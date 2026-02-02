@@ -1,0 +1,69 @@
+<header>
+    <div style="display: flex; justify-content: space-between; align-items: centre; flex-wrap: wrap; gap: 0.5rem;">
+        <h3 style="margin: 0;" id="section-heading-{{ section.pk }}">
+            {{ section.name }}
+            {% if section.status == "default" %}
+                <span class="badge badge-success">Active</span>
+            {% elif section.status == "completed" %}
+                <span class="badge badge-info">Completed</span>
+            {% else %}
+                <span class="badge badge-neutral">Deactivated</span>
+            {% endif %}
+        </h3>
+        {% if can_edit %}
+        <div role="group">
+            <button class="outline small"
+                    hx-get="{% url 'plans:section_edit' section_id=section.pk %}"
+                    hx-target="#section-{{ section.pk }}"
+                    hx-swap="innerHTML"
+                    aria-label="Edit {{ section.name }}">
+                Edit
+            </button>
+            <button class="outline small secondary"
+                    hx-get="{% url 'plans:section_status' section_id=section.pk %}"
+                    hx-target="#section-{{ section.pk }}"
+                    hx-swap="innerHTML"
+                    aria-label="Change status of {{ section.name }}">
+                Status
+            </button>
+        </div>
+        {% endif %}
+    </div>
+    {% if section.program %}
+    <small>
+        <span class="program-dot" style="background-color: {{ section.program.colour_hex }}" aria-hidden="true"></span>
+        {{ section.program.name }}
+    </small>
+    {% endif %}
+</header>
+
+<!-- Targets within this section -->
+{% if section.targets.all %}
+<table role="grid" aria-labelledby="section-heading-{{ section.pk }}">
+    <thead>
+        <tr>
+            <th scope="col">{{ term.target|default:"Target" }}</th>
+            <th scope="col">Status</th>
+            <th scope="col">Metrics</th>
+            {% if can_edit %}<th scope="col">Actions</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for target in section.targets.all %}
+        <tr id="target-{{ target.pk }}">
+            {% include "plans/_target.html" with target=target can_edit=can_edit %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p><em>No {{ term.target_plural|default:"targets" }} in this {{ term.section|default:"section" }}.</em></p>
+{% endif %}
+
+{% if can_edit %}
+<footer>
+    <a href="{% url 'plans:target_create' section_id=section.pk %}" role="button" class="outline small">
+        Add {{ term.target|default:"Target" }}
+    </a>
+</footer>
+{% endif %}

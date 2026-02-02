@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}{{ term.plan|default:"Plan" }} — {{ client.first_name }} {{ client.last_name }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{{ client.first_name }} {{ client.last_name }}</h1>
+    <p>
+        {% if client.status == "active" %}
+            <span class="badge badge-success">Active</span>
+        {% elif client.status == "inactive" %}
+            <span class="badge badge-warning">Inactive</span>
+        {% else %}
+            <span class="badge badge-neutral">Discharged</span>
+        {% endif %}
+        {% if client.record_id %}— Record ID: {{ client.record_id }}{% endif %}
+    </p>
+</hgroup>
+
+<!-- Tabs -->
+<nav aria-label="Client tabs">
+    <ul>
+        <li><a href="{% url 'clients:client_detail' client_id=client.pk %}" class="secondary">Info</a></li>
+        <li><strong>{{ term.plan|default:"Plan" }}</strong></li>
+        <li><a href="#" class="secondary" aria-disabled="true">Notes (Phase 4)</a></li>
+        <li><a href="#" class="secondary" aria-disabled="true">Analysis (Phase 5)</a></li>
+    </ul>
+</nav>
+
+<hr>
+
+<!-- Action buttons -->
+{% if can_edit %}
+<div role="group" style="margin-bottom: 1rem;">
+    <a href="{% url 'plans:section_create' client_id=client.pk %}" role="button" class="outline">
+        Add {{ term.section|default:"Section" }}
+    </a>
+    <a href="{% url 'plans:template_apply' client_id=client.pk %}" role="button" class="outline secondary">
+        Apply Template
+    </a>
+</div>
+{% endif %}
+
+<!-- Section create form (shown inline when section_create view re-renders this page) -->
+{% if show_section_form %}
+<article aria-label="Add section form">
+    <header><h3>Add {{ term.section|default:"Section" }}</h3></header>
+    <form method="post" action="{% url 'plans:section_create' client_id=client.pk %}">
+        {% csrf_token %}
+        {% for field in section_form %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+        <small class="error">{{ field.errors.0 }}</small>
+        {% endif %}
+        {% endfor %}
+        <div role="group">
+            <button type="submit">Save</button>
+            <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary">Cancel</a>
+        </div>
+    </form>
+</article>
+{% endif %}
+
+<!-- Active sections -->
+{% if active_sections %}
+{% for section in active_sections %}
+<article id="section-{{ section.pk }}" aria-label="{{ term.section|default:'Section' }}: {{ section.name }}">
+    {% include "plans/_section.html" with section=section can_edit=can_edit %}
+</article>
+{% endfor %}
+{% endif %}
+
+<!-- Completed / deactivated sections -->
+{% if inactive_sections %}
+<details>
+    <summary>Completed &amp; deactivated {{ term.section_plural|default:"sections" }} ({{ inactive_sections|length }})</summary>
+    {% for section in inactive_sections %}
+    <article id="section-{{ section.pk }}" aria-label="{{ term.section|default:'Section' }}: {{ section.name }}">
+        {% include "plans/_section.html" with section=section can_edit=can_edit %}
+    </article>
+    {% endfor %}
+</details>
+{% endif %}
+
+<!-- Empty state -->
+{% if not active_sections and not inactive_sections and not show_section_form %}
+<article aria-label="Empty plan">
+    <p>No {{ term.section_plural|default:"sections" }} yet. {% if can_edit %}Use the button above to add one, or apply a template.{% endif %}</p>
+</article>
+{% endif %}
+
+{% endblock %}

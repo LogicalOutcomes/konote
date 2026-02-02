@@ -36,6 +36,8 @@
             <li><a href="/programs/">{{ term.program_plural|default:"Programs" }}</a></li>
             {% endif %}
             {% if user.is_admin %}
+            <li><a href="/plans/admin/metrics/">{{ term.metric_plural|default:"Metrics" }}</a></li>
+            <li><a href="/admin/templates/">Templates</a></li>
             <li><a href="/admin/settings/">Settings</a></li>
             <li><a href="/admin/audit/">Audit Log</a></li>
             {% endif %}

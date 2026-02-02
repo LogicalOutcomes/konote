@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}{{ template.name }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<nav aria-label="Breadcrumb">
+    <ul>
+        <li><a href="{% url 'plan_templates:template_list' %}">Templates</a></li>
+        <li>{{ template.name }}</li>
+    </ul>
+</nav>
+
+<hgroup>
+    <h1>{{ template.name }}</h1>
+    {% if template.description %}<p>{{ template.description }}</p>{% endif %}
+</hgroup>
+
+<p>
+    Status:
+    {% if template.status == "active" %}
+        <span class="badge badge-success">Active</span>
+    {% else %}
+        <span class="badge badge-neutral">Archived</span>
+    {% endif %}
+    &nbsp;
+    <a href="{% url 'plan_templates:template_edit' template_id=template.pk %}">Edit Template</a>
+</p>
+
+<hr>
+
+<h2>{{ term.section_plural|default:"Sections" }}</h2>
+
+<p>
+    <a href="{% url 'plan_templates:template_section_create' template_id=template.pk %}" role="button" class="outline">
+        Add {{ term.section|default:"Section" }}
+    </a>
+</p>
+
+{% for section in template.sections.all %}
+<article>
+    <header>
+        <hgroup>
+            <h3>{{ section.name }}</h3>
+            {% if section.program %}
+            <p><small>{{ term.program|default:"Programme" }}: {{ section.program.name }}</small></p>
+            {% endif %}
+        </hgroup>
+        <nav aria-label="Section actions">
+            <a href="{% url 'plan_templates:template_section_edit' section_id=section.pk %}">Edit</a>
+            &middot;
+            <a href="{% url 'plan_templates:template_section_delete' section_id=section.pk %}" class="secondary">Delete</a>
+        </nav>
+    </header>
+
+    <h4>{{ term.target_plural|default:"Targets" }}</h4>
+
+    {% if section.targets.all %}
+    <table role="grid" aria-label="{{ term.target_plural|default:'Targets' }} in {{ section.name }}">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Description</th>
+                <th scope="col">Order</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for target in section.targets.all %}
+            <tr>
+                <td>{{ target.name }}</td>
+                <td>{{ target.description|truncatewords:12 }}</td>
+                <td>{{ target.sort_order }}</td>
+                <td>
+                    <a href="{% url 'plan_templates:template_target_edit' target_id=target.pk %}">Edit</a>
+                    &middot;
+                    <a href="{% url 'plan_templates:template_target_delete' target_id=target.pk %}" class="secondary">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p><em>No {{ term.target_plural|default:"targets" }} yet.</em></p>
+    {% endif %}
+
+    <p>
+        <a href="{% url 'plan_templates:template_target_create' section_id=section.pk %}" class="outline">
+            Add {{ term.target|default:"Target" }}
+        </a>
+    </p>
+</article>
+{% empty %}
+<p>No {{ term.section_plural|default:"sections" }} yet. Add one above.</p>
+{% endfor %}
+{% endblock %}

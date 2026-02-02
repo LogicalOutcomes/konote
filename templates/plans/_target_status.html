@@ -1,0 +1,21 @@
+<td colspan="4">
+    <form method="post"
+          hx-post="{% url 'plans:target_status' target_id=target.pk %}"
+          hx-target="#target-{{ target.pk }}"
+          hx-swap="innerHTML">
+        {% csrf_token %}
+        <h4>Change {{ term.target|default:"Target" }} Status</h4>
+        <p>Current: <strong>{{ target.get_status_display }}</strong></p>
+        {% for field in form %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+        <small class="error">{{ field.errors.0 }}</small>
+        {% endif %}
+        {% endfor %}
+        <div role="group">
+            <button type="submit">Update Status</button>
+            <button type="button" class="outline secondary" onclick="location.reload()">Cancel</button>
+        </div>
+    </form>
+</td>

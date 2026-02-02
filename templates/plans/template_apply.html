@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Apply Template — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<nav aria-label="Breadcrumb">
+    <ul>
+        <li><a href="{% url 'plans:plan_view' client_id=client_file.pk %}">{{ term.plan|default:"Plan" }}</a></li>
+        <li>Apply Template</li>
+    </ul>
+</nav>
+
+<hgroup>
+    <h1>Apply a {{ term.plan|default:"Plan" }} Template</h1>
+    <p>Choose a template to add {{ term.section_plural|default:"sections" }} and {{ term.target_plural|default:"targets" }} to this {{ term.client|default:"client" }}'s {{ term.plan|default:"plan" }}.</p>
+</hgroup>
+
+<article aria-label="Important information">
+    <p><strong>Note:</strong> Applying a template will <em>add</em> {{ term.section_plural|default:"sections" }} and {{ term.target_plural|default:"targets" }} to the existing {{ term.plan|default:"plan" }}. It will not overwrite or remove anything already there.</p>
+</article>
+
+{% if templates %}
+{% for tmpl in templates %}
+<article>
+    <header>
+        <h2>{{ tmpl.name }}</h2>
+    </header>
+    {% if tmpl.description %}
+    <p>{{ tmpl.description }}</p>
+    {% endif %}
+    <p><small>{{ tmpl.sections.count }} {{ term.section_plural|default:"sections" }}, {{ tmpl.sections.all|length }} with {{ term.target_plural|default:"targets" }}</small></p>
+
+    <details>
+        <summary>Preview contents</summary>
+        <ul>
+            {% for section in tmpl.sections.all %}
+            <li>
+                <strong>{{ section.name }}</strong>
+                {% if section.targets.all %}
+                <ul>
+                    {% for target in section.targets.all %}
+                    <li>{{ target.name }}</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </details>
+
+    <form method="post" action="{% url 'plan_templates:template_apply' client_id=client_file.pk template_id=tmpl.pk %}">
+        {% csrf_token %}
+        <button type="submit">Apply This Template</button>
+    </form>
+</article>
+{% endfor %}
+{% else %}
+<p>No active templates available. <a href="{% url 'plan_templates:template_list' %}">Create one first.</a></p>
+{% endif %}
+
+<p><a href="{% url 'plans:plan_view' client_id=client_file.pk %}">&larr; Back to {{ term.plan|default:"Plan" }}</a></p>
+{% endblock %}

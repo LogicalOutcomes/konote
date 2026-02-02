@@ -1,0 +1,19 @@
+<header><h3>Change {{ term.section|default:"Section" }} Status</h3></header>
+<p>Current: <strong>{{ section.get_status_display }}</strong></p>
+<form method="post"
+      hx-post="{% url 'plans:section_status' section_id=section.pk %}"
+      hx-target="#section-{{ section.pk }}"
+      hx-swap="innerHTML">
+    {% csrf_token %}
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% if field.errors %}
+    <small class="error">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% endfor %}
+    <div role="group">
+        <button type="submit">Update Status</button>
+        <button type="button" class="outline secondary" onclick="location.reload()">Cancel</button>
+    </div>
+</form>

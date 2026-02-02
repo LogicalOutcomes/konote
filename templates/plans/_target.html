@@ -1,0 +1,38 @@
+<td>
+    <strong>{{ target.name }}</strong>
+    {% if target.description %}
+    <br><small>{{ target.description|truncatewords:20 }}</small>
+    {% endif %}
+</td>
+<td>
+    {% if target.status == "default" %}
+        <span class="badge badge-success">Active</span>
+    {% elif target.status == "completed" %}
+        <span class="badge badge-info">Completed</span>
+    {% else %}
+        <span class="badge badge-neutral">Deactivated</span>
+    {% endif %}
+</td>
+<td>
+    {% for metric in target.metrics.all %}
+        <span class="badge badge-neutral" title="{{ metric.definition|truncatewords:10 }}">{{ metric.name }}</span>
+    {% empty %}
+        <small class="secondary">None</small>
+    {% endfor %}
+</td>
+{% if can_edit %}
+<td>
+    <div role="group">
+        <a href="{% url 'plans:target_edit' target_id=target.pk %}" class="outline small" role="button" aria-label="Edit {{ target.name }}">Edit</a>
+        <button class="outline small secondary"
+                hx-get="{% url 'plans:target_status' target_id=target.pk %}"
+                hx-target="#target-{{ target.pk }}"
+                hx-swap="innerHTML"
+                aria-label="Change status of {{ target.name }}">
+            Status
+        </button>
+        <a href="{% url 'plans:target_metrics' target_id=target.pk %}" class="outline small secondary" role="button" aria-label="Manage metrics for {{ target.name }}">Metrics</a>
+        <a href="{% url 'plans:target_history' target_id=target.pk %}" class="outline small secondary" role="button" aria-label="View history of {{ target.name }}">History</a>
+    </div>
+</td>
+{% endif %}

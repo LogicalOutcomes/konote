@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}{{ term.metric|default:"Metric" }} Library — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{{ term.metric|default:"Metric" }} Library</h1>
+    <p>Manage available {{ term.metric_plural|default:"metrics" }} for outcome tracking.</p>
+</hgroup>
+
+<a href="{% url 'plans:metric_create' %}" role="button" class="outline" style="margin-bottom: 1rem;">
+    Add Custom {{ term.metric|default:"Metric" }}
+</a>
+
+{% for category, metrics in metrics_by_category.items %}
+<section aria-labelledby="cat-{{ forloop.counter }}">
+    <h2 id="cat-{{ forloop.counter }}">{{ category }}</h2>
+    <table role="grid" aria-label="{{ category }} metrics">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Unit</th>
+                <th scope="col">Range</th>
+                <th scope="col">Library</th>
+                <th scope="col">Enabled</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for metric in metrics %}
+            <tr>
+                <td>
+                    <strong>{{ metric.name }}</strong>
+                    <br><small>{{ metric.definition|truncatewords:15 }}</small>
+                </td>
+                <td>{{ metric.unit|default:"—" }}</td>
+                <td>
+                    {% if metric.min_value != None or metric.max_value != None %}
+                        {{ metric.min_value|default:"—" }} to {{ metric.max_value|default:"—" }}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td>{% if metric.is_library %}Yes{% else %}Custom{% endif %}</td>
+                <td id="metric-toggle-{{ metric.pk }}">
+                    {% include "plans/_metric_toggle.html" with metric=metric %}
+                </td>
+                <td>
+                    <a href="{% url 'plans:metric_edit' metric_id=metric.pk %}" aria-label="Edit {{ metric.name }}">Edit</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% empty %}
+<p>No {{ term.metric_plural|default:"metrics" }} defined yet.</p>
+{% endfor %}
+{% endblock %}

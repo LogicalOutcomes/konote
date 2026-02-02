@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}{% if editing %}Edit{% else %}Create{% endif %} {{ term.metric|default:"Metric" }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% if editing %}Edit{% else %}Create{% endif %} {{ term.metric|default:"Metric" }}</h1>
+    <p>{% if editing %}Update metric definition.{% else %}Add a custom metric to the library.{% endif %}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% if field.help_text %}
+    <small>{{ field.help_text }}</small>
+    {% endif %}
+    {% if field.errors %}
+    <small class="error">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% endfor %}
+
+    <div role="group">
+        <button type="submit">{% if editing %}Save Changes{% else %}Create {{ term.metric|default:"Metric" }}{% endif %}</button>
+        <a href="{% url 'plans:metric_library' %}" role="button" class="outline secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

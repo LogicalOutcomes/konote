@@ -1,0 +1,25 @@
+<header><h3>Edit {{ term.section|default:"Section" }}</h3></header>
+<form method="post"
+      hx-post="{% url 'plans:section_edit' section_id=section.pk %}"
+      hx-target="#section-{{ section.pk }}"
+      hx-swap="innerHTML">
+    {% csrf_token %}
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {{ field }}
+    {% if field.errors %}
+    <small class="error">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% endfor %}
+    <div role="group">
+        <button type="submit">Save</button>
+        <button type="button" class="outline secondary"
+                hx-get="{% url 'plans:section_edit' section_id=section.pk %}"
+                hx-target="#section-{{ section.pk }}"
+                hx-swap="innerHTML"
+                hx-vals='{"cancel": "1"}'
+                onclick="location.reload()">
+            Cancel
+        </button>
+    </div>
+</form>

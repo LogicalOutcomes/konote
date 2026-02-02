@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Delete {{ term.target|default:"Target" }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<nav aria-label="Breadcrumb">
+    <ul>
+        <li><a href="{% url 'plan_templates:template_list' %}">Templates</a></li>
+        <li><a href="{% url 'plan_templates:template_detail' template_id=template.pk %}">{{ template.name }}</a></li>
+        <li>Delete {{ term.target|default:"Target" }}</li>
+    </ul>
+</nav>
+
+<h1>Delete {{ term.target|default:"Target" }}</h1>
+
+<article aria-label="Confirmation">
+    <p>
+        Are you sure you want to delete the {{ term.target|default:"target" }}
+        <strong>{{ target.name }}</strong> from {{ term.section|default:"section" }}
+        <strong>{{ section.name }}</strong>?
+    </p>
+    <p>This action cannot be undone.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div role="group">
+            <button type="submit" class="contrast">Delete</button>
+            <a href="{% url 'plan_templates:template_detail' template_id=template.pk %}" role="button" class="secondary">Cancel</a>
+        </div>
+    </form>
+</article>
+{% endblock %}

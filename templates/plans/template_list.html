@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}{{ term.plan|default:"Plan" }} Templates — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{{ term.plan|default:"Plan" }} Templates</h1>
+    <p>Reusable structures that can be applied to {{ term.client_plural|default:"clients" }}.</p>
+</hgroup>
+
+<p>
+    <a href="{% url 'plan_templates:template_create' %}" role="button">
+        Create Template
+    </a>
+</p>
+
+{% if templates %}
+<figure>
+<table role="grid" aria-label="{{ term.plan|default:'Plan' }} templates">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">{{ term.section_plural|default:"Sections" }}</th>
+            <th scope="col">Status</th>
+            <th scope="col">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tmpl in templates %}
+        <tr>
+            <td><a href="{% url 'plan_templates:template_detail' template_id=tmpl.pk %}">{{ tmpl.name }}</a></td>
+            <td>{{ tmpl.description|truncatewords:15 }}</td>
+            <td>{{ tmpl.sections.count }}</td>
+            <td>
+                {% if tmpl.status == "active" %}
+                    <span class="badge badge-success">Active</span>
+                {% else %}
+                    <span class="badge badge-neutral">Archived</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'plan_templates:template_edit' template_id=tmpl.pk %}">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<p>No templates yet. Create one to get started.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} {{ term.target|default:"Target" }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<nav aria-label="Breadcrumb">
+    <ul>
+        <li><a href="{% url 'plan_templates:template_list' %}">Templates</a></li>
+        <li><a href="{% url 'plan_templates:template_detail' template_id=template.pk %}">{{ template.name }}</a></li>
+        <li>{{ section.name }}</li>
+        <li>{% if is_edit %}Edit{% else %}Add{% endif %} {{ term.target|default:"Target" }}</li>
+    </ul>
+</nav>
+
+<h1>{% if is_edit %}Edit {{ term.target|default:"Target" }}{% else %}Add {{ term.target|default:"Target" }}{% endif %}</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">
+        {{ field.label }}
+        {% if field.field.required %}<abbr title="required">*</abbr>{% endif %}
+    </label>
+    {{ field }}
+    {% if field.errors %}
+    <small class="error">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% if field.help_text %}
+    <small>{{ field.help_text }}</small>
+    {% endif %}
+    {% endfor %}
+
+    <div role="group">
+        <button type="submit">{% if is_edit %}Save Changes{% else %}Add {{ term.target|default:"Target" }}{% endif %}</button>
+        <a href="{% url 'plan_templates:template_detail' template_id=template.pk %}" role="button" class="secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

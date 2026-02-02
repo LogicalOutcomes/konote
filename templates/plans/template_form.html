@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}{% if is_edit %}Edit{% else %}Create{% endif %} Template — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<h1>{% if is_edit %}Edit Template{% else %}Create Template{% endif %}</h1>
+
+<nav aria-label="Breadcrumb">
+    <ul>
+        <li><a href="{% url 'plan_templates:template_list' %}">Templates</a></li>
+        {% if is_edit %}<li><a href="{% url 'plan_templates:template_detail' template_id=template.pk %}">{{ template.name }}</a></li>{% endif %}
+        <li>{% if is_edit %}Edit{% else %}Create{% endif %}</li>
+    </ul>
+</nav>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">
+        {{ field.label }}
+        {% if field.field.required %}<abbr title="required">*</abbr>{% endif %}
+    </label>
+    {{ field }}
+    {% if field.errors %}
+    <small class="error">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% if field.help_text %}
+    <small>{{ field.help_text }}</small>
+    {% endif %}
+    {% endfor %}
+
+    <div role="group">
+        <button type="submit">{% if is_edit %}Save Changes{% else %}Create Template{% endif %}</button>
+        <a href="{% url 'plan_templates:template_list' %}" role="button" class="secondary">Cancel</a>
+    </div>
+</form>
+{% endblock %}

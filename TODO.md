@@ -6,14 +6,6 @@ _Nothing flagged._
 
 ## Active Work
 
-**Phase 3: Outcomes — Plans & Targets**
-- [ ] Create plan section CRUD for client files — (PLAN1)
-- [ ] Create plan target CRUD with status management — (PLAN2)
-- [ ] Create metric assignment to targets — (PLAN3)
-- [ ] Create plan template admin UI — (PLAN4)
-- [ ] Create "apply template to client" flow — (PLAN5)
-- [ ] Create target revision history view — (PLAN6)
-
 **Phase 4: Progress Notes**
 - [ ] Create quick note form — (NOTE1)
 - [ ] Create full structured note form with target entries — (NOTE2)
@@ -59,6 +51,7 @@ _Nothing flagged._
 
 ## Recently Done
 
+- [x] Phase 3: Plan sections, targets, metrics, templates, apply-to-client, revision history — 2026-02-02 (PLAN1–PLAN6)
 - [x] Phase 2: Program CRUD, role assignment, client CRUD, enrolment, custom fields, search — 2026-02-02 (PROG1–CLI3)
 - [x] Create theme.css with design tokens (swappable per agency) — 2026-02-02 (DES1)
 - [x] Replace badge colours with semantic token classes — 2026-02-02 (DES2)

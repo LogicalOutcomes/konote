@@ -1,0 +1,7 @@
+<button hx-post="{% url 'plans:metric_toggle' metric_id=metric.pk %}"
+        hx-target="#metric-toggle-{{ metric.pk }}"
+        hx-swap="innerHTML"
+        class="outline small {% if metric.is_enabled %}contrast{% else %}secondary{% endif %}"
+        aria-label="{% if metric.is_enabled %}Disable{% else %}Enable{% endif %} {{ metric.name }}">
+    {% if metric.is_enabled %}Enabled{% else %}Disabled{% endif %}
+</button>
