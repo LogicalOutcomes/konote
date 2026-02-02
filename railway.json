@@ -5,8 +5,9 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate && python manage.py migrate --database=audit && python manage.py seed && gunicorn konote.wsgi:application --bind 0.0.0.0:$PORT --workers 3",
+    "startCommand": "echo 'Starting migrations...' && python manage.py migrate --verbosity 2 2>&1 && echo 'Audit DB...' && python manage.py migrate --database=audit --verbosity 2 2>&1 && echo 'Seeding...' && python manage.py seed 2>&1 && echo 'Starting gunicorn on port '$PORT && gunicorn konote.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --log-level info --error-logfile - --access-logfile -",
     "healthcheckPath": "/auth/login/",
+    "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE"
   },
   "watchPatterns": ["*.py", "*.html", "*.css", "*.js", "requirements.txt", "Dockerfile"]
