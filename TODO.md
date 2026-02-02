@@ -2,9 +2,16 @@
 
 ## Flagged
 
-_Nothing flagged._
+- [ ] Phase prompts reference plan file `idempotent-cooking-walrus.md` — verify it exists or embed key decisions in CLAUDE.md — (FLAG1)
+- [ ] Confirm Phase 1 migrations were generated and committed — (FLAG2)
 
 ## Active Work
+
+**Pre-Phase 2: Foundation gaps (expert review)**
+- [ ] Verify/generate Django migrations for all apps and commit migration files — (FIX1)
+- [ ] Create basic test suite: RBAC enforcement + PII encryption tests — (TEST1)
+- [ ] Add HTMX global error handler to app.js — (FIX2)
+- [ ] Register all models in admin.py for debugging during development — (FIX3)
 
 **Phase 2: Core Data — Programs & Clients**
 - [ ] Create program CRUD views and templates — (PROG1)
@@ -47,17 +54,18 @@ _Nothing flagged._
 - [ ] Create user management admin (create, deactivate, assign roles) — (USR1)
 
 **Phase 7: Hardening & Deployment**
-- [ ] Lock down audit DB permissions (REVOKE UPDATE/DELETE) — (SEC1)
-- [ ] Add automated tests for RBAC enforcement — (SEC2)
-- [ ] Add automated tests for PII encryption — (SEC3)
+- [ ] Lock down audit DB permissions at deploy time, not after all phases — (SEC1)
 - [ ] Tune CSP and rate limiting for production — (SEC4)
+- [ ] Create encryption key rotation management command — (SEC5)
 - [ ] Write deployment guide for Azure — (DOC1)
 - [ ] Write deployment guide for Elest.io — (DOC2)
 - [ ] Write deployment guide for Railway — (DOC3)
 - [ ] Write agency setup guide (first-run wizard) — (DOC4)
+- [ ] Add pg_dump backup/restore documentation — (OPS2)
 
 ## Parking Lot
 
+- [ ] PIPEDA/PHIPA consent workflow — block note entry until client consent recorded — (PRIV1)
 - [ ] GDPR toolkit UI — data export, right to erasure, consent management — (GDPR1)
 - [ ] French language support (bilingual UI) — (I18N1)
 - [ ] Data import from existing systems (CSV) — (IMP1)
@@ -65,6 +73,7 @@ _Nothing flagged._
 - [ ] Mobile-responsive optimisation pass — (UI1)
 - [ ] First-run setup wizard for new instances — (SETUP1)
 - [ ] Automated backups documentation — (OPS1)
+- [ ] Encrypted search optimisation (search hash field) for large client lists — (PERF1)
 
 ## Recently Done
 

@@ -24,6 +24,18 @@ A secure, web-based client outcome management system for nonprofits. Agencies de
 - Audit logs go to separate database: `AuditLog.objects.using("audit")`
 - Canadian spelling: colour, centre, behaviour, organisation
 
+## Development Rules (from expert review)
+
+These rules apply to **every phase**. Do not skip them.
+
+1. **Always create `forms.py`** — use Django `ModelForm` for validation. Never use raw `request.POST.get()` directly in views.
+2. **Always extend the test suite** — when building views for a phase, add tests in `tests/` that cover the new views (permissions, form validation, happy path). Do not defer all testing to Phase 7.
+3. **Always run and commit migrations** — after any model change, run `makemigrations` and `migrate`, then commit the migration files.
+4. **Back up before migrating** — document/run `pg_dump` before applying migrations to a database with real data.
+5. **Encrypted fields cannot be searched in SQL** — client search must load accessible clients into Python and filter in memory. This is acceptable up to ~2,000 clients. Document the ceiling.
+6. **Cache invalidation** — after saving terminology, features, or settings, clear the relevant cache key. Prefer `post_save` signals over manual cache.delete() calls in views.
+7. **HTMX error handling** — `app.js` must include a global `htmx:responseError` handler so network/server errors don't fail silently.
+
 ## Task File: TODO.md
 
 TODO.md is a **dashboard** — scannable at a glance. It is not a project plan, decision log, or reference guide.
