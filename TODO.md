@@ -6,13 +6,6 @@ _Nothing flagged._
 
 ## Active Work
 
-**Phase 4: Progress Notes**
-- [ ] Create quick note form — (NOTE1)
-- [ ] Create full structured note form with target entries — (NOTE2)
-- [ ] Create metric value recording per target — (NOTE3)
-- [ ] Create progress note template admin UI — (NOTE4)
-- [ ] Create notes timeline view for client file — (NOTE5)
-
 **Phase 5: Visualisation, Events & Audit**
 - [ ] Create Chart.js progress charts (metrics over time) — (VIZ1)
 - [ ] Create event type admin and event CRUD — (EVT1)
@@ -51,6 +44,7 @@ _Nothing flagged._
 
 ## Recently Done
 
+- [x] Phase 4: Quick notes, full structured notes, metric recording, templates admin, timeline, cancellation — 2026-02-02 (NOTE1–NOTE5)
 - [x] Phase 3: Plan sections, targets, metrics, templates, apply-to-client, revision history — 2026-02-02 (PLAN1–PLAN6)
 - [x] Phase 2: Program CRUD, role assignment, client CRUD, enrolment, custom fields, search — 2026-02-02 (PROG1–CLI3)
 - [x] Create theme.css with design tokens (swappable per agency) — 2026-02-02 (DES1)

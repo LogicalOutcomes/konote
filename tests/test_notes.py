@@ -1,0 +1,217 @@
+"""Tests for Phase 4: Progress Notes views and forms."""
+from django.test import TestCase, Client, override_settings
+from django.utils import timezone
+from cryptography.fernet import Fernet
+
+from apps.auth_app.models import User
+from apps.programs.models import Program, UserProgramRole
+from apps.clients.models import ClientFile, ClientProgramEnrolment
+from apps.plans.models import MetricDefinition, PlanSection, PlanTarget, PlanTargetMetric
+from apps.notes.models import ProgressNote, ProgressNoteTarget, MetricValue
+import konote.encryption as enc_module
+
+TEST_KEY = Fernet.generate_key().decode()
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class NoteViewsTest(TestCase):
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.admin = User.objects.create_user(username="admin", password="pass", is_admin=True)
+        self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
+        self.other_staff = User.objects.create_user(username="other", password="pass", is_admin=False)
+
+        self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.other_staff, program=self.prog, role="staff")
+
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Jane"
+        self.client_file.last_name = "Doe"
+        self.client_file.status = "active"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(client_file=self.client_file, program=self.prog)
+
+        # Unreachable client (different program)
+        self.prog_b = Program.objects.create(name="Prog B", colour_hex="#3B82F6")
+        self.other_client = ClientFile()
+        self.other_client.first_name = "Bob"
+        self.other_client.last_name = "Smith"
+        self.other_client.status = "active"
+        self.other_client.save()
+        ClientProgramEnrolment.objects.create(client_file=self.other_client, program=self.prog_b)
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    # -- Quick Notes --
+
+    def test_quick_note_create_happy_path(self):
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/quick/",
+            {"notes_text": "Client seemed well today."},
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(client_file=self.client_file)
+        self.assertEqual(note.note_type, "quick")
+        self.assertEqual(note.notes_text, "Client seemed well today.")
+        self.assertEqual(note.author, self.staff)
+
+    def test_quick_note_empty_text_rejected(self):
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/quick/",
+            {"notes_text": "   "},
+        )
+        self.assertEqual(resp.status_code, 200)  # Re-renders form with errors
+        self.assertEqual(ProgressNote.objects.count(), 0)
+
+    def test_staff_cannot_create_note_for_inaccessible_client(self):
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.other_client.pk}/quick/",
+            {"notes_text": "Should not work."},
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_admin_can_create_note_for_any_client(self):
+        self.http.login(username="admin", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.other_client.pk}/quick/",
+            {"notes_text": "Admin note."},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(ProgressNote.objects.count(), 1)
+
+    # -- Note List --
+
+    def test_note_list_shows_notes(self):
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Test note", author=self.staff,
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/client/{self.client_file.pk}/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Test note")
+
+    # -- Full Notes --
+
+    def test_full_note_create_with_targets_and_metrics(self):
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Goals", program=self.prog,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Housing",
+        )
+        metric = MetricDefinition.objects.create(
+            name="Stability Score", min_value=0, max_value=10, unit="score",
+            definition="Housing stability", category="housing",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/new/",
+            {
+                "summary": "Good session",
+                f"target_{target.pk}-target_id": str(target.pk),
+                f"target_{target.pk}-notes": "Discussed housing options",
+                f"metric_{target.pk}_{metric.pk}-metric_def_id": str(metric.pk),
+                f"metric_{target.pk}_{metric.pk}-value": "7",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(note_type="full")
+        self.assertEqual(note.summary, "Good session")
+        pnt = ProgressNoteTarget.objects.get(progress_note=note)
+        self.assertEqual(pnt.notes, "Discussed housing options")
+        mv = MetricValue.objects.get(progress_note_target=pnt)
+        self.assertEqual(mv.value, "7")
+
+    def test_metric_value_out_of_range_rejected(self):
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Goals", program=self.prog,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Housing",
+        )
+        metric = MetricDefinition.objects.create(
+            name="Score", min_value=0, max_value=10, unit="score",
+            definition="Test", category="general",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/new/",
+            {
+                f"target_{target.pk}-target_id": str(target.pk),
+                f"target_{target.pk}-notes": "",
+                f"metric_{target.pk}_{metric.pk}-metric_def_id": str(metric.pk),
+                f"metric_{target.pk}_{metric.pk}-value": "15",  # Over max
+            },
+        )
+        self.assertEqual(resp.status_code, 200)  # Re-renders with errors
+        self.assertEqual(ProgressNote.objects.count(), 0)
+
+    # -- Cancellation --
+
+    def test_staff_can_cancel_own_note(self):
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Cancel me", author=self.staff,
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/{note.pk}/cancel/",
+            {"status_reason": "Entered in error"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        note.refresh_from_db()
+        self.assertEqual(note.status, "cancelled")
+        self.assertEqual(note.status_reason, "Entered in error")
+
+    def test_staff_cannot_cancel_others_note(self):
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Not yours", author=self.other_staff,
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/{note.pk}/cancel/",
+            {"status_reason": "Should fail"},
+        )
+        self.assertEqual(resp.status_code, 403)
+        note.refresh_from_db()
+        self.assertEqual(note.status, "default")
+
+    def test_admin_can_cancel_any_note(self):
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Admin cancel", author=self.staff,
+        )
+        self.http.login(username="admin", password="pass")
+        resp = self.http.post(
+            f"/notes/{note.pk}/cancel/",
+            {"status_reason": "Admin override"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        note.refresh_from_db()
+        self.assertEqual(note.status, "cancelled")
+
+    # -- Template Admin --
+
+    def test_admin_can_access_template_list(self):
+        self.http.login(username="admin", password="pass")
+        resp = self.http.get("/admin/settings/note-templates/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_staff_cannot_access_template_admin(self):
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get("/admin/settings/note-templates/")
+        self.assertEqual(resp.status_code, 403)
