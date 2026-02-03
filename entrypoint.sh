@@ -18,9 +18,10 @@ echo "Running security checks..."
 python manage.py startup_check
 # If startup_check exits non-zero, the script stops here (set -e)
 
-echo "Starting gunicorn on port 8000"
+PORT=${PORT:-8000}
+echo "Starting gunicorn on port $PORT"
 exec gunicorn konote.wsgi:application \
-    --bind 0.0.0.0:8000 \
+    --bind 0.0.0.0:$PORT \
     --workers 2 \
     --timeout 120 \
     --log-level info \
