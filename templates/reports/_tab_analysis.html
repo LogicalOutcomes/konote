@@ -13,8 +13,6 @@
     </section>
     {% endfor %}
 
-<!-- Chart.js loaded inline for HTMX partial support -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
 const chartData = {{ chart_data_json|safe }};
 chartData.forEach(function(chart, index) {
