@@ -82,6 +82,16 @@ class ProgressNote(models.Model):
     summary = models.TextField(default="", blank=True)
     backdate = models.DateTimeField(null=True, blank=True, help_text="Override date if note is for a past session.")
     begin_timestamp = models.DateTimeField(null=True, blank=True)
+    follow_up_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="Optional date to follow up on this note."
+    )
+    follow_up_completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="When the follow-up was completed (new note recorded)."
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

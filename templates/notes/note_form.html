@@ -74,6 +74,12 @@
     {{ form.summary }}
     {% if form.summary.errors %}<small class="error" role="alert">{{ form.summary.errors.0 }}</small>{% endif %}
 
+    <!-- Follow-up date (optional) -->
+    <label for="{{ form.follow_up_date.id_for_label }}">{% trans "Follow up by" %}</label>
+    {{ form.follow_up_date }}
+    <small>{% trans "(optional — adds to your home page reminders)" %}</small>
+    {% if form.follow_up_date.errors %}<small class="error" role="alert">{{ form.follow_up_date.errors.0 }}</small>{% endif %}
+
     <!-- Consent confirmation -->
     <fieldset>
         <label>

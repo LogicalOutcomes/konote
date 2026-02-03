@@ -64,7 +64,7 @@ Public sign-up forms for programs — parents register kids for sports, adults s
 
 See `tasks/note-follow-ups-design.md` for full design and rationale.
 
-- [ ] Note follow-up dates — optional follow-up date on notes, shows on home page — (FU1)
+- [x] Note follow-up dates — optional follow-up date on notes, shows on home page — (FU1)
 
 ### Planned Extensions (Build When Requested)
 
@@ -95,6 +95,7 @@ These features are intentionally excluded. See technical documentation for ratio
 
 ## Recently Done
 
+- [x] Note follow-up dates on home page — 2026-02-03 (FU1)
 - [x] Add backup automation examples to docs — 2026-02-03 (OPS1)
 - [x] Add client search filters (program, status, date) — 2026-02-03 (UX19)
 - [x] Note auto-save / draft recovery — 2026-02-03 (UX21)

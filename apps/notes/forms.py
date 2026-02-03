@@ -18,13 +18,22 @@ class QuickNoteForm(forms.ModelForm):
 
     class Meta:
         model = ProgressNote
-        fields = ["notes_text"]
+        fields = ["notes_text", "follow_up_date"]
         widgets = {
             "notes_text": forms.Textarea(attrs={
                 "rows": 5,
                 "placeholder": "Write your note here...",
                 "required": True,
             }),
+            "follow_up_date": forms.DateInput(attrs={
+                "type": "date",
+            }),
+        }
+        labels = {
+            "follow_up_date": "Follow up by",
+        }
+        help_texts = {
+            "follow_up_date": "(optional — adds to your home page reminders)",
         }
 
     def clean_notes_text(self):
@@ -50,6 +59,12 @@ class FullNoteForm(forms.Form):
     summary = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Optional summary..."}),
         required=False,
+    )
+    follow_up_date = forms.DateField(
+        widget=forms.DateInput(attrs={"type": "date"}),
+        required=False,
+        label="Follow up by",
+        help_text="(optional — adds to your home page reminders)",
     )
     consent_confirmed = forms.BooleanField(
         required=True,

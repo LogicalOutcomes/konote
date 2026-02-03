@@ -128,6 +128,11 @@
         <dd class="stat-value">{{ notes_today_count }}</dd>
         <dd class="stat-subtext">{% trans "recorded" %}</dd>
     </dl>
+    <dl class="stat-card{% if follow_up_count > 0 %} stat-card-warning{% endif %}">
+        <dt>{% trans "Follow-ups Due" %}</dt>
+        <dd class="stat-value">{{ follow_up_count }}</dd>
+        <dd class="stat-subtext">{% trans "need your attention" %}</dd>
+    </dl>
 </div>
 
 <!-- Two-column dashboard -->
@@ -136,8 +141,8 @@
     <article>
         <header class="card-header">
             <span>{% trans "Priority Items" %}</span>
-            {% if alert_count > 0 or needs_attention_count > 0 %}
-            <span class="badge badge-warning">{{ alert_count|add:needs_attention_count }}</span>
+            {% if alert_count > 0 or needs_attention_count > 0 or follow_up_count > 0 %}
+            <span class="badge badge-warning">{{ alert_count|add:needs_attention_count|add:follow_up_count }}</span>
             {% endif %}
         </header>
         {% if active_alerts %}
@@ -156,6 +161,22 @@
             </ul>
         </div>
         {% endif %}
+        {% if pending_follow_ups %}
+        <div class="priority-section">
+            <h4 class="priority-label">{% trans "Follow-ups Due" %}</h4>
+            <ul class="card-list">
+                {% for note in pending_follow_ups %}
+                <li class="priority-item{% if note.follow_up_date < today %} priority-overdue{% endif %}">
+                    <a href="{% url 'clients:client_detail' client_id=note.client_file.pk %}">
+                        {{ note.client_file.first_name }} {{ note.client_file.last_name }}
+                    </a>
+                    <span class="priority-detail">{{ note.notes_text|truncatechars:40 }}</span>
+                    <small class="secondary">{{ note.follow_up_date|date:"M j" }}</small>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
         {% if needs_attention %}
         <div class="priority-section">
             <h4 class="priority-label">{% trans "No Recent Notes" %}</h4>
@@ -169,7 +190,7 @@
             </ul>
         </div>
         {% endif %}
-        {% if not active_alerts and not needs_attention %}
+        {% if not active_alerts and not pending_follow_ups and not needs_attention %}
         <p class="empty-message"><em>{% trans "All caught up! No items need attention." %}</em></p>
         {% endif %}
     </article>

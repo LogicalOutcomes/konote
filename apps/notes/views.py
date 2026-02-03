@@ -169,12 +169,23 @@ def quick_note_create(request, client_id):
     if request.method == "POST":
         form = QuickNoteForm(request.POST)
         if form.is_valid():
-            note = form.save(commit=False)
-            note.client_file = client
-            note.note_type = "quick"
-            note.author = request.user
-            note.author_program = _get_author_program(request.user, client)
-            note.save()
+            with transaction.atomic():
+                note = form.save(commit=False)
+                note.client_file = client
+                note.note_type = "quick"
+                note.author = request.user
+                note.author_program = _get_author_program(request.user, client)
+                note.save()
+
+                # Auto-complete any pending follow-ups from this author for this client
+                ProgressNote.objects.filter(
+                    client_file=client,
+                    author=request.user,
+                    follow_up_date__isnull=False,
+                    follow_up_completed_at__isnull=True,
+                    status="default",
+                ).update(follow_up_completed_at=timezone.now())
+
             messages.success(request, "Quick note saved.")
             return redirect("notes:note_list", client_id=client.pk)
     else:
@@ -217,6 +228,7 @@ def note_create(request, client_id):
                     author_program=_get_author_program(request.user, client),
                     template=form.cleaned_data.get("template"),
                     summary=form.cleaned_data.get("summary", ""),
+                    follow_up_date=form.cleaned_data.get("follow_up_date"),
                 )
                 session_date = form.cleaned_data.get("session_date")
                 if session_date and session_date != timezone.localdate():
@@ -252,6 +264,15 @@ def note_create(request, client_id):
                                 metric_def_id=mf.cleaned_data["metric_def_id"],
                                 value=val,
                             )
+
+                # Auto-complete any pending follow-ups from this author for this client
+                ProgressNote.objects.filter(
+                    client_file=client,
+                    author=request.user,
+                    follow_up_date__isnull=False,
+                    follow_up_completed_at__isnull=True,
+                    status="default",
+                ).exclude(pk=note.pk).update(follow_up_completed_at=timezone.now())
 
             messages.success(request, "Progress note saved.")
             return redirect("notes:note_list", client_id=client.pk)

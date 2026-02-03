@@ -48,6 +48,15 @@ def home(request):
         created_at__gte=today_start,
     ).count()
 
+    # --- Pending follow-ups for this user ---
+    pending_follow_ups = ProgressNote.objects.filter(
+        author=request.user,
+        follow_up_date__lte=timezone.now().date(),
+        follow_up_completed_at__isnull=True,
+        status="default",
+    ).select_related("client_file").order_by("follow_up_date")[:10]
+    follow_up_count = pending_follow_ups.count()
+
     # --- Clients not seen in 30+ days ---
     thirty_days_ago = timezone.now() - timedelta(days=30)
     # Get clients with recent notes
@@ -86,6 +95,9 @@ def home(request):
         "notes_today_count": notes_today_count,
         "needs_attention": needs_attention,
         "needs_attention_count": needs_attention_count,
+        "pending_follow_ups": pending_follow_ups,
+        "follow_up_count": follow_up_count,
+        "today": timezone.now().date(),
         "org_name": org_name,
         "accessible_programs": accessible_programs,
     })

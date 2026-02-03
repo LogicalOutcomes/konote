@@ -115,6 +115,18 @@ msgstr "Notes aujourd'hui"
 msgid "recorded"
 msgstr "enregistrees"
 
+msgid "Follow-ups Due"
+msgstr "Suivis a effectuer"
+
+msgid "need your attention"
+msgstr "necessitent votre attention"
+
+msgid "Follow up by"
+msgstr "Suivi avant le"
+
+msgid "(optional — adds to your home page reminders)"
+msgstr "(facultatif — ajoute a vos rappels sur la page d'accueil)"
+
 msgid "Priority Items"
 msgstr "Elements prioritaires"
 
