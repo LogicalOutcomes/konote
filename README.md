@@ -95,6 +95,10 @@ KoNote Web is a ground-up reimplementation using modern Python/Django, designed 
 
 ## Quick Start
 
+> **Not a developer?** That's fine. If you've installed WordPress or used Excel competently, you can set up KoNote. Our [Getting Started Guide](docs/getting-started.md) explains every step in plain language. Plan for about 2 hours for your first setup — the technical steps are quick, but you'll be learning new concepts along the way.
+>
+> **Important:** Running your own instance means taking responsibility for client data security. KoNote has strong protections built in, but you need to configure them correctly and maintain them over time. The Getting Started Guide includes a [security responsibility section](docs/getting-started.md#before-you-begin-understanding-your-responsibility) to help you understand what that involves.
+
 ### Prerequisites
 
 - Python 3.12+

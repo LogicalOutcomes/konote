@@ -7,6 +7,83 @@ This guide walks you through setting up KoNote for local development. Choose bet
 
 ---
 
+## Is This Guide for Me?
+
+**Yes.** This guide is written for nonprofit staff who aren't developers.
+
+If you've ever:
+- Installed WordPress or another web application
+- Used Excel competently (formulas, sorting, multiple sheets)
+- Followed step-by-step software instructions
+
+...you have the skills to set up KoNote. No command-line experience is required — every step shows you exactly what to type and what to expect.
+
+> **Realistic time estimate:** Plan for **up to 2 hours** for your first Docker setup. The technical steps take 30-45 minutes, but you'll also be learning new concepts along the way. That's normal. Take breaks, re-read steps, and don't rush. Once it's running, you won't need to do this again.
+
+---
+
+## Before You Begin: Understanding Your Responsibility
+
+KoNote stores sensitive client information. By setting up and running your own instance, you're taking on responsibility for protecting that data. This section helps you understand what that means.
+
+### What KoNote Does Automatically
+
+KoNote has security protections built in. When configured correctly, it:
+
+- **Encrypts client names, emails, birth dates, and phone numbers** — Even if someone accessed your database directly, they'd see scrambled text, not readable data
+- **Blocks most common security mistakes** — The server won't start if critical security settings are missing
+- **Logs who accesses what** — Every time someone views or changes a client record, it's recorded in a separate audit database
+- **Restricts access by role** — Staff only see clients in their assigned programs; receptionists can't view clinical notes
+- **Runs security checks automatically** — Every time you start the application, it verifies encryption keys and security settings
+
+### What You Need to Do
+
+Software protections only work if you set things up correctly and maintain them. You are responsible for:
+
+| Your Responsibility | Why It Matters | How KoNote Helps |
+|---------------------|----------------|------------------|
+| **Keep the encryption key safe** | If you lose it, all client data becomes unreadable — permanently | Clear warnings in setup; no default key to fall back on |
+| **Use HTTPS in production** | Without it, data travels unprotected over the internet | Built-in support for HTTPS; warnings if cookies aren't secure |
+| **Remove departed staff promptly** | Former employees shouldn't access client data | User management in admin panel; audit logs show who accessed what |
+| **Back up your data regularly** | Hardware fails; mistakes happen | Backup guide provided; encryption key must be stored separately |
+| **Keep software updated** | Security fixes are released over time | Simple update process documented |
+| **Train staff on privacy** | Software can't stop someone from writing down a name | Role-based access limits exposure |
+
+### How to Verify Your Setup Is Secure
+
+After completing setup, run these commands to verify security is working:
+
+```bash
+# Basic check (should show "no issues")
+python manage.py check
+
+# Deployment check (should show no errors, may show warnings in development)
+python manage.py check --deploy
+
+# Full security audit (should show all PASS, with possible WARN for development settings)
+python manage.py security_audit
+```
+
+**What you want to see:**
+- `FIELD_ENCRYPTION_KEY` is configured and valid
+- No `FAIL` results in the security audit
+- `WARN` results are acceptable during local testing, but must be fixed before entering real client data
+
+See [Security Operations Guide](security-operations.md) for detailed explanations of each check.
+
+### When to Get Help
+
+Consider engaging IT support or a technical consultant if:
+
+- Your organisation serves **vulnerable populations** (children, mental health clients, survivors of violence)
+- You're subject to **specific regulatory requirements** (healthcare privacy laws, government contracts)
+- You need to **integrate with other systems** (SSO, external databases)
+- You're **not comfortable** with the responsibility after reading this section
+
+There's no shame in deciding this isn't the right approach for your organisation. Managed software-as-a-service options exist for a reason.
+
+---
+
 ## What You'll Need (Pre-Flight Checklist)
 
 Before you begin, make sure you have:
