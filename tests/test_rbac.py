@@ -348,23 +348,23 @@ class ReceptionistNotesAccessTest(TestCase):
     def test_receptionist_blocked_from_note_list(self):
         """Receptionists cannot access the notes list (requires staff role)."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/notes/")
+        response = self.client.get(f"/notes/client/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 403)
 
     def test_staff_can_access_note_list(self):
         """Staff can access the notes list."""
         self.client.force_login(self.staff_user)
-        response = self.client.get(f"/clients/{self.client_file.pk}/notes/")
+        response = self.client.get(f"/notes/client/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 200)
 
     def test_receptionist_blocked_from_quick_note_create(self):
         """Receptionists cannot create quick notes."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/notes/quick/")
+        response = self.client.get(f"/notes/client/{self.client_file.pk}/quick/")
         self.assertEqual(response.status_code, 403)
 
         # Also test POST
-        response = self.client.post(f"/clients/{self.client_file.pk}/notes/quick/", {
+        response = self.client.post(f"/notes/client/{self.client_file.pk}/quick/", {
             "notes_text": "Test note",
         })
         self.assertEqual(response.status_code, 403)
@@ -372,7 +372,7 @@ class ReceptionistNotesAccessTest(TestCase):
     def test_receptionist_blocked_from_full_note_create(self):
         """Receptionists cannot create full notes."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/notes/full/")
+        response = self.client.get(f"/notes/client/{self.client_file.pk}/new/")
         self.assertEqual(response.status_code, 403)
 
     def test_receptionist_blocked_from_note_cancel(self):
@@ -389,11 +389,11 @@ class ReceptionistNotesAccessTest(TestCase):
 
         # Receptionist tries to cancel
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/notes/{note.pk}/cancel/")
+        response = self.client.get(f"/notes/{note.pk}/cancel/")
         self.assertEqual(response.status_code, 403)
 
         # Also test POST
-        response = self.client.post(f"/clients/{self.client_file.pk}/notes/{note.pk}/cancel/", {
+        response = self.client.post(f"/notes/{note.pk}/cancel/", {
             "cancel_reason": "Testing",
         })
         self.assertEqual(response.status_code, 403)
@@ -436,25 +436,25 @@ class ReceptionistPlansAccessTest(TestCase):
     def test_receptionist_can_view_plan(self):
         """Receptionists can view the plan tab (read-only)."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/plan/")
+        response = self.client.get(f"/plans/client/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 200)
 
     def test_receptionist_blocked_from_section_create(self):
         """Receptionists cannot create plan sections."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/plan/sections/create/")
+        response = self.client.get(f"/plans/client/{self.client_file.pk}/sections/create/")
         self.assertEqual(response.status_code, 403)
 
     def test_staff_blocked_from_section_create(self):
         """Staff cannot create plan sections (only program managers can)."""
         self.client.force_login(self.staff_user)
-        response = self.client.get(f"/clients/{self.client_file.pk}/plan/sections/create/")
+        response = self.client.get(f"/plans/client/{self.client_file.pk}/sections/create/")
         self.assertEqual(response.status_code, 403)
 
     def test_manager_can_create_section(self):
         """Program managers can create plan sections."""
         self.client.force_login(self.manager)
-        response = self.client.get(f"/clients/{self.client_file.pk}/plan/sections/create/")
+        response = self.client.get(f"/plans/client/{self.client_file.pk}/sections/create/")
         self.assertEqual(response.status_code, 200)
 
     def test_receptionist_blocked_from_target_create(self):
@@ -463,12 +463,12 @@ class ReceptionistPlansAccessTest(TestCase):
         from apps.plans.models import PlanSection
         section = PlanSection.objects.create(
             client_file=self.client_file,
-            title="Test Section",
+            name="Test Section",
             program=self.program,
         )
 
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/plan/sections/{section.pk}/targets/create/")
+        response = self.client.get(f"/plans/sections/{section.pk}/targets/create/")
         self.assertEqual(response.status_code, 403)
 
 

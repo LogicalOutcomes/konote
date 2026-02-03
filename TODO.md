@@ -8,7 +8,7 @@ _Nothing flagged._
 
 ### Pre-Pilot Testing Fixes
 
-- [ ] Fix test suite configuration error — (TEST2)
+- [x] Fix test suite configuration error — (TEST2)
 - [ ] Add CSV export for all client data — (EXP1)
 - [ ] Add consent checkbox to note entry — (PRIV2)
 - [ ] Create first-run setup wizard — (SETUP1)

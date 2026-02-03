@@ -136,8 +136,8 @@ class MetricExportFormTest(TestCase):
         self.program = Program.objects.create(name="Test Program", status="active")
         self.metric = MetricDefinition.objects.create(
             name="Test Metric",
-            description="A test metric",
-            data_type="integer",
+            definition="A test metric",
+            category="custom",
             is_enabled=True,
             status="active",
         )
@@ -239,8 +239,8 @@ class ExportFormViewTest(TestCase):
         self.program = Program.objects.create(name="Test Program", status="active")
         self.metric = MetricDefinition.objects.create(
             name="Test Metric",
-            description="A test metric",
-            data_type="integer",
+            definition="A test metric",
+            category="custom",
             is_enabled=True,
             status="active",
         )
@@ -1200,8 +1200,8 @@ class MetricExportFormGroupByTests(TestCase):
         self.program = Program.objects.create(name="Test Program", status="active")
         self.metric = MetricDefinition.objects.create(
             name="Test Metric",
-            description="A test metric",
-            data_type="integer",
+            definition="A test metric",
+            category="custom",
             is_enabled=True,
             status="active",
         )

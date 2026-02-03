@@ -18,11 +18,15 @@ class ClientViewsTest(TestCase):
     def setUp(self):
         enc_module._fernet = None
         self.client = Client()
+        # Admin with program manager role — admins need a program role to access clients
         self.admin = User.objects.create_user(username="admin", password="testpass123", is_admin=True)
         self.staff = User.objects.create_user(username="staff", password="testpass123", is_admin=False)
         self.prog_a = Program.objects.create(name="Program A", colour_hex="#10B981")
         self.prog_b = Program.objects.create(name="Program B", colour_hex="#3B82F6")
         UserProgramRole.objects.create(user=self.staff, program=self.prog_a, role="staff")
+        # Give admin access to both programs so they can see all clients
+        UserProgramRole.objects.create(user=self.admin, program=self.prog_a, role="program_manager")
+        UserProgramRole.objects.create(user=self.admin, program=self.prog_b, role="program_manager")
 
     def _create_client(self, first="Jane", last="Doe", programs=None):
         cf = ClientFile()
@@ -189,6 +193,9 @@ class CustomFieldTest(TestCase):
         enc_module._fernet = None
         self.client = Client()
         self.admin = User.objects.create_user(username="admin", password="testpass123", is_admin=True)
+        # Admin needs a program role to access client data
+        self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.admin, program=self.program, role="program_manager")
 
     def test_custom_field_admin_requires_admin(self):
         staff = User.objects.create_user(username="staff", password="testpass123", is_admin=False)
@@ -211,6 +218,8 @@ class CustomFieldTest(TestCase):
         cf.first_name = "Jane"
         cf.last_name = "Doe"
         cf.save()
+        # Enrol client in program so admin has access
+        ClientProgramEnrolment.objects.create(client_file=cf, program=self.program)
         resp = self.client.post(f"/clients/{cf.pk}/custom-fields/", {
             f"custom_{field_def.pk}": "she/her",
         })
@@ -228,6 +237,8 @@ class CustomFieldTest(TestCase):
         cf.first_name = "Jane"
         cf.last_name = "Doe"
         cf.save()
+        # Enrol client in program so admin has access
+        ClientProgramEnrolment.objects.create(client_file=cf, program=self.program)
         resp = self.client.post(f"/clients/{cf.pk}/custom-fields/", {
             f"custom_{field_def.pk}": "555-0100",
         })
