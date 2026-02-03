@@ -22,8 +22,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Collect static files (errors shown for debugging)
-RUN FIELD_ENCRYPTION_KEY=dummy-build-key SECRET_KEY=dummy-build-key ALLOWED_HOSTS=* python manage.py collectstatic --noinput --settings=konote.settings.production
+# Collect static files (dummy env vars for build — not used at runtime)
+RUN FIELD_ENCRYPTION_KEY=dummy-build-key SECRET_KEY=dummy-build-key ALLOWED_HOSTS=* \
+    DATABASE_URL=sqlite:///dummy.db AUDIT_DATABASE_URL=sqlite:///dummy-audit.db \
+    python manage.py collectstatic --noinput --settings=konote.settings.production
 
 # Make entrypoint executable and create fontconfig cache dir for non-root user
 RUN chmod +x /app/entrypoint.sh && mkdir -p /home/konote/.cache/fontconfig && chown -R konote:konote /home/konote
