@@ -20,9 +20,8 @@ Based on usability review and expert panel analysis. See `tasks/usability-review
 
 ### Phase A: Market Access (High Priority)
 
-- [ ] French UI translation — Django i18n setup + ~500 strings — (I18N1)
-- [ ] Document folder button — link to client folder in SharePoint/Google Drive — (DOC5) — see `tasks/document-access-plan.md`
-- [ ] "What KoNote Is and Isn't" documentation page — set scope expectations — (DOC6)
+- [ ] 🔨 French UI translation — Django i18n setup + ~500 strings — (I18N1)
+- [ ] 🔨 Document folder button — link to client folder in SharePoint/Google Drive — (DOC5) — see `tasks/document-access-plan.md`
 - [ ] Terminology override by language — extend model for fr/en terms — (I18N2)
 
 ### Phase B: Funder Reporting (High Priority)
@@ -64,7 +63,8 @@ These features are intentionally excluded. See technical documentation for ratio
 
 - [ ] PIPEDA/PHIPA consent workflow — block note entry until client consent recorded — (PRIV1)
 - [ ] GDPR toolkit UI — data export, right to erasure, consent management — (GDPR1)
-- [ ] Data import from existing systems (CSV) — (IMP1)
+- [ ] CSV import of all client data from existing systems — migration tool — (IMP1)
+- [ ] CSV export of all client data for migration to future systems — (EXP1)
 - [ ] Mobile-responsive optimisation pass — (UI1)
 - [ ] First-run setup wizard for new instances — (SETUP1)
 - [ ] Automated backups documentation — (OPS1)
@@ -77,6 +77,7 @@ These features are intentionally excluded. See technical documentation for ratio
 
 ## Recently Done
 
+- [x] "What KoNote Is and Isn't" documentation page — set scope expectations — 2026-02-03 (DOC6)
 - [x] Show custom fields in read-only mode by default with edit toggle — 2026-02-03 (UX12)
 - [x] Add date-only toggle to event form — 2026-02-03 (UX13)
 - [x] Style permission error pages with navigation and helpful text — 2026-02-03 (UX14)
