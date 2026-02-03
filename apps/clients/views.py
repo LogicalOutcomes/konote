@@ -22,14 +22,17 @@ def _get_accessible_programs(user):
 
 
 def _get_accessible_clients(user):
-    """Return client queryset scoped to user's programs."""
+    """Return client queryset scoped to user's programs.
+
+    Uses prefetch_related to avoid N+1 queries when displaying enrolments.
+    """
     if user.is_admin:
-        return ClientFile.objects.all()
+        return ClientFile.objects.prefetch_related("enrolments__program").all()
     program_ids = UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True)
     client_ids = ClientProgramEnrolment.objects.filter(
         program_id__in=program_ids, status="enrolled"
     ).values_list("client_file_id", flat=True)
-    return ClientFile.objects.filter(pk__in=client_ids)
+    return ClientFile.objects.filter(pk__in=client_ids).prefetch_related("enrolments__program")
 
 
 @login_required
@@ -38,11 +41,11 @@ def client_list(request):
     # Decrypt names and build display list
     client_data = []
     for client in clients:
-        enrolments = ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled").select_related("program")
+        programs = [e.program for e in client.enrolments.all() if e.status == "enrolled"]
         client_data.append({
             "client": client,
             "name": f"{client.first_name} {client.last_name}",
-            "programs": [e.program for e in enrolments],
+            "programs": programs,
         })
     # Sort by name
     client_data.sort(key=lambda c: c["name"].lower())
@@ -127,6 +130,13 @@ def client_edit(request, client_id):
 @login_required
 def client_detail(request, client_id):
     client = get_object_or_404(ClientFile, pk=client_id)
+    # Track recently viewed clients in session (most recent first, max 10)
+    recent = request.session.get("recent_clients", [])
+    if client_id in recent:
+        recent.remove(client_id)
+    recent.insert(0, client_id)
+    request.session["recent_clients"] = recent[:10]
+
     enrolments = ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled").select_related("program")
     # Custom fields for Info tab
     groups = CustomFieldGroup.objects.filter(status="active").prefetch_related("fields")
@@ -142,11 +152,16 @@ def client_detail(request, client_id):
                 value = ""
             field_values.append({"field_def": field_def, "value": value})
         custom_data.append({"group": group, "fields": field_values})
-    return render(request, "clients/detail.html", {
+    context = {
         "client": client,
         "enrolments": enrolments,
         "custom_data": custom_data,
-    })
+        "active_tab": "info",
+    }
+    # HTMX tab switch — return only the tab content partial
+    if request.headers.get("HX-Request"):
+        return render(request, "clients/_tab_info.html", context)
+    return render(request, "clients/detail.html", context)
 
 
 @login_required
@@ -184,11 +199,11 @@ def client_search(request):
         name = f"{client.first_name} {client.last_name}".lower()
         record = (client.record_id or "").lower()
         if query in name or query in record:
-            enrolments = ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled").select_related("program")
+            programs = [e.program for e in client.enrolments.all() if e.status == "enrolled"]
             results.append({
                 "client": client,
                 "name": f"{client.first_name} {client.last_name}",
-                "programs": [e.program for e in enrolments],
+                "programs": programs,
             })
     results.sort(key=lambda c: c["name"].lower())
     return render(request, "clients/_search_results.html", {"results": results[:50], "query": query})

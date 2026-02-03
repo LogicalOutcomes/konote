@@ -25,11 +25,24 @@
         {% if form.backdate.errors %}<small class="error">{{ form.backdate.errors.0 }}</small>{% endif %}
     </fieldset>
 
-    <!-- Target entries — one accordion per active target -->
+    <!-- Target selection — staff pick which targets they worked on -->
     {% if target_forms %}
+    <fieldset>
+        <legend>Which {{ term.target_plural|default:"targets" }} did you work on?</legend>
+        <small>Tick the {{ term.target_plural|default:"targets" }} you want to record against. Only selected ones will appear below.</small>
+        {% for tf in target_forms %}
+        <label>
+            <input type="checkbox" class="target-selector" data-target-id="{{ tf.target.pk }}">
+            {{ tf.target.name }}
+            <small class="secondary">— {{ tf.target.plan_section.name }}</small>
+        </label>
+        {% endfor %}
+    </fieldset>
+
+    <!-- Target entries — one accordion per active target, hidden until selected -->
     <h2>{{ term.target_plural|default:"Targets" }}</h2>
     {% for tf in target_forms %}
-    <details {% if forloop.first %}open{% endif %}>
+    <details id="target-detail-{{ tf.target.pk }}" class="target-entry" hidden>
         <summary>
             {{ tf.target.name }}
             <small>— {{ tf.target.plan_section.name }}</small>
@@ -71,4 +84,20 @@
         <a href="{% url 'notes:note_list' client_id=client.pk %}" role="button" class="outline secondary">Cancel</a>
     </div>
 </form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Show/hide target accordions based on checkbox selection
+document.querySelectorAll(".target-selector").forEach(function (cb) {
+    cb.addEventListener("change", function () {
+        var targetId = this.getAttribute("data-target-id");
+        var detail = document.getElementById("target-detail-" + targetId);
+        if (detail) {
+            detail.hidden = !this.checked;
+            if (this.checked) { detail.open = true; }
+        }
+    });
+});
+</script>
 {% endblock %}

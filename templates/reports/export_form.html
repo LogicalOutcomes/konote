@@ -69,6 +69,11 @@
         {% if form.metrics.errors %}
         <small class="error">{{ form.metrics.errors.0 }}</small>
         {% endif %}
+        <div style="margin-bottom: 0.5rem;">
+            <a href="#" id="select-all-metrics" class="secondary">Select all</a>
+            &nbsp;|&nbsp;
+            <a href="#" id="deselect-all-metrics" class="secondary">Deselect all</a>
+        </div>
         {% for checkbox in form.metrics %}
         <label>
             {{ checkbox.tag }}

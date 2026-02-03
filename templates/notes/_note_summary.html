@@ -1,0 +1,31 @@
+<!-- HTMX partial: collapsed summary of a single note -->
+<header>
+    <div>
+        {% if note.note_type == "quick" %}
+            <span class="badge badge-info">{{ term.quick_note|default:"Quick" }}</span>
+        {% else %}
+            <span class="badge badge-success">Full</span>
+        {% endif %}
+        {% if note.status == "cancelled" %}
+            <span class="badge badge-danger">Cancelled</span>
+        {% endif %}
+        <strong>{{ note.effective_date|date:"Y-m-d" }}</strong>
+        — {{ note.author.display_name|default:note.author }}
+        {% if note.author_program %}
+            <small>({{ note.author_program.name }})</small>
+        {% endif %}
+    </div>
+</header>
+{% if note.status == "cancelled" %}
+    <p><del>{{ note.notes_text|truncatechars:200 }}</del></p>
+    {% if note.status_reason %}<p><small>Reason: {{ note.status_reason }}</small></p>{% endif %}
+{% else %}
+    <p>{{ note.notes_text|truncatechars:200 }}</p>
+{% endif %}
+<footer>
+    <a href="#"
+       hx-get="{% url 'notes:note_detail' note_id=note.pk %}"
+       hx-target="#note-{{ note.pk }}"
+       hx-swap="innerHTML"
+       hx-indicator="#loading-bar">View details</a>
+</footer>

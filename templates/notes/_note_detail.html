@@ -60,5 +60,9 @@
     {% if note.status != "cancelled" %}
     <a href="{% url 'notes:note_cancel' note_id=note.pk %}" class="secondary">Cancel this note</a>
     {% endif %}
-    <a href="#" onclick="location.reload(); return false;" class="secondary">Collapse</a>
+    <a href="#"
+       hx-get="{% url 'notes:note_summary' note_id=note.pk %}"
+       hx-target="#note-{{ note.pk }}"
+       hx-swap="innerHTML"
+       class="secondary">Collapse</a>
 </footer>

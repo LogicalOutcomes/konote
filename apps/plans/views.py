@@ -73,12 +73,16 @@ def plan_view(request, client_id):
     active_sections = [s for s in sections if s.status == "default"]
     inactive_sections = [s for s in sections if s.status != "default"]
 
-    return render(request, "plans/plan_view.html", {
+    context = {
         "client": client,
         "active_sections": active_sections,
         "inactive_sections": inactive_sections,
         "can_edit": can_edit,
-    })
+        "active_tab": "plan",
+    }
+    if request.headers.get("HX-Request"):
+        return render(request, "plans/_tab_plan.html", context)
+    return render(request, "plans/plan_view.html", context)
 
 
 # ---------------------------------------------------------------------------

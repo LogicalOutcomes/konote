@@ -1,0 +1,56 @@
+<!-- Partial: Plan tab content -->
+{% if can_edit %}
+<div role="group" style="margin-bottom: 1rem;">
+    <a href="{% url 'plans:section_create' client_id=client.pk %}" role="button" class="outline">
+        Add {{ term.section|default:"Section" }}
+    </a>
+    <a href="{% url 'plans:template_apply' client_id=client.pk %}" role="button" class="outline secondary">
+        Apply Template
+    </a>
+</div>
+{% endif %}
+
+{% if show_section_form %}
+<article aria-label="Add section form">
+    <header><h3>Add {{ term.section|default:"Section" }}</h3></header>
+    <form method="post" action="{% url 'plans:section_create' client_id=client.pk %}">
+        {% csrf_token %}
+        {% for field in section_form %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}
+        <small class="error">{{ field.errors.0 }}</small>
+        {% endif %}
+        {% endfor %}
+        <div role="group">
+            <button type="submit">Save</button>
+            <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary">Cancel</a>
+        </div>
+    </form>
+</article>
+{% endif %}
+
+{% if active_sections %}
+{% for section in active_sections %}
+<article id="section-{{ section.pk }}" aria-label="{{ term.section|default:'Section' }}: {{ section.name }}">
+    {% include "plans/_section.html" with section=section can_edit=can_edit %}
+</article>
+{% endfor %}
+{% endif %}
+
+{% if inactive_sections %}
+<details>
+    <summary>Completed &amp; deactivated {{ term.section_plural|default:"sections" }} ({{ inactive_sections|length }})</summary>
+    {% for section in inactive_sections %}
+    <article id="section-{{ section.pk }}" aria-label="{{ term.section|default:'Section' }}: {{ section.name }}">
+        {% include "plans/_section.html" with section=section can_edit=can_edit %}
+    </article>
+    {% endfor %}
+</details>
+{% endif %}
+
+{% if not active_sections and not inactive_sections and not show_section_form %}
+<article aria-label="Empty plan">
+    <p>No {{ term.section_plural|default:"sections" }} yet. {% if can_edit %}Use the button above to add one, or apply a template.{% endif %}</p>
+</article>
+{% endif %}

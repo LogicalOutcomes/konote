@@ -8,15 +8,18 @@
     <p>Search and manage {{ term.client|default:"client" }} files.</p>
 </hgroup>
 
+<!-- Quick actions -->
 <div role="group">
     <a href="{% url 'clients:client_create' %}" role="button">New {{ term.client|default:"Client" }}</a>
     <a href="{% url 'clients:client_list' %}" role="button" class="outline">View All</a>
 </div>
 
+<!-- Search -->
 <div role="search">
     <input type="search"
            name="q"
            placeholder="Search by name or ID..."
+           autofocus
            aria-label="Search {{ term.client_plural|default:'clients' }}"
            hx-get="{% url 'clients:client_search' %}"
            hx-trigger="input changed delay:300ms"
@@ -26,5 +29,70 @@
 
 <div id="client-list" aria-live="polite">
     {% include "clients/_search_results.html" %}
+</div>
+
+<!-- Dashboard -->
+<div class="grid" style="margin-top: 1.5rem;">
+    <!-- Quick stats -->
+    <article>
+        <header><strong>Quick Stats</strong></header>
+        <dl>
+            <dt>Active {{ term.client_plural|default:"clients" }}</dt>
+            <dd><strong>{{ active_count }}</strong></dd>
+            <dt>Total {{ term.client_plural|default:"clients" }}</dt>
+            <dd>{{ total_count }}</dd>
+        </dl>
+    </article>
+
+    <!-- Active alerts -->
+    <article>
+        <header><strong>Active Alerts</strong></header>
+        {% if active_alerts %}
+        <ul>
+            {% for alert in active_alerts %}
+            <li>
+                <a href="{% url 'clients:client_detail' client_id=alert.client_file.pk %}">
+                    {{ alert.client_file.first_name }} {{ alert.client_file.last_name }}
+                </a>
+                — {{ alert.content|truncatechars:60 }}
+                <small class="secondary">({{ alert.created_at|date:"Y-m-d" }})</small>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="secondary"><em>No active alerts.</em></p>
+        {% endif %}
+    </article>
+</div>
+
+<div class="grid">
+    <!-- Recently viewed -->
+    <article>
+        <header><strong>Recently Viewed</strong></header>
+        {% if recent_clients %}
+        <ul>
+            {% for item in recent_clients %}
+            <li><a href="{% url 'clients:client_detail' client_id=item.client.pk %}">{{ item.name }}</a></li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="secondary"><em>No recent {{ term.client_plural|default:"clients" }} yet.</em></p>
+        {% endif %}
+    </article>
+
+    <!-- Needs attention -->
+    <article>
+        <header><strong>Needs Attention</strong></header>
+        <small>{{ term.client_plural|default:"Clients" }} with no notes in the last 30 days</small>
+        {% if needs_attention %}
+        <ul>
+            {% for item in needs_attention %}
+            <li><a href="{% url 'clients:client_detail' client_id=item.client.pk %}">{{ item.name }}</a></li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="secondary"><em>All {{ term.client_plural|default:"clients" }} are up to date.</em></p>
+        {% endif %}
+    </article>
 </div>
 {% endblock %}

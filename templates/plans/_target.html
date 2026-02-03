@@ -28,6 +28,7 @@
                 hx-get="{% url 'plans:target_status' target_id=target.pk %}"
                 hx-target="#target-{{ target.pk }}"
                 hx-swap="innerHTML"
+                hx-confirm="Change the status of this target?"
                 aria-label="Change status of {{ target.name }}">
             Status
         </button>

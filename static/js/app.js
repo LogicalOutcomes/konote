@@ -12,6 +12,34 @@ document.body.addEventListener("htmx:configRequest", function (event) {
     }
 });
 
+// --- Toast helper ---
+function showToast(message, isError) {
+    var toast = document.getElementById("htmx-error-toast");
+    if (toast) {
+        var msgEl = document.getElementById("htmx-error-toast-message");
+        if (msgEl) {
+            msgEl.textContent = message;
+        } else {
+            toast.textContent = message;
+        }
+        toast.hidden = false;
+        // Only auto-dismiss non-error messages
+        if (!isError) {
+            setTimeout(function () { toast.hidden = true; }, 3000);
+        }
+    } else {
+        alert(message);
+    }
+}
+
+// Close button on toast
+document.addEventListener("click", function (event) {
+    if (event.target && event.target.id === "htmx-error-toast-close") {
+        var toast = document.getElementById("htmx-error-toast");
+        if (toast) { toast.hidden = true; }
+    }
+});
+
 // Global HTMX error handler — show user-friendly message on network/server errors
 document.body.addEventListener("htmx:responseError", function (event) {
     var status = event.detail.xhr ? event.detail.xhr.status : 0;
@@ -25,26 +53,24 @@ document.body.addEventListener("htmx:responseError", function (event) {
     } else if (status === 0) {
         message = "Could not connect to the server. Check your internet connection.";
     }
-    // Show error in a toast-style banner if one exists, otherwise alert
-    var toast = document.getElementById("htmx-error-toast");
-    if (toast) {
-        toast.textContent = message;
-        toast.hidden = false;
-        setTimeout(function () { toast.hidden = true; }, 6000);
-    } else {
-        alert(message);
-    }
+    showToast(message, true);
 });
 
 // Handle HTMX send errors (network failures before response)
 document.body.addEventListener("htmx:sendError", function () {
-    var toast = document.getElementById("htmx-error-toast");
-    var message = "Could not connect to the server. Check your internet connection.";
-    if (toast) {
-        toast.textContent = message;
-        toast.hidden = false;
-        setTimeout(function () { toast.hidden = true; }, 6000);
-    } else {
-        alert(message);
+    showToast("Could not connect to the server. Check your internet connection.", true);
+});
+
+// --- Select All / Deselect All for metric checkboxes (export form) ---
+document.addEventListener("click", function (event) {
+    var target = event.target;
+    if (target.id === "select-all-metrics" || target.id === "deselect-all-metrics") {
+        event.preventDefault();
+        var checked = target.id === "select-all-metrics";
+        var fieldset = target.closest("fieldset");
+        if (fieldset) {
+            var checkboxes = fieldset.querySelectorAll("input[type='checkbox']");
+            checkboxes.forEach(function (cb) { cb.checked = checked; });
+        }
     }
 });

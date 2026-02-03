@@ -8,5 +8,6 @@ urlpatterns = [
     path("client/<int:client_id>/quick/", views.quick_note_create, name="quick_note_create"),
     path("client/<int:client_id>/new/", views.note_create, name="note_create"),
     path("<int:note_id>/", views.note_detail, name="note_detail"),
+    path("<int:note_id>/summary/", views.note_summary, name="note_summary"),
     path("<int:note_id>/cancel/", views.note_cancel, name="note_cancel"),
 ]

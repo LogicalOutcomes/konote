@@ -6,7 +6,13 @@ _Nothing flagged._
 
 ## Active Work
 
-_No active work._
+### Phase 8 — UX Improvements for Frontline Staff
+
+- [ ] Show custom fields in read-only mode by default with edit toggle — (UX12)
+- [ ] Add date-only toggle to event form — (UX13)
+- [ ] Style permission error pages with navigation and helpful text — (UX14)
+- [ ] Add status and program filters to client list page — (UX15)
+- [ ] Auto-dismiss success messages after 3 seconds; keep errors persistent — (UX16)
 
 ## Parking Lot
 
@@ -18,9 +24,25 @@ _No active work._
 - [ ] First-run setup wizard for new instances — (SETUP1)
 - [ ] Automated backups documentation — (OPS1)
 - [ ] Encrypted search optimisation (search hash field) for large client lists — (PERF1)
+- [ ] Bulk operations for discharge, assign, export — (UX17)
+- [ ] Keyboard shortcuts and command palette — (UX18)
+- [ ] Client search by program, status, date, case manager — (UX19)
+- [ ] Merge home search and client list into single unified page — (UX20)
+- [ ] Note auto-save / draft recovery — (UX21)
 
 ## Recently Done
 
+- [x] Staff dashboard with recent clients, alerts, quick stats, needs-attention list — 2026-02-02 (UX1)
+- [x] HTMX-powered client detail tabs (no full page reloads) — 2026-02-02 (UX2)
+- [x] Target selection checkboxes on note form — 2026-02-02 (UX3)
+- [x] Notes list filtering (type, date, author) and pagination — 2026-02-02 (UX4)
+- [x] Fix N+1 queries in client search/list with prefetch_related — 2026-02-02 (UX5)
+- [x] Fix note collapse to use HTMX instead of location.reload() — 2026-02-02 (UX6)
+- [x] Add hx-confirm to destructive plan actions — 2026-02-02 (UX7)
+- [x] Group admin nav items under dropdown menu — 2026-02-02 (UX8)
+- [x] Autofocus search input on home page — 2026-02-02 (UX9)
+- [x] Select All / Deselect All for metric export checkboxes — 2026-02-02 (UX10)
+- [x] Error toasts persist until dismissed; added close button — 2026-02-02 (UX11)
 - [x] PDF exports: individual client progress reports + bulk funder reports (WeasyPrint) — 2026-02-02 (RPT2)
 - [x] Phase 7: Audit DB lockdown, CSP tuning, rate limiting, key rotation command, deployment guides (Azure, Elest.io, Railway), agency setup guide, backup/restore docs — 2026-02-02 (SEC1, SEC4, SEC5, SEED1, DOC1, DOC2, DOC3, DOC4, OPS2)
 - [x] Phase 6: Terminology, feature toggles, instance settings, user management admin UIs, cache invalidation signals — 2026-02-02 (CUST1, CUST2, CUST3, USR1)

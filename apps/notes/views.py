@@ -1,7 +1,10 @@
 # Phase 4: Progress note views
 """Views for progress notes — quick notes, full notes, timeline, cancellation."""
+import datetime
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import transaction
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
@@ -92,16 +95,50 @@ def _build_target_forms(client, post_data=None):
 
 @login_required
 def note_list(request, client_id):
-    """Notes timeline for a client."""
+    """Notes timeline for a client with filtering and pagination."""
     client = _get_client_or_403(request, client_id)
     if client is None:
         return HttpResponseForbidden("You do not have access to this client.")
 
     notes = ProgressNote.objects.filter(client_file=client).select_related("author", "author_program")
-    return render(request, "notes/note_list.html", {
+
+    # Filters
+    note_type = request.GET.get("type", "")
+    date_from = request.GET.get("date_from", "")
+    date_to = request.GET.get("date_to", "")
+    author_filter = request.GET.get("author", "")
+
+    if note_type in ("quick", "full"):
+        notes = notes.filter(note_type=note_type)
+    if date_from:
+        try:
+            notes = notes.filter(effective_date__gte=datetime.date.fromisoformat(date_from))
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            notes = notes.filter(effective_date__lte=datetime.date.fromisoformat(date_to))
+        except ValueError:
+            pass
+    if author_filter == "mine":
+        notes = notes.filter(author=request.user)
+
+    notes = notes.order_by("-effective_date", "-created_at")
+    paginator = Paginator(notes, 25)
+    page = paginator.get_page(request.GET.get("page"))
+
+    context = {
         "client": client,
-        "notes": notes,
-    })
+        "page": page,
+        "filter_type": note_type,
+        "filter_date_from": date_from,
+        "filter_date_to": date_to,
+        "filter_author": author_filter,
+        "active_tab": "notes",
+    }
+    if request.headers.get("HX-Request"):
+        return render(request, "notes/_tab_notes.html", context)
+    return render(request, "notes/note_list.html", context)
 
 
 @login_required
@@ -230,6 +267,19 @@ def note_detail(request, note_id):
         "client": client,
         "target_entries": target_entries,
     })
+
+
+@login_required
+def note_summary(request, note_id):
+    """HTMX partial: collapsed summary of a single note (reverses note_detail expand)."""
+    note = get_object_or_404(
+        ProgressNote.objects.select_related("author", "author_program"),
+        pk=note_id,
+    )
+    client = _get_client_or_403(request, note.client_file_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+    return render(request, "notes/_note_summary.html", {"note": note, "client": client})
 
 
 @login_required

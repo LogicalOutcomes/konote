@@ -136,12 +136,16 @@ def event_list(request, client_id):
     # Sort newest first
     timeline.sort(key=lambda x: x["date"], reverse=True)
 
-    return render(request, "events/event_list.html", {
+    context = {
         "client": client,
         "events": events,
         "alerts": alerts,
         "timeline": timeline,
-    })
+        "active_tab": "events",
+    }
+    if request.headers.get("HX-Request"):
+        return render(request, "events/_tab_events.html", context)
+    return render(request, "events/event_list.html", context)
 
 
 @login_required

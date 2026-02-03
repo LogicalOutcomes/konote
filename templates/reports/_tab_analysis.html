@@ -1,0 +1,70 @@
+<!-- Partial: Analysis tab content -->
+<div role="group" style="margin-bottom: 1rem;">
+    <a href="{% url 'reports:client_progress_pdf' client_id=client.pk %}" role="button" class="outline">Export as PDF</a>
+</div>
+
+{% if chart_data %}
+    {% for chart in chart_data %}
+    <section>
+        <h3>{{ chart.target_name }} — {{ chart.metric_name }}</h3>
+        <div class="chart-container" style="position: relative; height: 300px;">
+            <canvas id="chart-{{ forloop.counter }}" aria-label="Line chart showing {{ chart.metric_name }} over time for {{ chart.target_name }}" role="img"></canvas>
+        </div>
+    </section>
+    {% endfor %}
+
+<!-- Chart.js loaded inline for HTMX partial support -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+const chartData = {{ chart_data_json|safe }};
+chartData.forEach(function(chart, index) {
+    const ctx = document.getElementById('chart-' + (index + 1)).getContext('2d');
+    const datasets = [{
+        label: chart.metric_name + (chart.unit ? ' (' + chart.unit + ')' : ''),
+        data: chart.data_points.map(function(p) { return p.value; }),
+        borderColor: 'rgb(59, 130, 246)',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        fill: true,
+        tension: 0.3,
+    }];
+    if (chart.min_value !== null) {
+        datasets.push({
+            label: 'Minimum (' + chart.min_value + ')',
+            data: Array(chart.data_points.length).fill(chart.min_value),
+            borderColor: 'rgba(239, 68, 68, 0.5)',
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false,
+        });
+    }
+    if (chart.max_value !== null) {
+        datasets.push({
+            label: 'Maximum (' + chart.max_value + ')',
+            data: Array(chart.data_points.length).fill(chart.max_value),
+            borderColor: 'rgba(34, 197, 94, 0.5)',
+            borderDash: [5, 5],
+            pointRadius: 0,
+            fill: false,
+        });
+    }
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chart.data_points.map(function(p) { return p.date; }),
+            datasets: datasets,
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+            scales: {
+                y: { beginAtZero: false, title: { display: true, text: chart.unit || 'Value' } },
+                x: { title: { display: true, text: 'Date' } },
+            },
+        },
+    });
+});
+</script>
+{% else %}
+    <p class="empty-state">No metric data recorded yet. Record metrics through progress notes to see charts here.</p>
+{% endif %}

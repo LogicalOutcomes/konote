@@ -225,8 +225,12 @@ def client_analysis(request, client_id):
                     "data_points": data_points,
                 })
 
-    return render(request, "reports/analysis.html", {
+    context = {
         "client": client,
         "chart_data": chart_data,
         "chart_data_json": json.dumps(chart_data, default=str),
-    })
+        "active_tab": "analysis",
+    }
+    if request.headers.get("HX-Request"):
+        return render(request, "reports/_tab_analysis.html", context)
+    return render(request, "reports/analysis.html", context)
