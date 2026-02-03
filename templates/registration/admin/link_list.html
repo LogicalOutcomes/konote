@@ -92,9 +92,9 @@
 <script>
 function copyToClipboard(text) {
     navigator.clipboard.writeText(text).then(function() {
-        alert('Link copied to clipboard!');
+        alert('{% trans "Link copied to clipboard!" %}');
     }, function() {
-        prompt('Copy this link:', text);
+        prompt('{% trans "Copy this link:" %}', text);
     });
 }
 </script>

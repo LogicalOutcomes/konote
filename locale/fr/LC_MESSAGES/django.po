@@ -856,3 +856,360 @@ msgstr "Contactez votre administrateur si vous pensez devoir avoir acces"
 
 msgid "Return to a page you have access to using the links below"
 msgstr "Retournez a une page a laquelle vous avez acces en utilisant les liens ci-dessous"
+
+#: templates/clients/home.html
+#, python-format
+msgid "Welcome back, <strong>%(name)s</strong>"
+msgstr "Bon retour, <strong>%(name)s</strong>"
+
+#, python-format
+msgid "Search %(clients)s"
+msgstr "Rechercher %(clients)s"
+
+#, python-format
+msgid "New %(client)s"
+msgstr "Nouveau/Nouvelle %(client)s"
+
+#, python-format
+msgid "All %(programs)s"
+msgstr "Tous les %(programs)s"
+
+msgid "Created after"
+msgstr "Cree apres"
+
+msgid "Created before"
+msgstr "Cree avant"
+
+msgid "Search filters"
+msgstr "Filtres de recherche"
+
+#, python-format
+msgid "Active %(clients)s"
+msgstr "%(clients)s actifs"
+
+#, python-format
+msgid "of %(total)s total"
+msgstr "sur %(total)s au total"
+
+#, python-format
+msgid "No recent %(clients)s yet. Start by searching above."
+msgstr "Aucun(e) %(clients)s recent(e). Commencez par faire une recherche ci-dessus."
+
+#: templates/clients/_search_results.html
+#, python-format
+msgid "No %(clients)s match \"%(query)s\"."
+msgstr "Aucun(e) %(clients)s ne correspond a \"%(query)s\"."
+
+#: templates/notes/_tab_notes.html
+#, python-format
+msgid "Full %(note)s"
+msgstr "%(note)s complete"
+
+#, python-format
+msgid "Page %(current)s of %(total)s"
+msgstr "Page %(current)s sur %(total)s"
+
+#, python-format
+msgid "No %(notes)s recorded yet."
+msgstr "Aucune %(notes)s enregistree pour le moment."
+
+#: templates/base.html
+msgid "Toggle navigation menu"
+msgstr "Ouvrir/fermer le menu de navigation"
+
+msgid "Registration Links"
+msgstr "Liens d'inscription"
+
+msgid "Pending Submissions"
+msgstr "Soumissions en attente"
+
+msgid "Export Client Data"
+msgstr "Exporter les donnees clients"
+
+msgid "Dismiss"
+msgstr "Fermer"
+
+#: templates/notes/consent_required.html
+msgid "Consent Required"
+msgstr "Consentement requis"
+
+msgid "Cannot create notes for this"
+msgstr "Impossible de creer des notes pour ce/cette"
+
+#, python-format
+msgid "Privacy regulations (PIPEDA/PHIPA) require that consent be recorded before creating progress notes. Please record the %(client)s's consent on their profile before continuing."
+msgstr "Les reglements sur la vie privee (PIPEDA/LPRPS) exigent que le consentement soit enregistre avant de creer des notes de suivi. Veuillez enregistrer le consentement du/de la %(client)s dans son profil avant de continuer."
+
+msgid "Go to"
+msgstr "Aller a"
+
+msgid "Profile"
+msgstr "Profil"
+
+msgid "Back to Notes"
+msgstr "Retour aux notes"
+
+#: templates/clients/_consent_display.html
+msgid "Privacy Consent"
+msgstr "Consentement a la vie privee"
+
+msgid "Update consent record"
+msgstr "Mettre a jour le consentement"
+
+msgid "Record consent"
+msgstr "Enregistrer le consentement"
+
+msgid "Update"
+msgstr "Mettre a jour"
+
+msgid "Record Consent"
+msgstr "Enregistrer le consentement"
+
+msgid "Consent recorded"
+msgstr "Consentement enregistre"
+
+msgid "Date recorded"
+msgstr "Date d'enregistrement"
+
+msgid "No consent on file."
+msgstr "Aucun consentement au dossier."
+
+msgid "Consent must be recorded before progress notes can be created for this"
+msgstr "Le consentement doit etre enregistre avant de pouvoir creer des notes de suivi pour ce/cette"
+
+#: templates/clients/_consent_edit.html
+msgid "Record Privacy Consent"
+msgstr "Enregistrer le consentement a la vie privee"
+
+msgid "Record when and how the"
+msgstr "Enregistrez quand et comment le/la"
+
+msgid "provided consent for data collection and progress tracking."
+msgstr "a consenti a la collecte de donnees et au suivi des progres."
+
+msgid "Save Consent Record"
+msgstr "Enregistrer le consentement"
+
+#: templates/plans/_tab_plan.html
+#, python-format
+msgid "Add %(section)s"
+msgstr "Ajouter %(section)s"
+
+#, python-format
+msgid "Completed & deactivated %(sections)s (%(count)s)"
+msgstr "%(sections)s termines et desactives (%(count)s)"
+
+#, python-format
+msgid "No %(sections)s yet."
+msgstr "Aucune %(sections)s pour le moment."
+
+#: templates/registration/admin/link_list.html
+msgid "Create and manage self-service registration forms for programs."
+msgstr "Creer et gerer les formulaires d'inscription en libre-service pour les programmes."
+
+msgid "New Registration Link"
+msgstr "Nouveau lien d'inscription"
+
+msgid "Title"
+msgstr "Titre"
+
+msgid "Submissions"
+msgstr "Soumissions"
+
+msgid "Open"
+msgstr "Ouvert"
+
+msgid "Closed"
+msgstr "Ferme"
+
+msgid "Full"
+msgstr "Complet"
+
+msgid "pending"
+msgstr "en attente"
+
+msgid "View Form"
+msgstr "Voir le formulaire"
+
+msgid "Get Embed Code"
+msgstr "Obtenir le code d'integration"
+
+msgid "Copy Direct Link"
+msgstr "Copier le lien direct"
+
+msgid "View Submissions"
+msgstr "Voir les soumissions"
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "No registration links yet."
+msgstr "Aucun lien d'inscription pour le moment."
+
+msgid "Create your first registration link"
+msgstr "Creer votre premier lien d'inscription"
+
+#, python-format
+msgid "You've been invited as a <strong>%(role)s</strong>."
+msgstr "Vous avez ete invite(e) en tant que <strong>%(role)s</strong>."
+
+#, python-format
+msgid "Deactivate %(name)s?"
+msgstr "Desactiver %(name)s ?"
+
+#: templates/plans/metric_library.html
+#, python-format
+msgid "Manage available %(metrics)s for outcome tracking."
+msgstr "Gerer les %(metrics)s disponibles pour le suivi des resultats."
+
+#, python-format
+msgid "Add Custom %(metric)s"
+msgstr "Ajouter %(metric)s personnalise"
+
+#, python-format
+msgid "Edit %(name)s"
+msgstr "Modifier %(name)s"
+
+#, python-format
+msgid "No %(metrics)s defined yet."
+msgstr "Aucune %(metrics)s definie pour le moment."
+
+#: templates/reports/_tab_analysis.html
+#, python-format
+msgid "Line chart showing %(metric)s over time for %(target)s"
+msgstr "Graphique montrant %(metric)s au fil du temps pour %(target)s"
+
+#: templates/notes/note_form.html
+#, python-format
+msgid "This %(client)s requires a plan before notes can be recorded."
+msgstr "Ce/cette %(client)s necessite un plan avant de pouvoir enregistrer des notes."
+
+#, python-format
+msgid "Select a target to record progress for this %(client)s"
+msgstr "Selectionnez une cible pour enregistrer les progres de ce/cette %(client)s"
+
+#: templates/notes/quick_note_form.html
+#, python-format
+msgid "Add a quick note for %(name)s"
+msgstr "Ajouter une note rapide pour %(name)s"
+
+#, python-format
+msgid "If this %(client)s has a plan, you can record progress by adding a Full Note."
+msgstr "Si ce/cette %(client)s a un plan, vous pouvez enregistrer les progres en ajoutant une note complete."
+
+#: templates/notes/quick_note_form.html templates/notes/note_form.html
+#, python-format
+msgid "Quick %(note)s"
+msgstr "%(note)s rapide"
+
+#, python-format
+msgid "New %(note)s"
+msgstr "Nouvelle %(note)s"
+
+#, python-format
+msgid "Save %(note)s"
+msgstr "Enregistrer %(note)s"
+
+#, python-format
+msgid "Which %(targets)s did you work on?"
+msgstr "Sur quels/quelles %(targets)s avez-vous travaille ?"
+
+#, python-format
+msgid "Tick the %(targets)s you want to record against. Only selected ones will appear below."
+msgstr "Cochez les %(targets)s pour lesquels vous souhaitez enregistrer des donnees. Seuls ceux selectionnes apparaitront ci-dessous."
+
+#, python-format
+msgid "Notes for this %(target)s"
+msgstr "Notes pour cette %(target)s"
+
+#, python-format
+msgid "No active %(targets)s found."
+msgstr "Aucune %(targets)s active trouvee."
+
+#: templates/auth_app/invite_expired.html
+msgid "This invite link is no longer valid."
+msgstr "Ce lien d'invitation n'est plus valide."
+
+msgid "It may have expired or already been used."
+msgstr "Il a peut-etre expire ou a deja ete utilise."
+
+#: templates/registration/admin/submission_list.html
+msgid "Review"
+msgstr "Examiner"
+
+msgid "Approve"
+msgstr "Approuver"
+
+msgid "Reject"
+msgstr "Rejeter"
+
+msgid "All links"
+msgstr "Tous les liens"
+
+#: templates/registration/admin/submission_detail.html
+msgid "Submitted"
+msgstr "Soumis"
+
+msgid "Applicant Information"
+msgstr "Information du demandeur"
+
+msgid "Approve Submission"
+msgstr "Approuver la soumission"
+
+msgid "Reject Submission"
+msgstr "Rejeter la soumission"
+
+#: templates/registration/admin/link_list.html (JavaScript)
+msgid "Link copied to clipboard!"
+msgstr "Lien copie dans le presse-papiers!"
+
+msgid "Copy this link:"
+msgstr "Copiez ce lien :"
+
+#: templates/registration/admin/submission_list.html
+msgid "Registration Submissions"
+msgstr "Soumissions d'inscription"
+
+msgid "Review and process self-service registration submissions."
+msgstr "Examiner et traiter les soumissions d'inscription en libre-service."
+
+msgid "Filter by status"
+msgstr "Filtrer par statut"
+
+msgid "All"
+msgstr "Tous"
+
+msgid "Approved"
+msgstr "Approuve"
+
+msgid "Rejected"
+msgstr "Rejete"
+
+msgid "Waitlist"
+msgstr "Liste d'attente"
+
+msgid "Reference"
+msgstr "Reference"
+
+msgid "Possible duplicate"
+msgstr "Possible doublon"
+
+#, python-format
+msgid "Approve registration for %(name)s?"
+msgstr "Approuver l'inscription de %(name)s ?"
+
+msgid "View"
+msgstr "Voir"
+
+msgid "Details"
+msgstr "Details"
+
+#, python-format
+msgid "No %(status)s submissions."
+msgstr "Aucune soumission %(status)s."
+
+msgid "No registration submissions yet."
+msgstr "Aucune soumission d'inscription pour le moment."
+
+msgid "Back to Registration Links"
+msgstr "Retour aux liens d'inscription"
