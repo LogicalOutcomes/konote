@@ -572,6 +572,12 @@ details.filter-bar summary {
     margin-bottom: 1.5rem;
 }
 
+/* Demo login buttons — ensure text is readable on dark gray background */
+.login-container a[role="button"].secondary {
+    --pico-secondary-inverse: #ffffff;
+    color: #ffffff;
+}
+
 /* ---- Empty states ---- */
 .empty-state {
     text-align: center;
