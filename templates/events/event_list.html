@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Events — {{ client.first_name }} {{ client.last_name }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{{ client.first_name }} {{ client.last_name }}</h1>
+    <p>
+        {% if client.status == "active" %}
+            <span class="badge badge-success">Active</span>
+        {% elif client.status == "inactive" %}
+            <span class="badge badge-warning">Inactive</span>
+        {% else %}
+            <span class="badge badge-neutral">Discharged</span>
+        {% endif %}
+        {% if client.record_id %}— Record ID: {{ client.record_id }}{% endif %}
+    </p>
+</hgroup>
+
+<div role="group">
+    <a href="{% url 'events:event_create' client_id=client.pk %}" role="button">New Event</a>
+    <a href="{% url 'events:alert_create' client_id=client.pk %}" role="button" class="outline">New Alert</a>
+</div>
+
+<!-- Tabs -->
+<nav>
+    <ul>
+        <li><a href="{% url 'clients:client_detail' client_id=client.pk %}">Info</a></li>
+        <li><a href="{% url 'plans:plan_view' client_id=client.pk %}">{{ term.plan|default:"Plan" }}</a></li>
+        <li><a href="{% url 'notes:note_list' client_id=client.pk %}">{{ term.progress_note|default:"Notes" }}</a></li>
+        <li><strong>Events</strong></li>
+        <li><a href="#" class="secondary" aria-disabled="true">Analysis</a></li>
+    </ul>
+</nav>
+
+<hr>
+
+<!-- Active alerts -->
+{% for alert in alerts %}
+{% if alert.status == "default" %}
+<article aria-label="alert" style="border-left: 4px solid #EF4444;">
+    <header><strong>Alert</strong> — {{ alert.created_at|date:"Y-m-d" }}
+        {% if alert.author %}<small>by {{ alert.author.display_name|default:alert.author }}</small>{% endif %}
+    </header>
+    <p>{{ alert.content }}</p>
+    <footer>
+        <a href="{% url 'events:alert_cancel' alert_id=alert.pk %}">Cancel Alert</a>
+    </footer>
+</article>
+{% elif alert.status == "cancelled" %}
+<article aria-label="cancelled alert" style="border-left: 4px solid #6B7280; opacity: 0.6;">
+    <header>
+        <span class="badge badge-danger">Cancelled</span>
+        <strong>Alert</strong> — {{ alert.created_at|date:"Y-m-d" }}
+    </header>
+    <p><del>{{ alert.content }}</del></p>
+    {% if alert.status_reason %}<p><small>Reason: {{ alert.status_reason }}</small></p>{% endif %}
+</article>
+{% endif %}
+{% endfor %}
+
+<!-- Events -->
+{% if events %}
+<div id="events-timeline">
+    {% for event in events %}
+    <article>
+        <header>
+            {% if event.event_type %}
+                <span class="program-dot" style="background-color: {{ event.event_type.colour_hex }}" aria-hidden="true"></span>
+                <span class="badge" style="background-color: {{ event.event_type.colour_hex }}; color: #fff;">{{ event.event_type.name }}</span>
+            {% endif %}
+            <strong>{{ event.start_timestamp|date:"Y-m-d H:i" }}</strong>
+            {% if event.end_timestamp %} — {{ event.end_timestamp|date:"Y-m-d H:i" }}{% endif %}
+        </header>
+        {% if event.title %}<h3>{{ event.title }}</h3>{% endif %}
+        {% if event.description %}<p>{{ event.description|truncatechars:200 }}</p>{% endif %}
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<p class="empty-state">No events recorded yet.</p>
+{% endif %}
+{% endblock %}

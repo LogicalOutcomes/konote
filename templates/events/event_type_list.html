@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Event Types — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>Event Types</h1>
+    <p>Manage event categories for client timelines.</p>
+</hgroup>
+
+<p><a href="{% url 'events:event_type_create' %}" role="button">New Event Type</a></p>
+
+{% if event_types %}
+<figure>
+<table role="grid">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Description</th>
+            <th scope="col">Status</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for et in event_types %}
+        <tr>
+            <td>
+                <span class="program-dot" style="background-color: {{ et.colour_hex }}" aria-hidden="true"></span>
+                {{ et.name }}
+            </td>
+            <td>{{ et.description|truncatechars:80 }}</td>
+            <td>
+                {% if et.status == "active" %}
+                    <span class="badge badge-success">Active</span>
+                {% else %}
+                    <span class="badge badge-neutral">Archived</span>
+                {% endif %}
+            </td>
+            <td><a href="{% url 'events:event_type_edit' type_id=et.pk %}">Edit</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<div class="empty-state">
+    <p>No event types yet. Create one to get started.</p>
+</div>
+{% endif %}
+{% endblock %}

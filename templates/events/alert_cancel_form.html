@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Cancel Alert — {{ client.first_name }} {{ client.last_name }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>Cancel Alert</h1>
+    <p>For {{ client.first_name }} {{ client.last_name }}</p>
+</hgroup>
+
+<article aria-label="alert to cancel" style="border-left: 4px solid #EF4444;">
+    <p>{{ alert.content }}</p>
+    <small>Created {{ alert.created_at|date:"Y-m-d" }}
+        {% if alert.author %} by {{ alert.author.display_name|default:alert.author }}{% endif %}
+    </small>
+</article>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">
+        {{ field.label }}
+        {% if field.field.required %}<abbr title="required">*</abbr>{% endif %}
+    </label>
+    {{ field }}
+    {% if field.errors %}
+    <small class="badge badge-danger">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% endfor %}
+
+    <div role="group">
+        <button type="submit" class="contrast">Cancel Alert</button>
+        <a href="{% url 'events:event_list' client_id=client.pk %}" role="button" class="outline">Go Back</a>
+    </div>
+</form>
+{% endblock %}

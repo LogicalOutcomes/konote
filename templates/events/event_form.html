@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}New Event — {{ client.first_name }} {{ client.last_name }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>New Event for {{ client.first_name }} {{ client.last_name }}</h1>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">
+        {{ field.label }}
+        {% if field.field.required %}<abbr title="required">*</abbr>{% endif %}
+    </label>
+    {{ field }}
+    {% if field.errors %}
+    <small class="badge badge-danger">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% endfor %}
+
+    <div role="group">
+        <button type="submit">Create Event</button>
+        <a href="{% url 'events:event_list' client_id=client.pk %}" role="button" class="outline">Cancel</a>
+    </div>
+</form>
+{% endblock %}

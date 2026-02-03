@@ -1,1 +1,219 @@
-# Phase 5: Event views
+"""Views for events and alerts — admin event types + client-scoped events/alerts."""
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+
+from apps.clients.models import ClientFile, ClientProgramEnrolment
+from apps.programs.models import UserProgramRole
+
+from .forms import AlertCancelForm, AlertForm, EventForm, EventTypeForm
+from .models import Alert, Event, EventType
+
+
+# ---------------------------------------------------------------------------
+# Helpers (same pattern as notes/views.py)
+# ---------------------------------------------------------------------------
+
+def _get_client_or_403(request, client_id):
+    """Return client if user has access, otherwise None."""
+    client = get_object_or_404(ClientFile, pk=client_id)
+    user = request.user
+    if user.is_admin:
+        return client
+    user_program_ids = set(
+        UserProgramRole.objects.filter(user=user, status="active")
+        .values_list("program_id", flat=True)
+    )
+    client_program_ids = set(
+        ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled")
+        .values_list("program_id", flat=True)
+    )
+    if user_program_ids & client_program_ids:
+        return client
+    return None
+
+
+def _get_author_program(user, client):
+    """Return the first program the user shares with this client, or None."""
+    user_program_ids = set(
+        UserProgramRole.objects.filter(user=user, status="active")
+        .values_list("program_id", flat=True)
+    )
+    client_program_ids = set(
+        ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled")
+        .values_list("program_id", flat=True)
+    )
+    shared = user_program_ids & client_program_ids
+    if shared:
+        from apps.programs.models import Program
+        return Program.objects.filter(pk__in=shared).first()
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Event Type Admin (admin-only)
+# ---------------------------------------------------------------------------
+
+@login_required
+def event_type_list(request):
+    """List all event types (admin only)."""
+    if not request.user.is_admin:
+        return HttpResponseForbidden("Access denied. Admin privileges required.")
+    event_types = EventType.objects.all()
+    return render(request, "events/event_type_list.html", {"event_types": event_types})
+
+
+@login_required
+def event_type_create(request):
+    """Create a new event type (admin only)."""
+    if not request.user.is_admin:
+        return HttpResponseForbidden("Access denied. Admin privileges required.")
+    if request.method == "POST":
+        form = EventTypeForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Event type created.")
+            return redirect("events:event_type_list")
+    else:
+        form = EventTypeForm()
+    return render(request, "events/event_type_form.html", {"form": form, "editing": False})
+
+
+@login_required
+def event_type_edit(request, type_id):
+    """Edit an event type (admin only)."""
+    if not request.user.is_admin:
+        return HttpResponseForbidden("Access denied. Admin privileges required.")
+    event_type = get_object_or_404(EventType, pk=type_id)
+    if request.method == "POST":
+        form = EventTypeForm(request.POST, instance=event_type)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Event type updated.")
+            return redirect("events:event_type_list")
+    else:
+        form = EventTypeForm(instance=event_type)
+    return render(request, "events/event_type_form.html", {
+        "form": form,
+        "editing": True,
+        "event_type": event_type,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Event CRUD (client-scoped)
+# ---------------------------------------------------------------------------
+
+@login_required
+def event_list(request, client_id):
+    """List events for a client."""
+    client = _get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+    events = Event.objects.filter(client_file=client).select_related("event_type")
+    alerts = Alert.objects.filter(client_file=client)
+    return render(request, "events/event_list.html", {
+        "client": client,
+        "events": events,
+        "alerts": alerts,
+    })
+
+
+@login_required
+def event_create(request, client_id):
+    """Create an event for a client."""
+    client = _get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+    if request.method == "POST":
+        form = EventForm(request.POST)
+        if form.is_valid():
+            event = form.save(commit=False)
+            event.client_file = client
+            event.author_program = _get_author_program(request.user, client)
+            event.save()
+            messages.success(request, "Event created.")
+            return redirect("events:event_list", client_id=client.pk)
+    else:
+        form = EventForm()
+    return render(request, "events/event_form.html", {
+        "form": form,
+        "client": client,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Alert CRUD (client-scoped)
+# ---------------------------------------------------------------------------
+
+@login_required
+def alert_create(request, client_id):
+    """Create an alert for a client."""
+    client = _get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+    if request.method == "POST":
+        form = AlertForm(request.POST)
+        if form.is_valid():
+            Alert.objects.create(
+                client_file=client,
+                content=form.cleaned_data["content"],
+                author=request.user,
+                author_program=_get_author_program(request.user, client),
+            )
+            messages.success(request, "Alert created.")
+            return redirect("events:event_list", client_id=client.pk)
+    else:
+        form = AlertForm()
+    return render(request, "events/alert_form.html", {
+        "form": form,
+        "client": client,
+    })
+
+
+@login_required
+def alert_cancel(request, alert_id):
+    """Cancel an alert with a reason (never delete). Only author or admin can cancel."""
+    alert = get_object_or_404(Alert, pk=alert_id)
+    client = _get_client_or_403(request, alert.client_file_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+
+    user = request.user
+    # Permission: only author or admin can cancel
+    if not user.is_admin and alert.author_id != user.pk:
+        return HttpResponseForbidden("You can only cancel your own alerts.")
+
+    if alert.status == "cancelled":
+        messages.info(request, "This alert is already cancelled.")
+        return redirect("events:event_list", client_id=client.pk)
+
+    if request.method == "POST":
+        form = AlertCancelForm(request.POST)
+        if form.is_valid():
+            alert.status = "cancelled"
+            alert.status_reason = form.cleaned_data["status_reason"]
+            alert.save()
+            # Audit log
+            from apps.audit.models import AuditLog
+            AuditLog.objects.using("audit").create(
+                event_timestamp=timezone.now(),
+                user_id=user.pk,
+                user_display=user.display_name if hasattr(user, "display_name") else str(user),
+                action="cancel",
+                resource_type="alert",
+                resource_id=alert.pk,
+                metadata={"reason": form.cleaned_data["status_reason"]},
+            )
+            messages.success(request, "Alert cancelled.")
+            return redirect("events:event_list", client_id=client.pk)
+    else:
+        form = AlertCancelForm()
+
+    return render(request, "events/alert_cancel_form.html", {
+        "form": form,
+        "alert": alert,
+        "client": client,
+    })
