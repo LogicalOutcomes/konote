@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}{{ program.name }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>
+        <span class="program-dot" style="background-color: {{ program.colour_hex }}" aria-hidden="true"></span>
+        {{ program.name }}
+    </h1>
+</hgroup>
+
+<article>
+    <p>You don't have permission to see the {{ term.client|default:"client" }} list for this {{ term.program|default:"program" }}.</p>
+    <p>If you need access, please contact your administrator.</p>
+</article>
+
+<p><a href="{% url 'programs:program_list' %}" role="button" class="outline secondary">Back to {{ term.program_plural|default:"Programs" }}</a></p>
+{% endblock %}

@@ -5,10 +5,16 @@
 {% block content %}
 <hgroup>
     <h1>{{ term.program_plural|default:"Programs" }}</h1>
+    {% if is_admin %}
     <p>Manage organisational {{ term.program_plural|default:"programs" }}.</p>
+    {% else %}
+    <p>Your assigned {{ term.program_plural|default:"programs" }}.</p>
+    {% endif %}
 </hgroup>
 
+{% if is_admin %}
 <p><a href="{% url 'programs:program_create' %}" role="button">New {{ term.program|default:"Program" }}</a></p>
+{% endif %}
 
 {% if program_data %}
 <figure>
@@ -16,9 +22,11 @@
     <thead>
         <tr>
             <th scope="col">{{ term.program|default:"Program" }}</th>
+            <th scope="col">Description</th>
+            <th scope="col">Manager</th>
             <th scope="col">Status</th>
-            <th scope="col">Staff</th>
-            <th scope="col"></th>
+            {% if is_admin %}<th scope="col">Staff</th>{% endif %}
+            {% if is_admin %}<th scope="col"></th>{% endif %}
         </tr>
     </thead>
     <tbody>
@@ -28,6 +36,8 @@
                 <span class="program-dot" style="background-color: {{ item.program.colour_hex }}" aria-hidden="true"></span>
                 <a href="{% url 'programs:program_detail' program_id=item.program.pk %}">{{ item.program.name }}</a>
             </td>
+            <td>{{ item.program.description|default:"—"|truncatewords:10 }}</td>
+            <td>{{ item.manager_name|default:"—" }}</td>
             <td>
                 {% if item.program.status == "active" %}
                     <span class="badge badge-success">Active</span>
@@ -35,8 +45,8 @@
                     <span class="badge badge-neutral">Archived</span>
                 {% endif %}
             </td>
-            <td>{{ item.user_count }}</td>
-            <td><a href="{% url 'programs:program_edit' program_id=item.program.pk %}">Edit</a></td>
+            {% if is_admin %}<td>{{ item.user_count }}</td>{% endif %}
+            {% if is_admin %}<td><a href="{% url 'programs:program_edit' program_id=item.program.pk %}">Edit</a></td>{% endif %}
         </tr>
         {% endfor %}
     </tbody>

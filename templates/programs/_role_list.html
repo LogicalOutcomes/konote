@@ -6,7 +6,7 @@
             <th scope="col">User</th>
             <th scope="col">Role</th>
             <th scope="col">Status</th>
-            <th scope="col"></th>
+            {% if is_admin %}<th scope="col"></th>{% endif %}
         </tr>
     </thead>
     <tbody>
@@ -16,8 +16,10 @@
             <td>
                 {% if role.role == "program_manager" %}
                     <span class="badge badge-info">Program Manager</span>
+                {% elif role.role == "receptionist" %}
+                    <span class="badge badge-neutral">Receptionist</span>
                 {% else %}
-                    <span class="badge badge-neutral">Staff</span>
+                    <span class="badge badge-neutral">Counsellor</span>
                 {% endif %}
             </td>
             <td>
@@ -27,6 +29,7 @@
                     <span class="badge badge-danger">Removed</span>
                 {% endif %}
             </td>
+            {% if is_admin %}
             <td>
                 {% if role.status == "active" %}
                 <button hx-post="{% url 'programs:program_remove_role' program_id=program.pk role_id=role.pk %}"
@@ -39,6 +42,7 @@
                 </button>
                 {% endif %}
             </td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>

@@ -12,7 +12,9 @@
 </hgroup>
 
 <div role="group">
+    {% if is_admin %}
     <a href="{% url 'programs:program_edit' program_id=program.pk %}" role="button" class="outline">Edit {{ term.program|default:"Program" }}</a>
+    {% endif %}
     <a href="{% url 'programs:program_list' %}" role="button" class="outline secondary">Back to List</a>
 </div>
 
@@ -20,6 +22,7 @@
 
 <h2>Assigned Staff</h2>
 
+{% if is_admin %}
 <form hx-post="{% url 'programs:program_add_role' program_id=program.pk %}"
       hx-target="#role-list"
       hx-swap="innerHTML">
@@ -39,6 +42,7 @@
         <button type="submit">Add</button>
     </fieldset>
 </form>
+{% endif %}
 
 <div id="role-list" aria-live="polite">
     {% include "programs/_role_list.html" %}
