@@ -9,5 +9,5 @@
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE"
   },
-  "watchPatterns": ["*.py", "*.html", "*.css", "*.js", "requirements.txt", "Dockerfile"]
+  "watchPatterns": ["*.py", "*.html", "*.css", "*.js", "*.po", "*.mo", "requirements.txt", "Dockerfile"]
 }
