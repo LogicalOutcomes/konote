@@ -11,6 +11,31 @@ from .models import RegistrationLink, RegistrationSubmission
 from .utils import approve_submission
 
 
+def _is_embed_mode(request):
+    """Check if request is for embed mode (iframe display)."""
+    return request.GET.get("embed") == "1"
+
+
+def _render_with_frame_options(request, template, context, allow_framing=False):
+    """Render template with appropriate X-Frame-Options header.
+
+    Args:
+        request: The HTTP request
+        template: Template path to render
+        context: Template context dict
+        allow_framing: If True, allows the page to be embedded in iframes
+
+    Returns:
+        HttpResponse with X-Frame-Options header set
+    """
+    response = render(request, template, context)
+    if allow_framing:
+        # Remove X-Frame-Options to allow embedding
+        # CSP frame-ancestors could also be used for finer control
+        response["X-Frame-Options"] = "ALLOWALL"
+    return response
+
+
 # Rate limiting constants
 MAX_SUBMISSIONS_PER_HOUR = 5
 RATE_LIMIT_SESSION_KEY = "registration_submissions"
@@ -100,7 +125,16 @@ def public_registration_form(request, slug):
 
     GET: Show the registration form
     POST: Validate and create a submission
+
+    Supports embed mode with ?embed=1 query parameter for iframe embedding.
+    In embed mode:
+    - Uses minimal template (no header/footer)
+    - Allows framing (X-Frame-Options: ALLOWALL)
+    - Form targets parent window on submit
     """
+    # Check for embed mode (iframe display)
+    embed_mode = _is_embed_mode(request)
+
     # Look up the registration link
     try:
         registration_link = RegistrationLink.objects.select_related("program").get(
@@ -113,12 +147,18 @@ def public_registration_form(request, slug):
     closed_reason = registration_link.is_closed_reason
     is_open = closed_reason is None
 
+    # Select template based on mode
+    form_template = "registration/public_form_embed.html" if embed_mode else "registration/public_form.html"
+    closed_template = "registration/closed_embed.html" if embed_mode else "registration/closed.html"
+
     # If closed, show the closed page with appropriate message
     if closed_reason:
-        return render(request, "registration/closed.html", {
-            "registration_link": registration_link,
-            "reason": closed_reason,
-        })
+        return _render_with_frame_options(
+            request,
+            closed_template,
+            {"registration_link": registration_link, "reason": closed_reason},
+            allow_framing=embed_mode,
+        )
 
     # Get capacity info for display
     capacity = _get_capacity_info(registration_link)
@@ -137,31 +177,34 @@ def public_registration_form(request, slug):
         "is_rate_limited": is_rate_limited,
         "remaining_submissions": remaining_submissions,
         "spots_remaining": registration_link.spots_remaining,
+        "embed_mode": embed_mode,
     }
 
     if request.method == "GET":
         if is_open and not is_rate_limited:
             form = PublicRegistrationForm(registration_link=registration_link)
             context["form"] = form
-        return render(request, "registration/public_form.html", context)
+        return _render_with_frame_options(request, form_template, context, allow_framing=embed_mode)
 
     # POST handling - re-check if still open (race condition protection)
     closed_reason = registration_link.is_closed_reason
     if closed_reason:
-        return render(request, "registration/closed.html", {
-            "registration_link": registration_link,
-            "reason": closed_reason,
-        })
+        return _render_with_frame_options(
+            request,
+            closed_template,
+            {"registration_link": registration_link, "reason": closed_reason},
+            allow_framing=embed_mode,
+        )
 
     if is_rate_limited:
         context["rate_limit_error"] = True
-        return render(request, "registration/public_form.html", context)
+        return _render_with_frame_options(request, form_template, context, allow_framing=embed_mode)
 
     form = PublicRegistrationForm(request.POST, registration_link=registration_link)
     context["form"] = form
 
     if not form.is_valid():
-        return render(request, "registration/public_form.html", context)
+        return _render_with_frame_options(request, form_template, context, allow_framing=embed_mode)
 
     # Create the submission
     submission = RegistrationSubmission(
@@ -191,11 +234,20 @@ def public_registration_form(request, slug):
     request.session["last_submission_ref"] = submission.reference_number
     request.session["last_submission_auto_approved"] = registration_link.auto_approve
 
-    return redirect("registration:registration_submitted", slug=slug)
+    # Redirect - preserve embed mode
+    redirect_url = f"/register/{slug}/submitted/"
+    if embed_mode:
+        redirect_url += "?embed=1"
+    return redirect(redirect_url)
 
 
 def registration_submitted(request, slug):
-    """Display confirmation after a registration is submitted."""
+    """Display confirmation after a registration is submitted.
+
+    Supports embed mode with ?embed=1 for iframe display.
+    """
+    embed_mode = _is_embed_mode(request)
+
     # Look up the registration link (for branding/context)
     try:
         registration_link = RegistrationLink.objects.select_related("program").get(
@@ -216,6 +268,8 @@ def registration_submitted(request, slug):
         "registration_link": registration_link,
         "reference_number": reference_number,
         "auto_approved": auto_approved,
+        "embed_mode": embed_mode,
     }
 
-    return render(request, "registration/submitted.html", context)
+    template = "registration/submitted_embed.html" if embed_mode else "registration/submitted.html"
+    return _render_with_frame_options(request, template, context, allow_framing=embed_mode)

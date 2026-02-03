@@ -39,6 +39,11 @@ urlpatterns = [
         admin_views.link_delete,
         name="registration_link_delete",
     ),
+    path(
+        "admin/registration/<int:pk>/embed/",
+        admin_views.link_embed,
+        name="registration_link_embed",
+    ),
 
     # Submissions
     path(

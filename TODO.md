@@ -6,13 +6,17 @@ _Nothing flagged._
 
 ## Active Work
 
-### Code Review Fixes
+### Pre-Pilot Testing Fixes
 
-_All code review items complete._
-
-### Phase 8 — UX Improvements for Frontline Staff
-
-_All Phase 8 tasks complete._
+- [ ] Fix test suite configuration error — (TEST2)
+- [ ] Add CSV export for all client data — (EXP1)
+- [ ] Add consent checkbox to note entry — (PRIV2)
+- [ ] Create first-run setup wizard — (SETUP1)
+- [ ] Mobile responsiveness pass — (UI1)
+- [ ] Add backup automation examples to docs — (OPS1)
+- [ ] Add client search filters (program, status, date) — (UX19)
+- [ ] Add note auto-save / draft recovery — (UX21)
+- [ ] Create "Quick Start for Staff" training doc — (DOC18)
 
 ## Roadmap — Prioritized Extensions
 
@@ -52,13 +56,14 @@ See `tasks/documentation-improvement-plan.md` for full rationale.
 
 Public sign-up forms for programs — parents register kids for sports, adults sign up for classes. See `tasks/self-service-registration-design.md` for full design.
 
-- [ ] 🔨 RegistrationLink model — shareable form config per program — (REG1)
-- [ ] 🔨 Public registration form view — mobile-friendly, no login required — (REG2)
-- [ ] 🔨 RegistrationSubmission model — pending entries awaiting review — (REG3)
-- [ ] 🔨 Submission review UI — approve/reject/merge duplicates — (REG4)
-- [ ] 🔨 Auto-approve option — skip staff review for low-risk programs — (REG5)
-- [ ] 🔨 Duplicate detection — match by email/phone, flag for merge — (REG6)
-- [ ] 🔨 Capacity limits and deadlines — close registration when full or past date — (REG7)
+- [x] RegistrationLink model — shareable form config per program — (REG1)
+- [x] Public registration form view — mobile-friendly, no login required — (REG2)
+- [x] RegistrationSubmission model — pending entries awaiting review — (REG3)
+- [x] Submission review UI — approve/reject/merge duplicates — (REG4)
+- [x] Auto-approve option — skip staff review for low-risk programs — (REG5)
+- [x] Duplicate detection — match by email/phone, flag for merge — (REG6)
+- [x] Capacity limits and deadlines — close registration when full or past date — (REG7)
+- [x] Iframe embed support — agencies can embed form on their own website — (REG8)
 
 ### Planned Extensions (Build When Requested)
 
@@ -93,6 +98,8 @@ These features are intentionally excluded. See technical documentation for ratio
 
 ## Recently Done
 
+- [x] Iframe embed support for registration forms — 2026-02-03 (REG8)
+- [x] Phase E: Self-service registration complete (REG1–REG7) — 2026-02-03
 - [x] Add "What You'll Need" pre-flight checklist to getting-started.md — 2026-02-03 (DOC12)
 - [x] Add "What just happened?" explanations after key generation steps — 2026-02-03 (DOC13)
 - [x] Add expected output examples showing what success looks like — 2026-02-03 (DOC14)

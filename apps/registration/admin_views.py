@@ -12,6 +12,35 @@ from .models import RegistrationLink, RegistrationSubmission
 from .utils import approve_submission, find_duplicate_clients, merge_with_existing
 
 
+def _get_embed_code(request, link, height=600):
+    """Generate iframe embed code for a registration link.
+
+    Args:
+        request: HTTP request (for building absolute URL)
+        link: RegistrationLink instance
+        height: Default iframe height in pixels
+
+    Returns:
+        str: HTML iframe code
+    """
+    # Build the embed URL
+    embed_url = request.build_absolute_uri(f"/register/{link.slug}/?embed=1")
+
+    # Generate the embed code
+    embed_code = f'''<!-- {link.title} Registration Form -->
+<iframe
+    src="{embed_url}"
+    width="100%"
+    height="{height}"
+    frameborder="0"
+    title="{link.title}"
+    allow="forms"
+    style="border: none; max-width: 100%;">
+</iframe>'''
+
+    return embed_code
+
+
 def admin_required(view_func):
     """Decorator: 403 if user is not an admin."""
     def wrapper(request, *args, **kwargs):
@@ -83,6 +112,30 @@ def link_edit(request, pk):
         "form": form,
         "link": link,
         "editing": True,
+        "nav_active": "admin",
+    })
+
+
+@login_required
+@admin_required
+def link_embed(request, pk):
+    """Display embed code for a registration link."""
+    link = get_object_or_404(RegistrationLink, pk=pk)
+
+    # Generate embed code
+    embed_code = _get_embed_code(request, link)
+
+    # Direct link (non-embed)
+    direct_url = request.build_absolute_uri(f"/register/{link.slug}/")
+
+    # Embed URL
+    embed_url = request.build_absolute_uri(f"/register/{link.slug}/?embed=1")
+
+    return render(request, "registration/admin/link_embed.html", {
+        "link": link,
+        "embed_code": embed_code,
+        "direct_url": direct_url,
+        "embed_url": embed_url,
         "nav_active": "admin",
     })
 

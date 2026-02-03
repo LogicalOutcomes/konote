@@ -1,0 +1,29 @@
+{% extends "registration/base_embed.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Registration Closed" %}{% endblock %}
+
+{% block content %}
+<article>
+    <header class="registration-header">
+        {% if site.logo_url %}
+        <img src="{{ site.logo_url }}" alt="{{ site.organisation_name|default:'Organisation' }} logo" class="registration-logo">
+        {% endif %}
+        <h1 class="registration-title">{{ registration_link.title }}</h1>
+    </header>
+
+    <div class="registration-closed">
+        <h2>{% trans "Registration Closed" %}</h2>
+
+        {% if reason == "deadline" %}
+        <p>{% trans "The registration deadline has passed. Thank you for your interest." %}</p>
+        {% elif reason == "capacity" %}
+        <p>{% trans "This registration has reached capacity. Thank you for your interest." %}</p>
+        {% elif reason == "inactive" %}
+        <p>{% trans "Registration is not currently available. Please check back later." %}</p>
+        {% else %}
+        <p>{% trans "Registration is not currently available. Please check back later." %}</p>
+        {% endif %}
+    </div>
+</article>
+{% endblock %}

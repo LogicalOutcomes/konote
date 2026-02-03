@@ -1,0 +1,43 @@
+{% extends "registration/base_embed.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Registration Submitted" %}{% endblock %}
+
+{% block content %}
+<article>
+    <header class="registration-header">
+        {% if site.logo_url %}
+        <img src="{{ site.logo_url }}" alt="{{ site.organisation_name|default:'Organisation' }} logo" class="registration-logo">
+        {% endif %}
+        <h1 class="registration-title">{% trans "Thank You!" %}</h1>
+    </header>
+
+    <div style="text-align: center;">
+        {% if auto_approved %}
+        <p style="font-size: 1.2rem; color: var(--kn-success-fg);">
+            {% trans "Your registration has been confirmed." %}
+        </p>
+        <p>{% trans "You are now registered for this program." %}</p>
+        {% else %}
+        <p style="font-size: 1.2rem;">
+            {% trans "Your registration has been received." %}
+        </p>
+        <p>{% trans "We will review your registration and contact you soon." %}</p>
+        {% endif %}
+
+        {% if reference_number %}
+        <div style="margin: 1.5rem 0; padding: 1rem; background: var(--pico-secondary-background); border-radius: 0.25rem;">
+            <p style="margin: 0; font-size: 0.9rem; color: var(--pico-muted-color);">
+                {% trans "Reference Number" %}
+            </p>
+            <p style="margin: 0.5rem 0 0 0; font-size: 1.25rem; font-weight: bold; font-family: monospace;">
+                {{ reference_number }}
+            </p>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--pico-muted-color);">
+            {% trans "Please save this reference number for your records." %}
+        </p>
+        {% endif %}
+    </div>
+</article>
+{% endblock %}

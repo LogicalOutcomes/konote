@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Embed Code" %} — {{ link.title }}{% endblock %}
+
+{% block content %}
+<article>
+    <header>
+        <nav aria-label="breadcrumb">
+            <ul>
+                <li><a href="{% url 'registration:registration_link_list' %}">{% trans "Registration Links" %}</a></li>
+                <li>{{ link.title }}</li>
+                <li>{% trans "Embed Code" %}</li>
+            </ul>
+        </nav>
+        <h1>{% trans "Embed Code" %}</h1>
+        <p>{{ link.title }} — {{ link.program.name }}</p>
+    </header>
+
+    <!-- Embed Instructions -->
+    <section style="margin-bottom: 2rem;">
+        <h2>{% trans "How to Embed This Form" %}</h2>
+        <p>{% trans "Copy the code below and paste it into your website where you want the registration form to appear." %}</p>
+        <p style="color: var(--pico-muted-color); font-size: 0.9rem;">
+            {% trans "The form will be displayed in an iframe. Participants will see your website URL in their browser, not the KoNote URL." %}
+        </p>
+    </section>
+
+    <!-- Embed Code -->
+    <section style="margin-bottom: 2rem;">
+        <h3>{% trans "Embed Code (Recommended)" %}</h3>
+        <p style="font-size: 0.9rem; color: var(--pico-muted-color);">
+            {% trans "Paste this HTML into your website. Works with WordPress, Squarespace, Wix, and most website builders." %}
+        </p>
+        <div style="position: relative;">
+            <pre style="padding: 1rem; background: var(--pico-secondary-background); border-radius: 0.25rem; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"><code id="embed-code">{{ embed_code }}</code></pre>
+            <button type="button"
+                    onclick="copyToClipboard('embed-code')"
+                    style="position: absolute; top: 0.5rem; right: 0.5rem;">
+                {% trans "Copy" %}
+            </button>
+        </div>
+    </section>
+
+    <!-- Direct Link -->
+    <section style="margin-bottom: 2rem;">
+        <h3>{% trans "Direct Link" %}</h3>
+        <p style="font-size: 0.9rem; color: var(--pico-muted-color);">
+            {% trans "Share this link directly (e.g., in emails, flyers, QR codes). Opens the full registration page." %}
+        </p>
+        <div style="position: relative;">
+            <input type="text"
+                   id="direct-url"
+                   value="{{ direct_url }}"
+                   readonly
+                   style="padding-right: 5rem;">
+            <button type="button"
+                    onclick="copyToClipboard('direct-url')"
+                    style="position: absolute; top: 0.25rem; right: 0.25rem;">
+                {% trans "Copy" %}
+            </button>
+        </div>
+    </section>
+
+    <!-- Preview -->
+    <section style="margin-bottom: 2rem;">
+        <h3>{% trans "Preview" %}</h3>
+        <p style="font-size: 0.9rem; color: var(--pico-muted-color);">
+            {% trans "This is how the embedded form will appear on your website." %}
+        </p>
+        <div style="border: 2px dashed var(--pico-muted-border-color); padding: 1rem; border-radius: 0.5rem;">
+            <iframe src="{{ embed_url }}"
+                    width="100%"
+                    height="600"
+                    frameborder="0"
+                    title="{{ link.title }}"
+                    style="border: none; max-width: 100%;">
+            </iframe>
+        </div>
+    </section>
+
+    <!-- Customisation Tips -->
+    <details style="margin-bottom: 2rem;">
+        <summary>{% trans "Customisation Tips" %}</summary>
+        <div style="padding: 1rem;">
+            <h4>{% trans "Adjust Height" %}</h4>
+            <p style="font-size: 0.9rem;">
+                {% trans "Change" %} <code>height="600"</code> {% trans "to fit your form. Longer forms with more custom fields may need more height." %}
+            </p>
+
+            <h4>{% trans "Responsive Width" %}</h4>
+            <p style="font-size: 0.9rem;">
+                {% trans "The embed uses" %} <code>width="100%"</code> {% trans "by default, which makes it responsive. You can set a fixed width like" %} <code>width="500"</code> {% trans "if needed." %}
+            </p>
+
+            <h4>{% trans "Custom Styling" %}</h4>
+            <p style="font-size: 0.9rem;">
+                {% trans "Wrap the iframe in a container div and apply CSS to control margins, borders, and positioning on your site." %}
+            </p>
+        </div>
+    </details>
+
+    <footer>
+        <a href="{% url 'registration:registration_link_list' %}" role="button" class="secondary">
+            {% trans "Back to Registration Links" %}
+        </a>
+    </footer>
+</article>
+
+<script>
+function copyToClipboard(elementId) {
+    const element = document.getElementById(elementId);
+    const text = element.tagName === 'INPUT' ? element.value : element.textContent;
+
+    navigator.clipboard.writeText(text).then(function() {
+        // Show brief feedback
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = '{% trans "Copied!" %}';
+        setTimeout(function() {
+            button.textContent = originalText;
+        }, 2000);
+    }).catch(function(err) {
+        // Fallback for older browsers
+        if (element.tagName === 'INPUT') {
+            element.select();
+        } else {
+            const range = document.createRange();
+            range.selectNode(element);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+        }
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+    });
+}
+</script>
+{% endblock %}

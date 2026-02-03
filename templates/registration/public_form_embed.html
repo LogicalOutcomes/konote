@@ -1,0 +1,254 @@
+{% extends "registration/base_embed.html" %}
+{% load i18n %}
+{% load registration_tags %}
+
+{% block title %}{{ registration_link.title }}{% endblock %}
+
+{% block content %}
+<article>
+    <!-- Header with logo and title -->
+    <header class="registration-header">
+        {% if site.logo_url %}
+        <img src="{{ site.logo_url }}" alt="{{ site.organisation_name|default:site.product_name|default:'Organisation' }} logo" class="registration-logo">
+        {% endif %}
+
+        <h1 class="registration-title">{{ registration_link.title }}</h1>
+
+        {% if registration_link.description %}
+        <p class="registration-description">{{ registration_link.description|linebreaks }}</p>
+        {% endif %}
+
+        <!-- Registration info (capacity, deadline) -->
+        {% if is_open %}
+        <div class="registration-info">
+            {% if capacity.has_limit %}
+            <div class="registration-info-item">
+                <span aria-hidden="true">&#128101;</span>
+                {% blocktrans with remaining=capacity.remaining total=capacity.total %}
+                {{ remaining }} of {{ total }} spots remaining
+                {% endblocktrans %}
+            </div>
+            {% endif %}
+
+            {% if registration_link.closes_at %}
+            <div class="registration-info-item">
+                <span aria-hidden="true">&#128197;</span>
+                {% blocktrans with deadline=registration_link.closes_at|date:"F j, Y" %}
+                Registration closes {{ deadline }}
+                {% endblocktrans %}
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </header>
+
+    <!-- Registration closed message -->
+    {% if not is_open %}
+    <div class="registration-closed">
+        <h2>{% trans "Registration Closed" %}</h2>
+        {% if closed_reason == "deadline" %}
+        <p>{% trans "The registration deadline has passed. Thank you for your interest." %}</p>
+        {% elif closed_reason == "full" %}
+        <p>{% trans "This registration has reached capacity. Thank you for your interest." %}</p>
+        {% else %}
+        <p>{% trans "Registration is not currently available. Please check back later." %}</p>
+        {% endif %}
+    </div>
+
+    {% elif is_rate_limited %}
+    <!-- Rate limit message -->
+    <div class="registration-closed" role="alert">
+        <h2>{% trans "Too Many Submissions" %}</h2>
+        <p>{% trans "You have submitted too many registrations recently. Please wait an hour and try again." %}</p>
+    </div>
+
+    {% else %}
+    <!-- Registration form — target="_parent" to break out of iframe on submit -->
+    <form method="post" novalidate target="_parent">
+        {% csrf_token %}
+
+        <!-- Form-level errors -->
+        {% if form.non_field_errors %}
+        <div role="alert" aria-live="polite" class="error-summary">
+            {% for error in form.non_field_errors %}
+            <p style="color: var(--kn-danger-fg);">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Core fields section -->
+        <fieldset>
+            <legend>{% trans "Your Information" %}</legend>
+
+            <div class="grid">
+                <!-- First Name -->
+                <div>
+                    <label for="id_first_name">
+                        {% trans "First Name" %} <abbr title="{% trans 'required' %}">*</abbr>
+                    </label>
+                    <input type="text"
+                           name="first_name"
+                           id="id_first_name"
+                           value="{{ form.first_name.value|default:'' }}"
+                           required
+                           autocomplete="given-name"
+                           {% if form.first_name.errors %}aria-invalid="true" aria-describedby="first_name_error"{% endif %}>
+                    {% if form.first_name.errors %}
+                    <small id="first_name_error" class="error-message" style="color: var(--kn-danger-fg);">{{ form.first_name.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <!-- Last Name -->
+                <div>
+                    <label for="id_last_name">
+                        {% trans "Last Name" %} <abbr title="{% trans 'required' %}">*</abbr>
+                    </label>
+                    <input type="text"
+                           name="last_name"
+                           id="id_last_name"
+                           value="{{ form.last_name.value|default:'' }}"
+                           required
+                           autocomplete="family-name"
+                           {% if form.last_name.errors %}aria-invalid="true" aria-describedby="last_name_error"{% endif %}>
+                    {% if form.last_name.errors %}
+                    <small id="last_name_error" class="error-message" style="color: var(--kn-danger-fg);">{{ form.last_name.errors.0 }}</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div>
+                <label for="id_email">
+                    {% trans "Email Address" %} <abbr title="{% trans 'required' %}">*</abbr>
+                </label>
+                <input type="email"
+                       name="email"
+                       id="id_email"
+                       value="{{ form.email.value|default:'' }}"
+                       required
+                       autocomplete="email"
+                       {% if form.email.errors %}aria-invalid="true" aria-describedby="email_error"{% endif %}>
+                {% if form.email.errors %}
+                <small id="email_error" class="error-message" style="color: var(--kn-danger-fg);">{{ form.email.errors.0 }}</small>
+                {% endif %}
+            </div>
+
+            <!-- Phone -->
+            <div>
+                <label for="id_phone">{% trans "Phone Number" %}</label>
+                <input type="tel"
+                       name="phone"
+                       id="id_phone"
+                       value="{{ form.phone.value|default:'' }}"
+                       autocomplete="tel"
+                       {% if form.phone.errors %}aria-invalid="true" aria-describedby="phone_error"{% endif %}>
+                {% if form.phone.errors %}
+                <small id="phone_error" class="error-message" style="color: var(--kn-danger-fg);">{{ form.phone.errors.0 }}</small>
+                {% endif %}
+            </div>
+        </fieldset>
+
+        <!-- Custom field groups -->
+        {% for group_data in grouped_fields %}
+        <fieldset>
+            <legend class="field-group-heading">{{ group_data.group.title }}</legend>
+
+            {% for field_def in group_data.fields %}
+            {% with field_key="custom_"|add:field_def.pk|stringformat:"d" %}
+            {% with form_field=form|get_field:field_key %}
+            <div>
+                <label for="id_{{ field_key }}">
+                    {{ field_def.name }}
+                    {% if field_def.is_required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+                </label>
+
+                {% if field_def.input_type == "textarea" %}
+                <textarea name="{{ field_key }}"
+                          id="id_{{ field_key }}"
+                          rows="3"
+                          {% if field_def.is_required %}required{% endif %}
+                          {% if field_def.placeholder %}placeholder="{{ field_def.placeholder }}"{% endif %}>{{ form_field.value|default:'' }}</textarea>
+
+                {% elif field_def.input_type == "select" %}
+                <select name="{{ field_key }}"
+                        id="id_{{ field_key }}"
+                        {% if field_def.is_required %}required{% endif %}>
+                    <option value="">-- {% trans "Select" %} --</option>
+                    {% for option in field_def.options_json %}
+                    <option value="{{ option }}" {% if form_field.value == option %}selected{% endif %}>{{ option }}</option>
+                    {% endfor %}
+                </select>
+
+                {% elif field_def.input_type == "date" %}
+                <input type="date"
+                       name="{{ field_key }}"
+                       id="id_{{ field_key }}"
+                       value="{{ form_field.value|default:'' }}"
+                       {% if field_def.is_required %}required{% endif %}>
+
+                {% elif field_def.input_type == "number" %}
+                <input type="number"
+                       name="{{ field_key }}"
+                       id="id_{{ field_key }}"
+                       value="{{ form_field.value|default:'' }}"
+                       {% if field_def.is_required %}required{% endif %}
+                       {% if field_def.placeholder %}placeholder="{{ field_def.placeholder }}"{% endif %}>
+
+                {% elif field_def.input_type == "checkbox" %}
+                <label>
+                    <input type="checkbox"
+                           name="{{ field_key }}"
+                           id="id_{{ field_key }}"
+                           {% if form_field.value %}checked{% endif %}>
+                    {{ field_def.name }}
+                </label>
+
+                {% else %}
+                <!-- Default text input -->
+                <input type="text"
+                       name="{{ field_key }}"
+                       id="id_{{ field_key }}"
+                       value="{{ form_field.value|default:'' }}"
+                       {% if field_def.is_required %}required{% endif %}
+                       {% if field_def.placeholder %}placeholder="{{ field_def.placeholder }}"{% endif %}>
+                {% endif %}
+
+                {% if form_field.errors %}
+                <small class="error-message" style="color: var(--kn-danger-fg);">{{ form_field.errors.0 }}</small>
+                {% endif %}
+            </div>
+            {% endwith %}
+            {% endwith %}
+            {% endfor %}
+        </fieldset>
+        {% endfor %}
+
+        <!-- Consent section -->
+        <div class="consent-section">
+            <label>
+                <input type="checkbox"
+                       name="consent"
+                       id="id_consent"
+                       required
+                       {% if form.consent.value %}checked{% endif %}
+                       {% if form.consent.errors %}aria-invalid="true" aria-describedby="consent_error"{% endif %}>
+                <span>
+                    {% trans "I consent to my information being collected and stored for this registration." %}
+                    <abbr title="{% trans 'required' %}">*</abbr>
+                </span>
+            </label>
+            {% if form.consent.errors %}
+            <small id="consent_error" class="error-message" style="color: var(--kn-danger-fg); display: block; margin-top: 0.5rem;">
+                {{ form.consent.errors.0 }}
+            </small>
+            {% endif %}
+        </div>
+
+        <!-- Submit button -->
+        <div style="margin-top: 1.25rem;">
+            <button type="submit">{% trans "Submit Registration" %}</button>
+        </div>
+    </form>
+    {% endif %}
+</article>
+{% endblock %}
