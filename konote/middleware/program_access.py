@@ -8,6 +8,7 @@ from django.http import HttpResponseForbidden
 # Maps URL regex to the URL kwarg containing the client ID
 CLIENT_URL_PATTERNS = [
     (re.compile(r"^/clients/(?P<client_id>\d+)"), "client_id"),
+    (re.compile(r"^/notes/client/(?P<client_id>\d+)"), "client_id"),
 ]
 
 # URLs that only admins can access
