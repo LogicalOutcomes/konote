@@ -25,7 +25,7 @@ Based on usability review and expert panel analysis. See `tasks/usability-review
 ### Phase A: Market Access (High Priority)
 
 - [ ] French UI translation — Django i18n setup + ~500 strings — (I18N1)
-- [ ] Document Link field on client records — URL + title + document type — (DOC5)
+- [ ] Document folder button — link to client folder in SharePoint/Google Drive — (DOC5) — see `tasks/document-access-plan.md`
 - [ ] "What KoNote Is and Isn't" documentation page — set scope expectations — (DOC6)
 - [ ] Terminology override by language — extend model for fr/en terms — (I18N2)
 

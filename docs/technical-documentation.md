@@ -1488,67 +1488,81 @@ def calculate_achievement_rate(metric_def, client_metrics):
 
 ---
 
-### Document Attachments
+### Document Access
 
-**Current State:** No file attachment support.
+**Current State:** No document integration.
 
-**Recommended Approach:** Document Link field (not full attachment storage).
+**Design Decision:** Folder-level access, not per-document linking.
 
-**Rationale:**
-- Full attachment storage introduces: virus scanning, storage costs, backup complexity, retention policies
-- Most organizations already use SharePoint, Google Drive, or Dropbox
-- Link field provides 80% of value with 5% of complexity
+**Rationale (from expert panel review):**
+
+Per-document linking was evaluated and rejected:
+- Workflow requires 10 steps across 3 systems to link one document
+- SharePoint's "Copy link" permission dialog confuses non-technical staff
+- Predicted adoption: <5% sustained use after 3 months
+- Staff will abandon the feature and keep documents in SharePoint/Drive anyway
+
+**Recommended Approach:** Single "Open Documents Folder" button on client records.
+
+See `tasks/document-access-plan.md` for full design rationale.
 
 **Implementation:**
 
 ```python
-# apps/clients/models.py
+# apps/admin_settings/models.py
 
-class ClientDocument(models.Model):
-    client = models.ForeignKey(ClientFile, on_delete=models.CASCADE)
-    title = models.CharField(max_length=255)
-    url = models.URLField(max_length=500)
-    document_type = models.CharField(max_length=50, choices=[
-        ('consent', 'Consent Form'),
-        ('referral', 'Referral Letter'),
-        ('assessment', 'Assessment'),
-        ('other', 'Other'),
-    ])
-    notes = models.TextField(blank=True)
-    added_by = models.ForeignKey(User, on_delete=models.PROTECT)
-    added_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['-added_at']
+class InstanceSetting(models.Model):
+    # Document storage configuration
+    document_storage_provider = models.CharField(
+        max_length=20,
+        choices=[
+            ('none', 'Not configured'),
+            ('sharepoint', 'SharePoint / OneDrive'),
+            ('google_drive', 'Google Drive'),
+        ],
+        default='none'
+    )
+    document_storage_url_template = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text='URL template with {record_id} placeholder'
+    )
 ```
+
+**URL Templates by Provider:**
+
+| Provider | Template | Button Label |
+|----------|----------|--------------|
+| SharePoint | `https://contoso.sharepoint.com/sites/KoNote/Clients/{record_id}/` | Open Documents Folder |
+| Google Drive | `https://drive.google.com/drive/search?q={record_id}` | Search Documents |
+
+**SharePoint:** URLs are path-based; folder opens directly.
+
+**Google Drive:** URLs use opaque IDs; search by Record ID instead. Requires folder naming convention: `REC-2024-042 - Smith, Jane`
 
 ```html
-<!-- templates/clients/_documents.html -->
-<section>
-    <h3>Documents</h3>
-    <ul>
-    {% for doc in client.documents.all %}
-        <li>
-            <a href="{{ doc.url }}" target="_blank" rel="noopener">
-                {{ doc.title }}
-            </a>
-            <small>({{ doc.get_document_type_display }} — {{ doc.added_at|date:"Y-m-d" }})</small>
-        </li>
-    {% empty %}
-        <li class="empty-state">No documents linked yet.</li>
-    {% endfor %}
-    </ul>
-    <a href="{% url 'client_document_add' client.id %}" role="button" class="outline">
-        Add Document Link
-    </a>
-</section>
+<!-- templates/clients/_client_header.html -->
+{% if settings.document_storage_provider != 'none' %}
+<a href="{{ document_folder_url }}"
+   target="_blank"
+   rel="noopener noreferrer"
+   class="button outline">
+    {% if settings.document_storage_provider == 'google_drive' %}
+        🔍 Search Documents
+    {% else %}
+        📁 Open Documents Folder
+    {% endif %}
+</a>
+{% endif %}
 ```
 
-**Future Consideration:** If demand proves high, bounded attachment feature could be added:
-- PDF only (reduces virus risk)
-- 5 MB limit per file
-- 10 files per client maximum
-- Encrypted storage (extend existing Fernet approach)
+**What We're NOT Building:**
+- Per-document link storage
+- Document upload/storage
+- SharePoint/Google Drive API integration
+- Document preview or iframe embedding
+
+**Why:** Documents live in SharePoint/Google Drive. KoNote provides a doorway, not a replacement.
 
 ---
 
