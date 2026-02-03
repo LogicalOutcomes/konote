@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Users — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>Users</h1>
+    <p>Manage user accounts and roles.</p>
+</hgroup>
+
+<p><a href="{% url 'auth_app:user_create' %}" role="button">New User</a></p>
+
+{% if users %}
+<figure>
+<table role="grid">
+    <thead>
+        <tr>
+            <th scope="col">Name</th>
+            <th scope="col">Username</th>
+            <th scope="col">Role</th>
+            <th scope="col">Status</th>
+            <th scope="col">Last Login</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for u in users %}
+        <tr>
+            <td>{{ u.display_name }}</td>
+            <td>{{ u.username }}</td>
+            <td>
+                {% if u.is_admin %}
+                    <span class="badge badge-info">Admin</span>
+                {% else %}
+                    <span class="badge badge-neutral">Staff</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if u.is_active %}
+                    <span class="badge badge-success">Active</span>
+                {% else %}
+                    <span class="badge badge-danger">Inactive</span>
+                {% endif %}
+            </td>
+            <td>{{ u.last_login_at|default:"Never" }}</td>
+            <td>
+                <a href="{% url 'auth_app:user_edit' user_id=u.pk %}">Edit</a>
+                {% if u.is_active and u != request.user %}
+                <form method="post" action="{% url 'auth_app:user_deactivate' user_id=u.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="outline secondary"
+                            style="padding: 0.25rem 0.5rem; margin: 0;"
+                            onclick="return confirm('Deactivate {{ u.display_name }}?')">
+                        Deactivate
+                    </button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<div class="empty-state">
+    <p>No users found.</p>
+</div>
+{% endif %}
+
+<a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline">Back to Settings</a>
+{% endblock %}

@@ -6,14 +6,6 @@ _Nothing flagged._
 
 ## Active Work
 
-**Phase 6: Customisation Admin**
-
-**Phase 6: Customisation Admin**
-- [ ] Create terminology overrides admin UI — (CUST1)
-- [ ] Create feature toggles admin UI — (CUST2)
-- [ ] Create instance settings admin (branding, formats, timeouts) — (CUST3)
-- [ ] Create user management admin (create, deactivate, assign roles) — (USR1)
-
 **Phase 7: Hardening & Deployment**
 - [ ] Run seed_event_types management command on first deploy — (SEED1)
 - [ ] Lock down audit DB permissions at deploy time, not after all phases — (SEC1)
@@ -39,6 +31,7 @@ _Nothing flagged._
 
 ## Recently Done
 
+- [x] Phase 6: Terminology, feature toggles, instance settings, user management admin UIs, cache invalidation signals — 2026-02-02 (CUST1, CUST2, CUST3, USR1)
 - [x] Phase 5: Charts, events, alerts, combined timeline, funder report export, audit log viewer — 2026-02-02 (VIZ1, EVT1, EVT2, VIZ2, RPT1, AUD1)
 - [x] Phase 4: Quick notes, full structured notes, metric recording, templates admin, timeline, cancellation — 2026-02-02 (NOTE1–NOTE5)
 - [x] Phase 3: Plan sections, targets, metrics, templates, apply-to-client, revision history — 2026-02-02 (PLAN1–PLAN6)

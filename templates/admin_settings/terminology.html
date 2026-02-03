@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Terminology — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>Terminology</h1>
+    <p>Customise the words used throughout the system. Changes take effect immediately.</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    <figure>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">Term</th>
+                <th scope="col">Default</th>
+                <th scope="col">Your Label</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in term_rows %}
+            <tr>
+                <td><strong>{{ row.key }}</strong></td>
+                <td>{{ row.default }}</td>
+                <td><input type="text" name="{{ row.key }}" value="{{ row.current }}" maxlength="255"></td>
+                <td>
+                    {% if row.is_overridden %}
+                    <a href="#" onclick="this.closest('tr').querySelector('input').value='{{ row.default }}'; return false;"
+                       class="secondary" style="font-size:0.875rem;">Reset</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </figure>
+
+    <div role="group">
+        <button type="submit">Save Changes</button>
+        <a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline">Back</a>
+    </div>
+</form>
+{% endblock %}

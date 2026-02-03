@@ -1,0 +1,72 @@
+"""Forms for user management."""
+from django import forms
+
+from .models import User
+
+
+class UserCreateForm(forms.ModelForm):
+    """Form for creating a new user."""
+
+    password = forms.CharField(
+        widget=forms.PasswordInput,
+        min_length=8,
+        help_text="Minimum 8 characters.",
+    )
+    password_confirm = forms.CharField(
+        widget=forms.PasswordInput,
+        label="Confirm Password",
+    )
+    email = forms.EmailField(required=False, label="Email")
+
+    class Meta:
+        model = User
+        fields = ["username", "display_name", "is_admin"]
+
+    def clean(self):
+        cleaned = super().clean()
+        pw = cleaned.get("password")
+        pw2 = cleaned.get("password_confirm")
+        if pw and pw2 and pw != pw2:
+            self.add_error("password_confirm", "Passwords do not match.")
+        return cleaned
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password"])
+        if self.cleaned_data.get("email"):
+            user.email = self.cleaned_data["email"]
+        if commit:
+            user.save()
+        return user
+
+
+class UserEditForm(forms.ModelForm):
+    """Form for editing an existing user."""
+
+    email = forms.EmailField(required=False, label="Email")
+    new_password = forms.CharField(
+        widget=forms.PasswordInput,
+        required=False,
+        min_length=8,
+        label="New Password",
+        help_text="Leave blank to keep current password.",
+    )
+
+    class Meta:
+        model = User
+        fields = ["display_name", "is_admin", "is_active"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.fields["email"].initial = self.instance.email
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if self.cleaned_data.get("email"):
+            user.email = self.cleaned_data["email"]
+        if self.cleaned_data.get("new_password"):
+            user.set_password(self.cleaned_data["new_password"])
+        if commit:
+            user.save()
+        return user

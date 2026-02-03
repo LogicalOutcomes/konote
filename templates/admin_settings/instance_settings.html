@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Instance Settings — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>Instance Settings</h1>
+    <p>Configure branding, date format, and session behaviour.</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">
+        {{ field.label }}
+        {% if field.field.required %}<abbr title="required">*</abbr>{% endif %}
+    </label>
+    {{ field }}
+    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+    {% if field.errors %}
+    <small class="badge badge-danger">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% endfor %}
+
+    <div role="group">
+        <button type="submit">Save Changes</button>
+        <a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline">Back</a>
+    </div>
+</form>
+{% endblock %}

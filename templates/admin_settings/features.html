@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Features — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>Features</h1>
+    <p>Enable or disable modules for your organisation.</p>
+</hgroup>
+
+<figure>
+<table role="grid">
+    <thead>
+        <tr>
+            <th scope="col">Feature</th>
+            <th scope="col">Description</th>
+            <th scope="col">Status</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in feature_rows %}
+        <tr>
+            <td><strong>{{ row.key }}</strong></td>
+            <td>{{ row.description }}</td>
+            <td>
+                {% if row.is_enabled %}
+                    <span class="badge badge-success">Enabled</span>
+                {% else %}
+                    <span class="badge badge-neutral">Disabled</span>
+                {% endif %}
+            </td>
+            <td>
+                <form method="post" style="display:inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="feature_key" value="{{ row.key }}">
+                    {% if row.is_enabled %}
+                    <input type="hidden" name="action" value="disable">
+                    <button type="submit" class="outline secondary" style="padding: 0.25rem 0.5rem; margin: 0;">Disable</button>
+                    {% else %}
+                    <input type="hidden" name="action" value="enable">
+                    <button type="submit" class="outline" style="padding: 0.25rem 0.5rem; margin: 0;">Enable</button>
+                    {% endif %}
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+
+<a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline">Back</a>
+{% endblock %}

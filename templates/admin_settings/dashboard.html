@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Settings — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>Settings</h1>
+    <p>Manage your instance configuration.</p>
+</hgroup>
+
+<div class="grid">
+    <article>
+        <header>Terminology</header>
+        <p>Customise the words used throughout the system (e.g. rename "Client" to "Participant").</p>
+        <footer><a href="{% url 'admin_settings:terminology' %}" role="button" class="outline">Manage Terminology</a></footer>
+    </article>
+
+    <article>
+        <header>Features</header>
+        <p>Turn modules on or off for your organisation.</p>
+        <footer><a href="{% url 'admin_settings:features' %}" role="button" class="outline">Manage Features</a></footer>
+    </article>
+
+    <article>
+        <header>Instance Settings</header>
+        <p>Branding, date format, and session timeout.</p>
+        <footer><a href="{% url 'admin_settings:instance_settings' %}" role="button" class="outline">Manage Settings</a></footer>
+    </article>
+
+    <article>
+        <header>Users</header>
+        <p>Create, edit, and deactivate user accounts.</p>
+        <footer><a href="{% url 'auth_app:user_list' %}" role="button" class="outline">Manage Users</a></footer>
+    </article>
+</div>
+{% endblock %}
