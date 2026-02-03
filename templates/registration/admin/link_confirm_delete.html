@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Delete Registration Link" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Delete Registration Link" %}</h1>
+</hgroup>
+
+<article aria-label="warning" class="warning">
+    <p>{% blocktrans with title=link.title %}Are you sure you want to delete "{{ title }}"?{% endblocktrans %}</p>
+    <p>{% trans "This will permanently delete the registration link and all its submissions." %}</p>
+    <p>
+        <strong>{% trans "Submissions:" %}</strong> {{ link.submissions.count }}<br>
+        <strong>{{ term.program|default:"Program" }}:</strong> {{ link.program.name }}
+    </p>
+</article>
+
+<form method="post">
+    {% csrf_token %}
+    <div role="group">
+        <button type="submit" class="contrast">{% trans "Delete" %}</button>
+        <a href="{% url 'registration:registration_link_list' %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

@@ -6,3 +6,7 @@ class RegistrationConfig(AppConfig):
     name = "apps.registration"
     label = "registration"
     verbose_name = "Registration"
+
+    def ready(self):
+        """Connect signals when app is ready."""
+        from . import signals  # noqa: F401

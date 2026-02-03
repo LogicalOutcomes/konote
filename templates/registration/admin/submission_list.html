@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Registration Submissions" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Registration Submissions" %}</h1>
+    <p>{% trans "Review and process self-service registration submissions." %}</p>
+</hgroup>
+
+<!-- Status filter tabs -->
+<nav aria-label="{% trans 'Filter by status' %}">
+    <ul>
+        <li><a href="{% url 'registration:submission_list' %}"
+               {% if not status_filter %}class="nav-active"{% endif %}>
+            {% trans "All" %}
+            <span class="badge badge-neutral">{{ status_counts.all }}</span>
+        </a></li>
+        <li><a href="{% url 'registration:submission_list' %}?status=pending"
+               {% if status_filter == "pending" %}class="nav-active"{% endif %}>
+            {% trans "Pending" %}
+            {% if status_counts.pending > 0 %}
+            <span class="badge badge-warning">{{ status_counts.pending }}</span>
+            {% else %}
+            <span class="badge badge-neutral">0</span>
+            {% endif %}
+        </a></li>
+        <li><a href="{% url 'registration:submission_list' %}?status=approved"
+               {% if status_filter == "approved" %}class="nav-active"{% endif %}>
+            {% trans "Approved" %}
+            <span class="badge badge-neutral">{{ status_counts.approved }}</span>
+        </a></li>
+        <li><a href="{% url 'registration:submission_list' %}?status=rejected"
+               {% if status_filter == "rejected" %}class="nav-active"{% endif %}>
+            {% trans "Rejected" %}
+            <span class="badge badge-neutral">{{ status_counts.rejected }}</span>
+        </a></li>
+        <li><a href="{% url 'registration:submission_list' %}?status=waitlist"
+               {% if status_filter == "waitlist" %}class="nav-active"{% endif %}>
+            {% trans "Waitlist" %}
+            <span class="badge badge-neutral">{{ status_counts.waitlist }}</span>
+        </a></li>
+    </ul>
+</nav>
+
+{% if submissions %}
+<figure>
+<table role="grid">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Reference" %}</th>
+            <th scope="col">{% trans "Name" %}</th>
+            <th scope="col">{{ term.program|default:"Program" }}</th>
+            <th scope="col">{% trans "Submitted" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sub in submissions %}
+        <tr>
+            <td>
+                <a href="{% url 'registration:submission_detail' pk=sub.pk %}">{{ sub.reference_number }}</a>
+                {% if sub.is_duplicate %}
+                <span class="badge badge-warning" title="{% trans 'Possible duplicate' %}">!</span>
+                {% endif %}
+            </td>
+            <td>{{ sub.first_name }} {{ sub.last_name }}</td>
+            <td>{{ sub.registration_link.program.name }}</td>
+            <td>{{ sub.submitted_at|date:"Y-m-d H:i" }}</td>
+            <td>
+                <span class="badge badge-{{ sub.get_status_display_class }}">
+                    {{ sub.get_status_display }}
+                </span>
+            </td>
+            <td>
+                {% if sub.status == "pending" %}
+                <form method="post" action="{% url 'registration:submission_approve' pk=sub.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="outline" style="padding: 0.25rem 0.5rem; margin: 0;"
+                            onclick="return confirm('{% blocktrans with name=sub.first_name %}Approve registration for {{ name }}?{% endblocktrans %}')">
+                        {% trans "Approve" %}
+                    </button>
+                </form>
+                <a href="{% url 'registration:submission_detail' pk=sub.pk %}" class="secondary" style="margin-left: 0.5rem;">{% trans "Review" %}</a>
+                {% elif sub.status == "approved" and sub.client_file %}
+                <a href="{% url 'clients:client_detail' pk=sub.client_file.pk %}">{% trans "View" %} {{ term.client|default:"Client" }}</a>
+                {% elif sub.status == "waitlist" %}
+                <a href="{% url 'registration:submission_detail' pk=sub.pk %}">{% trans "Review" %}</a>
+                {% else %}
+                <a href="{% url 'registration:submission_detail' pk=sub.pk %}" class="secondary">{% trans "Details" %}</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<div class="empty-state">
+    {% if status_filter %}
+    <p>{% blocktrans with status=status_filter %}No {{ status }} submissions.{% endblocktrans %}</p>
+    {% else %}
+    <p>{% trans "No registration submissions yet." %}</p>
+    {% endif %}
+</div>
+{% endif %}
+
+<a href="{% url 'registration:registration_link_list' %}" role="button" class="outline">{% trans "Back to Registration Links" %}</a>
+{% endblock %}

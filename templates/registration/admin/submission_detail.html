@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ submission.reference_number }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Registration Submission" %}</h1>
+    <p>{{ submission.reference_number }}</p>
+</hgroup>
+
+<!-- Duplicate warning -->
+{% if duplicate_matches %}
+<article aria-label="warning" class="warning">
+    <p><strong>{% trans "Possible Duplicates Found" %}</strong></p>
+    <p>{% trans "The following existing clients may match this registration:" %}</p>
+    <ul>
+        {% for match in duplicate_matches %}
+        <li style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span>
+                <a href="{% url 'clients:client_detail' pk=match.client.pk %}">
+                    {{ match.client.first_name }} {{ match.client.last_name }}
+                </a>
+                {% if match.match_type == "email_exact" %}
+                <span class="badge badge-warning">{% trans "Email match" %}</span>
+                {% elif match.match_type == "name_exact" %}
+                <span class="badge badge-secondary">{% trans "Name match" %}</span>
+                {% endif %}
+                <span class="badge badge-{{ match.confidence }}">{{ match.confidence }}</span>
+            </span>
+            {% if submission.status == "pending" %}
+            <form method="post" action="{% url 'registration:submission_merge' pk=submission.pk %}" style="margin: 0;">
+                {% csrf_token %}
+                <input type="hidden" name="client_id" value="{{ match.client.pk }}">
+                <button type="submit" class="outline secondary" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"
+                        onclick="return confirm('{% trans "Merge this registration with the existing client? The registrant will be enrolled in the program." %}')">
+                    {% trans "Merge" %}
+                </button>
+            </form>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+    <p><small>{% trans "Merging will enrol the existing client in the program instead of creating a new record." %}</small></p>
+</article>
+{% endif %}
+
+<article>
+    <header>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="badge badge-{{ submission.get_status_display_class }}">
+                {{ submission.get_status_display }}
+            </span>
+            <small>
+                {% trans "Submitted:" %} {{ submission.submitted_at|date:"Y-m-d H:i" }}
+            </small>
+        </div>
+    </header>
+
+    <h3>{% trans "Registrant Information" %}</h3>
+    <dl>
+        <dt>{% trans "Name" %}</dt>
+        <dd>{{ submission.first_name }} {{ submission.last_name }}</dd>
+
+        <dt>{% trans "Email" %}</dt>
+        <dd>{{ submission.email|default:"—" }}</dd>
+
+        <dt>{% trans "Phone" %}</dt>
+        <dd>{{ submission.phone|default:"—" }}</dd>
+    </dl>
+
+    <h3>{{ term.program|default:"Program" }}</h3>
+    <dl>
+        <dt>{% trans "Registration Link" %}</dt>
+        <dd>{{ submission.registration_link.title }}</dd>
+
+        <dt>{{ term.program|default:"Program" }}</dt>
+        <dd>{{ submission.registration_link.program.name }}</dd>
+    </dl>
+
+    {% if custom_fields %}
+    <h3>{% trans "Additional Information" %}</h3>
+    <dl>
+        {% for field in custom_fields %}
+        <dt>{{ field.name }}</dt>
+        <dd>{{ field.value|default:"—" }}</dd>
+        {% endfor %}
+    </dl>
+    {% endif %}
+
+    {% if submission.status == "approved" and submission.client_file %}
+    <h3>{% trans "Review Details" %}</h3>
+    <dl>
+        <dt>{% trans "Client Record" %}</dt>
+        <dd><a href="{% url 'clients:client_detail' pk=submission.client_file.pk %}">
+            {{ submission.client_file.first_name }} {{ submission.client_file.last_name }}
+        </a></dd>
+
+        <dt>{% trans "Reviewed by" %}</dt>
+        <dd>{{ submission.reviewed_by.display_name }}</dd>
+
+        <dt>{% trans "Reviewed at" %}</dt>
+        <dd>{{ submission.reviewed_at|date:"Y-m-d H:i" }}</dd>
+    </dl>
+    {% endif %}
+
+    {% if submission.status == "rejected" %}
+    <h3>{% trans "Rejection Details" %}</h3>
+    <dl>
+        <dt>{% trans "Reason" %}</dt>
+        <dd>{{ submission.review_notes }}</dd>
+
+        <dt>{% trans "Rejected by" %}</dt>
+        <dd>{{ submission.reviewed_by.display_name }}</dd>
+
+        <dt>{% trans "Rejected at" %}</dt>
+        <dd>{{ submission.reviewed_at|date:"Y-m-d H:i" }}</dd>
+    </dl>
+    {% endif %}
+
+    <footer>
+        {% if submission.status == "pending" %}
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <!-- Approve button -->
+            <form method="post" action="{% url 'registration:submission_approve' pk=submission.pk %}">
+                {% csrf_token %}
+                <button type="submit" onclick="return confirm('{% trans "Approve this registration and create a client record?" %}')">
+                    {% trans "Approve" %}
+                </button>
+            </form>
+
+            <!-- Waitlist button -->
+            <form method="post" action="{% url 'registration:submission_waitlist' pk=submission.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="secondary">{% trans "Waitlist" %}</button>
+            </form>
+
+            <!-- Reject form (with reason) -->
+            <details>
+                <summary class="outline contrast" style="cursor: pointer;">{% trans "Reject" %}</summary>
+                <form method="post" action="{% url 'registration:submission_reject' pk=submission.pk %}" style="margin-top: 1rem;">
+                    {% csrf_token %}
+                    <label for="reason">{% trans "Rejection Reason" %} <abbr title="{% trans 'required' %}">*</abbr></label>
+                    <textarea id="reason" name="reason" required rows="3" placeholder="{% trans 'Please provide a reason for rejecting this submission.' %}"></textarea>
+                    <button type="submit" class="contrast">{% trans "Reject Submission" %}</button>
+                </form>
+            </details>
+        </div>
+        {% elif submission.status == "waitlist" %}
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+            <!-- Approve from waitlist -->
+            <form method="post" action="{% url 'registration:submission_approve' pk=submission.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="from_waitlist" value="1">
+                <button type="submit" onclick="return confirm('{% trans "Approve this registration and create a client record?" %}')">
+                    {% trans "Approve" %}
+                </button>
+            </form>
+
+            <!-- Reject from waitlist -->
+            <details>
+                <summary class="outline contrast" style="cursor: pointer;">{% trans "Reject" %}</summary>
+                <form method="post" action="{% url 'registration:submission_reject' pk=submission.pk %}" style="margin-top: 1rem;">
+                    {% csrf_token %}
+                    <label for="reason">{% trans "Rejection Reason" %} <abbr title="{% trans 'required' %}">*</abbr></label>
+                    <textarea id="reason" name="reason" required rows="3" placeholder="{% trans 'Please provide a reason for rejecting this submission.' %}"></textarea>
+                    <button type="submit" class="contrast">{% trans "Reject Submission" %}</button>
+                </form>
+            </details>
+        </div>
+        {% endif %}
+    </footer>
+</article>
+
+<a href="{% url 'registration:submission_list' %}" role="button" class="outline">{% trans "Back to Submissions" %}</a>
+{% endblock %}

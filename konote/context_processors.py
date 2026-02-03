@@ -76,3 +76,23 @@ def document_storage(request):
     """
     from apps.clients.helpers import get_document_storage_info
     return {"document_storage": get_document_storage_info()}
+
+
+def pending_submissions(request):
+    """Inject pending registration submissions count for admin badge.
+
+    Only calculated for admin users to avoid unnecessary queries.
+    """
+    if not hasattr(request, "user") or not request.user.is_authenticated:
+        return {}
+
+    if not request.user.is_admin:
+        return {}
+
+    from apps.registration.models import RegistrationSubmission
+
+    count = cache.get("pending_submissions_count")
+    if count is None:
+        count = RegistrationSubmission.objects.filter(status="pending").count()
+        cache.set("pending_submissions_count", count, 60)  # 1 min cache
+    return {"pending_submissions_count": count if count > 0 else None}

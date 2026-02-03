@@ -1,16 +1,15 @@
 """Admin views for managing registration links and submissions."""
-import hashlib
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from apps.clients.models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldDefinition
+from apps.clients.models import ClientFile, CustomFieldDefinition
 
 from .forms import RegistrationLinkForm
 from .models import RegistrationLink, RegistrationSubmission
+from .utils import approve_submission, find_duplicate_clients, merge_with_existing
 
 
 def admin_required(view_func):
@@ -157,8 +156,10 @@ def submission_detail(request, pk):
         pk=pk,
     )
 
-    # Check for duplicates
-    duplicate_client = _find_duplicate_client(submission)
+    # Find potential duplicate clients using comprehensive detection
+    duplicate_matches = []
+    if submission.status == "pending":
+        duplicate_matches = find_duplicate_clients(submission)
 
     # Build list of custom field values with labels
     custom_fields = []
@@ -177,7 +178,7 @@ def submission_detail(request, pk):
 
     return render(request, "registration/admin/submission_detail.html", {
         "submission": submission,
-        "duplicate_client": duplicate_client,
+        "duplicate_matches": duplicate_matches,
         "custom_fields": custom_fields,
         "nav_active": "admin",
     })
@@ -189,44 +190,12 @@ def submission_approve(request, pk):
     submission = get_object_or_404(RegistrationSubmission, pk=pk)
 
     if request.method == "POST":
-        if submission.status != "pending":
+        if submission.status not in ("pending", "waitlist"):
             messages.error(request, "This submission has already been reviewed.")
             return redirect("registration:submission_detail", pk=pk)
 
-        # 1. Create new ClientFile
-        client = ClientFile()
-        client.first_name = submission.first_name
-        client.last_name = submission.last_name
-        client.consent_given_at = submission.submitted_at
-        client.consent_type = "registration_form"
-        client.save()
-
-        # 2. Copy custom field values
-        for field_id, value in submission.field_values.items():
-            try:
-                field_def = CustomFieldDefinition.objects.get(pk=field_id)
-                detail_value = ClientDetailValue(
-                    client_file=client,
-                    field_def=field_def,
-                )
-                detail_value.set_value(str(value))
-                detail_value.save()
-            except CustomFieldDefinition.DoesNotExist:
-                pass  # Skip unknown fields
-
-        # 3. Create program enrolment
-        ClientProgramEnrolment.objects.create(
-            client_file=client,
-            program=submission.registration_link.program,
-            status="enrolled",
-        )
-
-        # 4. Update submission
-        submission.status = "approved"
-        submission.client_file = client
-        submission.reviewed_by = request.user
-        submission.reviewed_at = timezone.now()
-        submission.save()
+        # Use the utility function to create client and enrol
+        client = approve_submission(submission, reviewed_by=request.user)
 
         messages.success(
             request,
@@ -243,7 +212,7 @@ def submission_reject(request, pk):
     submission = get_object_or_404(RegistrationSubmission, pk=pk)
 
     if request.method == "POST":
-        if submission.status != "pending":
+        if submission.status not in ("pending", "waitlist"):
             messages.error(request, "This submission has already been reviewed.")
             return redirect("registration:submission_detail", pk=pk)
 
@@ -280,6 +249,39 @@ def submission_waitlist(request, pk):
         submission.save()
 
         messages.success(request, "Submission moved to waitlist.")
+        return redirect("registration:submission_list")
+
+    return redirect("registration:submission_detail", pk=pk)
+
+
+@login_required
+def submission_merge(request, pk):
+    """Merge a submission with an existing client instead of creating a new one."""
+    submission = get_object_or_404(RegistrationSubmission, pk=pk)
+
+    if request.method == "POST":
+        if submission.status != "pending":
+            messages.error(request, "This submission has already been reviewed.")
+            return redirect("registration:submission_detail", pk=pk)
+
+        client_id = request.POST.get("client_id")
+        if not client_id:
+            messages.error(request, "No client selected for merge.")
+            return redirect("registration:submission_detail", pk=pk)
+
+        try:
+            existing_client = ClientFile.objects.get(pk=client_id)
+        except ClientFile.DoesNotExist:
+            messages.error(request, "Selected client not found.")
+            return redirect("registration:submission_detail", pk=pk)
+
+        # Use the utility function to merge
+        client = merge_with_existing(submission, existing_client, request.user)
+
+        messages.success(
+            request,
+            f"Merged with existing client {client.first_name} {client.last_name}.",
+        )
         return redirect("registration:submission_list")
 
     return redirect("registration:submission_detail", pk=pk)

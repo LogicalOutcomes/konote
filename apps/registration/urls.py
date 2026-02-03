@@ -66,4 +66,9 @@ urlpatterns = [
         admin_views.submission_waitlist,
         name="submission_waitlist",
     ),
+    path(
+        "admin/submissions/<int:pk>/merge/",
+        admin_views.submission_merge,
+        name="submission_merge",
+    ),
 ]

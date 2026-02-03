@@ -92,6 +92,7 @@ TEMPLATES = [
                 "konote.context_processors.instance_settings",
                 "konote.context_processors.user_roles",
                 "konote.context_processors.document_storage",
+                "konote.context_processors.pending_submissions",
             ],
         },
     },
