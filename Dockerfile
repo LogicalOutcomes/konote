@@ -12,8 +12,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Collect static files
-RUN python manage.py collectstatic --noinput --settings=konote.settings.production 2>/dev/null || true
+# Collect static files (errors shown for debugging)
+RUN FIELD_ENCRYPTION_KEY=dummy-build-key SECRET_KEY=dummy-build-key ALLOWED_HOSTS=* python manage.py collectstatic --noinput --settings=konote.settings.production
 
 # Switch to non-root user
 USER konote

@@ -1,0 +1,4 @@
+nul
+venv/
+__pycache__/
+.git/
