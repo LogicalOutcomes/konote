@@ -125,6 +125,21 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
 # CSP — Content Security Policy
+# ─────────────────────────────────────────────────────────────────────
+# Controls which resources the browser is allowed to load.
+#
+#   default-src 'self'         — fallback: only same-origin resources
+#   script-src  unpkg.com      — HTMX is loaded from unpkg CDN
+#   style-src   jsdelivr.net   — Pico CSS is loaded from jsDelivr CDN
+#               'unsafe-inline' — required by Pico CSS (see production.py note)
+#   img-src     data:          — allows inline data-URI images (e.g. Chart.js)
+#   connect-src 'self'         — HTMX fetch/XHR requests to same origin only
+#   font-src    'self'         — no external font CDNs
+#   frame-src   'none'         — no iframes allowed
+#   object-src  'none'         — no plugins (Flash, Java, etc.)
+#   base-uri    'self'         — prevents <base> tag injection attacks
+#   form-action 'self'         — forms can only submit to same origin
+# ─────────────────────────────────────────────────────────────────────
 CSP_DEFAULT_SRC = ("'self'",)
 CSP_SCRIPT_SRC = ("'self'", "https://unpkg.com")
 CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net")
@@ -133,6 +148,8 @@ CSP_CONNECT_SRC = ("'self'",)
 CSP_FONT_SRC = ("'self'",)
 CSP_FRAME_SRC = ("'none'",)
 CSP_OBJECT_SRC = ("'none'",)
+CSP_BASE_URI = ("'self'",)
+CSP_FORM_ACTION = ("'self'",)
 
 # Internationalization
 LANGUAGE_CODE = "en-ca"

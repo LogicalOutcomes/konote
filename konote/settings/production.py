@@ -12,3 +12,17 @@ SECURE_HSTS_SECONDS = 31536000  # 1 year
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# CSP — production overrides
+# ─────────────────────────────────────────────────────────────────────
+# Report URI: set CSP_REPORT_URI_ENDPOINT in your environment to receive
+# browser reports when a CSP violation occurs (e.g. a Sentry or report-uri
+# endpoint). Leave unset to disable reporting.
+#
+# Note on 'unsafe-inline' for styles: Pico CSS currently requires it.
+# If you vendor Pico locally in future, you can remove 'unsafe-inline'
+# from CSP_STYLE_SRC in base.py for a tighter policy.
+# ─────────────────────────────────────────────────────────────────────
+_csp_report_uri = os.environ.get("CSP_REPORT_URI_ENDPOINT")
+if _csp_report_uri:
+    CSP_REPORT_URI = (_csp_report_uri,)

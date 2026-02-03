@@ -59,8 +59,9 @@ def _azure_login_redirect(request):
     return azure.authorize_redirect(request, redirect_uri)
 
 
+@ratelimit(key="ip", rate="10/m", method=["GET", "POST"], block=True)
 def azure_callback(request):
-    """Handle Azure AD OIDC callback."""
+    """Handle Azure AD OIDC callback (rate-limited to prevent abuse)."""
     from authlib.integrations.django_client import OAuth
     from apps.auth_app.models import User
 

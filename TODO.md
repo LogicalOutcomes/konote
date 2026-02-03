@@ -8,9 +8,9 @@ _Nothing flagged._
 
 **Phase 7: Hardening & Deployment**
 - [ ] Run seed_event_types management command on first deploy — (SEED1)
-- [ ] Lock down audit DB permissions at deploy time, not after all phases — (SEC1)
-- [ ] Tune CSP and rate limiting for production — (SEC4)
-- [ ] Create encryption key rotation management command — (SEC5)
+- [ ] 🔨 Lock down audit DB permissions at deploy time, not after all phases — (SEC1)
+- [x] Tune CSP and rate limiting for production — 2026-02-02 (SEC4)
+- [ ] 🔨 Create encryption key rotation management command — (SEC5)
 - [ ] Write deployment guide for Azure — (DOC1)
 - [ ] Write deployment guide for Elest.io — (DOC2)
 - [ ] Write deployment guide for Railway — (DOC3)
