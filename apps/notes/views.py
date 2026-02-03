@@ -10,6 +10,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from apps.auth_app.decorators import minimum_role
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.plans.models import PlanTarget, PlanTargetMetric
 from apps.programs.models import UserProgramRole
@@ -19,11 +20,12 @@ from .models import MetricValue, ProgressNote, ProgressNoteTarget
 
 
 def _get_client_or_403(request, client_id):
-    """Return client if user has access, otherwise 403."""
+    """Return client if user has access, otherwise 403.
+
+    Access is based on program roles — admins without program roles cannot access.
+    """
     client = get_object_or_404(ClientFile, pk=client_id)
     user = request.user
-    if user.is_admin:
-        return client
     user_program_ids = set(
         UserProgramRole.objects.filter(user=user, status="active")
         .values_list("program_id", flat=True)
@@ -94,6 +96,7 @@ def _build_target_forms(client, post_data=None):
 
 
 @login_required
+@minimum_role("staff")
 def note_list(request, client_id):
     """Notes timeline for a client with filtering and pagination."""
     client = _get_client_or_403(request, client_id)
@@ -142,6 +145,7 @@ def note_list(request, client_id):
 
 
 @login_required
+@minimum_role("staff")
 def quick_note_create(request, client_id):
     """Create a quick note for a client."""
     client = _get_client_or_403(request, client_id)
@@ -169,6 +173,7 @@ def quick_note_create(request, client_id):
 
 
 @login_required
+@minimum_role("staff")
 def note_create(request, client_id):
     """Create a full structured progress note with target entries and metric values."""
     client = _get_client_or_403(request, client_id)
@@ -247,6 +252,7 @@ def note_create(request, client_id):
 
 
 @login_required
+@minimum_role("staff")
 def note_detail(request, note_id):
     """HTMX partial: expanded view of a single note."""
     note = get_object_or_404(
@@ -270,6 +276,7 @@ def note_detail(request, note_id):
 
 
 @login_required
+@minimum_role("staff")
 def note_summary(request, note_id):
     """HTMX partial: collapsed summary of a single note (reverses note_detail expand)."""
     note = get_object_or_404(
@@ -283,16 +290,18 @@ def note_summary(request, note_id):
 
 
 @login_required
+@minimum_role("staff")
 def note_cancel(request, note_id):
-    """Cancel a progress note (staff: own notes within 24h, admin: any)."""
+    """Cancel a progress note (staff: own notes within 24h, program_manager: any in their program)."""
     note = get_object_or_404(ProgressNote, pk=note_id)
     client = _get_client_or_403(request, note.client_file_id)
     if client is None:
         return HttpResponseForbidden("You do not have access to this client.")
 
     user = request.user
-    # Permission check
-    if not user.is_admin:
+    # Permission check — program managers can cancel any note in their programs
+    user_role = getattr(request, "user_program_role", None)
+    if user_role != "program_manager":
         if note.author_id != user.pk:
             return HttpResponseForbidden("You can only cancel your own notes.")
         age = timezone.now() - note.created_at

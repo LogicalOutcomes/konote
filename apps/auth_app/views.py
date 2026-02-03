@@ -40,7 +40,11 @@ def _local_login(request):
         except User.DoesNotExist:
             error = "Invalid username or password."
 
-    return render(request, "auth/login.html", {"error": error, "auth_mode": "local"})
+    return render(request, "auth/login.html", {
+        "error": error,
+        "auth_mode": "local",
+        "demo_mode": settings.DEMO_MODE,
+    })
 
 
 def _azure_login_redirect(request):
@@ -102,6 +106,37 @@ def azure_callback(request):
 
     login(request, user)
     _audit_login(request, user)
+    return redirect("/")
+
+
+def demo_login(request, role):
+    """Quick-login as a demo user. Only available when DEMO_MODE is enabled."""
+    if not settings.DEMO_MODE:
+        from django.http import Http404
+        raise Http404
+
+    from apps.auth_app.models import User
+
+    demo_usernames = {
+        "receptionist": "demo-receptionist",
+        "staff": "demo-counsellor",
+        "manager": "demo-manager",
+        "admin": "demo-admin",
+    }
+    username = demo_usernames.get(role)
+    if not username:
+        from django.http import Http404
+        raise Http404
+
+    try:
+        user = User.objects.get(username=username, is_active=True)
+    except User.DoesNotExist:
+        from django.http import Http404
+        raise Http404
+
+    login(request, user)
+    user.last_login_at = timezone.now()
+    user.save(update_fields=["last_login_at"])
     return redirect("/")
 
 

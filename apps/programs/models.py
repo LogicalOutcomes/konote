@@ -29,7 +29,8 @@ class UserProgramRole(models.Model):
     """Links a user to a program with a specific role."""
 
     ROLE_CHOICES = [
-        ("staff", "Staff"),
+        ("receptionist", "Receptionist"),
+        ("staff", "Counsellor"),
         ("program_manager", "Program Manager"),
     ]
     STATUS_CHOICES = [

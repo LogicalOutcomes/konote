@@ -12,9 +12,16 @@ from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, Custo
 
 
 def _get_accessible_programs(user):
-    """Return programs the user can access."""
+    """Return programs the user can access.
+
+    Admins without program roles get no programs (they manage system config, not client data).
+    """
     if user.is_admin:
-        return Program.objects.filter(status="active")
+        # Admins see programs for management; if they also have program roles, include those
+        admin_program_ids = UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True)
+        if admin_program_ids:
+            return Program.objects.filter(pk__in=admin_program_ids, status="active")
+        return Program.objects.none()
     return Program.objects.filter(
         pk__in=UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True),
         status="active",
@@ -25,9 +32,8 @@ def _get_accessible_clients(user):
     """Return client queryset scoped to user's programs.
 
     Uses prefetch_related to avoid N+1 queries when displaying enrolments.
+    Admins without program roles see no clients.
     """
-    if user.is_admin:
-        return ClientFile.objects.prefetch_related("enrolments__program").all()
     program_ids = UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True)
     client_ids = ClientProgramEnrolment.objects.filter(
         program_id__in=program_ids, status="enrolled"
@@ -157,6 +163,7 @@ def client_detail(request, client_id):
         "enrolments": enrolments,
         "custom_data": custom_data,
         "active_tab": "info",
+        "user_role": getattr(request, "user_program_role", None),
     }
     # HTMX tab switch — return only the tab content partial
     if request.headers.get("HX-Request"):

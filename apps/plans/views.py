@@ -31,11 +31,10 @@ from .models import (
 def _can_edit_plan(user, client_file):
     """
     Return True if the user may modify this client's plan.
-    Admins can always edit. Programme managers can edit if they manage a
-    programme the client is enrolled in. Staff cannot edit.
+    Programme managers can edit if they manage a programme the client is
+    enrolled in. Staff and receptionists cannot edit.
+    Admins need a programme manager role to edit.
     """
-    if user.is_admin:
-        return True
     # Get programmes this client is enrolled in
     enrolled_program_ids = ClientProgramEnrolment.objects.filter(
         client_file=client_file, status="enrolled"

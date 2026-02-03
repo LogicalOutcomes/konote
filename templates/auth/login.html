@@ -37,6 +37,21 @@
             <a href="/auth/login/" role="button">Sign in with Microsoft</a>
             {% endif %}
         </article>
+
+        {% if demo_mode %}
+        <article>
+            <hgroup>
+                <h3>Try the Demo</h3>
+                <p>Sign in instantly as a demo user to explore the system</p>
+            </hgroup>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                <a href="/auth/demo-login/receptionist/" role="button" class="secondary">Receptionist</a>
+                <a href="/auth/demo-login/staff/" role="button" class="secondary">Counsellor</a>
+                <a href="/auth/demo-login/manager/" role="button" class="secondary">Manager</a>
+                <a href="/auth/demo-login/admin/" role="button" class="secondary">Administrator</a>
+            </div>
+        </article>
+        {% endif %}
     </main>
 </body>
 </html>

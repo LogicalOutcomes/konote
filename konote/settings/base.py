@@ -21,6 +21,9 @@ ALLOWED_HOSTS = []
 # Auth mode: "azure" or "local"
 AUTH_MODE = os.environ.get("AUTH_MODE", "local")
 
+# Demo mode — shows quick-login buttons on login page
+DEMO_MODE = os.environ.get("DEMO_MODE", "").lower() in ("1", "true", "yes")
+
 # Application definition
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -72,6 +75,7 @@ TEMPLATES = [
                 "konote.context_processors.terminology",
                 "konote.context_processors.features",
                 "konote.context_processors.instance_settings",
+                "konote.context_processors.user_roles",
             ],
         },
     },

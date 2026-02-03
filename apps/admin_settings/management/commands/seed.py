@@ -6,6 +6,7 @@ Run with: python manage.py seed
 import json
 from pathlib import Path
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 
@@ -17,6 +18,8 @@ class Command(BaseCommand):
         self._seed_feature_toggles()
         self._seed_instance_settings()
         self._seed_event_types()
+        if settings.DEMO_MODE:
+            self._seed_demo_data()
         self.stdout.write(self.style.SUCCESS("Seed data loaded successfully."))
 
     def _seed_event_types(self):
@@ -95,3 +98,66 @@ class Command(BaseCommand):
             if was_created:
                 created += 1
         self.stdout.write(f"  Instance settings: {created} created.")
+
+    def _seed_demo_data(self):
+        """Create demo users, a demo program, and sample clients when DEMO_MODE is on."""
+        from apps.auth_app.models import User
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.programs.models import Program, UserProgramRole
+
+        # Create demo program
+        program, _ = Program.objects.get_or_create(
+            name="Demo Program",
+            defaults={"description": "A sample program for exploring KoNote.", "colour_hex": "#6366F1"},
+        )
+
+        # Demo users: (username, display_name, role, is_admin)
+        demo_users = [
+            ("demo-receptionist", "Dana Receptionist", "receptionist", False),
+            ("demo-counsellor", "Casey Counsellor", "staff", False),
+            ("demo-manager", "Morgan Manager", "program_manager", False),
+            ("demo-admin", "Alex Admin", None, True),
+        ]
+
+        for username, display_name, role, is_admin in demo_users:
+            user, created = User.objects.get_or_create(
+                username=username,
+                defaults={
+                    "display_name": display_name,
+                    "is_admin": is_admin,
+                },
+            )
+            if created:
+                user.set_password("demo1234")
+                user.save()
+            # Assign program role (non-admin users)
+            if role:
+                UserProgramRole.objects.get_or_create(
+                    user=user, program=program,
+                    defaults={"role": role},
+                )
+
+        # Create sample clients
+        sample_clients = [
+            ("Jordan", "Rivera", "2000-03-15", "DEMO-001"),
+            ("Taylor", "Chen", "1995-07-22", "DEMO-002"),
+            ("Avery", "Johnson", "1988-11-03", "DEMO-003"),
+            ("Riley", "Patel", "2001-01-09", "DEMO-004"),
+            ("Sam", "Williams", "1992-06-18", "DEMO-005"),
+        ]
+
+        for first, last, dob, record_id in sample_clients:
+            existing = ClientFile.objects.filter(record_id=record_id).first()
+            if not existing:
+                client = ClientFile()
+                client.first_name = first
+                client.last_name = last
+                client.birth_date = dob
+                client.record_id = record_id
+                client.status = "active"
+                client.save()
+                ClientProgramEnrolment.objects.create(
+                    client_file=client, program=program, status="enrolled",
+                )
+
+        self.stdout.write("  Demo data: users, program, and sample clients created.")

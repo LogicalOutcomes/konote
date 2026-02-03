@@ -31,7 +31,9 @@
             </a></li>
         </ul>
         <ul>
+            {% if not is_admin_only %}
             <li><a href="/">{{ term.client_plural|default:"Clients" }}</a></li>
+            {% endif %}
             {% if features.programs %}
             <li><a href="/programs/">{{ term.program_plural|default:"Programs" }}</a></li>
             {% endif %}
@@ -45,6 +47,7 @@
                         <li><a href="/admin/templates/">Templates</a></li>
                         <li><a href="/events/admin/types/">Event Types</a></li>
                         <li><a href="/admin/settings/">Settings</a></li>
+                        <li><a href="/auth/invites/">Invites</a></li>
                         <li><a href="/admin/audit/">Audit Log</a></li>
                     </ul>
                 </details>

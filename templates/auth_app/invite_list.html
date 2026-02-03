@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Invites — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>Invites</h1>
+    <p>Manage invite links for new users</p>
+</hgroup>
+
+<p><a href="{% url 'auth_app:invite_create' %}" role="button">+ New Invite</a></p>
+
+<figure>
+<table role="grid">
+    <thead>
+        <tr>
+            <th scope="col">Role</th>
+            <th scope="col">Programs</th>
+            <th scope="col">Created</th>
+            <th scope="col">Expires</th>
+            <th scope="col">Status</th>
+            <th scope="col">Link</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for invite in invites %}
+        <tr>
+            <td>{{ invite.get_role_display }}</td>
+            <td>
+                {% for p in invite.programs.all %}
+                    <span class="badge" style="background-color: {{ p.colour_hex }};">{{ p.name }}</span>
+                {% empty %}
+                    —
+                {% endfor %}
+            </td>
+            <td>{{ invite.created_at|date:"Y-m-d" }} by {{ invite.created_by.display_name }}</td>
+            <td>{{ invite.expires_at|date:"Y-m-d" }}</td>
+            <td>
+                {% if invite.is_used %}
+                    <span class="badge badge-success">Used by {{ invite.used_by.display_name }}</span>
+                {% elif invite.is_expired %}
+                    <span class="badge badge-warning">Expired</span>
+                {% else %}
+                    <span class="badge badge-neutral">Pending</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if invite.is_valid %}
+                <input type="text" readonly value="{{ request.scheme }}://{{ request.get_host }}/auth/join/{{ invite.code }}/"
+                       style="font-size: 0.8em; padding: 0.25em;" aria-label="Invite link"
+                       onclick="this.select()">
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6">No invites yet. Create one to get started.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% endblock %}

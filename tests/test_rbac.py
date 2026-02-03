@@ -116,7 +116,18 @@ class ClientAccessTest(TestCase):
         response = self.middleware(request)
         self.assertEqual(response.status_code, 403)
 
-    def test_admin_bypasses_program_check(self):
+    def test_admin_without_program_role_blocked_from_client(self):
+        """Admins without program roles cannot access client data."""
+        request = self.factory.get(f"/clients/{self.client.pk}/")
+        request.user = self.admin_user
+        response = self.middleware(request)
+        self.assertEqual(response.status_code, 403)
+
+    def test_admin_with_program_role_can_access_client(self):
+        """Admins who also have a program role can access client data."""
+        UserProgramRole.objects.create(
+            user=self.admin_user, program=self.program_a, role="program_manager"
+        )
         request = self.factory.get(f"/clients/{self.client.pk}/")
         request.user = self.admin_user
         response = self.middleware(request)

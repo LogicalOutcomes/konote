@@ -23,10 +23,12 @@
 <nav aria-label="Client tabs">
     <ul>
         <li>{% if active_tab == "info" %}<strong>Info</strong>{% else %}<a href="{% url 'clients:client_detail' client_id=client.pk %}" hx-get="{% url 'clients:client_detail' client_id=client.pk %}" hx-target="#tab-content" hx-swap="innerHTML" hx-push-url="true">Info</a>{% endif %}</li>
+        {% if user_role != "receptionist" %}
         <li>{% if active_tab == "plan" %}<strong>{{ term.plan|default:"Plan" }}</strong>{% else %}<a href="{% url 'plans:plan_view' client_id=client.pk %}" hx-get="{% url 'plans:plan_view' client_id=client.pk %}" hx-target="#tab-content" hx-swap="innerHTML" hx-push-url="true">{{ term.plan|default:"Plan" }}</a>{% endif %}</li>
         <li>{% if active_tab == "notes" %}<strong>{{ term.progress_note|default:"Notes" }}</strong>{% else %}<a href="{% url 'notes:note_list' client_id=client.pk %}" hx-get="{% url 'notes:note_list' client_id=client.pk %}" hx-target="#tab-content" hx-swap="innerHTML" hx-push-url="true">{{ term.progress_note|default:"Notes" }}</a>{% endif %}</li>
         <li>{% if active_tab == "events" %}<strong>Events</strong>{% else %}<a href="{% url 'events:event_list' client_id=client.pk %}" hx-get="{% url 'events:event_list' client_id=client.pk %}" hx-target="#tab-content" hx-swap="innerHTML" hx-push-url="true">Events</a>{% endif %}</li>
         <li>{% if active_tab == "analysis" %}<strong>Analysis</strong>{% else %}<a href="{% url 'reports:client_analysis' client_id=client.pk %}" hx-get="{% url 'reports:client_analysis' client_id=client.pk %}" hx-target="#tab-content" hx-swap="innerHTML" hx-push-url="true">Analysis</a>{% endif %}</li>
+        {% endif %}
     </ul>
 </nav>
 
