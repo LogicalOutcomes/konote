@@ -30,8 +30,14 @@
             <li><a href="/" class="contrast">
                 <strong>{{ site.product_name|default:"KoNote" }}</strong>
             </a></li>
+            <li>
+                <!-- Mobile menu toggle -->
+                <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="{% trans 'Toggle navigation menu' %}">
+                    <span class="nav-toggle-icon" aria-hidden="true"></span>
+                </button>
+            </li>
         </ul>
-        <ul>
+        <ul id="nav-menu">
             {% if not is_admin_only %}
             <li><a href="/"{% if nav_active == "clients" %} class="nav-active"{% endif %}>{{ term.client_plural|default:"Clients" }}</a></li>
             {% endif %}
@@ -52,6 +58,7 @@
                         <li><a href="/admin/settings/">{% trans "Settings" %}</a></li>
                         <li><a href="/auth/invites/">{% trans "Invites" %}</a></li>
                         <li><a href="/admin/audit/">{% trans "Audit Log" %}</a></li>
+                        <li><a href="/reports/client-data-export/">{% trans "Export Client Data" %}</a></li>
                     </ul>
                 </details>
             </li>

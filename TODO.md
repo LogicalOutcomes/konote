@@ -11,7 +11,6 @@ _Nothing flagged._
 - [x] Fix test suite configuration error — (TEST2)
 - [x] Add CSV export for all client data — (EXP1)
 - [ ] Create first-run setup wizard — (SETUP1)
-- [ ] 🔨 Mobile responsiveness pass — (UI1)
 - [ ] Add backup automation examples to docs — (OPS1)
 - [ ] Add client search filters (program, status, date) — (UX19)
 - [ ] Add note auto-save / draft recovery — (UX21)
@@ -96,6 +95,7 @@ These features are intentionally excluded. See technical documentation for ratio
 
 ## Recently Done
 
+- [x] Mobile responsiveness pass — 2026-02-03 (UI1)
 - [x] Add CSV export for all client data — 2026-02-03 (EXP1)
 - [x] Add consent checkbox to note entry — 2026-02-03 (PRIV2)
 - [x] Iframe embed support for registration forms — 2026-02-03 (REG8)

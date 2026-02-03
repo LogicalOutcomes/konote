@@ -883,3 +883,339 @@ article[aria-label="notification"].fading-out {
     padding: var(--kn-space-xs) var(--kn-space-base);
     margin: 0;
 }
+
+/* ============================================
+   MOBILE RESPONSIVE STYLES
+   ============================================ */
+
+/* ---- Mobile navigation ---- */
+/* Hide mobile menu toggle by default (shown via JS when nav needs collapsing) */
+.nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--kn-space-sm);
+    color: var(--kn-text);
+    font-size: 1.5rem;
+    line-height: 1;
+}
+.nav-toggle:hover,
+.nav-toggle:focus {
+    color: var(--kn-primary);
+}
+.nav-toggle-icon {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: currentColor;
+    position: relative;
+}
+.nav-toggle-icon::before,
+.nav-toggle-icon::after {
+    content: "";
+    position: absolute;
+    width: 24px;
+    height: 2px;
+    background: currentColor;
+    left: 0;
+}
+.nav-toggle-icon::before { top: -7px; }
+.nav-toggle-icon::after { top: 7px; }
+
+@media (max-width: 768px) {
+    /* Show hamburger menu button */
+    .nav-toggle {
+        display: block;
+    }
+
+    /* Collapse nav items on mobile */
+    body > nav {
+        position: relative;
+    }
+    #nav-menu {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        background: var(--kn-card-bg);
+        border-bottom: 1px solid var(--kn-border-light);
+        box-shadow: var(--kn-shadow-card);
+        padding: var(--kn-space-sm) 0;
+        display: none;
+        z-index: 1000;
+    }
+    #nav-menu.nav-open {
+        display: flex;
+    }
+    #nav-menu li {
+        width: 100%;
+        padding: 0 var(--kn-space-base);
+    }
+    #nav-menu li a {
+        display: block;
+        padding: var(--kn-space-sm) 0;
+    }
+    /* Fix dropdown positioning on mobile */
+    body > nav details.dropdown {
+        position: static;
+    }
+    body > nav details.dropdown ul {
+        position: static;
+        box-shadow: none;
+        padding-left: var(--kn-space-base);
+    }
+    /* Language switcher full width on mobile */
+    body > nav select {
+        width: 100%;
+    }
+}
+
+/* ---- Responsive tables ---- */
+/* On mobile, make tables horizontally scrollable */
+@media (max-width: 600px) {
+    figure:has(table) {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-left: calc(-1 * var(--kn-space-base));
+        margin-right: calc(-1 * var(--kn-space-base));
+        padding-left: var(--kn-space-base);
+        padding-right: var(--kn-space-base);
+    }
+
+    /* Remove fixed table layout on mobile */
+    .client-table {
+        table-layout: auto;
+        min-width: 500px;
+    }
+    .client-table th:nth-child(1),
+    .client-table td:nth-child(1),
+    .client-table th:nth-child(2),
+    .client-table td:nth-child(2),
+    .client-table th:nth-child(3),
+    .client-table td:nth-child(3),
+    .client-table th:nth-child(4),
+    .client-table td:nth-child(4) {
+        width: auto;
+    }
+}
+
+/* ---- Tab bar mobile ---- */
+@media (max-width: 600px) {
+    .tab-bar {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+        margin-left: calc(-1 * var(--kn-space-base));
+        margin-right: calc(-1 * var(--kn-space-base));
+        padding-left: var(--kn-space-base);
+        padding-right: var(--kn-space-base);
+    }
+    .tab-bar::-webkit-scrollbar {
+        display: none;
+    }
+    .tab-bar li a {
+        white-space: nowrap;
+        padding: var(--kn-space-sm) var(--kn-space-md);
+    }
+}
+
+/* ---- Client header mobile ---- */
+@media (max-width: 600px) {
+    .client-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--kn-space-sm);
+    }
+    .client-header h2 {
+        font-size: 1.25rem;
+    }
+    .client-actions {
+        margin-left: 0;
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    .client-actions a[role="button"],
+    .client-actions button {
+        flex: 1 1 auto;
+        text-align: center;
+        min-width: 0;
+    }
+}
+
+/* ---- Organization header mobile ---- */
+@media (max-width: 600px) {
+    .org-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    .org-welcome {
+        text-align: center;
+    }
+}
+
+/* ---- Search bar mobile ---- */
+@media (max-width: 600px) {
+    .search-bar {
+        flex-direction: column;
+        gap: var(--kn-space-sm);
+    }
+    .search-input-wrapper {
+        width: 100%;
+    }
+    .search-actions {
+        width: 100%;
+    }
+    .search-actions a[role="button"] {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+/* ---- Action bar mobile ---- */
+@media (max-width: 480px) {
+    .action-bar {
+        flex-direction: column;
+    }
+    .action-bar a[role="button"],
+    .action-bar button {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* ---- Quick links mobile ---- */
+@media (max-width: 600px) {
+    .quick-links {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--kn-space-sm);
+    }
+}
+
+/* ---- Button groups mobile ---- */
+@media (max-width: 480px) {
+    [role="group"] {
+        flex-direction: column;
+    }
+    [role="group"] button,
+    [role="group"] a[role="button"] {
+        width: 100%;
+    }
+}
+
+/* ---- Card header mobile ---- */
+@media (max-width: 480px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--kn-space-xs);
+    }
+}
+
+/* ---- Section card mobile ---- */
+@media (max-width: 480px) {
+    .section-card header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ---- Priority items mobile ---- */
+@media (max-width: 480px) {
+    .priority-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* ---- Timeline mobile ---- */
+@media (max-width: 480px) {
+    .timeline {
+        padding-left: var(--kn-space-base);
+        margin-left: var(--kn-space-xs);
+    }
+    .timeline-item::before {
+        left: calc(-1 * var(--kn-space-base) - 7px);
+        width: 10px;
+        height: 10px;
+    }
+}
+
+/* ---- Toast mobile ---- */
+@media (max-width: 480px) {
+    .toast {
+        left: var(--kn-space-base);
+        right: var(--kn-space-base);
+        transform: none;
+        max-width: none;
+    }
+}
+
+/* ---- Login mobile ---- */
+@media (max-width: 480px) {
+    .login-container {
+        margin-top: 5vh;
+        padding: 0 var(--kn-space-sm);
+    }
+    .login-wordmark {
+        font-size: 1.5rem;
+    }
+}
+
+/* ---- Fieldset mobile ---- */
+@media (max-width: 480px) {
+    #tab-content fieldset,
+    .kn-form fieldset {
+        padding: var(--kn-space-base);
+    }
+}
+
+/* ---- Note rows mobile ---- */
+@media (max-width: 480px) {
+    .note-row-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--kn-space-xs);
+    }
+}
+
+/* ---- Pagination mobile ---- */
+@media (max-width: 480px) {
+    nav.pagination {
+        flex-direction: column;
+        gap: var(--kn-space-sm);
+    }
+}
+
+/* ---- Container padding mobile ---- */
+@media (max-width: 480px) {
+    main.container {
+        padding-left: var(--kn-space-base);
+        padding-right: var(--kn-space-base);
+    }
+}
+
+/* ---- Footer mobile ---- */
+@media (max-width: 480px) {
+    footer.container {
+        padding-top: var(--kn-space-lg);
+        padding-bottom: var(--kn-space-lg);
+    }
+}
+
+/* ---- Pico grid mobile (stack columns on small screens) ---- */
+@media (max-width: 480px) {
+    .grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* ---- Charts mobile ---- */
+@media (max-width: 480px) {
+    .chart-container {
+        max-height: 250px;
+    }
+}
