@@ -1,5 +1,9 @@
 /* KoNote Web — minimal vanilla JS for interactions */
 
+// Enable script execution in HTMX 2.0 swapped content (needed for Chart.js in Analysis tab)
+// This must be set before any HTMX swaps occur
+htmx.config.allowScriptTags = true;
+
 // Tell HTMX to use the loading bar as a global indicator
 document.body.setAttribute("hx-indicator", "#loading-bar");
 
