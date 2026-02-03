@@ -10,7 +10,7 @@ from django.utils import timezone
 @login_required
 def home(request):
     from apps.clients.models import ClientFile, ClientProgramEnrolment
-    from apps.clients.views import _get_accessible_clients
+    from apps.clients.views import _get_accessible_clients, _get_accessible_programs
     from apps.events.models import Alert
     from apps.notes.models import ProgressNote
 
@@ -72,6 +72,9 @@ def home(request):
     # --- Organization name (placeholder — will come from settings later) ---
     org_name = "LogicalOutcomes"
 
+    # --- Accessible programs for search filters ---
+    accessible_programs = _get_accessible_programs(request.user)
+
     return render(request, "clients/home.html", {
         "results": [],
         "query": "",
@@ -84,6 +87,7 @@ def home(request):
         "needs_attention": needs_attention,
         "needs_attention_count": needs_attention_count,
         "org_name": org_name,
+        "accessible_programs": accessible_programs,
     })
 
 

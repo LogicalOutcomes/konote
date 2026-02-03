@@ -17,23 +17,89 @@
 
 <!-- Search and actions bar -->
 <div class="search-bar">
-    <div class="search-input-wrapper">
-        <label for="client-search" class="search-label">{% blocktrans with clients=term.client_plural|default:"clients" %}Search {{ clients }}{% endblocktrans %}</label>
-        <input type="search"
-               id="client-search"
-               name="q"
-               placeholder="{% trans 'Name or ID...' %}"
-               aria-label="{% blocktrans with clients=term.client_plural|default:'clients' %}Search {{ clients }}{% endblocktrans %}"
-               hx-get="{% url 'clients:client_search' %}"
-               hx-trigger="input changed delay:300ms"
-               hx-target="#search-results"
-               hx-indicator="#loading-bar">
-    </div>
+    <form id="search-filters">
+        <div class="search-input-wrapper">
+            <label for="client-search" class="search-label">{% blocktrans with clients=term.client_plural|default:"clients" %}Search {{ clients }}{% endblocktrans %}</label>
+            <input type="search"
+                   id="client-search"
+                   name="q"
+                   placeholder="{% trans 'Name or ID...' %}"
+                   aria-label="{% blocktrans with clients=term.client_plural|default:'clients' %}Search {{ clients }}{% endblocktrans %}"
+                   hx-get="{% url 'clients:client_search' %}"
+                   hx-trigger="input changed delay:300ms"
+                   hx-target="#search-results"
+                   hx-include="#search-filters"
+                   hx-indicator="#loading-bar">
+        </div>
+    </form>
     <div class="search-actions" role="group">
         <a href="{% url 'clients:client_create' %}" role="button">+ {% blocktrans with client=term.client|default:"Client" %}New {{ client }}{% endblocktrans %}</a>
         <a href="{% url 'clients:client_list' %}" role="button" class="outline">{% trans "View All" %}</a>
     </div>
 </div>
+
+<!-- Search filters -->
+<details class="search-filters-panel">
+    <summary>{% trans "Search filters" %}</summary>
+    <div class="filter-row">
+        <div class="filter-field">
+            <label for="filter-status">{% trans "Status" %}</label>
+            <select id="filter-status"
+                    name="status"
+                    form="search-filters"
+                    hx-get="{% url 'clients:client_search' %}"
+                    hx-target="#search-results"
+                    hx-include="#search-filters"
+                    hx-indicator="#loading-bar">
+                <option value="">{% trans "All statuses" %}</option>
+                <option value="active">{% trans "Active" %}</option>
+                <option value="inactive">{% trans "Inactive" %}</option>
+                <option value="discharged">{% trans "Discharged" %}</option>
+            </select>
+        </div>
+        {% if features.programs and accessible_programs %}
+        <div class="filter-field">
+            <label for="filter-program">{{ term.program|default:"Program" }}</label>
+            <select id="filter-program"
+                    name="program"
+                    form="search-filters"
+                    hx-get="{% url 'clients:client_search' %}"
+                    hx-target="#search-results"
+                    hx-include="#search-filters"
+                    hx-indicator="#loading-bar">
+                <option value="">{% blocktrans with programs=term.program_plural|default:"programs" %}All {{ programs }}{% endblocktrans %}</option>
+                {% for prog in accessible_programs %}
+                <option value="{{ prog.pk }}">{{ prog.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        <div class="filter-field">
+            <label for="filter-date-from">{% trans "Created after" %}</label>
+            <input type="date"
+                   id="filter-date-from"
+                   name="date_from"
+                   form="search-filters"
+                   hx-get="{% url 'clients:client_search' %}"
+                   hx-trigger="change"
+                   hx-target="#search-results"
+                   hx-include="#search-filters"
+                   hx-indicator="#loading-bar">
+        </div>
+        <div class="filter-field">
+            <label for="filter-date-to">{% trans "Created before" %}</label>
+            <input type="date"
+                   id="filter-date-to"
+                   name="date_to"
+                   form="search-filters"
+                   hx-get="{% url 'clients:client_search' %}"
+                   hx-trigger="change"
+                   hx-target="#search-results"
+                   hx-include="#search-filters"
+                   hx-indicator="#loading-bar">
+        </div>
+    </div>
+</details>
 
 <!-- Search results (hidden until search) -->
 <div id="search-results" aria-live="polite">

@@ -186,6 +186,103 @@ class ClientViewsTest(TestCase):
         # Should contain table content
         self.assertContains(resp, "Jane Doe")
 
+    # --- Search filter tests (UX19) ---
+
+    def test_search_filter_by_status(self):
+        """Filter search results by status."""
+        active = self._create_client("Active", "Person", [self.prog_a])
+        discharged = self._create_client("Discharged", "Person", [self.prog_a])
+        discharged.status = "discharged"
+        discharged.save()
+
+        self.client.login(username="staff", password="testpass123")
+
+        # Filter to active only
+        resp = self.client.get("/clients/search/?q=person&status=active")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Active Person")
+        self.assertNotContains(resp, "Discharged Person")
+
+        # Filter to discharged only
+        resp = self.client.get("/clients/search/?q=person&status=discharged")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Discharged Person")
+        self.assertNotContains(resp, "Active Person")
+
+    def test_search_filter_by_program(self):
+        """Filter search results by program."""
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        alice = self._create_client("Alice", "Test", [self.prog_a])
+        bob = self._create_client("Bob", "Test", [self.prog_b])
+
+        self.client.login(username="staff", password="testpass123")
+
+        # Filter to Program A
+        resp = self.client.get(f"/clients/search/?q=test&program={self.prog_a.pk}")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Alice Test")
+        self.assertNotContains(resp, "Bob Test")
+
+        # Filter to Program B
+        resp = self.client.get(f"/clients/search/?q=test&program={self.prog_b.pk}")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Bob Test")
+        self.assertNotContains(resp, "Alice Test")
+
+    def test_search_filter_by_date_range(self):
+        """Filter search results by date range."""
+        from django.utils import timezone
+        from datetime import timedelta
+
+        old_client = self._create_client("Old", "Client", [self.prog_a])
+        new_client = self._create_client("New", "Client", [self.prog_a])
+
+        # Set old client to be created 30 days ago
+        old_date = timezone.now() - timedelta(days=30)
+        ClientFile.objects.filter(pk=old_client.pk).update(created_at=old_date)
+
+        self.client.login(username="staff", password="testpass123")
+
+        # Filter to recent clients only (last 7 days)
+        week_ago = (timezone.now() - timedelta(days=7)).strftime("%Y-%m-%d")
+        resp = self.client.get(f"/clients/search/?q=client&date_from={week_ago}")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "New Client")
+        self.assertNotContains(resp, "Old Client")
+
+    def test_search_filters_without_query(self):
+        """Filters should work without a search query."""
+        active = self._create_client("Active", "Person", [self.prog_a])
+        discharged = self._create_client("Discharged", "Person", [self.prog_a])
+        discharged.status = "discharged"
+        discharged.save()
+
+        self.client.login(username="staff", password="testpass123")
+
+        # Filter to active only (no search query)
+        resp = self.client.get("/clients/search/?status=active")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Active Person")
+        self.assertNotContains(resp, "Discharged Person")
+
+    def test_search_combined_filters(self):
+        """Multiple filters should work together."""
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        alice_active = self._create_client("Alice", "Active", [self.prog_a])
+        alice_discharged = self._create_client("Alice", "Discharged", [self.prog_a])
+        alice_discharged.status = "discharged"
+        alice_discharged.save()
+        bob = self._create_client("Bob", "Beta", [self.prog_b])
+
+        self.client.login(username="staff", password="testpass123")
+
+        # Search "Alice" + Program A + Active
+        resp = self.client.get(f"/clients/search/?q=alice&program={self.prog_a.pk}&status=active")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Alice Active")
+        self.assertNotContains(resp, "Alice Discharged")
+        self.assertNotContains(resp, "Bob Beta")
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class CustomFieldTest(TestCase):

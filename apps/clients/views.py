@@ -340,23 +340,79 @@ def client_search(request):
 
     Encrypted fields cannot be searched in SQL — loads accessible clients
     into Python and filters in memory. Acceptable up to ~2,000 clients.
+
+    Supports optional filters:
+    - status: filter by client status (active/inactive/discharged)
+    - program: filter by enrolled program ID
+    - date_from: filter clients created on or after this date
+    - date_to: filter clients created on or before this date
     """
+    from datetime import datetime
+
     query = request.GET.get("q", "").strip().lower()
-    if not query:
+    status_filter = request.GET.get("status", "").strip()
+    program_filter = request.GET.get("program", "").strip()
+    date_from = request.GET.get("date_from", "").strip()
+    date_to = request.GET.get("date_to", "").strip()
+
+    # Check if any filters are active (show results even without search query)
+    has_filters = any([status_filter, program_filter, date_from, date_to])
+
+    if not query and not has_filters:
         return render(request, "clients/_search_results.html", {"results": [], "query": ""})
 
     clients = _get_accessible_clients(request.user)
+
+    # Parse date filters
+    date_from_parsed = None
+    date_to_parsed = None
+    if date_from:
+        try:
+            date_from_parsed = datetime.strptime(date_from, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+    if date_to:
+        try:
+            date_to_parsed = datetime.strptime(date_to, "%Y-%m-%d").date()
+        except ValueError:
+            pass
+
     results = []
     for client in clients:
-        name = f"{client.first_name} {client.last_name}".lower()
-        record = (client.record_id or "").lower()
-        if query in name or query in record:
-            programs = [e.program for e in client.enrolments.all() if e.status == "enrolled"]
-            results.append({
-                "client": client,
-                "name": f"{client.first_name} {client.last_name}",
-                "programs": programs,
-            })
+        # Apply status filter
+        if status_filter and client.status != status_filter:
+            continue
+
+        # Apply date filters
+        if date_from_parsed and client.created_at.date() < date_from_parsed:
+            continue
+        if date_to_parsed and client.created_at.date() > date_to_parsed:
+            continue
+
+        programs = [e.program for e in client.enrolments.all() if e.status == "enrolled"]
+
+        # Apply program filter
+        if program_filter:
+            program_ids = [p.pk for p in programs]
+            try:
+                if int(program_filter) not in program_ids:
+                    continue
+            except ValueError:
+                pass
+
+        # Apply text search (if query provided)
+        if query:
+            name = f"{client.first_name} {client.last_name}".lower()
+            record = (client.record_id or "").lower()
+            if query not in name and query not in record:
+                continue
+
+        results.append({
+            "client": client,
+            "name": f"{client.first_name} {client.last_name}",
+            "programs": programs,
+        })
+
     results.sort(key=lambda c: c["name"].lower())
     return render(request, "clients/_search_results.html", {"results": results[:50], "query": query})
 

@@ -479,18 +479,36 @@ body > nav a.nav-active {
 }
 
 /* ---- Filter bar (collapsible, open by default) ---- */
-details.filter-bar {
+details.filter-bar,
+details.search-filters-panel {
     background: var(--kn-primary-subtle);
     border: 1px solid var(--kn-border-light);
     border-radius: var(--kn-radius-card);
     padding: var(--kn-space-base);
     margin-bottom: var(--kn-space-lg);
 }
-details.filter-bar summary {
+details.filter-bar summary,
+details.search-filters-panel summary {
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
     margin-bottom: var(--kn-space-sm);
+}
+details.search-filters-panel {
+    margin-top: var(--kn-space-sm);
+}
+details.search-filters-panel[open] summary {
+    margin-bottom: var(--kn-space-base);
+}
+.search-filters-panel label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    margin-bottom: var(--kn-space-xs);
+}
+.search-filters-panel select,
+.search-filters-panel input {
+    font-size: 0.8125rem;
+    margin-bottom: 0;
 }
 .filter-bar label {
     font-size: 0.8125rem;

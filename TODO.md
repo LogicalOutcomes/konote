@@ -11,8 +11,6 @@ _Nothing flagged._
 - [x] Fix test suite configuration error — (TEST2)
 - [x] Add CSV export for all client data — (EXP1)
 - [ ] Add backup automation examples to docs — (OPS1)
-- [ ] Add client search filters (program, status, date) — (UX19)
-- [x] Add note auto-save / draft recovery — (UX21)
 - [ ] Create "Quick Start for Staff" training doc — (DOC18)
 
 ## Roadmap — Prioritized Extensions
@@ -88,12 +86,11 @@ These features are intentionally excluded. See technical documentation for ratio
 - [ ] Encrypted search optimisation (search hash field) for large client lists — (PERF1)
 - [ ] Bulk operations for discharge, assign, export — (UX17)
 - [ ] Keyboard shortcuts and command palette — (UX18)
-- [ ] Client search by program, status, date, case manager — (UX19)
 - [ ] Merge home search and client list into single unified page — (UX20)
-- [x] Note auto-save / draft recovery — (UX21)
 
 ## Recently Done
 
+- [x] Add client search filters (program, status, date) — 2026-02-03 (UX19)
 - [x] Note auto-save / draft recovery — 2026-02-03 (UX21)
 - [x] Mobile responsiveness pass — 2026-02-03 (UI1)
 - [x] Add CSV export for all client data — 2026-02-03 (EXP1)
