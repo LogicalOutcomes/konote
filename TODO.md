@@ -10,8 +10,8 @@ _Nothing flagged._
 
 - [x] Fix test suite configuration error — (TEST2)
 - [x] Add CSV export for all client data — (EXP1)
-- [ ] Add backup automation examples to docs — (OPS1)
-- [ ] Create "Quick Start for Staff" training doc — (DOC18)
+- [x] Add backup automation examples to docs — (OPS1)
+- [x] Create "Quick Start for Staff" training doc — (DOC18)
 
 ## Roadmap — Prioritized Extensions
 
@@ -88,7 +88,6 @@ These features are intentionally excluded. See technical documentation for ratio
 - [ ] GDPR toolkit UI — data export, right to erasure, consent management — (GDPR1)
 - [ ] Mobile-responsive optimisation pass — (UI1)
 - [ ] First-run setup wizard — Claude skill + import command — See `tasks/setup-wizard-design.md` (SETUP1)
-- [ ] Automated backups documentation — (OPS1)
 - [ ] Encrypted search optimisation (search hash field) for large client lists — (PERF1)
 - [ ] Bulk operations for discharge, assign, export — (UX17)
 - [ ] Keyboard shortcuts and command palette — (UX18)
@@ -96,6 +95,7 @@ These features are intentionally excluded. See technical documentation for ratio
 
 ## Recently Done
 
+- [x] Add backup automation examples to docs — 2026-02-03 (OPS1)
 - [x] Add client search filters (program, status, date) — 2026-02-03 (UX19)
 - [x] Note auto-save / draft recovery — 2026-02-03 (UX21)
 - [x] Mobile responsiveness pass — 2026-02-03 (UI1)

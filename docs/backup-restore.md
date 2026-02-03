@@ -312,7 +312,104 @@ If your Railway database is corrupted:
 
 ## Automated Backups
 
-### Option 1: Cron Job (Linux/Mac or WSL on Windows)
+### Option 1: Windows Task Scheduler (Windows Servers)
+
+If you're running KoNote on Windows (not using WSL):
+
+#### Create a Backup Script
+
+Save this as `C:\KoNote\backup_konote.ps1`:
+
+```powershell
+# KoNote Backup Script for Windows
+# Run this with Task Scheduler
+
+$BackupDir = "C:\Backups\KoNote"
+$KoNoteDir = "C:\KoNote\konote-web"  # Adjust to your installation path
+$Date = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+$LogFile = "$BackupDir\backup_log.txt"
+
+# Create backup directory if it doesn't exist
+if (-not (Test-Path $BackupDir)) {
+    New-Item -ItemType Directory -Path $BackupDir -Force
+}
+
+# Start logging
+Add-Content -Path $LogFile -Value "=== Backup started: $Date ==="
+
+try {
+    # Change to KoNote directory (required for docker compose)
+    Set-Location $KoNoteDir
+
+    # Main database backup
+    $MainBackup = "$BackupDir\backup_main_$Date.sql"
+    docker compose exec -T db pg_dump -U konote konote | Out-File -FilePath $MainBackup -Encoding utf8
+    Add-Content -Path $LogFile -Value "Main database backed up: $MainBackup"
+
+    # Audit database backup
+    $AuditBackup = "$BackupDir\backup_audit_$Date.sql"
+    docker compose exec -T audit_db pg_dump -U audit_writer konote_audit | Out-File -FilePath $AuditBackup -Encoding utf8
+    Add-Content -Path $LogFile -Value "Audit database backed up: $AuditBackup"
+
+    # Verify backups have content (more than 1 KB)
+    $MainSize = (Get-Item $MainBackup).Length
+    $AuditSize = (Get-Item $AuditBackup).Length
+
+    if ($MainSize -lt 1024 -or $AuditSize -lt 1024) {
+        throw "Backup files are suspiciously small. Check database connection."
+    }
+
+    # Clean up backups older than 30 days
+    Get-ChildItem -Path $BackupDir -Filter "backup_*.sql" |
+        Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) } |
+        Remove-Item -Force
+
+    Add-Content -Path $LogFile -Value "Backup completed successfully: $Date"
+    Add-Content -Path $LogFile -Value ""
+
+} catch {
+    Add-Content -Path $LogFile -Value "ERROR: $_"
+    Add-Content -Path $LogFile -Value ""
+    exit 1
+}
+```
+
+#### Set Up Task Scheduler
+
+1. Press **Windows + R**, type `taskschd.msc`, press Enter
+2. In the right panel, click **Create Task** (not "Create Basic Task")
+3. **General tab:**
+   - Name: `KoNote Daily Backup`
+   - Check **Run whether user is logged on or not**
+   - Check **Run with highest privileges**
+4. **Triggers tab:**
+   - Click **New**
+   - Begin the task: **On a schedule**
+   - Daily, at 2:00 AM
+   - Click OK
+5. **Actions tab:**
+   - Click **New**
+   - Action: **Start a program**
+   - Program: `powershell.exe`
+   - Arguments: `-ExecutionPolicy Bypass -File "C:\KoNote\backup_konote.ps1"`
+   - Click OK
+6. **Settings tab:**
+   - Check **If the task fails, restart every:** 10 minutes, up to 3 times
+   - Click OK
+7. Enter your Windows password when prompted
+
+#### Verify It Works
+
+Run the task manually first:
+
+1. In Task Scheduler, right-click the task
+2. Click **Run**
+3. Check `C:\Backups\KoNote\backup_log.txt` for results
+4. Verify `.sql` files were created
+
+---
+
+### Option 2: Cron Job (Linux/Mac or WSL on Windows)
 
 If you're running KoNote on a Linux server or WSL (Windows Subsystem for Linux):
 
@@ -330,16 +427,40 @@ mkdir -p "$BACKUP_DIR"
 # Date for filename
 DATE=$(date +%Y-%m-%d_%H-%M-%S)
 
+# Log file
+LOG_FILE="$BACKUP_DIR/backup_log.txt"
+
+echo "=== Backup started: $DATE ===" >> "$LOG_FILE"
+
 # Main database backup
-docker compose -f /path/to/konote-web/docker-compose.yml exec db pg_dump -U konote konote > "$BACKUP_DIR/backup_main_$DATE.sql"
+# Note: -T flag is required for non-interactive (cron) execution
+docker compose -f /path/to/konote-web/docker-compose.yml exec -T db pg_dump -U konote konote > "$BACKUP_DIR/backup_main_$DATE.sql"
+
+if [ $? -ne 0 ]; then
+    echo "ERROR: Main database backup failed" >> "$LOG_FILE"
+    exit 1
+fi
 
 # Audit database backup
-docker compose -f /path/to/konote-web/docker-compose.yml exec audit_db pg_dump -U audit_writer konote_audit > "$BACKUP_DIR/backup_audit_$DATE.sql"
+docker compose -f /path/to/konote-web/docker-compose.yml exec -T audit_db pg_dump -U audit_writer konote_audit > "$BACKUP_DIR/backup_audit_$DATE.sql"
+
+if [ $? -ne 0 ]; then
+    echo "ERROR: Audit database backup failed" >> "$LOG_FILE"
+    exit 1
+fi
+
+# Verify backups have content (more than 1 KB)
+MAIN_SIZE=$(stat -f%z "$BACKUP_DIR/backup_main_$DATE.sql" 2>/dev/null || stat --printf="%s" "$BACKUP_DIR/backup_main_$DATE.sql")
+if [ "$MAIN_SIZE" -lt 1024 ]; then
+    echo "ERROR: Main backup file is too small" >> "$LOG_FILE"
+    exit 1
+fi
 
 # Clean up backups older than 30 days
 find "$BACKUP_DIR" -name "backup_*.sql" -mtime +30 -delete
 
-echo "Backup completed: $DATE"
+echo "Backup completed successfully: $DATE" >> "$LOG_FILE"
+echo "" >> "$LOG_FILE"
 ```
 
 #### Make It Executable
@@ -357,7 +478,7 @@ crontab -e
 Add this line to run backups daily at 2:00 AM:
 
 ```
-0 2 * * * /home/user/backup_konote.sh >> /var/log/konote_backup.log 2>&1
+0 2 * * * /home/user/backup_konote.sh 2>&1
 ```
 
 #### Verify Cron Is Running
@@ -383,6 +504,230 @@ Azure Database for PostgreSQL automatically backs up daily.
 
 - **Retention**: 7 days (configurable, up to 35 days for additional cost)
 - **Restore**: Via Azure portal or Azure CLI
+
+---
+
+### Option 4: Copy Backups to Cloud Storage (Off-Site)
+
+Storing backups only on your server is risky — if the server fails, you lose both the data and the backups. Copy backups to cloud storage for disaster recovery.
+
+#### Azure Blob Storage (Windows PowerShell)
+
+Add this to your Windows backup script after creating the `.sql` files:
+
+```powershell
+# Upload to Azure Blob Storage
+# First, install Azure CLI: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows
+
+$StorageAccount = "your-storage-account"
+$Container = "konote-backups"
+
+# Upload main backup
+az storage blob upload `
+    --account-name $StorageAccount `
+    --container-name $Container `
+    --file $MainBackup `
+    --name "main/backup_main_$Date.sql" `
+    --auth-mode login
+
+# Upload audit backup
+az storage blob upload `
+    --account-name $StorageAccount `
+    --container-name $Container `
+    --file $AuditBackup `
+    --name "audit/backup_audit_$Date.sql" `
+    --auth-mode login
+
+Add-Content -Path $LogFile -Value "Uploaded to Azure Blob Storage"
+```
+
+**Setup steps:**
+
+1. In Azure Portal, create a **Storage Account**
+2. Create a **Container** named `konote-backups`
+3. Set **Access level** to Private
+4. Run `az login` once on the server to authenticate
+
+#### Amazon S3 (Linux/Mac)
+
+Add this to your cron backup script after creating the `.sql` files:
+
+```bash
+# Upload to S3
+# First, install AWS CLI: pip install awscli && aws configure
+
+S3_BUCKET="your-bucket-name"
+
+aws s3 cp "$BACKUP_DIR/backup_main_$DATE.sql" "s3://$S3_BUCKET/main/backup_main_$DATE.sql"
+aws s3 cp "$BACKUP_DIR/backup_audit_$DATE.sql" "s3://$S3_BUCKET/audit/backup_audit_$DATE.sql"
+
+echo "Uploaded to S3" >> "$LOG_FILE"
+
+# Optional: Delete S3 backups older than 90 days
+aws s3 ls "s3://$S3_BUCKET/main/" | while read -r line; do
+    BACKUP_DATE=$(echo "$line" | awk '{print $1}')
+    FILE_NAME=$(echo "$line" | awk '{print $4}')
+    if [[ $(date -d "$BACKUP_DATE" +%s) -lt $(date -d "90 days ago" +%s) ]]; then
+        aws s3 rm "s3://$S3_BUCKET/main/$FILE_NAME"
+    fi
+done
+```
+
+#### Google Cloud Storage (Linux/Mac)
+
+```bash
+# Upload to Google Cloud Storage
+# First, install gsutil: https://cloud.google.com/storage/docs/gsutil_install
+
+GCS_BUCKET="gs://your-bucket-name"
+
+gsutil cp "$BACKUP_DIR/backup_main_$DATE.sql" "$GCS_BUCKET/main/"
+gsutil cp "$BACKUP_DIR/backup_audit_$DATE.sql" "$GCS_BUCKET/audit/"
+
+echo "Uploaded to Google Cloud Storage" >> "$LOG_FILE"
+```
+
+---
+
+### Option 5: Backup Monitoring and Alerts
+
+Know immediately when backups fail.
+
+#### Email Alerts (Windows PowerShell)
+
+Add this to the end of your Windows backup script:
+
+```powershell
+# Email notification on failure
+# Requires: An SMTP server or email service
+
+function Send-BackupAlert {
+    param($Subject, $Body)
+
+    $SmtpServer = "smtp.office365.com"  # Or your email provider
+    $SmtpPort = 587
+    $From = "backups@yourorg.ca"
+    $To = "admin@yourorg.ca"
+    $Username = "backups@yourorg.ca"
+    $Password = "REPLACE_WITH_APP_PASSWORD"  # Use app password, not main password
+
+    $SecurePassword = ConvertTo-SecureString $Password -AsPlainText -Force
+    $Credential = New-Object System.Management.Automation.PSCredential($Username, $SecurePassword)
+
+    Send-MailMessage -From $From -To $To -Subject $Subject -Body $Body `
+        -SmtpServer $SmtpServer -Port $SmtpPort -UseSsl -Credential $Credential
+}
+
+# In your catch block, add:
+# Send-BackupAlert -Subject "KoNote Backup FAILED" -Body "Backup failed at $Date. Check $LogFile for details."
+```
+
+#### Email Alerts (Linux/Mac)
+
+Add this to your cron backup script:
+
+```bash
+# Email notification on failure
+# Requires: mailutils or sendmail installed
+
+ADMIN_EMAIL="admin@yourorg.ca"
+
+send_alert() {
+    local subject="$1"
+    local body="$2"
+    echo "$body" | mail -s "$subject" "$ADMIN_EMAIL"
+}
+
+# Add this after any error:
+# send_alert "KoNote Backup FAILED" "Backup failed at $DATE. Check $LOG_FILE for details."
+```
+
+#### Slack/Teams Webhook Alerts
+
+For instant team notification:
+
+```bash
+# Slack webhook (add to backup script)
+SLACK_WEBHOOK="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+
+send_slack_alert() {
+    local message="$1"
+    curl -X POST -H 'Content-type: application/json' \
+        --data "{\"text\":\"$message\"}" \
+        "$SLACK_WEBHOOK"
+}
+
+# On failure:
+# send_slack_alert "🚨 KoNote backup failed at $DATE. Check server logs."
+
+# On success (optional, for peace of mind):
+# send_slack_alert "✅ KoNote backup completed: $DATE"
+```
+
+```powershell
+# Teams webhook (Windows PowerShell)
+$TeamsWebhook = "https://outlook.office.com/webhook/YOUR/WEBHOOK/URL"
+
+function Send-TeamsAlert {
+    param($Message)
+    $Body = @{ text = $Message } | ConvertTo-Json
+    Invoke-RestMethod -Uri $TeamsWebhook -Method Post -Body $Body -ContentType "application/json"
+}
+
+# On failure:
+# Send-TeamsAlert "🚨 KoNote backup failed at $Date. Check server logs."
+```
+
+#### Simple Health Check (Monitor Backup Recency)
+
+Create a script that checks if backups are recent. Run this weekly or use a monitoring service.
+
+**Windows PowerShell:**
+
+```powershell
+# Check if backups are fresh (run weekly via Task Scheduler)
+$BackupDir = "C:\Backups\KoNote"
+$MaxAge = 2  # Alert if no backup in last 2 days
+
+$LatestBackup = Get-ChildItem -Path $BackupDir -Filter "backup_main_*.sql" |
+    Sort-Object LastWriteTime -Descending |
+    Select-Object -First 1
+
+if (-not $LatestBackup) {
+    Send-BackupAlert -Subject "KoNote: NO BACKUPS FOUND" -Body "No backup files exist in $BackupDir"
+    exit 1
+}
+
+$Age = (Get-Date) - $LatestBackup.LastWriteTime
+
+if ($Age.Days -ge $MaxAge) {
+    Send-BackupAlert -Subject "KoNote: STALE BACKUP" `
+        -Body "Latest backup is $($Age.Days) days old: $($LatestBackup.Name)"
+    exit 1
+}
+
+Write-Host "Backup health check passed. Latest: $($LatestBackup.Name)"
+```
+
+**Linux/Mac:**
+
+```bash
+#!/bin/bash
+# Check if backups are fresh
+
+BACKUP_DIR="/backups/konote"
+MAX_AGE_DAYS=2
+ADMIN_EMAIL="admin@yourorg.ca"
+
+LATEST=$(find "$BACKUP_DIR" -name "backup_main_*.sql" -mtime -$MAX_AGE_DAYS | head -1)
+
+if [ -z "$LATEST" ]; then
+    echo "No recent backup found" | mail -s "KoNote: STALE BACKUP" "$ADMIN_EMAIL"
+    exit 1
+fi
+
+echo "Backup health check passed"
+```
 
 ---
 
