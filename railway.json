@@ -5,7 +5,7 @@
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
-    "startCommand": "python manage.py migrate 2>&1; timeout 30 python manage.py migrate --database=audit 2>&1 || echo 'Audit migrate timed out'; python manage.py seed 2>&1 || true; echo 'Starting gunicorn on port '$PORT; exec gunicorn konote.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --log-level info --error-logfile - --access-logfile -",
+    "startCommand": "python manage.py migrate 2>&1; echo 'Skipping audit migrate for now'; python manage.py seed 2>&1 || true; echo 'Starting gunicorn on port '$PORT; exec gunicorn konote.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120 --log-level info --error-logfile - --access-logfile -",
     "healthcheckPath": "/auth/login/",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE"
