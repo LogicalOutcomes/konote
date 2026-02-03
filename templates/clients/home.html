@@ -211,6 +211,9 @@
         {% else %}
         <p class="empty-message"><em>{% blocktrans with clients=term.client_plural|default:"clients" %}No recent {{ clients }} yet. Start by searching above.{% endblocktrans %}</em></p>
         {% endif %}
+        <footer class="card-footer">
+            <a href="{% url 'clients:client_list' %}" class="outline" role="button">{% blocktrans with clients=term.client_plural|default:"clients" %}View all {{ clients }}{% endblocktrans %} &rarr;</a>
+        </footer>
     </article>
 </div>
 
