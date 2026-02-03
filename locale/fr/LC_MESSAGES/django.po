@@ -509,6 +509,15 @@ msgstr "Pagination des notes"
 msgid "Add the first note"
 msgstr "Ajouter la premiere note"
 
+#: templates/notes/note_form.html templates/notes/quick_note_form.html
+msgid "I confirm verbal consent was obtained"
+msgstr "Je confirme que le consentement verbal a ete obtenu"
+
+#: templates/notes/note_form.html templates/notes/quick_note_form.html
+#, python-format
+msgid "The %(client)s has given verbal consent to record notes about this session."
+msgstr "Le/La %(client)s a donne son consentement verbal pour enregistrer des notes sur cette session."
+
 #: templates/notes/note_form.html
 msgid "Template"
 msgstr "Modele"

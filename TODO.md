@@ -10,7 +10,6 @@ _Nothing flagged._
 
 - [x] Fix test suite configuration error — (TEST2)
 - [ ] Add CSV export for all client data — (EXP1)
-- [ ] Add consent checkbox to note entry — (PRIV2)
 - [ ] Create first-run setup wizard — (SETUP1)
 - [ ] Mobile responsiveness pass — (UI1)
 - [ ] Add backup automation examples to docs — (OPS1)
@@ -98,6 +97,7 @@ These features are intentionally excluded. See technical documentation for ratio
 
 ## Recently Done
 
+- [x] Add consent checkbox to note entry — 2026-02-03 (PRIV2)
 - [x] Iframe embed support for registration forms — 2026-02-03 (REG8)
 - [x] Phase E: Self-service registration complete (REG1–REG7) — 2026-02-03
 - [x] Add "What You'll Need" pre-flight checklist to getting-started.md — 2026-02-03 (DOC12)

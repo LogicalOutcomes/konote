@@ -7,6 +7,15 @@ from .models import ProgressNote, ProgressNoteTemplate, ProgressNoteTemplateSect
 class QuickNoteForm(forms.ModelForm):
     """Simple form for quick notes — just a text area."""
 
+    consent_confirmed = forms.BooleanField(
+        required=True,
+        label="I confirm verbal consent was obtained",
+        help_text="The client has given verbal consent to record notes about this session.",
+        error_messages={
+            "required": "You must confirm consent was obtained before saving this note.",
+        },
+    )
+
     class Meta:
         model = ProgressNote
         fields = ["notes_text"]
@@ -41,6 +50,14 @@ class FullNoteForm(forms.Form):
     summary = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Optional summary..."}),
         required=False,
+    )
+    consent_confirmed = forms.BooleanField(
+        required=True,
+        label="I confirm verbal consent was obtained",
+        help_text="The client has given verbal consent to record notes about this session.",
+        error_messages={
+            "required": "You must confirm consent was obtained before saving this note.",
+        },
     )
 
 

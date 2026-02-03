@@ -74,6 +74,18 @@
     {{ form.summary }}
     {% if form.summary.errors %}<small class="error" role="alert">{{ form.summary.errors.0 }}</small>{% endif %}
 
+    <!-- Consent confirmation -->
+    <fieldset>
+        <label>
+            {{ form.consent_confirmed }}
+            {% trans "I confirm verbal consent was obtained" %}
+        </label>
+        <small>{% blocktrans with client=term.client|default:"client" %}The {{ client }} has given verbal consent to record notes about this session.{% endblocktrans %}</small>
+        {% if form.consent_confirmed.errors %}
+        <small class="error" role="alert">{{ form.consent_confirmed.errors.0 }}</small>
+        {% endif %}
+    </fieldset>
+
     <div role="group">
         <button type="submit">{% blocktrans with note=term.progress_note|default:"Note" %}Save {{ note }}{% endblocktrans %}</button>
         <a href="{% url 'notes:note_list' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>

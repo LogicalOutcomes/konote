@@ -53,7 +53,7 @@ class NoteViewsTest(TestCase):
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
             f"/notes/client/{self.client_file.pk}/quick/",
-            {"notes_text": "Client seemed well today."},
+            {"notes_text": "Client seemed well today.", "consent_confirmed": True},
         )
         self.assertEqual(resp.status_code, 302)
         note = ProgressNote.objects.get(client_file=self.client_file)
@@ -65,7 +65,17 @@ class NoteViewsTest(TestCase):
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
             f"/notes/client/{self.client_file.pk}/quick/",
-            {"notes_text": "   "},
+            {"notes_text": "   ", "consent_confirmed": True},
+        )
+        self.assertEqual(resp.status_code, 200)  # Re-renders form with errors
+        self.assertEqual(ProgressNote.objects.count(), 0)
+
+    def test_quick_note_without_consent_rejected(self):
+        """Notes cannot be saved without confirming consent."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/quick/",
+            {"notes_text": "Valid text but no consent."},
         )
         self.assertEqual(resp.status_code, 200)  # Re-renders form with errors
         self.assertEqual(ProgressNote.objects.count(), 0)
@@ -94,7 +104,7 @@ class NoteViewsTest(TestCase):
         self.http.login(username="admin", password="pass")
         resp = self.http.post(
             f"/notes/client/{self.other_client.pk}/quick/",
-            {"notes_text": "Admin note."},
+            {"notes_text": "Admin note.", "consent_confirmed": True},
         )
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(ProgressNote.objects.count(), 1)
@@ -131,6 +141,7 @@ class NoteViewsTest(TestCase):
             f"/notes/client/{self.client_file.pk}/new/",
             {
                 "summary": "Good session",
+                "consent_confirmed": True,
                 f"target_{target.pk}-target_id": str(target.pk),
                 f"target_{target.pk}-notes": "Discussed housing options",
                 f"metric_{target.pk}_{metric.pk}-metric_def_id": str(metric.pk),
