@@ -280,6 +280,8 @@ GRANT USAGE, SELECT ON SEQUENCE audit_auditlog_id_seq TO konote_audit;
 **Purpose:** Data export and visualisation
 
 - Metric CSV export with filters
+- Client data export (all PII, custom fields, enrolments)
+- CMT funder report export
 - Client analysis charts (Chart.js)
 - PDF reports (WeasyPrint)
 
@@ -638,7 +640,10 @@ MIDDLEWARE = [
 
 ```
 /reports/export/                GET, POST   Metric CSV export
+/reports/cmt-export/            GET, POST   CMT funder report export
+/reports/client-data-export/    GET, POST   Client data CSV export (admin)
 /reports/client/<id>/analysis/  GET         Client analysis charts
+/reports/client/<id>/pdf/       GET         Client progress PDF
 ```
 
 ### HTMX Endpoints
