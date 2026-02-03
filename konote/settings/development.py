@@ -1,4 +1,14 @@
 """Development settings — local use only."""
+import os
+
+# Provide safe dev-only defaults BEFORE importing base settings.
+# base.py requires these via require_env(); these defaults only apply
+# when the developer hasn't set them in .env or the shell.
+os.environ.setdefault("SECRET_KEY", "insecure-dev-key-do-not-use-in-production")
+os.environ.setdefault("DATABASE_URL", "postgresql://konote:konote@localhost:5432/konote")
+os.environ.setdefault("AUDIT_DATABASE_URL", "postgresql://audit_writer:audit_pass@localhost:5433/konote_audit")
+os.environ.setdefault("FIELD_ENCRYPTION_KEY", "dev-only-not-for-production-aaaaaaaaaaaaaaaaaa==")
+
 from .base import *  # noqa: F401, F403
 
 DEBUG = True

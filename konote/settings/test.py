@@ -1,4 +1,12 @@
 """Test settings — SQLite in-memory for fast tests without PostgreSQL."""
+import os
+
+# Provide test defaults BEFORE importing base (which calls require_env).
+os.environ.setdefault("SECRET_KEY", "test-secret-key-not-for-production")
+os.environ.setdefault("DATABASE_URL", "sqlite://:memory:")
+os.environ.setdefault("AUDIT_DATABASE_URL", "sqlite://:memory:")
+os.environ.setdefault("FIELD_ENCRYPTION_KEY", "dGVzdC1rZXktMzItYnl0ZXMtcGFkZGVkMTIzNA==")
+
 from .base import *  # noqa: F401, F403
 
 DATABASES = {

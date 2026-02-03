@@ -6,15 +6,28 @@ import os
 from pathlib import Path
 
 import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 load_dotenv()
 
+
+def require_env(name):
+    """Return an environment variable or raise ImproperlyConfigured."""
+    value = os.environ.get(name)
+    if not value:
+        raise ImproperlyConfigured(
+            f"Required environment variable {name} is not set. "
+            f"See .env.example for details."
+        )
+    return value
+
+
 # Paths
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Security — override in production
-SECRET_KEY = os.environ.get("SECRET_KEY", "insecure-dev-key-change-me")
+# Security — no fallback; must be set in every environment
+SECRET_KEY = require_env("SECRET_KEY")
 DEBUG = False
 ALLOWED_HOSTS = []
 
@@ -89,12 +102,12 @@ AUTH_USER_MODEL = "auth_app.User"
 # Databases
 DATABASES = {
     "default": dj_database_url.config(
-        default="postgresql://konote:konote@localhost:5432/konote",
+        default=require_env("DATABASE_URL"),
         conn_max_age=600,
     ) | {"OPTIONS": {"connect_timeout": 10}},
     "audit": dj_database_url.config(
         env="AUDIT_DATABASE_URL",
-        default="postgresql://konote:konote@localhost:5433/konote_audit",
+        default=require_env("AUDIT_DATABASE_URL"),
         conn_max_age=600,
     ) | {"OPTIONS": {"connect_timeout": 10}},
 }
@@ -178,8 +191,8 @@ LOGIN_URL = "/auth/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/auth/login/"
 
-# PII encryption key (Fernet)
-FIELD_ENCRYPTION_KEY = os.environ.get("FIELD_ENCRYPTION_KEY", "")
+# PII encryption key (Fernet) — required; no fallback
+FIELD_ENCRYPTION_KEY = require_env("FIELD_ENCRYPTION_KEY")
 
 # Azure AD / Entra ID settings
 AZURE_CLIENT_ID = os.environ.get("AZURE_CLIENT_ID", "")

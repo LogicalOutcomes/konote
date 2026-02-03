@@ -6,6 +6,10 @@ _Nothing flagged._
 
 ## Active Work
 
+### Code Review Fixes
+
+_All code review items complete._
+
 ### Phase 8 — UX Improvements for Frontline Staff
 
 - [ ] Show custom fields in read-only mode by default with edit toggle — (UX12)
@@ -32,6 +36,13 @@ _Nothing flagged._
 
 ## Recently Done
 
+- [x] Harden startup: raise ImproperlyConfigured if secrets missing; remove hardcoded fallbacks — 2026-02-02 (CR1)
+- [x] Fix CSS bug: `align-items: centre` → `center` — 2026-02-02 (CR8)
+- [x] Add encryption ceiling note to agency-setup.md — 2026-02-02 (CR5)
+- [x] Add `role="alert"` and `aria-live="polite"` to templates (18 files) — 2026-02-02 (CR9)
+- [x] Create ModelForm classes for login, feature toggle, custom fields, AI endpoints — 2026-02-02 (CR4)
+- [x] Add tests for auth views, plan CRUD, and AI endpoints (60 tests) — 2026-02-02 (CR6)
+- [x] Code review: DEBUG, CSRF, migrations, empty states verified — 2026-02-02 (CR2, CR3, CR7, CR10)
 - [x] Staff dashboard with recent clients, alerts, quick stats, needs-attention list — 2026-02-02 (UX1)
 - [x] HTMX-powered client detail tabs (no full page reloads) — 2026-02-02 (UX2)
 - [x] Target selection checkboxes on note form — 2026-02-02 (UX3)

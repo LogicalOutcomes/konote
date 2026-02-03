@@ -425,6 +425,14 @@ When you're ready to add your first client:
 5. Configure their custom field values (housing, funding, etc.).
 6. Staff can now start writing progress notes!
 
+### A Note on Client Search and Encryption
+
+KoNote encrypts all personally identifiable information (PII) — names, contact details, etc. — using Fernet (AES) encryption. This keeps client data secure, but it means the database cannot search encrypted fields directly using SQL.
+
+Instead, when you search for a client, KoNote loads accessible client records into memory and filters them there. **This works well for agencies with up to approximately 2,000 clients.** Most small and mid-sized nonprofits will never notice a difference.
+
+If your agency expects to serve significantly more than 2,000 clients, a search hash optimisation can be added to improve performance. This is tracked as **PERF1** in the project roadmap.
+
 ---
 
 ## Troubleshooting
