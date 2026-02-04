@@ -133,13 +133,21 @@ Use this when you need to document a structured session with targets and metrics
 1. Open the client's file.
 2. Go to the **Notes** tab.
 3. Click **+ Progress Note**.
-4. Fill in:
+4. Select **"This note is for..."** — Choose the type that best matches this interaction:
+   - **Standard session** — Regular client meetings
+   - **Brief check-in** — Quick touchpoints
+   - **Phone/text contact** — Remote communication
+   - **Crisis intervention** — Safety concerns or urgent situations
+   - **Intake assessment** — First meeting with a new client
+   - **Case closing** — Discharge and closure
+   - **Freeform** — Unstructured note without pre-defined sections
+5. Fill in:
    - **Session date** — Defaults to today; change if you're documenting a past session
    - **Target sections** — Select which targets you worked on and enter notes and metric values for each
    - **Summary** — A brief overview of the session (optional)
-5. **Capture their reflection** — Ask them the question shown on screen and record their response in their own words.
-6. Check **We created this note together**.
-7. Click **Save Note**.
+6. **Capture their reflection** — Ask them the question shown on screen and record their response in their own words.
+7. Check **We created this note together**.
+8. Click **Save Note**.
 
 **Tip:** You only need to fill in the targets you actually worked on. Leave others blank.
 

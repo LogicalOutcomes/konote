@@ -1,6 +1,6 @@
-# Administering KoNote
+# Administering KoNote2
 
-This guide covers everything administrators need to configure, maintain, and secure their KoNote instance.
+This guide covers everything administrators need to configure, maintain, and secure their KoNote2 instance.
 
 | I want to... | Go to... |
 |--------------|----------|
@@ -13,19 +13,19 @@ This guide covers everything administrators need to configure, maintain, and sec
 
 ## Agency Configuration
 
-After deployment, configure KoNote to match your organisation's needs. All setup is done through the web interface — no technical knowledge required.
+After deployment, configure KoNote2 to match your organisation's needs. All setup is done through the web interface — no technical knowledge required.
 
 **Time estimate:** 30–45 minutes for basic setup.
 
 ### First Login
 
 **Azure AD (Office 365):**
-1. Navigate to your KoNote URL
+1. Navigate to your KoNote2 URL
 2. Click **Login with Azure AD**
 3. Enter your work email and password
 
 **Local authentication:**
-1. Navigate to your KoNote URL
+1. Navigate to your KoNote2 URL
 2. Enter username and password (provided during setup)
 
 Your account starts as Staff. An admin must promote you to Admin to access configuration.
@@ -41,7 +41,7 @@ Control your organisation's branding and behaviour.
 
 | Field | What it does | Example |
 |-------|--------------|---------|
-| **Product Name** | Shown in header and titles | "Youth Housing — KoNote" |
+| **Product Name** | Shown in header and titles | "Youth Housing — KoNote2" |
 | **Support Email** | Displayed in footer | support@agency.ca |
 | **Logo URL** | Your organisation's logo | https://example.com/logo.png |
 | **Date Format** | How dates appear | 2026-02-03 (ISO) |
@@ -132,11 +132,43 @@ Changes to templates don't affect existing client plans.
 
 ### Set Up Progress Note Templates
 
-Note templates provide structure for staff documentation.
+Note templates define the structure for progress notes. When staff write a note, they see a dropdown labelled **"This note is for..."** with options like "Standard session" or "Crisis intervention." Each option is a template you create here.
 
-1. Click **gear icon** → **Progress Note Templates**
+**Default templates:** KoNote2 comes with six templates pre-configured:
+
+| Template | Use case |
+|----------|----------|
+| **Standard session** | Regular client meetings |
+| **Brief check-in** | Quick touchpoints |
+| **Phone/text contact** | Remote contact documentation |
+| **Crisis intervention** | Safety concerns, urgent situations |
+| **Intake assessment** | First meeting with new clients |
+| **Case closing** | Discharge and case closure |
+
+Staff can also select **"Freeform"** for unstructured notes without pre-defined sections.
+
+**Create or edit templates:**
+
+1. Click **Admin** → **Note Templates** (or go to Settings → Note Templates)
 2. Click **+ New Template**
-3. Add sections (e.g., Summary, Progress on Goals, Barriers, Next Steps)
+3. Enter a name (this appears in the "This note is for..." dropdown)
+4. Add sections:
+   - **Basic Text** — free-text area for narrative notes
+   - **Plan Targets** — shows the client's active plan targets with metric inputs
+5. Set the sort order for each section
+6. Click **Save**
+
+**Example template structure:**
+
+**Standard session**
+- Session summary *(Basic Text)*
+- Plan progress *(Plan Targets)*
+- Next steps *(Basic Text)*
+
+**Tips:**
+- Keep template names short and action-oriented (staff see them in a dropdown)
+- Include a "Plan progress" section (Plan Targets type) to capture outcome metrics
+- Archive templates instead of deleting them to preserve historical data
 
 ---
 
@@ -197,7 +229,7 @@ They can no longer log in, but historical data is preserved.
 
 ## Backup and Restore
 
-KoNote stores data in **two PostgreSQL databases**:
+KoNote2 stores data in **two PostgreSQL databases**:
 - **Main database** — clients, programs, plans, notes
 - **Audit database** — immutable log of every change
 
@@ -238,16 +270,16 @@ pg_dump -h hostname -U audit_writer -d konote_audit > backup_audit_$(date +%Y-%m
 
 **Windows Task Scheduler:**
 
-Save as `C:\KoNote\backup_konote.ps1`:
+Save as `C:\KoNote2\backup_konote.ps1`:
 
 ```powershell
-$BackupDir = "C:\Backups\KoNote"
-$KoNoteDir = "C:\KoNote\konote-web"
+$BackupDir = "C:\Backups\KoNote2"
+$KoNote2Dir = "C:\KoNote2\konote-web"
 $Date = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 
 if (-not (Test-Path $BackupDir)) { New-Item -ItemType Directory -Path $BackupDir -Force }
 
-Set-Location $KoNoteDir
+Set-Location $KoNote2Dir
 
 # Main database
 docker compose exec -T db pg_dump -U konote konote | Out-File -FilePath "$BackupDir\backup_main_$Date.sql" -Encoding utf8
@@ -330,7 +362,7 @@ docker compose exec -T audit_db psql -U audit_writer konote_audit < backup_audit
 
 ### Security Checks
 
-KoNote runs security checks automatically. You can also run them explicitly:
+KoNote2 runs security checks automatically. You can also run them explicitly:
 
 ```bash
 python manage.py check --deploy
@@ -466,6 +498,53 @@ ORDER BY event_timestamp DESC;
 
 ---
 
+## Data Retention
+
+### Why Clients Can't Be Deleted
+
+KoNote2 intentionally **does not allow deleting clients**. This is a safety feature, not a limitation.
+
+**Why this matters:**
+
+| Concern | How KoNote2 handles it |
+|---------|----------------------|
+| Accidental deletion | Not possible — there's no delete button |
+| Audit trail | Client history stays intact for compliance |
+| Funder reporting | Historical data remains available for reporting |
+| Data recovery | No need to restore backups for "oops" moments |
+
+**Instead of deleting, use these approaches:**
+
+| Scenario | What to do |
+|----------|------------|
+| Client leaves program | **Discharge** them — status changes to "Discharged" |
+| Client no longer active | Set status to **"Inactive"** |
+| Entered by mistake | Mark as "Inactive" and add a note explaining the error |
+
+Discharged and inactive clients:
+- Don't appear in active client lists
+- Remain searchable for historical reference
+- Keep all notes, plans, and events intact
+- Can be reactivated if the client returns
+
+---
+
+### GDPR/PIPEDA Right to Erasure
+
+Some privacy regulations require the ability to permanently delete personal data upon request.
+
+**Current status:** The data model includes fields for erasure requests (`erasure_requested`, `erasure_completed_at`), but the workflow is not yet implemented.
+
+**Workaround for erasure requests:**
+1. Export the client's data for their records (CSV export)
+2. Mark the client as "Inactive"
+3. Document the erasure request in a note
+4. Contact your technical support to discuss database-level removal if legally required
+
+**Planned:** A formal erasure workflow with approval process and audit trail is on the roadmap (see GDPR1 in TODO.md).
+
+---
+
 ## Troubleshooting
 
 ### Q: I see a login error
@@ -473,6 +552,9 @@ ORDER BY event_timestamp DESC;
 
 ### Q: Can I change terminology later?
 **A:** Yes. Changes apply immediately to all users.
+
+### Q: How do I delete a client?
+**A:** You can't — by design. KoNote2 preserves all client records to maintain audit trails and prevent accidental data loss. Instead, discharge the client or mark them as inactive. See [Data Retention](#data-retention) for details.
 
 ### Q: What if I delete a program?
 **A:** You can't delete programs with active clients. Deactivate instead.
@@ -493,5 +575,5 @@ ORDER BY event_timestamp DESC;
 
 ---
 
-**Version 1.0** — KoNote Web
-Last updated: 2026-02-03
+**Version 2.0** — KoNote2
+Last updated: 2026-02-04

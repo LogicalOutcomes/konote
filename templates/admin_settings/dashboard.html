@@ -33,5 +33,11 @@
         <p>{% trans "Create, edit, and deactivate user accounts." %}</p>
         <footer><a href="{% url 'auth_app:user_list' %}" role="button" class="outline">{% trans "Manage Users" %}</a></footer>
     </article>
+
+    <article>
+        <header>{% trans "Note Templates" %}</header>
+        <p>{% trans "Define structures for progress notes (e.g. Standard session, Crisis intervention)." %}</p>
+        <footer><a href="{% url 'note_templates:template_list' %}" role="button" class="outline">{% trans "Manage Templates" %}</a></footer>
+    </article>
 </div>
 {% endblock %}

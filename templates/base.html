@@ -51,7 +51,8 @@
                     <summary aria-haspopup="listbox"{% if nav_active == "admin" %} class="nav-active"{% endif %}>{% trans "Admin" %}</summary>
                     <ul role="listbox">
                         <li><a href="/plans/admin/metrics/">{{ term.metric_plural|default:"Metrics" }}</a></li>
-                        <li><a href="/admin/templates/">{% trans "Templates" %}</a></li>
+                        <li><a href="/admin/templates/">{% trans "Plan Templates" %}</a></li>
+                        <li><a href="/admin/settings/note-templates/">{% trans "Note Templates" %}</a></li>
                         <li><a href="/events/admin/types/">{% trans "Event Types" %}</a></li>
                         <li><a href="/admin/registration/">{% trans "Registration Links" %}</a></li>
                         <li><a href="/admin/submissions/">{% trans "Pending Submissions" %}{% if pending_submissions_count %} <span class="badge badge-warning">{{ pending_submissions_count }}</span>{% endif %}</a></li>

@@ -49,7 +49,8 @@ class FullNoteForm(forms.Form):
     template = forms.ModelChoiceField(
         queryset=ProgressNoteTemplate.objects.filter(status="active"),
         required=False,
-        empty_label="No template",
+        label="This note is for...",
+        empty_label="Freeform",
     )
     session_date = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}),
