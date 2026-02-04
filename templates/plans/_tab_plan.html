@@ -9,6 +9,10 @@
         {% trans "Apply Template" %}
     </a>
 </div>
+{% else %}
+<p class="notice" role="status">
+    <small>{% blocktrans with client=term.client|default:"client" programme=term.program|default:"programme" %}View only — to edit this plan, you must be a Programme Manager for a {{ programme }} this {{ client }} is enrolled in.{% endblocktrans %}</small>
+</p>
 {% endif %}
 
 {% if show_section_form %}

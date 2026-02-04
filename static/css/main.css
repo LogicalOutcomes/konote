@@ -766,6 +766,16 @@ nav.pagination a {
     padding: var(--kn-space-sm) var(--kn-space-base);
 }
 
+/* ---- Permission notice (view-only message) ---- */
+p.notice {
+    background: var(--kn-info-bg);
+    border-left: 3px solid var(--kn-primary);
+    padding: var(--kn-space-sm) var(--kn-space-base);
+    margin-bottom: var(--kn-space-lg);
+    border-radius: var(--kn-radius-card);
+    color: var(--kn-text-secondary);
+}
+
 /* ---- Section cards (plan) ---- */
 .section-card {
     margin-bottom: var(--kn-space-base);
