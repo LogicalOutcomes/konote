@@ -47,8 +47,8 @@ msgstr "Deconnexion"
 msgid "Select language"
 msgstr "Choisir la langue"
 
-msgid "Secure Client Outcome Management"
-msgstr "Gestion securisee des resultats clients"
+msgid "Participant Outcome Management"
+msgstr "Gestion des résultats des participants"
 
 #: templates/auth/login.html
 msgid "Sign In"
