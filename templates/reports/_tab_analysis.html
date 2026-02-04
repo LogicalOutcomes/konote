@@ -14,16 +14,15 @@
     </section>
     {% endfor %}
 
-{{ chart_data_json|json_script:"chart-data" }}
+{{ chart_data|json_script:"chart-data" }}
 <script>
-console.log('[Chart Debug] Script is executing');
-console.log('[Chart Debug] Chart global:', typeof Chart);
-const chartDataEl = document.getElementById('chart-data');
-console.log('[Chart Debug] chart-data element:', chartDataEl);
-const chartData = JSON.parse(chartDataEl.textContent);
-console.log('[Chart Debug] Parsed chart data:', chartData);
-chartData.forEach(function(chart, index) {
-    console.log('[Chart Debug] Processing chart', index + 1, ':', chart.target_name);
+(function() {
+    var chartData = JSON.parse(document.getElementById('chart-data').textContent);
+    if (!Array.isArray(chartData)) {
+        console.error('[Chart] Data is not an array:', typeof chartData);
+        return;
+    }
+    chartData.forEach(function(chart, index) {
     const ctx = document.getElementById('chart-' + (index + 1)).getContext('2d');
     const datasets = [{
         label: chart.metric_name + (chart.unit ? ' (' + chart.unit + ')' : ''),
@@ -53,34 +52,24 @@ chartData.forEach(function(chart, index) {
             fill: false,
         });
     }
-    const canvasEl = document.getElementById('chart-' + (index + 1));
-    console.log('[Chart Debug] Canvas element:', canvasEl);
-    if (!canvasEl) {
-        console.error('[Chart Debug] Canvas not found for chart', index + 1);
-        return;
-    }
-    try {
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: chart.data_points.map(function(p) { return p.date; }),
-                datasets: datasets,
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: chart.data_points.map(function(p) { return p.date; }),
+            datasets: datasets,
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } },
+            scales: {
+                y: { beginAtZero: false, title: { display: true, text: chart.unit || '{% trans "Value" %}' } },
+                x: { title: { display: true, text: '{% trans "Date" %}' } },
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { position: 'bottom' } },
-                scales: {
-                    y: { beginAtZero: false, title: { display: true, text: chart.unit || '{% trans "Value" %}' } },
-                    x: { title: { display: true, text: '{% trans "Date" %}' } },
-                },
-            },
-        });
-        console.log('[Chart Debug] Chart', index + 1, 'created successfully');
-    } catch (err) {
-        console.error('[Chart Debug] Error creating chart', index + 1, ':', err);
-    }
+        },
+    });
 });
+})();
 </script>
 {% else %}
     <p class="empty-state">{% trans "No metric data recorded yet. Record metrics through progress notes to see charts here." %}</p>

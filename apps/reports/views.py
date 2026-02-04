@@ -399,7 +399,6 @@ def client_analysis(request, client_id):
     context = {
         "client": client,
         "chart_data": chart_data,
-        "chart_data_json": json.dumps(chart_data, default=str),
         "active_tab": "analysis",
         "user_role": getattr(request, "user_program_role", None),
     }
