@@ -1,31 +1,30 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Delete {{ term.target|default:"Target" }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% blocktrans with target=term.target|default:"Target" %}Delete {{ target }}{% endblocktrans %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
-<nav aria-label="Breadcrumb">
+<nav aria-label="{% trans 'Breadcrumb' %}">
     <ul>
-        <li><a href="{% url 'plan_templates:template_list' %}">Templates</a></li>
+        <li><a href="{% url 'plan_templates:template_list' %}">{% trans "Templates" %}</a></li>
         <li><a href="{% url 'plan_templates:template_detail' template_id=template.pk %}">{{ template.name }}</a></li>
-        <li>Delete {{ term.target|default:"Target" }}</li>
+        <li>{% blocktrans with target=term.target|default:"Target" %}Delete {{ target }}{% endblocktrans %}</li>
     </ul>
 </nav>
 
-<h1>Delete {{ term.target|default:"Target" }}</h1>
+<h1>{% blocktrans with target=term.target|default:"Target" %}Delete {{ target }}{% endblocktrans %}</h1>
 
-<article aria-label="Confirmation">
+<article aria-label="{% trans 'Confirmation' %}">
     <p>
-        Are you sure you want to delete the {{ term.target|default:"target" }}
-        <strong>{{ target.name }}</strong> from {{ term.section|default:"section" }}
-        <strong>{{ section.name }}</strong>?
+        {% blocktrans with target=term.target|default:"target" name=target.name section=term.section|default:"section" section_name=section.name %}Are you sure you want to delete the {{ target }} <strong>{{ name }}</strong> from {{ section }} <strong>{{ section_name }}</strong>?{% endblocktrans %}
     </p>
-    <p>This action cannot be undone.</p>
+    <p>{% trans "This action cannot be undone." %}</p>
 
     <form method="post">
         {% csrf_token %}
         <div role="group">
-            <button type="submit" class="contrast">Delete</button>
-            <a href="{% url 'plan_templates:template_detail' template_id=template.pk %}" role="button" class="secondary">Cancel</a>
+            <button type="submit" class="contrast">{% trans "Delete" %}</button>
+            <a href="{% url 'plan_templates:template_detail' template_id=template.pk %}" role="button" class="secondary">{% trans "Cancel" %}</a>
         </div>
     </form>
 </article>

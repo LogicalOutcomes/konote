@@ -1391,3 +1391,738 @@ msgstr "Terme francais pour"
 
 msgid "Leave blank to use English"
 msgstr "Laissez vide pour utiliser l'anglais"
+
+#: templates/auth_app/invite_list.html
+#, python-format
+msgid "Used by %(name)s"
+msgstr "Utilise par %(name)s"
+
+#: templates/clients/form.html
+#, python-format
+msgid "Edit %(client)s"
+msgstr "Modifier %(client)s"
+
+#, python-format
+msgid "Edit %(first)s %(last)s"
+msgstr "Modifier %(first)s %(last)s"
+
+#, python-format
+msgid "Create %(client)s"
+msgstr "Creer %(client)s"
+
+#: templates/clients/_client_layout.html
+#, python-format
+msgid "Opens in %(provider)s"
+msgstr "Ouvre dans %(provider)s"
+
+#: templates/clients/list.html
+#, python-format
+msgid "All %(client)s files you have access to."
+msgstr "Tous les dossiers %(client)s auxquels vous avez acces."
+
+#, python-format
+msgid "No %(clients)s match the selected filters."
+msgstr "Aucun(e) %(clients)s ne correspond aux filtres selectionnes."
+
+#, python-format
+msgid "No %(client)s files yet."
+msgstr "Aucun dossier %(client)s pour le moment."
+
+#, python-format
+msgid "View all %(clients)s"
+msgstr "Voir tous les %(clients)s"
+
+#: templates/programs/list.html
+#, python-format
+msgid "Manage organisational %(programs)s."
+msgstr "Gerer les %(programs)s de l'organisation."
+
+#, python-format
+msgid "Your assigned %(programs)s."
+msgstr "Vos %(programs)s assignes."
+
+#, python-format
+msgid "New %(program)s"
+msgstr "Nouveau/Nouvelle %(program)s"
+
+#, python-format
+msgid "No %(programs)s yet."
+msgstr "Aucun(e) %(programs)s pour le moment."
+
+#: templates/programs/detail.html
+#, python-format
+msgid "Edit %(program)s"
+msgstr "Modifier %(program)s"
+
+#: templates/programs/form.html
+#, python-format
+msgid "Create %(program)s"
+msgstr "Creer %(program)s"
+
+#: templates/programs/no_access.html
+#, python-format
+msgid "You don't have permission to see the %(client)s list for this %(program)s."
+msgstr "Vous n'avez pas la permission de voir la liste des %(client)s pour ce/cette %(program)s."
+
+#, python-format
+msgid "Back to %(programs)s"
+msgstr "Retour aux %(programs)s"
+
+#: templates/programs/_role_list.html
+#, python-format
+msgid "Remove %(name)s from this program?"
+msgstr "Retirer %(name)s de ce programme?"
+
+#: templates/plans/template_list.html
+#, python-format
+msgid "Reusable structures that can be applied to %(clients)s."
+msgstr "Structures reutilisables pouvant etre appliquees aux %(clients)s."
+
+#: templates/plans/_section.html
+#, python-format
+msgid "Edit %(name)s"
+msgstr "Modifier %(name)s"
+
+#, python-format
+msgid "Change status of %(name)s"
+msgstr "Changer le statut de %(name)s"
+
+#, python-format
+msgid "No %(targets)s in this %(section)s."
+msgstr "Aucune %(targets)s dans cette %(section)s."
+
+#: templates/plans/target_form.html
+#, python-format
+msgid "Add %(target)s"
+msgstr "Ajouter %(target)s"
+
+#: templates/plans/_target.html
+#, python-format
+msgid "Manage metrics for %(name)s"
+msgstr "Gerer les mesures pour %(name)s"
+
+#, python-format
+msgid "View history of %(name)s"
+msgstr "Voir l'historique de %(name)s"
+
+#: templates/plans/target_metrics.html
+#, python-format
+msgid "Assign %(metrics)s"
+msgstr "Attribuer %(metrics)s"
+
+#, python-format
+msgid "No enabled %(metrics)s available."
+msgstr "Aucune %(metrics)s activee disponible."
+
+msgid "An administrator can add them in the <a href=\"{% url 'plans:metric_library' %}\">metric library</a>."
+msgstr "Un administrateur peut les ajouter dans la <a href=\"{% url 'plans:metric_library' %}\">bibliotheque de mesures</a>."
+
+#, python-format
+msgid "Save %(metrics)s"
+msgstr "Enregistrer %(metrics)s"
+
+#: templates/plans/target_history.html
+#, python-format
+msgid "%(target)s History"
+msgstr "Historique %(target)s"
+
+#, python-format
+msgid "Back to %(plan)s"
+msgstr "Retour au %(plan)s"
+
+msgid "Revision history"
+msgstr "Historique des revisions"
+
+msgid "Reason"
+msgstr "Raison"
+
+msgid "Changed by"
+msgstr "Modifie par"
+
+msgid "Current values:"
+msgstr "Valeurs actuelles :"
+
+#, python-format
+msgid "No revision history for this %(target)s."
+msgstr "Aucun historique de revision pour cette %(target)s."
+
+#: templates/notes/admin/template_form.html
+#, python-format
+msgid "Edit %(note)s Template"
+msgstr "Modifier le modele %(note)s"
+
+#, python-format
+msgid "New %(note)s Template"
+msgstr "Nouveau modele %(note)s"
+
+msgid "Template Details"
+msgstr "Details du modele"
+
+msgid "Sections"
+msgstr "Sections"
+
+#, python-format
+msgid "Section %(num)s"
+msgstr "Section %(num)s"
+
+msgid "New Section"
+msgstr "Nouvelle section"
+
+msgid "Remove this section"
+msgstr "Supprimer cette section"
+
+msgid "Save Template"
+msgstr "Enregistrer le modele"
+
+#: templates/notes/cancel_form.html
+#, python-format
+msgid "Cancel %(note)s"
+msgstr "Annuler %(note)s"
+
+#: templates/events/alert_form.html
+#, python-format
+msgid "New Alert for %(first)s %(last)s"
+msgstr "Nouvelle alerte pour %(first)s %(last)s"
+
+#: templates/events/event_form.html
+#, python-format
+msgid "Event for %(first)s %(last)s"
+msgstr "Evenement pour %(first)s %(last)s"
+
+#: templates/registration/public_form.html
+#, python-format
+msgid "%(remaining)s of %(total)s spots remaining"
+msgstr "%(remaining)s places restantes sur %(total)s"
+
+#, python-format
+msgid "Registration closes %(deadline)s"
+msgstr "Les inscriptions ferment le %(deadline)s"
+
+msgid "Registration Closed"
+msgstr "Inscriptions fermees"
+
+msgid "The registration deadline has passed. Thank you for your interest."
+msgstr "La date limite d'inscription est passee. Merci de votre interet."
+
+msgid "This registration has reached capacity. Thank you for your interest."
+msgstr "Cette inscription a atteint sa capacite maximale. Merci de votre interet."
+
+msgid "Registration is not currently available. Please check back later."
+msgstr "Les inscriptions ne sont pas disponibles actuellement. Veuillez revenir plus tard."
+
+msgid "Too Many Submissions"
+msgstr "Trop de soumissions"
+
+msgid "You have submitted too many registrations recently. Please wait an hour and try again."
+msgstr "Vous avez soumis trop d'inscriptions recemment. Veuillez attendre une heure et reessayer."
+
+msgid "Your Information"
+msgstr "Vos informations"
+
+msgid "Email Address"
+msgstr "Adresse courriel"
+
+msgid "Phone Number"
+msgstr "Numero de telephone"
+
+msgid "I consent to my information being collected and stored for this registration."
+msgstr "Je consens a ce que mes informations soient collectees et stockees pour cette inscription."
+
+msgid "Submit Registration"
+msgstr "Soumettre l'inscription"
+
+#: templates/registration/closed.html
+msgid "The registration deadline has passed."
+msgstr "La date limite d'inscription est passee."
+
+#, python-format
+msgid "Registration closed on %(deadline)s at %(time)s."
+msgstr "Les inscriptions ont ferme le %(deadline)s a %(time)s."
+
+msgid "This registration has reached capacity."
+msgstr "Cette inscription a atteint sa capacite maximale."
+
+msgid "All available spots have been filled."
+msgstr "Toutes les places disponibles ont ete remplies."
+
+msgid "Registration is not currently available."
+msgstr "Les inscriptions ne sont pas disponibles actuellement."
+
+msgid "Please check back later or contact us for more information."
+msgstr "Veuillez revenir plus tard ou nous contacter pour plus d'informations."
+
+msgid "Thank you for your interest."
+msgstr "Merci de votre interet."
+
+#: templates/registration/submitted.html
+msgid "Registration Submitted"
+msgstr "Inscription soumise"
+
+msgid "You're Registered!"
+msgstr "Vous etes inscrit(e)!"
+
+msgid "Your registration has been confirmed."
+msgstr "Votre inscription a ete confirmee."
+
+msgid "Thank You!"
+msgstr "Merci!"
+
+msgid "Your registration has been submitted for review."
+msgstr "Votre inscription a ete soumise pour examen."
+
+msgid "Your reference number"
+msgstr "Votre numero de reference"
+
+msgid "Please save this number for your records."
+msgstr "Veuillez conserver ce numero pour vos dossiers."
+
+#, python-format
+msgid "You have been registered for <strong>%(program)s</strong>."
+msgstr "Vous avez ete inscrit(e) a <strong>%(program)s</strong>."
+
+msgid "We look forward to seeing you!"
+msgstr "Au plaisir de vous voir!"
+
+msgid "We will review your registration and contact you at the email address you provided."
+msgstr "Nous examinerons votre inscription et vous contacterons a l'adresse courriel fournie."
+
+msgid "This usually takes 1-2 business days."
+msgstr "Cela prend generalement 1-2 jours ouvrables."
+
+#: templates/registration/admin/link_form.html
+msgid "Edit Registration Link"
+msgstr "Modifier le lien d'inscription"
+
+msgid "Create a shareable link for self-service program registration."
+msgstr "Creer un lien partageable pour l'inscription en libre-service au programme."
+
+msgid "Registration URL:"
+msgstr "URL d'inscription :"
+
+msgid "Copy"
+msgstr "Copier"
+
+msgid "Custom Field Groups"
+msgstr "Groupes de champs personnalises"
+
+msgid "Select which custom field groups to include on the registration form."
+msgstr "Selectionnez les groupes de champs personnalises a inclure dans le formulaire d'inscription."
+
+msgid "Uncheck to temporarily disable this registration link."
+msgstr "Decochez pour desactiver temporairement ce lien d'inscription."
+
+msgid "Create Link"
+msgstr "Creer le lien"
+
+#: templates/registration/admin/link_confirm_delete.html
+#, python-format
+msgid "Are you sure you want to delete \"%(title)s\"?"
+msgstr "Etes-vous sur de vouloir supprimer \"%(title)s\"?"
+
+#: templates/reports/cmt_export_form.html
+msgid "Funder Report Template"
+msgstr "Modele de rapport pour les bailleurs de fonds"
+
+msgid "Generate a standardised funder report with service statistics, demographics, and outcomes."
+msgstr "Generez un rapport standardise pour les bailleurs de fonds avec les statistiques de service, les donnees demographiques et les resultats."
+
+msgid "Draft Template Notice"
+msgstr "Avis de modele provisoire"
+
+msgid "⚠️ Draft Template — Customise for Your Funder"
+msgstr "⚠️ Modele provisoire — Personnalisez pour votre bailleur de fonds"
+
+msgid "This is a generic funder report template. Before submitting to your funder, verify it matches their specific reporting requirements. Different funders (United Way chapters, government agencies, foundations) may require different formats, fields, or calculations."
+msgstr "Ceci est un modele de rapport generique pour les bailleurs de fonds. Avant de soumettre a votre bailleur, verifiez qu'il correspond a leurs exigences specifiques. Differents bailleurs (chapitres Centraide, agences gouvernementales, fondations) peuvent exiger des formats, champs ou calculs differents."
+
+msgid "About Funder Reports"
+msgstr "A propos des rapports pour les bailleurs de fonds"
+
+msgid "What's included in this report?"
+msgstr "Qu'est-ce qui est inclus dans ce rapport?"
+
+msgid "Organisation and programme information"
+msgstr "Informations sur l'organisation et le programme"
+
+msgid "Service statistics (total individuals served, new clients, total contacts)"
+msgstr "Statistiques de service (total des personnes servies, nouveaux clients, total des contacts)"
+
+msgid "Age demographics using common nonprofit categories"
+msgstr "Donnees demographiques par age selon les categories courantes des OBNL"
+
+msgid "Outcome achievement rates for all metrics with defined targets"
+msgstr "Taux d'atteinte des resultats pour toutes les mesures avec des cibles definies"
+
+msgid "Generate Funder Report"
+msgstr "Generer le rapport pour les bailleurs de fonds"
+
+msgid "About This Report Template"
+msgstr "A propos de ce modele de rapport"
+
+msgid "This is a draft funder report template based on common Canadian nonprofit reporting requirements. It includes service statistics, demographics, and outcome achievement rates that many funders request."
+msgstr "Ceci est un modele de rapport provisoire base sur les exigences courantes de rapportage des OBNL canadiens. Il comprend les statistiques de service, les donnees demographiques et les taux d'atteinte des resultats demandes par de nombreux bailleurs de fonds."
+
+msgid "<strong>Important:</strong> Your funder may require different formats, additional fields, or specific calculations. Always verify this template matches your funder's actual reporting template before submission. You may need to adjust or supplement this data."
+msgstr "<strong>Important :</strong> Votre bailleur de fonds peut exiger des formats differents, des champs supplementaires ou des calculs specifiques. Verifiez toujours que ce modele correspond au modele de rapport reel de votre bailleur avant de soumettre. Vous devrez peut-etre ajuster ou completer ces donnees."
+
+msgid "Default Age Categories"
+msgstr "Categories d'age par defaut"
+
+msgid "This template uses these common age groupings (adjust if your funder requires different categories):"
+msgstr "Ce modele utilise ces regroupements d'age courants (ajustez si votre bailleur de fonds exige des categories differentes) :"
+
+msgid "Child (0-12)"
+msgstr "Enfant (0-12 ans)"
+
+msgid "Youth (13-17)"
+msgstr "Jeune (13-17 ans)"
+
+msgid "Young Adult (18-24)"
+msgstr "Jeune adulte (18-24 ans)"
+
+msgid "Adult (25-64)"
+msgstr "Adulte (25-64 ans)"
+
+msgid "Senior (65+)"
+msgstr "Aine(e) (65 ans et plus)"
+
+msgid "Data Sources"
+msgstr "Sources de donnees"
+
+msgid "Organisation name: From your Instance Settings"
+msgstr "Nom de l'organisation : A partir de vos parametres d'instance"
+
+msgid "Service statistics: Based on progress notes recorded in the period"
+msgstr "Statistiques de service : Basees sur les notes de suivi enregistrees dans la periode"
+
+msgid "Demographics: Calculated from client birth dates"
+msgstr "Donnees demographiques : Calculees a partir des dates de naissance des clients"
+
+msgid "Outcomes: Based on metric targets defined in your outcome metrics"
+msgstr "Resultats : Bases sur les cibles definies dans vos mesures de resultats"
+
+#: templates/reports/client_data_export_form.html
+msgid "Client Data Export"
+msgstr "Exportation des donnees clients"
+
+msgid "Export all client data as a CSV file for data portability, backup, or migration to another system."
+msgstr "Exportez toutes les donnees clients sous forme de fichier CSV pour la portabilite des donnees, la sauvegarde ou la migration vers un autre systeme."
+
+msgid "Data privacy notice"
+msgstr "Avis de confidentialite des donnees"
+
+msgid "Data Privacy Notice"
+msgstr "Avis de confidentialite des donnees"
+
+msgid "This export will include personally identifiable information (PII) such as names and birth dates. Handle the exported file according to your organisation's data protection policies."
+msgstr "Cette exportation inclura des renseignements personnels identifiables (RPI) tels que les noms et les dates de naissance. Manipulez le fichier exporte conformement aux politiques de protection des donnees de votre organisation."
+
+msgid "There are no clients matching the selected filters. Try adjusting your filters or leave them blank to export all clients."
+msgstr "Aucun client ne correspond aux filtres selectionnes. Essayez d'ajuster vos filtres ou laissez-les vides pour exporter tous les clients."
+
+msgid "Include in export"
+msgstr "Inclure dans l'exportation"
+
+#: templates/clients/custom_fields_admin.html
+msgid "Custom Fields"
+msgstr "Champs personnalises"
+
+#, python-format
+msgid "Define additional fields for %(client)s files."
+msgstr "Definissez des champs supplementaires pour les dossiers %(client)s."
+
+msgid "New Group"
+msgstr "Nouveau groupe"
+
+msgid "New Field"
+msgstr "Nouveau champ"
+
+msgid "Edit Group"
+msgstr "Modifier le groupe"
+
+msgid "Field"
+msgstr "Champ"
+
+msgid "Sensitive"
+msgstr "Sensible"
+
+msgid "No fields in this group yet."
+msgstr "Aucun champ dans ce groupe pour le moment."
+
+msgid "No custom field groups defined yet."
+msgstr "Aucun groupe de champs personnalises defini pour le moment."
+
+#: templates/events/event_type_form.html
+msgid "Create Event Type"
+msgstr "Creer un type d'evenement"
+
+#: templates/events/alert_cancel_form.html
+#, python-format
+msgid "For %(first)s %(last)s"
+msgstr "Pour %(first)s %(last)s"
+
+msgid "alert to cancel"
+msgstr "alerte a annuler"
+
+#: templates/plans/metric_form.html
+#, python-format
+msgid "Edit %(metric)s"
+msgstr "Modifier %(metric)s"
+
+#, python-format
+msgid "Create %(metric)s"
+msgstr "Creer %(metric)s"
+
+msgid "Update metric definition."
+msgstr "Mettre a jour la definition de la mesure."
+
+msgid "Add a custom metric to the library."
+msgstr "Ajouter une mesure personnalisee a la bibliotheque."
+
+#: templates/notes/admin/template_list.html
+msgid "Define the structure for full progress notes."
+msgstr "Definissez la structure des notes de suivi completes."
+
+msgid "New Template"
+msgstr "Nouveau modele"
+
+msgid "No templates created yet."
+msgstr "Aucun modele cree pour le moment."
+
+#: templates/plans/metric_import.html
+#, python-format
+msgid "Import %(metrics)s"
+msgstr "Importer %(metrics)s"
+
+#, python-format
+msgid "Upload a CSV file to add multiple %(metrics)s at once."
+msgstr "Telechargez un fichier CSV pour ajouter plusieurs %(metrics)s a la fois."
+
+msgid "Import errors"
+msgstr "Erreurs d'importation"
+
+msgid "Errors found in CSV:"
+msgstr "Erreurs trouvees dans le CSV :"
+
+msgid "Please fix these errors and upload the file again."
+msgstr "Veuillez corriger ces erreurs et telecharger le fichier a nouveau."
+
+msgid "Preview"
+msgstr "Apercu"
+
+#, python-format
+msgid "Preview: %(count)s %(metrics)s ready to import"
+msgstr "Apercu : %(count)s %(metrics)s prets a importer"
+
+msgid "Metrics to import"
+msgstr "Mesures a importer"
+
+msgid "Definition"
+msgstr "Definition"
+
+msgid "Category"
+msgstr "Categorie"
+
+#, python-format
+msgid "Import %(count)s %(metrics)s"
+msgstr "Importer %(count)s %(metrics)s"
+
+msgid "Start Over"
+msgstr "Recommencer"
+
+msgid "Upload and Preview"
+msgstr "Telecharger et previsualiser"
+
+msgid "CSV Format Instructions"
+msgstr "Instructions de format CSV"
+
+msgid "Your CSV file should have these columns:"
+msgstr "Votre fichier CSV doit avoir ces colonnes :"
+
+msgid "Column"
+msgstr "Colonne"
+
+msgid "Name of the metric (e.g., \"PHQ-9 (Depression)\")"
+msgstr "Nom de la mesure (par ex., \"PHQ-9 (Depression)\")"
+
+msgid "Description of what this metric measures and how to score it"
+msgstr "Description de ce que cette mesure evalue et comment la noter"
+
+msgid "One of: "
+msgstr "Un de : "
+
+msgid "Minimum valid value (number)"
+msgstr "Valeur minimale valide (nombre)"
+
+msgid "Maximum valid value (number)"
+msgstr "Valeur maximale valide (nombre)"
+
+msgid "Unit of measurement (e.g., \"score\", \"days\", \"%\")"
+msgstr "Unite de mesure (par ex., \"score\", \"jours\", \"%\")"
+
+msgid "Example CSV:"
+msgstr "Exemple de CSV :"
+
+#: templates/plans/template_detail.html
+msgid "Edit Template"
+msgstr "Modifier le modele"
+
+msgid "Status:"
+msgstr "Statut :"
+
+msgid "Section actions"
+msgstr "Actions de section"
+
+msgid "Order"
+msgstr "Ordre"
+
+msgid "Add one above."
+msgstr "Ajoutez-en un ci-dessus."
+
+#, python-format
+msgid "No %(targets)s yet."
+msgstr "Aucune %(targets)s pour le moment."
+
+#: templates/plans/template_section_form.html templates/plans/template_target_form.html
+msgid "Add"
+msgstr "Ajouter"
+
+#, python-format
+msgid "Edit %(section)s"
+msgstr "Modifier %(section)s"
+
+#, python-format
+msgid "Add %(section)s"
+msgstr "Ajouter %(section)s"
+
+#, python-format
+msgid "Edit %(target)s"
+msgstr "Modifier %(target)s"
+
+#: templates/plans/template_apply.html
+msgid "Apply Template"
+msgstr "Appliquer le modele"
+
+#, python-format
+msgid "Apply a %(plan)s Template"
+msgstr "Appliquer un modele de %(plan)s"
+
+#, python-format
+msgid "Choose a template to add %(sections)s and %(targets)s to this %(client)s's %(plan)s."
+msgstr "Choisissez un modele pour ajouter des %(sections)s et des %(targets)s au %(plan)s de ce/cette %(client)s."
+
+msgid "Important information"
+msgstr "Information importante"
+
+msgid "Note:"
+msgstr "Note :"
+
+#, python-format
+msgid "Applying a template will <em>add</em> %(sections)s and %(targets)s to the existing %(plan)s. It will not overwrite or remove anything already there."
+msgstr "L'application d'un modele <em>ajoutera</em> des %(sections)s et des %(targets)s au %(plan)s existant. Cela ne remplacera ni ne supprimera rien de ce qui existe deja."
+
+msgid "with"
+msgstr "avec"
+
+msgid "Preview contents"
+msgstr "Previsualiser le contenu"
+
+msgid "Apply This Template"
+msgstr "Appliquer ce modele"
+
+msgid "No active templates available."
+msgstr "Aucun modele actif disponible."
+
+msgid "Create one first."
+msgstr "Creez-en un d'abord."
+
+#, python-format
+msgid "Back to %(plan)s"
+msgstr "Retour au %(plan)s"
+
+#: templates/plans/template_section_delete_confirm.html templates/plans/template_target_delete_confirm.html
+msgid "Confirmation"
+msgstr "Confirmation"
+
+#, python-format
+msgid "Delete %(section)s"
+msgstr "Supprimer %(section)s"
+
+#, python-format
+msgid "Are you sure you want to delete the %(section)s <strong>%(name)s</strong> and all its %(targets)s?"
+msgstr "Etes-vous sur de vouloir supprimer %(section)s <strong>%(name)s</strong> et toutes ses %(targets)s?"
+
+msgid "This action cannot be undone."
+msgstr "Cette action ne peut pas etre annulee."
+
+#, python-format
+msgid "Delete %(target)s"
+msgstr "Supprimer %(target)s"
+
+#, python-format
+msgid "Are you sure you want to delete the %(target)s <strong>%(name)s</strong> from %(section)s <strong>%(section_name)s</strong>?"
+msgstr "Etes-vous sur de vouloir supprimer %(target)s <strong>%(name)s</strong> de %(section)s <strong>%(section_name)s</strong>?"
+
+#: templates/reports/pdf_unavailable.html
+msgid "PDF Generation Unavailable"
+msgstr "Generation de PDF non disponible"
+
+msgid "This feature requires additional software that is not currently installed."
+msgstr "Cette fonctionnalite necessite un logiciel supplementaire qui n'est pas actuellement installe."
+
+msgid "PDF unavailable notice"
+msgstr "Avis de non-disponibilite du PDF"
+
+msgid "What happened?"
+msgstr "Que s'est-il passe?"
+
+msgid "PDF report generation requires <strong>WeasyPrint</strong> and its native GTK libraries. These are not installed on this server."
+msgstr "La generation de rapports PDF necessite <strong>WeasyPrint</strong> et ses bibliotheques GTK natives. Celles-ci ne sont pas installees sur ce serveur."
+
+msgid "Technical details"
+msgstr "Details techniques"
+
+msgid "Alternative options"
+msgstr "Options alternatives"
+
+msgid "What can I do instead?"
+msgstr "Que puis-je faire a la place?"
+
+msgid "Print to PDF:"
+msgstr "Imprimer en PDF :"
+
+msgid "View the report in your browser and use your browser's \"Print to PDF\" feature (Ctrl+P or Cmd+P)"
+msgstr "Consultez le rapport dans votre navigateur et utilisez la fonction \"Imprimer en PDF\" de votre navigateur (Ctrl+P ou Cmd+P)"
+
+msgid "Export to CSV:"
+msgstr "Exporter en CSV :"
+
+msgid "If available, use the CSV export option for data you can open in Excel"
+msgstr "Si disponible, utilisez l'option d'exportation CSV pour des donnees que vous pouvez ouvrir dans Excel"
+
+msgid "Contact your administrator:"
+msgstr "Contactez votre administrateur :"
+
+msgid "If PDF exports are required, ask your system administrator to install the WeasyPrint dependencies"
+msgstr "Si les exportations PDF sont requises, demandez a votre administrateur systeme d'installer les dependances WeasyPrint"
+
+msgid "Administrator instructions"
+msgstr "Instructions pour l'administrateur"
+
+msgid "For Administrators"
+msgstr "Pour les administrateurs"
+
+msgid "To enable PDF generation, install WeasyPrint and its dependencies:"
+msgstr "Pour activer la generation de PDF, installez WeasyPrint et ses dependances :"
+
+msgid "Install GTK3 runtime from"
+msgstr "Installez le runtime GTK3 depuis"
+
+msgid "or see"
+msgstr "ou consultez"
+
+msgid "WeasyPrint documentation"
+msgstr "la documentation WeasyPrint"
+
+msgid "After installing dependencies, restart the application."
+msgstr "Apres avoir installe les dependances, redemarrez l'application."

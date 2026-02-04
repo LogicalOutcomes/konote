@@ -1,16 +1,17 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Custom Fields — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% trans "Custom Fields" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>Custom Fields</h1>
-    <p>Define additional fields for {{ term.client|default:"client" }} files.</p>
+    <h1>{% trans "Custom Fields" %}</h1>
+    <p>{% blocktrans with client=term.client|default:"client" %}Define additional fields for {{ client }} files.{% endblocktrans %}</p>
 </hgroup>
 
 <div role="group">
-    <a href="{% url 'clients:custom_field_group_create' %}" role="button">New Group</a>
-    <a href="{% url 'clients:custom_field_def_create' %}" role="button" class="outline">New Field</a>
+    <a href="{% url 'clients:custom_field_group_create' %}" role="button">{% trans "New Group" %}</a>
+    <a href="{% url 'clients:custom_field_def_create' %}" role="button" class="outline">{% trans "New Field" %}</a>
 </div>
 
 {% if groups %}
@@ -18,19 +19,19 @@
 <article>
     <header>
         <strong>{{ group.title }}</strong>
-        {% if group.status == "archived" %}<span class="badge badge-neutral">Archived</span>{% endif %}
+        {% if group.status == "archived" %}<span class="badge badge-neutral">{% trans "Archived" %}</span>{% endif %}
         <span style="float: right;">
-            <a href="{% url 'clients:custom_field_group_edit' group_id=group.pk %}">Edit Group</a>
+            <a href="{% url 'clients:custom_field_group_edit' group_id=group.pk %}">{% trans "Edit Group" %}</a>
         </span>
     </header>
     {% if group.fields.all %}
     <table role="grid">
         <thead>
             <tr>
-                <th>Field</th>
-                <th>Type</th>
-                <th>Required</th>
-                <th>Sensitive</th>
+                <th>{% trans "Field" %}</th>
+                <th>{% trans "Type" %}</th>
+                <th>{% trans "Required" %}</th>
+                <th>{% trans "Sensitive" %}</th>
                 <th></th>
             </tr>
         </thead>
@@ -39,21 +40,21 @@
             <tr>
                 <td>{{ field.name }}</td>
                 <td>{{ field.get_input_type_display }}</td>
-                <td>{% if field.is_required %}Yes{% else %}No{% endif %}</td>
-                <td>{% if field.is_sensitive %}Yes{% else %}No{% endif %}</td>
-                <td><a href="{% url 'clients:custom_field_def_edit' field_id=field.pk %}">Edit</a></td>
+                <td>{% if field.is_required %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</td>
+                <td>{% if field.is_sensitive %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</td>
+                <td><a href="{% url 'clients:custom_field_def_edit' field_id=field.pk %}">{% trans "Edit" %}</a></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% else %}
-    <p class="empty-state">No fields in this group yet.</p>
+    <p class="empty-state">{% trans "No fields in this group yet." %}</p>
     {% endif %}
 </article>
 {% endfor %}
 {% else %}
 <div class="empty-state">
-    <p>No custom field groups defined yet.</p>
+    <p>{% trans "No custom field groups defined yet." %}</p>
 </div>
 {% endif %}
 {% endblock %}

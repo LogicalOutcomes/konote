@@ -1,22 +1,23 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Apply Template — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% trans "Apply Template" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
-<nav aria-label="Breadcrumb">
+<nav aria-label="{% trans 'Breadcrumb' %}">
     <ul>
         <li><a href="{% url 'plans:plan_view' client_id=client_file.pk %}">{{ term.plan|default:"Plan" }}</a></li>
-        <li>Apply Template</li>
+        <li>{% trans "Apply Template" %}</li>
     </ul>
 </nav>
 
 <hgroup>
-    <h1>Apply a {{ term.plan|default:"Plan" }} Template</h1>
-    <p>Choose a template to add {{ term.section_plural|default:"sections" }} and {{ term.target_plural|default:"targets" }} to this {{ term.client|default:"client" }}'s {{ term.plan|default:"plan" }}.</p>
+    <h1>{% blocktrans with plan=term.plan|default:"Plan" %}Apply a {{ plan }} Template{% endblocktrans %}</h1>
+    <p>{% blocktrans with sections=term.section_plural|default:"sections" targets=term.target_plural|default:"targets" client=term.client|default:"client" plan=term.plan|default:"plan" %}Choose a template to add {{ sections }} and {{ targets }} to this {{ client }}'s {{ plan }}.{% endblocktrans %}</p>
 </hgroup>
 
-<article aria-label="Important information">
-    <p><strong>Note:</strong> Applying a template will <em>add</em> {{ term.section_plural|default:"sections" }} and {{ term.target_plural|default:"targets" }} to the existing {{ term.plan|default:"plan" }}. It will not overwrite or remove anything already there.</p>
+<article aria-label="{% trans 'Important information' %}">
+    <p><strong>{% trans "Note:" %}</strong> {% blocktrans with sections=term.section_plural|default:"sections" targets=term.target_plural|default:"targets" plan=term.plan|default:"plan" %}Applying a template will <em>add</em> {{ sections }} and {{ targets }} to the existing {{ plan }}. It will not overwrite or remove anything already there.{% endblocktrans %}</p>
 </article>
 
 {% if templates %}
@@ -28,10 +29,10 @@
     {% if tmpl.description %}
     <p>{{ tmpl.description }}</p>
     {% endif %}
-    <p><small>{{ tmpl.sections.count }} {{ term.section_plural|default:"sections" }}, {{ tmpl.sections.all|length }} with {{ term.target_plural|default:"targets" }}</small></p>
+    <p><small>{{ tmpl.sections.count }} {{ term.section_plural|default:"sections" }}, {{ tmpl.sections.all|length }} {% trans "with" %} {{ term.target_plural|default:"targets" }}</small></p>
 
     <details>
-        <summary>Preview contents</summary>
+        <summary>{% trans "Preview contents" %}</summary>
         <ul>
             {% for section in tmpl.sections.all %}
             <li>
@@ -50,13 +51,13 @@
 
     <form method="post" action="{% url 'plan_templates:template_apply' client_id=client_file.pk template_id=tmpl.pk %}">
         {% csrf_token %}
-        <button type="submit">Apply This Template</button>
+        <button type="submit">{% trans "Apply This Template" %}</button>
     </form>
 </article>
 {% endfor %}
 {% else %}
-<p>No active templates available. <a href="{% url 'plan_templates:template_list' %}">Create one first.</a></p>
+<p>{% trans "No active templates available." %} <a href="{% url 'plan_templates:template_list' %}">{% trans "Create one first." %}</a></p>
 {% endif %}
 
-<p><a href="{% url 'plans:plan_view' client_id=client_file.pk %}">&larr; Back to {{ term.plan|default:"Plan" }}</a></p>
+<p><a href="{% url 'plans:plan_view' client_id=client_file.pk %}">&larr; {% blocktrans with plan=term.plan|default:"Plan" %}Back to {{ plan }}{% endblocktrans %}</a></p>
 {% endblock %}

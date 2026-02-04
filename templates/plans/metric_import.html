@@ -1,38 +1,39 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Import {{ term.metric_plural|default:"Metrics" }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% blocktrans with metrics=term.metric_plural|default:"Metrics" %}Import {{ metrics }}{% endblocktrans %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>Import {{ term.metric_plural|default:"Metrics" }}</h1>
-    <p>Upload a CSV file to add multiple {{ term.metric_plural|default:"metrics" }} at once.</p>
+    <h1>{% blocktrans with metrics=term.metric_plural|default:"Metrics" %}Import {{ metrics }}{% endblocktrans %}</h1>
+    <p>{% blocktrans with metrics=term.metric_plural|default:"metrics" %}Upload a CSV file to add multiple {{ metrics }} at once.{% endblocktrans %}</p>
 </hgroup>
 
 {% if parse_errors %}
-<article aria-label="Import errors" class="error-box" style="background-color: var(--pico-del-color); padding: 1rem; border-radius: var(--pico-border-radius); margin-bottom: 1rem;">
-    <strong>Errors found in CSV:</strong>
+<article aria-label="{% trans 'Import errors' %}" class="error-box" style="background-color: var(--pico-del-color); padding: 1rem; border-radius: var(--pico-border-radius); margin-bottom: 1rem;">
+    <strong>{% trans "Errors found in CSV:" %}</strong>
     <ul style="margin-bottom: 0;">
         {% for error in parse_errors %}
         <li>{{ error }}</li>
         {% endfor %}
     </ul>
-    <p style="margin-top: 1rem; margin-bottom: 0;">Please fix these errors and upload the file again.</p>
+    <p style="margin-top: 1rem; margin-bottom: 0;">{% trans "Please fix these errors and upload the file again." %}</p>
 </article>
 {% endif %}
 
 {% if preview_rows %}
-<article aria-label="Preview">
+<article aria-label="{% trans 'Preview' %}">
     <header>
-        <strong>Preview: {{ preview_rows|length }} {{ term.metric_plural|default:"metrics" }} ready to import</strong>
+        <strong>{% blocktrans with count=preview_rows|length metrics=term.metric_plural|default:"metrics" %}Preview: {{ count }} {{ metrics }} ready to import{% endblocktrans %}</strong>
     </header>
-    <table role="grid" aria-label="Metrics to import">
+    <table role="grid" aria-label="{% trans 'Metrics to import' %}">
         <thead>
             <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Definition</th>
-                <th scope="col">Category</th>
-                <th scope="col">Range</th>
-                <th scope="col">Unit</th>
+                <th scope="col">{% trans "Name" %}</th>
+                <th scope="col">{% trans "Definition" %}</th>
+                <th scope="col">{% trans "Category" %}</th>
+                <th scope="col">{% trans "Range" %}</th>
+                <th scope="col">{% trans "Unit" %}</th>
             </tr>
         </thead>
         <tbody>
@@ -43,7 +44,7 @@
                 <td>{{ row.category }}</td>
                 <td>
                     {% if row.min_value != None or row.max_value != None %}
-                        {{ row.min_value|default:"—" }} to {{ row.max_value|default:"—" }}
+                        {{ row.min_value|default:"—" }} {% trans "to" %} {{ row.max_value|default:"—" }}
                     {% else %}
                         —
                     {% endif %}
@@ -57,8 +58,8 @@
         <form method="post">
             {% csrf_token %}
             <div role="group">
-                <button type="submit" name="confirm_import" value="1">Import {{ preview_rows|length }} {{ term.metric_plural|default:"Metrics" }}</button>
-                <a href="{% url 'plans:metric_import' %}" role="button" class="outline secondary">Start Over</a>
+                <button type="submit" name="confirm_import" value="1">{% blocktrans with count=preview_rows|length metrics=term.metric_plural|default:"Metrics" %}Import {{ count }} {{ metrics }}{% endblocktrans %}</button>
+                <a href="{% url 'plans:metric_import' %}" role="button" class="outline secondary">{% trans "Start Over" %}</a>
             </div>
         </form>
     </footer>
@@ -78,57 +79,57 @@
     {% endfor %}
 
     <div role="group">
-        <button type="submit">Upload and Preview</button>
-        <a href="{% url 'plans:metric_library' %}" role="button" class="outline secondary">Cancel</a>
+        <button type="submit">{% trans "Upload and Preview" %}</button>
+        <a href="{% url 'plans:metric_library' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
 
 <details style="margin-top: 2rem;">
-    <summary>CSV Format Instructions</summary>
-    <p>Your CSV file should have these columns:</p>
+    <summary>{% trans "CSV Format Instructions" %}</summary>
+    <p>{% trans "Your CSV file should have these columns:" %}</p>
     <table role="grid">
         <thead>
             <tr>
-                <th scope="col">Column</th>
-                <th scope="col">Required</th>
-                <th scope="col">Description</th>
+                <th scope="col">{% trans "Column" %}</th>
+                <th scope="col">{% trans "Required" %}</th>
+                <th scope="col">{% trans "Description" %}</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td><code>name</code></td>
-                <td>Yes</td>
-                <td>Name of the metric (e.g., "PHQ-9 (Depression)")</td>
+                <td>{% trans "Yes" %}</td>
+                <td>{% trans "Name of the metric (e.g., \"PHQ-9 (Depression)\")" %}</td>
             </tr>
             <tr>
                 <td><code>definition</code></td>
-                <td>Yes</td>
-                <td>Description of what this metric measures and how to score it</td>
+                <td>{% trans "Yes" %}</td>
+                <td>{% trans "Description of what this metric measures and how to score it" %}</td>
             </tr>
             <tr>
                 <td><code>category</code></td>
-                <td>Yes</td>
-                <td>One of: {% for key, label in category_choices.items %}{{ key }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                <td>{% trans "Yes" %}</td>
+                <td>{% blocktrans %}One of: {% endblocktrans %}{% for key, label in category_choices.items %}{{ key }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
             </tr>
             <tr>
                 <td><code>min_value</code></td>
-                <td>No</td>
-                <td>Minimum valid value (number)</td>
+                <td>{% trans "No" %}</td>
+                <td>{% trans "Minimum valid value (number)" %}</td>
             </tr>
             <tr>
                 <td><code>max_value</code></td>
-                <td>No</td>
-                <td>Maximum valid value (number)</td>
+                <td>{% trans "No" %}</td>
+                <td>{% trans "Maximum valid value (number)" %}</td>
             </tr>
             <tr>
                 <td><code>unit</code></td>
-                <td>No</td>
-                <td>Unit of measurement (e.g., "score", "days", "%")</td>
+                <td>{% trans "No" %}</td>
+                <td>{% trans "Unit of measurement (e.g., \"score\", \"days\", \"%\")" %}</td>
             </tr>
         </tbody>
     </table>
 
-    <p><strong>Example CSV:</strong></p>
+    <p><strong>{% trans "Example CSV:" %}</strong></p>
     <pre style="background: var(--pico-code-background-color); padding: 1rem; overflow-x: auto;">name,definition,category,min_value,max_value,unit
 Client Satisfaction,Client satisfaction with services. 1 = very dissatisfied 5 = very satisfied.,general,1,5,score
 Days in Program,Number of days enrolled in the program.,general,0,,days</pre>

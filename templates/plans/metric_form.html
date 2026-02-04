@@ -1,11 +1,12 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}{% if editing %}Edit{% else %}Create{% endif %} {{ term.metric|default:"Metric" }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% if editing %}{% trans "Edit" %}{% else %}{% trans "Create" %}{% endif %} {{ term.metric|default:"Metric" }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% if editing %}Edit{% else %}Create{% endif %} {{ term.metric|default:"Metric" }}</h1>
-    <p>{% if editing %}Update metric definition.{% else %}Add a custom metric to the library.{% endif %}</p>
+    <h1>{% if editing %}{% blocktrans with metric=term.metric|default:"Metric" %}Edit {{ metric }}{% endblocktrans %}{% else %}{% blocktrans with metric=term.metric|default:"Metric" %}Create {{ metric }}{% endblocktrans %}{% endif %}</h1>
+    <p>{% if editing %}{% trans "Update metric definition." %}{% else %}{% trans "Add a custom metric to the library." %}{% endif %}</p>
 </hgroup>
 
 <form method="post">
@@ -22,8 +23,8 @@
     {% endfor %}
 
     <div role="group">
-        <button type="submit">{% if editing %}Save Changes{% else %}Create {{ term.metric|default:"Metric" }}{% endif %}</button>
-        <a href="{% url 'plans:metric_library' %}" role="button" class="outline secondary">Cancel</a>
+        <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% blocktrans with metric=term.metric|default:"Metric" %}Create {{ metric }}{% endblocktrans %}{% endif %}</button>
+        <a href="{% url 'plans:metric_library' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
 {% endblock %}

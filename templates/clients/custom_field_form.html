@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}{{ title }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
@@ -13,7 +14,7 @@
     {% for field in form %}
     <label for="{{ field.id_for_label }}">
         {{ field.label }}
-        {% if field.field.required %}<abbr title="required">*</abbr>{% endif %}
+        {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
     </label>
     {{ field }}
     {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
@@ -21,8 +22,8 @@
     {% endfor %}
 
     <div role="group">
-        <button type="submit">Save</button>
-        <a href="{% url 'clients:custom_field_admin' %}" role="button" class="outline">Cancel</a>
+        <button type="submit">{% trans "Save" %}</button>
+        <a href="{% url 'clients:custom_field_admin' %}" role="button" class="outline">{% trans "Cancel" %}</a>
     </div>
 </form>
 {% endblock %}

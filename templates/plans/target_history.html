@@ -1,24 +1,25 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}History — {{ target.name }}{% endblock %}
+{% block title %}{% trans "History" %} — {{ target.name }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{{ term.target|default:"Target" }} History</h1>
+    <h1>{% blocktrans with target=term.target|default:"Target" %}{{ target }} History{% endblocktrans %}</h1>
     <p>{{ target.name }} — {{ client.first_name }} {{ client.last_name }}</p>
 </hgroup>
 
-<a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary" style="margin-bottom: 1rem;">Back to {{ term.plan|default:"Plan" }}</a>
+<a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary" style="margin-bottom: 1rem;">{% blocktrans with plan=term.plan|default:"Plan" %}Back to {{ plan }}{% endblocktrans %}</a>
 
 {% if revisions %}
-<table role="grid" aria-label="Revision history">
+<table role="grid" aria-label="{% trans 'Revision history' %}">
     <thead>
         <tr>
-            <th scope="col">Date</th>
-            <th scope="col">Name</th>
-            <th scope="col">Status</th>
-            <th scope="col">Reason</th>
-            <th scope="col">Changed by</th>
+            <th scope="col">{% trans "Date" %}</th>
+            <th scope="col">{% trans "Name" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Reason" %}</th>
+            <th scope="col">{% trans "Changed by" %}</th>
         </tr>
     </thead>
     <tbody>
@@ -28,11 +29,11 @@
             <td>{{ rev.name }}</td>
             <td>
                 {% if rev.status == "default" %}
-                    <span class="badge badge-success">Active</span>
+                    <span class="badge badge-success">{% trans "Active" %}</span>
                 {% elif rev.status == "completed" %}
-                    <span class="badge badge-info">Completed</span>
+                    <span class="badge badge-info">{% trans "Completed" %}</span>
                 {% else %}
-                    <span class="badge badge-neutral">Deactivated</span>
+                    <span class="badge badge-neutral">{% trans "Deactivated" %}</span>
                 {% endif %}
             </td>
             <td>{{ rev.status_reason|default:"—" }}</td>
@@ -42,8 +43,8 @@
     </tbody>
 </table>
 
-<p><strong>Current values:</strong> {{ target.name }} — {{ target.get_status_display }}</p>
+<p><strong>{% trans "Current values:" %}</strong> {{ target.name }} — {{ target.get_status_display }}</p>
 {% else %}
-<p>No revision history for this {{ term.target|default:"target" }}.</p>
+<p>{% blocktrans with target=term.target|default:"target" %}No revision history for this {{ target }}.{% endblocktrans %}</p>
 {% endif %}
 {% endblock %}

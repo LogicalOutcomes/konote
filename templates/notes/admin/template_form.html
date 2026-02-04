@@ -1,17 +1,18 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}{% if editing %}Edit{% else %}New{% endif %} {{ term.progress_note|default:"Note" }} Template{% endblock %}
+{% block title %}{% if editing %}{% trans "Edit" %}{% else %}{% trans "New" %}{% endif %} {{ term.progress_note|default:"Note" }} {% trans "Template" %}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% if editing %}Edit{% else %}New{% endif %} {{ term.progress_note|default:"Note" }} Template</h1>
+    <h1>{% if editing %}{% blocktrans with note=term.progress_note|default:"Note" %}Edit {{ note }} Template{% endblocktrans %}{% else %}{% blocktrans with note=term.progress_note|default:"Note" %}New {{ note }} Template{% endblocktrans %}{% endif %}</h1>
 </hgroup>
 
 <form method="post">
     {% csrf_token %}
 
     <fieldset>
-        <legend>Template Details</legend>
+        <legend>{% trans "Template Details" %}</legend>
         {% for field in form %}
         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
         {{ field }}
@@ -20,14 +21,14 @@
     </fieldset>
 
     <fieldset>
-        <legend>Sections</legend>
+        <legend>{% trans "Sections" %}</legend>
         {{ formset.management_form }}
         {% for section_form in formset %}
         <article>
             {% if section_form.instance.pk %}
-            <header>Section {{ forloop.counter }}</header>
+            <header>{% blocktrans with num=forloop.counter %}Section {{ num }}{% endblocktrans %}</header>
             {% else %}
-            <header>New Section</header>
+            <header>{% trans "New Section" %}</header>
             {% endif %}
             {{ section_form.id }}
             {% for field in section_form %}
@@ -39,7 +40,7 @@
             {% endfor %}
             {% if section_form.instance.pk %}
             <label>
-                {{ section_form.DELETE }} Remove this section
+                {{ section_form.DELETE }} {% trans "Remove this section" %}
             </label>
             {% endif %}
         </article>
@@ -47,8 +48,8 @@
     </fieldset>
 
     <div role="group">
-        <button type="submit">Save Template</button>
-        <a href="{% url 'note_templates:template_list' %}" role="button" class="outline secondary">Cancel</a>
+        <button type="submit">{% trans "Save Template" %}</button>
+        <a href="{% url 'note_templates:template_list' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
 {% endblock %}

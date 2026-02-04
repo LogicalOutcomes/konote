@@ -1,17 +1,18 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}{% if is_edit %}Edit{% else %}Add{% endif %} {{ term.section|default:"Section" }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% if is_edit %}{% trans "Edit" %}{% else %}{% trans "Add" %}{% endif %} {{ term.section|default:"Section" }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
-<nav aria-label="Breadcrumb">
+<nav aria-label="{% trans 'Breadcrumb' %}">
     <ul>
-        <li><a href="{% url 'plan_templates:template_list' %}">Templates</a></li>
+        <li><a href="{% url 'plan_templates:template_list' %}">{% trans "Templates" %}</a></li>
         <li><a href="{% url 'plan_templates:template_detail' template_id=template.pk %}">{{ template.name }}</a></li>
-        <li>{% if is_edit %}Edit{% else %}Add{% endif %} {{ term.section|default:"Section" }}</li>
+        <li>{% if is_edit %}{% trans "Edit" %}{% else %}{% trans "Add" %}{% endif %} {{ term.section|default:"Section" }}</li>
     </ul>
 </nav>
 
-<h1>{% if is_edit %}Edit {{ term.section|default:"Section" }}{% else %}Add {{ term.section|default:"Section" }}{% endif %}</h1>
+<h1>{% if is_edit %}{% blocktrans with section=term.section|default:"Section" %}Edit {{ section }}{% endblocktrans %}{% else %}{% blocktrans with section=term.section|default:"Section" %}Add {{ section }}{% endblocktrans %}{% endif %}</h1>
 
 <form method="post">
     {% csrf_token %}
@@ -19,7 +20,7 @@
     {% for field in form %}
     <label for="{{ field.id_for_label }}">
         {{ field.label }}
-        {% if field.field.required %}<abbr title="required">*</abbr>{% endif %}
+        {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
     </label>
     {{ field }}
     {% if field.errors %}
@@ -31,8 +32,8 @@
     {% endfor %}
 
     <div role="group">
-        <button type="submit">{% if is_edit %}Save Changes{% else %}Add {{ term.section|default:"Section" }}{% endif %}</button>
-        <a href="{% url 'plan_templates:template_detail' template_id=template.pk %}" role="button" class="secondary">Cancel</a>
+        <button type="submit">{% if is_edit %}{% trans "Save Changes" %}{% else %}{% blocktrans with section=term.section|default:"Section" %}Add {{ section }}{% endblocktrans %}{% endif %}</button>
+        <a href="{% url 'plan_templates:template_detail' template_id=template.pk %}" role="button" class="secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
 {% endblock %}

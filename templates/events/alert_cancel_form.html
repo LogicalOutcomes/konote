@@ -1,17 +1,18 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}Cancel Alert — {{ client.first_name }} {{ client.last_name }}{% endblock %}
+{% block title %}{% trans "Cancel Alert" %} — {{ client.first_name }} {{ client.last_name }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>Cancel Alert</h1>
-    <p>For {{ client.first_name }} {{ client.last_name }}</p>
+    <h1>{% trans "Cancel Alert" %}</h1>
+    <p>{% blocktrans with first=client.first_name last=client.last_name %}For {{ first }} {{ last }}{% endblocktrans %}</p>
 </hgroup>
 
-<article aria-label="alert to cancel" style="border-left: 4px solid #EF4444;">
+<article aria-label="{% trans 'alert to cancel' %}" style="border-left: 4px solid #EF4444;">
     <p>{{ alert.content }}</p>
-    <small>Created {{ alert.created_at|date:"Y-m-d" }}
-        {% if alert.author %} by {{ alert.author.display_name|default:alert.author }}{% endif %}
+    <small>{% trans "Created" %} {{ alert.created_at|date:"Y-m-d" }}
+        {% if alert.author %} {% trans "by" %} {{ alert.author.display_name|default:alert.author }}{% endif %}
     </small>
 </article>
 
@@ -21,7 +22,7 @@
     {% for field in form %}
     <label for="{{ field.id_for_label }}">
         {{ field.label }}
-        {% if field.field.required %}<abbr title="required">*</abbr>{% endif %}
+        {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
     </label>
     {{ field }}
     {% if field.errors %}
@@ -30,8 +31,8 @@
     {% endfor %}
 
     <div role="group">
-        <button type="submit" class="contrast">Cancel Alert</button>
-        <a href="{% url 'events:event_list' client_id=client.pk %}" role="button" class="outline">Go Back</a>
+        <button type="submit" class="contrast">{% trans "Cancel Alert" %}</button>
+        <a href="{% url 'events:event_list' client_id=client.pk %}" role="button" class="outline">{% trans "Go Back" %}</a>
     </div>
 </form>
 {% endblock %}

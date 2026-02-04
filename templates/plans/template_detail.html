@@ -1,11 +1,12 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}{{ template.name }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
-<nav aria-label="Breadcrumb">
+<nav aria-label="{% trans 'Breadcrumb' %}">
     <ul>
-        <li><a href="{% url 'plan_templates:template_list' %}">Templates</a></li>
+        <li><a href="{% url 'plan_templates:template_list' %}">{% trans "Templates" %}</a></li>
         <li>{{ template.name }}</li>
     </ul>
 </nav>
@@ -16,14 +17,14 @@
 </hgroup>
 
 <p>
-    Status:
+    {% trans "Status:" %}
     {% if template.status == "active" %}
-        <span class="badge badge-success">Active</span>
+        <span class="badge badge-success">{% trans "Active" %}</span>
     {% else %}
-        <span class="badge badge-neutral">Archived</span>
+        <span class="badge badge-neutral">{% trans "Archived" %}</span>
     {% endif %}
     &nbsp;
-    <a href="{% url 'plan_templates:template_edit' template_id=template.pk %}">Edit Template</a>
+    <a href="{% url 'plan_templates:template_edit' template_id=template.pk %}">{% trans "Edit Template" %}</a>
 </p>
 
 <hr>
@@ -32,7 +33,7 @@
 
 <p>
     <a href="{% url 'plan_templates:template_section_create' template_id=template.pk %}" role="button" class="outline">
-        Add {{ term.section|default:"Section" }}
+        {% blocktrans with section=term.section|default:"Section" %}Add {{ section }}{% endblocktrans %}
     </a>
 </p>
 
@@ -45,10 +46,10 @@
             <p><small>{{ term.program|default:"Programme" }}: {{ section.program.name }}</small></p>
             {% endif %}
         </hgroup>
-        <nav aria-label="Section actions">
-            <a href="{% url 'plan_templates:template_section_edit' section_id=section.pk %}">Edit</a>
+        <nav aria-label="{% trans 'Section actions' %}">
+            <a href="{% url 'plan_templates:template_section_edit' section_id=section.pk %}">{% trans "Edit" %}</a>
             &middot;
-            <a href="{% url 'plan_templates:template_section_delete' section_id=section.pk %}" class="secondary">Delete</a>
+            <a href="{% url 'plan_templates:template_section_delete' section_id=section.pk %}" class="secondary">{% trans "Delete" %}</a>
         </nav>
     </header>
 
@@ -58,10 +59,10 @@
     <table role="grid" aria-label="{{ term.target_plural|default:'Targets' }} in {{ section.name }}">
         <thead>
             <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Description</th>
-                <th scope="col">Order</th>
-                <th scope="col">Actions</th>
+                <th scope="col">{% trans "Name" %}</th>
+                <th scope="col">{% trans "Description" %}</th>
+                <th scope="col">{% trans "Order" %}</th>
+                <th scope="col">{% trans "Actions" %}</th>
             </tr>
         </thead>
         <tbody>
@@ -71,25 +72,25 @@
                 <td>{{ target.description|truncatewords:12 }}</td>
                 <td>{{ target.sort_order }}</td>
                 <td>
-                    <a href="{% url 'plan_templates:template_target_edit' target_id=target.pk %}">Edit</a>
+                    <a href="{% url 'plan_templates:template_target_edit' target_id=target.pk %}">{% trans "Edit" %}</a>
                     &middot;
-                    <a href="{% url 'plan_templates:template_target_delete' target_id=target.pk %}" class="secondary">Delete</a>
+                    <a href="{% url 'plan_templates:template_target_delete' target_id=target.pk %}" class="secondary">{% trans "Delete" %}</a>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     {% else %}
-    <p><em>No {{ term.target_plural|default:"targets" }} yet.</em></p>
+    <p><em>{% blocktrans with targets=term.target_plural|default:"targets" %}No {{ targets }} yet.{% endblocktrans %}</em></p>
     {% endif %}
 
     <p>
         <a href="{% url 'plan_templates:template_target_create' section_id=section.pk %}" class="outline">
-            Add {{ term.target|default:"Target" }}
+            {% blocktrans with target=term.target|default:"Target" %}Add {{ target }}{% endblocktrans %}
         </a>
     </p>
 </article>
 {% empty %}
-<p>No {{ term.section_plural|default:"sections" }} yet. Add one above.</p>
+<p>{% blocktrans with sections=term.section_plural|default:"sections" %}No {{ sections }} yet.{% endblocktrans %} {% trans "Add one above." %}</p>
 {% endfor %}
 {% endblock %}

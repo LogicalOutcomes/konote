@@ -1,52 +1,52 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}PDF Generation Unavailable — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% trans "PDF Generation Unavailable" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>PDF Generation Unavailable</h1>
-    <p>This feature requires additional software that is not currently installed.</p>
+    <h1>{% trans "PDF Generation Unavailable" %}</h1>
+    <p>{% trans "This feature requires additional software that is not currently installed." %}</p>
 </hgroup>
 
-<article aria-label="PDF unavailable notice">
+<article aria-label="{% trans 'PDF unavailable notice' %}">
     <header>
-        <strong>What happened?</strong>
+        <strong>{% trans "What happened?" %}</strong>
     </header>
     <p>
-        PDF report generation requires <strong>WeasyPrint</strong> and its native GTK libraries.
-        These are not installed on this server.
+        {% trans "PDF report generation requires <strong>WeasyPrint</strong> and its native GTK libraries. These are not installed on this server." %}
     </p>
     {% if reason %}
     <details>
-        <summary>Technical details</summary>
+        <summary>{% trans "Technical details" %}</summary>
         <pre style="white-space: pre-wrap; font-size: 0.85em;">{{ reason }}</pre>
     </details>
     {% endif %}
 </article>
 
-<article aria-label="Alternative options">
+<article aria-label="{% trans 'Alternative options' %}">
     <header>
-        <strong>What can I do instead?</strong>
+        <strong>{% trans "What can I do instead?" %}</strong>
     </header>
     <ul>
-        <li><strong>Print to PDF:</strong> View the report in your browser and use your browser's "Print to PDF" feature (Ctrl+P or Cmd+P)</li>
-        <li><strong>Export to CSV:</strong> If available, use the CSV export option for data you can open in Excel</li>
-        <li><strong>Contact your administrator:</strong> If PDF exports are required, ask your system administrator to install the WeasyPrint dependencies</li>
+        <li><strong>{% trans "Print to PDF:" %}</strong> {% trans "View the report in your browser and use your browser's \"Print to PDF\" feature (Ctrl+P or Cmd+P)" %}</li>
+        <li><strong>{% trans "Export to CSV:" %}</strong> {% trans "If available, use the CSV export option for data you can open in Excel" %}</li>
+        <li><strong>{% trans "Contact your administrator:" %}</strong> {% trans "If PDF exports are required, ask your system administrator to install the WeasyPrint dependencies" %}</li>
     </ul>
 </article>
 
-<article aria-label="Administrator instructions">
+<article aria-label="{% trans 'Administrator instructions' %}">
     <header>
-        <strong>For Administrators</strong>
+        <strong>{% trans "For Administrators" %}</strong>
     </header>
-    <p>To enable PDF generation, install WeasyPrint and its dependencies:</p>
+    <p>{% trans "To enable PDF generation, install WeasyPrint and its dependencies:" %}</p>
     <ul>
         <li><strong>Linux (Ubuntu/Debian):</strong> <code>apt install libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0</code></li>
         <li><strong>macOS:</strong> <code>brew install pango gdk-pixbuf libffi</code></li>
-        <li><strong>Windows:</strong> Install GTK3 runtime from <a href="https://github.com/nickvidal/MSYS2-packages/releases" target="_blank" rel="noopener">MSYS2</a> or see <a href="https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#windows" target="_blank" rel="noopener">WeasyPrint documentation</a></li>
+        <li><strong>Windows:</strong> {% trans "Install GTK3 runtime from" %} <a href="https://github.com/nickvidal/MSYS2-packages/releases" target="_blank" rel="noopener">MSYS2</a> {% trans "or see" %} <a href="https://doc.courtbouillon.org/weasyprint/stable/first_steps.html#windows" target="_blank" rel="noopener">{% trans "WeasyPrint documentation" %}</a></li>
     </ul>
-    <p>After installing dependencies, restart the application.</p>
+    <p>{% trans "After installing dependencies, restart the application." %}</p>
 </article>
 
-<p><a href="javascript:history.back()" role="button" class="secondary outline">Go Back</a></p>
+<p><a href="javascript:history.back()" role="button" class="secondary outline">{% trans "Go Back" %}</a></p>
 {% endblock %}

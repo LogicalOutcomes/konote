@@ -1,25 +1,26 @@
 {% extends "base.html" %}
+{% load i18n %}
 
-{% block title %}{{ term.progress_note|default:"Note" }} Templates — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{{ term.progress_note|default:"Note" }} {% trans "Templates" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{{ term.progress_note|default:"Note" }} Templates</h1>
-    <p>Define the structure for full progress notes.</p>
+    <h1>{{ term.progress_note|default:"Note" }} {% trans "Templates" %}</h1>
+    <p>{% trans "Define the structure for full progress notes." %}</p>
 </hgroup>
 
 <div role="group">
-    <a href="{% url 'note_templates:template_create' %}" role="button">New Template</a>
+    <a href="{% url 'note_templates:template_create' %}" role="button">{% trans "New Template" %}</a>
 </div>
 
 {% if templates %}
 <table>
     <thead>
         <tr>
-            <th>Name</th>
-            <th>Sections</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <th>{% trans "Name" %}</th>
+            <th>{% trans "Sections" %}</th>
+            <th>{% trans "Status" %}</th>
+            <th>{% trans "Actions" %}</th>
         </tr>
     </thead>
     <tbody>
@@ -29,17 +30,17 @@
             <td>{{ t.sections.count }}</td>
             <td>
                 {% if t.status == "active" %}
-                    <span class="badge badge-success">Active</span>
+                    <span class="badge badge-success">{% trans "Active" %}</span>
                 {% else %}
-                    <span class="badge badge-neutral">Archived</span>
+                    <span class="badge badge-neutral">{% trans "Archived" %}</span>
                 {% endif %}
             </td>
-            <td><a href="{% url 'note_templates:template_edit' pk=t.pk %}">Edit</a></td>
+            <td><a href="{% url 'note_templates:template_edit' pk=t.pk %}">{% trans "Edit" %}</a></td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 {% else %}
-<p class="empty-state">No templates created yet.</p>
+<p class="empty-state">{% trans "No templates created yet." %}</p>
 {% endif %}
 {% endblock %}

@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% load i18n %}
 
 {% block title %}{{ term.metric_plural|default:"Metrics" }} — {{ target.name }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>Assign {{ term.metric_plural|default:"Metrics" }}</h1>
+    <h1>{% blocktrans with metrics=term.metric_plural|default:"Metrics" %}Assign {{ metrics }}{% endblocktrans %}</h1>
     <p>{{ term.target|default:"Target" }}: {{ target.name }} — {{ client.first_name }} {{ client.last_name }}</p>
 </hgroup>
 
@@ -25,12 +26,12 @@
         {% endfor %}
     </fieldset>
     {% empty %}
-    <p>No enabled {{ term.metric_plural|default:"metrics" }} available. An administrator can add them in the <a href="{% url 'plans:metric_library' %}">metric library</a>.</p>
+    <p>{% blocktrans with metrics=term.metric_plural|default:"metrics" %}No enabled {{ metrics }} available.{% endblocktrans %} {% blocktrans %}An administrator can add them in the <a href="{% url 'plans:metric_library' %}">metric library</a>.{% endblocktrans %}</p>
     {% endfor %}
 
     <div role="group">
-        <button type="submit">Save {{ term.metric_plural|default:"Metrics" }}</button>
-        <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary">Cancel</a>
+        <button type="submit">{% blocktrans with metrics=term.metric_plural|default:"Metrics" %}Save {{ metrics }}{% endblocktrans %}</button>
+        <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
 {% endblock %}
