@@ -8,13 +8,18 @@ def terminology(request):
 
     Detects the current language from the request and returns terms
     in that language. Falls back to English if French translation
-    is not available.
+    is not available or if any error occurs.
     """
     from apps.admin_settings.models import TerminologyOverride
 
-    # Get current language (returns 'en', 'fr', etc.)
-    lang = get_language() or "en"
-    lang_prefix = "fr" if lang.startswith("fr") else "en"
+    try:
+        # Get current language (returns 'en', 'fr', etc.)
+        lang = get_language() or "en"
+        lang_prefix = "fr" if lang.startswith("fr") else "en"
+    except Exception:
+        # If translation system fails, default to English
+        lang_prefix = "en"
+
     cache_key = f"terminology_overrides_{lang_prefix}"
 
     terms = cache.get(cache_key)
