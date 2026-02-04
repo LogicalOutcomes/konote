@@ -626,8 +626,10 @@ details.search-filters-panel[open] summary {
     margin-bottom: 1.5rem;
 }
 
-/* Demo login buttons — ensure text is readable on dark gray background */
-.login-container a[role="button"].secondary {
+/* Secondary buttons — ensure text is readable on dark gray background */
+.login-container a[role="button"].secondary,
+.filter-actions a[role="button"].secondary,
+.empty-state a[role="button"].secondary {
     --pico-secondary-inverse: #ffffff;
     color: #ffffff;
 }
@@ -740,6 +742,36 @@ label {
     font-weight: 500;
 }
 
+/* ---- Compact info grid (receptionist view) ---- */
+.info-grid-compact {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--kn-space-base) var(--kn-space-lg);
+    margin-bottom: var(--kn-space-base);
+}
+.info-grid-compact .info-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kn-space-2xs, 0.125rem);
+}
+.info-grid-compact .info-field dt {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--kn-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+.info-grid-compact .info-field dd {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 500;
+}
+@media (max-width: 480px) {
+    .info-grid-compact {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 /* ---- Pagination ---- */
 nav.pagination {
     display: flex;
@@ -774,6 +806,11 @@ p.notice {
     margin-bottom: var(--kn-space-lg);
     border-radius: var(--kn-radius-card);
     color: var(--kn-text-secondary);
+}
+p.notice.notice-compact {
+    font-size: 0.8125rem;
+    padding: var(--kn-space-xs) var(--kn-space-sm);
+    margin-bottom: var(--kn-space-base);
 }
 
 /* ---- Section cards (plan) ---- */
