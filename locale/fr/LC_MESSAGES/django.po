@@ -1478,11 +1478,6 @@ msgstr "Retirer %(name)s de ce programme?"
 msgid "Reusable structures that can be applied to %(clients)s."
 msgstr "Structures reutilisables pouvant etre appliquees aux %(clients)s."
 
-#: templates/plans/_section.html
-#, python-format
-msgid "Edit %(name)s"
-msgstr "Modifier %(name)s"
-
 #, python-format
 msgid "Change status of %(name)s"
 msgstr "Changer le statut de %(name)s"
@@ -1983,25 +1978,13 @@ msgstr "Ajoutez-en un ci-dessus."
 msgid "No %(targets)s yet."
 msgstr "Aucune %(targets)s pour le moment."
 
-#: templates/plans/template_section_form.html templates/plans/template_target_form.html
-msgid "Add"
-msgstr "Ajouter"
-
 #, python-format
 msgid "Edit %(section)s"
 msgstr "Modifier %(section)s"
 
 #, python-format
-msgid "Add %(section)s"
-msgstr "Ajouter %(section)s"
-
-#, python-format
 msgid "Edit %(target)s"
 msgstr "Modifier %(target)s"
-
-#: templates/plans/template_apply.html
-msgid "Apply Template"
-msgstr "Appliquer le modele"
 
 #, python-format
 msgid "Apply a %(plan)s Template"
@@ -2035,10 +2018,6 @@ msgstr "Aucun modele actif disponible."
 
 msgid "Create one first."
 msgstr "Creez-en un d'abord."
-
-#, python-format
-msgid "Back to %(plan)s"
-msgstr "Retour au %(plan)s"
 
 #: templates/plans/template_section_delete_confirm.html templates/plans/template_target_delete_confirm.html
 msgid "Confirmation"
