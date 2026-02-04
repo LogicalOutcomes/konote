@@ -24,7 +24,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Compile translation files (.po → .mo) — ensures compatibility with this Python version
-RUN python manage.py compilemessages --settings=konote.settings.production
+RUN FIELD_ENCRYPTION_KEY=dummy-build-key SECRET_KEY=dummy-build-key ALLOWED_HOSTS=* \
+    DATABASE_URL=sqlite:///dummy.db AUDIT_DATABASE_URL=sqlite:///dummy-audit.db \
+    python manage.py compilemessages --settings=konote.settings.production
 
 # Collect static files (dummy env vars for build — not used at runtime)
 RUN FIELD_ENCRYPTION_KEY=dummy-build-key SECRET_KEY=dummy-build-key ALLOWED_HOSTS=* \
