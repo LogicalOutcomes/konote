@@ -359,9 +359,6 @@ msgstr "Role"
 msgid "Last Login"
 msgstr "Derniere connexion"
 
-msgid "Admin"
-msgstr "Admin"
-
 msgid "Staff"
 msgstr "Personnel"
 
@@ -715,10 +712,6 @@ msgstr "Modifier le statut de cette cible ?"
 msgid "History"
 msgstr "Historique"
 
-#: templates/plans/target_form.html
-msgid "Add"
-msgstr "Ajouter"
-
 #: templates/plans/template_list.html
 msgid "Create Template"
 msgstr "Creer un modele"
@@ -1021,9 +1014,6 @@ msgstr "Ouvert"
 
 msgid "Closed"
 msgstr "Ferme"
-
-msgid "Full"
-msgstr "Complet"
 
 msgid "pending"
 msgstr "en attente"
