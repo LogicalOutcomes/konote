@@ -72,6 +72,37 @@
 </article>
 {% endif %}
 
+{% if chart_simulation %}
+<h3>Chart Simulation ({{ charts_would_show }} would display)</h3>
+<p>This shows exactly what the Analysis tab queries for each target/metric combination:</p>
+<table>
+    <thead>
+        <tr>
+            <th>Target</th>
+            <th>Metric</th>
+            <th>Values Found</th>
+            <th>Numeric Values</th>
+            <th>Would Show Chart?</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sim in chart_simulation %}
+        <tr>
+            <td>{{ sim.target }}</td>
+            <td>{{ sim.metric }}</td>
+            <td>{{ sim.values_found }}</td>
+            <td>{{ sim.numeric_values }}</td>
+            <td>{% if sim.would_show %}<mark style="background: #90EE90;">YES</mark>{% else %}<mark style="background: #FFB6C1;">NO</mark>{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5"><em>No target/metric combinations found for this client.</em></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
 <h3>How Charts Work</h3>
 <ol>
     <li><strong>Library metrics</strong> must be seeded (run <code>python manage.py seed</code>)</li>

@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect, render
+from django.utils.translation import gettext as _
 
 from .forms import FeatureToggleForm, InstanceSettingsForm, TerminologyForm
 from .models import DEFAULT_TERMS, FeatureToggle, InstanceSetting, TerminologyOverride
@@ -171,6 +172,7 @@ def diagnose_charts(request):
 
     client = ClientFile.objects.filter(record_id=record_id).first()
     client_data = None
+    chart_simulation = []
 
     if client:
         targets = PlanTarget.objects.filter(client_file=client, status="default")
@@ -192,6 +194,32 @@ def diagnose_charts(request):
             progress_note_target__progress_note__client_file=client
         ).count()
 
+        # Simulate exactly what the analysis view does
+        for target in targets:
+            ptm_links = PlanTargetMetric.objects.filter(
+                plan_target=target
+            ).select_related("metric_def")
+
+            for ptm in ptm_links:
+                metric_def = ptm.metric_def
+                values = MetricValue.objects.filter(
+                    metric_def=metric_def,
+                    progress_note_target__plan_target=target,
+                    progress_note_target__progress_note__client_file=client,
+                    progress_note_target__progress_note__status="default",
+                )
+                value_count = values.count()
+                numeric_count = sum(
+                    1 for v in values if _is_numeric(v.value)
+                )
+                chart_simulation.append({
+                    "target": target.name,
+                    "metric": metric_def.name,
+                    "values_found": value_count,
+                    "numeric_values": numeric_count,
+                    "would_show": numeric_count > 0,
+                })
+
         client_data = {
             "record_id": record_id,
             "targets": target_data,
@@ -201,6 +229,9 @@ def diagnose_charts(request):
             "pnt_count": pnt_count,
             "mv_count": mv_count,
         }
+
+    # Count charts that would display
+    charts_would_show = sum(1 for c in chart_simulation if c["would_show"])
 
     # Determine diagnosis
     diagnosis = None
@@ -217,8 +248,11 @@ def diagnose_charts(request):
     elif client_data and client_data["mv_count"] == 0:
         diagnosis = "No metric values recorded. Enter values when creating full notes."
         diagnosis_type = "warning"
-    elif client_data and client_data["mv_count"] > 0:
-        diagnosis = f"Data looks good! {client_data['mv_count']} metric values exist. Charts should display."
+    elif charts_would_show == 0 and client_data and client_data["mv_count"] > 0:
+        diagnosis = f"BUG: {client_data['mv_count']} metric values exist but NO charts would display! Check chart simulation below."
+        diagnosis_type = "error"
+    elif charts_would_show > 0:
+        diagnosis = f"Data looks good! {charts_would_show} charts should display."
         diagnosis_type = "success"
 
     return render(request, "admin_settings/diagnose_charts.html", {
@@ -228,4 +262,15 @@ def diagnose_charts(request):
         "record_id": record_id,
         "diagnosis": diagnosis,
         "diagnosis_type": diagnosis_type,
+        "chart_simulation": chart_simulation,
+        "charts_would_show": charts_would_show,
     })
+
+
+def _is_numeric(value):
+    """Check if a value can be converted to float."""
+    try:
+        float(value)
+        return True
+    except (ValueError, TypeError):
+        return False
