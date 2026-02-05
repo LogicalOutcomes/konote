@@ -2,7 +2,7 @@
 
 ## Flagged
 
-- [ ] Choose Canadian hosting provider for pilot deployment — See `tasks/canadian-hosting-research.md` (HOST1)
+- [ ] Choose Canadian hosting provider for pilot deployment — See `tasks/canadian-hosting-research.md`, `tasks/azure-deployment-guide.md` (HOST1)
 
 ## Active Work
 
