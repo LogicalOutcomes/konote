@@ -81,7 +81,6 @@ These features are intentionally excluded. See technical documentation for ratio
 
 - [ ] Progress note encryption — encrypt clinical content (CLOUD Act protection) — (SEC1)
 - [ ] First-run setup wizard — Claude skill + import command — See `tasks/setup-wizard-design.md` (SETUP1)
-- [ ] Encrypted search optimisation (search hash field) for large client lists — (PERF1)
 - [ ] Bulk operations for discharge, assign, export — (UX17)
 
 ## Recently Done
