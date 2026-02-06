@@ -2,7 +2,7 @@
 
 ## Flagged
 
-- [ ] Decide product name — should web version  be called "KoNote" (not "KoNote2"). See `tasks/naming-versioning.md` (NAME1)
+- [ ] Decide product name — should web version be called "KoNote" (not "KoNote2"). See `tasks/naming-versioning.md` (NAME1)
 
 ## Active Work
 
@@ -19,7 +19,6 @@ The core app is feature-complete. These tasks prepare for production use.
 
 - [ ] Run UX walkthrough — `pytest tests/ux_walkthrough/ -v`, review report at `tasks/ux-review-latest.md` (UX-WALK1)
 
-
 ## Coming Up
 
 ### Export Monitoring
@@ -28,25 +27,6 @@ Weekly accountability reports for admins. Requires working email configuration.
 
 - [ ] Create weekly export summary email command (EXP2u)
 - [ ] Document cron/scheduled task setup in runbook (EXP2w)
-
-### Security Review Fixes (from SEC-REV1)
-
-- [x] Encrypt PlanTarget.name, .description, .status_reason fields + PlanTargetRevision equivalents (SEC-FIX1)
-- [x] Add MultiFernet key rotation support to konote/encryption.py (SEC-FIX2)
-- [x] Change decryption error return from "[decryption error]" to empty string (SEC-FIX3)
-
-### Privacy Review Fixes (from SEC-REV2)
-
-- [x] Create daily management command to alert admins about expired retention dates (PRIV-FIX1)
-- [x] Add Privacy Officer name/email to InstanceSettings and expose in templates (PRIV-FIX2)
-
-### Accessibility Review Fixes (from SEC-REV3)
-
-- [x] Add data table alternatives for Chart.js charts (A11Y-FIX1)
-- [x] Add aria-live to session timer + "Extend Session" button (A11Y-FIX2)
-- [x] Add aria-describedby to full note form error messages (A11Y-FIX3)
-- [x] Increase auto-dismiss delay from 3s to 8-10s (A11Y-FIX4)
-- [x] Create 404.html and 500.html error pages extending base.html (A11Y-FIX5)
 
 ## Roadmap — Future Extensions
 
@@ -99,7 +79,6 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 
 ### Translation Hardening
 
-- [x] Fix .mo build process — commit .mo to git, no compilation in Docker, freshness check in validate_translations.py — 2026-02-06 (I18N-FIX1)
 - [ ] Wrap 106 unwrapped strings across 10 apps in `_()` and add French translations — see `scripts/check_untranslated.py` for full list (I18N-FIX2)
 
 ### Erasure — Deferred Execution for Tier 3
@@ -118,17 +97,16 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
-- [x] Security, privacy, accessibility review fixes — encrypted PlanTarget fields, MultiFernet rotation, aria-live timer, data tables for charts, aria-describedby on forms, Privacy Officer settings, retention expiry alerts — 2026-02-06 (SEC-FIX1-2, PRIV-FIX1-2, A11Y-FIX1-3)
+- [x] Lock in .mo translation strategy — commit .mo to git, no compilation in Docker, freshness check in validate_translations.py — 2026-02-06 (I18N-FIX1)
+- [x] Fix 4 UX walkthrough crashes + 6 test failures — 2026-02-06 (UX-FIX1)
+- [x] Add translation lint script to catch unwrapped user-facing strings — 2026-02-06 (I18N-LINT1)
+- [x] Security, privacy, accessibility review fixes — encrypted PlanTarget fields, MultiFernet rotation, aria-live timer, data tables for charts, Privacy Officer settings, retention expiry alerts — 2026-02-06 (SEC-FIX1-2, PRIV-FIX1-2, A11Y-FIX1-3)
 - [x] Fix 3 review bugs — AuditLog crash on metric import, group re-add constraint, ghost revisions — 2026-02-06 (QR-FIX4-6)
 - [x] Fix 4 group view bugs — attendance name mismatch, membership form, role handling, demo separation — 2026-02-06 (QR-FIX1-3)
 - [x] Client voice, qualitative progress, groups app (Phases A-D) — encrypted client_goal on targets, progress descriptors, engagement observation, 7-model groups app, 3 demo groups — 2026-02-06 (CV1-4)
 - [x] Expand demo from 2 programs / 10 clients to 5 programs / 15 clients — 2026-02-06 (DEMO-EXP1)
 - [x] Independent code reviews (security, privacy, accessibility, deployment) — 2026-02-06 (SEC-REV1-4)
 - [x] Review quick fixes — .dockerignore, audit lockdown, split requirements, decryption error, auto-dismiss delay, error pages — 2026-02-06 (DEPLOY-FIX1-3, SEC-FIX3, A11Y-FIX4-5)
-- [x] Demo Account Directory page + is_demo_context audit flag — 2026-02-06 (DEMO9, DEMO12)
-- [x] Parking lot quick wins — aria-describedby, test deps, email errors, field rename — 2026-02-06 (UX-A11Y1, REV2-DEPS1, REV2-EMAIL2, DB-TERM1)
-- [x] Fix 5 review follow-ups — erasure emails, tier validation, history ordering, French filters, phone tests — 2026-02-06 (REV2-EMAIL1, REV2-TEST1, REV2-ORDER1, TESTFIX1, TESTFIX2)
-- [x] Review follow-ups — email warnings, SQL-optimised PM filtering, PIPEDA aging — 2026-02-06 (REV-W3, REV-W1, REV-PIPEDA1)
 
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 

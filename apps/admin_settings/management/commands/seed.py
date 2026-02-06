@@ -243,8 +243,13 @@ class Command(BaseCommand):
                 defaults={"role": "receptionist"},
             )
 
-        # Casey (worker-1): individual programs + shared Kitchen
-        for prog in (employment, housing, kitchen):
+        # Casey (worker-1): program_manager for Employment, staff for Housing + Kitchen
+        # Mixed roles demonstrate how the same person sees different things per program
+        UserProgramRole.objects.get_or_create(
+            user=worker1, program=employment,
+            defaults={"role": "program_manager"},
+        )
+        for prog in (housing, kitchen):
             UserProgramRole.objects.get_or_create(
                 user=worker1, program=prog,
                 defaults={"role": "staff"},
@@ -257,8 +262,9 @@ class Command(BaseCommand):
                 defaults={"role": "staff"},
             )
 
-        # Manager: program_manager on all 5
-        for prog in all_programs:
+        # Manager: program_manager on Employment, Housing, Kitchen (not all 5)
+        # Shows that even managers have program boundaries
+        for prog in (employment, housing, kitchen):
             UserProgramRole.objects.get_or_create(
                 user=manager, program=prog,
                 defaults={"role": "program_manager"},
@@ -318,8 +324,9 @@ class Command(BaseCommand):
                     )
 
         self.stdout.write("  Demo data: 6 users, 5 programs, 15 clients created.")
-        self.stdout.write("    - Casey Worker: Supported Employment + Housing Stability + Community Kitchen")
-        self.stdout.write("    - Noor Worker:  Youth Drop-In + Newcomer Connections + Community Kitchen")
+        self.stdout.write("    - Casey Worker: program_manager(Employment) + staff(Housing, Kitchen)")
+        self.stdout.write("    - Noor Worker:  staff(Youth Drop-In, Newcomer, Kitchen)")
+        self.stdout.write("    - Morgan Manager: program_manager(Employment, Housing, Kitchen only)")
         self.stdout.write("    - Community Kitchen is shared — both workers see Kitchen clients")
         self.stdout.write("    - 3 clients cross-enrolled in Kitchen from other programs")
 

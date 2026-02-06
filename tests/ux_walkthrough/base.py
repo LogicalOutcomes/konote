@@ -10,6 +10,9 @@ from .conftest import get_report
 
 TEST_KEY = Fernet.generate_key().decode()
 
+# Default password for all test users
+TEST_PASSWORD = "testpass123"
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class UxWalkthroughBase(TestCase):
@@ -247,6 +250,8 @@ class UxWalkthroughBase(TestCase):
         enc_module._fernet = None
         # Don't raise exceptions on server errors — record them as issues
         self.client.raise_request_exception = False
+        # Session-level forbidden content (set by login_as in UxScenarioBase)
+        self._session_forbidden: list[str] = []
 
     def tearDown(self):
         enc_module._fernet = None
@@ -267,6 +272,24 @@ class UxWalkthroughBase(TestCase):
             description=description,
         )
 
+    def _scan_response(self, response, role, step, url, forbidden_content=None):
+        """Scan a response for forbidden content (privacy check).
+
+        Merges session-level _session_forbidden with per-call forbidden_content.
+        Only scans 200 responses where content is actually displayed.
+        """
+        all_forbidden = self._session_forbidden + (forbidden_content or [])
+        issues = []
+        if all_forbidden and response.status_code == 200:
+            body = response.content.decode("utf-8", errors="replace").lower()
+            for item in all_forbidden:
+                if item.lower() in body:
+                    issues.append(self._make_issue(
+                        Severity.CRITICAL, url, role, step,
+                        f"Forbidden content found: '{item}'",
+                    ))
+        return issues
+
     def visit(
         self,
         role: str,
@@ -276,6 +299,7 @@ class UxWalkthroughBase(TestCase):
         expected_lang: str = "en",
         role_should_see: list | None = None,
         role_should_not_see: list | None = None,
+        forbidden_content: list | None = None,
     ):
         """GET a URL, run full-page UX checks, record results."""
         response = self.client.get(url)
@@ -301,6 +325,7 @@ class UxWalkthroughBase(TestCase):
                 f"Expected {expected_status}, got {response.status_code}",
             ))
 
+        issues.extend(self._scan_response(response, role, step, url, forbidden_content))
         self.report.record_step(role, step, url, response.status_code, issues)
         return response
 
@@ -311,6 +336,7 @@ class UxWalkthroughBase(TestCase):
         url: str,
         role_should_see: list | None = None,
         role_should_not_see: list | None = None,
+        forbidden_content: list | None = None,
     ):
         """GET with HX-Request header, run partial UX checks."""
         response = self.client.get(url, HTTP_HX_REQUEST="true")
@@ -330,6 +356,7 @@ class UxWalkthroughBase(TestCase):
             )
             issues = checker.run_all_checks()
 
+        issues.extend(self._scan_response(response, role, step, url, forbidden_content))
         self.report.record_step(role, step, url, response.status_code, issues)
         return response
 
@@ -340,6 +367,7 @@ class UxWalkthroughBase(TestCase):
         url: str,
         data: dict,
         expected_redirect: str | None = None,
+        forbidden_content: list | None = None,
     ):
         """POST with follow=True, check redirect + success message on landing."""
         response = self.client.post(url, data, follow=True)
@@ -373,11 +401,16 @@ class UxWalkthroughBase(TestCase):
                     [i for i in checker.issues if i not in issues]
                 )
 
+        issues.extend(self._scan_response(response, role, step, url, forbidden_content))
         self.report.record_step(role, step, url, response.status_code, issues)
         return response
 
     def visit_forbidden(self, role: str, step: str, url: str):
-        """Visit a URL that should return 403, check error page quality."""
+        """Visit a URL that should return 403, check error page quality.
+
+        Note: forbidden_content scan is skipped on 403 pages — the access
+        control already worked, so there's nothing to leak.
+        """
         response = self.client.get(url)
         issues = []
 
@@ -394,7 +427,7 @@ class UxWalkthroughBase(TestCase):
         self.report.record_step(role, step, url, response.status_code, issues)
         return response
 
-    def visit_redirect(self, role: str, step: str, url: str):
+    def visit_redirect(self, role: str, step: str, url: str, forbidden_content=None):
         """Visit a URL that should redirect, follow it, check landing page."""
         response = self.client.get(url, follow=True)
         issues = []
@@ -416,5 +449,72 @@ class UxWalkthroughBase(TestCase):
                 )
                 issues.extend(checker.run_all_checks())
 
+        issues.extend(self._scan_response(response, role, step, url, forbidden_content))
         self.report.record_step(role, step, url, response.status_code, issues)
         return response
+
+
+# =====================================================================
+# Scenario Base — for story-driven multi-user walkthrough tests
+# =====================================================================
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    CACHES={"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}},
+)
+class UxScenarioBase(UxWalkthroughBase):
+    """Base for scenario tests that simulate real user journeys.
+
+    Inherits all reference data from UxWalkthroughBase.setUpTestData.
+    Scenarios create transactional data during test execution — Django
+    TestCase rolls it back after each test method.
+
+    IMPORTANT: Must use TestCase (not TransactionTestCase) to ensure
+    each scenario's transactional data is rolled back and doesn't leak
+    to other scenarios.
+    """
+
+    def login_as(self, username, forbidden_content=None):
+        """Login as a user and set session-level forbidden content.
+
+        Every subsequent visit() call will automatically scan responses
+        for the forbidden strings (privacy check). This resets when
+        login_as() is called again for a different user.
+        """
+        self.client.login(username=username, password=TEST_PASSWORD)
+        self._session_forbidden = forbidden_content or []
+
+    def switch_language(self, lang_code):
+        """Switch the test client's language and set the cookie.
+
+        Use 'en' or 'fr'. All subsequent visit() calls will check
+        the lang attribute matches.
+        """
+        self.client.post("/i18n/switch/", {"language": lang_code})
+        self.client.cookies["django_language"] = lang_code
+
+    def record_scenario(self, scenario, role, step, url, status_code, issues):
+        """Record a scenario step for the Scenario Walkthroughs report section."""
+        self.report.record_scenario_step(
+            scenario, role, step, url, status_code, issues,
+        )
+
+    def quick_create_client(self, first_name, last_name, program):
+        """Create a client via POST, return the new ClientFile.
+
+        This is a data helper — it creates the client but doesn't run
+        UX checks. Use visit() calls in the scenario for UX assertions.
+        """
+        from apps.clients.models import ClientFile
+
+        self.client.post("/clients/create/", data={
+            "first_name": first_name,
+            "last_name": last_name,
+            "middle_name": "",
+            "birth_date": "",
+            "record_id": "",
+            "status": "active",
+            "programs": [program.pk],
+        })
+        return ClientFile.objects.order_by("-pk").first()
