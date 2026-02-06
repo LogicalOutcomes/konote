@@ -116,7 +116,57 @@ class NoteViewsTest(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(ProgressNote.objects.count(), 1)
 
+    def test_quick_note_with_phone_interaction_type(self):
+        """Quick note stores the selected interaction type."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/quick/",
+            {"notes_text": "Called about housing.", "interaction_type": "phone", "consent_confirmed": True},
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(client_file=self.client_file)
+        self.assertEqual(note.interaction_type, "phone")
+
+    def test_quick_note_invalid_interaction_type_rejected(self):
+        """Invalid interaction type values are rejected by form validation."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/quick/",
+            {"notes_text": "Valid text.", "interaction_type": "hacked", "consent_confirmed": True},
+        )
+        self.assertEqual(resp.status_code, 200)  # Re-renders form with errors
+        self.assertEqual(ProgressNote.objects.count(), 0)
+
     # -- Note List --
+
+    def test_note_list_filtered_by_interaction_type(self):
+        """Interaction type filter only shows matching notes."""
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Phone call note", author=self.staff,
+            interaction_type="phone",
+        )
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Session note", author=self.staff,
+            interaction_type="session",
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/client/{self.client_file.pk}/?interaction=phone")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Phone call note")
+        self.assertNotContains(resp, "Session note")
+
+    def test_note_list_invalid_filter_ignored(self):
+        """Invalid interaction filter values are ignored (shows all notes)."""
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Any note", author=self.staff,
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/client/{self.client_file.pk}/?interaction=invalid")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Any note")
 
     def test_note_list_shows_notes(self):
         ProgressNote.objects.create(

@@ -1,7 +1,7 @@
 # Phase 4: Progress note views
 """Views for progress notes — quick notes, full notes, timeline, cancellation."""
 import datetime
-import json
+
 import logging
 
 from django.contrib import messages
@@ -357,7 +357,7 @@ def note_create(request, client_id):
         "target_forms": target_forms,
         "client": client,
         "breadcrumbs": breadcrumbs,
-        "template_defaults_json": json.dumps(template_defaults),
+        "template_defaults": template_defaults,
     })
 
 

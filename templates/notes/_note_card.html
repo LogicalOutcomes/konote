@@ -21,20 +21,23 @@
 <div class="note-card-author">
     {% if note.author %}{{ note.author.display_name|default:note.author }}{% else %}{% trans "(unknown)" %}{% endif %}{% if note.author_program %} &middot; {{ note.author_program.name }}{% endif %}
 </div>
-{% if note.target_entries.all %}
+{# Cache the prefetched queryset to avoid repeated evaluation #}
+{% with entries=note.target_entries.all %}
+{% if entries %}
 <ul class="note-card-targets" aria-label="{% trans 'Plan targets' %}">
-    {% for entry in note.target_entries.all %}
+    {% for entry in entries %}
         {% if forloop.counter <= 3 %}
         <li>{{ entry.plan_target.name|truncatechars:30 }}</li>
         {% endif %}
     {% endfor %}
-    {% with overflow=note.target_entries.all|length %}
+    {% with overflow=entries|length %}
     {% if overflow > 3 %}
         <li class="note-card-targets-overflow">+{{ overflow|add:"-3" }} {% trans "more" %}</li>
     {% endif %}
     {% endwith %}
 </ul>
 {% endif %}
+{% endwith %}
 {% if note.status == "cancelled" %}
     <p class="note-card-preview"><del>{{ note.notes_text|truncatechars:200 }}</del></p>
     {% if note.status_reason %}<p class="note-card-reason">{% trans "Reason:" %} {{ note.status_reason }}</p>{% endif %}

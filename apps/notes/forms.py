@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from .models import ProgressNote, ProgressNoteTemplate, ProgressNoteTemplateSection
 
 
-# Subset of interaction types relevant to quick notes
+# Subset for quick notes — group and collateral typically need full notes with target tracking
 QUICK_INTERACTION_CHOICES = [
     ("phone", _("Phone Call")),
     ("session", _("Session")),

@@ -94,6 +94,7 @@ class ProgressNote(models.Model):
         max_length=20,
         choices=INTERACTION_TYPE_CHOICES,
         default="session",
+        db_index=True,
     )
     status = models.CharField(max_length=20, default="default", choices=STATUS_CHOICES)
     status_reason = models.TextField(default="", blank=True)

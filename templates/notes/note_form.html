@@ -130,6 +130,7 @@
 {% endblock %}
 
 {% block extra_scripts %}
+{{ template_defaults|json_script:"template-defaults" }}
 <script>
 // Show/hide target accordions based on checkbox selection
 document.querySelectorAll(".target-selector").forEach(function (cb) {
@@ -144,10 +145,11 @@ document.querySelectorAll(".target-selector").forEach(function (cb) {
 });
 
 // Auto-fill interaction type from template's default
-var templateDefaults = {{ template_defaults_json|safe }};
 var templateSelect = document.querySelector('[name="template"]');
 var interactionSelect = document.querySelector('[name="interaction_type"]');
-if (templateSelect && interactionSelect) {
+var defaultsEl = document.getElementById("template-defaults");
+if (templateSelect && interactionSelect && defaultsEl) {
+    var templateDefaults = JSON.parse(defaultsEl.textContent);
     templateSelect.addEventListener("change", function () {
         var tmplId = this.value;
         if (tmplId && templateDefaults[tmplId]) {
