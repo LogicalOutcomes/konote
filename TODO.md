@@ -13,7 +13,6 @@ The core app is feature-complete. These tasks prepare for production use.
 - [ ] Verify email is configured — needed for export notifications, erasure alerts, and password resets (OPS3)
 - [ ] Run full integration test pass — every role, every workflow (TEST3)
 - [ ] Test backup restore from a real database dump (OPS4)
-- [ ] Verify Railway deployment end-to-end with production-like config (OPS5)
 
 ### Occasional Tasks
 
@@ -64,6 +63,37 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 - [ ] Create import history page for admins (IMP1j)
 - [ ] Document import validation rules (DOC-IMP1)
 
+### Phase H: Cross-Program Client Matching & Confidential Programs
+
+Prevent duplicate client records across programs while protecting sensitive program privacy. See `tasks/cross-program-client-matching.md` for full design (4 expert panels).
+
+**H.1: Foundation — Confidential Program Isolation**
+- [ ] Add `is_confidential` field to Program model + migration (CONF1)
+- [ ] Create guided setup question in program create/edit admin UI (CONF2)
+- [ ] Update `get_client_queryset()` to filter out confidential program clients for non-confidential users (CONF3)
+
+**H.2: Duplicate Detection (Standard Programs)**
+- [ ] Add phone number as standard field on ClientFile if not already first-class (MATCH1)
+- [ ] Build phone-based duplicate detection on client create form — background check, banner UI (MATCH2)
+- [ ] Add name + DOB secondary matching as fallback when phone unavailable (MATCH3)
+
+**H.3: Merge Tool (Standard Programs)**
+- [ ] Build duplicate merge tool for Standard program admins — side-by-side comparison, merged record keeps all data (MATCH4)
+
+**H.4: Confidential Program Hardening (Required Before DV Use)**
+- [ ] Filter confidential client records from Django admin for superusers without confidential access (CONF4)
+- [ ] Add immutable audit logging for all confidential record access — who, when, what, which record (CONF5)
+- [ ] Aggregate reports use small-cell suppression — show "< 10" when confidential program has fewer than 10 clients (CONF6)
+- [ ] Create `tests/test_confidential_isolation.py` — test every view, search, match, merge, admin, and report path (CONF7)
+
+**H.5: DV Readiness & Documentation**
+- [ ] Ship PIA (Privacy Impact Assessment) template pre-filled from agency configuration (MATCH5)
+- [ ] Write user-facing documentation on confidential programs and matching (MATCH6)
+- [ ] Add annual security review checklist for confidential program filtering (CONF8)
+
+**H.6: Multi-Role Staff (Nice-to-Have)**
+- [ ] Build role selector for staff with roles in both Standard and Confidential programs (CONF9)
+
 ### Other Planned Extensions
 
 - [ ] Field data collection integrations — KoBoToolbox, Forms, or other tools (FIELD1)
@@ -92,11 +122,13 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 ### Privacy & Security
 
 - [ ] First-run setup wizard — guided initial configuration (SETUP1)
+- [ ] TOTP multi-factor authentication for local auth — see `tasks/mfa-implementation.md` (SEC2)
 - [ ] Encrypted search optimisation (search hash field) for 2000+ client lists (PERF1)
 - [ ] Bulk operations for discharge, assign (UX17)
 
 ## Recently Done
 
+- [x] Verify deployment end-to-end with production-like config — FullHost tested, HTTPS working, demo data live — 2026-02-06 (OPS5)
 - [x] Lock in .mo translation strategy — commit .mo to git, no compilation in Docker, freshness check in validate_translations.py — 2026-02-06 (I18N-FIX1)
 - [x] Fix 4 UX walkthrough crashes + 6 test failures — 2026-02-06 (UX-FIX1)
 - [x] Add translation lint script to catch unwrapped user-facing strings — 2026-02-06 (I18N-LINT1)
@@ -106,8 +138,6 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 - [x] Client voice, qualitative progress, groups app (Phases A-D) — encrypted client_goal on targets, progress descriptors, engagement observation, 7-model groups app, 3 demo groups — 2026-02-06 (CV1-4)
 - [x] Expand demo from 2 programs / 10 clients to 5 programs / 15 clients — 2026-02-06 (DEMO-EXP1)
 - [x] Independent code reviews (security, privacy, accessibility, deployment) — 2026-02-06 (SEC-REV1-4)
-- [x] Review quick fixes — .dockerignore, audit lockdown, split requirements, decryption error, auto-dismiss delay, error pages — 2026-02-06 (DEPLOY-FIX1-3, SEC-FIX3, A11Y-FIX4-5)
-
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 
 ---

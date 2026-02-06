@@ -50,6 +50,8 @@ settings:
       type: string
       inputType: password
       required: true
+      regex: "^.{10,}$"
+      regexText: Password must be at least 10 characters
       tooltip: Password for the admin account (minimum 10 characters)
 
     - name: clientTerm
@@ -83,6 +85,7 @@ nodes:
       JELASTIC_ENVIRONMENT: "true"
       DJANGO_SETTINGS_MODULE: konote.settings.production
       KoNote2_MODE: production
+      DEMO_MODE: "true"
       AUTH_MODE: local
       PORT: 8000
     volumes:
@@ -151,7 +154,7 @@ onInstall:
         **Your KoNote2 URL:** [${env.domain}](https://${env.domain})
 
         **Login with:**
-        - Email: ${settings.adminEmail}
+        - Username: **admin**
         - Password: (the password you entered during setup)
 
         ### Important: Save These Keys!
@@ -208,6 +211,7 @@ actions:
         ALLOWED_HOSTS: ${env.domain},127.0.0.1,localhost
         ORG_NAME: ${settings.orgName}
         DEFAULT_CLIENT_TERM: ${settings.clientTerm}
+        DEMO_MODE: "true"
         KONOTE_MODE: production
 
   restartApp:
@@ -246,6 +250,6 @@ success:
     Your secure Participant Outcome Management system is now running.
 
     **URL:** https://${env.domain}
-    **Admin Email:** ${settings.adminEmail}
+    **Username:** admin
 
     Remember to save your encryption key from the installation notes!

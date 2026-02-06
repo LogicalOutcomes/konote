@@ -39,6 +39,8 @@ You'll need:
 
 **Note:** This creates your FullHost hosting account. You'll create a separate KoNote2 admin account later.
 
+**Recommended:** Enable multi-factor authentication (MFA) on your FullHost account. Your FullHost login controls your entire KoNote2 environment — databases, encryption keys, and all client data. Go to your FullHost account settings and enable two-factor authentication before proceeding.
+
 ---
 
 ## Step 2: Deploy KoNote2
@@ -115,6 +117,8 @@ xK9mP2nQ4rS6tU8vW0xY2zA4bC6dE8fG0hI2jK4lM6n=
 
 If you ever need to restore KoNote2 from a backup, you'll need this key to decrypt client data. **If you lose this key, encrypted client data cannot be recovered.**
 
+**Tip:** If you misplace the key, you can retrieve it later from your FullHost dashboard. Click on the KoNote2 App container, then **Variables** — look for `FIELD_ENCRYPTION_KEY`. But it's still best to save a copy outside of FullHost.
+
 ---
 
 ## Step 6: Enable SSL (HTTPS)
@@ -130,6 +134,8 @@ SSL must be enabled manually after installation:
 This gives your site a free HTTPS certificate. It may take a few minutes to activate.
 
 **Note:** Login will not work until SSL is enabled — the app requires HTTPS for security.
+
+**Important — Do NOT add a public IP to the app container.** If the KoNote2 App node has a public/external IP address, HTTPS will not work. The SSL certificate is managed by FullHost's Shared Load Balancer (SLB), which sits in front of your containers. A public IP on the app container makes traffic bypass the SLB, skipping SSL entirely. If you accidentally add one, go to the app node's settings and remove the public IP.
 
 ---
 
@@ -154,6 +160,31 @@ After logging in for the first time:
 4. **Configure outcomes** — Define the outcomes you track for each program
 
 See the [Getting Started Guide](getting-started.md) for detailed instructions.
+
+---
+
+## Moving to Production Use
+
+Your KoNote2 instance comes pre-loaded with demo users and sample data so you can explore how everything works. When your organisation is ready to use it for real:
+
+1. **Create real staff accounts** — Go to Admin → Users and invite your team. These are regular (non-demo) accounts.
+2. **Real staff never see demo data** — Demo clients and demo users are completely separate. Your real staff will see an empty client list, ready for your actual clients.
+3. **You don't need to delete demo data** — It stays invisible to real users. The demo login buttons on the login page remain available for training purposes.
+4. **Optionally disable demo logins** — If you no longer want the demo login buttons on the login page, ask your administrator to set `DEMO_MODE` to `false` in the FullHost container environment variables and restart the app.
+
+---
+
+## Enable Automatic Backups
+
+We strongly recommend enabling automatic backups for your client data:
+
+1. In the FullHost dashboard, click on your KoNote2 environment
+2. Click **Settings** (gear icon)
+3. Click **Backup** in the left sidebar
+4. Enable automatic backups and choose a schedule (daily recommended)
+5. Set retention to at least 7 days
+
+This protects against accidental data loss. You can also download manual backups at any time (see [Backing Up Your Data](#backing-up-your-data) below).
 
 ---
 
@@ -289,6 +320,17 @@ We recommend:
 3. Add credits with a credit card
 
 FullHost will email you when credits are running low.
+
+### HTTPS Not Working / "Connection Refused" on HTTPS
+
+If HTTP works but HTTPS doesn't:
+
+1. Check whether the **KoNote2 App** container has a **public IP address** assigned
+2. If it does, that's the problem — the public IP bypasses FullHost's SSL proxy
+3. Go to the app container → **Settings** → remove the public/external IP
+4. Wait a minute for DNS to update, then try HTTPS again
+
+The FullHost Shared Load Balancer handles SSL. It only works when traffic goes through it (no public IP on the app container).
 
 ### Need More Help?
 

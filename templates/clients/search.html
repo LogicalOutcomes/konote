@@ -15,7 +15,7 @@
         <input type="search"
                id="client-search"
                name="q"
-               placeholder="{% trans 'Search by name or ID...' %}"
+               placeholder="{% trans 'Search by name, ID, or note content...' %}"
                value="{{ query }}"
                aria-label="{% blocktrans with clients=term.client_plural|default:'clients' %}Search {{ clients }}{% endblocktrans %}"
                hx-get="{% url 'clients:client_search' %}"
