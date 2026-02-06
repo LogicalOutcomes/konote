@@ -1541,9 +1541,16 @@ article[aria-label="notification"].fading-out {
         box-shadow: none;
         padding-left: var(--kn-space-base);
     }
-    /* Language switcher full width on mobile */
+    /* Language switcher visible in mobile menu */
     body > nav select {
         width: 100%;
+    }
+    #nav-menu .lang-link {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: var(--kn-space-sm) 0;
+        font-size: 0.875rem;
     }
 }
 
