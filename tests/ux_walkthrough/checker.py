@@ -240,18 +240,32 @@ class UxChecker:
                 "Expected form errors but none found (no .errorlist elements)",
             )
             return
-        # Check for aria-describedby association
+        # Check for aria-describedby association — check the error element
+        # itself and its parent wrapper (templates often wrap Django's
+        # errorlist in a <div> with its own id referenced by aria-describedby).
         for error_el in error_lists:
+            ids_to_check = []
             error_id = error_el.get("id", "")
             if error_id:
-                # Check if any input references this error
-                referencing = self.soup.find(
-                    attrs={"aria-describedby": re.compile(error_id)}
-                )
-                if not referencing:
+                ids_to_check.append(error_id)
+            # Also check parent wrapper id
+            parent = error_el.parent
+            if parent:
+                parent_id = parent.get("id", "")
+                if parent_id:
+                    ids_to_check.append(parent_id)
+            if ids_to_check:
+                found = False
+                for eid in ids_to_check:
+                    if self.soup.find(
+                        attrs={"aria-describedby": re.compile(eid)}
+                    ):
+                        found = True
+                        break
+                if not found:
                     self._add(
                         Severity.INFO,
-                        f"Error list #{error_id} not linked via aria-describedby",
+                        f"Error list #{ids_to_check[0]} not linked via aria-describedby",
                     )
 
     # ------------------------------------------------------------------
@@ -333,25 +347,31 @@ class UxChecker:
 
     def check_role_action_buttons(self):
         """Check that visible action buttons match the role's permissions."""
-        body_text = self.content.lower()
+        pattern_cache = {}
+
+        def _find_elements(text):
+            """Find <a> or <button> elements whose visible text contains text.
+
+            Uses get_text() so elements with child nodes (e.g.
+            <a>Notes<span>1</span></a>) are still matched.
+            """
+            if text not in pattern_cache:
+                pattern_cache[text] = re.compile(re.escape(text), re.I)
+            pat = pattern_cache[text]
+            return [
+                el for el in self.soup.find_all(["a", "button"])
+                if pat.search(el.get_text())
+            ]
+
         for btn_text in self.role_should_not_see:
-            # Look for links/buttons containing this text
-            elements = self.soup.find_all(
-                ["a", "button"],
-                string=re.compile(re.escape(btn_text), re.I),
-            )
-            if elements:
+            if _find_elements(btn_text):
                 self._add(
                     Severity.WARNING,
                     f"\"{btn_text}\" button/link visible but should be hidden "
                     f"for {self.role}",
                 )
         for btn_text in self.role_should_see:
-            elements = self.soup.find_all(
-                ["a", "button"],
-                string=re.compile(re.escape(btn_text), re.I),
-            )
-            if not elements:
+            if not _find_elements(btn_text):
                 self._add(
                     Severity.INFO,
                     f"\"{btn_text}\" button/link expected but not found "

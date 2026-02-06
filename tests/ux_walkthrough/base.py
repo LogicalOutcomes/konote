@@ -277,13 +277,24 @@ class UxWalkthroughBase(TestCase):
 
         Merges session-level _session_forbidden with per-call forbidden_content.
         Only scans 200 responses where content is actually displayed.
+        Checks visible text only (not HTML attributes, CSS classes, or URLs).
+        Uses word-boundary matching so 'active' won't match French 'actives'.
         """
+        import re
         all_forbidden = self._session_forbidden + (forbidden_content or [])
         issues = []
         if all_forbidden and response.status_code == 200:
-            body = response.content.decode("utf-8", errors="replace").lower()
+            from bs4 import BeautifulSoup
+            html = response.content.decode("utf-8", errors="replace")
+            soup = BeautifulSoup(html, "html.parser")
+            # Remove non-visible elements before extracting text
+            for tag in soup.find_all(["script", "style"]):
+                tag.decompose()
+            visible_text = soup.get_text(separator=" ")
             for item in all_forbidden:
-                if item.lower() in body:
+                # Word-boundary match: 'Active' matches the word 'Active'
+                # but not French 'actives' or 'Inactif'
+                if re.search(r'\b' + re.escape(item) + r'\b', visible_text, re.I):
                     issues.append(self._make_issue(
                         Severity.CRITICAL, url, role, step,
                         f"Forbidden content found: '{item}'",
