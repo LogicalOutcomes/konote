@@ -6,15 +6,6 @@
 
 ## Active Work
 
-### Demo Data Expansion
-
-- [x] Expand demo from 2 programs / 10 clients to 5 programs / 15 clients — (DEMO-EXP1)
-  - 5 programs: Supported Employment, Housing Stability, Youth Drop-In, Newcomer Connections, Community Kitchen
-  - 2 workers: Casey (individual) + Noor (group) + shared Kitchen
-  - 15 clients with realistic journeys across all programs
-  - 12 new "feedback and form" metrics (approachable, non-clinical)
-  - Participant-voiced goals, program-specific note texts, cross-enrolments
-
 ### Pre-Launch Checklist
 
 The core app is feature-complete. These tasks prepare for production use.
@@ -31,23 +22,12 @@ The core app is feature-complete. These tasks prepare for production use.
 
 ## Coming Up
 
-### Review Follow-ups (from 2026-02-05 session review)
-
-_All items completed — see Recently Done._
-
 ### Export Monitoring
 
 Weekly accountability reports for admins. Requires working email configuration.
 
 - [ ] Create weekly export summary email command (EXP2u)
 - [ ] Document cron/scheduled task setup in runbook (EXP2w)
-
-### Independent Code Review
-
-- [x] Get independent security review via Jules — see `tasks/reviews/2026-02-06-security.md` (SEC-REV1)
-- [x] Get independent privacy review (PIPEDA) via Jules — see `tasks/reviews/2026-02-06-privacy.md` (SEC-REV2)
-- [x] Get independent accessibility review via Jules — see `tasks/reviews/2026-02-06-accessibility.md` (SEC-REV3)
-- [x] Get independent deployment review via Jules — see `tasks/reviews/2026-02-06-deployment.md` (SEC-REV4)
 
 ### Security Review Fixes (from SEC-REV1)
 
@@ -67,12 +47,6 @@ Weekly accountability reports for admins. Requires working email configuration.
 - [ ] Add aria-describedby to full note form error messages (A11Y-FIX3)
 - [x] Increase auto-dismiss delay from 3s to 8-10s (A11Y-FIX4)
 - [x] Create 404.html and 500.html error pages extending base.html (A11Y-FIX5)
-
-### Deployment Review Fixes (from SEC-REV4)
-
-- [x] Create .dockerignore file to exclude .git, .env, venv, tests, tasks, docs (DEPLOY-FIX1)
-- [x] Add lockdown_audit_db to entrypoint.sh after audit migrations (DEPLOY-FIX2)
-- [x] Move pytest/pytest-django to requirements-dev.txt (DEPLOY-FIX3)
 
 ## Roadmap — Future Extensions
 
@@ -139,27 +113,16 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Fix 3 review bugs — AuditLog crash on metric import, group re-add constraint, ghost revisions — 2026-02-06 (QR-FIX4-6)
+- [x] Fix 4 group view bugs — attendance name mismatch, membership form, role handling, demo separation — 2026-02-06 (QR-FIX1-3)
+- [x] Client voice, qualitative progress, groups app (Phases A-D) — encrypted client_goal on targets, progress descriptors, engagement observation, 7-model groups app, 3 demo groups — 2026-02-06 (CV1-4)
+- [x] Expand demo from 2 programs / 10 clients to 5 programs / 15 clients — 2026-02-06 (DEMO-EXP1)
+- [x] Independent code reviews (security, privacy, accessibility, deployment) — 2026-02-06 (SEC-REV1-4)
 - [x] Review quick fixes — .dockerignore, audit lockdown, split requirements, decryption error, auto-dismiss delay, error pages — 2026-02-06 (DEPLOY-FIX1-3, SEC-FIX3, A11Y-FIX4-5)
-- [x] Independent deployment review via Jules — 1 high, 1 medium, 1 low — 2026-02-06 (SEC-REV4)
-- [x] Independent accessibility review via Jules — 2 high, 2 medium, 1 low (2 rejected) — 2026-02-06 (SEC-REV3)
-- [x] Demo Account Directory page + is_demo_context audit flag — already built in prior session, marked done — 2026-02-06 (DEMO9, DEMO12)
-- [x] Independent privacy review via Jules — 1 high, 1 medium, 2 low findings — 2026-02-06 (SEC-REV2)
-- [x] Independent security review via Jules — 3 findings (2 high, 1 medium), report saved — 2026-02-06 (SEC-REV1)
-- [x] Parking lot quick wins — aria-describedby on full note form, beautifulsoup4 to test-only, specific erasure email errors, rename receptionist_access → front_desk_access — 2026-02-06 (UX-A11Y1, REV2-DEPS1, REV2-EMAIL2, DB-TERM1)
-- [x] Fix 5 review follow-ups — erasure email templates, tier validation test, history ordering, French filter tests, phone validation tests — 2026-02-06 (REV2-EMAIL1, REV2-TEST1, REV2-ORDER1, TESTFIX1, TESTFIX2)
-- [x] Review follow-ups — email failure warnings, SQL-optimised PM filtering, 30-day PIPEDA aging indicator — 2026-02-06 (REV-W3, REV-W1, REV-PIPEDA1)
-- [x] Independent security review docs — added review section, AI prompt template, and "Trust, But Verify" to security ops + README — 2026-02-06 (SEC-DOC1-3, SEC-WEB1)
-- [x] Fix UX walkthrough issues — 500 error, heading structure, table accessibility, search page, 403 page, form validation — 2026-02-06 (UX-WALK1)
-- [x] Erasure hardening — receipt access scoping, audit-before-erasure, download tracking, rejection emails, race condition fix, pagination, 78 tests — 2026-02-06 (ERASE-H1-H7)
-- [x] Redesign erasure system — tiered anonymisation, erasure codes, PDF receipts, role restrictions, 72 tests — 2026-02-06 (ERASE-REDESIGN)
-- [x] Fix footer links — correct GitHub URL, wire up privacy and help routes, fix help guide nav — 2026-02-06 (FOOT1)
-- [x] Documentation refresh — security docs, feature lists, Getting Started guide, website — 2026-02-06 (DOC-REF1-3, WEB-REF1)
-- [x] Erasure i18n — email templates, completion email, error messages, JS escaping for French — 2026-02-05 (ERASE-I18N1-3, ERASE-JS1)
-- [x] Erasure review fixes — __str__, dead code, aria-labels, email template, 80+ French translations — 2026-02-05 (ERASE-REV2-6)
-- [x] Erasure review fixes — email privacy, auth decorators, HTML — 2026-02-05 (ERASE-REV1)
-- [x] Erase Client Data — multi-PM approval workflow, 49 tests, audit trail — 2026-02-05 (ERASE1-9)
-- [x] French journey test suite — 69 tests covering all 16 areas of the French UX — 2026-02-05 (I18N4b)
-- [x] i18n tooling — `find_untranslated.py` script + `update_translations.py` wrapper — 2026-02-05 (I18N-R5, I18N-R6)
+- [x] Demo Account Directory page + is_demo_context audit flag — 2026-02-06 (DEMO9, DEMO12)
+- [x] Parking lot quick wins — aria-describedby, test deps, email errors, field rename — 2026-02-06 (UX-A11Y1, REV2-DEPS1, REV2-EMAIL2, DB-TERM1)
+- [x] Fix 5 review follow-ups — erasure emails, tier validation, history ordering, French filters, phone tests — 2026-02-06 (REV2-EMAIL1, REV2-TEST1, REV2-ORDER1, TESTFIX1, TESTFIX2)
+- [x] Review follow-ups — email warnings, SQL-optimised PM filtering, PIPEDA aging — 2026-02-06 (REV-W3, REV-W1, REV-PIPEDA1)
 
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 
@@ -172,6 +135,9 @@ For detailed history, see `tasks/ARCHIVE.md`. Summary of completed work:
 | Area | What's Done |
 |------|-------------|
 | **Core app (Phases 1-8)** | Clients, plans, notes, events, charts, admin, security, UX |
+| **Client voice & qualitative** | Client-goal fields, progress descriptors, engagement observation, qualitative summary |
+| **Groups** | Service groups, activity groups, projects — session logs, attendance, highlights, milestones, outcomes |
+| **Demo data** | 5 programs, 15 clients, 3 groups, cross-enrolments, approachable metrics |
 | **Secure export** | Bug fix, audit logging, warnings, secure links, permission alignment |
 | **French** | 636 system strings translated, bilingual login, language switcher |
 | **Reporting** | Funder reports, aggregation, demographics, fiscal year, PDF exports |
