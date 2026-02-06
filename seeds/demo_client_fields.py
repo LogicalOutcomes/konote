@@ -1,11 +1,14 @@
 """
-Custom field values for demo clients (DEMO-001 through DEMO-010).
+Custom field values for demo clients (DEMO-001 through DEMO-015).
 
 Shared between seed_demo_data and update_demo_client_fields so that
 the data stays in sync. Field names must match those in seed_intake_fields.py.
 """
 
 CLIENT_CUSTOM_FIELDS = {
+    # =========================================================================
+    # Supported Employment (Casey Worker)
+    # =========================================================================
     "DEMO-001": {
         "Preferred Name": "Jordan",
         "Primary Phone": "(416) 555-0123",
@@ -35,70 +38,76 @@ CLIENT_CUSTOM_FIELDS = {
     "DEMO-003": {
         "Preferred Name": "Avery",
         "Primary Phone": "(905) 555-0345",
-        "Email": "avery.j@example.com",
+        "Email": "avery.osei@example.com",
         "Preferred Contact Method": "Email",
         "Best Time to Contact": "Any time",
         "Preferred Language of Service": "English",
-        "Emergency Contact Name": "Jamie Johnson",
+        "Emergency Contact Name": "Kofi Osei",
         "Emergency Contact Relationship": "Sibling",
         "Emergency Contact Phone": "(905) 555-0346",
-        "Referral Source": "Hospital/Health provider",
-        "Referring Agency Name": "CAMH",
+        "Referral Source": "Self-referral",
     },
+    # =========================================================================
+    # Housing Stability (Casey Worker)
+    # =========================================================================
     "DEMO-004": {
         "Primary Phone": "(416) 555-0456",
         "Preferred Contact Method": "Text message",
         "Best Time to Contact": "Evening (5pm-8pm)",
         "Preferred Language of Service": "English",
-        "Emergency Contact Name": "Priya Patel",
-        "Emergency Contact Relationship": "Parent/Guardian",
-        "Emergency Contact Phone": "(416) 555-0457",
-        "Referral Source": "School/Education",
-        "Referring Agency Name": "Toronto District School Board",
-    },
-    "DEMO-005": {
-        "Preferred Name": "Sam",
-        "Primary Phone": "(647) 555-0567",
-        "Email": "sam.williams@example.com",
-        "Preferred Contact Method": "Email",
-        "Best Time to Contact": "Any time",
-        "Preferred Language of Service": "English",
         "Emergency Contact Name": "Drew Williams",
         "Emergency Contact Relationship": "Spouse/Partner",
+        "Emergency Contact Phone": "(416) 555-0457",
+        "Referral Source": "Shelter/Housing provider",
+        "Referring Agency Name": "Fred Victor Centre",
+    },
+    "DEMO-005": {
+        "Primary Phone": "(647) 555-0567",
+        "Preferred Contact Method": "Phone call",
+        "Best Time to Contact": "Morning (9am-12pm)",
+        "Preferred Language of Service": "French",
+        "Emergency Contact Name": "Marie Dubois",
+        "Emergency Contact Relationship": "Parent/Guardian",
         "Emergency Contact Phone": "(647) 555-0568",
-        "Referral Source": "Self-referral",
+        "Referral Source": "Social services (OW/ODSP)",
+        "Accommodation Needs": "Prefers French when possible; OK with English",
     },
     "DEMO-006": {
         "Primary Phone": "(416) 555-0678",
         "Preferred Contact Method": "Text message",
         "Best Time to Contact": "Afternoon (12pm-5pm)",
         "Preferred Language of Service": "English",
-        "Emergency Contact Name": "Rosa Martinez",
+        "Emergency Contact Name": "Rosa Morales",
         "Emergency Contact Relationship": "Parent/Guardian",
         "Emergency Contact Phone": "(416) 555-0679",
-        "Referral Source": "School/Education",
+        "Referral Source": "Community agency",
+        "Referring Agency Name": "Dixon Hall",
     },
+    # =========================================================================
+    # Youth Drop-In (Noor Worker)
+    # =========================================================================
     "DEMO-007": {
-        "Preferred Name": "Maya",
         "Primary Phone": "(905) 555-0789",
+        "Preferred Contact Method": "Text message",
+        "Best Time to Contact": "Afternoon (12pm-5pm)",
+        "Preferred Language of Service": "English",
+        "Emergency Contact Name": "Elena Martinez",
+        "Emergency Contact Relationship": "Parent/Guardian",
+        "Emergency Contact Phone": "(905) 555-0790",
+        "Referral Source": "School/Education",
+        "Referring Agency Name": "Toronto District School Board",
+    },
+    "DEMO-008": {
+        "Preferred Name": "Maya",
+        "Primary Phone": "(647) 555-0890",
         "Preferred Contact Method": "Phone call",
         "Best Time to Contact": "Morning (9am-12pm)",
         "Preferred Language of Service": "English",
         "Emergency Contact Name": "David Thompson",
         "Emergency Contact Relationship": "Parent/Guardian",
-        "Emergency Contact Phone": "(905) 555-0790",
+        "Emergency Contact Phone": "(647) 555-0891",
         "Referral Source": "Hospital/Health provider",
         "Accommodation Needs": "Needs quiet space for meetings; social anxiety",
-    },
-    "DEMO-008": {
-        "Primary Phone": "(647) 555-0890",
-        "Preferred Contact Method": "Text message",
-        "Best Time to Contact": "Evening (5pm-8pm)",
-        "Preferred Language of Service": "English",
-        "Emergency Contact Name": "Lisa Nguyen",
-        "Emergency Contact Relationship": "Parent/Guardian",
-        "Emergency Contact Phone": "(647) 555-0891",
-        "Referral Source": "Social services (OW/ODSP)",
     },
     "DEMO-009": {
         "Preferred Name": "Zara",
@@ -107,22 +116,88 @@ CLIENT_CUSTOM_FIELDS = {
         "Preferred Contact Method": "Email",
         "Best Time to Contact": "Afternoon (12pm-5pm)",
         "Preferred Language of Service": "English",
-        "Emergency Contact Name": "Fatima Ahmed",
+        "Emergency Contact Name": "Yusuf Ahmed",
         "Emergency Contact Relationship": "Parent/Guardian",
         "Emergency Contact Phone": "(416) 555-0902",
         "Referral Source": "Self-referral",
     },
+    # =========================================================================
+    # Newcomer Connections (Noor Worker)
+    # =========================================================================
     "DEMO-010": {
-        "Preferred Name": "Liam",
+        "Preferred Name": "Amara",
         "Primary Phone": "(905) 555-1012",
+        "Preferred Contact Method": "Phone call",
+        "Best Time to Contact": "Morning (9am-12pm)",
+        "Preferred Language of Service": "French",
+        "Emergency Contact Name": "Ibrahim Diallo",
+        "Emergency Contact Relationship": "Spouse/Partner",
+        "Emergency Contact Phone": "(905) 555-1013",
+        "Referral Source": "Community agency",
+        "Referring Agency Name": "Centre francophone de Toronto",
+        "Accommodation Needs": "French-speaking; English is limited but improving",
+    },
+    "DEMO-011": {
+        "Primary Phone": "(416) 555-1123",
+        "Preferred Contact Method": "Text message",
+        "Best Time to Contact": "Any time",
+        "Preferred Language of Service": "Other",
+        "Emergency Contact Name": "Ali Hassan",
+        "Emergency Contact Relationship": "Spouse/Partner",
+        "Emergency Contact Phone": "(416) 555-1124",
+        "Referral Source": "Community agency",
+        "Referring Agency Name": "Catholic Crosscultural Services",
+        "Accommodation Needs": "Somali-speaking; needs interpreter for complex topics",
+    },
+    "DEMO-012": {
+        "Preferred Name": "Carlos",
+        "Primary Phone": "(647) 555-1234",
+        "Email": "carlos.reyes@example.com",
+        "Preferred Contact Method": "Email",
+        "Best Time to Contact": "Afternoon (12pm-5pm)",
+        "Preferred Language of Service": "Other",
+        "Emergency Contact Name": "Ana Reyes",
+        "Emergency Contact Relationship": "Spouse/Partner",
+        "Emergency Contact Phone": "(647) 555-1235",
+        "Referral Source": "Self-referral",
+        "Accommodation Needs": "Spanish-speaking; conversational in English",
+    },
+    # =========================================================================
+    # Community Kitchen (Both workers)
+    # =========================================================================
+    "DEMO-013": {
+        "Preferred Name": "Priya",
+        "Primary Phone": "(905) 555-1345",
+        "Preferred Contact Method": "Phone call",
+        "Best Time to Contact": "Morning (9am-12pm)",
+        "Preferred Language of Service": "English",
+        "Emergency Contact Name": "Raj Sharma",
+        "Emergency Contact Relationship": "Spouse/Partner",
+        "Emergency Contact Phone": "(905) 555-1346",
+        "Referral Source": "Community agency",
+        "Referring Agency Name": "Neighbourhood Food Bank",
+    },
+    "DEMO-014": {
+        "Preferred Name": "Liam",
+        "Primary Phone": "(416) 555-1456",
         "Email": "liam.oconnor@example.com",
         "Preferred Contact Method": "Phone call",
         "Best Time to Contact": "Any time",
         "Preferred Language of Service": "English",
         "Emergency Contact Name": "Patrick O'Connor",
         "Emergency Contact Relationship": "Parent/Guardian",
-        "Emergency Contact Phone": "(905) 555-1013",
-        "Referral Source": "Community agency",
-        "Referring Agency Name": "Youth Employment Services",
+        "Emergency Contact Phone": "(416) 555-1457",
+        "Referral Source": "Self-referral",
+    },
+    "DEMO-015": {
+        "Primary Phone": "(647) 555-1567",
+        "Preferred Contact Method": "Text message",
+        "Best Time to Contact": "Evening (5pm-8pm)",
+        "Preferred Language of Service": "English",
+        "Emergency Contact Name": "Marko Kovac",
+        "Emergency Contact Relationship": "Sibling",
+        "Emergency Contact Phone": "(647) 555-1568",
+        "Referral Source": "Social services (OW/ODSP)",
+        "Accommodation Needs": "Serbian-speaking at home; English is functional",
     },
 }

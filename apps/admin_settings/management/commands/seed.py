@@ -81,6 +81,7 @@ class Command(BaseCommand):
             ("quick_notes", True),
             ("analysis_charts", True),
             ("ai_assist", False),
+            ("groups", True),
         ]
         created = 0
         for key, enabled in defaults:
@@ -114,109 +115,194 @@ class Command(BaseCommand):
                 created += 1
         self.stdout.write(f"  Instance settings: {created} created.")
 
+    def _cleanup_old_demo_data(self):
+        """Remove old demo data so it can be re-seeded cleanly.
+
+        Safe: only deletes objects marked is_demo=True or linked to DEMO- clients.
+        """
+        from apps.auth_app.models import User
+        from apps.clients.models import ClientDetailValue, ClientFile, ClientProgramEnrolment
+        from apps.events.models import Alert, Event
+        from apps.notes.models import ProgressNote
+        from apps.plans.models import PlanSection, PlanTarget
+        from apps.programs.models import Program, UserProgramRole
+
+        demo_clients = ClientFile.objects.filter(
+            record_id__startswith="DEMO-", is_demo=True
+        )
+        if not demo_clients.exists():
+            return
+
+        self.stdout.write("  Cleaning up old demo data...")
+        count = demo_clients.count()
+
+        # Delete rich data (cascades handle MetricValue, ProgressNoteTarget, etc.)
+        ProgressNote.objects.filter(client_file__in=demo_clients).delete()
+        PlanTarget.objects.filter(client_file__in=demo_clients).delete()
+        PlanSection.objects.filter(client_file__in=demo_clients).delete()
+        Event.objects.filter(client_file__in=demo_clients).delete()
+        Alert.objects.filter(client_file__in=demo_clients).delete()
+        ClientDetailValue.objects.filter(client_file__in=demo_clients).delete()
+        ClientProgramEnrolment.objects.filter(client_file__in=demo_clients).delete()
+        demo_clients.delete()
+
+        # Remove old demo user roles and the old single-worker user
+        demo_users = User.objects.filter(is_demo=True)
+        UserProgramRole.objects.filter(user__in=demo_users).delete()
+        # Remove old demo-worker (replaced by demo-worker-1 and demo-worker-2)
+        User.objects.filter(username="demo-worker", is_demo=True).delete()
+
+        # Remove old program names that no longer exist
+        for old_name in ("Demo Program", "Youth Services"):
+            Program.objects.filter(name=old_name).exclude(
+                client_enrolments__isnull=False  # keep if real clients enrolled
+            ).delete()
+
+        self.stdout.write(f"  Removed {count} old demo clients and related data.")
+
     def _create_demo_users_and_clients(self):
-        """Create demo users, programs, and sample clients when DEMO_MODE is on."""
+        """Create demo users, 5 programs, and 15 sample clients for DEMO_MODE."""
         from apps.auth_app.models import User
         from apps.clients.models import ClientFile, ClientProgramEnrolment
         from apps.programs.models import Program, UserProgramRole
 
-        # Create demo programs
-        program1, _ = Program.objects.get_or_create(
-            name="Demo Program",
-            defaults={"description": "A sample program for exploring KoNote2.", "colour_hex": "#6366F1"},
-        )
-        program2, _ = Program.objects.get_or_create(
-            name="Youth Services",
-            defaults={"description": "Youth outreach and support services.", "colour_hex": "#10B981"},
-        )
+        # Clean up any old demo data first
+        self._cleanup_old_demo_data()
 
-        # Demo users: (username, display_name, is_admin)
+        # --- 5 Programs ---
+        employment, _ = Program.objects.get_or_create(
+            name="Supported Employment",
+            defaults={
+                "description": "One-on-one job coaching, resume building, and interview preparation for adults seeking stable employment.",
+                "colour_hex": "#3B82F6",
+            },
+        )
+        housing, _ = Program.objects.get_or_create(
+            name="Housing Stability",
+            defaults={
+                "description": "Case management to help adults find and maintain stable housing, including landlord mediation and referrals.",
+                "colour_hex": "#F59E0B",
+            },
+        )
+        youth, _ = Program.objects.get_or_create(
+            name="Youth Drop-In",
+            defaults={
+                "description": "Group activities, homework help, and mentorship for youth aged 13-18.",
+                "colour_hex": "#10B981",
+            },
+        )
+        newcomer, _ = Program.objects.get_or_create(
+            name="Newcomer Connections",
+            defaults={
+                "description": "Settlement support for newcomers including service navigation, English conversation circles, and community orientation.",
+                "colour_hex": "#8B5CF6",
+            },
+        )
+        kitchen, _ = Program.objects.get_or_create(
+            name="Community Kitchen",
+            defaults={
+                "description": "Weekly cooking sessions focused on affordable, healthy meals. Open to participants from any program.",
+                "colour_hex": "#14B8A6",
+            },
+        )
+        all_programs = [employment, housing, youth, newcomer, kitchen]
+
+        # --- Demo Users ---
         demo_users = [
             ("demo-frontdesk", "Dana Front Desk", False),
-            ("demo-worker", "Casey Worker", False),
+            ("demo-worker-1", "Casey Worker", False),
+            ("demo-worker-2", "Noor Worker", False),
             ("demo-manager", "Morgan Manager", False),
             ("demo-executive", "Eva Executive", False),
             ("demo-admin", "Alex Admin", True),
         ]
-
         for username, display_name, is_admin in demo_users:
             user, created = User.objects.get_or_create(
                 username=username,
                 defaults={
                     "display_name": display_name,
                     "is_admin": is_admin,
-                    "is_demo": True,  # Demo users can only see demo clients
+                    "is_demo": True,
                 },
             )
             if created:
                 user.set_password("demo1234")
                 user.save()
 
-        # Assign program roles with specific access patterns:
-        # - Front Desk: both programs (can see list of everyone, limited field access)
-        # - Direct Service: only Demo Program (limited access to demonstrate permissions)
-        # - Manager: both programs (can see details of everyone)
-        # - Executive: both programs (dashboard only, no individual client access)
         front_desk = User.objects.get(username="demo-frontdesk")
-        worker = User.objects.get(username="demo-worker")
+        worker1 = User.objects.get(username="demo-worker-1")
+        worker2 = User.objects.get(username="demo-worker-2")
         manager = User.objects.get(username="demo-manager")
         executive = User.objects.get(username="demo-executive")
 
-        # Front Desk gets access to both programs
-        UserProgramRole.objects.get_or_create(
-            user=front_desk, program=program1,
-            defaults={"role": "receptionist"},
-        )
-        UserProgramRole.objects.get_or_create(
-            user=front_desk, program=program2,
-            defaults={"role": "receptionist"},
-        )
+        # --- Program Roles ---
+        # Front Desk: receptionist on all 5 programs
+        for prog in all_programs:
+            UserProgramRole.objects.get_or_create(
+                user=front_desk, program=prog,
+                defaults={"role": "receptionist"},
+            )
 
-        # Direct Service worker gets access to only Demo Program (not Youth Services)
+        # Casey (worker-1): program_manager for Employment, staff for Housing + Kitchen
+        # Mixed roles demonstrate how the same person sees different things per program
         UserProgramRole.objects.get_or_create(
-            user=worker, program=program1,
-            defaults={"role": "staff"},
-        )
-
-        # Manager gets access to both programs
-        UserProgramRole.objects.get_or_create(
-            user=manager, program=program1,
+            user=worker1, program=employment,
             defaults={"role": "program_manager"},
         )
-        UserProgramRole.objects.get_or_create(
-            user=manager, program=program2,
-            defaults={"role": "program_manager"},
-        )
+        for prog in (housing, kitchen):
+            UserProgramRole.objects.get_or_create(
+                user=worker1, program=prog,
+                defaults={"role": "staff"},
+            )
 
-        # Executive gets access to both programs (dashboard/aggregate view only)
-        UserProgramRole.objects.get_or_create(
-            user=executive, program=program1,
-            defaults={"role": "executive"},
-        )
-        UserProgramRole.objects.get_or_create(
-            user=executive, program=program2,
-            defaults={"role": "executive"},
-        )
+        # Noor (worker-2): group programs + shared Kitchen
+        for prog in (youth, newcomer, kitchen):
+            UserProgramRole.objects.get_or_create(
+                user=worker2, program=prog,
+                defaults={"role": "staff"},
+            )
 
-        # Sample clients for Demo Program (DEMO-001 to DEMO-005)
-        program1_clients = [
-            ("Jordan", "Rivera", "2000-03-15", "DEMO-001"),
-            ("Taylor", "Chen", "1995-07-22", "DEMO-002"),
-            ("Avery", "Johnson", "1988-11-03", "DEMO-003"),
-            ("Riley", "Patel", "2001-01-09", "DEMO-004"),
-            ("Sam", "Williams", "1992-06-18", "DEMO-005"),
+        # Manager: program_manager on Employment, Housing, Kitchen (not all 5)
+        # Shows that even managers have program boundaries
+        for prog in (employment, housing, kitchen):
+            UserProgramRole.objects.get_or_create(
+                user=manager, program=prog,
+                defaults={"role": "program_manager"},
+            )
+
+        # Executive: executive on all 5 (dashboard only)
+        for prog in all_programs:
+            UserProgramRole.objects.get_or_create(
+                user=executive, program=prog,
+                defaults={"role": "executive"},
+            )
+
+        # --- 15 Demo Clients ---
+        # (first_name, last_name, dob, record_id, program, extra_programs)
+        demo_clients = [
+            # Supported Employment (Casey)
+            ("Jordan", "Rivera", "2000-03-15", "DEMO-001", employment, [kitchen]),
+            ("Taylor", "Chen", "1995-07-22", "DEMO-002", employment, []),
+            ("Avery", "Osei", "1988-11-03", "DEMO-003", employment, []),
+            # Housing Stability (Casey)
+            ("Sam", "Williams", "1992-06-18", "DEMO-004", housing, [kitchen]),
+            ("Kai", "Dubois", "1990-04-25", "DEMO-005", housing, []),
+            ("Jesse", "Morales", "1985-08-14", "DEMO-006", housing, []),
+            # Youth Drop-In (Noor)
+            ("Jayden", "Martinez", "2009-05-12", "DEMO-007", youth, []),
+            ("Maya", "Thompson", "2008-09-28", "DEMO-008", youth, []),
+            ("Zara", "Ahmed", "2009-11-03", "DEMO-009", youth, []),
+            # Newcomer Connections (Noor)
+            ("Amara", "Diallo", "1993-02-18", "DEMO-010", newcomer, [kitchen]),
+            ("Fatima", "Hassan", "1996-03-22", "DEMO-011", newcomer, []),
+            ("Carlos", "Reyes", "1991-10-05", "DEMO-012", newcomer, []),
+            # Community Kitchen (Both workers)
+            ("Priya", "Sharma", "1987-05-15", "DEMO-013", kitchen, []),
+            ("Liam", "O'Connor", "1994-08-22", "DEMO-014", kitchen, []),
+            ("Nadia", "Kovac", "1999-01-30", "DEMO-015", kitchen, []),
         ]
 
-        # Sample clients for Youth Services (DEMO-006 to DEMO-010)
-        program2_clients = [
-            ("Jayden", "Martinez", "2007-05-12", "DEMO-006"),
-            ("Maya", "Thompson", "2006-09-28", "DEMO-007"),
-            ("Ethan", "Nguyen", "2008-01-15", "DEMO-008"),
-            ("Zara", "Ahmed", "2005-11-03", "DEMO-009"),
-            ("Liam", "O'Connor", "2007-08-22", "DEMO-010"),
-        ]
-
-        for first, last, dob, record_id in program1_clients:
+        for first, last, dob, record_id, primary_program, extra_programs in demo_clients:
             existing = ClientFile.objects.filter(record_id=record_id).first()
             if not existing:
                 client = ClientFile()
@@ -225,32 +311,24 @@ class Command(BaseCommand):
                 client.birth_date = dob
                 client.record_id = record_id
                 client.status = "active"
-                client.is_demo = True  # Demo clients visible only to demo users
+                client.is_demo = True
                 client.save()
+                # Primary program enrolment
                 ClientProgramEnrolment.objects.create(
-                    client_file=client, program=program1, status="enrolled",
+                    client_file=client, program=primary_program, status="enrolled",
                 )
+                # Cross-enrolments (e.g., also in Community Kitchen)
+                for extra in extra_programs:
+                    ClientProgramEnrolment.objects.create(
+                        client_file=client, program=extra, status="enrolled",
+                    )
 
-        for first, last, dob, record_id in program2_clients:
-            existing = ClientFile.objects.filter(record_id=record_id).first()
-            if not existing:
-                client = ClientFile()
-                client.first_name = first
-                client.last_name = last
-                client.birth_date = dob
-                client.record_id = record_id
-                client.status = "active"
-                client.is_demo = True  # Demo clients visible only to demo users
-                client.save()
-                ClientProgramEnrolment.objects.create(
-                    client_file=client, program=program2, status="enrolled",
-                )
-
-        self.stdout.write("  Demo data: users, 2 programs, and 10 sample clients created.")
-        self.stdout.write("    - Front Desk: sees all 10 clients (limited field access)")
-        self.stdout.write("    - Direct Service: sees only 5 clients (Demo Program only)")
-        self.stdout.write("    - Manager: sees all 10 clients with full details")
-        self.stdout.write("    - Executive: sees aggregate dashboard (no individual clients)")
+        self.stdout.write("  Demo data: 6 users, 5 programs, 15 clients created.")
+        self.stdout.write("    - Casey Worker: program_manager(Employment) + staff(Housing, Kitchen)")
+        self.stdout.write("    - Noor Worker:  staff(Youth Drop-In, Newcomer, Kitchen)")
+        self.stdout.write("    - Morgan Manager: program_manager(Employment, Housing, Kitchen only)")
+        self.stdout.write("    - Community Kitchen is shared — both workers see Kitchen clients")
+        self.stdout.write("    - 3 clients cross-enrolled in Kitchen from other programs")
 
         # Populate demo clients with rich data for charts and reports
         from django.core.management import call_command

@@ -11,6 +11,25 @@
         <div class="chart-container" style="position: relative; height: 300px;">
             <canvas id="chart-{{ forloop.counter }}" aria-label="{% blocktrans with metric=chart.metric_name target=chart.target_name %}Line chart showing {{ metric }} over time for {{ target }}{% endblocktrans %}" role="img"></canvas>
         </div>
+        <details class="chart-data-table">
+            <summary>{% trans "View data table" %}</summary>
+            <table role="table" aria-label="{{ chart.metric_name }} — {{ chart.target_name }}">
+                <thead>
+                    <tr>
+                        <th scope="col">{% trans "Date" %}</th>
+                        <th scope="col">{{ chart.metric_name }}{% if chart.unit %} ({{ chart.unit }}){% endif %}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for point in chart.data_points %}
+                    <tr>
+                        <td>{{ point.date }}</td>
+                        <td>{{ point.value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </details>
     </section>
     {% endfor %}
 

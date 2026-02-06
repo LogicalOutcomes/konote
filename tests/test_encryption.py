@@ -40,10 +40,10 @@ class EncryptionUtilsTest(TestCase):
     def test_none_returns_empty_bytes(self):
         self.assertEqual(encrypt_field(None), b"")
 
-    def test_invalid_ciphertext_returns_error_marker(self):
-        """Corrupted data returns a safe error string, not an exception."""
+    def test_invalid_ciphertext_returns_empty_string(self):
+        """Corrupted data returns empty string, not an exception."""
         result = decrypt_field(b"not-valid-fernet-data")
-        self.assertEqual(result, "[decryption error]")
+        self.assertEqual(result, "")
 
     def test_memoryview_input(self):
         """BinaryField values come as memoryview — decryption handles this."""
@@ -305,3 +305,197 @@ class ProgressNoteTargetPIIEncryptionTest(TestCase):
         self.assertNotIn(b"Sensitive", target._notes_encrypted)
         self.assertNotIn(b"client", target._notes_encrypted)
         self.assertNotIn(b"information", target._notes_encrypted)
+
+
+# --- MultiFernet key rotation tests ---
+
+KEY_A = Fernet.generate_key().decode()
+KEY_B = Fernet.generate_key().decode()
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=KEY_A)
+class MultiFernetRotationTest(TestCase):
+    """Test key rotation using comma-separated FIELD_ENCRYPTION_KEY."""
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_single_key_still_works(self):
+        """A single key (no comma) works exactly as before."""
+        plaintext = "Single key test"
+        ciphertext = encrypt_field(plaintext)
+        self.assertEqual(decrypt_field(ciphertext), plaintext)
+
+    @override_settings(FIELD_ENCRYPTION_KEY=f"{KEY_B},{KEY_A}")
+    def test_data_encrypted_with_old_key_decrypts_with_new_primary(self):
+        """Data encrypted with KEY_A can be decrypted when KEY_B is primary."""
+        # Encrypt with KEY_A (single key)
+        enc_module._fernet = None
+        with self.settings(FIELD_ENCRYPTION_KEY=KEY_A):
+            enc_module._fernet = None
+            ciphertext = encrypt_field("Old key data")
+
+        # Now switch to KEY_B as primary, KEY_A as secondary
+        enc_module._fernet = None
+        result = decrypt_field(ciphertext)
+        self.assertEqual(result, "Old key data")
+
+    @override_settings(FIELD_ENCRYPTION_KEY=f"{KEY_B},{KEY_A}")
+    def test_new_encryption_uses_primary_key(self):
+        """New data is encrypted with the first (primary) key."""
+        enc_module._fernet = None
+        ciphertext = encrypt_field("New data")
+
+        # Should decrypt with KEY_B alone (the primary key)
+        enc_module._fernet = None
+        with self.settings(FIELD_ENCRYPTION_KEY=KEY_B):
+            enc_module._fernet = None
+            result = decrypt_field(ciphertext)
+            self.assertEqual(result, "New data")
+
+    @override_settings(FIELD_ENCRYPTION_KEY=f"{KEY_A},{KEY_B}")
+    def test_multiple_keys_round_trip(self):
+        """Encrypt/decrypt round-trip works with multiple keys."""
+        enc_module._fernet = None
+        plaintext = "Éloïse Côté-Tremblay — données personnelles"
+        ciphertext = encrypt_field(plaintext)
+        self.assertEqual(decrypt_field(ciphertext), plaintext)
+
+    @override_settings(FIELD_ENCRYPTION_KEY=f" {KEY_A} , {KEY_B} ")
+    def test_whitespace_in_key_string_is_trimmed(self):
+        """Spaces around keys and commas are handled gracefully."""
+        enc_module._fernet = None
+        ciphertext = encrypt_field("Whitespace test")
+        self.assertEqual(decrypt_field(ciphertext), "Whitespace test")
+
+
+# --- PlanTarget encryption tests (SEC-FIX1) ---
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class PlanTargetEncryptionTest(TestCase):
+    """Test that PlanTarget name, description, status_reason are encrypted."""
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_name_encryption_on_write(self):
+        from apps.plans.models import PlanTarget
+
+        target = PlanTarget()
+        target.name = "Manage anxiety and panic attacks"
+
+        self.assertIsInstance(target._name_encrypted, bytes)
+        self.assertNotIn(b"anxiety", target._name_encrypted)
+
+    def test_name_decryption_on_read(self):
+        from apps.plans.models import PlanTarget
+
+        target = PlanTarget()
+        target.name = "Manage anxiety and panic attacks"
+        self.assertEqual(target.name, "Manage anxiety and panic attacks")
+
+    def test_description_encryption_on_write(self):
+        from apps.plans.models import PlanTarget
+
+        target = PlanTarget()
+        target.description = "Work on breathing techniques and grounding exercises"
+
+        self.assertIsInstance(target._description_encrypted, bytes)
+        self.assertNotIn(b"breathing", target._description_encrypted)
+
+    def test_description_decryption_on_read(self):
+        from apps.plans.models import PlanTarget
+
+        target = PlanTarget()
+        target.description = "Work on breathing techniques and grounding exercises"
+        self.assertEqual(target.description, "Work on breathing techniques and grounding exercises")
+
+    def test_status_reason_encryption_on_write(self):
+        from apps.plans.models import PlanTarget
+
+        target = PlanTarget()
+        target.status_reason = "Client requested to focus on employment first"
+
+        self.assertIsInstance(target._status_reason_encrypted, bytes)
+        self.assertNotIn(b"employment", target._status_reason_encrypted)
+
+    def test_status_reason_decryption_on_read(self):
+        from apps.plans.models import PlanTarget
+
+        target = PlanTarget()
+        target.status_reason = "Client requested to focus on employment first"
+        self.assertEqual(target.status_reason, "Client requested to focus on employment first")
+
+    def test_empty_and_none_handling(self):
+        from apps.plans.models import PlanTarget
+
+        target = PlanTarget()
+        target.name = ""
+        target.description = None
+        target.status_reason = ""
+
+        self.assertEqual(target._name_encrypted, b"")
+        self.assertEqual(target._description_encrypted, b"")
+        self.assertEqual(target._status_reason_encrypted, b"")
+        self.assertEqual(target.name, "")
+        self.assertEqual(target.description, "")
+        self.assertEqual(target.status_reason, "")
+
+    def test_unicode_round_trip(self):
+        from apps.plans.models import PlanTarget
+
+        target = PlanTarget()
+        target.name = "Réduire la consommation d'alcool — objectif prioritaire"
+        target.description = "Travailler avec l'équipe de soutien"
+
+        self.assertEqual(target.name, "Réduire la consommation d'alcool — objectif prioritaire")
+        self.assertEqual(target.description, "Travailler avec l'équipe de soutien")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class PlanTargetRevisionEncryptionTest(TestCase):
+    """Test that PlanTargetRevision name, description, status_reason are encrypted."""
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_name_encryption_on_write(self):
+        from apps.plans.models import PlanTargetRevision
+
+        rev = PlanTargetRevision()
+        rev.name = "Original goal text"
+
+        self.assertIsInstance(rev._name_encrypted, bytes)
+        self.assertNotIn(b"Original", rev._name_encrypted)
+
+    def test_name_decryption_on_read(self):
+        from apps.plans.models import PlanTargetRevision
+
+        rev = PlanTargetRevision()
+        rev.name = "Original goal text"
+        self.assertEqual(rev.name, "Original goal text")
+
+    def test_description_round_trip(self):
+        from apps.plans.models import PlanTargetRevision
+
+        rev = PlanTargetRevision()
+        rev.description = "Detailed plan for housing stability"
+        self.assertEqual(rev.description, "Detailed plan for housing stability")
+        self.assertNotIn(b"housing", rev._description_encrypted)
+
+    def test_status_reason_round_trip(self):
+        from apps.plans.models import PlanTargetRevision
+
+        rev = PlanTargetRevision()
+        rev.status_reason = "Target completed — client met all goals"
+        self.assertEqual(rev.status_reason, "Target completed — client met all goals")
+        self.assertNotIn(b"completed", rev._status_reason_encrypted)

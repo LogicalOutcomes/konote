@@ -12,8 +12,11 @@ The target users are **nonprofit staff, not developers**. The workflow must be s
 
 ## Current State
 
-- Demo mode creates 10 sample clients (DEMO-001 to DEMO-010) with plans, notes, events, and metrics
-- Four demo users exist: demo-manager, demo-counsellor, demo-front-desk, demo-admin
+- Demo mode creates 15 sample clients (DEMO-001 to DEMO-015) across 5 programs with plans, notes, events, and metrics
+- Six demo users exist with differentiated roles:
+  - demo-admin (system config), demo-manager (program_manager for 3 programs)
+  - demo-worker-1 (mixed: program_manager + staff), demo-worker-2 (staff only)
+  - demo-executive (dashboard only), demo-frontdesk (receptionist)
 - Custom fields are seeded with Canadian nonprofit defaults
 - Demo data is protected by `DEMO_MODE=True` environment variable
 
@@ -52,7 +55,7 @@ Design a clear path from demo → customization → production:
 
 **Assessment Phase:**
 - Deploy with demo data
-- Explore as demo-manager, demo-counsellor, demo-front-desk
+- Explore as demo-manager, demo-worker-1, demo-worker-2, demo-frontdesk
 - Understand the features before making decisions
 
 **Customization Phase:**

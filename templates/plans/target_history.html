@@ -17,6 +17,7 @@
         <tr>
             <th scope="col">{% trans "Date" %}</th>
             <th scope="col">{% trans "Name" %}</th>
+            <th scope="col">{% trans "Client's words" %}</th>
             <th scope="col">{% trans "Status" %}</th>
             <th scope="col">{% trans "Reason" %}</th>
             <th scope="col">{% trans "Changed by" %}</th>
@@ -27,6 +28,7 @@
         <tr>
             <td>{{ rev.created_at|date:"Y-m-d H:i" }}</td>
             <td>{{ rev.name }}</td>
+            <td>{% if rev.client_goal %}"{{ rev.client_goal|truncatewords:15 }}"{% else %}—{% endif %}</td>
             <td>
                 {% if rev.status == "default" %}
                     <span class="badge badge-success">{% trans "Active" %}</span>

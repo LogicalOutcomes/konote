@@ -96,6 +96,16 @@ def find_untranslated_entries(po_file_path):
     return untranslated
 
 
+def check_mo_freshness(po_file):
+    """Check that the .mo file exists and is newer than the .po file."""
+    mo_file = po_file.with_suffix('.mo')
+    if not mo_file.exists():
+        return "MISSING", f".mo file not found — run: python manage.py compilemessages"
+    if mo_file.stat().st_mtime < po_file.stat().st_mtime:
+        return "STALE", f".mo is older than .po — run: python manage.py compilemessages"
+    return "OK", None
+
+
 def main():
     """Check all .po files in locale directories."""
     locale_dir = Path(__file__).parent.parent / 'locale'
@@ -155,6 +165,16 @@ def main():
 
             print(f"\nThese strings will appear in English for French users.")
             print(f"Add French translations in {rel_path} for each msgstr.\n")
+
+        # Check 3: .mo freshness (error — deployed translations would be stale)
+        status, message = check_mo_freshness(po_file)
+        if status != "OK":
+            errors_found = True
+            mo_rel = po_file.with_suffix('.mo').relative_to(locale_dir.parent)
+            print(f"\n{'='*60}")
+            print(f"ERROR: {status} .mo file — {mo_rel}")
+            print(f"{'='*60}")
+            print(f"\n  {message}\n")
 
     if errors_found:
         print("Translation validation FAILED - fix duplicates before deploying")

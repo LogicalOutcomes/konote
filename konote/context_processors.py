@@ -143,21 +143,17 @@ def pending_erasures(request):
             count = ErasureRequest.objects.filter(status="pending").count()
         else:
             # PM-scoped: count requests where at least one required program is theirs
-            # Uses SQL-level JSONField filtering instead of in-memory iteration
-            from django.db.models import Q
-
+            # Filters in Python — works on all DB backends (SQLite + PostgreSQL)
             pm_program_ids = list(
                 UserProgramRole.objects.filter(
                     user=request.user, role="program_manager", status="active",
                 ).values_list("program_id", flat=True)
             )
-            q = Q()
-            for pid in pm_program_ids:
-                q |= Q(programs_required__contains=[pid])
-            try:
-                count = ErasureRequest.objects.filter(status="pending").filter(q).count()
-            except Exception:
-                # JSONField __contains not supported on SQLite (test environment)
-                count = 0
+            pids_set = set(pm_program_ids)
+            pending = ErasureRequest.objects.filter(status="pending")
+            count = sum(
+                1 for r in pending
+                if pids_set & set(r.programs_required or [])
+            )
         cache.set(cache_key, count, 60)  # 1 min cache
     return {"pending_erasure_count": count if count > 0 else None}

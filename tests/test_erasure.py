@@ -1473,6 +1473,8 @@ class EmailNotificationWarningTests(TestCase):
     @patch("django.core.mail.send_mail", side_effect=Exception("SMTP down"))
     def test_create_view_shows_warning_on_email_failure(self, mock_send):
         self.client.login(username="pm", password="testpass123")
+        self.admin.email = "admin@example.com"
+        self.admin.save()
         UserProgramRole.objects.create(
             user=self.admin, program=self.prog,
             role="program_manager", status="active",

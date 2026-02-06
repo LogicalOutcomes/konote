@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ term.group_plural|default:"Groups" }} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ term.group_plural|default:"Groups" }}</h1>
+    <p>{% blocktrans with groups=term.group_plural|default:"groups" %}All {{ groups }} you have access to.{% endblocktrans %}</p>
+</div>
+
+<p><a href="{% url 'groups:group_create' %}" role="button">+ {% blocktrans with group=term.group|default:"Group" %}New {{ group }}{% endblocktrans %}</a></p>
+
+{% if groups %}
+<figure>
+<table role="grid" aria-label="{% blocktrans with groups=term.group_plural|default:'Groups' %}{{ groups }} list{% endblocktrans %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Name" %}</th>
+            <th scope="col">{% trans "Type" %}</th>
+            <th scope="col">{{ term.program|default:"Programme" }}</th>
+            <th scope="col">{% trans "Members" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for group in groups %}
+        <tr>
+            <td>
+                <a href="{% url 'groups:group_detail' group_id=group.pk %}">{{ group.name }}</a>
+            </td>
+            <td data-label="{% trans 'Type' %}">{{ group.get_group_type_display }}</td>
+            <td data-label="{{ term.program|default:'Programme' }}">{{ group.program.name|default:"—" }}</td>
+            <td data-label="{% trans 'Members' %}">{{ group.member_count }}</td>
+            <td data-label="{% trans 'Status' %}">
+                {% if group.status == "active" %}
+                    <span class="badge badge-success">{% trans "Active" %}</span>
+                {% else %}
+                    <span class="badge badge-neutral">{% trans "Archived" %}</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<div class="empty-state">
+    <p>{% blocktrans with group=term.group|default:"group" %}No {{ group }} records yet.{% endblocktrans %}</p>
+    <a href="{% url 'groups:group_create' %}" role="button">{% trans "Create the first one" %}</a>
+</div>
+{% endif %}
+{% endblock %}

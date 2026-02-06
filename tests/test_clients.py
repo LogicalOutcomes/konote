@@ -8,6 +8,7 @@ from apps.clients.models import (
     ClientFile, ClientProgramEnrolment, CustomFieldGroup,
     CustomFieldDefinition, ClientDetailValue,
 )
+from apps.notes.models import ProgressNote
 import konote.encryption as enc_module
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -101,6 +102,30 @@ class ClientViewsTest(TestCase):
         self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get("/clients/search/?q=jane")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Jane")
+
+    def test_search_finds_client_by_note_content(self):
+        """Search should find clients when their progress notes match the query."""
+        cf = self._create_client("Jane", "Doe", [self.prog_a])
+        note = ProgressNote(client_file=cf, note_type="quick", author=self.admin)
+        note.notes_text = "Discussed housing stability goals"
+        note.save()
+        self.client.login(username="admin", password="testpass123")
+        # Search for text in the note — should find the client
+        resp = self.client.get("/clients/search/?q=housing")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Jane")
+
+    def test_list_search_finds_client_by_note_content(self):
+        """Client list search should also find clients by note content."""
+        cf = self._create_client("Jane", "Doe", [self.prog_a])
+        note = ProgressNote(client_file=cf, note_type="quick", author=self.admin)
+        note.notes_text = "Completed intake assessment"
+        note.save()
+        self.client.login(username="admin", password="testpass123")
+        # Search for text in the note — should find the client
+        resp = self.client.get("/clients/?q=intake")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Jane")
 

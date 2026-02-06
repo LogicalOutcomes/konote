@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if editing %}{% trans "Edit Milestone" %}{% else %}{% trans "Add Milestone" %}{% endif %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% if editing %}{% blocktrans with title=milestone.title %}Edit Milestone: {{ title }}{% endblocktrans %}{% else %}{% blocktrans with name=group.name %}Add Milestone — {{ name }}{% endblocktrans %}{% endif %}</h1>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">
+        {{ field.label }}
+        {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+    </label>
+    {{ field }}
+    {% if field.help_text %}
+    <small>{{ field.help_text }}</small>
+    {% endif %}
+    {% if field.errors %}
+    <small class="badge badge-danger">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% endfor %}
+
+    <div role="group">
+        <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% trans "Add Milestone" %}{% endif %}</button>
+        <a href="{% url 'groups:group_detail' group_id=group.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

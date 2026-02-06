@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% blocktrans with name=group.name %}Log Session — {{ name }}{% endblocktrans %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% blocktrans with name=group.name %}Log Session — {{ name }}{% endblocktrans %}</h1>
+    <p>{% trans "Record attendance, observations, and notes for this session." %}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    <!-- Session date and group vibe -->
+    <div class="grid">
+        <div>
+            <label for="id_session_date">{% trans "Session Date" %} <abbr title="{% trans 'required' %}">*</abbr></label>
+            {{ form.session_date }}
+            {% if form.session_date.errors %}
+            <small class="badge badge-danger">{{ form.session_date.errors.0 }}</small>
+            {% endif %}
+        </div>
+        <div>
+            <label for="id_group_vibe">{% trans "Group Vibe" %}</label>
+            {{ form.group_vibe }}
+            {% if form.group_vibe.errors %}
+            <small class="badge badge-danger">{{ form.group_vibe.errors.0 }}</small>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Attendance -->
+    <fieldset>
+        <legend>{% trans "Attendance" %}</legend>
+        <p><small>{% trans "All members are checked by default. Uncheck anyone who was absent." %}</small></p>
+
+        {% for att in attendance_data %}
+        <label class="checkbox-item">
+            <input type="checkbox" name="present_{{ att.membership.pk }}" checked>
+            <span class="checkbox-label-text">{{ att.membership.display_name }}</span>
+        </label>
+        {% empty %}
+        <p><em>{% trans "No members in this group yet." %}</em></p>
+        {% endfor %}
+    </fieldset>
+
+    <!-- Individual highlights -->
+    {% if attendance_data %}
+    <fieldset>
+        <legend>{% trans "Individual Highlights" %} <small>({% trans "optional" %})</small></legend>
+        <p><small>{% trans "Brief observations about individual members during this session." %}</small></p>
+
+        {% for att in attendance_data %}
+        <label for="highlight_{{ att.membership.pk }}">{{ att.membership.display_name }}</label>
+        <input type="text"
+               id="highlight_{{ att.membership.pk }}"
+               name="highlight_{{ att.membership.pk }}"
+               placeholder="{% trans 'Quick observation...' %}"
+               aria-label="{% blocktrans with name=att.membership.display_name %}Highlight for {{ name }}{% endblocktrans %}">
+        {% endfor %}
+    </fieldset>
+    {% endif %}
+
+    <!-- Session notes -->
+    <label for="id_notes">{% trans "Session Notes" %}</label>
+    {{ form.notes }}
+    {% if form.notes.errors %}
+    <small class="badge badge-danger">{{ form.notes.errors.0 }}</small>
+    {% endif %}
+
+    <div role="group">
+        <button type="submit">{% trans "Save Session" %}</button>
+        <a href="{% url 'groups:group_detail' group_id=group.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}
