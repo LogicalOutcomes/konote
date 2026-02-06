@@ -13,8 +13,8 @@
         {% for item in results %}
         <tr>
             <td><a href="{% url 'clients:client_detail' client_id=item.client.pk %}">{{ item.name }}</a></td>
-            <td>{{ item.client.record_id|default:"—" }}</td>
-            <td>
+            <td data-label="{% trans 'ID' %}">{{ item.client.record_id|default:"—" }}</td>
+            <td data-label="{% trans 'Status' %}">
                 {% if item.client.status == "active" %}
                     <span class="badge badge-success">{% trans "Active" %}</span>
                 {% elif item.client.status == "inactive" %}
@@ -23,7 +23,7 @@
                     <span class="badge badge-neutral">{% trans "Discharged" %}</span>
                 {% endif %}
             </td>
-            <td>
+            <td data-label="{{ term.program_plural|default:'Programs' }}">
                 {% for prog in item.programs %}
                 <span class="program-dot" style="background-color: {{ prog.colour_hex }}" aria-hidden="true"></span>{{ prog.name }}{% if not forloop.last %}, {% endif %}
                 {% endfor %}

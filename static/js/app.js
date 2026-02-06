@@ -753,3 +753,68 @@ document.addEventListener("click", function (event) {
         setupSessionTimer();
     }
 })();
+
+// --- Theme Toggle (Dark Mode) ---
+(function() {
+    var STORAGE_KEY = "KoNote2_theme";
+    var STATES = ["auto", "dark", "light"];
+    // Unicode icons: half-circle (auto), crescent moon (dark), sun (light)
+    var ICONS = { auto: "\u25D1", dark: "\u263D", light: "\u2600" };
+
+    function getTheme() {
+        try { return localStorage.getItem(STORAGE_KEY) || "auto"; }
+        catch(e) { return "auto"; }
+    }
+
+    function applyTheme(theme) {
+        var html = document.documentElement;
+        if (theme === "dark") html.setAttribute("data-theme", "dark");
+        else if (theme === "light") html.setAttribute("data-theme", "light");
+        else html.removeAttribute("data-theme"); // auto — Pico uses prefers-color-scheme
+    }
+
+    function saveTheme(theme) {
+        try {
+            if (theme === "auto") localStorage.removeItem(STORAGE_KEY);
+            else localStorage.setItem(STORAGE_KEY, theme);
+        } catch(e) {}
+    }
+
+    function updateButton(btn, theme) {
+        var icon = btn.querySelector(".theme-toggle-icon");
+        if (icon) icon.textContent = ICONS[theme] || ICONS.auto;
+
+        // Bilingual tooltip
+        var lang = (document.documentElement.lang || "en").substring(0, 2);
+        var labels = {
+            en: { auto: "Theme: auto (system)", dark: "Theme: dark", light: "Theme: light" },
+            fr: { auto: "Th\u00e8me : auto (syst\u00e8me)", dark: "Th\u00e8me : sombre", light: "Th\u00e8me : clair" }
+        };
+        var l = labels[lang] || labels.en;
+        btn.setAttribute("title", l[theme]);
+        btn.setAttribute("aria-label", l[theme]);
+    }
+
+    function setup() {
+        var btn = document.getElementById("theme-toggle");
+        if (!btn) return;
+
+        var current = getTheme();
+        applyTheme(current);
+        updateButton(btn, current);
+
+        btn.addEventListener("click", function() {
+            var cur = getTheme();
+            var next = STATES[(STATES.indexOf(cur) + 1) % STATES.length];
+            applyTheme(next);
+            saveTheme(next);
+            updateButton(btn, next);
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", setup);
+    } else {
+        setup();
+    }
+})();

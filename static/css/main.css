@@ -41,6 +41,18 @@
     top: 0;
     z-index: 1000;
 }
+[data-theme="dark"] .demo-banner {
+    background-color: #3d2e0a;
+    border-bottom-color: #d69e2e;
+    color: #f6e05e;
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .demo-banner {
+        background-color: #3d2e0a;
+        border-bottom-color: #d69e2e;
+        color: #f6e05e;
+    }
+}
 
 /* ---- Branded focus style ---- */
 :focus-visible {
@@ -165,6 +177,15 @@ body > nav a.nav-active {
     vertical-align: middle;
     flex-shrink: 0;
 }
+/* Ring around colour dots in dark mode so agency colours stay visible */
+[data-theme="dark"] .program-dot {
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .program-dot {
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
+    }
+}
 
 /* ---- Client table column widths ---- */
 .client-table {
@@ -234,7 +255,7 @@ body > nav a.nav-active {
 }
 .search-input-wrapper {
     flex: 1;
-    min-width: 400px;
+    min-width: min(400px, 100%);
 }
 .search-label {
     display: block;
@@ -265,7 +286,16 @@ body > nav a.nav-active {
 }
 @media (max-width: 900px) {
     .stats-row {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media (max-width: 600px) {
+    .stats-row {
         grid-template-columns: repeat(2, 1fr);
+    }
+    /* If odd number of cards, last one spans full width */
+    .stats-row > :last-child:nth-child(odd) {
+        grid-column: 1 / -1;
     }
 }
 @media (max-width: 480px) {
@@ -458,7 +488,7 @@ body > nav a.nav-active {
 }
 .note-card:hover,
 .note-card:focus-within {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--kn-shadow-note-hover);
     border-color: var(--kn-primary);
 }
 .note-card:focus {
@@ -783,11 +813,33 @@ details.search-filters-panel[open] summary {
 }
 
 /* Secondary buttons — ensure text is readable on dark gray background */
-.login-container a[role="button"].secondary,
-.filter-actions a[role="button"].secondary,
-.empty-state a[role="button"].secondary {
+a[role="button"].secondary,
+button.secondary {
     --pico-secondary-inverse: #ffffff;
     color: #ffffff;
+}
+/* Outline secondary buttons — visible text in dark mode */
+[data-theme="dark"] a[role="button"].outline.secondary,
+[data-theme="dark"] button.outline.secondary {
+    color: var(--kn-text);
+    border-color: var(--kn-border);
+}
+[data-theme="dark"] a[role="button"].outline.secondary:hover,
+[data-theme="dark"] button.outline.secondary:hover {
+    color: var(--kn-text-inverse);
+    background: var(--kn-secondary);
+}
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) a[role="button"].outline.secondary,
+    :root:not([data-theme="light"]) button.outline.secondary {
+        color: var(--kn-text);
+        border-color: var(--kn-border);
+    }
+    :root:not([data-theme="light"]) a[role="button"].outline.secondary:hover,
+    :root:not([data-theme="light"]) button.outline.secondary:hover {
+        color: var(--kn-text-inverse);
+        background: var(--kn-secondary);
+    }
 }
 
 /* ---- Empty states ---- */
@@ -1321,9 +1373,9 @@ article[aria-label="notification"].fading-out {
 }
 
 /* ---- Responsive tables ---- */
-/* On mobile, make tables horizontally scrollable */
+/* On mobile, non-client tables scroll horizontally */
 @media (max-width: 600px) {
-    figure:has(table) {
+    figure:has(table:not(.client-table)) {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         margin-left: calc(-1 * var(--kn-space-base));
@@ -1331,21 +1383,52 @@ article[aria-label="notification"].fading-out {
         padding-left: var(--kn-space-base);
         padding-right: var(--kn-space-base);
     }
+}
 
-    /* Remove fixed table layout on mobile */
+/* ---- Client table card view on mobile ---- */
+@media (max-width: 600px) {
+    .client-table thead {
+        display: none;
+    }
+    .client-table,
+    .client-table tbody,
+    .client-table tr,
+    .client-table td {
+        display: block;
+    }
     .client-table {
         table-layout: auto;
-        min-width: 500px;
+        min-width: 0;
+        border: none;
     }
-    .client-table th:nth-child(1),
-    .client-table td:nth-child(1),
-    .client-table th:nth-child(2),
-    .client-table td:nth-child(2),
-    .client-table th:nth-child(3),
-    .client-table td:nth-child(3),
-    .client-table th:nth-child(4),
-    .client-table td:nth-child(4) {
-        width: auto;
+    .client-table tr {
+        padding: var(--kn-space-base);
+        margin-bottom: var(--kn-space-sm);
+        border: 1px solid var(--kn-border-light);
+        border-radius: var(--kn-radius-card);
+        background: var(--kn-card-bg);
+    }
+    .client-table td {
+        padding: var(--kn-space-xs) 0;
+        border: none;
+        width: 100% !important;
+    }
+    /* Name is the card title */
+    .client-table td:first-child {
+        font-size: 1rem;
+        font-weight: 600;
+        white-space: normal;
+        padding-bottom: var(--kn-space-xs);
+    }
+    /* Label each cell using data-label attribute */
+    .client-table td[data-label]::before {
+        content: attr(data-label) ": ";
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--kn-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        margin-right: var(--kn-space-xs);
     }
 }
 
@@ -1371,6 +1454,17 @@ article[aria-label="notification"].fading-out {
 }
 
 /* ---- Client header mobile ---- */
+@media (max-width: 768px) {
+    .client-header {
+        flex-wrap: wrap;
+        row-gap: var(--kn-space-xs);
+    }
+    /* Push actions to their own row */
+    .client-actions {
+        flex-basis: 100%;
+        margin-left: 0;
+    }
+}
 @media (max-width: 600px) {
     .client-header {
         flex-direction: column;
@@ -1424,6 +1518,17 @@ article[aria-label="notification"].fading-out {
 }
 
 /* ---- Action bar mobile ---- */
+@media (max-width: 768px) {
+    .action-bar {
+        flex-wrap: wrap;
+    }
+    .action-bar a[role="button"],
+    .action-bar button {
+        flex: 1 1 auto;
+        text-align: center;
+        min-width: 0;
+    }
+}
 @media (max-width: 480px) {
     .action-bar {
         flex-direction: column;
@@ -1559,7 +1664,7 @@ article[aria-label="notification"].fading-out {
 }
 
 /* ---- Pico grid mobile (stack columns on small screens) ---- */
-@media (max-width: 480px) {
+@media (max-width: 600px) {
     .grid {
         grid-template-columns: 1fr !important;
     }
@@ -1815,6 +1920,28 @@ article[aria-label="notification"].fading-out {
 }
 
 .keyboard-shortcuts-btn:hover {
+    background: var(--kn-primary-subtle);
+    border-color: var(--kn-primary);
+    color: var(--kn-primary);
+}
+
+/* Theme toggle button in footer */
+.theme-toggle-btn {
+    background: none;
+    border: 1px solid var(--kn-border-light);
+    border-radius: var(--kn-radius-badge);
+    padding: 0.125rem 0.5rem;
+    font-size: 0.875rem;
+    color: var(--kn-text-muted);
+    cursor: pointer;
+    transition: all var(--kn-transition);
+    min-height: 44px; /* WCAG touch target */
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.theme-toggle-btn:hover {
     background: var(--kn-primary-subtle);
     border-color: var(--kn-primary);
     color: var(--kn-primary);

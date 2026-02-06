@@ -4,6 +4,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        /* Apply saved theme before render to prevent flash */
+        (function(){
+            var s;
+            try { s = localStorage.getItem("KoNote2_theme"); } catch(e) {}
+            if (s === "dark") document.documentElement.setAttribute("data-theme", "dark");
+            else if (s === "light") document.documentElement.setAttribute("data-theme", "light");
+        })();
+    </script>
     <title>{% block title %}{{ site.product_name|default:"KoNote2" }}{% endblock %}</title>
 
     <!-- Pico CSS — classless, accessible defaults -->
@@ -131,6 +140,7 @@
                 <a href="https://github.com/gilliankerr/KoNote-Redux" target="_blank" rel="noopener">GitHub</a>
                 <a href="{% url 'privacy' %}">{% trans "Privacy" %}</a>
                 <a href="{% url 'help' %}">{% trans "Help" %}</a>
+                <button type="button" class="theme-toggle-btn" id="theme-toggle" aria-label="{% trans 'Toggle dark mode' %}" title="{% trans 'Toggle dark mode' %}"><span class="theme-toggle-icon" aria-hidden="true"></span></button>
                 <button type="button" class="keyboard-shortcuts-btn" id="show-shortcuts" aria-label="{% trans 'Keyboard shortcuts' %}">?</button>
             </div>
             {% if user.is_authenticated %}
