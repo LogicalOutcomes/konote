@@ -267,14 +267,14 @@ class DemoLoginTest(TestCase):
     def setUp(self):
         enc_module._fernet = None
         self.demo_user = User.objects.create_user(
-            username="demo-worker", password="demo1234", display_name="Casey Worker"
+            username="demo-worker-1", password="demo1234", display_name="Casey Worker"
         )
 
     def tearDown(self):
         enc_module._fernet = None
 
     def test_demo_login_works_when_enabled(self):
-        response = self.client.get("/auth/demo-login/worker/")
+        response = self.client.get("/auth/demo-login/worker-1/")
         self.assertEqual(response.status_code, 302)  # Redirect to home
 
     def test_demo_login_invalid_role_404(self):
@@ -293,5 +293,5 @@ class DemoLoginDisabledTest(TestCase):
         enc_module._fernet = None
 
     def test_demo_login_404_when_disabled(self):
-        response = self.client.get("/auth/demo-login/worker/")
+        response = self.client.get("/auth/demo-login/worker-1/")
         self.assertEqual(response.status_code, 404)

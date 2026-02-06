@@ -49,10 +49,12 @@ Demo clients (DEMO-001 through DEMO-005) remain in the system permanently as a t
 When an agency customises roles (renaming, adding, adjusting permissions), matching demo users should exist for testing and training.
 
 **Seed demo users:**
-- demo-admin — Administrator permissions
-- demo-manager — Program Manager permissions
-- demo-counsellor — Direct Service permissions
-- demo-receptionist — Front Desk permissions
+- demo-admin — Administrator (system config, no client data)
+- demo-manager — Program Manager (Employment, Housing, Kitchen only)
+- demo-worker-1 — Lead Worker (program_manager for Employment, staff for Housing + Kitchen)
+- demo-worker-2 — Direct Service (staff for Youth Drop-In, Newcomer, Kitchen)
+- demo-executive — Executive (dashboard only, all 5 programs)
+- demo-frontdesk — Receptionist (limited intake view, all 5 programs)
 
 **When admin customises roles:**
 - Renaming a role updates the demo user's display name (e.g., "Front Desk" → "Intake Clerk" makes demo-receptionist display as "Demo Intake Clerk")
@@ -105,7 +107,7 @@ Admin settings includes a "Demo Accounts" page:
 
 Agency deploys KoNote with demo mode enabled:
 - Demo clients and demo users are seeded
-- Staff explore as demo-manager, demo-counsellor, demo-front-desk
+- Staff explore as demo-manager, demo-worker-1, demo-worker-2, demo-frontdesk, demo-executive
 - Real user accounts may exist but see empty client list (no real clients yet)
 
 ### Phase 2: Customisation

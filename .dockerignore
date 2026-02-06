@@ -1,0 +1,35 @@
+# Version control
+.git
+.gitignore
+
+# Environment and secrets
+.env
+.env.*
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Documentation and tasks (not needed in production)
+docs/
+tasks/
+*.md
+
+# Tests (not needed in production)
+tests/
+pytest.ini
+requirements-dev.txt
+
+# Claude Code config
+.claude/
+
+# OS files
+Thumbs.db
+Desktop.ini

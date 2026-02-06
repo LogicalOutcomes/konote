@@ -32,8 +32,8 @@ KoNote deployment happens in three phases. You can move through them at your own
 
 Explore the system using demo data before making any configuration decisions.
 
-- Log in as one of the **demo users** (demo-manager, demo-counsellor, demo-front-desk)
-- Browse the 5 sample clients (DEMO-001 through DEMO-005)
+- Log in as one of the **demo users** (see table below for all 6 accounts)
+- Browse the 15 sample clients (DEMO-001 through DEMO-015) across 5 programs
 - See how plans, progress notes, metrics, and reports work
 - No real client data is involved — experiment freely
 
@@ -74,37 +74,39 @@ KoNote includes permanent demo data for training and demonstrations. This is by 
 
 | Account type | What they see |
 |--------------|---------------|
-| **Demo users** (demo-manager, demo-counsellor, etc.) | Demo clients only |
+| **Demo users** (demo-admin, demo-manager, demo-worker-1, etc.) | Demo clients only |
 | **Real users** (your staff accounts) | Real clients only |
 
 There's no toggle or mode switch. Your login determines what you see. Demo users can never see real clients, and real users can never see demo clients.
 
 ### Demo Clients
 
-Five sample clients with realistic data:
+Fifteen sample clients across 5 programs, each with realistic data:
 
-| Record ID | Profile |
-|-----------|---------|
-| DEMO-001 | Steady improvement over time |
-| DEMO-002 | Struggling, slow progress |
-| DEMO-003 | Mixed results |
-| DEMO-004 | Crisis, then recovery |
-| DEMO-005 | Stable, near discharge |
+| Program | Clients | Worker |
+|---------|---------|--------|
+| Supported Employment | DEMO-001 to DEMO-003 | Casey (Lead Worker) |
+| Housing Stability | DEMO-004 to DEMO-006 | Casey (Staff) |
+| Youth Drop-In | DEMO-007 to DEMO-009 | Noor (Staff) |
+| Newcomer Connections | DEMO-010 to DEMO-012 | Noor (Staff) |
+| Community Kitchen | DEMO-013 to DEMO-015 | Both workers |
 
-Each has plans, progress notes, metrics, and events — enough data to see how charts and reports work.
+Three clients are cross-enrolled in Community Kitchen from other programs. Each has plans, progress notes, metrics, and events — enough data to see how charts and reports work.
 
 ### Demo Users
 
-Four demo accounts for testing different permission levels:
+Six demo accounts for testing different permission levels:
 
-| Username | Role | Use for testing... |
-|----------|------|-------------------|
-| demo-admin | Administrator | System configuration, user management |
-| demo-manager | Program Manager | Program oversight, all client data |
-| demo-counsellor | Direct Service | Case management, notes, plans |
-| demo-receptionist | Front Desk | Limited client info, intake tasks |
+| Username | Display Name | Role | Programs | Use for testing... |
+|----------|-------------|------|----------|-------------------|
+| demo-admin | Alex Admin | Administrator | System-wide | System configuration, user management |
+| demo-manager | Morgan Manager | Program Manager | Employment, Housing, Kitchen | Program oversight — but **cannot** see Youth Drop-In or Newcomer Connections |
+| demo-worker-1 | Casey Worker | Lead Worker | program_manager(Employment), staff(Housing, Kitchen) | Mixed roles — manages one program, regular worker in others |
+| demo-worker-2 | Noor Worker | Direct Service | staff(Youth Drop-In, Newcomer, Kitchen) | Standard front-line worker, restricted to assigned clients |
+| demo-executive | Eva Executive | Executive | All 5 programs | Dashboard and reports only — cannot see individual client details |
+| demo-frontdesk | Dana Front Desk | Receptionist | All 5 programs | Limited client info, intake fields only |
 
-When you customise roles (rename, add, adjust permissions), matching demo users are created so you can test how each role sees the system.
+Log in as different demo users to see how the permission system restricts what each role can see and do.
 
 ### Using Demo Accounts
 

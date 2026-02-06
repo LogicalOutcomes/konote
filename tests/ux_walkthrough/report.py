@@ -13,6 +13,7 @@ class ReportGenerator:
         self.issues: list[UxIssue] = []
         self.pages_visited: int = 0
         self.steps_by_role: dict[str, list[dict]] = {}
+        self.scenarios: dict[str, list[dict]] = {}
 
     def record_step(
         self,
@@ -28,6 +29,32 @@ class ReportGenerator:
         if role not in self.steps_by_role:
             self.steps_by_role[role] = []
         self.steps_by_role[role].append({
+            "step": step,
+            "url": url,
+            "status_code": status_code,
+            "issues": issues,
+        })
+
+    def record_scenario_step(
+        self,
+        scenario: str,
+        role: str,
+        step: str,
+        url: str,
+        status_code: int,
+        issues: list[UxIssue],
+    ):
+        """Record a step belonging to a named scenario.
+
+        Scenario steps appear in the 'Scenario Walkthroughs' section of
+        the report, grouped by scenario name with acts listed in order.
+        """
+        self.pages_visited += 1
+        self.issues.extend(issues)
+        if scenario not in self.scenarios:
+            self.scenarios[scenario] = []
+        self.scenarios[scenario].append({
+            "role": role,
             "step": step,
             "url": url,
             "status_code": status_code,
@@ -143,6 +170,25 @@ class ReportGenerator:
                     f"{s['status_code']} | {issue_summary} |"
                 )
             lines.append("")
+
+        # Scenario walkthroughs (if any)
+        if self.scenarios:
+            lines.append("## Scenario Walkthroughs\n")
+            for scenario_name, steps in self.scenarios.items():
+                lines.append(f"### {scenario_name}\n")
+                lines.append("| Role | Step | URL | Status | Issues |")
+                lines.append("|------|------|-----|--------|--------|")
+                for s in steps:
+                    issue_count = len(s["issues"])
+                    issue_summary = (
+                        "None" if issue_count == 0
+                        else f"{issue_count} issue(s)"
+                    )
+                    lines.append(
+                        f"| {s['role']} | {s['step']} | `{s['url']}` | "
+                        f"{s['status_code']} | {issue_summary} |"
+                    )
+                lines.append("")
 
         # Recommendations
         lines.append("## Recommendations\n")

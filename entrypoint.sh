@@ -14,6 +14,9 @@ echo "Running audit migrations..."
 python manage.py migrate --database=audit --noinput
 echo "Audit migrations complete."
 
+echo "Locking down audit database permissions..."
+python manage.py lockdown_audit_db 2>&1 || echo "WARNING: Audit lockdown failed (see error above). Audit logs may not be write-protected."
+
 # Seed runs all sub-commands in the right order:
 # metrics, features, settings, event types, note templates, intake fields,
 # demo data (if DEMO_MODE), and demo client field values

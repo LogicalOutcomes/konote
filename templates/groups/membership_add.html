@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Add Member" %} — {{ group.name }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Add Member" %}</h1>
+    <p>{{ group.name }}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    <fieldset>
+        <legend>{% trans "Select an existing client" %}</legend>
+        <label for="id_client_file">{{ term.client|default:"Client" }}</label>
+        <select name="client_file" id="id_client_file">
+            <option value="">— {% trans "Select" %} —</option>
+            {% for cf in clients %}
+            <option value="{{ cf.pk }}">{{ cf.first_name }} {{ cf.last_name }}</option>
+            {% endfor %}
+        </select>
+    </fieldset>
+
+    <p>{% trans "— or —" %}</p>
+
+    <fieldset>
+        <legend>{% trans "Add a non-client member" %}</legend>
+        <label for="id_member_name">{% trans "Name" %}</label>
+        <input type="text" name="member_name" id="id_member_name" placeholder="{% trans 'Full name' %}">
+    </fieldset>
+
+    <label for="id_role">{% trans "Role" %}</label>
+    <select name="role" id="id_role">
+        <option value="member">{% trans "Member" %}</option>
+        <option value="leader">{% trans "Leader" %}</option>
+    </select>
+
+    <div role="group">
+        <button type="submit">{% trans "Add Member" %}</button>
+        <a href="{% url 'groups:group_detail' group_id=group.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

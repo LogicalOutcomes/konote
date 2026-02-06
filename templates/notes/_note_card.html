@@ -41,10 +41,10 @@
 {% if note.status == "cancelled" %}
     <p class="note-card-preview"><del>{{ note.notes_text|truncatechars:200 }}</del></p>
     {% if note.status_reason %}<p class="note-card-reason">{% trans "Reason:" %} {{ note.status_reason }}</p>{% endif %}
-{% else %}
-    {% if note.notes_text %}
-        <p class="note-card-preview">{{ note.notes_text|truncatechars:200 }}</p>
-    {% endif %}
+{% elif note.search_snippet %}
+    <p class="note-card-preview note-card-preview--search">{{ note.search_snippet }}</p>
+{% elif note.notes_text %}
+    <p class="note-card-preview">{{ note.notes_text|truncatechars:200 }}</p>
 {% endif %}
 <div class="note-card-meta">
     {% if note.template %}

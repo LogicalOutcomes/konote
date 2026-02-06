@@ -1,0 +1,27 @@
+{% load i18n %}
+{# Partial: collapsed session summary card #}
+<article>
+    <header>
+        <div>
+            <strong>{{ session.session_date|date:"Y-m-d" }}</strong>
+            {% if session.facilitator %}
+                — {{ session.facilitator.display_name }}
+            {% endif %}
+        </div>
+        <div>
+            {% if session.group_vibe == "great" %}
+                <span class="badge badge-success">{% trans "Great" %}</span>
+            {% elif session.group_vibe == "solid" %}
+                <span class="badge badge-success">{% trans "Solid" %}</span>
+            {% elif session.group_vibe == "low" %}
+                <span class="badge badge-warning">{% trans "Low" %}</span>
+            {% elif session.group_vibe == "rough" %}
+                <span class="badge badge-danger">{% trans "Rough" %}</span>
+            {% endif %}
+            <small>{{ session.present_count }}/{{ session.total_count }} {% trans "present" %}</small>
+        </div>
+    </header>
+    {% if session.notes %}
+    <p>{{ session.notes|truncatewords:30 }}</p>
+    {% endif %}
+</article>

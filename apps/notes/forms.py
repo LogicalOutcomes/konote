@@ -2,7 +2,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from .models import ProgressNote, ProgressNoteTemplate, ProgressNoteTemplateSection
+from .models import ProgressNote, ProgressNoteTarget, ProgressNoteTemplate, ProgressNoteTemplateSection
 
 
 # Subset for quick notes — group and collateral typically need full notes with target tracking
@@ -81,6 +81,12 @@ class FullNoteForm(forms.Form):
         label=_("Follow up by"),
         help_text=_("(optional — adds to your home page reminders)"),
     )
+    engagement_observation = forms.ChoiceField(
+        choices=ProgressNote.ENGAGEMENT_CHOICES,
+        required=False,
+        label=_("How engaged was the participant?"),
+        help_text=_("Your observation — not a score. This is a practice tool, not a performance evaluation."),
+    )
     participant_reflection = forms.CharField(
         widget=forms.Textarea(attrs={
             "rows": 2,
@@ -104,8 +110,21 @@ class TargetNoteForm(forms.Form):
     """Notes for a single plan target within a full note."""
 
     target_id = forms.IntegerField(widget=forms.HiddenInput())
+    client_words = forms.CharField(
+        widget=forms.TextInput(attrs={"placeholder": "What did they say about this goal?"}),
+        required=False,
+        label=_("In their words"),
+        help_text=_("What did they say about this goal?"),
+    )
+    progress_descriptor = forms.ChoiceField(
+        choices=ProgressNoteTarget.PROGRESS_DESCRIPTOR_CHOICES,
+        required=False,
+        label=_("How are things going?"),
+        widget=forms.RadioSelect,
+        help_text=_("Harder isn't always backwards — progress often makes things harder first."),
+    )
     notes = forms.CharField(
-        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Notes for this target..."}),
+        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Your notes for this target..."}),
         required=False,
     )
 

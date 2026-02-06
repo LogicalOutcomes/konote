@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Server Error" %} — KoNote2{% endblock %}
+
+{% block content %}
+<article class="error-page">
+    <header>
+        <h1>{% trans "Something Went Wrong" %}</h1>
+    </header>
+
+    <div class="error-content">
+        <p class="error-message">
+            {% trans "An unexpected error occurred. Our team has been notified." %}
+        </p>
+
+        <div class="error-help">
+            <h2>{% trans "What you can do" %}</h2>
+            <ul>
+                <li>{% trans "Wait a moment and try again" %}</li>
+                <li>{% trans "Return to the home page using the link below" %}</li>
+                <li>{% trans "Contact your administrator if the problem continues" %}</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer class="error-actions">
+        <a href="javascript:history.back()" role="button" class="outline">
+            &larr; {% trans "Go Back" %}
+        </a>
+        <a href="/" role="button">
+            {% trans "Home" %}
+        </a>
+    </footer>
+</article>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Note: CSS requires American spelling (color, center) even though we use Canadian in content */
+    .error-page {
+        max-width: 600px;
+        margin: var(--kn-space-2xl) auto;
+        text-align: center;
+    }
+    .error-page header {
+        padding-bottom: var(--kn-space-base);
+        border-bottom: 1px solid var(--kn-border-light);
+        margin-bottom: var(--kn-space-lg);
+    }
+    .error-page header h1 {
+        color: var(--kn-danger-fg);
+        margin-bottom: 0;
+    }
+    .error-content {
+        text-align: left;
+    }
+    .error-message {
+        background: var(--kn-danger-bg);
+        color: var(--kn-danger-fg);
+        padding: var(--kn-space-base);
+        border-radius: var(--kn-radius-card);
+        border-left: 4px solid var(--kn-danger-fg);
+        margin-bottom: var(--kn-space-lg);
+    }
+    .error-help {
+        background: var(--kn-primary-subtle);
+        padding: var(--kn-space-base);
+        border-radius: var(--kn-radius-card);
+        margin-bottom: var(--kn-space-lg);
+    }
+    .error-help h2 {
+        font-size: 1rem;
+        margin-bottom: var(--kn-space-sm);
+        color: var(--kn-text);
+    }
+    .error-help ul {
+        margin: 0;
+        padding-left: var(--kn-space-lg);
+    }
+    .error-help li {
+        margin-bottom: var(--kn-space-xs);
+        color: var(--kn-text-secondary);
+    }
+    .error-actions {
+        display: flex;
+        gap: var(--kn-space-base);
+        justify-content: center;
+        padding-top: var(--kn-space-base);
+        border-top: 1px solid var(--kn-border-light);
+    }
+</style>
+{% endblock %}
