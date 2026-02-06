@@ -2576,3 +2576,1003 @@ msgstr "Jeunesse"
 
 msgid "General"
 msgstr "Général"
+
+#: templates/pages/privacy.html — Privacy Policy page
+msgid "Privacy Policy"
+msgstr "Politique de confidentialité"
+
+msgid "This page describes how KoNote2 protects your data. Each organisation should customise this policy for their specific practices and hosting configuration."
+msgstr "Cette page décrit comment KoNote2 protège vos données. Chaque organisation devrait personnaliser cette politique selon ses pratiques et sa configuration d'hébergement."
+
+msgid "Administrators: See the full privacy policy template in the deployment documentation for a version you can tailor to your organisation."
+msgstr "Administrateurs : Consultez le modèle complet de politique de confidentialité dans la documentation de déploiement pour une version que vous pouvez adapter à votre organisation."
+
+msgid "Privacy policy navigation"
+msgstr "Navigation de la politique de confidentialité"
+
+msgid "Encryption"
+msgstr "Chiffrement"
+
+msgid "Access Control"
+msgstr "Contrôle d'accès"
+
+msgid "Sessions"
+msgstr "Sessions"
+
+msgid "Audit Logging"
+msgstr "Journalisation d'audit"
+
+msgid "Data Erasure"
+msgstr "Effacement des données"
+
+msgid "Data Exports"
+msgstr "Exportation des données"
+
+msgid "Your Rights"
+msgstr "Vos droits"
+
+msgid "Data at Rest"
+msgstr "Données au repos"
+
+msgid "All personally identifiable information (PII) is encrypted before being stored in the database using Fernet symmetric encryption:"
+msgstr "Tous les renseignements personnels identifiables (RPI) sont chiffrés avant d'être stockés dans la base de données à l'aide du chiffrement symétrique Fernet :"
+
+msgid "Algorithm: AES-128 in CBC mode with HMAC-SHA256 authentication"
+msgstr "Algorithme : AES-128 en mode CBC avec authentification HMAC-SHA256"
+
+msgid "Encryption keys are stored in environment variables, separate from the database and source code"
+msgstr "Les clés de chiffrement sont stockées dans des variables d'environnement, séparément de la base de données et du code source"
+
+msgid "Key rotation is supported without downtime"
+msgstr "La rotation des clés est prise en charge sans interruption de service"
+
+msgid "Encrypted fields include:"
+msgstr "Les champs chiffrés comprennent :"
+
+msgid "names, dates of birth, contact information, email addresses, session notes, and any custom fields marked as sensitive by administrators."
+msgstr "les noms, dates de naissance, coordonnées, adresses courriel, notes de session et tout champ personnalisé marqué comme sensible par les administrateurs."
+
+msgid "Data in Transit"
+msgstr "Données en transit"
+
+msgid "All connections are encrypted using TLS (HTTPS)"
+msgstr "Toutes les connexions sont chiffrées à l'aide de TLS (HTTPS)"
+
+msgid "HTTP Strict Transport Security (HSTS) is enabled"
+msgstr "HTTP Strict Transport Security (HSTS) est activé"
+
+msgid "Database connections use SSL/TLS"
+msgstr "Les connexions à la base de données utilisent SSL/TLS"
+
+msgid "Passwords"
+msgstr "Mots de passe"
+
+msgid "Passwords are hashed using Argon2id (winner of the Password Hashing Competition)"
+msgstr "Les mots de passe sont hachés à l'aide d'Argon2id (gagnant du concours Password Hashing Competition)"
+
+msgid "Each password has a unique random salt"
+msgstr "Chaque mot de passe possède un sel aléatoire unique"
+
+msgid "Passwords are never stored in readable form"
+msgstr "Les mots de passe ne sont jamais stockés sous forme lisible"
+
+msgid "Minimum password length: 10 characters"
+msgstr "Longueur minimale du mot de passe : 10 caractères"
+
+msgid "Access to"
+msgstr "Accès aux"
+
+msgid "information is controlled through role-based permissions:"
+msgstr "informations est contrôlé par des permissions basées sur les rôles :"
+
+msgid "Access Level"
+msgstr "Niveau d'accès"
+
+msgid "System settings and user management. No"
+msgstr "Paramètres système et gestion des utilisateurs. Aucun accès aux"
+
+msgid "data access unless also assigned a"
+msgstr "données à moins d'être également assigné à un"
+
+msgid "role."
+msgstr "rôle."
+
+msgid "Full access to"
+msgstr "Accès complet aux"
+
+msgid "in assigned"
+msgstr "dans les"
+
+msgid ". Can edit"
+msgstr " assignés. Peut modifier les"
+
+msgid "and export data."
+msgstr "et exporter les données."
+
+msgid ". Can write notes and record events."
+msgstr ". Peut écrire des notes et enregistrer des événements."
+
+msgid "Limited"
+msgstr "Accès limité aux"
+
+msgid "information only. Cannot view full records or export data."
+msgstr "informations seulement. Ne peut pas consulter les dossiers complets ni exporter les données."
+
+msgid "Staff can only see"
+msgstr "Le personnel ne peut voir que les"
+
+msgid "they are assigned to"
+msgstr "auxquels il est assigné"
+
+msgid "Administrative functions are restricted to administrators"
+msgstr "Les fonctions administratives sont réservées aux administrateurs"
+
+msgid "All permission checks are enforced server-side"
+msgstr "Toutes les vérifications de permissions sont appliquées côté serveur"
+
+msgid "Sessions and Cookies"
+msgstr "Sessions et témoins (cookies)"
+
+msgid "Sessions automatically expire after a period of inactivity (default: 30 minutes)"
+msgstr "Les sessions expirent automatiquement après une période d'inactivité (par défaut : 30 minutes)"
+
+msgid "Session timeout resets with each action you take"
+msgstr "Le délai d'expiration de session se réinitialise à chaque action"
+
+msgid "Sessions are stored server-side — only a session identifier is kept in your browser"
+msgstr "Les sessions sont stockées côté serveur — seul un identifiant de session est conservé dans votre navigateur"
+
+msgid "Cookies are HTTP-only (not accessible to JavaScript) and secure (HTTPS only)"
+msgstr "Les témoins sont HTTP-only (non accessibles au JavaScript) et sécurisés (HTTPS uniquement)"
+
+msgid "KoNote2 uses only essential cookies required for the application to function. No advertising, tracking, or analytics cookies are used."
+msgstr "KoNote2 utilise uniquement les témoins essentiels au fonctionnement de l'application. Aucun témoin publicitaire, de suivi ou d'analyse n'est utilisé."
+
+msgid "All access to and changes of"
+msgstr "Tous les accès et modifications des"
+
+msgid "data are recorded in a separate audit database:"
+msgstr "données sont enregistrés dans une base de données d'audit séparée :"
+
+msgid "Login attempts (successful and failed) with timestamps and IP addresses"
+msgstr "Tentatives de connexion (réussies et échouées) avec horodatage et adresses IP"
+
+msgid "Every time a"
+msgstr "Chaque fois qu'un dossier de"
+
+msgid "record is viewed"
+msgstr "est consulté"
+
+msgid "All data changes with before and after values"
+msgstr "Toutes les modifications de données avec les valeurs avant et après"
+
+msgid "Data exports — who exported what and when"
+msgstr "Exportations de données — qui a exporté quoi et quand"
+
+msgid "Permission changes and administrative actions"
+msgstr "Modifications de permissions et actions administratives"
+
+msgid "Audit logs are stored in a separate database and are append-only — they cannot be modified or deleted through the application."
+msgstr "Les journaux d'audit sont stockés dans une base de données séparée et en mode ajout uniquement — ils ne peuvent pas être modifiés ou supprimés via l'application."
+
+msgid "KoNote2 supports formal data erasure requests in compliance with PIPEDA:"
+msgstr "KoNote2 prend en charge les demandes formelles d'effacement de données conformément à la LPRPDE :"
+
+msgid "Any staff member can initiate an erasure request for a"
+msgstr "Tout membre du personnel peut initier une demande d'effacement pour un(e)"
+
+msgid "All program managers for that"
+msgstr "Tous les gestionnaires de programme de ce/cette"
+
+msgid "must approve the request"
+msgstr "doivent approuver la demande"
+
+msgid "Once approved, all"
+msgstr "Une fois approuvées, toutes les données du/de la"
+
+msgid "data is permanently and irreversibly deleted"
+msgstr "sont définitivement et irréversiblement supprimées"
+
+msgid "The audit trail records that an erasure occurred, but no personal information is retained"
+msgstr "La piste d'audit enregistre qu'un effacement a eu lieu, mais aucun renseignement personnel n'est conservé"
+
+msgid "Program managers and administrators can export"
+msgstr "Les gestionnaires de programme et les administrateurs peuvent exporter les données de"
+
+msgid "data in CSV format"
+msgstr "au format CSV"
+
+msgid "Individual"
+msgstr "Les données individuelles des"
+
+msgid "data can be exported for privacy access requests"
+msgstr "peuvent être exportées pour les demandes d'accès à la vie privée"
+
+msgid "Export download links expire after a limited time"
+msgstr "Les liens de téléchargement d'exportation expirent après un temps limité"
+
+msgid "All exports are recorded in the audit log"
+msgstr "Toutes les exportations sont enregistrées dans le journal d'audit"
+
+msgid "Exported files include protections against formula injection"
+msgstr "Les fichiers exportés incluent des protections contre l'injection de formules"
+
+msgid "Under PIPEDA and applicable privacy legislation, you have the right to:"
+msgstr "En vertu de la LPRPDE et de la législation applicable en matière de vie privée, vous avez le droit de :"
+
+msgid "Request access to your personal information"
+msgstr "Demander l'accès à vos renseignements personnels"
+
+msgid "Request correction of inaccurate information"
+msgstr "Demander la correction de renseignements inexacts"
+
+msgid "Request erasure of your personal information"
+msgstr "Demander l'effacement de vos renseignements personnels"
+
+msgid "Withdraw consent for specific uses"
+msgstr "Retirer votre consentement pour des utilisations spécifiques"
+
+msgid "File a complaint with the Privacy Commissioner of Canada"
+msgstr "Déposer une plainte auprès du Commissaire à la protection de la vie privée du Canada"
+
+msgid "Organisations must respond to access requests within 30 days as required by PIPEDA."
+msgstr "Les organisations doivent répondre aux demandes d'accès dans les 30 jours, comme l'exige la LPRPDE."
+
+msgid "Contact"
+msgstr "Contact"
+
+msgid "For privacy questions, contact:"
+msgstr "Pour les questions relatives à la vie privée, contactez :"
+
+msgid "Please contact your system administrator for privacy questions."
+msgstr "Veuillez contacter votre administrateur système pour les questions relatives à la vie privée."
+
+msgid "For complaints not resolved to your satisfaction:"
+msgstr "Pour les plaintes non résolues à votre satisfaction :"
+
+msgid "Office of the Privacy Commissioner of Canada"
+msgstr "Commissariat à la protection de la vie privée du Canada"
+
+msgid "Website:"
+msgstr "Site Web :"
+
+msgid "Phone:"
+msgstr "Téléphone :"
+
+#: templates/pages/help.html — Help / User Guide page
+msgid "KoNote2 Help"
+msgstr "Aide KoNote2"
+
+msgid "Welcome to KoNote2! This guide helps you find what you need quickly."
+msgstr "Bienvenue dans KoNote2! Ce guide vous aide à trouver rapidement ce dont vous avez besoin."
+
+msgid "Help navigation"
+msgstr "Navigation de l'aide"
+
+msgid "Quick Navigation"
+msgstr "Navigation rapide"
+
+msgid "Getting Started"
+msgstr "Pour commencer"
+
+msgid "Searching for"
+msgstr "Rechercher des"
+
+msgid "Events and Alerts"
+msgstr "Événements et alertes"
+
+msgid "Analysis and Reports"
+msgstr "Analyse et rapports"
+
+msgid "Roles"
+msgstr "Rôles"
+
+msgid "Troubleshooting"
+msgstr "Dépannage"
+
+msgid "Administrator Tasks"
+msgstr "Tâches d'administrateur"
+
+msgid "The Home Page"
+msgstr "La page d'accueil"
+
+msgid "After logging in, your home page shows:"
+msgstr "Après la connexion, votre page d'accueil affiche :"
+
+msgid "Section"
+msgstr "Section"
+
+msgid "What It Shows"
+msgstr "Ce qu'elle affiche"
+
+msgid "Search bar"
+msgstr "Barre de recherche"
+
+msgid "Type a name or ID to find"
+msgstr "Tapez un nom ou un ID pour trouver des"
+
+msgid "Stats row"
+msgstr "Ligne de statistiques"
+
+msgid ", alerts,"
+msgstr ", alertes,"
+
+msgid "needing attention"
+msgstr "nécessitant une attention"
+
+msgid "with active alerts or no recent notes"
+msgstr "avec des alertes actives ou sans notes récentes"
+
+msgid "Quick links to"
+msgstr "Liens rapides vers les"
+
+msgid "you've looked at recently"
+msgstr "que vous avez consultés récemment"
+
+msgid "Quick Search"
+msgstr "Recherche rapide"
+
+msgid "Type a"
+msgstr "Tapez le"
+
+msgid "name or record ID in the search bar"
+msgstr "nom ou l'ID du dossier dans la barre de recherche"
+
+msgid "Results appear as you type"
+msgstr "Les résultats apparaissent au fur et à mesure de la saisie"
+
+msgid "Click a name to open their"
+msgstr "Cliquez sur un nom pour ouvrir son"
+
+msgid "Using Filters"
+msgstr "Utilisation des filtres"
+
+msgid "Click"
+msgstr "Cliquez sur"
+
+msgid "below the search bar"
+msgstr "sous la barre de recherche"
+
+msgid "Choose from:"
+msgstr "Choisissez parmi :"
+
+msgid "Active, Inactive, or Discharged"
+msgstr "Actif, Inactif ou Congédié"
+
+msgid "Filter by specific"
+msgstr "Filtrer par"
+
+msgid "Date range"
+msgstr "Plage de dates"
+
+msgid "Created after/before certain dates"
+msgstr "Créé après/avant certaines dates"
+
+msgid "Results update automatically"
+msgstr "Les résultats se mettent à jour automatiquement"
+
+msgid "When you open a"
+msgstr "Lorsque vous ouvrez le dossier d'un(e)"
+
+msgid ", you'll see several tabs:"
+msgstr ", vous verrez plusieurs onglets :"
+
+msgid "Tab"
+msgstr "Onglet"
+
+msgid "What You'll Find"
+msgstr "Ce que vous y trouverez"
+
+msgid "Basic information,"
+msgstr "Informations de base,"
+
+msgid "enrolments,"
+msgstr "inscriptions aux"
+
+msgid "custom fields"
+msgstr "champs personnalisés"
+
+msgid "Notes"
+msgstr "Notes"
+
+msgid "timeline"
+msgstr "chronologie"
+
+msgid ","
+msgstr ","
+
+msgid ", and"
+msgstr " et"
+
+msgid "Events and alerts"
+msgstr "Événements et alertes"
+
+msgid "Progress charts over time"
+msgstr "Graphiques de progrès dans le temps"
+
+msgid "document your interactions with"
+msgstr "documentent vos interactions avec les"
+
+msgid ". KoNote2 offers two types:"
+msgstr ". KoNote2 offre deux types :"
+
+msgid "Use"
+msgstr "Utilisez les"
+
+msgid "for brief check-ins or short updates."
+msgstr "pour de brèves vérifications ou de courtes mises à jour."
+
+msgid "Open the"
+msgstr "Ouvrez le dossier du/de la"
+
+msgid "Go to the"
+msgstr "Allez à l'onglet"
+
+msgid "tab"
+msgstr ""
+
+msgid "Type your note"
+msgstr "Tapez votre note"
+
+msgid "Use full"
+msgstr "Utilisez les"
+
+msgid "for structured sessions where you're working on"
+msgstr "complètes pour les séances structurées où vous travaillez sur les"
+
+msgid "Fill in:"
+msgstr "Remplissez :"
+
+msgid "Session date"
+msgstr "Date de session"
+
+msgid "defaults to today"
+msgstr "par défaut aujourd'hui"
+
+msgid "brief overview of the session"
+msgstr "bref aperçu de la session"
+
+msgid "notes and"
+msgstr "notes et valeurs de"
+
+msgid "values for each"
+msgstr "pour chaque"
+
+msgid "you worked on"
+msgstr "sur lequel/laquelle vous avez travaillé"
+
+msgid "Save Note"
+msgstr "Enregistrer la note"
+
+msgid "Tip:"
+msgstr "Conseil :"
+
+msgid "You only need to fill in the"
+msgstr "Vous n'avez qu'à remplir les"
+
+msgid "you actually worked on. Leave others blank."
+msgstr "sur lesquels/lesquelles vous avez réellement travaillé. Laissez les autres vides."
+
+msgid "Recording"
+msgstr "Enregistrement des"
+
+msgid "When writing a full"
+msgstr "Lors de la rédaction d'une"
+
+msgid ", you'll see"
+msgstr " complète, vous verrez des champs de"
+
+msgid "fields under each"
+msgstr "sous chaque"
+
+msgid ". Common types:"
+msgstr ". Types courants :"
+
+msgid "Scale ratings"
+msgstr "Évaluations sur échelle"
+
+msgid "for things like housing stability or mood"
+msgstr "pour des éléments comme la stabilité du logement ou l'humeur"
+
+msgid "Yes/No"
+msgstr "Oui/Non"
+
+msgid "checkboxes for milestone achievements"
+msgstr "cases à cocher pour les jalons atteints"
+
+msgid "Text"
+msgstr "Texte"
+
+msgid "for qualitative observations"
+msgstr "pour les observations qualitatives"
+
+#: templates/pages/help.html — Backdating, Cancelling, Events, Plans
+msgid "Backdating Notes"
+msgstr "Antidater des notes"
+
+msgid "Documenting a session that happened earlier? In the note form, change the"
+msgstr "Vous documentez une séance passée? Dans le formulaire de note, changez la"
+
+msgid "to the actual date. The note will appear in the timeline based on that date."
+msgstr "à la date réelle. La note apparaîtra dans la chronologie en fonction de cette date."
+
+msgid "Cancelling a Note"
+msgstr "Annulation d'une note"
+
+msgid "Made a mistake? You can cancel a note within 24 hours:"
+msgstr "Vous avez fait une erreur? Vous pouvez annuler une note dans les 24 heures :"
+
+msgid "Find the note in the Notes tab"
+msgstr "Trouvez la note dans l'onglet Notes"
+
+msgid "Enter a reason (required)"
+msgstr "Entrez une raison (requis)"
+
+msgid "Confirm"
+msgstr "Confirmer"
+
+msgid "The note remains visible but is marked as cancelled. After 24 hours, notes cannot be cancelled."
+msgstr "La note reste visible mais est marquée comme annulée. Après 24 heures, les notes ne peuvent plus être annulées."
+
+msgid "Events record discrete occurrences that don't need a full note — intake, discharge, hospital visits, crises, etc."
+msgstr "Les événements enregistrent des occurrences ponctuelles qui ne nécessitent pas une note complète — admission, congé, visites à l'hôpital, crises, etc."
+
+msgid "Choose the event type"
+msgstr "Choisissez le type d'événement"
+
+msgid "Enter the date"
+msgstr "Entrez la date"
+
+msgid "Add any notes"
+msgstr "Ajoutez des notes"
+
+msgid "flag a"
+msgstr "signalent un(e)"
+
+msgid "as needing attention. Use them for safety concerns or urgent follow-ups."
+msgstr "comme nécessitant une attention. Utilisez-les pour les préoccupations de sécurité ou les suivis urgents."
+
+msgid "Describe the concern"
+msgstr "Décrivez la préoccupation"
+
+msgid "The"
+msgstr "Le/La"
+
+msgid "will appear in"
+msgstr "apparaîtra dans les"
+
+msgid "on the home page until the alert is resolved."
+msgstr "sur la page d'accueil jusqu'à ce que l'alerte soit résolue."
+
+msgid "Resolving"
+msgstr "Résolution des"
+
+msgid "Find the"
+msgstr "Trouvez l'"
+
+msgid "in the Events tab"
+msgstr "dans l'onglet Événements"
+
+msgid "Resolve"
+msgstr "Résoudre"
+
+msgid "or"
+msgstr "ou"
+
+msgid "Add a resolution note"
+msgstr "Ajoutez une note de résolution"
+
+msgid "tab shows the"
+msgstr "affiche le"
+
+msgid "— their goals and how they're progressing."
+msgstr "— ses objectifs et sa progression."
+
+msgid "Understanding the"
+msgstr "Comprendre la structure du"
+
+msgid "Structure"
+msgstr ""
+
+msgid "Broad categories like"
+msgstr "Grandes catégories comme"
+
+msgid "Health"
+msgstr "Santé"
+
+msgid "Specific goals within each"
+msgstr "Objectifs spécifiques dans chaque"
+
+msgid "Measurable indicators attached to"
+msgstr "Indicateurs mesurables attachés aux"
+
+msgid "Viewing"
+msgstr "Consultation des"
+
+msgid "Click a"
+msgstr "Cliquez sur le nom d'une"
+
+msgid "name to expand it"
+msgstr "pour la développer"
+
+msgid "View all notes and"
+msgstr "Consultez toutes les notes et les enregistrements de"
+
+msgid "recordings for that"
+msgstr "pour cette"
+
+msgid "See progress charts (if"
+msgstr "Consultez les graphiques de progrès (si des"
+
+msgid "have been recorded)"
+msgstr "ont été enregistrées)"
+
+msgid "Editing"
+msgstr "Modification des"
+
+msgid "can view"
+msgstr "peut consulter les"
+
+msgid "but typically cannot edit them."
+msgstr "mais ne peut généralement pas les modifier."
+
+msgid "Program managers"
+msgstr "Les gestionnaires de programme"
+
+msgid "coordinators"
+msgstr "coordonnateurs"
+
+msgid "can add"
+msgstr "peuvent ajouter des"
+
+msgid ", and assign"
+msgstr " et attribuer des"
+
+#: templates/pages/help.html — Reports, Shortcuts, Roles
+msgid "Viewing Progress Charts"
+msgstr "Consultation des graphiques de progrès"
+
+msgid "View charts showing"
+msgstr "Consultez les graphiques montrant les valeurs de"
+
+msgid "values over time"
+msgstr "dans le temps"
+
+msgid "Charts automatically update when new"
+msgstr "Les graphiques se mettent à jour automatiquement lorsque de nouvelles valeurs de"
+
+msgid "values are recorded in"
+msgstr "sont enregistrées dans les"
+
+msgid "Exporting Data"
+msgstr "Exportation des données"
+
+msgid "Program managers and administrators"
+msgstr "Les gestionnaires de programme et les administrateurs"
+
+msgid "can export data:"
+msgstr "peuvent exporter les données :"
+
+msgid "Metric Export (CSV)"
+msgstr "Exportation de mesures (CSV)"
+
+msgid "Export"
+msgstr "Exporter"
+
+msgid "data filtered by"
+msgstr "données filtrées par"
+
+msgid ", and date range"
+msgstr " et plage de dates"
+
+msgid "Data Export"
+msgstr "Exportation des données"
+
+msgid "Download a"
+msgstr "Téléchargez les données complètes d'un(e)"
+
+msgid "complete data (for GDPR/privacy requests)"
+msgstr "(pour les demandes de confidentialité)"
+
+msgid "PDF Reports"
+msgstr "Rapports PDF"
+
+msgid "Generate printable progress reports"
+msgstr "Générez des rapports de progrès imprimables"
+
+msgid "Find export options under"
+msgstr "Trouvez les options d'exportation sous"
+
+msgid "in the main navigation."
+msgstr "dans la navigation principale."
+
+msgid "Speed up your work with these shortcuts:"
+msgstr "Accélérez votre travail avec ces raccourcis :"
+
+msgid "Shortcut"
+msgstr "Raccourci"
+
+msgid "Focus the search bar"
+msgstr "Mettre le curseur dans la barre de recherche"
+
+msgid "then"
+msgstr "puis"
+
+msgid "on"
+msgstr "sur la page"
+
+msgid "page"
+msgstr ""
+
+msgid "Close modal or cancel action"
+msgstr "Fermer la fenêtre ou annuler l'action"
+
+msgid "Show keyboard shortcuts"
+msgstr "Afficher les raccourcis clavier"
+
+msgid "Understanding Roles"
+msgstr "Comprendre les rôles"
+
+msgid "Your access depends on your assigned role:"
+msgstr "Votre accès dépend de votre rôle assigné :"
+
+msgid "What You Can Do"
+msgstr "Ce que vous pouvez faire"
+
+msgid "View limited"
+msgstr "Consultation limitée des informations de"
+
+msgid "info, update contact details"
+msgstr ", mise à jour des coordonnées"
+
+msgid "access, write notes, record events"
+msgstr "complet, écrire des notes, enregistrer des événements"
+
+msgid "All staff abilities plus edit"
+msgstr "Toutes les capacités du personnel plus modifier les"
+
+msgid ", manage team"
+msgstr ", gérer l'équipe"
+
+msgid "System settings, user management, all configuration"
+msgstr "Paramètres système, gestion des utilisateurs, toute la configuration"
+
+msgid "Administrators without a"
+msgstr "Les administrateurs sans assignation à un"
+
+msgid "assignment cannot see"
+msgstr "ne peuvent pas voir les données des"
+
+msgid "data. This is a security feature."
+msgstr ". C'est une mesure de sécurité."
+
+#: templates/pages/help.html — Admin Tasks
+msgid "As an administrator, you can configure KoNote2 through the"
+msgstr "En tant qu'administrateur, vous pouvez configurer KoNote2 via le menu"
+
+msgid "menu:"
+msgstr ":"
+
+msgid "Task"
+msgstr "Tâche"
+
+msgid "Where to Find It"
+msgstr "Où la trouver"
+
+msgid "Create users"
+msgstr "Créer des utilisateurs"
+
+msgid "Manage"
+msgstr "Gérer les"
+
+msgid "Set up"
+msgstr "Configurer les"
+
+msgid "Create"
+msgstr "Créer des"
+
+msgid "Customise terminology"
+msgstr "Personnaliser la terminologie"
+
+msgid "Enable/disable features"
+msgstr "Activer/désactiver les fonctionnalités"
+
+msgid "View audit logs"
+msgstr "Consulter les journaux d'audit"
+
+msgid "Registration links"
+msgstr "Liens d'inscription"
+
+msgid "Registration"
+msgstr "Inscription"
+
+msgid "Need help with a setting? Contact your system administrator or support team."
+msgstr "Besoin d'aide avec un paramètre? Contactez votre administrateur système ou l'équipe de soutien."
+
+#: templates/pages/help.html — Troubleshooting
+msgid "I can't log in"
+msgstr "Je n'arrive pas à me connecter"
+
+msgid "Azure AD:"
+msgstr "Azure AD :"
+
+msgid "Check that your work email is registered with KoNote2. Contact your administrator."
+msgstr "Vérifiez que votre courriel professionnel est enregistré dans KoNote2. Contactez votre administrateur."
+
+msgid "Local login:"
+msgstr "Connexion locale :"
+
+msgid "Confirm your credentials. If forgotten, ask your administrator to reset your password."
+msgstr "Confirmez vos identifiants. Si vous les avez oubliés, demandez à votre administrateur de réinitialiser votre mot de passe."
+
+msgid "I can't find a"
+msgstr "Je ne trouve pas un(e)"
+
+msgid "Check your spelling"
+msgstr "Vérifiez l'orthographe"
+
+msgid "Try searching by record ID instead of name"
+msgstr "Essayez de chercher par ID du dossier plutôt que par nom"
+
+msgid "Check filters — you may have a status filter active"
+msgstr "Vérifiez les filtres — un filtre de statut est peut-être actif"
+
+msgid "You can only see"
+msgstr "Vous ne pouvez voir que les"
+
+msgid "in"
+msgstr "dans les"
+
+msgid "you're assigned to"
+msgstr "auxquels vous êtes assigné(e)"
+
+msgid "I can't edit a"
+msgstr "Je ne peux pas modifier le"
+
+msgid "Only program managers and administrators can edit"
+msgstr "Seuls les gestionnaires de programme et les administrateurs peuvent modifier les"
+
+msgid ". If you need changes, let your supervisor know."
+msgstr ". Si vous avez besoin de modifications, informez votre superviseur."
+
+msgid "I can't see the Admin menu"
+msgstr "Je ne vois pas le menu Administration"
+
+msgid "The Admin menu only appears for administrators. If you need admin access, contact your system administrator."
+msgstr "Le menu Administration n'apparaît que pour les administrateurs. Si vous avez besoin d'un accès administrateur, contactez votre administrateur système."
+
+msgid "My changes aren't saving"
+msgstr "Mes modifications ne s'enregistrent pas"
+
+msgid "Check for validation errors (red text near fields)"
+msgstr "Vérifiez les erreurs de validation (texte rouge près des champs)"
+
+msgid "Ensure you're clicking"
+msgstr "Assurez-vous de cliquer sur"
+
+msgid ", not just closing the form"
+msgstr ", et non simplement fermer le formulaire"
+
+msgid "Try refreshing the page and attempting again"
+msgstr "Essayez de rafraîchir la page et de réessayer"
+
+msgid "Charts aren't showing data"
+msgstr "Les graphiques n'affichent pas de données"
+
+msgid "Charts require"
+msgstr "Les graphiques nécessitent des valeurs de"
+
+msgid ". If no"
+msgstr ". Si aucune"
+
+msgid "have been recorded for a"
+msgstr "n'a été enregistrée pour une"
+
+msgid ", charts will be empty."
+msgstr ", les graphiques seront vides."
+
+msgid "The page timed out"
+msgstr "La page a expiré"
+
+msgid "For security, KoNote2 logs you out after inactivity. Log in again to continue. Your unsaved work may be lost."
+msgstr "Pour des raisons de sécurité, KoNote2 vous déconnecte après une période d'inactivité. Reconnectez-vous pour continuer. Votre travail non enregistré pourrait être perdu."
+
+#: templates/pages/help.html — Getting More Help and Quick Reference
+msgid "Getting More Help"
+msgstr "Obtenir plus d'aide"
+
+msgid "In-App Resources"
+msgstr "Ressources dans l'application"
+
+msgid "Press"
+msgstr "Appuyez sur"
+
+msgid "anywhere in the app to see keyboard shortcuts"
+msgstr "n'importe où dans l'application pour voir les raccourcis clavier"
+
+msgid "Contact Support"
+msgstr "Contacter le soutien"
+
+msgid "Password issues"
+msgstr "Problèmes de mot de passe"
+
+msgid "Contact your supervisor or administrator"
+msgstr "Contactez votre superviseur ou administrateur"
+
+msgid "Bug reports"
+msgstr "Rapports de bogues"
+
+msgid "Report to your administrator"
+msgstr "Signalez à votre administrateur"
+
+msgid "Feature requests"
+msgstr "Demandes de fonctionnalités"
+
+msgid "Talk to your program coordinator"
+msgstr "Parlez à votre coordonnateur de programme"
+
+msgid "Support email:"
+msgstr "Courriel de soutien :"
+
+msgid "Quick Reference"
+msgstr "Référence rapide"
+
+msgid "Common Tasks"
+msgstr "Tâches courantes"
+
+msgid "I want to..."
+msgstr "Je veux..."
+
+msgid "Do this..."
+msgstr "Faites ceci..."
+
+msgid "Find a"
+msgstr "Trouver un(e)"
+
+msgid "Type name in search bar"
+msgstr "Tapez le nom dans la barre de recherche"
+
+msgid "Write a quick update"
+msgstr "Écrire une mise à jour rapide"
+
+msgid "Notes tab"
+msgstr "Onglet Notes"
+
+msgid "Document a session"
+msgstr "Documenter une séance"
+
+msgid "Record intake/discharge"
+msgstr "Enregistrer une admission/un congé"
+
+msgid "Events tab"
+msgstr "Onglet Événements"
+
+msgid "Flag a safety concern"
+msgstr "Signaler une préoccupation de sécurité"
+
+msgid "See who needs attention"
+msgstr "Voir qui a besoin d'attention"
+
+msgid "Check Priority Items on home page"
+msgstr "Consultez les éléments prioritaires sur la page d'accueil"
+
+msgid "View progress charts"
+msgstr "Voir les graphiques de progrès"
+
+msgid "Analysis tab"
+msgstr "Onglet Analyse"
+
+msgid "Understanding Status"
+msgstr "Comprendre les statuts"
+
+msgid "Meaning"
+msgstr "Signification"
+
+msgid "Currently receiving services"
+msgstr "Reçoit actuellement des services"
+
+msgid "Temporarily not receiving services"
+msgstr "Ne reçoit temporairement pas de services"
+
+msgid "Services completed or ended"
+msgstr "Services terminés ou achevés"
