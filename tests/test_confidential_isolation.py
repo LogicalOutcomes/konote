@@ -191,7 +191,8 @@ class ConfidentialIsolationTest(TestCase):
         resp = self.http.get("/clients/search/?q=nonexistent")
         content = resp.content.decode()
         self.assertNotIn("may not be included", content)
-        self.assertNotIn("hidden", content)
+        self.assertNotIn("hidden clients", content.lower())
+        self.assertNotIn("hidden records", content.lower())
         self.assertNotIn("confidential", content.lower())
 
 

@@ -11,7 +11,7 @@
 The core app is feature-complete. These tasks prepare for production use.
 
 - [ ] Verify email is configured — needed for export notifications, erasure alerts, and password resets (OPS3)
-- [ ] Run full integration test pass — every role, every workflow (TEST3)
+- [x] Run full integration test pass — 901 tests, 1 false-positive fix — 2026-02-06 (TEST3)
 - [ ] Test backup restore from a real database dump (OPS4)
 
 ### Occasional Tasks
@@ -89,7 +89,7 @@ Prevent duplicate client records across programs while protecting sensitive prog
 - [x] Create `tests/test_confidential_isolation.py` — isolation, matching, registration, groups, phone field — 2026-02-06 (CONF7)
 
 **H.5: DV Readiness & Documentation**
-- [ ] Ship PIA (Privacy Impact Assessment) template pre-filled from agency configuration (MATCH5)
+- [x] Ship PIA (Privacy Impact Assessment) template pre-filled from agency configuration — 2026-02-06 (MATCH5)
 - [ ] Write user-facing documentation on confidential programs and matching (MATCH6)
 - [ ] Add annual security review checklist for confidential program filtering (CONF8)
 
@@ -116,6 +116,10 @@ Prevent duplicate client records across programs while protecting sensitive prog
 ### Erasure — Deferred Execution for Tier 3
 
 - [ ] Add 24-hour delay before Tier 3 (full erasure) CASCADE delete executes — requires background task scheduler, see `tasks/erasure-hardening.md` section ERASE-H8 (ERASE-H8)
+
+### FullHost SSL Issue
+
+- [ ] Resolve FullHost HTTPS — Built-In SSL is enabled but port 443 is intermittent. Contact FullHost support or try Let's Encrypt add-on. HTTP works, but login requires HTTPS (`CSRF_COOKIE_SECURE=True`) (OPS-FH2)
 
 ### Deployment Workflow Enhancements
 
