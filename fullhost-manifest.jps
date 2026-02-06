@@ -50,6 +50,8 @@ settings:
       type: string
       inputType: password
       required: true
+      regex: "^.{10,}$"
+      regexText: Password must be at least 10 characters
       tooltip: Password for the admin account (minimum 10 characters)
 
     - name: clientTerm
@@ -152,7 +154,7 @@ onInstall:
         **Your KoNote2 URL:** [${env.domain}](https://${env.domain})
 
         **Login with:**
-        - Email: ${settings.adminEmail}
+        - Username: **admin**
         - Password: (the password you entered during setup)
 
         ### Important: Save These Keys!
@@ -248,6 +250,6 @@ success:
     Your secure Participant Outcome Management system is now running.
 
     **URL:** https://${env.domain}
-    **Admin Email:** ${settings.adminEmail}
+    **Username:** admin
 
     Remember to save your encryption key from the installation notes!
