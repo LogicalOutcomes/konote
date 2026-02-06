@@ -26,7 +26,8 @@
         {% endfor %}
     </fieldset>
     {% empty %}
-    <p>{% blocktrans with metrics=term.metric_plural|default:"metrics" %}No enabled {{ metrics }} available.{% endblocktrans %} {% blocktrans %}An administrator can add them in the <a href="{% url 'plans:metric_library' %}">metric library</a>.{% endblocktrans %}</p>
+    {% url 'plans:metric_library' as metric_library_url %}
+    <p>{% blocktrans with metrics=term.metric_plural|default:"metrics" %}No enabled {{ metrics }} available.{% endblocktrans %} {% blocktrans with url=metric_library_url %}An administrator can add them in the <a href="{{ url }}">metric library</a>.{% endblocktrans %}</p>
     {% endfor %}
 
     <div role="group">
