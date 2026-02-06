@@ -3,6 +3,7 @@ import csv
 import io
 
 from django.contrib import messages
+from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponseForbidden
@@ -189,15 +190,20 @@ def target_create(request, section_id):
     if request.method == "POST":
         form = PlanTargetForm(request.POST)
         if form.is_valid():
-            target = form.save(commit=False)
-            target.plan_section = section
-            target.client_file = section.client_file
+            target = PlanTarget(
+                plan_section=section,
+                client_file=section.client_file,
+            )
+            target.name = form.cleaned_data["name"]
+            target.description = form.cleaned_data.get("description", "")
+            target.client_goal = form.cleaned_data.get("client_goal", "")
             target.save()
             # Create initial revision
             PlanTargetRevision.objects.create(
                 plan_target=target,
                 name=target.name,
                 description=target.description,
+                client_goal=target.client_goal,
                 status=target.status,
                 status_reason=target.status_reason,
                 changed_by=request.user,
@@ -223,22 +229,30 @@ def target_edit(request, target_id):
         raise PermissionDenied(_("You don't have permission to access this page."))
 
     if request.method == "POST":
-        # Save old values as a revision BEFORE overwriting
-        PlanTargetRevision.objects.create(
-            plan_target=target,
-            name=target.name,
-            description=target.description,
-            status=target.status,
-            status_reason=target.status_reason,
-            changed_by=request.user,
-        )
-        form = PlanTargetForm(request.POST, instance=target)
+        form = PlanTargetForm(request.POST)
         if form.is_valid():
-            form.save()
+            # Save old values as a revision BEFORE overwriting
+            PlanTargetRevision.objects.create(
+                plan_target=target,
+                name=target.name,
+                description=target.description,
+                client_goal=target.client_goal,
+                status=target.status,
+                status_reason=target.status_reason,
+                changed_by=request.user,
+            )
+            target.name = form.cleaned_data["name"]
+            target.description = form.cleaned_data.get("description", "")
+            target.client_goal = form.cleaned_data.get("client_goal", "")
+            target.save()
             messages.success(request, _("Target updated."))
             return redirect("plans:plan_view", client_id=target.client_file.pk)
     else:
-        form = PlanTargetForm(instance=target)
+        form = PlanTargetForm(initial={
+            "name": target.name,
+            "description": target.description,
+            "client_goal": target.client_goal,
+        })
 
     return render(request, "plans/target_form.html", {
         "form": form,
@@ -257,25 +271,31 @@ def target_status(request, target_id):
         raise PermissionDenied(_("You don't have permission to access this page."))
 
     if request.method == "POST":
-        # Revision with old values
-        PlanTargetRevision.objects.create(
-            plan_target=target,
-            name=target.name,
-            description=target.description,
-            status=target.status,
-            status_reason=target.status_reason,
-            changed_by=request.user,
-        )
-        form = PlanTargetStatusForm(request.POST, instance=target)
+        form = PlanTargetStatusForm(request.POST)
         if form.is_valid():
-            form.save()
+            # Revision with old values BEFORE overwriting
+            PlanTargetRevision.objects.create(
+                plan_target=target,
+                name=target.name,
+                description=target.description,
+                client_goal=target.client_goal,
+                status=target.status,
+                status_reason=target.status_reason,
+                changed_by=request.user,
+            )
+            target.status = form.cleaned_data["status"]
+            target.status_reason = form.cleaned_data.get("status_reason", "")
+            target.save()
             messages.success(request, _("Target status updated."))
             return render(request, "plans/_target.html", {
                 "target": target,
                 "can_edit": True,
             })
     else:
-        form = PlanTargetStatusForm(instance=target)
+        form = PlanTargetStatusForm(initial={
+            "status": target.status,
+            "status_reason": target.status_reason,
+        })
 
     return render(request, "plans/_target_status.html", {
         "target": target,
@@ -563,12 +583,14 @@ def metric_import(request):
 
             # Audit log
             AuditLog.objects.using("audit").create(
-                user=request.user,
-                action="import",
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=getattr(request.user, "display_name", str(request.user)),
+                action="create",
                 resource_type="MetricDefinition",
-                resource_id=None,
                 ip_address=request.META.get("REMOTE_ADDR", ""),
-                details=f"Imported {created_count} metric definitions from CSV",
+                is_demo_context=getattr(request.user, "is_demo", False),
+                metadata={"detail": f"Imported {created_count} metric definitions from CSV"},
             )
 
             messages.success(request, _("Successfully imported %(count)d metric definitions.") % {"count": created_count})

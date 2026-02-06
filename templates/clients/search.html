@@ -10,12 +10,12 @@
 
 <!-- Search bar -->
 <form id="search-filters" role="search" method="get" action="{% url 'clients:client_search' %}">
-    <div class="list-search-bar">
+    <div class="filter-field--search">
         <label for="client-search" class="visually-hidden">{% blocktrans with clients=term.client_plural|default:"clients" %}Search {{ clients }}{% endblocktrans %}</label>
         <input type="search"
                id="client-search"
                name="q"
-               placeholder="{% trans 'Search by name or ID...' %}"
+               placeholder="{% trans 'Search by name, ID, or note content...' %}"
                value="{{ query }}"
                aria-label="{% blocktrans with clients=term.client_plural|default:'clients' %}Search {{ clients }}{% endblocktrans %}"
                hx-get="{% url 'clients:client_search' %}"

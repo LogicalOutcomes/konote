@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Page Not Found" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+
+{% block content %}
+<article class="error-page">
+    <header>
+        <h1>{% trans "Page Not Found" %}</h1>
+    </header>
+
+    <div class="error-content">
+        <p class="error-message">
+            {% trans "The page you're looking for doesn't exist or has been moved." %}
+        </p>
+
+        <div class="error-help">
+            <h2>{% trans "What you can do" %}</h2>
+            <ul>
+                <li>{% trans "Check the address for typos" %}</li>
+                <li>{% trans "Use the navigation menu to find what you need" %}</li>
+                <li>{% trans "Return to a page you've visited using the links below" %}</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer class="error-actions">
+        <a href="javascript:history.back()" role="button" class="outline">
+            &larr; {% trans "Go Back" %}
+        </a>
+        <a href="/" role="button">
+            {% trans "Home" %}
+        </a>
+    </footer>
+</article>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* Note: CSS requires American spelling (color, center) even though we use Canadian in content */
+    .error-page {
+        max-width: 600px;
+        margin: var(--kn-space-2xl) auto;
+        text-align: center;
+    }
+    .error-page header {
+        padding-bottom: var(--kn-space-base);
+        border-bottom: 1px solid var(--kn-border-light);
+        margin-bottom: var(--kn-space-lg);
+    }
+    .error-page header h1 {
+        color: var(--kn-warning-fg);
+        margin-bottom: 0;
+    }
+    .error-content {
+        text-align: left;
+    }
+    .error-message {
+        background: var(--kn-warning-bg);
+        color: var(--kn-warning-fg);
+        padding: var(--kn-space-base);
+        border-radius: var(--kn-radius-card);
+        border-left: 4px solid var(--kn-warning-fg);
+        margin-bottom: var(--kn-space-lg);
+    }
+    .error-help {
+        background: var(--kn-primary-subtle);
+        padding: var(--kn-space-base);
+        border-radius: var(--kn-radius-card);
+        margin-bottom: var(--kn-space-lg);
+    }
+    .error-help h2 {
+        font-size: 1rem;
+        margin-bottom: var(--kn-space-sm);
+        color: var(--kn-text);
+    }
+    .error-help ul {
+        margin: 0;
+        padding-left: var(--kn-space-lg);
+    }
+    .error-help li {
+        margin-bottom: var(--kn-space-xs);
+        color: var(--kn-text-secondary);
+    }
+    .error-actions {
+        display: flex;
+        gap: var(--kn-space-base);
+        justify-content: center;
+        padding-top: var(--kn-space-base);
+        border-top: 1px solid var(--kn-border-light);
+    }
+</style>
+{% endblock %}

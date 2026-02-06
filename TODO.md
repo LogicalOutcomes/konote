@@ -2,7 +2,7 @@
 
 ## Flagged
 
-- [ ] Decide product name — should web version  be called "KoNote" (not "KoNote2"). See `tasks/naming-versioning.md` (NAME1)
+- [ ] Decide product name — should web version be called "KoNote" (not "KoNote2"). See `tasks/naming-versioning.md` (NAME1)
 
 ## Active Work
 
@@ -13,18 +13,12 @@ The core app is feature-complete. These tasks prepare for production use.
 - [ ] Verify email is configured — needed for export notifications, erasure alerts, and password resets (OPS3)
 - [ ] Run full integration test pass — every role, every workflow (TEST3)
 - [ ] Test backup restore from a real database dump (OPS4)
-- [ ] Verify Railway deployment end-to-end with production-like config (OPS5)
 
 ### Occasional Tasks
 
 - [ ] Run UX walkthrough — `pytest tests/ux_walkthrough/ -v`, review report at `tasks/ux-review-latest.md` (UX-WALK1)
 
-
 ## Coming Up
-
-### Review Follow-ups (from 2026-02-05 session review)
-
-_All items completed — see Recently Done._
 
 ### Export Monitoring
 
@@ -32,10 +26,6 @@ Weekly accountability reports for admins. Requires working email configuration.
 
 - [ ] Create weekly export summary email command (EXP2u)
 - [ ] Document cron/scheduled task setup in runbook (EXP2w)
-
-### Independent Code Review
-
-- [ ] Get independent code review from a third-party tool — e.g. Jules (jules.google.com) or GPT Codex — especially for security (SEC-REV1)
 
 ## Roadmap — Future Extensions
 
@@ -73,6 +63,37 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 - [ ] Create import history page for admins (IMP1j)
 - [ ] Document import validation rules (DOC-IMP1)
 
+### Phase H: Cross-Program Client Matching & Confidential Programs
+
+Prevent duplicate client records across programs while protecting sensitive program privacy. See `tasks/cross-program-client-matching.md` for full design (4 expert panels).
+
+**H.1: Foundation — Confidential Program Isolation**
+- [ ] Add `is_confidential` field to Program model + migration (CONF1)
+- [ ] Create guided setup question in program create/edit admin UI (CONF2)
+- [ ] Update `get_client_queryset()` to filter out confidential program clients for non-confidential users (CONF3)
+
+**H.2: Duplicate Detection (Standard Programs)**
+- [ ] Add phone number as standard field on ClientFile if not already first-class (MATCH1)
+- [ ] Build phone-based duplicate detection on client create form — background check, banner UI (MATCH2)
+- [ ] Add name + DOB secondary matching as fallback when phone unavailable (MATCH3)
+
+**H.3: Merge Tool (Standard Programs)**
+- [ ] Build duplicate merge tool for Standard program admins — side-by-side comparison, merged record keeps all data (MATCH4)
+
+**H.4: Confidential Program Hardening (Required Before DV Use)**
+- [ ] Filter confidential client records from Django admin for superusers without confidential access (CONF4)
+- [ ] Add immutable audit logging for all confidential record access — who, when, what, which record (CONF5)
+- [ ] Aggregate reports use small-cell suppression — show "< 10" when confidential program has fewer than 10 clients (CONF6)
+- [ ] Create `tests/test_confidential_isolation.py` — test every view, search, match, merge, admin, and report path (CONF7)
+
+**H.5: DV Readiness & Documentation**
+- [ ] Ship PIA (Privacy Impact Assessment) template pre-filled from agency configuration (MATCH5)
+- [ ] Write user-facing documentation on confidential programs and matching (MATCH6)
+- [ ] Add annual security review checklist for confidential program filtering (CONF8)
+
+**H.6: Multi-Role Staff (Nice-to-Have)**
+- [ ] Build role selector for staff with roles in both Standard and Confidential programs (CONF9)
+
 ### Other Planned Extensions
 
 - [ ] Field data collection integrations — KoBoToolbox, Forms, or other tools (FIELD1)
@@ -86,41 +107,37 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 
 ## Parking Lot
 
+### Translation Hardening
+
+- [ ] Wrap 106 unwrapped strings across 10 apps in `_()` and add French translations — see `scripts/check_untranslated.py` for full list (I18N-FIX2)
+
 ### Erasure — Deferred Execution for Tier 3
 
 - [ ] Add 24-hour delay before Tier 3 (full erasure) CASCADE delete executes — requires background task scheduler, see `tasks/erasure-hardening.md` section ERASE-H8 (ERASE-H8)
 
 ### Deployment Workflow Enhancements
 
-- [ ] Create Demo Account Directory page in admin settings — list all demo users and demo clients in one place so admins can manage them (DEMO9)
-- [ ] Add `is_demo_context` flag to audit log entries — lets admins filter out demo activity from real audit trails (DEMO12)
-
 See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-design.md) for full details.
 
 ### Privacy & Security
 
 - [ ] First-run setup wizard — guided initial configuration (SETUP1)
+- [ ] TOTP multi-factor authentication for local auth — see `tasks/mfa-implementation.md` (SEC2)
 - [ ] Encrypted search optimisation (search hash field) for 2000+ client lists (PERF1)
 - [ ] Bulk operations for discharge, assign (UX17)
 
 ## Recently Done
 
-- [x] Parking lot quick wins — aria-describedby on full note form, beautifulsoup4 to test-only, specific erasure email errors, rename receptionist_access → front_desk_access — 2026-02-06 (UX-A11Y1, REV2-DEPS1, REV2-EMAIL2, DB-TERM1)
-- [x] Fix 5 review follow-ups — erasure email templates, tier validation test, history ordering, French filter tests, phone validation tests — 2026-02-06 (REV2-EMAIL1, REV2-TEST1, REV2-ORDER1, TESTFIX1, TESTFIX2)
-- [x] Review follow-ups — email failure warnings, SQL-optimised PM filtering, 30-day PIPEDA aging indicator — 2026-02-06 (REV-W3, REV-W1, REV-PIPEDA1)
-- [x] Independent security review docs — added review section, AI prompt template, and "Trust, But Verify" to security ops + README — 2026-02-06 (SEC-DOC1-3, SEC-WEB1)
-- [x] Fix UX walkthrough issues — 500 error, heading structure, table accessibility, search page, 403 page, form validation — 2026-02-06 (UX-WALK1)
-- [x] Erasure hardening — receipt access scoping, audit-before-erasure, download tracking, rejection emails, race condition fix, pagination, 78 tests — 2026-02-06 (ERASE-H1-H7)
-- [x] Redesign erasure system — tiered anonymisation, erasure codes, PDF receipts, role restrictions, 72 tests — 2026-02-06 (ERASE-REDESIGN)
-- [x] Fix footer links — correct GitHub URL, wire up privacy and help routes, fix help guide nav — 2026-02-06 (FOOT1)
-- [x] Documentation refresh — security docs, feature lists, Getting Started guide, website — 2026-02-06 (DOC-REF1-3, WEB-REF1)
-- [x] Erasure i18n — email templates, completion email, error messages, JS escaping for French — 2026-02-05 (ERASE-I18N1-3, ERASE-JS1)
-- [x] Erasure review fixes — __str__, dead code, aria-labels, email template, 80+ French translations — 2026-02-05 (ERASE-REV2-6)
-- [x] Erasure review fixes — email privacy, auth decorators, HTML — 2026-02-05 (ERASE-REV1)
-- [x] Erase Client Data — multi-PM approval workflow, 49 tests, audit trail — 2026-02-05 (ERASE1-9)
-- [x] French journey test suite — 69 tests covering all 16 areas of the French UX — 2026-02-05 (I18N4b)
-- [x] i18n tooling — `find_untranslated.py` script + `update_translations.py` wrapper — 2026-02-05 (I18N-R5, I18N-R6)
-
+- [x] Verify deployment end-to-end with production-like config — FullHost tested, HTTPS working, demo data live — 2026-02-06 (OPS5)
+- [x] Lock in .mo translation strategy — commit .mo to git, no compilation in Docker, freshness check in validate_translations.py — 2026-02-06 (I18N-FIX1)
+- [x] Fix 4 UX walkthrough crashes + 6 test failures — 2026-02-06 (UX-FIX1)
+- [x] Add translation lint script to catch unwrapped user-facing strings — 2026-02-06 (I18N-LINT1)
+- [x] Security, privacy, accessibility review fixes — encrypted PlanTarget fields, MultiFernet rotation, aria-live timer, data tables for charts, Privacy Officer settings, retention expiry alerts — 2026-02-06 (SEC-FIX1-2, PRIV-FIX1-2, A11Y-FIX1-3)
+- [x] Fix 3 review bugs — AuditLog crash on metric import, group re-add constraint, ghost revisions — 2026-02-06 (QR-FIX4-6)
+- [x] Fix 4 group view bugs — attendance name mismatch, membership form, role handling, demo separation — 2026-02-06 (QR-FIX1-3)
+- [x] Client voice, qualitative progress, groups app (Phases A-D) — encrypted client_goal on targets, progress descriptors, engagement observation, 7-model groups app, 3 demo groups — 2026-02-06 (CV1-4)
+- [x] Expand demo from 2 programs / 10 clients to 5 programs / 15 clients — 2026-02-06 (DEMO-EXP1)
+- [x] Independent code reviews (security, privacy, accessibility, deployment) — 2026-02-06 (SEC-REV1-4)
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 
 ---
@@ -132,6 +149,9 @@ For detailed history, see `tasks/ARCHIVE.md`. Summary of completed work:
 | Area | What's Done |
 |------|-------------|
 | **Core app (Phases 1-8)** | Clients, plans, notes, events, charts, admin, security, UX |
+| **Client voice & qualitative** | Client-goal fields, progress descriptors, engagement observation, qualitative summary |
+| **Groups** | Service groups, activity groups, projects — session logs, attendance, highlights, milestones, outcomes |
+| **Demo data** | 5 programs, 15 clients, 3 groups, cross-enrolments, approachable metrics |
 | **Secure export** | Bug fix, audit logging, warnings, secure links, permission alignment |
 | **French** | 636 system strings translated, bilingual login, language switcher |
 | **Reporting** | Funder reports, aggregation, demographics, fiscal year, PDF exports |

@@ -135,6 +135,19 @@ class ProgressNote(models.Model):
     @participant_reflection.setter
     def participant_reflection(self, value):
         self._participant_reflection_encrypted = encrypt_field(value)
+    ENGAGEMENT_CHOICES = [
+        ("", "---------"),
+        ("disengaged", "Disengaged"),
+        ("motions", "Going through the motions"),
+        ("guarded", "Guarded but present"),
+        ("engaged", "Engaged"),
+        ("valuing", "Valuing the process"),
+        ("no_interaction", "No individual interaction"),
+    ]
+
+    engagement_observation = models.CharField(
+        max_length=20, choices=ENGAGEMENT_CHOICES, default="", blank=True,
+    )
     backdate = models.DateTimeField(null=True, blank=True, help_text="Override date if note is for a past session.")
     begin_timestamp = models.DateTimeField(null=True, blank=True)
     follow_up_date = models.DateField(
@@ -187,9 +200,21 @@ class ProgressNote(models.Model):
 class ProgressNoteTarget(models.Model):
     """Notes and metrics recorded for a specific plan target within a progress note."""
 
+    PROGRESS_DESCRIPTOR_CHOICES = [
+        ("", "---------"),
+        ("harder", "Harder right now"),
+        ("holding", "Holding steady"),
+        ("shifting", "Something's shifting"),
+        ("good_place", "In a good place"),
+    ]
+
     progress_note = models.ForeignKey(ProgressNote, on_delete=models.CASCADE, related_name="target_entries")
     plan_target = models.ForeignKey("plans.PlanTarget", on_delete=models.CASCADE, related_name="note_entries")
     _notes_encrypted = models.BinaryField(default=b"", blank=True)
+    _client_words_encrypted = models.BinaryField(default=b"", blank=True)
+    progress_descriptor = models.CharField(
+        max_length=20, choices=PROGRESS_DESCRIPTOR_CHOICES, default="", blank=True,
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     @property
@@ -200,6 +225,15 @@ class ProgressNoteTarget(models.Model):
     @notes.setter
     def notes(self, value):
         self._notes_encrypted = encrypt_field(value)
+
+    @property
+    def client_words(self):
+        """What the client said about this goal today (decrypted)."""
+        return decrypt_field(self._client_words_encrypted)
+
+    @client_words.setter
+    def client_words(self, value):
+        self._client_words_encrypted = encrypt_field(value)
 
     class Meta:
         app_label = "notes"

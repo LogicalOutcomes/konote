@@ -58,11 +58,9 @@ def _get_user_pm_program_ids(user):
 def _get_visible_requests(user, status_filter=None):
     """Get erasure requests visible to this user (PM-scoped or admin-all).
 
-    Uses SQL-level JSONField filtering (PostgreSQL @> operator) to avoid
-    loading all requests into memory for set intersection.
+    Filters in Python since erasure requests are a small dataset and
+    JSONField __contains is not supported on all backends (e.g. SQLite).
     """
-    from django.db.models import Q
-
     qs = ErasureRequest.objects.all().order_by("-requested_at")
     if status_filter:
         qs = qs.filter(status=status_filter)
@@ -75,11 +73,13 @@ def _get_visible_requests(user, status_filter=None):
     if not pm_program_ids:
         return qs.none()
 
-    # Build OR query: programs_required @> [id1] OR programs_required @> [id2] ...
-    q = Q()
-    for pid in pm_program_ids:
-        q |= Q(programs_required__contains=[pid])
-    return qs.filter(q)
+    # Filter in Python — works on all DB backends
+    pids_set = set(pm_program_ids)
+    matching_pks = [
+        r.pk for r in qs
+        if pids_set & set(r.programs_required or [])
+    ]
+    return qs.filter(pk__in=matching_pks)
 
 
 # --- Request creation (PM+ only) ---

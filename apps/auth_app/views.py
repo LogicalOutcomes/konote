@@ -272,7 +272,8 @@ def demo_login(request, role):
 
     demo_usernames = {
         "frontdesk": "demo-frontdesk",
-        "worker": "demo-worker",
+        "worker-1": "demo-worker-1",
+        "worker-2": "demo-worker-2",
         "manager": "demo-manager",
         "executive": "demo-executive",
         "admin": "demo-admin",

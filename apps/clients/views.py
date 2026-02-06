@@ -8,6 +8,7 @@ from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from apps.auth_app.decorators import minimum_role
+from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 
 from .forms import ClientFileForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm
@@ -65,6 +66,34 @@ def _get_accessible_clients(user):
     return base_queryset.filter(pk__in=client_ids).prefetch_related("enrolments__program")
 
 
+def _find_clients_with_matching_notes(client_ids, query_lower):
+    """Return set of client IDs whose progress notes contain the search query.
+
+    Encrypted fields can't be searched in SQL, so we decrypt each note's text
+    fields in memory and check for a case-insensitive substring match.
+    Stops checking a client as soon as one matching note is found.
+    """
+    matched = set()
+    notes = (
+        ProgressNote.objects.filter(client_file_id__in=client_ids)
+        .prefetch_related("target_entries")
+    )
+    for note in notes:
+        cid = note.client_file_id
+        if cid in matched:
+            continue  # already found a match for this client
+        for text in [note.notes_text or "", note.summary or "", note.participant_reflection or ""]:
+            if query_lower in text.lower():
+                matched.add(cid)
+                break
+        else:
+            for entry in note.target_entries.all():
+                if query_lower in (entry.notes or "").lower():
+                    matched.add(cid)
+                    break
+    return matched
+
+
 @login_required
 def client_list(request):
     clients = _get_accessible_clients(request.user)
@@ -75,8 +104,11 @@ def client_list(request):
     program_filter = request.GET.get("program", "")
     search_query = request.GET.get("q", "").strip().lower()
 
-    # Decrypt names and build display list
+    # Decrypt names and build display list — two passes when searching:
+    # 1. Apply status/program filters, match by name/record ID
+    # 2. For unmatched clients, also search progress note content
     client_data = []
+    unmatched = {}  # client.pk → item dict, for the note-search pass
     for client in clients:
         # Apply status filter (in Python because we're already iterating)
         if status_filter and client.status != status_filter:
@@ -91,18 +123,25 @@ def client_list(request):
                 continue
 
         name = f"{client.first_name} {client.last_name}"
+        item = {"client": client, "name": name, "programs": programs}
 
-        # Apply text search (name or record ID)
+        # Apply text search (name, record ID, or — via second pass — note content)
         if search_query:
             record = (client.record_id or "").lower()
-            if search_query not in name.lower() and search_query not in record:
-                continue
+            if search_query in name.lower() or search_query in record:
+                client_data.append(item)
+            else:
+                unmatched[client.pk] = item
+        else:
+            client_data.append(item)
 
-        client_data.append({
-            "client": client,
-            "name": name,
-            "programs": programs,
-        })
+    # Second pass: search progress notes for clients not matched by name/ID
+    if search_query and unmatched:
+        note_matched_ids = _find_clients_with_matching_notes(
+            unmatched.keys(), search_query
+        )
+        for cid in note_matched_ids:
+            client_data.append(unmatched[cid])
 
     # Sort by name
     client_data.sort(key=lambda c: c["name"].lower())
@@ -570,6 +609,7 @@ def client_search(request):
             pass
 
     results = []
+    unmatched = {}  # client.pk → item dict, for the note-search pass
     for client in clients:
         # Apply status filter
         if status_filter and client.status != status_filter:
@@ -592,18 +632,26 @@ def client_search(request):
             except ValueError:
                 pass
 
-        # Apply text search (if query provided)
-        if query:
-            name = f"{client.first_name} {client.last_name}".lower()
-            record = (client.record_id or "").lower()
-            if query not in name and query not in record:
-                continue
+        name = f"{client.first_name} {client.last_name}"
+        item = {"client": client, "name": name, "programs": programs}
 
-        results.append({
-            "client": client,
-            "name": f"{client.first_name} {client.last_name}",
-            "programs": programs,
-        })
+        # Apply text search (name, record ID, or — via second pass — note content)
+        if query:
+            record = (client.record_id or "").lower()
+            if query in name.lower() or query in record:
+                results.append(item)
+            else:
+                unmatched[client.pk] = item
+        else:
+            results.append(item)
+
+    # Second pass: search progress notes for clients not matched by name/ID
+    if query and unmatched:
+        note_matched_ids = _find_clients_with_matching_notes(
+            unmatched.keys(), query
+        )
+        for cid in note_matched_ids:
+            results.append(unmatched[cid])
 
     results.sort(key=lambda c: c["name"].lower())
 

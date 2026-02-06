@@ -1,0 +1,17 @@
+{{ product_name }} — Data Retention Alert
+
+{{ count }} client record(s) have passed their data retention date and may need to be reviewed for erasure.
+
+Records past retention:
+{% for item in expired_list %}
+  - {{ item.record_id }} — expired {{ item.retention_expires }} ({{ item.days_overdue }} days ago)
+{% endfor %}
+
+Next steps:
+1. Review each record in the system
+2. Determine if an erasure request should be initiated
+3. Follow your organisation's data retention policy
+
+{% if privacy_officer_name %}Privacy Officer: {{ privacy_officer_name }}{% if privacy_officer_email %} ({{ privacy_officer_email }}){% endif %}{% endif %}
+
+This is an automated notice from {{ product_name }} ({{ today }}).

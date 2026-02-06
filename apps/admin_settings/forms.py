@@ -119,10 +119,21 @@ class InstanceSettingsForm(forms.Form):
         widget=forms.TextInput(attrs={"placeholder": "https://example.com/clients/{record_id}/"}),
     )
 
+    # Privacy officer contact (PIPEDA compliance)
+    privacy_officer_name = forms.CharField(
+        max_length=255, required=False, label="Privacy Officer Name",
+        help_text="Displayed in privacy notices and erasure communications.",
+    )
+    privacy_officer_email = forms.EmailField(
+        required=False, label="Privacy Officer Email",
+        help_text="Contact email for privacy requests and data access inquiries.",
+    )
+
     SETTING_KEYS = [
         "product_name", "support_email", "logo_url",
         "date_format", "session_timeout_minutes",
         "document_storage_provider", "document_storage_url_template",
+        "privacy_officer_name", "privacy_officer_email",
     ]
 
     def __init__(self, *args, **kwargs):

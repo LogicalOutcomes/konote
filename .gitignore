@@ -10,8 +10,8 @@ build/
 staticfiles/
 db.sqlite3
 
-# Compiled translation files — pre-compiled locally and committed
-# (no gettext needed at build time)
+# .mo files ARE committed — pre-compiled locally, no gettext in Docker.
+# DO NOT add *.mo here. See MEMORY.md "Translation Decision".
 
 # Virtual environment
 venv/

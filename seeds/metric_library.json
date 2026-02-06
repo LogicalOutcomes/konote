@@ -153,7 +153,7 @@
   },
   {
     "name": "Goal Progress (1-10)",
-    "definition": "Client's self-assessed progress toward their stated goal. 1 = no progress, 10 = goal achieved.",
+    "definition": "Client's self-assessed progress toward their stated goal. 1 = no progress, 10 = goal achieved. Note: Consider using the qualitative progress descriptors (harder/holding/shifting/good place) for richer, less reductive tracking.",
     "category": "general",
     "min_value": 1,
     "max_value": 10,
@@ -161,7 +161,7 @@
   },
   {
     "name": "Client Satisfaction",
-    "definition": "Client satisfaction with services. 1 = very dissatisfied, 5 = very satisfied.",
+    "definition": "Client satisfaction with services. 1 = very dissatisfied, 5 = very satisfied. Note: Consider using the engagement observation and client voice fields for richer feedback capture.",
     "category": "general",
     "min_value": 1,
     "max_value": 5,
@@ -190,5 +190,101 @@
     "min_value": 1,
     "max_value": 5,
     "unit": "score"
+  },
+  {
+    "name": "How are you feeling today?",
+    "definition": "Simple wellbeing check-in at each session. 1 = not great at all, 2 = struggling a bit, 3 = okay, 4 = pretty good, 5 = really good.",
+    "category": "general",
+    "min_value": 1,
+    "max_value": 5,
+    "unit": "score"
+  },
+  {
+    "name": "Since we last met, how are things going?",
+    "definition": "Change since previous session. 1 = much harder, 2 = a bit harder, 3 = about the same, 4 = a bit better, 5 = much better.",
+    "category": "general",
+    "min_value": 1,
+    "max_value": 5,
+    "unit": "score"
+  },
+  {
+    "name": "How ready do you feel for work?",
+    "definition": "Self-reported readiness for job searching or starting work. 1 = not at all ready, 5 = completely ready.",
+    "category": "employment",
+    "min_value": 1,
+    "max_value": 5,
+    "unit": "score"
+  },
+  {
+    "name": "Confidence in your job search",
+    "definition": "How confident do you feel about finding work? Covers applications, interviews, and next steps. 1 = very anxious, 5 = very confident.",
+    "category": "employment",
+    "min_value": 1,
+    "max_value": 5,
+    "unit": "score"
+  },
+  {
+    "name": "How safe do you feel where you live?",
+    "definition": "Self-reported feeling of safety and security in current living situation. 1 = not safe at all, 5 = very safe and settled.",
+    "category": "housing",
+    "min_value": 1,
+    "max_value": 5,
+    "unit": "score"
+  },
+  {
+    "name": "How connected do you feel to the group?",
+    "definition": "Sense of belonging and connection in group activities. 1 = not at all connected, 5 = really feel like I belong.",
+    "category": "youth",
+    "min_value": 1,
+    "max_value": 5,
+    "unit": "score"
+  },
+  {
+    "name": "Confidence navigating services",
+    "definition": "How confident are you accessing community services on your own? Doctor, school, transit, government. 1 = not confident, 5 = very confident.",
+    "category": "general",
+    "min_value": 1,
+    "max_value": 5,
+    "unit": "score"
+  },
+  {
+    "name": "Comfort with English in daily life",
+    "definition": "Self-reported comfort using English for everyday tasks like shopping, appointments, and conversations. 1 = very difficult, 5 = very comfortable.",
+    "category": "general",
+    "min_value": 1,
+    "max_value": 5,
+    "unit": "score"
+  },
+  {
+    "name": "Cooking confidence",
+    "definition": "How confident do you feel preparing a healthy meal from scratch? 1 = not confident at all, 5 = very confident.",
+    "category": "general",
+    "min_value": 1,
+    "max_value": 5,
+    "unit": "score"
+  },
+  {
+    "name": "Healthy meals prepared this week",
+    "definition": "Number of healthy meals the participant prepared at home this week.",
+    "category": "general",
+    "min_value": 0,
+    "max_value": 14,
+    "unit": "meals"
+  },
+  {
+    "name": "Sessions attended this month",
+    "definition": "Number of program sessions attended in the past month.",
+    "category": "general",
+    "min_value": 0,
+    "max_value": 20,
+    "unit": "sessions"
+  },
+  {
+    "name": "Community connections this month",
+    "definition": "Number of new community connections or resources accessed this month. Includes services, neighbours, groups, or supports.",
+    "category": "general",
+    "min_value": 0,
+    "max_value": 20,
+    "unit": "connections"
   }
 ]

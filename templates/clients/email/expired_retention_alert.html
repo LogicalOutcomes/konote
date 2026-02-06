@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; color: #333; max-width: 600px; margin: 0 auto; padding: 1rem;">
+
+<h2 style="color: #b45309; border-bottom: 2px solid #fbbf24; padding-bottom: 0.5rem;">
+    Data Retention Alert
+</h2>
+
+<p><strong>{{ count }}</strong> client record{{ count|pluralize }} {{ count|pluralize:"has,have" }} passed {{ count|pluralize:"its,their" }} data retention date and may need to be reviewed for erasure.</p>
+
+<table style="width: 100%; border-collapse: collapse; margin: 1rem 0;">
+    <thead>
+        <tr style="background: #f9fafb;">
+            <th style="text-align: left; padding: 0.5rem; border-bottom: 2px solid #e5e7eb;">Record ID</th>
+            <th style="text-align: left; padding: 0.5rem; border-bottom: 2px solid #e5e7eb;">Expired</th>
+            <th style="text-align: right; padding: 0.5rem; border-bottom: 2px solid #e5e7eb;">Days Overdue</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in expired_list %}
+        <tr>
+            <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">{{ item.record_id }}</td>
+            <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">{{ item.retention_expires }}</td>
+            <td style="text-align: right; padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">{{ item.days_overdue }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<h3>Next Steps</h3>
+<ol>
+    <li>Review each record in the system</li>
+    <li>Determine if an erasure request should be initiated</li>
+    <li>Follow your organisation's data retention policy</li>
+</ol>
+
+{% if privacy_officer_name %}
+<p style="background: #f0f9ff; padding: 0.75rem; border-radius: 0.25rem;">
+    <strong>Privacy Officer:</strong> {{ privacy_officer_name }}{% if privacy_officer_email %} (<a href="mailto:{{ privacy_officer_email }}">{{ privacy_officer_email }}</a>){% endif %}
+</p>
+{% endif %}
+
+<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 1.5rem 0;">
+<p style="font-size: 0.85rem; color: #6b7280;">
+    This is an automated notice from {{ product_name }} ({{ today }}).
+</p>
+
+</body>
+</html>
