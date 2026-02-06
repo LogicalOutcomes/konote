@@ -16,7 +16,7 @@
     {% if is_admin %}
     <a href="{% url 'programs:program_edit' program_id=program.pk %}" role="button" class="outline">{% blocktrans with program=term.program|default:"Program" %}Edit {{ program }}{% endblocktrans %}</a>
     {% endif %}
-    <a href="{% url 'programs:program_list' %}" role="button" class="outline secondary">{% trans "Back to List" %}</a>
+    <a href="{% url 'programs:program_list' %}" class="back-link">&larr; {% trans "Back to List" %}</a>
 </div>
 
 <hr>

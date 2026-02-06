@@ -2,7 +2,7 @@
 
 ## Flagged
 
-_Nothing flagged._
+- [ ] Decide product name — should web version  be called "KoNote" (not "KoNote2"). See `tasks/naming-versioning.md` (NAME1)
 
 ## Active Work
 
@@ -92,14 +92,10 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 
 ### Deployment Workflow Enhancements
 
-- [ ] Create Demo Account Directory page in admin settings (DEMO9)
-- [ ] Add `is_demo_context` to audit log entries (DEMO12)
+- [ ] Create Demo Account Directory page in admin settings — list all demo users and demo clients in one place so admins can manage them (DEMO9)
+- [ ] Add `is_demo_context` flag to audit log entries — lets admins filter out demo activity from real audit trails (DEMO12)
 
 See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-design.md) for full details.
-
-### UX Accessibility (low priority info items)
-
-- [ ] Investigate "Note" button not found on Direct Service client detail — may be by design (UX-A11Y2)
 
 ### Privacy & Security
 

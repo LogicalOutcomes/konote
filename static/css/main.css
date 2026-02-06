@@ -1150,6 +1150,11 @@ nav.pagination a {
     font-size: 0.8125rem;
     padding: var(--kn-space-sm) var(--kn-space-base);
 }
+.action-bar .back-link {
+    font-size: 0.8125rem;
+    align-self: center;
+    text-decoration: none;
+}
 
 /* ---- Permission notice (view-only message) ---- */
 p.notice {
