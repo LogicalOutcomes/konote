@@ -179,6 +179,7 @@ class SectionStatusTest(PlanCRUDBaseTest):
 
 class TargetCreateTest(PlanCRUDBaseTest):
     """Test creating plan targets."""
+    databases = ("default", "audit")
 
     def setUp(self):
         super().setUp()
@@ -194,7 +195,9 @@ class TargetCreateTest(PlanCRUDBaseTest):
             "description": "Client will find stable housing within 3 months",
         })
         self.assertEqual(resp.status_code, 302)
-        target = PlanTarget.objects.get(name="Find stable housing")
+        # name is an encrypted property — can't query by it, so fetch by section
+        target = PlanTarget.objects.get(plan_section=self.section)
+        self.assertEqual(target.name, "Find stable housing")
         self.assertEqual(target.plan_section, self.section)
         self.assertEqual(target.client_file, self.client_file)
         # Should create an initial revision

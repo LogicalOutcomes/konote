@@ -16,7 +16,7 @@
     <!-- Template (determines note structure) -->
     <label for="{{ form.template.id_for_label }}">{% trans "Template" %}</label>
     {{ form.template }}
-    {% if form.template.errors %}<small class="error" role="alert">{{ form.template.errors.0 }}</small>{% endif %}
+    {% if form.template.errors %}<small class="error" id="template-error" role="alert">{{ form.template.errors.0 }}</small>{% endif %}
 
     <!-- Interaction type — pre-fills from template's default -->
     <label for="{{ form.interaction_type.id_for_label }}">{% trans "Interaction type" %}</label>
@@ -26,8 +26,8 @@
     <!-- Session date — pre-filled with today -->
     <label for="{{ form.session_date.id_for_label }}">{% trans "Session Date" %}</label>
     {{ form.session_date }}
-    <small>{{ form.session_date.help_text }}</small>
-    {% if form.session_date.errors %}<small class="error" role="alert">{{ form.session_date.errors.0 }}</small>{% endif %}
+    <small id="session-date-help">{{ form.session_date.help_text }}</small>
+    {% if form.session_date.errors %}<small class="error" id="session-date-error" role="alert">{{ form.session_date.errors.0 }}</small>{% endif %}
 
     <!-- Target selection — staff pick which targets they worked on -->
     {% if target_forms %}
@@ -57,9 +57,31 @@
         <!-- Hidden target ID -->
         {{ tf.note_form.target_id }}
 
-        <label for="{{ tf.note_form.notes.id_for_label }}">{% blocktrans with target=term.target|default:"target" %}Notes for this {{ target }}{% endblocktrans %}</label>
+        {% if tf.target.client_goal %}
+        <div class="client-goal-callout" role="note">
+            <strong>{% trans "In their words:" %}</strong> "{{ tf.target.client_goal }}"
+        </div>
+        {% endif %}
+
+        <label for="{{ tf.note_form.client_words.id_for_label }}">{% trans "In their words" %}</label>
+        {{ tf.note_form.client_words }}
+        {% if tf.note_form.client_words.help_text %}<small>{{ tf.note_form.client_words.help_text }}</small>{% endif %}
+        {% if tf.note_form.client_words.errors %}<small class="error" id="client-words-error-{{ tf.target.pk }}" role="alert">{{ tf.note_form.client_words.errors.0 }}</small>{% endif %}
+
+        <label>{% trans "How are things going?" %}</label>
+        <div class="descriptor-pills">
+        {% for radio in tf.note_form.progress_descriptor %}
+            {% if radio.choice_value %}
+            <label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+            {% endif %}
+        {% endfor %}
+        </div>
+        {% if tf.note_form.progress_descriptor.help_text %}<small>{{ tf.note_form.progress_descriptor.help_text }}</small>{% endif %}
+        {% if tf.note_form.progress_descriptor.errors %}<small class="error" id="descriptor-error-{{ tf.target.pk }}" role="alert">{{ tf.note_form.progress_descriptor.errors.0 }}</small>{% endif %}
+
+        <label for="{{ tf.note_form.notes.id_for_label }}">{% blocktrans with target=term.target|default:"target" %}Your notes for this {{ target }}{% endblocktrans %}</label>
         {{ tf.note_form.notes }}
-        {% if tf.note_form.notes.errors %}<small class="error" role="alert">{{ tf.note_form.notes.errors.0 }}</small>{% endif %}
+        {% if tf.note_form.notes.errors %}<small class="error" id="notes-error-{{ tf.target.pk }}" role="alert">{{ tf.note_form.notes.errors.0 }}</small>{% endif %}
 
         {% if tf.metric_forms %}
         <h3>{{ term.metric_plural|default:"Metrics" }}</h3>
@@ -68,7 +90,7 @@
         <label for="{{ mf.value.id_for_label }}">{{ mf.value.label }}</label>
         {{ mf.value }}
         {% if mf.value.help_text %}<small>{{ mf.value.help_text }}</small>{% endif %}
-        {% if mf.value.errors %}<small class="error" role="alert">{{ mf.value.errors.0 }}</small>{% endif %}
+        {% if mf.value.errors %}<small class="error" id="metric-error-{{ forloop.counter }}-{{ tf.target.pk }}" role="alert">{{ mf.value.errors.0 }}</small>{% endif %}
         {% endfor %}
         {% endif %}
     </details>
@@ -80,13 +102,19 @@
     <!-- Summary -->
     <label for="{{ form.summary.id_for_label }}">{% trans "Summary (optional)" %}</label>
     {{ form.summary }}
-    {% if form.summary.errors %}<small class="error" role="alert">{{ form.summary.errors.0 }}</small>{% endif %}
+    {% if form.summary.errors %}<small class="error" id="summary-error" role="alert">{{ form.summary.errors.0 }}</small>{% endif %}
 
     <!-- Follow-up date (optional) -->
     <label for="{{ form.follow_up_date.id_for_label }}">{% trans "Follow up by" %}</label>
     {{ form.follow_up_date }}
     <small>{% trans "(optional — adds to your home page reminders)" %}</small>
-    {% if form.follow_up_date.errors %}<small class="error" role="alert">{{ form.follow_up_date.errors.0 }}</small>{% endif %}
+    {% if form.follow_up_date.errors %}<small class="error" id="follow-up-error" role="alert">{{ form.follow_up_date.errors.0 }}</small>{% endif %}
+
+    <!-- Engagement observation -->
+    <label for="{{ form.engagement_observation.id_for_label }}">{% trans "How engaged was the participant?" %}</label>
+    {{ form.engagement_observation }}
+    <small>{% trans "Your observation — not a score. This is a practice tool, not a performance evaluation." %}</small>
+    {% if form.engagement_observation.errors %}<small class="error" id="engagement-error" role="alert">{{ form.engagement_observation.errors.0 }}</small>{% endif %}
 
     <!-- Participant reflection section -->
     <div class="participant-reflection" role="region" aria-labelledby="reflection-heading">
@@ -101,7 +129,7 @@
             {% blocktrans with client=term.client|default:"Participant" %}{{ client }}'s response{% endblocktrans %}
         </label>
         {{ form.participant_reflection }}
-        {% if form.participant_reflection.errors %}<small class="error" role="alert">{{ form.participant_reflection.errors.0 }}</small>{% endif %}
+        {% if form.participant_reflection.errors %}<small class="error" id="reflection-error" role="alert">{{ form.participant_reflection.errors.0 }}</small>{% endif %}
         <small class="reflection-help">{% trans "Record their words, not your interpretation. Even a brief phrase captures their voice." %}</small>
     </div>
 
@@ -114,7 +142,7 @@
                     {% trans "We created this note together" %}
                 </label>
                 {% if form.consent_confirmed.errors %}
-                <small class="error" role="alert">{{ form.consent_confirmed.errors.0 }}</small>
+                <small class="error" id="consent-error" role="alert">{{ form.consent_confirmed.errors.0 }}</small>
                 {% endif %}
             </div>
             <span class="autosave-indicator" id="autosave-status" hidden aria-live="polite" role="status">

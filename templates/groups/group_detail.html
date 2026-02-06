@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ group.name }} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'groups:group_list' %}" class="back-link">&larr; {% blocktrans with groups=term.group_plural|default:"Groups" %}Back to {{ groups }}{% endblocktrans %}</a></p>
+
+<hgroup>
+    <h1>
+        {{ group.name }}
+        {% if group.status == "active" %}
+            <span class="badge badge-success">{% trans "Active" %}</span>
+        {% else %}
+            <span class="badge badge-neutral">{% trans "Archived" %}</span>
+        {% endif %}
+    </h1>
+    <p>
+        {{ group.get_group_type_display }}
+        {% if group.program %}
+            — {{ group.program.name }}
+        {% endif %}
+    </p>
+</hgroup>
+
+{% if group.description %}
+<p>{{ group.description }}</p>
+{% endif %}
+
+<!-- Action buttons -->
+<div role="group">
+    <a href="{% url 'groups:group_edit' group_id=group.pk %}" role="button" class="outline">{% trans "Edit" %}</a>
+    <a href="{% url 'groups:session_log' group_id=group.pk %}" role="button">{% trans "Log Session" %}</a>
+    <a href="{% url 'groups:membership_add' group_id=group.pk %}" role="button" class="outline">{% trans "Add Member" %}</a>
+</div>
+
+<!-- Roster -->
+<section aria-labelledby="roster-heading">
+    <h2 id="roster-heading">{% trans "Roster" %}</h2>
+
+    {% if memberships %}
+    <figure>
+    <table role="grid" aria-label="{% trans 'Group roster' %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Name" %}</th>
+                <th scope="col">{% trans "Role" %}</th>
+                <th scope="col">{% trans "Status" %}</th>
+                <th scope="col">{% trans "Actions" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in memberships %}
+            <tr>
+                <td>{{ m.display_name }}</td>
+                <td data-label="{% trans 'Role' %}">
+                    {% if m.role == "leader" %}
+                        <span class="badge badge-primary">{% trans "Leader" %}</span>
+                    {% else %}
+                        <span class="badge badge-neutral">{% trans "Member" %}</span>
+                    {% endif %}
+                </td>
+                <td data-label="{% trans 'Status' %}">
+                    {% if m.status == "active" %}
+                        <span class="badge badge-success">{% trans "Active" %}</span>
+                    {% else %}
+                        <span class="badge badge-warning">{% trans "Inactive" %}</span>
+                    {% endif %}
+                </td>
+                <td data-label="{% trans 'Actions' %}">
+                    <form method="post"
+                          action="{% url 'groups:membership_remove' membership_id=m.pk %}"
+                          hx-post="{% url 'groups:membership_remove' membership_id=m.pk %}"
+                          hx-confirm="{% blocktrans with name=m.display_name %}Remove {{ name }} from this group?{% endblocktrans %}"
+                          hx-target="closest tr"
+                          hx-swap="outerHTML">
+                        {% csrf_token %}
+                        <button type="submit" class="outline secondary" aria-label="{% blocktrans with name=m.display_name %}Remove {{ name }}{% endblocktrans %}">{% trans "Remove" %}</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </figure>
+    {% else %}
+    <p><em>{% trans "No members yet." %}</em></p>
+    {% endif %}
+</section>
+
+<!-- Recent Sessions -->
+<section aria-labelledby="sessions-heading">
+    <h2 id="sessions-heading">{% trans "Recent Sessions" %}</h2>
+
+    {% if sessions %}
+    {% for session in sessions %}
+        {% include "groups/_session_card.html" with session=session %}
+    {% endfor %}
+    {% else %}
+    <p><em>{% trans "No sessions recorded yet." %}</em></p>
+    {% endif %}
+</section>
+
+{% if group.group_type == "project" %}
+<!-- Milestones (project-type groups only) -->
+<section aria-labelledby="milestones-heading">
+    <h2 id="milestones-heading">{% trans "Milestones" %}</h2>
+
+    <p><a href="{% url 'groups:milestone_create' group_id=group.pk %}" role="button" class="outline">+ {% trans "Add Milestone" %}</a></p>
+
+    {% if milestones %}
+    <figure>
+    <table role="grid" aria-label="{% trans 'Project milestones' %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Title" %}</th>
+                <th scope="col">{% trans "Status" %}</th>
+                <th scope="col">{% trans "Due Date" %}</th>
+                <th scope="col">{% trans "Actions" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ms in milestones %}
+            <tr>
+                <td>{{ ms.title }}</td>
+                <td data-label="{% trans 'Status' %}">
+                    {% if ms.status == "complete" %}
+                        <span class="badge badge-success">{% trans "Complete" %}</span>
+                    {% elif ms.status == "in_progress" %}
+                        <span class="badge badge-warning">{% trans "In Progress" %}</span>
+                    {% else %}
+                        <span class="badge badge-neutral">{% trans "Not Started" %}</span>
+                    {% endif %}
+                </td>
+                <td data-label="{% trans 'Due Date' %}">{{ ms.due_date|date:"Y-m-d"|default:"—" }}</td>
+                <td data-label="{% trans 'Actions' %}">
+                    <a href="{% url 'groups:milestone_edit' milestone_id=ms.pk %}">{% trans "Edit" %}</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </figure>
+    {% else %}
+    <p><em>{% trans "No milestones yet." %}</em></p>
+    {% endif %}
+</section>
+
+<!-- Outcomes (project-type groups only) -->
+<section aria-labelledby="outcomes-heading">
+    <h2 id="outcomes-heading">{% trans "Outcomes" %}</h2>
+
+    <p><a href="{% url 'groups:outcome_create' group_id=group.pk %}" role="button" class="outline">+ {% trans "Record Outcome" %}</a></p>
+
+    {% if outcomes %}
+    {% for outcome in outcomes %}
+    <article>
+        <header>
+            <strong>{{ outcome.outcome_date|date:"Y-m-d" }}</strong>
+            {% if outcome.created_by %}
+                — {{ outcome.created_by.display_name }}
+            {% endif %}
+        </header>
+        <p>{{ outcome.description }}</p>
+        {% if outcome.evidence %}
+        <small><strong>{% trans "Evidence:" %}</strong> {{ outcome.evidence }}</small>
+        {% endif %}
+    </article>
+    {% endfor %}
+    {% else %}
+    <p><em>{% trans "No outcomes recorded yet." %}</em></p>
+    {% endif %}
+</section>
+{% endif %}
+{% endblock %}

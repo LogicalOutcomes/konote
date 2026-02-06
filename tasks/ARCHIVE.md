@@ -4,6 +4,30 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Completed 2026-02-06
+
+### Moved from Recently Done (2026-02-06 cleanup)
+
+- [x] Demo Account Directory page + is_demo_context audit flag — 2026-02-06 (DEMO9, DEMO12)
+- [x] Parking lot quick wins — aria-describedby, test deps, email errors, field rename — 2026-02-06 (UX-A11Y1, REV2-DEPS1, REV2-EMAIL2, DB-TERM1)
+- [x] Fix 5 review follow-ups — erasure emails, tier validation, history ordering, French filters, phone tests — 2026-02-06 (REV2-EMAIL1, REV2-TEST1, REV2-ORDER1, TESTFIX1, TESTFIX2)
+- [x] Review follow-ups — email warnings, SQL-optimised PM filtering, PIPEDA aging — 2026-02-06 (REV-W3, REV-W1, REV-PIPEDA1)
+
+### Completed Review Fix Sections (all from SEC-REV1-3)
+
+- [x] Encrypt PlanTarget.name, .description, .status_reason fields + PlanTargetRevision equivalents (SEC-FIX1)
+- [x] Add MultiFernet key rotation support to konote/encryption.py (SEC-FIX2)
+- [x] Change decryption error return from "[decryption error]" to empty string (SEC-FIX3)
+- [x] Create daily management command to alert admins about expired retention dates (PRIV-FIX1)
+- [x] Add Privacy Officer name/email to InstanceSettings and expose in templates (PRIV-FIX2)
+- [x] Add data table alternatives for Chart.js charts (A11Y-FIX1)
+- [x] Add aria-live to session timer + "Extend Session" button (A11Y-FIX2)
+- [x] Add aria-describedby to full note form error messages (A11Y-FIX3)
+- [x] Increase auto-dismiss delay from 3s to 8-10s (A11Y-FIX4)
+- [x] Create 404.html and 500.html error pages extending base.html (A11Y-FIX5)
+
+---
+
 ## Completed 2026-02-05
 
 ### French i18n, Canadian Localisation, i18n Reliability (all complete)

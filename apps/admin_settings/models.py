@@ -35,6 +35,13 @@ DEFAULT_TERMS = {
     "program_plural": ("Programs", "Programmes"),
     "enrolment": ("Enrolment", "Inscription"),
     "enrolment_plural": ("Enrolments", "Inscriptions"),
+    # Groups & sessions
+    "group": ("Group", "Groupe"),
+    "group_plural": ("Groups", "Groupes"),
+    "member": ("Member", "Membre"),
+    "member_plural": ("Members", "Membres"),
+    "session": ("Session", "Séance"),
+    "session_plural": ("Sessions", "Séances"),
 }
 
 

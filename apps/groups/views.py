@@ -1,0 +1,347 @@
+"""Group views: list, detail, session logging, membership, milestones, outcomes."""
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.db import transaction
+from django.db.models import Count
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.utils.translation import gettext as _
+
+from apps.auth_app.decorators import minimum_role
+from apps.clients.models import ClientFile
+from apps.clients.views import get_client_queryset
+
+from .forms import (
+    GroupForm,
+    HighlightForm,
+    ProjectMilestoneForm,
+    ProjectOutcomeForm,
+    SessionLogForm,
+)
+from .models import (
+    Group,
+    GroupMembership,
+    GroupSession,
+    GroupSessionAttendance,
+    GroupSessionHighlight,
+    ProjectMilestone,
+    ProjectOutcome,
+)
+
+
+# ---------------------------------------------------------------------------
+# 1. Group list
+# ---------------------------------------------------------------------------
+
+@login_required
+@minimum_role("staff")
+def group_list(request):
+    """List all active groups."""
+    groups = Group.objects.filter(status="active").select_related("program")
+    return render(request, "groups/group_list.html", {
+        "groups": groups,
+        "active_groups": groups,
+    })
+
+
+# ---------------------------------------------------------------------------
+# 2. Group detail
+# ---------------------------------------------------------------------------
+
+@login_required
+@minimum_role("staff")
+def group_detail(request, group_id):
+    """Detail view: roster, recent sessions, and project extras."""
+    group = get_object_or_404(Group, pk=group_id)
+
+    # Active members
+    memberships = GroupMembership.objects.filter(
+        group=group, status="active",
+    ).select_related("client_file")
+
+    # Recent 10 sessions with attendance counts
+    recent_sessions = (
+        GroupSession.objects.filter(group=group)
+        .annotate(attendance_count=Count("attendance_records"))
+        .order_by("-session_date")[:10]
+    )
+
+    context = {
+        "group": group,
+        "memberships": memberships,
+        "recent_sessions": recent_sessions,
+    }
+
+    # Project-type extras: milestones and outcomes
+    if group.group_type == "project":
+        context["milestones"] = ProjectMilestone.objects.filter(group=group)
+        context["outcomes"] = ProjectOutcome.objects.filter(group=group)
+
+    return render(request, "groups/group_detail.html", context)
+
+
+# ---------------------------------------------------------------------------
+# 3. Group create
+# ---------------------------------------------------------------------------
+
+@login_required
+@minimum_role("staff")
+def group_create(request):
+    """Create a new group."""
+    if request.method == "POST":
+        form = GroupForm(request.POST)
+        if form.is_valid():
+            group = form.save()
+            messages.success(request, _("Group created."))
+            return redirect("groups:group_detail", group_id=group.pk)
+    else:
+        form = GroupForm()
+    return render(request, "groups/group_form.html", {
+        "form": form,
+        "editing": False,
+    })
+
+
+# ---------------------------------------------------------------------------
+# 4. Group edit
+# ---------------------------------------------------------------------------
+
+@login_required
+@minimum_role("staff")
+def group_edit(request, group_id):
+    """Edit an existing group."""
+    group = get_object_or_404(Group, pk=group_id)
+    if request.method == "POST":
+        form = GroupForm(request.POST, instance=group)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Group updated."))
+            return redirect("groups:group_detail", group_id=group.pk)
+    else:
+        form = GroupForm(instance=group)
+    return render(request, "groups/group_form.html", {
+        "form": form,
+        "editing": True,
+        "group": group,
+    })
+
+
+# ---------------------------------------------------------------------------
+# 5. Session log -- THE CRITICAL 60-SECOND WORKFLOW
+# ---------------------------------------------------------------------------
+
+@login_required
+@minimum_role("staff")
+def session_log(request, group_id):
+    """Log a group session with attendance and optional highlights.
+
+    All active members are pre-checked (Rec #9) -- the facilitator unchecks
+    anyone who was absent rather than checking everyone present.
+    """
+    group = get_object_or_404(Group, pk=group_id)
+    members = GroupMembership.objects.filter(
+        group=group, status="active",
+    ).select_related("client_file")
+
+    if request.method == "POST":
+        form = SessionLogForm(request.POST)
+        if form.is_valid():
+            with transaction.atomic():
+                # 1. Create the session
+                session = GroupSession(
+                    group=group,
+                    session_date=form.cleaned_data["session_date"],
+                    facilitator=request.user,
+                    group_vibe=form.cleaned_data["group_vibe"],
+                )
+                session.notes = form.cleaned_data["notes"]
+                session.save()
+
+                # 2. Record attendance for each member
+                for member in members:
+                    present = request.POST.get(f"present_{member.pk}") == "on"
+                    GroupSessionAttendance.objects.create(
+                        group_session=session,
+                        membership=member,
+                        present=present,
+                    )
+
+                # 3. Save any non-empty highlights
+                for member in members:
+                    highlight_notes = request.POST.get(
+                        f"highlight_{member.pk}", "",
+                    ).strip()
+                    if highlight_notes:
+                        highlight = GroupSessionHighlight(
+                            group_session=session,
+                            membership=member,
+                        )
+                        highlight.notes = highlight_notes
+                        highlight.save()
+
+            messages.success(request, _("Session logged."))
+            return redirect("groups:group_detail", group_id=group.pk)
+    else:
+        form = SessionLogForm(initial={"session_date": timezone.now().date()})
+
+    # Build attendance data -- all checked by default (Rec #9)
+    attendance_data = [
+        {"membership": m, "present": True} for m in members
+    ]
+
+    return render(request, "groups/session_log.html", {
+        "group": group,
+        "form": form,
+        "attendance_data": attendance_data,
+        "members": members,
+    })
+
+
+# ---------------------------------------------------------------------------
+# 6. Membership add
+# ---------------------------------------------------------------------------
+
+@login_required
+@minimum_role("staff")
+def membership_add(request, group_id):
+    """Add a member to a group (existing client or named non-client)."""
+    group = get_object_or_404(Group, pk=group_id)
+
+    if request.method == "POST":
+        client_file_id = request.POST.get("client_file", "").strip()
+        member_name = request.POST.get("member_name", "").strip()
+        role = request.POST.get("role", "member")
+        if role not in ("member", "leader"):
+            role = "member"
+
+        if client_file_id:
+            # Security: only allow adding clients the user can see
+            base_qs = get_client_queryset(request.user)
+            client = get_object_or_404(base_qs, pk=client_file_id)
+            # Check for duplicate membership
+            if GroupMembership.objects.filter(
+                group=group, client_file=client, status="active",
+            ).exists():
+                messages.warning(request, _("This client is already a member."))
+            else:
+                GroupMembership.objects.create(
+                    group=group,
+                    client_file=client,
+                    role=role,
+                )
+                messages.success(request, _("Member added."))
+        elif member_name:
+            GroupMembership.objects.create(
+                group=group,
+                member_name=member_name,
+                role=role,
+            )
+            messages.success(request, _("Member added."))
+        else:
+            messages.error(request, _("Please select a client or enter a name."))
+
+        return redirect("groups:group_detail", group_id=group.pk)
+
+    # GET -- show the add-member form (filtered by demo/real separation)
+    clients = get_client_queryset(request.user).filter(status="active").order_by("pk")
+    return render(request, "groups/membership_add.html", {
+        "group": group,
+        "clients": clients,
+    })
+
+
+# ---------------------------------------------------------------------------
+# 7. Membership remove
+# ---------------------------------------------------------------------------
+
+@login_required
+@minimum_role("staff")
+def membership_remove(request, membership_id):
+    """Deactivate a membership (POST only)."""
+    membership = get_object_or_404(GroupMembership, pk=membership_id)
+    if request.method == "POST":
+        membership.status = "inactive"
+        membership.save()
+        messages.success(request, _("Member removed."))
+    return redirect("groups:group_detail", group_id=membership.group_id)
+
+
+# ---------------------------------------------------------------------------
+# 8. Milestone create (project groups only)
+# ---------------------------------------------------------------------------
+
+@login_required
+@minimum_role("staff")
+def milestone_create(request, group_id):
+    """Create a milestone for a project-type group."""
+    group = get_object_or_404(Group, pk=group_id, group_type="project")
+    if request.method == "POST":
+        form = ProjectMilestoneForm(request.POST)
+        if form.is_valid():
+            milestone = form.save(commit=False)
+            milestone.group = group
+            milestone.save()
+            messages.success(request, _("Milestone created."))
+            return redirect("groups:group_detail", group_id=group.pk)
+    else:
+        form = ProjectMilestoneForm()
+    return render(request, "groups/milestone_form.html", {
+        "form": form,
+        "group": group,
+    })
+
+
+# ---------------------------------------------------------------------------
+# 9. Milestone edit
+# ---------------------------------------------------------------------------
+
+@login_required
+@minimum_role("staff")
+def milestone_edit(request, milestone_id):
+    """Edit an existing project milestone."""
+    milestone = get_object_or_404(ProjectMilestone, pk=milestone_id)
+    group = milestone.group
+    if request.method == "POST":
+        form = ProjectMilestoneForm(request.POST, instance=milestone)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Milestone updated."))
+            return redirect("groups:group_detail", group_id=group.pk)
+    else:
+        form = ProjectMilestoneForm(instance=milestone)
+    return render(request, "groups/milestone_form.html", {
+        "form": form,
+        "group": group,
+        "milestone": milestone,
+    })
+
+
+# ---------------------------------------------------------------------------
+# 10. Outcome create (project groups only)
+# ---------------------------------------------------------------------------
+
+@login_required
+@minimum_role("staff")
+def outcome_create(request, group_id):
+    """Record an outcome for a project-type group."""
+    group = get_object_or_404(Group, pk=group_id, group_type="project")
+    if request.method == "POST":
+        form = ProjectOutcomeForm(request.POST)
+        if form.is_valid():
+            ProjectOutcome.objects.create(
+                group=group,
+                outcome_date=form.cleaned_data["outcome_date"],
+                description=form.cleaned_data["description"],
+                evidence=form.cleaned_data["evidence"],
+                created_by=request.user,
+            )
+            messages.success(request, _("Outcome recorded."))
+            return redirect("groups:group_detail", group_id=group.pk)
+    else:
+        form = ProjectOutcomeForm(initial={
+            "outcome_date": timezone.now().date(),
+        })
+    return render(request, "groups/outcome_form.html", {
+        "form": form,
+        "group": group,
+    })

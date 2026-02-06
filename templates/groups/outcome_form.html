@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% blocktrans with name=group.name %}Record Outcome — {{ name }}{% endblocktrans %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% blocktrans with name=group.name %}Record Outcome — {{ name }}{% endblocktrans %}</h1>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">
+        {{ field.label }}
+        {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+    </label>
+    {{ field }}
+    {% if field.help_text %}
+    <small>{{ field.help_text }}</small>
+    {% endif %}
+    {% if field.errors %}
+    <small class="badge badge-danger">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% endfor %}
+
+    <div role="group">
+        <button type="submit">{% trans "Record Outcome" %}</button>
+        <a href="{% url 'groups:group_detail' group_id=group.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

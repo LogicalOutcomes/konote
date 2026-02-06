@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Qualitative Progress" %} — {{ client.first_name }} {{ client.last_name }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+<hgroup>
+    <h1>{% trans "Qualitative Progress" %}</h1>
+    <p>{{ client.first_name }} {{ client.last_name }}</p>
+</hgroup>
+
+{% if target_data %}
+{% for td in target_data %}
+<article class="section-card">
+    <header>
+        <h2>{{ td.target.name }}</h2>
+        {% if td.target.client_goal %}
+        <small>"{{ td.target.client_goal|truncatewords:20 }}"</small>
+        {% endif %}
+    </header>
+
+    {% if td.total_entries > 0 %}
+    <h3>{% trans "Progress over time" %} <small>({{ td.total_entries }} {% trans "entries" %})</small></h3>
+    <div class="descriptor-pills" style="pointer-events: none;">
+        {% for label, count in td.descriptor_counts.items %}
+        {% if count > 0 %}
+        <label style="border-color: var(--kn-primary); background: var(--kn-primary-subtle);">
+            <span>{{ label }}: {{ count }}</span>
+        </label>
+        {% else %}
+        <label>
+            <span>{{ label }}: 0</span>
+        </label>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    {% if td.recent_words %}
+    <h3>{% trans "Recent words" %}</h3>
+    <ul>
+        {% for w in td.recent_words %}
+        <li>"{{ w.text }}" <small class="secondary">— {{ w.date|date:"M d, Y" }}</small></li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% else %}
+    <p class="secondary">{% trans "No qualitative data recorded yet." %}</p>
+    {% endif %}
+</article>
+{% endfor %}
+{% else %}
+<p class="empty-state">{% blocktrans with targets=term.target_plural|default:"targets" %}No active {{ targets }} found.{% endblocktrans %}</p>
+{% endif %}
+
+<a href="{% url 'notes:note_list' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Back to notes" %}</a>
+{% endblock %}

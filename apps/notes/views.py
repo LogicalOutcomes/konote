@@ -117,6 +117,52 @@ def _build_target_forms(client, post_data=None):
     return target_forms
 
 
+def _search_notes_in_memory(notes_list, query):
+    """Search encrypted note content in memory.
+
+    Encrypted fields can't be searched in SQL — we decrypt each note's text
+    fields and check for a case-insensitive substring match.
+
+    Returns list of matching notes, each with a ``search_snippet`` attribute
+    showing the text surrounding the first match.
+    """
+    query_lower = query.lower()
+    matching = []
+    for note in notes_list:
+        # Collect all searchable text fields with labels
+        fields = [
+            (note.notes_text or "", "notes_text"),
+            (note.summary or "", "summary"),
+            (note.participant_reflection or "", "reflection"),
+        ]
+        # Include target entry notes (already prefetched)
+        for entry in note.target_entries.all():
+            fields.append((entry.notes or "", "target"))
+
+        # Check each field for a match
+        for text, field_name in fields:
+            if query_lower in text.lower():
+                note.search_snippet = _get_search_snippet(text, query)
+                matching.append(note)
+                break  # one match per note is enough
+    return matching
+
+
+def _get_search_snippet(text, query, context_chars=80):
+    """Return a snippet of text centred around the first match."""
+    idx = text.lower().find(query.lower())
+    if idx == -1:
+        return text[:160] + ("..." if len(text) > 160 else "")
+    start = max(0, idx - context_chars)
+    end = min(len(text), idx + len(query) + context_chars)
+    snippet = text[start:end]
+    if start > 0:
+        snippet = "\u2026" + snippet
+    if end < len(text):
+        snippet = snippet + "\u2026"
+    return snippet
+
+
 @login_required
 @minimum_role("staff")
 def note_list(request, client_id):
@@ -143,6 +189,7 @@ def note_list(request, client_id):
     date_from = request.GET.get("date_from", "")
     date_to = request.GET.get("date_to", "")
     author_filter = request.GET.get("author", "")
+    search_query = request.GET.get("q", "").strip()
 
     valid_interactions = [c[0] for c in ProgressNote.INTERACTION_TYPE_CHOICES]
     if interaction_filter in valid_interactions:
@@ -161,7 +208,17 @@ def note_list(request, client_id):
         notes = notes.filter(author=request.user)
 
     notes = notes.order_by("-_effective_date", "-created_at")
-    paginator = Paginator(notes, 25)
+
+    # Text search — decrypt and filter in memory (encrypted fields can't be
+    # searched in SQL). Only triggered when a search query is present so the
+    # default path remains a fast SQL-only query.
+    if search_query:
+        notes_list = list(notes)
+        notes_list = _search_notes_in_memory(notes_list, search_query)
+        paginator = Paginator(notes_list, 25)
+    else:
+        paginator = Paginator(notes, 25)
+
     page = paginator.get_page(request.GET.get("page"))
 
     # Count active filters for the filter bar indicator
@@ -186,6 +243,7 @@ def note_list(request, client_id):
         "filter_date_from": date_from,
         "filter_date_to": date_to,
         "filter_author": author_filter,
+        "search_query": search_query,
         "active_filter_count": active_filter_count,
         "active_tab": "notes",
         "user_role": getattr(request, "user_program_role", None),
@@ -288,6 +346,7 @@ def note_create(request, client_id):
                     template=form.cleaned_data.get("template"),
                     summary=form.cleaned_data.get("summary", ""),
                     participant_reflection=form.cleaned_data.get("participant_reflection", ""),
+                    engagement_observation=form.cleaned_data.get("engagement_observation", ""),
                     follow_up_date=form.cleaned_data.get("follow_up_date"),
                 )
                 session_date = form.cleaned_data.get("session_date")
@@ -304,18 +363,23 @@ def note_create(request, client_id):
                 for tf in target_forms:
                     nf = tf["note_form"]
                     notes_text = nf.cleaned_data.get("notes", "")
+                    client_words = nf.cleaned_data.get("client_words", "")
+                    progress_descriptor = nf.cleaned_data.get("progress_descriptor", "")
                     # Check if any data was entered for this target
                     has_metrics = any(
                         mf.cleaned_data.get("value", "") for mf in tf["metric_forms"]
                     )
-                    if not notes_text and not has_metrics:
+                    if not notes_text and not has_metrics and not client_words and not progress_descriptor:
                         continue  # Skip targets with no data entered
 
-                    pnt = ProgressNoteTarget.objects.create(
+                    pnt = ProgressNoteTarget(
                         progress_note=note,
                         plan_target_id=nf.cleaned_data["target_id"],
                         notes=notes_text,
+                        client_words=client_words,
+                        progress_descriptor=progress_descriptor,
                     )
+                    pnt.save()
                     for mf in tf["metric_forms"]:
                         val = mf.cleaned_data.get("value", "")
                         if val:
@@ -496,5 +560,69 @@ def note_cancel(request, note_id):
         "form": form,
         "note": note,
         "client": client,
+        "breadcrumbs": breadcrumbs,
+    })
+
+
+@login_required
+@minimum_role("staff")
+def qualitative_summary(request, client_id):
+    """Show qualitative progress summary — descriptor distribution and recent client words per target."""
+    client = _get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+
+    # Get all active plan targets for this client
+    targets = (
+        PlanTarget.objects.filter(client_file=client, status="default")
+        .select_related("plan_section")
+        .order_by("plan_section__sort_order", "sort_order")
+    )
+
+    target_data = []
+    for target in targets:
+        entries = (
+            ProgressNoteTarget.objects.filter(
+                plan_target=target,
+                progress_note__status="default",
+            )
+            .select_related("progress_note")
+            .order_by("-progress_note__created_at")
+        )
+        # Descriptor distribution
+        descriptor_counts = {}
+        for choice_val, choice_label in ProgressNoteTarget.PROGRESS_DESCRIPTOR_CHOICES:
+            if choice_val:  # Skip empty choice
+                descriptor_counts[choice_label] = 0
+        for entry in entries:
+            if entry.progress_descriptor:
+                label = entry.get_progress_descriptor_display()
+                if label in descriptor_counts:
+                    descriptor_counts[label] += 1
+
+        # Recent client words (last 5)
+        recent_words = []
+        for entry in entries[:5]:
+            if entry.client_words:
+                recent_words.append({
+                    "text": entry.client_words,
+                    "date": entry.progress_note.effective_date,
+                })
+
+        target_data.append({
+            "target": target,
+            "descriptor_counts": descriptor_counts,
+            "total_entries": entries.count(),
+            "recent_words": recent_words,
+        })
+
+    breadcrumbs = [
+        {"url": reverse("clients:client_list"), "label": "Clients"},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.first_name} {client.last_name}"},
+        {"url": "", "label": _("Qualitative Progress")},
+    ]
+    return render(request, "notes/qualitative_summary.html", {
+        "client": client,
+        "target_data": target_data,
         "breadcrumbs": breadcrumbs,
     })

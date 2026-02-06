@@ -31,6 +31,8 @@
     {% if entry.plan_target %}
     <details open>
         <summary>{{ entry.plan_target.name }}</summary>
+        {% if entry.client_words %}<p><strong>{% trans "In their words:" %}</strong> "{{ entry.client_words }}"</p>{% endif %}
+        {% if entry.progress_descriptor %}<p><span class="badge badge-neutral">{{ entry.get_progress_descriptor_display }}</span></p>{% endif %}
         {% if entry.notes %}<p>{{ entry.notes }}</p>{% endif %}
         {% if entry.metric_values.all %}
         <table>
@@ -50,6 +52,10 @@
     </details>
     {% endif %}
     {% endfor %}
+    {% endif %}
+
+    {% if note.engagement_observation %}
+        <p><strong>{% trans "Engagement:" %}</strong> {{ note.get_engagement_observation_display }}</p>
     {% endif %}
 
     {% if note.summary %}

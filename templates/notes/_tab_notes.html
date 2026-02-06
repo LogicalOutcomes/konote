@@ -5,14 +5,25 @@
     <a href="{% url 'notes:note_create' client_id=client.pk %}" role="button" class="outline">{% blocktrans with note=term.progress_note|default:"Note" %}Full {{ note }}{% endblocktrans %}</a>
 </div>
 
-<!-- Filters (collapsed by default, expand to refine) -->
-<details class="filter-bar"{% if active_filter_count %} open{% endif %}>
-    <summary>
-        {% trans "Filter notes" %}{% if active_filter_count %}
-            <span class="badge badge-info">{{ active_filter_count }}</span>
-        {% endif %}
-    </summary>
-    <form method="get" action="{% url 'notes:note_list' client_id=client.pk %}">
+<!-- Search and filters -->
+<form method="get" action="{% url 'notes:note_list' client_id=client.pk %}">
+    <div class="note-search-field">
+        <label for="note-search">{% trans "Search notes" %}</label>
+        <input type="search"
+               id="note-search"
+               name="q"
+               placeholder="{% trans 'Search note content...' %}"
+               value="{{ search_query }}"
+               aria-label="{% trans 'Search note content' %}">
+    </div>
+
+    <!-- Filters (collapsed by default, expand to refine) -->
+    <details class="filter-bar"{% if active_filter_count %} open{% endif %}>
+        <summary>
+            {% trans "Filter notes" %}{% if active_filter_count %}
+                <span class="badge badge-info">{{ active_filter_count }}</span>
+            {% endif %}
+        </summary>
         <div class="grid">
             <label>
                 {% trans "Interaction" %}
@@ -43,8 +54,8 @@
             <button type="submit" class="outline">{% trans "Apply filters" %}</button>
             <a href="{% url 'notes:note_list' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Clear" %}</a>
         </div>
-    </form>
-</details>
+    </details>
+</form>
 
 {% if page %}
 <div id="notes-timeline">
@@ -60,19 +71,24 @@
 {% if page.has_other_pages %}
 <nav class="pagination" aria-label="{% trans 'Notes pagination' %}">
     {% if page.has_previous %}
-    <a href="?page={{ page.previous_page_number }}&interaction={{ filter_interaction }}&author={{ filter_author }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}">{% trans "Previous" %}</a>
+    <a href="?page={{ page.previous_page_number }}&q={{ search_query }}&interaction={{ filter_interaction }}&author={{ filter_author }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}">{% trans "Previous" %}</a>
     {% else %}
     <span class="secondary">{% trans "Previous" %}</span>
     {% endif %}
     {% blocktrans with current=page.number total=page.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}
     {% if page.has_next %}
-    <a href="?page={{ page.next_page_number }}&interaction={{ filter_interaction }}&author={{ filter_author }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}">{% trans "Next" %}</a>
+    <a href="?page={{ page.next_page_number }}&q={{ search_query }}&interaction={{ filter_interaction }}&author={{ filter_author }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}">{% trans "Next" %}</a>
     {% else %}
     <span class="secondary">{% trans "Next" %}</span>
     {% endif %}
 </nav>
 {% endif %}
 
+{% elif search_query %}
+<div class="empty-state">
+    <p>{% blocktrans with query=search_query %}No notes match "{{ query }}".{% endblocktrans %}</p>
+    <a href="{% url 'notes:note_list' client_id=client.pk %}" role="button" class="outline">{% trans "Clear search" %}</a>
+</div>
 {% else %}
 <div class="empty-state">
     <p>{% blocktrans with notes=term.progress_note|default:"notes" %}No {{ notes }} recorded yet.{% endblocktrans %}</p>

@@ -3,12 +3,17 @@
 
 FROM python:3.12-alpine
 
+# UTF-8 locale — required for French .mo translation files
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+ENV PYTHONIOENCODING=utf-8
+
 # Security: run as non-root user
 RUN addgroup -S konote && adduser -S konote -G konote
 
 WORKDIR /app
 
-# WeasyPrint system dependencies (PDF export) + gettext (for translation compilation)
+# WeasyPrint system dependencies (PDF export)
 # Alpine packages differ from Debian
 RUN apk add --no-cache \
     pango \
@@ -17,7 +22,6 @@ RUN apk add --no-cache \
     fontconfig \
     ttf-freefont \
     shared-mime-info \
-    gettext \
     # Build dependencies for psycopg and cryptography
     gcc \
     musl-dev \
@@ -37,9 +41,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Build-time commands use konote.settings.build (no env vars needed)
-# Validate translations first - gives clear error messages if there are problems
-RUN python scripts/validate_translations.py
-RUN python manage.py compilemessages --settings=konote.settings.build
+# .mo files are pre-compiled locally and committed to git (no gettext needed)
 RUN python manage.py collectstatic --noinput --settings=konote.settings.build
 
 # Make entrypoint executable and create fontconfig cache dir for non-root user

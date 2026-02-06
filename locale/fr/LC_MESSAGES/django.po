@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: KoNote2 Web 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-01-01 00:00+0000\n"
-"PO-Revision-Date: 2026-02-05 00:00+0000\n"
+"PO-Revision-Date: 2026-02-06 00:00+0000\n"
 "Last-Translator: Claude Code\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -2508,3 +2508,71 @@ msgstr "Fermer / Annuler"
 
 msgid "Show this help"
 msgstr "Afficher cette aide"
+
+#: apps/plans/forms.py — Plan form fields
+msgid "No programme"
+msgstr "Aucun programme"
+
+msgid "Section name"
+msgstr "Nom de la section"
+
+msgid "Reason for status change (optional)"
+msgstr "Raison du changement de statut (facultatif)"
+
+msgid "What does the client want to work on?"
+msgstr "Sur quoi le client veut-il travailler?"
+
+msgid "Write what they said, in their own words."
+msgstr "Écrivez ce qu'il/elle a dit, dans ses propres mots."
+
+msgid "In their own words…"
+msgstr "Dans ses propres mots…"
+
+msgid "Target name"
+msgstr "Nom de la cible"
+
+msgid "Describe this target"
+msgstr "Décrivez cette cible"
+
+msgid "Assigned metrics"
+msgstr "Mesures assignées"
+
+msgid "Metric name"
+msgstr "Nom de la mesure"
+
+msgid "What this metric measures and how to score it"
+msgstr "Ce que cette mesure évalue et comment la noter"
+
+msgid "e.g., score, days, %"
+msgstr "par ex., score, jours, %"
+
+msgid "CSV File"
+msgstr "Fichier CSV"
+
+msgid "Upload a CSV with columns: name, definition, category, min_value, max_value, unit"
+msgstr "Téléchargez un CSV avec les colonnes : name, definition, category, min_value, max_value, unit"
+
+msgid "File must be a .csv file."
+msgstr "Le fichier doit être un fichier .csv."
+
+msgid "File too large. Maximum size is 1MB."
+msgstr "Fichier trop volumineux. La taille maximale est de 1 Mo."
+
+#: apps/plans/models.py — Metric category choices
+msgid "Mental Health"
+msgstr "Santé mentale"
+
+msgid "Housing"
+msgstr "Logement"
+
+msgid "Employment"
+msgstr "Emploi"
+
+msgid "Substance Use"
+msgstr "Consommation de substances"
+
+msgid "Youth"
+msgstr "Jeunesse"
+
+msgid "General"
+msgstr "Général"

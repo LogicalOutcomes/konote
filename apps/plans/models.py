@@ -1,6 +1,9 @@
 """Plan sections, targets, metrics — the core outcomes tracking models."""
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy as _
+
+from konote.encryption import decrypt_field, encrypt_field
 
 
 class MetricDefinition(models.Model):
@@ -10,13 +13,13 @@ class MetricDefinition(models.Model):
     """
 
     CATEGORY_CHOICES = [
-        ("mental_health", "Mental Health"),
-        ("housing", "Housing"),
-        ("employment", "Employment"),
-        ("substance_use", "Substance Use"),
-        ("youth", "Youth"),
-        ("general", "General"),
-        ("custom", "Custom"),
+        ("mental_health", _("Mental Health")),
+        ("housing", _("Housing")),
+        ("employment", _("Employment")),
+        ("substance_use", _("Substance Use")),
+        ("youth", _("Youth")),
+        ("general", _("General")),
+        ("custom", _("Custom")),
     ]
 
     name = models.CharField(max_length=255)
@@ -29,7 +32,7 @@ class MetricDefinition(models.Model):
     unit = models.CharField(max_length=50, default="", blank=True, help_text="e.g., 'score', 'days', '%'")
     status = models.CharField(
         max_length=20, default="active",
-        choices=[("active", "Active"), ("deactivated", "Deactivated")],
+        choices=[("active", _("Active")), ("deactivated", _("Deactivated"))],
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -46,9 +49,9 @@ class PlanSection(models.Model):
     """A section within a client's plan (e.g., 'Social Skills', 'Employment Goals')."""
 
     STATUS_CHOICES = [
-        ("default", "Active"),
-        ("completed", "Completed"),
-        ("deactivated", "Deactivated"),
+        ("default", _("Active")),
+        ("completed", _("Completed")),
+        ("deactivated", _("Deactivated")),
     ]
 
     client_file = models.ForeignKey("clients.ClientFile", on_delete=models.CASCADE, related_name="plan_sections")
@@ -78,21 +81,54 @@ class PlanTarget(models.Model):
     """
 
     STATUS_CHOICES = [
-        ("default", "Active"),
-        ("completed", "Completed"),
-        ("deactivated", "Deactivated"),
+        ("default", _("Active")),
+        ("completed", _("Completed")),
+        ("deactivated", _("Deactivated")),
     ]
 
     plan_section = models.ForeignKey(PlanSection, on_delete=models.CASCADE, related_name="targets")
     client_file = models.ForeignKey("clients.ClientFile", on_delete=models.CASCADE, related_name="plan_targets")
-    name = models.CharField(max_length=255)
-    description = models.TextField(default="", blank=True)
+    _name_encrypted = models.BinaryField(default=b"", blank=True)
+    _description_encrypted = models.BinaryField(default=b"", blank=True)
     status = models.CharField(max_length=20, default="default", choices=STATUS_CHOICES)
-    status_reason = models.TextField(default="", blank=True)
+    _status_reason_encrypted = models.BinaryField(default=b"", blank=True)
     metrics = models.ManyToManyField(MetricDefinition, through="PlanTargetMetric", blank=True)
+    _client_goal_encrypted = models.BinaryField(default=b"", blank=True)
     sort_order = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def name(self):
+        return decrypt_field(self._name_encrypted)
+
+    @name.setter
+    def name(self, value):
+        self._name_encrypted = encrypt_field(value)
+
+    @property
+    def description(self):
+        return decrypt_field(self._description_encrypted)
+
+    @description.setter
+    def description(self, value):
+        self._description_encrypted = encrypt_field(value)
+
+    @property
+    def status_reason(self):
+        return decrypt_field(self._status_reason_encrypted)
+
+    @status_reason.setter
+    def status_reason(self, value):
+        self._status_reason_encrypted = encrypt_field(value)
+
+    @property
+    def client_goal(self):
+        return decrypt_field(self._client_goal_encrypted)
+
+    @client_goal.setter
+    def client_goal(self, value):
+        self._client_goal_encrypted = encrypt_field(value)
 
     class Meta:
         app_label = "plans"
@@ -107,14 +143,47 @@ class PlanTargetRevision(models.Model):
     """Immutable revision history for plan targets."""
 
     plan_target = models.ForeignKey(PlanTarget, on_delete=models.CASCADE, related_name="revisions")
-    name = models.CharField(max_length=255)
-    description = models.TextField(default="", blank=True)
+    _name_encrypted = models.BinaryField(default=b"", blank=True)
+    _description_encrypted = models.BinaryField(default=b"", blank=True)
+    _client_goal_encrypted = models.BinaryField(default=b"", blank=True)
     status = models.CharField(max_length=20, default="default")
-    status_reason = models.TextField(default="", blank=True)
+    _status_reason_encrypted = models.BinaryField(default=b"", blank=True)
     changed_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def name(self):
+        return decrypt_field(self._name_encrypted)
+
+    @name.setter
+    def name(self, value):
+        self._name_encrypted = encrypt_field(value)
+
+    @property
+    def description(self):
+        return decrypt_field(self._description_encrypted)
+
+    @description.setter
+    def description(self, value):
+        self._description_encrypted = encrypt_field(value)
+
+    @property
+    def status_reason(self):
+        return decrypt_field(self._status_reason_encrypted)
+
+    @status_reason.setter
+    def status_reason(self, value):
+        self._status_reason_encrypted = encrypt_field(value)
+
+    @property
+    def client_goal(self):
+        return decrypt_field(self._client_goal_encrypted)
+
+    @client_goal.setter
+    def client_goal(self, value):
+        self._client_goal_encrypted = encrypt_field(value)
 
     class Meta:
         app_label = "plans"
@@ -148,7 +217,7 @@ class PlanTemplate(models.Model):
     description = models.TextField(default="", blank=True)
     status = models.CharField(
         max_length=20, default="active",
-        choices=[("active", "Active"), ("archived", "Archived")],
+        choices=[("active", _("Active")), ("archived", _("Archived"))],
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
