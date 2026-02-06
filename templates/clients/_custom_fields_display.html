@@ -5,13 +5,13 @@
     <h2 id="custom-fields-heading">{% trans "Additional Details" %}</h2>
     {% if has_editable_fields %}
     <button type="button"
-            class="outline secondary"
+            class="outline"
             hx-get="{% url 'clients:client_custom_fields_edit' client_id=client.pk %}"
             hx-target="#custom-fields-section"
             hx-swap="innerHTML"
             aria-describedby="custom-fields-heading"
             aria-label="{% trans 'Edit additional details' %}">
-        {% trans "Edit" %}
+        &#9998; {% trans "Edit" %}
     </button>
     {% endif %}
 </div>
