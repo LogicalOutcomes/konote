@@ -962,6 +962,13 @@ details.search-filters-panel[open] summary {
     padding: 0;
 }
 
+/* Footer language form — inline with footer links */
+.footer-lang-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
 /* Secondary buttons — ensure text is readable on dark gray background */
 a[role="button"].secondary,
 button.secondary {
@@ -1441,6 +1448,16 @@ article[aria-label="notification"].fading-out {
     padding: var(--kn-space-xs) var(--kn-space-base);
     margin: 0;
 }
+@media (prefers-color-scheme: dark) {
+    .custom-fields-header button.outline {
+        color: #5cc8cc;
+        border-color: #5cc8cc;
+    }
+    .custom-fields-header button.outline:hover {
+        color: #ffffff;
+        background: var(--kn-primary);
+    }
+}
 
 /* ============================================
    MOBILE RESPONSIVE STYLES
@@ -1524,9 +1541,16 @@ article[aria-label="notification"].fading-out {
         box-shadow: none;
         padding-left: var(--kn-space-base);
     }
-    /* Language switcher full width on mobile */
+    /* Language switcher visible in mobile menu */
     body > nav select {
         width: 100%;
+    }
+    #nav-menu .lang-link {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: var(--kn-space-sm) 0;
+        font-size: 0.875rem;
     }
 }
 

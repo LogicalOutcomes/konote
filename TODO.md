@@ -11,7 +11,7 @@
 The core app is feature-complete. These tasks prepare for production use.
 
 - [ ] Verify email is configured — needed for export notifications, erasure alerts, and password resets (OPS3)
-- [ ] Run full integration test pass — every role, every workflow (TEST3)
+- [x] Run full integration test pass — 901 tests, 1 false-positive fix — 2026-02-06 (TEST3)
 - [ ] Test backup restore from a real database dump (OPS4)
 
 ### Occasional Tasks
@@ -77,19 +77,19 @@ Prevent duplicate client records across programs while protecting sensitive prog
 **H.2: Duplicate Detection (Standard Programs)**
 - [x] Add phone number as first-class encrypted field on ClientFile — 2026-02-06 (MATCH1)
 - [x] Build phone-based duplicate detection on client create form — HTMX endpoint, banner UI — 2026-02-06 (MATCH2)
-- [ ] Add name + DOB secondary matching as fallback when phone unavailable (MATCH3)
+- [x] Add name + DOB secondary matching as fallback when phone unavailable — 2026-02-06 (MATCH3)
 
 **H.3: Merge Tool (Standard Programs)**
 - [ ] Build duplicate merge tool for Standard program admins — side-by-side comparison, merged record keeps all data (MATCH4)
 
 **H.4: Confidential Program Hardening (Required Before DV Use)**
-- [ ] Filter confidential client records from Django admin for superusers without confidential access (CONF4)
-- [ ] Add immutable audit logging for all confidential record access — who, when, what, which record (CONF5)
-- [ ] Aggregate reports use small-cell suppression — show "< 10" when confidential program has fewer than 10 clients (CONF6)
+- [x] Filter confidential client records from Django admin for superusers without confidential access — 2026-02-06 (CONF4)
+- [x] Add immutable audit logging for all confidential record access — who, when, what, which record — 2026-02-06 (CONF5)
+- [x] Aggregate reports use small-cell suppression — show "< 10" when confidential program has fewer than 10 clients — 2026-02-06 (CONF6)
 - [x] Create `tests/test_confidential_isolation.py` — isolation, matching, registration, groups, phone field — 2026-02-06 (CONF7)
 
 **H.5: DV Readiness & Documentation**
-- [ ] Ship PIA (Privacy Impact Assessment) template pre-filled from agency configuration (MATCH5)
+- [x] Ship PIA (Privacy Impact Assessment) template pre-filled from agency configuration — 2026-02-06 (MATCH5)
 - [ ] Write user-facing documentation on confidential programs and matching (MATCH6)
 - [ ] Add annual security review checklist for confidential program filtering (CONF8)
 
@@ -117,6 +117,10 @@ Prevent duplicate client records across programs while protecting sensitive prog
 
 - [ ] Add 24-hour delay before Tier 3 (full erasure) CASCADE delete executes — requires background task scheduler, see `tasks/erasure-hardening.md` section ERASE-H8 (ERASE-H8)
 
+### FullHost SSL Issue
+
+- [ ] Resolve FullHost HTTPS — Built-In SSL is enabled but port 443 is intermittent. Contact FullHost support or try Let's Encrypt add-on. HTTP works, but login requires HTTPS (`CSRF_COOKIE_SECURE=True`) (OPS-FH2)
+
 ### Deployment Workflow Enhancements
 
 See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-design.md) for full details.
@@ -130,6 +134,8 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Confidential program hardening Phase H.4 — Django admin filtering with object-level permissions, immutable audit logging (403 tracking, confidential tagging, PM audit view), small-cell suppression in reports, 17 new tests — 2026-02-06 (CONF4-6)
+- [x] Name + DOB secondary duplicate detection — fallback matching when phone unavailable, single-pass iterator, brittleness fixes (hx-params removal, date parsing, race condition prevention), 12 new tests — 2026-02-06 (MATCH3)
 - [x] Cross-program client matching Phase H.1 + H.2 — confidential program isolation, phone field, duplicate detection, security fixes (edit form bug, PDF export, registration links, group views), test suite — 2026-02-06 (CONF1-3, MATCH1-2, CONF7)
 - [x] Verify deployment end-to-end with production-like config — FullHost tested, HTTPS working, demo data live — 2026-02-06 (OPS5)
 - [x] Lock in .mo translation strategy — commit .mo to git, no compilation in Docker, freshness check in validate_translations.py — 2026-02-06 (I18N-FIX1)

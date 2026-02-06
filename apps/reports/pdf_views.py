@@ -142,6 +142,7 @@ def client_progress_pdf(request, client_id):
 def generate_funder_pdf(
     request, program, selected_metrics, date_from, date_to, rows, unique_clients,
     grouping_type="none", grouping_label=None, achievement_summary=None,
+    total_clients_display=None, total_data_points_display=None,
 ):
     """Generate a PDF funder report. Called from export_form view.
 
@@ -156,6 +157,8 @@ def generate_funder_pdf(
         grouping_type: "none", "age_range", or "custom_field".
         grouping_label: Human-readable label for the grouping (e.g., "Age Range", "Gender").
         achievement_summary: Optional dict from get_achievement_summary() with achievement rates.
+        total_clients_display: Suppressed client count (str or int) for confidential programs.
+        total_data_points_display: Suppressed data points count for confidential programs.
     """
     if not is_pdf_available():
         return _pdf_unavailable_response(request)
@@ -181,8 +184,8 @@ def generate_funder_pdf(
         "date_from": date_from,
         "date_to": date_to,
         "rows": rows,
-        "total_clients": len(unique_clients),
-        "total_data_points": len(rows),
+        "total_clients": total_clients_display if total_clients_display is not None else len(unique_clients),
+        "total_data_points": total_data_points_display if total_data_points_display is not None else len(rows),
         "generated_at": timezone.now(),
         "generated_by": request.user.display_name,
         "grouping_type": grouping_type,

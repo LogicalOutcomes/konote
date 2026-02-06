@@ -2,6 +2,7 @@
 from django.contrib import admin
 from django.urls import include, path
 
+from apps.audit.views import program_audit_log
 from apps.auth_app.views import switch_language
 from konote.error_views import permission_denied_view
 from konote.page_views import help_view, privacy_view
@@ -26,6 +27,7 @@ urlpatterns = [
     path("admin/settings/", include("apps.admin_settings.urls")),
     path("admin/users/", include("apps.auth_app.admin_urls")),
     path("admin/audit/", include("apps.audit.urls")),
+    path("audit/program/<int:program_id>/", program_audit_log, name="program_audit_log"),
     path("erasure/", include("apps.clients.erasure_urls")),
     path("ai/", include("konote.ai_urls")),
     path("", include("apps.registration.urls")),

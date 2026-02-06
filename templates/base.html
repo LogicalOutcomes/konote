@@ -135,6 +135,18 @@
                 <a href="{% url 'privacy' %}">{% trans "Privacy" %}</a>
                 <a href="{% url 'help' %}">{% trans "Help" %}</a>
                 <button type="button" class="keyboard-shortcuts-btn" id="show-shortcuts" aria-label="{% trans 'Keyboard shortcuts' %}">?</button>
+                {% get_current_language as FOOTER_LANG %}
+                <form action="{% url 'switch_language' %}" method="post" class="footer-lang-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    {% if FOOTER_LANG == "en" %}
+                    <input type="hidden" name="language" value="fr">
+                    <button type="submit" class="lang-link" lang="fr" hreflang="fr">Français</button>
+                    {% else %}
+                    <input type="hidden" name="language" value="en">
+                    <button type="submit" class="lang-link" lang="en" hreflang="en">English</button>
+                    {% endif %}
+                </form>
             </div>
             {% if user.is_authenticated %}
             <div class="site-footer-session">

@@ -28,6 +28,7 @@ from .achievements import get_achievement_summary, format_achievement_summary
 from .cmt_export import generate_cmt_data, generate_cmt_csv_rows
 from .csv_utils import sanitise_csv_row, sanitise_filename
 from .demographics import aggregate_by_demographic, get_age_range, parse_grouping_choice
+from .suppression import suppress_small_cell
 from .forms import CMTExportForm, ClientDataExportForm, MetricExportForm
 from .models import SecureExportLink
 from .utils import can_create_export, get_manageable_programs
@@ -363,6 +364,10 @@ def export_form(request):
     if grouping_type != "none":
         filters_dict["grouped_by"] = grouping_label
 
+    # Apply small-cell suppression for confidential programs
+    total_clients_display = suppress_small_cell(len(unique_clients), program)
+    total_data_points_display = suppress_small_cell(len(rows), program)
+
     if export_format == "pdf":
         from .pdf_views import generate_funder_pdf
         pdf_response = generate_funder_pdf(
@@ -371,6 +376,8 @@ def export_form(request):
             grouping_type=grouping_type,
             grouping_label=grouping_label,
             achievement_summary=achievement_summary,
+            total_clients_display=total_clients_display,
+            total_data_points_display=total_data_points_display,
         )
         safe_name = sanitise_filename(program.name.replace(" ", "_"))
         filename = f"funder_report_{safe_name}_{date_from}_{date_to}.pdf"
@@ -382,8 +389,8 @@ def export_form(request):
         # Summary header rows (prefixed with # so spreadsheet apps treat them as comments)
         writer.writerow(sanitise_csv_row([f"# Programme: {program.name}"]))
         writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
-        writer.writerow(sanitise_csv_row([f"# Total Clients: {len(unique_clients)}"]))
-        writer.writerow(sanitise_csv_row([f"# Total Data Points: {len(rows)}"]))
+        writer.writerow(sanitise_csv_row([f"# Total Clients: {total_clients_display}"]))
+        writer.writerow(sanitise_csv_row([f"# Total Data Points: {total_data_points_display}"]))
         if grouping_type != "none":
             writer.writerow(sanitise_csv_row([f"# Grouped By: {grouping_label}"]))
 
@@ -391,25 +398,39 @@ def export_form(request):
         if achievement_summary:
             writer.writerow([])  # blank separator
             writer.writerow(sanitise_csv_row(["# ===== ACHIEVEMENT RATE SUMMARY ====="]))
-            if achievement_summary["total_clients"] > 0:
+            ach_total = suppress_small_cell(achievement_summary["total_clients"], program)
+            ach_met = suppress_small_cell(achievement_summary["clients_met_any_target"], program)
+            if isinstance(ach_total, str) or isinstance(ach_met, str):
                 writer.writerow(sanitise_csv_row([
-                    f"# Overall: {achievement_summary['clients_met_any_target']} of "
-                    f"{achievement_summary['total_clients']} clients "
+                    f"# Overall: {ach_met} of {ach_total} clients met at least one target"
+                ]))
+            elif achievement_summary["total_clients"] > 0:
+                writer.writerow(sanitise_csv_row([
+                    f"# Overall: {ach_met} of "
+                    f"{ach_total} clients "
                     f"({achievement_summary['overall_rate']}%) met at least one target"
                 ]))
             else:
                 writer.writerow(sanitise_csv_row(["# No client data available for achievement calculation"]))
 
             for metric in achievement_summary.get("by_metric", []):
+                m_total = suppress_small_cell(metric["total_clients"], program)
+                m_met = suppress_small_cell(metric.get("clients_met_target", 0), program)
                 if metric["has_target"]:
-                    writer.writerow(sanitise_csv_row([
-                        f"# {metric['metric_name']}: {metric['clients_met_target']} of "
-                        f"{metric['total_clients']} clients ({metric['achievement_rate']}%) "
-                        f"met target of {metric['target_value']}"
-                    ]))
+                    if isinstance(m_total, str) or isinstance(m_met, str):
+                        writer.writerow(sanitise_csv_row([
+                            f"# {metric['metric_name']}: {m_met} of {m_total} clients "
+                            f"met target of {metric['target_value']}"
+                        ]))
+                    else:
+                        writer.writerow(sanitise_csv_row([
+                            f"# {metric['metric_name']}: {m_met} of "
+                            f"{m_total} clients ({metric['achievement_rate']}%) "
+                            f"met target of {metric['target_value']}"
+                        ]))
                 else:
                     writer.writerow(sanitise_csv_row([
-                        f"# {metric['metric_name']}: {metric['total_clients']} clients "
+                        f"# {metric['metric_name']}: {m_total} clients "
                         "(no target defined)"
                     ]))
 
@@ -631,6 +652,19 @@ def cmt_export_form(request):
         fiscal_year_label=fiscal_year_label,
         user=request.user,
     )
+
+    # Apply small-cell suppression for confidential programs
+    cmt_data["total_individuals_served"] = suppress_small_cell(
+        cmt_data["total_individuals_served"], program,
+    )
+    cmt_data["new_clients_this_period"] = suppress_small_cell(
+        cmt_data["new_clients_this_period"], program,
+    )
+    # Suppress age demographic counts individually
+    if program.is_confidential and "age_demographics" in cmt_data:
+        for age_group, count in cmt_data["age_demographics"].items():
+            if isinstance(count, int):
+                cmt_data["age_demographics"][age_group] = suppress_small_cell(count, program)
 
     recipient = form.get_recipient_display()
     safe_name = sanitise_filename(program.name.replace(" ", "_"))

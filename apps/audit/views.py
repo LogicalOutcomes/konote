@@ -1,11 +1,12 @@
-"""Audit log viewer — admin only."""
+"""Audit log viewer — admin and program manager access."""
 import csv
 from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db import models
 from django.http import HttpResponse, HttpResponseForbidden
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
 from apps.reports.csv_utils import sanitise_csv_row
@@ -171,3 +172,92 @@ def audit_log_export(request):
     )
 
     return response
+
+
+@login_required
+def program_audit_log(request, program_id):
+    """Program manager view: audit log for their program's clients.
+
+    Shows all audit entries where the resource is a client enrolled in
+    this program. Access limited to program_manager or executive role.
+    """
+    from apps.clients.models import ClientProgramEnrolment
+    from apps.programs.models import Program, UserProgramRole
+
+    program = get_object_or_404(Program, pk=program_id)
+
+    # Check access: user must be program_manager or executive for this program
+    role = UserProgramRole.objects.filter(
+        user=request.user,
+        program=program,
+        status="active",
+        role__in=["program_manager", "executive"],
+    ).first()
+
+    if not role:
+        return HttpResponseForbidden("You do not have permission to view audit logs for this program.")
+
+    # Get client IDs enrolled in this program
+    client_ids = list(ClientProgramEnrolment.objects.filter(
+        program=program, status="enrolled",
+    ).values_list("client_file_id", flat=True))
+
+    # Query audit log for entries related to these clients
+    qs = AuditLog.objects.using("audit").filter(
+        models.Q(program_id=program.pk) |
+        models.Q(resource_type="clients", resource_id__in=client_ids)
+    )
+
+    # Collect filter values
+    date_from = request.GET.get("date_from", "")
+    date_to = request.GET.get("date_to", "")
+    user_display = request.GET.get("user_display", "")
+    action = request.GET.get("action", "")
+
+    # Apply filters
+    if date_from:
+        try:
+            dt = datetime.strptime(date_from, "%Y-%m-%d")
+            qs = qs.filter(event_timestamp__gte=timezone.make_aware(dt))
+        except ValueError:
+            pass
+
+    if date_to:
+        try:
+            dt = datetime.strptime(date_to, "%Y-%m-%d")
+            dt = dt.replace(hour=23, minute=59, second=59)
+            qs = qs.filter(event_timestamp__lte=timezone.make_aware(dt))
+        except ValueError:
+            pass
+
+    if user_display:
+        qs = qs.filter(user_display__icontains=user_display)
+
+    if action:
+        qs = qs.filter(action=action)
+
+    # Build filter query string for pagination
+    filter_params = []
+    for key in ("date_from", "date_to", "user_display", "action"):
+        val = request.GET.get(key, "")
+        if val:
+            filter_params.append(f"{key}={val}")
+    filter_query = "&".join(filter_params)
+
+    # Paginate
+    paginator = Paginator(qs, 50)
+    page_number = request.GET.get("page")
+    page = paginator.get_page(page_number)
+
+    context = {
+        "program": program,
+        "page": page,
+        "filter_query": filter_query,
+        "action_choices": AuditLog.ACTION_CHOICES,
+        # Sticky filter values
+        "date_from": date_from,
+        "date_to": date_to,
+        "user_display": user_display,
+        "action_filter": action,
+    }
+    return render(request, "audit/program_audit_log.html", context)
