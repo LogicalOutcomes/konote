@@ -962,6 +962,13 @@ details.search-filters-panel[open] summary {
     padding: 0;
 }
 
+/* Footer language form — inline with footer links */
+.footer-lang-form {
+    display: inline;
+    margin: 0;
+    padding: 0;
+}
+
 /* Secondary buttons — ensure text is readable on dark gray background */
 a[role="button"].secondary,
 button.secondary {
