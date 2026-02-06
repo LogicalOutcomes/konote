@@ -47,7 +47,7 @@ You'll need:
 
 1. Click this button:
 
-   [![Deploy to FullHost](https://www.fullhost.com/deploy-button.svg)](https://app.fullhost.cloud/install?manifest=https://raw.githubusercontent.com/gilliankerr/KoNote2-Redux/main/fullhost-manifest.jps)
+   [![Deploy to FullHost](https://www.fullhost.com/deploy-button.svg)](https://app.fullhost.cloud/install?manifest=https://raw.githubusercontent.com/gilliankerr/KoNote-Redux/main/fullhost-manifest.jps)
 
 2. If prompted, log in to your FullHost account
 
@@ -62,7 +62,7 @@ If the button doesn't work:
 3. Select the **"URL"** tab
 4. Paste this URL:
    ```
-   https://raw.githubusercontent.com/gilliankerr/KoNote2-Redux/main/fullhost-manifest.jps
+   https://raw.githubusercontent.com/gilliankerr/KoNote-Redux/main/fullhost-manifest.jps
    ```
 5. Click **"Import"**
 
@@ -275,7 +275,7 @@ FullHost will email you when credits are running low.
 
 ### Need More Help?
 
-- **KoNote2 Documentation:** [github.com/gilliankerr/KoNote2-Redux/docs](https://github.com/gilliankerr/KoNote2-Redux/docs)
+- **KoNote2 Documentation:** [github.com/gilliankerr/KoNote-Redux/docs](https://github.com/gilliankerr/KoNote-Redux/docs)
 - **FullHost Support:** [fullhost.com/support](https://www.fullhost.com/support/)
 
 ---
@@ -313,6 +313,6 @@ This removes all data permanently. FullHost will stop charging you.
 
 ## Getting Help
 
-- **KoNote2 Issues:** [github.com/gilliankerr/KoNote2-Redux/issues](https://github.com/gilliankerr/KoNote2-Redux/issues)
+- **KoNote2 Issues:** [github.com/gilliankerr/KoNote-Redux/issues](https://github.com/gilliankerr/KoNote-Redux/issues)
 - **FullHost Support:** [fullhost.com/support](https://www.fullhost.com/support/)
-- **Community Forum:** [github.com/gilliankerr/KoNote2-Redux/discussions](https://github.com/gilliankerr/KoNote2-Redux/discussions)
+- **Community Forum:** [github.com/gilliankerr/KoNote-Redux/discussions](https://github.com/gilliankerr/KoNote-Redux/discussions)

@@ -201,7 +201,7 @@ The JPS manifest has been rewritten to use Docker containers:
 1. **Alpine-based Dockerfile created** — `Dockerfile.alpine` packages Python 3.12 + Django on Alpine Linux
 2. **GitHub Actions workflow created** — `.github/workflows/docker-fullhost.yml` builds and pushes to ghcr.io
 3. **JPS manifest updated** to use:
-   - `nodeType: docker` with `docker.image: ghcr.io/gilliankerr/KoNote2-redux:fullhost-latest`
+   - `nodeType: docker` with `docker.image: ghcr.io/gilliankerr/konote-redux:fullhost-latest`
    - `postgres:15-alpine` instead of native PostgreSQL
 4. **PowerShell deployment script created** — `deploy-fullhost.ps1` for API-based deployment
 
@@ -221,7 +221,7 @@ The following files have been created/updated:
 
 1. **Push to GitHub** — Commit and push these new files
 2. **Enable GitHub Actions** — The workflow should run automatically on push to main
-3. **Make package public** — After the first build, go to GitHub → Packages → KoNote2-redux → Package settings → Change visibility to Public
+3. **Make package public** — After the first build, go to GitHub → Packages → konote-redux → Package settings → Change visibility to Public
 4. **Test JPS manifest** — Import `fullhost-manifest.jps` in FullHost dashboard
 5. **Verify deployment** — Check that the app starts and migrations run
 
