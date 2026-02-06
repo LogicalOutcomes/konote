@@ -97,7 +97,7 @@ class GroupMembership(models.Model):
             models.UniqueConstraint(
                 fields=["group", "client_file"],
                 name="unique_group_client_file",
-                condition=models.Q(client_file__isnull=False),
+                condition=models.Q(client_file__isnull=False, status="active"),
             ),
         ]
 
