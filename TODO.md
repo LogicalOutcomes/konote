@@ -13,7 +13,6 @@ The core app is feature-complete. These tasks prepare for production use.
 - [ ] Verify email is configured — needed for export notifications, erasure alerts, and password resets (OPS3)
 - [ ] Run full integration test pass — every role, every workflow (TEST3)
 - [ ] Test backup restore from a real database dump (OPS4)
-- [ ] Verify Railway deployment end-to-end with production-like config (OPS5)
 
 ### Occasional Tasks
 
@@ -97,6 +96,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Verify deployment end-to-end with production-like config — FullHost tested, HTTPS working, demo data live — 2026-02-06 (OPS5)
 - [x] Lock in .mo translation strategy — commit .mo to git, no compilation in Docker, freshness check in validate_translations.py — 2026-02-06 (I18N-FIX1)
 - [x] Fix 4 UX walkthrough crashes + 6 test failures — 2026-02-06 (UX-FIX1)
 - [x] Add translation lint script to catch unwrapped user-facing strings — 2026-02-06 (I18N-LINT1)
@@ -106,8 +106,6 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 - [x] Client voice, qualitative progress, groups app (Phases A-D) — encrypted client_goal on targets, progress descriptors, engagement observation, 7-model groups app, 3 demo groups — 2026-02-06 (CV1-4)
 - [x] Expand demo from 2 programs / 10 clients to 5 programs / 15 clients — 2026-02-06 (DEMO-EXP1)
 - [x] Independent code reviews (security, privacy, accessibility, deployment) — 2026-02-06 (SEC-REV1-4)
-- [x] Review quick fixes — .dockerignore, audit lockdown, split requirements, decryption error, auto-dismiss delay, error pages — 2026-02-06 (DEPLOY-FIX1-3, SEC-FIX3, A11Y-FIX4-5)
-
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 
 ---
