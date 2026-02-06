@@ -766,6 +766,97 @@ Request created (by staff+)
 
 ---
 
+## Independent Security Review
+
+KoNote2 is open-source software that handles sensitive client information. Any agency considering adoption — or already using KoNote2 — can get an **independent security review** at any time, no vendor permission needed. This is a key advantage over proprietary case management tools where you have to trust the vendor's claims.
+
+### What You Can Verify
+
+These are the specific claims we make that a third-party review can confirm:
+
+1. **Encryption at rest** — All client names, notes, and outcome ratings are encrypted using Fernet (AES-128-CBC with HMAC). The encrypted fields are stored as ciphertext in the database — a database breach alone does not expose client data.
+
+2. **Key management options** — Agencies can either:
+   - Manage their own encryption key (set `FIELD_ENCRYPTION_KEY` themselves)
+   - Use a hosting-managed key (provider sets it during deployment)
+   - Either way, the key never touches the codebase
+
+3. **Audit logging** — Every data access, export, and admin action is logged to a separate audit database. Logs cannot be modified through the application.
+
+4. **Role-based access control** — Four roles (receptionist, staff, program manager, admin) with server-side enforcement. No client-side-only checks.
+
+5. **Export controls** — Elevated exports require admin approval, have time delays, and generate audit entries.
+
+6. **Demo/real data separation** — Demo users never see real client data and vice versa, enforced at the query level.
+
+### How to Do a Review
+
+#### Option 1: AI-Powered Code Review (Free, Fast)
+
+Use an AI code review tool to scan the entire codebase. Recommended tools:
+
+- **Jules** (jules.google.com) — Google's AI code agent
+- **GPT Codex** — OpenAI's code review tool
+- **Claude Code** — Anthropic's CLI tool (what built this software)
+
+Any of these can review the full codebase in minutes and produce a detailed security report. See the **AI Review Prompt** below for a ready-made prompt you can copy and paste.
+
+#### Option 2: Professional Penetration Test (Paid, Thorough)
+
+Hire a security firm to do a full penetration test. The open-source codebase means they have white-box access — far more thorough than black-box testing.
+
+#### Option 3: Internal IT Review
+
+If your agency has IT staff, they can clone the repo and review the security architecture directly.
+
+### AI Review Prompt
+
+Copy and paste this prompt into any AI code review tool (Claude Code, GPT Codex, Jules, etc.) after pointing it at the KoNote2 repository:
+
+> You are reviewing an open-source Django web application called KoNote2 that stores sensitive client information for nonprofit social service agencies. Please conduct a security-focused code review and produce a report covering:
+>
+> **1. Encryption Implementation**
+> - Are client names, notes, and ratings actually encrypted at rest?
+> - What encryption algorithm is used? Is it current and appropriate?
+> - How is the encryption key managed? Could it be accidentally exposed?
+> - Are there any fields containing PII that are NOT encrypted?
+>
+> **2. Authentication & Authorization**
+> - Are role-based access controls enforced server-side (not just in templates)?
+> - Can a lower-privilege user access higher-privilege endpoints?
+> - Is the Azure AD SSO integration implemented securely?
+> - Are local passwords hashed with a strong algorithm?
+>
+> **3. Data Export Security**
+> - Are exports protected against unauthorized access?
+> - Do secure download links expire properly?
+> - Is there CSV injection protection?
+> - Are exports logged in the audit trail?
+>
+> **4. Audit Logging**
+> - Is the audit log stored separately from application data?
+> - Can audit entries be modified or deleted through the application?
+> - Are all sensitive operations logged?
+>
+> **5. Common Vulnerabilities (OWASP Top 10)**
+> - SQL injection
+> - Cross-site scripting (XSS)
+> - Cross-site request forgery (CSRF)
+> - Insecure direct object references
+> - Security misconfiguration
+>
+> **6. Privacy Compliance**
+> - Does the application support PIPEDA requirements (data portability, consent)?
+> - Is there proper data separation between demo and production data?
+>
+> Please flag any issues found as Critical, High, Medium, or Low severity, and provide specific file paths and line numbers where possible.
+
+### Re-Reviewing After Updates
+
+Agencies can re-run their review after any update to verify nothing has regressed. Because the code is public, every change is visible and auditable.
+
+---
+
 ## Pre-Deployment Security Checklist
 
 Before deploying to production, verify all items:

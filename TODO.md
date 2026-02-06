@@ -2,7 +2,12 @@
 
 ## Flagged
 
-_Nothing flagged._
+### Pre-existing Test Failures (4 tests)
+
+Not from UX fixes — from earlier "interaction types" redesign and custom fields save issue.
+
+- [ ] Fix French note filter tests — tests expect old note_type filter ("Notes rapides", "Tous les types") but template now uses interaction types (TESTFIX1)
+- [ ] Fix custom field save tests — `test_custom_fields_save_htmx_returns_display_partial` and `test_receptionist_can_save_editable_fields` not saving values (TESTFIX2)
 
 ## Active Work
 
@@ -34,15 +39,6 @@ Weekly accountability reports for admins. Requires working email configuration.
 
 - [ ] Create weekly export summary email command (EXP2u)
 - [ ] Document cron/scheduled task setup in runbook (EXP2w)
-
-### Independent Security Review — Trust Through Transparency
-
-Open source means agencies can verify our security claims themselves. See `tasks/independent-security-review.md`.
-
-- [ ] Add "Independent Security Review" section to security docs (SEC-DOC1)
-- [ ] Add ready-made AI review prompt template to docs (SEC-DOC2)
-- [ ] Add "Trust, But Verify" section to website/landing page (SEC-WEB1)
-- [ ] Mention independent review capability in README (SEC-DOC3)
 
 ### Independent Code Review
 
@@ -112,6 +108,11 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 - [ ] Replace 'receptionist' and 'counsellor' with current role names in database migrations — do this the next time a migration is needed to avoid a standalone migration (DB-TERM1)
 
+### UX Accessibility (low priority info items)
+
+- [ ] Add `aria-describedby` linking for quick note form error on `interaction_type` field (UX-A11Y1)
+- [ ] Investigate "Note" button not found on Direct Service client detail — may be by design (UX-A11Y2)
+
 ### Privacy & Security
 
 - [ ] First-run setup wizard — guided initial configuration (SETUP1)
@@ -120,6 +121,8 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Independent security review docs — added review section, AI prompt template, and "Trust, But Verify" to security ops + README — 2026-02-06 (SEC-DOC1-3, SEC-WEB1)
+- [x] Fix UX walkthrough issues — 500 error, heading structure, table accessibility, search page, 403 page, form validation — 2026-02-06 (UX-WALK1)
 - [x] Erasure hardening — receipt access scoping, audit-before-erasure, download tracking, rejection emails, race condition fix, pagination, 78 tests — 2026-02-06 (ERASE-H1-H7)
 - [x] Redesign erasure system — tiered anonymisation, erasure codes, PDF receipts, role restrictions, 72 tests — 2026-02-06 (ERASE-REDESIGN)
 - [x] Fix footer links — correct GitHub URL, wire up privacy and help routes, fix help guide nav — 2026-02-06 (FOOT1)

@@ -314,6 +314,14 @@ KoNote2 is designed for sensitive client data:
 
 See [Administering KoNote2](docs/administering-KoNote2.md#security-operations) for security operations and [Technical Reference](docs/technical-documentation.md) for architecture details.
 
+### Trust, But Verify
+
+KoNote2 encrypts all client names, notes, and outcome ratings at rest using AES encryption. Your encryption key stays with you — it never touches our codebase.
+
+But don't just take our word for it.
+
+Because KoNote2 is open source, any agency can run an **independent security review** at any time — using free AI tools, your own IT staff, or a professional security firm. We provide a [ready-made review prompt](docs/security-operations.md#ai-review-prompt) to get you started. Security-focused code reviews happen automatically every time code changes, and because the code is public, those reviews are verifiable too.
+
 ---
 
 ## Accessibility

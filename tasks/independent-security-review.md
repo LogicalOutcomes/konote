@@ -122,7 +122,7 @@ For the "automatic security reviews" claim, we can point to:
 
 ## TODO Items
 
-- [ ] Add "Independent Security Review" section to security docs (SEC-DOC1)
-- [ ] Add review prompt template to docs or repo (SEC-DOC2)
-- [ ] Add "Trust, But Verify" section to website/landing page (SEC-WEB1)
-- [ ] Mention independent review capability in README (SEC-DOC3)
+- [x] Add "Independent Security Review" section to security docs (SEC-DOC1) — 2026-02-06
+- [x] Add review prompt template to docs or repo (SEC-DOC2) — 2026-02-06
+- [x] Add "Trust, But Verify" section to website/landing page (SEC-WEB1) — 2026-02-06
+- [x] Mention independent review capability in README (SEC-DOC3) — 2026-02-06
