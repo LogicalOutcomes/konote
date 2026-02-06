@@ -374,3 +374,101 @@ class FrenchWorkdayScenario(UxScenarioBase):
 
         # Switch back to English to avoid affecting other tests
         self.switch_language("en")
+
+
+# =====================================================================
+# Scenario 4: Client Search by Note Content
+# =====================================================================
+# Story: Casey searches the client list for text that appears only in
+# progress notes, not in the client's name or record ID. The search
+# should find the correct client. It must NOT surface clients from
+# programs Casey can't access.
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class NoteContentSearchScenario(UxScenarioBase):
+    """Scenario: Searching the client list and search page by note content.
+
+    Jane (Housing Support) has a note: "Client seemed well today."
+    Bob (Youth Services) has a note: "Discussed vocational training options."
+    Casey is Housing Support staff — can see Jane but not Bob.
+    """
+
+    SCENARIO = "Client Note Search"
+
+    def test_client_list_search_by_note_content(self):
+        """Casey searches the client list for text in Jane's note."""
+        self.login_as("staff", forbidden_content=CASEY_FORBIDDEN)
+        role = "Direct Service"
+
+        url = "/clients/?q=seemed+well"
+        resp = self.visit(role, "Search client list by note text", url)
+
+        issues = []
+        if resp.status_code == 200:
+            body = resp.content.decode("utf-8", errors="replace")
+            jane_url = f"/clients/{self.client_a.pk}/"
+            if jane_url not in body:
+                issues.append(self._make_issue(
+                    Severity.CRITICAL, url, role,
+                    "Search client list by note text",
+                    "Jane not found when searching for text in her note",
+                ))
+
+        self.record_scenario(
+            self.SCENARIO, role, "Client list search by note content",
+            url, resp.status_code, issues,
+        )
+
+    def test_dedicated_search_by_note_content(self):
+        """Casey searches the dedicated search page for text in Jane's note."""
+        self.login_as("staff")
+        role = "Direct Service"
+
+        url = "/clients/search/?q=seemed+well"
+        resp = self.visit(role, "Dedicated search by note text", url)
+
+        issues = []
+        if resp.status_code == 200:
+            body = resp.content.decode("utf-8", errors="replace")
+            jane_url = f"/clients/{self.client_a.pk}/"
+            if jane_url not in body:
+                issues.append(self._make_issue(
+                    Severity.CRITICAL, url, role,
+                    "Dedicated search by note text",
+                    "Jane not found when searching for text in her note",
+                ))
+
+        self.record_scenario(
+            self.SCENARIO, role, "Dedicated search by note content",
+            url, resp.status_code, issues,
+        )
+
+    def test_note_search_respects_program_isolation(self):
+        """Casey must NOT find Bob by searching for text in Bob's notes.
+
+        Bob's note says "vocational training" — Casey should get no
+        results for that phrase since Bob is in Youth Services.
+        """
+        self.login_as("staff")
+        role = "Direct Service"
+
+        url = "/clients/search/?q=vocational"
+        resp = self.visit(role, "Search for other program's note content", url)
+
+        issues = []
+        if resp.status_code == 200:
+            body = resp.content.decode("utf-8", errors="replace")
+            bob_url = f"/clients/{self.client_b.pk}/"
+            if bob_url in body:
+                issues.append(self._make_issue(
+                    Severity.CRITICAL, url, role,
+                    "Note search isolation",
+                    f"Bob's profile link ({bob_url}) found — note content "
+                    "leaked across programs",
+                ))
+
+        self.record_scenario(
+            self.SCENARIO, role, "Note search isolation (no cross-program leak)",
+            url, resp.status_code, issues,
+        )

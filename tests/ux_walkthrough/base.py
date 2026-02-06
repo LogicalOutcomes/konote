@@ -213,7 +213,7 @@ class UxWalkthroughBase(TestCase):
             sort_order=1,
         )
 
-        # --- Progress note ---
+        # --- Progress notes ---
         cls.note = ProgressNote.objects.create(
             client_file=cls.client_a,
             author=cls.staff_user,
@@ -222,6 +222,16 @@ class UxWalkthroughBase(TestCase):
         )
         cls.note.notes_text = "Client seemed well today."
         cls.note.save()
+
+        # Note for Bob (Youth Services) — used to test note-search isolation
+        cls.note_b = ProgressNote.objects.create(
+            client_file=cls.client_b,
+            author=cls.manager_user,
+            author_program=cls.program_b,
+            note_type="quick",
+        )
+        cls.note_b.notes_text = "Discussed vocational training options."
+        cls.note_b.save()
 
         # --- Event type + event + alert ---
         cls.event_type = EventType.objects.create(
