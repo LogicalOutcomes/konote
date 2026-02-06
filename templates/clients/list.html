@@ -12,25 +12,23 @@
 <p><a href="{% url 'clients:client_create' %}" role="button">{% blocktrans with client=term.client|default:"Client" %}New {{ client }}{% endblocktrans %}</a></p>
 
 <!-- Search and filter bar -->
-<div class="list-search-bar">
-    <label for="client-search" class="visually-hidden">{% blocktrans with clients=term.client_plural|default:"clients" %}Search {{ clients }}{% endblocktrans %}</label>
-    <input type="search"
-           id="client-search"
-           name="q"
-           placeholder="{% trans 'Search by name or ID...' %}"
-           value="{{ search_query }}"
-           form="client-filters"
-           aria-label="{% blocktrans with clients=term.client_plural|default:'clients' %}Search {{ clients }}{% endblocktrans %}"
-           hx-get="{% url 'clients:client_list' %}"
-           hx-trigger="input changed delay:300ms"
-           hx-target="#client-list-container"
-           hx-include="#client-filters"
-           hx-indicator="#loading-bar">
-</div>
-
 <details class="filter-bar" open>
     <summary>{% trans "Filters" %}</summary>
     <form id="client-filters" role="search">
+        <div class="list-search-bar">
+            <label for="client-search" class="visually-hidden">{% blocktrans with clients=term.client_plural|default:"clients" %}Search {{ clients }}{% endblocktrans %}</label>
+            <input type="search"
+                   id="client-search"
+                   name="q"
+                   placeholder="{% trans 'Search by name or ID...' %}"
+                   value="{{ search_query }}"
+                   aria-label="{% blocktrans with clients=term.client_plural|default:'clients' %}Search {{ clients }}{% endblocktrans %}"
+                   hx-get="{% url 'clients:client_list' %}"
+                   hx-trigger="input changed delay:300ms"
+                   hx-target="#client-list-container"
+                   hx-include="#client-filters"
+                   hx-indicator="#loading-bar">
+        </div>
         <div class="filter-row">
             <div class="filter-field">
                 <label for="filter-status">{% trans "Status" %}</label>

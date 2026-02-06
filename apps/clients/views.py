@@ -30,17 +30,6 @@ def get_client_queryset(user):
     return ClientFile.objects.real()
 
 
-def get_client_queryset(user):
-    """Return filtered ClientFile queryset based on user's demo status.
-
-    Security requirement: is_demo is read ONLY from request.user.is_demo.
-    Never read from query params, form data, or cookies.
-    """
-    if user.is_demo:
-        return ClientFile.objects.demo()
-    return ClientFile.objects.real()
-
-
 def _get_accessible_programs(user):
     """Return programs the user can access.
 
