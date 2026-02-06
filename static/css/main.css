@@ -90,7 +90,7 @@ body > nav a.nav-active {
     gap: var(--kn-space-sm) var(--kn-space-base);
     margin-bottom: var(--kn-space-base);
 }
-.client-header h2 {
+.client-header h1 {
     margin-bottom: 0;
     font-size: 1.5rem;
     font-weight: 600;
@@ -1181,7 +1181,7 @@ p.notice.warning {
     flex-wrap: wrap;
     gap: var(--kn-space-sm);
 }
-.section-card h3 {
+.section-card h2 {
     margin: 0;
     font-size: 1.0625rem;
 }
@@ -1543,7 +1543,7 @@ article[aria-label="notification"].fading-out {
         align-items: flex-start;
         gap: var(--kn-space-sm);
     }
-    .client-header h2 {
+    .client-header h1 {
         font-size: 1.25rem;
     }
     .client-actions {
@@ -2015,7 +2015,7 @@ article[aria-label="notification"].fading-out {
     overflow-y: auto;
 }
 
-.keyboard-shortcuts-modal h3 {
+.keyboard-shortcuts-modal h2 {
     margin: 0 0 var(--kn-space-base) 0;
     font-size: 1rem;
 }

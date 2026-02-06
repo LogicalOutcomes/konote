@@ -1,5 +1,5 @@
 {% load i18n %}
-<header><h3>{% blocktrans with section=term.section|default:"Section" %}Change {{ section }} Status{% endblocktrans %}</h3></header>
+<header><h2>{% blocktrans with section=term.section|default:"Section" %}Change {{ section }} Status{% endblocktrans %}</h2></header>
 <p>{% trans "Current:" %} <strong>{{ section.get_status_display }}</strong></p>
 <form method="post"
       hx-post="{% url 'plans:section_status' section_id=section.pk %}"

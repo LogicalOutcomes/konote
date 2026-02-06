@@ -57,7 +57,7 @@
         </div>
     </header>
 
-    <h3>{% trans "Registrant Information" %}</h3>
+    <h2>{% trans "Registrant Information" %}</h2>
     <dl>
         <dt>{% trans "Name" %}</dt>
         <dd>{{ submission.first_name }} {{ submission.last_name }}</dd>
@@ -69,7 +69,7 @@
         <dd>{{ submission.phone|default:"—" }}</dd>
     </dl>
 
-    <h3>{{ term.program|default:"Program" }}</h3>
+    <h2>{{ term.program|default:"Program" }}</h2>
     <dl>
         <dt>{% trans "Registration Link" %}</dt>
         <dd>{{ submission.registration_link.title }}</dd>
@@ -79,7 +79,7 @@
     </dl>
 
     {% if custom_fields %}
-    <h3>{% trans "Additional Information" %}</h3>
+    <h2>{% trans "Additional Information" %}</h2>
     <dl>
         {% for field in custom_fields %}
         <dt>{{ field.name }}</dt>
@@ -89,7 +89,7 @@
     {% endif %}
 
     {% if submission.status == "approved" and submission.client_file %}
-    <h3>{% trans "Review Details" %}</h3>
+    <h2>{% trans "Review Details" %}</h2>
     <dl>
         <dt>{% trans "Client Record" %}</dt>
         <dd><a href="{% url 'clients:client_detail' pk=submission.client_file.pk %}">
@@ -105,7 +105,7 @@
     {% endif %}
 
     {% if submission.status == "rejected" %}
-    <h3>{% trans "Rejection Details" %}</h3>
+    <h2>{% trans "Rejection Details" %}</h2>
     <dl>
         <dt>{% trans "Reason" %}</dt>
         <dd>{{ submission.review_notes }}</dd>

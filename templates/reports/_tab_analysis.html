@@ -7,7 +7,7 @@
 {% if chart_data %}
     {% for chart in chart_data %}
     <section>
-        <h3>{{ chart.target_name }} — {{ chart.metric_name }}</h3>
+        <h2>{{ chart.target_name }} — {{ chart.metric_name }}</h2>
         <div class="chart-container" style="position: relative; height: 300px;">
             <canvas id="chart-{{ forloop.counter }}" aria-label="{% blocktrans with metric=chart.metric_name target=chart.target_name %}Line chart showing {{ metric }} over time for {{ target }}{% endblocktrans %}" role="img"></canvas>
         </div>

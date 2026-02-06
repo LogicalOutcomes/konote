@@ -1,7 +1,7 @@
 {% load i18n %}
 <header>
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-        <h3 style="margin: 0;" id="section-heading-{{ section.pk }}">
+        <h2 style="margin: 0;" id="section-heading-{{ section.pk }}">
             {{ section.name }}
             {% if section.status == "default" %}
                 <span class="badge badge-success">{% trans "Active" %}</span>
@@ -10,7 +10,7 @@
             {% else %}
                 <span class="badge badge-neutral">{% trans "Deactivated" %}</span>
             {% endif %}
-        </h3>
+        </h2>
         {% if can_edit %}
         <div role="group">
             <button class="outline small"

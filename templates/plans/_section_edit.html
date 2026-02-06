@@ -1,5 +1,5 @@
 {% load i18n %}
-<header><h3>{% blocktrans with section=term.section|default:"Section" %}Edit {{ section }}{% endblocktrans %}</h3></header>
+<header><h2>{% blocktrans with section=term.section|default:"Section" %}Edit {{ section }}{% endblocktrans %}</h2></header>
 <form method="post"
       hx-post="{% url 'plans:section_edit' section_id=section.pk %}"
       hx-target="#section-{{ section.pk }}"

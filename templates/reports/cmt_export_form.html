@@ -28,7 +28,7 @@
 </article>
 
 <article aria-label="{% trans 'About Funder Reports' %}">
-    <h3>{% trans "What's included in this report?" %}</h3>
+    <h2>{% trans "What's included in this report?" %}</h2>
     <ul>
         <li>{% trans "Organisation and programme information" %}</li>
         <li>{% trans "Service statistics (total individuals served, new clients, total contacts)" %}</li>
@@ -123,7 +123,7 @@
     <p>
         {% blocktrans with strong_open="<strong>" strong_close="</strong>" %}{{ strong_open }}Important:{{ strong_close }} Your funder may require different formats, additional fields, or specific calculations. Always verify this template matches your funder's actual reporting template before submission. You may need to adjust or supplement this data.{% endblocktrans %}
     </p>
-    <h4>{% trans "Default Age Categories" %}</h4>
+    <h3>{% trans "Default Age Categories" %}</h3>
     <p>{% trans "This template uses these common age groupings (adjust if your funder requires different categories):" %}</p>
     <ul>
         <li>{% trans "Child (0-12)" %}</li>
@@ -132,7 +132,7 @@
         <li>{% trans "Adult (25-64)" %}</li>
         <li>{% trans "Senior (65+)" %}</li>
     </ul>
-    <h4>{% trans "Data Sources" %}</h4>
+    <h3>{% trans "Data Sources" %}</h3>
     <ul>
         <li>{% trans "Organisation name: From your Instance Settings" %}</li>
         <li>{% trans "Service statistics: Based on progress notes recorded in the period" %}</li>

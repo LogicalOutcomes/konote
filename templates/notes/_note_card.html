@@ -2,7 +2,7 @@
 {# Shared partial: note card inner content (used by _tab_notes.html and _note_summary.html) #}
 {# The outer <article> wrapper with id="note-{{ note.pk }}" is in _tab_notes.html #}
 {# This partial renders the collapsed/summary view that gets swapped by HTMX #}
-<h3 id="note-{{ note.pk }}-heading" class="note-card-heading">
+<h2 id="note-{{ note.pk }}-heading" class="note-card-heading">
     <a href="#"
        hx-get="{% url 'notes:note_detail' note_id=note.pk %}"
        hx-target="#note-{{ note.pk }}"
@@ -11,7 +11,7 @@
        class="note-card-link">
         {{ note.get_interaction_type_display }} &mdash; {{ note.effective_date|date:"M d, Y" }}
     </a>
-</h3>
+</h2>
 <div class="note-card-meta-line">
     {% if note.status == "cancelled" %}
         <span class="badge badge-danger">{% trans "Cancelled" %}</span>

@@ -17,7 +17,7 @@
 
 {% if show_section_form %}
 <article aria-label="{% trans 'Add section form' %}">
-    <header><h3>{% blocktrans with section=term.section|default:"Section" %}Add {{ section }}{% endblocktrans %}</h3></header>
+    <header><h2>{% blocktrans with section=term.section|default:"Section" %}Add {{ section }}{% endblocktrans %}</h2></header>
     <form method="post" action="{% url 'plans:section_create' client_id=client.pk %}">
         {% csrf_token %}
         {% for field in section_form %}

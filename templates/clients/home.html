@@ -147,7 +147,7 @@
         </header>
         {% if active_alerts %}
         <div class="priority-section">
-            <h4 class="priority-label"><span class="stat-icon" aria-hidden="true">&#9888;</span> {% trans "Alerts" %}</h4>
+            <h2 class="priority-label"><span class="stat-icon" aria-hidden="true">&#9888;</span> {% trans "Alerts" %}</h2>
             <ul class="card-list">
                 {% for alert in active_alerts %}
                 <li class="priority-item priority-alert">
@@ -163,7 +163,7 @@
         {% endif %}
         {% if pending_follow_ups %}
         <div class="priority-section">
-            <h4 class="priority-label">{% trans "Follow-ups Due" %}</h4>
+            <h2 class="priority-label">{% trans "Follow-ups Due" %}</h2>
             <ul class="card-list">
                 {% for note in pending_follow_ups %}
                 <li class="priority-item{% if note.follow_up_date < today %} priority-overdue{% endif %}">
@@ -179,7 +179,7 @@
         {% endif %}
         {% if needs_attention %}
         <div class="priority-section">
-            <h4 class="priority-label">{% trans "No Recent Notes" %}</h4>
+            <h2 class="priority-label">{% trans "No Recent Notes" %}</h2>
             <ul class="card-list">
                 {% for item in needs_attention %}
                 <li class="priority-item">

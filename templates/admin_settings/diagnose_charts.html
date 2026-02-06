@@ -7,7 +7,7 @@
 <h1>{% trans "Chart Diagnostics" %}</h1>
 <p>{% trans "This page helps diagnose why the Analysis tab might show no charts." %}</p>
 
-<h2>{% trans "System-wide" %}</h3>
+<h2>{% trans "System-wide" %}</h2>
 <table aria-label="{% trans 'System-wide diagnostics' %}">
     <tbody>
         <tr>
@@ -23,7 +23,7 @@
     </tbody>
 </table>
 
-<h2>{% blocktrans %}Client: {{ record_id }}{% endblocktrans %}</h3>
+<h2>{% blocktrans %}Client: {{ record_id }}{% endblocktrans %}</h2>
 <form method="get" style="margin-bottom: 1rem;">
     <label for="client">{% trans "Check different client:" %}</label>
     <input type="text" name="client" id="client" value="{{ record_id }}" placeholder="{% trans "e.g., DEMO-001" %}">
@@ -65,7 +65,7 @@
 <p><mark>{% blocktrans %}Client "{{ record_id }}" not found.{% endblocktrans %}</mark></p>
 {% endif %}
 
-<h2>{% trans "Diagnosis" %}</h3>
+<h2>{% trans "Diagnosis" %}</h2>
 {% if diagnosis %}
 <article class="{% if diagnosis_type == 'error' %}pico-background-red-500{% elif diagnosis_type == 'warning' %}pico-background-yellow-500{% else %}pico-background-green-500{% endif %}">
     <p><strong>{{ diagnosis }}</strong></p>
@@ -73,7 +73,7 @@
 {% endif %}
 
 {% if chart_simulation %}
-<h2>{% blocktrans with count=charts_would_show %}Chart Simulation ({{ count }} would display){% endblocktrans %}</h3>
+<h2>{% blocktrans with count=charts_would_show %}Chart Simulation ({{ count }} would display){% endblocktrans %}</h2>
 <p>{% trans "This shows exactly what the Analysis tab queries for each target/metric combination:" %}</p>
 <table aria-label="{% trans 'Chart simulation' %}">
     <thead>
@@ -103,7 +103,7 @@
 </table>
 {% endif %}
 
-<h2>{% trans "How Charts Work" %}</h3>
+<h2>{% trans "How Charts Work" %}</h2>
 <ol>
     <li><strong>{% trans "Library metrics" %}</strong> {% trans "must be seeded (run" %} <code>python manage.py seed</code>)</li>
     <li><strong>{% trans "Targets" %}</strong> {% trans "must have metrics assigned (in the Plan tab)" %}</li>

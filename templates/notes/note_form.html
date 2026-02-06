@@ -62,7 +62,7 @@
         {% if tf.note_form.notes.errors %}<small class="error" role="alert">{{ tf.note_form.notes.errors.0 }}</small>{% endif %}
 
         {% if tf.metric_forms %}
-        <h4>{{ term.metric_plural|default:"Metrics" }}</h4>
+        <h3>{{ term.metric_plural|default:"Metrics" }}</h3>
         {% for mf in tf.metric_forms %}
         {{ mf.metric_def_id }}
         <label for="{{ mf.value.id_for_label }}">{{ mf.value.label }}</label>
