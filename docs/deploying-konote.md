@@ -74,7 +74,7 @@ These estimates assume light usage — a small nonprofit with staff working most
 | Main database (2 reserved + ~1 dynamic cloudlet) | $5.50 |
 | Audit database (2 reserved + ~1 dynamic cloudlet) | $5.50 |
 | Storage (2 GB) | $0.40 |
-| External IP | $3.50 |
+| SSL via Shared Load Balancer | Included |
 
 **Pros:** Canadian data centre (Montreal), lowest cost, pay-per-use cloudlets, one-click deploy, free trial ($25 credits)
 **Cons:** No security certifications (SOC 2, ISO 27001), smaller provider, Jelastic platform may be unfamiliar
@@ -416,20 +416,32 @@ In your Railway project, click **Variables** on your app service and add:
 | `FIELD_ENCRYPTION_KEY` | Your generated key |
 | `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (use your first database's name) |
 | `AUDIT_DATABASE_URL` | `${{Postgres-XXXX.DATABASE_URL}}` (use your second database's name) |
+| `DEMO_MODE` | `true` (recommended — loads sample data for evaluation) |
 
 **Note:** The `${{ServiceName.DATABASE_URL}}` syntax tells Railway to pull the URL from your Postgres service. Check your database service names in the Railway dashboard.
+
+**Password requirements:** When you create your admin account, use at least 10 characters. KoNote2 enforces this — shorter passwords will be rejected.
 
 Optional variables (auto-detected, only set if needed):
 - `ALLOWED_HOSTS` — Auto-includes `.railway.app` domains
 - `AUTH_MODE` — Defaults to `local`, set to `azure` for SSO
+- `KoNote2_MODE` — Set to `production` for strict security checks (blocks startup if SECRET_KEY or encryption key are missing)
 
 ### Step 4: Redeploy
 
-Click **Redeploy** and wait for the build to complete.
+Click **Redeploy** and wait for the build to complete (~60 seconds). The container automatically runs database migrations, seeds sample data, runs security checks, and starts the web server — no manual steps needed.
 
 ### Step 5: Verify
 
 Click the generated domain (e.g., `KoNote2-web-production-xxxx.up.railway.app`). You should see the login page.
+
+If `DEMO_MODE` is `true`, you'll see demo login buttons for six sample users (one per role: admin, program manager, case worker, front desk, auditor, and a demo user). These are pre-loaded with sample clients and data so you can explore the system immediately.
+
+### Step 6: HTTPS
+
+Railway handles HTTPS automatically — no certificate setup needed. Your `.railway.app` domain and any custom domains you add are served over HTTPS by default.
+
+**Note:** Login requires HTTPS (the app sets secure cookies). This works out of the box on Railway.
 
 ### Adding a Custom Domain
 
@@ -438,6 +450,30 @@ Click the generated domain (e.g., `KoNote2-web-production-xxxx.up.railway.app`).
 3. Enter your domain (e.g., `outcomes.myorg.ca`)
 4. Follow DNS instructions from Railway
 5. Update `ALLOWED_HOSTS` to include your domain
+
+Railway automatically provisions an SSL certificate for custom domains.
+
+### Moving to Production Use
+
+Your KoNote2 instance comes pre-loaded with demo users and sample data so you can explore how everything works. When your organisation is ready to use it for real:
+
+1. **Create real staff accounts** — Go to Admin → Users and invite your team. These are regular (non-demo) accounts.
+2. **Real staff never see demo data** — Demo clients and demo users are completely separate. Your real staff will see an empty client list, ready for your actual clients.
+3. **You don't need to delete demo data** — It stays invisible to real users. The demo login buttons on the login page remain available for training purposes.
+4. **Optionally disable demo logins** — If you no longer want the demo login buttons on the login page, set `DEMO_MODE` to `false` in Railway Variables and redeploy.
+
+### Enable Automatic Backups
+
+Railway's PostgreSQL databases support point-in-time recovery on paid plans. To protect your data:
+
+1. In Railway, click on each PostgreSQL service (main and audit)
+2. Check the **Backups** tab for available options
+3. Railway Pro plans include automatic daily backups with 7-day retention
+
+**Also recommended:**
+- Periodically download a manual backup of both databases
+- Store your `FIELD_ENCRYPTION_KEY` separately from backups — you need both to restore encrypted data
+- Test restoring from a backup at least once before going live
 
 ### Azure AD SSO (Optional)
 
@@ -658,7 +694,7 @@ That's it — you'll have a working KoNote2 instance at a URL like `https://kono
 - **Cloudlets:** FullHost charges by "cloudlets" (128 MB RAM + 200 MHz CPU). Your environment scales automatically within the limits you set.
 - **Reserved cloudlets:** Minimum guaranteed resources (~$1.50/month each)
 - **Dynamic cloudlets:** Additional capacity used only during activity (~$2.50/month each)
-- **External IP:** Required for public access (~$3.50/month)
+- **SSL:** Provided free through the Shared Load Balancer with Let's Encrypt (do NOT add an external IP to the app container — it breaks SSL)
 
 ---
 

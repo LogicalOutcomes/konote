@@ -123,7 +123,9 @@ If you ever need to restore KoNote2 from a backup, you'll need this key to decry
 
 ## Step 6: Enable SSL (HTTPS)
 
-SSL must be enabled manually after installation:
+SSL must be enabled manually after installation. There are two parts:
+
+### 6a. Enable SSL on the Load Balancer
 
 1. In the FullHost dashboard, find your KoNote2 environment
 2. Click **Settings** (gear icon) on the environment
@@ -131,7 +133,17 @@ SSL must be enabled manually after installation:
 4. At the top, click the **yellow link** that says "following the link and clicking Enable button"
 5. In the topology editor that opens, check the **SSL** toggle, then click **Apply**
 
-This gives your site a free HTTPS certificate. It may take a few minutes to activate.
+### 6b. Install a Let's Encrypt Certificate
+
+1. In the FullHost dashboard, click on the **nginx load balancer** node (not the app container)
+2. Click **Add-ons** in the panel that opens
+3. Find **Let's Encrypt Free SSL** and click **Install**
+4. Enter your environment's hostname (e.g., `konote-full.ca-east.onfullhost.cloud`)
+5. Click **Install** — this creates the SSL configuration in nginx and enables port 443
+
+Both steps are required. Step 6a enables the SSL toggle, but the load balancer won't actually listen on port 443 until the Let's Encrypt add-on in step 6b creates the nginx SSL configuration.
+
+It may take a few minutes to activate. Once done, your site will be accessible over HTTPS. The certificate is valid for 90 days and **renews automatically** — you'll get an email notification one month before expiry. You can also manually renew or change domain names from the Let's Encrypt add-on panel.
 
 **Note:** Login will not work until SSL is enabled — the app requires HTTPS for security.
 
@@ -323,14 +335,21 @@ FullHost will email you when credits are running low.
 
 ### HTTPS Not Working / "Connection Refused" on HTTPS
 
-If HTTP works but HTTPS doesn't:
+If HTTP works but HTTPS doesn't, check these two things:
 
-1. Check whether the **KoNote2 App** container has a **public IP address** assigned
-2. If it does, that's the problem — the public IP bypasses FullHost's SSL proxy
-3. Go to the app container → **Settings** → remove the public/external IP
-4. Wait a minute for DNS to update, then try HTTPS again
+**1. Let's Encrypt add-on not installed on the load balancer**
+- Click on the **nginx load balancer** node (not the app container)
+- Click **Add-ons** — look for **Let's Encrypt Free SSL**
+- If it's not installed, install it with your environment hostname
+- This is the most common cause — without it, port 443 isn't listening at all
 
-The FullHost Shared Load Balancer handles SSL. It only works when traffic goes through it (no public IP on the app container).
+**2. App container has a public IP address**
+- Check whether the **KoNote2 App** container has a **public IP address** assigned
+- If it does, the public IP bypasses FullHost's SSL proxy
+- Go to the app container → **Settings** → remove the public/external IP
+- Wait a minute for DNS to update, then try HTTPS again
+
+The FullHost Shared Load Balancer handles SSL. It only works when traffic goes through it (no public IP on the app container) and when the Let's Encrypt add-on has created the nginx SSL configuration.
 
 ### Need More Help?
 
@@ -350,7 +369,13 @@ When new versions of KoNote2 are released:
 5. Ensure the image tag is set to `fullhost-latest`
 6. Click **"Redeploy"** to pull the latest version
 
-The container will restart automatically and run any new database migrations.
+The container will restart automatically and run any new database migrations. This takes about 60 seconds.
+
+7. **Verify HTTPS works** — After the redeploy, visit your site using `https://`. If you get a 502 error but `http://` works, SSL may need to be re-enabled:
+   - Click **Settings** (gear icon) on the environment
+   - Click **Custom SSL** in the left sidebar
+   - Click the **yellow link** at the top and re-enable SSL
+   - Wait a minute, then try HTTPS again
 
 **Tip:** Always download a backup before updating.
 
