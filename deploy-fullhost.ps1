@@ -80,6 +80,7 @@ $nodesJson = @"
             "JELASTIC_ENVIRONMENT": "true",
             "DJANGO_SETTINGS_MODULE": "konote.settings.production",
             "KoNote2_MODE": "production",
+            "DEMO_MODE": "true",
             "AUTH_MODE": "local",
             "PORT": "8000"
         }
@@ -187,6 +188,7 @@ $appVars = @{
     ALLOWED_HOSTS = "$envDomain,127.0.0.1,localhost"
     ORG_NAME = $OrgName
     DEFAULT_CLIENT_TERM = $ClientTerm
+    DEMO_MODE = "true"
     KONOTE_MODE = "production"
 } | ConvertTo-Json -Compress
 

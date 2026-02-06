@@ -83,6 +83,7 @@ nodes:
       JELASTIC_ENVIRONMENT: "true"
       DJANGO_SETTINGS_MODULE: konote.settings.production
       KoNote2_MODE: production
+      DEMO_MODE: "true"
       AUTH_MODE: local
       PORT: 8000
     volumes:
@@ -208,6 +209,7 @@ actions:
         ALLOWED_HOSTS: ${env.domain},127.0.0.1,localhost
         ORG_NAME: ${settings.orgName}
         DEFAULT_CLIENT_TERM: ${settings.clientTerm}
+        DEMO_MODE: "true"
         KONOTE_MODE: production
 
   restartApp:
