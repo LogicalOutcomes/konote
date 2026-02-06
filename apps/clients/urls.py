@@ -105,6 +105,7 @@ urlpatterns = [
     path("executive/", executive_dashboard, name="executive_dashboard"),
     path("", views.client_list, name="client_list"),
     path("create/", views.client_create, name="client_create"),
+    path("check-duplicate/", views.check_duplicate, name="check_duplicate"),
     path("search/", views.client_search, name="client_search"),
     path("<int:client_id>/", views.client_detail, name="client_detail"),
     path("<int:client_id>/edit/", views.client_edit, name="client_edit"),

@@ -1,0 +1,24 @@
+{% load i18n %}
+{% if matches %}
+<article aria-label="{% trans 'Possible duplicate' %}" class="duplicate-banner">
+    <header>
+        <strong>{% trans "Possible duplicate found" %}</strong>
+    </header>
+    {% for match in matches %}
+    <p>
+        {% blocktrans with first=match.first_name last=match.last_name %}A client named <strong>{{ first }} {{ last }}</strong> already has a record with this phone number.{% endblocktrans %}
+        {% if match.program_names %}
+        <br><small>
+            {% for pname in match.program_names %}{{ pname }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        </small>
+        {% endif %}
+    </p>
+    <p>
+        <a href="{% url 'clients:client_detail' client_id=match.client_id %}" role="button" class="secondary outline">{% trans "View existing record" %}</a>
+    </p>
+    {% endfor %}
+    <footer>
+        <small>{% trans "If this is a different person, continue creating the new record." %}</small>
+    </footer>
+</article>
+{% endif %}

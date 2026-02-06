@@ -12,6 +12,8 @@
 <form method="post">
     {% csrf_token %}
 
+    <div id="duplicate-banner" aria-live="polite"></div>
+
     <div class="grid">
         <div>
             <label for="id_first_name">{% trans "First Name" %} <abbr title="{% trans 'required' %}">*</abbr></label>
@@ -32,7 +34,12 @@
         </div>
         <div>
             <label for="id_phone">{% trans "Phone Number" %}</label>
-            <input type="tel" name="phone" id="id_phone" value="{{ form.phone.value|default:'' }}" placeholder="(613) 555-1234">
+            <input type="tel" name="phone" id="id_phone" value="{{ form.phone.value|default:'' }}" placeholder="(613) 555-1234"
+                   hx-get="{% url 'clients:check_duplicate' %}{% if editing %}?exclude={{ client.pk }}{% endif %}"
+                   hx-trigger="input changed delay:500ms"
+                   hx-target="#duplicate-banner"
+                   hx-include="[name='phone']"
+                   hx-params="phone">
             {% if form.phone.errors %}<small class="badge badge-danger">{{ form.phone.errors.0 }}</small>{% endif %}
         </div>
     </div>

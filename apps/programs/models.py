@@ -1,6 +1,7 @@
 """Program and user-program role models."""
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class Program(models.Model):
@@ -12,6 +13,13 @@ class Program(models.Model):
     status = models.CharField(
         max_length=20, default="active",
         choices=[("active", "Active"), ("archived", "Archived")],
+    )
+    is_confidential = models.BooleanField(
+        default=False,
+        help_text=_(
+            "Confidential programs are invisible to staff in other programs. "
+            "Cannot be changed back to Standard without a formal Privacy Impact Assessment."
+        ),
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -2341,3 +2341,23 @@ article[aria-label="notification"].fading-out {
         min-height: 40px;
     }
 }
+
+/* ---- Duplicate detection banner ---- */
+.duplicate-banner {
+    border-left: 4px solid var(--kn-warning, #e8a735);
+    margin-bottom: 1.5rem;
+}
+.duplicate-banner header {
+    background: transparent;
+    padding-bottom: 0;
+}
+.duplicate-banner footer {
+    background: transparent;
+    padding-top: 0;
+}
+
+/* ---- Confidential program badge ---- */
+.badge-warning {
+    background-color: var(--kn-warning, #e8a735);
+    color: #000;
+}

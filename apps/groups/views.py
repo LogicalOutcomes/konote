@@ -3,13 +3,14 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.db.models import Count
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.auth_app.decorators import minimum_role
 from apps.clients.models import ClientFile
-from apps.clients.views import get_client_queryset
+from apps.clients.views import _get_user_program_ids, get_client_queryset
 
 from .forms import (
     GroupForm,
@@ -36,8 +37,11 @@ from .models import (
 @login_required
 @minimum_role("staff")
 def group_list(request):
-    """List all active groups."""
-    groups = Group.objects.filter(status="active").select_related("program")
+    """List active groups the user has program access to."""
+    user_program_ids = _get_user_program_ids(request.user)
+    groups = Group.objects.filter(
+        status="active", program_id__in=user_program_ids,
+    ).select_related("program")
     return render(request, "groups/group_list.html", {
         "groups": groups,
         "active_groups": groups,
@@ -53,6 +57,11 @@ def group_list(request):
 def group_detail(request, group_id):
     """Detail view: roster, recent sessions, and project extras."""
     group = get_object_or_404(Group, pk=group_id)
+
+    # Block access if user has no role in the group's program
+    user_program_ids = _get_user_program_ids(request.user)
+    if group.program_id not in user_program_ids:
+        return HttpResponseForbidden(_("You do not have access to this group."))
 
     # Active members
     memberships = GroupMembership.objects.filter(
@@ -88,14 +97,15 @@ def group_detail(request, group_id):
 @minimum_role("staff")
 def group_create(request):
     """Create a new group."""
+    user_program_ids = _get_user_program_ids(request.user)
     if request.method == "POST":
-        form = GroupForm(request.POST)
+        form = GroupForm(request.POST, user_program_ids=user_program_ids)
         if form.is_valid():
             group = form.save()
             messages.success(request, _("Group created."))
             return redirect("groups:group_detail", group_id=group.pk)
     else:
-        form = GroupForm()
+        form = GroupForm(user_program_ids=user_program_ids)
     return render(request, "groups/group_form.html", {
         "form": form,
         "editing": False,
@@ -111,14 +121,17 @@ def group_create(request):
 def group_edit(request, group_id):
     """Edit an existing group."""
     group = get_object_or_404(Group, pk=group_id)
+    user_program_ids = _get_user_program_ids(request.user)
+    if group.program_id not in user_program_ids:
+        return HttpResponseForbidden(_("You do not have access to this group."))
     if request.method == "POST":
-        form = GroupForm(request.POST, instance=group)
+        form = GroupForm(request.POST, instance=group, user_program_ids=user_program_ids)
         if form.is_valid():
             form.save()
             messages.success(request, _("Group updated."))
             return redirect("groups:group_detail", group_id=group.pk)
     else:
-        form = GroupForm(instance=group)
+        form = GroupForm(instance=group, user_program_ids=user_program_ids)
     return render(request, "groups/group_form.html", {
         "form": form,
         "editing": True,
@@ -139,6 +152,9 @@ def session_log(request, group_id):
     anyone who was absent rather than checking everyone present.
     """
     group = get_object_or_404(Group, pk=group_id)
+    user_program_ids = _get_user_program_ids(request.user)
+    if group.program_id not in user_program_ids:
+        return HttpResponseForbidden(_("You do not have access to this group."))
     members = GroupMembership.objects.filter(
         group=group, status="active",
     ).select_related("client_file")
@@ -206,6 +222,9 @@ def session_log(request, group_id):
 def membership_add(request, group_id):
     """Add a member to a group (existing client or named non-client)."""
     group = get_object_or_404(Group, pk=group_id)
+    user_program_ids = _get_user_program_ids(request.user)
+    if group.program_id not in user_program_ids:
+        return HttpResponseForbidden(_("You do not have access to this group."))
 
     if request.method == "POST":
         client_file_id = request.POST.get("client_file", "").strip()

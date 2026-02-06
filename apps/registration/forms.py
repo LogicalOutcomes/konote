@@ -43,8 +43,12 @@ class RegistrationLinkForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Only show active programs
-        self.fields["program"].queryset = Program.objects.filter(status="active")
+        # Only show active, non-confidential programs — registration links
+        # cannot be created for confidential programs (safety risk: partner
+        # discovers DV intake URL in browser history).
+        self.fields["program"].queryset = Program.objects.filter(
+            status="active", is_confidential=False,
+        )
         # Only show active field groups
         self.fields["field_groups"].queryset = CustomFieldGroup.objects.filter(status="active")
 

@@ -18,9 +18,12 @@ class GroupForm(forms.ModelForm):
         model = Group
         fields = ["name", "group_type", "program", "description"]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user_program_ids=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["program"].queryset = Program.objects.filter(status="active")
+        qs = Program.objects.filter(status="active")
+        if user_program_ids is not None:
+            qs = qs.filter(pk__in=user_program_ids)
+        self.fields["program"].queryset = qs
         self.fields["program"].required = False
         self.fields["program"].empty_label = _("No programme")
 
