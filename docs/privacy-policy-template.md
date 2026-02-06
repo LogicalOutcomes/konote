@@ -66,9 +66,11 @@ All personally identifiable information (PII) is encrypted before storage using 
 - **Key Storage:** Encryption keys stored in environment variables, isolated from the database and source code
 
 **Encrypted fields include:**
-- Client first name, last name
-- Contact information (address, phone, email)
-- Any custom fields marked as PII by administrators
+- Client names (first, middle, last) and date of birth
+- All progress note content (notes text, summaries, participant reflections, per-target notes)
+- User email addresses
+- Registration submission data (name, email, phone)
+- Any custom field values marked as sensitive by administrators
 
 **Technical note:** Because PII is encrypted at the application layer, database-level searches on these fields are not possible. Client search operations decrypt permitted records in application memory and filter there. This architecture is designed for deployments with up to approximately 2,000 active clients.
 
