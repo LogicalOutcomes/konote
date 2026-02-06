@@ -262,6 +262,12 @@ This means you only need to set the **essential** variables for each platform �
 
 If something is missing, the startup check will tell you exactly what's wrong and give platform-specific hints on how to fix it.
 
+For a complete list of all configuration options (exports, email, demo mode, AI features), see the comments in `.env.example`.
+
+### Email Configuration
+
+Email is needed for export notifications and the erasure approval workflow. Configure SMTP variables in `.env` — see `.env.example` for variable names and defaults. If not configured, exports and erasure still work but admin notifications fail silently.
+
 ---
 
 ## Prerequisites
@@ -357,6 +363,16 @@ docker-compose exec web python manage.py createsuperuser
 ### Step 7: Access KoNote2
 
 Open **http://localhost:8000** and log in.
+
+### Step 7.5: Load Seed Data
+
+```bash
+docker-compose exec web python manage.py seed
+```
+
+Creates the metrics library, default templates, event types, feature toggles, and intake fields. If `DEMO_MODE=true`, also creates 5 demo users (one per role) and 10 demo clients with sample data.
+
+Idempotent — safe to run multiple times (uses `get_or_create`). Runs automatically via `entrypoint.sh` in Docker, but must be run manually for local development without Docker.
 
 ### Docker Commands Reference
 
@@ -708,10 +724,19 @@ Complete this checklist before entering any real client information.
 - [ ] I have tested restoring from a backup at least once
 - [ ] Backups are stored in a different location than the database
 
+### 2.5. Email Configured (Production)
+
+- [ ] SMTP settings configured (see `.env.example` for variables)
+- [ ] Test email works: `python manage.py sendtestemail admin@example.com`
+
 ### 3. User Accounts Set Up
 
 - [ ] All staff accounts created with correct roles
 - [ ] Test users and demo accounts removed or disabled
+
+### 3.5. Seed Data Loaded
+
+- [ ] `python manage.py seed` has been run (automatic in Docker, manual for local dev)
 
 ### 4. Security Settings Verified
 
@@ -727,12 +752,37 @@ python manage.py check --deploy
 
 You should see no errors about `FIELD_ENCRYPTION_KEY`, `SECRET_KEY`, or `CSRF`.
 
+### 4.5. Audit Database Locked Down
+
+- [ ] `python manage.py lockdown_audit_db` has been run
+- [ ] Audit DB user has INSERT-only permissions (prevents tampering with audit records)
+
 ### 5. Final Sign-Off
 
 - [ ] I have verified my encryption key is backed up and retrievable
 - [ ] I understand that losing my encryption key means losing client PII
 - [ ] My team has been trained on data entry procedures
 - [ ] I know who to contact if something goes wrong
+
+## Management Commands Reference
+
+| Command | When | Purpose | Dry Run? |
+|---------|------|---------|----------|
+| `seed` | Automatic (startup) | Create metrics, features, settings, event types, templates, intake fields; demo data if `DEMO_MODE` | No |
+| `startup_check` | Automatic (startup) | Validate encryption key, SECRET_KEY, middleware; block startup in production if critical checks fail | No |
+| `cleanup_expired_exports` | Manual/cron (daily) | Remove expired export links and orphan files from disk | Yes (`--dry-run`) |
+| `rotate_encryption_key` | Manual (as needed) | Re-encrypt all PII with a new Fernet key | Yes (`--dry-run`) |
+| `check_translations` | Manual/CI | Validate .po/.mo files for duplicates, coverage, staleness | No (`--strict` for CI) |
+| `security_audit` | Manual/CI | Audit encryption, RBAC, audit logging, configuration | Yes (`--json`, `--fail-on-warn`) |
+| `lockdown_audit_db` | Manual (post-setup) | Restrict audit DB user to INSERT/SELECT only | No |
+| `check_document_url` | Manual (after config) | Test document folder URL generation with a sample record ID | No (`--check-reachable`) |
+| `diagnose_charts` | Manual (troubleshooting) | Diagnose why charts might be empty for a client | No |
+
+---
+
+### Translation Workflow
+
+Pre-compiled `.mo` files are committed to the repository — no gettext system dependency needed in production. To update translations: edit `.po` → run `python manage.py compilemessages` locally → commit both `.po` and `.mo`.
 
 ---
 

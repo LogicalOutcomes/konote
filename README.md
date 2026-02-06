@@ -235,6 +235,13 @@ Then open http://localhost:8000 in your browser.
    python manage.py createsuperuser
    ```
 
+7.5. **Load seed data** (recommended)
+   ```bash
+   python manage.py seed
+   ```
+   Creates the metrics library, default templates, event types, and feature toggles.
+   Runs automatically in Docker but must be run manually for local development.
+
 8. **Start the server**
    ```bash
    python manage.py runserver
