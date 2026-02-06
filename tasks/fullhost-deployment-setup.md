@@ -217,20 +217,36 @@ The following files have been created/updated:
 | `deploy-fullhost.ps1` | PowerShell script for API deployment |
 | `docs/deploy-fullhost.md` | Updated URLs to correct repository |
 
-### Next Steps to Test
+### Deployment Test Results (2026-02-06)
 
-1. **Push to GitHub** — Commit and push these new files
-2. **Enable GitHub Actions** — The workflow should run automatically on push to main
-3. **Make package public** — After the first build, go to GitHub → Packages → konote-redux → Package settings → Change visibility to Public
-4. **Test JPS manifest** — Import `fullhost-manifest.jps` in FullHost dashboard
-5. **Verify deployment** — Check that the app starts and migrations run
+**Status: SUCCESSFUL** — App deploys, migrations run, login works.
 
-### Test Environment Created
+**Test environment:** `konote-full.ca-east.onfullhost.cloud`
 
-A test PostgreSQL environment was created during testing:
-- **Name:** KoNote2-test
-- **URL:** KoNote2-test.ca-east.onfullhost.cloud
-- **Status:** Running (delete from dashboard when done)
+**What worked:**
+- Docker image pulls from ghcr.io (public package)
+- Both PostgreSQL databases initialise correctly
+- Migrations run on both app and audit databases
+- Audit database lockdown runs successfully
+- Seed data loads (metrics, features, settings, templates)
+- Security checks pass (all 6 checks)
+- Login works, all pages load (Home, Clients, Programs, Admin)
+
+**Bugs found and fixed:**
+1. **Wrong repo name** — Manifest/script referenced `KoNote2-Redux` (doesn't exist), fixed to `KoNote-Redux`
+2. **ALLOWED_HOSTS missing 127.0.0.1** — FullHost health checks use `127.0.0.1:8000`, causing 400 errors. Fixed by adding `127.0.0.1,localhost` to ALLOWED_HOSTS
+3. **Admin user creation crashes** — `User.objects.filter(email=...)` fails because email is encrypted. Fixed to use `filter(is_superuser=True)` and `create_superuser(username='admin', ...)`
+4. **Startup wait too short** — 30 seconds wasn't enough for migrations + seed. Increased to 60 seconds
+
+**Known limitations:**
+- **SSL requires manual dashboard config** — Let's Encrypt addon fails (`tinyproxy` not in Alpine image). Users must enable Built-in SSL from Settings → Custom SSL → click yellow link
+- **Login requires HTTPS** — Production settings enforce `CSRF_COOKIE_SECURE=True`. Login returns 403 over HTTP
+- **API token can't delete environments** — Requires account password (safety feature). Delete from dashboard
+- **API token can't bind SSL** — Requires `environment.Binder` permission not available in standard tokens
+
+### Old Test Environments (Cleaned Up)
+
+- `konote-test2` — Deleted from dashboard (was just a lone PostgreSQL)
 
 ### API Token Permissions Needed
 

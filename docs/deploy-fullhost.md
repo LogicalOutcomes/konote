@@ -117,17 +117,34 @@ If you ever need to restore KoNote2 from a backup, you'll need this key to decry
 
 ---
 
-## Step 6: Log In to KoNote2
+## Step 6: Enable SSL (HTTPS)
+
+SSL must be enabled manually after installation:
+
+1. In the FullHost dashboard, find your KoNote2 environment
+2. Click **Settings** (gear icon) on the environment
+3. Click **Custom SSL** in the left sidebar
+4. At the top, click the **yellow link** that says "following the link and clicking Enable button"
+5. In the topology editor that opens, check the **SSL** toggle, then click **Apply**
+
+This gives your site a free HTTPS certificate. It may take a few minutes to activate.
+
+**Note:** Login will not work until SSL is enabled — the app requires HTTPS for security.
+
+---
+
+## Step 7: Log In to KoNote2
 
 1. Click the link in the success message, or go to your KoNote2 URL (shown on screen)
-2. Enter your **admin email** and **password** (the ones you chose during setup)
-3. Click **"Log In"**
+2. Your username is **admin** (not your email)
+3. Enter the **password** you chose during setup
+4. Click **"Log In"**
 
 You're in! You'll see the KoNote2 dashboard.
 
 ---
 
-## Step 7: Complete Initial Setup
+## Step 8: Complete Initial Setup
 
 After logging in for the first time:
 

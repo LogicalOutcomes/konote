@@ -205,9 +205,10 @@ actions:
         FIELD_ENCRYPTION_KEY: ${globals.FIELD_ENCRYPTION_KEY}
         DATABASE_URL: postgresql://KoNote2:${globals.DB_PASSWORD}@${nodes.sqldb.first.intIP}:5432/KoNote2
         AUDIT_DATABASE_URL: postgresql://audit_writer:${globals.AUDIT_DB_PASSWORD}@${nodes.sqldb2.first.intIP}:5432/KoNote2_audit
-        ALLOWED_HOSTS: ${env.domain}
+        ALLOWED_HOSTS: ${env.domain},127.0.0.1,localhost
         ORG_NAME: ${settings.orgName}
         DEFAULT_CLIENT_TERM: ${settings.clientTerm}
+        KONOTE_MODE: production
 
   restartApp:
     # Restart the app container to apply environment variables
@@ -216,25 +217,27 @@ actions:
       nodeGroup: cp
 
   createAdminUser:
-    # Wait for app to be ready after restart
+    # Wait for app to be ready after restart (migrations + seed take ~60s)
     - api: environment.control.ExecCmdById
       nodeId: ${nodes.cp.first.id}
       commandList:
         - command: |
-            sleep 30
-            python manage.py shell -c "
+            sleep 60
+            cd /app && cat > /tmp/create_admin.py << 'PYEOF'
             from apps.auth_app.models import User
-            if not User.objects.filter(email='${settings.adminEmail}').exists():
+            if User.objects.filter(is_superuser=True).count() == 0:
                 user = User.objects.create_superuser(
-                    email='${settings.adminEmail}',
+                    username='admin',
                     password='${settings.adminPassword}',
-                    first_name='Admin',
-                    last_name='User'
                 )
+                user.email = '${settings.adminEmail}'
+                user.save()
                 print('Admin user created')
             else:
                 print('Admin user already exists')
-            "
+            PYEOF
+            python manage.py shell < /tmp/create_admin.py 2>&1
+            rm -f /tmp/create_admin.py
 
 success:
   text: |

@@ -184,9 +184,10 @@ $appVars = @{
     FIELD_ENCRYPTION_KEY = $EncryptionKey
     DATABASE_URL = "postgresql://KoNote2:$DbPassword@$($dbNode.intIP):5432/KoNote2"
     AUDIT_DATABASE_URL = "postgresql://audit_writer:$AuditDbPassword@$($auditDbNode.intIP):5432/KoNote2_audit"
-    ALLOWED_HOSTS = $envDomain
+    ALLOWED_HOSTS = "$envDomain,127.0.0.1,localhost"
     ORG_NAME = $OrgName
     DEFAULT_CLIENT_TERM = $ClientTerm
+    KONOTE_MODE = "production"
 } | ConvertTo-Json -Compress
 
 $varsBody = @{
@@ -240,19 +241,21 @@ Write-Host ""
 Write-Host "Step 5: Creating admin user..." -ForegroundColor Yellow
 
 $createUserCmd = @"
-python manage.py shell -c "
+cd /app && cat > /tmp/create_admin.py << 'PYEOF'
 from apps.auth_app.models import User
-if not User.objects.filter(email='$AdminEmail').exists():
+if User.objects.filter(is_superuser=True).count() == 0:
     user = User.objects.create_superuser(
-        email='$AdminEmail',
+        username='admin',
         password='$AdminPasswordPlain',
-        first_name='Admin',
-        last_name='User'
     )
+    user.email = '$AdminEmail'
+    user.save()
     print('Admin user created')
 else:
     print('Admin user already exists')
-"
+PYEOF
+python manage.py shell < /tmp/create_admin.py 2>&1
+rm -f /tmp/create_admin.py
 "@
 
 $cmdBody = @{
