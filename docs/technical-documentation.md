@@ -1158,7 +1158,7 @@ self.addEventListener('install', (event) => {
 
 ### Internationalization (Adding Languages)
 
-**Current State:** KoNote2's interface is English only. Terminology customization allows changing specific terms (Client → Participant) but does not extend to menu labels, buttons, or system messages.
+**Current State:** French is live with 748 translated strings covering the full UI — menus, buttons, form labels, validation messages, and system notifications. Terminology customisation allows changing specific terms (Client → Participant) independently of language selection.
 
 **Why This Matters:**
 - Quebec organizations legally required to operate in French
@@ -1166,14 +1166,13 @@ self.addEventListener('install', (event) => {
 - Ontario's AODA has French language service requirements for many funded programs
 - ~25% of Canadian nonprofit market requires French
 
-#### Django i18n Implementation Path
+#### How Internationalisation Works
 
-Django has built-in internationalization support that KoNote2 could leverage:
+KoNote2 uses Django's built-in internationalisation support:
 
-**Step 1: Enable i18n in Settings**
+**Settings (konote/settings/base.py)**
 
 ```python
-# konote/settings/base.py
 USE_I18N = True
 USE_L10N = True
 
@@ -1188,12 +1187,12 @@ LOCALE_PATHS = [
 
 MIDDLEWARE = [
     ...
-    'django.middleware.locale.LocaleMiddleware',  # Add after SessionMiddleware
+    'konote.middleware.safe_locale.SafeLocaleMiddleware',  # After SessionMiddleware
     ...
 ]
 ```
 
-**Step 2: Mark Strings for Translation**
+**Marking Strings for Translation**
 
 ```python
 # views.py
@@ -1211,20 +1210,22 @@ def client_list(request):
 <button>{% trans "New Client" %}</button>
 ```
 
-**Step 3: Extract and Translate**
+**Extracting and Compiling Translations**
 
 ```bash
-# Extract all translatable strings
+# Extract all translatable strings (run locally, not in Docker)
 python manage.py makemessages -l fr
 
 # This creates: locale/fr/LC_MESSAGES/django.po
 # Translate strings in the .po file
 
-# Compile translations
+# Compile translations (run locally, commit the .mo files)
 python manage.py compilemessages
 ```
 
-**Step 4: Language Switching**
+**Language Switching**
+
+The header includes a language switcher following the Canada.ca convention:
 
 ```html
 <!-- templates/base.html -->
@@ -1240,10 +1241,19 @@ python manage.py compilemessages
 </form>
 ```
 
-**Implementation Effort:**
-- Initial setup: 1 week
-- French translation: 2–3 weeks (500+ strings estimated)
-- Ongoing maintenance: Translation updates with each feature
+#### Implementation Details
+
+| Component | Description |
+|-----------|-------------|
+| **SafeLocaleMiddleware** (`konote/middleware/safe_locale.py`) | Tests French translations on each request; falls back to English if translations fail (corrupted `.mo` files, missing catalogues) |
+| **Cookie-based persistence** | `LANGUAGE_COOKIE_AGE = 365 * 24 * 60 * 60` (1 year), `LANGUAGE_COOKIE_SECURE = True`, `LANGUAGE_COOKIE_HTTPONLY = True` |
+| **User.preferred_language** | Field synced on login for multi-device roaming — language follows the user, not the browser |
+| **Pre-compiled `.mo` files** | Committed to the repository. No `gettext` system dependency required in production |
+| **Pre-commit hook** (`.githooks/pre-commit`) | Blocks commits if `.po` is staged without a matching `.mo` file |
+
+**Translation scope:** 748 strings translated, covering menus, buttons, form labels, validation messages, error pages, email templates, and system notifications.
+
+**Ongoing maintenance:** Translation updates with each feature addition.
 
 **Interaction with Terminology Customization:**
 
@@ -1259,7 +1269,7 @@ class TerminologyOverride(models.Model):
         unique_together = ['term_key', 'language']
 ```
 
-**Status:** Not currently implemented. This is a high-priority enhancement for Canadian market expansion.
+**Status:** **Implemented.** French translations are live with 748 strings. Pre-compiled `.mo` files are committed to the repository.
 
 ---
 
@@ -1660,5 +1670,5 @@ When considering a new feature or extension:
 
 ---
 
-**Version 1.1** — KoNote2 Web Technical Documentation
-Last updated: 2026-02-03
+**Version 1.3** — KoNote2 Web Technical Documentation
+Last updated: 2026-02-05

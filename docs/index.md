@@ -18,6 +18,17 @@ Welcome! Find what you need based on what you're trying to do.
 
 ---
 
+## What's New
+
+- **French language support** — full bilingual interface with 748 translated strings
+- **Client data erasure** — multi-PM approval workflow for PIPEDA/GDPR compliance
+- **Self-service registration** — public forms with capacity limits and duplicate detection
+- **Export hardening** — CSV injection protection, elevated export monitoring, secure download links
+- **Canadian localisation** — postal code and phone number validation
+- **Demo mode** — safe evaluation with separated demo data
+
+---
+
 ## Quick Links
 
 ### For Everyone
@@ -33,6 +44,8 @@ Welcome! Find what you need based on what you're trying to do.
 - [User Management](administering-KoNote2.md#user-management) — creating accounts, assigning roles
 - [Backup & Restore](administering-KoNote2.md#backup-and-restore) — protecting your data
 - [Security Operations](administering-KoNote2.md#security-operations) — audit logs, encryption keys
+- [Export Operations](export-runbook.md) — managing exports and download links
+- [Security Operations (detailed)](security-operations.md) — encryption, audit logging, erasure, export controls
 
 ### For Staff
 

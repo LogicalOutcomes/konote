@@ -113,6 +113,17 @@ For the research basis behind these design choices, see [Design Principles](docs
 - Session management with configurable timeout
 - HTTPS with HSTS, CSP headers, CSRF protection
 
+### Privacy & Compliance
+- **Data portability** — Individual client export (CSV/PDF) with selectable sections for PIPEDA compliance
+- **Client data erasure** — Multi-programme-manager approval workflow for PIPEDA/GDPR right to erasure
+- **Self-service registration** — Public forms with capacity limits, duplicate detection, consent tracking
+- **Export controls** — CSV injection protection, elevated export monitoring, recipient tracking, secure download links
+- **Demo/real separation** — Immutable `is_demo` flags prevent cross-contamination between evaluation and production data
+
+### Localisation
+- **French (Français)** — 748 translated strings, header language switcher (Canada.ca convention), cookie-based persistence
+- **Canadian formats** — Postal code validation (A1A 1A1), phone normalisation ((613) 555-1234), auto-detection from field names
+
 ---
 
 ## Tech Stack
