@@ -1441,6 +1441,16 @@ article[aria-label="notification"].fading-out {
     padding: var(--kn-space-xs) var(--kn-space-base);
     margin: 0;
 }
+@media (prefers-color-scheme: dark) {
+    .custom-fields-header button.outline {
+        color: #5cc8cc;
+        border-color: #5cc8cc;
+    }
+    .custom-fields-header button.outline:hover {
+        color: #ffffff;
+        background: var(--kn-primary);
+    }
+}
 
 /* ============================================
    MOBILE RESPONSIVE STYLES
