@@ -244,6 +244,8 @@ The following files have been created/updated:
 - **API token can't delete environments** — Requires account password (safety feature). Delete from dashboard
 - **API token can't bind SSL** — Requires `environment.Binder` permission not available in standard tokens
 
+5. **HTTPS fix: Remove external IP from app container** — If the app node has a public/external IP, DNS resolves directly to the container (bypassing the SLB). Since the container has no SSL termination (only gunicorn on port 8000), HTTPS fails with "connection refused". Fix: detach the external IP via API (`detachextip`) or dashboard. Without it, DNS resolves to the SLB IPs which terminate SSL. Verified working 2026-02-06.
+
 ### Old Test Environments (Cleaned Up)
 
 - `konote-test2` — Deleted from dashboard (was just a lone PostgreSQL)

@@ -131,6 +131,8 @@ This gives your site a free HTTPS certificate. It may take a few minutes to acti
 
 **Note:** Login will not work until SSL is enabled — the app requires HTTPS for security.
 
+**Important — Do NOT add a public IP to the app container.** If the KoNote2 App node has a public/external IP address, HTTPS will not work. The SSL certificate is managed by FullHost's Shared Load Balancer (SLB), which sits in front of your containers. A public IP on the app container makes traffic bypass the SLB, skipping SSL entirely. If you accidentally add one, go to the app node's settings and remove the public IP.
+
 ---
 
 ## Step 7: Log In to KoNote2
@@ -289,6 +291,17 @@ We recommend:
 3. Add credits with a credit card
 
 FullHost will email you when credits are running low.
+
+### HTTPS Not Working / "Connection Refused" on HTTPS
+
+If HTTP works but HTTPS doesn't:
+
+1. Check whether the **KoNote2 App** container has a **public IP address** assigned
+2. If it does, that's the problem — the public IP bypasses FullHost's SSL proxy
+3. Go to the app container → **Settings** → remove the public/external IP
+4. Wait a minute for DNS to update, then try HTTPS again
+
+The FullHost Shared Load Balancer handles SSL. It only works when traffic goes through it (no public IP on the app container).
 
 ### Need More Help?
 
