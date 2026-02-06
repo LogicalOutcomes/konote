@@ -83,9 +83,9 @@ Prevent duplicate client records across programs while protecting sensitive prog
 - [ ] Build duplicate merge tool for Standard program admins — side-by-side comparison, merged record keeps all data (MATCH4)
 
 **H.4: Confidential Program Hardening (Required Before DV Use)**
-- [ ] 🔨 Filter confidential client records from Django admin for superusers without confidential access (CONF4)
-- [ ] 🔨 Add immutable audit logging for all confidential record access — who, when, what, which record (CONF5)
-- [ ] 🔨 Aggregate reports use small-cell suppression — show "< 10" when confidential program has fewer than 10 clients (CONF6)
+- [x] Filter confidential client records from Django admin for superusers without confidential access — 2026-02-06 (CONF4)
+- [x] Add immutable audit logging for all confidential record access — who, when, what, which record — 2026-02-06 (CONF5)
+- [x] Aggregate reports use small-cell suppression — show "< 10" when confidential program has fewer than 10 clients — 2026-02-06 (CONF6)
 - [x] Create `tests/test_confidential_isolation.py` — isolation, matching, registration, groups, phone field — 2026-02-06 (CONF7)
 
 **H.5: DV Readiness & Documentation**
@@ -134,6 +134,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Confidential program hardening Phase H.4 — Django admin filtering with object-level permissions, immutable audit logging (403 tracking, confidential tagging, PM audit view), small-cell suppression in reports, 17 new tests — 2026-02-06 (CONF4-6)
 - [x] Name + DOB secondary duplicate detection — fallback matching when phone unavailable, single-pass iterator, brittleness fixes (hx-params removal, date parsing, race condition prevention), 12 new tests — 2026-02-06 (MATCH3)
 - [x] Cross-program client matching Phase H.1 + H.2 — confidential program isolation, phone field, duplicate detection, security fixes (edit form bug, PDF export, registration links, group views), test suite — 2026-02-06 (CONF1-3, MATCH1-2, CONF7)
 - [x] Verify deployment end-to-end with production-like config — FullHost tested, HTTPS working, demo data live — 2026-02-06 (OPS5)

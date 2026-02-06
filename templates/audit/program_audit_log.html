@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Access Log" %} — {{ program.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <hgroup>
+        <h1>{% trans "Access Log" %} — {{ program.name }}</h1>
+        <p>{% trans "All access to client records in this program. Each entry records who accessed which record, when, and what action they performed." %}</p>
+    </hgroup>
+
+    {# ---- Filter form ---- #}
+    <form method="get" action="" role="search">
+        <div class="grid">
+            <label for="date_from">
+                {% trans "From" %}
+                <input type="date" id="date_from" name="date_from" value="{{ date_from }}">
+            </label>
+            <label for="date_to">
+                {% trans "To" %}
+                <input type="date" id="date_to" name="date_to" value="{{ date_to }}">
+            </label>
+            <label for="user_display">
+                {% trans "User" %}
+                <input type="text" id="user_display" name="user_display" value="{{ user_display }}" placeholder="{% trans 'Search by name' %}">
+            </label>
+            <label for="action">
+                {% trans "Action" %}
+                <select id="action" name="action">
+                    <option value="">{% trans "All actions" %}</option>
+                    {% for value, label in action_choices %}
+                    <option value="{{ value }}" {% if action_filter == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+        </div>
+        <div class="grid">
+            <div>
+                <button type="submit">{% trans "Filter" %}</button>
+                <a href="{% url 'program_audit_log' program.pk %}" role="button" class="secondary outline" style="margin-left:0.5rem;">{% trans "Clear" %}</a>
+            </div>
+        </div>
+    </form>
+
+    {# ---- Results table ---- #}
+    {% if page.object_list %}
+    <figure>
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Timestamp" %}</th>
+                    <th scope="col">{% trans "User" %}</th>
+                    <th scope="col">{% trans "IP Address" %}</th>
+                    <th scope="col">{% trans "Action" %}</th>
+                    <th scope="col">{% trans "Resource" %}</th>
+                    <th scope="col">{% trans "Confidential" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry in page.object_list %}
+                <tr{% if entry.action == "access_denied" %} style="background: var(--pico-del-color, #e53935); color: white;"{% endif %}>
+                    <td>{{ entry.event_timestamp|date:"Y-m-d H:i" }}</td>
+                    <td>{{ entry.user_display }}</td>
+                    <td>{{ entry.ip_address|default:"\u2014" }}</td>
+                    <td>
+                        <span class="badge {% if entry.action == 'access_denied' %}badge-danger{% elif entry.action == 'view' %}badge-info{% elif entry.action == 'create' %}badge-success{% elif entry.action == 'update' or entry.action == 'put' or entry.action == 'patch' %}badge-warning{% elif entry.action == 'delete' %}badge-danger{% else %}badge-neutral{% endif %}">
+                            {{ entry.get_action_display }}
+                        </span>
+                    </td>
+                    <td>{{ entry.resource_type }} #{{ entry.resource_id|default:"\u2014" }}</td>
+                    <td>{% if entry.is_confidential_context %}{% trans "Yes" %}{% else %}&mdash;{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </figure>
+
+    {# ---- Pagination ---- #}
+    {% if page.has_previous or page.has_next %}
+    <nav aria-label="{% trans 'Pagination' %}">
+        <ul>
+            {% if page.has_previous %}
+            <li><a href="?page={{ page.previous_page_number }}&{{ filter_query }}">{% trans "Previous" %}</a></li>
+            {% endif %}
+            <li>{% blocktrans with current=page.number total=page.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}</li>
+            {% if page.has_next %}
+            <li><a href="?page={{ page.next_page_number }}&{{ filter_query }}">{% trans "Next" %}</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+    {% else %}
+    <p>{% trans "No audit log entries found for this program. Try adjusting your filters." %}</p>
+    {% endif %}
+</div>
+{% endblock %}

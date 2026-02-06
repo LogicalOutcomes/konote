@@ -20,6 +20,7 @@ class AuditLog(models.Model):
         ("post", "POST"),
         ("put", "PUT"),
         ("patch", "PATCH"),
+        ("access_denied", "Access Denied"),
     ]
 
     event_timestamp = models.DateTimeField()
@@ -36,6 +37,10 @@ class AuditLog(models.Model):
     is_demo_context = models.BooleanField(
         default=False,
         help_text="True when the action was performed by a demo user.",
+    )
+    is_confidential_context = models.BooleanField(
+        default=False,
+        help_text="True when the action involved a confidential program.",
     )
 
     class Meta:

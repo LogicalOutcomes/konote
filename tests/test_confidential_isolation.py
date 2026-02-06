@@ -4,12 +4,17 @@ Security contract: confidential program clients must NEVER appear in any
 query, search, match, view, or export accessible to users without explicit
 confidential program access. This test file blocks deployment if any test fails.
 """
-from cryptography.fernet import Fernet
-from django.test import Client, TestCase, override_settings
+from django.contrib.admin.sites import AdminSite
+from django.test import Client, RequestFactory, TestCase, override_settings
 
+from cryptography.fernet import Fernet
+
+from apps.audit.models import AuditLog
 from apps.auth_app.models import User
-from apps.clients.models import ClientFile, ClientProgramEnrolment
+from apps.clients.admin import ClientDetailValueAdmin, ClientFileAdmin, ClientProgramEnrolmentAdmin
+from apps.clients.models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldDefinition, CustomFieldGroup
 from apps.programs.models import Program, UserProgramRole
+from apps.reports.suppression import suppress_small_cell
 
 import konote.encryption as enc_module
 
@@ -585,3 +590,315 @@ class PhoneFieldTest(TestCase):
         cf = ClientFile.objects.order_by("-pk").first()
         if cf:
             self.assertEqual(cf.phone, "(613) 555-1234")
+
+
+# =====================================================================
+# CONF4: Django admin confidential filtering
+# =====================================================================
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class DjangoAdminConfidentialTest(TestCase):
+    """Test Django admin respects confidential program boundaries.
+
+    Expert panel finding #1: get_queryset() AND object-level permissions
+    must both be checked (direct URL bypass prevention).
+    """
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.factory = RequestFactory()
+        self.site = AdminSite()
+
+        # Users — none get automatic access via superuser status
+        self.admin_no_roles = User.objects.create_user(
+            username="admin_noroles", password="testpass123", is_admin=True,
+        )
+        self.admin_standard = User.objects.create_user(
+            username="admin_std", password="testpass123", is_admin=True,
+        )
+        self.admin_confidential = User.objects.create_user(
+            username="admin_conf", password="testpass123", is_admin=True,
+        )
+
+        # Programs
+        self.standard_prog = Program.objects.create(
+            name="Employment", colour_hex="#10B981",
+        )
+        self.confidential_prog = Program.objects.create(
+            name="DV Support", colour_hex="#EF4444", is_confidential=True,
+        )
+
+        # Roles
+        UserProgramRole.objects.create(
+            user=self.admin_standard, program=self.standard_prog,
+            role="program_manager",
+        )
+        UserProgramRole.objects.create(
+            user=self.admin_confidential, program=self.confidential_prog,
+            role="program_manager",
+        )
+
+        # Clients
+        self.standard_client = ClientFile()
+        self.standard_client.first_name = "Standard"
+        self.standard_client.last_name = "Client"
+        self.standard_client.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.standard_client, program=self.standard_prog,
+        )
+
+        self.confidential_client = ClientFile()
+        self.confidential_client.first_name = "Confidential"
+        self.confidential_client.last_name = "Client"
+        self.confidential_client.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.confidential_client, program=self.confidential_prog,
+        )
+
+        self.dual_client = ClientFile()
+        self.dual_client.first_name = "Dual"
+        self.dual_client.last_name = "Client"
+        self.dual_client.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.dual_client, program=self.standard_prog,
+        )
+        ClientProgramEnrolment.objects.create(
+            client_file=self.dual_client, program=self.confidential_prog,
+        )
+
+    def _make_request(self, user):
+        request = self.factory.get("/django-admin/clients/clientfile/")
+        request.user = user
+        return request
+
+    # ---- ClientFileAdmin list filtering ----
+
+    def test_admin_no_roles_sees_no_clients(self):
+        admin_cls = ClientFileAdmin(ClientFile, self.site)
+        qs = admin_cls.get_queryset(self._make_request(self.admin_no_roles))
+        self.assertEqual(qs.count(), 0)
+
+    def test_admin_standard_sees_standard_and_dual(self):
+        admin_cls = ClientFileAdmin(ClientFile, self.site)
+        qs = admin_cls.get_queryset(self._make_request(self.admin_standard))
+        ids = set(qs.values_list("pk", flat=True))
+        self.assertIn(self.standard_client.pk, ids)
+        self.assertIn(self.dual_client.pk, ids)
+        self.assertNotIn(self.confidential_client.pk, ids)
+
+    def test_admin_confidential_sees_confidential_and_dual(self):
+        admin_cls = ClientFileAdmin(ClientFile, self.site)
+        qs = admin_cls.get_queryset(self._make_request(self.admin_confidential))
+        ids = set(qs.values_list("pk", flat=True))
+        self.assertIn(self.confidential_client.pk, ids)
+        self.assertIn(self.dual_client.pk, ids)
+        self.assertNotIn(self.standard_client.pk, ids)
+
+    # ---- Object-level permission checks (expert finding #1) ----
+
+    def test_direct_access_blocked_for_confidential_client(self):
+        """Direct URL access to a confidential client must be denied."""
+        admin_cls = ClientFileAdmin(ClientFile, self.site)
+        request = self._make_request(self.admin_standard)
+        self.assertFalse(
+            admin_cls.has_view_permission(request, self.confidential_client)
+        )
+        self.assertFalse(
+            admin_cls.has_change_permission(request, self.confidential_client)
+        )
+        self.assertFalse(
+            admin_cls.has_delete_permission(request, self.confidential_client)
+        )
+
+    def test_direct_access_allowed_for_accessible_client(self):
+        admin_cls = ClientFileAdmin(ClientFile, self.site)
+        request = self._make_request(self.admin_standard)
+        self.assertTrue(
+            admin_cls.has_view_permission(request, self.standard_client)
+        )
+
+    # ---- Enrolment admin filtering (expert finding #5) ----
+
+    def test_enrolment_admin_filters_by_program(self):
+        """Enrolment admin must filter by program access, not just client."""
+        admin_cls = ClientProgramEnrolmentAdmin(ClientProgramEnrolment, self.site)
+        qs = admin_cls.get_queryset(self._make_request(self.admin_standard))
+        program_ids = set(qs.values_list("program_id", flat=True))
+        self.assertIn(self.standard_prog.pk, program_ids)
+        self.assertNotIn(self.confidential_prog.pk, program_ids)
+
+    def test_enrolment_direct_access_blocked(self):
+        """Direct access to confidential program enrolment must be denied."""
+        admin_cls = ClientProgramEnrolmentAdmin(ClientProgramEnrolment, self.site)
+        request = self._make_request(self.admin_standard)
+        conf_enrolment = ClientProgramEnrolment.objects.get(
+            client_file=self.confidential_client, program=self.confidential_prog,
+        )
+        self.assertFalse(
+            admin_cls.has_view_permission(request, conf_enrolment)
+        )
+
+    # ---- ClientDetailValue admin filtering ----
+
+    def test_detail_value_admin_filtered(self):
+        """Custom field values for confidential clients must be hidden."""
+        group = CustomFieldGroup.objects.create(title="Demographics")
+        field = CustomFieldDefinition.objects.create(
+            group=group, name="Test Field", input_type="text",
+        )
+        val_std = ClientDetailValue.objects.create(
+            client_file=self.standard_client, field_def=field,
+        )
+        val_conf = ClientDetailValue.objects.create(
+            client_file=self.confidential_client, field_def=field,
+        )
+
+        admin_cls = ClientDetailValueAdmin(ClientDetailValue, self.site)
+        qs = admin_cls.get_queryset(self._make_request(self.admin_standard))
+        client_ids = set(qs.values_list("client_file_id", flat=True))
+        self.assertIn(self.standard_client.pk, client_ids)
+        self.assertNotIn(self.confidential_client.pk, client_ids)
+
+
+# =====================================================================
+# CONF5: Audit logging for confidential access
+# =====================================================================
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AuditConfidentialTaggingTest(TestCase):
+    """Test audit logging tags confidential access correctly."""
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+
+        self.staff = User.objects.create_user(
+            username="audit_staff", password="testpass123",
+        )
+
+        self.standard_prog = Program.objects.create(
+            name="Sports", colour_hex="#10B981",
+        )
+        self.conf_prog = Program.objects.create(
+            name="DV Support", colour_hex="#EF4444", is_confidential=True,
+        )
+
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.standard_prog, role="staff",
+        )
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.conf_prog, role="staff",
+        )
+
+        self.standard_client = ClientFile()
+        self.standard_client.first_name = "Standard"
+        self.standard_client.last_name = "AuditTest"
+        self.standard_client.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.standard_client, program=self.standard_prog,
+        )
+
+        self.conf_client = ClientFile()
+        self.conf_client.first_name = "Confidential"
+        self.conf_client.last_name = "AuditTest"
+        self.conf_client.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.conf_client, program=self.conf_prog,
+        )
+
+    def test_standard_client_view_not_tagged_confidential(self):
+        self.http.login(username="audit_staff", password="testpass123")
+        self.http.get(f"/clients/{self.standard_client.pk}/")
+
+        log = AuditLog.objects.using("audit").filter(
+            resource_id=self.standard_client.pk, action="view",
+        ).first()
+        self.assertIsNotNone(log)
+        self.assertFalse(log.is_confidential_context)
+
+    def test_confidential_client_view_tagged(self):
+        self.http.login(username="audit_staff", password="testpass123")
+        self.http.get(f"/clients/{self.conf_client.pk}/")
+
+        log = AuditLog.objects.using("audit").filter(
+            resource_id=self.conf_client.pk, action="view",
+        ).first()
+        self.assertIsNotNone(log)
+        self.assertTrue(log.is_confidential_context)
+        self.assertEqual(log.program_id, self.conf_prog.pk)
+
+    def test_failed_access_logged_as_access_denied(self):
+        """403 on a client record must be logged (expert finding #14)."""
+        # Create a user WITHOUT access to the confidential program
+        outsider = User.objects.create_user(
+            username="outsider", password="testpass123",
+        )
+        UserProgramRole.objects.create(
+            user=outsider, program=self.standard_prog, role="staff",
+        )
+        self.http.login(username="outsider", password="testpass123")
+        resp = self.http.get(f"/clients/{self.conf_client.pk}/")
+        self.assertIn(resp.status_code, [403, 404])
+
+        log = AuditLog.objects.using("audit").filter(
+            resource_id=self.conf_client.pk, action="access_denied",
+        ).first()
+        # Log should exist if a 403 was returned
+        if resp.status_code == 403:
+            self.assertIsNotNone(log, "403 on confidential client must be audit-logged")
+
+    def test_program_manager_can_view_audit_log(self):
+        pm = User.objects.create_user(
+            username="pm_audit", password="testpass123",
+        )
+        UserProgramRole.objects.create(
+            user=pm, program=self.conf_prog, role="program_manager",
+        )
+        self.http.login(username="pm_audit", password="testpass123")
+        resp = self.http.get(f"/audit/program/{self.conf_prog.pk}/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_non_pm_cannot_view_program_audit_log(self):
+        self.http.login(username="audit_staff", password="testpass123")
+        resp = self.http.get(f"/audit/program/{self.conf_prog.pk}/")
+        self.assertEqual(resp.status_code, 403)
+
+
+# =====================================================================
+# CONF6: Small-cell suppression
+# =====================================================================
+
+
+class SmallCellSuppressionTest(TestCase):
+    """Test suppress_small_cell utility function."""
+
+    def setUp(self):
+        self.standard_prog = Program.objects.create(
+            name="Sports", colour_hex="#10B981",
+        )
+        self.conf_prog = Program.objects.create(
+            name="DV Support", colour_hex="#EF4444", is_confidential=True,
+        )
+
+    def test_standard_program_not_suppressed(self):
+        """Standard programs show exact counts regardless of size."""
+        self.assertEqual(suppress_small_cell(3, self.standard_prog), 3)
+        self.assertEqual(suppress_small_cell(0, self.standard_prog), 0)
+
+    def test_confidential_small_count_suppressed(self):
+        """Confidential program with < 10 clients shows '< 10'."""
+        self.assertEqual(suppress_small_cell(7, self.conf_prog), "< 10")
+        self.assertEqual(suppress_small_cell(1, self.conf_prog), "< 10")
+        self.assertEqual(suppress_small_cell(0, self.conf_prog), "< 10")
+
+    def test_confidential_large_count_not_suppressed(self):
+        """Confidential program with >= 10 clients shows exact count."""
+        self.assertEqual(suppress_small_cell(10, self.conf_prog), 10)
+        self.assertEqual(suppress_small_cell(25, self.conf_prog), 25)
+
+    def test_custom_threshold(self):
+        self.assertEqual(suppress_small_cell(4, self.conf_prog, threshold=5), "< 5")
+        self.assertEqual(suppress_small_cell(5, self.conf_prog, threshold=5), 5)
