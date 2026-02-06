@@ -198,7 +198,7 @@ class ConfidentialIsolationTest(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class DuplicateMatchingTest(TestCase):
-    """Test phone-based duplicate detection."""
+    """Test phone-based and name+DOB duplicate detection."""
 
     def setUp(self):
         enc_module._fernet = None
@@ -222,21 +222,23 @@ class DuplicateMatchingTest(TestCase):
             user=self.staff, program=self.standard_prog, role="staff",
         )
 
-        # Existing client in standard program with phone
+        # Existing client in standard program with phone and DOB
         self.existing = ClientFile()
         self.existing.first_name = "Jane"
         self.existing.last_name = "Doe"
         self.existing.phone = "(613) 555-9999"
+        self.existing.birth_date = "2001-03-15"
         self.existing.save()
         ClientProgramEnrolment.objects.create(
             client_file=self.existing, program=self.standard_prog,
         )
 
-        # Existing client in confidential program with same phone pattern
+        # Existing client in confidential program with phone and DOB
         self.conf_client = ClientFile()
         self.conf_client.first_name = "Secret"
         self.conf_client.last_name = "Person"
         self.conf_client.phone = "(613) 555-8888"
+        self.conf_client.birth_date = "1990-06-20"
         self.conf_client.save()
         ClientProgramEnrolment.objects.create(
             client_file=self.conf_client, program=self.confidential_prog,
@@ -299,6 +301,144 @@ class DuplicateMatchingTest(TestCase):
         )
         self.assertEqual(resp.status_code, 200)
         # Real client should not match for demo user
+        self.assertNotContains(resp, "Jane")
+
+    # ---- Name + DOB matching (MATCH3) ----
+
+    def test_name_dob_match_found(self):
+        """First 3 chars of first name + exact DOB returns banner."""
+        self.http.login(username="staff", password="testpass123")
+        resp = self.http.get(
+            "/clients/check-duplicate/",
+            {"first_name": "Jan", "birth_date": "2001-03-15"},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "similar name and date of birth")
+        self.assertContains(resp, "Check existing records")
+        self.assertContains(resp, f"/clients/{self.existing.pk}/")
+
+    def test_name_dob_case_insensitive(self):
+        """Name matching must be case-insensitive."""
+        self.http.login(username="staff", password="testpass123")
+        for name in ["jan", "JAN", "Jan", "jAn"]:
+            resp = self.http.get(
+                "/clients/check-duplicate/",
+                {"first_name": name, "birth_date": "2001-03-15"},
+            )
+            self.assertContains(
+                resp, "similar name and date of birth",
+                msg_prefix=f"Failed for '{name}'",
+            )
+
+    def test_name_dob_confidential_excluded(self):
+        """CRITICAL: Confidential clients must never appear in name+DOB matching."""
+        self.http.login(username="staff", password="testpass123")
+        resp = self.http.get(
+            "/clients/check-duplicate/",
+            {"first_name": "Sec", "birth_date": "1990-06-20"},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "Secret")
+        self.assertNotContains(resp, "DV Support")
+
+    def test_phone_takes_priority_over_name_dob(self):
+        """When phone matches, show phone banner even if name+DOB also matches."""
+        self.http.login(username="staff", password="testpass123")
+        resp = self.http.get(
+            "/clients/check-duplicate/",
+            {
+                "phone": "(613) 555-9999",
+                "first_name": "Jan",
+                "birth_date": "2001-03-15",
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "phone number")
+        self.assertNotContains(resp, "similar name")
+
+    def test_phone_no_match_falls_back_to_name_dob(self):
+        """When phone is provided but doesn't match, fall back to name+DOB."""
+        self.http.login(username="staff", password="testpass123")
+        resp = self.http.get(
+            "/clients/check-duplicate/",
+            {
+                "phone": "(613) 555-0000",
+                "first_name": "Jan",
+                "birth_date": "2001-03-15",
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "similar name and date of birth")
+        self.assertContains(resp, f"/clients/{self.existing.pk}/")
+
+    def test_partial_data_first_name_only_returns_empty(self):
+        """First name alone (no DOB) must not trigger matching."""
+        self.http.login(username="staff", password="testpass123")
+        resp = self.http.get(
+            "/clients/check-duplicate/",
+            {"first_name": "Jan"},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "Jane")
+
+    def test_partial_data_birth_date_only_returns_empty(self):
+        """DOB alone (no first name) must not trigger matching."""
+        self.http.login(username="staff", password="testpass123")
+        resp = self.http.get(
+            "/clients/check-duplicate/",
+            {"birth_date": "2001-03-15"},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "Jane")
+
+    def test_short_name_ignored(self):
+        """First name with fewer than 3 chars must not trigger matching."""
+        self.http.login(username="staff", password="testpass123")
+        resp = self.http.get(
+            "/clients/check-duplicate/",
+            {"first_name": "Ja", "birth_date": "2001-03-15"},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "Jane")
+
+    def test_self_exclusion_on_edit_with_name_dob(self):
+        """Editing a client must not match against themselves via name+DOB."""
+        self.http.login(username="staff", password="testpass123")
+        resp = self.http.get(
+            "/clients/check-duplicate/",
+            {
+                "first_name": "Jan",
+                "birth_date": "2001-03-15",
+                "exclude": str(self.existing.pk),
+            },
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "Jane")
+
+    def test_name_dob_demo_separation(self):
+        """Demo staff must not match against real clients via name+DOB."""
+        demo_staff = User.objects.create_user(
+            username="demo_staff2", password="testpass123", is_demo=True,
+        )
+        UserProgramRole.objects.create(
+            user=demo_staff, program=self.standard_prog, role="staff",
+        )
+        self.http.login(username="demo_staff2", password="testpass123")
+        resp = self.http.get(
+            "/clients/check-duplicate/",
+            {"first_name": "Jan", "birth_date": "2001-03-15"},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "Jane")
+
+    def test_wrong_dob_does_not_match(self):
+        """Same name prefix but different DOB must not match."""
+        self.http.login(username="staff", password="testpass123")
+        resp = self.http.get(
+            "/clients/check-duplicate/",
+            {"first_name": "Jan", "birth_date": "2001-03-16"},
+        )
+        self.assertEqual(resp.status_code, 200)
         self.assertNotContains(resp, "Jane")
 
 

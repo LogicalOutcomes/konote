@@ -772,17 +772,24 @@ def custom_field_def_edit(request, field_id):
 @login_required
 @minimum_role("staff")
 def check_duplicate(request):
-    """HTMX endpoint: check for duplicate clients by phone number.
+    """HTMX endpoint: check for duplicate clients.
 
+    Tries phone matching first (strong signal). Falls back to
+    name + DOB matching when phone is unavailable or has no match.
     Returns the _duplicate_banner.html partial with any matches,
     or an empty response if no matches.
     """
     phone = request.GET.get("phone", "").strip()
+    first_name = request.GET.get("first_name", "").strip()
+    birth_date = request.GET.get("birth_date", "").strip()
     exclude_id = request.GET.get("exclude", "")
 
-    from .matching import find_phone_matches
-    matches = find_phone_matches(
-        phone, request.user,
+    from .matching import find_duplicate_matches
+    matches, match_type = find_duplicate_matches(
+        phone, first_name, birth_date, request.user,
         exclude_client_id=int(exclude_id) if exclude_id.isdigit() else None,
     )
-    return render(request, "clients/_duplicate_banner.html", {"matches": matches})
+    return render(request, "clients/_duplicate_banner.html", {
+        "matches": matches,
+        "match_type": match_type,
+    })

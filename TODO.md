@@ -77,15 +77,15 @@ Prevent duplicate client records across programs while protecting sensitive prog
 **H.2: Duplicate Detection (Standard Programs)**
 - [x] Add phone number as first-class encrypted field on ClientFile — 2026-02-06 (MATCH1)
 - [x] Build phone-based duplicate detection on client create form — HTMX endpoint, banner UI — 2026-02-06 (MATCH2)
-- [ ] Add name + DOB secondary matching as fallback when phone unavailable (MATCH3)
+- [x] Add name + DOB secondary matching as fallback when phone unavailable — 2026-02-06 (MATCH3)
 
 **H.3: Merge Tool (Standard Programs)**
 - [ ] Build duplicate merge tool for Standard program admins — side-by-side comparison, merged record keeps all data (MATCH4)
 
 **H.4: Confidential Program Hardening (Required Before DV Use)**
-- [ ] Filter confidential client records from Django admin for superusers without confidential access (CONF4)
-- [ ] Add immutable audit logging for all confidential record access — who, when, what, which record (CONF5)
-- [ ] Aggregate reports use small-cell suppression — show "< 10" when confidential program has fewer than 10 clients (CONF6)
+- [ ] 🔨 Filter confidential client records from Django admin for superusers without confidential access (CONF4)
+- [ ] 🔨 Add immutable audit logging for all confidential record access — who, when, what, which record (CONF5)
+- [ ] 🔨 Aggregate reports use small-cell suppression — show "< 10" when confidential program has fewer than 10 clients (CONF6)
 - [x] Create `tests/test_confidential_isolation.py` — isolation, matching, registration, groups, phone field — 2026-02-06 (CONF7)
 
 **H.5: DV Readiness & Documentation**
@@ -134,6 +134,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Name + DOB secondary duplicate detection — fallback matching when phone unavailable, single-pass iterator, brittleness fixes (hx-params removal, date parsing, race condition prevention), 12 new tests — 2026-02-06 (MATCH3)
 - [x] Cross-program client matching Phase H.1 + H.2 — confidential program isolation, phone field, duplicate detection, security fixes (edit form bug, PDF export, registration links, group views), test suite — 2026-02-06 (CONF1-3, MATCH1-2, CONF7)
 - [x] Verify deployment end-to-end with production-like config — FullHost tested, HTTPS working, demo data live — 2026-02-06 (OPS5)
 - [x] Lock in .mo translation strategy — commit .mo to git, no compilation in Docker, freshness check in validate_translations.py — 2026-02-06 (I18N-FIX1)
