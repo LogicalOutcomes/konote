@@ -53,6 +53,7 @@ class ClientFile(models.Model):
     _middle_name_encrypted = models.BinaryField(default=b"", blank=True)
     _last_name_encrypted = models.BinaryField(default=b"")
     _birth_date_encrypted = models.BinaryField(default=b"", blank=True)
+    _phone_encrypted = models.BinaryField(default=b"", blank=True)
 
     record_id = models.CharField(max_length=100, default="", blank=True)
     status = models.CharField(max_length=20, default="active", choices=STATUS_CHOICES)
@@ -126,6 +127,14 @@ class ClientFile(models.Model):
     @birth_date.setter
     def birth_date(self, value):
         self._birth_date_encrypted = encrypt_field(str(value) if value else "")
+
+    @property
+    def phone(self):
+        return decrypt_field(self._phone_encrypted)
+
+    @phone.setter
+    def phone(self, value):
+        self._phone_encrypted = encrypt_field(value)
 
 
 class ClientProgramEnrolment(models.Model):

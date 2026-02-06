@@ -1,4 +1,6 @@
 """Program CRUD views — list visible to all users, management admin-only."""
+import json
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
@@ -7,7 +9,7 @@ from django.utils.translation import gettext as _
 
 from apps.auth_app.models import User
 
-from .forms import ProgramForm, UserProgramRoleForm
+from .forms import CONFIDENTIAL_KEYWORDS, ProgramForm, UserProgramRoleForm
 from .models import Program, UserProgramRole
 
 
@@ -66,7 +68,12 @@ def program_create(request):
             return redirect("programs:program_list")
     else:
         form = ProgramForm()
-    return render(request, "programs/form.html", {"form": form, "editing": False})
+    return render(request, "programs/form.html", {
+        "form": form,
+        "editing": False,
+        "suggest_confidential": True,
+        "confidential_keywords_json": json.dumps(CONFIDENTIAL_KEYWORDS),
+    })
 
 
 @login_required
@@ -81,7 +88,12 @@ def program_edit(request, program_id):
             return redirect("programs:program_detail", program_id=program.pk)
     else:
         form = ProgramForm(instance=program)
-    return render(request, "programs/form.html", {"form": form, "editing": True, "program": program})
+    return render(request, "programs/form.html", {
+        "form": form,
+        "editing": True,
+        "program": program,
+        "confidential_locked": program.is_confidential,
+    })
 
 
 @login_required

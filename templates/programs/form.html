@@ -11,7 +11,9 @@
 <form method="post">
     {% csrf_token %}
 
+    {# Render all fields except is_confidential in the standard loop #}
     {% for field in form %}
+    {% if field.name != "is_confidential" %}
     <label for="{{ field.id_for_label }}">
         {{ field.label }}
         {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
@@ -20,11 +22,94 @@
     {% if field.errors %}
     <small class="badge badge-danger">{{ field.errors.0 }}</small>
     {% endif %}
+    {% endif %}
     {% endfor %}
+
+    {# Confidential program section — dedicated fieldset #}
+    <fieldset>
+        <legend><strong>{% trans "Is this a confidential program?" %}</strong></legend>
+        <p>
+            <small>
+                {% blocktrans with program=term.program|default:"program" %}
+                Confidential {{ program }}s are invisible to staff in other {{ program }}s.
+                Client records in a confidential {{ program }} will not appear in
+                cross-{{ program }} searches. Once set, this cannot be changed back
+                without a formal Privacy Impact Assessment.
+                {% endblocktrans %}
+            </small>
+        </p>
+
+        {# Keyword suggestion banner — hidden by default, shown by JS #}
+        {% if suggest_confidential %}
+        <div id="confidential-suggestion" role="status" aria-live="polite" style="display:none; padding: 0.75rem 1rem; border-left: 4px solid var(--pico-primary); background: var(--pico-primary-focus); margin-bottom: 1rem;">
+            <small>
+                {% blocktrans with program=term.program|default:"program" %}
+                Based on the name, this {{ program }} may handle sensitive data.
+                Consider marking it as confidential.
+                {% endblocktrans %}
+            </small>
+        </div>
+        {% endif %}
+
+        {% if confidential_locked %}
+        {# Already confidential — show locked state #}
+        <p>
+            <strong>{% trans "This program is confidential." %}</strong>
+            {% trans "This setting cannot be changed back to standard." %}
+        </p>
+        {# Hidden input to preserve the value on form submission #}
+        <input type="hidden" name="is_confidential" value="on">
+        {% else %}
+        {# Show the checkbox #}
+        <label for="id_is_confidential">
+            <input type="checkbox" id="id_is_confidential" name="is_confidential"
+                   {% if form.is_confidential.value %}checked{% endif %}>
+            {% trans "Yes, this is a confidential program" %}
+        </label>
+        {% endif %}
+
+        {# Phase warning #}
+        <p>
+            <small>
+                <em>
+                    {% trans "Note: Audit hardening and admin isolation are not yet active (Phase H.4). Do not use for domestic violence or other high-risk services until that phase is complete." %}
+                </em>
+            </small>
+        </p>
+
+        {# Validation errors #}
+        {% if form.is_confidential.errors %}
+        <small class="badge badge-danger">{{ form.is_confidential.errors.0 }}</small>
+        {% endif %}
+    </fieldset>
 
     <div role="group">
         <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% blocktrans with program=term.program|default:"Program" %}Create {{ program }}{% endblocktrans %}{% endif %}</button>
         <a href="{% url 'programs:program_list' %}" role="button" class="outline">{% trans "Cancel" %}</a>
     </div>
 </form>
+
+{% if suggest_confidential and confidential_keywords_json %}
+<script>
+(function() {
+    // Progressive enhancement: suggest confidential when program name matches keywords
+    var keywords = {{ confidential_keywords_json|safe }};
+    var nameInput = document.getElementById("id_name");
+    var suggestion = document.getElementById("confidential-suggestion");
+    if (!nameInput || !suggestion) return;
+
+    function checkName() {
+        var name = nameInput.value.toLowerCase();
+        var match = keywords.some(function(kw) {
+            return name.indexOf(kw) !== -1;
+        });
+        suggestion.style.display = match ? "block" : "none";
+    }
+
+    nameInput.addEventListener("input", checkName);
+    // Check on page load in case the field already has a value (e.g., validation error)
+    checkName();
+})();
+</script>
+{% endif %}
 {% endblock %}

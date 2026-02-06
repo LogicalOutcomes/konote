@@ -248,14 +248,19 @@ def generate_cmt_pdf(request, cmt_data):
     return render_pdf("reports/pdf_cmt_report.html", context, filename)
 
 
-def _collect_client_data(client, include_plans, include_notes, include_metrics, include_events, include_custom_fields):
+def _collect_client_data(client, include_plans, include_notes, include_metrics, include_events, include_custom_fields, user_program_ids=None):
     """Collect all data for an individual client export."""
     data = {}
 
-    # Always include enrolments (all, not just enrolled)
-    data["enrolments"] = ClientProgramEnrolment.objects.filter(
+    # Include enrolments (all statuses, not just enrolled) — filtered to
+    # programs the requesting user can see, so confidential program
+    # enrolments are never leaked in exports.
+    enrolments_qs = ClientProgramEnrolment.objects.filter(
         client_file=client
     ).select_related("program").order_by("-enrolled_at")
+    if user_program_ids is not None:
+        enrolments_qs = enrolments_qs.filter(program_id__in=user_program_ids)
+    data["enrolments"] = enrolments_qs
 
     # Custom fields
     if include_custom_fields:
@@ -469,10 +474,14 @@ def client_export(request, client_id):
             include_custom_fields = form.cleaned_data["include_custom_fields"]
             recipient = form.get_recipient_display()
 
-            # Collect all requested data
+            # Collect all requested data — pass user's program IDs so
+            # confidential program enrolments are excluded from export.
+            from apps.clients.views import _get_user_program_ids
+            user_program_ids = _get_user_program_ids(request.user)
             data = _collect_client_data(
                 client, include_plans, include_notes,
                 include_metrics, include_events, include_custom_fields,
+                user_program_ids=user_program_ids,
             )
 
             # Audit log

@@ -17,6 +17,8 @@ The core app is feature-complete. These tasks prepare for production use.
 ### Occasional Tasks
 
 - [ ] Run UX walkthrough — `pytest tests/ux_walkthrough/ -v`, review report at `tasks/ux-review-latest.md` (UX-WALK1)
+- [ ] Redeploy to Railway — push to `main`, Railway auto-deploys. See `docs/deploy-railway.md` (OPS-RAIL1)
+- [ ] Redeploy to FullHost — push to `main`, then trigger redeploy via API or dashboard. See `docs/deploy-fullhost.md` (OPS-FH1)
 
 ## Coming Up
 
@@ -68,13 +70,13 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 Prevent duplicate client records across programs while protecting sensitive program privacy. See `tasks/cross-program-client-matching.md` for full design (4 expert panels).
 
 **H.1: Foundation — Confidential Program Isolation**
-- [ ] Add `is_confidential` field to Program model + migration (CONF1)
-- [ ] Create guided setup question in program create/edit admin UI (CONF2)
-- [ ] Update `get_client_queryset()` to filter out confidential program clients for non-confidential users (CONF3)
+- [x] Add `is_confidential` field to Program model + migration — 2026-02-06 (CONF1)
+- [x] Create guided setup question in program create/edit admin UI — 2026-02-06 (CONF2)
+- [x] Filter confidential data from views — enrolment display, edit form unenrolment bug, PDF export, registration links, group views — 2026-02-06 (CONF3)
 
 **H.2: Duplicate Detection (Standard Programs)**
-- [ ] Add phone number as standard field on ClientFile if not already first-class (MATCH1)
-- [ ] Build phone-based duplicate detection on client create form — background check, banner UI (MATCH2)
+- [x] Add phone number as first-class encrypted field on ClientFile — 2026-02-06 (MATCH1)
+- [x] Build phone-based duplicate detection on client create form — HTMX endpoint, banner UI — 2026-02-06 (MATCH2)
 - [ ] Add name + DOB secondary matching as fallback when phone unavailable (MATCH3)
 
 **H.3: Merge Tool (Standard Programs)**
@@ -84,7 +86,7 @@ Prevent duplicate client records across programs while protecting sensitive prog
 - [ ] Filter confidential client records from Django admin for superusers without confidential access (CONF4)
 - [ ] Add immutable audit logging for all confidential record access — who, when, what, which record (CONF5)
 - [ ] Aggregate reports use small-cell suppression — show "< 10" when confidential program has fewer than 10 clients (CONF6)
-- [ ] Create `tests/test_confidential_isolation.py` — test every view, search, match, merge, admin, and report path (CONF7)
+- [x] Create `tests/test_confidential_isolation.py` — isolation, matching, registration, groups, phone field — 2026-02-06 (CONF7)
 
 **H.5: DV Readiness & Documentation**
 - [ ] Ship PIA (Privacy Impact Assessment) template pre-filled from agency configuration (MATCH5)
@@ -128,6 +130,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Cross-program client matching Phase H.1 + H.2 — confidential program isolation, phone field, duplicate detection, security fixes (edit form bug, PDF export, registration links, group views), test suite — 2026-02-06 (CONF1-3, MATCH1-2, CONF7)
 - [x] Verify deployment end-to-end with production-like config — FullHost tested, HTTPS working, demo data live — 2026-02-06 (OPS5)
 - [x] Lock in .mo translation strategy — commit .mo to git, no compilation in Docker, freshness check in validate_translations.py — 2026-02-06 (I18N-FIX1)
 - [x] Fix 4 UX walkthrough crashes + 6 test failures — 2026-02-06 (UX-FIX1)

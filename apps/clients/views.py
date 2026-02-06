@@ -31,6 +31,18 @@ def get_client_queryset(user):
     return ClientFile.objects.real()
 
 
+def _get_user_program_ids(user):
+    """Return set of program IDs the user has active roles in.
+
+    Used to filter enrolment display — only show programs the user can see.
+    Prevents leaking confidential program names to users without access.
+    """
+    return set(
+        UserProgramRole.objects.filter(user=user, status="active")
+        .values_list("program_id", flat=True)
+    )
+
+
 def _get_accessible_programs(user):
     """Return programs the user can access.
 
@@ -98,6 +110,7 @@ def _find_clients_with_matching_notes(client_ids, query_lower):
 def client_list(request):
     clients = _get_accessible_clients(request.user)
     accessible_programs = _get_accessible_programs(request.user)
+    user_program_ids = _get_user_program_ids(request.user)
 
     # Get filter values from query params
     status_filter = request.GET.get("status", "")
@@ -114,7 +127,12 @@ def client_list(request):
         if status_filter and client.status != status_filter:
             continue
 
-        programs = [e.program for e in client.enrolments.all() if e.status == "enrolled"]
+        # Only show enrolments in programs the user has access to.
+        # Prevents leaking confidential program names.
+        programs = [
+            e.program for e in client.enrolments.all()
+            if e.status == "enrolled" and e.program_id in user_program_ids
+        ]
 
         # Apply program filter
         if program_filter:
@@ -175,6 +193,7 @@ def client_create(request):
             client.last_name = form.cleaned_data["last_name"]
             client.middle_name = form.cleaned_data["middle_name"] or ""
             client.birth_date = form.cleaned_data["birth_date"]
+            client.phone = form.cleaned_data.get("phone", "")
             client.record_id = form.cleaned_data["record_id"]
             client.status = form.cleaned_data["status"]
             # Set is_demo based on the creating user's status
@@ -208,13 +227,19 @@ def client_edit(request, client_id):
             client.last_name = form.cleaned_data["last_name"]
             client.middle_name = form.cleaned_data["middle_name"] or ""
             client.birth_date = form.cleaned_data["birth_date"]
+            client.phone = form.cleaned_data.get("phone", "")
             client.record_id = form.cleaned_data["record_id"]
             client.status = form.cleaned_data["status"]
             client.save()
-            # Sync enrolments
+            # Sync enrolments — only touch programs the user has access to.
+            # Confidential program enrolments the user can't see are preserved.
+            accessible_program_ids = _get_user_program_ids(request.user)
             selected_ids = set(p.pk for p in form.cleaned_data["programs"])
-            # Unenrol removed programs
-            for enrolment in ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled"):
+            # Unenrol removed programs (only within user's accessible programs)
+            for enrolment in ClientProgramEnrolment.objects.filter(
+                client_file=client, status="enrolled",
+                program_id__in=accessible_program_ids,
+            ):
                 if enrolment.program_id not in selected_ids:
                     enrolment.status = "unenrolled"
                     enrolment.save()
@@ -233,6 +258,7 @@ def client_edit(request, client_id):
                 "first_name": client.first_name,
                 "last_name": client.last_name,
                 "middle_name": client.middle_name,
+                "phone": client.phone,
                 "birth_date": client.birth_date,
                 "record_id": client.record_id,
                 "status": client.status,
@@ -264,7 +290,12 @@ def client_detail(request, client_id):
     user_role = getattr(request, "user_program_role", None)
     is_receptionist = user_role == "receptionist"
 
-    enrolments = ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled").select_related("program")
+    # Only show enrolments in programs the user has access to.
+    # Prevents leaking confidential program names.
+    user_program_ids = _get_user_program_ids(request.user)
+    enrolments = ClientProgramEnrolment.objects.filter(
+        client_file=client, status="enrolled", program_id__in=user_program_ids,
+    ).select_related("program")
     # Custom fields for Info tab — filter by role visibility and hide empty fields
     groups = CustomFieldGroup.objects.filter(status="active").prefetch_related("fields")
     custom_data = []
@@ -736,3 +767,22 @@ def custom_field_def_edit(request, field_id):
     else:
         form = CustomFieldDefinitionForm(instance=field_def)
     return render(request, "clients/custom_field_form.html", {"form": form, "title": f"Edit {field_def.name}"})
+
+
+@login_required
+@minimum_role("staff")
+def check_duplicate(request):
+    """HTMX endpoint: check for duplicate clients by phone number.
+
+    Returns the _duplicate_banner.html partial with any matches,
+    or an empty response if no matches.
+    """
+    phone = request.GET.get("phone", "").strip()
+    exclude_id = request.GET.get("exclude", "")
+
+    from .matching import find_phone_matches
+    matches = find_phone_matches(
+        phone, request.user,
+        exclude_client_id=int(exclude_id) if exclude_id.isdigit() else None,
+    )
+    return render(request, "clients/_duplicate_banner.html", {"matches": matches})
