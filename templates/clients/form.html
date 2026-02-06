@@ -31,16 +31,24 @@
             <input type="text" name="middle_name" id="id_middle_name" value="{{ form.middle_name.value|default:'' }}">
         </div>
         <div>
-            <label for="id_birth_date">{% trans "Date of Birth" %}</label>
-            <input type="date" name="birth_date" id="id_birth_date" value="{{ form.birth_date.value|default:'' }}">
+            <label for="id_phone">{% trans "Phone Number" %}</label>
+            <input type="tel" name="phone" id="id_phone" value="{{ form.phone.value|default:'' }}" placeholder="(613) 555-1234">
+            {% if form.phone.errors %}<small class="badge badge-danger">{{ form.phone.errors.0 }}</small>{% endif %}
         </div>
     </div>
 
     <div class="grid">
         <div>
+            <label for="id_birth_date">{% trans "Date of Birth" %}</label>
+            <input type="date" name="birth_date" id="id_birth_date" value="{{ form.birth_date.value|default:'' }}">
+        </div>
+        <div>
             <label for="id_record_id">{% trans "Record ID" %}</label>
             <input type="text" name="record_id" id="id_record_id" value="{{ form.record_id.value|default:'' }}">
         </div>
+    </div>
+
+    <div class="grid">
         <div>
             <label for="id_status">{% trans "Status" %}</label>
             <select name="status" id="id_status">
@@ -49,6 +57,7 @@
                 {% endfor %}
             </select>
         </div>
+        <div></div>
     </div>
 
     {% if form.programs.field.queryset.exists %}

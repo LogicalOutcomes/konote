@@ -175,6 +175,7 @@ def client_create(request):
             client.last_name = form.cleaned_data["last_name"]
             client.middle_name = form.cleaned_data["middle_name"] or ""
             client.birth_date = form.cleaned_data["birth_date"]
+            client.phone = form.cleaned_data.get("phone", "")
             client.record_id = form.cleaned_data["record_id"]
             client.status = form.cleaned_data["status"]
             # Set is_demo based on the creating user's status
@@ -208,6 +209,7 @@ def client_edit(request, client_id):
             client.last_name = form.cleaned_data["last_name"]
             client.middle_name = form.cleaned_data["middle_name"] or ""
             client.birth_date = form.cleaned_data["birth_date"]
+            client.phone = form.cleaned_data.get("phone", "")
             client.record_id = form.cleaned_data["record_id"]
             client.status = form.cleaned_data["status"]
             client.save()
@@ -233,6 +235,7 @@ def client_edit(request, client_id):
                 "first_name": client.first_name,
                 "last_name": client.last_name,
                 "middle_name": client.middle_name,
+                "phone": client.phone,
                 "birth_date": client.birth_date,
                 "record_id": client.record_id,
                 "status": client.status,

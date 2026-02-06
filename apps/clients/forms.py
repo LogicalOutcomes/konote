@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.programs.models import Program
 
 from .models import ClientFile, CustomFieldDefinition, CustomFieldGroup
+from .validators import normalize_phone_number, validate_phone_number
 
 
 class ConsentRecordForm(forms.Form):
@@ -40,6 +41,11 @@ class ClientFileForm(forms.Form):
     first_name = forms.CharField(max_length=255)
     last_name = forms.CharField(max_length=255)
     middle_name = forms.CharField(max_length=255, required=False)
+    phone = forms.CharField(
+        max_length=20, required=False,
+        label=_("Phone Number"),
+        widget=forms.TextInput(attrs={"type": "tel", "placeholder": "(613) 555-1234"}),
+    )
     birth_date = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
     record_id = forms.CharField(max_length=100, required=False)
     status = forms.ChoiceField(choices=ClientFile.STATUS_CHOICES)
@@ -55,6 +61,13 @@ class ClientFileForm(forms.Form):
         super().__init__(*args, **kwargs)
         if available_programs is not None:
             self.fields["programs"].queryset = available_programs
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get("phone", "").strip()
+        if phone:
+            validate_phone_number(phone)
+            phone = normalize_phone_number(phone)
+        return phone
 
 
 class CustomFieldGroupForm(forms.ModelForm):
