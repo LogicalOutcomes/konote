@@ -83,20 +83,19 @@
         </article>
 
         {% if demo_mode %}
-        <article>
-            <hgroup>
-                <h2>{% trans "Try the Demo" %}</h2>
-                <p>{% trans "Sign in instantly as a demo user to explore the system" %}</p>
-            </hgroup>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
-                <a href="/auth/demo-login/frontdesk/" role="button" class="secondary">{% trans "Front Desk" %} — Dana</a>
-                <a href="/auth/demo-login/manager/" role="button" class="secondary">{% trans "Manager" %} — Morgan</a>
-                <a href="/auth/demo-login/worker-1/" role="button" class="secondary">{% trans "Lead Worker" %} — Casey</a>
-                <a href="/auth/demo-login/worker-2/" role="button" class="secondary">{% trans "Direct Service" %} — Noor</a>
-                <a href="/auth/demo-login/executive/" role="button" class="secondary">{% trans "Executive" %} — Eva</a>
-                <a href="/auth/demo-login/admin/" role="button" class="secondary">{% trans "Administrator" %} — Alex</a>
+        <hr class="demo-divider">
+        <section class="demo-section">
+            <p class="demo-heading">{% trans "Try the Demo" %}</p>
+            <p class="demo-subtext">{% trans "Sign in instantly as a demo user to explore the system" %}</p>
+            <div class="demo-grid">
+                <a href="/auth/demo-login/frontdesk/" class="demo-btn">{% trans "Front Desk" %} — Dana</a>
+                <a href="/auth/demo-login/manager/" class="demo-btn">{% trans "Manager" %} — Morgan</a>
+                <a href="/auth/demo-login/worker-1/" class="demo-btn">{% trans "Lead Worker" %} — Casey</a>
+                <a href="/auth/demo-login/worker-2/" class="demo-btn">{% trans "Direct Service" %} — Noor</a>
+                <a href="/auth/demo-login/executive/" class="demo-btn">{% trans "Executive" %} — Eva</a>
+                <a href="/auth/demo-login/admin/" class="demo-btn">{% trans "Administrator" %} — Alex</a>
             </div>
-        </article>
+        </section>
         {% endif %}
     </main>
 </body>

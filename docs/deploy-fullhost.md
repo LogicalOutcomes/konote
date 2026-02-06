@@ -39,6 +39,8 @@ You'll need:
 
 **Note:** This creates your FullHost hosting account. You'll create a separate KoNote2 admin account later.
 
+**Recommended:** Enable multi-factor authentication (MFA) on your FullHost account. Your FullHost login controls your entire KoNote2 environment — databases, encryption keys, and all client data. Go to your FullHost account settings and enable two-factor authentication before proceeding.
+
 ---
 
 ## Step 2: Deploy KoNote2

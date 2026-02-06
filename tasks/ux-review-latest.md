@@ -1,14 +1,14 @@
 # KoNote2 UX Walkthrough Report
 
-**Generated:** 2026-02-06 16:14:21  
+**Generated:** 2026-02-06 16:25:26  
 **Command:** `pytest tests/ux_walkthrough/ -v`
 
 ## Summary
 
 | Metric | This Run | Previous |
 |--------|----------|----------|
-| Pages visited | 133 | 133 (same) |
-| Critical issues | 0 | 1 (down 1) |
+| Pages visited | 139 | 6 (up 133) |
+| Critical issues | 0 |
 | Warnings | 0 |
 | Info items | 0 |
 
@@ -97,6 +97,9 @@ _No info issues found._
 | View new client profile | `/clients/3/` | 200 | None |
 | Document intake session | `/notes/client/3/quick/` | 200 | None |
 | Notes timeline after intake | `/notes/client/3/` | 200 | None |
+| Search client list by note text | `/clients/?q=seemed+well` | 200 | None |
+| Dedicated search by note text | `/clients/search/?q=seemed+well` | 200 | None |
+| Search for other program's note content | `/clients/search/?q=vocational` | 200 | None |
 
 ### Program Manager
 
@@ -226,6 +229,14 @@ _No info issues found._
 | Front Desk (FR) | Client list | `/clients/` | 200 | None |
 | Front Desk (FR) | Client detail | `/clients/1/` | 200 | None |
 | Front Desk (FR) | Programs list | `/programs/` | 200 | None |
+
+### Client Note Search
+
+| Role | Step | URL | Status | Issues |
+|------|------|-----|--------|--------|
+| Direct Service | Client list search by note content | `/clients/?q=seemed+well` | 200 | None |
+| Direct Service | Dedicated search by note content | `/clients/search/?q=seemed+well` | 200 | None |
+| Direct Service | Note search isolation (no cross-program leak) | `/clients/search/?q=vocational` | 200 | None |
 
 ## Recommendations
 
