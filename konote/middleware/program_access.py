@@ -37,6 +37,20 @@ class ProgramAccessMiddleware:
     def __init__(self, get_response):
         self.get_response = get_response
 
+    # CONF9: Paths exempt from forced program selection redirect.
+    # These either have their own access control or don't show client data.
+    SELECTION_EXEMPT_PREFIXES = (
+        "/programs/",
+        "/auth/",
+        "/i18n/",
+        "/static/",
+        "/merge/",
+        "/audit/",
+        "/admin/",
+        "/erasure/",
+        "/reports/export/",
+    )
+
     def __call__(self, request):
         # Skip for unauthenticated users (login page handles that)
         if not hasattr(request, "user") or not request.user.is_authenticated:
@@ -44,7 +58,16 @@ class ProgramAccessMiddleware:
 
         path = request.path
 
-        # Admin-only routes
+        # CONF9: Stash active program IDs on request for views to use.
+        # Guard against missing session (e.g., RequestFactory in tests).
+        if hasattr(request, "session"):
+            from apps.programs.context import get_active_program_ids
+            request.active_program_ids = get_active_program_ids(request.user, request.session)
+        else:
+            request.active_program_ids = None
+
+        # Admin-only routes (checked BEFORE program selection — admin routes
+        # have their own access control and don't need program context)
         for pattern in ADMIN_ONLY_PATTERNS:
             if pattern.match(path):
                 if not request.user.is_admin:
@@ -53,6 +76,14 @@ class ProgramAccessMiddleware:
                         "Access denied. Admin privileges are required to view this page."
                     )
                 return self.get_response(request)
+
+        # CONF9: Force program selection for mixed-tier users without a selection.
+        # Placed after admin-only check so admin routes aren't affected.
+        if hasattr(request, "session"):
+            from apps.programs.context import needs_program_selection
+            if needs_program_selection(request.user, request.session):
+                if not any(path.startswith(p) for p in self.SELECTION_EXEMPT_PREFIXES):
+                    return redirect("programs:select_program")
 
         # Executive role: redirect to dashboard instead of client pages
         # Executives can see aggregate data only, not individual client records

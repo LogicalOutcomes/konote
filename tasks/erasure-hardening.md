@@ -5,12 +5,14 @@
 
 ## Context
 
-The tiered erasure system (anonymise/purge/full erasure) is complete and tested (72 tests pass).
+The tiered erasure system (anonymise/purge/full erasure) is complete and tested (89 tests pass).
 This task file covers hardening improvements identified by the expert panel, ordered by priority.
+
+**Status: All 7 items (H1–H7) implemented and tested. Completed 2026-02-06.**
 
 ---
 
-## ERASE-H1: Scope PDF Receipt Access (High Priority, Low Effort)
+## ERASE-H1: Scope PDF Receipt Access (High Priority, Low Effort) — DONE
 
 **Problem:** Any PM can download any erasure receipt, even for requests they're not involved in. The receipt contains full client PII (name, DOB, record ID).
 
@@ -38,7 +40,7 @@ if not is_involved:
 
 ---
 
-## ERASE-H2: Write Audit Before Erasure (High Priority, Medium Effort)
+## ERASE-H2: Write Audit Before Erasure (High Priority, Medium Effort) — DONE
 
 **Problem:** Audit log write is in a try/except that swallows failures. If the audit DB is down when erasure executes, the erasure proceeds but the compliance trail is lost.
 
@@ -89,7 +91,7 @@ def _log_erasure_audit(erasure_request, client_pk, record_id, action, ip_address
 
 ---
 
-## ERASE-H3: Track Receipt Downloads (Medium Priority, Low Effort)
+## ERASE-H3: Track Receipt Downloads (Medium Priority, Low Effort) — DONE
 
 **Problem:** The PDF receipt is the single most important document in the workflow. If nobody downloads it before approval, the erasure code links to nothing. Currently there's no way to tell whether anyone downloaded it.
 
@@ -135,7 +137,7 @@ Template warning (above the approval buttons):
 
 ---
 
-## ERASE-H4: Notify Requester on Rejection (Medium Priority, Low Effort)
+## ERASE-H4: Notify Requester on Rejection (Medium Priority, Low Effort) — DONE
 
 **Problem:** When a PM rejects an erasure request, no email is sent. The requester only finds out by checking the pending list. In a busy agency, rejected requests could sit unnoticed.
 
@@ -178,7 +180,7 @@ _notify_requester_rejection(er, request.user, review_notes)
 
 ---
 
-## ERASE-H5: Deduplicate build_data_summary Call (Low Priority, Low Effort)
+## ERASE-H5: Deduplicate build_data_summary Call (Low Priority, Low Effort) — DONE
 
 **Problem:** `erasure_request_create()` calls `build_data_summary()` twice — once on POST (line 103, saved to the request) and once for the template (line 130). The summary could differ if data changes between page load and submission.
 
@@ -211,7 +213,7 @@ active_alerts = Alert.objects.filter(...)
 
 ---
 
-## ERASE-H6: Erasure Code Race Condition Fix (Low Priority, Low Effort)
+## ERASE-H6: Erasure Code Race Condition Fix (Low Priority, Low Effort) — DONE
 
 **Problem:** The `save()` override uses `.count()` to generate sequential erasure codes. Two simultaneous saves could produce the same code. The `unique=True` constraint catches this as an IntegrityError, but with a confusing error message.
 
@@ -242,7 +244,7 @@ def save(self, *args, **kwargs):
 
 ---
 
-## ERASE-H7: History View Pagination (Low Priority, Low Effort)
+## ERASE-H7: History View Pagination (Low Priority, Low Effort) — DONE
 
 **Problem:** The erasure history view has no pagination. After a year of operation, this list could grow large.
 

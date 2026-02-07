@@ -157,3 +157,58 @@ def pending_erasures(request):
             )
         cache.set(cache_key, count, 60)  # 1 min cache
     return {"pending_erasure_count": count if count > 0 else None}
+
+
+def active_program_context(request):
+    """Inject active program context for the program switcher (CONF9).
+
+    Only runs queries for authenticated users with multi-tier program access.
+    Single-program and standard-only users get empty context (no switcher shown).
+    """
+    if not hasattr(request, "user") or not request.user.is_authenticated:
+        return {
+            "show_program_switcher": False,
+            "active_program_id": None,
+            "active_program_name": "",
+            "program_options": [],
+        }
+
+    from apps.programs.context import (
+        SESSION_KEY,
+        get_switcher_options,
+        needs_program_selector,
+    )
+    from apps.programs.models import Program
+
+    if not needs_program_selector(request.user):
+        return {
+            "show_program_switcher": False,
+            "active_program_id": None,
+            "active_program_name": "",
+            "program_options": [],
+        }
+
+    options = get_switcher_options(request.user)
+    value = request.session.get(SESSION_KEY)
+
+    # Determine display name for the active selection
+    active_name = ""
+    if value == "all_standard":
+        from django.utils.translation import gettext as _
+        active_name = _("All Standard Programs")
+    elif value is not None:
+        try:
+            program = Program.objects.get(pk=int(value))
+            active_name = program.name
+        except (Program.DoesNotExist, ValueError, TypeError):
+            pass
+
+    # Convert value to string for template comparison
+    active_id = str(value) if value is not None else ""
+
+    return {
+        "show_program_switcher": True,
+        "active_program_id": active_id,
+        "active_program_name": active_name,
+        "program_options": options,
+    }

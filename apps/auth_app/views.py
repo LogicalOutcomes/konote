@@ -167,6 +167,10 @@ def _local_login(request):
                     user.save(update_fields=["last_login_at"])
                     _audit_login(request, user)
                     sync_language_on_login(request, user)
+                    # CONF9: Redirect to program selection if mixed-tier user
+                    from apps.programs.context import needs_program_selection
+                    if needs_program_selection(user, request.session):
+                        return redirect("programs:select_program")
                     return redirect("/")
                 else:
                     attempts = _record_failed_attempt(client_ip)
@@ -259,6 +263,10 @@ def azure_callback(request):
     login(request, user)
     _audit_login(request, user)
     sync_language_on_login(request, user)
+    # CONF9: Redirect to program selection if mixed-tier user
+    from apps.programs.context import needs_program_selection
+    if needs_program_selection(user, request.session):
+        return redirect("programs:select_program")
     return redirect("/")
 
 
@@ -293,6 +301,10 @@ def demo_login(request, role):
     user.last_login_at = timezone.now()
     user.save(update_fields=["last_login_at"])
     sync_language_on_login(request, user)
+    # CONF9: Redirect to program selection if mixed-tier user
+    from apps.programs.context import needs_program_selection
+    if needs_program_selection(user, request.session):
+        return redirect("programs:select_program")
     return redirect("/")
 
 

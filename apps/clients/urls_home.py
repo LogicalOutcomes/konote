@@ -31,7 +31,9 @@ def home(request):
                 })
 
     # --- Quick stats ---
-    accessible = _get_accessible_clients(request.user)
+    # CONF9: Use active program context from middleware if available
+    active_ids = getattr(request, "active_program_ids", None)
+    accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
     active_count = accessible.filter(status="active").count()
     total_count = accessible.count()
 
@@ -84,7 +86,7 @@ def home(request):
     org_name = "LogicalOutcomes"
 
     # --- Accessible programs for search filters ---
-    accessible_programs = _get_accessible_programs(request.user)
+    accessible_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
 
     return render(request, "clients/home.html", {
         "results": [],

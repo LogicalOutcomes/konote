@@ -31,23 +31,30 @@ def get_client_queryset(user):
     return ClientFile.objects.real()
 
 
-def _get_user_program_ids(user):
+def _get_user_program_ids(user, active_program_ids=None):
     """Return set of program IDs the user has active roles in.
 
     Used to filter enrolment display — only show programs the user can see.
     Prevents leaking confidential program names to users without access.
+
+    If active_program_ids is provided (CONF9), narrows to those programs only.
     """
+    if active_program_ids:
+        return active_program_ids
     return set(
         UserProgramRole.objects.filter(user=user, status="active")
         .values_list("program_id", flat=True)
     )
 
 
-def _get_accessible_programs(user):
+def _get_accessible_programs(user, active_program_ids=None):
     """Return programs the user can access.
 
     Admins without program roles get no programs (they manage system config, not client data).
+    If active_program_ids is provided (CONF9), narrows to those programs only.
     """
+    if active_program_ids:
+        return Program.objects.filter(pk__in=active_program_ids, status="active")
     if user.is_admin:
         # Admins see programs for management; if they also have program roles, include those
         admin_program_ids = UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True)
@@ -60,7 +67,7 @@ def _get_accessible_programs(user):
     )
 
 
-def _get_accessible_clients(user):
+def _get_accessible_clients(user, active_program_ids=None):
     """Return client queryset scoped to user's programs and demo status.
 
     Uses prefetch_related to avoid N+1 queries when displaying enrolments.
@@ -68,8 +75,13 @@ def _get_accessible_clients(user):
 
     Security: Filters by user.is_demo to enforce demo/real data separation.
     Demo users only see demo clients; real users only see real clients.
+
+    If active_program_ids is provided (CONF9), narrows to those programs only.
     """
-    program_ids = UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True)
+    if active_program_ids:
+        program_ids = active_program_ids
+    else:
+        program_ids = UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True)
     client_ids = ClientProgramEnrolment.objects.filter(
         program_id__in=program_ids, status="enrolled"
     ).values_list("client_file_id", flat=True)
@@ -108,9 +120,11 @@ def _find_clients_with_matching_notes(client_ids, query_lower):
 
 @login_required
 def client_list(request):
-    clients = _get_accessible_clients(request.user)
-    accessible_programs = _get_accessible_programs(request.user)
-    user_program_ids = _get_user_program_ids(request.user)
+    # CONF9: Use active program context from middleware if available
+    active_ids = getattr(request, "active_program_ids", None)
+    clients = _get_accessible_clients(request.user, active_program_ids=active_ids)
+    accessible_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
+    user_program_ids = _get_user_program_ids(request.user, active_program_ids=active_ids)
 
     # Get filter values from query params
     status_filter = request.GET.get("status", "")

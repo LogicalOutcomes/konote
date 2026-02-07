@@ -3,12 +3,19 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponseForbidden, HttpResponseNotAllowed
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.auth_app.models import User
 
+from .context import (
+    get_switcher_options,
+    get_user_program_tiers,
+    needs_program_selector,
+    set_active_program,
+)
 from .forms import CONFIDENTIAL_KEYWORDS, ProgramForm, UserProgramRoleForm
 from .models import Program, UserProgramRole
 
@@ -154,3 +161,108 @@ def program_remove_role(request, program_id, role_id):
     messages.success(request, _("%(name)s removed.") % {"name": role.user.display_name})
     roles = UserProgramRole.objects.filter(program_id=program_id).select_related("user").order_by("status", "user__display_name")
     return render(request, "programs/_role_list.html", {"roles": roles, "program": role.program, "is_admin": True})
+
+
+# --- CONF9: Program context switcher views ---
+
+
+@login_required
+def select_program(request):
+    """Full-page program selection for mixed-tier users.
+
+    Shown on login (and by middleware) when a user has roles in both
+    Standard and Confidential programs but hasn't chosen a context yet.
+    """
+    tiers = get_user_program_tiers(request.user)
+    options = get_switcher_options(request.user)
+    return render(request, "programs/select_program.html", {
+        "standard_programs": tiers["standard"],
+        "confidential_programs": tiers["confidential"],
+        "options": options,
+    })
+
+
+@login_required
+def switch_program(request):
+    """POST: Set the active program in the user's session.
+
+    Accepts form field 'program' with value:
+    - A program ID (integer) for a specific program
+    - "all_standard" to see all standard programs combined
+
+    Validates that the user has an active role in the chosen program.
+    Audit-logs switches to confidential programs.
+    Redirects to 'next' param or home.
+    """
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    value = request.POST.get("program", "").strip()
+    next_url = request.POST.get("next", "/")
+
+    # Validate next URL (prevent open redirect)
+    from django.utils.http import url_has_allowed_host_and_scheme
+    if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+        next_url = "/"
+
+    if value == "all_standard":
+        # Valid if user has at least one standard program
+        has_standard = UserProgramRole.objects.filter(
+            user=request.user, status="active",
+            program__status="active", program__is_confidential=False,
+        ).exists()
+        if not has_standard:
+            return HttpResponseForbidden(_("You do not have access to any standard programs."))
+        set_active_program(request.session, "all_standard")
+        return redirect(next_url)
+
+    # Single program ID
+    try:
+        program_id = int(value)
+    except (ValueError, TypeError):
+        return HttpResponseForbidden(_("Invalid program selection."))
+
+    # Verify user has active role in this program
+    try:
+        role = UserProgramRole.objects.select_related("program").get(
+            user=request.user, program_id=program_id, status="active",
+            program__status="active",
+        )
+    except UserProgramRole.DoesNotExist:
+        return HttpResponseForbidden(_("You do not have access to this program."))
+
+    set_active_program(request.session, program_id)
+
+    # Audit-log switches to confidential programs
+    if role.program.is_confidential:
+        _audit_program_switch(request, role.program)
+
+    return redirect(next_url)
+
+
+def _audit_program_switch(request, program):
+    """Log a context switch to a confidential program in the audit trail."""
+    try:
+        from apps.audit.models import AuditLog
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=request.user.display_name,
+            ip_address=_get_client_ip(request),
+            action="view",
+            resource_type="program",
+            resource_id=program.pk,
+            program_id=program.pk,
+            is_confidential_context=True,
+            metadata={"context_switch": True, "program_name": program.name},
+        )
+    except Exception:
+        pass  # Audit failure should not block the switch
+
+
+def _get_client_ip(request):
+    """Extract client IP from request headers."""
+    xff = request.META.get("HTTP_X_FORWARDED_FOR")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR", "unknown")
