@@ -39,11 +39,12 @@ These rules apply to **every phase**. Do not skip them.
 ## Translations
 
 After creating or modifying any template that uses `{% trans %}` tags:
-1. Run `python manage.py translate_strings` to extract new strings and compile
-2. Add French translations for any empty `msgstr` entries in the .po file
-3. Commit both `locale/fr/LC_MESSAGES/django.po` and `django.mo`
+1. Run `python manage.py translate_strings` — this extracts, auto-translates (via Claude API), and compiles
+2. Commit both `locale/fr/LC_MESSAGES/django.po` and `django.mo`
 
-If you see a startup warning about missing translations, run `translate_strings` to fix it.
+The command auto-translates empty strings when `ANTHROPIC_API_KEY` is set. If the key is not set, it warns and skips translation — empty strings will then cause `validate_translations.py` to fail (exit code 1).
+
+Use `--no-translate` to skip auto-translation. Use `--dry-run` to preview changes.
 
 ## Task File: TODO.md
 

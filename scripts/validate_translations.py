@@ -121,7 +121,6 @@ def main():
         return 0
 
     errors_found = False
-    warnings_found = False
 
     for po_file in po_files:
         rel_path = po_file.relative_to(locale_dir.parent)
@@ -150,21 +149,23 @@ def main():
             print("4. Make sure to delete the entire block (msgid + msgstr lines)")
             print()
 
-        # Check 2: Untranslated entries (warnings — will show English to users)
+        # Check 2: Untranslated entries (errors — will show English to users)
         untranslated = find_untranslated_entries(po_file)
 
         if untranslated:
-            warnings_found = True
+            errors_found = True
 
             print(f"\n{'='*60}")
-            print(f"WARNING: {len(untranslated)} untranslated string(s) in {rel_path}")
+            print(f"ERROR: {len(untranslated)} untranslated string(s) in {rel_path}")
             print(f"{'='*60}\n")
 
-            for line_num, msgid in untranslated:
+            for line_num, msgid in untranslated[:20]:
                 print(f'  Line {line_num}: "{msgid}"')
+            if len(untranslated) > 20:
+                print(f"  ... and {len(untranslated) - 20} more")
 
             print(f"\nThese strings will appear in English for French users.")
-            print(f"Add French translations in {rel_path} for each msgstr.\n")
+            print(f"FIX: Run 'python manage.py translate_strings' to auto-translate.\n")
 
         # Check 3: .mo freshness (error — deployed translations would be stale)
         status, message = check_mo_freshness(po_file)
@@ -177,14 +178,11 @@ def main():
             print(f"\n  {message}\n")
 
     if errors_found:
-        print("Translation validation FAILED - fix duplicates before deploying")
+        print("Translation validation FAILED — fix errors before deploying")
+        print("  Run: python manage.py translate_strings")
         return 1
 
-    if warnings_found:
-        print("Translation validation passed with WARNINGS - untranslated strings found")
-        return 0
-
-    print(f"Translation validation passed - checked {len(po_files)} file(s)")
+    print(f"Translation validation passed — checked {len(po_files)} file(s)")
     return 0
 
 

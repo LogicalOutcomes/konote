@@ -1,19 +1,22 @@
 """
-Extract translatable strings from templates and Python, sync with .po, compile .mo.
+Extract translatable strings from templates and Python, auto-translate, compile .mo.
 
 Replaces the need for gettext/makemessages on Windows. Uses regex extraction
 and polib for .po/.mo handling — pure Python, no system dependencies.
 
+Auto-translates empty strings using Claude API when ANTHROPIC_API_KEY is set.
+
 Usage:
-    python manage.py translate_strings           # Extract + add missing + compile
-    python manage.py translate_strings --dry-run  # Show what would change
-    python manage.py translate_strings --translate # (future) AI translation
+    python manage.py translate_strings              # Extract + translate + compile
+    python manage.py translate_strings --dry-run    # Show what would change
+    python manage.py translate_strings --no-translate  # Extract + compile only
 
 Exit codes:
     0 = success
     1 = error (duplicate msgids, file write failure, etc.)
 """
 
+import json
 import os
 import re
 import shutil
@@ -26,11 +29,35 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 
+# ── Translation prompt ──────────────────────────────────────────────────
+
+SYSTEM_PROMPT = """\
+You are a translator for a Canadian nonprofit client management system called KoNote2.
+
+Rules:
+- Translate English to Canadian French
+- Use formal "vous" (not "tu")
+- Use Canadian nonprofit terminology (organisme, bénéficiaire, intervenant)
+- Use Canadian French terms: courriel (not e-mail), téléverser (not uploader)
+- Keep UI text concise — space is limited
+- Preserve ALL placeholders exactly: %(name)s, %(count)d, {{ var }}, {record_id}
+- Preserve ALL HTML tags exactly: <strong>, <em>, <a href="...">, etc.
+- Use French typographic conventions: space before colon, semicolon, question/exclamation marks
+- Use « guillemets » for quotation marks
+- Canadian spelling: organisation (not organization)
+
+Return ONLY a JSON object mapping each number to its French translation.
+Example input: {"1": "Sign In", "2": "Password"}
+Example output: {"1": "Connexion", "2": "Mot de passe"}
+"""
+
+BATCH_SIZE = 25  # strings per API call
+
+
 class Command(BaseCommand):
-    help = "Extract translatable strings, add missing to .po, compile .mo."
+    help = "Extract translatable strings, auto-translate empty ones, compile .mo."
 
     # Regex for {% trans "string" %} and {% trans 'string' %}
-    # Handles {%- and -%} whitespace trimming variants
     TEMPLATE_PATTERN = re.compile(
         r"""\{%[-\s]*trans\s+['"](.+?)['"]\s*[-]?%\}"""
     )
@@ -50,9 +77,9 @@ class Command(BaseCommand):
             help="Show what would change without modifying files.",
         )
         parser.add_argument(
-            "--translate",
+            "--no-translate",
             action="store_true",
-            help="(Future) AI-powered translation. Not yet configured.",
+            help="Skip auto-translation (extract and compile only).",
         )
         parser.add_argument(
             "--lang",
@@ -62,14 +89,8 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         dry_run = options["dry_run"]
+        skip_translate = options["no_translate"]
         lang = options["lang"]
-
-        if options["translate"]:
-            self.stdout.write(self.style.WARNING(
-                "\n  --translate is not yet configured. "
-                "See tasks/ai-translation-implementation.md\n"
-            ))
-            return
 
         self.stdout.write("\nKoNote2 Translation Sync")
         self.stdout.write("=" * 40)
@@ -79,7 +100,7 @@ class Command(BaseCommand):
         # ----------------------------------------------------------
         # Phase 1: Extract strings
         # ----------------------------------------------------------
-        self.stdout.write("\n[1/3] Extracting strings...")
+        self.stdout.write("\n[1/4] Extracting strings...")
 
         template_strings, template_file_count = self._extract_templates(base_dir)
         python_strings, python_file_count = self._extract_python(base_dir)
@@ -101,7 +122,7 @@ class Command(BaseCommand):
         # ----------------------------------------------------------
         # Phase 2: Compare with .po and add missing
         # ----------------------------------------------------------
-        self.stdout.write(f"\n[2/3] Comparing with django.po...")
+        self.stdout.write(f"\n[2/4] Comparing with django.po...")
 
         po_path = self._find_po_file(lang, base_dir)
         if po_path is None:
@@ -114,7 +135,6 @@ class Command(BaseCommand):
         po = polib.pofile(str(po_path))
         existing_msgids = {entry.msgid for entry in po}
 
-        # Count already translated
         translated_count = sum(
             1 for entry in po if entry.msgstr and not entry.obsolete
         )
@@ -128,10 +148,7 @@ class Command(BaseCommand):
             f"({translated_count} translated)"
         )
 
-        # Find strings in code but not in .po
         new_strings = sorted(all_strings - existing_msgids)
-
-        # Find strings in .po but not in code (possibly stale)
         stale_strings = sorted(existing_msgids - all_strings - {""})
 
         self.stdout.write(
@@ -143,8 +160,7 @@ class Command(BaseCommand):
         if new_strings:
             self.stdout.write(
                 self.style.WARNING(
-                    f"      + {len(new_strings)} new strings to add to .po "
-                    f"(empty translation)"
+                    f"      + {len(new_strings)} new strings to add"
                 )
             )
         else:
@@ -168,7 +184,7 @@ class Command(BaseCommand):
                 f"not found in code (possibly stale)"
             )
 
-        # Check for duplicate msgids before writing
+        # Check for duplicate msgids
         msgid_counts = {}
         for entry in po:
             if entry.msgid:
@@ -199,7 +215,12 @@ class Command(BaseCommand):
                     self.stdout.write(
                         f"    ... and {len(new_strings) - 20} more"
                     )
-            self._print_summary(new_strings, empty_count, dry_run=True)
+            total_empty = len(new_strings) + empty_count
+            if total_empty:
+                self.stdout.write(self.style.WARNING(
+                    f"\n  {total_empty} strings would be auto-translated."
+                ))
+            self._print_summary(0, total_empty, dry_run=True)
             return
 
         # Add new strings to .po
@@ -207,45 +228,54 @@ class Command(BaseCommand):
             for msgid in new_strings:
                 entry = polib.POEntry(msgid=msgid, msgstr="")
                 po.append(entry)
+            self._save_po(po, po_path)
+            self.stdout.write(self.style.SUCCESS(
+                f"      [OK] Added {len(new_strings)} entries to {po_path.name}"
+            ))
 
-            # Write to temp file first, then replace (crash safety)
-            fd, tmp_path = tempfile.mkstemp(
-                suffix=".po", dir=str(po_path.parent)
+        # ----------------------------------------------------------
+        # Phase 3: Auto-translate empty strings
+        # ----------------------------------------------------------
+        # Collect all empty entries (including any we just added)
+        empty_entries = [
+            e for e in po
+            if not e.msgstr and not e.obsolete and e.msgid
+        ]
+
+        if empty_entries and not skip_translate:
+            self.stdout.write(
+                f"\n[3/4] Auto-translating {len(empty_entries)} "
+                f"empty strings..."
             )
-            os.close(fd)
-            try:
-                po.save(tmp_path)
-                shutil.move(tmp_path, str(po_path))
+            translated = self._auto_translate(empty_entries, lang)
+            if translated > 0:
+                self._save_po(po, po_path)
                 self.stdout.write(self.style.SUCCESS(
-                    f"      [OK] Added {len(new_strings)} entries to {po_path.name}"
+                    f"      [OK] Translated {translated} strings"
                 ))
-            except Exception as e:
-                # Clean up temp file on failure
-                if os.path.exists(tmp_path):
-                    os.unlink(tmp_path)
-                self.stderr.write(self.style.ERROR(
-                    f"\n  ERROR writing .po file: {e}\n"
-                ))
-                sys.exit(1)
+            # Reload after saving
+            po = polib.pofile(str(po_path))
+        elif empty_entries and skip_translate:
+            self.stdout.write(
+                f"\n[3/4] Skipping translation (--no-translate)"
+            )
+            self.stdout.write(self.style.WARNING(
+                f"      [!!] {len(empty_entries)} strings still untranslated"
+            ))
+        else:
+            self.stdout.write(f"\n[3/4] No empty strings to translate.")
 
         # ----------------------------------------------------------
-        # Phase 3: Compile .mo
+        # Phase 4: Compile .mo
         # ----------------------------------------------------------
-        self.stdout.write(f"\n[3/3] Compiling django.mo...")
+        self.stdout.write(f"\n[4/4] Compiling django.mo...")
 
         mo_path = po_path.with_suffix(".mo")
-
-        # Reload if we modified the .po
-        if new_strings:
-            po = polib.pofile(str(po_path))
-
-        # Write .mo via temp file
         fd, tmp_mo = tempfile.mkstemp(suffix=".mo", dir=str(mo_path.parent))
         os.close(fd)
         try:
             po.save_as_mofile(tmp_mo)
             shutil.move(tmp_mo, str(mo_path))
-
             compiled_count = len([e for e in po if e.translated()])
             self.stdout.write(self.style.SUCCESS(
                 f"      [OK] Compiled {compiled_count} entries to {mo_path.name}"
@@ -261,8 +291,123 @@ class Command(BaseCommand):
         # ----------------------------------------------------------
         # Summary
         # ----------------------------------------------------------
-        total_needing = len(new_strings) + empty_count
-        self._print_summary(new_strings, empty_count, dry_run=False)
+        remaining_empty = sum(
+            1 for entry in po
+            if not entry.msgstr and not entry.obsolete and entry.msgid
+        )
+        self._print_summary(0, remaining_empty, dry_run=False)
+
+    # ------------------------------------------------------------------
+    # Auto-translation
+    # ------------------------------------------------------------------
+
+    def _auto_translate(self, empty_entries, lang):
+        """Translate empty entries using Claude API. Returns count translated."""
+        # Check for API key
+        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        if not api_key:
+            self.stdout.write(self.style.WARNING(
+                "      [!!] ANTHROPIC_API_KEY not set — skipping auto-translate.\n"
+                "      Set the key or translate manually, then re-run."
+            ))
+            return 0
+
+        # Import anthropic (optional dependency)
+        try:
+            from anthropic import Anthropic
+        except ImportError:
+            self.stdout.write(self.style.WARNING(
+                "      [!!] anthropic package not installed — skipping.\n"
+                "      Install with: pip install anthropic"
+            ))
+            return 0
+
+        client = Anthropic(api_key=api_key)
+        total_translated = 0
+
+        # Process in batches
+        for batch_start in range(0, len(empty_entries), BATCH_SIZE):
+            batch = empty_entries[batch_start:batch_start + BATCH_SIZE]
+            batch_num = (batch_start // BATCH_SIZE) + 1
+            total_batches = (len(empty_entries) + BATCH_SIZE - 1) // BATCH_SIZE
+
+            self.stdout.write(
+                f"      Batch {batch_num}/{total_batches} "
+                f"({len(batch)} strings)..."
+            )
+
+            # Build numbered dict for the API
+            source = {}
+            for i, entry in enumerate(batch, 1):
+                source[str(i)] = entry.msgid
+
+            try:
+                response = client.messages.create(
+                    model="claude-haiku-4-5-20251001",
+                    max_tokens=4096,
+                    system=SYSTEM_PROMPT,
+                    messages=[{
+                        "role": "user",
+                        "content": (
+                            f"Translate these {lang} strings. "
+                            f"Return ONLY valid JSON.\n\n"
+                            f"{json.dumps(source, ensure_ascii=False, indent=2)}"
+                        ),
+                    }],
+                )
+
+                # Parse the response
+                text = response.content[0].text.strip()
+                # Strip markdown code fences if present
+                if text.startswith("```"):
+                    text = re.sub(r"^```\w*\n?", "", text)
+                    text = re.sub(r"\n?```$", "", text)
+                    text = text.strip()
+
+                translations = json.loads(text)
+
+                # Apply translations
+                batch_count = 0
+                for i, entry in enumerate(batch, 1):
+                    key = str(i)
+                    if key in translations and translations[key]:
+                        entry.msgstr = translations[key]
+                        batch_count += 1
+
+                total_translated += batch_count
+
+            except json.JSONDecodeError as e:
+                self.stdout.write(self.style.WARNING(
+                    f"      [!!] Could not parse API response for batch "
+                    f"{batch_num}: {e}"
+                ))
+            except Exception as e:
+                self.stdout.write(self.style.WARNING(
+                    f"      [!!] API error on batch {batch_num}: {e}"
+                ))
+
+        return total_translated
+
+    # ------------------------------------------------------------------
+    # File helpers
+    # ------------------------------------------------------------------
+
+    def _save_po(self, po, po_path):
+        """Save .po file safely via temp file."""
+        fd, tmp_path = tempfile.mkstemp(
+            suffix=".po", dir=str(po_path.parent)
+        )
+        os.close(fd)
+        try:
+            po.save(tmp_path)
+            shutil.move(tmp_path, str(po_path))
+        except Exception as e:
+            if os.path.exists(tmp_path):
+                os.unlink(tmp_path)
+            self.stderr.write(self.style.ERROR(
+                f"\n  ERROR writing .po file: {e}\n"
+            ))
+            sys.exit(1)
 
     # ------------------------------------------------------------------
     # Extraction helpers
@@ -277,7 +422,6 @@ class Command(BaseCommand):
         if not template_dir.exists():
             return strings, file_count
 
-        # Pattern to strip {% comment %}...{% endcomment %} blocks
         comment_pattern = re.compile(
             r"\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}",
             re.DOTALL,
@@ -289,7 +433,6 @@ class Command(BaseCommand):
             except (UnicodeDecodeError, OSError):
                 continue
 
-            # Strip comment blocks before extracting
             content = comment_pattern.sub("", content)
 
             matches = self.TEMPLATE_PATTERN.findall(content)
@@ -309,7 +452,6 @@ class Command(BaseCommand):
             return strings, file_count
 
         for py_file in apps_dir.rglob("*.py"):
-            # Skip migrations, __pycache__, test files
             parts = py_file.parts
             if any(skip in parts for skip in self.PYTHON_SKIP):
                 continue
@@ -335,24 +477,25 @@ class Command(BaseCommand):
             if po_path.exists():
                 return po_path
 
-        # Fallback: BASE_DIR/locale
         po_path = base_dir / "locale" / lang / "LC_MESSAGES" / "django.po"
         if po_path.exists():
             return po_path
 
         return None
 
-    def _print_summary(self, new_strings, empty_count, dry_run=False):
+    def _print_summary(self, new_strings_count, empty_count, dry_run=False):
         """Print final summary line."""
-        total_needing = len(new_strings) + empty_count
         prefix = "(Dry run) " if dry_run else ""
 
         self.stdout.write("")
-        if total_needing:
+        if empty_count:
             self.stdout.write(self.style.WARNING(
-                f"{prefix}Summary: {total_needing} strings need "
+                f"{prefix}Summary: {empty_count} strings still need "
                 f"French translations."
             ))
+            self.stdout.write(
+                "  Set ANTHROPIC_API_KEY to enable auto-translation."
+            )
         else:
             self.stdout.write(self.style.SUCCESS(
                 f"{prefix}Summary: All strings have French translations."
