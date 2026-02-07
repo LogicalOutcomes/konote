@@ -959,9 +959,9 @@ class Command(BaseCommand):
 
         # Always ensure demo registration link exists (idempotent)
         programs_by_name = {p.name: p for p in Program.objects.all()}
-        admin_user = User.objects.filter(is_superuser=True).first()
-        if programs_by_name and admin_user:
-            self._create_demo_registration_link(programs_by_name, admin_user)
+        created_by = User.objects.filter(is_admin=True).first() or User.objects.first()
+        if programs_by_name and created_by:
+            self._create_demo_registration_link(programs_by_name, created_by)
 
         # Check if rich data already exists
         if ProgressNote.objects.filter(
