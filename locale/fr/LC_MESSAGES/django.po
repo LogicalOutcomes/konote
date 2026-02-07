@@ -6584,3 +6584,66 @@ msgstr "Taux %"
 
 msgid "Total sessions"
 msgstr "Total des séances"
+
+msgid "%(count)d new"
+msgstr "%(count)d nouveau(x)"
+
+msgid "%(count)d updated"
+msgstr "%(count)d mis à jour"
+
+msgid "Export to CSV"
+msgstr "Exporter en CSV"
+
+msgid "Import complete: %s."
+msgstr "Importation terminée : %s."
+
+msgid "Leave blank if same as first name"
+msgstr "Laisser vide si identique au prénom"
+
+msgid ""
+"Metric ID from export. If present, that metric will be updated. If blank, a "
+"new metric is created."
+msgstr ""
+"Identifiant de la mesure provenant de l'exportation. Si présent, la mesure "
+"existante sera mise à jour. Si vide, une nouvelle mesure sera créée."
+
+msgid "Now viewing: %(name)s"
+msgstr "Consultation en cours : %(name)s"
+
+msgid "Preferred Name"
+msgstr "Nom préféré"
+
+msgid ""
+"Row 1 has no id — it creates a new metric. Row 2 has id 42 — it updates the "
+"existing metric with that ID."
+msgstr ""
+"La ligne 1 n'a pas d'identifiant — elle crée une nouvelle mesure. La ligne 2 "
+"a l'identifiant 42 — elle met à jour la mesure existante avec cet identifiant."
+
+msgid "What do you prefer to be called?"
+msgstr "Comment préférez-vous être appelé(e) ?"
+
+msgid "What name do you prefer to be called?"
+msgstr "Par quel nom préférez-vous être appelé(e) ?"
+
+msgid "active or deactivated (defaults to active)"
+msgstr "active ou désactivée (par défaut : active)"
+
+msgid "yes or no — whether this metric is available for use (defaults to yes)"
+msgstr "oui ou non — indique si cette mesure est disponible (par défaut : oui)"
+
+#, python-format
+msgid "Upload a CSV file to add or update %(metrics)s."
+msgstr "Téléchargez un fichier CSV pour ajouter ou mettre à jour des %(metrics)s."
+
+#, python-format
+msgid "%(new)s new, %(updated)s updates to existing"
+msgstr "%(new)s nouveau(x), %(updated)s mise(s) à jour"
+
+msgid ""
+"The easiest way is to use <strong>Export to CSV</strong> from the Metric "
+"Library, edit the file in Excel, then upload it here."
+msgstr ""
+"Le plus simple est d'utiliser <strong>Exporter en CSV</strong> depuis la "
+"bibliothèque de mesures, de modifier le fichier dans Excel, puis de le "
+"téléverser ici."
