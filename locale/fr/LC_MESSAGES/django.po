@@ -4628,22 +4628,26 @@ msgid "Demo Account Directory"
 msgstr ""
 
 msgid "Demo Accounts"
-msgstr ""
+msgstr "Comptes de démonstration"
 
 msgid "Demo Directory"
-msgstr ""
+msgstr "Répertoire de démonstration"
 
 msgid "Demo Mode:"
-msgstr ""
+msgstr "Mode démo :"
 
 msgid "Demo client list"
-msgstr ""
+msgstr "Liste des clients de démonstration"
 
 msgid "Demo user list"
-msgstr ""
+msgstr "Liste des utilisateurs de démonstration"
 
 msgid "Demo users only"
-msgstr ""
+msgstr "Utilisateurs de démonstration seulement"
+
+#: templates/base.html
+msgid "You are logged in as %(name)s. Changes affect demo data only."
+msgstr "Vous êtes connecté(e) en tant que %(name)s. Les modifications n'affectent que les données de démonstration."
 
 msgid "Diagnosis"
 msgstr ""
@@ -6079,4 +6083,39 @@ msgid "— Select —"
 msgstr ""
 
 msgid "— or —"
+msgstr ""
+
+msgid "(empty)"
+msgstr ""
+
+msgid "Cannot merge a demo client with a real client."
+msgstr ""
+
+msgid "I understand this cannot be undone"
+msgstr ""
+
+msgid "One or both client records no longer exist."
+msgstr ""
+
+msgid ""
+"Records merged successfully. All data has been combined into this record."
+msgstr ""
+
+msgid ""
+"The primary client has a confidential programme enrolment and cannot be "
+"merged."
+msgstr ""
+
+msgid "The primary client record has been anonymised and cannot be merged."
+msgstr ""
+
+msgid ""
+"The secondary client has a confidential programme enrolment and cannot be "
+"merged."
+msgstr ""
+
+msgid "The secondary client record has been anonymised and cannot be merged."
+msgstr ""
+
+msgid "You must acknowledge that this action cannot be undone."
 msgstr ""
