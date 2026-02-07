@@ -26,6 +26,10 @@ def approve_submission(submission, reviewed_by=None):
     client = ClientFile()
     client.first_name = submission.first_name
     client.last_name = submission.last_name
+    # Preferred name is stored in field_values (not an encrypted model field on submission)
+    preferred_name = (submission.field_values or {}).get("preferred_name", "")
+    if preferred_name:
+        client.preferred_name = preferred_name
     client.status = "active"
     client.consent_given_at = submission.submitted_at
     client.consent_type = "registration_form"
@@ -34,6 +38,8 @@ def approve_submission(submission, reviewed_by=None):
     # Copy custom field values to ClientDetailValues
     if submission.field_values:
         for field_pk_str, value in submission.field_values.items():
+            if field_pk_str == "preferred_name":
+                continue  # Already handled above
             try:
                 field_pk = int(field_pk_str)
                 field_def = CustomFieldDefinition.objects.get(pk=field_pk)
