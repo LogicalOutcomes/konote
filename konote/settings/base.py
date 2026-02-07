@@ -97,6 +97,7 @@ TEMPLATES = [
                 "konote.context_processors.document_storage",
                 "konote.context_processors.pending_submissions",
                 "konote.context_processors.pending_erasures",
+                "konote.context_processors.active_program_context",
             ],
         },
     },

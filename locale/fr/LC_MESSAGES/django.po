@@ -6260,3 +6260,46 @@ msgstr "objectifs"
 
 msgid "weaker signal — verify carefully"
 msgstr "signal faible — vérifiez attentivement"
+
+# CONF9: Program context switcher
+msgid "Active program"
+msgstr "Programme actif"
+
+msgid "Switch active program"
+msgstr "Changer de programme actif"
+
+msgid "Select program..."
+msgstr "Sélectionner un programme..."
+
+msgid "All Standard Programs"
+msgstr "Tous les programmes standards"
+
+msgid "Select Program"
+msgstr "Sélectionner un programme"
+
+msgid "Which program are you working in right now?"
+msgstr "Dans quel programme travaillez-vous en ce moment?"
+
+msgid "You have access to multiple programs. Choose which one you are working in. Your client list will show only clients from the selected program."
+msgstr "Vous avez accès à plusieurs programmes. Choisissez celui dans lequel vous travaillez. Votre liste de clients affichera uniquement les clients du programme sélectionné."
+
+msgid "Program selection"
+msgstr "Sélection du programme"
+
+msgid "Program"
+msgstr "Programme"
+
+msgid "Continue"
+msgstr "Continuer"
+
+msgid "You can switch programs at any time using the dropdown in the navigation bar."
+msgstr "Vous pouvez changer de programme à tout moment en utilisant le menu déroulant dans la barre de navigation."
+
+msgid "You do not have access to any standard programs."
+msgstr "Vous n'avez accès à aucun programme standard."
+
+msgid "Invalid program selection."
+msgstr "Sélection de programme invalide."
+
+msgid "You do not have access to this program."
+msgstr "Vous n'avez pas accès à ce programme."

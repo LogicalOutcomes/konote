@@ -2385,3 +2385,27 @@ article[aria-label="notification"].fading-out {
     background-color: var(--kn-warning, #e8a735);
     color: #000;
 }
+
+/* ---- CONF9: Program context switcher in nav ---- */
+.program-switcher {
+    display: flex;
+    align-items: center;
+}
+.program-switcher-form {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+.program-switcher-form select {
+    margin: 0;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+    max-width: 220px;
+    border-radius: var(--kn-radius, 4px);
+}
+@media (max-width: 768px) {
+    .program-switcher-form select {
+        max-width: 100%;
+    }
+}

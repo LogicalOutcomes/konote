@@ -66,7 +66,6 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 
 ### Other Planned Extensions
 
-- [ ] Multi-role staff program selector — UI for staff with roles in both Standard and Confidential programs (CONF9)
 - [ ] Field data collection integrations — KoBoToolbox, Forms, or other tools (FIELD1)
 
 ### Explicitly Out of Scope
@@ -101,6 +100,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 - [x] Translation reliability — `translate_strings` command, startup detection, CLAUDE.md workflow rule — 2026-02-06 (I18N-CMD1)
 - [x] Full integration test pass — 1,000+ tests passing — 2026-02-06 (TEST3)
 - [x] FullHost deployment verified — HTTPS working via Let's Encrypt, demo data live — 2026-02-06 (OPS5, OPS-FH2)
+- [x] Multi-role staff program context switcher — session-based active program for mixed Standard/Confidential users, forced selection on login, nav dropdown, 39 tests — 2026-02-06 (CONF9)
 - [x] French translation hardening — 108 unwrapped strings, Help/Privacy pages, demo banner — 2026-02-06 (I18N-FIX2-3)
 - [x] Security, privacy, accessibility review fixes — encrypted PlanTarget fields, MultiFernet rotation, aria-live, data tables — 2026-02-06 (SEC-FIX1-2, PRIV-FIX1-2, A11Y-FIX1-3)
 - [x] Client voice, qualitative progress, groups app (Phases A-D) — 2026-02-06 (CV1-4)

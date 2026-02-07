@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Select Program" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+
+{% block content %}
+<article>
+    <header>
+        <h1>{% trans "Which program are you working in right now?" %}</h1>
+        <p>{% trans "You have access to multiple programs. Choose which one you are working in. Your client list will show only clients from the selected program." %}</p>
+    </header>
+
+    <form method="post" action="{% url 'programs:switch_program' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="/">
+
+        {% if options|length <= 4 %}
+        {# Radio buttons for small number of options #}
+        <fieldset>
+            <legend class="visually-hidden">{% trans "Program selection" %}</legend>
+            {% for option in options %}
+            <label>
+                <input type="radio" name="program" value="{{ option.value }}"
+                       {% if forloop.first %}checked{% endif %}
+                       required>
+                {{ option.label }}
+            </label>
+            {% endfor %}
+        </fieldset>
+        {% else %}
+        {# Dropdown for many options #}
+        <label for="program-select">{% trans "Program" %}</label>
+        <select name="program" id="program-select" required>
+            {% for option in options %}
+            <option value="{{ option.value }}">{{ option.label }}</option>
+            {% endfor %}
+        </select>
+        {% endif %}
+
+        <button type="submit">{% trans "Continue" %}</button>
+    </form>
+
+    <footer>
+        <small>{% trans "You can switch programs at any time using the dropdown in the navigation bar." %}</small>
+    </footer>
+</article>
+{% endblock %}
