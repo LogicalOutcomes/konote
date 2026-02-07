@@ -3354,7 +3354,7 @@ msgid "Go to the"
 msgstr "Allez à l'onglet"
 
 msgid "tab"
-msgstr ""
+msgstr "onglet"
 
 msgid "Type your note"
 msgstr "Tapez votre note"
@@ -3536,7 +3536,7 @@ msgid "Understanding the"
 msgstr "Comprendre la structure du"
 
 msgid "Structure"
-msgstr ""
+msgstr "Structure"
 
 msgid "Broad categories like"
 msgstr "Grandes catégories comme"
@@ -3668,7 +3668,7 @@ msgid "on"
 msgstr "sur la page"
 
 msgid "page"
-msgstr ""
+msgstr "page"
 
 msgid "Close modal or cancel action"
 msgstr "Fermer la fenêtre ou annuler l'action"
@@ -4220,415 +4220,469 @@ msgid "CMT Report"
 msgstr "Rapport CMT"
 
 msgid "%(name)s added."
-msgstr ""
+msgstr "%(name)s ajouté(e)."
 
 msgid "%(name)s removed."
-msgstr ""
+msgstr "%(name)s retiré(e)."
 
 msgid "%(name)s role updated."
-msgstr ""
+msgstr "Rôle de %(name)s mis à jour."
 
 msgid "'Date from' must be before 'Date to'."
-msgstr ""
+msgstr "La « Date de début » doit précéder la « Date de fin »."
 
 msgid ", you can revoke it before the download becomes available:"
 msgstr ""
+", vous pouvez la révoquer avant que le téléchargement ne soit disponible :"
 
 msgid "A client with a similar name and date of birth already has a record."
 msgstr ""
+"Un client avec un nom et une date de naissance similaires a déjà un dossier."
 
 msgid "A rejection reason is required."
-msgstr ""
+msgstr "Un motif de rejet est requis."
 
 msgid "AI metric suggestions"
-msgstr ""
+msgstr "Suggestions de mesures par IA"
 
 msgid "About This Export"
-msgstr ""
+msgstr "À propos de cette exportation"
 
 msgid "Access Log"
-msgstr ""
+msgstr "Journal d'accès"
 
 msgid "Active only"
-msgstr ""
+msgstr "Actifs seulement"
 
 msgid "Add Member"
-msgstr ""
+msgstr "Ajouter un membre"
 
 msgid "Add Milestone"
-msgstr ""
+msgstr "Ajouter un jalon"
 
 msgid "Add a non-client member"
-msgstr ""
+msgstr "Ajouter un membre non-client"
 
 msgid "Add consent and data retention fields."
-msgstr ""
+msgstr "Ajouter les champs de consentement et de conservation des données."
 
 msgid "Add custom field values as additional columns."
 msgstr ""
+"Ajouter les valeurs des champs personnalisés comme colonnes supplémentaires."
 
 msgid "Add programme enrolment history as additional columns."
 msgstr ""
+"Ajouter l'historique des inscriptions aux programmes comme colonnes "
+"supplémentaires."
 
 msgid "Additional Details"
-msgstr ""
+msgstr "Détails supplémentaires"
 
 msgid "Additional Information"
-msgstr ""
+msgstr "Renseignements supplémentaires"
 
 msgid "Adjust Height"
-msgstr ""
+msgstr "Ajuster la hauteur"
 
 msgid ""
 "Admin fallback: Are you sure? The requester is the only PM for this "
 "program.\" as admin_msg %}onclick=\"return confirm('{{ admin_msg|escapejs "
 "}}')\">{% trans \"Approve (Admin Fallback)"
 msgstr ""
+"Approbation par l'administrateur : Êtes-vous sûr(e)? Le demandeur est le "
+"seul gestionnaire pour ce programme.\" as admin_msg %}onclick=\"return "
+"confirm('{{ admin_msg|escapejs }}')\">{% trans \"Approuver (Administrateur)"
 
 msgid "Age"
-msgstr ""
+msgstr "Âge"
 
 msgid "Aggregate Data Export"
-msgstr ""
+msgstr "Exportation de données agrégées"
 
 msgid ""
 "Aggregate statistics across your programs. Individual client records are not"
 " accessible from this view to protect confidentiality."
 msgstr ""
+"Statistiques agrégées de vos programmes. Les dossiers individuels des "
+"clients ne sont pas accessibles depuis cette vue pour protéger la "
+"confidentialité."
 
 msgid "Alert cancelled."
-msgstr ""
+msgstr "Alerte annulée."
 
 msgid "Alert created."
-msgstr ""
+msgstr "Alerte créée."
 
 msgid ""
 "All access to client records in this program. Each entry records who "
 "accessed which record, when, and what action they performed."
 msgstr ""
+"Tous les accès aux dossiers clients dans ce programme. Chaque entrée "
+"enregistre qui a accédé à quel dossier, quand et quelle action a été "
+"effectuée."
 
 msgid "All activity"
-msgstr ""
+msgstr "Toute l'activité"
 
 msgid "All approvals received. Client data has been anonymised."
 msgstr ""
+"Toutes les approbations reçues. Les données du client ont été anonymisées."
 
 msgid ""
 "All demo users and demo clients in one place. Demo data is isolated from "
 "real data."
 msgstr ""
+"Tous les utilisateurs et les clients de démonstration au même endroit. Les "
+"données de démonstration sont isolées des données réelles."
 
 msgid "All members are checked by default. Uncheck anyone who was absent."
 msgstr ""
+"Tous les membres sont cochés par défaut. Décochez ceux qui étaient absents."
 
 msgid "All programme manager approvals were received."
 msgstr ""
+"Toutes les approbations des gestionnaires de programme ont été reçues."
 
 msgid "An unexpected error occurred. Our team has been notified."
-msgstr ""
+msgstr "Une erreur inattendue s'est produite. Notre équipe a été avisée."
 
 msgid "Anonymise"
-msgstr ""
+msgstr "Anonymiser"
 
 msgid "Anonymise + Purge Notes"
-msgstr ""
+msgstr "Anonymiser + Purger les notes"
 
 msgid ""
 "Anonymise + Purge Notes — Remove identifying information and all narrative "
 "content"
 msgstr ""
+"Anonymiser + Purger les notes — Supprimer les renseignements identifiants et"
+" tout le contenu narratif"
 
 msgid "Anonymise — Remove identifying information, keep service records"
 msgstr ""
+"Anonymiser — Supprimer les renseignements identifiants, conserver les "
+"dossiers de service"
 
 msgid "Approaching 30-day PIPEDA deadline."
-msgstr ""
+msgstr "La date limite de 30 jours de la LPRPDE approche."
 
 msgid "Approaching PIPEDA Deadline"
-msgstr ""
+msgstr "Date limite LPRPDE approchante"
 
 msgid "Approve this registration and create a client record?"
-msgstr ""
+msgstr "Approuver cette inscription et créer un dossier client?"
 
 msgid "Approved By"
-msgstr ""
+msgstr "Approuvé par"
 
 msgid "Approved — Data Anonymised"
-msgstr ""
+msgstr "Approuvé — Données anonymisées"
 
 msgid "Approved! Client record created for %(first)s %(last)s."
-msgstr ""
+msgstr "Approuvé! Dossier client créé pour %(first)s %(last)s."
 
 msgid ""
 "Are you sure you want to approve this erasure? This cannot be undone.\" as "
 "approve_msg %}onclick=\"return confirm('{{ approve_msg|escapejs }}')\">{% "
 "trans \"Approve"
 msgstr ""
+"Êtes-vous sûr(e) de vouloir approuver cet effacement? Cette action est "
+"irréversible.\" as approve_msg %}onclick=\"return confirm('{{ "
+"approve_msg|escapejs }}')\">{% trans \"Approuver"
 
 msgid ""
 "Are you sure you want to cancel this erasure request?\" as cancel_msg "
 "%}onclick=\"return confirm('{{ cancel_msg|escapejs }}')\">{% trans \"Cancel "
 "Request"
 msgstr ""
+"Êtes-vous sûr(e) de vouloir annuler cette demande d'effacement?\" as "
+"cancel_msg %}onclick=\"return confirm('{{ cancel_msg|escapejs }}')\">{% "
+"trans \"Annuler la demande"
 
 msgid ""
 "Are you sure you want to reject this erasure request?\" as reject_msg "
 "%}onclick=\"return confirm('{{ reject_msg|escapejs }}')\">{% trans \"Reject"
 msgstr ""
+"Êtes-vous sûr(e) de vouloir rejeter cette demande d'effacement?\" as "
+"reject_msg %}onclick=\"return confirm('{{ reject_msg|escapejs }}')\">{% "
+"trans \"Rejeter"
 
 msgid "Ask:"
-msgstr ""
+msgstr "Demander :"
 
 msgid "Assigned staff"
-msgstr ""
+msgstr "Personnel assigné"
 
 msgid "Attendance"
-msgstr ""
+msgstr "Présence"
 
 msgid ""
 "Audit logging, admin isolation, and small-cell suppression are active for "
 "confidential programs. Complete a Privacy Impact Assessment before using for"
 " domestic violence or other high-risk services."
-msgstr "La journalisation d'audit, l'isolation administrative et la suppression des petites cellules sont actives pour les programmes confidentiels. Effectuez une évaluation des facteurs relatifs à la vie privée avant d'utiliser pour la violence conjugale ou d'autres services à haut risque."
+msgstr ""
+"La journalisation d'audit, l'isolation administrative et la suppression des "
+"petites cellules sont actives pour les programmes confidentiels. Effectuez "
+"une évaluation des facteurs relatifs à la vie privée avant d'utiliser pour "
+"la violence conjugale ou d'autres services à haut risque."
 
 msgid "Audit notice"
-msgstr ""
+msgstr "Avis d'audit"
 
 msgid "Available at"
-msgstr ""
+msgstr "Disponible le"
 
 msgid "Back to Reports"
-msgstr ""
+msgstr "Retour aux rapports"
 
 msgid "Back to Submissions"
-msgstr ""
+msgstr "Retour aux soumissions"
 
 msgid "Back to notes"
-msgstr ""
+msgstr "Retour aux notes"
 
 msgid "Before submitting, confirm you understand:"
-msgstr ""
+msgstr "Avant de soumettre, confirmez que vous comprenez :"
 
 msgid "Birth dates"
-msgstr ""
+msgstr "Dates de naissance"
 
 msgid "Breadcrumb"
-msgstr ""
+msgstr "Fil d'Ariane"
 
 msgid "Brief observations about individual members during this session."
-msgstr ""
+msgstr "Brèves observations sur les membres individuels durant cette séance."
 
 msgid "CSV (spreadsheet)"
-msgstr ""
+msgstr "CSV (tableur)"
 
 msgid "Calculate and include outcome achievement statistics in the export."
 msgstr ""
+"Calculer et inclure les statistiques de réussite des résultats dans "
+"l'exportation."
 
 msgid "Cancel editing and return to read-only view"
-msgstr ""
+msgstr "Annuler la modification et revenir à la vue en lecture seule"
 
 msgid "Cannot impersonate inactive users."
-msgstr ""
+msgstr "Impossible d'usurper l'identité d'utilisateurs inactifs."
 
 msgid "Cannot impersonate real users. Only demo accounts can be impersonated."
 msgstr ""
+"Impossible d'usurper l'identité d'utilisateurs réels. Seuls les comptes de "
+"démonstration peuvent être usurpés."
 
 msgid "Change"
-msgstr ""
+msgstr "Modifier"
 
 msgid "Change if this note is for a different day."
-msgstr ""
+msgstr "Modifier si cette note concerne un autre jour."
 
 msgid "Chart simulation"
-msgstr ""
+msgstr "Simulation des graphiques"
 
 msgid "Check existing records"
-msgstr ""
+msgstr "Vérifier les dossiers existants"
 
 msgid "Check the address for typos"
-msgstr ""
+msgstr "Vérifiez l'adresse pour les fautes de frappe"
 
 msgid "Choose a username for signing in."
-msgstr ""
+msgstr "Choisissez un nom d'utilisateur pour vous connecter."
 
 msgid ""
 "Choose the level of data removal. Anonymisation (recommended) removes "
 "identifying information while keeping service records for compliance and "
 "reporting."
 msgstr ""
+"Choisissez le niveau de suppression des données. L'anonymisation "
+"(recommandée) supprime les renseignements identifiants tout en conservant "
+"les dossiers de service pour la conformité et les rapports."
 
 msgid "Clear search"
-msgstr ""
+msgstr "Effacer la recherche"
 
 msgid "Client Count"
-msgstr ""
+msgstr "Nombre de clients"
 
 msgid "Client Data Anonymised — %(code)s"
-msgstr ""
+msgstr "Données du client anonymisées — %(code)s"
 
 msgid "Client Data Erased — %(code)s"
-msgstr ""
+msgstr "Données du client effacées — %(code)s"
 
 msgid "Client Information"
-msgstr ""
+msgstr "Renseignements sur le client"
 
 msgid "Client Record"
-msgstr ""
+msgstr "Dossier du client"
 
 msgid "Client count"
-msgstr ""
+msgstr "Nombre de clients"
 
 msgid "Client data has been anonymised."
-msgstr ""
+msgstr "Les données du client ont été anonymisées."
 
 msgid "Client data has been permanently erased."
-msgstr ""
+msgstr "Les données du client ont été définitivement effacées."
 
 msgid "Client data no longer exists. Receipt cannot be generated."
 msgstr ""
+"Les données du client n'existent plus. Le reçu ne peut pas être généré."
 
 msgid "Client file created."
-msgstr ""
+msgstr "Dossier du client créé."
 
 msgid "Client file updated."
-msgstr ""
+msgstr "Dossier du client mis à jour."
 
 msgid "Client status"
-msgstr ""
+msgstr "Statut du client"
 
 msgid "Client's words"
-msgstr ""
+msgstr "Paroles du client"
 
 msgid "Clients"
-msgstr ""
+msgstr "Clients"
 
 msgid "Code"
-msgstr ""
+msgstr "Code"
 
 msgid "Confidential"
-msgstr ""
+msgstr "Confidentiel"
 
 msgid "Confidential — Erasure Receipt"
-msgstr ""
+msgstr "Confidentiel — Reçu d'effacement"
 
 msgid "Confirm and save"
-msgstr ""
+msgstr "Confirmer et enregistrer"
 
 msgid "Confirm you reviewed this note with the participant."
-msgstr ""
+msgstr "Confirmez que vous avez révisé cette note avec le participant."
 
 msgid "Consent"
-msgstr ""
+msgstr "Consentement"
 
 msgid "Consent Compliance"
-msgstr ""
+msgstr "Conformité du consentement"
 
 msgid "Consent Given"
-msgstr ""
+msgstr "Consentement donné"
 
 msgid "Consent Type"
-msgstr ""
+msgstr "Type de consentement"
 
 msgid "Consent and save"
-msgstr ""
+msgstr "Consentir et enregistrer"
 
 msgid "Consent compliance"
-msgstr ""
+msgstr "Conformité du consentement"
 
 msgid "Consent information"
-msgstr ""
+msgstr "Renseignements sur le consentement"
 
 msgid "Consent recorded."
-msgstr ""
+msgstr "Consentement enregistré."
 
 msgid "Consent type"
-msgstr ""
+msgstr "Type de consentement"
 
 msgid ""
 "Consider setting a retention expiry date on this client record. Full erasure"
 " is only available after the retention period expires."
 msgstr ""
+"Envisagez de définir une date d'expiration de conservation pour ce dossier "
+"client. L'effacement complet n'est disponible qu'après l'expiration de la "
+"période de conservation."
 
 msgid ""
 "Contact details displayed in privacy notices, erasure communications, and "
 "data access responses (PIPEDA compliance)."
 msgstr ""
+"Coordonnées affichées dans les avis de confidentialité, les communications "
+"d'effacement et les réponses aux demandes d'accès aux données (conformité "
+"LPRPDE)."
 
 msgid "Contact your administrator if the problem continues"
-msgstr ""
+msgstr "Contactez votre administrateur si le problème persiste"
 
 msgid "Context"
-msgstr ""
+msgstr "Contexte"
 
 msgid "Copied!"
-msgstr ""
+msgstr "Copié!"
 
 msgid "Copy Link"
-msgstr ""
+msgstr "Copier le lien"
 
 msgid ""
 "Copy the code below and paste it into your website where you want the "
 "registration form to appear."
 msgstr ""
+"Copiez le code ci-dessous et collez-le sur votre site Web à l'endroit où "
+"vous souhaitez que le formulaire d'inscription apparaisse."
 
 msgid "Copy this link and share it with the intended recipient."
-msgstr ""
+msgstr "Copiez ce lien et partagez-le avec le destinataire prévu."
 
 msgid "Create Alert"
-msgstr ""
+msgstr "Créer une alerte"
 
 msgid "Created by"
-msgstr ""
+msgstr "Créé par"
 
 msgid "Current:"
-msgstr ""
+msgstr "Actuel :"
 
 msgid "Custom Styling"
-msgstr ""
+msgstr "Style personnalisé"
 
 msgid "Custom field values"
-msgstr ""
+msgstr "Valeurs des champs personnalisés"
 
 msgid "Custom fields"
-msgstr ""
+msgstr "Champs personnalisés"
 
 msgid "Customisation Tips"
-msgstr ""
+msgstr "Conseils de personnalisation"
 
 msgid "DOB"
-msgstr ""
+msgstr "DDN"
 
 msgid "Data Contents"
-msgstr ""
+msgstr "Contenu des données"
 
 msgid "Data Export Notice"
-msgstr ""
+msgstr "Avis d'exportation de données"
 
 msgid "Data that will be affected"
-msgstr ""
+msgstr "Données qui seront affectées"
 
 msgid "Date consent was obtained"
-msgstr ""
+msgstr "Date d'obtention du consentement"
 
 msgid "Date from"
-msgstr ""
+msgstr "Date de début"
 
 msgid "Date to"
-msgstr ""
+msgstr "Date de fin"
 
 msgid ""
 "Define structures for progress notes (e.g. Standard session, Crisis "
 "intervention)."
 msgstr ""
+"Définir des structures pour les notes d'évolution (p. ex. séance standard, "
+"intervention de crise)."
 
 msgid "Delete Registration Link"
-msgstr ""
+msgstr "Supprimer le lien d'inscription"
 
 msgid "Deleted programme"
-msgstr ""
+msgstr "Programme supprimé"
 
 msgid "Demo Account Directory"
-msgstr ""
+msgstr "Répertoire des comptes de démonstration"
 
 msgid "Demo Accounts"
 msgstr "Comptes de démonstration"
@@ -4655,445 +4709,468 @@ msgstr ""
 "que les données de démonstration."
 
 msgid "Diagnosis"
-msgstr ""
+msgstr "Diagnostic"
 
 msgid "Direct Link"
-msgstr ""
+msgstr "Lien direct"
 
 msgid "Discharged only"
-msgstr ""
+msgstr "Congédiés seulement"
 
 msgid "Download PDF Receipt"
-msgstr ""
+msgstr "Télécharger le reçu PDF"
 
 msgid ""
 "Download a copy of this request including client details before erasure "
 "proceeds. The system does not retain a copy."
 msgstr ""
+"Téléchargez une copie de cette demande incluant les détails du client avant "
+"que l'effacement ne procède. Le système ne conserve pas de copie."
 
 msgid "Download link"
-msgstr ""
+msgstr "Lien de téléchargement"
 
 msgid ""
 "Download the PDF receipt before approving. Once erased, client details "
 "cannot be recovered from the system."
 msgstr ""
+"Téléchargez le reçu PDF avant d'approuver. Une fois les données effacées, "
+"les détails du client ne peuvent pas être récupérés du système."
 
 msgid "Downloads"
-msgstr ""
+msgstr "Téléchargements"
 
 msgid "Draft Template — Customise for Your Funder"
-msgstr ""
+msgstr "Modèle provisoire — Personnaliser pour votre bailleur de fonds"
 
 msgid "Due Date"
-msgstr ""
+msgstr "Date d'échéance"
 
 msgid "Edit Milestone"
-msgstr ""
+msgstr "Modifier le jalon"
 
 msgid "Edit additional details"
-msgstr ""
+msgstr "Modifier les détails supplémentaires"
 
 msgid "Electronic consent"
-msgstr ""
+msgstr "Consentement électronique"
 
 msgid "Elevated"
-msgstr ""
+msgstr "Élevé"
 
 msgid "Elevated Export Alert"
-msgstr ""
+msgstr "Alerte d'exportation élevée"
 
 msgid "Elevated Export — Delay Applied"
-msgstr ""
+msgstr "Exportation élevée — Délai appliqué"
 
 msgid "Elevated Export — Download Not Yet Available"
-msgstr ""
+msgstr "Exportation élevée — Téléchargement pas encore disponible"
 
 msgid "Elevated export notice"
-msgstr ""
+msgstr "Avis d'exportation élevée"
 
 msgid "Email"
-msgstr ""
+msgstr "Courriel"
 
 msgid "Email match"
-msgstr ""
+msgstr "Correspondance de courriel"
 
 msgid ""
 "Email notification failed. Please notify involved programme managers "
 "manually."
 msgstr ""
+"L'envoi du courriel a échoué. Veuillez aviser manuellement les gestionnaires"
+" de programme concernés."
 
 msgid ""
 "Email notification failed. Please notify the programme managers manually."
 msgstr ""
+"L'envoi du courriel a échoué. Veuillez aviser manuellement les gestionnaires"
+" de programme."
 
 msgid ""
 "Email notification to the requester failed. Please notify them manually."
 msgstr ""
+"L'envoi du courriel au demandeur a échoué. Veuillez l'aviser manuellement."
 
 msgid "Embed Code"
-msgstr ""
+msgstr "Code d'intégration"
 
 msgid "Embed Code (Recommended)"
-msgstr ""
+msgstr "Code d'intégration (recommandé)"
 
 msgid "Engagement:"
-msgstr ""
+msgstr "Engagement :"
 
 msgid "Enter a valid Canadian postal code (e.g., A1A 1A1)."
-msgstr ""
+msgstr "Entrez un code postal canadien valide (p. ex., A1A 1A1)."
 
 msgid "Enter a valid number."
-msgstr ""
+msgstr "Entrez un nombre valide."
 
 msgid "Enter a valid phone number with 10 digits (e.g., (613) 555-1234)."
 msgstr ""
+"Entrez un numéro de téléphone valide à 10 chiffres (p. ex., (613) 555-1234)."
 
 msgid "Erasure Code"
-msgstr ""
+msgstr "Code d'effacement"
 
 msgid "Erasure Level"
-msgstr ""
+msgstr "Niveau d'effacement"
 
 msgid "Erasure Pending"
-msgstr ""
+msgstr "Effacement en attente"
 
 msgid "Erasure Request Details"
-msgstr ""
+msgstr "Détails de la demande d'effacement"
 
 msgid "Erasure Request Rejected — %(code)s"
-msgstr ""
+msgstr "Demande d'effacement rejetée — %(code)s"
 
 msgid "Erasure code:"
-msgstr ""
+msgstr "Code d'effacement :"
 
 msgid "Erasure code: %(code)s"
-msgstr ""
+msgstr "Code d'effacement : %(code)s"
 
 msgid "Erasure level"
-msgstr ""
+msgstr "Niveau d'effacement"
 
 msgid "Erasure level: %(tier)s"
-msgstr ""
+msgstr "Niveau d'effacement : %(tier)s"
 
 msgid "Erasure request created."
-msgstr ""
+msgstr "Demande d'effacement créée."
 
 msgid "Errors"
-msgstr ""
+msgstr "Erreurs"
 
 msgid "Event Type"
-msgstr ""
+msgstr "Type d'événement"
 
 msgid "Event created."
-msgstr ""
+msgstr "Événement créé."
 
 msgid "Event type created."
-msgstr ""
+msgstr "Type d'événement créé."
 
 msgid "Event type updated."
-msgstr ""
+msgstr "Type d'événement mis à jour."
 
 msgid "Event types"
-msgstr ""
+msgstr "Types d'événements"
 
 msgid "Evidence"
-msgstr ""
+msgstr "Preuves"
 
 msgid "Evidence:"
-msgstr ""
+msgstr "Preuves :"
 
 msgid "Executive Dashboard"
-msgstr ""
+msgstr "Tableau de bord de la direction"
 
 msgid "Executive Overview"
-msgstr ""
+msgstr "Aperçu pour la direction"
 
 msgid "Export All Data"
-msgstr ""
+msgstr "Exporter toutes les données"
 
 msgid "Export Details"
-msgstr ""
+msgstr "Détails de l'exportation"
 
 msgid "Export Info"
-msgstr ""
+msgstr "Info sur l'exportation"
 
 msgid "Export Link Created"
-msgstr ""
+msgstr "Lien d'exportation créé"
 
 msgid "Export Link Unavailable"
-msgstr ""
+msgstr "Lien d'exportation indisponible"
 
 msgid "Export Pending"
-msgstr ""
+msgstr "Exportation en attente"
 
 msgid "Export Preview"
-msgstr ""
+msgstr "Aperçu de l'exportation"
 
 msgid "Export Recipient"
-msgstr ""
+msgstr "Destinataire de l'exportation"
 
 msgid "Export created successfully"
-msgstr ""
+msgstr "Exportation créée avec succès"
 
 msgid "Export details"
-msgstr ""
+msgstr "Détails de l'exportation"
 
 msgid "Export file no longer available"
-msgstr ""
+msgstr "Le fichier d'exportation n'est plus disponible"
 
 msgid "Export format"
-msgstr ""
+msgstr "Format d'exportation"
 
 msgid "Export link revoked successfully."
-msgstr ""
+msgstr "Lien d'exportation révoqué avec succès."
 
 msgid "Export type"
-msgstr ""
-
+msgstr "Type d'exportation"
 
 msgid "Feature toggles"
-msgstr ""
+msgstr "Fonctionnalités activables"
 
 msgid "Field created."
-msgstr ""
+msgstr "Champ créé."
 
 msgid "Field group created."
-msgstr ""
+msgstr "Groupe de champs créé."
 
 msgid "Field group updated."
-msgstr ""
+msgstr "Groupe de champs mis à jour."
 
 msgid "Field updated."
-msgstr ""
+msgstr "Champ mis à jour."
 
 msgid "File Missing"
-msgstr ""
+msgstr "Fichier manquant"
 
 msgid "File unavailable"
-msgstr ""
+msgstr "Fichier indisponible"
 
 msgid "Filter by client status, or export all."
-msgstr ""
+msgstr "Filtrer par statut du client, ou exporter tous."
 
 msgid "Fiscal Year (April-March)"
-msgstr ""
+msgstr "Année fiscale (avril-mars)"
 
 msgid "Follow-up"
-msgstr ""
+msgstr "Suivi"
 
 msgid ""
 "For audit purposes, please indicate who will receive this exported data."
 msgstr ""
+"À des fins d'audit, veuillez indiquer qui recevra ces données exportées."
 
 msgid ""
 "For individual client information or detailed reports, please contact your "
 "Program Manager. This dashboard provides oversight while ensuring client "
 "confidentiality is maintained."
 msgstr ""
+"Pour les renseignements individuels sur les clients ou les rapports "
+"détaillés, veuillez contacter votre gestionnaire de programme. Ce tableau de"
+" bord fournit une vue d'ensemble tout en assurant le maintien de la "
+"confidentialité des clients."
 
 msgid "Format"
-msgstr ""
+msgstr "Format"
 
 msgid "Français"
-msgstr ""
+msgstr "Français"
 
 msgid "Freeform"
-msgstr ""
+msgstr "Libre"
 
 msgid "Full Erasure"
-msgstr ""
+msgstr "Effacement complet"
 
 msgid "Full Erasure — Delete all records permanently"
-msgstr ""
+msgstr "Effacement complet — Supprimer définitivement tous les dossiers"
 
 msgid "Full Name"
-msgstr ""
+msgstr "Nom complet"
 
 msgid "Full name"
-msgstr ""
+msgstr "Nom complet"
 
 msgid "Generated narrative"
-msgstr ""
+msgstr "Récit généré"
 
 msgid "Generated under PIPEDA data portability provisions"
 msgstr ""
+"Généré en vertu des dispositions de portabilité des données de la LPRPDE"
 
 msgid "Generated:"
-msgstr ""
+msgstr "Généré :"
 
 msgid "Getting More Information"
-msgstr ""
+msgstr "Obtenir plus de renseignements"
 
 msgid "Group Vibe"
-msgstr ""
+msgstr "Ambiance du groupe"
 
 msgid "Group by demographic"
-msgstr ""
+msgstr "Regrouper par données démographiques"
 
 msgid "Group created."
-msgstr ""
+msgstr "Groupe créé."
 
 msgid "Group roster"
-msgstr ""
+msgstr "Liste des membres du groupe"
 
 msgid "Group updated."
-msgstr ""
+msgstr "Groupe mis à jour."
 
 msgid "Group vibe"
-msgstr ""
+msgstr "Ambiance du groupe"
 
 msgid ""
 "Handle the exported file according to your organisation's data protection "
 "policies."
 msgstr ""
+"Manipulez le fichier exporté conformément aux politiques de protection des "
+"données de votre organisation."
 
 msgid ""
 "Harder isn't always backwards — progress often makes things harder first."
 msgstr ""
+"Plus difficile ne veut pas toujours dire un recul — le progrès rend souvent "
+"les choses plus difficiles au début."
 
 msgid "How are things going?"
-msgstr ""
+msgstr "Comment ça va?"
 
 msgid "How engaged was the participant?"
-msgstr ""
+msgstr "Quel était le niveau d'engagement du participant?"
 
 msgid "How to Embed This Form"
-msgstr ""
+msgstr "Comment intégrer ce formulaire"
 
 msgid "How your name will appear to others."
-msgstr ""
+msgstr "Comment votre nom apparaîtra aux autres."
 
 msgid ""
 "Identifying information has been removed. Service records are retained for "
 "statistical and compliance purposes."
 msgstr ""
+"Les renseignements identifiants ont été supprimés. Les dossiers de service "
+"sont conservés à des fins statistiques et de conformité."
 
 msgid "If this export is expected, no action is needed."
-msgstr ""
+msgstr "Si cette exportation est attendue, aucune action n'est requise."
 
 msgid "If this export is unauthorized"
-msgstr ""
+msgstr "Si cette exportation n'est pas autorisée"
 
 msgid "If this is a different person, continue creating the new record."
 msgstr ""
+"S'il s'agit d'une personne différente, continuez à créer le nouveau dossier."
 
 msgid "Impersonate"
-msgstr ""
+msgstr "Usurper l'identité"
 
 msgid "Import session expired. Please upload the file again."
 msgstr ""
+"La session d'importation a expiré. Veuillez téléverser le fichier à nouveau."
 
 msgid "Improved outcome suggestion"
-msgstr ""
+msgstr "Suggestion de résultat amélioré"
 
 msgid "In their words"
-msgstr ""
+msgstr "Dans leurs mots"
 
 msgid "In their words:"
-msgstr ""
+msgstr "Dans leurs mots :"
 
 msgid "Inactive only"
-msgstr ""
+msgstr "Inactifs seulement"
 
 msgid "Include achievement rate"
-msgstr ""
+msgstr "Inclure le taux de réussite"
 
 msgid "Include consent information"
-msgstr ""
+msgstr "Inclure les renseignements sur le consentement"
 
 msgid "Include custom fields"
-msgstr ""
+msgstr "Inclure les champs personnalisés"
 
 msgid "Include events"
-msgstr ""
+msgstr "Inclure les événements"
 
 msgid "Include metric values"
-msgstr ""
+msgstr "Inclure les valeurs de mesure"
 
 msgid "Include plan sections and targets"
-msgstr ""
+msgstr "Inclure les sections du plan et les cibles"
 
 msgid "Include programme enrolments"
-msgstr ""
+msgstr "Inclure les inscriptions aux programmes"
 
 msgid "Include progress notes"
-msgstr ""
+msgstr "Inclure les notes d'évolution"
 
 msgid "Includes notes"
-msgstr ""
+msgstr "Inclut les notes"
 
 msgid "Individual Highlights"
-msgstr ""
+msgstr "Points saillants individuels"
 
 msgid "Interaction type"
-msgstr ""
+msgstr "Type d'interaction"
 
 msgid "Invalid fiscal year selection."
-msgstr ""
+msgstr "Sélection d'année fiscale invalide."
 
 msgid "Invite created. Share this link: %(url)s"
-msgstr ""
+msgstr "Invitation créée. Partagez ce lien : %(url)s"
 
 msgid "Invite list"
-msgstr ""
+msgstr "Liste des invitations"
 
 msgid "Is this a confidential program?"
-msgstr ""
+msgstr "Est-ce un programme confidentiel?"
 
 msgid "Keeping for my records"
-msgstr ""
+msgstr "Conservation pour mes dossiers"
 
 msgid "Language selection"
-msgstr ""
+msgstr "Sélection de la langue"
 
 msgid "Last Updated"
-msgstr ""
+msgstr "Dernière mise à jour"
 
 msgid "Lead Worker"
-msgstr ""
+msgstr "Intervenant principal"
 
 msgid "Leave blank to export clients from all programmes."
-msgstr ""
+msgstr "Laisser vide pour exporter les clients de tous les programmes."
 
 msgid "Leave blank to keep current password."
-msgstr ""
+msgstr "Laissez vide pour conserver le mot de passe actuel."
 
 msgid "Level"
-msgstr ""
+msgstr "Niveau"
 
 msgid "Level:"
-msgstr ""
+msgstr "Niveau :"
 
 msgid "Link copied to clipboard."
-msgstr ""
+msgstr "Lien copié dans le presse-papiers."
 
 msgid "Link expired"
-msgstr ""
+msgstr "Lien expiré"
 
 msgid "Link revoked"
-msgstr ""
+msgstr "Lien révoqué"
 
 msgid "Log Session"
-msgstr ""
+msgstr "Enregistrer une séance"
 
 msgid "Manage Export Links"
-msgstr ""
+msgstr "Gérer les liens d'exportation"
 
 msgid "Manage Templates"
-msgstr ""
+msgstr "Gérer les modèles"
 
 msgid "Max"
-msgstr ""
+msgstr "Max"
 
 msgid "Member added."
-msgstr ""
+msgstr "Membre ajouté(e)."
 
 msgid "Member removed."
-msgstr ""
+msgstr "Membre retiré(e)."
 
 msgid "Members"
-msgstr ""
+msgstr "Membres"
 
 msgid "Merge"
 msgstr "Fusionner"
@@ -5101,7 +5178,9 @@ msgstr "Fusionner"
 msgid ""
 "Merge this registration with the existing client? The registrant will be "
 "enrolled in the program."
-msgstr "Fusionner cette inscription avec le client existant? L'inscrit sera inscrit au programme."
+msgstr ""
+"Fusionner cette inscription avec le client existant? L'inscrit sera inscrit "
+"au programme."
 
 msgid "Merged with existing client %(first)s %(last)s."
 msgstr "Fusionné avec le client existant %(first)s %(last)s."
@@ -5109,972 +5188,1065 @@ msgstr "Fusionné avec le client existant %(first)s %(last)s."
 msgid ""
 "Merging will enrol the existing client in the program instead of creating a "
 "new record."
-msgstr "La fusion inscrira le client existant au programme au lieu de créer un nouveau dossier."
+msgstr ""
+"La fusion inscrira le client existant au programme au lieu de créer un "
+"nouveau dossier."
 
 msgid "Metric Progress"
-msgstr ""
+msgstr "Progrès des mesures"
 
 msgid "Metric created."
-msgstr ""
+msgstr "Mesure créée."
 
 msgid "Metric updated."
-msgstr ""
+msgstr "Mesure mise à jour."
 
 msgid "Metrics to include"
-msgstr ""
+msgstr "Mesures à inclure"
 
 msgid "Metrics updated."
-msgstr ""
+msgstr "Mesures mises à jour."
 
 msgid "Milestone created."
-msgstr ""
+msgstr "Jalon créé."
 
 msgid "Milestone updated."
-msgstr ""
+msgstr "Jalon mis à jour."
 
 msgid "Milestones"
-msgstr ""
+msgstr "Jalons"
 
 msgid "Min"
-msgstr ""
+msgstr "Min"
 
 msgid "Name match"
-msgstr ""
+msgstr "Correspondance de nom"
 
 msgid "Name of colleague, funder, or other recipient."
-msgstr ""
+msgstr "Nom du collègue, du bailleur de fonds ou d'un autre destinataire."
 
 msgid "Name of the metric (e.g., \\\"PHQ-9 (Depression)\\\")"
-msgstr ""
+msgstr "Nom de la mesure (p. ex., \\\"PHQ-9 (Dépression)\\\")"
 
 msgid "Names"
-msgstr ""
+msgstr "Noms"
 
 msgid "Need More Details?"
-msgstr ""
+msgstr "Besoin de plus de détails?"
 
 msgid "New Password"
-msgstr ""
+msgstr "Nouveau mot de passe"
 
 msgid "New this month"
-msgstr ""
+msgstr "Nouveau ce mois-ci"
 
 msgid "Next steps"
-msgstr ""
+msgstr "Prochaines étapes"
 
 msgid "No"
-msgstr ""
+msgstr "Non"
 
 msgid "No Consent"
-msgstr ""
+msgstr "Aucun consentement"
 
 msgid "No additional details recorded. Click Edit to add information."
 msgstr ""
+"Aucun détail supplémentaire enregistré. Cliquez sur Modifier pour ajouter "
+"des renseignements."
 
 msgid ""
 "No audit log entries found for this program. Try adjusting your filters."
 msgstr ""
+"Aucune entrée trouvée dans le journal d'audit pour ce programme. Essayez "
+"d'ajuster vos filtres."
 
 msgid "No client selected for merge."
 msgstr "Aucun client sélectionné pour la fusion."
 
 msgid "No client words recorded yet"
-msgstr ""
+msgstr "Aucune parole du client enregistrée"
 
 msgid "No demo clients found. Run the seed command to create demo data."
 msgstr ""
+"Aucun client de démonstration trouvé. Exécutez la commande d'initialisation "
+"pour créer des données de démonstration."
 
 msgid "No demo users found. Run the seed command to create demo accounts."
 msgstr ""
+"Aucun utilisateur de démonstration trouvé. Exécutez la commande "
+"d'initialisation pour créer des comptes de démonstration."
 
 msgid "No export links found in the last 7 days."
-msgstr ""
+msgstr "Aucun lien d'exportation trouvé dans les 7 derniers jours."
 
 msgid "No links"
-msgstr ""
+msgstr "Aucun lien"
 
 msgid "No members in this group yet."
-msgstr ""
+msgstr "Aucun membre dans ce groupe pour le moment."
 
 msgid "No members yet."
-msgstr ""
+msgstr "Aucun membre pour le moment."
 
 msgid "No milestones yet."
-msgstr ""
+msgstr "Aucun jalon pour le moment."
 
 msgid "No outcomes recorded yet."
-msgstr ""
+msgstr "Aucun résultat enregistré."
 
 msgid ""
 "No programs assigned. Contact your administrator to request program access."
 msgstr ""
+"Aucun programme assigné. Contactez votre administrateur pour demander "
+"l'accès à un programme."
 
 msgid "No qualitative data recorded yet."
-msgstr ""
+msgstr "Aucune donnée qualitative enregistrée."
 
 msgid "No retention period set."
-msgstr ""
+msgstr "Aucune période de conservation définie."
 
 msgid "No roles assigned"
-msgstr ""
+msgstr "Aucun rôle assigné"
 
 msgid "No sessions recorded yet."
-msgstr ""
+msgstr "Aucune séance enregistrée."
 
 msgid "No templates yet. Create one to get started."
-msgstr ""
+msgstr "Aucun modèle pour le moment. Créez-en un pour commencer."
 
 msgid "Not enrolled"
-msgstr ""
+msgstr "Non inscrit(e)"
 
 msgid "Note cancelled."
-msgstr ""
+msgstr "Note annulée."
 
 msgid "Note template created."
-msgstr ""
+msgstr "Modèle de note créé."
 
 msgid "Note template updated."
-msgstr ""
+msgstr "Modèle de note mis à jour."
 
 msgid "Note text is required."
-msgstr ""
+msgstr "Le texte de la note est obligatoire."
 
 msgid "Notes (optional)"
-msgstr ""
+msgstr "Notes (facultatif)"
 
 msgid "Notes this week"
-msgstr ""
+msgstr "Notes cette semaine"
 
 msgid "Observation"
-msgstr ""
+msgstr "Observation"
 
 msgid ""
 "Once all programme managers approve, client data will be permanently "
 "anonymised or erased depending on the level selected below."
 msgstr ""
+"Une fois que tous les gestionnaires de programme auront approuvé, les "
+"données du client seront définitivement anonymisées ou effacées selon le "
+"niveau sélectionné ci-dessous."
 
 msgid ""
 "Once all programme managers approve, the client's data will be permanently "
 "deleted."
 msgstr ""
+"Une fois que tous les gestionnaires de programme auront approuvé, les "
+"données du client seront définitivement supprimées."
 
 msgid ""
 "Once all programme managers approve, the client's identifying information "
 "will be permanently removed."
 msgstr ""
+"Une fois que tous les gestionnaires de programme auront approuvé, les "
+"renseignements identifiants du client seront définitivement supprimés."
 
 msgid "Optionally break down results by age range or a custom field."
 msgstr ""
+"Ventiler optionnellement les résultats par tranche d'âge ou par champ "
+"personnalisé."
 
 msgid "Options"
-msgstr ""
+msgstr "Options"
 
 msgid "Organization Summary"
-msgstr ""
+msgstr "Résumé de l'organisation"
 
 msgid "Original:"
-msgstr ""
+msgstr "Original :"
 
 msgid "Other (please specify)"
-msgstr ""
+msgstr "Autre (veuillez préciser)"
 
 msgid "Outcome date"
-msgstr ""
+msgstr "Date du résultat"
 
 msgid "Outcome recorded."
-msgstr ""
+msgstr "Résultat enregistré."
 
 msgid "Outcomes"
-msgstr ""
+msgstr "Résultats"
 
 msgid "Overdue — PIPEDA 30-Day Deadline"
-msgstr ""
+msgstr "En retard — Date limite de 30 jours LPRPDE"
 
 msgid "PDF (printable report)"
-msgstr ""
+msgstr "PDF (rapport imprimable)"
 
 msgid "PDF generation is not available on this server."
-msgstr ""
+msgstr "La génération de PDF n'est pas disponible sur ce serveur."
 
 msgid "PDF receipt has not been downloaded."
-msgstr ""
+msgstr "Le reçu PDF n'a pas été téléchargé."
 
 msgid "PII Warning"
-msgstr ""
+msgstr "Avertissement de RPI"
 
 msgid "PIPEDA Data Portability"
-msgstr ""
+msgstr "Portabilité des données (LPRPDE)"
 
 msgid "PIPEDA deadline approaching"
-msgstr ""
+msgstr "Date limite LPRPDE approchante"
 
 msgid "PIPEDA deadline warning"
-msgstr ""
+msgstr "Avertissement de date limite LPRPDE"
 
 msgid "PIPEDA requires a response within 30 days. This request is overdue."
 msgstr ""
+"La LPRPDE exige une réponse dans les 30 jours. Cette demande est en retard."
 
 msgid "Page Not Found"
-msgstr ""
+msgstr "Page non trouvée"
 
 msgid "Participant's reflection"
-msgstr ""
+msgstr "Réflexion du participant"
 
 msgid "Participant's words"
-msgstr ""
+msgstr "Paroles du participant"
 
 msgid "Passwords do not match."
-msgstr ""
+msgstr "Les mots de passe ne correspondent pas."
 
 msgid ""
 "Paste this HTML into your website. Works with WordPress, Squarespace, Wix, "
 "and most website builders."
 msgstr ""
+"Collez ce code HTML sur votre site Web. Fonctionne avec WordPress, "
+"Squarespace, Wix et la plupart des créateurs de sites."
 
 msgid "Pending elevated exports"
-msgstr ""
+msgstr "Exportations élevées en attente"
 
 msgid "Pending notice"
-msgstr ""
+msgstr "Avis en attente"
 
 msgid ""
 "Permanently deletes all records. Only a statistical summary is preserved."
 msgstr ""
+"Supprime définitivement tous les dossiers. Seul un résumé statistique est "
+"conservé."
 
 msgid "Phone"
-msgstr ""
+msgstr "Téléphone"
 
 msgid "Plan Sections and Targets"
-msgstr ""
+msgstr "Sections du plan et cibles"
 
 msgid "Plan sections and targets"
-msgstr ""
+msgstr "Sections du plan et cibles"
 
 msgid "Plan targets"
-msgstr ""
+msgstr "Cibles du plan"
 
 msgid "Please confirm you reviewed this note together."
-msgstr ""
+msgstr "Veuillez confirmer que vous avez révisé cette note ensemble."
 
 msgid "Please correct the errors."
-msgstr ""
+msgstr "Veuillez corriger les erreurs."
 
 msgid "Please correct the following:"
-msgstr ""
+msgstr "Veuillez corriger ce qui suit :"
 
 msgid "Please provide a reason for rejecting this submission."
-msgstr ""
+msgstr "Veuillez fournir un motif de rejet pour cette soumission."
 
 msgid "Please save this reference number for your records."
-msgstr ""
+msgstr "Veuillez conserver ce numéro de référence pour vos dossiers."
 
 msgid "Please select a client or enter a name."
-msgstr ""
+msgstr "Veuillez sélectionner un client ou entrer un nom."
 
 msgid "Please select a fiscal year."
-msgstr ""
+msgstr "Veuillez sélectionner une année fiscale."
 
 msgid "Please select who will receive this export."
-msgstr ""
+msgstr "Veuillez sélectionner qui recevra cette exportation."
 
 msgid "Please specify…"
-msgstr ""
+msgstr "Veuillez préciser…"
 
 msgid "Possible Duplicates Found"
-msgstr ""
+msgstr "Doublons potentiels trouvés"
 
 msgid "Possible duplicate found"
-msgstr ""
+msgstr "Doublon potentiel trouvé"
 
 msgid "Privacy & Data Management"
-msgstr ""
+msgstr "Vie privée et gestion des données"
 
 msgid "Privacy Officer"
-msgstr ""
+msgstr "Responsable de la vie privée"
 
 msgid "Privacy notice"
-msgstr ""
+msgstr "Avis de confidentialité"
 
 msgid "Program Statistics"
-msgstr ""
+msgstr "Statistiques du programme"
 
 msgid "Program created."
-msgstr ""
+msgstr "Programme créé."
 
 msgid "Program updated."
-msgstr ""
+msgstr "Programme mis à jour."
 
 msgid "Programme"
-msgstr ""
+msgstr "Programme"
 
 msgid "Programme Enrolments"
-msgstr ""
+msgstr "Inscriptions aux programmes"
 
 msgid "Programme enrolments"
-msgstr ""
+msgstr "Inscriptions aux programmes"
 
 msgid "Programme managers have been notified by email."
-msgstr ""
+msgstr "Les gestionnaires de programme ont été avisés par courriel."
 
 msgid "Programmes Enrolled"
-msgstr ""
+msgstr "Programmes inscrits"
 
 msgid "Programs"
-msgstr ""
+msgstr "Programmes"
 
 msgid "Progress note saved."
-msgstr ""
+msgstr "Note d'évolution enregistrée."
 
 msgid "Progress notes"
-msgstr ""
+msgstr "Notes d'évolution"
 
 msgid "Progress over time"
-msgstr ""
+msgstr "Progrès dans le temps"
 
 msgid "Project milestones"
-msgstr ""
+msgstr "Jalons du projet"
 
 msgid "Qualitative Progress"
-msgstr ""
+msgstr "Progrès qualitatif"
 
 msgid "Quick note saved."
-msgstr ""
+msgstr "Note rapide enregistrée."
 
 msgid "Quick observation..."
-msgstr ""
+msgstr "Observation rapide..."
 
 msgid "Real users only"
-msgstr ""
+msgstr "Utilisateurs réels seulement"
 
 msgid "Reason: %(notes)s"
-msgstr ""
+msgstr "Motif : %(notes)s"
 
 msgid "Receipt warning"
-msgstr ""
+msgstr "Avertissement de reçu"
 
 msgid "Recent Sessions"
-msgstr ""
+msgstr "Séances récentes"
 
 msgid "Recent words"
-msgstr ""
+msgstr "Paroles récentes"
 
 msgid "Recipient"
-msgstr ""
+msgstr "Destinataire"
 
 msgid "Recipient details"
-msgstr ""
+msgstr "Détails du destinataire"
 
 msgid "Record Outcome"
-msgstr ""
+msgstr "Enregistrer un résultat"
 
 msgid "Record attendance, observations, and notes for this session."
 msgstr ""
+"Enregistrer les présences, les observations et les notes pour cette séance."
 
 msgid "Record their words, not your interpretation."
-msgstr ""
+msgstr "Enregistrez leurs mots, pas votre interprétation."
 
 msgid ""
 "Record their words, not your interpretation. Even a brief phrase captures "
 "their voice."
 msgstr ""
+"Enregistrez leurs mots, pas votre interprétation. Même une brève phrase "
+"capture leur voix."
 
 msgid "Recorded"
-msgstr ""
+msgstr "Enregistré"
 
 msgid "Reference Number"
-msgstr ""
+msgstr "Numéro de référence"
 
 msgid "Registrant Information"
-msgstr ""
+msgstr "Renseignements sur l'inscrit"
 
 msgid "Registration Link"
-msgstr ""
+msgstr "Lien d'inscription"
 
 msgid "Registration Submission"
-msgstr ""
+msgstr "Soumission d'inscription"
 
 msgid "Registration link '%(title)s' created."
-msgstr ""
+msgstr "Lien d'inscription « %(title)s » créé."
 
 msgid "Registration link '%(title)s' deleted."
-msgstr ""
+msgstr "Lien d'inscription « %(title)s » supprimé."
 
 msgid "Registration link '%(title)s' updated."
-msgstr ""
+msgstr "Lien d'inscription « %(title)s » mis à jour."
 
 msgid "Rejected at"
-msgstr ""
+msgstr "Rejeté le"
 
 msgid "Rejected by"
-msgstr ""
+msgstr "Rejeté par"
 
 msgid "Rejected by: %(name)s"
-msgstr ""
+msgstr "Rejeté par : %(name)s"
 
 msgid "Rejection Details"
-msgstr ""
+msgstr "Détails du rejet"
 
 msgid "Rejection Reason"
-msgstr ""
+msgstr "Motif du rejet"
 
 msgid ""
 "Removes identifying fields AND all narrative content (notes, alerts, event "
 "descriptions). Keeps numeric metrics and programme enrolments."
 msgstr ""
+"Supprime les champs identifiants ET tout le contenu narratif (notes, "
+"alertes, descriptions d'événements). Conserve les mesures numériques et les "
+"inscriptions aux programmes."
 
 msgid ""
 "Removes name, date of birth, and other identifying fields. Keeps notes, "
 "metrics, plans, and programme data for reporting."
 msgstr ""
+"Supprime le nom, la date de naissance et les autres champs identifiants. "
+"Conserve les notes, les mesures, les plans et les données de programme pour "
+"les rapports."
 
 msgid "Request Data Erasure"
-msgstr ""
+msgstr "Demander l'effacement des données"
 
 msgid "Request Date"
-msgstr ""
+msgstr "Date de la demande"
 
 msgid "Request Irreversible Data Erasure"
-msgstr ""
+msgstr "Demander l'effacement irréversible des données"
 
 msgid "Required"
-msgstr ""
+msgstr "Obligatoire"
 
 msgid "Required for audit purposes."
-msgstr ""
+msgstr "Requis à des fins d'audit."
 
 msgid "Resource"
-msgstr ""
+msgstr "Ressource"
 
 msgid "Resource Type"
-msgstr ""
+msgstr "Type de ressource"
 
 msgid "Responsive Width"
-msgstr ""
+msgstr "Largeur réactive"
 
 msgid "Retention Expires"
-msgstr ""
+msgstr "Expiration de la conservation"
 
 msgid "Retention period has expired. All erasure levels are available."
 msgstr ""
+"La période de conservation a expiré. Tous les niveaux d'effacement sont "
+"disponibles."
 
 msgid "Retention period:"
-msgstr ""
+msgstr "Période de conservation :"
 
 msgid "Return to a page you've visited using the links below"
 msgstr ""
+"Retournez à une page que vous avez visitée en utilisant les liens ci-dessous"
 
 msgid "Return to the home page using the link below"
-msgstr ""
+msgstr "Retournez à la page d'accueil en utilisant le lien ci-dessous"
 
 msgid "Review &amp; Revoke Exports"
-msgstr ""
+msgstr "Réviser et révoquer les exportations"
 
 msgid "Review Details"
-msgstr ""
+msgstr "Détails de la révision"
 
 msgid "Reviewed at"
-msgstr ""
+msgstr "Révisé le"
 
 msgid "Reviewed by"
-msgstr ""
+msgstr "Révisé par"
 
 msgid "Revoke"
-msgstr ""
+msgstr "Révoquer"
 
 msgid ""
 "Revoke this export link? The file will be deleted and the link will stop "
 "working."
 msgstr ""
+"Révoquer ce lien d'exportation? Le fichier sera supprimé et le lien cessera "
+"de fonctionner."
 
 msgid "Revoked"
-msgstr ""
+msgstr "Révoqué"
 
 msgid "Roster"
-msgstr ""
+msgstr "Liste"
 
 msgid "Save Session"
-msgstr ""
+msgstr "Enregistrer la séance"
 
 msgid "Saved"
-msgstr ""
+msgstr "Enregistré"
 
 msgid "Saved."
-msgstr ""
+msgstr "Enregistré."
 
 msgid "Search by name, ID, or note content..."
-msgstr ""
+msgstr "Rechercher par nom, identifiant ou contenu de note..."
 
 msgid "Search note content"
-msgstr ""
+msgstr "Rechercher dans les notes"
 
 msgid "Search note content..."
-msgstr ""
+msgstr "Rechercher dans les notes..."
 
 msgid "Search notes"
-msgstr ""
+msgstr "Rechercher des notes"
 
 msgid "Section added."
-msgstr ""
+msgstr "Section ajoutée."
 
 msgid "Section deleted."
-msgstr ""
+msgstr "Section supprimée."
 
 msgid "Section status updated."
-msgstr ""
+msgstr "Statut de la section mis à jour."
 
 msgid "Section updated."
-msgstr ""
+msgstr "Section mise à jour."
 
 msgid "Secure Download Link"
-msgstr ""
+msgstr "Lien de téléchargement sécurisé"
 
 msgid "Secure download URL"
-msgstr ""
+msgstr "URL de téléchargement sécurisé"
 
 msgid "Select"
-msgstr ""
+msgstr "Sélectionner"
 
 msgid ""
 "Select a fiscal year to auto-fill dates, or leave blank for custom range."
 msgstr ""
+"Sélectionnez une année fiscale pour remplir automatiquement les dates, ou "
+"laissez vide pour une période personnalisée."
 
 msgid "Select an existing client"
-msgstr ""
+msgstr "Sélectionner un client existant"
 
 msgid "Select the fiscal year to report on."
-msgstr ""
+msgstr "Sélectionnez l'année fiscale visée par le rapport."
 
 msgid ""
 "Select which programs this person will be assigned to. Not needed for "
 "administrators."
 msgstr ""
+"Sélectionnez les programmes auxquels cette personne sera assignée. Non "
+"requis pour les administrateurs."
 
 msgid "Selected client not found."
-msgstr ""
+msgstr "Le client sélectionné est introuvable."
 
 msgid "Select…"
-msgstr ""
+msgstr "Sélectionner…"
 
 msgid "Server Error"
-msgstr ""
+msgstr "Erreur du serveur"
 
 msgid "Session"
-msgstr ""
+msgstr "Séance"
 
 msgid "Session Notes"
-msgstr ""
+msgstr "Notes de séance"
 
 msgid "Session logged."
-msgstr ""
+msgstr "Séance enregistrée."
 
 msgid "Session notes"
-msgstr ""
+msgstr "Notes de séance"
 
 msgid ""
 "Set front desk access to 'View and edit' for contact info, emergency "
 "contacts, and safety alerts."
 msgstr ""
+"Définir l'accès de la réception à « Consulter et modifier » pour les "
+"coordonnées, les contacts d'urgence et les alertes de sécurité."
 
 msgid ""
 "Share this link directly (e.g., in emails, flyers, QR codes). Opens the full"
 " registration page."
 msgstr ""
+"Partagez ce lien directement (p. ex., dans des courriels, des dépliants, des"
+" codes QR). Ouvre la page d'inscription complète."
 
 msgid "Sharing Notice"
-msgstr ""
+msgstr "Avis de partage"
 
 msgid "Sharing with colleague"
-msgstr ""
+msgstr "Partage avec un collègue"
 
 msgid "Sharing with funder"
-msgstr ""
+msgstr "Partage avec un bailleur de fonds"
 
 msgid "Something Went Wrong"
-msgstr ""
+msgstr "Quelque chose s'est mal passé"
 
 msgid "Standard"
-msgstr ""
+msgstr "Standard"
 
 msgid "Stated recipient"
-msgstr ""
+msgstr "Destinataire déclaré"
 
 msgid "Status and dates"
-msgstr ""
+msgstr "Statut et dates"
 
 msgid "Status message"
-msgstr ""
+msgstr "Message de statut"
 
 msgid "Submission moved to waitlist."
-msgstr ""
+msgstr "Soumission déplacée vers la liste d'attente."
 
 msgid "Submission rejected."
-msgstr ""
+msgstr "Soumission rejetée."
 
 msgid "Submissions:"
-msgstr ""
+msgstr "Soumissions :"
 
 msgid "Submitted:"
-msgstr ""
+msgstr "Soumis :"
 
 msgid "Success"
-msgstr ""
+msgstr "Succès"
 
 msgid "Successfully imported %(count)d metric definitions."
-msgstr ""
+msgstr "%(count)d définitions de mesures importées avec succès."
 
 msgid "Suggested improvement:"
-msgstr ""
+msgstr "Amélioration suggérée :"
 
 msgid "Suggested note structure"
-msgstr ""
+msgstr "Structure de note suggérée"
 
 msgid "System-wide diagnostics"
-msgstr ""
+msgstr "Diagnostics à l'échelle du système"
 
 msgid "Target added."
-msgstr ""
+msgstr "Cible ajoutée."
 
 msgid "Target deleted."
-msgstr ""
+msgstr "Cible supprimée."
 
 msgid "Target status updated."
-msgstr ""
+msgstr "Statut de la cible mis à jour."
 
 msgid "Target updated."
-msgstr ""
+msgstr "Cible mise à jour."
 
 msgid "Template \"%(name)s\" applied successfully."
-msgstr ""
+msgstr "Le modèle « %(name)s » a été appliqué avec succès."
 
 msgid "Template created."
-msgstr ""
+msgstr "Modèle créé."
 
 msgid "Template updated."
-msgstr ""
+msgstr "Modèle mis à jour."
 
 msgid "Terminology settings"
-msgstr ""
+msgstr "Paramètres de terminologie"
 
 msgid "The embed uses"
-msgstr ""
+msgstr "L'intégration utilise"
 
 msgid "The exported file will contain:"
-msgstr ""
+msgstr "Le fichier exporté contiendra :"
 
 msgid ""
 "The exports below are in the delay period. You can revoke them before the "
 "download becomes available."
 msgstr ""
+"Les exportations ci-dessous sont en période de délai. Vous pouvez les "
+"révoquer avant que le téléchargement ne soit disponible."
 
 msgid "The following existing clients may match this registration:"
 msgstr ""
+"Les clients existants suivants pourraient correspondre à cette inscription :"
 
 msgid ""
 "The form will be displayed in an iframe. Participants will see your website "
 "URL in their browser, not the KoNote2 URL."
 msgstr ""
+"Le formulaire sera affiché dans un iframe. Les participants verront l'URL de"
+" votre site Web dans leur navigateur, pas l'URL de KoNote2."
 
 msgid "The page you're looking for doesn't exist or has been moved."
-msgstr ""
+msgstr "La page que vous recherchez n'existe pas ou a été déplacée."
 
 msgid ""
 "These actions are for privacy compliance and data governance. Data erasure "
 "is permanent and irreversible."
 msgstr ""
+"Ces actions sont destinées à la conformité en matière de vie privée et à la "
+"gouvernance des données. L'effacement des données est permanent et "
+"irréversible."
 
 msgid "This alert is already cancelled."
-msgstr ""
+msgstr "Cette alerte est déjà annulée."
 
 msgid "This client is already a member."
-msgstr ""
+msgstr "Ce client est déjà un membre."
 
 msgid "This client's data has already been anonymised."
-msgstr ""
+msgstr "Les données de ce client ont déjà été anonymisées."
 
 msgid ""
 "This document contains all personal information held in KoNote2 for the "
 "above-named individual. This export was generated in accordance with PIPEDA "
 "data portability requirements."
 msgstr ""
+"Ce document contient tous les renseignements personnels détenus dans KoNote2"
+" pour la personne nommée ci-dessus. Cette exportation a été générée "
+"conformément aux exigences de portabilité des données de la LPRPDE."
 
 msgid ""
 "This document was generated before data erasure. The system does not retain "
 "a copy."
 msgstr ""
+"Ce document a été généré avant l'effacement des données. Le système ne "
+"conserve pas de copie."
 
 msgid "This download link can no longer be used."
-msgstr ""
+msgstr "Ce lien de téléchargement ne peut plus être utilisé."
 
 msgid "This erasure level is not available."
-msgstr ""
+msgstr "Ce niveau d'effacement n'est pas disponible."
 
 msgid "This export includes personal information"
-msgstr ""
+msgstr "Cette exportation comprend des renseignements personnels"
 
 msgid "This export is being reviewed before the download becomes available."
 msgstr ""
+"Cette exportation est en cours de révision avant que le téléchargement ne "
+"soit disponible."
 
 msgid "This field is required when not using a fiscal year."
 msgstr ""
+"Ce champ est obligatoire lorsqu'aucune année fiscale n'est sélectionnée."
 
 msgid "This invite has already been used."
-msgstr ""
+msgstr "Cette invitation a déjà été utilisée."
 
 msgid "This invite has expired. Please ask your administrator for a new one."
 msgstr ""
+"Cette invitation a expiré. Veuillez demander à votre administrateur d'en "
+"créer une nouvelle."
 
 msgid ""
 "This is an automated notification from KoNote2. You are receiving this "
 "because you are an administrator."
 msgstr ""
+"Ceci est une notification automatique de KoNote2. Vous recevez ceci parce "
+"que vous êtes administrateur."
 
 msgid "This is how the embedded form will appear on your website."
-msgstr ""
+msgstr "Voici comment le formulaire intégré apparaîtra sur votre site Web."
 
 msgid "This link has been revoked"
-msgstr ""
+msgstr "Ce lien a été révoqué"
 
 msgid "This link has expired"
-msgstr ""
+msgstr "Ce lien a expiré"
 
 msgid "This link was already revoked."
-msgstr ""
+msgstr "Ce lien a déjà été révoqué."
 
 msgid "This note is already cancelled."
-msgstr ""
+msgstr "Cette note est déjà annulée."
 
 msgid "This note is for..."
-msgstr ""
+msgstr "Cette note concerne..."
 
 msgid "This program is confidential."
-msgstr ""
+msgstr "Ce programme est confidentiel."
 
 msgid ""
 "This receipt should be stored securely by the privacy officer as the only "
 "record linking the erasure code to the client's identity."
 msgstr ""
+"Ce reçu devrait être conservé de façon sécuritaire par le responsable de la "
+"vie privée en tant que seul document reliant le code d'effacement à "
+"l'identité du client."
 
 msgid "This record has been anonymised."
-msgstr ""
+msgstr "Ce dossier a été anonymisé."
 
 msgid "This setting cannot be changed back to standard."
-msgstr ""
+msgstr "Ce paramètre ne peut pas être remis à standard."
 
 msgid "This submission cannot be waitlisted."
-msgstr ""
+msgstr "Cette soumission ne peut pas être mise en liste d'attente."
 
 msgid "This submission has already been reviewed."
-msgstr ""
+msgstr "Cette soumission a déjà été examinée."
 
 msgid "This username is already taken."
-msgstr ""
+msgstr "Ce nom d'utilisateur est déjà pris."
 
 msgid ""
 "This will permanently delete the registration link and all its submissions."
 msgstr ""
+"Cela supprimera définitivement le lien d'inscription et toutes ses "
+"soumissions."
 
 msgid "Total"
-msgstr ""
+msgstr "Total"
 
 msgid "Try Again"
-msgstr ""
+msgstr "Réessayer"
 
 msgid ""
 "Under PIPEDA, individuals have the right to access their personal "
 "information. This export includes all data held for this client."
 msgstr ""
+"En vertu de la LPRPDE, les individus ont le droit d'accéder à leurs "
+"renseignements personnels. Cette exportation comprend toutes les données "
+"détenues pour ce client."
 
 msgid "Unit of measurement (e.g., \\\"score\\\", \\\"days\\\", \\\"%\\\")"
-msgstr ""
+msgstr "Unité de mesure (p. ex., \\\"score\\\", \\\"jours\\\", \\\"%\\\")"
 
 msgid "Update Status"
-msgstr ""
+msgstr "Mettre à jour le statut"
 
 msgid "Use the filters below to narrow down the export."
-msgstr ""
+msgstr "Utilisez les filtres ci-dessous pour affiner l'exportation."
 
 msgid "Use the navigation menu to find what you need"
-msgstr ""
+msgstr "Utilisez le menu de navigation pour trouver ce dont vous avez besoin"
 
 msgid "User '%(name)s' deactivated."
-msgstr ""
+msgstr "Utilisateur « %(name)s » désactivé."
 
 msgid "User created."
-msgstr ""
+msgstr "Utilisateur créé."
 
 msgid "User list"
-msgstr ""
+msgstr "Liste des utilisateurs"
 
 msgid "User updated."
-msgstr ""
+msgstr "Utilisateur mis à jour."
 
 msgid "Verbal consent"
-msgstr ""
+msgstr "Consentement verbal"
 
 msgid ""
 "View all demo users and demo clients. Impersonate demo users for testing."
 msgstr ""
+"Voir tous les utilisateurs et les clients de démonstration. Usurper "
+"l'identité des utilisateurs de démonstration pour tester."
 
 msgid ""
 "View and revoke active secure download links. Links from the last 7 days are"
 " shown."
 msgstr ""
+"Visualiser et révoquer les liens de téléchargement sécurisés actifs. Les "
+"liens des 7 derniers jours sont affichés."
 
 msgid "View data table"
-msgstr ""
+msgstr "Voir le tableau de données"
 
 msgid "View existing record"
-msgstr ""
+msgstr "Voir le dossier existant"
 
 msgid ""
 "View the report in your browser and use your browser's \\\"Print to PDF\\\" "
 "feature (Ctrl+P or Cmd+P)"
 msgstr ""
+"Consultez le rapport dans votre navigateur et utilisez la fonction "
+"\\\"Imprimer en PDF\\\" de votre navigateur (Ctrl+P ou Cmd+P)"
 
 msgid "Wait a moment and try again"
-msgstr ""
+msgstr "Attendez un moment et réessayez"
 
 msgid "We created this note together"
-msgstr ""
+msgstr "Nous avons créé cette note ensemble"
 
 msgid "We will review your registration and contact you soon."
-msgstr ""
+msgstr "Nous examinerons votre inscription et vous contacterons bientôt."
 
 msgid "Welcome, %(name)s! Your account has been created."
-msgstr ""
+msgstr "Bienvenue, %(name)s! Votre compte a été créé."
 
 msgid "What kind of interaction?"
-msgstr ""
+msgstr "Quel type d'interaction?"
 
 msgid "What to do next"
-msgstr ""
+msgstr "Prochaines étapes"
 
 msgid "What to include"
-msgstr ""
+msgstr "Quoi inclure"
 
 msgid "What's one thing you're taking away from today?"
-msgstr ""
+msgstr "Quelle est la chose que vous retenez d'aujourd'hui?"
 
 msgid "Who is receiving this data?"
-msgstr ""
+msgstr "Qui recevra ces données?"
 
 msgid ""
 "Wrap the iframe in a container div and apply CSS to control margins, "
 "borders, and positioning on your site."
 msgstr ""
+"Enveloppez l'iframe dans un conteneur div et appliquez du CSS pour contrôler"
+" les marges, les bordures et le positionnement sur votre site."
 
 msgid "Written consent"
-msgstr ""
+msgstr "Consentement écrit"
 
 msgid "Yes, this is a confidential program"
-msgstr ""
+msgstr "Oui, c'est un programme confidentiel"
 
 msgid "You are now registered for this program."
-msgstr ""
+msgstr "Vous êtes maintenant inscrit(e) à ce programme."
 
 msgid ""
 "You can share the link now — the recipient will be able to download after "
 "the delay period."
 msgstr ""
+"Vous pouvez partager le lien maintenant — le destinataire pourra télécharger"
+" après la période de délai."
 
 msgid "You cannot deactivate your own account."
-msgstr ""
+msgstr "Vous ne pouvez pas désactiver votre propre compte."
 
 msgid "You do not have access to this group."
-msgstr ""
+msgstr "Vous n'avez pas accès à ce groupe."
 
 msgid "You do not have access to this receipt."
-msgstr ""
+msgstr "Vous n'avez pas accès à ce reçu."
 
 msgid "You may submit a new request if circumstances change."
 msgstr ""
+"Vous pouvez soumettre une nouvelle demande si les circonstances changent."
 
 msgid "Your erasure request %(code)s has been rejected."
-msgstr ""
+msgstr "Votre demande d'effacement %(code)s a été rejetée."
 
 msgid "Your information is collected and stored securely."
-msgstr ""
+msgstr "Vos renseignements sont recueillis et conservés de façon sécuritaire."
 
 msgid ""
 "Your observation — not a score. This is a practice tool, not a performance "
 "evaluation."
 msgstr ""
+"Votre observation — pas une note. C'est un outil de pratique, pas une "
+"évaluation de rendement."
 
 msgid "Your registration has been received."
-msgstr ""
+msgstr "Votre inscription a été reçue."
 
 msgid "Your secure download link is ready."
-msgstr ""
+msgstr "Votre lien de téléchargement sécurisé est prêt."
 
 msgid "[ANONYMISED]"
-msgstr ""
+msgstr "[ANONYMISÉ]"
 
 msgid "ago"
-msgstr ""
+msgstr "il y a"
 
 msgid "and"
-msgstr ""
+msgstr "et"
 
 msgid "by default, which makes it responsive. You can set a fixed width like"
 msgstr ""
+"par défaut, ce qui la rend réactive. Vous pouvez définir une largeur fixe "
+"comme"
 
 msgid "created, updated"
-msgstr ""
+msgstr "créé, mis à jour"
 
 msgid "encrypted"
-msgstr ""
+msgstr "chiffré"
 
 msgid "entries"
-msgstr ""
+msgstr "entrées"
 
 msgid "first, middle, last"
-msgstr ""
+msgstr "prénom, deuxième prénom, nom"
 
 msgid "if needed."
-msgstr ""
+msgstr "si nécessaire."
 
 msgid "if selected"
-msgstr ""
+msgstr "si sélectionné"
 
 msgid "including clinical notes"
-msgstr ""
+msgstr "y compris les notes cliniques"
 
 msgid "measurements"
-msgstr ""
+msgstr "mesures"
 
 msgid "more"
-msgstr ""
+msgstr "plus"
 
 msgid "optional"
-msgstr ""
+msgstr "facultatif"
 
 msgid "present"
-msgstr ""
+msgstr "présent"
 
 msgid "read-only"
-msgstr ""
+msgstr "lecture seule"
 
 msgid "string"
-msgstr ""
+msgstr "chaîne"
 
 msgid ""
 "to fit your form. Longer forms with more custom fields may need more height."
 msgstr ""
+"pour adapter votre formulaire. Les formulaires plus longs avec plus de "
+"champs personnalisés peuvent nécessiter plus de hauteur."
 
 msgid "values recorded in"
-msgstr ""
+msgstr "valeurs enregistrées dans"
 
 msgid "— All programmes —"
-msgstr ""
+msgstr "— Tous les programmes —"
 
 msgid "— All statuses —"
-msgstr ""
+msgstr "— Tous les statuts —"
 
 msgid "— Select a programme —"
-msgstr ""
+msgstr "— Sélectionner un programme —"
 
 msgid "— Select recipient —"
-msgstr ""
+msgstr "— Sélectionner un destinataire —"
 
 msgid "— Select —"
 msgstr "— Sélectionner —"
@@ -6086,7 +6258,8 @@ msgid "(empty)"
 msgstr "(vide)"
 
 msgid "Cannot merge a demo client with a real client."
-msgstr "Impossible de fusionner un client de démonstration avec un client réel."
+msgstr ""
+"Impossible de fusionner un client de démonstration avec un client réel."
 
 msgid "I understand this cannot be undone"
 msgstr "Je comprends que cette action est irréversible"
@@ -6096,23 +6269,32 @@ msgstr "Un ou les deux dossiers clients n'existent plus."
 
 msgid ""
 "Records merged successfully. All data has been combined into this record."
-msgstr "Dossiers fusionnés avec succès. Toutes les données ont été combinées dans ce dossier."
+msgstr ""
+"Dossiers fusionnés avec succès. Toutes les données ont été combinées dans ce"
+" dossier."
 
 msgid ""
 "The primary client has a confidential programme enrolment and cannot be "
 "merged."
-msgstr "Le client principal est inscrit à un programme confidentiel et ne peut pas être fusionné."
+msgstr ""
+"Le client principal est inscrit à un programme confidentiel et ne peut pas "
+"être fusionné."
 
 msgid "The primary client record has been anonymised and cannot be merged."
-msgstr "Le dossier du client principal a été anonymisé et ne peut pas être fusionné."
+msgstr ""
+"Le dossier du client principal a été anonymisé et ne peut pas être fusionné."
 
 msgid ""
 "The secondary client has a confidential programme enrolment and cannot be "
 "merged."
-msgstr "Le client secondaire est inscrit à un programme confidentiel et ne peut pas être fusionné."
+msgstr ""
+"Le client secondaire est inscrit à un programme confidentiel et ne peut pas "
+"être fusionné."
 
 msgid "The secondary client record has been anonymised and cannot be merged."
-msgstr "Le dossier du client secondaire a été anonymisé et ne peut pas être fusionné."
+msgstr ""
+"Le dossier du client secondaire a été anonymisé et ne peut pas être "
+"fusionné."
 
 msgid "You must acknowledge that this action cannot be undone."
 msgstr "Vous devez confirmer que cette action est irréversible."
@@ -6126,13 +6308,18 @@ msgstr "Après la fusion"
 msgid ""
 "After merge, staff in the following programmes will see all combined "
 "records:"
-msgstr "Après la fusion, le personnel des programmes suivants verra tous les dossiers combinés :"
+msgstr ""
+"Après la fusion, le personnel des programmes suivants verra tous les "
+"dossiers combinés :"
 
 msgid ""
 "All notes, events, plans, enrolments, and custom fields from the archived "
 "record will be combined into the primary record. The archived record will be"
 " permanently anonymised."
-msgstr "Toutes les notes, événements, plans, inscriptions et champs personnalisés du dossier archivé seront combinés dans le dossier principal. Le dossier archivé sera anonymisé de façon permanente."
+msgstr ""
+"Toutes les notes, événements, plans, inscriptions et champs personnalisés du"
+" dossier archivé seront combinés dans le dossier principal. Le dossier "
+"archivé sera anonymisé de façon permanente."
 
 msgid "Automatic scanning unavailable"
 msgstr "Analyse automatique non disponible"
@@ -6183,7 +6370,9 @@ msgid "No duplicates"
 msgstr "Aucun doublon"
 
 msgid "No potential duplicates found. All client records appear to be unique."
-msgstr "Aucun doublon potentiel trouvé. Tous les dossiers clients semblent être uniques."
+msgstr ""
+"Aucun doublon potentiel trouvé. Tous les dossiers clients semblent être "
+"uniques."
 
 msgid "Phone Matches"
 msgstr "Correspondances téléphoniques"
@@ -6201,11 +6390,16 @@ msgid ""
 "Review potential duplicate client records and merge them into a single "
 "record. All data from the archived record will be transferred to the kept "
 "record."
-msgstr "Examinez les dossiers clients potentiellement en double et fusionnez-les en un seul dossier. Toutes les données du dossier archivé seront transférées au dossier conservé."
+msgstr ""
+"Examinez les dossiers clients potentiellement en double et fusionnez-les en "
+"un seul dossier. Toutes les données du dossier archivé seront transférées au"
+" dossier conservé."
 
 msgid ""
 "Staff in all listed programmes will be able to see all combined records."
-msgstr "Le personnel de tous les programmes listés pourra voir tous les dossiers combinés."
+msgstr ""
+"Le personnel de tous les programmes listés pourra voir tous les dossiers "
+"combinés."
 
 msgid "The merged record will be enrolled in:"
 msgstr "Le dossier fusionné sera inscrit à :"
@@ -6213,7 +6407,9 @@ msgstr "Le dossier fusionné sera inscrit à :"
 msgid ""
 "These custom fields have different values on each record. Choose which to "
 "keep."
-msgstr "Ces champs personnalisés ont des valeurs différentes dans chaque dossier. Choisissez lesquelles conserver."
+msgstr ""
+"Ces champs personnalisés ont des valeurs différentes dans chaque dossier. "
+"Choisissez lesquelles conserver."
 
 msgid "Too many clients"
 msgstr "Trop de clients"
@@ -6224,7 +6420,9 @@ msgstr "Quel dossier doit être le dossier principal (conservé) ?"
 msgid ""
 "Your agency has too many client records for automatic duplicate scanning. "
 "Please contact support for assistance with duplicate detection."
-msgstr "Votre organisme a trop de dossiers clients pour l'analyse automatique des doublons. Veuillez contacter le soutien technique pour obtenir de l'aide."
+msgstr ""
+"Votre organisme a trop de dossiers clients pour l'analyse automatique des "
+"doublons. Veuillez contacter le soutien technique pour obtenir de l'aide."
 
 msgid "choose which to keep"
 msgstr "choisir lequel conserver"
@@ -6275,8 +6473,13 @@ msgstr "Sélectionner un programme"
 msgid "Which program are you working in right now?"
 msgstr "Dans quel programme travaillez-vous en ce moment?"
 
-msgid "You have access to multiple programs. Choose which one you are working in. Your client list will show only clients from the selected program."
-msgstr "Vous avez accès à plusieurs programmes. Choisissez celui dans lequel vous travaillez. Votre liste de clients affichera uniquement les clients du programme sélectionné."
+msgid ""
+"You have access to multiple programs. Choose which one you are working in. "
+"Your client list will show only clients from the selected program."
+msgstr ""
+"Vous avez accès à plusieurs programmes. Choisissez celui dans lequel vous "
+"travaillez. Votre liste de clients affichera uniquement les clients du "
+"programme sélectionné."
 
 msgid "Program selection"
 msgstr "Sélection du programme"
@@ -6287,8 +6490,12 @@ msgstr "Programme"
 msgid "Continue"
 msgstr "Continuer"
 
-msgid "You can switch programs at any time using the dropdown in the navigation bar."
-msgstr "Vous pouvez changer de programme à tout moment en utilisant le menu déroulant dans la barre de navigation."
+msgid ""
+"You can switch programs at any time using the dropdown in the navigation "
+"bar."
+msgstr ""
+"Vous pouvez changer de programme à tout moment en utilisant le menu "
+"déroulant dans la barre de navigation."
 
 msgid "You do not have access to any standard programs."
 msgstr "Vous n'avez accès à aucun programme standard."
