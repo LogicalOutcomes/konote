@@ -25,6 +25,7 @@ Welcome! Find what you need based on what you're trying to do.
 - **Self-service registration** — public forms with capacity limits and duplicate detection
 - **Export hardening** — CSV injection protection, elevated export monitoring, secure download links
 - **Canadian localisation** — postal code and phone number validation
+- **Confidential programs** — sensitive program isolation with audit logging and duplicate detection
 - **Demo mode** — safe evaluation with separated demo data
 
 ---
@@ -45,6 +46,7 @@ Welcome! Find what you need based on what you're trying to do.
 - [Backup & Restore](administering-KoNote2.md#backup-and-restore) — protecting your data
 - [Security Operations](administering-KoNote2.md#security-operations) — audit logs, encryption keys
 - [Export Operations](export-runbook.md) — managing exports and download links
+- [Confidential Programs & Matching](confidential-programs.md) — sensitive program isolation and duplicate detection
 - [Security Operations (detailed)](security-operations.md) — encryption, audit logging, erasure, export controls
 
 ### For Staff
@@ -73,6 +75,7 @@ Welcome! Find what you need based on what you're trying to do.
 | [Deploying KoNote2](deploying-KoNote2.md) | IT / Technical lead | Get KoNote2 running (local or cloud) |
 | [Privacy Policy Template](privacy-policy-template.md) | Admins / Legal | Customise for your organisation before going live |
 | [Administering KoNote2](administering-KoNote2.md) | Program managers / Admins | Configure and maintain your instance |
+| [Confidential Programs](confidential-programs.md) | Program managers / Admins | Sensitive program isolation and duplicate matching |
 | [Using KoNote2](using-KoNote2.md) | Front-line staff | Day-to-day usage guide |
 | [Technical Reference](technical-documentation.md) | Developers | Architecture, data models, customisation |
 
