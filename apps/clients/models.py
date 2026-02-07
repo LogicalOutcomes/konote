@@ -50,6 +50,7 @@ class ClientFile(models.Model):
 
     # Encrypted PII
     _first_name_encrypted = models.BinaryField(default=b"")
+    _preferred_name_encrypted = models.BinaryField(default=b"", blank=True)
     _middle_name_encrypted = models.BinaryField(default=b"", blank=True)
     _last_name_encrypted = models.BinaryField(default=b"")
     _birth_date_encrypted = models.BinaryField(default=b"", blank=True)
@@ -92,7 +93,7 @@ class ClientFile(models.Model):
     def __str__(self):
         if self.is_anonymised:
             return _("[ANONYMISED]")
-        return f"{self.first_name} {self.last_name}" if self.first_name else f"Client #{self.pk}"
+        return f"{self.display_name} {self.last_name}" if self.display_name else f"Client #{self.pk}"
 
     # Encrypted property accessors
     @property
@@ -102,6 +103,23 @@ class ClientFile(models.Model):
     @first_name.setter
     def first_name(self, value):
         self._first_name_encrypted = encrypt_field(value)
+
+    @property
+    def preferred_name(self):
+        return decrypt_field(self._preferred_name_encrypted)
+
+    @preferred_name.setter
+    def preferred_name(self, value):
+        self._preferred_name_encrypted = encrypt_field(value)
+
+    @property
+    def display_name(self):
+        """Return preferred name if set, otherwise first name.
+
+        Use this for everyday display (headers, lists, breadcrumbs).
+        Use first_name directly for legal/formal contexts (exports, erasure receipts).
+        """
+        return self.preferred_name or self.first_name
 
     @property
     def middle_name(self):

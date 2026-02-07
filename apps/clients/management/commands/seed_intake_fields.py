@@ -99,14 +99,12 @@ INTAKE_FIELD_GROUPS = [
                 "Text message",
                 "Email",
                 "In person",
-                "Prefer not to answer",
             ]),
             ("Best Time to Contact", "select", False, False, "edit", "", [
                 "Morning (9am-12pm)",
                 "Afternoon (12pm-5pm)",
                 "Evening (5pm-8pm)",
                 "Any time",
-                "Prefer not to answer",
             ]),
             ("Preferred Language of Service", "select", False, False, "edit", "", [
                 "English",
@@ -190,7 +188,6 @@ INTAKE_FIELD_GROUPS = [
                 "Electronic/Digital",
                 "Sign language interpreter",
                 "Other",
-                "Prefer not to answer",
             ]),
         ],
     ),
@@ -516,18 +513,24 @@ class Command(BaseCommand):
             placeholder="Street address, city, postal code",
         ).update(placeholder="Street address, city")
 
-        # Preferred Language: remove "Prefer not to answer" (operational field)
-        lang_fields = CustomFieldDefinition.objects.filter(
-            group__title="Contact Information",
-            name="Preferred Language of Service",
-        )
-        for field in lang_fields:
-            opts = field.options_json if isinstance(field.options_json, list) else []
-            if "Prefer not to answer" in opts:
-                opts.remove("Prefer not to answer")
-                field.options_json = opts
-                field.save(update_fields=["options_json"])
-                fixups += 1
+        # Remove "Prefer not to answer" from operational fields (not demographics)
+        # These are service delivery fields where staff need an actual answer.
+        operational_fields = [
+            ("Contact Information", "Preferred Language of Service"),
+            ("Contact Information", "Preferred Contact Method"),
+            ("Contact Information", "Best Time to Contact"),
+            ("Accessibility & Accommodation", "Preferred Communication Format"),
+        ]
+        for group_title, field_name in operational_fields:
+            for field in CustomFieldDefinition.objects.filter(
+                group__title=group_title, name=field_name,
+            ):
+                opts = field.options_json if isinstance(field.options_json, list) else []
+                if "Prefer not to answer" in opts:
+                    opts.remove("Prefer not to answer")
+                    field.options_json = opts
+                    field.save(update_fields=["options_json"])
+                    fixups += 1
 
         if fixups:
             self.stdout.write(f"  Updated {fixups} stale field(s) from earlier seeds.")

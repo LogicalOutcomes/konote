@@ -40,6 +40,11 @@ class ClientFileForm(forms.Form):
 
     first_name = forms.CharField(max_length=255)
     last_name = forms.CharField(max_length=255)
+    preferred_name = forms.CharField(
+        max_length=255, required=False,
+        label=_("Preferred Name"),
+        widget=forms.TextInput(attrs={"placeholder": _("What do you prefer to be called?")}),
+    )
     middle_name = forms.CharField(max_length=255, required=False)
     phone = forms.CharField(
         max_length=20, required=False,

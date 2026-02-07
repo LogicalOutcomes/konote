@@ -193,6 +193,7 @@ def build_comparison(client_a, client_b):
     pii_fields = []
     for field_name, label in [
         ("first_name", _("First Name")),
+        ("preferred_name", _("Preferred Name")),
         ("middle_name", _("Middle Name")),
         ("last_name", _("Last Name")),
         ("birth_date", _("Date of Birth")),
@@ -366,6 +367,8 @@ def execute_merge(kept, archived, pii_choices, field_resolutions, user, ip_addre
         if choice == "archived":
             if field_name == "first_name":
                 kept.first_name = archived.first_name
+            elif field_name == "preferred_name":
+                kept.preferred_name = archived.preferred_name
             elif field_name == "middle_name":
                 kept.middle_name = archived.middle_name
             elif field_name == "last_name":
@@ -490,6 +493,7 @@ def execute_merge(kept, archived, pii_choices, field_resolutions, user, ip_addre
 
     # 8. Anonymise archived client
     archived._first_name_encrypted = b""
+    archived._preferred_name_encrypted = b""
     archived._middle_name_encrypted = b""
     archived._last_name_encrypted = b""
     archived._birth_date_encrypted = b""

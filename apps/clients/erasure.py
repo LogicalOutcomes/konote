@@ -294,6 +294,7 @@ def _anonymise_client_pii(client, erasure_code):
 
     # Blank client identifying fields
     client._first_name_encrypted = b""
+    client._preferred_name_encrypted = b""
     client._middle_name_encrypted = b""
     client._last_name_encrypted = b""
     client._birth_date_encrypted = b""

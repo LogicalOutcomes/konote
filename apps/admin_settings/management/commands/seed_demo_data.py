@@ -923,6 +923,10 @@ class Command(BaseCommand):
                 clients_missing += 1
                 continue
             for field_name, value in field_values.items():
+                # Also set preferred_name on the core model field
+                if field_name == "Preferred Name":
+                    client.preferred_name = value
+                    client.save()
                 try:
                     field_def = CustomFieldDefinition.objects.get(name=field_name)
                     cdv, _ = ClientDetailValue.objects.get_or_create(

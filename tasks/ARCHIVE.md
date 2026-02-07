@@ -4,6 +4,16 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Completed 2026-02-07
+
+### Moved from Recently Done (2026-02-07 cleanup)
+
+- [x] French translation hardening — 108 unwrapped strings, Help/Privacy pages, demo banner — 2026-02-06 (I18N-FIX2-3)
+- [x] Security, privacy, accessibility review fixes — encrypted PlanTarget fields, MultiFernet rotation, aria-live, data tables — 2026-02-06 (SEC-FIX1-2, PRIV-FIX1-2, A11Y-FIX1-3)
+- [x] Client voice, qualitative progress, groups app (Phases A-D) — 2026-02-06 (CV1-4)
+
+---
+
 ## Completed 2026-02-06
 
 ### Moved from Recently Done (2026-02-06 cleanup #3)
