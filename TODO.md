@@ -90,7 +90,7 @@ Prevent duplicate client records across programs while protecting sensitive prog
 - [x] Add name + DOB secondary matching as fallback when phone unavailable — 2026-02-06 (MATCH3)
 
 **H.3: Merge Tool (Standard Programs)**
-- [ ] Build duplicate merge tool for Standard program admins — side-by-side comparison, merged record keeps all data (MATCH4)
+- [x] Build duplicate merge tool for Standard program admins — side-by-side comparison, merged record keeps all data — 2026-02-06 (MATCH4)
 
 **H.4: Confidential Program Hardening (Required Before DV Use)**
 - [x] Filter confidential client records from Django admin for superusers without confidential access — 2026-02-06 (CONF4)
@@ -140,6 +140,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Duplicate merge tool — admin-only side-by-side comparison, transfers notes/events/plans/enrolments/fields, historical confidential exclusion, pending erasure blocking, audit logging, 32 tests — 2026-02-06 (MATCH4)
 - [x] Wrap 108 unwrapped strings across 10 apps in `_()` + 78 new French translations — forms, models, choices, placeholders — 2026-02-06 (I18N-FIX2)
 - [x] Add French translations for Help and Privacy Policy pages — ~200 new strings, both pages were showing English — 2026-02-06 (I18N-FIX3)
 - [x] Phase H.5 documentation — user-facing confidential programs guide, annual security review checklist, updated Phase H.4 warning in template, docs index links — 2026-02-06 (MATCH6, CONF8)

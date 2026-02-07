@@ -136,6 +136,9 @@ class MergeComparisonTest(TestCase):
 
     def setUp(self):
         enc_module._fernet = None
+        self.admin = User.objects.create_user(
+            username="admin", password="testpass123", is_admin=True,
+        )
         self.prog = Program.objects.create(name="Employment", colour_hex="#10B981")
 
         self.client_a = ClientFile()
@@ -163,14 +166,14 @@ class MergeComparisonTest(TestCase):
 
     def test_shows_record_counts(self):
         # Add some notes to client_a
-        ProgressNote.objects.create(client_file=self.client_a, note_type="quick")
-        ProgressNote.objects.create(client_file=self.client_a, note_type="quick")
+        ProgressNote.objects.create(client_file=self.client_a, note_type="quick", author=self.admin)
+        ProgressNote.objects.create(client_file=self.client_a, note_type="quick", author=self.admin)
         comp = build_comparison(self.client_a, self.client_b)
         self.assertEqual(comp["counts_a"]["notes"], 2)
         self.assertEqual(comp["counts_b"]["notes"], 0)
 
     def test_identifies_custom_field_conflicts(self):
-        group = CustomFieldGroup.objects.create(name="Test Group")
+        group = CustomFieldGroup.objects.create(title="Test Group")
         field_def = CustomFieldDefinition.objects.create(
             name="Referral Source", input_type="text", group=group,
         )
@@ -224,8 +227,8 @@ class MergeExecutionTest(TestCase):
         ClientProgramEnrolment.objects.create(client_file=self.archived, program=self.prog)
 
     def test_transfers_progress_notes(self):
-        ProgressNote.objects.create(client_file=self.archived, note_type="quick")
-        ProgressNote.objects.create(client_file=self.archived, note_type="full")
+        ProgressNote.objects.create(client_file=self.archived, note_type="quick", author=self.admin)
+        ProgressNote.objects.create(client_file=self.archived, note_type="full", author=self.admin)
         merge = execute_merge(self.kept, self.archived, {}, {}, self.admin, "127.0.0.1")
         self.assertEqual(
             ProgressNote.objects.filter(client_file=self.kept).count(), 2,
@@ -234,7 +237,7 @@ class MergeExecutionTest(TestCase):
 
     def test_transfers_events_and_alerts(self):
         et = EventType.objects.create(name="Meeting")
-        Event.objects.create(client_file=self.archived, title="Test", event_type=et)
+        Event.objects.create(client_file=self.archived, title="Test", event_type=et, start_timestamp=timezone.now())
         Alert.objects.create(client_file=self.archived, content="Alert!")
         execute_merge(self.kept, self.archived, {}, {}, self.admin, "127.0.0.1")
         self.assertEqual(Event.objects.filter(client_file=self.kept).count(), 1)
@@ -264,7 +267,7 @@ class MergeExecutionTest(TestCase):
 
     def test_handles_custom_field_conflicts(self):
         """Admin's choice resolves custom field conflicts without IntegrityError."""
-        group = CustomFieldGroup.objects.create(name="Test Group")
+        group = CustomFieldGroup.objects.create(title="Test Group")
         field_def = CustomFieldDefinition.objects.create(
             name="Referral Source", input_type="text", group=group,
         )
