@@ -8,4 +8,5 @@ class AdminSettingsConfig(AppConfig):
     verbose_name = "Settings & Customisation"
 
     def ready(self):
+        import apps.admin_settings.checks  # noqa: F401
         import apps.admin_settings.signals  # noqa: F401

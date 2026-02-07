@@ -115,13 +115,16 @@ class Command(BaseCommand):
         # ----------------------------------------------------------
         self.stdout.write("\n[1/4] Extracting strings...")
 
-        template_strings, template_file_count = self._extract_templates(base_dir)
+        template_strings, template_file_count, blocktrans_count = (
+            self._extract_templates(base_dir)
+        )
         python_strings, python_file_count = self._extract_python(base_dir)
 
         all_strings = template_strings | python_strings
 
         self.stdout.write(
-            f"      Templates: {len(template_strings):,} strings "
+            f"      Templates: {len(template_strings):,} trans strings "
+            f"+ {blocktrans_count} blocktrans blocks "
             f"from {template_file_count} files"
         )
         self.stdout.write(
@@ -129,8 +132,13 @@ class Command(BaseCommand):
             f"from {python_file_count} files"
         )
         self.stdout.write(
-            f"      Total unique: {len(all_strings):,} strings"
+            f"      Total unique: {len(all_strings):,} extractable strings"
         )
+        if blocktrans_count:
+            self.stdout.write(
+                f"      [i] {blocktrans_count} blocktrans blocks are in "
+                f".po from earlier extraction — verify they have translations"
+            )
 
         # ----------------------------------------------------------
         # Phase 2: Compare with .po and add missing
@@ -455,14 +463,20 @@ class Command(BaseCommand):
     # Extraction helpers
     # ------------------------------------------------------------------
 
+    # Regex to detect {% blocktrans %} blocks (for gap reporting)
+    BLOCKTRANS_PATTERN = re.compile(
+        r"""\{%[-\s]*blocktrans[\s%]"""
+    )
+
     def _extract_templates(self, base_dir):
-        """Scan templates/**/*.html for {% trans %} strings."""
+        """Scan templates/**/*.html for {% trans %} strings and count blocktrans blocks."""
         strings = set()
         file_count = 0
+        blocktrans_count = 0
         template_dir = base_dir / "templates"
 
         if not template_dir.exists():
-            return strings, file_count
+            return strings, file_count, blocktrans_count
 
         comment_pattern = re.compile(
             r"\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}",
@@ -478,11 +492,13 @@ class Command(BaseCommand):
             content = comment_pattern.sub("", content)
 
             matches = self.TEMPLATE_PATTERN.findall(content)
-            if matches:
+            bt_matches = self.BLOCKTRANS_PATTERN.findall(content)
+            if matches or bt_matches:
                 strings.update(matches)
+                blocktrans_count += len(bt_matches)
                 file_count += 1
 
-        return strings, file_count
+        return strings, file_count, blocktrans_count
 
     def _extract_python(self, base_dir):
         """Scan apps/**/*.py for _() / gettext() / gettext_lazy() strings."""
