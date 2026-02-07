@@ -6,6 +6,23 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ## Completed 2026-02-06
 
+### Moved from Recently Done (2026-02-06 cleanup #3)
+
+- [x] Wrap 108 unwrapped strings across 10 apps in `_()` + 78 new French translations — forms, models, choices, placeholders — 2026-02-06 (I18N-FIX2)
+- [x] Add French translations for Help and Privacy Policy pages — ~200 new strings, both pages were showing English — 2026-02-06 (I18N-FIX3)
+- [x] Phase H.5 documentation — user-facing confidential programs guide, annual security review checklist, updated Phase H.4 warning in template, docs index links — 2026-02-06 (MATCH6, CONF8)
+- [x] Confidential program hardening Phase H.4 — Django admin filtering with object-level permissions, immutable audit logging (403 tracking, confidential tagging, PM audit view), small-cell suppression in reports, 17 new tests — 2026-02-06 (CONF4-6)
+- [x] Name + DOB secondary duplicate detection — fallback matching when phone unavailable, single-pass iterator, brittleness fixes (hx-params removal, date parsing, race condition prevention), 12 new tests — 2026-02-06 (MATCH3)
+- [x] Cross-program client matching Phase H.1 + H.2 — confidential program isolation, phone field, duplicate detection, security fixes (edit form bug, PDF export, registration links, group views), test suite — 2026-02-06 (CONF1-3, MATCH1-2, CONF7)
+- [x] Verify deployment end-to-end with production-like config — FullHost tested, HTTPS working, demo data live — 2026-02-06 (OPS5)
+- [x] Lock in .mo translation strategy — commit .mo to git, no compilation in Docker, freshness check in validate_translations.py — 2026-02-06 (I18N-FIX1)
+- [x] Fix 4 UX walkthrough crashes + 6 test failures — 2026-02-06 (UX-FIX1)
+- [x] Add translation lint script to catch unwrapped user-facing strings — 2026-02-06 (I18N-LINT1)
+- [x] Security, privacy, accessibility review fixes — encrypted PlanTarget fields, MultiFernet rotation, aria-live timer, data tables for charts, Privacy Officer settings, retention expiry alerts — 2026-02-06 (SEC-FIX1-2, PRIV-FIX1-2, A11Y-FIX1-3)
+- [x] Fix 3 review bugs — AuditLog crash on metric import, group re-add constraint, ghost revisions — 2026-02-06 (QR-FIX4-6)
+- [x] Fix 4 group view bugs — attendance name mismatch, membership form, role handling, demo separation — 2026-02-06 (QR-FIX1-3)
+- [x] Client voice, qualitative progress, groups app (Phases A-D) — encrypted client_goal on targets, progress descriptors, engagement observation, 7-model groups app, 3 demo groups — 2026-02-06 (CV1-4)
+
 ### Moved from Recently Done (2026-02-06 cleanup #2)
 
 - [x] Expand demo from 2 programs / 10 clients to 5 programs / 15 clients — 2026-02-06 (DEMO-EXP1)

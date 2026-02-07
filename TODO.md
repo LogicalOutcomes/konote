@@ -11,7 +11,6 @@
 The core app is feature-complete. These tasks prepare for production use.
 
 - [ ] Verify email is configured — needed for export notifications, erasure alerts, and password resets (OPS3)
-- [x] Run full integration test pass — 901 tests, 1 false-positive fix — 2026-02-06 (TEST3)
 - [ ] Test backup restore from a real database dump (OPS4)
 
 ### Occasional Tasks
@@ -22,22 +21,24 @@ The core app is feature-complete. These tasks prepare for production use.
 
 ## Coming Up
 
-### Translation Reliability — Three-Layer Defence
-
-Build `translate_strings` command + startup detection to stop French translations from silently breaking. Two expert panels reviewed. See `tasks/translate-strings-command.md` for full plan.
-
-- [x] Create `translate_strings` management command — regex extraction + polib compilation, no gettext needed — 2026-02-06 (I18N-CMD1a)
-- [x] Expand `check_translations` startup check — lightweight count comparison detects missing strings at every deploy — 2026-02-06 (I18N-CMD1b)
-- [x] Add Translations section to CLAUDE.md — workflow rule as backup forcing function — 2026-02-06 (I18N-CMD1c)
-- [x] Add `polib>=1.2.0` to requirements-dev.txt — 2026-02-06 (I18N-CMD1d)
-- [x] Verify end-to-end — dry-run, extract, validate, check_translations all pass — 2026-02-06 (I18N-CMD1e)
-
 ### Export Monitoring
 
-Weekly accountability reports for admins. Requires working email configuration.
+Weekly accountability reports for admins. Requires working email configuration (OPS3).
 
 - [ ] Create weekly export summary email command (EXP2u)
 - [ ] Document cron/scheduled task setup in runbook (EXP2w)
+
+### Erasure Hardening
+
+Expert-panel recommendations from `tasks/erasure-hardening.md`. High-priority items first.
+
+- [ ] Scope PDF receipt access — only requester + approvers can download (ERASE-H1)
+- [ ] Write audit log before erasure executes — guarantees record even if delete crashes (ERASE-H2)
+- [ ] Track receipt downloads in audit log (ERASE-H3)
+- [ ] Notify requester when erasure request is rejected (ERASE-H4)
+- [ ] Deduplicate build_data_summary call in erasure flow (ERASE-H5)
+- [ ] Fix erasure code race condition (ERASE-H6)
+- [ ] Add pagination to erasure history view (ERASE-H7)
 
 ## Roadmap — Future Extensions
 
@@ -75,39 +76,9 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 - [ ] Create import history page for admins (IMP1j)
 - [ ] Document import validation rules (DOC-IMP1)
 
-### Phase H: Cross-Program Client Matching & Confidential Programs
-
-Prevent duplicate client records across programs while protecting sensitive program privacy. See `tasks/cross-program-client-matching.md` for full design (4 expert panels).
-
-**H.1: Foundation — Confidential Program Isolation**
-- [x] Add `is_confidential` field to Program model + migration — 2026-02-06 (CONF1)
-- [x] Create guided setup question in program create/edit admin UI — 2026-02-06 (CONF2)
-- [x] Filter confidential data from views — enrolment display, edit form unenrolment bug, PDF export, registration links, group views — 2026-02-06 (CONF3)
-
-**H.2: Duplicate Detection (Standard Programs)**
-- [x] Add phone number as first-class encrypted field on ClientFile — 2026-02-06 (MATCH1)
-- [x] Build phone-based duplicate detection on client create form — HTMX endpoint, banner UI — 2026-02-06 (MATCH2)
-- [x] Add name + DOB secondary matching as fallback when phone unavailable — 2026-02-06 (MATCH3)
-
-**H.3: Merge Tool (Standard Programs)**
-- [x] Build duplicate merge tool for Standard program admins — side-by-side comparison, merged record keeps all data — 2026-02-06 (MATCH4)
-
-**H.4: Confidential Program Hardening (Required Before DV Use)**
-- [x] Filter confidential client records from Django admin for superusers without confidential access — 2026-02-06 (CONF4)
-- [x] Add immutable audit logging for all confidential record access — who, when, what, which record — 2026-02-06 (CONF5)
-- [x] Aggregate reports use small-cell suppression — show "< 10" when confidential program has fewer than 10 clients — 2026-02-06 (CONF6)
-- [x] Create `tests/test_confidential_isolation.py` — isolation, matching, registration, groups, phone field — 2026-02-06 (CONF7)
-
-**H.5: DV Readiness & Documentation**
-- [x] Ship PIA (Privacy Impact Assessment) template pre-filled from agency configuration — 2026-02-06 (MATCH5)
-- [x] Write user-facing documentation on confidential programs and matching — 2026-02-06 (MATCH6)
-- [x] Add annual security review checklist for confidential program filtering — 2026-02-06 (CONF8)
-
-**H.6: Multi-Role Staff (Nice-to-Have)**
-- [ ] Build role selector for staff with roles in both Standard and Confidential programs (CONF9)
-
 ### Other Planned Extensions
 
+- [ ] Multi-role staff program selector — UI for staff with roles in both Standard and Confidential programs (CONF9)
 - [ ] Field data collection integrations — KoBoToolbox, Forms, or other tools (FIELD1)
 
 ### Explicitly Out of Scope
@@ -123,10 +94,6 @@ Prevent duplicate client records across programs while protecting sensitive prog
 
 - [ ] Add 24-hour delay before Tier 3 (full erasure) CASCADE delete executes — requires background task scheduler, see `tasks/erasure-hardening.md` section ERASE-H8 (ERASE-H8)
 
-### FullHost SSL Issue
-
-- [ ] Resolve FullHost HTTPS — Built-In SSL is enabled but port 443 is intermittent. Contact FullHost support or try Let's Encrypt add-on. HTTP works, but login requires HTTPS (`CSRF_COOKIE_SECURE=True`) (OPS-FH2)
-
 ### Deployment Workflow Enhancements
 
 See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-design.md) for full details.
@@ -140,21 +107,14 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
-- [x] Duplicate merge tool — admin-only side-by-side comparison, transfers notes/events/plans/enrolments/fields, historical confidential exclusion, pending erasure blocking, audit logging, 32 tests — 2026-02-06 (MATCH4)
-- [x] Wrap 108 unwrapped strings across 10 apps in `_()` + 78 new French translations — forms, models, choices, placeholders — 2026-02-06 (I18N-FIX2)
-- [x] Add French translations for Help and Privacy Policy pages — ~200 new strings, both pages were showing English — 2026-02-06 (I18N-FIX3)
-- [x] Phase H.5 documentation — user-facing confidential programs guide, annual security review checklist, updated Phase H.4 warning in template, docs index links — 2026-02-06 (MATCH6, CONF8)
-- [x] Confidential program hardening Phase H.4 — Django admin filtering with object-level permissions, immutable audit logging (403 tracking, confidential tagging, PM audit view), small-cell suppression in reports, 17 new tests — 2026-02-06 (CONF4-6)
-- [x] Name + DOB secondary duplicate detection — fallback matching when phone unavailable, single-pass iterator, brittleness fixes (hx-params removal, date parsing, race condition prevention), 12 new tests — 2026-02-06 (MATCH3)
-- [x] Cross-program client matching Phase H.1 + H.2 — confidential program isolation, phone field, duplicate detection, security fixes (edit form bug, PDF export, registration links, group views), test suite — 2026-02-06 (CONF1-3, MATCH1-2, CONF7)
-- [x] Verify deployment end-to-end with production-like config — FullHost tested, HTTPS working, demo data live — 2026-02-06 (OPS5)
-- [x] Lock in .mo translation strategy — commit .mo to git, no compilation in Docker, freshness check in validate_translations.py — 2026-02-06 (I18N-FIX1)
-- [x] Fix 4 UX walkthrough crashes + 6 test failures — 2026-02-06 (UX-FIX1)
-- [x] Add translation lint script to catch unwrapped user-facing strings — 2026-02-06 (I18N-LINT1)
-- [x] Security, privacy, accessibility review fixes — encrypted PlanTarget fields, MultiFernet rotation, aria-live timer, data tables for charts, Privacy Officer settings, retention expiry alerts — 2026-02-06 (SEC-FIX1-2, PRIV-FIX1-2, A11Y-FIX1-3)
-- [x] Fix 3 review bugs — AuditLog crash on metric import, group re-add constraint, ghost revisions — 2026-02-06 (QR-FIX4-6)
-- [x] Fix 4 group view bugs — attendance name mismatch, membership form, role handling, demo separation — 2026-02-06 (QR-FIX1-3)
-- [x] Client voice, qualitative progress, groups app (Phases A-D) — encrypted client_goal on targets, progress descriptors, engagement observation, 7-model groups app, 3 demo groups — 2026-02-06 (CV1-4)
+- [x] Duplicate merge tool — admin-only side-by-side comparison, transfers notes/events/plans/enrolments/fields, 32 tests — 2026-02-06 (MATCH4)
+- [x] Phase H complete — confidential programs, duplicate detection, merge tool, DV documentation — 2026-02-06 (CONF1-8, MATCH1-6)
+- [x] Translation reliability — `translate_strings` command, startup detection, CLAUDE.md workflow rule — 2026-02-06 (I18N-CMD1)
+- [x] Full integration test pass — 1,000+ tests passing — 2026-02-06 (TEST3)
+- [x] FullHost deployment verified — HTTPS working via Let's Encrypt, demo data live — 2026-02-06 (OPS5, OPS-FH2)
+- [x] French translation hardening — 108 unwrapped strings, Help/Privacy pages, demo banner — 2026-02-06 (I18N-FIX2-3)
+- [x] Security, privacy, accessibility review fixes — encrypted PlanTarget fields, MultiFernet rotation, aria-live, data tables — 2026-02-06 (SEC-FIX1-2, PRIV-FIX1-2, A11Y-FIX1-3)
+- [x] Client voice, qualitative progress, groups app (Phases A-D) — 2026-02-06 (CV1-4)
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 
 ---
@@ -168,13 +128,15 @@ For detailed history, see `tasks/ARCHIVE.md`. Summary of completed work:
 | **Core app (Phases 1-8)** | Clients, plans, notes, events, charts, admin, security, UX |
 | **Client voice & qualitative** | Client-goal fields, progress descriptors, engagement observation, qualitative summary |
 | **Groups** | Service groups, activity groups, projects — session logs, attendance, highlights, milestones, outcomes |
+| **Confidential programs** | Isolation, guided setup, Django admin filtering, audit logging, small-cell suppression, DV-ready documentation |
+| **Duplicate detection & merge** | Phone + name/DOB matching, cross-program dedup, admin merge tool with full data transfer |
 | **Demo data** | 5 programs, 15 clients, 3 groups, cross-enrolments, approachable metrics |
 | **Secure export** | Bug fix, audit logging, warnings, secure links, permission alignment |
-| **French** | 1,110 system strings translated, bilingual login, language switcher |
+| **French** | 1,110+ system strings translated, bilingual login, language switcher, translate_strings command |
 | **Reporting** | Funder reports, aggregation, demographics, fiscal year, PDF exports |
-| **Documentation** | Getting started, security ops, deployment guides (Azure, Railway, Elest.io) |
+| **Documentation** | Getting started, security ops, deployment guides (Azure, Railway, Elest.io, FullHost) |
 | **Registration** | Self-service public forms with duplicate detection and capacity limits |
 | **Privacy** | Tiered client data erasure (anonymise/purge/delete), multi-PM approval, erasure codes, PDF receipts, PIPEDA compliance |
 | **Accessibility** | WCAG 2.2 AA — semantic HTML, colour contrast, aria attributes |
 | **Canadian localisation** | Postal codes, provinces, phone formats, date/currency by locale |
-| **Roadmap A-F** | Market access, funder reporting, docs, registration, staff productivity — all complete |
+| **Deployment** | Railway (auto-deploy), FullHost (HTTPS verified), Docker Compose for Azure/Elest.io |
