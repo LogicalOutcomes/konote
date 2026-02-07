@@ -56,37 +56,37 @@
     <section id="access-control">
         <h2>{% trans "Access Control" %}</h2>
 
-        <p>{% trans "Access to" %} {{ term.client }} {% trans "information is controlled through role-based permissions:" %}</p>
+        <p>{% blocktrans with client=term.client %}Access to {{ client }} information is controlled through role-based permissions:{% endblocktrans %}</p>
 
         <table>
             <thead>
                 <tr>
-                    <th>{% trans "Role" %}</th>
-                    <th>{% trans "Access Level" %}</th>
+                    <th scope="col">{% trans "Role" %}</th>
+                    <th scope="col">{% trans "Access Level" %}</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td><strong>{% trans "Administrator" %}</strong></td>
-                    <td>{% trans "System settings and user management. No" %} {{ term.client }} {% trans "data access unless also assigned a" %} {{ term.program }} {% trans "role." %}</td>
+                    <td>{% blocktrans with client=term.client program=term.program %}System settings and user management. No {{ client }} data access unless also assigned a {{ program }} role.{% endblocktrans %}</td>
                 </tr>
                 <tr>
                     <td><strong>{% trans "Program Manager" %}</strong></td>
-                    <td>{% trans "Full access to" %} {{ term.client_plural }} {% trans "in assigned" %} {{ term.program_plural }}{% trans ". Can edit" %} {{ term.plan }}s {% trans "and export data." %}</td>
+                    <td>{% blocktrans with client_plural=term.client_plural program_plural=term.program_plural plans=term.plan_plural %}Full access to {{ client_plural }} in assigned {{ program_plural }}. Can edit {{ plans }} and export data.{% endblocktrans %}</td>
                 </tr>
                 <tr>
                     <td><strong>{% trans "Staff" %}</strong></td>
-                    <td>{% trans "Access to" %} {{ term.client_plural }} {% trans "in assigned" %} {{ term.program_plural }}{% trans ". Can write notes and record events." %}</td>
+                    <td>{% blocktrans with client_plural=term.client_plural program_plural=term.program_plural %}Access to {{ client_plural }} in assigned {{ program_plural }}. Can write notes and record events.{% endblocktrans %}</td>
                 </tr>
                 <tr>
                     <td><strong>{% trans "Front Desk" %}</strong></td>
-                    <td>{% trans "Limited" %} {{ term.client }} {% trans "information only. Cannot view full records or export data." %}</td>
+                    <td>{% blocktrans with client=term.client %}Limited {{ client }} information only. Cannot view full records or export data.{% endblocktrans %}</td>
                 </tr>
             </tbody>
         </table>
 
         <ul>
-            <li>{% trans "Staff can only see" %} {{ term.client_plural }} {% trans "in" %} {{ term.program_plural }} {% trans "they are assigned to" %}</li>
+            <li>{% blocktrans with client_plural=term.client_plural program_plural=term.program_plural %}Staff can only see {{ client_plural }} in {{ program_plural }} they are assigned to{% endblocktrans %}</li>
             <li>{% trans "Administrative functions are restricted to administrators" %}</li>
             <li>{% trans "All permission checks are enforced server-side" %}</li>
         </ul>
@@ -108,10 +108,10 @@
     <section id="audit">
         <h2>{% trans "Audit Logging" %}</h2>
 
-        <p>{% trans "All access to and changes of" %} {{ term.client }} {% trans "data are recorded in a separate audit database:" %}</p>
+        <p>{% blocktrans with client=term.client %}All access to and changes of {{ client }} data are recorded in a separate audit database:{% endblocktrans %}</p>
         <ul>
             <li>{% trans "Login attempts (successful and failed) with timestamps and IP addresses" %}</li>
-            <li>{% trans "Every time a" %} {{ term.client }} {% trans "record is viewed" %}</li>
+            <li>{% blocktrans with client=term.client %}Every time a {{ client }} record is viewed{% endblocktrans %}</li>
             <li>{% trans "All data changes with before and after values" %}</li>
             <li>{% trans "Data exports — who exported what and when" %}</li>
             <li>{% trans "Permission changes and administrative actions" %}</li>
@@ -124,9 +124,9 @@
 
         <p>{% trans "KoNote2 supports formal data erasure requests in compliance with PIPEDA:" %}</p>
         <ul>
-            <li>{% trans "Any staff member can initiate an erasure request for a" %} {{ term.client }}</li>
-            <li>{% trans "All program managers for that" %} {{ term.client }}'s {{ term.program_plural }} {% trans "must approve the request" %}</li>
-            <li>{% trans "Once approved, all" %} {{ term.client }} {% trans "data is permanently and irreversibly deleted" %}</li>
+            <li>{% blocktrans with client=term.client %}Any staff member can initiate an erasure request for a {{ client }}{% endblocktrans %}</li>
+            <li>{% blocktrans with client=term.client program_plural=term.program_plural %}All program managers for that {{ client }}'s {{ program_plural }} must approve the request{% endblocktrans %}</li>
+            <li>{% blocktrans with client=term.client %}Once approved, all {{ client }} data is permanently and irreversibly deleted{% endblocktrans %}</li>
             <li>{% trans "The audit trail records that an erasure occurred, but no personal information is retained" %}</li>
         </ul>
     </section>
@@ -135,8 +135,8 @@
         <h2>{% trans "Data Exports" %}</h2>
 
         <ul>
-            <li>{% trans "Program managers and administrators can export" %} {{ term.metric }} {% trans "data in CSV format" %}</li>
-            <li>{% trans "Individual" %} {{ term.client }} {% trans "data can be exported for privacy access requests" %}</li>
+            <li>{% blocktrans with metric=term.metric %}Program managers and administrators can export {{ metric }} data in CSV format{% endblocktrans %}</li>
+            <li>{% blocktrans with client=term.client %}Individual {{ client }} data can be exported for privacy access requests{% endblocktrans %}</li>
             <li>{% trans "Export download links expire after a limited time" %}</li>
             <li>{% trans "All exports are recorded in the audit log" %}</li>
             <li>{% trans "Exported files include protections against formula injection" %}</li>

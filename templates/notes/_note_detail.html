@@ -36,7 +36,7 @@
         {% if entry.notes %}<p>{{ entry.notes }}</p>{% endif %}
         {% if entry.metric_values.all %}
         <table>
-            <thead><tr><th>{{ term.metric|default:"Metric" }}</th><th>{% trans "Value" %}</th></tr></thead>
+            <thead><tr><th scope="col">{{ term.metric|default:"Metric" }}</th><th scope="col">{% trans "Value" %}</th></tr></thead>
             <tbody>
             {% for mv in entry.metric_values.all %}
             {% if mv.metric_def %}

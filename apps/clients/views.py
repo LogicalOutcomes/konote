@@ -284,34 +284,10 @@ def client_detail(request, client_id):
     enrolments = ClientProgramEnrolment.objects.filter(
         client_file=client, status="enrolled", program_id__in=user_program_ids,
     ).select_related("program")
-    # Custom fields for Info tab — filter by role visibility and hide empty fields
-    groups = CustomFieldGroup.objects.filter(status="active").prefetch_related("fields")
-    custom_data = []
-    has_editable_fields = False
-    for group in groups:
-        if is_receptionist:
-            # Front desk staff only see fields with view or edit access
-            fields = group.fields.filter(status="active", front_desk_access__in=["view", "edit"])
-        else:
-            fields = group.fields.filter(status="active")
-        field_values = []
-        for field_def in fields:
-            try:
-                cdv = ClientDetailValue.objects.get(client_file=client, field_def=field_def)
-                value = cdv.get_value()
-            except ClientDetailValue.DoesNotExist:
-                value = ""
-            # Track if field is editable (staff can edit all, front desk only if access=edit)
-            is_editable = not is_receptionist or field_def.front_desk_access == "edit"
-            if is_editable:
-                has_editable_fields = True
-            # For display mode, skip empty fields — Edit button shows all fields
-            if not value:
-                continue
-            field_values.append({"field_def": field_def, "value": value, "is_editable": is_editable})
-        # Only include groups that have fields with values
-        if field_values:
-            custom_data.append({"group": group, "fields": field_values})
+    # Custom fields for Info tab — uses shared helper with hide_empty=True (display mode)
+    custom_fields_ctx = _get_custom_fields_context(client, user_role, hide_empty=True)
+    custom_data = custom_fields_ctx["custom_data"]
+    has_editable_fields = custom_fields_ctx["has_editable_fields"]
     # Breadcrumbs: Participants > [Name]
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},

@@ -1,17 +1,17 @@
-{{ product_name }} — Data Retention Alert
+{% load i18n %}{% blocktrans with name=product_name %}{{ name }} — Data Retention Alert{% endblocktrans %}
 
-{{ count }} client record(s) have passed their data retention date and may need to be reviewed for erasure.
+{% blocktrans count counter=count %}{{ counter }} client record has passed its data retention date and may need to be reviewed for erasure.{% plural %}{{ counter }} client records have passed their data retention date and may need to be reviewed for erasure.{% endblocktrans %}
 
-Records past retention:
+{% trans "Records past retention:" %}
 {% for item in expired_list %}
-  - {{ item.record_id }} — expired {{ item.retention_expires }} ({{ item.days_overdue }} days ago)
+  - {% blocktrans with rid=item.record_id expires=item.retention_expires days=item.days_overdue %}{{ rid }} — expired {{ expires }} ({{ days }} days ago){% endblocktrans %}
 {% endfor %}
 
-Next steps:
-1. Review each record in the system
-2. Determine if an erasure request should be initiated
-3. Follow your organisation's data retention policy
+{% trans "Next steps:" %}
+1. {% trans "Review each record in the system" %}
+2. {% trans "Determine if an erasure request should be initiated" %}
+3. {% trans "Follow your organisation's data retention policy" %}
 
-{% if privacy_officer_name %}Privacy Officer: {{ privacy_officer_name }}{% if privacy_officer_email %} ({{ privacy_officer_email }}){% endif %}{% endif %}
+{% if privacy_officer_name %}{% blocktrans with officer=privacy_officer_name %}Privacy Officer: {{ officer }}{% endblocktrans %}{% if privacy_officer_email %} ({{ privacy_officer_email }}){% endif %}{% endif %}
 
-This is an automated notice from {{ product_name }} ({{ today }}).
+{% blocktrans with name=product_name date=today %}This is an automated notice from {{ name }} ({{ date }}).{% endblocktrans %}

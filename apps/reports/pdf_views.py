@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
 from apps.auth_app.decorators import minimum_role
@@ -368,27 +369,27 @@ def _generate_client_csv(client, data):
     writer = csv.writer(output)
 
     # Client info section
-    writer.writerow(sanitise_csv_row(["=== CLIENT INFORMATION ==="]))
-    writer.writerow(sanitise_csv_row(["First Name", client.first_name]))
-    writer.writerow(sanitise_csv_row(["Last Name", client.last_name]))
+    writer.writerow(sanitise_csv_row(["=== %s ===" % _("CLIENT INFORMATION")]))
+    writer.writerow(sanitise_csv_row([_("First Name"), client.first_name]))
+    writer.writerow(sanitise_csv_row([_("Last Name"), client.last_name]))
     if client.middle_name:
-        writer.writerow(sanitise_csv_row(["Middle Name", client.middle_name]))
+        writer.writerow(sanitise_csv_row([_("Middle Name"), client.middle_name]))
     if client.record_id:
-        writer.writerow(sanitise_csv_row(["Record ID", client.record_id]))
+        writer.writerow(sanitise_csv_row([_("Record ID"), client.record_id]))
     if client.birth_date:
-        writer.writerow(sanitise_csv_row(["Date of Birth", client.birth_date]))
-    writer.writerow(sanitise_csv_row(["Status", client.status]))
-    writer.writerow(sanitise_csv_row(["Created", client.created_at.strftime("%Y-%m-%d")]))
+        writer.writerow(sanitise_csv_row([_("Date of Birth"), client.birth_date]))
+    writer.writerow(sanitise_csv_row([_("Status"), client.status]))
+    writer.writerow(sanitise_csv_row([_("Created"), client.created_at.strftime("%Y-%m-%d")]))
     if client.consent_given_at:
-        writer.writerow(sanitise_csv_row(["Consent Given", client.consent_given_at.strftime("%Y-%m-%d")]))
+        writer.writerow(sanitise_csv_row([_("Consent Given"), client.consent_given_at.strftime("%Y-%m-%d")]))
         if client.consent_type:
-            writer.writerow(sanitise_csv_row(["Consent Type", client.consent_type]))
+            writer.writerow(sanitise_csv_row([_("Consent Type"), client.consent_type]))
     writer.writerow([])
 
     # Enrolments
     if data["enrolments"]:
-        writer.writerow(sanitise_csv_row(["=== PROGRAMME ENROLMENTS ==="]))
-        writer.writerow(sanitise_csv_row(["Programme", "Status", "Enrolled", "Unenrolled"]))
+        writer.writerow(sanitise_csv_row(["=== %s ===" % _("PROGRAMME ENROLMENTS")]))
+        writer.writerow(sanitise_csv_row([_("Programme"), _("Status"), _("Enrolled"), _("Unenrolled")]))
         for e in data["enrolments"]:
             writer.writerow(sanitise_csv_row([
                 e.program.name,
@@ -400,16 +401,16 @@ def _generate_client_csv(client, data):
 
     # Custom fields
     if data["custom_fields"]:
-        writer.writerow(sanitise_csv_row(["=== CUSTOM FIELDS ==="]))
-        writer.writerow(sanitise_csv_row(["Field", "Value"]))
+        writer.writerow(sanitise_csv_row(["=== %s ===" % _("CUSTOM FIELDS")]))
+        writer.writerow(sanitise_csv_row([_("Field"), _("Value")]))
         for field in data["custom_fields"]:
             writer.writerow(sanitise_csv_row([field["name"], field["value"]]))
         writer.writerow([])
 
     # Plans
     if data["sections"]:
-        writer.writerow(sanitise_csv_row(["=== PLAN SECTIONS & TARGETS ==="]))
-        writer.writerow(sanitise_csv_row(["Section", "Target", "Description"]))
+        writer.writerow(sanitise_csv_row(["=== %s ===" % _("PLAN SECTIONS & TARGETS")]))
+        writer.writerow(sanitise_csv_row([_("Section"), _("Target"), _("Description")]))
         for section in data["sections"]:
             for target in section.targets.all():
                 writer.writerow(sanitise_csv_row([section.name, target.name, target.description or ""]))
@@ -417,8 +418,8 @@ def _generate_client_csv(client, data):
 
     # Metrics
     if data["metric_tables"]:
-        writer.writerow(sanitise_csv_row(["=== METRIC PROGRESS ==="]))
-        writer.writerow(sanitise_csv_row(["Target", "Metric", "Date", "Value", "Author"]))
+        writer.writerow(sanitise_csv_row(["=== %s ===" % _("METRIC PROGRESS")]))
+        writer.writerow(sanitise_csv_row([_("Target"), _("Metric"), _("Date"), _("Value"), _("Author")]))
         for table in data["metric_tables"]:
             for row in table["rows"]:
                 writer.writerow(sanitise_csv_row([
@@ -429,8 +430,8 @@ def _generate_client_csv(client, data):
 
     # Notes
     if data["notes"]:
-        writer.writerow(sanitise_csv_row(["=== PROGRESS NOTES ==="]))
-        writer.writerow(sanitise_csv_row(["Date", "Type", "Author", "Content", "Summary"]))
+        writer.writerow(sanitise_csv_row(["=== %s ===" % _("PROGRESS NOTES")]))
+        writer.writerow(sanitise_csv_row([_("Date"), _("Type"), _("Author"), _("Content"), _("Summary")]))
         for note in data["notes"]:
             writer.writerow(sanitise_csv_row([
                 note.effective_date.strftime("%Y-%m-%d"),
@@ -443,8 +444,8 @@ def _generate_client_csv(client, data):
 
     # Events
     if data["events"]:
-        writer.writerow(sanitise_csv_row(["=== EVENTS ==="]))
-        writer.writerow(sanitise_csv_row(["Date", "Type", "Title", "Description"]))
+        writer.writerow(sanitise_csv_row(["=== %s ===" % _("EVENTS")]))
+        writer.writerow(sanitise_csv_row([_("Date"), _("Type"), _("Title"), _("Description")]))
         for event in data["events"]:
             writer.writerow(sanitise_csv_row([
                 event.start_timestamp.strftime("%Y-%m-%d"),

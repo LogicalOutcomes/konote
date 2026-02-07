@@ -9,19 +9,15 @@
 
 ### Code Review Fixes (from 2026-02-07 review — see `tasks/code-review-2026-02-07.md`)
 
-**Critical — fix before next deploy:**
-- [ ] Fix demo/real data isolation bypass in 5 client HTMX views — `apps/clients/views.py` (SEC1)
-- [ ] Add @admin_required to 6 registration submission views — `apps/registration/admin_views.py` (SEC2)
-- [ ] Fix demo data bypass in 2 plan template views — `apps/plans/admin_views.py` (SEC3)
-- [ ] Fix demo data bypass in submission merge — `apps/registration/admin_views.py` (SEC4)
+**Medium — remaining (depend on HIGH fixes above):**
+- [ ] Translate access denied messages — depends on QUAL3 consolidation (I18N-8)
+- [ ] Refactor inline admin checks to use decorator — depends on QUAL3 (QUAL8)
+- [ ] Modal focus trap — depends on QUAL4 app.js cleanup (A11Y-2)
+- [ ] Translate ~20 JS strings in app.js — depends on QUAL4 (I18N-4)
+- [ ] Test audit log views — depends on QUAL1 (TEST-4)
 
-**High — fix soon:**
-- [ ] Add "cancel" to AuditLog.ACTION_CHOICES — `apps/audit/models.py` (QUAL1)
-- [ ] Consolidate `_get_client_ip()` from 6 files into shared utility (QUAL2)
-- [ ] Consolidate `admin_required` decorator from 4 files into `auth_app/decorators.py` (QUAL3)
-- [ ] Delete dead duplicate functions in `static/js/app.js` lines 459-486 (QUAL4)
-- [ ] Write tests for `rotate_encryption_key` management command (TEST1)
-- [ ] Write tests for account lockout logic (TEST2)
+**Medium — 77 strings still need French translation (TRANSLATE_API_KEY not set):**
+- [ ] Set TRANSLATE_API_KEY and re-run `python manage.py translate_strings` (I18N-TRANS1)
 
 ### Pre-Launch Checklist
 
@@ -113,6 +109,9 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Code review MEDIUM fixes — QUAL5-7, A11Y-1, I18N-1/2/3/5/6/7/9/10: dev cookie fix, group forms, dedup client fields, scope on th, PDF/email/form/CSV translations, breadcrumbs, privacy.html blocktrans — 2026-02-07
+- [x] Code review HIGH fixes — audit "cancel" action, consolidated `_get_client_ip()` and `admin_required`, dead JS code removed, encryption key rotation + lockout tests — 2026-02-07 (QUAL1-4, TEST1-2)
+- [x] Code review CRITICAL fixes — demo/real data isolation in client HTMX views, admin_required on registration views, plan template + submission merge bypasses — 2026-02-07 (SEC1-4)
 - [x] Per-Program Roles cleanup — audit logging, dead code removal, ROLE_RANK constants, help.html blocktrans, admin notices, query caching — 2026-02-07 (ROLE1-8)
 - [x] Demo site setup — merged to main, registration link seeded, GitHub Pages verified, live demo tested — 2026-02-07 (DEMO1-4)
 - [x] CONF9 follow-ups — logger.exception() for audit, flash message on context switch, request-level cache for needs_program_selector, soft-filter vs hard-boundary docs — 2026-02-07 (CONF9a-d)
@@ -121,8 +120,6 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 - [x] Phase H complete — confidential programs, duplicate detection, merge tool, DV documentation — 2026-02-06 (CONF1-8, MATCH1-6)
 - [x] Translation reliability — `translate_strings` command, startup detection, CLAUDE.md workflow rule — 2026-02-06 (I18N-CMD1)
 - [x] Full integration test pass — 1,000+ tests passing — 2026-02-06 (TEST3)
-- [x] FullHost deployment verified — HTTPS working via Let's Encrypt, demo data live — 2026-02-06 (OPS5, OPS-FH2)
-- [x] Multi-role staff program context switcher — session-based active program for mixed Standard/Confidential users, forced selection on login, nav dropdown, 39 tests — 2026-02-06 (CONF9)
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 
 ---
@@ -140,7 +137,7 @@ For detailed history, see `tasks/ARCHIVE.md`. Summary of completed work:
 | **Duplicate detection & merge** | Phone + name/DOB matching, cross-program dedup, admin merge tool with full data transfer |
 | **Demo data** | 5 programs, 15 clients, 3 groups, cross-enrolments, approachable metrics |
 | **Secure export** | Bug fix, audit logging, warnings, secure links, permission alignment |
-| **French** | 1,110+ system strings translated, bilingual login, language switcher, translate_strings command |
+| **French** | 2,050+ system strings (77 pending translation), bilingual login, language switcher, translate_strings command |
 | **Reporting** | Funder reports, aggregation, demographics, fiscal year, PDF exports |
 | **Documentation** | Getting started, security ops, deployment guides (Azure, Railway, Elest.io, FullHost) |
 | **Registration** | Self-service public forms with duplicate detection and capacity limits |

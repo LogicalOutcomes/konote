@@ -104,3 +104,52 @@ class ProjectOutcomeForm(forms.Form):
         required=False,
         label=_("Evidence"),
     )
+
+
+# ---------------------------------------------------------------------------
+# 6. MembershipAddForm (plain Form -- conditional validation)
+# ---------------------------------------------------------------------------
+
+class MembershipAddForm(forms.Form):
+    """Add a member to a group: either an existing client or a named non-client.
+
+    Validates that exactly one of client_file or member_name is provided,
+    and that role is one of the allowed choices.
+    """
+
+    ROLE_CHOICES = [
+        ("member", _("Member")),
+        ("leader", _("Leader")),
+    ]
+
+    client_file = forms.IntegerField(
+        required=False,
+        label=_("Client"),
+    )
+    member_name = forms.CharField(
+        max_length=255,
+        required=False,
+        label=_("Name"),
+    )
+    role = forms.ChoiceField(
+        choices=ROLE_CHOICES,
+        initial="member",
+        label=_("Role"),
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        client_file = cleaned_data.get("client_file")
+        member_name = cleaned_data.get("member_name", "").strip()
+        # Store the stripped value back
+        cleaned_data["member_name"] = member_name
+
+        if client_file and member_name:
+            raise forms.ValidationError(
+                _("Please select a client or enter a name, not both.")
+            )
+        if not client_file and not member_name:
+            raise forms.ValidationError(
+                _("Please select a client or enter a name.")
+            )
+        return cleaned_data

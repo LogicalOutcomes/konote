@@ -38,28 +38,29 @@ class ConsentRecordForm(forms.Form):
 class ClientFileForm(forms.Form):
     """Form for client PII — plain form since fields are encrypted properties."""
 
-    first_name = forms.CharField(max_length=255)
-    last_name = forms.CharField(max_length=255)
+    first_name = forms.CharField(max_length=255, label=_("First Name"))
+    last_name = forms.CharField(max_length=255, label=_("Last Name"))
     preferred_name = forms.CharField(
         max_length=255, required=False,
         label=_("Preferred Name"),
         widget=forms.TextInput(attrs={"placeholder": _("What do you prefer to be called?")}),
     )
-    middle_name = forms.CharField(max_length=255, required=False)
+    middle_name = forms.CharField(max_length=255, required=False, label=_("Middle Name"))
     phone = forms.CharField(
         max_length=20, required=False,
         label=_("Phone Number"),
         widget=forms.TextInput(attrs={"type": "tel", "placeholder": _("(613) 555-1234")}),
     )
-    birth_date = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
-    record_id = forms.CharField(max_length=100, required=False)
-    status = forms.ChoiceField(choices=ClientFile.STATUS_CHOICES)
+    birth_date = forms.DateField(required=False, label=_("Date of Birth"), widget=forms.DateInput(attrs={"type": "date"}))
+    record_id = forms.CharField(max_length=100, required=False, label=_("Record ID"))
+    status = forms.ChoiceField(choices=ClientFile.STATUS_CHOICES, label=_("Status"))
 
     # Program enrolment checkboxes — populated dynamically
     programs = forms.ModelMultipleChoiceField(
         queryset=Program.objects.none(),
         widget=forms.CheckboxSelectMultiple,
         required=False,
+        label=_("Programmes"),
     )
 
     def __init__(self, *args, available_programs=None, **kwargs):

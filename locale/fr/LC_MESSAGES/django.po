@@ -7382,10 +7382,14 @@ msgstr ""
 "Vous ne pouvez voir que les %(clients)s dans les %(progs)s auxquels vous "
 "êtes affecté"
 
-msgid "You have access to %(strong_open)s%(count)s%(strong_close)s client record."
-msgid_plural "You have access to %(strong_open)s%(count)s%(strong_close)s client records."
-msgstr[0] "Vous avez accès à %(strong_open)s%(count)s%(strong_close)s dossier client."
-msgstr[1] "Vous avez accès à %(strong_open)s%(count)s%(strong_close)s dossiers clients."
+msgid ""
+"You have access to %(strong_open)s%(count)s%(strong_close)s client record."
+msgid_plural ""
+"You have access to %(strong_open)s%(count)s%(strong_close)s client records."
+msgstr[0] ""
+"Vous avez accès à %(strong_open)s%(count)s%(strong_close)s dossier client."
+msgstr[1] ""
+"Vous avez accès à %(strong_open)s%(count)s%(strong_close)s dossiers clients."
 
 msgid ""
 "You may have a different role depending on which %(prog)s you are working "
@@ -7440,3 +7444,225 @@ msgid "%(counter)s elevated export is pending review"
 msgid_plural "%(counter)s elevated exports are pending review"
 msgstr[0] "%(counter)s exportation élevée est en attente de révision"
 msgstr[1] "%(counter)s exportations élevées sont en attente de révision"
+
+msgid "Achieved"
+msgstr ""
+
+msgid "Achievement Rate"
+msgstr ""
+
+msgid "Achievement by Metric"
+msgstr ""
+
+msgid "Age Demographics"
+msgstr ""
+
+msgid "Age Group"
+msgstr ""
+
+msgid "CLIENT INFORMATION"
+msgstr ""
+
+msgid "CUSTOM FIELDS"
+msgstr ""
+
+msgid "Cancel Note"
+msgstr ""
+
+msgid "Client Record ID"
+msgstr ""
+
+msgid "Clients Achieving Target:"
+msgstr ""
+
+msgid "Clients Measured:"
+msgstr ""
+
+msgid "Clients Met Target"
+msgstr ""
+
+msgid "Clients Met at Least One Target"
+msgstr ""
+
+msgid "Clients with Data"
+msgstr ""
+
+msgid "Content"
+msgstr ""
+
+msgid "Data Points"
+msgstr ""
+
+msgid "Data Retention Alert"
+msgstr ""
+
+msgid "Days Overdue"
+msgstr ""
+
+msgid "Determine if an erasure request should be initiated"
+msgstr ""
+
+msgid "Draft Template:"
+msgstr ""
+
+msgid "EVENTS"
+msgstr ""
+
+msgid "Follow your organisation's data retention policy"
+msgstr ""
+
+msgid "Funder Report"
+msgstr ""
+
+msgid "Grouped By"
+msgstr ""
+
+msgid "Indicator Name"
+msgstr ""
+
+msgid "METRIC PROGRESS"
+msgstr ""
+
+msgid "Measured"
+msgstr ""
+
+msgid "Metric Data"
+msgstr ""
+
+msgid "Metric Name"
+msgstr ""
+
+msgid "Metrics Included"
+msgstr ""
+
+msgid "N/A"
+msgstr ""
+
+msgid "New Clients This Period"
+msgstr ""
+
+msgid "New Note"
+msgstr ""
+
+msgid "Next Steps"
+msgstr ""
+
+msgid "No outcome indicators with targets defined for this programme."
+msgstr ""
+
+msgid "No target defined"
+msgstr ""
+
+msgid "Organisation Information"
+msgstr ""
+
+msgid "Organisation Name"
+msgstr ""
+
+msgid "Outcome Achievement Rates"
+msgstr ""
+
+msgid "Outcome Indicators"
+msgstr ""
+
+msgid "Overall Achievement Rate"
+msgstr ""
+
+msgid "Overall Summary"
+msgstr ""
+
+msgid "PLAN SECTIONS & TARGETS"
+msgstr ""
+
+msgid "PROGRAMME ENROLMENTS"
+msgstr ""
+
+msgid "PROGRESS NOTES"
+msgstr ""
+
+msgid "Percentage"
+msgstr ""
+
+msgid "Plan Sections & Targets"
+msgstr ""
+
+msgid "Please select a client or enter a name, not both."
+msgstr ""
+
+msgid "Primary Outcome"
+msgstr ""
+
+msgid "Privacy Officer:"
+msgstr ""
+
+msgid "Programme Description"
+msgstr ""
+
+msgid "Programme/Service Name"
+msgstr ""
+
+msgid "Programmes"
+msgstr ""
+
+msgid "Progress Report"
+msgstr ""
+
+msgid "Range: "
+msgstr ""
+
+msgid "Recent Events"
+msgstr ""
+
+msgid "Recent Progress Notes"
+msgstr ""
+
+msgid "Reporting Period"
+msgstr ""
+
+msgid "Review each record in the system"
+msgstr ""
+
+msgid "Secondary Outcomes"
+msgstr ""
+
+msgid "Service Statistics"
+msgstr ""
+
+msgid "Start date and time is required."
+msgstr ""
+
+msgid "Start date is required for all-day events."
+msgstr ""
+
+msgid "Target Value"
+msgstr ""
+
+msgid "Target:"
+msgstr ""
+
+msgid "This report was generated using KoNote2's Funder Report Template."
+msgstr ""
+
+msgid "Toggle on to hide time fields and record date only."
+msgstr ""
+
+msgid "Total Individuals Served"
+msgstr ""
+
+msgid "Total Service Contacts"
+msgstr ""
+
+msgid "Value must be at least %(min_value)s."
+msgstr ""
+
+msgid "Value must be at most %(max_value)s."
+msgstr ""
+
+msgid ""
+"Verify this format matches your funder's requirements before submission."
+msgstr ""
+
+msgid ""
+"Verify this format matches your funder's specific requirements before "
+"submission."
+msgstr ""

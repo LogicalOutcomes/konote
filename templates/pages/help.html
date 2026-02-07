@@ -38,8 +38,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>{% trans "Section" %}</th>
-                    <th>{% trans "What It Shows" %}</th>
+                    <th scope="col">{% trans "Section" %}</th>
+                    <th scope="col">{% trans "What It Shows" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -99,8 +99,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>{% trans "Tab" %}</th>
-                    <th>{% trans "What You'll Find" %}</th>
+                    <th scope="col">{% trans "Tab" %}</th>
+                    <th scope="col">{% trans "What You'll Find" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -276,8 +276,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>{% trans "Shortcut" %}</th>
-                    <th>{% trans "Action" %}</th>
+                    <th scope="col">{% trans "Shortcut" %}</th>
+                    <th scope="col">{% trans "Action" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -318,8 +318,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>{% trans "Role" %}</th>
-                    <th>{% trans "What You Can Do" %}</th>
+                    <th scope="col">{% trans "Role" %}</th>
+                    <th scope="col">{% trans "What You Can Do" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -359,8 +359,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>{% trans "Task" %}</th>
-                    <th>{% trans "Where to Find It" %}</th>
+                    <th scope="col">{% trans "Task" %}</th>
+                    <th scope="col">{% trans "Where to Find It" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -469,8 +469,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>{% trans "I want to..." %}</th>
-                    <th>{% trans "Do this..." %}</th>
+                    <th scope="col">{% trans "I want to..." %}</th>
+                    <th scope="col">{% trans "Do this..." %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -509,8 +509,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>{% blocktrans with client=term.client|default:"Participant" %}{{ client }} Status{% endblocktrans %}</th>
-                    <th>{% trans "Meaning" %}</th>
+                    <th scope="col">{% blocktrans with client=term.client|default:"Participant" %}{{ client }} Status{% endblocktrans %}</th>
+                    <th scope="col">{% trans "Meaning" %}</th>
                 </tr>
             </thead>
             <tbody>

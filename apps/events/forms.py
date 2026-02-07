@@ -45,10 +45,10 @@ class EventForm(forms.ModelForm):
             }),
         }
         labels = {
-            "all_day": "All day event",
+            "all_day": _("All day event"),
         }
         help_texts = {
-            "all_day": "Toggle on to hide time fields and record date only.",
+            "all_day": _("Toggle on to hide time fields and record date only."),
         }
 
     def __init__(self, *args, **kwargs):
@@ -75,7 +75,7 @@ class EventForm(forms.ModelForm):
             end_date = cleaned_data.get("end_date")
 
             if not start_date:
-                self.add_error("start_date", "Start date is required for all-day events.")
+                self.add_error("start_date", _("Start date is required for all-day events."))
             else:
                 # Convert date to datetime at midnight (start of day)
                 from django.utils import timezone
@@ -93,7 +93,7 @@ class EventForm(forms.ModelForm):
         else:
             # Standard datetime mode - start_timestamp is required
             if not cleaned_data.get("start_timestamp"):
-                self.add_error("start_timestamp", "Start date and time is required.")
+                self.add_error("start_timestamp", _("Start date and time is required."))
 
         return cleaned_data
 

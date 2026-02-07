@@ -148,7 +148,7 @@ class MetricValueForm(forms.Form):
             if metric_def.definition:
                 help_parts.append(metric_def.definition)
             if metric_def.min_value is not None or metric_def.max_value is not None:
-                range_str = "Range: "
+                range_str = _("Range: ")
                 if metric_def.min_value is not None:
                     range_str += str(metric_def.min_value)
                 range_str += " – "
@@ -179,11 +179,11 @@ class MetricValueForm(forms.Form):
                 raise forms.ValidationError(_("Enter a valid number."))
             if self.metric_def.min_value is not None and numeric < self.metric_def.min_value:
                 raise forms.ValidationError(
-                    f"Value must be at least {self.metric_def.min_value}."
+                    _("Value must be at least %(min_value)s.") % {"min_value": self.metric_def.min_value}
                 )
             if self.metric_def.max_value is not None and numeric > self.metric_def.max_value:
                 raise forms.ValidationError(
-                    f"Value must be at most {self.metric_def.max_value}."
+                    _("Value must be at most %(max_value)s.") % {"max_value": self.metric_def.max_value}
                 )
         return val
 

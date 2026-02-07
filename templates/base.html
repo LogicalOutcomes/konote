@@ -193,7 +193,7 @@
             <dt>g h</dt>
             <dd>{% trans "Go to Home" %}</dd>
             <dt>n</dt>
-            <dd>{% trans "New quick note (on client page)" %}</dd>
+            <dd>{% blocktrans with client=term.client %}New quick note (on {{ client }} page){% endblocktrans %}</dd>
             <dt>Ctrl+S</dt>
             <dd>{% trans "Save current form" %}</dd>
             <dt>Esc</dt>
