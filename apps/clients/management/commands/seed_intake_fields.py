@@ -63,7 +63,7 @@ INTAKE_FIELD_GROUPS = [
         "Contact Information",
         10,
         [
-            ("Preferred Name", "text", False, False, "edit", "Name the client prefers to be called", []),
+            ("Preferred Name", "text", False, False, "edit", "What name do you prefer to be called?", []),
             # Pronouns — per HL7 Personal Pronouns ValueSet v2.0.0 + common combinations
             # from Trevor Project 2024 National Survey. Agencies can customise options.
             ("Pronouns", "select_other", False, True, "view", "", [
@@ -77,7 +77,7 @@ INTAKE_FIELD_GROUPS = [
             ("Primary Phone", "text", True, True, "edit", "(416) 555-0123", [], "phone"),
             ("Secondary Phone", "text", False, True, "edit", "", [], "phone"),
             ("Email", "text", False, True, "edit", "email@example.com", []),
-            ("Mailing Address", "textarea", False, True, "edit", "Street address, city, postal code", []),
+            ("Mailing Address", "textarea", False, True, "edit", "Street address, city", []),
             ("Postal Code", "text", False, False, "edit", "A1A 1A1", [], "postal_code"),
             ("Province or Territory", "select", False, False, "edit", "", [
                 "Alberta",
@@ -112,7 +112,6 @@ INTAKE_FIELD_GROUPS = [
                 "English",
                 "French",
                 "Other",
-                "Prefer not to answer",
             ]),
         ],
     ),
@@ -499,6 +498,39 @@ class Command(BaseCommand):
                 )
                 if was_field_created:
                     fields_created += 1
+
+        # Fix stale data from earlier seeds
+        fixups = 0
+
+        # Preferred Name: remove "client" language
+        fixups += CustomFieldDefinition.objects.filter(
+            group__title="Contact Information",
+            name="Preferred Name",
+            placeholder="Name the client prefers to be called",
+        ).update(placeholder="What name do you prefer to be called?")
+
+        # Mailing Address: remove "postal code" (has its own field)
+        fixups += CustomFieldDefinition.objects.filter(
+            group__title="Contact Information",
+            name="Mailing Address",
+            placeholder="Street address, city, postal code",
+        ).update(placeholder="Street address, city")
+
+        # Preferred Language: remove "Prefer not to answer" (operational field)
+        lang_fields = CustomFieldDefinition.objects.filter(
+            group__title="Contact Information",
+            name="Preferred Language of Service",
+        )
+        for field in lang_fields:
+            opts = field.options_json if isinstance(field.options_json, list) else []
+            if "Prefer not to answer" in opts:
+                opts.remove("Prefer not to answer")
+                field.options_json = opts
+                field.save(update_fields=["options_json"])
+                fixups += 1
+
+        if fixups:
+            self.stdout.write(f"  Updated {fixups} stale field(s) from earlier seeds.")
 
         self.stdout.write(
             self.style.SUCCESS(
