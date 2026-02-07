@@ -957,6 +957,12 @@ class Command(BaseCommand):
         # Always populate custom fields (idempotent via get_or_create)
         self._populate_custom_fields()
 
+        # Always ensure demo registration link exists (idempotent)
+        programs_by_name = {p.name: p for p in Program.objects.all()}
+        admin_user = User.objects.filter(is_superuser=True).first()
+        if programs_by_name and admin_user:
+            self._create_demo_registration_link(programs_by_name, admin_user)
+
         # Check if rich data already exists
         if ProgressNote.objects.filter(
             client_file__record_id__startswith="DEMO-"
@@ -1024,6 +1030,40 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             "  Demo rich data seeded successfully (15 clients across 5 programs)."
         ))
+
+    def _create_demo_registration_link(self, programs_by_name, created_by):
+        """Create a public registration link with slug 'demo' for the marketing site."""
+        from apps.clients.models import CustomFieldGroup
+        from apps.registration.models import RegistrationLink
+
+        program = programs_by_name.get("Supported Employment")
+        if not program:
+            self.stdout.write(self.style.WARNING(
+                "  Supported Employment program not found — skipping demo registration link."
+            ))
+            return
+
+        link, created = RegistrationLink.objects.get_or_create(
+            slug="demo",
+            defaults={
+                "program": program,
+                "title": "Program Registration Demo",
+                "description": (
+                    "This is a demonstration registration form. "
+                    "Try filling it out to see how clients register for programs."
+                ),
+                "auto_approve": False,
+                "created_by": created_by,
+            },
+        )
+
+        if created:
+            # Attach active field groups so the form has meaningful fields
+            active_groups = CustomFieldGroup.objects.filter(status="active")
+            link.field_groups.set(active_groups)
+            self.stdout.write("  Created demo registration link (slug: demo)")
+        else:
+            self.stdout.write("  Demo registration link already exists.")
 
     def _seed_client_data(
         self, record_id, plan_config, workers, programs_by_name,
