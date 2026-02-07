@@ -232,7 +232,7 @@ def note_list(request, client_id):
     # Breadcrumbs: Clients > [Client Name] > Notes
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": "Clients"},
-        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.first_name} {client.last_name}"},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
         {"url": "", "label": "Notes"},
     ]
     context = {
@@ -298,7 +298,7 @@ def quick_note_create(request, client_id):
     # Breadcrumbs: Clients > [Client Name] > Notes > Quick Note
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": "Clients"},
-        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.first_name} {client.last_name}"},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
         {"url": reverse("notes:note_list", kwargs={"client_id": client.pk}), "label": "Notes"},
         {"url": "", "label": "Quick Note"},
     ]
@@ -412,7 +412,7 @@ def note_create(request, client_id):
     # Breadcrumbs: Clients > [Client Name] > Notes > New Note
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": "Clients"},
-        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.first_name} {client.last_name}"},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
         {"url": reverse("notes:note_list", kwargs={"client_id": client.pk}), "label": "Notes"},
         {"url": "", "label": "New Note"},
     ]
@@ -552,7 +552,7 @@ def note_cancel(request, note_id):
     # Breadcrumbs: Clients > [Client Name] > Notes > Cancel Note
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": "Clients"},
-        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.first_name} {client.last_name}"},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
         {"url": reverse("notes:note_list", kwargs={"client_id": client.pk}), "label": "Notes"},
         {"url": "", "label": "Cancel Note"},
     ]
@@ -618,7 +618,7 @@ def qualitative_summary(request, client_id):
 
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": "Clients"},
-        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.first_name} {client.last_name}"},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
         {"url": "", "label": _("Qualitative Progress")},
     ]
     return render(request, "notes/qualitative_summary.html", {
