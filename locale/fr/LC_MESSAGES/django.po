@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: KoNote2 Web 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-01-01 00:00+0000\n"
-"PO-Revision-Date: 2026-02-06 19:15-0500\n"
+"PO-Revision-Date: 2026-02-07 16:53\n"
 "Last-Translator: Claude Code\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -6744,8 +6744,7 @@ msgstr "Action requise : demande d'effacement — %(term)s"
 
 msgid "All approvals received. %(term)s data has been anonymised."
 msgstr ""
-"Toutes les approbations reçues. Les données du %(term)s ont été "
-"anonymisées."
+"Toutes les approbations reçues. Les données du %(term)s ont été anonymisées."
 
 msgid "All approvals received. %(term)s data has been permanently erased."
 msgstr ""
@@ -6767,3 +6766,525 @@ msgstr "Effacer les données du %(term)s"
 
 msgid "Export %(term)s Data"
 msgstr "Exporter les données du %(term)s"
+
+msgid "Export Client Data"
+msgstr ""
+
+msgid ""
+"%(alerts)ss flag a %(client)s as needing attention. Use them for safety "
+"concerns or urgent follow-ups."
+msgstr ""
+
+msgid "%(client)s %(file)s"
+msgstr ""
+
+msgid "%(client)s %(file)ss"
+msgstr ""
+
+msgid "%(client)s Data Export"
+msgstr ""
+
+msgid "%(client)s Status"
+msgstr ""
+
+msgid "%(client)s's Reflection"
+msgstr ""
+
+msgid "%(client)s's response"
+msgstr ""
+
+msgid "%(clients)s list"
+msgstr ""
+
+msgid "%(clients)s search results"
+msgstr ""
+
+msgid "%(clients)s with active alerts or no recent notes"
+msgstr ""
+
+msgid "%(groups)s list"
+msgstr ""
+
+msgid "%(note)s templates"
+msgstr ""
+
+msgid ""
+"%(notes)s document your interactions with %(clients)s. KoNote2 offers two "
+"types:"
+msgstr ""
+
+msgid "%(notes)s timeline"
+msgstr ""
+
+msgid "%(plan)s with %(sections)ss, %(targets)s, and %(metrics)s"
+msgstr ""
+
+msgid "%(prog)s enrolments,"
+msgstr ""
+
+msgid "%(programs)s list"
+msgstr ""
+
+msgid ""
+"%(strong_open)s%(name)s%(strong_close)s (%(email)s) is exporting data for "
+"%(strong_open)s%(count)s clients%(strong_close)s"
+msgstr ""
+
+msgid ""
+"%(strong_open)sImportant:%(strong_close)s Your funder may require different "
+"formats, additional fields, or specific calculations. Always verify this "
+"template matches your funder's actual reporting template before submission. "
+"You may need to adjust or supplement this data."
+msgstr ""
+
+msgid "%(total)s sessions in selected range"
+msgstr ""
+
+msgid "&larr; Back to %(clients)s list"
+msgstr ""
+
+msgid ""
+"<strong>Program managers</strong> and <strong>coordinators</strong> can add "
+"%(sections)ss, %(targets)s, and assign %(metrics)s."
+msgstr ""
+
+msgid ""
+"<strong>Staff</strong> can view %(plans)ss but typically cannot edit them."
+msgstr ""
+
+msgid ""
+"A client named <strong>%(first)s %(last)s</strong> already has a record with"
+" this phone number."
+msgstr ""
+
+msgid "Active %(clients)s, alerts, %(clients)s needing attention"
+msgstr ""
+
+msgid "Add %(group)s"
+msgstr ""
+
+msgid "Add Milestone — %(name)s"
+msgstr ""
+
+msgid ""
+"Administrators without a %(prog)s assignment cannot see %(client)s data. "
+"This is a security feature."
+msgstr ""
+
+msgid "All %(groups)s you have access to."
+msgstr ""
+
+msgid "All staff abilities plus edit %(plans)ss, manage team"
+msgstr ""
+
+msgid ""
+"An administrator can add them in the <a href=\"%(url)s\">metric library</a>."
+msgstr ""
+
+msgid ""
+"An administrator has revoked this download link. It is no longer valid and "
+"cannot be used to access the exported data. If you believe this was done in "
+"error, please contact your organisation's administrator."
+msgstr ""
+
+msgid "Attendance Report — %(name)s"
+msgstr ""
+
+msgid "Available at %(time)s"
+msgstr ""
+
+msgid "Back to %(name)s"
+msgstr ""
+
+msgid ""
+"Based on the name, this %(program)s may handle sensitive data. Consider "
+"marking it as confidential."
+msgstr ""
+
+msgid "Change %(section)s Status"
+msgstr ""
+
+msgid "Change %(target)s Status"
+msgstr ""
+
+msgid ""
+"Charts automatically update when new %(metric)s values are recorded in "
+"%(notes)s."
+msgstr ""
+
+msgid ""
+"Charts require %(metric)s values recorded in %(notes)s. If no %(metrics)s "
+"have been recorded for a %(target)s, charts will be empty."
+msgstr ""
+
+msgid "Click a %(target)s name to expand it"
+msgstr ""
+
+msgid "Click a name to open their %(file)s"
+msgstr ""
+
+msgid "Client #%(pk)s (anonymised)"
+msgstr ""
+
+msgid "Client %(record_id)s diagnostics"
+msgstr ""
+
+msgid "Client A: %(name)s"
+msgstr ""
+
+msgid "Client B: %(name)s"
+msgstr ""
+
+msgid ""
+"Confidential %(program)ss are invisible to staff in other %(program)ss. "
+"Client records in a confidential %(program)s will not appear in "
+"cross-%(program)s searches. Once set, this cannot be changed back without a "
+"formal Privacy Impact Assessment."
+msgstr ""
+
+msgid "Create %(group)s"
+msgstr ""
+
+msgid "Create %(plan)s templates"
+msgstr ""
+
+msgid "Disable %(name)s"
+msgstr ""
+
+msgid "Download a %(client)s's complete data (for GDPR/privacy requests)"
+msgstr ""
+
+msgid "Edit %(group)s"
+msgstr ""
+
+msgid "Edit Milestone: %(title)s"
+msgstr ""
+
+msgid "Editing %(plans)ss"
+msgstr ""
+
+msgid "Enable %(name)s"
+msgstr ""
+
+msgid "Expires %(date)s"
+msgstr ""
+
+msgid "Expires: %(time)s"
+msgstr ""
+
+msgid ""
+"Export %(metric)s data filtered by %(prog)s, %(metrics)s, and date range"
+msgstr ""
+
+msgid "Export all data for %(name)s."
+msgstr ""
+
+msgid ""
+"Export download links are only valid for a limited time. This link has "
+"passed its expiry date and can no longer be used to download the file."
+msgstr ""
+
+msgid "Exported on %(date)s by %(by)s."
+msgstr ""
+
+msgid "Filter by specific %(prog)s"
+msgstr ""
+
+msgid "Find a %(client)s"
+msgstr ""
+
+msgid "Find the %(alert)s in the Events tab"
+msgstr ""
+
+msgid "Full %(client)s access, write notes, record events"
+msgstr ""
+
+msgid "Full %(notes)s"
+msgstr ""
+
+msgid "Funder narrative for %(program)s:"
+msgstr ""
+
+msgid "Generated %(date)s by %(by)s"
+msgstr ""
+
+msgid "Highlight for %(name)s"
+msgstr ""
+
+msgid "I can't edit a %(client)s's %(plan)s"
+msgstr ""
+
+msgid "I can't find a %(client)s"
+msgstr ""
+
+msgid ""
+"If you still need this data, you can create a new export from the Reports "
+"page. Each new export will generate a fresh, time-limited download link. For"
+" security, expired and revoked links cannot be reactivated."
+msgstr ""
+
+msgid "Keep \"%(val)s\" from Client A (Record #%(id)s)"
+msgstr ""
+
+msgid "Keep \"%(val)s\" from Client B (Record #%(id)s)"
+msgstr ""
+
+msgid "Keep Client A: %(name)s %(last)s (Record #%(id)s)"
+msgstr ""
+
+msgid "Keep Client B: %(name)s %(last)s (Record #%(id)s)"
+msgstr ""
+
+msgid "Last: %(name)s"
+msgstr ""
+
+msgid "Log Session — %(name)s"
+msgstr ""
+
+msgid "Manage %(progs)s"
+msgstr ""
+
+msgid "Manage Roles — %(name)s"
+msgstr ""
+
+msgid "Measurable indicators attached to %(targets)s"
+msgstr ""
+
+msgid "New %(group)s"
+msgstr ""
+
+msgid "New %(qnote)s (on %(client)s page)"
+msgstr ""
+
+msgid "No %(group)s records yet."
+msgstr ""
+
+msgid "No notes match \"%(query)s\"."
+msgstr ""
+
+msgid "One of:"
+msgstr ""
+
+msgid ""
+"Only program managers and administrators can edit %(plans)ss. If you need "
+"changes, let your supervisor know."
+msgstr ""
+
+msgid "Open the %(client)s's %(file)s"
+msgstr ""
+
+msgid ""
+"PDF report generation requires %(strong_open)sWeasyPrint%(strong_close)s and"
+" its native GTK libraries. These are not installed on this server."
+msgstr ""
+
+msgid "Quick links to %(clients)s you've looked at recently"
+msgstr ""
+
+msgid "Record Outcome — %(name)s"
+msgstr ""
+
+msgid "Recording %(metrics)s"
+msgstr ""
+
+msgid "Remove %(name)s"
+msgstr ""
+
+msgid "Remove %(name)s from this group?"
+msgstr ""
+
+msgid "Remove role from %(prog)s?"
+msgstr ""
+
+msgid "Resolving %(alerts)ss"
+msgstr ""
+
+msgid "Searching for %(clients)s"
+msgstr ""
+
+msgid "See progress charts (if %(metrics)s have been recorded)"
+msgstr ""
+
+msgid "Set up %(metrics)s"
+msgstr ""
+
+msgid "Specific goals within each %(section)s"
+msgstr ""
+
+msgid "Suggested %(metrics)s:"
+msgstr ""
+
+msgid "Suggested note sections for %(target)s:"
+msgstr ""
+
+msgid ""
+"The %(client)s will appear in Priority Items on the home page until the "
+"alert is resolved."
+msgstr ""
+
+msgid ""
+"The %(plan)s tab shows the %(client)s's %(plan)s — their goals and how "
+"they're progressing."
+msgstr ""
+
+msgid ""
+"The download link below is active and will expire on "
+"%(strong_open)s%(expires)s%(strong_close)s."
+msgstr ""
+
+msgid ""
+"The download link will become active in %(strong_open)s%(minutes)s "
+"minutes%(strong_close)s (at %(time)s)."
+msgstr ""
+
+msgid "The download will be available at %(time)s."
+msgstr ""
+
+msgid ""
+"The export file is no longer available on the server. This can happen after "
+"a system update or server restart. The download link was valid, but the "
+"temporary file has been removed. Please create a new export."
+msgstr ""
+
+msgid ""
+"The exported file will contain: %(strong_open)sclient record "
+"IDs%(strong_close)s, %(strong_open)smetric values%(strong_close)s, "
+"%(strong_open)sdates of service%(strong_close)s, and %(strong_open)sstaff "
+"names%(strong_close)s. If demographic grouping is selected, it may also "
+"include %(strong_open)sbirth dates%(strong_close)s (for age calculations) or"
+" %(strong_open)scustom field values%(strong_close)s. Handle the exported "
+"file according to your organisation's data protection policies."
+msgstr ""
+
+msgid ""
+"The exported file will include a summary header showing the "
+"%(strong_open)stotal client count%(strong_close)s and %(strong_open)sdata "
+"points%(strong_close)s matching your selected filters."
+msgstr ""
+
+msgid ""
+"This controls what tools are available in this %(program)s. You can change "
+"this later."
+msgstr ""
+
+msgid ""
+"This export contains a large number of clients or clinical notes. For "
+"security, the download link will not become active until "
+"%(strong_open)s%(time)s%(strong_close)s. Administrators have been notified."
+msgstr ""
+
+msgid ""
+"This export contains a large number of clients or clinical notes. For "
+"security, there is a short delay before the download becomes available. "
+"Administrators have been notified."
+msgstr ""
+
+msgid ""
+"This link can be shared with others in your organisation. All downloads are "
+"%(strong_open)slogged for audit purposes%(strong_close)s, including the time"
+" of access and the identity of the person downloading. Handle the exported "
+"data according to your organisation's data protection policies."
+msgstr ""
+
+msgid ""
+"This report contains %(strong_open)saggregate statistics "
+"only%(strong_close)s — counts and percentages grouped by category, including"
+" %(strong_open)stotal individuals served%(strong_close)s. It does "
+"%(strong_open)snot%(strong_close)s include individual client names, birth "
+"dates, or other personally identifiable information (PII)."
+msgstr ""
+
+msgid ""
+"This request has been pending for %(days)s days. PIPEDA requires a response "
+"within 30 days of receiving an erasure request."
+msgstr ""
+
+msgid ""
+"This request has been pending for %(days)s days. The 30-day PIPEDA response "
+"deadline is approaching."
+msgstr ""
+
+msgid "Type a %(client)s's name or record ID in the search bar"
+msgstr ""
+
+msgid "Type a name or ID to find %(clients)s"
+msgstr ""
+
+msgid "Understanding the %(plan)s Structure"
+msgstr ""
+
+msgid "Use %(qnotes)ss for brief check-ins or short updates."
+msgstr ""
+
+msgid ""
+"Use full %(notes)s for structured sessions where you're working on %(plan)s "
+"%(targets)s."
+msgstr ""
+
+msgid "View all notes and %(metric)s recordings for that %(target)s"
+msgstr ""
+
+msgid "View charts showing %(metric)s values over time"
+msgstr ""
+
+msgid "View limited %(client)s info, update contact details"
+msgstr ""
+
+msgid ""
+"View only — to edit this plan, you must be assigned to a %(programme)s this "
+"%(client)s is enrolled in."
+msgstr ""
+
+msgid "Viewing %(target)s Details"
+msgstr ""
+
+msgid ""
+"When writing a full %(note)s, you'll see %(metric)s fields under each "
+"%(target)s. Common types:"
+msgstr ""
+
+msgid "When you open a %(client)s's %(file)s, you'll see several tabs:"
+msgstr ""
+
+msgid ""
+"You are an administrator without %(programme)s assignments. To see data, ask"
+" another admin to assign you a %(programme)s role."
+msgstr ""
+
+msgid "You can only see %(clients)s in %(progs)s you're assigned to"
+msgstr ""
+
+msgid ""
+"You have access to %(strong_open)s%(count)s%(strong_close)s client record.{%"
+" plural %}You have access to %(strong_open)s%(count)s%(strong_close)s client"
+" records."
+msgstr ""
+
+msgid ""
+"You may have a different role depending on which %(prog)s you are working "
+"in. For example, you might be a Program Manager in one %(prog)s and Direct "
+"Service staff in another."
+msgstr ""
+
+msgid ""
+"You only need to fill in the %(targets)s you actually worked on. Leave "
+"others blank."
+msgstr ""
+
+msgid "You will be logged out and signed in as %(name)s. Continue?"
+msgstr ""
+
+msgid ""
+"Your current role is shown as a badge next to your name in the navigation "
+"bar. If you switch %(progs)s, the badge updates to reflect your role in that"
+" %(prog)s."
+msgstr ""
+
+msgid "Your notes for this %(target)s"
+msgstr ""
+
+msgid "by %(name)s"
+msgstr ""
+
+msgid "notes and %(metric)s values for each %(target)s you worked on"
+msgstr ""

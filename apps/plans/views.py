@@ -65,33 +65,6 @@ def _can_edit_plan(user, client_file):
     ).exists()
 
 
-def _get_client_or_403_legacy(client_id, user):
-    """Fetch client and verify the user has at least view access.
-
-    Legacy wrapper for views that pass (client_id, user) instead of (request, client_id).
-    Used by section_create and other CRUD views that don't need program display context.
-    """
-    client = get_object_or_404(ClientFile, pk=client_id)
-    # Demo/real data separation
-    if client.is_demo != user.is_demo:
-        return None
-    # Admins can access any client (for system administration)
-    if user.is_admin:
-        return client
-    from apps.programs.models import UserProgramRole
-    user_program_ids = set(
-        UserProgramRole.objects.filter(user=user, status="active")
-        .values_list("program_id", flat=True)
-    )
-    client_program_ids = set(
-        ClientProgramEnrolment.objects.filter(
-            client_file=client, status="enrolled"
-        ).values_list("program_id", flat=True)
-    )
-    if user_program_ids & client_program_ids:
-        return client
-    return None
-
 
 # ---------------------------------------------------------------------------
 # Plan tab view
@@ -163,7 +136,7 @@ def plan_view(request, client_id):
 @login_required
 def section_create(request, client_id):
     """Add a new section to a client's plan."""
-    client = _get_client_or_403_legacy(client_id, request.user)
+    client = get_client_or_403(request, client_id)
     if client is None:
         return HttpResponseForbidden("You do not have access to this client.")
     if not _can_edit_plan(request.user, client):

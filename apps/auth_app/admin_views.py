@@ -1,4 +1,6 @@
 """User management views — admin only."""
+import logging
+
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
@@ -6,6 +8,8 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
+
+logger = logging.getLogger(__name__)
 
 from apps.programs.models import Program, UserProgramRole
 
@@ -243,7 +247,7 @@ def _audit_role_change(request, target_user, program, role, action_type):
             },
         )
     except Exception:
-        pass  # Don't fail the action if audit logging fails
+        logger.exception("Failed to audit role change for user %s", target_user.id)
 
 
 def _audit_impersonation(request, target_user):
@@ -269,5 +273,4 @@ def _audit_impersonation(request, target_user):
             },
         )
     except Exception:
-        # Don't fail the impersonation if audit logging fails
-        pass
+        logger.exception("Failed to audit impersonation of user %s", target_user.id)

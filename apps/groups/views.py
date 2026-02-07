@@ -40,13 +40,20 @@ from .models import (
 )
 
 
-def _get_user_role_for_group(user, group):
-    """Return the display name of the user's role in the group's program."""
+def _get_user_role_for_group(request, group):
+    """Return the display name of the user's role in the group's program.
+
+    Uses request-level caching so repeated calls in the same request
+    don't issue extra DB queries.
+    """
     if not group.program_id:
         return None
-    role_obj = UserProgramRole.objects.filter(
-        user=user, program_id=group.program_id, status="active",
-    ).only("role").first()
+    if not hasattr(request, "_user_role_cache"):
+        roles = UserProgramRole.objects.filter(
+            user=request.user, status="active",
+        ).only("program_id", "role")
+        request._user_role_cache = {r.program_id: r for r in roles}
+    role_obj = request._user_role_cache.get(group.program_id)
     return role_obj.get_role_display() if role_obj else None
 
 
@@ -111,7 +118,7 @@ def group_detail(request, group_id):
             {"url": reverse("groups:group_list"), "label": _("Groups")},
             {"url": "", "label": group.name},
         ],
-        "user_role_for_program": _get_user_role_for_group(request.user, group),
+        "user_role_for_program": _get_user_role_for_group(request, group),
     }
 
     # Project-type extras: milestones and outcomes
@@ -248,7 +255,7 @@ def session_log(request, group_id):
             {"url": reverse("groups:group_detail", args=[group.pk]), "label": group.name},
             {"url": "", "label": _("Log Session")},
         ],
-        "user_role_for_program": _get_user_role_for_group(request.user, group),
+        "user_role_for_program": _get_user_role_for_group(request, group),
     })
 
 

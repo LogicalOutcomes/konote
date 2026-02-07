@@ -1,5 +1,10 @@
 {% load i18n %}
 <!-- Partial: Notes tab content -->
+{% if is_admin_only %}
+<p class="notice" role="status">
+    <small>{% blocktrans with programme=term.program|default:"programme" %}You are an administrator without {{ programme }} assignments. To see data, ask another admin to assign you a {{ programme }} role.{% endblocktrans %}</small>
+</p>
+{% endif %}
 {% if active_service_model != "group" %}
 <div class="action-bar">
     <a href="{% url 'notes:quick_note_create' client_id=client.pk %}" role="button">{{ term.quick_note|default:"Quick Note" }}</a>

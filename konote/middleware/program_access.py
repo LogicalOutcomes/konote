@@ -4,6 +4,8 @@ import re
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
+from apps.auth_app.constants import ROLE_RANK
+
 
 # URL patterns that require program-level access checks
 # Maps URL regex to the URL kwarg containing the client ID
@@ -148,8 +150,6 @@ class ProgramAccessMiddleware:
 
         return self.get_response(request)
 
-    # Role hierarchy — higher number = more access (executive has highest rank but no client data access)
-    ROLE_RANK = {"receptionist": 1, "staff": 2, "program_manager": 3, "executive": 4}
 
     def _is_executive_only(self, user):
         """Check if user's only/highest role is executive (no client data access)."""
@@ -200,7 +200,7 @@ class ProgramAccessMiddleware:
 
         if not roles:
             return None
-        return max(roles, key=lambda r: self.ROLE_RANK.get(r, 0))
+        return max(roles, key=lambda r: ROLE_RANK.get(r, 0))
 
     def _get_client_id_from_note(self, note_id):
         """Return the client_file_id for a given progress note, or None if not found."""

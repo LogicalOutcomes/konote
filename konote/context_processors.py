@@ -179,7 +179,6 @@ def active_program_context(request):
     from apps.programs.context import (
         SESSION_KEY,
         get_switcher_options,
-        get_user_program_tiers,
         needs_program_selector,
     )
     from apps.programs.models import Program, UserProgramRole
@@ -224,8 +223,9 @@ def active_program_context(request):
 
         active_name = _("All Standard Programs")
         # For "all standard", show the user's highest role across standard programs
+        from apps.programs.context import get_user_program_tiers
         tiers = get_user_program_tiers(request.user)
-        from apps.auth_app.decorators import ROLE_RANK
+        from apps.auth_app.constants import ROLE_RANK
 
         best = None
         for prog in tiers["standard"]:

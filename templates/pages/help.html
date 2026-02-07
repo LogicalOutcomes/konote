@@ -14,8 +14,8 @@
         <h2>{% trans "Quick Navigation" %}</h2>
         <ul>
             <li><a href="#getting-started">{% trans "Getting Started" %}</a></li>
-            <li><a href="#searching">{% trans "Searching for" %} {{ term.client_plural }}</a></li>
-            <li><a href="#files">{{ term.client|capfirst }} {{ term.file }}s</a></li>
+            <li><a href="#searching">{% blocktrans with clients=term.client_plural|default:"Participants" %}Searching for {{ clients }}{% endblocktrans %}</a></li>
+            <li><a href="#files">{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}{{ client }} {{ file }}s{% endblocktrans %}</a></li>
             <li><a href="#notes">{{ term.progress_note_plural }}</a></li>
             <li><a href="#events">{% trans "Events and Alerts" %}</a></li>
             <li><a href="#plans">{{ term.plan }}s</a></li>
@@ -45,19 +45,19 @@
             <tbody>
                 <tr>
                     <td><strong>{% trans "Search bar" %}</strong></td>
-                    <td>{% trans "Type a name or ID to find" %} {{ term.client_plural }}</td>
+                    <td>{% blocktrans with clients=term.client_plural|default:"Participants" %}Type a name or ID to find {{ clients }}{% endblocktrans %}</td>
                 </tr>
                 <tr>
                     <td><strong>{% trans "Stats row" %}</strong></td>
-                    <td>{% trans "Active" %} {{ term.client_plural }}{% trans ", alerts," %} {{ term.client_plural }} {% trans "needing attention" %}</td>
+                    <td>{% blocktrans with clients=term.client_plural|default:"Participants" %}Active {{ clients }}, alerts, {{ clients }} needing attention{% endblocktrans %}</td>
                 </tr>
                 <tr>
                     <td><strong>{% trans "Priority Items" %}</strong></td>
-                    <td>{{ term.client_plural|capfirst }} {% trans "with active alerts or no recent notes" %}</td>
+                    <td>{% blocktrans with clients=term.client_plural|default:"Participants" %}{{ clients }} with active alerts or no recent notes{% endblocktrans %}</td>
                 </tr>
                 <tr>
                     <td><strong>{% trans "Recently Viewed" %}</strong></td>
-                    <td>{% trans "Quick links to" %} {{ term.client_plural }} {% trans "you've looked at recently" %}</td>
+                    <td>{% blocktrans with clients=term.client_plural|default:"Participants" %}Quick links to {{ clients }} you've looked at recently{% endblocktrans %}</td>
                 </tr>
             </tbody>
         </table>
@@ -65,13 +65,13 @@
 
     <!-- Searching for Clients -->
     <section id="searching">
-        <h2>{% trans "Searching for" %} {{ term.client_plural|capfirst }}</h2>
+        <h2>{% blocktrans with clients=term.client_plural|default:"Participants" %}Searching for {{ clients }}{% endblocktrans %}</h2>
 
         <h3>{% trans "Quick Search" %}</h3>
         <ol>
-            <li>{% trans "Type a" %} {{ term.client }}'s {% trans "name or record ID in the search bar" %}</li>
+            <li>{% blocktrans with client=term.client|default:"Participant" %}Type a {{ client }}'s name or record ID in the search bar{% endblocktrans %}</li>
             <li>{% trans "Results appear as you type" %}</li>
-            <li>{% trans "Click a name to open their" %} {{ term.file }}</li>
+            <li>{% blocktrans with file=term.file|default:"File" %}Click a name to open their {{ file }}{% endblocktrans %}</li>
         </ol>
 
         <h3>{% trans "Using Filters" %}</h3>
@@ -81,7 +81,7 @@
                 <ul>
                     <li><strong>{% trans "Status" %}</strong> — {% trans "Active, Inactive, or Discharged" %}</li>
                     {% if features.programs %}
-                    <li><strong>{{ term.program|capfirst }}</strong> — {% trans "Filter by specific" %} {{ term.program }}</li>
+                    <li><strong>{{ term.program|capfirst }}</strong> — {% blocktrans with prog=term.program|default:"programme" %}Filter by specific {{ prog }}{% endblocktrans %}</li>
                     {% endif %}
                     <li><strong>{% trans "Date range" %}</strong> — {% trans "Created after/before certain dates" %}</li>
                 </ul>
@@ -92,9 +92,9 @@
 
     <!-- Client Files -->
     <section id="files">
-        <h2>{{ term.client|capfirst }} {{ term.file }}s</h2>
+        <h2>{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}{{ client }} {{ file }}s{% endblocktrans %}</h2>
 
-        <p>{% trans "When you open a" %} {{ term.client }}'s {{ term.file }}{% trans ", you'll see several tabs:" %}</p>
+        <p>{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}When you open a {{ client }}'s {{ file }}, you'll see several tabs:{% endblocktrans %}</p>
 
         <table>
             <thead>
@@ -106,15 +106,15 @@
             <tbody>
                 <tr>
                     <td><strong>{% trans "Info" %}</strong></td>
-                    <td>{% trans "Basic information," %} {% if features.programs %}{{ term.program }} {% trans "enrolments," %}{% endif %} {% trans "custom fields" %}</td>
+                    <td>{% trans "Basic information," %} {% if features.programs %}{% blocktrans with prog=term.program|default:"programme" %}{{ prog }} enrolments,{% endblocktrans %}{% endif %} {% trans "custom fields" %}</td>
                 </tr>
                 <tr>
                     <td><strong>{% trans "Notes" %}</strong></td>
-                    <td>{{ term.progress_note_plural|capfirst }} {% trans "timeline" %}</td>
+                    <td>{% blocktrans with notes=term.progress_note_plural|default:"Progress Notes" %}{{ notes }} timeline{% endblocktrans %}</td>
                 </tr>
                 <tr>
                     <td><strong>{{ term.plan|capfirst }}</strong></td>
-                    <td>{{ term.plan|capfirst }} {% trans "with" %} {{ term.section }}s{% trans "," %} {{ term.target_plural }}{% trans ", and" %} {{ term.metric_plural }}</td>
+                    <td>{% blocktrans with plan=term.plan|default:"Plan" sections=term.section|default:"Section" targets=term.target_plural|default:"Targets" metrics=term.metric_plural|default:"Metrics" %}{{ plan }} with {{ sections }}s, {{ targets }}, and {{ metrics }}{% endblocktrans %}</td>
                 </tr>
                 <tr>
                     <td><strong>{% trans "Events" %}</strong></td>
@@ -132,38 +132,38 @@
     <section id="notes">
         <h2>{{ term.progress_note_plural|capfirst }}</h2>
 
-        <p>{{ term.progress_note_plural|capfirst }} {% trans "document your interactions with" %} {{ term.client_plural }}{% trans ". KoNote2 offers two types:" %}</p>
+        <p>{% blocktrans with notes=term.progress_note_plural|default:"Progress Notes" clients=term.client_plural|default:"Participants" %}{{ notes }} document your interactions with {{ clients }}. KoNote2 offers two types:{% endblocktrans %}</p>
 
         <h3>{{ term.quick_note|capfirst }}s</h3>
-        <p>{% trans "Use" %} {{ term.quick_note }}s {% trans "for brief check-ins or short updates." %}</p>
+        <p>{% blocktrans with qnotes=term.quick_note|default:"Quick Note" %}Use {{ qnotes }}s for brief check-ins or short updates.{% endblocktrans %}</p>
         <ol>
-            <li>{% trans "Open the" %} {{ term.client }}'s {{ term.file }}</li>
+            <li>{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}Open the {{ client }}'s {{ file }}{% endblocktrans %}</li>
             <li>{% trans "Go to the" %} <strong>{% trans "Notes" %}</strong> {% trans "tab" %}</li>
             <li>{% trans "Click" %} <strong>+ {{ term.quick_note|capfirst }}</strong></li>
             <li>{% trans "Type your note" %}</li>
             <li>{% trans "Click" %} <strong>{% trans "Save" %}</strong></li>
         </ol>
 
-        <h3>{% trans "Full" %} {{ term.progress_note_plural|capfirst }}</h3>
-        <p>{% trans "Use full" %} {{ term.progress_note_plural }} {% trans "for structured sessions where you're working on" %} {{ term.plan }} {{ term.target_plural }}.</p>
+        <h3>{% blocktrans with notes=term.progress_note_plural|default:"Progress Notes" %}Full {{ notes }}{% endblocktrans %}</h3>
+        <p>{% blocktrans with notes=term.progress_note_plural|default:"Progress Notes" plan=term.plan|default:"Plan" targets=term.target_plural|default:"Targets" %}Use full {{ notes }} for structured sessions where you're working on {{ plan }} {{ targets }}.{% endblocktrans %}</p>
         <ol>
-            <li>{% trans "Open the" %} {{ term.client }}'s {{ term.file }}</li>
+            <li>{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}Open the {{ client }}'s {{ file }}{% endblocktrans %}</li>
             <li>{% trans "Go to the" %} <strong>{% trans "Notes" %}</strong> {% trans "tab" %}</li>
             <li>{% trans "Click" %} <strong>+ {{ term.progress_note|capfirst }}</strong></li>
             <li>{% trans "Fill in:" %}
                 <ul>
                     <li><strong>{% trans "Session date" %}</strong> — {% trans "defaults to today" %}</li>
                     <li><strong>{% trans "Summary" %}</strong> — {% trans "brief overview of the session" %}</li>
-                    <li><strong>{{ term.target|capfirst }} {{ term.section }}s</strong> — {% trans "notes and" %} {{ term.metric }} {% trans "values for each" %} {{ term.target }} {% trans "you worked on" %}</li>
+                    <li><strong>{{ term.target|capfirst }} {{ term.section }}s</strong> — {% blocktrans with metric=term.metric|default:"Metric" target=term.target|default:"Target" %}notes and {{ metric }} values for each {{ target }} you worked on{% endblocktrans %}</li>
                 </ul>
             </li>
             <li>{% trans "Click" %} <strong>{% trans "Save Note" %}</strong></li>
         </ol>
 
-        <p><strong>{% trans "Tip:" %}</strong> {% trans "You only need to fill in the" %} {{ term.target_plural }} {% trans "you actually worked on. Leave others blank." %}</p>
+        <p><strong>{% trans "Tip:" %}</strong> {% blocktrans with targets=term.target_plural|default:"Targets" %}You only need to fill in the {{ targets }} you actually worked on. Leave others blank.{% endblocktrans %}</p>
 
-        <h3>{% trans "Recording" %} {{ term.metric_plural|capfirst }}</h3>
-        <p>{% trans "When writing a full" %} {{ term.progress_note }}{% trans ", you'll see" %} {{ term.metric }} {% trans "fields under each" %} {{ term.target }}{% trans ". Common types:" %}</p>
+        <h3>{% blocktrans with metrics=term.metric_plural|default:"Metrics" %}Recording {{ metrics }}{% endblocktrans %}</h3>
+        <p>{% blocktrans with note=term.progress_note|default:"Progress Note" metric=term.metric|default:"Metric" target=term.target|default:"Target" %}When writing a full {{ note }}, you'll see {{ metric }} fields under each {{ target }}. Common types:{% endblocktrans %}</p>
         <ul>
             <li><strong>{% trans "Scale ratings" %}</strong> (1–10) {% trans "for things like housing stability or mood" %}</li>
             <li><strong>{% trans "Yes/No" %}</strong> {% trans "checkboxes for milestone achievements" %}</li>
@@ -191,7 +191,7 @@
         <h3>{% trans "Events" %}</h3>
         <p>{% trans "Events record discrete occurrences that don't need a full note — intake, discharge, hospital visits, crises, etc." %}</p>
         <ol>
-            <li>{% trans "Open the" %} {{ term.client }}'s {{ term.file }}</li>
+            <li>{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}Open the {{ client }}'s {{ file }}{% endblocktrans %}</li>
             <li>{% trans "Go to the" %} <strong>{% trans "Events" %}</strong> {% trans "tab" %}</li>
             <li>{% trans "Click" %} <strong>+ {% trans "New Event" %}</strong></li>
             <li>{% trans "Choose the event type" %}</li>
@@ -201,19 +201,19 @@
         </ol>
 
         <h3>{{ term.alert|capfirst }}s</h3>
-        <p>{{ term.alert|capfirst }}s {% trans "flag a" %} {{ term.client }} {% trans "as needing attention. Use them for safety concerns or urgent follow-ups." %}</p>
+        <p>{% blocktrans with alerts=term.alert|default:"Alert" client=term.client|default:"Participant" %}{{ alerts }}s flag a {{ client }} as needing attention. Use them for safety concerns or urgent follow-ups.{% endblocktrans %}</p>
         <ol>
-            <li>{% trans "Open the" %} {{ term.client }}'s {{ term.file }}</li>
+            <li>{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}Open the {{ client }}'s {{ file }}{% endblocktrans %}</li>
             <li>{% trans "Go to the" %} <strong>{% trans "Events" %}</strong> {% trans "tab" %}</li>
             <li>{% trans "Click" %} <strong>+ {% trans "New" %} {{ term.alert|capfirst }}</strong></li>
             <li>{% trans "Describe the concern" %}</li>
             <li>{% trans "Click" %} <strong>{% trans "Save" %}</strong></li>
         </ol>
-        <p>{% trans "The" %} {{ term.client }} {% trans "will appear in" %} <strong>{% trans "Priority Items" %}</strong> {% trans "on the home page until the alert is resolved." %}</p>
+        <p>{% blocktrans with client=term.client|default:"Participant" %}The {{ client }} will appear in Priority Items on the home page until the alert is resolved.{% endblocktrans %}</p>
 
-        <h3>{% trans "Resolving" %} {{ term.alert|capfirst }}s</h3>
+        <h3>{% blocktrans with alerts=term.alert|default:"Alert" %}Resolving {{ alerts }}s{% endblocktrans %}</h3>
         <ol>
-            <li>{% trans "Find the" %} {{ term.alert }} {% trans "in the Events tab" %}</li>
+            <li>{% blocktrans with alert=term.alert|default:"Alert" %}Find the {{ alert }} in the Events tab{% endblocktrans %}</li>
             <li>{% trans "Click" %} <strong>{% trans "Resolve" %}</strong> {% trans "or" %} <strong>{% trans "Cancel" %} {{ term.alert|capfirst }}</strong></li>
             <li>{% trans "Add a resolution note" %}</li>
             <li>{% trans "Save" %}</li>
@@ -224,25 +224,25 @@
     <section id="plans">
         <h2>{{ term.plan|capfirst }}s</h2>
 
-        <p>{% trans "The" %} <strong>{{ term.plan|capfirst }}</strong> {% trans "tab shows the" %} {{ term.client }}'s {{ term.plan }} {% trans "— their goals and how they're progressing." %}</p>
+        <p>{% blocktrans with plan=term.plan|default:"Plan" client=term.client|default:"Participant" %}The {{ plan }} tab shows the {{ client }}'s {{ plan }} — their goals and how they're progressing.{% endblocktrans %}</p>
 
-        <h3>{% trans "Understanding the" %} {{ term.plan|capfirst }} {% trans "Structure" %}</h3>
+        <h3>{% blocktrans with plan=term.plan|default:"Plan" %}Understanding the {{ plan }} Structure{% endblocktrans %}</h3>
         <ul>
             <li><strong>{{ term.section|capfirst }}s</strong> — {% trans "Broad categories like" %} "{% trans "Housing" %}", "{% trans "Employment" %}", "{% trans "Health" %}"</li>
-            <li><strong>{{ term.target_plural|capfirst }}</strong> — {% trans "Specific goals within each" %} {{ term.section }}</li>
-            <li><strong>{{ term.metric_plural|capfirst }}</strong> — {% trans "Measurable indicators attached to" %} {{ term.target_plural }}</li>
+            <li><strong>{{ term.target_plural|capfirst }}</strong> — {% blocktrans with section=term.section|default:"Section" %}Specific goals within each {{ section }}{% endblocktrans %}</li>
+            <li><strong>{{ term.metric_plural|capfirst }}</strong> — {% blocktrans with targets=term.target_plural|default:"Targets" %}Measurable indicators attached to {{ targets }}{% endblocktrans %}</li>
         </ul>
 
-        <h3>{% trans "Viewing" %} {{ term.target|capfirst }} {% trans "Details" %}</h3>
+        <h3>{% blocktrans with target=term.target|default:"Target" %}Viewing {{ target }} Details{% endblocktrans %}</h3>
         <ol>
-            <li>{% trans "Click a" %} {{ term.target }} {% trans "name to expand it" %}</li>
-            <li>{% trans "View all notes and" %} {{ term.metric }} {% trans "recordings for that" %} {{ term.target }}</li>
-            <li>{% trans "See progress charts (if" %} {{ term.metric_plural }} {% trans "have been recorded)" %}</li>
+            <li>{% blocktrans with target=term.target|default:"Target" %}Click a {{ target }} name to expand it{% endblocktrans %}</li>
+            <li>{% blocktrans with metric=term.metric|default:"Metric" target=term.target|default:"Target" %}View all notes and {{ metric }} recordings for that {{ target }}{% endblocktrans %}</li>
+            <li>{% blocktrans with metrics=term.metric_plural|default:"Metrics" %}See progress charts (if {{ metrics }} have been recorded){% endblocktrans %}</li>
         </ol>
 
-        <h3>{% trans "Editing" %} {{ term.plan|capfirst }}s</h3>
-        <p><strong>{% trans "Staff" %}</strong> {% trans "can view" %} {{ term.plan }}s {% trans "but typically cannot edit them." %}</p>
-        <p><strong>{% trans "Program managers" %}</strong> {% trans "and" %} <strong>{% trans "coordinators" %}</strong> {% trans "can add" %} {{ term.section }}s{% trans "," %} {{ term.target_plural }}{% trans ", and assign" %} {{ term.metric_plural }}.</p>
+        <h3>{% blocktrans with plans=term.plan|default:"Plan" %}Editing {{ plans }}s{% endblocktrans %}</h3>
+        <p>{% blocktrans with plans=term.plan|default:"Plan" %}<strong>Staff</strong> can view {{ plans }}s but typically cannot edit them.{% endblocktrans %}</p>
+        <p>{% blocktrans with sections=term.section|default:"Section" targets=term.target_plural|default:"Targets" metrics=term.metric_plural|default:"Metrics" %}<strong>Program managers</strong> and <strong>coordinators</strong> can add {{ sections }}s, {{ targets }}, and assign {{ metrics }}.{% endblocktrans %}</p>
     </section>
 
     <!-- Analysis and Reports -->
@@ -251,17 +251,17 @@
 
         <h3>{% trans "Viewing Progress Charts" %}</h3>
         <ol>
-            <li>{% trans "Open the" %} {{ term.client }}'s {{ term.file }}</li>
+            <li>{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}Open the {{ client }}'s {{ file }}{% endblocktrans %}</li>
             <li>{% trans "Go to the" %} <strong>{% trans "Analysis" %}</strong> {% trans "tab" %}</li>
-            <li>{% trans "View charts showing" %} {{ term.metric }} {% trans "values over time" %}</li>
+            <li>{% blocktrans with metric=term.metric|default:"Metric" %}View charts showing {{ metric }} values over time{% endblocktrans %}</li>
         </ol>
-        <p>{% trans "Charts automatically update when new" %} {{ term.metric }} {% trans "values are recorded in" %} {{ term.progress_note_plural }}.</p>
+        <p>{% blocktrans with metric=term.metric|default:"Metric" notes=term.progress_note_plural|default:"Progress Notes" %}Charts automatically update when new {{ metric }} values are recorded in {{ notes }}.{% endblocktrans %}</p>
 
         <h3>{% trans "Exporting Data" %}</h3>
         <p><strong>{% trans "Program managers and administrators" %}</strong> {% trans "can export data:" %}</p>
         <ul>
-            <li><strong>{% trans "Metric Export (CSV)" %}</strong> — {% trans "Export" %} {{ term.metric }} {% trans "data filtered by" %} {{ term.program }}{% trans "," %} {{ term.metric_plural }}{% trans ", and date range" %}</li>
-            <li><strong>{{ term.client|capfirst }} {% trans "Data Export" %}</strong> — {% trans "Download a" %} {{ term.client }}'s {% trans "complete data (for GDPR/privacy requests)" %}</li>
+            <li><strong>{% trans "Metric Export (CSV)" %}</strong> — {% blocktrans with metric=term.metric|default:"Metric" prog=term.program|default:"Programme" metrics=term.metric_plural|default:"Metrics" %}Export {{ metric }} data filtered by {{ prog }}, {{ metrics }}, and date range{% endblocktrans %}</li>
+            <li><strong>{% blocktrans with client=term.client|default:"Participant" %}{{ client }} Data Export{% endblocktrans %}</strong> — {% blocktrans with client=term.client|default:"Participant" %}Download a {{ client }}'s complete data (for GDPR/privacy requests){% endblocktrans %}</li>
             <li><strong>{% trans "PDF Reports" %}</strong> — {% trans "Generate printable progress reports" %}</li>
         </ul>
         <p>{% trans "Find export options under" %} <strong>{% trans "Reports" %}</strong> {% trans "in the main navigation." %}</p>
@@ -291,7 +291,7 @@
                 </tr>
                 <tr>
                     <td><kbd>n</kbd></td>
-                    <td>{% trans "New" %} {{ term.quick_note }} ({% trans "on" %} {{ term.client }} {% trans "page" %})</td>
+                    <td>{% blocktrans with qnote=term.quick_note|default:"Quick Note" client=term.client|default:"Participant" %}New {{ qnote }} (on {{ client }} page){% endblocktrans %}</td>
                 </tr>
                 <tr>
                     <td><kbd>Ctrl</kbd>+<kbd>S</kbd></td>
@@ -325,15 +325,15 @@
             <tbody>
                 <tr>
                     <td><strong>{% trans "Front Desk" %}</strong></td>
-                    <td>{% trans "View limited" %} {{ term.client }} {% trans "info, update contact details" %}</td>
+                    <td>{% blocktrans with client=term.client|default:"Participant" %}View limited {{ client }} info, update contact details{% endblocktrans %}</td>
                 </tr>
                 <tr>
                     <td><strong>{% trans "Staff" %}</strong></td>
-                    <td>{% trans "Full" %} {{ term.client }} {% trans "access, write notes, record events" %}</td>
+                    <td>{% blocktrans with client=term.client|default:"Participant" %}Full {{ client }} access, write notes, record events{% endblocktrans %}</td>
                 </tr>
                 <tr>
                     <td><strong>{% trans "Program Manager" %}</strong></td>
-                    <td>{% trans "All staff abilities plus edit" %} {{ term.plan }}s{% trans ", manage team" %}</td>
+                    <td>{% blocktrans with plans=term.plan|default:"Plan" %}All staff abilities plus edit {{ plans }}s, manage team{% endblocktrans %}</td>
                 </tr>
                 <tr>
                     <td><strong>{% trans "Administrator" %}</strong></td>
@@ -342,11 +342,11 @@
             </tbody>
         </table>
 
-        <p><strong>{% trans "Note:" %}</strong> {% trans "Administrators without a" %} {{ term.program }} {% trans "assignment cannot see" %} {{ term.client }} {% trans "data. This is a security feature." %}</p>
+        <p><strong>{% trans "Note:" %}</strong> {% blocktrans with prog=term.program|default:"Programme" client=term.client|default:"Participant" %}Administrators without a {{ prog }} assignment cannot see {{ client }} data. This is a security feature.{% endblocktrans %}</p>
 
         <h3>{% trans "Different Roles in Different Programs" %}</h3>
-        <p>{% trans "You may have a different role depending on which" %} {{ term.program }} {% trans "you are working in. For example, you might be a Program Manager in one" %} {{ term.program }} {% trans "and Direct Service staff in another." %}</p>
-        <p>{% trans "Your current role is shown as a badge next to your name in the navigation bar. If you switch" %} {{ term.program_plural }}{% trans ", the badge updates to reflect your role in that" %} {{ term.program }}.</p>
+        <p>{% blocktrans with prog=term.program|default:"Programme" %}You may have a different role depending on which {{ prog }} you are working in. For example, you might be a Program Manager in one {{ prog }} and Direct Service staff in another.{% endblocktrans %}</p>
+        <p>{% blocktrans with progs=term.program_plural|default:"Programmes" prog=term.program|default:"Programme" %}Your current role is shown as a badge next to your name in the navigation bar. If you switch {{ progs }}, the badge updates to reflect your role in that {{ prog }}.{% endblocktrans %}</p>
     </section>
 
     {% if user.is_admin %}
@@ -370,16 +370,16 @@
                 </tr>
                 {% if features.programs %}
                 <tr>
-                    <td>{% trans "Manage" %} {{ term.program_plural }}</td>
+                    <td>{% blocktrans with progs=term.program_plural|default:"Programmes" %}Manage {{ progs }}{% endblocktrans %}</td>
                     <td>{% trans "Admin" %} → {{ term.program_plural|capfirst }}</td>
                 </tr>
                 {% endif %}
                 <tr>
-                    <td>{% trans "Set up" %} {{ term.metric_plural }}</td>
+                    <td>{% blocktrans with metrics=term.metric_plural|default:"Metrics" %}Set up {{ metrics }}{% endblocktrans %}</td>
                     <td>{% trans "Admin" %} → {{ term.metric_plural|capfirst }}</td>
                 </tr>
                 <tr>
-                    <td>{% trans "Create" %} {{ term.plan }} {% trans "templates" %}</td>
+                    <td>{% blocktrans with plan=term.plan|default:"Plan" %}Create {{ plan }} templates{% endblocktrans %}</td>
                     <td>{% trans "Admin" %} → {% trans "Templates" %}</td>
                 </tr>
                 <tr>
@@ -413,16 +413,16 @@
         <p><strong>{% trans "Azure AD:" %}</strong> {% trans "Check that your work email is registered with KoNote2. Contact your administrator." %}</p>
         <p><strong>{% trans "Local login:" %}</strong> {% trans "Confirm your credentials. If forgotten, ask your administrator to reset your password." %}</p>
 
-        <h3>{% trans "I can't find a" %} {{ term.client }}</h3>
+        <h3>{% blocktrans with client=term.client|default:"Participant" %}I can't find a {{ client }}{% endblocktrans %}</h3>
         <ul>
             <li>{% trans "Check your spelling" %}</li>
             <li>{% trans "Try searching by record ID instead of name" %}</li>
             <li>{% trans "Check filters — you may have a status filter active" %}</li>
-            <li>{% trans "You can only see" %} {{ term.client_plural }} {% trans "in" %} {{ term.program_plural }} {% trans "you're assigned to" %}</li>
+            <li>{% blocktrans with clients=term.client_plural|default:"Participants" progs=term.program_plural|default:"Programmes" %}You can only see {{ clients }} in {{ progs }} you're assigned to{% endblocktrans %}</li>
         </ul>
 
-        <h3>{% trans "I can't edit a" %} {{ term.client }}'s {{ term.plan }}</h3>
-        <p>{% trans "Only program managers and administrators can edit" %} {{ term.plan }}s{% trans ". If you need changes, let your supervisor know." %}</p>
+        <h3>{% blocktrans with client=term.client|default:"Participant" plan=term.plan|default:"Plan" %}I can't edit a {{ client }}'s {{ plan }}{% endblocktrans %}</h3>
+        <p>{% blocktrans with plans=term.plan|default:"Plan" %}Only program managers and administrators can edit {{ plans }}s. If you need changes, let your supervisor know.{% endblocktrans %}</p>
 
         <h3>{% trans "I can't see the Admin menu" %}</h3>
         <p>{% trans "The Admin menu only appears for administrators. If you need admin access, contact your system administrator." %}</p>
@@ -435,7 +435,7 @@
         </ul>
 
         <h3>{% trans "Charts aren't showing data" %}</h3>
-        <p>{% trans "Charts require" %} {{ term.metric }} {% trans "values recorded in" %} {{ term.progress_note_plural }}{% trans ". If no" %} {{ term.metric_plural }} {% trans "have been recorded for a" %} {{ term.target }}{% trans ", charts will be empty." %}</p>
+        <p>{% blocktrans with metric=term.metric|default:"Metric" notes=term.progress_note_plural|default:"Progress Notes" metrics=term.metric_plural|default:"Metrics" target=term.target|default:"Target" %}Charts require {{ metric }} values recorded in {{ notes }}. If no {{ metrics }} have been recorded for a {{ target }}, charts will be empty.{% endblocktrans %}</p>
 
         <h3>{% trans "The page timed out" %}</h3>
         <p>{% trans "For security, KoNote2 logs you out after inactivity. Log in again to continue. Your unsaved work may be lost." %}</p>
@@ -475,7 +475,7 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>{% trans "Find a" %} {{ term.client }}</td>
+                    <td>{% blocktrans with client=term.client|default:"Participant" %}Find a {{ client }}{% endblocktrans %}</td>
                     <td>{% trans "Type name in search bar" %}</td>
                 </tr>
                 <tr>
@@ -500,7 +500,7 @@
                 </tr>
                 <tr>
                     <td>{% trans "View progress charts" %}</td>
-                    <td>{{ term.client|capfirst }} {{ term.file }} → {% trans "Analysis tab" %}</td>
+                    <td>{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}{{ client }} {{ file }}{% endblocktrans %} → {% trans "Analysis tab" %}</td>
                 </tr>
             </tbody>
         </table>
@@ -509,7 +509,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>{{ term.client|capfirst }} {% trans "Status" %}</th>
+                    <th>{% blocktrans with client=term.client|default:"Participant" %}{{ client }} Status{% endblocktrans %}</th>
                     <th>{% trans "Meaning" %}</th>
                 </tr>
             </thead>
