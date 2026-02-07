@@ -31,40 +31,11 @@ def get_client_queryset(user):
     return ClientFile.objects.real()
 
 
-def _get_user_program_ids(user, active_program_ids=None):
-    """Return set of program IDs the user has active roles in.
-
-    Used to filter enrolment display — only show programs the user can see.
-    Prevents leaking confidential program names to users without access.
-
-    If active_program_ids is provided (CONF9), narrows to those programs only.
-    """
-    if active_program_ids:
-        return active_program_ids
-    return set(
-        UserProgramRole.objects.filter(user=user, status="active")
-        .values_list("program_id", flat=True)
-    )
-
-
-def _get_accessible_programs(user, active_program_ids=None):
-    """Return programs the user can access.
-
-    Admins without program roles get no programs (they manage system config, not client data).
-    If active_program_ids is provided (CONF9), narrows to those programs only.
-    """
-    if active_program_ids:
-        return Program.objects.filter(pk__in=active_program_ids, status="active")
-    if user.is_admin:
-        # Admins see programs for management; if they also have program roles, include those
-        admin_program_ids = UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True)
-        if admin_program_ids:
-            return Program.objects.filter(pk__in=admin_program_ids, status="active")
-        return Program.objects.none()
-    return Program.objects.filter(
-        pk__in=UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True),
-        status="active",
-    )
+# Shared program access helpers — canonical implementations in apps/programs/access
+from apps.programs.access import (
+    get_user_program_ids as _get_user_program_ids,
+    get_accessible_programs as _get_accessible_programs,
+)
 
 
 def _get_accessible_clients(user, active_program_ids=None):

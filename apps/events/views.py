@@ -1,56 +1,28 @@
 """Views for events and alerts — admin event types + client-scoped events/alerts."""
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.clients.models import ClientFile, ClientProgramEnrolment
+from apps.programs.access import (
+    build_program_display_context,
+    get_author_program,
+    get_client_or_403,
+    get_user_program_ids,
+)
 from apps.programs.models import UserProgramRole
 
 from .forms import AlertCancelForm, AlertForm, EventForm, EventTypeForm
 from .models import Alert, Event, EventType
 
 
-# ---------------------------------------------------------------------------
-# Helpers (same pattern as notes/views.py)
-# ---------------------------------------------------------------------------
-
-def _get_client_or_403(request, client_id):
-    """Return client if user has access, otherwise None."""
-    client = get_object_or_404(ClientFile, pk=client_id)
-    user = request.user
-    if user.is_admin:
-        return client
-    user_program_ids = set(
-        UserProgramRole.objects.filter(user=user, status="active")
-        .values_list("program_id", flat=True)
-    )
-    client_program_ids = set(
-        ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled")
-        .values_list("program_id", flat=True)
-    )
-    if user_program_ids & client_program_ids:
-        return client
-    return None
-
-
-def _get_author_program(user, client):
-    """Return the first program the user shares with this client, or None."""
-    user_program_ids = set(
-        UserProgramRole.objects.filter(user=user, status="active")
-        .values_list("program_id", flat=True)
-    )
-    client_program_ids = set(
-        ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled")
-        .values_list("program_id", flat=True)
-    )
-    shared = user_program_ids & client_program_ids
-    if shared:
-        from apps.programs.models import Program
-        return Program.objects.filter(pk__in=shared).first()
-    return None
+# Use shared access helpers from apps.programs.access
+_get_client_or_403 = get_client_or_403
+_get_author_program = get_author_program
 
 
 # ---------------------------------------------------------------------------
@@ -114,12 +86,20 @@ def event_list(request, client_id):
     if client is None:
         return HttpResponseForbidden("You do not have access to this client.")
 
-    events = Event.objects.filter(client_file=client).select_related("event_type")
-    alerts = Alert.objects.filter(client_file=client)
+    # Get user's accessible programs (respects CONF9 context switcher)
+    active_ids = getattr(request, "active_program_ids", None)
+    user_program_ids = get_user_program_ids(request.user, active_ids)
+    program_ctx = build_program_display_context(request.user, active_ids)
+
+    # Filter events, alerts, and notes by user's accessible programs
+    program_q = Q(author_program_id__in=user_program_ids) | Q(author_program__isnull=True)
+
+    events = Event.objects.filter(client_file=client).filter(program_q).select_related("event_type", "author_program")
+    alerts = Alert.objects.filter(client_file=client).filter(program_q).select_related("author_program")
 
     # Build combined timeline entries
     from apps.notes.models import ProgressNote
-    notes = ProgressNote.objects.filter(client_file=client).select_related("author", "author_program")
+    notes = ProgressNote.objects.filter(client_file=client).filter(program_q).select_related("author", "author_program")
 
     timeline = []
     for event in events:
@@ -143,6 +123,7 @@ def event_list(request, client_id):
         "alerts": alerts,
         "timeline": timeline,
         "active_tab": "events",
+        "show_program_ui": program_ctx["show_program_ui"],
     }
     if request.headers.get("HX-Request"):
         return render(request, "events/_tab_events.html", context)

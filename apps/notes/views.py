@@ -18,50 +18,26 @@ from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 
+from django.db.models import Q
+
 from apps.auth_app.decorators import minimum_role
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.plans.models import PlanTarget, PlanTargetMetric
+from apps.programs.access import (
+    build_program_display_context,
+    get_author_program,
+    get_client_or_403,
+    get_user_program_ids,
+)
 from apps.programs.models import UserProgramRole
 
 from .forms import FullNoteForm, MetricValueForm, NoteCancelForm, QuickNoteForm, TargetNoteForm
 from .models import MetricValue, ProgressNote, ProgressNoteTarget, ProgressNoteTemplate
 
 
-def _get_client_or_403(request, client_id):
-    """Return client if user has access, otherwise 403.
-
-    Access is based on program roles — admins without program roles cannot access.
-    """
-    client = get_object_or_404(ClientFile, pk=client_id)
-    user = request.user
-    user_program_ids = set(
-        UserProgramRole.objects.filter(user=user, status="active")
-        .values_list("program_id", flat=True)
-    )
-    client_program_ids = set(
-        ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled")
-        .values_list("program_id", flat=True)
-    )
-    if user_program_ids & client_program_ids:
-        return client
-    return None
-
-
-def _get_author_program(user, client):
-    """Return the first program the user shares with this client, or None."""
-    user_program_ids = set(
-        UserProgramRole.objects.filter(user=user, status="active")
-        .values_list("program_id", flat=True)
-    )
-    client_program_ids = set(
-        ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled")
-        .values_list("program_id", flat=True)
-    )
-    shared = user_program_ids & client_program_ids
-    if shared:
-        from apps.programs.models import Program
-        return Program.objects.filter(pk__in=shared).first()
-    return None
+# Use shared access helpers from apps.programs.access
+_get_client_or_403 = get_client_or_403
+_get_author_program = get_author_program
 
 
 def _check_client_consent(client):
@@ -171,11 +147,18 @@ def note_list(request, client_id):
     if client is None:
         return HttpResponseForbidden("You do not have access to this client.")
 
+    # Get user's accessible programs (respects CONF9 context switcher)
+    active_ids = getattr(request, "active_program_ids", None)
+    user_program_ids = get_user_program_ids(request.user, active_ids)
+    program_ctx = build_program_display_context(request.user, active_ids)
+
     # Annotate with computed effective_date for filtering and ordering
     # (backdate if set, otherwise created_at), plus target count for display.
     # prefetch target_entries→plan_target so cards can show target chips (3 queries total)
+    # Filter by user's accessible programs — workers only see notes from their programs
     notes = (
         ProgressNote.objects.filter(client_file=client)
+        .filter(Q(author_program_id__in=user_program_ids) | Q(author_program__isnull=True))
         .select_related("author", "author_program", "template")
         .prefetch_related("target_entries__plan_target")
         .annotate(
@@ -190,6 +173,7 @@ def note_list(request, client_id):
     date_to = request.GET.get("date_to", "")
     author_filter = request.GET.get("author", "")
     search_query = request.GET.get("q", "").strip()
+    program_filter = request.GET.get("program", "")
 
     valid_interactions = [c[0] for c in ProgressNote.INTERACTION_TYPE_CHOICES]
     if interaction_filter in valid_interactions:
@@ -206,6 +190,11 @@ def note_list(request, client_id):
             pass
     if author_filter == "mine":
         notes = notes.filter(author=request.user)
+    if program_filter:
+        try:
+            notes = notes.filter(author_program_id=int(program_filter))
+        except (ValueError, TypeError):
+            pass
 
     notes = notes.order_by("-_effective_date", "-created_at")
 
@@ -227,6 +216,7 @@ def note_list(request, client_id):
         bool(date_from),
         bool(date_to),
         bool(author_filter),
+        bool(program_filter),
     ])
 
     # Breadcrumbs: Clients > [Client Name] > Notes
@@ -243,11 +233,14 @@ def note_list(request, client_id):
         "filter_date_from": date_from,
         "filter_date_to": date_to,
         "filter_author": author_filter,
+        "filter_program": program_filter,
         "search_query": search_query,
         "active_filter_count": active_filter_count,
         "active_tab": "notes",
         "user_role": getattr(request, "user_program_role", None),
         "breadcrumbs": breadcrumbs,
+        "show_program_ui": program_ctx["show_program_ui"],
+        "accessible_programs": program_ctx["accessible_programs"],
     }
     if request.headers.get("HX-Request"):
         return render(request, "notes/_tab_notes.html", context)

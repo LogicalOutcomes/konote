@@ -187,6 +187,22 @@ body > nav a.nav-active {
     }
 }
 
+/* ---- Program group headers (multi-program view) ---- */
+.program-group {
+    margin-bottom: var(--kn-space-lg, 1.5rem);
+    padding-left: var(--kn-space-sm, 0.75rem);
+}
+.program-group-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--kn-space-xs, 0.25rem);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: var(--kn-space-sm, 0.75rem);
+    padding-bottom: var(--kn-space-xs, 0.25rem);
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
 /* ---- Client table column widths ---- */
 .client-table {
     table-layout: fixed;

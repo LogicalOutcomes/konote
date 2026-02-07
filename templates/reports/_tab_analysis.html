@@ -5,6 +5,50 @@
 </div>
 
 {% if chart_data %}
+    {% if show_grouping %}
+    {# Multi-program: group charts by program with colour headers #}
+    {% regroup chart_data by program_name as program_groups %}
+    {% for group in program_groups %}
+    <div class="program-group"{% if group.grouper %} style="border-left: 3px solid {{ group.list.0.program_colour|default:'var(--pico-muted-border-color)' }};"{% endif %}>
+        <h2 class="program-group-heading">
+            {% if group.grouper %}
+                <span class="program-dot" style="background-color: {{ group.list.0.program_colour }}" aria-hidden="true"></span>
+                {{ group.grouper }}
+            {% else %}
+                {% trans "General" %}
+            {% endif %}
+        </h2>
+        {% for chart in group.list %}
+        <section>
+            <h3>{{ chart.target_name }} — {{ chart.metric_name }}</h3>
+            <div class="chart-container" style="position: relative; height: 300px;">
+                <canvas id="chart-{{ forloop.parentloop.counter }}-{{ forloop.counter }}" aria-label="{% blocktrans with metric=chart.metric_name target=chart.target_name %}Line chart showing {{ metric }} over time for {{ target }}{% endblocktrans %}" role="img"></canvas>
+            </div>
+            <details class="chart-data-table">
+                <summary>{% trans "View data table" %}</summary>
+                <table role="table" aria-label="{{ chart.metric_name }} — {{ chart.target_name }}">
+                    <thead>
+                        <tr>
+                            <th scope="col">{% trans "Date" %}</th>
+                            <th scope="col">{{ chart.metric_name }}{% if chart.unit %} ({{ chart.unit }}){% endif %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for point in chart.data_points %}
+                        <tr>
+                            <td>{{ point.date }}</td>
+                            <td>{{ point.value }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </details>
+        </section>
+        {% endfor %}
+    </div>
+    {% endfor %}
+    {% else %}
+    {# Single program or specific CONF9: flat list, no group headers #}
     {% for chart in chart_data %}
     <section>
         <h2>{{ chart.target_name }} — {{ chart.metric_name }}</h2>
@@ -32,6 +76,7 @@
         </details>
     </section>
     {% endfor %}
+    {% endif %}
 
 {{ chart_data|json_script:"chart-data" }}
 <script>
@@ -41,8 +86,11 @@
         console.error('[Chart] Data is not an array:', typeof chartData);
         return;
     }
+    /* Find all chart canvases dynamically — works for both grouped and flat layouts */
+    var canvases = document.querySelectorAll('canvas[id^="chart-"]');
     chartData.forEach(function(chart, index) {
-    const ctx = document.getElementById('chart-' + (index + 1)).getContext('2d');
+    if (index >= canvases.length) return;
+    const ctx = canvases[index].getContext('2d');
     const datasets = [{
         label: chart.metric_name + (chart.unit ? ' (' + chart.unit + ')' : ''),
         data: chart.data_points.map(function(p) { return p.value; }),

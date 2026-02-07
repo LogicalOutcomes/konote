@@ -6713,3 +6713,6 @@ msgid "you are working in. For example, you might be a Program Manager in one"
 msgstr ""
 "dans lequel vous travaillez. Par exemple, vous pourriez être gestionnaire de"
 " programme dans un"
+
+msgid "All programs"
+msgstr "Tous les programmes"

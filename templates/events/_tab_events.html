@@ -11,6 +11,7 @@
 <article class="alert-card" aria-label="{% trans 'alert' %}">
     <header><strong>{% trans "Alert" %}</strong> — {{ alert.created_at|date:"Y-m-d" }}
         {% if alert.author %}<small class="secondary">{% trans "by" %} {{ alert.author.display_name|default:alert.author }}</small>{% endif %}
+        {% if show_program_ui and alert.author_program %}<span class="badge" style="background-color: {{ alert.author_program.colour_hex }}; color: #fff;">{{ alert.author_program.name }}</span>{% endif %}
     </header>
     <p>{{ alert.content }}</p>
     <footer>
@@ -43,6 +44,9 @@
             {% else %}
                 <span class="badge badge-neutral">{% trans "Event" %}</span>
             {% endif %}
+            {% if show_program_ui and entry.obj.author_program %}
+                <span class="badge" style="background-color: {{ entry.obj.author_program.colour_hex }}; color: #fff;">{{ entry.obj.author_program.name }}</span>
+            {% endif %}
             {% if entry.obj.all_day %}
                 <span class="badge badge-info" title="{% trans 'All day event' %}">{% trans "All Day" %}</span>
                 <strong>{{ entry.date|date:"Y-m-d" }}</strong>
@@ -67,7 +71,9 @@
             {% endif %}
             <strong>{{ entry.date|date:"Y-m-d" }}</strong>
             — {{ entry.obj.author.display_name|default:entry.obj.author }}
-            {% if entry.obj.author_program %}
+            {% if show_program_ui and entry.obj.author_program %}
+                <span class="badge" style="background-color: {{ entry.obj.author_program.colour_hex }}; color: #fff;">{{ entry.obj.author_program.name }}</span>
+            {% elif entry.obj.author_program %}
                 <small class="secondary">({{ entry.obj.author_program.name }})</small>
             {% endif %}
         </div>
