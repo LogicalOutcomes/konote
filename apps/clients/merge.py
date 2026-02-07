@@ -411,8 +411,10 @@ def execute_merge(kept, archived, pii_choices, field_resolutions, user, ip_addre
                 client_file=kept, program_id=enrolment.program_id,
             )
             if enrolment.enrolled_at < kept_enrolment.enrolled_at:
-                kept_enrolment.enrolled_at = enrolment.enrolled_at
-                kept_enrolment.save(update_fields=["enrolled_at"])
+                # auto_now_add fields can't use save(update_fields=), use queryset.update()
+                ClientProgramEnrolment.objects.filter(
+                    pk=kept_enrolment.pk,
+                ).update(enrolled_at=enrolment.enrolled_at)
             enrolment.status = "unenrolled"
             enrolment.unenrolled_at = timezone.now()
             enrolment.client_file = kept
