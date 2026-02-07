@@ -24,6 +24,11 @@ echo ""
 echo "Seeding data..."
 python manage.py seed 2>&1 || echo "WARNING: Seed failed (see error above). App will start but may be missing data."
 
+# Translation check (non-blocking — logs issues but never prevents startup)
+echo ""
+echo "Checking translations..."
+python manage.py check_translations 2>&1 || echo "WARNING: Translation issues detected (non-blocking — app will start)"
+
 # Security check before starting the application
 # Set KONOTE_MODE=demo to allow startup with security warnings (for evaluation)
 # Set KONOTE_MODE=production (default) to block startup if security checks fail

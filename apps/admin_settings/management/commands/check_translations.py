@@ -195,8 +195,9 @@ class Command(BaseCommand):
                     if gap > 5:
                         msg = (
                             f"Template files contain ~{template_count} "
-                            f"translatable strings but django.po has only "
-                            f"{po_count} entries (gap: {gap}). "
+                            f"translatable items (trans + blocktrans) but "
+                            f"django.po has only {po_count} entries "
+                            f"(gap: {gap}). "
                             f"Run: python manage.py translate_strings"
                         )
                         warnings.append(msg)
@@ -204,8 +205,9 @@ class Command(BaseCommand):
                     else:
                         self.stdout.write(
                             self.style.SUCCESS(
-                                f"  [PASS] Template strings (~{template_count}) "
-                                f"vs .po entries ({po_count}) — no significant gap"
+                                f"  [PASS] Template items (~{template_count} "
+                                f"trans + blocktrans) vs .po entries "
+                                f"({po_count}) — no significant gap"
                             )
                         )
 
@@ -436,16 +438,22 @@ class Command(BaseCommand):
 
     def _quick_template_count(self):
         """
-        Fast count of unique {% trans %} strings in templates.
+        Fast count of unique translatable strings in templates.
 
-        This is a lightweight check for startup — counts unique strings
-        without building a full extraction set. The full extraction
-        lives in the translate_strings command.
+        Counts both {% trans %} strings and {% blocktrans %} blocks.
+        This is a lightweight check — counts unique strings without
+        building a full extraction set. The full extraction lives in
+        the translate_strings command.
         """
         trans_pattern = re.compile(
             r"""\{%[-\s]*trans\s+['"](.+?)['"]\s*[-]?%\}"""
         )
-        strings = set()
+        # Count blocktrans blocks (each block = one translatable unit)
+        blocktrans_pattern = re.compile(
+            r"""\{%[-\s]*blocktrans[\s%]"""
+        )
+        trans_strings = set()
+        blocktrans_count = 0
         base_dir = getattr(settings, "BASE_DIR", None)
         if not base_dir:
             return 0
@@ -459,6 +467,7 @@ class Command(BaseCommand):
                 content = html_file.read_text(encoding="utf-8")
             except (UnicodeDecodeError, OSError):
                 continue
-            strings.update(trans_pattern.findall(content))
+            trans_strings.update(trans_pattern.findall(content))
+            blocktrans_count += len(blocktrans_pattern.findall(content))
 
-        return len(strings)
+        return len(trans_strings) + blocktrans_count

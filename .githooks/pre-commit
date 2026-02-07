@@ -75,4 +75,32 @@ if [ -n "$ERRORS" ]; then
     exit 1
 fi
 
+# =============================================================================
+# Advisory check: warn if .html templates changed but .po wasn't updated
+# This is a WARNING only — it does NOT block the commit.
+# =============================================================================
+
+STAGED_HTML=$(git diff --cached --name-only --diff-filter=ACM | grep '\.html$' || true)
+
+if [ -n "$STAGED_HTML" ]; then
+    # Check if any .po file was also staged
+    PO_ALSO_STAGED=$(git diff --cached --name-only | grep '\.po$' || true)
+
+    if [ -z "$PO_ALSO_STAGED" ]; then
+        echo ""
+        echo "-------------------------------------------------------"
+        echo "  NOTE: Template files changed but .po was not updated"
+        echo "-------------------------------------------------------"
+        echo ""
+        echo "  If you added or changed {% trans %} or {% blocktrans %}"
+        echo "  tags, French translations may be incomplete."
+        echo ""
+        echo "  Run: python manage.py translate_strings"
+        echo ""
+        echo "  (This is a reminder, not a blocker — commit proceeds.)"
+        echo "-------------------------------------------------------"
+        echo ""
+    fi
+fi
+
 exit 0

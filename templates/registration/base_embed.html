@@ -108,6 +108,26 @@
     <!-- App JS — CSRF handling -->
     <script src="{% static 'js/app.js' %}"></script>
 
+    <!-- Auto-resize: tell parent page our height so iframe has no scrollbar -->
+    <script>
+    (function() {
+        function reportHeight() {
+            var height = document.documentElement.scrollHeight;
+            window.parent.postMessage({type: 'konote-embed-resize', height: height}, '*');
+        }
+        // Report on load
+        reportHeight();
+        // Report after images/fonts finish loading
+        window.addEventListener('load', reportHeight);
+        // Report when content changes (e.g. validation errors appear)
+        if (window.ResizeObserver) {
+            new ResizeObserver(reportHeight).observe(document.body);
+        } else {
+            window.addEventListener('resize', reportHeight);
+        }
+    })();
+    </script>
+
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>
