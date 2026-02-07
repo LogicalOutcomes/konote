@@ -2733,7 +2733,13 @@ msgid "Logged in as"
 msgstr "Connecté en tant que"
 
 msgid "Stay logged in"
-msgstr "Rester connecté"
+msgstr "Prolonger la session"
+
+msgid "Your login expires in {mins} minute(s)"
+msgstr "Votre session expire dans {mins} minute(s)"
+
+msgid "You'll be logged out in {mins} minute(s)"
+msgstr "Vous serez déconnecté dans {mins} minute(s)"
 
 #: templates/base.html — Keyboard shortcuts modal
 msgid "Keyboard shortcuts"

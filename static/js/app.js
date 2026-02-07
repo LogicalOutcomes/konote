@@ -743,7 +743,13 @@ document.addEventListener("click", function (event) {
         if (!timerEl || !messageEl) return;
 
         var timeoutMinutes = parseInt(timerEl.getAttribute("data-timeout"), 10) || 30;
+        var warnTemplate = timerEl.getAttribute("data-warn") || "Your login expires in {mins} minute(s)";
+        var urgentTemplate = timerEl.getAttribute("data-urgent") || "You'll be logged out in {mins} minute(s)";
         var remainingSeconds = timeoutMinutes * 60;
+
+        function formatMessage(template, mins) {
+            return template.replace("{mins}", mins);
+        }
 
         function updateDisplay() {
             var mins = Math.floor(remainingSeconds / 60);
@@ -751,16 +757,14 @@ document.addEventListener("click", function (event) {
             timerEl.classList.remove("warning", "critical");
 
             if (mins <= CRITICAL_THRESHOLD) {
-                // Urgent: "You'll be logged out in 1 minute"
                 timerEl.hidden = false;
                 timerEl.classList.add("critical");
-                messageEl.textContent = "You\u2019ll be logged out in " + mins + " minute" + (mins === 1 ? "" : "s");
+                messageEl.textContent = formatMessage(urgentTemplate, mins);
                 if (extendBtn) extendBtn.hidden = false;
             } else if (mins <= WARNING_THRESHOLD) {
-                // Warning: "Your login expires in 5 minutes"
                 timerEl.hidden = false;
                 timerEl.classList.add("warning");
-                messageEl.textContent = "Your login expires in " + mins + " minute" + (mins === 1 ? "" : "s");
+                messageEl.textContent = formatMessage(warnTemplate, mins);
                 if (extendBtn) extendBtn.hidden = false;
             } else {
                 // Plenty of time — hide everything
