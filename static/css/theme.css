@@ -40,7 +40,7 @@
     /* --- Text --- */
     --kn-text: #1a202c;
     --kn-text-secondary: #4a5568;
-    --kn-text-muted: #718096;
+    --kn-text-muted: #64748b;   /* Darkened for WCAG AA (4.75:1 on white) */
     --kn-text-faint: #a0aec0;
     --kn-text-inverse: #ffffff;
 
@@ -77,7 +77,7 @@
     --pico-card-border-radius: var(--kn-radius-card);
     --pico-card-box-shadow: var(--kn-shadow-card);
     --pico-border-radius: var(--kn-radius-sm);
-    --pico-form-element-spacing-vertical: 0.5rem;
+    --pico-form-element-spacing-vertical: 0.6875rem; /* Bumped from 0.5rem for 44px touch targets (exceeds WCAG 2.5.8 AA 24px) */
     --pico-form-element-spacing-horizontal: 0.75rem;
 }
 

@@ -19,7 +19,7 @@ def ux_report():
         "tasks",
         "ux-review-latest.md",
     )
-    if _report.pages_visited > 0:
+    if _report.pages_visited > 0 or _report.browser_findings:
         _report.write_report(report_path)
 
 

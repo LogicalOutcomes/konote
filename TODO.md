@@ -13,6 +13,13 @@ The core app is feature-complete. These tasks prepare for production use.
 - [ ] Verify email is configured — needed for export notifications, erasure alerts, and password resets (OPS3)
 - [ ] Test backup restore from a real database dump (OPS4)
 
+### Demo Site Setup
+
+- [ ] Merge develop → main in konote-web — deploys iframe fix to Railway (DEMO1)
+- [ ] Create registration link with slug `demo` on Railway instance — Admin → Registration → Create (DEMO2)
+- [ ] Verify GitHub Pages is enabled for konote2-website repo — Settings → Pages → Source: main (DEMO3)
+- [ ] Test live demo page — visit `demo.html` on marketing site, confirm iframe loads (DEMO4)
+
 ### Occasional Tasks
 
 - [ ] Run UX walkthrough — `pytest tests/ux_walkthrough/ -v`, review report at `tasks/ux-review-latest.md` (UX-WALK1)
@@ -84,6 +91,13 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 ### Deployment Workflow Enhancements
 
 See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-design.md) for full details.
+
+### CONF9 Follow-ups (from expert panel review)
+
+- [ ] Add `logger.exception()` to `_audit_program_switch` bare except block — PIPEDA compliance (CONF9a)
+- [ ] Flash message on context switch — "Now viewing: Employment" reinforces awareness (CONF9b)
+- [ ] Cache `needs_program_selector` result on request to reduce duplicate DB queries (CONF9c)
+- [ ] Document soft-filter vs hard-boundary distinction for agency privacy officers (CONF9d)
 
 ### Privacy & Security
 

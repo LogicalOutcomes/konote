@@ -831,7 +831,7 @@ details.search-filters-panel[open] summary {
 }
 .login-tagline-bilingual span {
     font-style: italic;
-    opacity: 0.85;
+    /* opacity removed — was 0.85 which dropped contrast below WCAG AA 4.5:1 */
 }
 
 /* Language chooser — two equal-prominence buttons on first visit */
@@ -903,6 +903,20 @@ details.search-filters-panel[open] summary {
     outline: 2px solid var(--kn-primary);
     outline-offset: 2px;
 }
+/* Dark mode: brighten lang buttons/links for contrast on dark backgrounds */
+@media (prefers-color-scheme: dark) {
+    .lang-link,
+    .lang-chooser-btn {
+        color: #5cc8cc;
+        border-color: #5cc8cc;
+    }
+    .lang-chooser-btn:hover,
+    .lang-chooser-btn:focus-visible {
+        background: #5cc8cc;
+        color: #1a202c;
+    }
+}
+
 /* ---- Demo section on login page ---- */
 .demo-divider {
     border: none;

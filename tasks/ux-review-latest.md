@@ -1,6 +1,6 @@
 # KoNote2 UX Walkthrough Report
 
-**Generated:** 2026-02-06 18:45:14  
+**Generated:** 2026-02-06 20:24:38  
 **Command:** `pytest tests/ux_walkthrough/ -v`
 
 ## Summary
@@ -10,7 +10,7 @@
 | Pages visited | 139 | 139 (same) |
 | Critical issues | 0 |
 | Warnings | 0 |
-| Info items | 0 |
+| Info items | 5 | 11 (down 6) |
 
 ## Critical Issues
 
@@ -22,13 +22,25 @@ _No warning issues found._
 
 ## Info Issues
 
-_No info issues found._
+- **[Browser] Focus Management** `/clients/1/`
+  Consent: No consent edit button found
+
+- **[Browser] Focus Management** `/clients/3/`
+  Custom fields: No edit button found (may not have editable fields)
+
+- **[Browser] Focus Management** `/notes/client/5/`
+  Note expansion: No note card link found
+
+- **[Browser] Focus Management** `/plans/client/7/`
+  Plan section: No edit button found
+
+- **[Browser] Focus Management** `/clients/search/`
+  Search: No #client-search input found
 
 ## Known Limitations
 
-- Colour contrast not tested (requires browser rendering)
-- Focus management after HTMX swaps not tested
-- Visual layout / responsive behaviour not tested
+- Colour contrast, focus management, and responsive layout are tested via Playwright browser tests
+- Colour contrast checks depend on CDN (axe-core) — require internet
 
 ## Per-Role Walkthrough Results
 
@@ -237,6 +249,22 @@ _No info issues found._
 | Direct Service | Client list search by note content | `/clients/?q=seemed+well` | 200 | None |
 | Direct Service | Dedicated search by note content | `/clients/search/?q=seemed+well` | 200 | None |
 | Direct Service | Note search isolation (no cross-program leak) | `/clients/search/?q=vocational` | 200 | None |
+
+## Browser-Based Findings
+
+_Tested with Playwright (headless Chromium) + axe-core._
+
+### Focus Management
+
+- **[INFO]** `/clients/1/` — Consent: No consent edit button found
+
+- **[INFO]** `/clients/3/` — Custom fields: No edit button found (may not have editable fields)
+
+- **[INFO]** `/notes/client/5/` — Note expansion: No note card link found
+
+- **[INFO]** `/plans/client/7/` — Plan section: No edit button found
+
+- **[INFO]** `/clients/search/` — Search: No #client-search input found
 
 ## Recommendations
 
