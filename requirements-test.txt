@@ -1,3 +1,4 @@
 # Extra dependencies for running tests (not needed in production)
 -r requirements.txt
 beautifulsoup4>=4.12
+playwright>=1.40
