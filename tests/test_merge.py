@@ -196,6 +196,8 @@ class MergeComparisonTest(TestCase):
 class MergeExecutionTest(TestCase):
     """Test the merge execution — data transfer, anonymisation, auditing."""
 
+    databases = "__all__"
+
     def setUp(self):
         enc_module._fernet = None
         self.admin = User.objects.create_user(
