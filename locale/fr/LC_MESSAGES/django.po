@@ -2732,11 +2732,8 @@ msgstr "Soutien :"
 msgid "Logged in as"
 msgstr "Connecté en tant que"
 
-msgid "Session:"
-msgstr "Session :"
-
-msgid "min"
-msgstr "min"
+msgid "Stay logged in"
+msgstr "Rester connecté"
 
 #: templates/base.html — Keyboard shortcuts modal
 msgid "Keyboard shortcuts"
@@ -4848,11 +4845,6 @@ msgstr ""
 msgid "Export type"
 msgstr ""
 
-msgid "Extend"
-msgstr ""
-
-msgid "Extend session"
-msgstr ""
 
 msgid "Feature toggles"
 msgstr ""
@@ -5395,9 +5387,6 @@ msgid "Privacy Officer"
 msgstr ""
 
 msgid "Privacy notice"
-msgstr ""
-
-msgid "Program"
 msgstr ""
 
 msgid "Program Statistics"

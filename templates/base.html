@@ -166,10 +166,10 @@
             {% if user.is_authenticated %}
             <div class="site-footer-session">
                 <span>{% trans "Logged in as" %} {{ user.display_name|default:user.username }}</span>
-                <span class="session-timer" id="session-timer" data-timeout="{{ session_timeout_minutes|default:30 }}" aria-live="polite" aria-atomic="true">
-                    {% trans "Session:" %} <span id="session-remaining">--</span> {% trans "min" %}
+                <span class="session-timer" id="session-timer" data-timeout="{{ session_timeout_minutes|default:30 }}" aria-live="polite" aria-atomic="true" hidden>
+                    <span id="session-message"></span>
                 </span>
-                <button type="button" id="extend-session" class="extend-session-btn" hidden aria-label="{% trans 'Extend session' %}">{% trans "Extend" %}</button>
+                <button type="button" id="extend-session" class="extend-session-btn" hidden aria-label="{% trans 'Stay logged in' %}">{% trans "Stay logged in" %}</button>
             </div>
             {% endif %}
         </div>
