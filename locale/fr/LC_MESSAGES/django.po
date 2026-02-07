@@ -354,7 +354,7 @@ msgid ""
 msgstr ""
 "Connectez-vous à un système de stockage de documents externe (SharePoint ou "
 "Google Drive) pour afficher un bouton « Ouvrir le dossier de documents » sur"
-" les dossiers clients."
+" les dossiers participants."
 
 msgid "Test with sample Record ID: REC-2024-001"
 msgstr "Tester avec l'ID de dossier exemple : REC-2024-001"
@@ -676,7 +676,7 @@ msgstr "Créer l'événement"
 
 #: templates/events/event_type_list.html
 msgid "Manage event categories for client timelines."
-msgstr "Gérez les catégories d'événements pour les chronologies des clients."
+msgstr "Gérez les catégories d'événements pour les chronologies des participants."
 
 msgid "New Event Type"
 msgstr "Nouveau type d'événement"
@@ -876,7 +876,7 @@ msgid "Resource type"
 msgstr "Type de ressource"
 
 msgid "e.g. client, note"
-msgstr "par ex. client, note"
+msgstr "par ex. participant, note"
 
 msgid "Filter"
 msgstr "Filtrer"
@@ -986,7 +986,7 @@ msgid "Pending Submissions"
 msgstr "Soumissions en attente"
 
 msgid "Export Client Data"
-msgstr "Exporter les données clients"
+msgstr "Exporter les données participants"
 
 msgid "Dismiss"
 msgstr "Fermer"
@@ -1321,7 +1321,7 @@ msgid "Programs module"
 msgstr "Module Programmes"
 
 msgid "Custom client fields"
-msgstr "Champs clients personnalisés"
+msgstr "Champs participants personnalisés"
 
 msgid "Metric alerts"
 msgstr "Alertes de mesures"
@@ -1333,7 +1333,7 @@ msgid "Funder report exports"
 msgstr "Exportations de rapports pour les bailleurs de fonds"
 
 msgid "Require client consent before notes (PIPEDA/PHIPA)"
-msgstr "Exiger le consentement du client avant les notes (PIPEDA/LPRPS)"
+msgstr "Exiger le consentement du participant avant les notes (PIPEDA/LPRPS)"
 
 #: apps/admin_settings/views.py - Diagnosis messages
 msgid "NO LIBRARY METRICS! Run: python manage.py seed"
@@ -1396,10 +1396,10 @@ msgstr "Aucun! Mesures non liées aux cibles."
 
 #, python-format
 msgid "Client: %(record_id)s"
-msgstr "Client : %(record_id)s"
+msgstr "Participant : %(record_id)s"
 
 msgid "Check different client:"
-msgstr "Vérifier un autre client :"
+msgstr "Vérifier un autre participant :"
 
 msgid "e.g., DEMO-001"
 msgstr "par ex., DEMO-001"
@@ -1422,7 +1422,7 @@ msgstr "Entrées MetricValue"
 
 #, python-format
 msgid "Client \"%(record_id)s\" not found."
-msgstr "Client « %(record_id)s » non trouvé."
+msgstr "Participant « %(record_id)s » non trouvé."
 
 #, python-format
 msgid "Chart Simulation (%(count)s would display)"
@@ -1457,7 +1457,7 @@ msgid "NO"
 msgstr "NON"
 
 msgid "No target/metric combinations found for this client."
-msgstr "Aucune combinaison cible/mesure trouvée pour ce client."
+msgstr "Aucune combinaison cible/mesure trouvée pour ce participant."
 
 msgid "How Charts Work"
 msgstr "Comment fonctionnent les graphiques"
@@ -1888,7 +1888,7 @@ msgstr "Informations sur l'organisation et le programme"
 msgid ""
 "Service statistics (total individuals served, new clients, total contacts)"
 msgstr ""
-"Statistiques de service (total des personnes servies, nouveaux clients, "
+"Statistiques de service (total des personnes servies, nouveaux participants, "
 "total des contacts)"
 
 msgid "Age demographics using common nonprofit categories"
@@ -1967,7 +1967,7 @@ msgstr ""
 msgid "Demographics: Calculated from client birth dates"
 msgstr ""
 "Données démographiques : Calculées à partir des dates de naissance des "
-"clients"
+"participants"
 
 msgid "Outcomes: Based on metric targets defined in your outcome metrics"
 msgstr ""
@@ -1975,13 +1975,13 @@ msgstr ""
 
 #: templates/reports/client_data_export_form.html
 msgid "Client Data Export"
-msgstr "Exportation des données clients"
+msgstr "Exportation des données participants"
 
 msgid ""
 "Export all client data as a CSV file for data portability, backup, or "
 "migration to another system."
 msgstr ""
-"Exportez toutes les données clients sous forme de fichier CSV pour la "
+"Exportez toutes les données participants sous forme de fichier CSV pour la "
 "portabilité des données, la sauvegarde ou la migration vers un autre "
 "système."
 
@@ -2004,8 +2004,8 @@ msgid ""
 "There are no clients matching the selected filters. Try adjusting your "
 "filters or leave them blank to export all clients."
 msgstr ""
-"Aucun client ne correspond aux filtres sélectionnés. Essayez d'ajuster vos "
-"filtres ou laissez-les vides pour exporter tous les clients."
+"Aucun participant ne correspond aux filtres sélectionnés. Essayez d'ajuster vos "
+"filtres ou laissez-les vides pour exporter tous les participants."
 
 msgid "Include in export"
 msgstr "Inclure dans l'exportation"
@@ -2356,18 +2356,18 @@ msgstr "Direction"
 
 #: templates/clients/erasure/ — Erasure feature
 msgid "Erase Client Data"
-msgstr "Effacer les données du client"
+msgstr "Effacer les données du participant"
 
 msgid ""
 "All client data will be permanently deleted once all program managers "
 "approve. Recovery requires a database backup."
 msgstr ""
-"Toutes les données du client seront définitivement supprimées une fois que "
+"Toutes les données du participant seront définitivement supprimées une fois que "
 "tous les gestionnaires de programme auront approuvé. La récupération "
 "nécessite une sauvegarde de la base de données."
 
 msgid "This client has active alerts. Review them before proceeding."
-msgstr "Ce client a des alertes actives. Consultez-les avant de procéder."
+msgstr "Ce participant a des alertes actives. Consultez-les avant de procéder."
 
 msgid "Data that will be erased"
 msgstr "Données qui seront effacées"
@@ -2449,13 +2449,13 @@ msgid ""
 "deleted. Recovery requires a database backup."
 msgstr ""
 "Une fois que tous les gestionnaires de programme auront approuvé, les "
-"données du client seront définitivement supprimées. La récupération "
+"données du participant seront définitivement supprimées. La récupération "
 "nécessite une sauvegarde de la base de données."
 
 msgid ""
 "This client has active alerts. Consider reviewing them before approving."
 msgstr ""
-"Ce client a des alertes actives. Pensez à les consulter avant d'approuver."
+"Ce participant a des alertes actives. Pensez à les consulter avant d'approuver."
 
 msgid "Deadlock Detected"
 msgstr "Impasse détectée"
@@ -2469,11 +2469,11 @@ msgstr ""
 "remplacement."
 
 msgid "Client"
-msgstr "Client"
+msgstr "Participant"
 
 #, python-format
 msgid "Client #%(pk)s (deleted)"
-msgstr "Client nº %(pk)s (supprimé)"
+msgstr "Participant nº %(pk)s (supprimé)"
 
 msgid "Data Summary"
 msgstr "Résumé des données"
@@ -2549,13 +2549,13 @@ msgid "Reason for erasure"
 msgstr "Raison de l'effacement"
 
 msgid "Client requested"
-msgstr "Demande du client"
+msgstr "Demande du participant"
 
 msgid "Retention period expired"
 msgstr "Période de conservation expirée"
 
 msgid "Client discharged"
-msgstr "Client congédié"
+msgstr "Participant congédié"
 
 msgid "Other"
 msgstr "Autre"
@@ -2563,13 +2563,13 @@ msgstr "Autre"
 msgid "Explain why this data should be erased. Do not include client names."
 msgstr ""
 "Expliquez pourquoi ces données doivent être effacées. N'incluez pas de noms "
-"de clients."
+"de participants."
 
 msgid ""
 "Required. Provide context such as client request date, retention policy "
 "reference, etc."
 msgstr ""
-"Requis. Fournissez le contexte tel que la date de la demande du client, la "
+"Requis. Fournissez le contexte tel que la date de la demande du participant, la "
 "référence de la politique de conservation, etc."
 
 msgid "Review notes"
@@ -2590,7 +2590,7 @@ msgstr "Requis. Cela sera visible par la personne qui a demandé l'effacement."
 
 #: apps/clients/erasure_views.py — Erasure view messages
 msgid "An erasure request already exists for this client."
-msgstr "Une demande d'effacement existe déjà pour ce client."
+msgstr "Une demande d'effacement existe déjà pour ce participant."
 
 msgid "Erasure request created. Program managers have been notified."
 msgstr ""
@@ -2610,7 +2610,7 @@ msgstr "Données de formulaire invalides."
 
 msgid "All approvals received. Client data has been permanently erased."
 msgstr ""
-"Toutes les approbations reçues. Les données du client ont été définitivement"
+"Toutes les approbations reçues. Les données du participant ont été définitivement"
 " effacées."
 
 msgid "Approval recorded. Waiting for remaining program managers."
@@ -2622,11 +2622,11 @@ msgstr "Une raison de rejet est requise."
 
 msgid "You are not a program manager for this client's programs."
 msgstr ""
-"Vous n'êtes pas gestionnaire de programme pour les programmes de ce client."
+"Vous n'êtes pas gestionnaire de programme pour les programmes de ce participant."
 
 msgid "Erasure request rejected. Client data has been preserved."
 msgstr ""
-"Demande d'effacement rejetée. Les données du client ont été préservées."
+"Demande d'effacement rejetée. Les données du participant ont été préservées."
 
 msgid "You cannot cancel this request."
 msgstr "Vous ne pouvez pas annuler cette demande."
@@ -2635,7 +2635,7 @@ msgid "Erasure request cancelled."
 msgstr "Demande d'effacement annulée."
 
 msgid "Action Required: Client Erasure Request"
-msgstr "Action requise : Demande d'effacement de données client"
+msgstr "Action requise : Demande d'effacement de données participant"
 
 #: apps/clients/models.py — Erasure model strings
 msgid "Deleted program"
@@ -2648,27 +2648,27 @@ msgid "Approved — Data Erased"
 msgstr "Approuvé — Données effacées"
 
 msgid "Client Requested"
-msgstr "Demande du client"
+msgstr "Demande du participant"
 
 msgid "Retention Period Expired"
 msgstr "Période de conservation expirée"
 
 msgid "Client Discharged"
-msgstr "Client congédié"
+msgstr "Participant congédié"
 
 #: templates/clients/email/ — Erasure email templates (ERASE-I18N1)
 msgid "Client Erasure Request"
-msgstr "Demande d'effacement de données client"
+msgstr "Demande d'effacement de données participant"
 
 msgid ""
 "A new client data erasure request has been submitted and requires your "
 "approval."
 msgstr ""
-"Une nouvelle demande d'effacement de données client a été soumise et "
+"Une nouvelle demande d'effacement de données participant a été soumise et "
 "requiert votre approbation."
 
 msgid "Client:"
-msgstr "Client :"
+msgstr "Participant :"
 
 msgid "Requested by:"
 msgstr "Demandé par :"
@@ -2684,7 +2684,7 @@ msgid ""
 "deleted."
 msgstr ""
 "Une fois que tous les gestionnaires de programme auront approuvé, les "
-"données du client seront définitivement supprimées."
+"données du participant seront définitivement supprimées."
 
 msgid "Review and approve or reject this request:"
 msgstr "Examinez et approuvez ou rejetez cette demande :"
@@ -2692,15 +2692,15 @@ msgstr "Examinez et approuvez ou rejetez cette demande :"
 #: apps/clients/erasure_views.py — Erasure completion email (ERASE-I18N2)
 #, python-format
 msgid "Client #%(pk)s"
-msgstr "Client no %(pk)s"
+msgstr "Participant no %(pk)s"
 
 #, python-format
 msgid "Client Data Erased — %(record)s"
-msgstr "Données client effacées — %(record)s"
+msgstr "Données participant effacées — %(record)s"
 
 #, python-format
 msgid "Client data erasure has been completed for %(record)s."
-msgstr "L'effacement des données client a été complété pour %(record)s."
+msgstr "L'effacement des données participant a été complété pour %(record)s."
 
 #, python-format
 msgid "Reason: %(category)s — %(reason)s"
@@ -2758,7 +2758,7 @@ msgid "Go to Home"
 msgstr "Aller à l'accueil"
 
 msgid "New quick note (on client page)"
-msgstr "Nouvelle note rapide (sur la page client)"
+msgstr "Nouvelle note rapide (sur la page participant)"
 
 msgid "Save current form"
 msgstr "Enregistrer le formulaire"
@@ -2780,7 +2780,7 @@ msgid "Reason for status change (optional)"
 msgstr "Raison du changement de statut (facultatif)"
 
 msgid "What does the client want to work on?"
-msgstr "Sur quoi le client veut-il travailler?"
+msgstr "Sur quoi le participant veut-il travailler?"
 
 msgid "Write what they said, in their own words."
 msgstr "Écrivez ce qu'il/elle a dit, dans ses propres mots."
@@ -4237,7 +4237,7 @@ msgstr ""
 
 msgid "A client with a similar name and date of birth already has a record."
 msgstr ""
-"Un client avec un nom et une date de naissance similaires a déjà un dossier."
+"Un participant avec un nom et une date de naissance similaires a déjà un dossier."
 
 msgid "A rejection reason is required."
 msgstr "Un motif de rejet est requis."
@@ -4261,7 +4261,7 @@ msgid "Add Milestone"
 msgstr "Ajouter un jalon"
 
 msgid "Add a non-client member"
-msgstr "Ajouter un membre non-client"
+msgstr "Ajouter un membre non-participant"
 
 msgid "Add consent and data retention fields."
 msgstr "Ajouter les champs de consentement et de conservation des données."
@@ -4304,7 +4304,7 @@ msgid ""
 " accessible from this view to protect confidentiality."
 msgstr ""
 "Statistiques agrégées de vos programmes. Les dossiers individuels des "
-"clients ne sont pas accessibles depuis cette vue pour protéger la "
+"participants ne sont pas accessibles depuis cette vue pour protéger la "
 "confidentialité."
 
 msgid "Alert cancelled."
@@ -4317,7 +4317,7 @@ msgid ""
 "All access to client records in this program. Each entry records who "
 "accessed which record, when, and what action they performed."
 msgstr ""
-"Tous les accès aux dossiers clients dans ce programme. Chaque entrée "
+"Tous les accès aux dossiers participants dans ce programme. Chaque entrée "
 "enregistre qui a accédé à quel dossier, quand et quelle action a été "
 "effectuée."
 
@@ -4326,13 +4326,13 @@ msgstr "Toute l'activité"
 
 msgid "All approvals received. Client data has been anonymised."
 msgstr ""
-"Toutes les approbations reçues. Les données du client ont été anonymisées."
+"Toutes les approbations reçues. Les données du participant ont été anonymisées."
 
 msgid ""
 "All demo users and demo clients in one place. Demo data is isolated from "
 "real data."
 msgstr ""
-"Tous les utilisateurs et les clients de démonstration au même endroit. Les "
+"Tous les utilisateurs et les participants de démonstration au même endroit. Les "
 "données de démonstration sont isolées des données réelles."
 
 msgid "All members are checked by default. Uncheck anyone who was absent."
@@ -4371,7 +4371,7 @@ msgid "Approaching PIPEDA Deadline"
 msgstr "Date limite LPRPDE approchante"
 
 msgid "Approve this registration and create a client record?"
-msgstr "Approuver cette inscription et créer un dossier client?"
+msgstr "Approuver cette inscription et créer un dossier participant?"
 
 msgid "Approved By"
 msgstr "Approuvé par"
@@ -4380,7 +4380,7 @@ msgid "Approved — Data Anonymised"
 msgstr "Approuvé — Données anonymisées"
 
 msgid "Approved! Client record created for %(first)s %(last)s."
-msgstr "Approuvé! Dossier client créé pour %(first)s %(last)s."
+msgstr "Approuvé! Dossier participant créé pour %(first)s %(last)s."
 
 msgid ""
 "Are you sure you want to approve this erasure? This cannot be undone.\" as "
@@ -4504,47 +4504,47 @@ msgid "Clear search"
 msgstr "Effacer la recherche"
 
 msgid "Client Count"
-msgstr "Nombre de clients"
+msgstr "Nombre de participants"
 
 msgid "Client Data Anonymised — %(code)s"
-msgstr "Données du client anonymisées — %(code)s"
+msgstr "Données du participant anonymisées — %(code)s"
 
 msgid "Client Data Erased — %(code)s"
-msgstr "Données du client effacées — %(code)s"
+msgstr "Données du participant effacées — %(code)s"
 
 msgid "Client Information"
-msgstr "Renseignements sur le client"
+msgstr "Renseignements sur le participant"
 
 msgid "Client Record"
-msgstr "Dossier du client"
+msgstr "Dossier du participant"
 
 msgid "Client count"
-msgstr "Nombre de clients"
+msgstr "Nombre de participants"
 
 msgid "Client data has been anonymised."
-msgstr "Les données du client ont été anonymisées."
+msgstr "Les données du participant ont été anonymisées."
 
 msgid "Client data has been permanently erased."
-msgstr "Les données du client ont été définitivement effacées."
+msgstr "Les données du participant ont été définitivement effacées."
 
 msgid "Client data no longer exists. Receipt cannot be generated."
 msgstr ""
-"Les données du client n'existent plus. Le reçu ne peut pas être généré."
+"Les données du participant n'existent plus. Le reçu ne peut pas être généré."
 
 msgid "Client file created."
-msgstr "Dossier du client créé."
+msgstr "Dossier du participant créé."
 
 msgid "Client file updated."
-msgstr "Dossier du client mis à jour."
+msgstr "Dossier du participant mis à jour."
 
 msgid "Client status"
-msgstr "Statut du client"
+msgstr "Statut du participant"
 
 msgid "Client's words"
-msgstr "Paroles du client"
+msgstr "Paroles du participant"
 
 msgid "Clients"
-msgstr "Clients"
+msgstr "Participants"
 
 msgid "Code"
 msgstr "Code"
@@ -4593,7 +4593,7 @@ msgid ""
 " is only available after the retention period expires."
 msgstr ""
 "Envisagez de définir une date d'expiration de conservation pour ce dossier "
-"client. L'effacement complet n'est disponible qu'après l'expiration de la "
+"participant. L'effacement complet n'est disponible qu'après l'expiration de la "
 "période de conservation."
 
 msgid ""
@@ -4694,7 +4694,7 @@ msgid "Demo Mode:"
 msgstr "Mode démo :"
 
 msgid "Demo client list"
-msgstr "Liste des clients de démonstration"
+msgstr "Liste des participants de démonstration"
 
 msgid "Demo user list"
 msgstr "Liste des utilisateurs de démonstration"
@@ -4724,7 +4724,7 @@ msgid ""
 "Download a copy of this request including client details before erasure "
 "proceeds. The system does not retain a copy."
 msgstr ""
-"Téléchargez une copie de cette demande incluant les détails du client avant "
+"Téléchargez une copie de cette demande incluant les détails du participant avant "
 "que l'effacement ne procède. Le système ne conserve pas de copie."
 
 msgid "Download link"
@@ -4735,7 +4735,7 @@ msgid ""
 "cannot be recovered from the system."
 msgstr ""
 "Téléchargez le reçu PDF avant d'approuver. Une fois les données effacées, "
-"les détails du client ne peuvent pas être récupérés du système."
+"les détails du participant ne peuvent pas être récupérés du système."
 
 msgid "Downloads"
 msgstr "Téléchargements"
@@ -4937,7 +4937,7 @@ msgid "File unavailable"
 msgstr "Fichier indisponible"
 
 msgid "Filter by client status, or export all."
-msgstr "Filtrer par statut du client, ou exporter tous."
+msgstr "Filtrer par statut du participant, ou exporter tous."
 
 msgid "Fiscal Year (April-March)"
 msgstr "Année fiscale (avril-mars)"
@@ -4955,10 +4955,10 @@ msgid ""
 "Program Manager. This dashboard provides oversight while ensuring client "
 "confidentiality is maintained."
 msgstr ""
-"Pour les renseignements individuels sur les clients ou les rapports "
+"Pour les renseignements individuels sur les participants ou les rapports "
 "détaillés, veuillez contacter votre gestionnaire de programme. Ce tableau de"
 " bord fournit une vue d'ensemble tout en assurant le maintien de la "
-"confidentialité des clients."
+"confidentialité des participants."
 
 msgid "Format"
 msgstr "Format"
@@ -5131,7 +5131,7 @@ msgid "Lead Worker"
 msgstr "Intervenant principal"
 
 msgid "Leave blank to export clients from all programmes."
-msgstr "Laisser vide pour exporter les clients de tous les programmes."
+msgstr "Laisser vide pour exporter les participants de tous les programmes."
 
 msgid "Leave blank to keep current password."
 msgstr "Laissez vide pour conserver le mot de passe actuel."
@@ -5179,17 +5179,17 @@ msgid ""
 "Merge this registration with the existing client? The registrant will be "
 "enrolled in the program."
 msgstr ""
-"Fusionner cette inscription avec le client existant? L'inscrit sera inscrit "
+"Fusionner cette inscription avec le participant existant? L'inscrit sera inscrit "
 "au programme."
 
 msgid "Merged with existing client %(first)s %(last)s."
-msgstr "Fusionné avec le client existant %(first)s %(last)s."
+msgstr "Fusionné avec le participant existant %(first)s %(last)s."
 
 msgid ""
 "Merging will enrol the existing client in the program instead of creating a "
 "new record."
 msgstr ""
-"La fusion inscrira le client existant au programme au lieu de créer un "
+"La fusion inscrira le participant existant au programme au lieu de créer un "
 "nouveau dossier."
 
 msgid "Metric Progress"
@@ -5261,14 +5261,14 @@ msgstr ""
 "d'ajuster vos filtres."
 
 msgid "No client selected for merge."
-msgstr "Aucun client sélectionné pour la fusion."
+msgstr "Aucun participant sélectionné pour la fusion."
 
 msgid "No client words recorded yet"
-msgstr "Aucune parole du client enregistrée"
+msgstr "Aucune parole du participant enregistrée"
 
 msgid "No demo clients found. Run the seed command to create demo data."
 msgstr ""
-"Aucun client de démonstration trouvé. Exécutez la commande d'initialisation "
+"Aucun participant de démonstration trouvé. Exécutez la commande d'initialisation "
 "pour créer des données de démonstration."
 
 msgid "No demo users found. Run the seed command to create demo accounts."
@@ -5344,7 +5344,7 @@ msgid ""
 "anonymised or erased depending on the level selected below."
 msgstr ""
 "Une fois que tous les gestionnaires de programme auront approuvé, les "
-"données du client seront définitivement anonymisées ou effacées selon le "
+"données du participant seront définitivement anonymisées ou effacées selon le "
 "niveau sélectionné ci-dessous."
 
 msgid ""
@@ -5352,14 +5352,14 @@ msgid ""
 "deleted."
 msgstr ""
 "Une fois que tous les gestionnaires de programme auront approuvé, les "
-"données du client seront définitivement supprimées."
+"données du participant seront définitivement supprimées."
 
 msgid ""
 "Once all programme managers approve, the client's identifying information "
 "will be permanently removed."
 msgstr ""
 "Une fois que tous les gestionnaires de programme auront approuvé, les "
-"renseignements identifiants du client seront définitivement supprimés."
+"renseignements identifiants du participant seront définitivement supprimés."
 
 msgid "Optionally break down results by age range or a custom field."
 msgstr ""
@@ -5474,7 +5474,7 @@ msgid "Please save this reference number for your records."
 msgstr "Veuillez conserver ce numéro de référence pour vos dossiers."
 
 msgid "Please select a client or enter a name."
-msgstr "Veuillez sélectionner un client ou entrer un nom."
+msgstr "Veuillez sélectionner un participant ou entrer un nom."
 
 msgid "Please select a fiscal year."
 msgstr "Veuillez sélectionner une année fiscale."
@@ -5760,7 +5760,7 @@ msgstr ""
 "laissez vide pour une période personnalisée."
 
 msgid "Select an existing client"
-msgstr "Sélectionner un client existant"
+msgstr "Sélectionner un participant existant"
 
 msgid "Select the fiscal year to report on."
 msgstr "Sélectionnez l'année fiscale visée par le rapport."
@@ -5773,7 +5773,7 @@ msgstr ""
 "requis pour les administrateurs."
 
 msgid "Selected client not found."
-msgstr "Le client sélectionné est introuvable."
+msgstr "Le participant sélectionné est introuvable."
 
 msgid "Select…"
 msgstr "Sélectionner…"
@@ -5897,7 +5897,7 @@ msgstr ""
 
 msgid "The following existing clients may match this registration:"
 msgstr ""
-"Les clients existants suivants pourraient correspondre à cette inscription :"
+"Les participants existants suivants pourraient correspondre à cette inscription :"
 
 msgid ""
 "The form will be displayed in an iframe. Participants will see your website "
@@ -5921,10 +5921,10 @@ msgid "This alert is already cancelled."
 msgstr "Cette alerte est déjà annulée."
 
 msgid "This client is already a member."
-msgstr "Ce client est déjà un membre."
+msgstr "Ce participant est déjà un membre."
 
 msgid "This client's data has already been anonymised."
-msgstr "Les données de ce client ont déjà été anonymisées."
+msgstr "Les données de ce participant ont déjà été anonymisées."
 
 msgid ""
 "This document contains all personal information held in KoNote2 for the "
@@ -6002,7 +6002,7 @@ msgid ""
 msgstr ""
 "Ce reçu devrait être conservé de façon sécuritaire par le responsable de la "
 "vie privée en tant que seul document reliant le code d'effacement à "
-"l'identité du client."
+"l'identité du participant."
 
 msgid "This record has been anonymised."
 msgstr "Ce dossier a été anonymisé."
@@ -6037,7 +6037,7 @@ msgid ""
 msgstr ""
 "En vertu de la LPRPDE, les individus ont le droit d'accéder à leurs "
 "renseignements personnels. Cette exportation comprend toutes les données "
-"détenues pour ce client."
+"détenues pour ce participant."
 
 msgid "Unit of measurement (e.g., \\\"score\\\", \\\"days\\\", \\\"%\\\")"
 msgstr "Unité de mesure (p. ex., \\\"score\\\", \\\"jours\\\", \\\"%\\\")"
@@ -6069,7 +6069,7 @@ msgstr "Consentement verbal"
 msgid ""
 "View all demo users and demo clients. Impersonate demo users for testing."
 msgstr ""
-"Voir tous les utilisateurs et les clients de démonstration. Usurper "
+"Voir tous les utilisateurs et les participants de démonstration. Usurper "
 "l'identité des utilisateurs de démonstration pour tester."
 
 msgid ""
@@ -6259,13 +6259,13 @@ msgstr "(vide)"
 
 msgid "Cannot merge a demo client with a real client."
 msgstr ""
-"Impossible de fusionner un client de démonstration avec un client réel."
+"Impossible de fusionner un participant de démonstration avec un participant réel."
 
 msgid "I understand this cannot be undone"
 msgstr "Je comprends que cette action est irréversible"
 
 msgid "One or both client records no longer exist."
-msgstr "Un ou les deux dossiers clients n'existent plus."
+msgstr "Un ou les deux dossiers participants n'existent plus."
 
 msgid ""
 "Records merged successfully. All data has been combined into this record."
@@ -6277,23 +6277,23 @@ msgid ""
 "The primary client has a confidential programme enrolment and cannot be "
 "merged."
 msgstr ""
-"Le client principal est inscrit à un programme confidentiel et ne peut pas "
+"Le participant principal est inscrit à un programme confidentiel et ne peut pas "
 "être fusionné."
 
 msgid "The primary client record has been anonymised and cannot be merged."
 msgstr ""
-"Le dossier du client principal a été anonymisé et ne peut pas être fusionné."
+"Le dossier du participant principal a été anonymisé et ne peut pas être fusionné."
 
 msgid ""
 "The secondary client has a confidential programme enrolment and cannot be "
 "merged."
 msgstr ""
-"Le client secondaire est inscrit à un programme confidentiel et ne peut pas "
+"Le participant secondaire est inscrit à un programme confidentiel et ne peut pas "
 "être fusionné."
 
 msgid "The secondary client record has been anonymised and cannot be merged."
 msgstr ""
-"Le dossier du client secondaire a été anonymisé et ne peut pas être "
+"Le dossier du participant secondaire a été anonymisé et ne peut pas être "
 "fusionné."
 
 msgid "You must acknowledge that this action cannot be undone."
@@ -6325,10 +6325,10 @@ msgid "Automatic scanning unavailable"
 msgstr "Analyse automatique non disponible"
 
 msgid "Client A"
-msgstr "Client A"
+msgstr "Participant A"
 
 msgid "Client B"
-msgstr "Client B"
+msgstr "Participant B"
 
 msgid "Compare"
 msgstr "Comparer"
@@ -6371,7 +6371,7 @@ msgstr "Aucun doublon"
 
 msgid "No potential duplicates found. All client records appear to be unique."
 msgstr ""
-"Aucun doublon potentiel trouvé. Tous les dossiers clients semblent être "
+"Aucun doublon potentiel trouvé. Tous les dossiers participants semblent être "
 "uniques."
 
 msgid "Phone Matches"
@@ -6391,7 +6391,7 @@ msgid ""
 "record. All data from the archived record will be transferred to the kept "
 "record."
 msgstr ""
-"Examinez les dossiers clients potentiellement en double et fusionnez-les en "
+"Examinez les dossiers participants potentiellement en double et fusionnez-les en "
 "un seul dossier. Toutes les données du dossier archivé seront transférées au"
 " dossier conservé."
 
@@ -6412,7 +6412,7 @@ msgstr ""
 "Choisissez lesquelles conserver."
 
 msgid "Too many clients"
-msgstr "Trop de clients"
+msgstr "Trop de participants"
 
 msgid "Which record should be the primary (kept) record?"
 msgstr "Quel dossier doit être le dossier principal (conservé) ?"
@@ -6421,7 +6421,7 @@ msgid ""
 "Your agency has too many client records for automatic duplicate scanning. "
 "Please contact support for assistance with duplicate detection."
 msgstr ""
-"Votre organisme a trop de dossiers clients pour l'analyse automatique des "
+"Votre organisme a trop de dossiers participants pour l'analyse automatique des "
 "doublons. Veuillez contacter le soutien technique pour obtenir de l'aide."
 
 msgid "choose which to keep"
@@ -6478,7 +6478,7 @@ msgid ""
 "Your client list will show only clients from the selected program."
 msgstr ""
 "Vous avez accès à plusieurs programmes. Choisissez celui dans lequel vous "
-"travaillez. Votre liste de clients affichera uniquement les clients du "
+"travaillez. Votre liste de participants affichera uniquement les participants du "
 "programme sélectionné."
 
 msgid "Program selection"
