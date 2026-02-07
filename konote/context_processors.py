@@ -181,7 +181,12 @@ def active_program_context(request):
     )
     from apps.programs.models import Program
 
-    if not needs_program_selector(request.user):
+    # Use cached result from middleware when available (CONF9c).
+    selector_needed = getattr(request, "_needs_program_selector", None)
+    if selector_needed is None:
+        selector_needed = needs_program_selector(request.user)
+
+    if not selector_needed:
         # Check if user has exactly one program — use its service model
         from apps.programs.models import UserProgramRole
         single_program_sm = None
