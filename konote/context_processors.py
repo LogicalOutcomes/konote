@@ -172,14 +172,17 @@ def active_program_context(request):
             "active_program_name": "",
             "program_options": [],
             "active_service_model": None,
+            "active_program_role": "",
+            "active_program_role_display": "",
         }
 
     from apps.programs.context import (
         SESSION_KEY,
         get_switcher_options,
+        get_user_program_tiers,
         needs_program_selector,
     )
-    from apps.programs.models import Program
+    from apps.programs.models import Program, UserProgramRole
 
     # Use cached result from middleware when available (CONF9c).
     selector_needed = getattr(request, "_needs_program_selector", None)
@@ -187,36 +190,63 @@ def active_program_context(request):
         selector_needed = needs_program_selector(request.user)
 
     if not selector_needed:
-        # Check if user has exactly one program — use its service model
-        from apps.programs.models import UserProgramRole
+        # Check if user has exactly one program — use its service model + role
         single_program_sm = None
+        single_role = ""
+        single_role_display = ""
         user_roles = UserProgramRole.objects.filter(
             user=request.user, status="active", program__status="active",
         ).select_related("program")[:2]
         if len(user_roles) == 1:
             single_program_sm = user_roles[0].program.service_model
+            single_role = user_roles[0].role
+            single_role_display = user_roles[0].get_role_display()
         return {
             "show_program_switcher": False,
             "active_program_id": None,
             "active_program_name": "",
             "program_options": [],
             "active_service_model": single_program_sm,
+            "active_program_role": single_role,
+            "active_program_role_display": single_role_display,
         }
 
     options = get_switcher_options(request.user)
     value = request.session.get(SESSION_KEY)
 
-    # Determine display name and service model for the active selection
+    # Determine display name, service model, and role for the active selection
     active_name = ""
     active_service_model = None
+    active_role = ""
+    active_role_display = ""
     if value == "all_standard":
         from django.utils.translation import gettext as _
+
         active_name = _("All Standard Programs")
+        # For "all standard", show the user's highest role across standard programs
+        tiers = get_user_program_tiers(request.user)
+        from apps.auth_app.decorators import ROLE_RANK
+
+        best = None
+        for prog in tiers["standard"]:
+            if best is None or ROLE_RANK.get(prog["role"], 0) > ROLE_RANK.get(
+                best["role"], 0
+            ):
+                best = prog
+        if best:
+            active_role = best["role"]
+            active_role_display = best["role_display"]
     elif value is not None:
         try:
             program = Program.objects.get(pk=int(value))
             active_name = program.name
             active_service_model = program.service_model
+            role_obj = UserProgramRole.objects.filter(
+                user=request.user, program=program, status="active",
+            ).first()
+            if role_obj:
+                active_role = role_obj.role
+                active_role_display = role_obj.get_role_display()
         except (Program.DoesNotExist, ValueError, TypeError):
             pass
 
@@ -229,4 +259,6 @@ def active_program_context(request):
         "active_program_name": active_name,
         "program_options": options,
         "active_service_model": active_service_model,
+        "active_program_role": active_role,
+        "active_program_role_display": active_role_display,
     }

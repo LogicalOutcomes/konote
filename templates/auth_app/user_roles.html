@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% blocktrans with name=edit_user.display_name %}Manage Roles — {{ name }}{% endblocktrans %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% blocktrans with name=edit_user.display_name %}Manage Roles — {{ name }}{% endblocktrans %}</h1>
+    <p>{% trans "Assign this user to programs with specific roles. A user can have different roles in different programs." %}</p>
+</hgroup>
+
+{% if roles %}
+<figure>
+<table role="grid" aria-label="{% trans 'Program role assignments' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Program" %}</th>
+            <th scope="col">{% trans "Role" %}</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for role in roles %}
+        <tr>
+            <td>{{ role.program.name }}</td>
+            <td><span class="badge badge-info">{{ role.get_role_display }}</span></td>
+            <td>
+                <form method="post"
+                      action="{% url 'auth_app:user_role_remove' user_id=edit_user.pk role_id=role.pk %}"
+                      style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="outline secondary"
+                            style="padding: 0.25rem 0.5rem; margin: 0;"
+                            onclick="return confirm('{% blocktrans with prog=role.program.name %}Remove role from {{ prog }}?{% endblocktrans %}')">
+                        {% trans "Remove" %}
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<div class="empty-state">
+    <p>{% trans "No program roles assigned. This user cannot access any program data." %}</p>
+</div>
+{% endif %}
+
+{% if has_available_programs %}
+<h2>{% trans "Add Role" %}</h2>
+<form method="post" action="{% url 'auth_app:user_role_add' user_id=edit_user.pk %}">
+    {% csrf_token %}
+    <div class="grid">
+        <div>
+            <label for="id_program">{{ form.program.label }}</label>
+            {{ form.program }}
+        </div>
+        <div>
+            <label for="id_role">{{ form.role.label }}</label>
+            {{ form.role }}
+        </div>
+    </div>
+    <button type="submit">{% trans "Add Role" %}</button>
+</form>
+{% elif not roles %}
+<p>{% trans "No programs available. Create a program first." %}</p>
+{% endif %}
+
+<div role="group">
+    <a href="{% url 'auth_app:user_list' %}" role="button" class="outline">{% trans "Back to Users" %}</a>
+    <a href="{% url 'auth_app:user_edit' user_id=edit_user.pk %}" role="button" class="outline">{% trans "Edit User" %}</a>
+</div>
+{% endblock %}

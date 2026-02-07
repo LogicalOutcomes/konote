@@ -4,7 +4,7 @@
 {% block title %}{{ group.name }} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
-<p><a href="{% url 'groups:group_list' %}" class="back-link">&larr; {% blocktrans with groups=term.group_plural|default:"Groups" %}Back to {{ groups }}{% endblocktrans %}</a></p>
+{% include "_breadcrumbs.html" %}
 
 <hgroup>
     <h1>
@@ -19,6 +19,9 @@
         {{ group.get_group_type_display }}
         {% if group.program %}
             — {{ group.program.name }}
+        {% endif %}
+        {% if user_role_for_program %}
+            — <small>{% trans "Your role:" %} {{ user_role_for_program }}</small>
         {% endif %}
     </p>
 </hgroup>

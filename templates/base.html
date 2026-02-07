@@ -101,7 +101,7 @@
             {% include "_program_switcher.html" %}
             <li>
                 <details class="dropdown" role="list" dir="rtl">
-                    <summary aria-haspopup="listbox">{{ user.display_name }}</summary>
+                    <summary aria-haspopup="listbox">{{ user.display_name }}{% if active_program_role_display %} <span class="badge badge-neutral nav-role-badge">{{ active_program_role_display }}</span>{% endif %}</summary>
                     <ul role="listbox">
                         <li><a href="/auth/logout/">{% trans "Sign Out" %}</a></li>
                     </ul>

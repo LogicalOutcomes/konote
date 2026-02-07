@@ -11,47 +11,53 @@
 
 <p><a href="{% url 'auth_app:user_create' %}" role="button">{% trans "New User" %}</a></p>
 
-{% if users %}
+{% if user_data %}
 <figure>
 <table role="grid" aria-label="{% trans 'User list' %}">
     <thead>
         <tr>
             <th scope="col">{% trans "Name" %}</th>
             <th scope="col">{% trans "Username" %}</th>
-            <th scope="col">{% trans "Role" %}</th>
+            <th scope="col">{% trans "Roles" %}</th>
             <th scope="col">{% trans "Status" %}</th>
             <th scope="col">{% trans "Last Login" %}</th>
             <th scope="col"></th>
         </tr>
     </thead>
     <tbody>
-        {% for u in users %}
+        {% for item in user_data %}
         <tr>
-            <td>{{ u.display_name }}</td>
-            <td>{{ u.username }}</td>
+            <td>{{ item.user.display_name }}</td>
+            <td>{{ item.user.username }}</td>
             <td>
-                {% if u.is_admin %}
+                {% if item.user.is_admin %}
                     <span class="badge badge-info">{% trans "Admin" %}</span>
-                {% else %}
-                    <span class="badge badge-neutral">{% trans "Staff" %}</span>
                 {% endif %}
+                {% for role in item.roles %}
+                    <span class="badge badge-neutral">{{ role.get_role_display }} ({{ role.program.name }})</span>
+                {% empty %}
+                    {% if not item.user.is_admin %}
+                    <span class="badge badge-warning">{% trans "No roles" %}</span>
+                    {% endif %}
+                {% endfor %}
             </td>
             <td>
-                {% if u.is_active %}
+                {% if item.user.is_active %}
                     <span class="badge badge-success">{% trans "Active" %}</span>
                 {% else %}
                     <span class="badge badge-danger">{% trans "Inactive" %}</span>
                 {% endif %}
             </td>
-            <td>{{ u.last_login_at|default:_("Never") }}</td>
+            <td>{{ item.user.last_login_at|default:_("Never") }}</td>
             <td>
-                <a href="{% url 'auth_app:user_edit' user_id=u.pk %}">{% trans "Edit" %}</a>
-                {% if u.is_active and u != request.user %}
-                <form method="post" action="{% url 'auth_app:user_deactivate' user_id=u.pk %}" style="display:inline">
+                <a href="{% url 'auth_app:user_edit' user_id=item.user.pk %}">{% trans "Edit" %}</a>
+                <a href="{% url 'auth_app:user_roles' user_id=item.user.pk %}">{% trans "Roles" %}</a>
+                {% if item.user.is_active and item.user != request.user %}
+                <form method="post" action="{% url 'auth_app:user_deactivate' user_id=item.user.pk %}" style="display:inline">
                     {% csrf_token %}
                     <button type="submit" class="outline secondary"
                             style="padding: 0.25rem 0.5rem; margin: 0;"
-                            onclick="return confirm('{% blocktrans with name=u.display_name %}Deactivate {{ name }}?{% endblocktrans %}')">
+                            onclick="return confirm('{% blocktrans with name=item.user.display_name %}Deactivate {{ name }}?{% endblocktrans %}')">
                         {% trans "Deactivate" %}
                     </button>
                 </form>

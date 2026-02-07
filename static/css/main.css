@@ -161,6 +161,14 @@ body > nav a.nav-active {
 .badge-warning { background: var(--kn-warning-bg); color: var(--kn-warning-fg); }
 .badge-danger  { background: var(--kn-danger-bg);  color: var(--kn-danger-fg); }
 .badge-neutral { background: var(--kn-neutral-bg); color: var(--kn-neutral-fg); }
+.badge-primary { background: var(--kn-info-bg);    color: var(--kn-info-fg); }
+
+/* Badge inside navigation — smaller to fit inline */
+.nav-role-badge {
+    font-size: 0.65rem;
+    padding: 1px 6px;
+    margin-left: 0.25rem;
+}
 
 /* ---- Program colour dot ---- */
 .program-dot {

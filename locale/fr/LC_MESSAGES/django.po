@@ -6617,8 +6617,9 @@ msgid ""
 "Row 1 has no id — it creates a new metric. Row 2 has id 42 — it updates the "
 "existing metric with that ID."
 msgstr ""
-"La ligne 1 n'a pas d'identifiant — elle crée une nouvelle mesure. La ligne 2 "
-"a l'identifiant 42 — elle met à jour la mesure existante avec cet identifiant."
+"La ligne 1 n'a pas d'identifiant — elle crée une nouvelle mesure. La ligne 2"
+" a l'identifiant 42 — elle met à jour la mesure existante avec cet "
+"identifiant."
 
 msgid "What do you prefer to be called?"
 msgstr "Comment préférez-vous être appelé(e) ?"
@@ -6630,11 +6631,13 @@ msgid "active or deactivated (defaults to active)"
 msgstr "active ou désactivée (par défaut : active)"
 
 msgid "yes or no — whether this metric is available for use (defaults to yes)"
-msgstr "oui ou non — indique si cette mesure est disponible (par défaut : oui)"
+msgstr ""
+"oui ou non — indique si cette mesure est disponible (par défaut : oui)"
 
 #, python-format
 msgid "Upload a CSV file to add or update %(metrics)s."
-msgstr "Téléchargez un fichier CSV pour ajouter ou mettre à jour des %(metrics)s."
+msgstr ""
+"Téléchargez un fichier CSV pour ajouter ou mettre à jour des %(metrics)s."
 
 #, python-format
 msgid "%(new)s new, %(updated)s updates to existing"
@@ -6647,3 +6650,66 @@ msgstr ""
 "Le plus simple est d'utiliser <strong>Exporter en CSV</strong> depuis la "
 "bibliothèque de mesures, de modifier le fichier dans Excel, puis de le "
 "téléverser ici."
+
+msgid "%(name)s assigned as %(role)s in %(program)s."
+msgstr "%(name)s a été assigné comme %(role)s dans %(program)s."
+
+msgid ", the badge updates to reflect your role in that"
+msgstr ", le badge se met à jour pour refléter votre rôle dans ce"
+
+msgid "Add Role"
+msgstr "Ajouter un rôle"
+
+msgid ""
+"Assign this user to programs with specific roles. A user can have different "
+"roles in different programs."
+msgstr ""
+"Attribuez des programmes à cet utilisateur avec des rôles spécifiques. Un "
+"utilisateur peut avoir des rôles différents dans différents programmes."
+
+msgid "Back to Users"
+msgstr "Retour aux utilisateurs"
+
+msgid "Different Roles in Different Programs"
+msgstr "Différents rôles dans différents programmes"
+
+msgid "Edit User"
+msgstr "Modifier l'utilisateur"
+
+msgid "No program roles assigned. This user cannot access any program data."
+msgstr ""
+"Aucun rôle de programme attribué. Cet utilisateur ne peut accéder à aucune "
+"donnée de programme."
+
+msgid "No programs available. Create a program first."
+msgstr "Aucun programme disponible. Créez d'abord un programme."
+
+msgid "No roles"
+msgstr "Aucun rôle"
+
+msgid "Program role assignments"
+msgstr "Attributions des rôles de programme"
+
+msgid "Role removed from %(program)s."
+msgstr "Rôle retiré de %(program)s."
+
+msgid "You may have a different role depending on which"
+msgstr "Vous pouvez avoir un rôle différent selon le"
+
+msgid ""
+"Your current role is shown as a badge next to your name in the navigation "
+"bar. If you switch"
+msgstr ""
+"Votre rôle actuel est affiché sous forme de badge à côté de votre nom dans "
+"la barre de navigation. Si vous changez de"
+
+msgid "Your role:"
+msgstr "Votre rôle :"
+
+msgid "and Direct Service staff in another."
+msgstr "et membre du personnel de service direct dans un autre."
+
+msgid "you are working in. For example, you might be a Program Manager in one"
+msgstr ""
+"dans lequel vous travaillez. Par exemple, vous pourriez être gestionnaire de"
+" programme dans un"
