@@ -39,10 +39,15 @@ These rules apply to **every phase**. Do not skip them.
 ## Translations
 
 After creating or modifying any template that uses `{% trans %}` tags:
-1. Run `python manage.py translate_strings` — this extracts, auto-translates (via Claude API), and compiles
+1. Run `python manage.py translate_strings` — this extracts, auto-translates, and compiles
 2. Commit both `locale/fr/LC_MESSAGES/django.po` and `django.mo`
 
-The command auto-translates empty strings when `ANTHROPIC_API_KEY` is set. If the key is not set, it warns and skips translation — empty strings will then cause `validate_translations.py` to fail (exit code 1).
+Auto-translation uses any OpenAI-compatible API. Set these environment variables:
+- `TRANSLATE_API_KEY` — required to enable (works with OpenAI, Open Router, Anthropic, Ollama)
+- `TRANSLATE_API_BASE` — API base URL (default: `https://api.openai.com/v1`)
+- `TRANSLATE_MODEL` — model name (default: `gpt-5`)
+
+If `TRANSLATE_API_KEY` is not set, translation is skipped — empty strings will then cause `validate_translations.py` to fail (exit code 1).
 
 Use `--no-translate` to skip auto-translation. Use `--dry-run` to preview changes.
 

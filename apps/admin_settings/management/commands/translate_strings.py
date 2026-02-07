@@ -4,11 +4,24 @@ Extract translatable strings from templates and Python, auto-translate, compile 
 Replaces the need for gettext/makemessages on Windows. Uses regex extraction
 and polib for .po/.mo handling — pure Python, no system dependencies.
 
-Auto-translates empty strings using Claude API when ANTHROPIC_API_KEY is set.
+Auto-translates empty strings via any OpenAI-compatible API when configured.
+Uses only the `requests` library (already a project dependency) — no vendor SDK needed.
+
+Configuration (environment variables):
+    TRANSLATE_API_KEY   — API key (required to enable auto-translation)
+    TRANSLATE_API_BASE  — API base URL (default: https://api.openai.com/v1)
+    TRANSLATE_MODEL     — Model name (default: gpt-5)
+
+Translation quality matters — the default is a flagship model because this
+runs infrequently (only when new strings are added). Override TRANSLATE_MODEL
+for a cheaper option if needed.
+
+Works with OpenAI, Open Router, Anthropic, local Ollama, or any
+provider that supports the OpenAI chat completions format.
 
 Usage:
-    python manage.py translate_strings              # Extract + translate + compile
-    python manage.py translate_strings --dry-run    # Show what would change
+    python manage.py translate_strings                # Extract + translate + compile
+    python manage.py translate_strings --dry-run      # Show what would change
     python manage.py translate_strings --no-translate  # Extract + compile only
 
 Exit codes:
@@ -302,62 +315,86 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------
 
     def _auto_translate(self, empty_entries, lang):
-        """Translate empty entries using Claude API. Returns count translated."""
-        # Check for API key
-        api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+        """
+        Translate empty entries via OpenAI-compatible chat completions API.
+
+        Uses only the `requests` library — no vendor SDK needed.
+        Works with OpenAI, Open Router, Anthropic, Ollama, etc.
+
+        Returns count of strings translated.
+        """
+        import requests as http_client
+
+        api_key = os.environ.get("TRANSLATE_API_KEY", "")
         if not api_key:
             self.stdout.write(self.style.WARNING(
-                "      [!!] ANTHROPIC_API_KEY not set — skipping auto-translate.\n"
-                "      Set the key or translate manually, then re-run."
+                "      [!!] TRANSLATE_API_KEY not set — skipping auto-translate.\n"
+                "      Set the env var to enable. Works with any OpenAI-compatible API.\n"
+                "      See: TRANSLATE_API_KEY, TRANSLATE_API_BASE, TRANSLATE_MODEL"
             ))
             return 0
 
-        # Import anthropic (optional dependency)
-        try:
-            from anthropic import Anthropic
-        except ImportError:
-            self.stdout.write(self.style.WARNING(
-                "      [!!] anthropic package not installed — skipping.\n"
-                "      Install with: pip install anthropic"
-            ))
-            return 0
+        api_base = os.environ.get(
+            "TRANSLATE_API_BASE", "https://api.openai.com/v1"
+        ).rstrip("/")
+        model = os.environ.get("TRANSLATE_MODEL", "gpt-5")
+        url = f"{api_base}/chat/completions"
 
-        client = Anthropic(api_key=api_key)
+        self.stdout.write(
+            f"      Using: {model} via {api_base}"
+        )
+
         total_translated = 0
 
-        # Process in batches
         for batch_start in range(0, len(empty_entries), BATCH_SIZE):
             batch = empty_entries[batch_start:batch_start + BATCH_SIZE]
             batch_num = (batch_start // BATCH_SIZE) + 1
-            total_batches = (len(empty_entries) + BATCH_SIZE - 1) // BATCH_SIZE
+            total_batches = (
+                (len(empty_entries) + BATCH_SIZE - 1) // BATCH_SIZE
+            )
 
             self.stdout.write(
                 f"      Batch {batch_num}/{total_batches} "
                 f"({len(batch)} strings)..."
             )
 
-            # Build numbered dict for the API
+            # Build numbered dict for the prompt
             source = {}
             for i, entry in enumerate(batch, 1):
                 source[str(i)] = entry.msgid
 
-            try:
-                response = client.messages.create(
-                    model="claude-haiku-4-5-20251001",
-                    max_tokens=4096,
-                    system=SYSTEM_PROMPT,
-                    messages=[{
+            payload = {
+                "model": model,
+                "max_tokens": 4096,
+                "messages": [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {
                         "role": "user",
                         "content": (
-                            f"Translate these {lang} strings. "
+                            f"Translate these to {lang}. "
                             f"Return ONLY valid JSON.\n\n"
                             f"{json.dumps(source, ensure_ascii=False, indent=2)}"
                         ),
-                    }],
-                )
+                    },
+                ],
+            }
 
-                # Parse the response
-                text = response.content[0].text.strip()
+            try:
+                resp = http_client.post(
+                    url,
+                    headers={
+                        "Authorization": f"Bearer {api_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json=payload,
+                    timeout=60,
+                )
+                resp.raise_for_status()
+                data = resp.json()
+
+                # Extract text from OpenAI-compatible response
+                text = data["choices"][0]["message"]["content"].strip()
+
                 # Strip markdown code fences if present
                 if text.startswith("```"):
                     text = re.sub(r"^```\w*\n?", "", text)
@@ -380,6 +417,11 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.WARNING(
                     f"      [!!] Could not parse API response for batch "
                     f"{batch_num}: {e}"
+                ))
+            except http_client.exceptions.HTTPError as e:
+                self.stdout.write(self.style.WARNING(
+                    f"      [!!] API HTTP error on batch {batch_num}: "
+                    f"{e.response.status_code} {e.response.reason}"
                 ))
             except Exception as e:
                 self.stdout.write(self.style.WARNING(
@@ -494,7 +536,7 @@ class Command(BaseCommand):
                 f"French translations."
             ))
             self.stdout.write(
-                "  Set ANTHROPIC_API_KEY to enable auto-translation."
+                "  Set TRANSLATE_API_KEY to enable auto-translation."
             )
         else:
             self.stdout.write(self.style.SUCCESS(
