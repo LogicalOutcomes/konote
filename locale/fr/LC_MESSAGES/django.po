@@ -6505,3 +6505,30 @@ msgstr "Sélection de programme invalide."
 
 msgid "You do not have access to this program."
 msgstr "Vous n'avez pas accès à ce programme."
+
+msgid "Both"
+msgstr "Les deux"
+
+msgid "Both — individual notes and group sessions"
+msgstr "Les deux — notes individuelles et séances de groupe"
+
+msgid "Group sessions"
+msgstr "Séances de groupe"
+
+msgid "Group sessions — attendance and session notes"
+msgstr "Séances de groupe — présences et notes de séance"
+
+msgid "How do staff record their work?"
+msgstr "Comment le personnel consigne son travail?"
+
+msgid "One-on-one"
+msgstr "Individuel"
+
+msgid "One-on-one — individual notes and plans"
+msgstr "Individuel — notes et plans individuels"
+
+msgid "Service Model"
+msgstr "Mode de service"
+
+msgid "— Choose one —"
+msgstr "— Choisir —"

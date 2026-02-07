@@ -11,9 +11,9 @@
 <form method="post">
     {% csrf_token %}
 
-    {# Render all fields except is_confidential in the standard loop #}
+    {# Render all fields except is_confidential and service_model in the standard loop #}
     {% for field in form %}
-    {% if field.name != "is_confidential" %}
+    {% if field.name != "is_confidential" and field.name != "service_model" %}
     <label for="{{ field.id_for_label }}">
         {{ field.label }}
         {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
@@ -24,6 +24,30 @@
     {% endif %}
     {% endif %}
     {% endfor %}
+
+    {# Service model — dedicated fieldset #}
+    <fieldset>
+        <legend><strong>{% trans "How do staff record their work?" %}</strong></legend>
+        <p>
+            <small>
+                {% blocktrans with program=term.program|default:"program" %}
+                This controls what tools are available in this {{ program }}.
+                You can change this later.
+                {% endblocktrans %}
+            </small>
+        </p>
+        <label for="id_service_model">
+            {{ form.service_model.label }}
+            {% if form.service_model.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+        </label>
+        {{ form.service_model }}
+        {% if form.service_model.help_text %}
+        <small>{{ form.service_model.help_text }}</small>
+        {% endif %}
+        {% if form.service_model.errors %}
+        <small class="badge badge-danger">{{ form.service_model.errors.0 }}</small>
+        {% endif %}
+    </fieldset>
 
     {# Confidential program section — dedicated fieldset #}
     <fieldset>

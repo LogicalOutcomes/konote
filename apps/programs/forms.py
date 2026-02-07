@@ -36,14 +36,31 @@ CONFIDENTIAL_KEYWORDS = [
 class ProgramForm(forms.ModelForm):
     class Meta:
         model = Program
-        fields = ["name", "description", "colour_hex", "status", "is_confidential"]
+        fields = ["name", "description", "colour_hex", "service_model", "status", "is_confidential"]
         widgets = {
             "colour_hex": forms.TextInput(attrs={"type": "color"}),
             "description": forms.Textarea(attrs={"rows": 3}),
         }
         labels = {
+            "service_model": _("How do staff record their work?"),
             "is_confidential": _("Yes, this is a confidential program"),
         }
+        help_texts = {
+            "service_model": _(
+                "One-on-one: staff write individual notes and plans for each participant. "
+                "Group sessions: staff log sessions with attendance for the whole group. "
+                "Both: staff do both."
+            ),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # On creation, require an explicit choice (no pre-selected default)
+        if not self.instance.pk:
+            self.fields["service_model"].widget = forms.Select(
+                choices=[("", _("— Choose one —"))] + list(Program.SERVICE_MODEL_CHOICES),
+            )
+            self.fields["service_model"].required = True
 
     def clean_is_confidential(self):
         """Enforce one-way rule: once confidential, cannot be unchecked."""
