@@ -6,7 +6,7 @@
 {% block content %}
 {% include "_breadcrumbs.html" %}
 <hgroup>
-    <h1>{% if editing %}{% blocktrans with first=client.first_name last=client.last_name %}Edit {{ first }} {{ last }}{% endblocktrans %}{% else %}{% blocktrans with client=term.client|default:"Client" %}New {{ client }}{% endblocktrans %}{% endif %}</h1>
+    <h1>{% if editing %}{% blocktrans with first=client.display_name last=client.last_name %}Edit {{ first }} {{ last }}{% endblocktrans %}{% else %}{% blocktrans with client=term.client|default:"Client" %}New {{ client }}{% endblocktrans %}{% endif %}</h1>
 </hgroup>
 
 <form method="post">
@@ -35,9 +35,17 @@
 
     <div class="grid">
         <div>
+            <label for="id_preferred_name">{% trans "Preferred Name" %}</label>
+            <input type="text" name="preferred_name" id="id_preferred_name" value="{{ form.preferred_name.value|default:'' }}" placeholder="{% trans "What do you prefer to be called?" %}">
+            <small>{% trans "Leave blank if same as first name" %}</small>
+        </div>
+        <div>
             <label for="id_middle_name">{% trans "Middle Name" %}</label>
             <input type="text" name="middle_name" id="id_middle_name" value="{{ form.middle_name.value|default:'' }}">
         </div>
+    </div>
+
+    <div class="grid">
         <div>
             <label for="id_phone">{% trans "Phone Number" %}</label>
             <input type="tel" name="phone" id="id_phone" value="{{ form.phone.value|default:'' }}" placeholder="(613) 555-1234"
@@ -48,6 +56,7 @@
                    hx-sync="#duplicate-banner:replace">
             {% if form.phone.errors %}<small class="badge badge-danger">{{ form.phone.errors.0 }}</small>{% endif %}
         </div>
+        <div></div>
     </div>
 
     <div class="grid">

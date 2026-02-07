@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% if editing %}{% trans "Edit" %}{% else %}{% trans "Add" %}{% endif %} {{ term.target|default:"Target" }} — {{ client.first_name }} {{ client.last_name }}{% endblock %}
+{% block title %}{% if editing %}{% trans "Edit" %}{% else %}{% trans "Add" %}{% endif %} {{ term.target|default:"Target" }} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
 
 {% block content %}
 <hgroup>
     <h1>{% if editing %}{% trans "Edit" %}{% else %}{% trans "Add" %}{% endif %} {{ term.target|default:"Target" }}</h1>
-    <p>{{ term.section|default:"Section" }}: {{ section.name }} — {{ client.first_name }} {{ client.last_name }}</p>
+    <p>{{ term.section|default:"Section" }}: {{ section.name }} — {{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
 
 <form method="post">

@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% blocktrans with note=term.progress_note|default:"Progress Note" %}New {{ note }}{% endblocktrans %} — {{ client.first_name }} {{ client.last_name }}{% endblock %}
+{% block title %}{% blocktrans with note=term.progress_note|default:"Progress Note" %}New {{ note }}{% endblocktrans %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
 
 {% block content %}
 {% include "_breadcrumbs.html" %}
 <hgroup>
     <h1>{% blocktrans with note=term.progress_note|default:"Progress Note" %}New {{ note }}{% endblocktrans %}</h1>
-    <p>{{ client.first_name }} {{ client.last_name }}</p>
+    <p>{{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
 
 <form method="post" data-autosave data-client-id="{{ client.pk }}" data-form-type="full">
