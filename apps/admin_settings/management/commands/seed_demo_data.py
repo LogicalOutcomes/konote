@@ -1046,7 +1046,7 @@ class Command(BaseCommand):
         ))
 
     def _create_demo_registration_link(self, programs_by_name, created_by):
-        """Create a public registration link with slug 'demo' for the marketing site."""
+        """Create a public registration link with slug 'demo' for the project website."""
         from apps.clients.models import CustomFieldGroup
         from apps.registration.models import RegistrationLink
 
@@ -1057,27 +1057,43 @@ class Command(BaseCommand):
             ))
             return
 
+        description = (
+            "This is a sample registration form. "
+            "Your agency can customise which fields appear, "
+            "add field groups, set capacity limits, and brand it with your logo."
+        )
+
         link, created = RegistrationLink.objects.get_or_create(
             slug="demo",
             defaults={
                 "program": program,
-                "title": "Program Registration Demo",
-                "description": (
-                    "This is a demonstration registration form. "
-                    "Try filling it out to see how clients register for programs."
-                ),
+                "title": "Program Registration",
+                "description": description,
                 "auto_approve": False,
                 "created_by": created_by,
             },
         )
 
+        # Keep the demo link simple — only Contact Information.
+        # Always reset field groups so redeployments pick up changes.
+        contact_group = CustomFieldGroup.objects.filter(
+            title="Contact Information", status="active"
+        ).first()
+        if contact_group:
+            link.field_groups.set([contact_group])
+        else:
+            self.stdout.write(self.style.WARNING(
+                "  Contact Information field group not found — demo form will have no custom fields."
+            ))
+
         if created:
-            # Attach active field groups so the form has meaningful fields
-            active_groups = CustomFieldGroup.objects.filter(status="active")
-            link.field_groups.set(active_groups)
             self.stdout.write("  Created demo registration link (slug: demo)")
         else:
-            self.stdout.write("  Demo registration link already exists.")
+            # Update title/description on existing links too
+            link.title = "Program Registration"
+            link.description = description
+            link.save(update_fields=["title", "description"])
+            self.stdout.write("  Updated demo registration link.")
 
     def _seed_client_data(
         self, record_id, plan_config, workers, programs_by_name,
@@ -1410,19 +1426,26 @@ class Command(BaseCommand):
             },
         )
 
+        # Always ensure demo client memberships are properly linked
+        # (fixes orphaned memberships from re-seeding)
+        circle_members = []
+        for rid in ["DEMO-007", "DEMO-008", "DEMO-009"]:
+            client = get_client(rid)
+            if client:
+                membership, _ = GroupMembership.objects.get_or_create(
+                    group=circle,
+                    client_file=client,
+                    defaults={"role": "member"},
+                )
+                circle_members.append(membership)
+
+        # Remove orphaned memberships (NULL client_file, empty name)
+        GroupMembership.objects.filter(
+            group=circle, client_file__isnull=True, member_name="",
+        ).delete()
+
         if created:
             self.stdout.write("  Creating group: Wednesday After-School Circle...")
-
-            circle_members = []
-            for rid in ["DEMO-007", "DEMO-008", "DEMO-009"]:
-                client = get_client(rid)
-                if client:
-                    membership, _ = GroupMembership.objects.get_or_create(
-                        group=circle,
-                        client_file=client,
-                        defaults={"role": "member"},
-                    )
-                    circle_members.append(membership)
 
             session_notes_list = [
                 "Good discussion about managing stress at school.",
@@ -1497,23 +1520,28 @@ class Command(BaseCommand):
             },
         )
 
+        # Always ensure demo client memberships are properly linked
+        kitchen_members = []
+        for rid in [
+            "DEMO-013", "DEMO-014", "DEMO-015",
+            "DEMO-001", "DEMO-004", "DEMO-010",
+        ]:
+            client = get_client(rid)
+            if client:
+                membership, _ = GroupMembership.objects.get_or_create(
+                    group=kitchen,
+                    client_file=client,
+                    defaults={"role": "member"},
+                )
+                kitchen_members.append(membership)
+
+        # Remove orphaned memberships (NULL client_file, empty name)
+        GroupMembership.objects.filter(
+            group=kitchen, client_file__isnull=True, member_name="",
+        ).delete()
+
         if created:
             self.stdout.write("  Creating group: Thursday Kitchen Session...")
-
-            kitchen_members = []
-            # Kitchen-primary clients + cross-enrolled clients
-            for rid in [
-                "DEMO-013", "DEMO-014", "DEMO-015",
-                "DEMO-001", "DEMO-004", "DEMO-010",
-            ]:
-                client = get_client(rid)
-                if client:
-                    membership, _ = GroupMembership.objects.get_or_create(
-                        group=kitchen,
-                        client_file=client,
-                        defaults={"role": "member"},
-                    )
-                    kitchen_members.append(membership)
 
             kitchen_session_notes = [
                 "Lentil soup day. Everyone pitched in. Good teamwork on the prep station.",
@@ -1585,28 +1613,35 @@ class Command(BaseCommand):
             },
         )
 
+        # Always ensure demo client memberships are properly linked
+        mural_members = []
+        for rid in ["DEMO-007", "DEMO-009"]:
+            client = get_client(rid)
+            if client:
+                membership, _ = GroupMembership.objects.get_or_create(
+                    group=mural,
+                    client_file=client,
+                    defaults={"role": "member"},
+                )
+                mural_members.append(membership)
+
+        # Non-client volunteer artist
+        vol_membership, _ = GroupMembership.objects.get_or_create(
+            group=mural,
+            client_file=None,
+            member_name="Alex (Volunteer Artist)",
+            defaults={"role": "leader"},
+        )
+        mural_members.append(vol_membership)
+
+        # Remove orphaned memberships (NULL client_file, empty name)
+        # but keep intentional non-client members (like Alex)
+        GroupMembership.objects.filter(
+            group=mural, client_file__isnull=True, member_name="",
+        ).delete()
+
         if created:
             self.stdout.write("  Creating group: Community Mural Project...")
-
-            mural_members = []
-            for rid in ["DEMO-007", "DEMO-009"]:
-                client = get_client(rid)
-                if client:
-                    membership, _ = GroupMembership.objects.get_or_create(
-                        group=mural,
-                        client_file=client,
-                        defaults={"role": "member"},
-                    )
-                    mural_members.append(membership)
-
-            # Non-client volunteer artist
-            vol_membership, _ = GroupMembership.objects.get_or_create(
-                group=mural,
-                client_file=None,
-                member_name="Alex (Volunteer Artist)",
-                defaults={"role": "leader"},
-            )
-            mural_members.append(vol_membership)
 
             mural_session_notes = [
                 "Brainstorming session — youth chose 'belonging' as the theme. Sketched ideas on big paper.",
