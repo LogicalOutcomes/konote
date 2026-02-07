@@ -130,10 +130,3 @@ def build_program_display_context(user, active_program_ids=None):
     }
 
 
-def program_filter_q(field_name="author_program_id", program_ids=None):
-    """Return a Q object to filter by program OR null program.
-
-    Items with a null program are visible to all users with client access.
-    Items with a specific program are only visible to users in that program.
-    """
-    return Q(**{f"{field_name}__in": program_ids}) | Q(**{f"{field_name}__isnull": True})

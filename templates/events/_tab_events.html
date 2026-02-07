@@ -1,5 +1,10 @@
 {% load i18n %}
 <!-- Partial: Events tab content -->
+{% if is_admin_only %}
+<p class="notice" role="status">
+    <small>{% blocktrans with programme=term.program|default:"programme" %}You are an administrator without {{ programme }} assignments. To see data, ask another admin to assign you a {{ programme }} role.{% endblocktrans %}</small>
+</p>
+{% endif %}
 <div class="action-bar">
     <a href="{% url 'events:event_create' client_id=client.pk %}" role="button">{% trans "New Event" %}</a>
     <a href="{% url 'events:alert_create' client_id=client.pk %}" role="button" class="outline">{% trans "New Alert" %}</a>

@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: KoNote2 Web 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-01-01 00:00+0000\n"
-"PO-Revision-Date: 2026-02-06 19:15-0500\n"
+"PO-Revision-Date: 2026-02-07 16:53\n"
 "Last-Translator: Claude Code\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -6744,8 +6744,7 @@ msgstr "Action requise : demande d'effacement — %(term)s"
 
 msgid "All approvals received. %(term)s data has been anonymised."
 msgstr ""
-"Toutes les approbations reçues. Les données du %(term)s ont été "
-"anonymisées."
+"Toutes les approbations reçues. Les données du %(term)s ont été anonymisées."
 
 msgid "All approvals received. %(term)s data has been permanently erased."
 msgstr ""
@@ -6767,3 +6766,677 @@ msgstr "Effacer les données du %(term)s"
 
 msgid "Export %(term)s Data"
 msgstr "Exporter les données du %(term)s"
+
+msgid "Export Client Data"
+msgstr "Exporter les données du client"
+
+msgid ""
+"%(alerts)ss flag a %(client)s as needing attention. Use them for safety "
+"concerns or urgent follow-ups."
+msgstr ""
+"Les %(alerts)ss signalent qu’un %(client)s nécessite une attention "
+"particulière. Utilisez-les pour les préoccupations de sécurité ou les suivis"
+" urgents."
+
+msgid "%(client)s %(file)s"
+msgstr "%(client)s %(file)s"
+
+msgid "%(client)s %(file)ss"
+msgstr "%(client)s %(file)ss"
+
+msgid "%(client)s Data Export"
+msgstr "Exportation des données du %(client)s"
+
+msgid "%(client)s Status"
+msgstr "Statut du %(client)s"
+
+msgid "%(client)s's Reflection"
+msgstr "Réflexion du %(client)s"
+
+msgid "%(client)s's response"
+msgstr "Réponse du %(client)s"
+
+msgid "%(clients)s list"
+msgstr "Liste des %(clients)s"
+
+msgid "%(clients)s search results"
+msgstr "Résultats de recherche des %(clients)s"
+
+msgid "%(clients)s with active alerts or no recent notes"
+msgstr "%(clients)s avec alertes actives ou sans notes récentes"
+
+msgid "%(groups)s list"
+msgstr "Liste des %(groups)s"
+
+msgid "%(note)s templates"
+msgstr "Modèles de %(note)s"
+
+msgid ""
+"%(notes)s document your interactions with %(clients)s. KoNote2 offers two "
+"types:"
+msgstr ""
+"Les %(notes)s documentent vos interactions avec les %(clients)s. KoNote2 "
+"offre deux types :"
+
+msgid "%(notes)s timeline"
+msgstr "Chronologie des %(notes)s"
+
+msgid "%(plan)s with %(sections)ss, %(targets)s, and %(metrics)s"
+msgstr "%(plan)s avec %(sections)ss, %(targets)s et %(metrics)s"
+
+msgid "%(prog)s enrolments,"
+msgstr "inscriptions au %(prog)s,"
+
+msgid "%(programs)s list"
+msgstr "Liste des %(programs)s"
+
+msgid ""
+"%(strong_open)s%(name)s%(strong_close)s (%(email)s) is exporting data for "
+"%(strong_open)s%(count)s clients%(strong_close)s"
+msgstr ""
+"%(strong_open)s%(name)s%(strong_close)s (%(email)s) exporte les données de "
+"%(strong_open)s%(count)s clients%(strong_close)s"
+
+msgid ""
+"%(strong_open)sImportant:%(strong_close)s Your funder may require different "
+"formats, additional fields, or specific calculations. Always verify this "
+"template matches your funder's actual reporting template before submission. "
+"You may need to adjust or supplement this data."
+msgstr ""
+"%(strong_open)sImportant :%(strong_close)s  Votre bailleur de fonds peut "
+"exiger des formats différents, des champs supplémentaires ou des calculs "
+"spécifiques. Vérifiez toujours que ce modèle correspond au modèle de rapport"
+" de votre bailleur avant de le soumettre. Vous devrez peut-être ajuster ou "
+"compléter ces données."
+
+msgid "%(total)s sessions in selected range"
+msgstr "%(total)s séances dans la période sélectionnée"
+
+msgid "&larr; Back to %(clients)s list"
+msgstr "&larr; Retour à la liste des %(clients)s"
+
+msgid ""
+"<strong>Program managers</strong> and <strong>coordinators</strong> can add "
+"%(sections)ss, %(targets)s, and assign %(metrics)s."
+msgstr ""
+"<strong>Les gestionnaires de programme</strong> et <strong>les "
+"coordonnateurs</strong> peuvent ajouter des %(sections)ss, des %(targets)s "
+"et attribuer des %(metrics)s."
+
+msgid ""
+"<strong>Staff</strong> can view %(plans)ss but typically cannot edit them."
+msgstr ""
+"<strong>Le personnel</strong> peut consulter les %(plans)ss mais ne peut "
+"généralement pas les modifier."
+
+msgid ""
+"A client named <strong>%(first)s %(last)s</strong> already has a record with"
+" this phone number."
+msgstr ""
+"Un client nommé <strong>%(first)s %(last)s</strong> a déjà un dossier avec "
+"ce numéro de téléphone."
+
+msgid "Active %(clients)s, alerts, %(clients)s needing attention"
+msgstr "%(clients)s actifs, alertes, %(clients)s nécessitant une attention"
+
+msgid "Add %(group)s"
+msgstr "Ajouter %(group)s"
+
+msgid "Add Milestone — %(name)s"
+msgstr "Ajouter un jalon — %(name)s"
+
+msgid ""
+"Administrators without a %(prog)s assignment cannot see %(client)s data. "
+"This is a security feature."
+msgstr ""
+"Les administrateurs sans affectation à un %(prog)s ne peuvent pas voir les "
+"données des %(client)s. Il s’agit d’une mesure de sécurité."
+
+msgid "All %(groups)s you have access to."
+msgstr "Tous les %(groups)s auxquels vous avez accès."
+
+msgid "All staff abilities plus edit %(plans)ss, manage team"
+msgstr ""
+"Toutes les capacités du personnel, plus modifier les %(plans)ss et gérer "
+"l’équipe"
+
+msgid ""
+"An administrator can add them in the <a href=\"%(url)s\">metric library</a>."
+msgstr ""
+"Un administrateur peut les ajouter dans la <a href=\"%(url)s\">bibliothèque "
+"de mesures</a>."
+
+msgid ""
+"An administrator has revoked this download link. It is no longer valid and "
+"cannot be used to access the exported data. If you believe this was done in "
+"error, please contact your organisation's administrator."
+msgstr ""
+"Un administrateur a révoqué ce lien de téléchargement. Il n’est plus valide "
+"et ne peut pas être utilisé pour accéder aux données exportées. Si vous "
+"pensez qu’il s’agit d’une erreur, veuillez contacter l’administrateur de "
+"votre organisation."
+
+msgid "Attendance Report — %(name)s"
+msgstr "Rapport de présence — %(name)s"
+
+msgid "Available at %(time)s"
+msgstr "Disponible à %(time)s"
+
+msgid "Back to %(name)s"
+msgstr "Retour à %(name)s"
+
+msgid ""
+"Based on the name, this %(program)s may handle sensitive data. Consider "
+"marking it as confidential."
+msgstr ""
+"Selon le nom, ce %(program)s pourrait traiter des données sensibles. "
+"Envisagez de le marquer comme confidentiel."
+
+msgid "Change %(section)s Status"
+msgstr "Modifier le statut de %(section)s"
+
+msgid "Change %(target)s Status"
+msgstr "Modifier le statut de %(target)s"
+
+msgid ""
+"Charts automatically update when new %(metric)s values are recorded in "
+"%(notes)s."
+msgstr ""
+"Les graphiques se mettent à jour automatiquement lorsque de nouvelles "
+"valeurs de %(metric)s sont enregistrées dans les %(notes)s."
+
+msgid ""
+"Charts require %(metric)s values recorded in %(notes)s. If no %(metrics)s "
+"have been recorded for a %(target)s, charts will be empty."
+msgstr ""
+"Les graphiques nécessitent des valeurs de %(metric)s enregistrées dans les "
+"%(notes)s. Si aucune %(metrics)s n’a été enregistrée pour un %(target)s, les"
+" graphiques seront vides."
+
+msgid "Click a %(target)s name to expand it"
+msgstr "Cliquez sur le nom d’un %(target)s pour le développer"
+
+msgid "Click a name to open their %(file)s"
+msgstr "Cliquez sur un nom pour ouvrir son %(file)s"
+
+msgid "Client #%(pk)s (anonymised)"
+msgstr "Client no %(pk)s (anonymisé)"
+
+msgid "Client %(record_id)s diagnostics"
+msgstr "Diagnostics du client %(record_id)s"
+
+msgid "Client A: %(name)s"
+msgstr "Client A : %(name)s"
+
+msgid "Client B: %(name)s"
+msgstr "Client B : %(name)s"
+
+msgid ""
+"Confidential %(program)ss are invisible to staff in other %(program)ss. "
+"Client records in a confidential %(program)s will not appear in "
+"cross-%(program)s searches. Once set, this cannot be changed back without a "
+"formal Privacy Impact Assessment."
+msgstr ""
+"Les %(program)ss confidentiels sont invisibles pour le personnel des autres "
+"%(program)ss. Les dossiers des clients dans un %(program)s confidentiel "
+"n’apparaîtront pas dans les recherches inter-%(program)ss. Une fois défini, "
+"ce paramètre ne peut être modifié sans une évaluation formelle des facteurs "
+"relatifs à la vie privée."
+
+msgid "Create %(group)s"
+msgstr "Créer %(group)s"
+
+msgid "Create %(plan)s templates"
+msgstr "Créer des modèles de %(plan)s"
+
+msgid "Disable %(name)s"
+msgstr "Désactiver %(name)s"
+
+msgid "Download a %(client)s's complete data (for GDPR/privacy requests)"
+msgstr ""
+"Télécharger les données complètes d’un %(client)s (pour les demandes "
+"RGPD/vie privée)"
+
+msgid "Edit %(group)s"
+msgstr "Modifier %(group)s"
+
+msgid "Edit Milestone: %(title)s"
+msgstr "Modifier le jalon : %(title)s"
+
+msgid "Editing %(plans)ss"
+msgstr "Modification des %(plans)ss"
+
+msgid "Enable %(name)s"
+msgstr "Activer %(name)s"
+
+msgid "Expires %(date)s"
+msgstr "Expire le %(date)s"
+
+msgid "Expires: %(time)s"
+msgstr "Expiration : %(time)s"
+
+msgid ""
+"Export %(metric)s data filtered by %(prog)s, %(metrics)s, and date range"
+msgstr ""
+"Exporter les données de %(metric)s filtrées par %(prog)s, %(metrics)s et "
+"période"
+
+msgid "Export all data for %(name)s."
+msgstr "Exporter toutes les données pour %(name)s."
+
+msgid ""
+"Export download links are only valid for a limited time. This link has "
+"passed its expiry date and can no longer be used to download the file."
+msgstr ""
+"Les liens de téléchargement d’exportation ne sont valides que pour une durée"
+" limitée. Ce lien a dépassé sa date d’expiration et ne peut plus être "
+"utilisé pour télécharger le fichier."
+
+msgid "Exported on %(date)s by %(by)s."
+msgstr "Exporté le %(date)s par %(by)s."
+
+msgid "Filter by specific %(prog)s"
+msgstr "Filtrer par %(prog)s spécifique"
+
+msgid "Find a %(client)s"
+msgstr "Trouver un %(client)s"
+
+msgid "Find the %(alert)s in the Events tab"
+msgstr "Trouvez l’%(alert)s dans l’onglet Événements"
+
+msgid "Full %(client)s access, write notes, record events"
+msgstr ""
+"Accès complet au %(client)s, rédiger des notes, enregistrer des événements"
+
+msgid "Full %(notes)s"
+msgstr "%(notes)s complètes"
+
+msgid "Funder narrative for %(program)s:"
+msgstr "Narratif pour le bailleur de fonds du %(program)s :"
+
+msgid "Generated %(date)s by %(by)s"
+msgstr "Généré le %(date)s par %(by)s"
+
+msgid "Highlight for %(name)s"
+msgstr "Fait saillant pour %(name)s"
+
+msgid "I can't edit a %(client)s's %(plan)s"
+msgstr "Je ne peux pas modifier le %(plan)s d’un %(client)s"
+
+msgid "I can't find a %(client)s"
+msgstr "Je ne trouve pas un %(client)s"
+
+msgid ""
+"If you still need this data, you can create a new export from the Reports "
+"page. Each new export will generate a fresh, time-limited download link. For"
+" security, expired and revoked links cannot be reactivated."
+msgstr ""
+"Si vous avez encore besoin de ces données, vous pouvez créer une nouvelle "
+"exportation depuis la page Rapports. Chaque nouvelle exportation génère un "
+"nouveau lien de téléchargement à durée limitée. Pour des raisons de "
+"sécurité, les liens expirés et révoqués ne peuvent pas être réactivés."
+
+msgid "Keep \"%(val)s\" from Client A (Record #%(id)s)"
+msgstr "Garder « %(val)s » du Client A (Dossier no %(id)s)"
+
+msgid "Keep \"%(val)s\" from Client B (Record #%(id)s)"
+msgstr "Garder « %(val)s » du Client B (Dossier no %(id)s)"
+
+msgid "Keep Client A: %(name)s %(last)s (Record #%(id)s)"
+msgstr "Garder Client A : %(name)s %(last)s (Dossier no %(id)s)"
+
+msgid "Keep Client B: %(name)s %(last)s (Record #%(id)s)"
+msgstr "Garder Client B : %(name)s %(last)s (Dossier no %(id)s)"
+
+msgid "Last: %(name)s"
+msgstr "Dernier : %(name)s"
+
+msgid "Log Session — %(name)s"
+msgstr "Consigner la séance — %(name)s"
+
+msgid "Manage %(progs)s"
+msgstr "Gérer les %(progs)s"
+
+msgid "Manage Roles — %(name)s"
+msgstr "Gérer les rôles — %(name)s"
+
+msgid "Measurable indicators attached to %(targets)s"
+msgstr "Indicateurs mesurables associés aux %(targets)s"
+
+msgid "New %(group)s"
+msgstr "Nouveau %(group)s"
+
+msgid "New %(qnote)s (on %(client)s page)"
+msgstr "Nouvelle %(qnote)s (sur la page du %(client)s)"
+
+msgid "No %(group)s records yet."
+msgstr "Aucun dossier de %(group)s pour le moment."
+
+msgid "No notes match \"%(query)s\"."
+msgstr "Aucune note ne correspond à « %(query)s »."
+
+msgid "One of:"
+msgstr "L’un de :"
+
+msgid ""
+"Only program managers and administrators can edit %(plans)ss. If you need "
+"changes, let your supervisor know."
+msgstr ""
+"Seuls les gestionnaires de programme et les administrateurs peuvent modifier"
+" les %(plans)ss. Si vous avez besoin de modifications, informez votre "
+"superviseur."
+
+msgid "Open the %(client)s's %(file)s"
+msgstr "Ouvrir le %(file)s du %(client)s"
+
+msgid ""
+"PDF report generation requires %(strong_open)sWeasyPrint%(strong_close)s and"
+" its native GTK libraries. These are not installed on this server."
+msgstr ""
+"La génération de rapports PDF nécessite "
+"%(strong_open)sWeasyPrint%(strong_close)s et ses bibliothèques GTK natives. "
+"Celles-ci ne sont pas installées sur ce serveur."
+
+msgid "Quick links to %(clients)s you've looked at recently"
+msgstr "Liens rapides vers les %(clients)s que vous avez consultés récemment"
+
+msgid "Record Outcome — %(name)s"
+msgstr "Enregistrer un résultat — %(name)s"
+
+msgid "Recording %(metrics)s"
+msgstr "Enregistrement des %(metrics)s"
+
+msgid "Remove %(name)s"
+msgstr "Retirer %(name)s"
+
+msgid "Remove %(name)s from this group?"
+msgstr "Retirer %(name)s de ce groupe ?"
+
+msgid "Remove role from %(prog)s?"
+msgstr "Retirer le rôle de %(prog)s ?"
+
+msgid "Resolving %(alerts)ss"
+msgstr "Résolution des %(alerts)ss"
+
+msgid "Searching for %(clients)s"
+msgstr "Recherche de %(clients)s"
+
+msgid "See progress charts (if %(metrics)s have been recorded)"
+msgstr ""
+"Voir les graphiques de progrès (si des %(metrics)s ont été enregistrées)"
+
+msgid "Set up %(metrics)s"
+msgstr "Configurer les %(metrics)s"
+
+msgid "Specific goals within each %(section)s"
+msgstr "Objectifs spécifiques au sein de chaque %(section)s"
+
+msgid "Suggested %(metrics)s:"
+msgstr "%(metrics)s suggérées :"
+
+msgid "Suggested note sections for %(target)s:"
+msgstr "Sections de notes suggérées pour %(target)s :"
+
+msgid ""
+"The %(client)s will appear in Priority Items on the home page until the "
+"alert is resolved."
+msgstr ""
+"Le %(client)s apparaîtra dans les Éléments prioritaires de la page d’accueil"
+" jusqu’à la résolution de l’alerte."
+
+msgid ""
+"The %(plan)s tab shows the %(client)s's %(plan)s — their goals and how "
+"they're progressing."
+msgstr ""
+"L’onglet %(plan)s affiche le %(plan)s du %(client)s — ses objectifs et sa "
+"progression."
+
+msgid ""
+"The download link below is active and will expire on "
+"%(strong_open)s%(expires)s%(strong_close)s."
+msgstr ""
+"Le lien de téléchargement ci-dessous est actif et expirera le "
+"%(strong_open)s%(expires)s%(strong_close)s."
+
+msgid ""
+"The download link will become active in %(strong_open)s%(minutes)s "
+"minutes%(strong_close)s (at %(time)s)."
+msgstr ""
+"Le lien de téléchargement sera actif dans %(strong_open)s%(minutes)s "
+"minutes%(strong_close)s (à %(time)s)."
+
+msgid "The download will be available at %(time)s."
+msgstr "Le téléchargement sera disponible à %(time)s."
+
+msgid ""
+"The export file is no longer available on the server. This can happen after "
+"a system update or server restart. The download link was valid, but the "
+"temporary file has been removed. Please create a new export."
+msgstr ""
+"Le fichier d’exportation n’est plus disponible sur le serveur. Cela peut "
+"survenir après une mise à jour du système ou un redémarrage du serveur. Le "
+"lien de téléchargement était valide, mais le fichier temporaire a été "
+"supprimé. Veuillez créer une nouvelle exportation."
+
+msgid ""
+"The exported file will contain: %(strong_open)sclient record "
+"IDs%(strong_close)s, %(strong_open)smetric values%(strong_close)s, "
+"%(strong_open)sdates of service%(strong_close)s, and %(strong_open)sstaff "
+"names%(strong_close)s. If demographic grouping is selected, it may also "
+"include %(strong_open)sbirth dates%(strong_close)s (for age calculations) or"
+" %(strong_open)scustom field values%(strong_close)s. Handle the exported "
+"file according to your organisation's data protection policies."
+msgstr ""
+"Le fichier exporté contiendra : %(strong_open)snuméros de dossier des "
+"clients%(strong_close)s, %(strong_open)svaleurs des mesures%(strong_close)s,"
+" %(strong_open)sdates de service%(strong_close)s et %(strong_open)snoms du "
+"personnel%(strong_close)s. Si le regroupement démographique est sélectionné,"
+" il peut aussi inclure les %(strong_open)sdates de naissance%(strong_close)s"
+" (pour le calcul de l’âge) ou les %(strong_open)svaleurs des champs "
+"personnalisés%(strong_close)s. Traitez le fichier exporté selon les "
+"politiques de protection des données de votre organisation."
+
+msgid ""
+"The exported file will include a summary header showing the "
+"%(strong_open)stotal client count%(strong_close)s and %(strong_open)sdata "
+"points%(strong_close)s matching your selected filters."
+msgstr ""
+"Le fichier exporté comprendra un en-tête résumé indiquant le "
+"%(strong_open)snombre total de clients%(strong_close)s et les "
+"%(strong_open)spoints de données%(strong_close)s correspondant aux filtres "
+"sélectionnés."
+
+msgid ""
+"This controls what tools are available in this %(program)s. You can change "
+"this later."
+msgstr ""
+"Ceci contrôle les outils disponibles dans ce %(program)s. Vous pouvez "
+"modifier cela ultérieurement."
+
+msgid ""
+"This export contains a large number of clients or clinical notes. For "
+"security, the download link will not become active until "
+"%(strong_open)s%(time)s%(strong_close)s. Administrators have been notified."
+msgstr ""
+"Cette exportation contient un grand nombre de clients ou de notes cliniques."
+" Pour des raisons de sécurité, le lien de téléchargement ne sera pas actif "
+"avant %(strong_open)s%(time)s%(strong_close)s. Les administrateurs ont été "
+"avisés."
+
+msgid ""
+"This export contains a large number of clients or clinical notes. For "
+"security, there is a short delay before the download becomes available. "
+"Administrators have been notified."
+msgstr ""
+"Cette exportation contient un grand nombre de clients ou de notes cliniques."
+" Pour des raisons de sécurité, il y a un court délai avant que le "
+"téléchargement ne soit disponible. Les administrateurs ont été avisés."
+
+msgid ""
+"This link can be shared with others in your organisation. All downloads are "
+"%(strong_open)slogged for audit purposes%(strong_close)s, including the time"
+" of access and the identity of the person downloading. Handle the exported "
+"data according to your organisation's data protection policies."
+msgstr ""
+"Ce lien peut être partagé avec d’autres membres de votre organisation. Tous "
+"les téléchargements sont %(strong_open)senregistrés à des fins de "
+"vérification%(strong_close)s, y compris l’heure d’accès et l’identité de la "
+"personne qui télécharge. Traitez les données exportées selon les politiques "
+"de protection des données de votre organisation."
+
+msgid ""
+"This report contains %(strong_open)saggregate statistics "
+"only%(strong_close)s — counts and percentages grouped by category, including"
+" %(strong_open)stotal individuals served%(strong_close)s. It does "
+"%(strong_open)snot%(strong_close)s include individual client names, birth "
+"dates, or other personally identifiable information (PII)."
+msgstr ""
+"Ce rapport contient %(strong_open)suniquement des statistiques "
+"agrégées%(strong_close)s — des nombres et pourcentages regroupés par "
+"catégorie, y compris le %(strong_open)snombre total de personnes "
+"servies%(strong_close)s. Il %(strong_open)sne contient pas%(strong_close)s "
+"de noms de clients individuels, de dates de naissance ou d’autres "
+"renseignements personnels identifiables (RPI)."
+
+msgid ""
+"This request has been pending for %(days)s days. PIPEDA requires a response "
+"within 30 days of receiving an erasure request."
+msgstr ""
+"Cette demande est en attente depuis %(days)s jours. La LPRPDE exige une "
+"réponse dans les 30 jours suivant la réception d’une demande d’effacement."
+
+msgid ""
+"This request has been pending for %(days)s days. The 30-day PIPEDA response "
+"deadline is approaching."
+msgstr ""
+"Cette demande est en attente depuis %(days)s jours. Le délai de réponse de "
+"30 jours de la LPRPDE approche."
+
+msgid "Type a %(client)s's name or record ID in the search bar"
+msgstr ""
+"Tapez le nom ou le numéro de dossier d’un %(client)s dans la barre de "
+"recherche"
+
+msgid "Type a name or ID to find %(clients)s"
+msgstr "Tapez un nom ou un identifiant pour trouver des %(clients)s"
+
+msgid "Understanding the %(plan)s Structure"
+msgstr "Comprendre la structure du %(plan)s"
+
+msgid "Use %(qnotes)ss for brief check-ins or short updates."
+msgstr ""
+"Utilisez les %(qnotes)ss pour de brefs suivis ou de courtes mises à jour."
+
+msgid ""
+"Use full %(notes)s for structured sessions where you're working on %(plan)s "
+"%(targets)s."
+msgstr ""
+"Utilisez les %(notes)s complètes pour les séances structurées où vous "
+"travaillez sur les %(targets)s du %(plan)s."
+
+msgid "View all notes and %(metric)s recordings for that %(target)s"
+msgstr ""
+"Voir toutes les notes et les enregistrements de %(metric)s pour ce "
+"%(target)s"
+
+msgid "View charts showing %(metric)s values over time"
+msgstr ""
+"Voir les graphiques montrant les valeurs de %(metric)s au fil du temps"
+
+msgid "View limited %(client)s info, update contact details"
+msgstr ""
+"Voir les informations limitées du %(client)s, mettre à jour les coordonnées"
+
+msgid ""
+"View only — to edit this plan, you must be assigned to a %(programme)s this "
+"%(client)s is enrolled in."
+msgstr ""
+"Consultation seulement — pour modifier ce plan, vous devez être affecté à un"
+" %(programme)s auquel ce %(client)s est inscrit."
+
+msgid "Viewing %(target)s Details"
+msgstr "Affichage des détails de %(target)s"
+
+msgid ""
+"When writing a full %(note)s, you'll see %(metric)s fields under each "
+"%(target)s. Common types:"
+msgstr ""
+"Lors de la rédaction d’une %(note)s complète, vous verrez des champs de "
+"%(metric)s sous chaque %(target)s. Types courants :"
+
+msgid "When you open a %(client)s's %(file)s, you'll see several tabs:"
+msgstr ""
+"Lorsque vous ouvrez le %(file)s d’un %(client)s, vous verrez plusieurs "
+"onglets :"
+
+msgid ""
+"You are an administrator without %(programme)s assignments. To see data, ask"
+" another admin to assign you a %(programme)s role."
+msgstr ""
+"Vous êtes un administrateur sans affectation à un %(programme)s. Pour voir "
+"les données, demandez à un autre administrateur de vous attribuer un rôle "
+"dans un %(programme)s."
+
+msgid "You can only see %(clients)s in %(progs)s you're assigned to"
+msgstr ""
+"Vous ne pouvez voir que les %(clients)s dans les %(progs)s auxquels vous "
+"êtes affecté"
+
+msgid "You have access to %(strong_open)s%(count)s%(strong_close)s client record."
+msgid_plural "You have access to %(strong_open)s%(count)s%(strong_close)s client records."
+msgstr[0] "Vous avez accès à %(strong_open)s%(count)s%(strong_close)s dossier client."
+msgstr[1] "Vous avez accès à %(strong_open)s%(count)s%(strong_close)s dossiers clients."
+
+msgid ""
+"You may have a different role depending on which %(prog)s you are working "
+"in. For example, you might be a Program Manager in one %(prog)s and Direct "
+"Service staff in another."
+msgstr ""
+"Vous pouvez avoir un rôle différent selon le %(prog)s dans lequel vous "
+"travaillez. Par exemple, vous pourriez être gestionnaire de programme dans "
+"un %(prog)s et personnel de service direct dans un autre."
+
+msgid ""
+"You only need to fill in the %(targets)s you actually worked on. Leave "
+"others blank."
+msgstr ""
+"Vous n’avez qu’à remplir les %(targets)s sur lesquels vous avez réellement "
+"travaillé. Laissez les autres vides."
+
+msgid "You will be logged out and signed in as %(name)s. Continue?"
+msgstr "Vous serez déconnecté et connecté en tant que %(name)s. Continuer ?"
+
+msgid ""
+"Your current role is shown as a badge next to your name in the navigation "
+"bar. If you switch %(progs)s, the badge updates to reflect your role in that"
+" %(prog)s."
+msgstr ""
+"Votre rôle actuel est affiché sous forme de badge à côté de votre nom dans "
+"la barre de navigation. Si vous changez de %(progs)s, le badge se met à jour"
+" pour refléter votre rôle dans ce %(prog)s."
+
+msgid "Your notes for this %(target)s"
+msgstr "Vos notes pour ce %(target)s"
+
+msgid "by %(name)s"
+msgstr "par %(name)s"
+
+msgid "notes and %(metric)s values for each %(target)s you worked on"
+msgstr ""
+"notes et valeurs de %(metric)s pour chaque %(target)s sur lequel vous avez "
+"travaillé"
+
+msgid "%(counter)s Demo User"
+msgid_plural "%(counter)s Demo Users"
+msgstr[0] "%(counter)s utilisateur de démonstration"
+msgstr[1] "%(counter)s utilisateurs de démonstration"
+
+msgid "%(counter)s Demo Client"
+msgid_plural "%(counter)s Demo Clients"
+msgstr[0] "%(counter)s client de démonstration"
+msgstr[1] "%(counter)s clients de démonstration"
+
+msgid "%(counter)s elevated export is pending review"
+msgid_plural "%(counter)s elevated exports are pending review"
+msgstr[0] "%(counter)s exportation élevée est en attente de révision"
+msgstr[1] "%(counter)s exportations élevées sont en attente de révision"

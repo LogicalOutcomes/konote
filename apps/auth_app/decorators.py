@@ -3,8 +3,7 @@ from functools import wraps
 
 from django.template.response import TemplateResponse
 
-# Higher number = more access (executive has highest rank but no client data access)
-ROLE_RANK = {"receptionist": 1, "staff": 2, "program_manager": 3, "executive": 4}
+from apps.auth_app.constants import ROLE_RANK
 
 
 def _get_user_highest_role(user):
