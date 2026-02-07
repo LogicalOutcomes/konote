@@ -30,6 +30,19 @@
     </div>
     {% endif %}
 
+    {% if not user.is_authenticated %}
+    <nav class="container-fluid">
+        <ul>
+            <li><a href="/" class="contrast">
+                <strong>{{ site.product_name|default:"KoNote2" }}</strong>
+            </a></li>
+        </ul>
+        <ul>
+            <li><a href="{% url 'auth_app:login' %}">{% trans "Sign In" %}</a></li>
+        </ul>
+    </nav>
+    {% endif %}
+
     {% if user.is_authenticated %}
     <nav class="container-fluid">
         <ul>
