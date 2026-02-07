@@ -986,9 +986,6 @@ msgstr "Liens d'inscription"
 msgid "Pending Submissions"
 msgstr "Soumissions en attente"
 
-msgid "Export Participant Data"
-msgstr "Exporter les données participants"
-
 msgid "Dismiss"
 msgstr "Fermer"
 
@@ -2356,9 +2353,6 @@ msgid "Executive"
 msgstr "Direction"
 
 #: templates/clients/erasure/ — Erasure feature
-msgid "Erase Participant Data"
-msgstr "Effacer les données du participant"
-
 msgid ""
 "All client data will be permanently deleted once all program managers "
 "approve. Recovery requires a database backup."
@@ -4265,8 +4259,8 @@ msgstr "Ajouter un membre"
 msgid "Add Milestone"
 msgstr "Ajouter un jalon"
 
-msgid "Add a non-client member"
-msgstr "Ajouter un membre non-participant"
+msgid "Add a non-%(term)s member"
+msgstr "Ajouter un membre non-%(term)s"
 
 msgid "Add consent and data retention fields."
 msgstr "Ajouter les champs de consentement et de conservation des données."
@@ -5765,8 +5759,8 @@ msgstr ""
 "Sélectionnez une année fiscale pour remplir automatiquement les dates, ou "
 "laissez vide pour une période personnalisée."
 
-msgid "Select an existing participant"
-msgstr "Sélectionner un participant existant"
+msgid "Select an existing %(term)s"
+msgstr "Sélectionner un(e) %(term)s existant(e)"
 
 msgid "Select the fiscal year to report on."
 msgstr "Sélectionnez l'année fiscale visée par le rapport."
@@ -6748,9 +6742,6 @@ msgstr "Dossier %(term)s mis à jour."
 msgid "Action Required: %(term)s Erasure Request"
 msgstr "Action requise : demande d'effacement — %(term)s"
 
-msgid "Add a non-participant member"
-msgstr "Ajouter un membre non participant"
-
 msgid "All approvals received. %(term)s data has been anonymised."
 msgstr ""
 "Toutes les approbations reçues. Les données du %(term)s ont été "
@@ -6768,8 +6759,11 @@ msgid "Erasure request rejected. %(term)s data has been preserved."
 msgstr ""
 "Demande d'effacement rejetée. Les données du %(term)s ont été préservées."
 
-msgid "Export Client Data"
-msgstr "Exporter les données du participant"
-
 msgid "This %(term)s's data has already been anonymised."
 msgstr "Les données de ce %(term)s ont déjà été anonymisées."
+
+msgid "Erase %(term)s Data"
+msgstr "Effacer les données du %(term)s"
+
+msgid "Export %(term)s Data"
+msgstr "Exporter les données du %(term)s"
