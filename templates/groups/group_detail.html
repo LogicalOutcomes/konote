@@ -32,6 +32,7 @@
     <a href="{% url 'groups:group_edit' group_id=group.pk %}" role="button" class="outline">{% trans "Edit" %}</a>
     <a href="{% url 'groups:session_log' group_id=group.pk %}" role="button">{% trans "Log Session" %}</a>
     <a href="{% url 'groups:membership_add' group_id=group.pk %}" role="button" class="outline">{% trans "Add Member" %}</a>
+    <a href="{% url 'groups:attendance_report' group_id=group.pk %}" role="button" class="outline">{% trans "Attendance Report" %}</a>
 </div>
 
 <!-- Roster -->

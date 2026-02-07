@@ -989,7 +989,18 @@ button.secondary {
     --pico-secondary-inverse: #ffffff;
     color: #ffffff;
 }
-/* Outline secondary buttons — visible text in dark mode */
+/* Outline secondary buttons — ensure visible text */
+a[role="button"].outline.secondary,
+button.outline.secondary {
+    color: var(--kn-secondary);
+    border-color: var(--kn-secondary);
+}
+a[role="button"].outline.secondary:hover,
+button.outline.secondary:hover {
+    color: var(--kn-text-inverse);
+    background: var(--kn-secondary);
+    border-color: var(--kn-secondary);
+}
 @media (prefers-color-scheme: dark) {
     a[role="button"].outline.secondary,
     button.outline.secondary {

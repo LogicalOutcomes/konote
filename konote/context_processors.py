@@ -171,6 +171,7 @@ def active_program_context(request):
             "active_program_id": None,
             "active_program_name": "",
             "program_options": [],
+            "active_service_model": None,
         }
 
     from apps.programs.context import (
@@ -181,18 +182,28 @@ def active_program_context(request):
     from apps.programs.models import Program
 
     if not needs_program_selector(request.user):
+        # Check if user has exactly one program — use its service model
+        from apps.programs.models import UserProgramRole
+        single_program_sm = None
+        user_roles = UserProgramRole.objects.filter(
+            user=request.user, status="active", program__status="active",
+        ).select_related("program")[:2]
+        if len(user_roles) == 1:
+            single_program_sm = user_roles[0].program.service_model
         return {
             "show_program_switcher": False,
             "active_program_id": None,
             "active_program_name": "",
             "program_options": [],
+            "active_service_model": single_program_sm,
         }
 
     options = get_switcher_options(request.user)
     value = request.session.get(SESSION_KEY)
 
-    # Determine display name for the active selection
+    # Determine display name and service model for the active selection
     active_name = ""
+    active_service_model = None
     if value == "all_standard":
         from django.utils.translation import gettext as _
         active_name = _("All Standard Programs")
@@ -200,6 +211,7 @@ def active_program_context(request):
         try:
             program = Program.objects.get(pk=int(value))
             active_name = program.name
+            active_service_model = program.service_model
         except (Program.DoesNotExist, ValueError, TypeError):
             pass
 
@@ -211,4 +223,5 @@ def active_program_context(request):
         "active_program_id": active_id,
         "active_program_name": active_name,
         "program_options": options,
+        "active_service_model": active_service_model,
     }

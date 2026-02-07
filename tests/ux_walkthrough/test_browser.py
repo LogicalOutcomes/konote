@@ -8,6 +8,8 @@ Run with:  pytest tests/ux_walkthrough/test_browser.py -v
 """
 import unittest
 
+import pytest
+
 # Skip the entire module if Playwright is not installed
 pw = None
 try:
@@ -27,6 +29,7 @@ from .browser_base import BrowserTestBase
 # ======================================================================
 
 
+@pytest.mark.browser
 class ColourContrastBrowserTest(BrowserTestBase):
     """Test colour contrast on key pages using axe-core.
 
@@ -117,6 +120,7 @@ class ColourContrastBrowserTest(BrowserTestBase):
 # ======================================================================
 
 
+@pytest.mark.browser
 class FocusManagementBrowserTest(BrowserTestBase):
     """Test that focus is managed correctly after HTMX content swaps.
 
@@ -283,6 +287,7 @@ class FocusManagementBrowserTest(BrowserTestBase):
 # ======================================================================
 
 
+@pytest.mark.browser
 class ResponsiveLayoutBrowserTest(BrowserTestBase):
     """Test responsive layout at mobile, tablet, and desktop viewpoints.
 

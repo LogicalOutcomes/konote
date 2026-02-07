@@ -62,7 +62,7 @@
 <p><em>{% blocktrans with targets=term.target_plural|default:"targets" section=term.section|default:"section" %}No {{ targets }} in this {{ section }}.{% endblocktrans %}</em></p>
 {% endif %}
 
-{% if can_edit %}
+{% if can_edit and active_service_model != "group" %}
 <footer>
     <a href="{% url 'plans:target_create' section_id=section.pk %}" role="button" class="outline small">
         {% blocktrans with target=term.target|default:"Target" %}Add {{ target }}{% endblocktrans %}

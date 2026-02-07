@@ -63,4 +63,40 @@
 <div id="role-list" aria-live="polite">
     {% include "programs/_role_list.html" %}
 </div>
+
+{% if groups != None %}
+<hr>
+<section aria-labelledby="groups-heading">
+    <h2 id="groups-heading">{% trans "Groups" %}</h2>
+
+    {% if groups %}
+    <figure>
+    <table role="grid" aria-label="{% trans 'Groups in this program' %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Name" %}</th>
+                <th scope="col">{% trans "Members" %}</th>
+                <th scope="col">{% trans "Actions" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in groups %}
+            <tr>
+                <td><a href="{% url 'groups:group_detail' group_id=group.pk %}">{{ group.name }}</a></td>
+                <td data-label="{% trans 'Members' %}">{{ group.member_count }}</td>
+                <td data-label="{% trans 'Actions' %}">
+                    <a href="{% url 'groups:session_log' group_id=group.pk %}" role="button" class="outline small">{% trans "Log Session" %}</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </figure>
+    {% else %}
+    <p><em>{% trans "No groups created yet." %}</em></p>
+    {% endif %}
+
+    <a href="{% url 'groups:group_create' %}" role="button" class="outline">{% trans "Create Group" %}</a>
+</section>
+{% endif %}
 {% endblock %}
