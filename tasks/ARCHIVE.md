@@ -6,6 +6,11 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ## Completed 2026-02-06
 
+### Moved from Recently Done (2026-02-06 cleanup #2)
+
+- [x] Expand demo from 2 programs / 10 clients to 5 programs / 15 clients — 2026-02-06 (DEMO-EXP1)
+- [x] Independent code reviews (security, privacy, accessibility, deployment) — 2026-02-06 (SEC-REV1-4)
+
 ### Moved from Recently Done (2026-02-06 cleanup)
 
 - [x] Demo Account Directory page + is_demo_context audit flag — 2026-02-06 (DEMO9, DEMO12)
