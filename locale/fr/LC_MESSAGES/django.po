@@ -4647,7 +4647,9 @@ msgstr "Utilisateurs de démonstration seulement"
 
 #: templates/base.html
 msgid "You are logged in as %(name)s. Changes affect demo data only."
-msgstr "Vous êtes connecté(e) en tant que %(name)s. Les modifications n'affectent que les données de démonstration."
+msgstr ""
+"Vous êtes connecté(e) en tant que %(name)s. Les modifications n'affectent "
+"que les données de démonstration."
 
 msgid "Diagnosis"
 msgstr ""
@@ -5096,20 +5098,20 @@ msgid "Members"
 msgstr ""
 
 msgid "Merge"
-msgstr ""
+msgstr "Fusionner"
 
 msgid ""
 "Merge this registration with the existing client? The registrant will be "
 "enrolled in the program."
-msgstr ""
+msgstr "Fusionner cette inscription avec le client existant? L'inscrit sera inscrit au programme."
 
 msgid "Merged with existing client %(first)s %(last)s."
-msgstr ""
+msgstr "Fusionné avec le client existant %(first)s %(last)s."
 
 msgid ""
 "Merging will enrol the existing client in the program instead of creating a "
 "new record."
-msgstr ""
+msgstr "La fusion inscrira le client existant au programme au lieu de créer un nouveau dossier."
 
 msgid "Metric Progress"
 msgstr ""
@@ -5176,7 +5178,7 @@ msgid ""
 msgstr ""
 
 msgid "No client selected for merge."
-msgstr ""
+msgstr "Aucun client sélectionné pour la fusion."
 
 msgid "No client words recorded yet"
 msgstr ""
@@ -6080,42 +6082,181 @@ msgid "— Select recipient —"
 msgstr ""
 
 msgid "— Select —"
-msgstr ""
+msgstr "— Sélectionner —"
 
 msgid "— or —"
-msgstr ""
+msgstr "— ou —"
 
 msgid "(empty)"
-msgstr ""
+msgstr "(vide)"
 
 msgid "Cannot merge a demo client with a real client."
-msgstr ""
+msgstr "Impossible de fusionner un client de démonstration avec un client réel."
 
 msgid "I understand this cannot be undone"
-msgstr ""
+msgstr "Je comprends que cette action est irréversible"
 
 msgid "One or both client records no longer exist."
-msgstr ""
+msgstr "Un ou les deux dossiers clients n'existent plus."
 
 msgid ""
 "Records merged successfully. All data has been combined into this record."
-msgstr ""
+msgstr "Dossiers fusionnés avec succès. Toutes les données ont été combinées dans ce dossier."
 
 msgid ""
 "The primary client has a confidential programme enrolment and cannot be "
 "merged."
-msgstr ""
+msgstr "Le client principal est inscrit à un programme confidentiel et ne peut pas être fusionné."
 
 msgid "The primary client record has been anonymised and cannot be merged."
-msgstr ""
+msgstr "Le dossier du client principal a été anonymisé et ne peut pas être fusionné."
 
 msgid ""
 "The secondary client has a confidential programme enrolment and cannot be "
 "merged."
-msgstr ""
+msgstr "Le client secondaire est inscrit à un programme confidentiel et ne peut pas être fusionné."
 
 msgid "The secondary client record has been anonymised and cannot be merged."
-msgstr ""
+msgstr "Le dossier du client secondaire a été anonymisé et ne peut pas être fusionné."
 
 msgid "You must acknowledge that this action cannot be undone."
-msgstr ""
+msgstr "Vous devez confirmer que cette action est irréversible."
+
+msgid "&larr; Back to candidates list"
+msgstr "&larr; Retour à la liste des candidats"
+
+msgid "After merge"
+msgstr "Après la fusion"
+
+msgid ""
+"After merge, staff in the following programmes will see all combined "
+"records:"
+msgstr "Après la fusion, le personnel des programmes suivants verra tous les dossiers combinés :"
+
+msgid ""
+"All notes, events, plans, enrolments, and custom fields from the archived "
+"record will be combined into the primary record. The archived record will be"
+" permanently anonymised."
+msgstr "Toutes les notes, événements, plans, inscriptions et champs personnalisés du dossier archivé seront combinés dans le dossier principal. Le dossier archivé sera anonymisé de façon permanente."
+
+msgid "Automatic scanning unavailable"
+msgstr "Analyse automatique non disponible"
+
+msgid "Client A"
+msgstr "Client A"
+
+msgid "Client B"
+msgstr "Client B"
+
+msgid "Compare"
+msgstr "Comparer"
+
+msgid "Compare Records"
+msgstr "Comparer les dossiers"
+
+msgid "Confirm Merge"
+msgstr "Confirmer la fusion"
+
+msgid "Custom Field Conflicts"
+msgstr "Conflits de champs personnalisés"
+
+msgid "Last note"
+msgstr "Dernière note"
+
+msgid "Match Type"
+msgstr "Type de correspondance"
+
+msgid "Merge Duplicates"
+msgstr "Fusionner les doublons"
+
+msgid "Merge confirmation"
+msgstr "Confirmation de fusion"
+
+msgid "Merge — cannot be undone"
+msgstr "Fusionner — irréversible"
+
+msgid "Name + DOB"
+msgstr "Nom + date de naissance"
+
+msgid "Name + Date of Birth Matches"
+msgstr "Correspondances nom + date de naissance"
+
+msgid "Name and DOB match candidates"
+msgstr "Candidats correspondant par nom et date de naissance"
+
+msgid "No duplicates"
+msgstr "Aucun doublon"
+
+msgid "No potential duplicates found. All client records appear to be unique."
+msgstr "Aucun doublon potentiel trouvé. Tous les dossiers clients semblent être uniques."
+
+msgid "Phone Matches"
+msgstr "Correspondances téléphoniques"
+
+msgid "Phone match"
+msgstr "Correspondance téléphonique"
+
+msgid "Phone match candidates"
+msgstr "Candidats correspondant par téléphone"
+
+msgid "Programme visibility after merge"
+msgstr "Visibilité des programmes après la fusion"
+
+msgid ""
+"Review potential duplicate client records and merge them into a single "
+"record. All data from the archived record will be transferred to the kept "
+"record."
+msgstr "Examinez les dossiers clients potentiellement en double et fusionnez-les en un seul dossier. Toutes les données du dossier archivé seront transférées au dossier conservé."
+
+msgid ""
+"Staff in all listed programmes will be able to see all combined records."
+msgstr "Le personnel de tous les programmes listés pourra voir tous les dossiers combinés."
+
+msgid "The merged record will be enrolled in:"
+msgstr "Le dossier fusionné sera inscrit à :"
+
+msgid ""
+"These custom fields have different values on each record. Choose which to "
+"keep."
+msgstr "Ces champs personnalisés ont des valeurs différentes dans chaque dossier. Choisissez lesquelles conserver."
+
+msgid "Too many clients"
+msgstr "Trop de clients"
+
+msgid "Which record should be the primary (kept) record?"
+msgstr "Quel dossier doit être le dossier principal (conservé) ?"
+
+msgid ""
+"Your agency has too many client records for automatic duplicate scanning. "
+"Please contact support for assistance with duplicate detection."
+msgstr "Votre organisme a trop de dossiers clients pour l'analyse automatique des doublons. Veuillez contacter le soutien technique pour obtenir de l'aide."
+
+msgid "choose which to keep"
+msgstr "choisir lequel conserver"
+
+msgid "enrolments"
+msgstr "inscriptions"
+
+msgid "events"
+msgstr "événements"
+
+msgid "name + date of birth matches"
+msgstr "correspondances nom + date de naissance"
+
+msgid "notes"
+msgstr "notes"
+
+msgid "phone matches"
+msgstr "correspondances téléphoniques"
+
+msgid "potential duplicate pairs found"
+msgstr "paires de doublons potentiels trouvées"
+
+msgid "stronger signal"
+msgstr "signal fort"
+
+msgid "targets"
+msgstr "objectifs"
+
+msgid "weaker signal — verify carefully"
+msgstr "signal faible — vérifiez attentivement"
