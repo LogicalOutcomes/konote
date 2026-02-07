@@ -12,7 +12,7 @@
 </hgroup>
 
 <article>
-    <p>{% blocktrans with client=term.client|default:"client" program=term.program|default:"program" %}You don't have permission to see the {{ client }} list for this {{ program }}.{% endblocktrans %}</p>
+    <p>{% blocktrans with client=term.client|default:"participant" program=term.program|default:"program" %}You don't have permission to see the {{ client }} list for this {{ program }}.{% endblocktrans %}</p>
     <p>{% trans "If you need access, please contact your administrator." %}</p>
 </article>
 

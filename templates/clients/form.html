@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% if editing %}{% blocktrans with client=term.client|default:"Client" %}Edit {{ client }}{% endblocktrans %}{% else %}{% blocktrans with client=term.client|default:"Client" %}New {{ client }}{% endblocktrans %}{% endif %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% if editing %}{% blocktrans with client=term.client|default:"Participant" %}Edit {{ client }}{% endblocktrans %}{% else %}{% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}{% endif %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
 {% include "_breadcrumbs.html" %}
 <hgroup>
-    <h1>{% if editing %}{% blocktrans with first=client.display_name last=client.last_name %}Edit {{ first }} {{ last }}{% endblocktrans %}{% else %}{% blocktrans with client=term.client|default:"Client" %}New {{ client }}{% endblocktrans %}{% endif %}</h1>
+    <h1>{% if editing %}{% blocktrans with first=client.display_name last=client.last_name %}Edit {{ first }} {{ last }}{% endblocktrans %}{% else %}{% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}{% endif %}</h1>
 </hgroup>
 
 <form method="post">
@@ -102,7 +102,7 @@
     {% endif %}
 
     <div role="group">
-        <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% blocktrans with client=term.client|default:"Client" %}Create {{ client }}{% endblocktrans %}{% endif %}</button>
+        <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% blocktrans with client=term.client|default:"Participant" %}Create {{ client }}{% endblocktrans %}{% endif %}</button>
         {% if editing %}
         <a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
         {% else %}

@@ -1,7 +1,7 @@
 {% load i18n %}
 {% if page.object_list %}
 <figure>
-<table role="grid" class="client-table" aria-label="{% blocktrans with clients=term.client_plural|default:'Clients' %}{{ clients }} list{% endblocktrans %}">
+<table role="grid" class="client-table" aria-label="{% blocktrans with clients=term.client_plural|default:'Participants' %}{{ clients }} list{% endblocktrans %}">
     <thead>
         <tr>
             <th scope="col">{% trans "Name" %}</th>
@@ -58,10 +58,10 @@
 {% else %}
 <div class="empty-state">
     {% if status_filter or program_filter %}
-    <p>{% blocktrans with clients=term.client_plural|default:"clients" %}No {{ clients }} match the selected filters.{% endblocktrans %}</p>
+    <p>{% blocktrans with clients=term.client_plural|default:"participants" %}No {{ clients }} match the selected filters.{% endblocktrans %}</p>
     <a href="{% url 'clients:client_list' %}" role="button">{% trans "Clear filters" %}</a>
     {% else %}
-    <p>{% blocktrans with client=term.client|default:"client" %}No {{ client }} files yet.{% endblocktrans %}</p>
+    <p>{% blocktrans with client=term.client|default:"participant" %}No {{ client }} files yet.{% endblocktrans %}</p>
     <a href="{% url 'clients:client_create' %}" role="button">{% trans "Create the first one" %}</a>
     {% endif %}
 </div>

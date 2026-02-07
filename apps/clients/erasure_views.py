@@ -297,9 +297,9 @@ def erasure_approve(request, pk):
     if executed:
         email_sent = _notify_erasure_completed(er, request)
         if er.erasure_tier == "full_erasure":
-            messages.success(request, _("All approvals received. Client data has been permanently erased."))
+            messages.success(request, _("All approvals received. Participant data has been permanently erased."))
         else:
-            messages.success(request, _("All approvals received. Client data has been anonymised."))
+            messages.success(request, _("All approvals received. Participant data has been anonymised."))
         if not email_sent:
             messages.warning(
                 request,
@@ -359,7 +359,7 @@ def erasure_reject(request, pk):
     # Notify the requester
     email_sent = _notify_requester_rejection(er, request.user, form.cleaned_data["review_notes"])
 
-    messages.success(request, _("Erasure request rejected. Client data has been preserved."))
+    messages.success(request, _("Erasure request rejected. Participant data has been preserved."))
     if not email_sent:
         messages.warning(
             request,
@@ -452,7 +452,7 @@ def erasure_receipt_pdf(request, pk):
 
     # Only available while client data still exists
     if er.client_file is None:
-        messages.error(request, _("Client data no longer exists. Receipt cannot be generated."))
+        messages.error(request, _("Participant data no longer exists. Receipt cannot be generated."))
         return redirect("erasure_request_detail", pk=pk)
 
     client = er.client_file
@@ -524,7 +524,7 @@ def _notify_pms_erasure_request(erasure_request, request):
         "review_url": review_url,
     }
 
-    subject = _("Action Required: Client Erasure Request")
+    subject = _("Action Required: Participant Erasure Request")
     try:
         text_body = render_to_string("clients/email/erasure_request_alert.txt", context)
         html_body = render_to_string("clients/email/erasure_request_alert.html", context)
@@ -570,15 +570,15 @@ def _notify_erasure_completed(erasure_request, request):
         return True  # No one to notify — not a failure
 
     code = erasure_request.erasure_code
-    record_ref = erasure_request.client_record_id or _("Client #%(pk)s") % {"pk": erasure_request.client_pk}
+    record_ref = erasure_request.client_record_id or _("Participant #%(pk)s") % {"pk": erasure_request.client_pk}
     tier_label = erasure_request.get_erasure_tier_display()
 
     if erasure_request.erasure_tier == "full_erasure":
-        subject = _("Client Data Erased — %(code)s") % {"code": code}
-        action_desc = _("Client data has been permanently erased.")
+        subject = _("Participant Data Erased — %(code)s") % {"code": code}
+        action_desc = _("Participant data has been permanently erased.")
     else:
-        subject = _("Client Data Anonymised — %(code)s") % {"code": code}
-        action_desc = _("Client data has been anonymised.")
+        subject = _("Participant Data Anonymised — %(code)s") % {"code": code}
+        action_desc = _("Participant data has been anonymised.")
 
     body = (
         action_desc

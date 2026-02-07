@@ -6,8 +6,8 @@ from django.db import models
 # Format: { key: (English, French) }
 DEFAULT_TERMS = {
     # People & files
-    "client": ("Client", "Client(e)"),
-    "client_plural": ("Clients", "Client(e)s"),
+    "client": ("Participant", "Participant(e)"),
+    "client_plural": ("Participants", "Participant(e)s"),
     "file": ("File", "Dossier"),
     "file_plural": ("Files", "Dossiers"),
     # Plans & structure

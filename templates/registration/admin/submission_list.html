@@ -85,7 +85,7 @@
                 </form>
                 <a href="{% url 'registration:submission_detail' pk=sub.pk %}" class="secondary" style="margin-left: 0.5rem;">{% trans "Review" %}</a>
                 {% elif sub.status == "approved" and sub.client_file %}
-                <a href="{% url 'clients:client_detail' pk=sub.client_file.pk %}">{% trans "View" %} {{ term.client|default:"Client" }}</a>
+                <a href="{% url 'clients:client_detail' pk=sub.client_file.pk %}">{% trans "View" %} {{ term.client|default:"Participant" }}</a>
                 {% elif sub.status == "waitlist" %}
                 <a href="{% url 'registration:submission_detail' pk=sub.pk %}">{% trans "Review" %}</a>
                 {% else %}

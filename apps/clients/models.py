@@ -93,7 +93,7 @@ class ClientFile(models.Model):
     def __str__(self):
         if self.is_anonymised:
             return _("[ANONYMISED]")
-        return f"{self.display_name} {self.last_name}" if self.display_name else f"Client #{self.pk}"
+        return f"{self.display_name} {self.last_name}" if self.display_name else f"Participant #{self.pk}"
 
     # Encrypted property accessors
     @property
@@ -320,9 +320,9 @@ class ErasureRequest(models.Model):
     ]
 
     REASON_CATEGORY_CHOICES = [
-        ("client_requested", _("Client Requested")),
+        ("client_requested", _("Participant Requested")),
         ("retention_expired", _("Retention Period Expired")),
-        ("discharged", _("Client Discharged")),
+        ("discharged", _("Participant Discharged")),
         ("other", _("Other")),
     ]
 
@@ -398,7 +398,7 @@ class ErasureRequest(models.Model):
 
     def __str__(self):
         code = self.erasure_code or f"#{self.pk}"
-        return f"Erasure {code} — Client #{self.client_pk} ({self.get_status_display()})"
+        return f"Erasure {code} — Participant #{self.client_pk} ({self.get_status_display()})"
 
 
 class ErasureApproval(models.Model):
@@ -485,6 +485,6 @@ class ClientMerge(models.Model):
 
     def __str__(self):
         return (
-            f"Merge #{self.pk}: Client #{self.archived_client_pk} "
-            f"→ Client #{self.kept_client_pk}"
+            f"Merge #{self.pk}: Participant #{self.archived_client_pk} "
+            f"→ Participant #{self.kept_client_pk}"
         )

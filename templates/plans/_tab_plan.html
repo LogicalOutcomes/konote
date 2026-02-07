@@ -11,7 +11,7 @@
 </div>
 {% else %}
 <p class="notice" role="status">
-    <small>{% blocktrans with client=term.client|default:"client" programme=term.program|default:"programme" %}View only — to edit this plan, you must be assigned to a {{ programme }} this {{ client }} is enrolled in.{% endblocktrans %}</small>
+    <small>{% blocktrans with client=term.client|default:"participant" programme=term.program|default:"programme" %}View only — to edit this plan, you must be assigned to a {{ programme }} this {{ client }} is enrolled in.{% endblocktrans %}</small>
 </p>
 {% endif %}
 

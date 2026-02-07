@@ -63,7 +63,7 @@
         </ul>
         <ul id="nav-menu">
             {% if not is_admin_only and not is_executive_only %}
-            <li><a href="/"{% if nav_active == "clients" %} class="nav-active"{% endif %}>{{ term.client_plural|default:"Clients" }}</a></li>
+            <li><a href="/"{% if nav_active == "clients" %} class="nav-active"{% endif %}>{{ term.client_plural|default:"Participants" }}</a></li>
             {% endif %}
             {% if is_executive_only %}
             <li><a href="{% url 'clients:executive_dashboard' %}"{% if nav_active == "executive" %} class="nav-active"{% endif %}>{% trans "Dashboard" %}</a></li>
@@ -92,8 +92,8 @@
                         <li><a href="/auth/invites/">{% trans "Invites" %}</a></li>
                         <li><a href="/admin/audit/">{% trans "Audit Log" %}</a></li>
                         <li><a href="/merge/">{% trans "Merge Duplicates" %}</a></li>
-                        <li><a href="/erasure/">{% trans "Erase Client Data" %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>
-                        <li><a href="/reports/client-data-export/">{% trans "Export Client Data" %}</a></li>
+                        <li><a href="/erasure/">{% trans "Erase Participant Data" %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>
+                        <li><a href="/reports/client-data-export/">{% trans "Export Participant Data" %}</a></li>
                     </ul>
                 </details>
             </li>

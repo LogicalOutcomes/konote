@@ -189,7 +189,7 @@ def client_create(request):
             # Enrol in selected programs
             for program in form.cleaned_data["programs"]:
                 ClientProgramEnrolment.objects.create(client_file=client, program=program)
-            messages.success(request, _("Client file created."))
+            messages.success(request, _("%(participant)s file created.") % {"participant": request.get_term("client")})
             return redirect("clients:client_detail", client_id=client.pk)
     else:
         form = ClientFileForm(available_programs=available_programs)
@@ -237,7 +237,7 @@ def client_edit(request, client_id):
                         client_file=client, program_id=program_id,
                         defaults={"status": "enrolled"},
                     )
-            messages.success(request, _("Client file updated."))
+            messages.success(request, _("%(participant)s file updated.") % {"participant": request.get_term("client")})
             return redirect("clients:client_detail", client_id=client.pk)
     else:
         form = ClientFileForm(
@@ -254,9 +254,9 @@ def client_edit(request, client_id):
             },
             available_programs=available_programs,
         )
-    # Breadcrumbs: Clients > [Client Name] > Edit
+    # Breadcrumbs: Participants > [Name] > Edit
     breadcrumbs = [
-        {"url": reverse("clients:client_list"), "label": "Clients"},
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
         {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
         {"url": "", "label": "Edit"},
     ]
@@ -312,9 +312,9 @@ def client_detail(request, client_id):
         # Only include groups that have fields with values
         if field_values:
             custom_data.append({"group": group, "fields": field_values})
-    # Breadcrumbs: Clients > [Client Name]
+    # Breadcrumbs: Participants > [Name]
     breadcrumbs = [
-        {"url": reverse("clients:client_list"), "label": "Clients"},
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
         {"url": "", "label": f"{client.display_name} {client.last_name}"},
     ]
     # Tab counts for badges (only for non-front-desk roles, only for full page loads)

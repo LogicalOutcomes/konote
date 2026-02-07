@@ -986,7 +986,7 @@ msgstr "Liens d'inscription"
 msgid "Pending Submissions"
 msgstr "Soumissions en attente"
 
-msgid "Export Client Data"
+msgid "Export Participant Data"
 msgstr "Exporter les données participants"
 
 msgid "Dismiss"
@@ -2356,7 +2356,7 @@ msgid "Executive"
 msgstr "Direction"
 
 #: templates/clients/erasure/ — Erasure feature
-msgid "Erase Client Data"
+msgid "Erase Participant Data"
 msgstr "Effacer les données du participant"
 
 msgid ""
@@ -2611,7 +2611,7 @@ msgstr "Vous n'êtes pas gestionnaire de programme pour ce programme."
 msgid "Invalid form data."
 msgstr "Données de formulaire invalides."
 
-msgid "All approvals received. Client data has been permanently erased."
+msgid "All approvals received. Participant data has been permanently erased."
 msgstr ""
 "Toutes les approbations reçues. Les données du participant ont été "
 "définitivement effacées."
@@ -2628,7 +2628,7 @@ msgstr ""
 "Vous n'êtes pas gestionnaire de programme pour les programmes de ce "
 "participant."
 
-msgid "Erasure request rejected. Client data has been preserved."
+msgid "Erasure request rejected. Participant data has been preserved."
 msgstr ""
 "Demande d'effacement rejetée. Les données du participant ont été préservées."
 
@@ -2638,7 +2638,7 @@ msgstr "Vous ne pouvez pas annuler cette demande."
 msgid "Erasure request cancelled."
 msgstr "Demande d'effacement annulée."
 
-msgid "Action Required: Client Erasure Request"
+msgid "Action Required: Participant Erasure Request"
 msgstr "Action requise : Demande d'effacement de données participant"
 
 #: apps/clients/models.py — Erasure model strings
@@ -2651,13 +2651,13 @@ msgstr "Approbation en attente"
 msgid "Approved — Data Erased"
 msgstr "Approuvé — Données effacées"
 
-msgid "Client Requested"
+msgid "Participant Requested"
 msgstr "Demande du participant"
 
 msgid "Retention Period Expired"
 msgstr "Période de conservation expirée"
 
-msgid "Client Discharged"
+msgid "Participant Discharged"
 msgstr "Participant congédié"
 
 #: templates/clients/email/ — Erasure email templates (ERASE-I18N1)
@@ -2695,7 +2695,7 @@ msgstr "Examinez et approuvez ou rejetez cette demande :"
 
 #: apps/clients/erasure_views.py — Erasure completion email (ERASE-I18N2)
 #, python-format
-msgid "Client #%(pk)s"
+msgid "Participant #%(pk)s"
 msgstr "Participant no %(pk)s"
 
 #, python-format
@@ -4329,7 +4329,7 @@ msgstr ""
 msgid "All activity"
 msgstr "Toute l'activité"
 
-msgid "All approvals received. Client data has been anonymised."
+msgid "All approvals received. Participant data has been anonymised."
 msgstr ""
 "Toutes les approbations reçues. Les données du participant ont été "
 "anonymisées."
@@ -4512,10 +4512,10 @@ msgstr "Effacer la recherche"
 msgid "Client Count"
 msgstr "Nombre de participants"
 
-msgid "Client Data Anonymised — %(code)s"
+msgid "Participant Data Anonymised — %(code)s"
 msgstr "Données du participant anonymisées — %(code)s"
 
-msgid "Client Data Erased — %(code)s"
+msgid "Participant Data Erased — %(code)s"
 msgstr "Données du participant effacées — %(code)s"
 
 msgid "Client Information"
@@ -4527,21 +4527,21 @@ msgstr "Dossier du participant"
 msgid "Client count"
 msgstr "Nombre de participants"
 
-msgid "Client data has been anonymised."
+msgid "Participant data has been anonymised."
 msgstr "Les données du participant ont été anonymisées."
 
-msgid "Client data has been permanently erased."
+msgid "Participant data has been permanently erased."
 msgstr "Les données du participant ont été définitivement effacées."
 
-msgid "Client data no longer exists. Receipt cannot be generated."
+msgid "Participant data no longer exists. Receipt cannot be generated."
 msgstr ""
 "Les données du participant n'existent plus. Le reçu ne peut pas être généré."
 
-msgid "Client file created."
-msgstr "Dossier du participant créé."
+msgid "%(participant)s file created."
+msgstr "Dossier du/de la %(participant)s créé."
 
-msgid "Client file updated."
-msgstr "Dossier du participant mis à jour."
+msgid "%(participant)s file updated."
+msgstr "Dossier du/de la %(participant)s mis à jour."
 
 msgid "Client status"
 msgstr "Statut du participant"
@@ -5765,7 +5765,7 @@ msgstr ""
 "Sélectionnez une année fiscale pour remplir automatiquement les dates, ou "
 "laissez vide pour une période personnalisée."
 
-msgid "Select an existing client"
+msgid "Select an existing participant"
 msgstr "Sélectionner un participant existant"
 
 msgid "Select the fiscal year to report on."

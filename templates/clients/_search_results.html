@@ -1,6 +1,6 @@
 {% load i18n %}
 {% if results %}
-<table role="grid" class="client-table" aria-label="{% blocktrans with clients=term.client_plural|default:'Clients' %}{{ clients }} search results{% endblocktrans %}">
+<table role="grid" class="client-table" aria-label="{% blocktrans with clients=term.client_plural|default:'Participants' %}{{ clients }} search results{% endblocktrans %}">
     <thead>
         <tr>
             <th scope="col">{% trans "Name" %}</th>
@@ -34,6 +34,6 @@
 </table>
 {% elif query %}
 <div class="empty-state">
-    <p>{% blocktrans with clients=term.client_plural|default:"clients" %}No {{ clients }} match "{{ query }}".{% endblocktrans %}</p>
+    <p>{% blocktrans with clients=term.client_plural|default:"participants" %}No {{ clients }} match "{{ query }}".{% endblocktrans %}</p>
 </div>
 {% endif %}
