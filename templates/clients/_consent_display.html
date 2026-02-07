@@ -32,7 +32,7 @@
 <div class="consent-warning">
     <p class="notice warning" role="alert">
         <strong>{% trans "No consent on file." %}</strong>
-        {% trans "Consent must be recorded before progress notes can be created for this" %} {{ term.client|default:"client" }}.
+        {% trans "Consent must be recorded before progress notes can be created for this" %} {{ term.client|default:"participant" }}.
     </p>
     {% if not is_receptionist %}
     <button type="button"

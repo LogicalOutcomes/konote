@@ -11,7 +11,7 @@
 </div>
 {% else %}
 <p class="notice" role="status">
-    <small>{% blocktrans with client=term.client|default:"client" programme=term.program|default:"programme" %}View only — to edit this plan, you must be assigned to a {{ programme }} this {{ client }} is enrolled in.{% endblocktrans %}</small>
+    <small>{% blocktrans with client=term.client|default:"participant" programme=term.program|default:"programme" %}View only — to edit this plan, you must be assigned to a {{ programme }} this {{ client }} is enrolled in.{% endblocktrans %}</small>
 </p>
 {% endif %}
 
@@ -38,11 +38,39 @@
 {% endif %}
 
 {% if active_sections %}
+{% if show_grouping and grouped_active_sections %}
+{# Multi-program: group sections by program with colour headers #}
+{% for program_id, group in grouped_active_sections.items %}
+<div class="program-group" style="border-left: 3px solid {{ group.program.colour_hex|default:'var(--pico-muted-border-color)' }};">
+    <h2 class="program-group-heading">
+        <span class="program-dot" style="background-color: {{ group.program.colour_hex }}" aria-hidden="true"></span>
+        {{ group.program.name }}
+    </h2>
+    {% for section in group.sections %}
+    <article class="section-card" id="section-{{ section.pk }}" aria-label="{{ term.section|default:'Section' }}: {{ section.name }}">
+        {% include "plans/_section.html" with section=section can_edit=can_edit hide_program_dot=True %}
+    </article>
+    {% endfor %}
+</div>
+{% endfor %}
+{% if general_sections %}
+<div class="program-group">
+    <h2 class="program-group-heading">{% trans "General" %}</h2>
+    {% for section in general_sections %}
+    <article class="section-card" id="section-{{ section.pk }}" aria-label="{{ term.section|default:'Section' }}: {{ section.name }}">
+        {% include "plans/_section.html" with section=section can_edit=can_edit hide_program_dot=True %}
+    </article>
+    {% endfor %}
+</div>
+{% endif %}
+{% else %}
+{# Single program or specific CONF9: flat list, no group headers #}
 {% for section in active_sections %}
 <article class="section-card" id="section-{{ section.pk }}" aria-label="{{ term.section|default:'Section' }}: {{ section.name }}">
     {% include "plans/_section.html" with section=section can_edit=can_edit %}
 </article>
 {% endfor %}
+{% endif %}
 {% endif %}
 
 {% if inactive_sections %}

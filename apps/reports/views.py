@@ -517,30 +517,10 @@ def export_form(request):
 def _get_client_or_403(request, client_id):
     """Return client if user has access via program roles, otherwise None.
 
-    Security: Verifies client's demo status matches user's demo status.
-    Demo users can only view demo clients; real users can only view real clients.
-
-    Admins without program roles cannot access client data — consistent with
-    the RBAC model where admin-only users manage system config, not client records.
+    Delegates to the shared canonical implementation.
     """
-    client = get_object_or_404(ClientFile, pk=client_id)
-    user = request.user
-
-    # Security: Demo/real data separation - user can only see clients matching their demo status
-    if client.is_demo != user.is_demo:
-        return None
-
-    user_program_ids = set(
-        UserProgramRole.objects.filter(user=user, status="active")
-        .values_list("program_id", flat=True)
-    )
-    client_program_ids = set(
-        ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled")
-        .values_list("program_id", flat=True)
-    )
-    if user_program_ids & client_program_ids:
-        return client
-    return None
+    from apps.programs.access import get_client_or_403
+    return get_client_or_403(request, client_id)
 
 
 @login_required
@@ -550,16 +530,30 @@ def client_analysis(request, client_id):
     if client is None:
         return HttpResponseForbidden("You do not have access to this client.")
 
-    # Get targets with metrics for this client
+    # Get user's accessible programs (respects CONF9 context switcher)
+    from apps.programs.access import build_program_display_context, get_user_program_ids
+    active_ids = getattr(request, "active_program_ids", None)
+    user_program_ids = get_user_program_ids(request.user, active_ids)
+    program_ctx = build_program_display_context(request.user, active_ids)
+
+    # Get targets with metrics — filtered by user's accessible programs
+    # PlanTarget doesn't have a direct program FK, so filter through plan_section.program
     targets = PlanTarget.objects.filter(
         client_file=client, status="default"
-    ).prefetch_related("metrics")
+    ).filter(
+        Q(plan_section__program_id__in=user_program_ids) | Q(plan_section__program__isnull=True)
+    ).select_related("plan_section__program").prefetch_related("metrics")
 
     chart_data = []
     for target in targets:
         ptm_links = PlanTargetMetric.objects.filter(
             plan_target=target
         ).select_related("metric_def")
+
+        # Get program info from the section for grouping
+        section_program = target.plan_section.program if target.plan_section else None
+        program_name = section_program.name if section_program else None
+        program_colour = section_program.colour_hex if section_program else None
 
         for ptm in ptm_links:
             metric_def = ptm.metric_def
@@ -596,13 +590,20 @@ def client_analysis(request, client_id):
                     "min_value": metric_def.min_value,
                     "max_value": metric_def.max_value,
                     "data_points": data_points,
+                    "program_name": program_name,
+                    "program_colour": program_colour,
                 })
+
+    # Sort by program_name for template {% regroup %} tag
+    chart_data.sort(key=lambda c: (c["program_name"] or "", c["target_name"]))
 
     context = {
         "client": client,
         "chart_data": chart_data,
         "active_tab": "analysis",
         "user_role": getattr(request, "user_program_role", None),
+        "show_grouping": program_ctx["show_grouping"],
+        "show_program_ui": program_ctx["show_program_ui"],
     }
     if request.headers.get("HX-Request"):
         return render(request, "reports/_tab_analysis.html", context)

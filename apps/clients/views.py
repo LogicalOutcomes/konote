@@ -31,40 +31,11 @@ def get_client_queryset(user):
     return ClientFile.objects.real()
 
 
-def _get_user_program_ids(user, active_program_ids=None):
-    """Return set of program IDs the user has active roles in.
-
-    Used to filter enrolment display — only show programs the user can see.
-    Prevents leaking confidential program names to users without access.
-
-    If active_program_ids is provided (CONF9), narrows to those programs only.
-    """
-    if active_program_ids:
-        return active_program_ids
-    return set(
-        UserProgramRole.objects.filter(user=user, status="active")
-        .values_list("program_id", flat=True)
-    )
-
-
-def _get_accessible_programs(user, active_program_ids=None):
-    """Return programs the user can access.
-
-    Admins without program roles get no programs (they manage system config, not client data).
-    If active_program_ids is provided (CONF9), narrows to those programs only.
-    """
-    if active_program_ids:
-        return Program.objects.filter(pk__in=active_program_ids, status="active")
-    if user.is_admin:
-        # Admins see programs for management; if they also have program roles, include those
-        admin_program_ids = UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True)
-        if admin_program_ids:
-            return Program.objects.filter(pk__in=admin_program_ids, status="active")
-        return Program.objects.none()
-    return Program.objects.filter(
-        pk__in=UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True),
-        status="active",
-    )
+# Shared program access helpers — canonical implementations in apps/programs/access
+from apps.programs.access import (
+    get_user_program_ids as _get_user_program_ids,
+    get_accessible_programs as _get_accessible_programs,
+)
 
 
 def _get_accessible_clients(user, active_program_ids=None):
@@ -218,7 +189,7 @@ def client_create(request):
             # Enrol in selected programs
             for program in form.cleaned_data["programs"]:
                 ClientProgramEnrolment.objects.create(client_file=client, program=program)
-            messages.success(request, _("Client file created."))
+            messages.success(request, _("%(term)s file created.") % {"term": request.get_term("client")})
             return redirect("clients:client_detail", client_id=client.pk)
     else:
         form = ClientFileForm(available_programs=available_programs)
@@ -266,7 +237,7 @@ def client_edit(request, client_id):
                         client_file=client, program_id=program_id,
                         defaults={"status": "enrolled"},
                     )
-            messages.success(request, _("Client file updated."))
+            messages.success(request, _("%(term)s file updated.") % {"term": request.get_term("client")})
             return redirect("clients:client_detail", client_id=client.pk)
     else:
         form = ClientFileForm(
@@ -283,9 +254,9 @@ def client_edit(request, client_id):
             },
             available_programs=available_programs,
         )
-    # Breadcrumbs: Clients > [Client Name] > Edit
+    # Breadcrumbs: Participants > [Name] > Edit
     breadcrumbs = [
-        {"url": reverse("clients:client_list"), "label": "Clients"},
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
         {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
         {"url": "", "label": "Edit"},
     ]
@@ -341,9 +312,9 @@ def client_detail(request, client_id):
         # Only include groups that have fields with values
         if field_values:
             custom_data.append({"group": group, "fields": field_values})
-    # Breadcrumbs: Clients > [Client Name]
+    # Breadcrumbs: Participants > [Name]
     breadcrumbs = [
-        {"url": reverse("clients:client_list"), "label": "Clients"},
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
         {"url": "", "label": f"{client.display_name} {client.last_name}"},
     ]
     # Tab counts for badges (only for non-front-desk roles, only for full page loads)

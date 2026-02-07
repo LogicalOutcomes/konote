@@ -13,7 +13,7 @@
 
 <hgroup>
     <h1>{% blocktrans with plan=term.plan|default:"Plan" %}Apply a {{ plan }} Template{% endblocktrans %}</h1>
-    <p>{% blocktrans with sections=term.section_plural|default:"sections" targets=term.target_plural|default:"targets" client=term.client|default:"client" plan=term.plan|default:"plan" %}Choose a template to add {{ sections }} and {{ targets }} to this {{ client }}'s {{ plan }}.{% endblocktrans %}</p>
+    <p>{% blocktrans with sections=term.section_plural|default:"sections" targets=term.target_plural|default:"targets" client=term.client|default:"participant" plan=term.plan|default:"plan" %}Choose a template to add {{ sections }} and {{ targets }} to this {{ client }}'s {{ plan }}.{% endblocktrans %}</p>
 </hgroup>
 
 <article aria-label="{% trans 'Important information' %}">

@@ -1,8 +1,10 @@
 """Phase 3: Plan editing views — sections, targets, metrics, revisions."""
 import csv
 import io
+from collections import OrderedDict
 
 from django.contrib import messages
+from django.db.models import Q
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -12,6 +14,11 @@ from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
 from apps.clients.models import ClientFile, ClientProgramEnrolment
+from apps.programs.access import (
+    build_program_display_context,
+    get_client_or_403,
+    get_user_program_ids,
+)
 from apps.programs.models import UserProgramRole
 
 from .forms import (
@@ -58,9 +65,32 @@ def _can_edit_plan(user, client_file):
     ).exists()
 
 
-def _get_client_or_403(client_id, user):
-    """Fetch client and verify the user has at least view access."""
-    return get_object_or_404(ClientFile, pk=client_id)
+def _get_client_or_403_legacy(client_id, user):
+    """Fetch client and verify the user has at least view access.
+
+    Legacy wrapper for views that pass (client_id, user) instead of (request, client_id).
+    Used by section_create and other CRUD views that don't need program display context.
+    """
+    client = get_object_or_404(ClientFile, pk=client_id)
+    # Demo/real data separation
+    if client.is_demo != user.is_demo:
+        return None
+    # Admins can access any client (for system administration)
+    if user.is_admin:
+        return client
+    from apps.programs.models import UserProgramRole
+    user_program_ids = set(
+        UserProgramRole.objects.filter(user=user, status="active")
+        .values_list("program_id", flat=True)
+    )
+    client_program_ids = set(
+        ClientProgramEnrolment.objects.filter(
+            client_file=client, status="enrolled"
+        ).values_list("program_id", flat=True)
+    )
+    if user_program_ids & client_program_ids:
+        return client
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -70,17 +100,45 @@ def _get_client_or_403(client_id, user):
 @login_required
 def plan_view(request, client_id):
     """Full plan tab — all sections with targets and metrics."""
-    client = _get_client_or_403(client_id, request.user)
+    client = get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
     can_edit = _can_edit_plan(request.user, client)
 
+    # Get user's accessible programs (respects CONF9 context switcher)
+    active_ids = getattr(request, "active_program_ids", None)
+    user_program_ids = get_user_program_ids(request.user, active_ids)
+    program_ctx = build_program_display_context(request.user, active_ids)
+
+    # Filter sections to user's accessible programs + null-program sections
     sections = (
         PlanSection.objects.filter(client_file=client)
-        .prefetch_related("targets__metrics", "program")
+        .filter(Q(program_id__in=user_program_ids) | Q(program__isnull=True))
+        .prefetch_related("targets__metrics")
+        .select_related("program")
         .order_by("sort_order")
     )
 
     active_sections = [s for s in sections if s.status == "default"]
     inactive_sections = [s for s in sections if s.status != "default"]
+
+    # Build grouped context for multi-program display
+    grouped_active_sections = None
+    general_sections = None
+    if program_ctx["show_grouping"]:
+        grouped_active_sections = OrderedDict()
+        general_sections = []
+        for section in active_sections:
+            if section.program_id:
+                key = section.program_id
+                if key not in grouped_active_sections:
+                    grouped_active_sections[key] = {
+                        "program": section.program,
+                        "sections": [],
+                    }
+                grouped_active_sections[key]["sections"].append(section)
+            else:
+                general_sections.append(section)
 
     context = {
         "client": client,
@@ -88,6 +146,10 @@ def plan_view(request, client_id):
         "inactive_sections": inactive_sections,
         "can_edit": can_edit,
         "active_tab": "plan",
+        "show_grouping": program_ctx["show_grouping"],
+        "show_program_ui": program_ctx["show_program_ui"],
+        "grouped_active_sections": grouped_active_sections,
+        "general_sections": general_sections,
     }
     if request.headers.get("HX-Request"):
         return render(request, "plans/_tab_plan.html", context)
@@ -101,7 +163,9 @@ def plan_view(request, client_id):
 @login_required
 def section_create(request, client_id):
     """Add a new section to a client's plan."""
-    client = _get_client_or_403(client_id, request.user)
+    client = _get_client_or_403_legacy(client_id, request.user)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
     if not _can_edit_plan(request.user, client):
         raise PermissionDenied(_("You don't have permission to access this page."))
 
@@ -481,11 +545,14 @@ def metric_edit(request, metric_id):
 def target_history(request, target_id):
     """Show revision history for a target."""
     target = get_object_or_404(PlanTarget, pk=target_id)
+    client = get_client_or_403(request, target.client_file_id)
+    if client is None:
+        return HttpResponseForbidden(_("You do not have access to this client."))
     revisions = PlanTargetRevision.objects.filter(plan_target=target).select_related("changed_by")
 
     return render(request, "plans/target_history.html", {
         "target": target,
-        "client": target.client_file,
+        "client": client,
         "revisions": revisions,
     })
 

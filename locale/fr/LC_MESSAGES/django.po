@@ -986,9 +986,6 @@ msgstr "Liens d'inscription"
 msgid "Pending Submissions"
 msgstr "Soumissions en attente"
 
-msgid "Export Client Data"
-msgstr "Exporter les données participants"
-
 msgid "Dismiss"
 msgstr "Fermer"
 
@@ -2356,9 +2353,6 @@ msgid "Executive"
 msgstr "Direction"
 
 #: templates/clients/erasure/ — Erasure feature
-msgid "Erase Client Data"
-msgstr "Effacer les données du participant"
-
 msgid ""
 "All client data will be permanently deleted once all program managers "
 "approve. Recovery requires a database backup."
@@ -2611,7 +2605,7 @@ msgstr "Vous n'êtes pas gestionnaire de programme pour ce programme."
 msgid "Invalid form data."
 msgstr "Données de formulaire invalides."
 
-msgid "All approvals received. Client data has been permanently erased."
+msgid "All approvals received. Participant data has been permanently erased."
 msgstr ""
 "Toutes les approbations reçues. Les données du participant ont été "
 "définitivement effacées."
@@ -2628,7 +2622,7 @@ msgstr ""
 "Vous n'êtes pas gestionnaire de programme pour les programmes de ce "
 "participant."
 
-msgid "Erasure request rejected. Client data has been preserved."
+msgid "Erasure request rejected. Participant data has been preserved."
 msgstr ""
 "Demande d'effacement rejetée. Les données du participant ont été préservées."
 
@@ -2638,7 +2632,7 @@ msgstr "Vous ne pouvez pas annuler cette demande."
 msgid "Erasure request cancelled."
 msgstr "Demande d'effacement annulée."
 
-msgid "Action Required: Client Erasure Request"
+msgid "Action Required: Participant Erasure Request"
 msgstr "Action requise : Demande d'effacement de données participant"
 
 #: apps/clients/models.py — Erasure model strings
@@ -2651,13 +2645,13 @@ msgstr "Approbation en attente"
 msgid "Approved — Data Erased"
 msgstr "Approuvé — Données effacées"
 
-msgid "Client Requested"
+msgid "Participant Requested"
 msgstr "Demande du participant"
 
 msgid "Retention Period Expired"
 msgstr "Période de conservation expirée"
 
-msgid "Client Discharged"
+msgid "Participant Discharged"
 msgstr "Participant congédié"
 
 #: templates/clients/email/ — Erasure email templates (ERASE-I18N1)
@@ -2695,7 +2689,7 @@ msgstr "Examinez et approuvez ou rejetez cette demande :"
 
 #: apps/clients/erasure_views.py — Erasure completion email (ERASE-I18N2)
 #, python-format
-msgid "Client #%(pk)s"
+msgid "Participant #%(pk)s"
 msgstr "Participant no %(pk)s"
 
 #, python-format
@@ -4265,8 +4259,8 @@ msgstr "Ajouter un membre"
 msgid "Add Milestone"
 msgstr "Ajouter un jalon"
 
-msgid "Add a non-client member"
-msgstr "Ajouter un membre non-participant"
+msgid "Add a non-%(term)s member"
+msgstr "Ajouter un membre non-%(term)s"
 
 msgid "Add consent and data retention fields."
 msgstr "Ajouter les champs de consentement et de conservation des données."
@@ -4329,7 +4323,7 @@ msgstr ""
 msgid "All activity"
 msgstr "Toute l'activité"
 
-msgid "All approvals received. Client data has been anonymised."
+msgid "All approvals received. Participant data has been anonymised."
 msgstr ""
 "Toutes les approbations reçues. Les données du participant ont été "
 "anonymisées."
@@ -4512,10 +4506,10 @@ msgstr "Effacer la recherche"
 msgid "Client Count"
 msgstr "Nombre de participants"
 
-msgid "Client Data Anonymised — %(code)s"
+msgid "Participant Data Anonymised — %(code)s"
 msgstr "Données du participant anonymisées — %(code)s"
 
-msgid "Client Data Erased — %(code)s"
+msgid "Participant Data Erased — %(code)s"
 msgstr "Données du participant effacées — %(code)s"
 
 msgid "Client Information"
@@ -4527,21 +4521,21 @@ msgstr "Dossier du participant"
 msgid "Client count"
 msgstr "Nombre de participants"
 
-msgid "Client data has been anonymised."
+msgid "Participant data has been anonymised."
 msgstr "Les données du participant ont été anonymisées."
 
-msgid "Client data has been permanently erased."
+msgid "Participant data has been permanently erased."
 msgstr "Les données du participant ont été définitivement effacées."
 
-msgid "Client data no longer exists. Receipt cannot be generated."
+msgid "Participant data no longer exists. Receipt cannot be generated."
 msgstr ""
 "Les données du participant n'existent plus. Le reçu ne peut pas être généré."
 
-msgid "Client file created."
-msgstr "Dossier du participant créé."
+msgid "%(participant)s file created."
+msgstr "Dossier du/de la %(participant)s créé."
 
-msgid "Client file updated."
-msgstr "Dossier du participant mis à jour."
+msgid "%(participant)s file updated."
+msgstr "Dossier du/de la %(participant)s mis à jour."
 
 msgid "Client status"
 msgstr "Statut du participant"
@@ -5765,8 +5759,8 @@ msgstr ""
 "Sélectionnez une année fiscale pour remplir automatiquement les dates, ou "
 "laissez vide pour une période personnalisée."
 
-msgid "Select an existing client"
-msgstr "Sélectionner un participant existant"
+msgid "Select an existing %(term)s"
+msgstr "Sélectionner un(e) %(term)s existant(e)"
 
 msgid "Select the fiscal year to report on."
 msgstr "Sélectionnez l'année fiscale visée par le rapport."
@@ -6154,6 +6148,9 @@ msgstr "Vous ne pouvez pas désactiver votre propre compte."
 
 msgid "You do not have access to this group."
 msgstr "Vous n'avez pas accès à ce groupe."
+
+msgid "You do not have access to this client."
+msgstr "Vous n'avez pas accès à ce client."
 
 msgid "You do not have access to this receipt."
 msgstr "Vous n'avez pas accès à ce reçu."
@@ -6617,8 +6614,9 @@ msgid ""
 "Row 1 has no id — it creates a new metric. Row 2 has id 42 — it updates the "
 "existing metric with that ID."
 msgstr ""
-"La ligne 1 n'a pas d'identifiant — elle crée une nouvelle mesure. La ligne 2 "
-"a l'identifiant 42 — elle met à jour la mesure existante avec cet identifiant."
+"La ligne 1 n'a pas d'identifiant — elle crée une nouvelle mesure. La ligne 2"
+" a l'identifiant 42 — elle met à jour la mesure existante avec cet "
+"identifiant."
 
 msgid "What do you prefer to be called?"
 msgstr "Comment préférez-vous être appelé(e) ?"
@@ -6630,11 +6628,13 @@ msgid "active or deactivated (defaults to active)"
 msgstr "active ou désactivée (par défaut : active)"
 
 msgid "yes or no — whether this metric is available for use (defaults to yes)"
-msgstr "oui ou non — indique si cette mesure est disponible (par défaut : oui)"
+msgstr ""
+"oui ou non — indique si cette mesure est disponible (par défaut : oui)"
 
 #, python-format
 msgid "Upload a CSV file to add or update %(metrics)s."
-msgstr "Téléchargez un fichier CSV pour ajouter ou mettre à jour des %(metrics)s."
+msgstr ""
+"Téléchargez un fichier CSV pour ajouter ou mettre à jour des %(metrics)s."
 
 #, python-format
 msgid "%(new)s new, %(updated)s updates to existing"
@@ -6647,3 +6647,123 @@ msgstr ""
 "Le plus simple est d'utiliser <strong>Exporter en CSV</strong> depuis la "
 "bibliothèque de mesures, de modifier le fichier dans Excel, puis de le "
 "téléverser ici."
+
+msgid "%(name)s assigned as %(role)s in %(program)s."
+msgstr "%(name)s a été assigné comme %(role)s dans %(program)s."
+
+msgid ", the badge updates to reflect your role in that"
+msgstr ", le badge se met à jour pour refléter votre rôle dans ce"
+
+msgid "Add Role"
+msgstr "Ajouter un rôle"
+
+msgid ""
+"Assign this user to programs with specific roles. A user can have different "
+"roles in different programs."
+msgstr ""
+"Attribuez des programmes à cet utilisateur avec des rôles spécifiques. Un "
+"utilisateur peut avoir des rôles différents dans différents programmes."
+
+msgid "Back to Users"
+msgstr "Retour aux utilisateurs"
+
+msgid "Different Roles in Different Programs"
+msgstr "Différents rôles dans différents programmes"
+
+msgid "Edit User"
+msgstr "Modifier l'utilisateur"
+
+msgid "No program roles assigned. This user cannot access any program data."
+msgstr ""
+"Aucun rôle de programme attribué. Cet utilisateur ne peut accéder à aucune "
+"donnée de programme."
+
+msgid "No programs available. Create a program first."
+msgstr "Aucun programme disponible. Créez d'abord un programme."
+
+msgid "No roles"
+msgstr "Aucun rôle"
+
+msgid "Program role assignments"
+msgstr "Attributions des rôles de programme"
+
+msgid "Role removed from %(program)s."
+msgstr "Rôle retiré de %(program)s."
+
+msgid "You may have a different role depending on which"
+msgstr "Vous pouvez avoir un rôle différent selon le"
+
+msgid ""
+"Your current role is shown as a badge next to your name in the navigation "
+"bar. If you switch"
+msgstr ""
+"Votre rôle actuel est affiché sous forme de badge à côté de votre nom dans "
+"la barre de navigation. Si vous changez de"
+
+msgid "Your role:"
+msgstr "Votre rôle :"
+
+msgid "and Direct Service staff in another."
+msgstr "et membre du personnel de service direct dans un autre."
+
+msgid "you are working in. For example, you might be a Program Manager in one"
+msgstr ""
+"dans lequel vous travaillez. Par exemple, vous pourriez être gestionnaire de"
+" programme dans un"
+
+msgid "All programs"
+msgstr "Tous les programmes"
+
+msgid "%(term)s #%(pk)s"
+msgstr "%(term)s nº %(pk)s"
+
+msgid "%(term)s Data Anonymised — %(code)s"
+msgstr "Données du %(term)s anonymisées — %(code)s"
+
+msgid "%(term)s Data Erased — %(code)s"
+msgstr "Données du %(term)s effacées — %(code)s"
+
+msgid "%(term)s data has been anonymised."
+msgstr "Les données du %(term)s ont été anonymisées."
+
+msgid "%(term)s data has been permanently erased."
+msgstr "Les données du %(term)s ont été définitivement effacées."
+
+msgid "%(term)s data no longer exists. Receipt cannot be generated."
+msgstr ""
+"Les données du %(term)s n'existent plus. Le reçu ne peut pas être généré."
+
+msgid "%(term)s file created."
+msgstr "Dossier %(term)s créé."
+
+msgid "%(term)s file updated."
+msgstr "Dossier %(term)s mis à jour."
+
+msgid "Action Required: %(term)s Erasure Request"
+msgstr "Action requise : demande d'effacement — %(term)s"
+
+msgid "All approvals received. %(term)s data has been anonymised."
+msgstr ""
+"Toutes les approbations reçues. Les données du %(term)s ont été "
+"anonymisées."
+
+msgid "All approvals received. %(term)s data has been permanently erased."
+msgstr ""
+"Toutes les approbations reçues. Les données du %(term)s ont été "
+"définitivement effacées."
+
+msgid "An erasure request already exists for this %(term)s."
+msgstr "Une demande d'effacement existe déjà pour ce %(term)s."
+
+msgid "Erasure request rejected. %(term)s data has been preserved."
+msgstr ""
+"Demande d'effacement rejetée. Les données du %(term)s ont été préservées."
+
+msgid "This %(term)s's data has already been anonymised."
+msgstr "Les données de ce %(term)s ont déjà été anonymisées."
+
+msgid "Erase %(term)s Data"
+msgstr "Effacer les données du %(term)s"
+
+msgid "Export %(term)s Data"
+msgstr "Exporter les données du %(term)s"

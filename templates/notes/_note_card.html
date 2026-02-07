@@ -19,7 +19,7 @@
     <span class="note-card-ago">{{ note.effective_date|timesince }} {% trans "ago" %}</span>
 </div>
 <div class="note-card-author">
-    {% if note.author %}{{ note.author.display_name|default:note.author }}{% else %}{% trans "(unknown)" %}{% endif %}{% if note.author_program %} &middot; {{ note.author_program.name }}{% endif %}
+    {% if note.author %}{{ note.author.display_name|default:note.author }}{% else %}{% trans "(unknown)" %}{% endif %}{% if show_program_ui and note.author_program %} <span class="badge" style="background-color: {{ note.author_program.colour_hex }}; color: #fff;">{{ note.author_program.name }}</span>{% elif note.author_program %} &middot; {{ note.author_program.name }}{% endif %}
 </div>
 {# Cache the prefetched queryset to avoid repeated evaluation #}
 {% with entries=note.target_entries.all %}

@@ -7,7 +7,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from .forms import UserCreateForm, UserEditForm
+from apps.programs.models import Program, UserProgramRole
+
+from .forms import UserCreateForm, UserEditForm, UserProgramRoleForm
 from .models import User
 
 
@@ -25,7 +27,18 @@ def admin_required(view_func):
 @admin_required
 def user_list(request):
     users = User.objects.all().order_by("-is_admin", "display_name")
-    return render(request, "auth_app/user_list.html", {"users": users})
+    # Prefetch program roles for display
+    user_roles = {}
+    for role in UserProgramRole.objects.filter(
+        status="active",
+    ).select_related("program"):
+        user_roles.setdefault(role.user_id, []).append(role)
+
+    user_data = []
+    for u in users:
+        user_data.append({"user": u, "roles": user_roles.get(u.pk, [])})
+
+    return render(request, "auth_app/user_list.html", {"user_data": user_data})
 
 
 @login_required
@@ -121,6 +134,116 @@ def impersonate_user(request, user_id):
         }
     )
     return redirect("/")
+
+
+# ---------------------------------------------------------------------------
+# Role management
+# ---------------------------------------------------------------------------
+
+
+@login_required
+@admin_required
+def user_roles(request, user_id):
+    """Manage a user's program role assignments."""
+    edit_user = get_object_or_404(User, pk=user_id)
+    roles = (
+        UserProgramRole.objects.filter(user=edit_user, status="active")
+        .select_related("program")
+        .order_by("program__name")
+    )
+
+    form = UserProgramRoleForm()
+    # Exclude programs the user is already assigned to
+    assigned_program_ids = roles.values_list("program_id", flat=True)
+    form.fields["program"].queryset = Program.objects.filter(
+        status="active",
+    ).exclude(pk__in=assigned_program_ids)
+
+    return render(request, "auth_app/user_roles.html", {
+        "edit_user": edit_user,
+        "roles": roles,
+        "form": form,
+        "has_available_programs": form.fields["program"].queryset.exists(),
+    })
+
+
+@login_required
+@admin_required
+def user_role_add(request, user_id):
+    """Add a program role assignment (POST only)."""
+    edit_user = get_object_or_404(User, pk=user_id)
+    if request.method == "POST":
+        form = UserProgramRoleForm(request.POST)
+        if form.is_valid():
+            program = form.cleaned_data["program"]
+            role = form.cleaned_data["role"]
+            obj, created = UserProgramRole.objects.get_or_create(
+                user=edit_user,
+                program=program,
+                defaults={"role": role, "status": "active"},
+            )
+            if not created:
+                # Reactivate if previously removed
+                obj.role = role
+                obj.status = "active"
+                obj.save()
+            messages.success(
+                request,
+                _("%(name)s assigned as %(role)s in %(program)s.")
+                % {
+                    "name": edit_user.display_name,
+                    "role": obj.get_role_display(),
+                    "program": program.name,
+                },
+            )
+            _audit_role_change(request, edit_user, program, role, "add")
+    return redirect("auth_app:user_roles", user_id=edit_user.pk)
+
+
+@login_required
+@admin_required
+def user_role_remove(request, user_id, role_id):
+    """Remove a program role assignment (POST only)."""
+    edit_user = get_object_or_404(User, pk=user_id)
+    role_obj = get_object_or_404(UserProgramRole, pk=role_id, user=edit_user)
+    if request.method == "POST":
+        role_obj.status = "removed"
+        role_obj.save()
+        messages.success(
+            request,
+            _("Role removed from %(program)s.")
+            % {"program": role_obj.program.name},
+        )
+        _audit_role_change(
+            request, edit_user, role_obj.program, role_obj.role, "remove",
+        )
+    return redirect("auth_app:user_roles", user_id=edit_user.pk)
+
+
+def _audit_role_change(request, target_user, program, role, action_type):
+    """Record role change in audit log."""
+    try:
+        from apps.audit.models import AuditLog
+
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.id,
+            user_display=request.user.get_display_name(),
+            ip_address=request.META.get("REMOTE_ADDR", ""),
+            action="update",
+            resource_type="user_program_role",
+            resource_id=target_user.id,
+            metadata={
+                "target_user_id": target_user.id,
+                "target_user": target_user.display_name,
+                "program": program.name,
+                "program_id": program.id,
+                "role": role,
+                "change": action_type,
+            },
+        )
+    except Exception:
+        pass  # Don't fail the action if audit logging fails
 
 
 def _audit_impersonation(request, target_user):

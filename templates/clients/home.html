@@ -19,12 +19,12 @@
 <div class="search-bar">
     <form id="search-filters">
         <div class="search-input-wrapper">
-            <label for="client-search" class="search-label">{% blocktrans with clients=term.client_plural|default:"clients" %}Search {{ clients }}{% endblocktrans %}</label>
+            <label for="client-search" class="search-label">{% blocktrans with clients=term.client_plural|default:"participants" %}Search {{ clients }}{% endblocktrans %}</label>
             <input type="search"
                    id="client-search"
                    name="q"
                    placeholder="{% trans 'Name or ID...' %}"
-                   aria-label="{% blocktrans with clients=term.client_plural|default:'clients' %}Search {{ clients }}{% endblocktrans %}"
+                   aria-label="{% blocktrans with clients=term.client_plural|default:'participants' %}Search {{ clients }}{% endblocktrans %}"
                    hx-get="{% url 'clients:client_search' %}"
                    hx-trigger="input changed delay:300ms"
                    hx-target="#search-results"
@@ -33,7 +33,7 @@
         </div>
     </form>
     <div class="search-actions" role="group">
-        <a href="{% url 'clients:client_create' %}" role="button">+ {% blocktrans with client=term.client|default:"Client" %}New {{ client }}{% endblocktrans %}</a>
+        <a href="{% url 'clients:client_create' %}" role="button">+ {% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}</a>
         <a href="{% url 'clients:client_list' %}" role="button" class="outline">{% trans "View All" %}</a>
     </div>
 </div>
@@ -109,7 +109,7 @@
 <!-- Stats row -->
 <div class="stats-row">
     <dl class="stat-card">
-        <dt>{% blocktrans with clients=term.client_plural|default:"Clients" %}Active {{ clients }}{% endblocktrans %}</dt>
+        <dt>{% blocktrans with clients=term.client_plural|default:"Participants" %}Active {{ clients }}{% endblocktrans %}</dt>
         <dd class="stat-value">{{ active_count }}</dd>
         <dd class="stat-subtext">{% blocktrans with total=total_count %}of {{ total }} total{% endblocktrans %}</dd>
     </dl>
@@ -209,10 +209,10 @@
             {% endfor %}
         </ul>
         {% else %}
-        <p class="empty-message"><em>{% blocktrans with clients=term.client_plural|default:"clients" %}No recent {{ clients }} yet. Start by searching above.{% endblocktrans %}</em></p>
+        <p class="empty-message"><em>{% blocktrans with clients=term.client_plural|default:"participants" %}No recent {{ clients }} yet. Start by searching above.{% endblocktrans %}</em></p>
         {% endif %}
         <footer class="card-footer">
-            <a href="{% url 'clients:client_list' %}" class="outline" role="button">{% blocktrans with clients=term.client_plural|default:"clients" %}View all {{ clients }}{% endblocktrans %} &rarr;</a>
+            <a href="{% url 'clients:client_list' %}" class="outline" role="button">{% blocktrans with clients=term.client_plural|default:"participants" %}View all {{ clients }}{% endblocktrans %} &rarr;</a>
         </footer>
     </article>
 </div>

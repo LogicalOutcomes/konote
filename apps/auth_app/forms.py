@@ -2,7 +2,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from apps.programs.models import Program
+from apps.programs.models import Program, UserProgramRole
 
 from .models import Invite, User
 
@@ -140,3 +140,16 @@ class InviteAcceptForm(forms.Form):
         if pw and pw2 and pw != pw2:
             self.add_error("password_confirm", _("Passwords do not match."))
         return cleaned
+
+
+class UserProgramRoleForm(forms.Form):
+    """Form for assigning a user to a program with a specific role."""
+
+    program = forms.ModelChoiceField(
+        queryset=Program.objects.filter(status="active"),
+        label=_("Program"),
+    )
+    role = forms.ChoiceField(
+        choices=UserProgramRole.ROLE_CHOICES,
+        label=_("Role"),
+    )

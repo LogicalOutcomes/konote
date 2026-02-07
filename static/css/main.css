@@ -161,6 +161,14 @@ body > nav a.nav-active {
 .badge-warning { background: var(--kn-warning-bg); color: var(--kn-warning-fg); }
 .badge-danger  { background: var(--kn-danger-bg);  color: var(--kn-danger-fg); }
 .badge-neutral { background: var(--kn-neutral-bg); color: var(--kn-neutral-fg); }
+.badge-primary { background: var(--kn-info-bg);    color: var(--kn-info-fg); }
+
+/* Badge inside navigation — smaller to fit inline */
+.nav-role-badge {
+    font-size: 0.65rem;
+    padding: 1px 6px;
+    margin-left: 0.25rem;
+}
 
 /* ---- Program colour dot ---- */
 .program-dot {
@@ -177,6 +185,22 @@ body > nav a.nav-active {
     .program-dot {
         box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
     }
+}
+
+/* ---- Program group headers (multi-program view) ---- */
+.program-group {
+    margin-bottom: var(--kn-space-lg, 1.5rem);
+    padding-left: var(--kn-space-sm, 0.75rem);
+}
+.program-group-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--kn-space-xs, 0.25rem);
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: var(--kn-space-sm, 0.75rem);
+    padding-bottom: var(--kn-space-xs, 0.25rem);
+    border-bottom: 1px solid var(--pico-muted-border-color);
 }
 
 /* ---- Client table column widths ---- */

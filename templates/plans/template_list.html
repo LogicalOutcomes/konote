@@ -6,7 +6,7 @@
 {% block content %}
 <hgroup>
     <h1>{{ term.plan|default:"Plan" }} {% trans "Templates" %}</h1>
-    <p>{% blocktrans with clients=term.client_plural|default:"clients" %}Reusable structures that can be applied to {{ clients }}.{% endblocktrans %}</p>
+    <p>{% blocktrans with clients=term.client_plural|default:"participants" %}Reusable structures that can be applied to {{ clients }}.{% endblocktrans %}</p>
 </hgroup>
 
 <p>

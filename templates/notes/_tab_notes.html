@@ -43,6 +43,17 @@
                     <option value="mine" {% if filter_author == "mine" %}selected{% endif %}>{% trans "My notes only" %}</option>
                 </select>
             </label>
+            {% if show_program_ui %}
+            <label>
+                {% trans "Program" %}
+                <select name="program">
+                    <option value="">{% trans "All programs" %}</option>
+                    {% for prog in accessible_programs %}
+                    <option value="{{ prog.pk }}" {% if filter_program == prog.pk|stringformat:"d" %}selected{% endif %}>{{ prog.name }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            {% endif %}
             <label>
                 {% trans "From date" %}
                 <input type="date" name="date_from" value="{{ filter_date_from }}">
@@ -73,13 +84,13 @@
 {% if page.has_other_pages %}
 <nav class="pagination" aria-label="{% trans 'Notes pagination' %}">
     {% if page.has_previous %}
-    <a href="?page={{ page.previous_page_number }}&q={{ search_query }}&interaction={{ filter_interaction }}&author={{ filter_author }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}">{% trans "Previous" %}</a>
+    <a href="?page={{ page.previous_page_number }}&q={{ search_query }}&interaction={{ filter_interaction }}&author={{ filter_author }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}&program={{ filter_program }}">{% trans "Previous" %}</a>
     {% else %}
     <span class="secondary">{% trans "Previous" %}</span>
     {% endif %}
     {% blocktrans with current=page.number total=page.paginator.num_pages %}Page {{ current }} of {{ total }}{% endblocktrans %}
     {% if page.has_next %}
-    <a href="?page={{ page.next_page_number }}&q={{ search_query }}&interaction={{ filter_interaction }}&author={{ filter_author }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}">{% trans "Next" %}</a>
+    <a href="?page={{ page.next_page_number }}&q={{ search_query }}&interaction={{ filter_interaction }}&author={{ filter_author }}&date_from={{ filter_date_from }}&date_to={{ filter_date_to }}&program={{ filter_program }}">{% trans "Next" %}</a>
     {% else %}
     <span class="secondary">{% trans "Next" %}</span>
     {% endif %}

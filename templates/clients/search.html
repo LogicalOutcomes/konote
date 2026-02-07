@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% blocktrans with clients=term.client_plural|default:"Clients" %}Search {{ clients }}{% endblocktrans %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% blocktrans with clients=term.client_plural|default:"Participants" %}Search {{ clients }}{% endblocktrans %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1>{% blocktrans with clients=term.client_plural|default:"Clients" %}Search {{ clients }}{% endblocktrans %}</h1>
+    <h1>{% blocktrans with clients=term.client_plural|default:"Participants" %}Search {{ clients }}{% endblocktrans %}</h1>
 </div>
 
 <!-- Search bar -->
 <form id="search-filters" role="search" method="get" action="{% url 'clients:client_search' %}">
     <div class="filter-field--search">
-        <label for="client-search" class="visually-hidden">{% blocktrans with clients=term.client_plural|default:"clients" %}Search {{ clients }}{% endblocktrans %}</label>
+        <label for="client-search" class="visually-hidden">{% blocktrans with clients=term.client_plural|default:"participants" %}Search {{ clients }}{% endblocktrans %}</label>
         <input type="search"
                id="client-search"
                name="q"
                placeholder="{% trans 'Search by name, ID, or note content...' %}"
                value="{{ query }}"
-               aria-label="{% blocktrans with clients=term.client_plural|default:'clients' %}Search {{ clients }}{% endblocktrans %}"
+               aria-label="{% blocktrans with clients=term.client_plural|default:'participants' %}Search {{ clients }}{% endblocktrans %}"
                hx-get="{% url 'clients:client_search' %}"
                hx-trigger="input changed delay:300ms"
                hx-target="#search-results-container"
@@ -31,5 +31,5 @@
     {% include "clients/_search_results.html" %}
 </div>
 
-<p><a href="{% url 'clients:client_list' %}">{% blocktrans with clients=term.client_plural|default:"Clients" %}&larr; Back to {{ clients }} list{% endblocktrans %}</a></p>
+<p><a href="{% url 'clients:client_list' %}">{% blocktrans with clients=term.client_plural|default:"Participants" %}&larr; Back to {{ clients }} list{% endblocktrans %}</a></p>
 {% endblock %}

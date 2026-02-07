@@ -1,15 +1,15 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ term.client_plural|default:"Clients" }} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{{ term.client_plural|default:"Participants" }} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
 <div class="page-header">
-    <h1>{{ term.client_plural|default:"Clients" }}</h1>
-    <p>{% blocktrans with client=term.client|default:"client" %}All {{ client }} files you have access to.{% endblocktrans %}</p>
+    <h1>{{ term.client_plural|default:"Participants" }}</h1>
+    <p>{% blocktrans with client=term.client|default:"participant" %}All {{ client }} files you have access to.{% endblocktrans %}</p>
 </div>
 
-<p><a href="{% url 'clients:client_create' %}" role="button">{% blocktrans with client=term.client|default:"Client" %}New {{ client }}{% endblocktrans %}</a></p>
+<p><a href="{% url 'clients:client_create' %}" role="button">{% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}</a></p>
 
 <!-- Search and filter bar -->
 <details class="filter-bar" open>
@@ -17,13 +17,13 @@
     <form id="client-filters" role="search">
         <div class="filter-row">
             <div class="filter-field filter-field--search">
-                <label for="client-search">{% blocktrans with clients=term.client_plural|default:"Clients" %}Search {{ clients }}{% endblocktrans %}</label>
+                <label for="client-search">{% blocktrans with clients=term.client_plural|default:"Participants" %}Search {{ clients }}{% endblocktrans %}</label>
                 <input type="search"
                        id="client-search"
                        name="q"
                        placeholder="{% trans 'Search by name, ID, or note content...' %}"
                        value="{{ search_query }}"
-                       aria-label="{% blocktrans with clients=term.client_plural|default:'clients' %}Search {{ clients }}{% endblocktrans %}"
+                       aria-label="{% blocktrans with clients=term.client_plural|default:'participants' %}Search {{ clients }}{% endblocktrans %}"
                        hx-get="{% url 'clients:client_list' %}"
                        hx-trigger="input changed delay:300ms"
                        hx-target="#client-list-container"

@@ -63,7 +63,7 @@
         </ul>
         <ul id="nav-menu">
             {% if not is_admin_only and not is_executive_only %}
-            <li><a href="/"{% if nav_active == "clients" %} class="nav-active"{% endif %}>{{ term.client_plural|default:"Clients" }}</a></li>
+            <li><a href="/"{% if nav_active == "clients" %} class="nav-active"{% endif %}>{{ term.client_plural|default:"Participants" }}</a></li>
             {% endif %}
             {% if is_executive_only %}
             <li><a href="{% url 'clients:executive_dashboard' %}"{% if nav_active == "executive" %} class="nav-active"{% endif %}>{% trans "Dashboard" %}</a></li>
@@ -92,8 +92,8 @@
                         <li><a href="/auth/invites/">{% trans "Invites" %}</a></li>
                         <li><a href="/admin/audit/">{% trans "Audit Log" %}</a></li>
                         <li><a href="/merge/">{% trans "Merge Duplicates" %}</a></li>
-                        <li><a href="/erasure/">{% trans "Erase Client Data" %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>
-                        <li><a href="/reports/client-data-export/">{% trans "Export Client Data" %}</a></li>
+                        <li><a href="/erasure/">{% blocktrans with term=term.client|default:"Participant" %}Erase {{ term }} Data{% endblocktrans %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>
+                        <li><a href="/reports/client-data-export/">{% blocktrans with term=term.client|default:"Participant" %}Export {{ term }} Data{% endblocktrans %}</a></li>
                     </ul>
                 </details>
             </li>
@@ -101,7 +101,7 @@
             {% include "_program_switcher.html" %}
             <li>
                 <details class="dropdown" role="list" dir="rtl">
-                    <summary aria-haspopup="listbox">{{ user.display_name }}</summary>
+                    <summary aria-haspopup="listbox">{{ user.display_name }}{% if active_program_role_display %} <span class="badge badge-neutral nav-role-badge">{{ active_program_role_display }}</span>{% endif %}</summary>
                     <ul role="listbox">
                         <li><a href="/auth/logout/">{% trans "Sign Out" %}</a></li>
                     </ul>

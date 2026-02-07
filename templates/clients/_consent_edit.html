@@ -20,7 +20,7 @@
     {% csrf_token %}
 
     <p class="help-text">
-        {% trans "Record when and how the" %} {{ term.client|default:"client" }} {% trans "provided consent for data collection and progress tracking." %}
+        {% trans "Record when and how the" %} {{ term.client|default:"participant" }} {% trans "provided consent for data collection and progress tracking." %}
     </p>
 
     <fieldset>

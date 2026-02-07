@@ -14,7 +14,7 @@
     <div class="stats-grid">
         <article class="stat-card">
             <div class="stat-value">{{ total_clients }}</div>
-            <div class="stat-label">{% trans "Total" %} {{ term.client_plural|default:"Clients" }}</div>
+            <div class="stat-label">{% trans "Total" %} {{ term.client_plural|default:"Participants" }}</div>
         </article>
         <article class="stat-card">
             <div class="stat-value">{{ total_active }}</div>
@@ -42,7 +42,7 @@
 
             <div class="program-metrics">
                 <div class="metric-row">
-                    <span class="metric-label">{% trans "Total" %} {{ term.client_plural|default:"Clients" }}</span>
+                    <span class="metric-label">{% trans "Total" %} {{ term.client_plural|default:"Participants" }}</span>
                     <span class="metric-value">{{ stat.total }}</span>
                 </div>
                 <div class="metric-row">

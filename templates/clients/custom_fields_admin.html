@@ -6,7 +6,7 @@
 {% block content %}
 <hgroup>
     <h1>{% trans "Custom Fields" %}</h1>
-    <p>{% blocktrans with client=term.client|default:"client" %}Define additional fields for {{ client }} files.{% endblocktrans %}</p>
+    <p>{% blocktrans with client=term.client|default:"participant" %}Define additional fields for {{ client }} files.{% endblocktrans %}</p>
 </hgroup>
 
 <div role="group">

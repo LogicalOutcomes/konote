@@ -15,9 +15,12 @@ from django.utils.translation import gettext as _
 
 from apps.reports.csv_utils import sanitise_csv_row, sanitise_filename
 
+from django.urls import reverse
+
 from apps.auth_app.decorators import minimum_role
 from apps.clients.models import ClientFile
 from apps.clients.views import _get_user_program_ids, get_client_queryset
+from apps.programs.models import UserProgramRole
 
 from .forms import (
     GroupForm,
@@ -35,6 +38,16 @@ from .models import (
     ProjectMilestone,
     ProjectOutcome,
 )
+
+
+def _get_user_role_for_group(user, group):
+    """Return the display name of the user's role in the group's program."""
+    if not group.program_id:
+        return None
+    role_obj = UserProgramRole.objects.filter(
+        user=user, program_id=group.program_id, status="active",
+    ).only("role").first()
+    return role_obj.get_role_display() if role_obj else None
 
 
 # ---------------------------------------------------------------------------
@@ -94,6 +107,11 @@ def group_detail(request, group_id):
         "group": group,
         "memberships": memberships,
         "sessions": sessions,
+        "breadcrumbs": [
+            {"url": reverse("groups:group_list"), "label": _("Groups")},
+            {"url": "", "label": group.name},
+        ],
+        "user_role_for_program": _get_user_role_for_group(request.user, group),
     }
 
     # Project-type extras: milestones and outcomes
@@ -225,6 +243,12 @@ def session_log(request, group_id):
         "form": form,
         "attendance_data": attendance_data,
         "members": members,
+        "breadcrumbs": [
+            {"url": reverse("groups:group_list"), "label": _("Groups")},
+            {"url": reverse("groups:group_detail", args=[group.pk]), "label": group.name},
+            {"url": "", "label": _("Log Session")},
+        ],
+        "user_role_for_program": _get_user_role_for_group(request.user, group),
     })
 
 
@@ -281,6 +305,11 @@ def membership_add(request, group_id):
     return render(request, "groups/membership_add.html", {
         "group": group,
         "clients": clients,
+        "breadcrumbs": [
+            {"url": reverse("groups:group_list"), "label": _("Groups")},
+            {"url": reverse("groups:group_detail", args=[group.pk]), "label": group.name},
+            {"url": "", "label": _("Add Member")},
+        ],
     })
 
 
@@ -293,6 +322,9 @@ def membership_add(request, group_id):
 def membership_remove(request, membership_id):
     """Deactivate a membership (POST only)."""
     membership = get_object_or_404(GroupMembership, pk=membership_id)
+    user_program_ids = _get_user_program_ids(request.user)
+    if membership.group.program_id not in user_program_ids:
+        return HttpResponseForbidden(_("You do not have access to this group."))
     if request.method == "POST":
         membership.status = "inactive"
         membership.save()
@@ -309,6 +341,9 @@ def membership_remove(request, membership_id):
 def milestone_create(request, group_id):
     """Create a milestone for a project-type group."""
     group = get_object_or_404(Group, pk=group_id, group_type="project")
+    user_program_ids = _get_user_program_ids(request.user)
+    if group.program_id not in user_program_ids:
+        return HttpResponseForbidden(_("You do not have access to this group."))
     if request.method == "POST":
         form = ProjectMilestoneForm(request.POST)
         if form.is_valid():
@@ -335,6 +370,9 @@ def milestone_edit(request, milestone_id):
     """Edit an existing project milestone."""
     milestone = get_object_or_404(ProjectMilestone, pk=milestone_id)
     group = milestone.group
+    user_program_ids = _get_user_program_ids(request.user)
+    if group.program_id not in user_program_ids:
+        return HttpResponseForbidden(_("You do not have access to this group."))
     if request.method == "POST":
         form = ProjectMilestoneForm(request.POST, instance=milestone)
         if form.is_valid():
@@ -359,6 +397,9 @@ def milestone_edit(request, milestone_id):
 def outcome_create(request, group_id):
     """Record an outcome for a project-type group."""
     group = get_object_or_404(Group, pk=group_id, group_type="project")
+    user_program_ids = _get_user_program_ids(request.user)
+    if group.program_id not in user_program_ids:
+        return HttpResponseForbidden(_("You do not have access to this group."))
     if request.method == "POST":
         form = ProjectOutcomeForm(request.POST)
         if form.is_valid():
@@ -547,4 +588,9 @@ def attendance_report(request, group_id):
         "date_from": str(date_from_parsed),
         "date_to": str(date_to_parsed),
         "total_sessions": len(session_list),
+        "breadcrumbs": [
+            {"url": reverse("groups:group_list"), "label": _("Groups")},
+            {"url": reverse("groups:group_detail", args=[group.pk]), "label": group.name},
+            {"url": "", "label": _("Attendance Report")},
+        ],
     })

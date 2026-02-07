@@ -13,8 +13,8 @@
     {% csrf_token %}
 
     <fieldset>
-        <legend>{% trans "Select an existing client" %}</legend>
-        <label for="id_client_file">{{ term.client|default:"Client" }}</label>
+        <legend>{% blocktrans with term=term.client|default:"participant" %}Select an existing {{ term }}{% endblocktrans %}</legend>
+        <label for="id_client_file">{{ term.client|default:"Participant" }}</label>
         <select name="client_file" id="id_client_file">
             <option value="">— {% trans "Select" %} —</option>
             {% for cf in clients %}
@@ -26,7 +26,7 @@
     <p>{% trans "— or —" %}</p>
 
     <fieldset>
-        <legend>{% trans "Add a non-client member" %}</legend>
+        <legend>{% blocktrans with term=term.client|default:"participant" %}Add a non-{{ term }} member{% endblocktrans %}</legend>
         <label for="id_member_name">{% trans "Name" %}</label>
         <input type="text" name="member_name" id="id_member_name" placeholder="{% trans 'Full name' %}">
     </fieldset>

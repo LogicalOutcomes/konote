@@ -4,9 +4,16 @@
 {% block title %}{% blocktrans with name=group.name %}Log Session — {{ name }}{% endblocktrans %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
+{% include "_breadcrumbs.html" %}
+
 <hgroup>
     <h1>{% blocktrans with name=group.name %}Log Session — {{ name }}{% endblocktrans %}</h1>
-    <p>{% trans "Record attendance, observations, and notes for this session." %}</p>
+    <p>
+        {% trans "Record attendance, observations, and notes for this session." %}
+        {% if user_role_for_program %}
+            <small>{% trans "Your role:" %} {{ user_role_for_program }}</small>
+        {% endif %}
+    </p>
 </hgroup>
 
 <form method="post">

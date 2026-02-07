@@ -93,7 +93,7 @@ def erasure_request_create(request, client_id):
 
     # Block if client is already anonymised
     if client.is_anonymised:
-        messages.info(request, _("This client's data has already been anonymised."))
+        messages.info(request, _("This %(term)s's data has already been anonymised.") % {"term": request.get_term("client").lower()})
         return redirect("clients:client_detail", client_id=client.pk)
 
     # Check for existing pending request
@@ -101,7 +101,7 @@ def erasure_request_create(request, client_id):
         client_file=client, status="pending",
     ).first()
     if existing:
-        messages.info(request, _("An erasure request already exists for this client."))
+        messages.info(request, _("An erasure request already exists for this %(term)s.") % {"term": request.get_term("client").lower()})
         return redirect("erasure_request_detail", pk=existing.pk)
 
     available_tiers = get_available_tiers(client)
@@ -297,9 +297,9 @@ def erasure_approve(request, pk):
     if executed:
         email_sent = _notify_erasure_completed(er, request)
         if er.erasure_tier == "full_erasure":
-            messages.success(request, _("All approvals received. Client data has been permanently erased."))
+            messages.success(request, _("All approvals received. %(term)s data has been permanently erased.") % {"term": request.get_term("client")})
         else:
-            messages.success(request, _("All approvals received. Client data has been anonymised."))
+            messages.success(request, _("All approvals received. %(term)s data has been anonymised.") % {"term": request.get_term("client")})
         if not email_sent:
             messages.warning(
                 request,
@@ -359,7 +359,7 @@ def erasure_reject(request, pk):
     # Notify the requester
     email_sent = _notify_requester_rejection(er, request.user, form.cleaned_data["review_notes"])
 
-    messages.success(request, _("Erasure request rejected. Client data has been preserved."))
+    messages.success(request, _("Erasure request rejected. %(term)s data has been preserved.") % {"term": request.get_term("client")})
     if not email_sent:
         messages.warning(
             request,
@@ -452,7 +452,7 @@ def erasure_receipt_pdf(request, pk):
 
     # Only available while client data still exists
     if er.client_file is None:
-        messages.error(request, _("Client data no longer exists. Receipt cannot be generated."))
+        messages.error(request, _("%(term)s data no longer exists. Receipt cannot be generated.") % {"term": request.get_term("client")})
         return redirect("erasure_request_detail", pk=pk)
 
     client = er.client_file
@@ -524,7 +524,8 @@ def _notify_pms_erasure_request(erasure_request, request):
         "review_url": review_url,
     }
 
-    subject = _("Action Required: Client Erasure Request")
+    term = request.get_term("client")
+    subject = _("Action Required: %(term)s Erasure Request") % {"term": term}
     try:
         text_body = render_to_string("clients/email/erasure_request_alert.txt", context)
         html_body = render_to_string("clients/email/erasure_request_alert.html", context)
@@ -570,15 +571,16 @@ def _notify_erasure_completed(erasure_request, request):
         return True  # No one to notify — not a failure
 
     code = erasure_request.erasure_code
-    record_ref = erasure_request.client_record_id or _("Client #%(pk)s") % {"pk": erasure_request.client_pk}
+    term = request.get_term("client")
+    record_ref = erasure_request.client_record_id or _("%(term)s #%(pk)s") % {"term": term, "pk": erasure_request.client_pk}
     tier_label = erasure_request.get_erasure_tier_display()
 
     if erasure_request.erasure_tier == "full_erasure":
-        subject = _("Client Data Erased — %(code)s") % {"code": code}
-        action_desc = _("Client data has been permanently erased.")
+        subject = _("%(term)s Data Erased — %(code)s") % {"term": term, "code": code}
+        action_desc = _("%(term)s data has been permanently erased.") % {"term": term}
     else:
-        subject = _("Client Data Anonymised — %(code)s") % {"code": code}
-        action_desc = _("Client data has been anonymised.")
+        subject = _("%(term)s Data Anonymised — %(code)s") % {"term": term, "code": code}
+        action_desc = _("%(term)s data has been anonymised.") % {"term": term}
 
     body = (
         action_desc
