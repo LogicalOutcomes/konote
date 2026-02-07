@@ -5,6 +5,7 @@ This guide covers everything administrators need to configure, maintain, and sec
 | I want to... | Go to... |
 |--------------|----------|
 | Set up my agency's instance | [Agency Configuration](#agency-configuration) |
+| Choose which outcome metrics to use | [Manage Outcome Metrics](#manage-outcome-metrics) |
 | Create user accounts | [User Management](#user-management) |
 | Back up my data | [Backup and Restore](#backup-and-restore) |
 | Run security checks | [Security Operations](#security-operations) |
@@ -127,6 +128,59 @@ Plan templates are reusable blueprints for client outcome plans.
   - Achieve 80% attendance rate
 
 Changes to templates don't affect existing client plans.
+
+---
+
+### Manage Outcome Metrics
+
+Metrics are standardised measurements attached to plan targets (e.g., "PHQ-9 Score", "Housing Stability"). KoNote2 ships with a built-in library, and you can add your own.
+
+**Browse the metric library:**
+1. Click **gear icon** → **Metric Library**
+2. Metrics are grouped by category (Mental Health, Housing, Employment, etc.)
+3. Toggle the **Enabled** switch to make a metric available or unavailable for staff
+
+**Review and customise metrics using CSV (recommended for initial setup):**
+
+This workflow lets you review all metrics in Excel, decide which to enable, edit definitions, and push changes back — without creating duplicates.
+
+1. Go to **gear icon** → **Metric Library**
+2. Click **Export to CSV** — this downloads a spreadsheet with every metric
+3. Open the file in Excel. Each row has:
+
+| Column | What it means |
+|--------|---------------|
+| **id** | System identifier — don't change this (it's how KoNote2 matches rows back) |
+| **name** | What staff see when recording outcomes |
+| **definition** | How to score/measure it — guides staff on consistent data entry |
+| **category** | Grouping: mental_health, housing, employment, substance_use, youth, general, custom |
+| **min_value / max_value** | Valid range (e.g., 0–27 for PHQ-9) |
+| **unit** | Label for the value (score, days, %) |
+| **is_enabled** | **yes** = available for use, **no** = hidden from staff |
+| **status** | **active** or **deactivated** |
+
+4. Make your changes:
+   - Set `is_enabled` to **no** for metrics your organisation won't use
+   - Edit `definition` to match your agency's scoring guidelines
+   - Change `category` to reorganise how metrics are grouped
+   - Add new rows at the bottom (leave the `id` column blank for new metrics)
+5. Save the file as CSV
+6. Go back to **Metric Library** → click **Import from CSV**
+7. Upload your edited file — KoNote2 shows a preview:
+   - Rows with an ID are marked **Update** (overwrites the existing metric)
+   - Rows without an ID are marked **New** (creates a new metric)
+8. Review the preview, then click **Import**
+
+**Tips:**
+- Don't delete the `id` column — it prevents duplicates when re-importing
+- You can repeat this workflow any time (export → edit → re-import)
+- Deactivating a metric doesn't affect historical data already recorded
+- All exports and imports are recorded in the audit log
+
+**Add a single metric manually:**
+1. Click **gear icon** → **Metric Library** → **Add Custom Metric**
+2. Fill in name, definition, category, range, and unit
+3. Click **Save**
 
 ---
 
