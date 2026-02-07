@@ -16,6 +16,9 @@
     <a href="{% url 'plans:metric_import' %}" role="button" class="outline secondary">
         {% trans "Import from CSV" %}
     </a>
+    <a href="{% url 'plans:metric_export' %}" role="button" class="outline secondary">
+        {% trans "Export to CSV" %}
+    </a>
 </div>
 
 {% for category, metrics in metrics_by_category.items %}
