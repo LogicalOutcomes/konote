@@ -319,6 +319,10 @@ class ErasureRequest(models.Model):
         ("full_erasure", _("Full Erasure")),
     ]
 
+    # Note: These labels use the default terminology ("Participant"). They are
+    # class-level constants and cannot use request.get_term() dynamically. If an
+    # agency overrides terminology, these dropdown labels won't change — this is
+    # an accepted limitation (one dropdown in one form).
     REASON_CATEGORY_CHOICES = [
         ("client_requested", _("Participant Requested")),
         ("retention_expired", _("Retention Period Expired")),

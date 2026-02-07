@@ -6719,3 +6719,57 @@ msgstr ""
 
 msgid "All programs"
 msgstr "Tous les programmes"
+
+msgid "%(term)s #%(pk)s"
+msgstr "%(term)s nº %(pk)s"
+
+msgid "%(term)s Data Anonymised — %(code)s"
+msgstr "Données du %(term)s anonymisées — %(code)s"
+
+msgid "%(term)s Data Erased — %(code)s"
+msgstr "Données du %(term)s effacées — %(code)s"
+
+msgid "%(term)s data has been anonymised."
+msgstr "Les données du %(term)s ont été anonymisées."
+
+msgid "%(term)s data has been permanently erased."
+msgstr "Les données du %(term)s ont été définitivement effacées."
+
+msgid "%(term)s data no longer exists. Receipt cannot be generated."
+msgstr ""
+"Les données du %(term)s n'existent plus. Le reçu ne peut pas être généré."
+
+msgid "%(term)s file created."
+msgstr "Dossier %(term)s créé."
+
+msgid "%(term)s file updated."
+msgstr "Dossier %(term)s mis à jour."
+
+msgid "Action Required: %(term)s Erasure Request"
+msgstr "Action requise : demande d'effacement — %(term)s"
+
+msgid "Add a non-participant member"
+msgstr "Ajouter un membre non participant"
+
+msgid "All approvals received. %(term)s data has been anonymised."
+msgstr ""
+"Toutes les approbations reçues. Les données du %(term)s ont été "
+"anonymisées."
+
+msgid "All approvals received. %(term)s data has been permanently erased."
+msgstr ""
+"Toutes les approbations reçues. Les données du %(term)s ont été "
+"définitivement effacées."
+
+msgid "An erasure request already exists for this %(term)s."
+msgstr "Une demande d'effacement existe déjà pour ce %(term)s."
+
+msgid "Erasure request rejected. %(term)s data has been preserved."
+msgstr ""
+"Demande d'effacement rejetée. Les données du %(term)s ont été préservées."
+
+msgid "Export Client Data"
+msgstr "Exporter les données du participant"
+
+msgid "This %(term)s's data has already been anonymised."
+msgstr "Les données de ce %(term)s ont déjà été anonymisées."

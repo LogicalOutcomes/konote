@@ -189,7 +189,7 @@ def client_create(request):
             # Enrol in selected programs
             for program in form.cleaned_data["programs"]:
                 ClientProgramEnrolment.objects.create(client_file=client, program=program)
-            messages.success(request, _("%(participant)s file created.") % {"participant": request.get_term("client")})
+            messages.success(request, _("%(term)s file created.") % {"term": request.get_term("client")})
             return redirect("clients:client_detail", client_id=client.pk)
     else:
         form = ClientFileForm(available_programs=available_programs)
@@ -237,7 +237,7 @@ def client_edit(request, client_id):
                         client_file=client, program_id=program_id,
                         defaults={"status": "enrolled"},
                     )
-            messages.success(request, _("%(participant)s file updated.") % {"participant": request.get_term("client")})
+            messages.success(request, _("%(term)s file updated.") % {"term": request.get_term("client")})
             return redirect("clients:client_detail", client_id=client.pk)
     else:
         form = ClientFileForm(

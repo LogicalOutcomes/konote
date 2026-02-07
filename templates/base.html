@@ -92,8 +92,8 @@
                         <li><a href="/auth/invites/">{% trans "Invites" %}</a></li>
                         <li><a href="/admin/audit/">{% trans "Audit Log" %}</a></li>
                         <li><a href="/merge/">{% trans "Merge Duplicates" %}</a></li>
-                        <li><a href="/erasure/">{% trans "Erase Participant Data" %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>
-                        <li><a href="/reports/client-data-export/">{% trans "Export Participant Data" %}</a></li>
+                        <li><a href="/erasure/">{% blocktrans with term=term.client|default:"Participant" %}Erase {{ term }} Data{% endblocktrans %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>
+                        <li><a href="/reports/client-data-export/">{% blocktrans with term=term.client|default:"Participant" %}Export {{ term }} Data{% endblocktrans %}</a></li>
                     </ul>
                 </details>
             </li>
