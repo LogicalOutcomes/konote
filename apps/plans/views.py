@@ -545,11 +545,14 @@ def metric_edit(request, metric_id):
 def target_history(request, target_id):
     """Show revision history for a target."""
     target = get_object_or_404(PlanTarget, pk=target_id)
+    client = get_client_or_403(request, target.client_file_id)
+    if client is None:
+        return HttpResponseForbidden(_("You do not have access to this client."))
     revisions = PlanTargetRevision.objects.filter(plan_target=target).select_related("changed_by")
 
     return render(request, "plans/target_history.html", {
         "target": target,
-        "client": target.client_file,
+        "client": client,
         "revisions": revisions,
     })
 

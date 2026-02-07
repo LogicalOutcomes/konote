@@ -6155,6 +6155,9 @@ msgstr "Vous ne pouvez pas désactiver votre propre compte."
 msgid "You do not have access to this group."
 msgstr "Vous n'avez pas accès à ce groupe."
 
+msgid "You do not have access to this client."
+msgstr "Vous n'avez pas accès à ce client."
+
 msgid "You do not have access to this receipt."
 msgstr "Vous n'avez pas accès à ce reçu."
 

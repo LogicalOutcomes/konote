@@ -159,6 +159,20 @@ class CrossProgramIsolationScenario(UxScenarioBase):
             url, resp.status_code, issues,
         )
 
+    def test_plan_target_history_blocked(self):
+        """Casey can't view revision history for Bob's plan targets."""
+        self.login_as("staff", forbidden_content=CASEY_FORBIDDEN)
+        role = "Direct Service"
+
+        url = f"/plans/targets/{self.plan_target_b.pk}/history/"
+        resp = self.visit_forbidden(
+            role, "Target history for Bob (403)", url,
+        )
+        self.record_scenario(
+            self.SCENARIO, role, "Target history blocked",
+            url, resp.status_code, [],
+        )
+
     def test_admin_without_program_sees_no_clients(self):
         """Admin (no program role) sees no client data at all."""
         self.login_as("admin")
@@ -470,5 +484,149 @@ class NoteContentSearchScenario(UxScenarioBase):
 
         self.record_scenario(
             self.SCENARIO, role, "Note search isolation (no cross-program leak)",
+            url, resp.status_code, issues,
+        )
+
+
+# =====================================================================
+# Scenario 5: Group & Plan Permission Leakage
+# =====================================================================
+# Priority: HIGH — validates that users can't access groups, milestones,
+# memberships, or plan data from programs they aren't assigned to.
+# Complements CrossProgramIsolationScenario (which tests client data).
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class GroupPermissionLeakageScenario(UxScenarioBase):
+    """Scenario: Casey (Housing Support staff) must not access groups,
+    milestones, or plan data in Youth Services.
+
+    Tests program isolation at the group and plan level:
+    - Group detail for other program's group must return 403
+    - Session log for other program's group must return 403
+    - Membership remove in other program must return 403
+    - Milestone create/edit in other program must return 403
+    - Outcome create in other program must return 403
+    - Plan target history for other program's client must return 403
+    """
+
+    SCENARIO = "Group Permission Leakage"
+
+    def test_group_detail_blocked(self):
+        """Casey can't view a group in Youth Services."""
+        self.login_as("staff", forbidden_content=CASEY_FORBIDDEN)
+        role = "Direct Service"
+        url = f"/groups/{self.group_b.pk}/"
+        resp = self.visit_forbidden(role, "Group detail (other program, 403)", url)
+        self.record_scenario(
+            self.SCENARIO, role, "Group detail blocked",
+            url, resp.status_code, [],
+        )
+
+    def test_session_log_blocked(self):
+        """Casey can't log a session for a Youth Services group."""
+        self.login_as("staff", forbidden_content=CASEY_FORBIDDEN)
+        role = "Direct Service"
+        url = f"/groups/{self.group_b.pk}/session/"
+        resp = self.visit_forbidden(role, "Session log (other program, 403)", url)
+        self.record_scenario(
+            self.SCENARIO, role, "Session log blocked",
+            url, resp.status_code, [],
+        )
+
+    def test_membership_remove_blocked(self):
+        """Casey can't remove a member from a Youth Services group."""
+        self.login_as("staff")
+        role = "Direct Service"
+        url = f"/groups/member/{self.membership_b.pk}/remove/"
+        resp = self.client.post(url)
+        issues = []
+        if resp.status_code != 403:
+            issues.append(self._make_issue(
+                Severity.CRITICAL, url, role,
+                "Membership remove (other program)",
+                f"Expected 403, got {resp.status_code}",
+            ))
+        self.record_scenario(
+            self.SCENARIO, role, "Membership remove blocked",
+            url, resp.status_code, issues,
+        )
+
+    def test_milestone_create_blocked(self):
+        """Casey can't create a milestone in a Youth Services group."""
+        self.login_as("staff")
+        role = "Direct Service"
+        url = f"/groups/{self.group_b.pk}/milestone/"
+        resp = self.client.post(url, {"title": "Hacked", "status": "not_started"})
+        issues = []
+        if resp.status_code != 403:
+            issues.append(self._make_issue(
+                Severity.CRITICAL, url, role,
+                "Milestone create (other program)",
+                f"Expected 403, got {resp.status_code}",
+            ))
+        self.record_scenario(
+            self.SCENARIO, role, "Milestone create blocked",
+            url, resp.status_code, issues,
+        )
+
+    def test_milestone_edit_blocked(self):
+        """Casey can't edit a milestone in a Youth Services group."""
+        self.login_as("staff", forbidden_content=CASEY_FORBIDDEN)
+        role = "Direct Service"
+        url = f"/groups/milestone/{self.milestone_b.pk}/edit/"
+        resp = self.visit_forbidden(role, "Milestone edit (other program, 403)", url)
+        self.record_scenario(
+            self.SCENARIO, role, "Milestone edit blocked",
+            url, resp.status_code, [],
+        )
+
+    def test_outcome_create_blocked(self):
+        """Casey can't record an outcome in a Youth Services group."""
+        self.login_as("staff")
+        role = "Direct Service"
+        url = f"/groups/{self.group_b.pk}/outcome/"
+        resp = self.client.post(url, {
+            "outcome_date": "2026-01-15",
+            "description": "Hacked outcome",
+        })
+        issues = []
+        if resp.status_code != 403:
+            issues.append(self._make_issue(
+                Severity.CRITICAL, url, role,
+                "Outcome create (other program)",
+                f"Expected 403, got {resp.status_code}",
+            ))
+        self.record_scenario(
+            self.SCENARIO, role, "Outcome create blocked",
+            url, resp.status_code, issues,
+        )
+
+    def test_target_history_blocked(self):
+        """Casey can't view plan target history for a Youth Services client."""
+        self.login_as("staff", forbidden_content=CASEY_FORBIDDEN)
+        role = "Direct Service"
+        url = f"/plans/targets/{self.plan_target_b.pk}/history/"
+        resp = self.visit_forbidden(role, "Target history (other program, 403)", url)
+        self.record_scenario(
+            self.SCENARIO, role, "Target history blocked",
+            url, resp.status_code, [],
+        )
+
+    def test_own_program_group_accessible(self):
+        """Casey CAN access her own program's group — sanity check."""
+        self.login_as("staff", forbidden_content=CASEY_FORBIDDEN)
+        role = "Direct Service"
+        url = f"/groups/{self.group_a.pk}/"
+        resp = self.visit(role, "Own program group (200)", url)
+        issues = []
+        if resp.status_code != 200:
+            issues.append(self._make_issue(
+                Severity.CRITICAL, url, role,
+                "Own program group",
+                f"Expected 200, got {resp.status_code}",
+            ))
+        self.record_scenario(
+            self.SCENARIO, role, "Own program group accessible",
             url, resp.status_code, issues,
         )

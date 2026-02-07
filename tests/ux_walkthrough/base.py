@@ -251,6 +251,34 @@ class UxWalkthroughBase(TestCase):
             author_program=cls.program_a,
         )
 
+        # --- Groups (for permission leakage testing) ---
+        from apps.groups.models import Group, GroupMembership, ProjectMilestone
+
+        cls.group_a = Group.objects.create(
+            name="Housing Workshop", program=cls.program_a,
+            group_type="standard",
+        )
+        cls.group_b = Group.objects.create(
+            name="Youth Coding Club", program=cls.program_b,
+            group_type="project",
+        )
+        cls.membership_b = GroupMembership.objects.create(
+            group=cls.group_b, member_name="Test Member",
+        )
+        cls.milestone_b = ProjectMilestone.objects.create(
+            group=cls.group_b, title="Launch Day",
+        )
+
+        # --- Plan data for client_b (for target_history isolation test) ---
+        cls.plan_section_b = PlanSection.objects.create(
+            client_file=cls.client_b, name="Youth Goals",
+            program=cls.program_b,
+        )
+        cls.plan_target_b = PlanTarget.objects.create(
+            plan_section=cls.plan_section_b, client_file=cls.client_b,
+            name="Complete coding course",
+        )
+
         # --- Feature toggles ---
         FeatureToggle.objects.create(
             feature_key="programs", is_enabled=True

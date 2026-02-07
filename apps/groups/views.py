@@ -322,6 +322,9 @@ def membership_add(request, group_id):
 def membership_remove(request, membership_id):
     """Deactivate a membership (POST only)."""
     membership = get_object_or_404(GroupMembership, pk=membership_id)
+    user_program_ids = _get_user_program_ids(request.user)
+    if membership.group.program_id not in user_program_ids:
+        return HttpResponseForbidden(_("You do not have access to this group."))
     if request.method == "POST":
         membership.status = "inactive"
         membership.save()
@@ -338,6 +341,9 @@ def membership_remove(request, membership_id):
 def milestone_create(request, group_id):
     """Create a milestone for a project-type group."""
     group = get_object_or_404(Group, pk=group_id, group_type="project")
+    user_program_ids = _get_user_program_ids(request.user)
+    if group.program_id not in user_program_ids:
+        return HttpResponseForbidden(_("You do not have access to this group."))
     if request.method == "POST":
         form = ProjectMilestoneForm(request.POST)
         if form.is_valid():
@@ -364,6 +370,9 @@ def milestone_edit(request, milestone_id):
     """Edit an existing project milestone."""
     milestone = get_object_or_404(ProjectMilestone, pk=milestone_id)
     group = milestone.group
+    user_program_ids = _get_user_program_ids(request.user)
+    if group.program_id not in user_program_ids:
+        return HttpResponseForbidden(_("You do not have access to this group."))
     if request.method == "POST":
         form = ProjectMilestoneForm(request.POST, instance=milestone)
         if form.is_valid():
@@ -388,6 +397,9 @@ def milestone_edit(request, milestone_id):
 def outcome_create(request, group_id):
     """Record an outcome for a project-type group."""
     group = get_object_or_404(Group, pk=group_id, group_type="project")
+    user_program_ids = _get_user_program_ids(request.user)
+    if group.program_id not in user_program_ids:
+        return HttpResponseForbidden(_("You do not have access to this group."))
     if request.method == "POST":
         form = ProjectOutcomeForm(request.POST)
         if form.is_valid():
