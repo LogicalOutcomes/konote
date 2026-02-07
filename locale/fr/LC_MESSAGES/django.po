@@ -4386,7 +4386,7 @@ msgid ""
 "Audit logging, admin isolation, and small-cell suppression are active for "
 "confidential programs. Complete a Privacy Impact Assessment before using for"
 " domestic violence or other high-risk services."
-msgstr ""
+msgstr "La journalisation d'audit, l'isolation administrative et la suppression des petites cellules sont actives pour les programmes confidentiels. Effectuez une évaluation des facteurs relatifs à la vie privée avant d'utiliser pour la violence conjugale ou d'autres services à haut risque."
 
 msgid "Audit notice"
 msgstr ""
