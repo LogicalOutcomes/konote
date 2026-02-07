@@ -343,10 +343,6 @@
         </table>
 
         <p><strong>{% trans "Note:" %}</strong> {% trans "Administrators without a" %} {{ term.program }} {% trans "assignment cannot see" %} {{ term.client }} {% trans "data. This is a security feature." %}</p>
-
-        <h3>{% trans "Different Roles in Different Programs" %}</h3>
-        <p>{% trans "You may have a different role depending on which" %} {{ term.program }} {% trans "you are working in. For example, you might be a Program Manager in one" %} {{ term.program }} {% trans "and Direct Service staff in another." %}</p>
-        <p>{% trans "Your current role is shown as a badge next to your name in the navigation bar. If you switch" %} {{ term.program_plural }}{% trans ", the badge updates to reflect your role in that" %} {{ term.program }}.</p>
     </section>
 
     {% if user.is_admin %}
