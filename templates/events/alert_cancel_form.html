@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Cancel Alert" %} — {{ client.first_name }} {{ client.last_name }}{% endblock %}
+{% block title %}{% trans "Cancel Alert" %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
 
 {% block content %}
 <hgroup>
     <h1>{% trans "Cancel Alert" %}</h1>
-    <p>{% blocktrans with first=client.first_name last=client.last_name %}For {{ first }} {{ last }}{% endblocktrans %}</p>
+    <p>{% blocktrans with first=client.display_name last=client.last_name %}For {{ first }} {{ last }}{% endblocktrans %}</p>
 </hgroup>
 
 <article aria-label="{% trans 'alert to cancel' %}" style="border-left: 4px solid #EF4444;">

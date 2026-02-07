@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Qualitative Progress" %} — {{ client.first_name }} {{ client.last_name }}{% endblock %}
+{% block title %}{% trans "Qualitative Progress" %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
 
 {% block content %}
 {% include "_breadcrumbs.html" %}
 <hgroup>
     <h1>{% trans "Qualitative Progress" %}</h1>
-    <p>{{ client.first_name }} {{ client.last_name }}</p>
+    <p>{{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
 
 {% if target_data %}

@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 
@@ -367,6 +367,53 @@ def metric_library(request):
 
 
 @login_required
+def metric_export(request):
+    """Admin-only CSV export of all metric definitions for review/editing."""
+    if not request.user.is_admin:
+        raise PermissionDenied(_("You don't have permission to access this page."))
+
+    from apps.reports.csv_utils import sanitise_csv_row
+
+    metrics = MetricDefinition.objects.all()
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="metric_definitions.csv"'
+    # UTF-8 BOM so Excel opens the file correctly
+    response.write("\ufeff")
+
+    writer = csv.writer(response)
+    writer.writerow(["id", "name", "definition", "category", "min_value",
+                     "max_value", "unit", "is_enabled", "status"])
+
+    for m in metrics:
+        writer.writerow(sanitise_csv_row([
+            m.pk,
+            m.name,
+            m.definition,
+            m.category,
+            m.min_value if m.min_value is not None else "",
+            m.max_value if m.max_value is not None else "",
+            m.unit,
+            "yes" if m.is_enabled else "no",
+            m.status,
+        ]))
+
+    # Audit log
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=getattr(request.user, "display_name", str(request.user)),
+        action="export",
+        resource_type="MetricDefinition",
+        ip_address=request.META.get("REMOTE_ADDR", ""),
+        is_demo_context=getattr(request.user, "is_demo", False),
+        metadata={"detail": f"Exported {metrics.count()} metric definitions to CSV"},
+    )
+
+    return response
+
+
+@login_required
 def metric_toggle(request, metric_id):
     """HTMX POST to toggle is_enabled on a metric definition."""
     if not request.user.is_admin:
@@ -453,8 +500,11 @@ VALID_CATEGORIES = dict(MetricDefinition.CATEGORY_CHOICES)
 def _parse_metric_csv(csv_file):
     """
     Parse a CSV file and return (rows, errors).
-    rows: list of dicts with metric data
+    rows: list of dicts with metric data (includes 'id' for updates)
     errors: list of error strings
+
+    If the CSV has an 'id' column, rows with a valid id will be matched
+    to existing metrics for updating. Rows without an id are treated as new.
     """
     rows = []
     errors = []
@@ -466,7 +516,6 @@ def _parse_metric_csv(csv_file):
 
         # Validate headers
         required_headers = {"name", "definition", "category"}
-        optional_headers = {"min_value", "max_value", "unit"}
         if reader.fieldnames is None:
             errors.append("CSV file is empty or has no headers.")
             return rows, errors
@@ -477,11 +526,35 @@ def _parse_metric_csv(csv_file):
             errors.append(f"Missing required columns: {', '.join(sorted(missing))}")
             return rows, errors
 
+        has_id_column = "id" in headers
+        has_enabled_column = "is_enabled" in headers
+        has_status_column = "status" in headers
+
+        # Pre-fetch existing metric ids for validation
+        existing_ids = set()
+        if has_id_column:
+            existing_ids = set(MetricDefinition.objects.values_list("pk", flat=True))
+
         for row_num, row in enumerate(reader, start=2):  # Start at 2 (row 1 is headers)
             # Normalize keys to lowercase
             row = {k.strip().lower(): v.strip() if v else "" for k, v in row.items()}
 
             row_errors = []
+
+            # Optional id for update-or-create
+            raw_id = row.get("id", "")
+            metric_id = None
+            action = "new"
+            if has_id_column and raw_id:
+                try:
+                    metric_id = int(raw_id)
+                    if metric_id not in existing_ids:
+                        row_errors.append(f"id {metric_id} does not match any existing metric")
+                        metric_id = None
+                    else:
+                        action = "update"
+                except ValueError:
+                    row_errors.append(f"id '{raw_id}' is not a valid number")
 
             # Required fields
             name = row.get("name", "")
@@ -521,16 +594,40 @@ def _parse_metric_csv(csv_file):
             if parsed_min is not None and parsed_max is not None and parsed_min > parsed_max:
                 row_errors.append(f"min_value ({parsed_min}) cannot be greater than max_value ({parsed_max})")
 
+            # is_enabled (optional — defaults to True for new, unchanged for updates)
+            is_enabled = True
+            if has_enabled_column:
+                raw_enabled = row.get("is_enabled", "").lower()
+                if raw_enabled in ("yes", "true", "1"):
+                    is_enabled = True
+                elif raw_enabled in ("no", "false", "0"):
+                    is_enabled = False
+                elif raw_enabled:
+                    row_errors.append(f"is_enabled '{row.get('is_enabled', '')}' must be yes/no")
+
+            # status (optional — defaults to 'active' for new)
+            status = "active"
+            if has_status_column:
+                raw_status = row.get("status", "").lower()
+                if raw_status in ("active", "deactivated"):
+                    status = raw_status
+                elif raw_status:
+                    row_errors.append(f"status '{row.get('status', '')}' must be active/deactivated")
+
             if row_errors:
                 errors.append(f"Row {row_num}: {'; '.join(row_errors)}")
             else:
                 rows.append({
+                    "id": metric_id,
+                    "action": action,
                     "name": name,
                     "definition": definition,
                     "category": category,
                     "min_value": parsed_min,
                     "max_value": parsed_max,
                     "unit": unit,
+                    "is_enabled": is_enabled,
+                    "status": status,
                 })
 
     except UnicodeDecodeError:
@@ -565,35 +662,56 @@ def metric_import(request):
                 messages.error(request, _("Import session expired. Please upload the file again."))
                 return redirect("plans:metric_import")
 
-            # Create the metrics
+            # Create or update the metrics
             created_count = 0
+            updated_count = 0
             for row_data in cached_rows:
-                MetricDefinition.objects.create(
-                    name=row_data["name"],
-                    definition=row_data["definition"],
-                    category=row_data["category"],
-                    min_value=row_data["min_value"],
-                    max_value=row_data["max_value"],
-                    unit=row_data["unit"],
-                    is_library=False,
-                    is_enabled=True,
-                    status="active",
-                )
-                created_count += 1
+                fields = {
+                    "name": row_data["name"],
+                    "definition": row_data["definition"],
+                    "category": row_data["category"],
+                    "min_value": row_data["min_value"],
+                    "max_value": row_data["max_value"],
+                    "unit": row_data["unit"],
+                    "is_enabled": row_data.get("is_enabled", True),
+                    "status": row_data.get("status", "active"),
+                }
+
+                if row_data.get("id"):
+                    # Update existing metric
+                    MetricDefinition.objects.filter(pk=row_data["id"]).update(**fields)
+                    updated_count += 1
+                else:
+                    # Create new metric
+                    MetricDefinition.objects.create(is_library=False, **fields)
+                    created_count += 1
 
             # Audit log
+            parts = []
+            if created_count:
+                parts.append(f"created {created_count}")
+            if updated_count:
+                parts.append(f"updated {updated_count}")
+            detail = f"CSV import: {', '.join(parts)} metric definitions"
+
             AuditLog.objects.using("audit").create(
                 event_timestamp=timezone.now(),
                 user_id=request.user.pk,
                 user_display=getattr(request.user, "display_name", str(request.user)),
-                action="create",
+                action="import",
                 resource_type="MetricDefinition",
                 ip_address=request.META.get("REMOTE_ADDR", ""),
                 is_demo_context=getattr(request.user, "is_demo", False),
-                metadata={"detail": f"Imported {created_count} metric definitions from CSV"},
+                metadata={"detail": detail},
             )
 
-            messages.success(request, _("Successfully imported %(count)d metric definitions.") % {"count": created_count})
+            # Build success message
+            msg_parts = []
+            if created_count:
+                msg_parts.append(_("%(count)d new") % {"count": created_count})
+            if updated_count:
+                msg_parts.append(_("%(count)d updated") % {"count": updated_count})
+            messages.success(request, _("Import complete: %s.") % ", ".join(msg_parts))
             return redirect("plans:metric_library")
 
         # This is the upload step - parse the CSV
@@ -606,9 +724,14 @@ def metric_import(request):
                 # Cache the parsed data in session for confirmation
                 request.session["metric_import_rows"] = preview_rows
 
+    update_count = sum(1 for r in preview_rows if r.get("action") == "update")
+    new_count = len(preview_rows) - update_count
+
     return render(request, "plans/metric_import.html", {
         "form": form,
         "preview_rows": preview_rows,
         "parse_errors": parse_errors,
         "category_choices": VALID_CATEGORIES,
+        "update_count": update_count,
+        "new_count": new_count,
     })

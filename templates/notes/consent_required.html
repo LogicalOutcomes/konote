@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Consent Required" %} — {{ client.first_name }} {{ client.last_name }}{% endblock %}
+{% block title %}{% trans "Consent Required" %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
 
 {% block content %}
 <article class="notice-card">
     <hgroup>
         <h1>{% trans "Consent Required" %}</h1>
-        <p>{{ client.first_name }} {{ client.last_name }}</p>
+        <p>{{ client.display_name }} {{ client.last_name }}</p>
     </hgroup>
 
     <p class="notice warning" role="alert">

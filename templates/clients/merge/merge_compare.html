@@ -12,9 +12,9 @@
 
 {# Summary cards — creation dates and activity counts #}
 <div class="grid">
-    <article aria-label="{% blocktrans with name=client_a.first_name %}Client A: {{ name }}{% endblocktrans %}">
+    <article aria-label="{% blocktrans with name=client_a.display_name %}Client A: {{ name }}{% endblocktrans %}">
         <header>
-            <strong>{% trans "Client A" %}: {{ client_a.first_name }} {{ client_a.last_name }}</strong>
+            <strong>{% trans "Client A" %}: {{ client_a.display_name }} {{ client_a.last_name }}</strong>
             {% if client_a.record_id %}<br><small>{% trans "Record ID" %}: {{ client_a.record_id }}</small>{% endif %}
         </header>
         <p>
@@ -28,9 +28,9 @@
             {{ comparison.counts_a.enrolments }} {% trans "enrolments" %}
         </p>
     </article>
-    <article aria-label="{% blocktrans with name=client_b.first_name %}Client B: {{ name }}{% endblocktrans %}">
+    <article aria-label="{% blocktrans with name=client_b.display_name %}Client B: {{ name }}{% endblocktrans %}">
         <header>
-            <strong>{% trans "Client B" %}: {{ client_b.first_name }} {{ client_b.last_name }}</strong>
+            <strong>{% trans "Client B" %}: {{ client_b.display_name }} {{ client_b.last_name }}</strong>
             {% if client_b.record_id %}<br><small>{% trans "Record ID" %}: {{ client_b.record_id }}</small>{% endif %}
         </header>
         <p>
@@ -105,14 +105,14 @@
         <label>
             <input type="radio" name="primary" value="{{ client_a.pk }}" checked
                    onchange="document.querySelector('[name=primary]').value=this.value">
-            {% blocktrans with name=client_a.first_name last=client_a.last_name id=client_a.pk %}
+            {% blocktrans with name=client_a.display_name last=client_a.last_name id=client_a.pk %}
             Keep Client A: {{ name }} {{ last }} (Record #{{ id }})
             {% endblocktrans %}
         </label>
         <label>
             <input type="radio" name="primary" value="{{ client_b.pk }}"
                    onchange="document.querySelector('[name=primary]').value=this.value">
-            {% blocktrans with name=client_b.first_name last=client_b.last_name id=client_b.pk %}
+            {% blocktrans with name=client_b.display_name last=client_b.last_name id=client_b.pk %}
             Keep Client B: {{ name }} {{ last }} (Record #{{ id }})
             {% endblocktrans %}
         </label>

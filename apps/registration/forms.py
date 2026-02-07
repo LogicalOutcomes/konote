@@ -69,6 +69,14 @@ class PublicRegistrationForm(forms.Form):
         max_length=255,
         widget=forms.TextInput(attrs={"autocomplete": "family-name"}),
     )
+    preferred_name = forms.CharField(
+        max_length=255,
+        required=False,
+        label=_("Preferred Name"),
+        widget=forms.TextInput(attrs={
+            "placeholder": _("What name do you prefer to be called?"),
+        }),
+    )
     email = forms.EmailField(
         widget=forms.EmailInput(attrs={"autocomplete": "email"}),
     )

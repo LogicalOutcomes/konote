@@ -7,7 +7,7 @@
 {% include "_breadcrumbs.html" %}
 <hgroup>
     <h1>{% blocktrans with note=term.progress_note|default:"Note" %}Cancel {{ note }}{% endblocktrans %}</h1>
-    <p>{{ client.first_name }} {{ client.last_name }} — {{ note.effective_date|date:"Y-m-d" }}</p>
+    <p>{{ client.display_name }} {{ client.last_name }} — {{ note.effective_date|date:"Y-m-d" }}</p>
 </hgroup>
 
 <article>

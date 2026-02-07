@@ -63,6 +63,7 @@ class ClientViewsTest(TestCase):
         resp = self.client.post("/clients/create/", {
             "first_name": "Test",
             "last_name": "User",
+            "preferred_name": "",
             "middle_name": "",
             "birth_date": "",
             "record_id": "R001",
@@ -74,6 +75,41 @@ class ClientViewsTest(TestCase):
         self.assertEqual(cf.first_name, "Test")
         self.assertEqual(cf.last_name, "User")
         self.assertTrue(ClientProgramEnrolment.objects.filter(client_file=cf, program=self.prog_a).exists())
+
+    def test_create_client_with_preferred_name(self):
+        """Preferred name is saved and used as display_name."""
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.post("/clients/create/", {
+            "first_name": "Jonathan",
+            "last_name": "Smith",
+            "preferred_name": "Jay",
+            "middle_name": "",
+            "birth_date": "",
+            "record_id": "",
+            "status": "active",
+            "programs": [self.prog_a.pk],
+        })
+        self.assertEqual(resp.status_code, 302)
+        cf = ClientFile.objects.last()
+        self.assertEqual(cf.first_name, "Jonathan")
+        self.assertEqual(cf.preferred_name, "Jay")
+        self.assertEqual(cf.display_name, "Jay")
+
+    def test_display_name_falls_back_to_first_name(self):
+        """When no preferred name, display_name returns first_name."""
+        cf = self._create_client("Jane", "Doe")
+        self.assertEqual(cf.display_name, "Jane")
+        self.assertEqual(cf.preferred_name, "")
+
+    def test_preferred_name_shown_in_client_detail(self):
+        """Client detail page shows preferred name, not legal first name."""
+        cf = self._create_client("Jonathan", "Smith", [self.prog_a])
+        cf.preferred_name = "Jay"
+        cf.save()
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.get(f"/clients/{cf.pk}/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Jay")
 
     def test_edit_client(self):
         cf = self._create_client("Jane", "Doe", [self.prog_a])

@@ -6,7 +6,7 @@
 {% block content %}
 <hgroup>
     <h1>{% blocktrans with metrics=term.metric_plural|default:"Metrics" %}Import {{ metrics }}{% endblocktrans %}</h1>
-    <p>{% blocktrans with metrics=term.metric_plural|default:"metrics" %}Upload a CSV file to add multiple {{ metrics }} at once.{% endblocktrans %}</p>
+    <p>{% blocktrans with metrics=term.metric_plural|default:"metrics" %}Upload a CSV file to add or update {{ metrics }}.{% endblocktrans %}</p>
 </hgroup>
 
 {% if parse_errors %}
@@ -25,20 +25,33 @@
 <article aria-label="{% trans 'Preview' %}">
     <header>
         <strong>{% blocktrans with count=preview_rows|length metrics=term.metric_plural|default:"metrics" %}Preview: {{ count }} {{ metrics }} ready to import{% endblocktrans %}</strong>
+        {% if update_count %}
+        <br><small>{% blocktrans with new=new_count updated=update_count %}{{ new }} new, {{ updated }} updates to existing{% endblocktrans %}</small>
+        {% endif %}
     </header>
     <table role="grid" aria-label="{% trans 'Metrics to import' %}">
         <thead>
             <tr>
+                <th scope="col">{% trans "Action" %}</th>
                 <th scope="col">{% trans "Name" %}</th>
                 <th scope="col">{% trans "Definition" %}</th>
                 <th scope="col">{% trans "Category" %}</th>
                 <th scope="col">{% trans "Range" %}</th>
                 <th scope="col">{% trans "Unit" %}</th>
+                <th scope="col">{% trans "Enabled" %}</th>
+                <th scope="col">{% trans "Status" %}</th>
             </tr>
         </thead>
         <tbody>
             {% for row in preview_rows %}
             <tr>
+                <td>
+                    {% if row.action == "update" %}
+                    <mark>{% trans "Update" %}</mark>
+                    {% else %}
+                    <ins>{% trans "New" %}</ins>
+                    {% endif %}
+                </td>
                 <td>{{ row.name }}</td>
                 <td>{{ row.definition|truncatewords:15 }}</td>
                 <td>{{ row.category }}</td>
@@ -50,6 +63,8 @@
                     {% endif %}
                 </td>
                 <td>{{ row.unit|default:"—" }}</td>
+                <td>{% if row.is_enabled %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</td>
+                <td>{{ row.status }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -86,6 +101,7 @@
 
 <details style="margin-top: 2rem;">
     <summary>{% trans "CSV Format Instructions" %}</summary>
+    <p>{% blocktrans %}The easiest way is to use <strong>Export to CSV</strong> from the Metric Library, edit the file in Excel, then upload it here.{% endblocktrans %}</p>
     <p>{% trans "Your CSV file should have these columns:" %}</p>
     <table role="grid">
         <thead>
@@ -96,6 +112,11 @@
             </tr>
         </thead>
         <tbody>
+            <tr>
+                <td><code>id</code></td>
+                <td>{% trans "No" %}</td>
+                <td>{% trans "Metric ID from export. If present, that metric will be updated. If blank, a new metric is created." %}</td>
+            </tr>
             <tr>
                 <td><code>name</code></td>
                 <td>{% trans "Yes" %}</td>
@@ -126,13 +147,24 @@
                 <td>{% trans "No" %}</td>
                 <td>{% trans "Unit of measurement (e.g., \"score\", \"days\", \"%\")" %}</td>
             </tr>
+            <tr>
+                <td><code>is_enabled</code></td>
+                <td>{% trans "No" %}</td>
+                <td>{% trans "yes or no — whether this metric is available for use (defaults to yes)" %}</td>
+            </tr>
+            <tr>
+                <td><code>status</code></td>
+                <td>{% trans "No" %}</td>
+                <td>{% trans "active or deactivated (defaults to active)" %}</td>
+            </tr>
         </tbody>
     </table>
 
     <p><strong>{% trans "Example CSV:" %}</strong></p>
-    <pre style="background: var(--pico-code-background-color); padding: 1rem; overflow-x: auto;">name,definition,category,min_value,max_value,unit
-Client Satisfaction,Client satisfaction with services. 1 = very dissatisfied 5 = very satisfied.,general,1,5,score
-Days in Program,Number of days enrolled in the program.,general,0,,days</pre>
+    <pre style="background: var(--pico-code-background-color); padding: 1rem; overflow-x: auto;">id,name,definition,category,min_value,max_value,unit,is_enabled,status
+,Client Satisfaction,Client satisfaction with services. 1 = very dissatisfied 5 = very satisfied.,general,1,5,score,yes,active
+42,PHQ-9 (Depression),Patient Health Questionnaire depression scale.,mental_health,0,27,score,yes,active</pre>
+    <p><small>{% trans "Row 1 has no id — it creates a new metric. Row 2 has id 42 — it updates the existing metric with that ID." %}</small></p>
 </details>
 {% endif %}
 {% endblock %}

@@ -3,6 +3,7 @@
 ## Flagged
 
 - [ ] Decide product name — should web version be called "KoNote" (not "KoNote2"). See `tasks/naming-versioning.md` (NAME1)
+- [ ] Update konote-website git remote URL — repo was renamed to `konote2-website` but local remote still points to old `konote2` name (NAME2)
 
 ## Active Work
 
@@ -12,13 +13,6 @@ The core app is feature-complete. These tasks prepare for production use.
 
 - [ ] Verify email is configured — needed for export notifications, erasure alerts, and password resets (OPS3)
 - [ ] Test backup restore from a real database dump (OPS4)
-
-### Demo Site Setup
-
-- [x] Merge develop → main in konote-web — deploys iframe fix to Railway (DEMO1)
-- [x] Add demo registration link to seed data — auto-creates on Railway startup (DEMO2)
-- [x] Verify GitHub Pages is enabled for konote2-website repo (DEMO3)
-- [x] Test live demo page — iframe loads, registration form works (DEMO4)
 
 ### Occasional Tasks
 
@@ -101,6 +95,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Demo site setup — merged to main, registration link seeded, GitHub Pages verified, live demo tested — 2026-02-07 (DEMO1-4)
 - [x] CONF9 follow-ups — logger.exception() for audit, flash message on context switch, request-level cache for needs_program_selector, soft-filter vs hard-boundary docs — 2026-02-07 (CONF9a-d)
 - [x] Erasure hardening — all 7 expert-panel recommendations implemented: PDF receipt scoping, audit-before-erasure, receipt download tracking, rejection notifications, deduplication fix, race condition fix, pagination — 2026-02-06 (ERASE-H1–H7)
 - [x] Duplicate merge tool — admin-only side-by-side comparison, transfers notes/events/plans/enrolments/fields, 32 tests — 2026-02-06 (MATCH4)
@@ -109,9 +104,6 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 - [x] Full integration test pass — 1,000+ tests passing — 2026-02-06 (TEST3)
 - [x] FullHost deployment verified — HTTPS working via Let's Encrypt, demo data live — 2026-02-06 (OPS5, OPS-FH2)
 - [x] Multi-role staff program context switcher — session-based active program for mixed Standard/Confidential users, forced selection on login, nav dropdown, 39 tests — 2026-02-06 (CONF9)
-- [x] French translation hardening — 108 unwrapped strings, Help/Privacy pages, demo banner — 2026-02-06 (I18N-FIX2-3)
-- [x] Security, privacy, accessibility review fixes — encrypted PlanTarget fields, MultiFernet rotation, aria-live, data tables — 2026-02-06 (SEC-FIX1-2, PRIV-FIX1-2, A11Y-FIX1-3)
-- [x] Client voice, qualitative progress, groups app (Phases A-D) — 2026-02-06 (CV1-4)
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 
 ---

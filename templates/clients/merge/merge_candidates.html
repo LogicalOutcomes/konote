@@ -43,13 +43,13 @@
         {% for pair in phone_pairs %}
         <tr>
             <td>
-                <strong>{{ pair.client_a.first_name }} {{ pair.client_a.last_name }}</strong>
+                <strong>{{ pair.client_a.display_name }} {{ pair.client_a.last_name }}</strong>
                 {% if pair.client_a.program_names %}
                 <br><small>{{ pair.client_a.program_names|join:", " }}</small>
                 {% endif %}
             </td>
             <td>
-                <strong>{{ pair.client_b.first_name }} {{ pair.client_b.last_name }}</strong>
+                <strong>{{ pair.client_b.display_name }} {{ pair.client_b.last_name }}</strong>
                 {% if pair.client_b.program_names %}
                 <br><small>{{ pair.client_b.program_names|join:", " }}</small>
                 {% endif %}
@@ -84,13 +84,13 @@
         {% for pair in name_dob_pairs %}
         <tr>
             <td>
-                <strong>{{ pair.client_a.first_name }} {{ pair.client_a.last_name }}</strong>
+                <strong>{{ pair.client_a.display_name }} {{ pair.client_a.last_name }}</strong>
                 {% if pair.client_a.program_names %}
                 <br><small>{{ pair.client_a.program_names|join:", " }}</small>
                 {% endif %}
             </td>
             <td>
-                <strong>{{ pair.client_b.first_name }} {{ pair.client_b.last_name }}</strong>
+                <strong>{{ pair.client_b.display_name }} {{ pair.client_b.last_name }}</strong>
                 {% if pair.client_b.program_names %}
                 <br><small>{{ pair.client_b.program_names|join:", " }}</small>
                 {% endif %}

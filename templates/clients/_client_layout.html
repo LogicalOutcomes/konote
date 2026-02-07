@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ client.first_name }} {{ client.last_name }} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{{ client.display_name }} {{ client.last_name }} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
 {% include "_breadcrumbs.html" %}
 <div class="client-header">
-    <h1>{{ client.first_name }} {{ client.last_name }}</h1>
+    <h1>{{ client.display_name }} {{ client.last_name }}</h1>
     {% if client.status == "active" %}
         <span class="badge badge-success">{% trans "Active" %}</span>
     {% elif client.status == "inactive" %}

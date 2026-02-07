@@ -6,7 +6,7 @@
 {% block content %}
 <hgroup>
     <h1>{% blocktrans with target=term.target|default:"Target" %}{{ target }} History{% endblocktrans %}</h1>
-    <p>{{ target.name }} — {{ client.first_name }} {{ client.last_name }}</p>
+    <p>{{ target.name }} — {{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
 
 <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary" style="margin-bottom: 1rem;">{% blocktrans with plan=term.plan|default:"Plan" %}Back to {{ plan }}{% endblocktrans %}</a>

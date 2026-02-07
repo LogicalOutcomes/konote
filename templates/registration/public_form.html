@@ -116,6 +116,20 @@
                 </div>
             </div>
 
+            <!-- Preferred Name -->
+            <div>
+                <label for="id_preferred_name">{% trans "Preferred Name" %}</label>
+                <input type="text"
+                       name="preferred_name"
+                       id="id_preferred_name"
+                       value="{{ form.preferred_name.value|default:'' }}"
+                       placeholder="{% trans 'What name do you prefer to be called?' %}"
+                       {% if form.preferred_name.errors %}aria-invalid="true" aria-describedby="preferred_name_error"{% endif %}>
+                {% if form.preferred_name.errors %}
+                <small id="preferred_name_error" class="error-message" style="color: var(--kn-danger-fg);">{{ form.preferred_name.errors.0 }}</small>
+                {% endif %}
+            </div>
+
             <!-- Email -->
             <div>
                 <label for="id_email">

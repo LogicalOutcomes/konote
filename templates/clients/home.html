@@ -152,7 +152,7 @@
                 {% for alert in active_alerts %}
                 <li class="priority-item priority-alert">
                     <a href="{% url 'clients:client_detail' client_id=alert.client_file.pk %}">
-                        {{ alert.client_file.first_name }} {{ alert.client_file.last_name }}
+                        {{ alert.client_file.display_name }} {{ alert.client_file.last_name }}
                     </a>
                     <span class="priority-detail">{{ alert.content|truncatechars:40 }}</span>
                     <small class="secondary">{{ alert.created_at|date:"M j" }}</small>
@@ -168,7 +168,7 @@
                 {% for note in pending_follow_ups %}
                 <li class="priority-item{% if note.follow_up_date < today %} priority-overdue{% endif %}">
                     <a href="{% url 'clients:client_detail' client_id=note.client_file.pk %}">
-                        {{ note.client_file.first_name }} {{ note.client_file.last_name }}
+                        {{ note.client_file.display_name }} {{ note.client_file.last_name }}
                     </a>
                     <span class="priority-detail">{{ note.notes_text|truncatechars:40 }}</span>
                     <small class="secondary">{{ note.follow_up_date|date:"M j" }}</small>

@@ -923,6 +923,10 @@ class Command(BaseCommand):
                 clients_missing += 1
                 continue
             for field_name, value in field_values.items():
+                # Also set preferred_name on the core model field
+                if field_name == "Preferred Name":
+                    client.preferred_name = value
+                    client.save()
                 try:
                     field_def = CustomFieldDefinition.objects.get(name=field_name)
                     cdv, _ = ClientDetailValue.objects.get_or_create(
@@ -1047,7 +1051,6 @@ class Command(BaseCommand):
 
     def _create_demo_registration_link(self, programs_by_name, created_by):
         """Create a public registration link with slug 'demo' for the project website."""
-        from apps.clients.models import CustomFieldGroup
         from apps.registration.models import RegistrationLink
 
         program = programs_by_name.get("Supported Employment")
@@ -1074,17 +1077,10 @@ class Command(BaseCommand):
             },
         )
 
-        # Keep the demo link simple — only Contact Information.
-        # Always reset field groups so redeployments pick up changes.
-        contact_group = CustomFieldGroup.objects.filter(
-            title="Contact Information", status="active"
-        ).first()
-        if contact_group:
-            link.field_groups.set([contact_group])
-        else:
-            self.stdout.write(self.style.WARNING(
-                "  Contact Information field group not found — demo form will have no custom fields."
-            ))
+        # Keep the demo form minimal and welcoming — no custom field groups.
+        # Core fields (name, email, phone, consent) are enough for registration.
+        # Agencies can attach field groups to their own registration links.
+        link.field_groups.clear()
 
         if created:
             self.stdout.write("  Created demo registration link (slug: demo)")

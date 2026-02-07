@@ -9,7 +9,7 @@
         {% if match_type == "name_dob" %}
         {% trans "A client with a similar name and date of birth already has a record." %}
         {% else %}
-        {% blocktrans with first=match.first_name last=match.last_name %}A client named <strong>{{ first }} {{ last }}</strong> already has a record with this phone number.{% endblocktrans %}
+        {% blocktrans with first=match.display_name last=match.last_name %}A client named <strong>{{ first }} {{ last }}</strong> already has a record with this phone number.{% endblocktrans %}
         {% endif %}
         {% if match.program_names %}
         <br><small>

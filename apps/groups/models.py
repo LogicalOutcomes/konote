@@ -104,9 +104,9 @@ class GroupMembership(models.Model):
 
     @property
     def display_name(self):
-        """Return client's full name if linked, otherwise the member_name."""
+        """Return client's display name + last name if linked, otherwise the member_name."""
         if self.client_file:
-            first = self.client_file.first_name or ""
+            first = self.client_file.display_name or ""
             last = self.client_file.last_name or ""
             full = f"{first} {last}".strip()
             return full or f"Client #{self.client_file.pk}"

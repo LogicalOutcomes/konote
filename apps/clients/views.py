@@ -154,7 +154,7 @@ def client_list(request):
             if int(program_filter) not in program_ids:
                 continue
 
-        name = f"{client.first_name} {client.last_name}"
+        name = f"{client.display_name} {client.last_name}"
         item = {"client": client, "name": name, "programs": programs}
 
         # Apply text search (name, record ID, or — via second pass — note content)
@@ -205,6 +205,7 @@ def client_create(request):
             client = ClientFile()
             client.first_name = form.cleaned_data["first_name"]
             client.last_name = form.cleaned_data["last_name"]
+            client.preferred_name = form.cleaned_data["preferred_name"] or ""
             client.middle_name = form.cleaned_data["middle_name"] or ""
             client.birth_date = form.cleaned_data["birth_date"]
             client.phone = form.cleaned_data.get("phone", "")
@@ -239,6 +240,7 @@ def client_edit(request, client_id):
         if form.is_valid():
             client.first_name = form.cleaned_data["first_name"]
             client.last_name = form.cleaned_data["last_name"]
+            client.preferred_name = form.cleaned_data["preferred_name"] or ""
             client.middle_name = form.cleaned_data["middle_name"] or ""
             client.birth_date = form.cleaned_data["birth_date"]
             client.phone = form.cleaned_data.get("phone", "")
@@ -271,6 +273,7 @@ def client_edit(request, client_id):
             initial={
                 "first_name": client.first_name,
                 "last_name": client.last_name,
+                "preferred_name": client.preferred_name,
                 "middle_name": client.middle_name,
                 "phone": client.phone,
                 "birth_date": client.birth_date,
@@ -283,7 +286,7 @@ def client_edit(request, client_id):
     # Breadcrumbs: Clients > [Client Name] > Edit
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": "Clients"},
-        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.first_name} {client.last_name}"},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
         {"url": "", "label": "Edit"},
     ]
     return render(request, "clients/form.html", {"form": form, "editing": True, "client": client, "breadcrumbs": breadcrumbs})
@@ -341,7 +344,7 @@ def client_detail(request, client_id):
     # Breadcrumbs: Clients > [Client Name]
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": "Clients"},
-        {"url": "", "label": f"{client.first_name} {client.last_name}"},
+        {"url": "", "label": f"{client.display_name} {client.last_name}"},
     ]
     # Tab counts for badges (only for non-front-desk roles, only for full page loads)
     tab_counts = {} if is_receptionist else get_client_tab_counts(client)
@@ -677,7 +680,7 @@ def client_search(request):
             except ValueError:
                 pass
 
-        name = f"{client.first_name} {client.last_name}"
+        name = f"{client.display_name} {client.last_name}"
         item = {"client": client, "name": name, "programs": programs}
 
         # Apply text search (name, record ID, or — via second pass — note content)
