@@ -217,8 +217,12 @@ def public_registration_form(request, slug):
     submission.email = form.cleaned_data["email"]
     submission.phone = form.cleaned_data.get("phone", "")
 
-    # Store custom field values
-    submission.field_values = form.get_custom_field_values()
+    # Store custom field values + preferred name
+    field_values = form.get_custom_field_values()
+    preferred_name = form.cleaned_data.get("preferred_name", "")
+    if preferred_name:
+        field_values["preferred_name"] = preferred_name
+    submission.field_values = field_values
 
     # Save the submission first
     submission.save()
