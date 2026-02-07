@@ -269,6 +269,33 @@ Capture agency-specific information not in the standard client form.
 | **Staff** | Enter data, write notes, view clients in assigned programs |
 | **Front Desk** | Limited client info, basic data entry |
 
+### Per-Program Role Assignments
+
+A single user can hold **different roles in different programs**. This is common in small agencies where one person wears multiple hats.
+
+**Examples:**
+- Sarah is **Program Manager** in "Youth Housing" but delivers direct services as **Staff** in "Employment Support"
+- David works the front desk for Drop-In Centre (**Front Desk**) but does casework in Mental Health (**Staff**)
+
+**When to use this:**
+- A senior staff member oversees one program but facilitates groups or sees clients in another
+- A front-desk worker also does casework in a specific program
+- Someone is covering temporarily in a different capacity
+
+**How it works:**
+- Each program assignment has its own role — the system checks the role for the specific program being accessed
+- When viewing a client enrolled in multiple programs, the user's **highest** role across those programs applies
+- The user's current role is shown as a badge in the navigation bar
+
+**To manage per-program roles:**
+1. Go to **User Management**
+2. Click **Roles** next to the user's name
+3. Use the table to see current program assignments
+4. Use the form below the table to add a new program role
+5. Click **Remove** to revoke access to a specific program
+
+> **Tip:** When someone manages one program but personally runs groups in another, assign them as Program Manager in the first and Staff in the second. This gives them management tools where they need them and direct-service access where they're delivering services.
+
 ### Deactivate Users
 
 When someone leaves:
