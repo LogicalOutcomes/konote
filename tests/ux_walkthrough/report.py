@@ -14,6 +14,7 @@ class ReportGenerator:
         self.pages_visited: int = 0
         self.steps_by_role: dict[str, list[dict]] = {}
         self.scenarios: dict[str, list[dict]] = {}
+        self.browser_findings: dict[str, list[dict]] = {}
 
     def record_step(
         self,
@@ -60,6 +61,38 @@ class ReportGenerator:
             "status_code": status_code,
             "issues": issues,
         })
+
+    def record_browser_finding(
+        self,
+        category: str,
+        severity: str,
+        url: str,
+        description: str,
+        detail: str = "",
+    ):
+        """Record a finding from a browser-based test (Playwright).
+
+        Findings are grouped by category (e.g. "Colour Contrast",
+        "Focus Management", "Responsive Layout") and also added to
+        the main issues list for summary counts.
+        """
+        if category not in self.browser_findings:
+            self.browser_findings[category] = []
+        self.browser_findings[category].append({
+            "severity": severity,
+            "url": url,
+            "description": description,
+            "detail": detail,
+        })
+        # Add to main issues list so summary counts include browser findings
+        self.issues.append(UxIssue(
+            severity=Severity(severity),
+            url=url,
+            role="Browser",
+            step=category,
+            description=description,
+            detail=detail,
+        ))
 
     def _read_previous_counts(self, filepath: str) -> dict:
         """Read issue counts from a previous report file, if it exists."""
@@ -149,9 +182,15 @@ class ReportGenerator:
 
         # Known limitations
         lines.append("## Known Limitations\n")
-        lines.append("- Colour contrast not tested (requires browser rendering)")
-        lines.append("- Focus management after HTMX swaps not tested")
-        lines.append("- Visual layout / responsive behaviour not tested")
+        if self.browser_findings:
+            lines.append("- Colour contrast, focus management, and responsive "
+                         "layout are tested via Playwright browser tests")
+            lines.append("- Colour contrast checks depend on CDN "
+                         "(axe-core) — require internet")
+        else:
+            lines.append("- Colour contrast not tested (requires browser rendering)")
+            lines.append("- Focus management after HTMX swaps not tested")
+            lines.append("- Visual layout / responsive behaviour not tested")
         lines.append("")
 
         # Per-role walkthrough table
@@ -189,6 +228,29 @@ class ReportGenerator:
                         f"{s['status_code']} | {issue_summary} |"
                     )
                 lines.append("")
+
+        # Browser-based findings (Playwright)
+        if self.browser_findings:
+            lines.append("## Browser-Based Findings\n")
+            lines.append("_Tested with Playwright (headless Chromium) + axe-core._\n")
+            for category, findings in self.browser_findings.items():
+                lines.append(f"### {category}\n")
+                if not findings:
+                    lines.append("_No issues found._\n")
+                else:
+                    for f in findings:
+                        sev_label = {
+                            "critical": "CRITICAL",
+                            "warning": "WARNING",
+                            "info": "INFO",
+                        }.get(f["severity"], f["severity"].upper())
+                        lines.append(
+                            f"- **[{sev_label}]** `{f['url']}` "
+                            f"— {f['description']}"
+                        )
+                        if f.get("detail"):
+                            lines.append(f"  _{f['detail']}_")
+                        lines.append("")
 
         # Recommendations
         lines.append("## Recommendations\n")
