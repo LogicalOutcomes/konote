@@ -405,7 +405,8 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
 @login_required
 def client_custom_fields_display(request, client_id):
     """HTMX: Return read-only custom fields partial."""
-    client = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
     context = _get_custom_fields_context(client, user_role, hide_empty=True)
     return render(request, "clients/_custom_fields_display.html", context)
@@ -414,7 +415,8 @@ def client_custom_fields_display(request, client_id):
 @login_required
 def client_custom_fields_edit(request, client_id):
     """HTMX: Return editable custom fields form partial."""
-    client = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
     context = _get_custom_fields_context(client, user_role)
 
@@ -509,7 +511,8 @@ def client_save_custom_fields(request, client_id):
 @login_required
 def client_consent_display(request, client_id):
     """HTMX: Return read-only consent status partial."""
-    client = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
     is_receptionist = user_role == "receptionist"
     return render(request, "clients/_consent_display.html", {
@@ -524,7 +527,8 @@ def client_consent_edit(request, client_id):
     """HTMX: Return consent recording form partial."""
     from django.utils import timezone
 
-    client = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
     initial = {}
     if client.consent_given_at:
         initial["consent_date"] = client.consent_given_at.date()
@@ -547,7 +551,8 @@ def client_consent_save(request, client_id):
     """
     from django.utils import timezone
 
-    client = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
     is_receptionist = user_role == "receptionist"
 

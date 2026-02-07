@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.clients.models import ClientFile, CustomFieldDefinition
+from apps.clients.views import get_client_queryset
 
 from .forms import RegistrationLinkForm
 from .models import RegistrationLink, RegistrationSubmission
@@ -162,6 +163,7 @@ def link_delete(request, pk):
 # --- Submission Management ---
 
 @login_required
+@admin_required
 def submission_list(request):
     """List all registration submissions with filtering."""
     status_filter = request.GET.get("status", "")
@@ -198,6 +200,7 @@ def submission_list(request):
 
 
 @login_required
+@admin_required
 def submission_detail(request, pk):
     """View details of a registration submission."""
     submission = get_object_or_404(
@@ -239,6 +242,7 @@ def submission_detail(request, pk):
 
 
 @login_required
+@admin_required
 def submission_approve(request, pk):
     """Approve a registration submission and create client record."""
     submission = get_object_or_404(RegistrationSubmission, pk=pk)
@@ -264,6 +268,7 @@ def submission_approve(request, pk):
 
 
 @login_required
+@admin_required
 def submission_reject(request, pk):
     """Reject a registration submission."""
     submission = get_object_or_404(RegistrationSubmission, pk=pk)
@@ -291,6 +296,7 @@ def submission_reject(request, pk):
 
 
 @login_required
+@admin_required
 def submission_waitlist(request, pk):
     """Move a submission to waitlist."""
     submission = get_object_or_404(RegistrationSubmission, pk=pk)
@@ -312,6 +318,7 @@ def submission_waitlist(request, pk):
 
 
 @login_required
+@admin_required
 def submission_merge(request, pk):
     """Merge a submission with an existing client instead of creating a new one."""
     submission = get_object_or_404(RegistrationSubmission, pk=pk)
@@ -327,7 +334,7 @@ def submission_merge(request, pk):
             return redirect("registration:submission_detail", pk=pk)
 
         try:
-            existing_client = ClientFile.objects.get(pk=client_id)
+            existing_client = get_client_queryset(request.user).get(pk=client_id)
         except ClientFile.DoesNotExist:
             messages.error(request, _("Selected client not found."))
             return redirect("registration:submission_detail", pk=pk)

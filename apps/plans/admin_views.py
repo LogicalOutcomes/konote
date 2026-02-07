@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 
 from apps.clients.models import ClientFile
+from apps.clients.views import get_client_queryset
 from apps.plans.admin_forms import (
     PlanTemplateForm,
     PlanTemplateSectionForm,
@@ -276,7 +277,8 @@ def template_apply_list(request, client_id):
     if denied:
         return denied
 
-    client_file = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client_file = get_object_or_404(base_queryset, pk=client_id)
     templates = PlanTemplate.objects.filter(status="active").prefetch_related("sections__targets")
 
     return render(request, "plans/template_apply.html", {
@@ -295,7 +297,8 @@ def template_apply(request, client_id, template_id):
     if request.method != "POST":
         return redirect("plan_templates:template_apply_list", client_id=client_id)
 
-    client_file = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client_file = get_object_or_404(base_queryset, pk=client_id)
     template = get_object_or_404(
         PlanTemplate.objects.prefetch_related("sections__targets"),
         pk=template_id,

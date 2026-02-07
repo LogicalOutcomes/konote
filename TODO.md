@@ -7,6 +7,21 @@
 
 ## Active Work
 
+### Code Review Fixes (from 2026-02-07 review — see `tasks/code-review-2026-02-07.md`)
+
+**Critical — fix before next deploy:**
+- [ ] Fix demo/real data isolation bypass in 5 client HTMX views — `apps/clients/views.py` (SEC1)
+- [ ] Add @admin_required to 6 registration submission views — `apps/registration/admin_views.py` (SEC2)
+- [ ] Fix demo data bypass in 2 plan template views — `apps/plans/admin_views.py` (SEC3)
+- [ ] Fix demo data bypass in submission merge — `apps/registration/admin_views.py` (SEC4)
+
+**High — fix soon:**
+- [ ] Add "cancel" to AuditLog.ACTION_CHOICES — `apps/audit/models.py` (QUAL1)
+- [ ] Consolidate `_get_client_ip()` from 6 files into shared utility (QUAL2)
+- [ ] Consolidate `admin_required` decorator from 4 files into `auth_app/decorators.py` (QUAL3)
+- [ ] Delete dead duplicate functions in `static/js/app.js` lines 459-486 (QUAL4)
+- [ ] Write tests for `rotate_encryption_key` management command (TEST1)
+- [ ] Write tests for account lockout logic (TEST2)
 
 ### Pre-Launch Checklist
 
@@ -21,6 +36,7 @@ The core app is feature-complete. These tasks prepare for production use.
 - [ ] French translation review — have a French speaker spot-check AI translations, especially new strings. Run `python manage.py check_translations` to see coverage stats (I18N-REV1)
 - [ ] Redeploy to Railway — push to `main`, Railway auto-deploys. See `docs/deploy-railway.md` (OPS-RAIL1)
 - [ ] Redeploy to FullHost — push to `main`, then trigger redeploy via API or dashboard. See `docs/deploy-fullhost.md` (OPS-FH1)
+- [ ] Code review round — open Claude Code in VS Code, say "review the codebase for code quality, security, and consistency issues" — see `tasks/code-review-process.md` (REV1)
 
 ## Coming Up
 
