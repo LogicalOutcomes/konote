@@ -23,7 +23,7 @@ The core app is feature-complete. These tasks prepare for production use.
 ### Occasional Tasks
 
 - [ ] Run UX walkthrough — `pytest tests/ux_walkthrough/ -v`, review report at `tasks/ux-review-latest.md` (UX-WALK1)
-- [ ] UX work-through: admin workflows — walk through all admin setup scenarios, see `tasks/ux-admin-workflows.md` (UX-ADMIN1)
+- [ ] UX work-through: admin workflows — `pytest tests/ux_walkthrough/test_admin_workflows.py -v`, manual checklist at `tasks/ux-admin-workflows.md` (UX-ADMIN1)
 - [ ] Redeploy to Railway — push to `main`, Railway auto-deploys. See `docs/deploy-railway.md` (OPS-RAIL1)
 - [ ] Redeploy to FullHost — push to `main`, then trigger redeploy via API or dashboard. See `docs/deploy-fullhost.md` (OPS-FH1)
 
