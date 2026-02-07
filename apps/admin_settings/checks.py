@@ -123,10 +123,37 @@ def _find_po_file(base_dir):
 
 
 def _count_po_entries(po_path):
-    """Fast count of non-header msgid entries in a .po file."""
+    """Fast count of non-header msgid entries in a .po file.
+
+    Handles both single-line (msgid "text") and multi-line msgids
+    (msgid "" followed by "continuation" lines). Skips the header
+    entry (first msgid "").
+    """
     count = 0
+    seen_header = False
     with open(po_path, "r", encoding="utf-8") as f:
-        for line in f:
-            if line.startswith('msgid "') and line.strip() != 'msgid ""':
+        lines = f.readlines()
+
+    i = 0
+    while i < len(lines):
+        stripped = lines[i].strip()
+
+        if stripped.startswith('msgid "'):
+            if stripped == 'msgid ""':
+                # Could be header or multi-line msgid
+                # Check if next line is a string continuation
+                if i + 1 < len(lines) and lines[i + 1].strip().startswith('"'):
+                    if not seen_header:
+                        # First msgid "" is the header — skip it
+                        seen_header = True
+                    else:
+                        # Multi-line msgid — count it
+                        count += 1
+                elif not seen_header:
+                    seen_header = True
+            else:
+                # Single-line msgid "some text"
                 count += 1
+        i += 1
+
     return count
