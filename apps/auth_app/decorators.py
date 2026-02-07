@@ -3,7 +3,7 @@ from functools import wraps
 
 from django.template.response import TemplateResponse
 
-from apps.auth_app.constants import ROLE_RANK  # noqa: F401 — re-exported for back-compat
+from apps.auth_app.constants import ROLE_RANK
 
 
 def _get_user_highest_role(user):
