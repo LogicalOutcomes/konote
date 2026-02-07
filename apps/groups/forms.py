@@ -20,7 +20,10 @@ class GroupForm(forms.ModelForm):
 
     def __init__(self, *args, user_program_ids=None, **kwargs):
         super().__init__(*args, **kwargs)
-        qs = Program.objects.filter(status="active")
+        # Only offer programs that support group sessions
+        qs = Program.objects.filter(
+            status="active", service_model__in=["group", "both"],
+        )
         if user_program_ids is not None:
             qs = qs.filter(pk__in=user_program_ids)
         self.fields["program"].queryset = qs

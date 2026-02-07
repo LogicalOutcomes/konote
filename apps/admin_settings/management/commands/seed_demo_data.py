@@ -963,6 +963,20 @@ class Command(BaseCommand):
         if programs_by_name and created_by:
             self._create_demo_registration_link(programs_by_name, created_by)
 
+        # Always ensure demo groups exist (idempotent via get_or_create)
+        # Moved above the early-return guard so groups are created even when
+        # other rich data already exists (e.g. environment seeded before groups
+        # feature was added).
+        try:
+            worker1 = User.objects.get(username="demo-worker-1")
+            worker2 = User.objects.get(username="demo-worker-2")
+            workers_early = {"demo-worker-1": worker1, "demo-worker-2": worker2}
+            now_early = timezone.now()
+            random.seed(42)
+            self._create_demo_groups(workers_early, programs_by_name, now_early)
+        except User.DoesNotExist:
+            pass  # Workers not yet created — full seed below will handle it
+
         # Check if rich data already exists
         if ProgressNote.objects.filter(
             client_file__record_id__startswith="DEMO-"

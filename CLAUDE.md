@@ -39,11 +39,17 @@ These rules apply to **every phase**. Do not skip them.
 ## Translations
 
 After creating or modifying any template that uses `{% trans %}` tags:
-1. Run `python manage.py translate_strings` to extract new strings and compile
-2. Add French translations for any empty `msgstr` entries in the .po file
-3. Commit both `locale/fr/LC_MESSAGES/django.po` and `django.mo`
+1. Run `python manage.py translate_strings` — this extracts, auto-translates, and compiles
+2. Commit both `locale/fr/LC_MESSAGES/django.po` and `django.mo`
 
-If you see a startup warning about missing translations, run `translate_strings` to fix it.
+Auto-translation uses any OpenAI-compatible API. Set these environment variables:
+- `TRANSLATE_API_KEY` — required to enable (works with OpenAI, Open Router, Anthropic, Ollama)
+- `TRANSLATE_API_BASE` — API base URL (default: `https://api.openai.com/v1`)
+- `TRANSLATE_MODEL` — model name (default: `gpt-5`)
+
+If `TRANSLATE_API_KEY` is not set, translation is skipped — empty strings will then cause `validate_translations.py` to fail (exit code 1).
+
+Use `--no-translate` to skip auto-translation. Use `--dry-run` to preview changes.
 
 ## Task File: TODO.md
 

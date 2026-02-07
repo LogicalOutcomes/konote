@@ -40,7 +40,9 @@ def group_list(request):
     """List active groups the user has program access to."""
     user_program_ids = _get_user_program_ids(request.user)
     groups = Group.objects.filter(
-        status="active", program_id__in=user_program_ids,
+        status="active",
+        program_id__in=user_program_ids,
+        program__service_model__in=["group", "both"],
     ).select_related("program")
     return render(request, "groups/group_list.html", {
         "groups": groups,

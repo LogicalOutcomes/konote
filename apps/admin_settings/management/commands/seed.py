@@ -175,6 +175,7 @@ class Command(BaseCommand):
             defaults={
                 "description": "One-on-one job coaching, resume building, and interview preparation for adults seeking stable employment.",
                 "colour_hex": "#3B82F6",
+                "service_model": "individual",
             },
         )
         housing, _ = Program.objects.get_or_create(
@@ -182,6 +183,7 @@ class Command(BaseCommand):
             defaults={
                 "description": "Case management to help adults find and maintain stable housing, including landlord mediation and referrals.",
                 "colour_hex": "#F59E0B",
+                "service_model": "individual",
             },
         )
         youth, _ = Program.objects.get_or_create(
@@ -189,6 +191,7 @@ class Command(BaseCommand):
             defaults={
                 "description": "Group activities, homework help, and mentorship for youth aged 13-18.",
                 "colour_hex": "#10B981",
+                "service_model": "both",
             },
         )
         newcomer, _ = Program.objects.get_or_create(
@@ -196,6 +199,7 @@ class Command(BaseCommand):
             defaults={
                 "description": "Settlement support for newcomers including service navigation, English conversation circles, and community orientation.",
                 "colour_hex": "#8B5CF6",
+                "service_model": "individual",
             },
         )
         kitchen, _ = Program.objects.get_or_create(
@@ -203,8 +207,23 @@ class Command(BaseCommand):
             defaults={
                 "description": "Weekly cooking sessions focused on affordable, healthy meals. Open to participants from any program.",
                 "colour_hex": "#14B8A6",
+                "service_model": "group",
             },
         )
+
+        # Ensure service_model is set on existing programs (idempotent update)
+        _service_models = {
+            "Supported Employment": "individual",
+            "Housing Stability": "individual",
+            "Youth Drop-In": "both",
+            "Newcomer Connections": "individual",
+            "Community Kitchen": "group",
+        }
+        for prog in [employment, housing, youth, newcomer, kitchen]:
+            expected = _service_models.get(prog.name)
+            if expected and prog.service_model != expected:
+                prog.service_model = expected
+                prog.save(update_fields=["service_model"])
         all_programs = [employment, housing, youth, newcomer, kitchen]
 
         # --- Demo Users ---

@@ -731,41 +731,52 @@ document.addEventListener("click", function (event) {
 })();
 
 // --- Session Timer ---
+// Hidden by default. Only shows a warning when login is about to expire.
 (function() {
-    var WARNING_THRESHOLD = 5; // minutes
-    var CRITICAL_THRESHOLD = 1; // minutes
+    var WARNING_THRESHOLD = 5; // minutes — show warning
+    var CRITICAL_THRESHOLD = 1; // minutes — urgent warning
 
     function setupSessionTimer() {
         var timerEl = document.getElementById("session-timer");
-        var remainingEl = document.getElementById("session-remaining");
+        var messageEl = document.getElementById("session-message");
         var extendBtn = document.getElementById("extend-session");
-        if (!timerEl || !remainingEl) return;
+        if (!timerEl || !messageEl) return;
 
         var timeoutMinutes = parseInt(timerEl.getAttribute("data-timeout"), 10) || 30;
+        var warnTemplate = timerEl.getAttribute("data-warn") || "Your login expires in {mins} minute(s)";
+        var urgentTemplate = timerEl.getAttribute("data-urgent") || "You'll be logged out in {mins} minute(s)";
         var remainingSeconds = timeoutMinutes * 60;
+
+        function formatMessage(template, mins) {
+            return template.replace("{mins}", mins);
+        }
 
         function updateDisplay() {
             var mins = Math.floor(remainingSeconds / 60);
-            remainingEl.textContent = mins;
 
-            // Update styling based on remaining time
             timerEl.classList.remove("warning", "critical");
-            if (mins <= CRITICAL_THRESHOLD) {
-                timerEl.classList.add("critical");
-            } else if (mins <= WARNING_THRESHOLD) {
-                timerEl.classList.add("warning");
-            }
 
-            // Show/hide extend button at warning threshold
-            if (extendBtn) {
-                extendBtn.hidden = mins > WARNING_THRESHOLD;
+            if (mins <= CRITICAL_THRESHOLD) {
+                timerEl.hidden = false;
+                timerEl.classList.add("critical");
+                messageEl.textContent = formatMessage(urgentTemplate, mins);
+                if (extendBtn) extendBtn.hidden = false;
+            } else if (mins <= WARNING_THRESHOLD) {
+                timerEl.hidden = false;
+                timerEl.classList.add("warning");
+                messageEl.textContent = formatMessage(warnTemplate, mins);
+                if (extendBtn) extendBtn.hidden = false;
+            } else {
+                // Plenty of time — hide everything
+                timerEl.hidden = true;
+                if (extendBtn) extendBtn.hidden = true;
             }
         }
 
         function tick() {
             remainingSeconds--;
             if (remainingSeconds <= 0) {
-                // Session expired - reload to trigger login redirect
+                // Session expired — reload to trigger login redirect
                 window.location.reload();
                 return;
             }
@@ -785,11 +796,10 @@ document.addEventListener("click", function (event) {
             document.addEventListener(evt, resetDebounced, { passive: true });
         });
 
-        // Extend session button — resets the timer explicitly
+        // "Stay logged in" button — resets the timer explicitly
         if (extendBtn) {
             extendBtn.addEventListener("click", function() {
                 resetTimer();
-                extendBtn.hidden = true;
             });
         }
 
@@ -802,10 +812,10 @@ document.addEventListener("click", function (event) {
             };
         }
 
-        // Initial display
+        // Initial display (hidden — plenty of time)
         updateDisplay();
 
-        // Tick every minute (no need for per-second accuracy)
+        // Tick every minute
         setInterval(tick, 60000);
     }
 

@@ -26,6 +26,7 @@
             <th scope="col">{% trans "Description" %}</th>
             <th scope="col">{% trans "Manager" %}</th>
             <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Service Model" %}</th>
             <th scope="col">{% trans "Type" %}</th>
             {% if is_admin %}<th scope="col">{% trans "Staff" %}</th>{% endif %}
             {% if is_admin %}<th scope="col"></th>{% endif %}
@@ -47,6 +48,7 @@
                     <span class="badge badge-neutral">{% trans "Archived" %}</span>
                 {% endif %}
             </td>
+            <td>{{ item.program.get_service_model_display }}</td>
             <td>
                 {% if item.program.is_confidential %}
                     <span class="badge badge-warning">{% trans "Confidential" %}</span>

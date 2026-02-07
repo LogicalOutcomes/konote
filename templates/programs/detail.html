@@ -12,6 +12,21 @@
     <p>{{ program.description }}</p>
 </hgroup>
 
+<p>
+    <small>
+        {% if program.service_model == "individual" %}
+            {% trans "One-on-one — individual notes and plans" %}
+        {% elif program.service_model == "group" %}
+            {% trans "Group sessions — attendance and session notes" %}
+        {% else %}
+            {% trans "Both — individual notes and group sessions" %}
+        {% endif %}
+        {% if program.is_confidential %}
+            &middot; <strong>{% trans "Confidential" %}</strong>
+        {% endif %}
+    </small>
+</p>
+
 <div role="group">
     {% if is_admin %}
     <a href="{% url 'programs:program_edit' program_id=program.pk %}" role="button" class="outline">{% blocktrans with program=term.program|default:"Program" %}Edit {{ program }}{% endblocktrans %}</a>
