@@ -3576,3 +3576,250 @@ msgstr "Ne reçoit temporairement pas de services"
 
 msgid "Services completed or ended"
 msgstr "Services terminés ou achevés"
+
+# --- I18N-FIX2: Form and model choice labels (108 strings wrapped) ---
+
+# admin_settings/forms.py — Instance Settings
+msgid "Not configured"
+msgstr "Non configuré"
+
+msgid "SharePoint / OneDrive"
+msgstr "SharePoint / OneDrive"
+
+msgid "Google Drive"
+msgstr "Google Drive"
+
+msgid "Product Name"
+msgstr "Nom du produit"
+
+msgid "Shown in the header and page titles."
+msgstr "Affiché dans l'en-tête et les titres de page."
+
+msgid "Support Email"
+msgstr "Courriel de soutien"
+
+msgid "Displayed in the footer or help pages."
+msgstr "Affiché dans le pied de page ou les pages d'aide."
+
+msgid "Logo URL"
+msgstr "URL du logo"
+
+msgid "URL to your organisation's logo image."
+msgstr "URL de l'image du logo de votre organisme."
+
+msgid "Date Format"
+msgstr "Format de date"
+
+msgid "Session Timeout (minutes)"
+msgstr "Délai d'inactivité (minutes)"
+
+msgid "Inactive sessions expire after this many minutes."
+msgstr "Les sessions inactives expirent après ce nombre de minutes."
+
+msgid "Document Storage Provider"
+msgstr "Fournisseur de stockage de documents"
+
+msgid "External system where client documents are stored."
+msgstr "Système externe où les documents des participants sont stockés."
+
+msgid "URL Template"
+msgstr "Modèle d'URL"
+
+msgid "URL with {record_id} placeholder. Example for SharePoint: https://contoso.sharepoint.com/sites/KoNote2/Clients/{record_id}/"
+msgstr "URL avec l'espace réservé {record_id}. Exemple pour SharePoint : https://contoso.sharepoint.com/sites/KoNote2/Clients/{record_id}/"
+
+msgid "Privacy Officer Name"
+msgstr "Nom du responsable de la protection de la vie privée"
+
+msgid "Displayed in privacy notices and erasure communications."
+msgstr "Affiché dans les avis de confidentialité et les communications d'effacement."
+
+msgid "Privacy Officer Email"
+msgstr "Courriel du responsable de la vie privée"
+
+msgid "Contact email for privacy requests and data access inquiries."
+msgstr "Courriel de contact pour les demandes de confidentialité et d'accès aux données."
+
+# audit/models.py — Audit Action Choices
+msgid "Login"
+msgstr "Connexion"
+
+msgid "Login Failed"
+msgstr "Échec de connexion"
+
+msgid "Logout"
+msgstr "Déconnexion"
+
+msgid "POST"
+msgstr "POST"
+
+msgid "PUT"
+msgstr "PUT"
+
+msgid "PATCH"
+msgstr "PATCH"
+
+# clients/forms.py — Placeholders
+msgid "Any additional details about how consent was obtained..."
+msgstr "Tout détail supplémentaire sur la façon dont le consentement a été obtenu..."
+
+msgid "(613) 555-1234"
+msgstr "(613) 555-1234"
+
+msgid "[\"Option 1\", \"Option 2\"]"
+msgstr "[\"Option 1\", \"Option 2\"]"
+
+# clients/models.py — Enrolment & Field Choices
+msgid "Enrolled"
+msgstr "Inscrit"
+
+msgid "Unenrolled"
+msgstr "Désinscrit"
+
+msgid "Text Area"
+msgstr "Zone de texte"
+
+msgid "Dropdown"
+msgstr "Liste déroulante"
+
+msgid "Dropdown with Other option"
+msgstr "Liste déroulante avec option Autre"
+
+msgid "Number"
+msgstr "Nombre"
+
+msgid "Canadian Postal Code"
+msgstr "Code postal canadien"
+
+# events/forms.py — Event Form Labels
+msgid "Start Date"
+msgstr "Date de début"
+
+msgid "End Date"
+msgstr "Date de fin"
+
+msgid "Describe the alert..."
+msgstr "Décrivez l'alerte..."
+
+msgid "Alert Content"
+msgstr "Contenu de l'alerte"
+
+msgid "Reason for cancellation..."
+msgstr "Raison de l'annulation..."
+
+msgid "Cancellation Reason"
+msgstr "Raison de l'annulation"
+
+# groups/models.py — Group Types & Choices
+msgid "Service Group"
+msgstr "Groupe de services"
+
+msgid "Activity Group"
+msgstr "Groupe d'activités"
+
+msgid "Project"
+msgstr "Projet"
+
+msgid "Member"
+msgstr "Membre"
+
+msgid "Leader"
+msgstr "Leader"
+
+msgid "Not recorded"
+msgstr "Non enregistré"
+
+msgid "Rough"
+msgstr "Difficile"
+
+msgid "Low"
+msgstr "Faible"
+
+msgid "Solid"
+msgstr "Solide"
+
+msgid "Great"
+msgstr "Excellent"
+
+msgid "Not Started"
+msgstr "Non commencé"
+
+msgid "In Progress"
+msgstr "En cours"
+
+msgid "Complete"
+msgstr "Terminé"
+
+# notes/forms.py — Placeholders
+msgid "Write your note here..."
+msgstr "Rédigez votre note ici..."
+
+msgid "Optional summary..."
+msgstr "Résumé facultatif..."
+
+msgid "Their words..."
+msgstr "Leurs mots..."
+
+msgid "What did they say about this goal?"
+msgstr "Qu'ont-ils dit au sujet de cet objectif?"
+
+msgid "Your notes for this target..."
+msgstr "Vos notes pour cet objectif..."
+
+# notes/models.py — Note & Engagement Choices
+msgid "Basic Text"
+msgstr "Texte simple"
+
+msgid "Quick Note"
+msgstr "Note rapide"
+
+msgid "Disengaged"
+msgstr "Désengagé"
+
+msgid "Going through the motions"
+msgstr "Fait les gestes"
+
+msgid "Guarded but present"
+msgstr "Réservé mais présent"
+
+msgid "Engaged"
+msgstr "Engagé"
+
+msgid "Valuing the process"
+msgstr "Valorise le processus"
+
+msgid "No individual interaction"
+msgstr "Aucune interaction individuelle"
+
+msgid "Harder right now"
+msgstr "Plus difficile en ce moment"
+
+msgid "Holding steady"
+msgstr "Se maintient"
+
+msgid "Something's shifting"
+msgstr "Quelque chose bouge"
+
+msgid "In a good place"
+msgstr "En bonne posture"
+
+# registration/models.py — Status Choices
+msgid "Pending Review"
+msgstr "En attente de révision"
+
+msgid "Waitlisted"
+msgstr "Sur la liste d'attente"
+
+# reports/forms.py — Placeholder
+msgid "e.g., United Way, Jane Smith"
+msgstr "p. ex., Centraide, Jeanne Dupont"
+
+# reports/models.py — Export Types
+msgid "Client Data"
+msgstr "Données du participant"
+
+msgid "Metric Report"
+msgstr "Rapport de mesures"
+
+msgid "CMT Report"
+msgstr "Rapport CMT"

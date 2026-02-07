@@ -43,9 +43,9 @@ class ClientFile(models.Model):
     """A client record with encrypted PII fields."""
 
     STATUS_CHOICES = [
-        ("active", "Active"),
-        ("inactive", "Inactive"),
-        ("discharged", "Discharged"),
+        ("active", _("Active")),
+        ("inactive", _("Inactive")),
+        ("discharged", _("Discharged")),
     ]
 
     # Encrypted PII
@@ -141,8 +141,8 @@ class ClientProgramEnrolment(models.Model):
     """Links a client to a program."""
 
     STATUS_CHOICES = [
-        ("enrolled", "Enrolled"),
-        ("unenrolled", "Unenrolled"),
+        ("enrolled", _("Enrolled")),
+        ("unenrolled", _("Unenrolled")),
     ]
 
     client_file = models.ForeignKey(ClientFile, on_delete=models.CASCADE, related_name="enrolments")
@@ -183,19 +183,19 @@ class CustomFieldDefinition(models.Model):
     """A single custom field definition within a group."""
 
     INPUT_TYPE_CHOICES = [
-        ("text", "Text"),
-        ("textarea", "Text Area"),
-        ("select", "Dropdown"),
-        ("select_other", "Dropdown with Other option"),
-        ("date", "Date"),
-        ("number", "Number"),
+        ("text", _("Text")),
+        ("textarea", _("Text Area")),
+        ("select", _("Dropdown")),
+        ("select_other", _("Dropdown with Other option")),
+        ("date", _("Date")),
+        ("number", _("Number")),
     ]
 
     VALIDATION_TYPE_CHOICES = [
-        ("none", "None"),
-        ("postal_code", "Canadian Postal Code"),
-        ("phone", "Phone Number"),
-        ("email", "Email Address"),
+        ("none", _("None")),
+        ("postal_code", _("Canadian Postal Code")),
+        ("phone", _("Phone Number")),
+        ("email", _("Email Address")),
     ]
 
     group = models.ForeignKey(CustomFieldGroup, on_delete=models.CASCADE, related_name="fields")

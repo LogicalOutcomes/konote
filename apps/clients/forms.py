@@ -31,7 +31,7 @@ class ConsentRecordForm(forms.Form):
     notes = forms.CharField(
         required=False,
         label=_("Notes (optional)"),
-        widget=forms.Textarea(attrs={"rows": 2, "placeholder": "Any additional details about how consent was obtained..."}),
+        widget=forms.Textarea(attrs={"rows": 2, "placeholder": _("Any additional details about how consent was obtained...")}),
     )
 
 
@@ -44,7 +44,7 @@ class ClientFileForm(forms.Form):
     phone = forms.CharField(
         max_length=20, required=False,
         label=_("Phone Number"),
-        widget=forms.TextInput(attrs={"type": "tel", "placeholder": "(613) 555-1234"}),
+        widget=forms.TextInput(attrs={"type": "tel", "placeholder": _("(613) 555-1234")}),
     )
     birth_date = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
     record_id = forms.CharField(max_length=100, required=False)
@@ -138,7 +138,7 @@ class CustomFieldDefinitionForm(forms.ModelForm):
             "is_sensitive", "front_desk_access", "options_json", "sort_order", "status",
         ]
         widgets = {
-            "options_json": forms.Textarea(attrs={"rows": 3, "placeholder": '["Option 1", "Option 2"]'}),
+            "options_json": forms.Textarea(attrs={"rows": 3, "placeholder": _('["Option 1", "Option 2"]')}),
         }
         help_texts = {
             "front_desk_access": _("Set front desk access to 'View and edit' for contact info, emergency contacts, and safety alerts."),

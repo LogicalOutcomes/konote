@@ -1,5 +1,6 @@
 """Forms for events and alerts."""
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from .models import Alert, Event, EventType
 
@@ -23,12 +24,12 @@ class EventForm(forms.ModelForm):
     start_date = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={"type": "date"}),
-        label="Start Date",
+        label=_("Start Date"),
     )
     end_date = forms.DateField(
         required=False,
         widget=forms.DateInput(attrs={"type": "date"}),
-        label="End Date",
+        label=_("End Date"),
     )
 
     class Meta:
@@ -101,8 +102,8 @@ class AlertForm(forms.Form):
     """Form for creating an alert on a client file."""
 
     content = forms.CharField(
-        widget=forms.Textarea(attrs={"rows": 4, "placeholder": "Describe the alert..."}),
-        label="Alert Content",
+        widget=forms.Textarea(attrs={"rows": 4, "placeholder": _("Describe the alert...")}),
+        label=_("Alert Content"),
     )
 
 
@@ -110,7 +111,7 @@ class AlertCancelForm(forms.Form):
     """Form for cancelling an alert with a reason."""
 
     status_reason = forms.CharField(
-        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Reason for cancellation..."}),
-        label="Cancellation Reason",
+        widget=forms.Textarea(attrs={"rows": 3, "placeholder": _("Reason for cancellation...")}),
+        label=_("Cancellation Reason"),
         required=True,
     )

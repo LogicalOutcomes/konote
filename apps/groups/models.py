@@ -8,6 +8,7 @@ Supports three group types:
 
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from konote.encryption import decrypt_field, encrypt_field
 
@@ -20,14 +21,14 @@ class Group(models.Model):
     """A group that delivers services, activities, or projects."""
 
     GROUP_TYPE_CHOICES = [
-        ("service_group", "Service Group"),
-        ("activity_group", "Activity Group"),
-        ("project", "Project"),
+        ("service_group", _("Service Group")),
+        ("activity_group", _("Activity Group")),
+        ("project", _("Project")),
     ]
 
     STATUS_CHOICES = [
-        ("active", "Active"),
-        ("archived", "Archived"),
+        ("active", _("Active")),
+        ("archived", _("Archived")),
     ]
 
     name = models.CharField(max_length=255)
@@ -61,13 +62,13 @@ class GroupMembership(models.Model):
     """Links a client (or named non-client) to a group."""
 
     ROLE_CHOICES = [
-        ("member", "Member"),
-        ("leader", "Leader"),
+        ("member", _("Member")),
+        ("leader", _("Leader")),
     ]
 
     STATUS_CHOICES = [
-        ("active", "Active"),
-        ("inactive", "Inactive"),
+        ("active", _("Active")),
+        ("inactive", _("Inactive")),
     ]
 
     group = models.ForeignKey(
@@ -123,11 +124,11 @@ class GroupSession(models.Model):
     """A single session (meeting/event) for a group."""
 
     GROUP_VIBE_CHOICES = [
-        ("", "Not recorded"),
-        ("rough", "Rough"),
-        ("low", "Low"),
-        ("solid", "Solid"),
-        ("great", "Great"),
+        ("", _("Not recorded")),
+        ("rough", _("Rough")),
+        ("low", _("Low")),
+        ("solid", _("Solid")),
+        ("great", _("Great")),
     ]
 
     group = models.ForeignKey(
@@ -256,9 +257,9 @@ class ProjectMilestone(models.Model):
     """A milestone within a project-type group."""
 
     STATUS_CHOICES = [
-        ("not_started", "Not Started"),
-        ("in_progress", "In Progress"),
-        ("complete", "Complete"),
+        ("not_started", _("Not Started")),
+        ("in_progress", _("In Progress")),
+        ("complete", _("Complete")),
     ]
 
     group = models.ForeignKey(

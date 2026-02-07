@@ -46,8 +46,8 @@ class ProgressNoteTemplateSection(models.Model):
     """A section within a progress note template."""
 
     SECTION_TYPE_CHOICES = [
-        ("basic", "Basic Text"),
-        ("plan", "Plan Targets"),
+        ("basic", _("Basic Text")),
+        ("plan", _("Plan Targets")),
     ]
 
     template = models.ForeignKey(ProgressNoteTemplate, on_delete=models.CASCADE, related_name="sections")
@@ -80,13 +80,13 @@ class ProgressNote(models.Model):
     """A progress note recorded against a client."""
 
     NOTE_TYPE_CHOICES = [
-        ("quick", "Quick Note"),
-        ("full", "Full Note"),
+        ("quick", _("Quick Note")),
+        ("full", _("Full Note")),
     ]
     INTERACTION_TYPE_CHOICES = ProgressNoteTemplate.INTERACTION_TYPE_CHOICES
     STATUS_CHOICES = [
-        ("default", "Active"),
-        ("cancelled", "Cancelled"),
+        ("default", _("Active")),
+        ("cancelled", _("Cancelled")),
     ]
 
     client_file = models.ForeignKey("clients.ClientFile", on_delete=models.CASCADE, related_name="progress_notes")
@@ -137,12 +137,12 @@ class ProgressNote(models.Model):
         self._participant_reflection_encrypted = encrypt_field(value)
     ENGAGEMENT_CHOICES = [
         ("", "---------"),
-        ("disengaged", "Disengaged"),
-        ("motions", "Going through the motions"),
-        ("guarded", "Guarded but present"),
-        ("engaged", "Engaged"),
-        ("valuing", "Valuing the process"),
-        ("no_interaction", "No individual interaction"),
+        ("disengaged", _("Disengaged")),
+        ("motions", _("Going through the motions")),
+        ("guarded", _("Guarded but present")),
+        ("engaged", _("Engaged")),
+        ("valuing", _("Valuing the process")),
+        ("no_interaction", _("No individual interaction")),
     ]
 
     engagement_observation = models.CharField(
@@ -202,10 +202,10 @@ class ProgressNoteTarget(models.Model):
 
     PROGRESS_DESCRIPTOR_CHOICES = [
         ("", "---------"),
-        ("harder", "Harder right now"),
-        ("holding", "Holding steady"),
-        ("shifting", "Something's shifting"),
-        ("good_place", "In a good place"),
+        ("harder", _("Harder right now")),
+        ("holding", _("Holding steady")),
+        ("shifting", _("Something's shifting")),
+        ("good_place", _("In a good place")),
     ]
 
     progress_note = models.ForeignKey(ProgressNote, on_delete=models.CASCADE, related_name="target_entries")

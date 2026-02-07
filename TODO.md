@@ -119,10 +119,6 @@ Prevent duplicate client records across programs while protecting sensitive prog
 
 ## Parking Lot
 
-### Translation Hardening
-
-- [ ] Wrap 106 unwrapped strings across 10 apps in `_()` and add French translations — see `scripts/check_untranslated.py` for full list (I18N-FIX2)
-
 ### Erasure — Deferred Execution for Tier 3
 
 - [ ] Add 24-hour delay before Tier 3 (full erasure) CASCADE delete executes — requires background task scheduler, see `tasks/erasure-hardening.md` section ERASE-H8 (ERASE-H8)
@@ -144,6 +140,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Wrap 108 unwrapped strings across 10 apps in `_()` + 78 new French translations — forms, models, choices, placeholders — 2026-02-06 (I18N-FIX2)
 - [x] Add French translations for Help and Privacy Policy pages — ~200 new strings, both pages were showing English — 2026-02-06 (I18N-FIX3)
 - [x] Phase H.5 documentation — user-facing confidential programs guide, annual security review checklist, updated Phase H.4 warning in template, docs index links — 2026-02-06 (MATCH6, CONF8)
 - [x] Confidential program hardening Phase H.4 — Django admin filtering with object-level permissions, immutable audit logging (403 tracking, confidential tagging, PM audit view), small-cell suppression in reports, 17 new tests — 2026-02-06 (CONF4-6)

@@ -7,6 +7,7 @@ from datetime import datetime
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from konote.encryption import decrypt_field, encrypt_field
 
@@ -119,10 +120,10 @@ class RegistrationSubmission(models.Model):
     """A submitted registration awaiting review or auto-approved."""
 
     STATUS_CHOICES = [
-        ("pending", "Pending Review"),
-        ("approved", "Approved"),
-        ("rejected", "Rejected"),
-        ("waitlist", "Waitlisted"),
+        ("pending", _("Pending Review")),
+        ("approved", _("Approved")),
+        ("rejected", _("Rejected")),
+        ("waitlist", _("Waitlisted")),
     ]
 
     registration_link = models.ForeignKey(

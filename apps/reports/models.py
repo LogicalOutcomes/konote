@@ -6,6 +6,7 @@ from datetime import timedelta
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 
 class SecureExportLink(models.Model):
@@ -22,9 +23,9 @@ class SecureExportLink(models.Model):
     """
 
     EXPORT_TYPE_CHOICES = [
-        ("client_data", "Client Data"),
-        ("metrics", "Metric Report"),
-        ("cmt", "CMT Report"),
+        ("client_data", _("Client Data")),
+        ("metrics", _("Metric Report")),
+        ("cmt", _("CMT Report")),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

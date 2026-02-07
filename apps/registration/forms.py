@@ -1,5 +1,6 @@
 """Registration forms."""
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from apps.clients.models import CustomFieldDefinition, CustomFieldGroup
 from apps.clients.validators import (
@@ -80,7 +81,7 @@ class PublicRegistrationForm(forms.Form):
     # Consent checkbox (always required)
     consent = forms.BooleanField(
         required=True,
-        label="I consent to my information being collected and stored for this registration.",
+        label=_("I consent to my information being collected and stored for this registration."),
     )
 
     def __init__(self, *args, registration_link=None, **kwargs):
