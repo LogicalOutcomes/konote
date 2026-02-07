@@ -26,7 +26,7 @@ class QuickNoteForm(forms.Form):
     notes_text = forms.CharField(
         widget=forms.Textarea(attrs={
             "rows": 5,
-            "placeholder": "Write your note here...",
+            "placeholder": _("Write your note here..."),
             "required": True,
         }),
         required=True,
@@ -72,7 +72,7 @@ class FullNoteForm(forms.Form):
         help_text=_("Change if this note is for a different day."),
     )
     summary = forms.CharField(
-        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Optional summary..."}),
+        widget=forms.Textarea(attrs={"rows": 3, "placeholder": _("Optional summary...")}),
         required=False,
     )
     follow_up_date = forms.DateField(
@@ -90,7 +90,7 @@ class FullNoteForm(forms.Form):
     participant_reflection = forms.CharField(
         widget=forms.Textarea(attrs={
             "rows": 2,
-            "placeholder": "Their words...",
+            "placeholder": _("Their words..."),
         }),
         required=False,
         label=_("Participant's reflection"),
@@ -111,7 +111,7 @@ class TargetNoteForm(forms.Form):
 
     target_id = forms.IntegerField(widget=forms.HiddenInput())
     client_words = forms.CharField(
-        widget=forms.TextInput(attrs={"placeholder": "What did they say about this goal?"}),
+        widget=forms.TextInput(attrs={"placeholder": _("What did they say about this goal?")}),
         required=False,
         label=_("In their words"),
         help_text=_("What did they say about this goal?"),
@@ -124,7 +124,7 @@ class TargetNoteForm(forms.Form):
         help_text=_("Harder isn't always backwards — progress often makes things harder first."),
     )
     notes = forms.CharField(
-        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Your notes for this target..."}),
+        widget=forms.Textarea(attrs={"rows": 3, "placeholder": _("Your notes for this target...")}),
         required=False,
     )
 
@@ -208,6 +208,6 @@ class NoteCancelForm(forms.Form):
     """Form for cancelling a progress note."""
 
     status_reason = forms.CharField(
-        widget=forms.Textarea(attrs={"rows": 2, "placeholder": "Reason for cancellation..."}),
+        widget=forms.Textarea(attrs={"rows": 2, "placeholder": _("Reason for cancellation...")}),
         label=_("Reason"),
     )

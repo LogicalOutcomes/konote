@@ -31,7 +31,7 @@ class ConsentRecordForm(forms.Form):
     notes = forms.CharField(
         required=False,
         label=_("Notes (optional)"),
-        widget=forms.Textarea(attrs={"rows": 2, "placeholder": "Any additional details about how consent was obtained..."}),
+        widget=forms.Textarea(attrs={"rows": 2, "placeholder": _("Any additional details about how consent was obtained...")}),
     )
 
 
@@ -44,7 +44,7 @@ class ClientFileForm(forms.Form):
     phone = forms.CharField(
         max_length=20, required=False,
         label=_("Phone Number"),
-        widget=forms.TextInput(attrs={"type": "tel", "placeholder": "(613) 555-1234"}),
+        widget=forms.TextInput(attrs={"type": "tel", "placeholder": _("(613) 555-1234")}),
     )
     birth_date = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
     record_id = forms.CharField(max_length=100, required=False)
@@ -138,7 +138,7 @@ class CustomFieldDefinitionForm(forms.ModelForm):
             "is_sensitive", "front_desk_access", "options_json", "sort_order", "status",
         ]
         widgets = {
-            "options_json": forms.Textarea(attrs={"rows": 3, "placeholder": '["Option 1", "Option 2"]'}),
+            "options_json": forms.Textarea(attrs={"rows": 3, "placeholder": _('["Option 1", "Option 2"]')}),
         }
         help_texts = {
             "front_desk_access": _("Set front desk access to 'View and edit' for contact info, emergency contacts, and safety alerts."),
@@ -244,3 +244,58 @@ class ErasureRejectForm(forms.Form):
         label=_("Reason for rejection"),
         help_text=_("Required. This will be visible to the person who requested the erasure."),
     )
+
+
+class MergeConfirmForm(forms.Form):
+    """Confirmation form for merging two client records.
+
+    Dynamic fields are built in __init__ based on the comparison data:
+    - pii_{field_name}: RadioSelect for differing PII fields
+    - custom_{field_def_id}: RadioSelect for conflicting custom fields
+    - primary: which client PK to keep
+    - ack_permanent: acknowledgement checkbox
+    """
+
+    primary = forms.IntegerField(widget=forms.HiddenInput)
+
+    ack_permanent = forms.BooleanField(
+        label=_("I understand this cannot be undone"),
+        required=True,
+        error_messages={
+            "required": _("You must acknowledge that this action cannot be undone."),
+        },
+    )
+
+    def __init__(self, *args, pii_fields=None, field_conflicts=None,
+                 client_a_pk=None, client_b_pk=None, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Add radio buttons for differing PII fields
+        if pii_fields:
+            for field_info in pii_fields:
+                if not field_info["differs"]:
+                    continue
+                field_name = f"pii_{field_info['field_name']}"
+                self.fields[field_name] = forms.ChoiceField(
+                    choices=[
+                        (str(client_a_pk), field_info["value_a"] or _("(empty)")),
+                        (str(client_b_pk), field_info["value_b"] or _("(empty)")),
+                    ],
+                    widget=forms.RadioSelect,
+                    label=field_info["label"],
+                    initial=str(client_a_pk),
+                )
+
+        # Add radio buttons for conflicting custom fields
+        if field_conflicts:
+            for conflict in field_conflicts:
+                field_name = f"custom_{conflict['field_def_id']}"
+                self.fields[field_name] = forms.ChoiceField(
+                    choices=[
+                        (str(client_a_pk), conflict["value_a"] or _("(empty)")),
+                        (str(client_b_pk), conflict["value_b"] or _("(empty)")),
+                    ],
+                    widget=forms.RadioSelect,
+                    label=conflict["field_name"],
+                    initial=str(client_a_pk),
+                )

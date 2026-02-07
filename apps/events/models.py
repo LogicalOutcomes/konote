@@ -1,6 +1,7 @@
 """Events and alerts for client timelines."""
 from django.conf import settings
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class EventType(models.Model):
@@ -56,8 +57,8 @@ class Alert(models.Model):
     """An alert attached to a client file (e.g., safety concerns)."""
 
     STATUS_CHOICES = [
-        ("default", "Active"),
-        ("cancelled", "Cancelled"),
+        ("default", _("Active")),
+        ("cancelled", _("Cancelled")),
     ]
 
     client_file = models.ForeignKey("clients.ClientFile", on_delete=models.CASCADE, related_name="alerts")

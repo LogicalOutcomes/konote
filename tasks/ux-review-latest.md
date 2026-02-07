@@ -1,13 +1,13 @@
 # KoNote2 UX Walkthrough Report
 
-**Generated:** 2026-02-06 16:25:26  
+**Generated:** 2026-02-06 18:45:14  
 **Command:** `pytest tests/ux_walkthrough/ -v`
 
 ## Summary
 
 | Metric | This Run | Previous |
 |--------|----------|----------|
-| Pages visited | 139 | 6 (up 133) |
+| Pages visited | 139 | 139 (same) |
 | Critical issues | 0 |
 | Warnings | 0 |
 | Info items | 0 |

@@ -1,5 +1,6 @@
 """Forms for admin settings views."""
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from .models import DEFAULT_TERMS, TerminologyOverride
 
@@ -69,9 +70,9 @@ class TerminologyForm(forms.Form):
 
 
 DOCUMENT_STORAGE_CHOICES = [
-    ("none", "Not configured"),
-    ("sharepoint", "SharePoint / OneDrive"),
-    ("google_drive", "Google Drive"),
+    ("none", _("Not configured")),
+    ("sharepoint", _("SharePoint / OneDrive")),
+    ("google_drive", _("Google Drive")),
 ]
 
 
@@ -79,16 +80,16 @@ class InstanceSettingsForm(forms.Form):
     """Form for instance-level settings."""
 
     product_name = forms.CharField(
-        max_length=255, required=False, label="Product Name",
-        help_text="Shown in the header and page titles.",
+        max_length=255, required=False, label=_("Product Name"),
+        help_text=_("Shown in the header and page titles."),
     )
     support_email = forms.EmailField(
-        required=False, label="Support Email",
-        help_text="Displayed in the footer or help pages.",
+        required=False, label=_("Support Email"),
+        help_text=_("Displayed in the footer or help pages."),
     )
     logo_url = forms.URLField(
-        required=False, label="Logo URL",
-        help_text="URL to your organisation's logo image.",
+        required=False, label=_("Logo URL"),
+        help_text=_("URL to your organisation's logo image."),
     )
     date_format = forms.ChoiceField(
         choices=[
@@ -97,36 +98,36 @@ class InstanceSettingsForm(forms.Form):
             ("d/m/Y", "02/02/2026"),
             ("m/d/Y", "02/02/2026 (US)"),
         ],
-        label="Date Format",
+        label=_("Date Format"),
     )
     session_timeout_minutes = forms.IntegerField(
         min_value=5, max_value=480, initial=30,
-        label="Session Timeout (minutes)",
-        help_text="Inactive sessions expire after this many minutes.",
+        label=_("Session Timeout (minutes)"),
+        help_text=_("Inactive sessions expire after this many minutes."),
     )
 
     # Document storage settings
     document_storage_provider = forms.ChoiceField(
         choices=DOCUMENT_STORAGE_CHOICES,
         initial="none",
-        label="Document Storage Provider",
-        help_text="External system where client documents are stored.",
+        label=_("Document Storage Provider"),
+        help_text=_("External system where client documents are stored."),
     )
     document_storage_url_template = forms.CharField(
-        max_length=500, required=False, label="URL Template",
-        help_text='URL with {record_id} placeholder. Example for SharePoint: '
-                  'https://contoso.sharepoint.com/sites/KoNote2/Clients/{record_id}/',
+        max_length=500, required=False, label=_("URL Template"),
+        help_text=_('URL with {record_id} placeholder. Example for SharePoint: '
+                  'https://contoso.sharepoint.com/sites/KoNote2/Clients/{record_id}/'),
         widget=forms.TextInput(attrs={"placeholder": "https://example.com/clients/{record_id}/"}),
     )
 
     # Privacy officer contact (PIPEDA compliance)
     privacy_officer_name = forms.CharField(
-        max_length=255, required=False, label="Privacy Officer Name",
-        help_text="Displayed in privacy notices and erasure communications.",
+        max_length=255, required=False, label=_("Privacy Officer Name"),
+        help_text=_("Displayed in privacy notices and erasure communications."),
     )
     privacy_officer_email = forms.EmailField(
-        required=False, label="Privacy Officer Email",
-        help_text="Contact email for privacy requests and data access inquiries.",
+        required=False, label=_("Privacy Officer Email"),
+        help_text=_("Contact email for privacy requests and data access inquiries."),
     )
 
     SETTING_KEYS = [

@@ -22,6 +22,16 @@ The core app is feature-complete. These tasks prepare for production use.
 
 ## Coming Up
 
+### Translation Reliability — Three-Layer Defence
+
+Build `translate_strings` command + startup detection to stop French translations from silently breaking. Two expert panels reviewed. See `tasks/translate-strings-command.md` for full plan.
+
+- [x] Create `translate_strings` management command — regex extraction + polib compilation, no gettext needed — 2026-02-06 (I18N-CMD1a)
+- [x] Expand `check_translations` startup check — lightweight count comparison detects missing strings at every deploy — 2026-02-06 (I18N-CMD1b)
+- [x] Add Translations section to CLAUDE.md — workflow rule as backup forcing function — 2026-02-06 (I18N-CMD1c)
+- [x] Add `polib>=1.2.0` to requirements-dev.txt — 2026-02-06 (I18N-CMD1d)
+- [x] Verify end-to-end — dry-run, extract, validate, check_translations all pass — 2026-02-06 (I18N-CMD1e)
+
 ### Export Monitoring
 
 Weekly accountability reports for admins. Requires working email configuration.
@@ -90,8 +100,8 @@ Prevent duplicate client records across programs while protecting sensitive prog
 
 **H.5: DV Readiness & Documentation**
 - [x] Ship PIA (Privacy Impact Assessment) template pre-filled from agency configuration — 2026-02-06 (MATCH5)
-- [ ] Write user-facing documentation on confidential programs and matching (MATCH6)
-- [ ] Add annual security review checklist for confidential program filtering (CONF8)
+- [x] Write user-facing documentation on confidential programs and matching — 2026-02-06 (MATCH6)
+- [x] Add annual security review checklist for confidential program filtering — 2026-02-06 (CONF8)
 
 **H.6: Multi-Role Staff (Nice-to-Have)**
 - [ ] Build role selector for staff with roles in both Standard and Confidential programs (CONF9)
@@ -108,10 +118,6 @@ Prevent duplicate client records across programs while protecting sensitive prog
 - ~~Multi-tenancy~~ → Fork required for coalition implementations
 
 ## Parking Lot
-
-### Translation Hardening
-
-- [ ] Wrap 106 unwrapped strings across 10 apps in `_()` and add French translations — see `scripts/check_untranslated.py` for full list (I18N-FIX2)
 
 ### Erasure — Deferred Execution for Tier 3
 
@@ -134,6 +140,9 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Wrap 108 unwrapped strings across 10 apps in `_()` + 78 new French translations — forms, models, choices, placeholders — 2026-02-06 (I18N-FIX2)
+- [x] Add French translations for Help and Privacy Policy pages — ~200 new strings, both pages were showing English — 2026-02-06 (I18N-FIX3)
+- [x] Phase H.5 documentation — user-facing confidential programs guide, annual security review checklist, updated Phase H.4 warning in template, docs index links — 2026-02-06 (MATCH6, CONF8)
 - [x] Confidential program hardening Phase H.4 — Django admin filtering with object-level permissions, immutable audit logging (403 tracking, confidential tagging, PM audit view), small-cell suppression in reports, 17 new tests — 2026-02-06 (CONF4-6)
 - [x] Name + DOB secondary duplicate detection — fallback matching when phone unavailable, single-pass iterator, brittleness fixes (hx-params removal, date parsing, race condition prevention), 12 new tests — 2026-02-06 (MATCH3)
 - [x] Cross-program client matching Phase H.1 + H.2 — confidential program isolation, phone field, duplicate detection, security fixes (edit form bug, PDF export, registration links, group views), test suite — 2026-02-06 (CONF1-3, MATCH1-2, CONF7)
@@ -145,8 +154,6 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 - [x] Fix 3 review bugs — AuditLog crash on metric import, group re-add constraint, ghost revisions — 2026-02-06 (QR-FIX4-6)
 - [x] Fix 4 group view bugs — attendance name mismatch, membership form, role handling, demo separation — 2026-02-06 (QR-FIX1-3)
 - [x] Client voice, qualitative progress, groups app (Phases A-D) — encrypted client_goal on targets, progress descriptors, engagement observation, 7-model groups app, 3 demo groups — 2026-02-06 (CV1-4)
-- [x] Expand demo from 2 programs / 10 clients to 5 programs / 15 clients — 2026-02-06 (DEMO-EXP1)
-- [x] Independent code reviews (security, privacy, accessibility, deployment) — 2026-02-06 (SEC-REV1-4)
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 
 ---
@@ -162,7 +169,7 @@ For detailed history, see `tasks/ARCHIVE.md`. Summary of completed work:
 | **Groups** | Service groups, activity groups, projects — session logs, attendance, highlights, milestones, outcomes |
 | **Demo data** | 5 programs, 15 clients, 3 groups, cross-enrolments, approachable metrics |
 | **Secure export** | Bug fix, audit logging, warnings, secure links, permission alignment |
-| **French** | 636 system strings translated, bilingual login, language switcher |
+| **French** | 1,110 system strings translated, bilingual login, language switcher |
 | **Reporting** | Funder reports, aggregation, demographics, fiscal year, PDF exports |
 | **Documentation** | Getting started, security ops, deployment guides (Azure, Railway, Elest.io) |
 | **Registration** | Self-service public forms with duplicate detection and capacity limits |

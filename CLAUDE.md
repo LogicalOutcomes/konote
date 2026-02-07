@@ -36,6 +36,15 @@ These rules apply to **every phase**. Do not skip them.
 6. **Cache invalidation** — after saving terminology, features, or settings, clear the relevant cache key. Prefer `post_save` signals over manual cache.delete() calls in views.
 7. **HTMX error handling** — `app.js` must include a global `htmx:responseError` handler so network/server errors don't fail silently.
 
+## Translations
+
+After creating or modifying any template that uses `{% trans %}` tags:
+1. Run `python manage.py translate_strings` to extract new strings and compile
+2. Add French translations for any empty `msgstr` entries in the .po file
+3. Commit both `locale/fr/LC_MESSAGES/django.po` and `django.mo`
+
+If you see a startup warning about missing translations, run `translate_strings` to fix it.
+
 ## Task File: TODO.md
 
 TODO.md is a **dashboard** — scannable at a glance. It is not a project plan, decision log, or reference guide.

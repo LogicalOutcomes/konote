@@ -1,5 +1,6 @@
 """Immutable audit log — stored in separate database."""
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 
 class AuditLog(models.Model):
@@ -9,18 +10,18 @@ class AuditLog(models.Model):
     """
 
     ACTION_CHOICES = [
-        ("create", "Create"),
-        ("update", "Update"),
-        ("delete", "Delete"),
-        ("login", "Login"),
-        ("login_failed", "Login Failed"),
-        ("logout", "Logout"),
-        ("export", "Export"),
-        ("view", "View"),
-        ("post", "POST"),
-        ("put", "PUT"),
-        ("patch", "PATCH"),
-        ("access_denied", "Access Denied"),
+        ("create", _("Create")),
+        ("update", _("Update")),
+        ("delete", _("Delete")),
+        ("login", _("Login")),
+        ("login_failed", _("Login Failed")),
+        ("logout", _("Logout")),
+        ("export", _("Export")),
+        ("view", _("View")),
+        ("post", _("POST")),
+        ("put", _("PUT")),
+        ("patch", _("PATCH")),
+        ("access_denied", _("Access Denied")),
     ]
 
     event_timestamp = models.DateTimeField()

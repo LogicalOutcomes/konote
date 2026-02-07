@@ -41,7 +41,7 @@ class ExportRecipientMixin:
             max_length=200,
             label=_("Recipient details"),
             help_text=_("Name of colleague, funder, or other recipient."),
-            widget=forms.TextInput(attrs={"placeholder": "e.g., United Way, Jane Smith"}),
+            widget=forms.TextInput(attrs={"placeholder": _("e.g., United Way, Jane Smith")}),
         )
 
     def get_recipient_display(self):

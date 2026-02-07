@@ -37,14 +37,14 @@ class UserProgramRole(models.Model):
     """Links a user to a program with a specific role."""
 
     ROLE_CHOICES = [
-        ("receptionist", "Front Desk"),
-        ("staff", "Direct Service"),
-        ("program_manager", "Program Manager"),
-        ("executive", "Executive"),
+        ("receptionist", _("Front Desk")),
+        ("staff", _("Direct Service")),
+        ("program_manager", _("Program Manager")),
+        ("executive", _("Executive")),
     ]
     STATUS_CHOICES = [
-        ("active", "Active"),
-        ("removed", "Removed"),
+        ("active", _("Active")),
+        ("removed", _("Removed")),
     ]
 
     user = models.ForeignKey(

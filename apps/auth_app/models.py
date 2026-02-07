@@ -5,6 +5,7 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from konote.encryption import decrypt_field, encrypt_field
 
@@ -106,11 +107,11 @@ class Invite(models.Model):
     """
 
     ROLE_CHOICES = [
-        ("receptionist", "Front Desk"),
-        ("staff", "Direct Service"),
-        ("program_manager", "Program Manager"),
-        ("executive", "Executive"),
-        ("admin", "Administrator"),
+        ("receptionist", _("Front Desk")),
+        ("staff", _("Direct Service")),
+        ("program_manager", _("Program Manager")),
+        ("executive", _("Executive")),
+        ("admin", _("Administrator")),
     ]
 
     code = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)

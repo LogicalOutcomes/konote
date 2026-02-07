@@ -16,6 +16,7 @@ Exit codes:
 
 import gettext as gettext_module
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -179,6 +180,33 @@ class Command(BaseCommand):
                     else:
                         self.stdout.write(
                             self.style.SUCCESS("  [PASS] .mo file is up to date with .po")
+                        )
+
+                # ----------------------------------------------------------
+                # 6. Lightweight check: template string count vs .po entries
+                #    Catches the common case of new pages with untranslated
+                #    strings. Full extraction lives in translate_strings.
+                # ----------------------------------------------------------
+                if po_path.exists():
+                    template_count = self._quick_template_count()
+                    po_count = total if total > 0 else 0
+                    gap = template_count - po_count
+                    # Threshold: warn if templates have 5+ more strings than .po
+                    if gap > 5:
+                        msg = (
+                            f"Template files contain ~{template_count} "
+                            f"translatable strings but django.po has only "
+                            f"{po_count} entries (gap: {gap}). "
+                            f"Run: python manage.py translate_strings"
+                        )
+                        warnings.append(msg)
+                        self.stdout.write(self.style.WARNING(f"  [WARN] {msg}"))
+                    else:
+                        self.stdout.write(
+                            self.style.SUCCESS(
+                                f"  [PASS] Template strings (~{template_count}) "
+                                f"vs .po entries ({po_count}) — no significant gap"
+                            )
                         )
 
         # ----------------------------------------------------------
@@ -405,3 +433,32 @@ class Command(BaseCommand):
         if line.startswith('"') and line.endswith('"'):
             return line[1:-1]
         return ""
+
+    def _quick_template_count(self):
+        """
+        Fast count of unique {% trans %} strings in templates.
+
+        This is a lightweight check for startup — counts unique strings
+        without building a full extraction set. The full extraction
+        lives in the translate_strings command.
+        """
+        trans_pattern = re.compile(
+            r"""\{%[-\s]*trans\s+['"](.+?)['"]\s*[-]?%\}"""
+        )
+        strings = set()
+        base_dir = getattr(settings, "BASE_DIR", None)
+        if not base_dir:
+            return 0
+
+        template_dir = Path(base_dir) / "templates"
+        if not template_dir.exists():
+            return 0
+
+        for html_file in template_dir.rglob("*.html"):
+            try:
+                content = html_file.read_text(encoding="utf-8")
+            except (UnicodeDecodeError, OSError):
+                continue
+            strings.update(trans_pattern.findall(content))
+
+        return len(strings)
