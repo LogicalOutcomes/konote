@@ -413,3 +413,60 @@ class ErasureApproval(models.Model):
     def __str__(self):
         program_name = self.program.name if self.program else _("Deleted program")
         return f"Approval for {program_name} by {self.approved_by_display}"
+
+
+class ClientMerge(models.Model):
+    """Records that two client records were merged.
+
+    The 'kept' client is the surviving record that receives all data.
+    The 'archived' client is anonymised (PII stripped, status discharged).
+    All related records (notes, events, plans, enrolments) transfer to 'kept'.
+    """
+
+    # Links to the two clients (SET_NULL so this record survives erasure)
+    kept_client = models.ForeignKey(
+        ClientFile, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="merges_kept",
+    )
+    archived_client = models.ForeignKey(
+        ClientFile, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="merges_archived",
+    )
+    # Snapshot IDs survive FK nullification (e.g. after erasure)
+    kept_client_pk = models.IntegerField()
+    archived_client_pk = models.IntegerField()
+    kept_record_id = models.CharField(max_length=100, default="", blank=True)
+    archived_record_id = models.CharField(max_length=100, default="", blank=True)
+
+    # Who and when
+    merged_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="merges_performed",
+    )
+    merged_by_display = models.CharField(max_length=255, default="")
+    merged_at = models.DateTimeField(auto_now_add=True)
+
+    # Audit data — field names only, never actual PII values
+    transfer_summary = models.JSONField(
+        default=dict,
+        help_text="Counts of transferred records: {notes: 5, events: 2, ...}",
+    )
+    pii_choices = models.JSONField(
+        default=dict,
+        help_text="Which PII fields came from which client: {first_name: 'kept', phone: 'archived'}",
+    )
+    field_conflict_resolutions = models.JSONField(
+        default=dict,
+        help_text="Custom field conflict resolutions: {field_def_id: 'kept'/'archived'}",
+    )
+
+    class Meta:
+        app_label = "clients"
+        db_table = "client_merges"
+        ordering = ["-merged_at"]
+
+    def __str__(self):
+        return (
+            f"Merge #{self.pk}: Client #{self.archived_client_pk} "
+            f"→ Client #{self.kept_client_pk}"
+        )

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Merge Duplicates" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Merge Duplicates" %}</h1>
+
+<p>{% trans "Review potential duplicate client records and merge them into a single record. All data from the archived record will be transferred to the kept record." %}</p>
+
+{% if too_many %}
+<article aria-label="{% trans 'Too many clients' %}">
+    <header><strong>{% trans "Automatic scanning unavailable" %}</strong></header>
+    <p>{% trans "Your agency has too many client records for automatic duplicate scanning. Please contact support for assistance with duplicate detection." %}</p>
+</article>
+
+{% elif total_count == 0 %}
+<article aria-label="{% trans 'No duplicates' %}">
+    <p>{% trans "No potential duplicates found. All client records appear to be unique." %}</p>
+</article>
+
+{% else %}
+<p>
+    <strong>{{ total_count }}</strong> {% trans "potential duplicate pairs found" %}:
+    {% if phone_count %}{{ phone_count }} {% trans "phone matches" %}{% endif %}
+    {% if phone_count and name_dob_count %}, {% endif %}
+    {% if name_dob_count %}{{ name_dob_count }} {% trans "name + date of birth matches" %}{% endif %}
+</p>
+
+{% if phone_pairs %}
+<h2>{% trans "Phone Matches" %} <small>({% trans "stronger signal" %})</small></h2>
+<figure>
+<table role="grid" aria-label="{% trans 'Phone match candidates' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Client A" %}</th>
+            <th scope="col">{% trans "Client B" %}</th>
+            <th scope="col">{% trans "Match Type" %}</th>
+            <th scope="col">{% trans "Actions" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pair in phone_pairs %}
+        <tr>
+            <td>
+                <strong>{{ pair.client_a.first_name }} {{ pair.client_a.last_name }}</strong>
+                {% if pair.client_a.program_names %}
+                <br><small>{{ pair.client_a.program_names|join:", " }}</small>
+                {% endif %}
+            </td>
+            <td>
+                <strong>{{ pair.client_b.first_name }} {{ pair.client_b.last_name }}</strong>
+                {% if pair.client_b.program_names %}
+                <br><small>{{ pair.client_b.program_names|join:", " }}</small>
+                {% endif %}
+            </td>
+            <td><span class="badge">{% trans "Phone match" %}</span></td>
+            <td>
+                <a href="{% url 'merge_compare' client_a_id=pair.client_a.client_id client_b_id=pair.client_b.client_id %}"
+                   role="button" class="outline contrast" style="white-space:nowrap">
+                    {% trans "Compare" %}
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% endif %}
+
+{% if name_dob_pairs %}
+<h2>{% trans "Name + Date of Birth Matches" %} <small>({% trans "weaker signal — verify carefully" %})</small></h2>
+<figure>
+<table role="grid" aria-label="{% trans 'Name and DOB match candidates' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Client A" %}</th>
+            <th scope="col">{% trans "Client B" %}</th>
+            <th scope="col">{% trans "Match Type" %}</th>
+            <th scope="col">{% trans "Actions" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pair in name_dob_pairs %}
+        <tr>
+            <td>
+                <strong>{{ pair.client_a.first_name }} {{ pair.client_a.last_name }}</strong>
+                {% if pair.client_a.program_names %}
+                <br><small>{{ pair.client_a.program_names|join:", " }}</small>
+                {% endif %}
+            </td>
+            <td>
+                <strong>{{ pair.client_b.first_name }} {{ pair.client_b.last_name }}</strong>
+                {% if pair.client_b.program_names %}
+                <br><small>{{ pair.client_b.program_names|join:", " }}</small>
+                {% endif %}
+            </td>
+            <td><span class="badge">{% trans "Name + DOB" %}</span></td>
+            <td>
+                <a href="{% url 'merge_compare' client_a_id=pair.client_a.client_id client_b_id=pair.client_b.client_id %}"
+                   role="button" class="outline contrast" style="white-space:nowrap">
+                    {% trans "Compare" %}
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% endif %}
+
+{% endif %}
+{% endblock %}

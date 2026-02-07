@@ -29,6 +29,7 @@ urlpatterns = [
     path("admin/audit/", include("apps.audit.urls")),
     path("audit/program/<int:program_id>/", program_audit_log, name="program_audit_log"),
     path("erasure/", include("apps.clients.erasure_urls")),
+    path("merge/", include("apps.clients.merge_urls")),
     path("ai/", include("konote.ai_urls")),
     path("", include("apps.registration.urls")),
     path("", include("apps.clients.urls_home")),

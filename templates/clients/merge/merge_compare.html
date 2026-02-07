@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Compare Records" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Compare Records" %}</h1>
+
+<p>
+    <a href="{% url 'merge_candidates_list' %}">{% trans "&larr; Back to candidates list" %}</a>
+</p>
+
+{# Summary cards — creation dates and activity counts #}
+<div class="grid">
+    <article aria-label="{% blocktrans with name=client_a.first_name %}Client A: {{ name }}{% endblocktrans %}">
+        <header>
+            <strong>{% trans "Client A" %}: {{ client_a.first_name }} {{ client_a.last_name }}</strong>
+            {% if client_a.record_id %}<br><small>{% trans "Record ID" %}: {{ client_a.record_id }}</small>{% endif %}
+        </header>
+        <p>
+            {% trans "Created" %}: {{ client_a.created_at|date:"Y-m-d" }}<br>
+            {% if comparison.counts_a.last_note_date %}
+            {% trans "Last note" %}: {{ comparison.counts_a.last_note_date|date:"Y-m-d" }}<br>
+            {% endif %}
+            {{ comparison.counts_a.notes }} {% trans "notes" %},
+            {{ comparison.counts_a.events }} {% trans "events" %},
+            {{ comparison.counts_a.plan_targets }} {% trans "targets" %},
+            {{ comparison.counts_a.enrolments }} {% trans "enrolments" %}
+        </p>
+    </article>
+    <article aria-label="{% blocktrans with name=client_b.first_name %}Client B: {{ name }}{% endblocktrans %}">
+        <header>
+            <strong>{% trans "Client B" %}: {{ client_b.first_name }} {{ client_b.last_name }}</strong>
+            {% if client_b.record_id %}<br><small>{% trans "Record ID" %}: {{ client_b.record_id }}</small>{% endif %}
+        </header>
+        <p>
+            {% trans "Created" %}: {{ client_b.created_at|date:"Y-m-d" }}<br>
+            {% if comparison.counts_b.last_note_date %}
+            {% trans "Last note" %}: {{ comparison.counts_b.last_note_date|date:"Y-m-d" }}<br>
+            {% endif %}
+            {{ comparison.counts_b.notes }} {% trans "notes" %},
+            {{ comparison.counts_b.events }} {% trans "events" %},
+            {{ comparison.counts_b.plan_targets }} {% trans "targets" %},
+            {{ comparison.counts_b.enrolments }} {% trans "enrolments" %}
+        </p>
+    </article>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.primary }}
+
+    {# Section 1: PII field comparison — only shown for fields that differ #}
+    {% for field in comparison.pii_fields %}
+    {% if field.differs %}
+    <fieldset>
+        <legend>{{ field.label }} — {% trans "choose which to keep" %}</legend>
+        {% with form_field_name="pii_"|add:field.field_name %}
+        {% for radio in form|get_field:form_field_name %}
+        {{ radio }}
+        {% endfor %}
+        {# Manual radio rendering for accessible labels #}
+        <label>
+            <input type="radio" name="pii_{{ field.field_name }}" value="{{ client_a.pk }}"
+                   {% if form.initial.primary == client_a.pk %}checked{% endif %}>
+            {% blocktrans with val=field.value_a id=client_a.pk %}Keep "{{ val }}" from Client A (Record #{{ id }}){% endblocktrans %}
+        </label>
+        <label>
+            <input type="radio" name="pii_{{ field.field_name }}" value="{{ client_b.pk }}">
+            {% blocktrans with val=field.value_b id=client_b.pk %}Keep "{{ val }}" from Client B (Record #{{ id }}){% endblocktrans %}
+        </label>
+        {% endwith %}
+    </fieldset>
+    {% endif %}
+    {% endfor %}
+
+    {# Section 2: Custom field conflicts — only shown if any #}
+    {% if comparison.field_conflicts %}
+    <h2>{% trans "Custom Field Conflicts" %}</h2>
+    <p>{% trans "These custom fields have different values on each record. Choose which to keep." %}</p>
+    {% for conflict in comparison.field_conflicts %}
+    <fieldset>
+        <legend>{{ conflict.field_name }} — {% trans "choose which to keep" %}</legend>
+        <label>
+            <input type="radio" name="custom_{{ conflict.field_def_id }}" value="{{ client_a.pk }}" checked>
+            {% blocktrans with val=conflict.value_a id=client_a.pk %}Keep "{{ val }}" from Client A (Record #{{ id }}){% endblocktrans %}
+        </label>
+        <label>
+            <input type="radio" name="custom_{{ conflict.field_def_id }}" value="{{ client_b.pk }}">
+            {% blocktrans with val=conflict.value_b id=client_b.pk %}Keep "{{ val }}" from Client B (Record #{{ id }}){% endblocktrans %}
+        </label>
+    </fieldset>
+    {% endfor %}
+    {% endif %}
+
+    {# Section 3: Enrolment summary #}
+    {% if comparison.post_merge_programs %}
+    <article aria-label="{% trans 'Programme visibility after merge' %}">
+        <header><strong>{% trans "After merge" %}</strong></header>
+        <p>
+            {% trans "The merged record will be enrolled in:" %}
+            <strong>{{ comparison.post_merge_programs|join:", " }}</strong>
+        </p>
+        <p><small>{% trans "Staff in all listed programmes will be able to see all combined records." %}</small></p>
+    </article>
+    {% endif %}
+
+    {# Section 4: Which record to keep #}
+    <fieldset>
+        <legend>{% trans "Which record should be the primary (kept) record?" %}</legend>
+        <label>
+            <input type="radio" name="primary" value="{{ client_a.pk }}" checked
+                   onchange="document.querySelector('[name=primary]').value=this.value">
+            {% blocktrans with name=client_a.first_name last=client_a.last_name id=client_a.pk %}
+            Keep Client A: {{ name }} {{ last }} (Record #{{ id }})
+            {% endblocktrans %}
+        </label>
+        <label>
+            <input type="radio" name="primary" value="{{ client_b.pk }}"
+                   onchange="document.querySelector('[name=primary]').value=this.value">
+            {% blocktrans with name=client_b.first_name last=client_b.last_name id=client_b.pk %}
+            Keep Client B: {{ name }} {{ last }} (Record #{{ id }})
+            {% endblocktrans %}
+        </label>
+    </fieldset>
+
+    {# Section 5: Impact summary and confirmation #}
+    <article aria-label="{% trans 'Merge confirmation' %}" id="merge-confirmation">
+        <header><strong>{% trans "Confirm Merge" %}</strong></header>
+
+        <p id="merge-warning">
+            {% trans "All notes, events, plans, enrolments, and custom fields from the archived record will be combined into the primary record. The archived record will be permanently anonymised." %}
+        </p>
+
+        {% if comparison.post_merge_programs %}
+        <p>
+            <strong>{% trans "After merge, staff in the following programmes will see all combined records:" %}</strong>
+            {{ comparison.post_merge_programs|join:", " }}
+        </p>
+        {% endif %}
+
+        <label>
+            <input type="checkbox" name="ack_permanent" required>
+            {% trans "I understand this cannot be undone" %}
+        </label>
+        {% if form.ack_permanent.errors %}
+        <small class="badge badge-danger">{{ form.ack_permanent.errors.0 }}</small>
+        {% endif %}
+
+        <button type="submit" class="contrast" aria-describedby="merge-warning">
+            {% trans "Merge — cannot be undone" %}
+        </button>
+    </article>
+</form>
+{% endblock %}
