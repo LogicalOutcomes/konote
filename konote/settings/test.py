@@ -41,3 +41,6 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+
+# Scenario-based QA holdout directory (set via env var)
+SCENARIO_HOLDOUT_DIR = os.environ.get("SCENARIO_HOLDOUT_DIR", "")
