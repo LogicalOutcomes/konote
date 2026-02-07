@@ -26,11 +26,11 @@ The core app is feature-complete. These tasks prepare for production use.
 
 Build `translate_strings` command + startup detection to stop French translations from silently breaking. Two expert panels reviewed. See `tasks/translate-strings-command.md` for full plan.
 
-- [ ] Create `translate_strings` management command — regex extraction + polib compilation, no gettext needed (I18N-CMD1a)
-- [ ] Expand `check_translations` startup check — lightweight count comparison detects missing strings at every deploy (I18N-CMD1b)
-- [ ] Add Translations section to CLAUDE.md — workflow rule as backup forcing function (I18N-CMD1c)
-- [ ] Add `polib>=1.2.0` to requirements-dev.txt (I18N-CMD1d)
-- [ ] Verify end-to-end — dry-run, extract, validate, check_translations all pass (I18N-CMD1e)
+- [x] Create `translate_strings` management command — regex extraction + polib compilation, no gettext needed — 2026-02-06 (I18N-CMD1a)
+- [x] Expand `check_translations` startup check — lightweight count comparison detects missing strings at every deploy — 2026-02-06 (I18N-CMD1b)
+- [x] Add Translations section to CLAUDE.md — workflow rule as backup forcing function — 2026-02-06 (I18N-CMD1c)
+- [x] Add `polib>=1.2.0` to requirements-dev.txt — 2026-02-06 (I18N-CMD1d)
+- [x] Verify end-to-end — dry-run, extract, validate, check_translations all pass — 2026-02-06 (I18N-CMD1e)
 
 ### Export Monitoring
 
