@@ -126,9 +126,12 @@ def program_detail(request, program_id):
     # Groups linked to this program (for group/both service models)
     groups = None
     if program.service_model in ("group", "both"):
+        from django.db.models import Q
         groups = (
             Group.objects.filter(program=program, status="active")
-            .annotate(member_count=Count("memberships"))
+            .annotate(member_count=Count(
+                "memberships", filter=Q(memberships__status="active"),
+            ))
             .order_by("name")
         )
 

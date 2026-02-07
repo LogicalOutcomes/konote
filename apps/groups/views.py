@@ -2,7 +2,7 @@
 import csv
 import io
 from collections import OrderedDict
-from datetime import timedelta
+from datetime import date as dt_date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -406,13 +406,11 @@ def attendance_report(request, group_id):
     date_to = request.GET.get("date_to", "")
 
     try:
-        from datetime import date as dt_date
         date_from_parsed = dt_date.fromisoformat(date_from) if date_from else default_from
     except ValueError:
         date_from_parsed = default_from
 
     try:
-        from datetime import date as dt_date
         date_to_parsed = dt_date.fromisoformat(date_to) if date_to else today
     except ValueError:
         date_to_parsed = today
