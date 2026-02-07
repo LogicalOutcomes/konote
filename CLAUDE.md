@@ -38,9 +38,16 @@ These rules apply to **every phase**. Do not skip them.
 
 ## Translations
 
-After creating or modifying any template that uses `{% trans %}` tags:
+After creating or modifying any template that uses `{% trans %}` or `{% blocktrans %}` tags:
 1. Run `python manage.py translate_strings` — this extracts, auto-translates, and compiles
 2. Commit both `locale/fr/LC_MESSAGES/django.po` and `django.mo`
+
+**For `{% blocktrans %}` blocks** (strings with variables or plurals): `translate_strings` cannot auto-extract these from templates. If you add a new `{% blocktrans %}`, you must add the corresponding msgid to the .po file manually, then run `translate_strings` to auto-translate and compile it.
+
+**Automated safety nets** (you don't need to remember these — they run automatically):
+- Django system check (W010) warns if template string count exceeds .po entries
+- Pre-commit hook warns if .html files change without .po updates
+- Container startup runs `check_translations` (non-blocking)
 
 Auto-translation uses any OpenAI-compatible API. Set these environment variables:
 - `TRANSLATE_API_KEY` — required to enable (works with OpenAI, Open Router, Anthropic, Ollama)
