@@ -92,13 +92,6 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 
 See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-design.md) for full details.
 
-### CONF9 Follow-ups (from expert panel review)
-
-- [ ] Add `logger.exception()` to `_audit_program_switch` bare except block — PIPEDA compliance (CONF9a)
-- [ ] Flash message on context switch — "Now viewing: Employment" reinforces awareness (CONF9b)
-- [ ] Cache `needs_program_selector` result on request to reduce duplicate DB queries (CONF9c)
-- [ ] Document soft-filter vs hard-boundary distinction for agency privacy officers (CONF9d)
-
 ### Privacy & Security
 
 - [ ] First-run setup wizard — guided initial configuration (SETUP1)
@@ -108,6 +101,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] CONF9 follow-ups — logger.exception() for audit, flash message on context switch, request-level cache for needs_program_selector, soft-filter vs hard-boundary docs — 2026-02-07 (CONF9a-d)
 - [x] Erasure hardening — all 7 expert-panel recommendations implemented: PDF receipt scoping, audit-before-erasure, receipt download tracking, rejection notifications, deduplication fix, race condition fix, pagination — 2026-02-06 (ERASE-H1–H7)
 - [x] Duplicate merge tool — admin-only side-by-side comparison, transfers notes/events/plans/enrolments/fields, 32 tests — 2026-02-06 (MATCH4)
 - [x] Phase H complete — confidential programs, duplicate detection, merge tool, DV documentation — 2026-02-06 (CONF1-8, MATCH1-6)

@@ -79,9 +79,11 @@ class ProgramAccessMiddleware:
 
         # CONF9: Force program selection for mixed-tier users without a selection.
         # Placed after admin-only check so admin routes aren't affected.
+        # Stash needs_program_selector result on request for context processor (CONF9c).
         if hasattr(request, "session"):
-            from apps.programs.context import needs_program_selection
-            if needs_program_selection(request.user, request.session):
+            from apps.programs.context import needs_program_selection, needs_program_selector
+            request._needs_program_selector = needs_program_selector(request.user)
+            if request._needs_program_selector and needs_program_selection(request.user, request.session):
                 if not any(path.startswith(p) for p in self.SELECTION_EXEMPT_PREFIXES):
                     return redirect("programs:select_program")
 

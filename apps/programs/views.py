@@ -1,5 +1,6 @@
 """Program CRUD views — list visible to all users, management admin-only."""
 import json
+import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -21,6 +22,8 @@ from apps.groups.models import Group
 
 from .forms import CONFIDENTIAL_KEYWORDS, ProgramForm, UserProgramRoleForm
 from .models import Program, UserProgramRole
+
+logger = logging.getLogger(__name__)
 
 
 def admin_required(view_func):
@@ -230,6 +233,7 @@ def switch_program(request):
         if not has_standard:
             return HttpResponseForbidden(_("You do not have access to any standard programs."))
         set_active_program(request.session, "all_standard")
+        messages.info(request, _("Now viewing: %(name)s") % {"name": _("All Standard Programs")})
         return redirect(next_url)
 
     # Single program ID
@@ -248,6 +252,7 @@ def switch_program(request):
         return HttpResponseForbidden(_("You do not have access to this program."))
 
     set_active_program(request.session, program_id)
+    messages.info(request, _("Now viewing: %(name)s") % {"name": role.program.name})
 
     # Audit-log switches to confidential programs
     if role.program.is_confidential:
@@ -273,7 +278,7 @@ def _audit_program_switch(request, program):
             metadata={"context_switch": True, "program_name": program.name},
         )
     except Exception:
-        pass  # Audit failure should not block the switch
+        logger.exception("Failed to audit program context switch for user %s", request.user.pk)
 
 
 def _get_client_ip(request):

@@ -43,6 +43,9 @@ def needs_program_selector(user):
 
     Trigger: user has 2+ active programs where at least one is confidential.
     Standard-only multi-program users keep the current 'see all' behaviour.
+
+    For per-request caching, the middleware stashes the result on the request
+    object and the context processor reads it from there (see CONF9c).
     """
     programs = (
         UserProgramRole.objects.filter(user=user, status="active", program__status="active")

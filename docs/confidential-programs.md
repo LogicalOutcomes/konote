@@ -11,6 +11,7 @@ This guide explains how KoNote2 handles sensitive programs and prevents duplicat
 | Understand duplicate matching | [Duplicate Detection](#duplicate-detection) |
 | Know what staff see (and don't see) | [What Staff See](#what-staff-see) |
 | Prepare for DV or high-risk services | [Readiness for High-Risk Services](#readiness-for-high-risk-services) |
+| Understand soft-filter vs. hard-boundary | [Soft-Filter vs. Hard-Boundary Access Controls](#soft-filter-vs-hard-boundary-access-controls) |
 | Complete a Privacy Impact Assessment | [Privacy Impact Assessment](#privacy-impact-assessment) |
 
 ---
@@ -165,6 +166,42 @@ KoNote2 ships with a pre-filled PIA template at [Privacy Impact Assessment Templ
 5. **What mitigations exist?** (Pre-filled: encrypted fields, query-level filtering, annual review)
 
 Complete this assessment with your Privacy Officer before going live with confidential programs.
+
+---
+
+## Soft-Filter vs. Hard-Boundary Access Controls
+
+KoNote2 uses two distinct levels of access control. Privacy officers should understand the difference when assessing risk.
+
+### Soft-filter (standard programs)
+
+Standard program access uses a **soft filter** — a preference-based view that limits what staff normally see, but does not create an impenetrable wall.
+
+| Aspect | How it works |
+|--------|-------------|
+| **What it controls** | Which clients appear in a staff member's default list |
+| **How it's enforced** | Database queries filter by the user's active program assignments |
+| **Can admins override it?** | Yes — administrators can assign themselves to additional programs to broaden their view |
+| **Can staff discover hidden clients?** | Only clients in other standard programs they could be assigned to. Duplicate detection intentionally surfaces potential matches across standard programs |
+| **Purpose** | Keeps day-to-day views focused and manageable. Prevents accidental access, not determined access |
+
+### Hard-boundary (confidential programs)
+
+Confidential program access uses a **hard boundary** — an architectural wall that cannot be bypassed through normal system use.
+
+| Aspect | How it works |
+|--------|-------------|
+| **What it controls** | Whether client records exist at all from the perspective of outside staff |
+| **How it's enforced** | Query-level filtering that excludes confidential clients from all search, matching, admin browse, and report detail paths |
+| **Can admins override it?** | No — even superusers and Django admin cannot browse individual confidential client records |
+| **Can staff discover hidden clients?** | No — no search, matching, or browsing path reveals confidential clients to outside staff. Aggregate reports use small-cell suppression ("< 10") to prevent inference |
+| **Purpose** | Protects sensitive service participation (DV, addiction, mental health) from disclosure to any staff outside the program |
+
+### Key distinction for privacy assessments
+
+A soft-filter protects against **accidental** access — a receptionist doesn't see counselling clients in their daily list, but the system doesn't claim those clients don't exist. A hard-boundary protects against **intentional** discovery — even a determined administrator using Django admin, search, or reports cannot identify individual confidential clients.
+
+When completing a Privacy Impact Assessment, document standard programs as using soft-filter controls and confidential programs as using hard-boundary controls. This distinction matters for regulatory compliance (PHIPA, PIPEDA) because the level of safeguard should match the sensitivity of the data.
 
 ---
 
