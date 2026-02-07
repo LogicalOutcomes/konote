@@ -55,7 +55,6 @@
     {% if field.differs %}
     <fieldset>
         <legend>{{ field.label }} — {% trans "choose which to keep" %}</legend>
-        {% with form_field_name="pii_"|add:field.field_name %}
         <label>
             <input type="radio" name="pii_{{ field.field_name }}" value="{{ client_a.pk }}"
                    {% if form.initial.primary == client_a.pk %}checked{% endif %}>
@@ -65,7 +64,6 @@
             <input type="radio" name="pii_{{ field.field_name }}" value="{{ client_b.pk }}">
             {% blocktrans with val=field.value_b id=client_b.pk %}Keep "{{ val }}" from Client B (Record #{{ id }}){% endblocktrans %}
         </label>
-        {% endwith %}
     </fieldset>
     {% endif %}
     {% endfor %}
