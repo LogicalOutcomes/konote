@@ -200,7 +200,7 @@ INTAKE_FIELD_GROUPS = [
         "Demographics",
         50,
         [
-            ("Gender Identity", "select", False, False, "none", "", [
+            ("Gender Identity", "select_other", False, False, "none", "", [
                 "Woman",
                 "Man",
                 "Non-binary",
@@ -221,7 +221,7 @@ INTAKE_FIELD_GROUPS = [
                 "East Asian",
                 "South Asian",
                 "Southeast Asian",
-                "Middle Eastern",
+                "Middle Eastern/North African",
                 "Latin American",
                 "White",
                 "Mixed/Multiple backgrounds",
@@ -242,7 +242,9 @@ INTAKE_FIELD_GROUPS = [
                 "Yes - physical",
                 "Yes - sensory (vision, hearing)",
                 "Yes - cognitive/developmental",
-                "Yes - mental health",
+                "Yes - learning disability",
+                "Yes - mental health condition",
+                "Yes - chronic illness/pain",
                 "Yes - multiple",
                 "No",
                 "Prefer not to answer",
@@ -265,7 +267,7 @@ INTAKE_FIELD_GROUPS = [
                 "Unemployed - not looking",
                 "Student",
                 "Retired",
-                "Unable to work",
+                "Not currently able to work",
                 "Prefer not to answer",
             ]),
             ("Highest Education Completed", "select", False, False, "none", "", [
@@ -273,6 +275,7 @@ INTAKE_FIELD_GROUPS = [
                 "Some high school",
                 "High school diploma/GED",
                 "Some college/university",
+                "Apprenticeship/Trades certificate",
                 "College diploma/certificate",
                 "Bachelor's degree",
                 "Graduate degree",
@@ -295,7 +298,8 @@ INTAKE_FIELD_GROUPS = [
                 "$20,000 - $39,999",
                 "$40,000 - $59,999",
                 "$60,000 - $79,999",
-                "$80,000 or more",
+                "$80,000 - $99,999",
+                "$100,000 or more",
                 "Don't know",
                 "Prefer not to answer",
             ]),
@@ -306,7 +310,7 @@ INTAKE_FIELD_GROUPS = [
                 "Living with family/friends",
                 "Rooming house",
                 "Shelter/Transitional housing",
-                "Homeless/No fixed address",
+                "Experiencing homelessness/No fixed address",
                 "Other",
                 "Prefer not to answer",
             ]),
@@ -359,11 +363,13 @@ INTAKE_FIELD_GROUPS = [
         [
             ("Parent/Guardian Name", "text", False, True, "edit", "Full name of primary parent/guardian", []),
             ("Relationship to Participant", "select", False, False, "edit", "", [
+                "Parent",
                 "Mother",
                 "Father",
                 "Stepparent",
                 "Grandparent",
                 "Foster parent",
+                "Kinship caregiver",
                 "Legal guardian",
                 "Other family member",
                 "Other",
@@ -531,6 +537,98 @@ class Command(BaseCommand):
                     field.options_json = opts
                     field.save(update_fields=["options_json"])
                     fixups += 1
+
+        # Inclusive language updates (2026-02-07 review)
+        # These update option lists for fields that already exist with old values.
+        OPTION_FIXUPS = [
+            # Housing: person-first language
+            ("Baseline Status", "Housing Situation",
+             "Homeless/No fixed address", "Experiencing homelessness/No fixed address"),
+            # Employment: less defining
+            ("Baseline Status", "Employment Status",
+             "Unable to work", "Not currently able to work"),
+            # Disability: clearer label
+            ("Demographics", "Disability Status",
+             "Yes - mental health", "Yes - mental health condition"),
+            # Racial/ethnic: include North Africa
+            ("Demographics", "Racial/Ethnic Background",
+             "Middle Eastern", "Middle Eastern/North African"),
+            # Income: split old top bracket
+            ("Baseline Status", "Household Income Range",
+             "$80,000 or more", "$80,000 - $99,999"),
+        ]
+        for group_title, field_name, old_val, new_val in OPTION_FIXUPS:
+            for field in CustomFieldDefinition.objects.filter(
+                group__title=group_title, name=field_name,
+            ):
+                opts = field.options_json if isinstance(field.options_json, list) else []
+                if old_val in opts:
+                    opts[opts.index(old_val)] = new_val
+                    field.options_json = opts
+                    field.save(update_fields=["options_json"])
+                    fixups += 1
+
+        # Income: add $100,000+ bracket if missing (after splitting $80k+)
+        for field in CustomFieldDefinition.objects.filter(
+            group__title="Baseline Status", name="Household Income Range",
+        ):
+            opts = field.options_json if isinstance(field.options_json, list) else []
+            if "$100,000 or more" not in opts:
+                # Insert before "Don't know" if present, otherwise append
+                insert_pos = opts.index("Don't know") if "Don't know" in opts else len(opts)
+                opts.insert(insert_pos, "$100,000 or more")
+                field.options_json = opts
+                field.save(update_fields=["options_json"])
+                fixups += 1
+
+        # Disability: add new categories if missing
+        for field in CustomFieldDefinition.objects.filter(
+            group__title="Demographics", name="Disability Status",
+        ):
+            opts = field.options_json if isinstance(field.options_json, list) else []
+            new_opts = ["Yes - learning disability", "Yes - chronic illness/pain"]
+            for opt in new_opts:
+                if opt not in opts:
+                    # Insert before "Yes - multiple"
+                    insert_pos = opts.index("Yes - multiple") if "Yes - multiple" in opts else len(opts)
+                    opts.insert(insert_pos, opt)
+                    fixups += 1
+            field.options_json = opts
+            field.save(update_fields=["options_json"])
+
+        # Education: add trades/apprenticeship if missing
+        for field in CustomFieldDefinition.objects.filter(
+            group__title="Baseline Status", name="Highest Education Completed",
+        ):
+            opts = field.options_json if isinstance(field.options_json, list) else []
+            if "Apprenticeship/Trades certificate" not in opts:
+                insert_pos = opts.index("College diploma/certificate") if "College diploma/certificate" in opts else len(opts)
+                opts.insert(insert_pos, "Apprenticeship/Trades certificate")
+                field.options_json = opts
+                field.save(update_fields=["options_json"])
+                fixups += 1
+
+        # Parent/Guardian: add inclusive options if missing
+        for field in CustomFieldDefinition.objects.filter(
+            group__title="Parent/Guardian Information", name="Relationship to Participant",
+        ):
+            opts = field.options_json if isinstance(field.options_json, list) else []
+            if "Parent" not in opts:
+                opts.insert(0, "Parent")
+                fixups += 1
+            if "Kinship caregiver" not in opts:
+                insert_pos = opts.index("Legal guardian") if "Legal guardian" in opts else len(opts)
+                opts.insert(insert_pos, "Kinship caregiver")
+                fixups += 1
+            field.options_json = opts
+            field.save(update_fields=["options_json"])
+
+        # Gender Identity: change field type to select_other so self-describe has a text box
+        fixups += CustomFieldDefinition.objects.filter(
+            group__title="Demographics",
+            name="Gender Identity",
+            input_type="select",
+        ).update(input_type="select_other")
 
         if fixups:
             self.stdout.write(f"  Updated {fixups} stale field(s) from earlier seeds.")
