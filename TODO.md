@@ -28,18 +28,6 @@ Weekly accountability reports for admins. Requires working email configuration (
 - [ ] Create weekly export summary email command (EXP2u)
 - [ ] Document cron/scheduled task setup in runbook (EXP2w)
 
-### Erasure Hardening
-
-Expert-panel recommendations from `tasks/erasure-hardening.md`. High-priority items first.
-
-- [ ] Scope PDF receipt access — only requester + approvers can download (ERASE-H1)
-- [ ] Write audit log before erasure executes — guarantees record even if delete crashes (ERASE-H2)
-- [ ] Track receipt downloads in audit log (ERASE-H3)
-- [ ] Notify requester when erasure request is rejected (ERASE-H4)
-- [ ] Deduplicate build_data_summary call in erasure flow (ERASE-H5)
-- [ ] Fix erasure code race condition (ERASE-H6)
-- [ ] Add pagination to erasure history view (ERASE-H7)
-
 ## Roadmap — Future Extensions
 
 ### Phase G: Agency Content Translation
@@ -107,6 +95,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Erasure hardening — all 7 expert-panel recommendations implemented: PDF receipt scoping, audit-before-erasure, receipt download tracking, rejection notifications, deduplication fix, race condition fix, pagination — 2026-02-06 (ERASE-H1–H7)
 - [x] Duplicate merge tool — admin-only side-by-side comparison, transfers notes/events/plans/enrolments/fields, 32 tests — 2026-02-06 (MATCH4)
 - [x] Phase H complete — confidential programs, duplicate detection, merge tool, DV documentation — 2026-02-06 (CONF1-8, MATCH1-6)
 - [x] Translation reliability — `translate_strings` command, startup detection, CLAUDE.md workflow rule — 2026-02-06 (I18N-CMD1)
