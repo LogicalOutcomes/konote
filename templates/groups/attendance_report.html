@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% blocktrans with name=group.name %}Attendance Report — {{ name }}{% endblocktrans %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+
+{% block content %}
+<p><a href="{% url 'groups:group_detail' group_id=group.pk %}" class="back-link">&larr; {% blocktrans with name=group.name %}Back to {{ name }}{% endblocktrans %}</a></p>
+
+<hgroup>
+    <h1>{% blocktrans with name=group.name %}Attendance Report — {{ name }}{% endblocktrans %}</h1>
+    <p>{% blocktrans with total=total_sessions %}{{ total }} sessions in selected range{% endblocktrans %}</p>
+</hgroup>
+
+<!-- Date range filter -->
+<form method="get" role="search">
+    <fieldset>
+        <legend>{% trans "Date Range" %}</legend>
+        <div class="grid">
+            <label>
+                {% trans "From" %}
+                <input type="date" name="date_from" value="{{ date_from }}">
+            </label>
+            <label>
+                {% trans "To" %}
+                <input type="date" name="date_to" value="{{ date_to }}">
+            </label>
+            <div style="align-self: end;">
+                <button type="submit">{% trans "Update" %}</button>
+            </div>
+        </div>
+    </fieldset>
+</form>
+
+<!-- Export link -->
+<p>
+    <a href="{% url 'groups:attendance_report' group_id=group.pk %}?date_from={{ date_from }}&date_to={{ date_to }}&format=csv"
+       role="button" class="outline small">
+        {% trans "Download CSV" %}
+    </a>
+</p>
+
+{% if rows %}
+<figure>
+<div style="overflow-x: auto;">
+<table role="grid" aria-label="{% trans 'Attendance matrix' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Member" %}</th>
+            {% for s in sessions %}
+            <th scope="col"><small>{{ s.session_date|date:"M j" }}</small></th>
+            {% endfor %}
+            <th scope="col">{% trans "Present" %}</th>
+            <th scope="col">{% trans "Rate" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            <td><strong>{{ row.name }}</strong></td>
+            {% for present in row.sessions %}
+            <td data-label="{{ forloop.counter }}">
+                {% if present == True %}
+                    <span class="badge badge-success" aria-label="{% trans 'Present' %}">&#10003;</span>
+                {% elif present == False %}
+                    <span class="badge badge-danger" aria-label="{% trans 'Absent' %}">&#10007;</span>
+                {% else %}
+                    <span class="secondary">—</span>
+                {% endif %}
+            </td>
+            {% endfor %}
+            <td data-label="{% trans 'Present' %}">{{ row.present }}/{{ row.total }}</td>
+            <td data-label="{% trans 'Rate' %}">
+                {% if row.rate != None %}
+                    {% if row.rate >= 80 %}
+                        <span class="badge badge-success">{{ row.rate }}%</span>
+                    {% elif row.rate >= 50 %}
+                        <span class="badge badge-warning">{{ row.rate }}%</span>
+                    {% else %}
+                        <span class="badge badge-danger">{{ row.rate }}%</span>
+                    {% endif %}
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+</figure>
+{% else %}
+<div class="empty-state">
+    <p>{% trans "No attendance data for this date range." %}</p>
+</div>
+{% endif %}
+{% endblock %}

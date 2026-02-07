@@ -1,12 +1,19 @@
-"""Group views: list, detail, session logging, membership, milestones, outcomes."""
+"""Group views: list, detail, session logging, membership, milestones, outcomes, reports."""
+import csv
+import io
+from collections import OrderedDict
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
+from django.db import models, transaction
 from django.db.models import Count
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
+
+from apps.reports.csv_utils import sanitise_csv_row, sanitise_filename
 
 from apps.auth_app.decorators import minimum_role
 from apps.clients.models import ClientFile
@@ -70,17 +77,23 @@ def group_detail(request, group_id):
         group=group, status="active",
     ).select_related("client_file")
 
-    # Recent 10 sessions with attendance counts
-    recent_sessions = (
+    # Recent 10 sessions with present/total counts for session cards
+    sessions = (
         GroupSession.objects.filter(group=group)
-        .annotate(attendance_count=Count("attendance_records"))
+        .annotate(
+            total_count=Count("attendance_records"),
+            present_count=Count(
+                "attendance_records",
+                filter=models.Q(attendance_records__present=True),
+            ),
+        )
         .order_by("-session_date")[:10]
     )
 
     context = {
         "group": group,
         "memberships": memberships,
-        "recent_sessions": recent_sessions,
+        "sessions": sessions,
     }
 
     # Project-type extras: milestones and outcomes
@@ -365,4 +378,175 @@ def outcome_create(request, group_id):
     return render(request, "groups/outcome_form.html", {
         "form": form,
         "group": group,
+    })
+
+
+# ---------------------------------------------------------------------------
+# 11. Attendance report
+# ---------------------------------------------------------------------------
+
+@login_required
+@minimum_role("staff")
+def attendance_report(request, group_id):
+    """Attendance report: member x session matrix with CSV export.
+
+    Shows attendance for a date range (default: last 3 months).
+    Sortable by attendance rate so staff can see who's been missing.
+    CSV export for funder reporting.
+    """
+    group = get_object_or_404(Group, pk=group_id)
+    user_program_ids = _get_user_program_ids(request.user)
+    if group.program_id not in user_program_ids:
+        return HttpResponseForbidden(_("You do not have access to this group."))
+
+    # Date range (default: last 3 months)
+    today = timezone.now().date()
+    default_from = today - timedelta(days=90)
+    date_from = request.GET.get("date_from", "")
+    date_to = request.GET.get("date_to", "")
+
+    try:
+        from datetime import date as dt_date
+        date_from_parsed = dt_date.fromisoformat(date_from) if date_from else default_from
+    except ValueError:
+        date_from_parsed = default_from
+
+    try:
+        from datetime import date as dt_date
+        date_to_parsed = dt_date.fromisoformat(date_to) if date_to else today
+    except ValueError:
+        date_to_parsed = today
+
+    # Get sessions in range
+    sessions = (
+        GroupSession.objects.filter(
+            group=group,
+            session_date__gte=date_from_parsed,
+            session_date__lte=date_to_parsed,
+        )
+        .order_by("session_date")
+    )
+
+    # Get all attendance records for these sessions
+    attendance_qs = (
+        GroupSessionAttendance.objects.filter(group_session__in=sessions)
+        .select_related("membership", "membership__client_file", "group_session")
+    )
+
+    # Build the matrix: {membership_id: {session_id: present_bool}}
+    # Also track member info and totals
+    members_data = OrderedDict()  # {membership_id: {"name": str, "sessions": {}, "present": 0, "total": 0}}
+    session_list = list(sessions)
+
+    # Initialise from all active + any historically-attending members
+    all_memberships = GroupMembership.objects.filter(
+        group=group,
+    ).select_related("client_file")
+
+    for m in all_memberships:
+        members_data[m.pk] = {
+            "name": m.display_name,
+            "sessions": {},
+            "present": 0,
+            "total": 0,
+        }
+
+    # Fill in attendance data
+    for att in attendance_qs:
+        mid = att.membership_id
+        if mid not in members_data:
+            members_data[mid] = {
+                "name": att.membership.display_name,
+                "sessions": {},
+                "present": 0,
+                "total": 0,
+            }
+        members_data[mid]["sessions"][att.group_session_id] = att.present
+        members_data[mid]["total"] += 1
+        if att.present:
+            members_data[mid]["present"] += 1
+
+    # Calculate attendance rates and sort by rate (ascending = most absent first)
+    for mid, data in members_data.items():
+        if data["total"] > 0:
+            data["rate"] = round(data["present"] / data["total"] * 100)
+        else:
+            data["rate"] = None  # No sessions in range
+
+    # Sort: members with attendance data first (by rate ascending), then members with no data
+    sorted_members = sorted(
+        members_data.items(),
+        key=lambda x: (x[1]["rate"] is None, x[1]["rate"] if x[1]["rate"] is not None else 0),
+    )
+
+    # Build rows for template/CSV
+    rows = []
+    for mid, data in sorted_members:
+        row_sessions = []
+        for s in session_list:
+            present = data["sessions"].get(s.pk)
+            row_sessions.append(present)  # True, False, or None (not recorded)
+        rows.append({
+            "name": data["name"],
+            "sessions": row_sessions,
+            "present": data["present"],
+            "total": data["total"],
+            "rate": data["rate"],
+        })
+
+    # CSV export
+    if request.GET.get("format") == "csv":
+        csv_buffer = io.StringIO()
+        writer = csv.writer(csv_buffer)
+
+        # Header comment rows
+        writer.writerow(sanitise_csv_row(
+            [f"# {_('Attendance Report')}: {group.name}"]
+        ))
+        writer.writerow(sanitise_csv_row(
+            [f"# {_('Date range')}: {date_from_parsed} — {date_to_parsed}"]
+        ))
+        writer.writerow(sanitise_csv_row(
+            [f"# {_('Total sessions')}: {len(session_list)}"]
+        ))
+        writer.writerow([])
+
+        # Column headers
+        header = [_("Member")]
+        for s in session_list:
+            header.append(str(s.session_date))
+        header.extend([_("Present"), _("Total"), _("Rate %")])
+        writer.writerow(sanitise_csv_row(header))
+
+        # Data rows
+        for row in rows:
+            csv_row = [row["name"]]
+            for present in row["sessions"]:
+                if present is True:
+                    csv_row.append(_("Yes"))
+                elif present is False:
+                    csv_row.append(_("No"))
+                else:
+                    csv_row.append("—")
+            csv_row.extend([
+                row["present"],
+                row["total"],
+                f"{row['rate']}%" if row["rate"] is not None else "—",
+            ])
+            writer.writerow(sanitise_csv_row(csv_row))
+
+        content = csv_buffer.getvalue()
+        safe_name = sanitise_filename(group.name.replace(" ", "_"))
+        filename = f"attendance_{safe_name}_{date_from_parsed}_{date_to_parsed}.csv"
+        response = HttpResponse(content, content_type="text/csv")
+        response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        return response
+
+    return render(request, "groups/attendance_report.html", {
+        "group": group,
+        "sessions": session_list,
+        "rows": rows,
+        "date_from": str(date_from_parsed),
+        "date_to": str(date_to_parsed),
+        "total_sessions": len(session_list),
     })

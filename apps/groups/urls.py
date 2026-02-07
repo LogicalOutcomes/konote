@@ -14,4 +14,5 @@ urlpatterns = [
     path("<int:group_id>/milestone/", views.milestone_create, name="milestone_create"),
     path("milestone/<int:milestone_id>/edit/", views.milestone_edit, name="milestone_edit"),
     path("<int:group_id>/outcome/", views.outcome_create, name="outcome_create"),
+    path("<int:group_id>/attendance/", views.attendance_report, name="attendance_report"),
 ]

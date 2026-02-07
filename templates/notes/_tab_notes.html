@@ -1,9 +1,11 @@
 {% load i18n %}
 <!-- Partial: Notes tab content -->
+{% if active_service_model != "group" %}
 <div class="action-bar">
     <a href="{% url 'notes:quick_note_create' client_id=client.pk %}" role="button">{{ term.quick_note|default:"Quick Note" }}</a>
     <a href="{% url 'notes:note_create' client_id=client.pk %}" role="button" class="outline">{% blocktrans with note=term.progress_note|default:"Note" %}Full {{ note }}{% endblocktrans %}</a>
 </div>
+{% endif %}
 
 <!-- Search and filters -->
 <form method="get" action="{% url 'notes:note_list' client_id=client.pk %}">
@@ -92,6 +94,8 @@
 {% else %}
 <div class="empty-state">
     <p>{% blocktrans with notes=term.progress_note|default:"notes" %}No {{ notes }} recorded yet.{% endblocktrans %}</p>
+    {% if active_service_model != "group" %}
     <a href="{% url 'notes:quick_note_create' client_id=client.pk %}" role="button">{% trans "Add the first note" %}</a>
+    {% endif %}
 </div>
 {% endif %}

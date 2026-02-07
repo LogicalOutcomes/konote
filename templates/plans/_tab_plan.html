@@ -1,6 +1,6 @@
 {% load i18n %}
 <!-- Partial: Plan tab content -->
-{% if can_edit %}
+{% if can_edit and active_service_model != "group" %}
 <div class="action-bar">
     <a href="{% url 'plans:section_create' client_id=client.pk %}" role="button" class="outline">
         {% blocktrans with section=term.section|default:"Section" %}Add {{ section }}{% endblocktrans %}
