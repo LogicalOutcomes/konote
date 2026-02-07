@@ -455,37 +455,6 @@ document.addEventListener("click", function (event) {
         });
     }
 
-    // Initialize auto-save on a form
-    function initAutoSave(form) {
-        var key = getStorageKey(form);
-        if (!key) return; // Form doesn't have required data attributes
-
-        // Check for existing draft and show recovery banner
-        var draft = loadDraft(form);
-        if (draft && hasContent(draft)) {
-            showRecoveryBanner(form, draft);
-        }
-
-        // Set up auto-save on input
-        var debouncedSave = debounce(function () {
-            saveDraft(form);
-        }, AUTOSAVE_DELAY);
-
-        form.addEventListener("input", debouncedSave);
-        form.addEventListener("change", debouncedSave);
-
-        // Clear draft on successful form submission
-        form.addEventListener("submit", function () {
-            clearDraft(form);
-        });
-    }
-
-    // Find and initialize all auto-save forms
-    function setupAutoSave() {
-        var forms = document.querySelectorAll("form[data-autosave]");
-        forms.forEach(initAutoSave);
-    }
-
     // Show autosave indicator
     function showAutosaveIndicator(status) {
         var indicator = document.getElementById("autosave-status");

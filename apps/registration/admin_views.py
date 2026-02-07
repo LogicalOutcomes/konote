@@ -1,11 +1,11 @@
 """Admin views for managing registration links and submissions."""
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from apps.auth_app.decorators import admin_required
 from apps.clients.models import ClientFile, CustomFieldDefinition
 from apps.clients.views import get_client_queryset
 
@@ -41,16 +41,6 @@ def _get_embed_code(request, link, height=600):
 </iframe>'''
 
     return embed_code
-
-
-def admin_required(view_func):
-    """Decorator: 403 if user is not an admin."""
-    def wrapper(request, *args, **kwargs):
-        if not request.user.is_admin:
-            return HttpResponseForbidden("Access denied. Admin privileges required.")
-        return view_func(request, *args, **kwargs)
-    wrapper.__name__ = view_func.__name__
-    return wrapper
 
 
 # --- Registration Link Management ---

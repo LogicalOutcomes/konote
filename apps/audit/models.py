@@ -22,6 +22,7 @@ class AuditLog(models.Model):
         ("put", _("PUT")),
         ("patch", _("PATCH")),
         ("access_denied", _("Access Denied")),
+        ("cancel", _("Cancel")),
     ]
 
     event_timestamp = models.DateTimeField()

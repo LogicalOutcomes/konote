@@ -36,14 +36,7 @@ from .utils import can_create_export, get_manageable_programs
 logger = logging.getLogger(__name__)
 
 
-def _get_client_ip(request):
-    """
-    Extract client IP address from request, handling reverse proxies.
-    """
-    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
-    if x_forwarded_for:
-        return x_forwarded_for.split(",")[0].strip()
-    return request.META.get("REMOTE_ADDR", "")
+from konote.utils import get_client_ip as _get_client_ip
 
 
 def _notify_admins_elevated_export(link, request):
