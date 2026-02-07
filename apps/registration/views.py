@@ -26,13 +26,13 @@ def _render_with_frame_options(request, template, context, allow_framing=False):
         allow_framing: If True, allows the page to be embedded in iframes
 
     Returns:
-        HttpResponse with X-Frame-Options header set
+        HttpResponse, optionally exempt from X-Frame-Options
     """
     response = render(request, template, context)
     if allow_framing:
-        # Remove X-Frame-Options to allow embedding
-        # CSP frame-ancestors could also be used for finer control
-        response["X-Frame-Options"] = "ALLOWALL"
+        # Tell Django's XFrameOptionsMiddleware to skip this response,
+        # allowing the page to be embedded in iframes on other domains.
+        response.xframe_options_exempt = True
     return response
 
 

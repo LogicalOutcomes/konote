@@ -858,11 +858,12 @@ class IframeEmbedSecurityTest(TestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        # ALLOWALL allows any site to embed this page
-        self.assertEqual(response.get("X-Frame-Options"), "ALLOWALL")
+        # Embed mode exempts the response from X-Frame-Options middleware
+        self.assertTrue(getattr(response, "xframe_options_exempt", False))
+        self.assertIsNone(response.get("X-Frame-Options"))
 
     def test_regular_form_has_default_frame_options(self):
-        """Registration form without ?embed=1 should NOT have ALLOWALL framing."""
+        """Registration form without ?embed=1 should NOT be frameable."""
         url = reverse(
             "registration:public_registration_form",
             kwargs={"slug": self.registration_link.slug}
@@ -870,9 +871,8 @@ class IframeEmbedSecurityTest(TestCase):
 
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        # Should not have ALLOWALL - default Django behaviour is DENY or SAMEORIGIN
-        x_frame = response.get("X-Frame-Options", "")
-        self.assertNotEqual(x_frame, "ALLOWALL")
+        # Without embed mode, response should NOT be exempt from X-Frame-Options
+        self.assertFalse(getattr(response, "xframe_options_exempt", False))
 
     def test_embed_mode_uses_minimal_template(self):
         """Embed mode should use minimal template without site navigation."""
@@ -910,7 +910,8 @@ class IframeEmbedSecurityTest(TestCase):
         # Follow redirect
         response = self.client.get(response.url)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get("X-Frame-Options"), "ALLOWALL")
+        self.assertTrue(getattr(response, "xframe_options_exempt", False))
+        self.assertIsNone(response.get("X-Frame-Options"))
 
     def test_admin_pages_cannot_be_framed(self):
         """Admin pages should never allow framing."""
@@ -920,9 +921,8 @@ class IframeEmbedSecurityTest(TestCase):
         url = reverse("registration:registration_link_list")
         response = self.client.get(url)
 
-        # Admin pages should have DENY or SAMEORIGIN, not ALLOWALL
-        x_frame = response.get("X-Frame-Options", "DENY")
-        self.assertNotEqual(x_frame, "ALLOWALL")
+        # Admin pages should NOT be exempt from X-Frame-Options
+        self.assertFalse(getattr(response, "xframe_options_exempt", False))
 
     def test_embed_code_view_returns_correct_url(self):
         """Embed code view should generate correct iframe code."""
