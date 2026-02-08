@@ -14,6 +14,7 @@ Welcome to KoNote2! This guide helps you find what you need quickly.
 | View or edit a client's plan | [Outcome Plans](#outcome-plans) |
 | See progress charts | [Analysis and Reports](#analysis-and-reports) |
 | See programme patterns | [Outcome Insights](#outcome-insights) |
+| Review registration submissions | [Registration Forms](#registration-forms) |
 | Change my password | [Account Settings](#account-settings) |
 | Get admin help | [Administrator Tasks](#administrator-tasks) |
 
@@ -213,6 +214,53 @@ The client will appear in **Priority Items** on the home page until the alert is
 
 ---
 
+## Registration Forms
+
+Registration forms let people sign up for your programs through a public web page — no login required. When someone submits a form, their information comes into KoNote2 for review.
+
+### How Registration Works
+
+1. An administrator creates a **registration link** tied to a program
+2. The link is shared or embedded on your agency's website
+3. Someone fills out the form (name, email, phone, and any custom fields)
+4. The submission appears under **Admin → Submissions** for review
+5. Staff approve, reject, waitlist, or merge the submission
+
+When approved, KoNote2 automatically creates a client record and enrols the person in the program.
+
+**Auto-approve:** If the administrator turned on auto-approve for a link, submissions skip the review step — clients are created immediately.
+
+### Reviewing Submissions
+
+If your role allows you to review submissions:
+
+1. Go to **Admin → Submissions**
+2. Click the **Pending** tab to see new submissions
+3. Click a submission to view the details
+
+**You can:**
+
+| Action | What it does |
+|--------|-------------|
+| **Approve** | Creates a new client and enrols them in the program |
+| **Merge** | Connects the submission to an existing client instead of creating a duplicate |
+| **Waitlist** | Parks the submission for later — you can approve or reject it later |
+| **Reject** | Marks the submission as rejected (with a reason). No client is created |
+
+**Duplicate detection:** KoNote2 highlights submissions that match an existing client's email or name. If a match is found, use **Merge** instead of Approve to avoid creating a duplicate record.
+
+### Creating Registration Links (Administrators)
+
+1. Go to **Admin → Registration**
+2. Click **+ New Registration Link**
+3. Choose a **program**, add a title and description
+4. Optionally: add custom field groups, set a capacity limit, or set a deadline
+5. Save — you'll get a shareable URL and an embed code for your website
+
+For full setup details, see [Administering KoNote2 — Registration Forms](administering-KoNote2.md#set-up-registration-forms).
+
+---
+
 ## Outcome Plans
 
 The **Plan** tab shows the client's outcome plan — their goals, how they're progressing, and what you're working on together.
@@ -367,7 +415,8 @@ If you're an administrator, you can configure KoNote2 through the **Admin** menu
 | Customise terminology | Admin → Settings → Terminology |
 | Enable/disable features | Admin → Settings → Features |
 | View audit logs | Admin → Audit Log |
-| Registration links | Admin → Registration |
+| Create registration forms | Admin → Registration |
+| Review registration submissions | Admin → Submissions |
 
 ### Customising Terminology
 
@@ -512,6 +561,8 @@ For security, KoNote2 logs you out after inactivity. Log in again to continue. Y
 | See who needs attention | Check Priority Items on home page |
 | View progress charts | Client file → Analysis tab |
 | See programme patterns | Insights (main navigation) |
+| Review registrations | Admin → Submissions |
+| Create a registration form | Admin → Registration |
 | Change terminology | Admin → Settings → Terminology |
 | Add a user | Admin → Invites |
 
