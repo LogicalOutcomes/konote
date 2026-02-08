@@ -7446,283 +7446,296 @@ msgstr[0] "%(counter)s exportation élevée est en attente de révision"
 msgstr[1] "%(counter)s exportations élevées sont en attente de révision"
 
 msgid "Achieved"
-msgstr ""
+msgstr "Atteint"
 
 msgid "Achievement Rate"
-msgstr ""
+msgstr "Taux de réussite"
 
 msgid "Achievement by Metric"
-msgstr ""
+msgstr "Réussite par indicateur"
 
 msgid "Age Demographics"
-msgstr ""
+msgstr "Démographie par âge"
 
 msgid "Age Group"
-msgstr ""
+msgstr "Groupe d’âge"
 
 msgid "CLIENT INFORMATION"
-msgstr ""
+msgstr "INFORMATIONS SUR LE CLIENT"
 
 msgid "CUSTOM FIELDS"
-msgstr ""
+msgstr "CHAMPS PERSONNALISÉS"
 
 msgid "Cancel Note"
-msgstr ""
+msgstr "Annuler la note"
 
 msgid "Client Record ID"
-msgstr ""
+msgstr "Identifiant du dossier client"
 
 msgid "Clients Achieving Target:"
-msgstr ""
+msgstr "Clients ayant atteint la cible :"
 
 msgid "Clients Measured:"
-msgstr ""
+msgstr "Clients mesurés :"
 
 msgid "Clients Met Target"
-msgstr ""
+msgstr "Clients ayant atteint la cible"
 
 msgid "Clients Met at Least One Target"
-msgstr ""
+msgstr "Clients ayant atteint au moins une cible"
 
 msgid "Clients with Data"
-msgstr ""
+msgstr "Clients avec des données"
 
 msgid "Content"
-msgstr ""
+msgstr "Contenu"
 
 msgid "Data Points"
-msgstr ""
+msgstr "Points de données"
 
 msgid "Data Retention Alert"
-msgstr ""
+msgstr "Alerte de conservation des données"
 
 msgid "Days Overdue"
-msgstr ""
+msgstr "Jours de retard"
 
 msgid "Determine if an erasure request should be initiated"
-msgstr ""
+msgstr "Déterminer si une demande d’effacement devrait être initiée"
 
 msgid "Draft Template:"
-msgstr ""
+msgstr "Modèle de brouillon :"
 
 msgid "EVENTS"
-msgstr ""
+msgstr "ÉVÉNEMENTS"
 
 msgid "Follow your organisation's data retention policy"
-msgstr ""
+msgstr "Suivre la politique de conservation des données de votre organisme"
 
 msgid "Funder Report"
-msgstr ""
+msgstr "Rapport au bailleur de fonds"
 
 msgid "Grouped By"
-msgstr ""
+msgstr "Regroupé par"
 
 msgid "Indicator Name"
-msgstr ""
+msgstr "Nom de l’indicateur"
 
 msgid "METRIC PROGRESS"
-msgstr ""
+msgstr "PROGRÈS DES INDICATEURS"
 
 msgid "Measured"
-msgstr ""
+msgstr "Mesuré"
 
 msgid "Metric Data"
-msgstr ""
+msgstr "Données des indicateurs"
 
 msgid "Metric Name"
-msgstr ""
+msgstr "Nom de l’indicateur"
 
 msgid "Metrics Included"
-msgstr ""
+msgstr "Indicateurs inclus"
 
 msgid "N/A"
-msgstr ""
+msgstr "S. O."
 
 msgid "New Clients This Period"
-msgstr ""
+msgstr "Nouveaux clients cette période"
 
 msgid "New Note"
-msgstr ""
+msgstr "Nouvelle note"
 
 msgid "Next Steps"
-msgstr ""
+msgstr "Prochaines étapes"
 
 msgid "No outcome indicators with targets defined for this programme."
 msgstr ""
+"Aucun indicateur de résultats avec des cibles définies pour ce programme."
 
 msgid "No target defined"
-msgstr ""
+msgstr "Aucune cible définie"
 
 msgid "Organisation Information"
-msgstr ""
+msgstr "Informations sur l’organisme"
 
 msgid "Organisation Name"
-msgstr ""
+msgstr "Nom de l’organisme"
 
 msgid "Outcome Achievement Rates"
-msgstr ""
+msgstr "Taux d’atteinte des résultats"
 
 msgid "Outcome Indicators"
-msgstr ""
+msgstr "Indicateurs de résultats"
 
 msgid "Overall Achievement Rate"
-msgstr ""
+msgstr "Taux de réussite global"
 
 msgid "Overall Summary"
-msgstr ""
+msgstr "Résumé général"
 
 msgid "PLAN SECTIONS & TARGETS"
-msgstr ""
+msgstr "SECTIONS DU PLAN ET CIBLES"
 
 msgid "PROGRAMME ENROLMENTS"
-msgstr ""
+msgstr "INSCRIPTIONS AUX PROGRAMMES"
 
 msgid "PROGRESS NOTES"
-msgstr ""
+msgstr "NOTES DE PROGRÈS"
 
 msgid "Percentage"
-msgstr ""
+msgstr "Pourcentage"
 
 msgid "Plan Sections & Targets"
-msgstr ""
+msgstr "Sections du plan et cibles"
 
 msgid "Please select a client or enter a name, not both."
-msgstr ""
+msgstr "Veuillez sélectionner un client ou saisir un nom, mais pas les deux."
 
 msgid "Primary Outcome"
-msgstr ""
+msgstr "Résultat principal"
 
 msgid "Privacy Officer:"
-msgstr ""
+msgstr "Responsable de la confidentialité :"
 
 msgid "Programme Description"
-msgstr ""
+msgstr "Description du programme"
 
 msgid "Programme/Service Name"
-msgstr ""
+msgstr "Nom du programme ou service"
 
 msgid "Programmes"
-msgstr ""
+msgstr "Programmes"
 
 msgid "Progress Report"
-msgstr ""
+msgstr "Rapport de progrès"
 
 msgid "Range: "
-msgstr ""
+msgstr "Plage : "
 
 msgid "Recent Events"
-msgstr ""
+msgstr "Événements récents"
 
 msgid "Recent Progress Notes"
-msgstr ""
+msgstr "Notes de progrès récentes"
 
 msgid "Reporting Period"
-msgstr ""
+msgstr "Période de déclaration"
 
 msgid "Review each record in the system"
-msgstr ""
+msgstr "Réviser chaque dossier dans le système"
 
 msgid "Secondary Outcomes"
-msgstr ""
+msgstr "Résultats secondaires"
 
 msgid "Service Statistics"
-msgstr ""
+msgstr "Statistiques de service"
 
 msgid "Start date and time is required."
-msgstr ""
+msgstr "La date et l’heure de début sont requises."
 
 msgid "Start date is required for all-day events."
 msgstr ""
+"La date de début est requise pour les événements d’une journée entière."
 
 msgid "Target Value"
-msgstr ""
+msgstr "Valeur cible"
 
 msgid "Target:"
-msgstr ""
+msgstr "Cible :"
 
 msgid "This report was generated using KoNote2's Funder Report Template."
 msgstr ""
+"Ce rapport a été généré à l’aide du modèle de rapport au bailleur de fonds "
+"de KoNote2."
 
 msgid "Toggle on to hide time fields and record date only."
-msgstr ""
+msgstr "Activer pour masquer les champs d’heure et n’enregistrer que la date."
 
 msgid "Total Individuals Served"
-msgstr ""
+msgstr "Total des personnes desservies"
 
 msgid "Total Service Contacts"
-msgstr ""
+msgstr "Total des contacts de service"
 
 msgid "Value must be at least %(min_value)s."
-msgstr ""
+msgstr "La valeur doit être d’au moins %(min_value)s."
 
 msgid "Value must be at most %(max_value)s."
-msgstr ""
+msgstr "La valeur doit être d’au plus %(max_value)s."
 
 msgid ""
 "Verify this format matches your funder's requirements before submission."
 msgstr ""
+"Vérifiez que ce format correspond aux exigences de votre bailleur de fonds "
+"avant la soumission."
 
 msgid ""
 "Verify this format matches your funder's specific requirements before "
 "submission."
 msgstr ""
+"Vérifiez que ce format correspond aux exigences spécifiques de votre "
+"bailleur de fonds avant la soumission."
 
 msgid "1 hour ago"
-msgstr ""
+msgstr "il y a 1 heure"
 
 msgid "1 minute ago"
-msgstr ""
+msgstr "il y a 1 minute"
 
 msgid "A server error occurred. Please try again later."
-msgstr ""
+msgstr "Une erreur de serveur est survenue. Veuillez réessayer plus tard."
 
 msgid "Could not connect to the server. Check your internet connection."
 msgstr ""
+"Impossible de se connecter au serveur. Vérifiez votre connexion Internet."
 
 msgid "Discard"
-msgstr ""
+msgstr "Supprimer"
 
 msgid "Dismiss message"
-msgstr ""
+msgstr "Fermer le message"
 
 msgid "Draft found"
-msgstr ""
+msgstr "Brouillon trouvé"
 
 msgid "Draft restored"
-msgstr ""
+msgstr "Brouillon restauré"
 
 msgid "Restore draft"
-msgstr ""
+msgstr "Restaurer le brouillon"
 
 msgid "Saving…"
-msgstr ""
+msgstr "Enregistrement…"
 
 msgid "Something went wrong. Please try again."
-msgstr ""
+msgstr "Une erreur est survenue. Veuillez réessayer."
 
 msgid "The requested item was not found."
-msgstr ""
+msgstr "L’élément demandé est introuvable."
 
 msgid "You do not have permission to view audit logs for this program."
 msgstr ""
+"Vous n’avez pas la permission de consulter les journaux de vérification de "
+"ce programme."
 
 msgid "You don't have permission to do that."
-msgstr ""
+msgstr "Vous n’avez pas la permission d’effectuer cette action."
 
 msgid "You have unsaved changes. Are you sure you want to leave?"
 msgstr ""
+"Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir "
+"quitter ?"
 
 msgid "You have unsaved work from {time}."
-msgstr ""
+msgstr "Vous avez du travail non enregistré datant de {time}."
 
 msgid "earlier"
-msgstr ""
+msgstr "plus tôt"
 
 msgid "just now"
-msgstr ""
+msgstr "à l’instant"
 
 msgid "{n} hours ago"
-msgstr ""
+msgstr "il y a {n} heures"
 
 msgid "{n} minutes ago"
-msgstr ""
+msgstr "il y a {n} minutes"

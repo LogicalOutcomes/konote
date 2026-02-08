@@ -9,8 +9,7 @@
 
 ### Code Review Remaining (from 2026-02-07 review — see `tasks/code-review-2026-02-07.md`)
 
-**Medium — 97 strings still need French translation (TRANSLATE_API_KEY not set):**
-- [ ] Set TRANSLATE_API_KEY and re-run `python manage.py translate_strings` (I18N-TRANS1)
+_No remaining code review items._
 
 ### Pre-Launch Checklist
 
@@ -103,6 +102,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] French translations complete — translated 93 remaining strings to Canadian French, 100% coverage (2146/2146 entries), .mo compiled, validation passed — 2026-02-07 (I18N-TRANS1)
 - [x] Code review MEDIUM remaining — admin_required decorator across all views (QUAL8), translated access denied messages (I18N-8), modal focus trap (A11Y-2), 20 JS strings translatable (I18N-4), 29 audit log view tests (TEST-4) — 2026-02-07
 - [x] Code review MEDIUM fixes — QUAL5-7, A11Y-1, I18N-1/2/3/5/6/7/9/10: dev cookie fix, group forms, dedup client fields, scope on th, PDF/email/form/CSV translations, breadcrumbs, privacy.html blocktrans — 2026-02-07
 - [x] Code review HIGH fixes — audit "cancel" action, consolidated `_get_client_ip()` and `admin_required`, dead JS code removed, encryption key rotation + lockout tests — 2026-02-07 (QUAL1-4, TEST1-2)
@@ -127,7 +127,7 @@ For detailed history, see `tasks/ARCHIVE.md`. Summary of completed work:
 | **Duplicate detection & merge** | Phone + name/DOB matching, cross-program dedup, admin merge tool with full data transfer |
 | **Demo data** | 5 programs, 15 clients, 3 groups, cross-enrolments, approachable metrics |
 | **Secure export** | Bug fix, audit logging, warnings, secure links, permission alignment |
-| **French** | 2,050+ system strings (77 pending translation), bilingual login, language switcher, translate_strings command |
+| **French** | 2,146 system strings (100% translated), bilingual login, language switcher, translate_strings command |
 | **Reporting** | Funder reports, aggregation, demographics, fiscal year, PDF exports |
 | **Documentation** | Getting started, security ops, deployment guides (Azure, Railway, Elest.io, FullHost) |
 | **Registration** | Self-service public forms with duplicate detection and capacity limits |
