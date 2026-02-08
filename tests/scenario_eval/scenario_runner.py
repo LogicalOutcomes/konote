@@ -91,7 +91,8 @@ class ScenarioRunner(BrowserTestBase):
         from apps.clients.models import ClientFile, ClientProgramEnrolment
 
         # SCN-047 needs Aisha Mohamed in Youth Services
-        if not ClientFile.objects.filter(first_name="Aisha").exists():
+        # first_name is encrypted — can't filter in SQL, must check in Python
+        if not any(c.first_name == "Aisha" for c in ClientFile.objects.all()):
             aisha = ClientFile.objects.create(is_demo=False)
             aisha.first_name = "Aisha"
             aisha.last_name = "Mohamed"
@@ -109,7 +110,8 @@ class ScenarioRunner(BrowserTestBase):
                 )
 
         # SCN-048 needs James Thompson in Housing Support
-        if not ClientFile.objects.filter(first_name="James").exists():
+        # first_name is encrypted — can't filter in SQL, must check in Python
+        if not any(c.first_name == "James" for c in ClientFile.objects.all()):
             james = ClientFile.objects.create(is_demo=False)
             james.first_name = "James"
             james.last_name = "Thompson"
