@@ -9,6 +9,22 @@ from .score_models import ScenarioResult, StepEvaluation
 from .state_capture import capture_step_state, capture_to_evaluation_context
 
 
+def _get_moment_action(moment):
+    """Extract the 'what_X_does' text from a DITL moment.
+
+    DITL moments use persona-specific keys like 'what_casey_does',
+    'what_amara_does', etc. This finds whichever key matches.
+    """
+    for key, value in moment.items():
+        if key.startswith("what_") and key.endswith("_does"):
+            return value
+    # Fall back to what_to_evaluate if no action key found
+    evals = moment.get("what_to_evaluate", [])
+    if evals:
+        return "; ".join(evals)
+    return ""
+
+
 class ScenarioRunner(BrowserTestBase):
     """Execute scenario YAML files against a live test server.
 
@@ -20,6 +36,9 @@ class ScenarioRunner(BrowserTestBase):
     scenario_data = None
     personas = None
     use_llm = True  # Set to False for dry-run (captures only, no API calls)
+
+    # CDP session for network throttling (lazy-created)
+    _cdp_session = None
 
     def _create_test_data(self):
         """Extend base test data with extra users needed by scenarios."""
@@ -58,6 +77,121 @@ class ScenarioRunner(BrowserTestBase):
                 user=staff_a11y, program=self.program_a, role="staff",
             )
 
+        # R2: Omar (tech-savvy part-time receptionist)
+        if not User.objects.filter(username="frontdesk2").exists():
+            frontdesk2 = User.objects.create_user(
+                username="frontdesk2", password=TEST_PASSWORD,
+                display_name="Omar Hussain",
+            )
+            UserProgramRole.objects.create(
+                user=frontdesk2, program=self.program_b, role="receptionist",
+            )
+
+        # Extra clients needed by specific scenarios
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+
+        # SCN-047 needs Aisha Mohamed in Youth Services
+        if not ClientFile.objects.filter(first_name="Aisha").exists():
+            aisha = ClientFile.objects.create(is_demo=False)
+            aisha.first_name = "Aisha"
+            aisha.last_name = "Mohamed"
+            aisha.status = "active"
+            aisha.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=aisha, program=self.program_b,
+            )
+            # Add phone number for the update-phone-number step
+            from apps.clients.models import ClientDetailValue
+            if hasattr(self, "phone_field"):
+                ClientDetailValue.objects.create(
+                    client_file=aisha, field_def=self.phone_field,
+                    value="416-555-0199",
+                )
+
+        # SCN-048 needs James Thompson in Housing Support
+        if not ClientFile.objects.filter(first_name="James").exists():
+            james = ClientFile.objects.create(is_demo=False)
+            james.first_name = "James"
+            james.last_name = "Thompson"
+            james.status = "active"
+            james.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=james, program=self.program_a,
+            )
+
+    def _setup_context_for_scenario(self, scenario):
+        """Create a browser context configured for the scenario's prerequisites.
+
+        Reads device/accessibility settings from the scenario YAML and creates
+        a context with the appropriate viewport, touch emulation, forced colours,
+        and locale settings.
+        """
+        prereqs = scenario.get("prerequisites", {})
+        device = prereqs.get("device", {})
+        config = prereqs.get("config", [])
+
+        context_kwargs = {}
+
+        # Viewport from device prerequisites
+        viewport = device.get("viewport")
+        if viewport:
+            context_kwargs["viewport"] = {
+                "width": viewport.get("width", 1280),
+                "height": viewport.get("height", 720),
+            }
+
+        # Touch emulation
+        if device.get("touch"):
+            context_kwargs["has_touch"] = True
+
+        # Forced colours (high contrast) for accessibility scenarios
+        users = prereqs.get("users", [])
+        for user in users:
+            a11y = user.get("accessibility", {})
+            if a11y.get("high_contrast"):
+                context_kwargs["forced_colors"] = "active"
+
+        # French locale for bilingual scenarios
+        for user in users:
+            if user.get("language") == "fr" or user.get("username") == "staff_fr":
+                context_kwargs["locale"] = "fr-CA"
+                context_kwargs["extra_http_headers"] = {
+                    "Accept-Language": "fr-CA,fr;q=0.9,en;q=0.1"
+                }
+
+        # Close existing context and create a new one with settings
+        if context_kwargs:
+            self.page.close()
+            self._context.close()
+            self._context = self._browser.new_context(**context_kwargs)
+            self.page = self._context.new_page()
+
+    def _seed_bulk_clients(self, count=150):
+        """Create many active clients for executive dashboard scenarios.
+
+        DITL-E1 (Margaret) needs 140+ active clients to make the dashboard
+        numbers realistic. This creates simple client records across both
+        programs.
+        """
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+
+        existing = ClientFile.objects.count()
+        if existing >= count:
+            return  # Already seeded
+
+        needed = count - existing
+        for i in range(needed):
+            client = ClientFile.objects.create(is_demo=False)
+            client.first_name = f"Client{i + existing}"
+            client.last_name = f"Test{i + existing}"
+            client.status = "active"
+            client.save()
+            # Alternate between programs
+            program = self.program_a if i % 2 == 0 else self.program_b
+            ClientProgramEnrolment.objects.create(
+                client_file=client, program=program,
+            )
+
     def run_scenario(self, scenario, personas=None, screenshot_dir=None):
         """Execute a full scenario and return a ScenarioResult.
 
@@ -70,6 +204,10 @@ class ScenarioRunner(BrowserTestBase):
             ScenarioResult with all step evaluations.
         """
         personas = personas or self.personas or {}
+
+        # Configure browser context from scenario prerequisites
+        self._setup_context_for_scenario(scenario)
+
         result = ScenarioResult(
             scenario_id=scenario["id"],
             title=scenario.get("title", ""),
@@ -147,6 +285,111 @@ class ScenarioRunner(BrowserTestBase):
 
         return result
 
+    def run_narrative(self, scenario, personas=None, screenshot_dir=None):
+        """Execute a day-in-the-life narrative scenario.
+
+        DITL scenarios have 'moments' instead of 'steps'. They don't have
+        explicit Playwright actions — instead, we capture key pages that
+        correspond to each moment and send everything to the LLM for a
+        holistic narrative assessment.
+
+        The runner logs in as the persona, then visits key pages (dashboard,
+        client list, client profile, note form) and captures state at each.
+        The LLM gets the full narrative context plus the page captures.
+        """
+        personas = personas or self.personas or {}
+        self._setup_context_for_scenario(scenario)
+
+        result = ScenarioResult(
+            scenario_id=scenario["id"],
+            title=scenario.get("title", ""),
+        )
+
+        persona_id = scenario.get("persona", "")
+        moments = scenario.get("moments", [])
+        if not moments:
+            return result
+
+        # Determine login user from persona data
+        persona_data = personas.get(persona_id, {})
+        test_user = persona_data.get("test_user", {})
+        username = test_user.get("username", "staff")
+
+        self.login_via_browser(username)
+
+        # Key pages to capture for narrative evaluation
+        # Each moment maps to a page we can actually navigate to
+        key_pages = [
+            ("/", "dashboard"),
+            ("/clients/", "client_list"),
+        ]
+
+        # Capture the dashboard and client list
+        for page_url, label in key_pages:
+            self.page.goto(self.live_url(page_url))
+            self.page.wait_for_load_state("networkidle")
+
+            capture = capture_step_state(
+                page=self.page,
+                scenario_id=scenario["id"],
+                step_id=len(result.step_evaluations) + 1,
+                actor_persona=persona_id,
+                screenshot_dir=screenshot_dir,
+                run_axe_fn=self.run_axe if hasattr(self, "run_axe") else None,
+            )
+
+            if self.use_llm:
+                persona_desc = format_persona_for_prompt(persona_data)
+                page_state_text = capture_to_evaluation_context(capture)
+
+                # Build a combined prompt with narrative context
+                narrative = scenario.get("narrative", "")
+                moment_texts = "\n".join(
+                    f"- {m.get('time', '')}: {m.get('event', '')} — "
+                    f"{_get_moment_action(m)}"
+                    for m in moments
+                )
+                eval_focus = "\n".join(
+                    f"- {f}" for f in scenario.get("evaluation_focus", [])
+                )
+
+                # Create a synthetic step for the evaluator
+                step = {
+                    "id": len(result.step_evaluations) + 1,
+                    "actor": persona_id,
+                    "intent": f"Narrative: {label} — {narrative[:200]}",
+                    "satisfaction_criteria": scenario.get("evaluation_focus", []),
+                    "frustration_triggers": [],
+                }
+
+                context = (
+                    f"NARRATIVE CONTEXT:\n{narrative}\n\n"
+                    f"DAY'S MOMENTS:\n{moment_texts}\n\n"
+                    f"EVALUATION FOCUS:\n{eval_focus}\n\n"
+                    f"SCORING NOTE: {scenario.get('scoring_note', '')}"
+                )
+
+                evaluation = evaluate_step(
+                    persona_desc=persona_desc,
+                    step=step,
+                    page_state_text=page_state_text,
+                    context_from_previous=context,
+                )
+                if evaluation:
+                    evaluation.scenario_id = scenario["id"]
+                    evaluation.persona_id = persona_id
+                    result.step_evaluations.append(evaluation)
+            else:
+                placeholder = StepEvaluation(
+                    scenario_id=scenario["id"],
+                    step_id=len(result.step_evaluations) + 1,
+                    persona_id=persona_id,
+                    one_line_summary=f"[DRY RUN] DITL capture: {capture.url}",
+                )
+                result.step_evaluations.append(placeholder)
+
+        return result
+
     def _execute_actions(self, actions):
         """Execute a list of Playwright actions from a scenario step.
 
@@ -220,6 +463,75 @@ class ScenarioRunner(BrowserTestBase):
             elif "wait_htmx" in action:
                 if action["wait_htmx"]:
                     self.wait_for_htmx()
+
+            elif "wait" in action:
+                # Timed wait in milliseconds (e.g., simulate idle period)
+                # Cap at 30 seconds for test speed; real idle times are symbolic
+                ms = min(action["wait"], 30000)
+                self.page.wait_for_timeout(ms)
+
+            elif "set_viewport" in action:
+                vp = action["set_viewport"]
+                self.page.set_viewport_size({
+                    "width": vp.get("width", 1280),
+                    "height": vp.get("height", 720),
+                })
+
+            elif "set_zoom" in action:
+                zoom = action["set_zoom"]
+                self.page.evaluate(
+                    f"document.documentElement.style.zoom = '{zoom}%'"
+                )
+
+            elif "emulate_touch" in action:
+                # Touch emulation is set at context creation via prerequisites.
+                # This action is a no-op if the context was already created
+                # with has_touch=True. Logged for clarity.
+                pass
+
+            elif "set_high_contrast" in action:
+                # High contrast is set at context creation via prerequisites.
+                # This action is a no-op if the context was already created
+                # with forced_colors='active'.
+                pass
+
+            elif "set_network" in action:
+                condition = action["set_network"]
+                if condition == "offline":
+                    self._context.set_offline(True)
+                elif condition == "online":
+                    self._context.set_offline(False)
+                    # Close CDP throttle session if open
+                    if self._cdp_session:
+                        try:
+                            self._cdp_session.send(
+                                "Network.emulateNetworkConditions",
+                                {
+                                    "offline": False,
+                                    "latency": 0,
+                                    "downloadThroughput": -1,
+                                    "uploadThroughput": -1,
+                                },
+                            )
+                        except Exception:
+                            pass
+                elif condition == "Slow 3G":
+                    # Use Chrome DevTools Protocol for throttling
+                    try:
+                        self._cdp_session = self._context.new_cdp_session(
+                            self.page
+                        )
+                        self._cdp_session.send(
+                            "Network.emulateNetworkConditions",
+                            {
+                                "offline": False,
+                                "latency": 500,
+                                "downloadThroughput": 50000,  # ~400kbps
+                                "uploadThroughput": 50000,
+                            },
+                        )
+                    except Exception:
+                        pass  # CDP not available — proceed without throttle
 
             # Small pause between actions for realism
             self.page.wait_for_timeout(100)

@@ -65,22 +65,29 @@ def discover_scenarios(holdout_dir=None, tags=None, ids=None):
     if not scenarios_dir.is_dir():
         return []
 
+    # Search scenarios/ and day-in-the-life/ directories
+    search_dirs = [scenarios_dir]
+    ditl_dir = Path(holdout) / "day-in-the-life"
+    if ditl_dir.is_dir():
+        search_dirs.append(ditl_dir)
+
     results = []
-    for yaml_file in sorted(scenarios_dir.rglob("*.yaml")):
-        scenario = load_scenario(yaml_file)
-        if not scenario or "id" not in scenario:
-            continue
-
-        # Filter by ID
-        if ids and scenario["id"] not in ids:
-            continue
-
-        # Filter by tags
-        if tags:
-            scenario_tags = scenario.get("tags", [])
-            if not any(t in scenario_tags for t in tags):
+    for search_dir in search_dirs:
+        for yaml_file in sorted(search_dir.rglob("*.yaml")):
+            scenario = load_scenario(yaml_file)
+            if not scenario or "id" not in scenario:
                 continue
 
-        results.append((yaml_file, scenario))
+            # Filter by ID
+            if ids and scenario["id"] not in ids:
+                continue
+
+            # Filter by tags
+            if tags:
+                scenario_tags = scenario.get("tags", [])
+                if not any(t in scenario_tags for t in tags):
+                    continue
+
+            results.append((yaml_file, scenario))
 
     return sorted(results, key=lambda x: x[1]["id"])
