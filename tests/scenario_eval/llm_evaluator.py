@@ -27,6 +27,34 @@ def get_api_client():
         return None
 
 
+def _format_extra_checks(step):
+    """Format optional check fields from the step YAML for the LLM prompt.
+
+    Includes cognitive_load_checks, mechanical_checks, and
+    task_completion_criteria when present in the step dict.
+    """
+    sections = []
+
+    cognitive = step.get("cognitive_load_checks", {})
+    if cognitive:
+        lines = [f"  - {check}: expected {expected}" for check, expected in cognitive.items()]
+        sections.append("## Cognitive Load Checks (verify these)\n" + "\n".join(lines))
+
+    mechanical = step.get("mechanical_checks", {})
+    if mechanical:
+        lines = [f"  - {check}: expected {expected}" for check, expected in mechanical.items()]
+        sections.append("## Mechanical Checks (verify these)\n" + "\n".join(lines))
+
+    completion = step.get("task_completion_criteria", {})
+    if completion:
+        lines = [f"  - {outcome}: {description}" for outcome, description in completion.items()]
+        sections.append("## Task Completion Criteria\n" + "\n".join(lines))
+
+    if sections:
+        return "\n\n".join(sections) + "\n\n"
+    return ""
+
+
 def build_evaluation_prompt(persona_desc, step, page_state_text,
                             context_from_previous=""):
     """Build the evaluation prompt for a single step.
@@ -78,7 +106,7 @@ IMPORTANT: Respond ONLY with valid JSON. No markdown, no explanation outside the
 ## Known Frustration Triggers for this persona
 {frustration_list or '  (none specified)'}
 
-## Evaluation Dimensions (score each 1-5)
+{_format_extra_checks(step)}## Evaluation Dimensions (score each 1-5)
 1. Clarity: Can this persona understand what they see?
 2. Efficiency: How many actions to accomplish the goal?
 3. Feedback: Does the system confirm what happened?
