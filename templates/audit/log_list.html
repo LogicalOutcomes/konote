@@ -3,6 +3,19 @@
 
 {% block title %}{% trans "Audit Log" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
+{% block extra_head %}
+<style>
+    /* BUG-3b: Prevent filter dropdowns from truncating labels */
+    .audit-filters .grid {
+        grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    }
+    .audit-filters select {
+        min-width: 0;
+        text-overflow: ellipsis;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <hgroup>
@@ -11,7 +24,7 @@
     </hgroup>
 
     {# ---- Filter form ---- #}
-    <form method="get" action="" role="search">
+    <form method="get" action="" role="search" class="audit-filters">
         <div class="grid">
             <label for="date_from">
                 {% trans "From" %}

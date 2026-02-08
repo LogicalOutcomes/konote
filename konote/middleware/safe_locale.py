@@ -20,10 +20,23 @@ class SafeLocaleMiddleware(LocaleMiddleware):
     """
 
     def process_request(self, request):
-        """Activate language with fallback on failure."""
+        """Activate language with fallback on failure.
+
+        BUG-4: Override cookie-based language with user's saved preference.
+        This middleware runs after AuthenticationMiddleware so request.user
+        is available. Authenticated users always get their profile language,
+        preventing language bleed on shared browsers.
+        """
         try:
-            # Let Django's LocaleMiddleware do its thing
+            # Let Django's LocaleMiddleware set language from cookie/header
             super().process_request(request)
+
+            # BUG-4: Override with user's saved preference if authenticated
+            if hasattr(request, "user") and request.user.is_authenticated:
+                pref = getattr(request.user, "preferred_language", "")
+                if pref:
+                    translation.activate(pref)
+                    request.LANGUAGE_CODE = pref
 
             # Test that translations actually work by calling gettext
             # This catches corrupted .mo files that load but fail on use

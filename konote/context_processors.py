@@ -68,19 +68,13 @@ def user_roles(request):
     )
     has_roles = bool(roles)
 
-    # Executive-only: has executive role and no other roles that grant client access
-    is_executive_only = False
-    if "executive" in roles:
-        client_access_roles = {"receptionist", "staff", "program_manager"}
-        is_executive_only = not bool(roles & client_access_roles)
-
     # Export access: admins and program managers can create reports
     has_export_access = request.user.is_admin or "program_manager" in roles
 
     return {
         "has_program_roles": has_roles,
         "is_admin_only": request.user.is_admin and not has_roles,
-        "is_executive_only": is_executive_only,
+        "is_executive_only": UserProgramRole.is_executive_only(request.user, roles=roles),
         "has_export_access": has_export_access,
     }
 

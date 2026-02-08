@@ -131,6 +131,11 @@
     </nav>
     {% endif %}
 
+    <div id="offline-banner" class="offline-banner" hidden role="alert">
+        {% trans "You appear to be offline. Your changes may not be saved." %}
+        <button type="button" class="offline-retry">{% trans "Try again" %}</button>
+    </div>
+
     <main id="main-content" class="container" tabindex="-1">
         {% if messages %}
         {% for message in messages %}

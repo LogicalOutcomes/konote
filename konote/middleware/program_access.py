@@ -93,7 +93,8 @@ class ProgramAccessMiddleware:
 
         # Executive role: redirect to dashboard instead of client pages
         # Executives can see aggregate data only, not individual client records
-        if self._is_executive_only(request.user):
+        from apps.programs.models import UserProgramRole
+        if UserProgramRole.is_executive_only(request.user):
             for pattern, _ in CLIENT_URL_PATTERNS:
                 if pattern.match(path):
                     return redirect("clients:executive_dashboard")
@@ -150,21 +151,6 @@ class ProgramAccessMiddleware:
 
         return self.get_response(request)
 
-
-    def _is_executive_only(self, user):
-        """Check if user's only/highest role is executive (no client data access)."""
-        from apps.programs.models import UserProgramRole
-
-        roles = set(
-            UserProgramRole.objects.filter(user=user, status="active").values_list("role", flat=True)
-        )
-        if not roles:
-            return False
-        # Executive-only if they have executive role and no other roles that grant client access
-        if "executive" in roles:
-            client_access_roles = {"receptionist", "staff", "program_manager"}
-            return not bool(roles & client_access_roles)
-        return False
 
     def _user_can_access_client(self, user, client_id):
         """Check if user shares at least one program with the client."""

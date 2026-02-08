@@ -27,7 +27,8 @@ class AuditLog(models.Model):
 
     # Human-readable labels for resource_type values
     RESOURCE_TYPE_LABELS = {
-        "session": _("Login session"),
+        "auth": _("Account"),
+        "session": _("Account"),
         "clients": _("Client record"),
         "notes": _("Progress note"),
         "plans": _("Plan"),
