@@ -13,12 +13,20 @@
     <article>
         <header>{% trans "Terminology" %}</header>
         <p>{% trans 'Customise the words used throughout the system (e.g. rename "Client" to "Participant").' %}</p>
+        <p class="settings-indicator">
+            {% if terminology_overrides %}
+                {% blocktrans count count=terminology_overrides %}{{ count }} term customised{% plural %}{{ count }} terms customised{% endblocktrans %}
+            {% else %}
+                {% trans "Using defaults" %}
+            {% endif %}
+        </p>
         <footer><a href="{% url 'admin_settings:terminology' %}" role="button" class="outline">{% trans "Manage Terminology" %}</a></footer>
     </article>
 
     <article>
         <header>{% trans "Features" %}</header>
         <p>{% trans "Turn modules on or off for your organisation." %}</p>
+        <p class="settings-indicator">{% blocktrans with enabled=enabled_features total=total_features %}{{ enabled }} of {{ total }} enabled{% endblocktrans %}</p>
         <footer><a href="{% url 'admin_settings:features' %}" role="button" class="outline">{% trans "Manage Features" %}</a></footer>
     </article>
 
@@ -31,12 +39,14 @@
     <article>
         <header>{% trans "Users" %}</header>
         <p>{% trans "Create, edit, and deactivate user accounts." %}</p>
+        <p class="settings-indicator">{% blocktrans count count=active_users %}{{ count }} active user{% plural %}{{ count }} active users{% endblocktrans %}</p>
         <footer><a href="{% url 'auth_app:user_list' %}" role="button" class="outline">{% trans "Manage Users" %}</a></footer>
     </article>
 
     <article>
         <header>{% trans "Note Templates" %}</header>
         <p>{% trans "Define structures for progress notes (e.g. Standard session, Crisis intervention)." %}</p>
+        <p class="settings-indicator">{% blocktrans count count=note_template_count %}{{ count }} template{% plural %}{{ count }} templates{% endblocktrans %}</p>
         <footer><a href="{% url 'note_templates:template_list' %}" role="button" class="outline">{% trans "Manage Templates" %}</a></footer>
     </article>
 
@@ -46,4 +56,14 @@
         <footer><a href="{% url 'admin_settings:demo_directory' %}" role="button" class="outline">{% trans "Demo Directory" %}</a></footer>
     </article>
 </div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .settings-indicator {
+        font-size: 0.8125rem;
+        color: var(--kn-text-secondary);
+        margin-bottom: 0;
+    }
+</style>
 {% endblock %}

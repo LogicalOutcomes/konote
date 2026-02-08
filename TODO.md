@@ -20,14 +20,14 @@ _No remaining code review items._
 **Priority Bugs:**
 - [x] Search "no results" shows wrong empty state — says "No Participant files yet" instead of "No participants found" — 2026-02-07 (BUG-1)
 - [x] Hide create buttons from roles without permission — receptionist sees New Participant but gets 403 — 2026-02-07 (BUG-2)
-- [ ] Audit log uses developer jargon — shows "POST" instead of "Created", exposes IP Address column (BUG-3)
+- [x] Audit log uses developer jargon — shows "POST" instead of "Created", exposes IP Address column — 2026-02-07 (BUG-3)
 - [ ] Language preference not tied to user account — cookie-based, bleeds between users on same browser (BUG-4)
 
 **Improvements:**
-- [ ] Settings page needs state indicators — cards don't show current state like "4 of 6 enabled" (IMPROVE-1)
-- [ ] Pre-select program when user has only one — unnecessary checkbox click on create form (IMPROVE-2)
-- [ ] 403 page warmer language — "Access Denied" feels accusatory, soften to "You don't have access" (IMPROVE-3)
-- [ ] Dashboard needs "last updated" timestamp — no indication when data was generated (IMPROVE-4)
+- [x] Settings page needs state indicators — cards don't show current state like "4 of 6 enabled" — 2026-02-07 (IMPROVE-1)
+- [x] Pre-select program when user has only one — unnecessary checkbox click on create form — 2026-02-07 (IMPROVE-2)
+- [x] 403 page warmer language — "Access Denied" feels accusatory, soften to "You don't have access" — 2026-02-07 (IMPROVE-3)
+- [x] Dashboard needs "last updated" timestamp — no indication when data was generated — 2026-02-07 (IMPROVE-4)
 
 ### Pre-Launch Checklist
 

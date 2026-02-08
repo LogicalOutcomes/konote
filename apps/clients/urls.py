@@ -95,6 +95,7 @@ def executive_dashboard(request):
         "total_clients": total_clients,
         "total_active": total_active,
         "overall_consent_pct": overall_consent_pct,
+        "data_refreshed_at": now,
         "nav_active": "executive",
     })
 

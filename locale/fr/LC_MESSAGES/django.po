@@ -7817,3 +7817,27 @@ msgstr "Consulté"
 
 msgid "You don't have access to this page"
 msgstr "Vous n'avez pas accès à cette page"
+
+msgid "Last updated"
+msgstr "Dernière mise à jour"
+
+msgid "Using defaults"
+msgstr "Valeurs par défaut"
+
+msgid "%(count)s term customised"
+msgid_plural "%(count)s terms customised"
+msgstr[0] "%(count)s terme personnalisé"
+msgstr[1] "%(count)s termes personnalisés"
+
+msgid "%(enabled)s of %(total)s enabled"
+msgstr "%(enabled)s sur %(total)s activées"
+
+msgid "%(count)s active user"
+msgid_plural "%(count)s active users"
+msgstr[0] "%(count)s utilisateur actif"
+msgstr[1] "%(count)s utilisateurs actifs"
+
+msgid "%(count)s template"
+msgid_plural "%(count)s templates"
+msgstr[0] "%(count)s modèle"
+msgstr[1] "%(count)s modèles"

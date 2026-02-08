@@ -15,7 +15,27 @@ from .models import DEFAULT_TERMS, FeatureToggle, InstanceSetting, TerminologyOv
 @login_required
 @admin_required
 def dashboard(request):
-    return render(request, "admin_settings/dashboard.html")
+    from apps.auth_app.models import User
+    from apps.notes.models import ProgressNoteTemplate
+
+    # State indicators for dashboard cards
+    current_flags = FeatureToggle.get_all_flags()
+    total_features = len(DEFAULT_FEATURES)
+    enabled_features = sum(
+        1 for key in DEFAULT_FEATURES
+        if current_flags.get(key, key in FEATURES_DEFAULT_ENABLED)
+    )
+    terminology_overrides = TerminologyOverride.objects.count()
+    active_users = User.objects.filter(is_active=True).count()
+    note_template_count = ProgressNoteTemplate.objects.count()
+
+    return render(request, "admin_settings/dashboard.html", {
+        "enabled_features": enabled_features,
+        "total_features": total_features,
+        "terminology_overrides": terminology_overrides,
+        "active_users": active_users,
+        "note_template_count": note_template_count,
+    })
 
 
 # --- Terminology ---

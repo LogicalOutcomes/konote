@@ -67,6 +67,9 @@ class ClientFileForm(forms.Form):
         super().__init__(*args, **kwargs)
         if available_programs is not None:
             self.fields["programs"].queryset = available_programs
+            # Pre-select when user has exactly one program (IMPROVE-2)
+            if not self.is_bound and available_programs.count() == 1:
+                self.initial["programs"] = [available_programs.first().pk]
 
     def clean_phone(self):
         phone = self.cleaned_data.get("phone", "").strip()
