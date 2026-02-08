@@ -116,6 +116,10 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 
 See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-design.md) for full details.
 
+### QA Test Isolation
+
+- [ ] Test isolation for scenario runner — fresh browser context, locale override, prerequisite validation, demo data cleanup between scenarios. See `tasks/test-isolation.md` (QA-ISO1)
+
 ### Privacy & Security
 
 - [ ] First-run setup wizard — guided initial configuration (SETUP1)
