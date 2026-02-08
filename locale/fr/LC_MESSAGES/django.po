@@ -7666,3 +7666,63 @@ msgid ""
 "Verify this format matches your funder's specific requirements before "
 "submission."
 msgstr ""
+
+msgid "1 hour ago"
+msgstr ""
+
+msgid "1 minute ago"
+msgstr ""
+
+msgid "A server error occurred. Please try again later."
+msgstr ""
+
+msgid "Could not connect to the server. Check your internet connection."
+msgstr ""
+
+msgid "Discard"
+msgstr ""
+
+msgid "Dismiss message"
+msgstr ""
+
+msgid "Draft found"
+msgstr ""
+
+msgid "Draft restored"
+msgstr ""
+
+msgid "Restore draft"
+msgstr ""
+
+msgid "Saving…"
+msgstr ""
+
+msgid "Something went wrong. Please try again."
+msgstr ""
+
+msgid "The requested item was not found."
+msgstr ""
+
+msgid "You do not have permission to view audit logs for this program."
+msgstr ""
+
+msgid "You don't have permission to do that."
+msgstr ""
+
+msgid "You have unsaved changes. Are you sure you want to leave?"
+msgstr ""
+
+msgid "You have unsaved work from {time}."
+msgstr ""
+
+msgid "earlier"
+msgstr ""
+
+msgid "just now"
+msgstr ""
+
+msgid "{n} hours ago"
+msgstr ""
+
+msgid "{n} minutes ago"
+msgstr ""

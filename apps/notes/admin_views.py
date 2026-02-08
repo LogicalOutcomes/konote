@@ -2,9 +2,10 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.forms import inlineformset_factory
-from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
+
+from apps.auth_app.decorators import admin_required
 
 from .forms import NoteTemplateForm, NoteTemplateSectionForm
 from .models import ProgressNoteTemplate, ProgressNoteTemplateSection
@@ -19,23 +20,15 @@ SectionFormSet = inlineformset_factory(
 )
 
 
-def _admin_required(view_func):
-    """Decorator: require admin role."""
-    def wrapper(request, *args, **kwargs):
-        if not request.user.is_admin:
-            return HttpResponseForbidden("Access denied.")
-        return view_func(request, *args, **kwargs)
-    wrapper.__name__ = view_func.__name__
-    return login_required(wrapper)
-
-
-@_admin_required
+@login_required
+@admin_required
 def template_list(request):
     templates = ProgressNoteTemplate.objects.all()
     return render(request, "notes/admin/template_list.html", {"templates": templates})
 
 
-@_admin_required
+@login_required
+@admin_required
 def template_create(request):
     if request.method == "POST":
         form = NoteTemplateForm(request.POST)
@@ -56,7 +49,8 @@ def template_create(request):
     })
 
 
-@_admin_required
+@login_required
+@admin_required
 def template_edit(request, pk):
     template = get_object_or_404(ProgressNoteTemplate, pk=pk)
     if request.method == "POST":

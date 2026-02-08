@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from apps.auth_app.decorators import minimum_role
+from apps.auth_app.decorators import admin_required, minimum_role
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 
@@ -668,17 +668,15 @@ def client_search(request):
 # ---- Custom Field Admin (FIELD1) — admin only ----
 
 @login_required
+@admin_required
 def custom_field_admin(request):
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied.")
     groups = CustomFieldGroup.objects.all().prefetch_related("fields")
     return render(request, "clients/custom_fields_admin.html", {"groups": groups})
 
 
 @login_required
+@admin_required
 def custom_field_group_create(request):
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied.")
     if request.method == "POST":
         form = CustomFieldGroupForm(request.POST)
         if form.is_valid():
@@ -691,9 +689,8 @@ def custom_field_group_create(request):
 
 
 @login_required
+@admin_required
 def custom_field_group_edit(request, group_id):
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied.")
     group = get_object_or_404(CustomFieldGroup, pk=group_id)
     if request.method == "POST":
         form = CustomFieldGroupForm(request.POST, instance=group)
@@ -707,9 +704,8 @@ def custom_field_group_edit(request, group_id):
 
 
 @login_required
+@admin_required
 def custom_field_def_create(request):
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied.")
     if request.method == "POST":
         form = CustomFieldDefinitionForm(request.POST)
         if form.is_valid():
@@ -722,9 +718,8 @@ def custom_field_def_create(request):
 
 
 @login_required
+@admin_required
 def custom_field_def_edit(request, field_id):
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied.")
     from .models import CustomFieldDefinition
     field_def = get_object_or_404(CustomFieldDefinition, pk=field_id)
     if request.method == "POST":

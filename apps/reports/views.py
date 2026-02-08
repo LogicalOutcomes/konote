@@ -18,6 +18,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.audit.models import AuditLog
+from apps.auth_app.decorators import admin_required
 from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.clients.views import get_client_queryset
@@ -727,6 +728,7 @@ def cmt_export_form(request):
 
 
 @login_required
+@admin_required
 def client_data_export(request):
     """
     Export all client data as CSV for data portability and migration.
@@ -748,9 +750,6 @@ def client_data_export(request):
         ClientProgramEnrolment,
         CustomFieldDefinition,
     )
-
-    if not request.user.is_admin:
-        return HttpResponseForbidden("You do not have permission to access this page.")
 
     if request.method != "POST":
         form = ClientDataExportForm()
@@ -1051,14 +1050,13 @@ def download_export(request, link_id):
 
 
 @login_required
+@admin_required
 def manage_export_links(request):
     """
     Admin view: list all active and recent secure export links.
 
     Shows link status, download counts, and revocation controls.
     """
-    if not request.user.is_admin:
-        return HttpResponseForbidden("You do not have permission to access this page.")
 
     # Show active links + recently expired (last 7 days)
     cutoff = timezone.now() - timedelta(days=7)
@@ -1081,6 +1079,7 @@ def manage_export_links(request):
 
 
 @login_required
+@admin_required
 def revoke_export_link(request, link_id):
     """
     Admin action: revoke a secure export link so it can no longer be downloaded.
@@ -1092,9 +1091,6 @@ def revoke_export_link(request, link_id):
     from django.http import HttpResponseNotAllowed
     from django.shortcuts import redirect
     from django.utils.translation import gettext as _
-
-    if not request.user.is_admin:
-        return HttpResponseForbidden("You do not have permission to revoke export links.")
 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])

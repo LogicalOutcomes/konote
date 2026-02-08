@@ -13,6 +13,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
+from apps.auth_app.decorators import admin_required
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.access import (
     build_program_display_context,
@@ -387,11 +388,9 @@ def target_metrics(request, target_id):
 # ---------------------------------------------------------------------------
 
 @login_required
+@admin_required
 def metric_library(request):
     """Admin-only page listing all metric definitions by category."""
-    if not request.user.is_admin:
-        raise PermissionDenied(_("You don't have permission to access this page."))
-
     metrics = MetricDefinition.objects.all()
     metrics_by_category = {}
     for metric in metrics:
@@ -404,11 +403,9 @@ def metric_library(request):
 
 
 @login_required
+@admin_required
 def metric_export(request):
     """Admin-only CSV export of all metric definitions for review/editing."""
-    if not request.user.is_admin:
-        raise PermissionDenied(_("You don't have permission to access this page."))
-
     from apps.reports.csv_utils import sanitise_csv_row
 
     metrics = MetricDefinition.objects.all()
@@ -451,11 +448,9 @@ def metric_export(request):
 
 
 @login_required
+@admin_required
 def metric_toggle(request, metric_id):
     """HTMX POST to toggle is_enabled on a metric definition."""
-    if not request.user.is_admin:
-        raise PermissionDenied(_("You don't have permission to access this page."))
-
     metric = get_object_or_404(MetricDefinition, pk=metric_id)
     if request.method == "POST":
         metric.is_enabled = not metric.is_enabled
@@ -465,11 +460,9 @@ def metric_toggle(request, metric_id):
 
 
 @login_required
+@admin_required
 def metric_create(request):
     """Admin form to create a custom metric definition."""
-    if not request.user.is_admin:
-        raise PermissionDenied(_("You don't have permission to access this page."))
-
     if request.method == "POST":
         form = MetricDefinitionForm(request.POST)
         if form.is_valid():
@@ -488,11 +481,9 @@ def metric_create(request):
 
 
 @login_required
+@admin_required
 def metric_edit(request, metric_id):
     """Admin form to edit a metric definition."""
-    if not request.user.is_admin:
-        raise PermissionDenied(_("You don't have permission to access this page."))
-
     metric = get_object_or_404(MetricDefinition, pk=metric_id)
     if request.method == "POST":
         form = MetricDefinitionForm(request.POST, instance=metric)
@@ -679,6 +670,7 @@ def _parse_metric_csv(csv_file):
 
 
 @login_required
+@admin_required
 def metric_import(request):
     """
     Admin page to import metric definitions from CSV.
@@ -686,9 +678,6 @@ def metric_import(request):
     POST without confirm: Parse CSV and show preview
     POST with confirm: Import the metrics
     """
-    if not request.user.is_admin:
-        raise PermissionDenied(_("You don't have permission to access this page."))
-
     preview_rows = []
     parse_errors = []
     form = MetricImportForm()

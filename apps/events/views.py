@@ -14,6 +14,7 @@ from apps.programs.access import (
     get_client_or_403,
     get_user_program_ids,
 )
+from apps.auth_app.decorators import admin_required
 from apps.programs.models import UserProgramRole
 
 from .forms import AlertCancelForm, AlertForm, EventForm, EventTypeForm
@@ -30,19 +31,17 @@ _get_author_program = get_author_program
 # ---------------------------------------------------------------------------
 
 @login_required
+@admin_required
 def event_type_list(request):
     """List all event types (admin only)."""
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied. Admin privileges required.")
     event_types = EventType.objects.all()
     return render(request, "events/event_type_list.html", {"event_types": event_types})
 
 
 @login_required
+@admin_required
 def event_type_create(request):
     """Create a new event type (admin only)."""
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied. Admin privileges required.")
     if request.method == "POST":
         form = EventTypeForm(request.POST)
         if form.is_valid():
@@ -55,10 +54,9 @@ def event_type_create(request):
 
 
 @login_required
+@admin_required
 def event_type_edit(request, type_id):
     """Edit an event type (admin only)."""
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied. Admin privileges required.")
     event_type = get_object_or_404(EventType, pk=type_id)
     if request.method == "POST":
         form = EventTypeForm(request.POST, instance=event_type)

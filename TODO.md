@@ -7,16 +7,9 @@
 
 ## Active Work
 
-### Code Review Fixes (from 2026-02-07 review — see `tasks/code-review-2026-02-07.md`)
+### Code Review Remaining (from 2026-02-07 review — see `tasks/code-review-2026-02-07.md`)
 
-**Medium — remaining (depend on HIGH fixes above):**
-- [ ] Translate access denied messages — depends on QUAL3 consolidation (I18N-8)
-- [ ] Refactor inline admin checks to use decorator — depends on QUAL3 (QUAL8)
-- [ ] Modal focus trap — depends on QUAL4 app.js cleanup (A11Y-2)
-- [ ] Translate ~20 JS strings in app.js — depends on QUAL4 (I18N-4)
-- [ ] Test audit log views — depends on QUAL1 (TEST-4)
-
-**Medium — 77 strings still need French translation (TRANSLATE_API_KEY not set):**
+**Medium — 97 strings still need French translation (TRANSLATE_API_KEY not set):**
 - [ ] Set TRANSLATE_API_KEY and re-run `python manage.py translate_strings` (I18N-TRANS1)
 
 ### Pre-Launch Checklist
@@ -33,6 +26,7 @@ The core app is feature-complete. These tasks prepare for production use.
 - [ ] Redeploy to Railway — push to `main`, Railway auto-deploys. See `docs/deploy-railway.md` (OPS-RAIL1)
 - [ ] Redeploy to FullHost — push to `main`, then trigger redeploy via API or dashboard. See `docs/deploy-fullhost.md` (OPS-FH1)
 - [ ] Code review round — open Claude Code in VS Code, say "review the codebase for code quality, security, and consistency issues" — see `tasks/code-review-process.md` (REV1)
+- [ ] Scenario QA evaluation — persona-based satisfaction scoring against a live test server. Slow (~60s), run sparingly after major UX changes. Uses dry-run mode (no API key needed) to capture screenshots and page state, then show Claude the results for evaluation. See `tasks/scenario-eval-howto.md` (QA-SCEN1)
 
 ## Coming Up
 
@@ -109,17 +103,13 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Code review MEDIUM remaining — admin_required decorator across all views (QUAL8), translated access denied messages (I18N-8), modal focus trap (A11Y-2), 20 JS strings translatable (I18N-4), 29 audit log view tests (TEST-4) — 2026-02-07
 - [x] Code review MEDIUM fixes — QUAL5-7, A11Y-1, I18N-1/2/3/5/6/7/9/10: dev cookie fix, group forms, dedup client fields, scope on th, PDF/email/form/CSV translations, breadcrumbs, privacy.html blocktrans — 2026-02-07
 - [x] Code review HIGH fixes — audit "cancel" action, consolidated `_get_client_ip()` and `admin_required`, dead JS code removed, encryption key rotation + lockout tests — 2026-02-07 (QUAL1-4, TEST1-2)
 - [x] Code review CRITICAL fixes — demo/real data isolation in client HTMX views, admin_required on registration views, plan template + submission merge bypasses — 2026-02-07 (SEC1-4)
 - [x] Per-Program Roles cleanup — audit logging, dead code removal, ROLE_RANK constants, help.html blocktrans, admin notices, query caching — 2026-02-07 (ROLE1-8)
 - [x] Demo site setup — merged to main, registration link seeded, GitHub Pages verified, live demo tested — 2026-02-07 (DEMO1-4)
 - [x] CONF9 follow-ups — logger.exception() for audit, flash message on context switch, request-level cache for needs_program_selector, soft-filter vs hard-boundary docs — 2026-02-07 (CONF9a-d)
-- [x] Erasure hardening — all 7 expert-panel recommendations implemented: PDF receipt scoping, audit-before-erasure, receipt download tracking, rejection notifications, deduplication fix, race condition fix, pagination — 2026-02-06 (ERASE-H1–H7)
-- [x] Duplicate merge tool — admin-only side-by-side comparison, transfers notes/events/plans/enrolments/fields, 32 tests — 2026-02-06 (MATCH4)
-- [x] Phase H complete — confidential programs, duplicate detection, merge tool, DV documentation — 2026-02-06 (CONF1-8, MATCH1-6)
-- [x] Translation reliability — `translate_strings` command, startup detection, CLAUDE.md workflow rule — 2026-02-06 (I18N-CMD1)
-- [x] Full integration test pass — 1,000+ tests passing — 2026-02-06 (TEST3)
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 
 ---
