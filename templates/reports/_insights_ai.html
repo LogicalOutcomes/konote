@@ -26,6 +26,38 @@
     </ul>
     {% endif %}
 
+    {# Participant feedback — categorised actionable items #}
+    {% if summary.participant_feedback %}
+    <h4>{% trans "Participant Feedback" %}</h4>
+    <div class="participant-feedback-grid">
+        {% for item in summary.participant_feedback %}
+        <details class="feedback-item feedback-{{ item.category }}" open>
+            <summary>
+                <span class="feedback-category-badge feedback-badge--{{ item.category }}">
+                    {% if item.category == "request" %}{% trans "Request" %}
+                    {% elif item.category == "suggestion" %}{% trans "Suggestion" %}
+                    {% elif item.category == "concern" or item.category == "complaint" %}{% trans "Concern" %}
+                    {% elif item.category == "praise" %}{% trans "Praise" %}
+                    {% endif %}
+                </span>
+                {{ item.finding }}
+                {% if item.count %}
+                <small class="muted">({{ item.count }} {% trans "participants" %})</small>
+                {% endif %}
+            </summary>
+            {% for sq in item.supporting_quotes %}
+            <blockquote class="insight-quote insight-quote--compact">
+                <p>&ldquo;{{ sq.text }}&rdquo;</p>
+                {% if sq.note_id %}
+                <cite><a href="{% url 'notes:note_detail' note_id=sq.note_id %}">{% trans "View note" %}</a></cite>
+                {% endif %}
+            </blockquote>
+            {% endfor %}
+        </details>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     {# Cited quotes #}
     {% if summary.cited_quotes %}
     <h4>{% trans "Cited Quotes" %}</h4>
@@ -50,7 +82,7 @@
 
     {# Actions #}
     <div class="ai-actions" style="margin-top: 1rem;">
-        <button onclick="navigator.clipboard.writeText(document.getElementById('ai-narrative-text').innerText).then(function(){this.textContent='{% trans "Copied!" %}'}.bind(this))" class="outline secondary" type="button">
+        <button onclick="navigator.clipboard.writeText(this.closest('.insights-ai-result').innerText).then(function(){this.textContent='{% trans "Copied!" %}'}.bind(this))" class="outline secondary" type="button">
             {% trans "Copy to clipboard" %}
         </button>
         <button

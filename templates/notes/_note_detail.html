@@ -58,6 +58,18 @@
         <p><strong>{% trans "Engagement:" %}</strong> {{ note.get_engagement_observation_display }}</p>
     {% endif %}
 
+    {% if note.participant_reflection %}
+        <p><strong>{% trans "Reflection:" %}</strong> "{{ note.participant_reflection }}"</p>
+    {% endif %}
+
+    {% if note.participant_suggestion %}
+        <p><strong>{% trans "Suggestion:" %}</strong> "{{ note.participant_suggestion }}"
+            {% if note.suggestion_priority %}
+                <span class="badge badge-neutral">{{ note.get_suggestion_priority_display }}</span>
+            {% endif %}
+        </p>
+    {% endif %}
+
     {% if note.summary %}
         <h3>{% trans "Summary" %}</h3>
         <p>{{ note.summary }}</p>
