@@ -7747,3 +7747,73 @@ msgstr "il y a {n} heures"
 
 msgid "{n} minutes ago"
 msgstr "il y a {n} minutes"
+
+msgid "Access denied"
+msgstr "Accès refusé"
+
+msgid "Ask your program manager if you need access to this page"
+msgstr ""
+"Demandez à votre gestionnaire de programme si vous avez besoin d'accéder à "
+"cette page"
+
+msgid "Audit log"
+msgstr "Journal d'audit"
+
+msgid "Client record"
+msgstr "Dossier client"
+
+msgid "Deleted"
+msgstr "Supprimé"
+
+msgid "Erasure request"
+msgstr "Demande d'effacement"
+
+msgid "Exported"
+msgstr "Exporté"
+
+msgid "Group"
+msgstr "Groupe"
+
+msgid "Logged in"
+msgstr "Connecté"
+
+msgid "Logged out"
+msgstr "Déconnecté"
+
+msgid "Login failed"
+msgstr "Échec de connexion"
+
+msgid "Login session"
+msgstr "Session de connexion"
+
+msgid "Page not available"
+msgstr "Page non disponible"
+
+msgid "Plan"
+msgstr "Plan"
+
+msgid "Progress note"
+msgstr "Note de progrès"
+
+msgid "Record type"
+msgstr "Type d'enregistrement"
+
+msgid "Show technical details"
+msgstr "Afficher les détails techniques"
+
+msgid ""
+"This page is available to staff members and program managers. If you need "
+"access, ask your program manager."
+msgstr ""
+"Cette page est accessible aux membres du personnel et aux gestionnaires de "
+"programme. Si vous avez besoin d'accès, demandez à votre gestionnaire de "
+"programme."
+
+msgid "Updated"
+msgstr "Mis à jour"
+
+msgid "Viewed"
+msgstr "Consulté"
+
+msgid "You don't have access to this page"
+msgstr "Vous n'avez pas accès à cette page"

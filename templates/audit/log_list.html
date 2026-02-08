@@ -35,7 +35,7 @@
                 </select>
             </label>
             <label for="resource_type">
-                {% trans "Resource type" %}
+                {% trans "Record type" %}
                 <input type="text" id="resource_type" name="resource_type" value="{{ resource_type }}" placeholder="{% trans 'e.g. client, note' %}">
             </label>
             <label for="demo_filter">
@@ -60,16 +60,22 @@
 
     {# ---- Results table ---- #}
     {% if page.object_list %}
+    <p style="text-align:right; margin-bottom: var(--kn-space-sm);">
+        <label style="display:inline-flex; align-items:center; gap:0.5rem; font-size:0.8125rem; cursor:pointer;">
+            <input type="checkbox" id="show-advanced-cols" style="width:auto; margin:0;">
+            {% trans "Show technical details" %}
+        </label>
+    </p>
     <figure>
         <table role="grid">
             <thead>
                 <tr>
                     <th scope="col">{% trans "Timestamp" %}</th>
                     <th scope="col">{% trans "User" %}</th>
-                    <th scope="col">{% trans "IP Address" %}</th>
                     <th scope="col">{% trans "Action" %}</th>
-                    <th scope="col">{% trans "Resource Type" %}</th>
-                    <th scope="col">{% trans "Resource ID" %}</th>
+                    <th scope="col">{% trans "Record type" %}</th>
+                    <th scope="col" class="audit-advanced" hidden>{% trans "IP Address" %}</th>
+                    <th scope="col" class="audit-advanced" hidden>{% trans "Record ID" %}</th>
                 </tr>
             </thead>
             <tbody>
@@ -77,14 +83,14 @@
                 <tr{% if entry.is_demo_context %} style="opacity: 0.7;"{% endif %}>
                     <td>{{ entry.event_timestamp|date:"Y-m-d H:i" }}</td>
                     <td>{{ entry.user_display }}{% if entry.is_demo_context %} <small style="color: var(--pico-del-color, #e53935);">(demo)</small>{% endif %}</td>
-                    <td>{{ entry.ip_address|default:"—" }}</td>
                     <td>
-                        <span class="badge {% if entry.action == 'create' %}badge-success{% elif entry.action == 'view' or entry.action == 'login' %}badge-info{% elif entry.action == 'update' or entry.action == 'put' or entry.action == 'patch' %}badge-warning{% elif entry.action == 'delete' %}badge-danger{% else %}badge-neutral{% endif %}">
+                        <span class="badge {% if entry.action == 'create' or entry.action == 'post' %}badge-success{% elif entry.action == 'view' or entry.action == 'login' %}badge-info{% elif entry.action == 'update' or entry.action == 'put' or entry.action == 'patch' %}badge-warning{% elif entry.action == 'delete' %}badge-danger{% else %}badge-neutral{% endif %}">
                             {{ entry.get_action_display }}
                         </span>
                     </td>
-                    <td>{{ entry.resource_type }}</td>
-                    <td>{{ entry.resource_id|default:"—" }}</td>
+                    <td>{{ entry.resource_type_display }}</td>
+                    <td class="audit-advanced" hidden>{{ entry.ip_address|default:"—" }}</td>
+                    <td class="audit-advanced" hidden>{{ entry.resource_id|default:"—" }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -110,4 +116,19 @@
     <p>{% trans "No audit log entries found. Try adjusting your filters." %}</p>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+(function() {
+    var cb = document.getElementById('show-advanced-cols');
+    if (!cb) return;
+    cb.addEventListener('change', function() {
+        var cells = document.querySelectorAll('.audit-advanced');
+        for (var i = 0; i < cells.length; i++) {
+            cells[i].hidden = !cb.checked;
+        }
+    });
+})();
+</script>
 {% endblock %}
