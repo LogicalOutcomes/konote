@@ -1,0 +1,58 @@
+# Run QA scenario evaluations against holdout scenarios from konote-qa-scenarios.
+# Pytest captures UI state via Playwright; qa_gate.py checks for blocker scenarios.
+
+name: QA Scenario Evaluation
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  qa-scenarios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout konote-web
+        uses: actions/checkout@v4
+
+      - name: Checkout konote-qa-scenarios
+        uses: actions/checkout@v4
+        with:
+          repository: gilliankerr/konote-qa-scenarios
+          path: qa-scenarios
+          token: ${{ secrets.QA_REPO_TOKEN }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest playwright
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Run QA scenario tests
+        id: run-scenarios
+        continue-on-error: true
+        run: pytest tests/scenario_eval/ -v --no-llm
+        env:
+          SCENARIO_HOLDOUT_DIR: ${{ github.workspace }}/qa-scenarios
+          SCENARIO_NO_LLM: '1'
+          DJANGO_SETTINGS_MODULE: konote.settings.test
+
+      - name: Check for blocker scenarios
+        run: |
+          if [ "${{ steps.run-scenarios.outcome }}" = "failure" ]; then
+            echo "WARNING: pytest exited with an error (possible crash or import failure)"
+          fi
+          python scripts/qa_gate.py ${{ github.workspace }}/qa-scenarios/reports/
+        env:
+          PYTEST_OUTCOME: ${{ steps.run-scenarios.outcome }}

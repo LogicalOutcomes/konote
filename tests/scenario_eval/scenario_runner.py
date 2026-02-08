@@ -7,6 +7,9 @@ QA-ISO1: Fresh browser context per scenario, locale from persona,
 QA-T10:  Objective scoring for accessibility, efficiency, language.
 """
 import logging
+import os
+
+from django.utils import timezone
 
 from ..ux_walkthrough.browser_base import BrowserTestBase, TEST_PASSWORD
 
@@ -80,6 +83,8 @@ class ScenarioRunner(BrowserTestBase):
     scenario_data = None
     personas = None
     use_llm = True  # Set to False for dry-run (captures only, no API calls)
+    eval_model = None  # Override LLM model for evaluation (None = default)
+    eval_temperature = None  # Override LLM temperature (None = API default)
 
     # CDP session for network throttling (lazy-created)
     _cdp_session = None
@@ -131,6 +136,56 @@ class ScenarioRunner(BrowserTestBase):
                 user=frontdesk2, program=self.program_b, role="receptionist",
             )
 
+        # DS1c: Casey with ADHD (cognitive accessibility profile)
+        if not User.objects.filter(username="staff_adhd").exists():
+            staff_adhd = User.objects.create_user(
+                username="staff_adhd", password=TEST_PASSWORD,
+                display_name="Casey Parker",
+            )
+            UserProgramRole.objects.create(
+                user=staff_adhd, program=self.program_a, role="staff",
+            )
+
+        # DS4: Riley Chen (voice navigation / Dragon user)
+        if not User.objects.filter(username="staff_voice").exists():
+            staff_voice = User.objects.create_user(
+                username="staff_voice", password=TEST_PASSWORD,
+                display_name="Riley Chen",
+            )
+            UserProgramRole.objects.create(
+                user=staff_voice, program=self.program_a, role="staff",
+            )
+
+        # PM1: Morgan Tremblay (program manager, cross-program)
+        if not User.objects.filter(username="program_mgr").exists():
+            program_mgr = User.objects.create_user(
+                username="program_mgr", password=TEST_PASSWORD,
+                display_name="Morgan Tremblay",
+            )
+            UserProgramRole.objects.create(
+                user=program_mgr, program=self.program_a,
+                role="program_manager",
+            )
+            UserProgramRole.objects.create(
+                user=program_mgr, program=self.program_b,
+                role="program_manager",
+            )
+
+        # E2: Kwame Asante (second admin)
+        if not User.objects.filter(username="admin2").exists():
+            admin2 = User.objects.create_user(
+                username="admin2", password=TEST_PASSWORD,
+                display_name="Kwame Asante",
+            )
+            admin2.is_admin = True
+            admin2.save()
+            UserProgramRole.objects.create(
+                user=admin2, program=self.program_a, role="executive",
+            )
+            UserProgramRole.objects.create(
+                user=admin2, program=self.program_b, role="executive",
+            )
+
         # Extra clients needed by specific scenarios
         from apps.clients.models import ClientFile, ClientProgramEnrolment
 
@@ -163,6 +218,95 @@ class ScenarioRunner(BrowserTestBase):
             james.save()
             ClientProgramEnrolment.objects.create(
                 client_file=james, program=self.program_a,
+            )
+
+        all_clients = list(ClientFile.objects.all())
+
+        # SCN-040: Benoit Tremblay (French-accented name for bilingual intake)
+        if not any(c.first_name == "Benoit" for c in all_clients):
+            benoit = ClientFile.objects.create(is_demo=False)
+            benoit.first_name = "Benoit"
+            benoit.last_name = "Tremblay"
+            benoit.status = "active"
+            benoit.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=benoit, program=self.program_a,
+            )
+
+        # SCN-042: Sofia Garcia (multi-program client)
+        if not any(c.first_name == "Sofia" for c in all_clients):
+            sofia = ClientFile.objects.create(is_demo=False)
+            sofia.first_name = "Sofia"
+            sofia.last_name = "Garcia"
+            sofia.status = "active"
+            sofia.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=sofia, program=self.program_a,
+            )
+            ClientProgramEnrolment.objects.create(
+                client_file=sofia, program=self.program_b,
+            )
+
+        # SCN-070: Priya Sharma (consent client with 5+ notes)
+        if not any(c.first_name == "Priya" for c in all_clients):
+            from apps.notes.models import ProgressNote
+
+            priya = ClientFile.objects.create(is_demo=False)
+            priya.first_name = "Priya"
+            priya.last_name = "Sharma"
+            priya.status = "active"
+            priya.consent_given_at = timezone.now()
+            priya.consent_type = "written"
+            priya.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=priya, program=self.program_a,
+            )
+            # Create 5 progress notes for consent withdrawal scenario
+            staff = User.objects.filter(username="staff").first()
+            for i in range(5):
+                note = ProgressNote.objects.create(
+                    client_file=priya, author=staff,
+                    author_program=self.program_a, note_type="quick",
+                )
+                note.notes_text = f"Session {i + 1} progress note."
+                note.save()
+
+        # SCN-015: Li Wei (batch note entry client)
+        if not any(c.first_name == "Li" for c in all_clients):
+            li = ClientFile.objects.create(is_demo=False)
+            li.first_name = "Li"
+            li.last_name = "Wei"
+            li.status = "active"
+            li.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=li, program=self.program_a,
+            )
+
+        # SCN-020: Fatima Hassan (phone number update client)
+        if not any(c.first_name == "Fatima" for c in all_clients):
+            fatima = ClientFile.objects.create(is_demo=False)
+            fatima.first_name = "Fatima"
+            fatima.last_name = "Hassan"
+            fatima.status = "active"
+            fatima.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=fatima, program=self.program_a,
+            )
+            if hasattr(self, "phone_field"):
+                ClientDetailValue.objects.create(
+                    client_file=fatima, field_def=self.phone_field,
+                    value="613-555-0142",
+                )
+
+        # SCN-025: Derek Williams (Omar's quick lookup client)
+        if not any(c.first_name == "Derek" for c in all_clients):
+            derek = ClientFile.objects.create(is_demo=False)
+            derek.first_name = "Derek"
+            derek.last_name = "Williams"
+            derek.status = "active"
+            derek.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=derek, program=self.program_b,
             )
 
     # ------------------------------------------------------------------
@@ -430,6 +574,8 @@ class ScenarioRunner(BrowserTestBase):
                     step=step,
                     page_state_text=page_state_text,
                     context_from_previous=prev_context,
+                    model=self.eval_model,
+                    temperature=self.eval_temperature,
                 )
                 if evaluation:
                     evaluation.scenario_id = scenario["id"]
@@ -554,6 +700,8 @@ class ScenarioRunner(BrowserTestBase):
                     step=step,
                     page_state_text=page_state_text,
                     context_from_previous=context,
+                    model=self.eval_model,
+                    temperature=self.eval_temperature,
                 )
                 if evaluation:
                     evaluation.scenario_id = scenario["id"]
@@ -714,6 +862,68 @@ class ScenarioRunner(BrowserTestBase):
                         )
                     except Exception:
                         pass  # CDP not available — proceed without throttle
+
+            elif "voice_command" in action:
+                # Dragon NaturallySpeaking voice commands mapped to Playwright
+                command = action["voice_command"]
+                if command.lower().startswith("click "):
+                    target_text = command[6:]  # Strip "Click "
+                    try:
+                        self.page.get_by_text(target_text, exact=False).first.click(timeout=5000)
+                    except Exception:
+                        pass  # Voice target not found — evaluator will note
+                elif command.lower().startswith("go to "):
+                    target = command[6:]  # Strip "Go to "
+                    try:
+                        self.page.get_by_label(target, exact=False).first.focus()
+                    except Exception:
+                        pass
+                logger.info(f"Voice command: {command}")
+
+            elif "dictate" in action:
+                # Dragon dictation mapped to keyboard typing
+                text = action["dictate"]
+                self.page.keyboard.type(text)
+                logger.info(f"Dictation: {text}")
+
+            elif "intercept_network" in action:
+                # Mock error responses via Playwright route interception
+                config = action["intercept_network"]
+                url_pattern = config.get("url", "**/*")
+                status = config.get("status", 500)
+
+                def _make_handler(s):
+                    def handler(route):
+                        route.fulfill(status=s, body=f"Mocked {s} error")
+                    return handler
+
+                self.page.route(url_pattern, _make_handler(status))
+
+            elif "close_tab" in action:
+                self.page.close()
+                # Switch to the last open page in the context
+                pages = self._context.pages
+                if pages:
+                    self.page = pages[-1]
+
+            elif "open_new_tab" in action:
+                new_page = self._context.new_page()
+                self.page = new_page
+
+            elif "go_back" in action:
+                self.page.go_back()
+
+            elif "screenshot" in action:
+                # Explicit named screenshot capture
+                name = action["screenshot"]
+                screenshot_dir = os.environ.get("SCENARIO_HOLDOUT_DIR", "")
+                if screenshot_dir:
+                    path = os.path.join(
+                        screenshot_dir, "reports", "screenshots",
+                        f"{name}.png",
+                    )
+                    os.makedirs(os.path.dirname(path), exist_ok=True)
+                    self.page.screenshot(path=path, full_page=True)
 
             # Small pause between actions for realism
             self.page.wait_for_timeout(100)

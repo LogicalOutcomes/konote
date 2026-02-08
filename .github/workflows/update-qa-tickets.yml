@@ -1,0 +1,31 @@
+# Update QA tickets in konote-qa-scenarios when fixes are merged.
+# Parses commit messages for "QA: TICKET-ID" patterns and posts
+# comments or creates issues in the QA repo.
+
+name: Update QA Tickets
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync-qa-tickets:
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, 'QA:')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Sync QA tickets
+        run: python scripts/sync_qa_tickets.py
+        env:
+          GH_TOKEN: ${{ secrets.QA_REPO_TOKEN }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_URL: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
