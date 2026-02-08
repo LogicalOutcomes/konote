@@ -1534,6 +1534,14 @@ msgid "No %(client)s files yet."
 msgstr "Aucun dossier %(client)s pour le moment."
 
 #, python-format
+msgid ""
+"No %(clients)s found matching \"%(query)s\". Try a different name or check "
+"the spelling."
+msgstr ""
+"Aucun(e) %(clients)s ne correspond à « %(query)s ». Essayez un autre nom ou "
+"vérifiez l'orthographe."
+
+#, python-format
 msgid "View all %(clients)s"
 msgstr "Voir tous les %(clients)s"
 

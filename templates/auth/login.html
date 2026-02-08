@@ -11,9 +11,11 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
 </head>
 <body>
+    <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
+
     {% if not has_language_cookie %}
     {# ── First visit: bilingual hero with language chooser ── #}
-    <main class="container login-container">
+    <main id="main-content" class="container login-container" tabindex="-1">
         <h1 class="login-wordmark">{{ site.product_name|default:"KoNote2" }}</h1>
         <p class="login-tagline-bilingual">
             Participant Outcome Management<br>
@@ -53,7 +55,7 @@
         </form>
     </nav>
 
-    <main class="container login-container">
+    <main id="main-content" class="container login-container" tabindex="-1">
         <h1 class="login-wordmark">{{ site.product_name|default:"KoNote2" }}</h1>
         <p class="login-tagline">{% trans "Participant Outcome Management" %}</p>
     {% endif %}
@@ -98,5 +100,19 @@
         </section>
         {% endif %}
     </main>
+
+    <footer class="container site-footer" role="contentinfo">
+        <div class="site-footer-inner">
+            <div class="site-footer-brand">
+                <strong>{{ site.product_name|default:"KoNote2" }}</strong>
+                {% if site.support_email %}<span>{% trans "Support:" %} <a href="mailto:{{ site.support_email }}">{{ site.support_email }}</a></span>{% endif %}
+            </div>
+            <div class="site-footer-links">
+                <a href="https://github.com/gilliankerr/KoNote-Redux" target="_blank" rel="noopener">GitHub</a>
+                <a href="{% url 'privacy' %}">{% trans "Privacy" %}</a>
+                <a href="{% url 'help' %}">{% trans "Help" %}</a>
+            </div>
+        </div>
+    </footer>
 </body>
 </html>

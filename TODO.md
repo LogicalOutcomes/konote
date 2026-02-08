@@ -11,6 +11,24 @@
 
 _No remaining code review items._
 
+### Scenario Evaluation Fixes (from 2026-02-07 — see `tasks/2026-02-07-improvement-tickets.md`)
+
+**Blockers:**
+- [ ] Add skip-to-content link — WCAG 2.4.1 Level A, keyboard users can't reach main content (BLOCKER-1)
+- [ ] Fix focus management after login — focus lands on body/footer instead of main content (BLOCKER-2)
+
+**Priority Bugs:**
+- [ ] Search "no results" shows wrong empty state — says "No Participant files yet" instead of "No participants found" (BUG-1)
+- [ ] Hide create buttons from roles without permission — receptionist sees New Participant but gets 403 (BUG-2)
+- [ ] Audit log uses developer jargon — shows "POST" instead of "Created", exposes IP Address column (BUG-3)
+- [ ] Language preference not tied to user account — cookie-based, bleeds between users on same browser (BUG-4)
+
+**Improvements:**
+- [ ] Settings page needs state indicators — cards don't show current state like "4 of 6 enabled" (IMPROVE-1)
+- [ ] Pre-select program when user has only one — unnecessary checkbox click on create form (IMPROVE-2)
+- [ ] 403 page warmer language — "Access Denied" feels accusatory, soften to "You don't have access" (IMPROVE-3)
+- [ ] Dashboard needs "last updated" timestamp — no indication when data was generated (IMPROVE-4)
+
 ### Pre-Launch Checklist
 
 The core app is feature-complete. These tasks prepare for production use.

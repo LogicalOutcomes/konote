@@ -9,7 +9,9 @@
     <p>{% blocktrans with client=term.client|default:"participant" %}All {{ client }} files you have access to.{% endblocktrans %}</p>
 </div>
 
+{% if can_create %}
 <p><a href="{% url 'clients:client_create' %}" role="button">{% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}</a></p>
+{% endif %}
 
 <!-- Search and filter bar -->
 <details class="filter-bar" open>
