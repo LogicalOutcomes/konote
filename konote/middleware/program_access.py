@@ -101,8 +101,8 @@ class ProgramAccessMiddleware:
             for pattern in NOTE_URL_PATTERNS:
                 if pattern.match(path):
                     return redirect("clients:executive_dashboard")
-            # Also redirect from client list
-            if path == "/clients/" or path == "/clients":
+            # Also redirect from staff dashboard (root) and client list
+            if path in ("/", "/clients/", "/clients"):
                 return redirect("clients:executive_dashboard")
 
         # Client-scoped routes — check program overlap (admins are NOT exempt)

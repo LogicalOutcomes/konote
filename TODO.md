@@ -4,35 +4,19 @@
 
 - [ ] Decide product name — should web version be called "KoNote" (not "KoNote2"). See `tasks/naming-versioning.md` (NAME1)
 - [ ] Update konote-website git remote URL — repo was renamed to `konote2-website` but local remote still points to old `konote2` name (NAME2)
-_Nothing flagged._
 
 ## Active Work
 
-### Code Review Remaining (from 2026-02-07 review — see `tasks/code-review-2026-02-07.md`)
+### QA Process Improvements (see `tasks/qa-process-improvement-plan.md`)
 
-_All review items complete. 74 new tests added. Pre-existing test failures fixed._
-
-### Scenario Evaluation Fixes (updated 2026-02-08 — see `qa/2026-02-08-improvement-tickets.md`)
-
-_All 2026-02-08 evaluation items fixed. Re-run scenarios to verify._
-
-**Fixed (2026-02-08):**
-- [x] Skip-to-content link — improved CSS, added `clip-path` for robustness — 2026-02-08 (BLOCKER-1)
-- [x] Focus after login — JS auto-focuses `<main>` on page load — 2026-02-08 (BLOCKER-2)
-- [x] Executive redirect — `_login_redirect()` sends executives to aggregate dashboard — 2026-02-08 (BUG-5)
-- [x] Language preference — moved middleware after auth, overrides cookie with user profile — 2026-02-08 (BUG-4)
-- [x] Offline banner — `role="alert"` banner with "Try again" button — 2026-02-08 (BUG-6)
-- [x] Audit log "Auth" → "Account", filter grid widened — 2026-02-08 (BUG-3b)
-- [x] Settings cards — all 6 now show summary stats — 2026-02-08 (IMPROVE-1b)
-
-**Fixed (confirmed by 2026-02-08 eval):**
-- [x] Search "no results" shows correct empty state — 2026-02-07 (BUG-1)
-- [x] Create buttons hidden for roles without permission — 2026-02-07 (BUG-2)
-- [x] Audit log badges show "Created"/"Logged in", IP hidden behind toggle — 2026-02-07 (BUG-3)
-- [x] Pre-select program when user has only one — 2026-02-07 (IMPROVE-2)
-- [x] 403 page warmer language — 2026-02-07 (IMPROVE-3)
-- [x] Dashboard "last updated" timestamp — 2026-02-07 (IMPROVE-4)
-- [x] 4 of 6 settings cards now show summary stats — 2026-02-07 (IMPROVE-1)
+- [ ] Add pre-flight check to scenario runner — login, language, dashboard, test data (QA-W1)
+- [ ] Capture browser console logs alongside screenshots (QA-W2)
+- [ ] Detect and flag duplicate consecutive screenshots (QA-W3)
+- [ ] Add action verification — confirm fills, clicks, and logins actually executed (QA-W4)
+- [ ] Capture screenshots at DITL key moments (QA-W5)
+- [ ] Report naming with sequence suffix for multiple runs per day (QA-W6)
+- [ ] Fix 404 after create participant form submission (QA-W7 / BUG-7)
+- [ ] Add post-creation confirmation flash message (QA-W8 / IMPROVE-5)
 
 ### Pre-Launch Checklist
 
@@ -58,50 +42,6 @@ Weekly accountability reports for admins. Requires working email configuration (
 
 - [ ] Create weekly export summary email command (EXP2u)
 - [ ] Document cron/scheduled task setup in runbook (EXP2w)
-
-### QA Infrastructure (Phase 3) — from konote-qa-scenarios
-
-Tasks from the QA holdout repo that require code changes in this repo. Scenario data and persona definitions stay in `konote-qa-scenarios`.
-
-- [x] Automate objective scoring dimensions — axe-core for accessibility, action count for efficiency, doc lang for language. Objective scores override LLM for these 3 dimensions — 2026-02-08 (QA-T10)
-- [x] CI/CD gate — GitHub Actions workflow runs scenarios on push to main, `qa_gate.py` fails build on BLOCKER scores — 2026-02-08 (QA-T11)
-- [x] Track satisfaction gap over time — `track_satisfaction.py` appends to history JSON, `chart_satisfaction.py` generates trend table, target < 1.0 gap — 2026-02-08 (QA-T12)
-- [x] Bidirectional ticket status — GitHub Actions workflow parses `QA:` in commit messages, syncs issues to konote-qa-scenarios via `gh` CLI — 2026-02-08 (QA-T14)
-
-### QA Scenario Runner Update — Full Coverage (see `tasks/qa-scenario-runner-update-plan.md`)
-
-_All scenario runner tasks complete._
-
-**Test Data (scenario_runner.py `_create_test_data`):**
-- [x] Add DS1c test user (`staff_adhd`, Casey with ADHD) for SCN-058 — 2026-02-08 (QA-DATA1)
-- [x] Add DS4 test user (`staff_voice`, Riley Chen) for SCN-059 — 2026-02-08 (QA-DATA2)
-- [x] Add PM1 test user (`program_mgr`, Morgan Tremblay, cross-program) for SCN-035, SCN-042, SCN-070 — 2026-02-08 (QA-DATA3)
-- [x] Add E2 test user (`admin2`, Kwame Asante) for SCN-030 — 2026-02-08 (QA-DATA4)
-- [x] Add test clients: Benoit Tremblay, Sofia Garcia, Priya Sharma, Li Wei, Fatima Hassan, Derek Williams — 2026-02-08 (QA-DATA5)
-
-**New Action Types (scenario_runner.py `_execute_actions`):**
-- [x] `voice_command` — Dragon "Click [text]" to click-by-text, "Go to [field]" to focus-by-label — 2026-02-08 (QA-ACT1)
-- [x] `dictate` — Dragon dictation to `keyboard.type()` — 2026-02-08 (QA-ACT2)
-- [x] `intercept_network` — `page.route()` to mock error responses — 2026-02-08 (QA-ACT3)
-- [x] `close_tab` / `open_new_tab` — tab management for shared-device scenarios — 2026-02-08 (QA-ACT4)
-- [x] `go_back` + `screenshot` — page.go_back() alias and explicit named capture — 2026-02-08 (QA-ACT5)
-
-**New Test Classes (test_scenario_eval.py):**
-- [x] Add CAL-004 and CAL-005 to TestCalibrationScenarios — 2026-02-08 (QA-TEST1)
-- [x] Add TestDailyScenarios: SCN-015, SCN-020, SCN-025 — 2026-02-08 (QA-TEST2)
-- [x] Add TestPeriodicScenarios: SCN-030, SCN-035 — 2026-02-08 (QA-TEST3)
-- [x] Add TestCrossRoleScenarios: SCN-040, SCN-042 — 2026-02-08 (QA-TEST4)
-- [x] Add TestEdgeCaseScenarios: SCN-045, SCN-046, SCN-049, SCN-070 — 2026-02-08 (QA-TEST5)
-- [x] Add TestAccessibilityMicro: SCN-051 through SCN-059, SCN-061, SCN-062 — 2026-02-08 (QA-TEST6)
-- [x] Add DITL-DS1 and DITL-R1 to TestDayInTheLife — 2026-02-08 (QA-TEST7)
-
-**LLM Evaluator (llm_evaluator.py):**
-- [x] Include `cognitive_load_checks` in prompt when present — 2026-02-08 (QA-EVAL1)
-- [x] Include `mechanical_checks` in prompt when present — 2026-02-08 (QA-EVAL2)
-- [x] Include `task_completion_criteria` in prompt when present — 2026-02-08 (QA-EVAL3)
-
-**Inter-Rater Reliability:**
-- [x] CAL-006 inter-rater reliability automation — runs CAL-001 to CAL-005 with variant configs, computes ICC(2,1) and agreement metrics — 2026-02-08 (QA-IRR1)
 
 ## Roadmap — Future Extensions
 
@@ -158,7 +98,6 @@ From konote-qa-scenarios. These require test infrastructure or app features in t
 
 - [ ] Stress testing — simulate 50+ concurrent users to find performance bottlenecks and connection pool limits (QA-T15)
 - [ ] Data migration scenario — test what happens when importing client data from a legacy system. Validates the Bulk Import feature (IMP1 series) once built (QA-T16)
-- [x] Screenshot naming improvement — URL slug appended to filenames (e.g., `SCN-005_step1_DS1b_clients.png`) for route traceability — 2026-02-08 (QA-T20)
 
 ### Erasure — Deferred Execution for Tier 3
 
@@ -167,10 +106,6 @@ From konote-qa-scenarios. These require test infrastructure or app features in t
 ### Deployment Workflow Enhancements
 
 See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-design.md) for full details.
-
-### QA Test Isolation
-
-- [x] Test isolation for scenario runner — fresh browser context per scenario, locale from persona data, auto-login, prerequisite validation — 2026-02-08 (QA-ISO1)
 
 ### Privacy & Security
 
@@ -192,8 +127,6 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 - [x] Code review HIGH fixes — audit "cancel" action, consolidated `_get_client_ip()` and `admin_required`, dead JS code removed, encryption key rotation + lockout tests — 2026-02-07 (QUAL1-4, TEST1-2)
 - [x] Code review CRITICAL fixes — demo/real data isolation in client HTMX views, admin_required on registration views, plan template + submission merge bypasses — 2026-02-07 (SEC1-4)
 - [x] Per-Program Roles cleanup — audit logging, dead code removal, ROLE_RANK constants, help.html blocktrans, admin notices, query caching — 2026-02-07 (ROLE1-8)
-- [x] Demo site setup — merged to main, registration link seeded, GitHub Pages verified, live demo tested — 2026-02-07 (DEMO1-4)
-- [x] CONF9 follow-ups — logger.exception() for audit, flash message on context switch, request-level cache for needs_program_selector, soft-filter vs hard-boundary docs — 2026-02-07 (CONF9a-d)
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 
 ---
@@ -219,3 +152,5 @@ For detailed history, see `tasks/ARCHIVE.md`. Summary of completed work:
 | **Accessibility** | WCAG 2.2 AA — semantic HTML, colour contrast, aria attributes |
 | **Canadian localisation** | Postal codes, provinces, phone formats, date/currency by locale |
 | **Deployment** | Railway (auto-deploy), FullHost (HTTPS verified), Docker Compose for Azure/Elest.io |
+| **QA** | Scenario runner (22 scenarios, 7 action types), CI/CD gate, satisfaction tracking, inter-rater reliability, objective scoring |
+| **Code review** | 74 tests added, CRITICAL/HIGH/MEDIUM fixes, admin_required, demo isolation, focus trap, i18n |

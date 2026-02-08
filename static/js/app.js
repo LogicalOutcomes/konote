@@ -932,3 +932,13 @@ document.addEventListener("click", function (event) {
         setupOfflineDetection();
     }
 })();
+
+// --- BLOCKER-2: Focus Management After Login ---
+// After login redirect or page navigation, move focus to <main>
+// so screen readers announce the new page context.
+(function () {
+    var main = document.getElementById("main-content");
+    if (main && !document.querySelector("[autofocus]")) {
+        main.focus({ preventScroll: true });
+    }
+})();

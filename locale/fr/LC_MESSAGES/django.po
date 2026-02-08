@@ -8436,3 +8436,6 @@ msgstr ""
 
 msgid "e.g. participant, note"
 msgstr ""
+
+msgid "Please select at least one programme."
+msgstr ""
