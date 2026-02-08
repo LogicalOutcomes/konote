@@ -125,3 +125,37 @@ class SecureExportLink(models.Model):
             models.Index(fields=["expires_at"]),
             models.Index(fields=["created_by", "created_at"]),
         ]
+
+
+class InsightSummary(models.Model):
+    """Cached AI-generated insight summary for Outcome Insights.
+
+    Stores the validated AI response so the same summary can be revisited
+    without re-calling the API. Users see the generation timestamp and
+    can click "Regenerate" to refresh.
+    """
+
+    cache_key = models.CharField(
+        max_length=255,
+        unique=True,
+        db_index=True,
+        help_text="Format: insights:{program_id}:{date_from}:{date_to} or "
+                  "insights:client:{client_id}:{date_from}:{date_to}",
+    )
+    summary_json = models.JSONField(
+        help_text="Full validated AI response: summary, themes, cited_quotes, recommendations.",
+    )
+    generated_at = models.DateTimeField(auto_now_add=True)
+    generated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="generated_insights",
+    )
+
+    class Meta:
+        db_table = "insight_summaries"
+        ordering = ["-generated_at"]
+
+    def __str__(self):
+        return f"Insight {self.cache_key} ({self.generated_at:%Y-%m-%d})"

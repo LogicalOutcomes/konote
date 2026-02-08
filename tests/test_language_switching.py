@@ -169,3 +169,155 @@ class BilingualLoginPageTest(TestCase):
         # The language link should offer English as the alternative
         self.assertContains(resp, 'lang="en"')
         self.assertContains(resp, "English")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local")
+class LogoutClearsCookieTest(TestCase):
+    """Test that logout clears the language cookie."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.user = User.objects.create_user(
+            username="logoutuser", password="testpass123", display_name="Logout User"
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_logout_deletes_language_cookie(self):
+        """Logging out clears the language cookie so next user gets fresh state."""
+        self.http.login(username="logoutuser", password="testpass123")
+        # Switch to French (sets cookie)
+        self.http.post("/i18n/switch/", {"language": "fr", "next": "/"})
+        self.assertEqual(self.http.cookies[settings.LANGUAGE_COOKIE_NAME].value, "fr")
+
+        # Log out
+        resp = self.http.get("/auth/logout/")
+        # Cookie should be cleared (max-age=0 means delete)
+        cookie = resp.cookies[settings.LANGUAGE_COOKIE_NAME]
+        self.assertEqual(cookie["max-age"], 0)
+
+    def test_login_page_shows_bilingual_hero_after_logout(self):
+        """After logout, the login page should show the bilingual hero (no cookie)."""
+        self.http.login(username="logoutuser", password="testpass123")
+        self.http.post("/i18n/switch/", {"language": "fr", "next": "/"})
+
+        # Log out — clears cookie
+        self.http.get("/auth/logout/")
+
+        # Visit login page — should see bilingual hero since cookie was cleared
+        resp = self.http.get("/auth/login/")
+        self.assertContains(resp, "lang-chooser")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local")
+class LoginSetsCookieTest(TestCase):
+    """Test that login sets the language cookie to the user's preference."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_login_sets_cookie_to_saved_preference(self):
+        """User with preferred_language='fr' gets French cookie on login."""
+        user = User.objects.create_user(
+            username="frpref", password="testpass123", display_name="FR Pref"
+        )
+        user.preferred_language = "fr"
+        user.save(update_fields=["preferred_language"])
+
+        resp = self.http.post("/auth/login/", {
+            "username": "frpref",
+            "password": "testpass123",
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.cookies[settings.LANGUAGE_COOKIE_NAME].value, "fr")
+
+    def test_login_sets_cookie_for_new_user(self):
+        """New user (no preference) gets a cookie matching the default language."""
+        User.objects.create_user(
+            username="newuser2", password="testpass123", display_name="New User"
+        )
+        resp = self.http.post("/auth/login/", {
+            "username": "newuser2",
+            "password": "testpass123",
+        })
+        self.assertEqual(resp.status_code, 302)
+        # Should have a language cookie set (either "en" or "fr")
+        self.assertIn(
+            resp.cookies[settings.LANGUAGE_COOKIE_NAME].value, ["en", "fr"]
+        )
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local")
+class SharedBrowserScenarioTest(TestCase):
+    """Test that language doesn't bleed between users on the same browser."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        # User A prefers French
+        self.user_a = User.objects.create_user(
+            username="user_a", password="testpass123", display_name="User A"
+        )
+        self.user_a.preferred_language = "fr"
+        self.user_a.save(update_fields=["preferred_language"])
+        # User B prefers English
+        self.user_b = User.objects.create_user(
+            username="user_b", password="testpass123", display_name="User B"
+        )
+        self.user_b.preferred_language = "en"
+        self.user_b.save(update_fields=["preferred_language"])
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_user_b_not_affected_by_user_a_language(self):
+        """User A (French) logs out → User B logs in → gets English, not French."""
+        # User A logs in — gets French cookie
+        resp = self.http.post("/auth/login/", {
+            "username": "user_a",
+            "password": "testpass123",
+        })
+        self.assertEqual(resp.cookies[settings.LANGUAGE_COOKIE_NAME].value, "fr")
+
+        # User A logs out — cookie cleared
+        self.http.get("/auth/logout/")
+
+        # User B logs in — should get English cookie, not French
+        resp = self.http.post("/auth/login/", {
+            "username": "user_b",
+            "password": "testpass123",
+        })
+        self.assertEqual(resp.cookies[settings.LANGUAGE_COOKIE_NAME].value, "en")
+
+    def test_new_user_not_inheriting_stale_preference(self):
+        """New user on shared browser doesn't inherit previous user's French."""
+        new_user = User.objects.create_user(
+            username="brand_new", password="testpass123", display_name="Brand New"
+        )
+        # Simulate: User A was using French, then logged out
+        self.http.post("/auth/login/", {
+            "username": "user_a",
+            "password": "testpass123",
+        })
+        self.http.get("/auth/logout/")
+
+        # New user logs in — no saved preference, should get default (en)
+        resp = self.http.post("/auth/login/", {
+            "username": "brand_new",
+            "password": "testpass123",
+        })
+        new_user.refresh_from_db()
+        # Should NOT have inherited French from User A
+        self.assertEqual(new_user.preferred_language, "en")

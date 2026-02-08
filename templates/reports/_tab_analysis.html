@@ -146,3 +146,11 @@
 {% else %}
     <p class="empty-state">{% trans "No metric data recorded yet. Record metrics through progress notes to see charts here." %}</p>
 {% endif %}
+
+{# ── Qualitative Insights section ── #}
+<div id="client-insights-section"
+     hx-get="{% url 'reports:client_insights' client_id=client.pk %}"
+     hx-trigger="load"
+     hx-swap="innerHTML"
+     hx-indicator="#loading-bar">
+</div>

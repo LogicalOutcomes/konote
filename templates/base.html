@@ -73,6 +73,9 @@
             {% if features.programs %}
             <li><a href="/programs/"{% if nav_active == "programs" %} class="nav-active"{% endif %}>{{ term.program_plural|default:"Programs" }}</a></li>
             {% endif %}
+            {% if has_program_roles %}
+            <li><a href="/reports/insights/"{% if nav_active == "insights" %} class="nav-active"{% endif %}>{% trans "Insights" %}</a></li>
+            {% endif %}
             {% if has_export_access %}
             <li><a href="/reports/export/"{% if nav_active == "reports" %} class="nav-active"{% endif %}>{% trans "Reports" %}</a></li>
             {% endif %}

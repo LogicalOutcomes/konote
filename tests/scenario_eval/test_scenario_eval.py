@@ -122,3 +122,89 @@ class TestStarterScenarios(ScenarioRunner):
     def test_keyboard_only(self):
         """SCN-050: Keyboard-Only Workflow — full intake by keyboard."""
         self._run_starter("SCN-050")
+
+
+@pytest.mark.scenario_eval
+@pytest.mark.browser
+class TestRound3Scenarios(ScenarioRunner):
+    """Round 3 scenarios: mobile viewport and offline/slow network."""
+
+    def _run_round3(self, scenario_id):
+        """Common logic for running a single Round 3 scenario."""
+        holdout = os.environ.get("SCENARIO_HOLDOUT_DIR", "")
+        if not holdout or not os.path.isdir(holdout):
+            self.skipTest("SCENARIO_HOLDOUT_DIR not set")
+
+        scenarios = discover_scenarios(holdout, ids=[scenario_id])
+        scn = [s for _, s in scenarios if s["id"] == scenario_id]
+        if not scn:
+            self.skipTest(f"{scenario_id} not found in holdout dir")
+
+        scenario = scn[0]
+        self.personas = load_personas()
+        self.use_llm = not _should_skip_llm()
+
+        screenshot_dir = os.path.join(holdout, "reports", "screenshots")
+        result = self.run_scenario(scenario, screenshot_dir=screenshot_dir)
+        get_all_results().append(result)
+        return result
+
+    def test_mobile_phone_375px(self):
+        """SCN-047: Mobile phone at 375px — responsive layout and touch."""
+        self._run_round3("SCN-047")
+
+    def test_offline_slow_network(self):
+        """SCN-048: Offline/slow network — graceful degradation."""
+        self._run_round3("SCN-048")
+
+
+@pytest.mark.scenario_eval
+@pytest.mark.browser
+class TestDayInTheLife(ScenarioRunner):
+    """Day-in-the-life narrative scenarios.
+
+    These are NOT step-by-step automation — the test runner captures
+    screenshots at key moments described in the YAML, and the LLM
+    evaluator scores the full day as a narrative assessment.
+
+    For DITL scenarios, we simulate key moments by navigating to the
+    relevant pages and capturing state, rather than replaying every
+    action. The narrative YAML has 'moments' instead of 'steps'.
+    """
+
+    def _run_ditl(self, scenario_id):
+        """Common logic for running a day-in-the-life narrative."""
+        holdout = os.environ.get("SCENARIO_HOLDOUT_DIR", "")
+        if not holdout or not os.path.isdir(holdout):
+            self.skipTest("SCENARIO_HOLDOUT_DIR not set")
+
+        scenarios = discover_scenarios(holdout, ids=[scenario_id])
+        scn = [s for _, s in scenarios if s["id"] == scenario_id]
+        if not scn:
+            self.skipTest(f"{scenario_id} not found in holdout dir")
+
+        scenario = scn[0]
+        self.personas = load_personas()
+        self.use_llm = not _should_skip_llm()
+
+        screenshot_dir = os.path.join(holdout, "reports", "screenshots")
+
+        # DITL scenarios use 'moments' not 'steps' — use run_narrative
+        # to capture key pages and evaluate holistically
+        result = self.run_narrative(scenario, screenshot_dir=screenshot_dir)
+        get_all_results().append(result)
+        return result
+
+    def test_ditl_ds3_amara(self):
+        """DITL-DS3: Amara's Wednesday — screen reader full day."""
+        self._run_ditl("DITL-DS3")
+
+    def test_ditl_e1_margaret(self):
+        """DITL-E1: Margaret's Thursday — executive dashboard full day."""
+        # Seed bulk clients so dashboard numbers are realistic
+        self._seed_bulk_clients(150)
+        self._run_ditl("DITL-E1")
+
+    def test_ditl_ds2_jean_luc(self):
+        """DITL-DS2: Jean-Luc's Friday — bilingual full day."""
+        self._run_ditl("DITL-DS2")

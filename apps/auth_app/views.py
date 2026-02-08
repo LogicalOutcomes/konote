@@ -55,20 +55,37 @@ def sync_language_on_login(request, user):
     Called after successful login on all paths (local, Azure, demo).
     - If user has a saved preference → activate it for this request
     - If no preference saved → save current language to profile
-    Note: The language cookie (set by switch_language view) is the primary
-    persistence mechanism. This just syncs the User model for roaming.
+    Returns the activated language code so callers can set the cookie.
     """
     if user.preferred_language:
+        lang_code = user.preferred_language
         try:
-            translation.activate(user.preferred_language)
+            translation.activate(lang_code)
         except (UnicodeDecodeError, Exception) as e:
             logger.error("Failed to activate language '%s' on login: %s",
-                         user.preferred_language, e)
-            translation.activate("en")
+                         lang_code, e)
+            lang_code = "en"
+            translation.activate(lang_code)
     else:
-        current_lang = translation.get_language() or "en"
-        user.preferred_language = current_lang
+        lang_code = translation.get_language() or "en"
+        user.preferred_language = lang_code
         user.save(update_fields=["preferred_language"])
+    return lang_code
+
+
+def _set_language_cookie(response, lang_code):
+    """Set the language cookie on a response with all the correct settings."""
+    response.set_cookie(
+        settings.LANGUAGE_COOKIE_NAME,
+        lang_code,
+        max_age=settings.LANGUAGE_COOKIE_AGE,
+        path=settings.LANGUAGE_COOKIE_PATH,
+        domain=settings.LANGUAGE_COOKIE_DOMAIN,
+        secure=settings.LANGUAGE_COOKIE_SECURE,
+        httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
+        samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+    )
+    return response
 
 
 def switch_language(request):
@@ -107,18 +124,7 @@ def switch_language(request):
         next_url = "/"
 
     response = redirect(next_url)
-    # Set language cookie (persists across browser sessions)
-    response.set_cookie(
-        settings.LANGUAGE_COOKIE_NAME,
-        lang_code,
-        max_age=settings.LANGUAGE_COOKIE_AGE,
-        path=settings.LANGUAGE_COOKIE_PATH,
-        domain=settings.LANGUAGE_COOKIE_DOMAIN,
-        secure=settings.LANGUAGE_COOKIE_SECURE,
-        httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
-        samesite=settings.LANGUAGE_COOKIE_SAMESITE,
-    )
-    return response
+    return _set_language_cookie(response, lang_code)
 
 
 def login_view(request):
@@ -161,12 +167,14 @@ def _local_login(request):
                     user.last_login_at = timezone.now()
                     user.save(update_fields=["last_login_at"])
                     _audit_login(request, user)
-                    sync_language_on_login(request, user)
+                    lang_code = sync_language_on_login(request, user)
                     # CONF9: Redirect to program selection if mixed-tier user
                     from apps.programs.context import needs_program_selection
                     if needs_program_selection(user, request.session):
-                        return redirect("programs:select_program")
-                    return redirect("/")
+                        response = redirect("programs:select_program")
+                    else:
+                        response = redirect("/")
+                    return _set_language_cookie(response, lang_code)
                 else:
                     attempts = _record_failed_attempt(client_ip)
                     _audit_failed_login(request, username, "invalid_password")
@@ -257,12 +265,14 @@ def azure_callback(request):
 
     login(request, user)
     _audit_login(request, user)
-    sync_language_on_login(request, user)
+    lang_code = sync_language_on_login(request, user)
     # CONF9: Redirect to program selection if mixed-tier user
     from apps.programs.context import needs_program_selection
     if needs_program_selection(user, request.session):
-        return redirect("programs:select_program")
-    return redirect("/")
+        response = redirect("programs:select_program")
+    else:
+        response = redirect("/")
+    return _set_language_cookie(response, lang_code)
 
 
 def demo_login(request, role):
@@ -295,20 +305,33 @@ def demo_login(request, role):
     login(request, user)
     user.last_login_at = timezone.now()
     user.save(update_fields=["last_login_at"])
-    sync_language_on_login(request, user)
+    lang_code = sync_language_on_login(request, user)
     # CONF9: Redirect to program selection if mixed-tier user
     from apps.programs.context import needs_program_selection
     if needs_program_selection(user, request.session):
-        return redirect("programs:select_program")
-    return redirect("/")
+        response = redirect("programs:select_program")
+    else:
+        response = redirect("/")
+    return _set_language_cookie(response, lang_code)
 
 
 @login_required
 def logout_view(request):
-    """Log out and destroy server-side session."""
+    """Log out and destroy server-side session.
+
+    Clears the language cookie so the next user on a shared browser
+    sees the bilingual hero instead of inheriting this user's language.
+    """
     _audit_logout(request)
     logout(request)
-    return redirect("/auth/login/")
+    response = redirect("/auth/login/")
+    response.delete_cookie(
+        settings.LANGUAGE_COOKIE_NAME,
+        path=settings.LANGUAGE_COOKIE_PATH,
+        domain=settings.LANGUAGE_COOKIE_DOMAIN,
+        samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+    )
+    return response
 
 
 def _audit_login(request, user):

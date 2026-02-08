@@ -48,6 +48,7 @@ class ProgramViewsTest(TestCase):
             "name": "Housing",
             "description": "Housing support",
             "colour_hex": "#10B981",
+            "service_model": "individual",
             "status": "active",
         })
         self.assertEqual(resp.status_code, 302)
@@ -70,6 +71,7 @@ class ProgramViewsTest(TestCase):
             "name": "Youth Services",
             "description": "",
             "colour_hex": "#3B82F6",
+            "service_model": "both",
             "status": "active",
         })
         self.assertEqual(resp.status_code, 302)

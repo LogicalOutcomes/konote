@@ -27,6 +27,12 @@ class StepCapture:
     interactive_element_count: int = 0
     focus_element: str = ""
 
+    # Round 3: extra captures for mobile, a11y tree, and bilingual scenarios
+    accessibility_tree: dict = field(default_factory=dict)
+    has_horizontal_scroll: bool = False
+    document_lang: str = ""
+    viewport_width: int = 0
+
 
 def capture_step_state(page, scenario_id, step_id, actor_persona,
                        screenshot_dir=None, run_axe_fn=None):
@@ -103,6 +109,27 @@ def capture_step_state(page, scenario_id, step_id, actor_persona,
         return `${tag}${id} ${label}`.trim();
     }""")
 
+    # Horizontal scroll detection (for mobile viewport scenarios)
+    capture.has_horizontal_scroll = page.evaluate("""() => {
+        return document.documentElement.scrollWidth > document.documentElement.clientWidth;
+    }""")
+
+    # Document language attribute (for bilingual scenarios)
+    capture.document_lang = page.evaluate(
+        "() => document.documentElement.lang || ''"
+    )
+
+    # Viewport width (for responsive scenarios)
+    capture.viewport_width = page.evaluate(
+        "() => window.innerWidth"
+    )
+
+    # Accessibility tree snapshot (for screen reader scenarios)
+    try:
+        capture.accessibility_tree = page.accessibility.snapshot() or {}
+    except Exception:
+        pass  # Some pages may not support accessibility snapshots
+
     # Screenshot
     if screenshot_dir:
         Path(screenshot_dir).mkdir(parents=True, exist_ok=True)
@@ -151,6 +178,20 @@ def capture_to_evaluation_context(capture, persona_description=""):
         for v in capture.axe_violations
     ) or "  (none)"
 
+    # Accessibility tree summary (for screen reader scenarios)
+    a11y_tree_str = ""
+    if capture.accessibility_tree:
+        a11y_tree_str = _format_a11y_tree(capture.accessibility_tree, depth=0)
+
+    # Extra metadata for mobile and bilingual scenarios
+    extra_meta = ""
+    if capture.viewport_width:
+        extra_meta += f"Viewport width: {capture.viewport_width}px\n"
+    if capture.has_horizontal_scroll:
+        extra_meta += "Horizontal scroll: YES (content overflows viewport)\n"
+    if capture.document_lang:
+        extra_meta += f"Document language: {capture.document_lang}\n"
+
     return f"""## Page State After Step {capture.step_id}
 
 URL: {capture.url}
@@ -158,7 +199,7 @@ Page title: {capture.page_title}
 Interactive elements on page: {capture.interactive_element_count}
 Current focus: {capture.focus_element}
 Axe-core violations: {capture.axe_violation_count}
-
+{extra_meta}
 ### Heading Hierarchy
 {headings_str or '  (no headings found)'}
 
@@ -167,7 +208,44 @@ Axe-core violations: {capture.axe_violation_count}
 
 ### Accessibility Violations
 {axe_str}
-
+{"" if not a11y_tree_str else f'''
+### Accessibility Tree (Screen Reader View)
+{a11y_tree_str}
+'''}
 ### Visible Text Content
 {capture.visible_text[:5000]}
 """
+
+
+def _format_a11y_tree(node, depth=0):
+    """Format a Playwright accessibility tree snapshot into readable text.
+
+    Shows the tree structure that a screen reader like JAWS would navigate:
+    roles, names, and states. Truncated to keep LLM context manageable.
+    """
+    if not node:
+        return ""
+
+    indent = "  " * depth
+    role = node.get("role", "")
+    name = node.get("name", "")
+    value = node.get("value", "")
+
+    parts = [role]
+    if name:
+        parts.append(f'"{name}"')
+    if value:
+        parts.append(f'[value: {value}]')
+
+    lines = [f"{indent}{' '.join(parts)}"]
+
+    # Recurse into children (limit depth to keep output manageable)
+    if depth < 4:
+        for child in node.get("children", []):
+            lines.append(_format_a11y_tree(child, depth + 1))
+
+    # Truncate total output to avoid overwhelming the LLM
+    result = "\n".join(lines)
+    if len(result) > 5000:
+        result = result[:5000] + "\n  ... (truncated)"
+    return result

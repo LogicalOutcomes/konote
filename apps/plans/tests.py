@@ -164,6 +164,8 @@ class MetricTogglePermissionTest(TestCase):
 class MetricExportTest(TestCase):
     """Test CSV export of metric definitions."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         self.admin = User.objects.create_user(username="admin", password="pass123", is_admin=True)
         self.staff = User.objects.create_user(username="staff", password="pass123")
@@ -259,6 +261,8 @@ class MetricCsvParseTest(TestCase):
 
 class MetricImportUpdateTest(TestCase):
     """Test that import with id column updates existing metrics."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         self.admin = User.objects.create_user(username="admin", password="pass123", is_admin=True)

@@ -1,0 +1,76 @@
+{% load i18n %}
+{# Layer 2 AI narrative draft — swapped in via HTMX #}
+
+<article class="insights-ai-result" aria-label="{% trans 'AI-generated summary' %}">
+    <header>
+        <strong>{% trans "AI-Generated Draft" %}</strong>
+        <small class="muted">{% trans "Review and edit before including in reports." %}</small>
+    </header>
+
+    {% if error %}
+    <p class="error" role="alert">{{ error }}</p>
+    {% else %}
+
+    {# Narrative summary #}
+    <div class="ai-narrative" id="ai-narrative-text">
+        {{ summary.summary|linebreaksbr }}
+    </div>
+
+    {# Themes #}
+    {% if summary.themes %}
+    <h4>{% trans "Key Themes" %}</h4>
+    <ul>
+        {% for theme in summary.themes %}
+        <li>{{ theme }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {# Cited quotes #}
+    {% if summary.cited_quotes %}
+    <h4>{% trans "Cited Quotes" %}</h4>
+    {% for quote in summary.cited_quotes %}
+    <blockquote class="insight-quote">
+        <p>&ldquo;{{ quote.text }}&rdquo;</p>
+        <cite>
+            {% if quote.context %}{{ quote.context }} &middot; {% endif %}
+            {% if quote.note_id %}
+            <a href="{% url 'notes:note_detail' note_id=quote.note_id %}">{% trans "View note" %}</a>
+            {% endif %}
+        </cite>
+    </blockquote>
+    {% endfor %}
+    {% endif %}
+
+    {# Staff observations #}
+    {% if summary.recommendations %}
+    <h4>{% trans "Staff Observations" %}</h4>
+    <p>{{ summary.recommendations }}</p>
+    {% endif %}
+
+    {# Actions #}
+    <div class="ai-actions" style="margin-top: 1rem;">
+        <button onclick="navigator.clipboard.writeText(document.getElementById('ai-narrative-text').innerText).then(function(){this.textContent='{% trans "Copied!" %}'}.bind(this))" class="outline secondary" type="button">
+            {% trans "Copy to clipboard" %}
+        </button>
+        <button
+            hx-post="{% url 'ai:outcome_insights' %}"
+            hx-target="closest .insights-ai-result"
+            hx-swap="outerHTML"
+            hx-indicator="#loading-bar"
+            hx-vals='{"program_id": "{{ program_id }}", "date_from": "{{ date_from }}", "date_to": "{{ date_to }}", "regenerate": "1"}'
+            class="outline"
+            type="button"
+        >
+            {% trans "Regenerate" %}
+        </button>
+    </div>
+
+    <footer>
+        <small class="muted">
+            {% blocktrans with dt=generated_at %}Generated {{ dt }}{% endblocktrans %}
+        </small>
+    </footer>
+
+    {% endif %}
+</article>

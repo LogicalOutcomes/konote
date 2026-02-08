@@ -1,7 +1,10 @@
 """AI-powered HTMX endpoints — all POST, all rate-limited, no PII."""
+from datetime import date
+
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import render
+from django.utils import timezone
 from django_ratelimit.decorators import ratelimit
 
 from apps.admin_settings.models import FeatureToggle
@@ -162,3 +165,119 @@ def suggest_note_structure_view(request):
         return render(request, "ai/_error.html", {"message": "AI suggestion unavailable. Please try again later."})
 
     return render(request, "ai/_note_structure.html", {"sections": sections, "target_name": target.name})
+
+
+@login_required
+@ratelimit(key="user", rate="10/h", method="POST", block=True)
+def outcome_insights_view(request):
+    """Generate AI narrative draft from qualitative outcome data. HTMX POST."""
+    if not _ai_enabled():
+        return HttpResponseForbidden("AI features are not enabled.")
+
+    from apps.programs.models import Program
+    from apps.reports.insights import get_structured_insights, collect_quotes
+    from apps.reports.pii_scrub import scrub_pii
+    from apps.reports.models import InsightSummary
+
+    program_id = request.POST.get("program_id")
+    date_from_str = request.POST.get("date_from")
+    date_to_str = request.POST.get("date_to")
+    regenerate = request.POST.get("regenerate")
+
+    if not program_id or not date_from_str or not date_to_str:
+        return render(request, "reports/_insights_ai.html", {
+            "error": "Please select a programme and date range first.",
+        })
+
+    try:
+        program = Program.objects.get(pk=program_id)
+    except Program.DoesNotExist:
+        return HttpResponseBadRequest("Programme not found.")
+
+    try:
+        dt_from = date.fromisoformat(date_from_str)
+        dt_to = date.fromisoformat(date_to_str)
+    except ValueError:
+        return HttpResponseBadRequest("Invalid date format.")
+
+    # Check cache first (unless regenerating)
+    cache_key = f"insights:{program_id}:{dt_from}:{dt_to}"
+    if not regenerate:
+        try:
+            cached = InsightSummary.objects.get(cache_key=cache_key)
+            return render(request, "reports/_insights_ai.html", {
+                "summary": cached.summary_json,
+                "program_id": program_id,
+                "date_from": date_from_str,
+                "date_to": date_to_str,
+                "generated_at": cached.generated_at,
+            })
+        except InsightSummary.DoesNotExist:
+            pass
+
+    # Collect data
+    structured = get_structured_insights(program=program, date_from=dt_from, date_to=dt_to)
+    quotes = collect_quotes(
+        program=program, date_from=dt_from, date_to=dt_to,
+        max_quotes=30, include_dates=False,
+    )
+
+    if not quotes and structured["note_count"] < 20:
+        return render(request, "reports/_insights_ai.html", {
+            "error": "Not enough data to generate a meaningful summary.",
+        })
+
+    # PII-scrub quotes before sending to AI
+    # Collect known names from clients in this programme
+    from apps.clients.models import ClientFile, ClientProgramEnrolment
+    client_ids = (
+        ClientProgramEnrolment.objects.filter(program=program, status="enrolled")
+        .values_list("client_file_id", flat=True)
+    )
+    known_names = set()
+    for client in ClientFile.objects.filter(pk__in=client_ids):
+        for name in [client.first_name, client.last_name, client.preferred_name]:
+            if name and len(name) >= 2:
+                known_names.add(name)
+
+    # Also scrub staff names
+    from apps.auth_app.models import User
+    for user in User.objects.filter(is_active=True):
+        display = getattr(user, "display_name", "")
+        if display and len(display) >= 2:
+            known_names.add(display)
+
+    scrubbed_quotes = []
+    for q in quotes:
+        scrubbed_quotes.append({
+            "text": scrub_pii(q["text"], known_names),
+            "target_name": q.get("target_name", ""),
+            "note_id": q["note_id"],
+        })
+
+    date_range = f"{dt_from} to {dt_to}"
+    result = ai.generate_outcome_insights(
+        program.name, date_range, structured, scrubbed_quotes,
+    )
+
+    if result is None:
+        return render(request, "reports/_insights_ai.html", {
+            "error": "AI summary could not be verified. Showing data analysis only.",
+        })
+
+    # Cache the validated result
+    InsightSummary.objects.update_or_create(
+        cache_key=cache_key,
+        defaults={
+            "summary_json": result,
+            "generated_by": request.user,
+        },
+    )
+
+    return render(request, "reports/_insights_ai.html", {
+        "summary": result,
+        "program_id": program_id,
+        "date_from": date_from_str,
+        "date_to": date_to_str,
+        "generated_at": timezone.now(),
+    })

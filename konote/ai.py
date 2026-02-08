@@ -145,6 +145,164 @@ def generate_narrative(program_name, date_range, aggregate_stats):
     return _call_openrouter(system, user_msg, max_tokens=512)
 
 
+def _call_insights_api(system_prompt, user_message, max_tokens=2048):
+    """Call the insights AI provider — OpenRouter or local Ollama.
+
+    Checks for INSIGHTS_API_BASE first (Ollama or any OpenAI-compatible endpoint).
+    Falls back to the standard OpenRouter integration.
+
+    Returns:
+        str — response text, or None on failure.
+    """
+    insights_base = getattr(settings, "INSIGHTS_API_BASE", "")
+    if insights_base:
+        # Local / custom provider (Ollama, etc.)
+        api_key = getattr(settings, "INSIGHTS_API_KEY", "")
+        model = getattr(settings, "INSIGHTS_MODEL", "llama3")
+        url = f"{insights_base.rstrip('/')}/chat/completions"
+        headers = {"Content-Type": "application/json"}
+        if api_key:
+            headers["Authorization"] = f"Bearer {api_key}"
+        try:
+            resp = requests.post(
+                url,
+                headers=headers,
+                json={
+                    "model": model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt + _SAFETY_FOOTER},
+                        {"role": "user", "content": user_message},
+                    ],
+                    "max_tokens": max_tokens,
+                },
+                timeout=60,  # Local models can be slower
+            )
+            resp.raise_for_status()
+            return resp.json()["choices"][0]["message"]["content"]
+        except Exception:
+            logger.exception("Insights API call failed (custom provider)")
+            return None
+    else:
+        # Fall back to OpenRouter
+        return _call_openrouter(system_prompt, user_message, max_tokens)
+
+
+def generate_outcome_insights(program_name, date_range, structured_data, quotes):
+    """Generate a funder-ready narrative draft from qualitative data.
+
+    Args:
+        program_name: str
+        date_range: str — e.g. "2025-10-01 to 2026-01-31"
+        structured_data: dict — output from get_structured_insights()
+        quotes: list of dicts — PII-scrubbed quotes with text, target_name, note_id
+
+    Returns:
+        dict {summary, themes, cited_quotes, recommendations} or None on failure.
+    """
+    system = (
+        "You write concise funder report drafts for Canadian nonprofits. "
+        "You will receive programme outcome data including descriptor trends, "
+        "engagement patterns, and participant quotes. Write a narrative summary.\n\n"
+        "RULES — follow these exactly:\n"
+        "- Use ONLY the numbers provided. Never calculate new statistics.\n"
+        "- Report explicit counts: '3 of 20 participants mentioned...' not "
+        "'participants frequently...'\n"
+        "- Your narrative MUST be consistent with the descriptor trend data.\n"
+        "- Quote participant words VERBATIM only. Never paraphrase.\n"
+        "- If trends are flat or declining, report that honestly.\n"
+        "- Rank themes by frequency. Only report the top 3.\n"
+        "- If the most frequent theme appears in fewer than 3 quotes, "
+        "say 'no dominant themes emerged.'\n"
+        "- Use Canadian English spelling (programme, colour, centre).\n\n"
+        "Return a JSON object with these keys:\n"
+        "- summary: 2-3 paragraphs of narrative text\n"
+        "- themes: array of 3-5 theme strings with counts\n"
+        "- cited_quotes: array of {text, note_id, context} — verbatim only\n"
+        "- recommendations: 1 paragraph of staff observations\n\n"
+        "Return ONLY the JSON object, no other text."
+    )
+
+    user_msg = (
+        f"Programme: {program_name}\n"
+        f"Period: {date_range}\n\n"
+        f"Descriptor trends (percentages by month):\n"
+        f"{json.dumps(structured_data.get('descriptor_trend', []), indent=2)}\n\n"
+        f"Current descriptor distribution:\n"
+        f"{json.dumps(structured_data.get('descriptor_distribution', {}), indent=2)}\n\n"
+        f"Engagement distribution:\n"
+        f"{json.dumps(structured_data.get('engagement_distribution', {}), indent=2)}\n\n"
+        f"Total notes: {structured_data.get('note_count', 0)}\n"
+        f"Total participants: {structured_data.get('participant_count', 0)}\n\n"
+        f"Participant quotes (PII-scrubbed, verbatim):\n"
+        f"{json.dumps(quotes, indent=2)}"
+    )
+
+    result = _call_insights_api(system, user_msg, max_tokens=2048)
+    if result is None:
+        return None
+
+    # Strip markdown fences if present
+    text = result.strip()
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = [l for l in lines if not l.strip().startswith("```")]
+        text = "\n".join(lines).strip()
+
+    try:
+        parsed = json.loads(text)
+    except (json.JSONDecodeError, TypeError):
+        logger.warning("Could not parse outcome insights response: %s", text[:300])
+        return None
+
+    # Validate response structure
+    validated = validate_insights_response(parsed, quotes)
+    if validated is None:
+        return None
+    return validated
+
+
+def validate_insights_response(response, original_quotes):
+    """Validate AI response: check structure, verify quotes are verbatim.
+
+    Returns:
+        The response dict if valid, or None if validation fails.
+    """
+    required_keys = {"summary", "themes", "cited_quotes", "recommendations"}
+    if not isinstance(response, dict):
+        logger.warning("Insights response is not a dict")
+        return None
+
+    missing = required_keys - set(response.keys())
+    if missing:
+        logger.warning("Insights response missing keys: %s", missing)
+        return None
+
+    if not isinstance(response["summary"], str) or len(response["summary"]) < 20:
+        logger.warning("Insights summary is too short or not a string")
+        return None
+
+    # Verify cited quotes are verbatim substrings of provided quotes
+    original_texts = {q["text"] for q in original_quotes}
+    if isinstance(response.get("cited_quotes"), list):
+        verified_quotes = []
+        for cq in response["cited_quotes"]:
+            if not isinstance(cq, dict) or "text" not in cq:
+                continue
+            # Check if the quoted text is a substring of any provided quote
+            is_verbatim = any(cq["text"] in orig for orig in original_texts)
+            if is_verbatim:
+                verified_quotes.append(cq)
+            else:
+                logger.info("AI quote not verbatim, skipping: %s", cq["text"][:80])
+        response["cited_quotes"] = verified_quotes
+
+    # Ensure themes is a list
+    if not isinstance(response.get("themes"), list):
+        response["themes"] = []
+
+    return response
+
+
 def suggest_note_structure(target_name, target_description, metric_names):
     """
     Suggest a progress note structure for a given plan target.

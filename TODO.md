@@ -4,27 +4,13 @@
 
 - [ ] Decide product name — should web version be called "KoNote" (not "KoNote2"). See `tasks/naming-versioning.md` (NAME1)
 - [ ] Update konote-website git remote URL — repo was renamed to `konote2-website` but local remote still points to old `konote2` name (NAME2)
-- [ ] 14 pre-existing test failures + 4 errors in full suite — none from new code, all existed before code review work. See details below (TEST-FIX1)
+_Nothing flagged._
 
 ## Active Work
 
 ### Code Review Remaining (from 2026-02-07 review — see `tasks/code-review-2026-02-07.md`)
 
-_All review items complete. 74 new tests added. Pre-existing test failures below._
-
-### Pre-Existing Test Failures (TEST-FIX1)
-
-**Failures (14):**
-- [ ] `test_attendance_report_date_filter` — expects "No attendance data" but template shows table with 0 sessions (TEST-FIX1a)
-- [ ] `test_admin_can_create_program` + `test_admin_can_edit_program` — POST returns 200 not 302, form validation likely failing (TEST-FIX1b)
-- [ ] `MetricExportTest` + `MetricImportUpdateTest` — 3 failures in `apps/plans/tests.py` (TEST-FIX1c)
-- [ ] `test_phone_match_found` — in `test_confidential_isolation.py` (TEST-FIX1d)
-- [ ] `test_create_erasure_request` — in `test_erasure.py` (TEST-FIX1e)
-- [ ] `test_audit_log_in_french` + `test_client_data_export_in_french` — in `test_french_journey.py` (TEST-FIX1f)
-
-**Errors (4):**
-- [ ] `EmailNotificationWarningTests` — 2 errors in `test_erasure.py` (TEST-FIX1g)
-- [ ] `FocusManagementBrowserTest` + `ResponsiveLayoutBrowserTest` — need Playwright installed (TEST-FIX1h)
+_All review items complete. 74 new tests added. Pre-existing test failures fixed._
 
 ### Scenario Evaluation Fixes (from 2026-02-07 — see `tasks/2026-02-07-improvement-tickets.md`)
 
@@ -36,7 +22,7 @@ _All review items complete. 74 new tests added. Pre-existing test failures below
 - [x] Search "no results" shows wrong empty state — says "No Participant files yet" instead of "No participants found" — 2026-02-07 (BUG-1)
 - [x] Hide create buttons from roles without permission — receptionist sees New Participant but gets 403 — 2026-02-07 (BUG-2)
 - [x] Audit log uses developer jargon — shows "POST" instead of "Created", exposes IP Address column — 2026-02-07 (BUG-3)
-- [ ] Language preference not tied to user account — cookie-based, bleeds between users on same browser (BUG-4)
+- [x] Language preference not tied to user account — cookie-based, bleeds between users on same browser — 2026-02-07 (BUG-4)
 
 **Improvements:**
 - [x] Settings page needs state indicators — cards don't show current state like "4 of 6 enabled" — 2026-02-07 (IMPROVE-1)
@@ -135,6 +121,8 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Fix 14 pre-existing test failures + 4 errors — missing form fields, wrong assertions, missing DB declarations, template bugs, Playwright skip fix — 2026-02-07 (TEST-FIX1)
+- [x] Fix language bleed on shared browser — clear cookie on logout, set cookie on login to match user preference — 2026-02-07 (BUG-4)
 - [x] French translations complete — translated 93 remaining strings to Canadian French, 100% coverage (2146/2146 entries), .mo compiled, validation passed — 2026-02-07 (I18N-TRANS1)
 - [x] Code review MEDIUM remaining — admin_required decorator across all views (QUAL8), translated access denied messages (I18N-8), modal focus trap (A11Y-2), 20 JS strings translatable (I18N-4), 29 audit log view tests (TEST-4) — 2026-02-07
 - [x] Code review MEDIUM fixes — QUAL5-7, A11Y-1, I18N-1/2/3/5/6/7/9/10: dev cookie fix, group forms, dedup client fields, scope on th, PDF/email/form/CSV translations, breadcrumbs, privacy.html blocktrans — 2026-02-07

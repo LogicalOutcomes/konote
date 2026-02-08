@@ -497,10 +497,10 @@ class ReportsFrenchTest(FrenchJourneyBaseTest):
         self._login_admin_fr()
         resp = self.http.get("/reports/client-data-export/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Exportation des donn\u00e9es clients")
+        self.assertContains(resp, "Exportation des donn\u00e9es participants")
         # Fieldset legend and submit button are translated
         self.assertContains(resp, "Inclure dans l'exportation")  # "Include in export" fieldset
-        self.assertContains(resp, "Exporter les donn\u00e9es clients")  # Submit button
+        self.assertContains(resp, "Exporter les donn\u00e9es du client")  # Submit button
 
     def test_analysis_tab_in_french(self):
         """Client analysis tab shows French labels."""

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Outcome Insights" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Outcome Insights" %}</h1>
+    <p>{% trans "See patterns in participant progress and generate funder report summaries." %}</p>
+</hgroup>
+
+<form method="get" id="insights-form">
+    <div class="grid">
+        <label for="{{ form.program.id_for_label }}">
+            {{ form.program.label }}
+            {{ form.program }}
+            {% if form.program.errors %}
+            <small class="error" role="alert">{{ form.program.errors.0 }}</small>
+            {% endif %}
+        </label>
+
+        <label for="{{ form.time_period.id_for_label }}">
+            {{ form.time_period.label }}
+            {{ form.time_period }}
+        </label>
+    </div>
+
+    <div id="custom-date-range" style="display: none;">
+        <div class="grid">
+            <label for="{{ form.date_from.id_for_label }}">
+                {{ form.date_from.label }}
+                {{ form.date_from }}
+                {% if form.date_from.errors %}
+                <small class="error" role="alert">{{ form.date_from.errors.0 }}</small>
+                {% endif %}
+            </label>
+            <label for="{{ form.date_to.id_for_label }}">
+                {{ form.date_to.label }}
+                {{ form.date_to }}
+                {% if form.date_to.errors %}
+                <small class="error" role="alert">{{ form.date_to.errors.0 }}</small>
+                {% endif %}
+            </label>
+        </div>
+    </div>
+
+    {% if form.non_field_errors %}
+    <article class="pico-background-red-100" role="alert">
+        {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+    </article>
+    {% endif %}
+
+    <button type="submit">{% trans "Show Insights" %}</button>
+</form>
+
+{% if show_results %}
+<hr>
+{% include "reports/_insights_basic.html" %}
+{% endif %}
+
+<script>
+(function() {
+    var periodSelect = document.getElementById('{{ form.time_period.id_for_label }}');
+    var customRange = document.getElementById('custom-date-range');
+    if (periodSelect && customRange) {
+        function toggleCustom() {
+            customRange.style.display = periodSelect.value === 'custom' ? '' : 'none';
+        }
+        periodSelect.addEventListener('change', toggleCustom);
+        toggleCustom();
+    }
+})();
+</script>
+{% endblock %}
