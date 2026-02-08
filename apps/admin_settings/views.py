@@ -29,12 +29,21 @@ def dashboard(request):
     active_users = User.objects.filter(is_active=True).count()
     note_template_count = ProgressNoteTemplate.objects.count()
 
+    # IMPROVE-1b: Instance Settings summary
+    instance_settings = InstanceSetting.get_all()
+    instance_settings_count = len(instance_settings)
+
+    # IMPROVE-1b: Demo Accounts summary
+    demo_users = User.objects.filter(is_demo=True, is_active=True).count()
+
     return render(request, "admin_settings/dashboard.html", {
         "enabled_features": enabled_features,
         "total_features": total_features,
         "terminology_overrides": terminology_overrides,
         "active_users": active_users,
         "note_template_count": note_template_count,
+        "instance_settings_count": instance_settings_count,
+        "demo_users": demo_users,
     })
 
 

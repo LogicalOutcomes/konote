@@ -201,6 +201,27 @@ document.body.addEventListener("htmx:afterSwap", function (event) {
     }
 });
 
+// BLOCKER-2: Focus main content on page load (WCAG 2.4.3)
+// After login redirect or page navigation, move focus to <main> so
+// keyboard/screen reader users start from the content, not the footer.
+(function () {
+    function focusMainContent() {
+        var main = document.getElementById("main-content");
+        if (!main) return;
+        // Don't override if URL targets a specific element
+        if (window.location.hash) return;
+        // Don't override if something other than body already has focus
+        if (document.activeElement && document.activeElement !== document.body &&
+            document.activeElement.tagName !== "HTML") return;
+        main.focus({ preventScroll: true });
+    }
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", focusMainContent);
+    } else {
+        focusMainContent();
+    }
+})();
+
 // Keyboard activation for role="button" elements (WCAG 2.1.1 — Enter/Space triggers click)
 document.addEventListener("keydown", function (e) {
     if ((e.key === "Enter" || e.key === " ") &&
@@ -878,5 +899,36 @@ document.addEventListener("click", function (event) {
         document.addEventListener("DOMContentLoaded", setupSessionTimer);
     } else {
         setupSessionTimer();
+    }
+})();
+
+// --- BUG-6: Offline Detection Banner ---
+// Shows a warning when the browser loses network connectivity
+(function () {
+    function setupOfflineDetection() {
+        var banner = document.getElementById("offline-banner");
+        if (!banner) return;
+
+        window.addEventListener("offline", function () {
+            banner.hidden = false;
+        });
+
+        window.addEventListener("online", function () {
+            banner.hidden = true;
+        });
+
+        // "Try again" button
+        var retryBtn = banner.querySelector(".offline-retry");
+        if (retryBtn) {
+            retryBtn.addEventListener("click", function () {
+                window.location.reload();
+            });
+        }
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", setupOfflineDetection);
+    } else {
+        setupOfflineDetection();
     }
 })();

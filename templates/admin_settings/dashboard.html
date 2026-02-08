@@ -33,6 +33,13 @@
     <article>
         <header>{% trans "Instance Settings" %}</header>
         <p>{% trans "Branding, date format, and session timeout." %}</p>
+        <p class="settings-indicator">
+            {% if instance_settings_count %}
+                {% blocktrans count count=instance_settings_count %}{{ count }} setting customised{% plural %}{{ count }} settings customised{% endblocktrans %}
+            {% else %}
+                {% trans "Using defaults" %}
+            {% endif %}
+        </p>
         <footer><a href="{% url 'admin_settings:instance_settings' %}" role="button" class="outline">{% trans "Manage Settings" %}</a></footer>
     </article>
 
@@ -53,6 +60,13 @@
     <article>
         <header>{% trans "Demo Accounts" %}</header>
         <p>{% trans "View all demo users and demo clients. Impersonate demo users for testing." %}</p>
+        <p class="settings-indicator">
+            {% if demo_users %}
+                {% blocktrans count count=demo_users %}{{ count }} demo user{% plural %}{{ count }} demo users{% endblocktrans %}
+            {% else %}
+                {% trans "No demo accounts" %}
+            {% endif %}
+        </p>
         <footer><a href="{% url 'admin_settings:demo_directory' %}" role="button" class="outline">{% trans "Demo Directory" %}</a></footer>
     </article>
 </div>

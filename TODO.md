@@ -12,23 +12,27 @@ _Nothing flagged._
 
 _All review items complete. 74 new tests added. Pre-existing test failures fixed._
 
-### Scenario Evaluation Fixes (from 2026-02-07 — see `tasks/2026-02-07-improvement-tickets.md`)
+### Scenario Evaluation Fixes (updated 2026-02-08 — see `qa/2026-02-08-improvement-tickets.md`)
 
-**Blockers:**
-- [x] Add skip-to-content link — WCAG 2.4.1 Level A, keyboard users can't reach main content — 2026-02-07 (BLOCKER-1)
-- [x] Fix focus management after login — focus lands on body/footer instead of main content — 2026-02-07 (BLOCKER-2)
+_All 2026-02-08 evaluation items fixed. Re-run scenarios to verify._
 
-**Priority Bugs:**
-- [x] Search "no results" shows wrong empty state — says "No Participant files yet" instead of "No participants found" — 2026-02-07 (BUG-1)
-- [x] Hide create buttons from roles without permission — receptionist sees New Participant but gets 403 — 2026-02-07 (BUG-2)
-- [x] Audit log uses developer jargon — shows "POST" instead of "Created", exposes IP Address column — 2026-02-07 (BUG-3)
-- [x] Language preference not tied to user account — cookie-based, bleeds between users on same browser — 2026-02-07 (BUG-4)
+**Fixed (2026-02-08):**
+- [x] Skip-to-content link — improved CSS, added `clip-path` for robustness — 2026-02-08 (BLOCKER-1)
+- [x] Focus after login — JS auto-focuses `<main>` on page load — 2026-02-08 (BLOCKER-2)
+- [x] Executive redirect — `_login_redirect()` sends executives to aggregate dashboard — 2026-02-08 (BUG-5)
+- [x] Language preference — moved middleware after auth, overrides cookie with user profile — 2026-02-08 (BUG-4)
+- [x] Offline banner — `role="alert"` banner with "Try again" button — 2026-02-08 (BUG-6)
+- [x] Audit log "Auth" → "Account", filter grid widened — 2026-02-08 (BUG-3b)
+- [x] Settings cards — all 6 now show summary stats — 2026-02-08 (IMPROVE-1b)
 
-**Improvements:**
-- [x] Settings page needs state indicators — cards don't show current state like "4 of 6 enabled" — 2026-02-07 (IMPROVE-1)
-- [x] Pre-select program when user has only one — unnecessary checkbox click on create form — 2026-02-07 (IMPROVE-2)
-- [x] 403 page warmer language — "Access Denied" feels accusatory, soften to "You don't have access" — 2026-02-07 (IMPROVE-3)
-- [x] Dashboard needs "last updated" timestamp — no indication when data was generated — 2026-02-07 (IMPROVE-4)
+**Fixed (confirmed by 2026-02-08 eval):**
+- [x] Search "no results" shows correct empty state — 2026-02-07 (BUG-1)
+- [x] Create buttons hidden for roles without permission — 2026-02-07 (BUG-2)
+- [x] Audit log badges show "Created"/"Logged in", IP hidden behind toggle — 2026-02-07 (BUG-3)
+- [x] Pre-select program when user has only one — 2026-02-07 (IMPROVE-2)
+- [x] 403 page warmer language — 2026-02-07 (IMPROVE-3)
+- [x] Dashboard "last updated" timestamp — 2026-02-07 (IMPROVE-4)
+- [x] 4 of 6 settings cards now show summary stats — 2026-02-07 (IMPROVE-1)
 
 ### Pre-Launch Checklist
 
@@ -99,7 +103,7 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 
 - ~~Calendar/scheduling~~ → Recommend Calendly, Google Calendar, Microsoft Bookings
 - ~~Full document storage~~ → Recommend Google Drive, SharePoint, Dropbox
-- ~~Offline PWA~~ → Paper forms acceptable; integrations available when needed
+- ~~Full offline PWA~~ → Paper forms acceptable; basic offline banner added (BUG-6)
 - ~~Multi-tenancy~~ → Fork required for coalition implementations
 
 ## Parking Lot

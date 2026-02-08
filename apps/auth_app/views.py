@@ -73,6 +73,36 @@ def sync_language_on_login(request, user):
     return lang_code
 
 
+def _is_executive_only(user):
+    """Check if user only has executive role (no client access roles).
+
+    Used for login redirect — executives go to the aggregate dashboard
+    instead of the staff landing page which shows individual client names.
+    """
+    from apps.programs.models import UserProgramRole
+
+    roles = set(
+        UserProgramRole.objects.filter(user=user, status="active")
+        .values_list("role", flat=True)
+    )
+    if not roles:
+        return False
+    if "executive" in roles:
+        return not bool(roles & {"receptionist", "staff", "program_manager"})
+    return False
+
+
+def _login_redirect(user, request_session):
+    """Determine the post-login redirect for a user."""
+    from apps.programs.context import needs_program_selection
+
+    if needs_program_selection(user, request_session):
+        return redirect("programs:select_program")
+    if _is_executive_only(user):
+        return redirect("clients:executive_dashboard")
+    return redirect("/")
+
+
 def _set_language_cookie(response, lang_code):
     """Set the language cookie on a response with all the correct settings."""
     response.set_cookie(
@@ -168,12 +198,7 @@ def _local_login(request):
                     user.save(update_fields=["last_login_at"])
                     _audit_login(request, user)
                     lang_code = sync_language_on_login(request, user)
-                    # CONF9: Redirect to program selection if mixed-tier user
-                    from apps.programs.context import needs_program_selection
-                    if needs_program_selection(user, request.session):
-                        response = redirect("programs:select_program")
-                    else:
-                        response = redirect("/")
+                    response = _login_redirect(user, request.session)
                     return _set_language_cookie(response, lang_code)
                 else:
                     attempts = _record_failed_attempt(client_ip)
@@ -266,12 +291,7 @@ def azure_callback(request):
     login(request, user)
     _audit_login(request, user)
     lang_code = sync_language_on_login(request, user)
-    # CONF9: Redirect to program selection if mixed-tier user
-    from apps.programs.context import needs_program_selection
-    if needs_program_selection(user, request.session):
-        response = redirect("programs:select_program")
-    else:
-        response = redirect("/")
+    response = _login_redirect(user, request.session)
     return _set_language_cookie(response, lang_code)
 
 
@@ -306,12 +326,7 @@ def demo_login(request, role):
     user.last_login_at = timezone.now()
     user.save(update_fields=["last_login_at"])
     lang_code = sync_language_on_login(request, user)
-    # CONF9: Redirect to program selection if mixed-tier user
-    from apps.programs.context import needs_program_selection
-    if needs_program_selection(user, request.session):
-        response = redirect("programs:select_program")
-    else:
-        response = redirect("/")
+    response = _login_redirect(user, request.session)
     return _set_language_cookie(response, lang_code)
 
 

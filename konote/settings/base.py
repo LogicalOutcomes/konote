@@ -64,10 +64,11 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "konote.middleware.safe_locale.SafeLocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    # SafeLocaleMiddleware after Auth so it can read user.preferred_language (BUG-4)
+    "konote.middleware.safe_locale.SafeLocaleMiddleware",
     "konote.middleware.audit.AuditMiddleware",
     "konote.middleware.program_access.ProgramAccessMiddleware",
     "konote.middleware.terminology.TerminologyMiddleware",
