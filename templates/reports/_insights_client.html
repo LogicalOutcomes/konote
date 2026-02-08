@@ -1,0 +1,109 @@
+{% load i18n %}
+{# Client-level insights partial — loaded in the Analysis tab #}
+
+<section class="insights-results insights-client" aria-label="{% trans 'Qualitative Insights' %}">
+<h2>{% trans "Qualitative Insights" %}</h2>
+
+{% if structured.note_count == 0 %}
+<p class="empty-state">{% trans "No notes recorded yet for this participant." %}</p>
+{% elif data_tier == "sparse" %}
+
+{# Sparse: snapshot only #}
+{% if structured.descriptor_distribution %}
+<h3>{% trans "Progress Snapshot" %}</h3>
+<div class="descriptor-pills">
+    {% for label, pct in structured.descriptor_distribution.items %}
+    <span class="pill pill--descriptor">{{ label }}: {{ pct }}%</span>
+    {% endfor %}
+</div>
+{% endif %}
+
+<p class="insights-notice-inline">{% trans "More data needed for trend analysis." %}</p>
+
+{% else %}
+
+{# Trend chart #}
+{% if structured.descriptor_trend %}
+<div class="chart-container" style="position: relative; height: 250px;">
+    <canvas id="client-descriptor-trend"
+            aria-label="{% trans 'Line chart showing progress trends for this participant' %}"
+            role="img"></canvas>
+</div>
+
+<details class="chart-data-table">
+    <summary>{% trans "View data table" %}</summary>
+    <table role="table">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Month" %}</th>
+                <th scope="col">{% trans "Harder" %}</th>
+                <th scope="col">{% trans "Holding" %}</th>
+                <th scope="col">{% trans "Shifting" %}</th>
+                <th scope="col">{% trans "Good place" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in structured.descriptor_trend %}
+            <tr>
+                <td>{{ row.month }}</td>
+                <td>{{ row.harder }}%</td>
+                <td>{{ row.holding }}%</td>
+                <td>{{ row.shifting }}%</td>
+                <td>{{ row.good_place }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</details>
+{% endif %}
+
+{# Quotes with dates (client-level is not privacy-restricted) #}
+{% if quotes %}
+<h3>{% trans "In their words" %}</h3>
+{% for quote in quotes|slice:":5" %}
+<blockquote class="insight-quote">
+    <p>&ldquo;{{ quote.text }}&rdquo;</p>
+    <cite>
+        {% if quote.target_name %}
+        {% blocktrans with target=quote.target_name %}On their {{ target }} goal{% endblocktrans %} &middot;
+        {% endif %}
+        {% if quote.date %}{{ quote.date }} &middot; {% endif %}
+        <a href="{% url 'notes:note_detail' note_id=quote.note_id %}">{% trans "View note" %}</a>
+    </cite>
+</blockquote>
+{% endfor %}
+{% endif %}
+
+{% endif %}{# end data_tier #}
+</section>
+
+{# Chart.js for client descriptor trend #}
+{% if structured.descriptor_trend and data_tier != "sparse" %}
+{{ chart_data_json|json_script:"client-trend-data" }}
+<script>
+(function() {
+    var rawData = JSON.parse(document.getElementById('client-trend-data').textContent);
+    if (!Array.isArray(rawData) || rawData.length === 0) return;
+    var ctx = document.getElementById('client-descriptor-trend');
+    if (!ctx) return;
+    new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: rawData.map(function(r) { return r.month; }),
+            datasets: [
+                { label: '{% trans "Harder right now" %}', data: rawData.map(function(r) { return r.harder; }), borderColor: '#e74c3c', tension: 0.3, fill: false },
+                { label: '{% trans "Holding steady" %}', data: rawData.map(function(r) { return r.holding; }), borderColor: '#f39c12', tension: 0.3, fill: false },
+                { label: '{% trans "Something\'s shifting" %}', data: rawData.map(function(r) { return r.shifting; }), borderColor: '#3498db', tension: 0.3, fill: false },
+                { label: '{% trans "In a good place" %}', data: rawData.map(function(r) { return r.good_place; }), borderColor: '#27ae60', tension: 0.3, fill: false },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.parsed.y + '%'; } } } },
+            scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + '%'; } } } },
+        },
+    });
+})();
+</script>
+{% endif %}

@@ -7841,3 +7841,144 @@ msgid "%(count)s template"
 msgid_plural "%(count)s templates"
 msgstr[0] "%(count)s modèle"
 msgstr[1] "%(count)s modèles"
+
+msgid "AI-Generated Draft"
+msgstr "Ébauche générée par l'IA"
+
+msgid "AI-generated summary"
+msgstr "Résumé généré par l'IA"
+
+msgid ""
+"Based on limited data. Insights will become more reliable as more notes are "
+"recorded."
+msgstr ""
+"Basé sur des données limitées. Les analyses deviendront plus fiables à "
+"mesure que d'autres notes seront enregistrées."
+
+msgid "Cited Quotes"
+msgstr "Citations référencées"
+
+msgid "Copy to clipboard"
+msgstr "Copier dans le presse-papiers"
+
+msgid "Current Period"
+msgstr "Période actuelle"
+
+msgid "Custom range"
+msgstr "Période personnalisée"
+
+msgid "Descriptor trend data"
+msgstr "Données de tendance des descripteurs"
+
+msgid "Draft funder summary"
+msgstr "Ébauche de résumé pour le bailleur de fonds"
+
+msgid "Engagement"
+msgstr "Engagement"
+
+msgid "Good place"
+msgstr "Bon endroit"
+
+msgid "Harder"
+msgstr "Plus difficile"
+
+msgid "Holding"
+msgstr "Maintien"
+
+msgid "Insights"
+msgstr "Analyses"
+
+msgid ""
+"Insights will become richer as more notes are recorded. At least 20 notes "
+"across 3 months are needed for trend analysis."
+msgstr ""
+"Les analyses s'enrichiront à mesure que d'autres notes seront enregistrées. "
+"Au moins 20 notes sur 3 mois sont nécessaires pour l'analyse des tendances."
+
+msgid "Key Themes"
+msgstr "Thèmes principaux"
+
+msgid "Last 12 months"
+msgstr "12 derniers mois"
+
+msgid "Last 3 months"
+msgstr "3 derniers mois"
+
+msgid "Last 6 months"
+msgstr "6 derniers mois"
+
+msgid "Line chart showing participant progress descriptor trends by month"
+msgstr "Graphique linéaire montrant les tendances mensuelles des descripteurs de progrès"
+
+msgid "Line chart showing progress trends for this participant"
+msgstr "Graphique linéaire montrant les tendances de progrès pour ce participant"
+
+msgid "Month"
+msgstr "Mois"
+
+msgid "More data needed for trend analysis."
+msgstr "Plus de données nécessaires pour l'analyse des tendances."
+
+msgid "Must be after the start date."
+msgstr "Doit être après la date de début."
+
+msgid "No notes recorded yet for this participant."
+msgstr "Aucune note enregistrée pour ce participant."
+
+msgid "Outcome Insights"
+msgstr "Analyses des résultats"
+
+msgid "Progress Snapshot"
+msgstr "Aperçu du progrès"
+
+msgid "Progress Trend"
+msgstr "Tendance du progrès"
+
+msgid "Qualitative Insights"
+msgstr "Analyses qualitatives"
+
+msgid "Regenerate"
+msgstr "Régénérer"
+
+msgid "Required for custom range."
+msgstr "Requis pour une période personnalisée."
+
+msgid "Review and edit before including in reports."
+msgstr "Réviser et modifier avant d'inclure dans les rapports."
+
+msgid ""
+"See patterns in participant progress and generate funder report summaries."
+msgstr ""
+"Visualisez les tendances du progrès des participants et générez des résumés "
+"pour les rapports aux bailleurs de fonds."
+
+msgid "Shifting"
+msgstr "En transition"
+
+msgid "Show Insights"
+msgstr "Afficher les analyses"
+
+msgid "Something\\'s shifting"
+msgstr "Quelque chose bouge"
+
+msgid "Staff Observations"
+msgstr "Observations du personnel"
+
+msgid "Time period"
+msgstr "Période"
+
+msgid ""
+"Uses AI to generate a narrative draft with cited quotes. Review before "
+"including in reports."
+msgstr ""
+"Utilise l'IA pour générer une ébauche narrative avec des citations "
+"référencées. Réviser avant d'inclure dans les rapports."
+
+msgid "View note"
+msgstr "Voir la note"
+
+msgid "What participants are saying"
+msgstr "Ce que disent les participants"
+
+msgid "participants"
+msgstr "participants"

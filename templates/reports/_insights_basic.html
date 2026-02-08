@@ -1,0 +1,224 @@
+{% load i18n %}
+{# Layer 1 insights partial — loaded via HTMX or included directly #}
+
+<section class="insights-results" aria-label="{% trans 'Outcome Insights' %}">
+
+{# Summary bar #}
+<div class="insights-summary-bar">
+    <strong>{{ structured.note_count }}</strong> {% trans "notes" %} &middot;
+    <strong>{{ structured.participant_count }}</strong> {% trans "participants" %}
+    {% if date_from and date_to %}
+    &middot; {{ date_from }} {% trans "to" %} {{ date_to }}
+    {% endif %}
+</div>
+
+{% if data_tier == "sparse" %}
+{# ── Sparse data: snapshot only ── #}
+<article class="insights-notice" role="status">
+    <p>{% trans "Insights will become richer as more notes are recorded. At least 20 notes across 3 months are needed for trend analysis." %}</p>
+</article>
+
+{% if structured.descriptor_distribution %}
+<h2>{% trans "Progress Snapshot" %}</h2>
+<div class="descriptor-pills">
+    {% for label, pct in structured.descriptor_distribution.items %}
+    <span class="pill pill--descriptor">{{ label }}: {{ pct }}%</span>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% if structured.engagement_distribution %}
+<h3>{% trans "Engagement" %}</h3>
+<div class="descriptor-pills">
+    {% for label, pct in structured.engagement_distribution.items %}
+    <span class="pill pill--engagement">{{ label }}: {{ pct }}%</span>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% else %}
+{# ── Enough data for trends ── #}
+
+{% if data_tier == "limited" %}
+<article class="insights-notice" role="status">
+    <p>{% trans "Based on limited data. Insights will become more reliable as more notes are recorded." %}</p>
+</article>
+{% endif %}
+
+{# ── Hero: Descriptor trend chart ── #}
+{% if structured.descriptor_trend %}
+<h2>{% trans "Progress Trend" %}</h2>
+<div class="chart-container" style="position: relative; height: 300px;">
+    <canvas id="descriptor-trend-chart"
+            aria-label="{% trans 'Line chart showing participant progress descriptor trends by month' %}"
+            role="img"></canvas>
+</div>
+
+{# Accessible data table #}
+<details class="chart-data-table">
+    <summary>{% trans "View data table" %}</summary>
+    <table role="table" aria-label="{% trans 'Descriptor trend data' %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Month" %}</th>
+                <th scope="col">{% trans "Harder right now" %}</th>
+                <th scope="col">{% trans "Holding steady" %}</th>
+                <th scope="col">{% trans "Something's shifting" %}</th>
+                <th scope="col">{% trans "In a good place" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in structured.descriptor_trend %}
+            <tr>
+                <td>{{ row.month }}</td>
+                <td>{{ row.harder }}%</td>
+                <td>{{ row.holding }}%</td>
+                <td>{{ row.shifting }}%</td>
+                <td>{{ row.good_place }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</details>
+{% endif %}
+
+{# ── Engagement distribution ── #}
+{% if structured.engagement_distribution %}
+<h3>{% trans "Engagement" %}</h3>
+<div class="descriptor-pills">
+    {% for label, pct in structured.engagement_distribution.items %}
+    <span class="pill pill--engagement">{{ label }}: {{ pct }}%</span>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# ── Descriptor snapshot (current totals) ── #}
+{% if structured.descriptor_distribution %}
+<h3>{% trans "Current Period" %}</h3>
+<div class="descriptor-pills">
+    {% for label, pct in structured.descriptor_distribution.items %}
+    <span class="pill pill--descriptor">{{ label }}: {{ pct }}%</span>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# ── Quotes ── #}
+{% if quotes %}
+<h3>{% trans "What participants are saying" %}</h3>
+{% for quote in quotes %}
+<blockquote class="insight-quote">
+    <p>&ldquo;{{ quote.text }}&rdquo;</p>
+    <cite>
+        {% if quote.target_name %}
+        {% blocktrans with target=quote.target_name %}On their {{ target }} goal{% endblocktrans %} &middot;
+        {% endif %}
+        {% if quote.date %}{{ quote.date }} &middot; {% endif %}
+        <a href="{% url 'notes:note_detail' note_id=quote.note_id %}">{% trans "View note" %}</a>
+    </cite>
+</blockquote>
+{% endfor %}
+{% elif data_tier != "sparse" and structured.participant_count < min_participants %}
+<p class="insights-privacy-note">
+    {% blocktrans with count=min_participants %}Individual quotes are not shown for programmes with fewer than {{ count }} active participants, to protect confidentiality. Quotes are available on each participant's Analysis tab.{% endblocktrans %}
+</p>
+{% endif %}
+
+{# ── AI summary button ── #}
+{% if ai_enabled and data_tier != "sparse" %}
+<hr>
+<div id="ai-insights-container">
+    <button
+        hx-post="{% url 'ai:outcome_insights' %}"
+        hx-target="#ai-insights-container"
+        hx-swap="innerHTML"
+        hx-indicator="#loading-bar"
+        hx-vals='{"program_id": "{{ program.pk }}", "date_from": "{{ date_from|date:"Y-m-d" }}", "date_to": "{{ date_to|date:"Y-m-d" }}"}'
+        class="outline"
+    >
+        {% trans "Draft funder summary" %}
+    </button>
+    <small class="muted">{% trans "Uses AI to generate a narrative draft with cited quotes. Review before including in reports." %}</small>
+</div>
+{% endif %}
+
+{% endif %}{# end data_tier check #}
+
+</section>
+
+{# Chart.js for descriptor trend #}
+{% if structured.descriptor_trend and data_tier != "sparse" %}
+{{ chart_data_json|json_script:"descriptor-trend-data" }}
+<script>
+(function() {
+    var rawData = JSON.parse(document.getElementById('descriptor-trend-data').textContent);
+    if (!Array.isArray(rawData) || rawData.length === 0) return;
+
+    var ctx = document.getElementById('descriptor-trend-chart');
+    if (!ctx) return;
+
+    new Chart(ctx.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: rawData.map(function(r) { return r.month; }),
+            datasets: [
+                {
+                    label: '{% trans "Harder right now" %}',
+                    data: rawData.map(function(r) { return r.harder; }),
+                    borderColor: '#e74c3c',
+                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                },
+                {
+                    label: '{% trans "Holding steady" %}',
+                    data: rawData.map(function(r) { return r.holding; }),
+                    borderColor: '#f39c12',
+                    backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                },
+                {
+                    label: '{% trans "Something\'s shifting" %}',
+                    data: rawData.map(function(r) { return r.shifting; }),
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                },
+                {
+                    label: '{% trans "In a good place" %}',
+                    data: rawData.map(function(r) { return r.good_place; }),
+                    borderColor: '#27ae60',
+                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                    tension: 0.3,
+                    fill: false,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y + '%'; }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: { display: true, text: '{% trans "Percentage" %}' },
+                    ticks: { callback: function(v) { return v + '%'; } }
+                },
+                x: {
+                    title: { display: true, text: '{% trans "Month" %}' }
+                },
+            },
+        },
+    });
+})();
+</script>
+{% endif %}

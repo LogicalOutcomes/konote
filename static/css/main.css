@@ -2458,3 +2458,79 @@ article[aria-label="notification"].fading-out {
         max-width: 100%;
     }
 }
+
+/* ── Outcome Insights ── */
+.insights-results { margin-top: 1.5rem; }
+.insights-summary-bar {
+    padding: 0.75rem 1rem;
+    background: var(--kn-card-bg, #f8f9fa);
+    border-radius: var(--kn-radius, 4px);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+.insights-notice {
+    border-left: 4px solid var(--kn-info-fg, #2980b9);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    background: var(--kn-card-bg, #f0f7ff);
+}
+.insights-notice p { margin: 0; }
+.insights-notice-inline {
+    font-size: 0.85rem;
+    color: var(--kn-text-muted, #888);
+    font-style: italic;
+}
+.insights-privacy-note {
+    font-size: 0.85rem;
+    color: var(--kn-text-muted, #888);
+    font-style: italic;
+    padding: 0.5rem 0;
+}
+/* Descriptor pills */
+.descriptor-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+.pill {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+.pill--descriptor { background: var(--kn-primary-subtle, #e8f0fe); color: var(--kn-primary, #2c3e50); }
+.pill--engagement { background: var(--kn-success-subtle, #e8f5e9); color: var(--kn-success-fg, #27ae60); }
+/* Insight quotes */
+.insight-quote {
+    border-left: 3px solid var(--kn-primary, #2c3e50);
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    background: var(--kn-card-bg, #fafafa);
+}
+.insight-quote p { margin: 0 0 0.25rem; font-style: italic; }
+.insight-quote cite {
+    font-size: 0.8rem;
+    color: var(--kn-text-muted, #888);
+    font-style: normal;
+}
+/* AI results */
+.insights-ai-result {
+    border: 1px solid var(--kn-border, #dee2e6);
+    border-radius: var(--kn-radius, 4px);
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+.insights-ai-result header {
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--kn-border, #dee2e6);
+}
+.insights-ai-result footer {
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--kn-border, #dee2e6);
+}
+.ai-narrative { line-height: 1.6; }
+.ai-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
