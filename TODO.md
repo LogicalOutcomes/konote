@@ -7,6 +7,13 @@
 
 ## Active Work
 
+### QA Scenario Fixes
+
+From Round 2 scenario run (2026-02-08): 14 of 22 scenarios failed.
+
+- [x] Seed missing demo clients + fix prerequisite validator — added Maria Santos, Priya Patel, Alex Chen, Aaliyah Thompson, Marcus Williams, David Park + 8 ARIA clients. Fixed `_validate_prerequisites()` to compare full names and handle `type: "clients"` (plural). Renamed SCN-010 client to "Sofia Reyes" to avoid conflict. See `tasks/qa-seed-missing-clients.md` (QA-DATA6)
+- [x] Fix screenshot timeout — all 3 screenshot calls now use 15s timeout with viewport-only fallback when `full_page=True` hangs. See `tasks/qa-fix-scn061-timeout.md` (QA-DATA7)
+
 ### Pre-Launch Checklist
 
 The core app is feature-complete. These tasks prepare for production use.

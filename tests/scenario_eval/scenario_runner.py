@@ -251,10 +251,19 @@ class ScenarioRunner(BrowserTestBase):
                 client_file=james, program=self.program_a,
             )
 
+        # Helper: check if a client already exists by first name
+        # (encrypted field — can't filter in SQL)
         all_clients = list(ClientFile.objects.all())
 
+        def _client_exists(first):
+            return any(c.first_name == first for c in all_clients)
+
+        from apps.clients.models import ClientDetailValue
+        from apps.notes.models import ProgressNote
+        staff = User.objects.filter(username="staff").first()
+
         # SCN-040: Benoit Tremblay (French-accented name for bilingual intake)
-        if not any(c.first_name == "Benoit" for c in all_clients):
+        if not _client_exists("Benoit"):
             benoit = ClientFile.objects.create(is_demo=False)
             benoit.first_name = "Benoit"
             benoit.last_name = "Tremblay"
@@ -264,81 +273,126 @@ class ScenarioRunner(BrowserTestBase):
                 client_file=benoit, program=self.program_a,
             )
 
-        # SCN-042: Sofia Garcia (multi-program client)
-        if not any(c.first_name == "Sofia" for c in all_clients):
-            sofia = ClientFile.objects.create(is_demo=False)
-            sofia.first_name = "Sofia"
-            sofia.last_name = "Garcia"
-            sofia.status = "active"
-            sofia.save()
+        # SCN-042: Aaliyah Thompson (multi-program client — dual enrolment)
+        if not _client_exists("Aaliyah"):
+            aaliyah = ClientFile.objects.create(is_demo=False)
+            aaliyah.first_name = "Aaliyah"
+            aaliyah.last_name = "Thompson"
+            aaliyah.status = "active"
+            aaliyah.save()
             ClientProgramEnrolment.objects.create(
-                client_file=sofia, program=self.program_a,
+                client_file=aaliyah, program=self.program_a,
             )
             ClientProgramEnrolment.objects.create(
-                client_file=sofia, program=self.program_b,
+                client_file=aaliyah, program=self.program_b,
+            )
+            ProgressNote.objects.create(
+                client_file=aaliyah, author=staff,
+                author_program=self.program_a, note_type="quick",
             )
 
-        # SCN-070: Priya Sharma (consent client with 5+ notes)
-        if not any(c.first_name == "Priya" for c in all_clients):
-            from apps.notes.models import ProgressNote
-
-            priya = ClientFile.objects.create(is_demo=False)
-            priya.first_name = "Priya"
-            priya.last_name = "Sharma"
-            priya.status = "active"
-            priya.consent_given_at = timezone.now()
-            priya.consent_type = "written"
-            priya.save()
+        # SCN-070: David Park (consent client with notes for PIPEDA withdrawal)
+        if not _client_exists("David"):
+            david = ClientFile.objects.create(is_demo=False)
+            david.first_name = "David"
+            david.last_name = "Park"
+            david.status = "active"
+            david.consent_given_at = timezone.now()
+            david.consent_type = "written"
+            david.save()
             ClientProgramEnrolment.objects.create(
-                client_file=priya, program=self.program_a,
+                client_file=david, program=self.program_a,
             )
-            # Create 5 progress notes for consent withdrawal scenario
-            staff = User.objects.filter(username="staff").first()
             for i in range(5):
                 note = ProgressNote.objects.create(
-                    client_file=priya, author=staff,
+                    client_file=david, author=staff,
                     author_program=self.program_a, note_type="quick",
                 )
                 note.notes_text = f"Session {i + 1} progress note."
                 note.save()
 
-        # SCN-015: Li Wei (batch note entry client)
-        if not any(c.first_name == "Li" for c in all_clients):
-            li = ClientFile.objects.create(is_demo=False)
-            li.first_name = "Li"
-            li.last_name = "Wei"
-            li.status = "active"
-            li.save()
+        # SCN-015, SCN-058: Maria Santos (batch notes, cognitive load)
+        if not _client_exists("Maria"):
+            maria = ClientFile.objects.create(is_demo=False)
+            maria.first_name = "Maria"
+            maria.last_name = "Santos"
+            maria.status = "active"
+            maria.save()
             ClientProgramEnrolment.objects.create(
-                client_file=li, program=self.program_a,
-            )
-
-        # SCN-020: Fatima Hassan (phone number update client)
-        if not any(c.first_name == "Fatima" for c in all_clients):
-            fatima = ClientFile.objects.create(is_demo=False)
-            fatima.first_name = "Fatima"
-            fatima.last_name = "Hassan"
-            fatima.status = "active"
-            fatima.save()
-            ClientProgramEnrolment.objects.create(
-                client_file=fatima, program=self.program_a,
+                client_file=maria, program=self.program_a,
             )
             if hasattr(self, "phone_field"):
                 ClientDetailValue.objects.create(
-                    client_file=fatima, field_def=self.phone_field,
-                    value="613-555-0142",
+                    client_file=maria, field_def=self.phone_field,
+                    value="416-555-0147",
                 )
 
-        # SCN-025: Derek Williams (Omar's quick lookup client)
-        if not any(c.first_name == "Derek" for c in all_clients):
-            derek = ClientFile.objects.create(is_demo=False)
-            derek.first_name = "Derek"
-            derek.last_name = "Williams"
-            derek.status = "active"
-            derek.save()
+        # SCN-015: Alex Chen (batch note entry)
+        if not _client_exists("Alex"):
+            alex = ClientFile.objects.create(is_demo=False)
+            alex.first_name = "Alex"
+            alex.last_name = "Chen"
+            alex.status = "active"
+            alex.save()
             ClientProgramEnrolment.objects.create(
-                client_file=derek, program=self.program_b,
+                client_file=alex, program=self.program_a,
             )
+
+        # SCN-015, SCN-025: Priya Patel (batch notes, receptionist lookup)
+        if not _client_exists("Priya"):
+            priya = ClientFile.objects.create(is_demo=False)
+            priya.first_name = "Priya"
+            priya.last_name = "Patel"
+            priya.status = "active"
+            priya.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=priya, program=self.program_a,
+            )
+            if hasattr(self, "phone_field"):
+                ClientDetailValue.objects.create(
+                    client_file=priya, field_def=self.phone_field,
+                    value="905-555-0233",
+                )
+
+        # SCN-049: Marcus Williams (shared-device handoff, data bleed test)
+        if not _client_exists("Marcus"):
+            marcus = ClientFile.objects.create(is_demo=False)
+            marcus.first_name = "Marcus"
+            marcus.last_name = "Williams"
+            marcus.status = "active"
+            marcus.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=marcus, program=self.program_a,
+            )
+            ProgressNote.objects.create(
+                client_file=marcus, author=staff,
+                author_program=self.program_a, note_type="quick",
+            )
+
+        # SCN-062: 8 clients for ARIA live region fatigue test
+        # Re-fetch client list after additions above
+        all_clients = list(ClientFile.objects.all())
+        existing_full = {
+            f"{c.first_name} {c.last_name}".strip()
+            for c in all_clients
+        }
+        aria_clients = [
+            ("Alice", "Martin"), ("Bob", "Garcia"),
+            ("Carol", "Nguyen"), ("David", "Okafor"),
+            ("Elena", "Petrov"), ("Frank", "Yamamoto"),
+            ("Grace", "Ibrahim"), ("Henry", "Lavoie"),
+        ]
+        for first, last in aria_clients:
+            full = f"{first} {last}"
+            if full not in existing_full:
+                c = ClientFile.objects.create(is_demo=False)
+                c.first_name = first
+                c.last_name = last
+                c.status = "active"
+                c.save()
+                ClientProgramEnrolment.objects.create(
+                    client_file=c, program=self.program_a,
+                )
 
     # ------------------------------------------------------------------
     # QA-ISO1: Fresh context per scenario with locale from persona
@@ -468,16 +522,35 @@ class ScenarioRunner(BrowserTestBase):
 
             if req_type == "client":
                 from apps.clients.models import ClientFile
-                # Encrypted field — must check in Python
+                # Encrypted field — must check in Python.
+                # Compare full name (first + last), not just first_name.
+                all_c = ClientFile.objects.all()
                 found = any(
-                    c.first_name == req_name
-                    for c in ClientFile.objects.all()
+                    f"{c.first_name} {c.last_name}".strip() == req_name
+                    for c in all_c
                 )
                 if not found:
                     self.fail(
                         f"PREREQUISITE MISSING: Client '{req_name}' not "
                         f"found. Seed demo data or run the setup scenario "
                         f"first. (Scenario: {scenario['id']})"
+                    )
+
+            elif req_type == "clients":
+                # Plural form — list of client names (SCN-015, SCN-058)
+                from apps.clients.models import ClientFile
+                req_names = requirement.get("names", [])
+                all_c = ClientFile.objects.all()
+                existing = {
+                    f"{c.first_name} {c.last_name}".strip()
+                    for c in all_c
+                }
+                missing = [n for n in req_names if n not in existing]
+                if missing:
+                    self.fail(
+                        f"PREREQUISITE MISSING: Clients not found: "
+                        f"{', '.join(missing)}. "
+                        f"(Scenario: {scenario['id']})"
                     )
 
             elif req_type == "user":
@@ -999,7 +1072,14 @@ class ScenarioRunner(BrowserTestBase):
                     )
                     moment_path = os.path.join(screenshot_dir, moment_filename)
                     os.makedirs(screenshot_dir, exist_ok=True)
-                    self.page.screenshot(path=moment_path, full_page=True)
+                    try:
+                        self.page.screenshot(
+                            path=moment_path, full_page=True, timeout=15000,
+                        )
+                    except Exception:
+                        self.page.screenshot(
+                            path=moment_path, full_page=False, timeout=15000,
+                        )
 
                 # Attach console messages
                 if hasattr(self, "_console_messages"):
@@ -1364,7 +1444,14 @@ class ScenarioRunner(BrowserTestBase):
                         f"{name}.png",
                     )
                     os.makedirs(os.path.dirname(path), exist_ok=True)
-                    self.page.screenshot(path=path, full_page=True)
+                    try:
+                        self.page.screenshot(
+                            path=path, full_page=True, timeout=15000,
+                        )
+                    except Exception:
+                        self.page.screenshot(
+                            path=path, full_page=False, timeout=15000,
+                        )
 
             # Small pause between actions for realism
             self.page.wait_for_timeout(100)

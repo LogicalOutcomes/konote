@@ -173,9 +173,16 @@ def capture_step_state(page, scenario_id, step_id, actor_persona,
         slug = _url_to_slug(capture.url)
         filename = f"{scenario_id}_step{step_id}_{actor_persona}_{slug}.png"
         capture.screenshot_path = os.path.join(screenshot_dir, filename)
-        page.screenshot(
-            path=capture.screenshot_path, full_page=True, timeout=60000
-        )
+        try:
+            page.screenshot(
+                path=capture.screenshot_path, full_page=True, timeout=15000
+            )
+        except Exception:
+            # full_page can hang if the page keeps resizing (HTMX polling,
+            # animations). Fall back to viewport-only screenshot.
+            page.screenshot(
+                path=capture.screenshot_path, full_page=False, timeout=15000
+            )
 
         # Duplicate screenshot detection (QA-W3)
         if previous_screenshot_path and Path(previous_screenshot_path).is_file():
