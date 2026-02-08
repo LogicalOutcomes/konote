@@ -316,6 +316,9 @@
         <ul>
             <li>{% trans "Always review and edit before using — AI summaries are starting points, not final text" %}</li>
             <li>{% trans "No participant names are sent to the AI — all identifying information is removed first" %}</li>
+            <li>{% trans "Phone numbers, email addresses, postal codes, SINs, and street addresses are all automatically stripped before anything leaves the server" %}</li>
+            <li>{% trans "The AI can only cite exact quotes from the original data — if it tries to make up or change a quote, the system removes it automatically" %}</li>
+            <li>{% trans "Your organisation can also run the AI locally so that no data leaves your own servers at all" %}</li>
         </ul>
 
         <h3>{% blocktrans with client=term.client|default:"Participant" %}{{ client }}-Level Insights{% endblocktrans %}</h3>
