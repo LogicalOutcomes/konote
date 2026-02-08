@@ -21,6 +21,7 @@
             <li><a href="#audit">{% trans "Audit Logging" %}</a></li>
             <li><a href="#erasure">{% trans "Data Erasure" %}</a></li>
             <li><a href="#exports">{% trans "Data Exports" %}</a></li>
+            <li><a href="#ai-analysis">{% trans "AI-Assisted Analysis" %}</a></li>
             <li><a href="#rights">{% trans "Your Rights" %}</a></li>
         </ul>
     </nav>
@@ -141,6 +142,39 @@
             <li>{% trans "All exports are recorded in the audit log" %}</li>
             <li>{% trans "Exported files include protections against formula injection" %}</li>
         </ul>
+    </section>
+
+    <section id="ai-analysis">
+        <h2>{% trans "AI-Assisted Analysis (Optional)" %}</h2>
+
+        <p>{% trans "KoNote2's Outcome Insights feature can optionally use AI to generate draft narrative summaries of programme outcomes. This feature is off by default and must be enabled by your administrator." %}</p>
+
+        <h3>{% trans "What is sent to the AI" %}</h3>
+        <ul>
+            <li>{% trans "Aggregate statistics (counts, percentages) — no personal information" %}</li>
+            <li>{% blocktrans with client=term.client|default:"Participant" %}Anonymous quotes from progress notes — all {{ client }} names, email addresses, phone numbers, postal codes, and other identifying information are removed before sending{% endblocktrans %}</li>
+            <li>{% trans "Staff names are also removed" %}</li>
+        </ul>
+
+        <h3>{% trans "What is never sent" %}</h3>
+        <ul>
+            <li>{% blocktrans with client=term.client|default:"Participant" %}{{ client }} names, dates of birth, or contact information{% endblocktrans %}</li>
+            <li>{% trans "Unprocessed progress notes or full case records" %}</li>
+            <li>{% trans "Database credentials, encryption keys, or system configuration" %}</li>
+        </ul>
+
+        <h3>{% trans "AI provider" %}</h3>
+        <p>{% trans "Your administrator configures which AI service is used. Options include cloud-based services (such as OpenRouter) or a locally hosted AI that keeps all data on your own servers. Check with your administrator for details about your organisation's configuration." %}</p>
+
+        <p>{% trans "All AI-generated content is clearly labelled as a draft and must be reviewed by staff before use." %}</p>
+
+        <h3>{% trans "Sample Notice for Your Privacy Policy" %}</h3>
+        <div class="notice">
+            <p>{% blocktrans with client=term.client|default:"Participant" %}The following is a suggested paragraph you can include in your organisation's privacy policy or consent forms. Edit it to match your specific practices:{% endblocktrans %}</p>
+            <blockquote>
+                <p>{% blocktrans with client_plural=term.client_plural|default:"Participants" %}"To help us understand patterns and improve our services, anonymised quotes from progress notes may be processed using AI. Before any text is sent, all names, contact information, and identifying details are removed. Quotes are only used when 15 or more {{ client_plural }} are included, so no individual can be identified. The AI can only repeat exact words — it cannot make up or change quotes. This feature is optional and can be disabled at any time."{% endblocktrans %}</p>
+            </blockquote>
+        </div>
     </section>
 
     <section id="rights">
