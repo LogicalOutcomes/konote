@@ -466,8 +466,6 @@ def _compute_icc(scores_matrix):
     Returns:
         ICC value (float), or None if computation fails.
     """
-    import math
-
     n_raters = len(scores_matrix)
     if n_raters < 2:
         return None
