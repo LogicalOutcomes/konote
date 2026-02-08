@@ -77,5 +77,29 @@ class UserProgramRole(models.Model):
         db_table = "user_program_roles"
         unique_together = ["user", "program"]
 
+    # Roles that grant access to individual client records
+    CLIENT_ACCESS_ROLES = {"receptionist", "staff", "program_manager"}
+
     def __str__(self):
         return f"{self.user} → {self.program} ({self.role})"
+
+    @classmethod
+    def is_executive_only(cls, user, roles=None):
+        """Check if user only has executive role (no client access roles).
+
+        Returns True if the user has an active executive role but no roles
+        that grant access to individual client records.
+
+        Pass pre-fetched ``roles`` set to avoid an extra query when the
+        caller has already loaded the user's roles.
+        """
+        if roles is None:
+            roles = set(
+                cls.objects.filter(user=user, status="active")
+                .values_list("role", flat=True)
+            )
+        if not roles:
+            return False
+        if "executive" in roles:
+            return not bool(roles & cls.CLIENT_ACCESS_ROLES)
+        return False

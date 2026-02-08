@@ -73,32 +73,14 @@ def sync_language_on_login(request, user):
     return lang_code
 
 
-def _is_executive_only(user):
-    """Check if user only has executive role (no client access roles).
-
-    Used for login redirect — executives go to the aggregate dashboard
-    instead of the staff landing page which shows individual client names.
-    """
-    from apps.programs.models import UserProgramRole
-
-    roles = set(
-        UserProgramRole.objects.filter(user=user, status="active")
-        .values_list("role", flat=True)
-    )
-    if not roles:
-        return False
-    if "executive" in roles:
-        return not bool(roles & {"receptionist", "staff", "program_manager"})
-    return False
-
-
 def _login_redirect(user, request_session):
     """Determine the post-login redirect for a user."""
     from apps.programs.context import needs_program_selection
+    from apps.programs.models import UserProgramRole
 
     if needs_program_selection(user, request_session):
         return redirect("programs:select_program")
-    if _is_executive_only(user):
+    if UserProgramRole.is_executive_only(user):
         return redirect("clients:executive_dashboard")
     return redirect("/")
 

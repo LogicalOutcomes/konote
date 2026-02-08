@@ -534,3 +534,71 @@ class AccountLockoutTest(TestCase):
         # Should be able to log in again with correct credentials
         resp = self._succeed_login()
         self.assertEqual(resp.status_code, 302)  # Redirect on success
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local")
+class ExecutiveLoginRedirectTest(TestCase):
+    """BUG-5: Executives should land on aggregate dashboard, not staff home."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.program = Program.objects.create(name="Test Program")
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def _create_user(self, username, roles):
+        """Create user with specified program roles."""
+        user = User.objects.create_user(
+            username=username, password="pass123", display_name=username.title()
+        )
+        for role in roles:
+            UserProgramRole.objects.create(
+                user=user, program=self.program, role=role, status="active"
+            )
+        return user
+
+    def _login(self, username):
+        return self.http.post("/auth/login/", {
+            "username": username,
+            "password": "pass123",
+        })
+
+    def test_executive_only_redirects_to_executive_dashboard(self):
+        self._create_user("exec_user", ["executive"])
+        resp = self._login("exec_user")
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, "/clients/executive/")
+
+    def test_staff_redirects_to_home(self):
+        self._create_user("staff_user", ["staff"])
+        resp = self._login("staff_user")
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, "/")
+
+    def test_executive_with_staff_role_redirects_to_home(self):
+        """User with both executive and staff roles gets staff home (has client access)."""
+        user = User.objects.create_user(
+            username="dual_user", password="pass123", display_name="Dual"
+        )
+        prog2 = Program.objects.create(name="Program 2")
+        UserProgramRole.objects.create(
+            user=user, program=self.program, role="executive", status="active"
+        )
+        UserProgramRole.objects.create(
+            user=user, program=prog2, role="staff", status="active"
+        )
+        resp = self._login("dual_user")
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, "/")
+
+    def test_user_with_no_roles_redirects_to_home(self):
+        User.objects.create_user(
+            username="norole", password="pass123", display_name="No Role"
+        )
+        resp = self._login("norole")
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(resp.url, "/")

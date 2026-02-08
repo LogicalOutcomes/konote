@@ -30,8 +30,7 @@ def dashboard(request):
     note_template_count = ProgressNoteTemplate.objects.count()
 
     # IMPROVE-1b: Instance Settings summary
-    instance_settings = InstanceSetting.get_all()
-    instance_settings_count = len(instance_settings)
+    instance_settings_count = InstanceSetting.objects.count()
 
     # IMPROVE-1b: Demo Accounts summary
     demo_users = User.objects.filter(is_demo=True, is_active=True).count()
