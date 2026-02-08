@@ -10,16 +10,13 @@ import unittest
 
 import pytest
 
-# Skip the entire module if Playwright is not installed
-pw = None
+# Check if Playwright is installed — used by @skipUnless on each class
+HAS_PLAYWRIGHT = False
 try:
     import playwright  # noqa: F401
-    pw = True
+    HAS_PLAYWRIGHT = True
 except ImportError:
     pass
-
-if not pw:
-    raise unittest.SkipTest("Playwright not installed — skipping browser tests")
 
 from .browser_base import BrowserTestBase
 
@@ -29,6 +26,7 @@ from .browser_base import BrowserTestBase
 # ======================================================================
 
 
+@unittest.skipUnless(HAS_PLAYWRIGHT, "Playwright not installed")
 @pytest.mark.browser
 class ColourContrastBrowserTest(BrowserTestBase):
     """Test colour contrast on key pages using axe-core.
@@ -120,6 +118,7 @@ class ColourContrastBrowserTest(BrowserTestBase):
 # ======================================================================
 
 
+@unittest.skipUnless(HAS_PLAYWRIGHT, "Playwright not installed")
 @pytest.mark.browser
 class FocusManagementBrowserTest(BrowserTestBase):
     """Test that focus is managed correctly after HTMX content swaps.
@@ -287,6 +286,7 @@ class FocusManagementBrowserTest(BrowserTestBase):
 # ======================================================================
 
 
+@unittest.skipUnless(HAS_PLAYWRIGHT, "Playwright not installed")
 @pytest.mark.browser
 class ResponsiveLayoutBrowserTest(BrowserTestBase):
     """Test responsive layout at mobile, tablet, and desktop viewpoints.

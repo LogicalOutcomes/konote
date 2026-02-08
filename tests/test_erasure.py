@@ -66,7 +66,7 @@ class ErasureModelTests(TestCase):
         self.assertEqual(er.status, "pending")
         self.assertEqual(er.client_pk, self.client_file.pk)
         self.assertTrue(er.erasure_code.startswith("ER-"))
-        self.assertIn(f"Client #{self.client_file.pk}", str(er))
+        self.assertIn(f"Participant #{self.client_file.pk}", str(er))
 
     def test_erasure_request_survives_client_deletion(self):
         er = ErasureRequest.objects.create(
@@ -1450,6 +1450,7 @@ class EmailNotificationWarningTests(TestCase):
         from django.test import RequestFactory
         factory = RequestFactory()
         request = factory.get("/")
+        request.get_term = lambda key: "Participant"
         result = _notify_pms_erasure_request(er, request)
         self.assertFalse(result)
 
@@ -1467,6 +1468,7 @@ class EmailNotificationWarningTests(TestCase):
         from django.test import RequestFactory
         factory = RequestFactory()
         request = factory.get("/")
+        request.get_term = lambda key: "Participant"
         result = _notify_pms_erasure_request(er, request)
         self.assertTrue(result)
 
