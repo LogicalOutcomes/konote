@@ -1,8 +1,10 @@
 """Capture page state at each scenario step for LLM evaluation."""
 import os
+import re
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import urlparse
 
 
 @dataclass
@@ -32,6 +34,31 @@ class StepCapture:
     has_horizontal_scroll: bool = False
     document_lang: str = ""
     viewport_width: int = 0
+
+
+def _url_to_slug(url, max_length=60):
+    """Convert a URL into a short, filesystem-safe slug for screenshot filenames.
+
+    Examples:
+        http://localhost:8000/clients/          → 'clients'
+        http://localhost:8000/clients/executive/ → 'clients-executive'
+        http://localhost:8000/clients/42/notes/  → 'clients-42-notes'
+        http://localhost:8000/admin/settings/    → 'admin-settings'
+        http://localhost:8000/                   → 'home'
+    """
+    path = urlparse(url).path.strip("/")
+    if not path:
+        return "home"
+    # Replace path separators with hyphens
+    slug = path.replace("/", "-")
+    # Remove anything that isn't alphanumeric, hyphen, or underscore
+    slug = re.sub(r"[^a-zA-Z0-9_-]", "", slug)
+    # Collapse multiple hyphens
+    slug = re.sub(r"-{2,}", "-", slug)
+    # Truncate to keep filenames reasonable
+    if len(slug) > max_length:
+        slug = slug[:max_length].rstrip("-")
+    return slug or "home"
 
 
 def capture_step_state(page, scenario_id, step_id, actor_persona,
@@ -130,10 +157,11 @@ def capture_step_state(page, scenario_id, step_id, actor_persona,
     except Exception:
         pass  # Some pages may not support accessibility snapshots
 
-    # Screenshot
+    # Screenshot — filename includes URL slug for route traceability (QA-T20)
     if screenshot_dir:
         Path(screenshot_dir).mkdir(parents=True, exist_ok=True)
-        filename = f"{scenario_id}_step{step_id}_{actor_persona}.png"
+        slug = _url_to_slug(capture.url)
+        filename = f"{scenario_id}_step{step_id}_{actor_persona}_{slug}.png"
         capture.screenshot_path = os.path.join(screenshot_dir, filename)
         page.screenshot(path=capture.screenshot_path, full_page=True)
 
