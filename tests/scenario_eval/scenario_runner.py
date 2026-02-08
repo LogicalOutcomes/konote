@@ -102,6 +102,24 @@ class ScenarioRunner(BrowserTestBase):
     # CDP session for network throttling (lazy-created)
     _cdp_session = None
 
+    # Timeout (ms) for networkidle waits — pages with HTMX polling or timers
+    # may never reach idle, so we cap the wait and fall back to domcontentloaded.
+    _networkidle_timeout = 10000
+
+    def _wait_for_idle(self):
+        """Wait for network idle, falling back to domcontentloaded on timeout.
+
+        Pages with HTMX polling, timers, or long-running fetches may never
+        reach 'networkidle'. Rather than hang forever, cap the wait and
+        continue — the page is usable once DOM content has loaded.
+        """
+        try:
+            self.page.wait_for_load_state(
+                "networkidle", timeout=self._networkidle_timeout
+            )
+        except Exception:
+            self.page.wait_for_load_state("domcontentloaded")
+
     def _create_test_data(self):
         """Extend base test data with extra users needed by scenarios."""
         super()._create_test_data()
@@ -543,7 +561,7 @@ class ScenarioRunner(BrowserTestBase):
 
         # 5. Verify at least one client is accessible (navigate to client list)
         self.page.goto(self.live_url("/clients/"))
-        self.page.wait_for_load_state("networkidle")
+        self._wait_for_idle()
         has_clients = self.page.evaluate("""() => {
             const rows = document.querySelectorAll(
                 'table tbody tr, .client-card, [data-client-id]'
@@ -555,7 +573,7 @@ class ScenarioRunner(BrowserTestBase):
 
         # Navigate back to dashboard so scenario steps start from expected state
         self.page.goto(self.live_url("/"))
-        self.page.wait_for_load_state("networkidle")
+        self._wait_for_idle()
 
         return (True, "")
 
@@ -842,7 +860,7 @@ class ScenarioRunner(BrowserTestBase):
         # Capture the dashboard and client list
         for page_url, label in key_pages:
             self.page.goto(self.live_url(page_url))
-            self.page.wait_for_load_state("networkidle")
+            self._wait_for_idle()
 
             capture = capture_step_state(
                 page=self.page,
@@ -949,7 +967,7 @@ class ScenarioRunner(BrowserTestBase):
                 if moment_url.startswith("/"):
                     moment_url = self.live_url(moment_url)
                 self.page.goto(moment_url)
-                self.page.wait_for_load_state("networkidle")
+                self._wait_for_idle()
 
                 # Check for 404 / error page and skip if so
                 status_text = self.page.evaluate(
@@ -1095,7 +1113,7 @@ class ScenarioRunner(BrowserTestBase):
                 if url.startswith("/"):
                     url = self.live_url(url)
                 self.page.goto(url)
-                self.page.wait_for_load_state("networkidle")
+                self._wait_for_idle()
 
             elif "fill" in action:
                 selector, value = action["fill"]
@@ -1211,7 +1229,7 @@ class ScenarioRunner(BrowserTestBase):
             elif "wait_for" in action:
                 state = action["wait_for"]
                 if state == "networkidle":
-                    self.page.wait_for_load_state("networkidle")
+                    self._wait_for_idle()
 
             elif "wait_htmx" in action:
                 if action["wait_htmx"]:
