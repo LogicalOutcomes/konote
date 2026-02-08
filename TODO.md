@@ -34,6 +34,17 @@ _All 2026-02-08 evaluation items fixed. Re-run scenarios to verify._
 - [x] Dashboard "last updated" timestamp — 2026-02-07 (IMPROVE-4)
 - [x] 4 of 6 settings cards now show summary stats — 2026-02-07 (IMPROVE-1)
 
+### QA Process Improvements (see `tasks/qa-process-improvement-plan.md`)
+
+- [ ] Add pre-flight check to scenario runner — login, language, dashboard, test data (QA-W1)
+- [ ] Capture browser console logs alongside screenshots (QA-W2)
+- [ ] Detect and flag duplicate consecutive screenshots (QA-W3)
+- [ ] Add action verification — confirm fills, clicks, and logins actually executed (QA-W4)
+- [ ] Capture screenshots at DITL key moments (QA-W5)
+- [ ] Report naming with sequence suffix for multiple runs per day (QA-W6)
+- [ ] Fix 404 after create participant form submission (QA-W7 / BUG-7)
+- [ ] Add post-creation confirmation flash message (QA-W8 / IMPROVE-5)
+
 ### Pre-Launch Checklist
 
 The core app is feature-complete. These tasks prepare for production use.

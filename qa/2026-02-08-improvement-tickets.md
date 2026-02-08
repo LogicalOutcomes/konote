@@ -1,9 +1,9 @@
-# Improvement Tickets — 2026-02-08
+# KoNote2 Improvement Tickets — 2026-02-08 (Updated)
 
-Developer-facing handoff from the scenario evaluation.
+Developer-facing handoff from the full scenario evaluation.
 Each item has: what's wrong, where to look, what "fixed" looks like, and priority.
 
-**Source:** Satisfaction report from 2026-02-08 full evaluation (replacing 2026-02-07 dry run).
+**Source:** Satisfaction report from 2026-02-08 full evaluation.
 **Test runner version:** Playwright via pytest, `--no-llm` mode.
 **Note:** Items marked [CONFIDENCE: Low] may be test artifacts. Verify before fixing.
 
@@ -13,32 +13,48 @@ Each item has: what's wrong, where to look, what "fixed" looks like, and priorit
 
 | Ticket | Status | Evidence |
 |--------|--------|----------|
-| BLOCKER-1: Skip-to-content link | **NOT FIXED** | SCN-050 step 2 still lands on Privacy page |
-| BLOCKER-2: Focus after login | **NOT FIXED** | SCN-050 step 1 — focus ring on GitHub footer link |
-| BUG-1: Wrong empty-state message | **FIXED** | SCN-010 step 1 now shows "No Participants found matching..." |
-| BUG-2: Create buttons for wrong roles | **FIXED** | SCN-010 step 1 — no "New Participant" for receptionist |
-| BUG-3: Audit log jargon | **PARTIALLY FIXED** | CAL-003 shows "Created"/"Logged in" badges, IP hidden behind "Show technical details" |
-| BUG-4: Language not tied to user | **NOT FIXED** | SCN-010 step 4, SCN-050 steps 4-6, SCN-047 step 5, DITL-DS2 |
-| IMPROVE-1: Settings state indicators | **PARTIALLY FIXED** | 4 of 6 cards now show summary stats |
-| IMPROVE-2: Pre-select single program | **FIXED** | SCN-005 step 3 — Housing Support pre-checked |
-| IMPROVE-3: 403 page wording | **FIXED** | SCN-010 step 3 — "You don't have access to this page" |
-| IMPROVE-4: Dashboard timestamp | **FIXED** | CAL-001 — "Last updated: 2026-02-08 03:04" visible |
+| BLOCKER-1: Skip-to-content link | **NOT FIXED** | SCN-050: no skip link on login or any subsequent page |
+| BLOCKER-2: Focus after login | **NOT FIXED** | SCN-050 step 6: focus ring visible on GitHub footer link after credentials entered |
+| BUG-1: Wrong empty-state message | **FIXED** | SCN-010 step 1: "No Participants found matching 'Marie Santos'" with helpful suggestion |
+| BUG-2: Create buttons for wrong roles | **FIXED** | SCN-010 step 3: receptionist sees proper 403 page, no Create button |
+| BUG-3: Audit log jargon | **PARTIALLY FIXED** | CAL-003: "Created"/"Logged in" badges, IP hidden behind "Show technical details" |
+| BUG-4: Language not tied to user | **NOT FIXED** | SCN-010 step 4 (Casey→French), SCN-047 step 5 (Omar→French), SCN-050 steps 3-7 (Amara→French), DITL-DS2 (Jean-Luc→English) |
+| BUG-5: Executive landing page exposes PII | **NOT FIXED** | DITL-E1 step 1: client names visible to executive role |
+| BUG-6: No offline handling — blank screen | **NOT FIXED** | SCN-048 steps 3-4: completely blank white page |
+| IMPROVE-1: Settings state indicators | **PARTIALLY FIXED** | CAL-002: 4 of 6 cards show status |
+| IMPROVE-2: Pre-select single program | **FIXED** | SCN-005 step 3: Housing Support pre-checked |
+| IMPROVE-3: 403 page wording | **FIXED** | SCN-010 step 3: excellent plain-language error page (scored 4.7) |
+| IMPROVE-4: Dashboard timestamp | **FIXED** | CAL-001: "Last updated: 2026-02-08 03:04" visible |
 
-**Fix these first:** BLOCKER-1 and BLOCKER-2 block ALL keyboard/screen reader testing. Until they're fixed, SCN-050 through SCN-055 and SCN-061 can't produce useful results.
+**Summary: 5 FIXED | 2 PARTIALLY FIXED | 5 NOT FIXED (including both BLOCKERs)**
 
 ---
 
-## BLOCKER-1: Add skip-to-content link
+## Recommended Fix Order
+
+Fix in this order — each step unblocks the next:
+
+1. **BLOCKER-1 + BLOCKER-2** (skip link + focus) — unblocks all accessibility testing
+2. **BUG-5** (executive landing page PII) — quick redirect fix, high privacy impact
+3. **BUG-4** (language preference) — unblocks bilingual testing, prevents cross-scenario contamination
+4. **BUG-7** (new: 404 after create form submission) — blocks participant creation workflow
+5. **BUG-6** (offline handling) — minimum viable banner is a small change
+6. **BUG-3 remaining** (audit log polish) — cosmetic, lower priority
+7. **IMPROVE-1 remaining** (2 settings cards) — cosmetic, lower priority
+8. **IMPROVE-5** (new: post-creation confirmation) — usability polish
+
+---
+
+## BLOCKER-1: Add Skip-to-Content Link (WCAG 2.4.1)
 
 **Status:** NOT FIXED (carried forward from 2026-02-07)
+**Confidence:** High
 
-**What's wrong:** No skip-to-content link exists anywhere in the app. After login, pressing Tab sends focus to the footer (Privacy, Help, GitHub links) instead of main content. Keyboard-only users cannot reach the main application.
-
-**WCAG violation:** 2.4.1 Bypass Blocks (Level A — this is not just AA, it's the baseline).
+**What's wrong:** No skip-to-content link exists anywhere in the app. Keyboard-only users (DS3 Amara) must Tab through the entire navigation bar, language selector, and footer links before reaching main content. On the login page, this means tabbing through 8+ elements before reaching the username field. This is a WCAG 2.4.1 Level A failure — the most basic accessibility requirement.
 
 **Where to look:**
 - Base template (likely `templates/base.html` or similar layout template)
-- The `<body>` tag or first child — skip link should be the very first focusable element
+- The `<body>` tag — skip link should be the very first focusable element
 
 **What "fixed" looks like:**
 ```html
@@ -54,10 +70,15 @@ Each item has: what's wrong, where to look, what "fixed" looks like, and priorit
   position: absolute;
   left: -9999px;
   z-index: 999;
+  padding: 8px 16px;
+  background: #1a1a2e;
+  color: #fff;
+  font-size: 14px;
 }
 .skip-link:focus {
-  position: static;
-  /* or position: fixed; top: 0; left: 0; with visible styling */
+  position: fixed;
+  top: 0;
+  left: 0;
 }
 ```
 
@@ -65,140 +86,148 @@ Each item has: what's wrong, where to look, what "fixed" looks like, and priorit
 - [ ] Pressing Tab on any page focuses the skip link as the FIRST interactive element
 - [ ] The skip link is visually hidden until focused, then visible
 - [ ] Activating the skip link moves focus to the `<main>` element
-- [ ] Works on: login page, client list, client profile, dashboard, admin pages
+- [ ] Works on: login page, dashboard, participants list, client profile, admin pages
 - [ ] JAWS/NVDA announces "Skip to main content, link"
 
-**Screenshot reference:** `SCN-050_step2_DS3.png` — shows Privacy page instead of main content after Tab+Enter.
+**Screenshot reference:** `SCN-050_step1_DS3.png` — no skip link visible on login page.
 
-**Priority:** BLOCKER. Blocks all keyboard-only testing (SCN-050 through SCN-055, SCN-061).
-**Confidence:** High — this is a structural issue, not a test artifact.
+**Priority:** BLOCKER. Blocks all keyboard-only testing (SCN-050 through SCN-055, SCN-061, SCN-062).
 
 ---
 
-## BLOCKER-2: Fix focus management after login
+## BLOCKER-2: Fix Focus Management After Login
 
 **Status:** NOT FIXED (carried forward from 2026-02-07)
+**Confidence:** High
 
-**What's wrong:** After submitting the login form, focus lands on `<body>` or an unspecified element. The first Tab press goes to footer links rather than main navigation or content.
+**What's wrong:** After submitting the login form, focus lands on the footer area (GitHub link has visible focus ring) instead of main content. Screen reader users have no way to know they've logged in successfully without manually navigating back up the entire page.
 
 **Where to look:**
 - Login view (likely `auth/views.py` or similar) — the redirect after successful login
 - The landing page template — needs a focus target
-- May need JavaScript: `document.getElementById('main-content').focus()` on page load after redirect
+- Any HTMX `hx-swap` or `hx-target` on the login form
+- May need JavaScript: `document.querySelector('main h1').focus()` on page load
 
 **What "fixed" looks like:**
-After login redirect, focus should land on either:
-1. The `<main>` element (with `tabindex="-1"` so it can receive programmatic focus), or
-2. The first heading (`<h1>`) inside main content, or
-3. A welcome message that serves as a live region announcement
+After successful login, focus should move to:
+1. The `<main>` element (with `tabindex="-1"`), OR
+2. The `<h1>` of the landing page, OR
+3. A welcome message announced as an ARIA live region
+
+```javascript
+// After login redirect/swap:
+document.addEventListener('DOMContentLoaded', () => {
+  const main = document.querySelector('main') || document.querySelector('h1');
+  if (main) main.focus();
+});
+```
 
 **Acceptance criteria:**
-- [ ] After login, focus is NOT on `<body>`
-- [ ] After login, pressing Tab goes to the skip link (if added) or main content — not footer
-- [ ] JAWS announces the new page context (heading or welcome message)
+- [ ] After login, focus is on main content (not footer, not `<body>`)
+- [ ] Screen reader announces the new page context (heading or welcome message)
+- [ ] Focus is visible (focus ring/outline) on the target element
+- [ ] Works for all user roles (staff, receptionist, executive, admin)
 
-**Screenshot reference:** `SCN-050_step1_DS3.png` — focus ring visible on GitHub footer link, not on main content.
+**Screenshot reference:** `SCN-050_step6_DS3.png` — focus ring visible on GitHub footer link.
 
-**Priority:** BLOCKER. Combined with BLOCKER-1, makes the app unusable for keyboard users.
-**Confidence:** High — visible focus ring on footer link confirms the issue.
+**Priority:** BLOCKER. Combined with BLOCKER-1, makes the app unusable for keyboard-only and screen reader users.
 
 ---
 
-## BUG-4: Language preference not tied to user account
+## BUG-4: Language Preference Not Tied to User Account
 
-**Status:** NOT FIXED (carried forward from 2026-02-07, now confirmed across multiple scenarios)
+**Status:** NOT FIXED (carried forward from 2026-02-07, now confirmed across 4 scenarios)
+**Confidence:** High
 
-**What's wrong:** The interface language is stored in the session/cookie, not the user profile. This means:
-- A previous user on the same browser can change the language for the next user
-- On shared computers (common in nonprofits), language bleeds between users
-- Jean-Luc (DS2, profile says `language: "fr"`) sees English after login
-- Casey (DS1, English speaker) sees French after a French user was on the same browser
-
-**Confirmed in:** SCN-010 step 4 (Casey sees French), SCN-050 steps 4-6 (screen reader user gets French), SCN-047 step 5 (mobile user gets French), DITL-DS2 steps 1-2 (Jean-Luc gets English).
+**What's wrong:** The interface language is stored in the session/cookie rather than the user's account. When one user logs out and another logs in on the same browser, the second user inherits the first user's language. This is a systemic problem:
+- Casey (English) sees French create form after a French session (SCN-010 step 4)
+- Omar (English) sees French login on mobile (SCN-047 step 5)
+- Amara (English) gets stuck in French redirect loop (SCN-050 steps 3-7)
+- Jean-Luc (French) appears to see English dashboard (DITL-DS2 step 1)
 
 **Where to look:**
 - Language middleware (likely Django's `LocaleMiddleware` or a custom one)
 - The language toggle in the footer/nav — how does it store the preference?
-- User profile model — does it have a `language` field?
+- User profile model — does it have a `language` or `preferred_language` field?
+- Login handler — does it set language from user profile?
 
 **What "fixed" looks like:**
-1. Language preference stored on the User model (e.g., `user.profile.language = 'en'`)
-2. On login, language is set from the user profile (overrides any session/cookie value)
-3. The language toggle in the UI updates the user profile, not just the session
-4. Unauthenticated pages (login) use browser Accept-Language header or default to English
+
+| Before | After |
+|--------|-------|
+| Language stored in session cookie | Language stored in user profile |
+| Persists across different users | Loaded from user profile on login |
+| Logout doesn't clear language | Logout clears session; login sets from profile |
+| Login page language unpredictable | Login page uses browser Accept-Language or default |
 
 **Acceptance criteria:**
-- [ ] Each user has a language preference in their profile
-- [ ] Login sets the interface language from the user profile
-- [ ] Switching language in the UI persists to the user profile
+- [ ] Each user account has a `language` or `preferred_language` field
+- [ ] On login, the interface language is set from the user's profile
+- [ ] On logout, the language preference is cleared from the session
+- [ ] The language toggle updates both the session AND the user profile
+- [ ] Login page defaults to browser Accept-Language header or English
 - [ ] A French user logging in after an English user sees French (and vice versa)
-- [ ] The login page defaults to English (or uses browser language)
 
-**Screenshot reference:** `SCN-010_step4_DS1.png` (Casey sees French), `DITL-DS2_step1_DS2.png` (Jean-Luc sees English).
+**Screenshot reference:** `SCN-010_step4_DS1.png` (English user sees French form), `DITL-DS2_step1_DS2.png` (French user sees English dashboard).
 
 **Priority:** Priority fix. Affects bilingual agencies across all roles.
-**Confidence:** Medium — confirmed across 4 scenarios, but shared-computer behaviour should also be tested manually outside the test runner to rule out Playwright session bleed.
 
 ---
 
-## BUG-5: Executive landing page exposes individual client names
+## BUG-5: Executive Landing Page Exposes Individual Client Names (PII)
 
-**Status:** NEW
+**Status:** NOT FIXED (identified in previous report, still present)
+**Confidence:** High
 
-**What's wrong:** After login, the executive (E1 Margaret, `role: "executive"`) lands on the **staff dashboard**, which shows:
-1. A "New Participant" button — executives should never create clients
-2. Individual client names in the "Priority Items" section (Jane Doe, James Thompson, Client148 Test148, etc.)
-3. A search box that could be used to look up individual clients
+**What's wrong:** When an executive (E1 Margaret) logs in, the default landing page is the **staff operational dashboard** which shows:
+1. Individual client names in "Priority Items" (Jane Doe, James Thompson, Client148, etc.)
+2. A "New Participant" button — executives should never create clients
+3. A search box that could look up individual clients
 
-Margaret's persona explicitly says seeing individual client names is a **liability concern**. The Executive Dashboard (at `/clients/executive/`) correctly shows aggregate-only data with no PII — but the user doesn't land there after login.
+The Executive Overview page (`/clients/executive/`) correctly shows aggregate-only data with an explicit confidentiality statement, but it's not the default landing page.
+
+Margaret's persona explicitly states: seeing individual client names is a **liability concern**. This is also a PIPEDA issue — minimum necessary access.
 
 **Where to look:**
-- Login redirect logic — what determines where each role lands after login
+- Login redirect logic — what determines where each role lands
 - Likely in `auth/views.py` or a `LOGIN_REDIRECT_URL` setting
-- The executive role may not have a custom redirect, so it falls through to the default staff landing page
+- The executive role may not have a custom redirect
 
 **What "fixed" looks like:**
 ```python
-# In the login view or a post-login signal
+# In the login view or post-login redirect
 if user.role == 'executive':
-    return redirect('/clients/executive/')  # Executive Dashboard
+    return redirect('/clients/executive/')  # Aggregate-only dashboard
 else:
-    return redirect('/')  # Staff landing page
+    return redirect('/')  # Staff operational dashboard
 ```
 
 **Acceptance criteria:**
-- [ ] Executive role lands on `/clients/executive/` (Executive Dashboard) after login
-- [ ] Executive role does NOT see the staff landing page with individual client names
+- [ ] Executive role redirects to `/clients/executive/` after login
+- [ ] Executive role does NOT see the staff dashboard with individual names
 - [ ] Executive role does NOT see "New Participant" button
-- [ ] Staff and receptionist roles still land on the staff landing page (unchanged)
+- [ ] Staff and receptionist roles still land on the operational dashboard (unchanged)
 
-**Screenshot reference:** `DITL-E1_step1_E1.png` — shows Eva Executive seeing "Jane Doe Safety concern noted", "James Thompson", and 10+ test client names in Priority Items.
+**Screenshot reference:** `DITL-E1_step1_E1.png` (client names visible to executive), `DITL-E1_step2_E1.png` (correct Executive Overview).
 
 **Priority:** Priority fix. PII exposure to a role that shouldn't see it.
-**Confidence:** High — screenshot clearly shows individual names on the executive's landing page.
 
 ---
 
-## BUG-6: No offline handling — blank screen when network drops
+## BUG-6: Blank Page on Network Failure — No Error or Recovery
 
-**Status:** NEW
+**Status:** NOT FIXED (identified in previous report, still present)
+**Confidence:** Medium — blank screenshots may be a Playwright rendering issue, but the app itself has zero offline handling regardless.
 
-**What's wrong:** When the network connection drops, the app shows a completely blank white screen. There is:
-- No "You're offline" message from the app
-- No service worker or cached page
-- No draft preservation in localStorage
-- No retry mechanism
-- No warning before the connection is lost
-
-Casey (DS1) works at a drop-in centre with unreliable wifi. If she's mid-note and the connection drops, she loses everything with zero warning and zero recovery.
+**What's wrong:** When the network drops during use (SCN-048), the page goes completely blank — no loading indicator, no error message, no retry button, no offline banner. Any unsaved data is silently lost. Casey works at a drop-in centre with unreliable wifi; this is a realistic and high-impact scenario.
 
 **Where to look:**
-- There is currently no offline handling to look at — this is a missing feature
-- Start with a simple approach: a JavaScript-based online/offline detector
+- HTMX error handling (`htmx:responseError`, `htmx:sendError` events)
+- Service worker (if any) for offline caching
+- Base template — no network error fallback exists currently
 
 **What "fixed" looks like (minimum viable):**
 ```javascript
-// Add to base template or a shared JS file
 window.addEventListener('offline', () => {
   document.getElementById('offline-banner').hidden = false;
 });
@@ -222,54 +251,83 @@ window.addEventListener('online', () => {
 - Show a loading spinner with timeout message on slow connections
 
 **Acceptance criteria:**
-- [ ] When the browser loses network, a visible banner appears saying "You appear to be offline"
-- [ ] The banner includes a "Try again" button
+- [ ] When the browser loses network, a visible banner appears
+- [ ] The banner includes a "Try again" / "Reload" button
 - [ ] When the network returns, the banner disappears
 - [ ] The banner uses `role="alert"` so screen readers announce it
 - [ ] No data is silently lost (at minimum, warn the user)
 
-**Screenshot reference:** `SCN-048_step3_DS1.png` and `SCN-048_step4_DS1.png` — both completely blank.
+**Screenshot reference:** `SCN-048_step3_DS1.png`, `SCN-048_step4_DS1.png` — completely blank white pages.
 
 **Priority:** Priority fix. Data loss risk for field workers with unreliable connections.
-**Confidence:** Medium — blank screenshots may be a Playwright rendering issue (Chrome normally shows its own error page), but the app itself has zero offline handling regardless.
 
 ---
 
-## BUG-3: Audit log still needs work (partially fixed)
+## BUG-7: 404 Error After Create Participant Form Submission (NEW)
+
+**Status:** NEW
+**Confidence:** High
+
+**What's wrong:** After Casey (DS1) submits the Create Participant form in SCN-010, the system returns a 404 "Page Not Found" error instead of a success page or the new participant's profile. It's unclear whether the participant was actually created — all form data may have been lost.
+
+**Where to look:**
+- Create participant form's `action` attribute or HTMX `hx-post` target
+- Post-creation redirect URL — may point to a non-existent route
+- URL generation for the new participant's profile page (possibly a slug/ID mismatch)
+
+**What "fixed" looks like:**
+
+| Before | After |
+|--------|-------|
+| Form submits → 404 error page | Form submits → redirect to new participant's profile |
+| No indication if data was saved | Success message: "Participant [Name] created successfully" |
+| User left confused | Participant visible in profile and participant list |
+
+**Acceptance criteria:**
+- [ ] Create Participant form submits without error
+- [ ] After successful creation, user is redirected to the new participant's profile
+- [ ] A success message confirms the creation (toast, banner, or inline)
+- [ ] The new participant appears in the participants list
+- [ ] If creation fails, a clear error message explains why (not a 404)
+
+**Screenshot reference:** `SCN-010_step6_DS1.png` (404 after form submission).
+
+**Priority:** Priority fix. Blocks the core participant creation workflow.
+
+---
+
+## BUG-3: Audit Log Remaining Polish
 
 **Status:** PARTIALLY FIXED (carried forward, updated)
+**Confidence:** High
 
 **What was fixed:**
-- Action badges now show "Created" and "Logged in" instead of "POST" and raw action codes
-- IP Address and Resource ID are hidden behind a "Show technical details" toggle
+- Action badges now show "Created" and "Logged in" instead of raw codes
+- IP addresses hidden behind "Show technical details" toggle
 - Column header changed from "Resource Type" to "Record type"
 
 **What's still wrong:**
-- Filter dropdowns are truncated: "All acti..." appears for both Action and Context dropdowns (labels cut off)
-- "Record type" field shows placeholder "e.g. client," — still somewhat technical
+- Filter dropdowns are truncated: "All acti..." appears for Action and Context dropdowns
 - "Auth" appears as a record type — should be "Account" or "Login"
-- No "Common searches" shortcut (e.g., "Recent exports", "Login activity")
-- Margaret still can't easily answer "Who exported client data last month?" without knowing how to use the filters
-
-**Where to look:**
-- Audit log template — fix dropdown widths or use full labels
-- Action/record type display logic — map "Auth" to "Account" or "Login"
+- 6 filter fields visible for pages with very few results (2 rows in screenshot)
+- No "Common searches" shortcuts for typical audit tasks
 
 **Acceptance criteria (remaining):**
-- [ ] Filter dropdowns are not truncated — full labels visible
+- [ ] Filter dropdowns show full text (not truncated)
 - [ ] "Auth" record type renamed to "Account" or "Login"
-- [ ] Optional: "Common searches" dropdown with pre-built filter combinations
+- [ ] Optional: Filters collapsed by default behind a "Show filters" toggle
+- [ ] Optional: Default date range (e.g., last 30 days) instead of all time
 
-**Screenshot reference:** `CAL-003_step1_E1.png` — shows truncated dropdowns and "Auth" record type.
+**Screenshot reference:** `CAL-003_step1_E1.png`.
 
 **Priority:** Review recommended (core issues fixed, these are polish).
-**Confidence:** High.
 
 ---
 
-## IMPROVE-1: Settings page state indicators (partially fixed)
+## IMPROVE-1: Settings Cards — Remaining State Indicators
 
 **Status:** PARTIALLY FIXED (carried forward, updated)
+**Confidence:** High
 
 **What was fixed:** 4 of 6 cards now show summary data:
 - Terminology: "Using defaults"
@@ -278,47 +336,81 @@ window.addEventListener('online', () => {
 - Note Templates: "1 template"
 
 **What's still missing:**
-- Instance Settings: Shows description only ("Branding, date format, and session timeout.") — no current values
-- Demo Accounts: Shows description only — no count of demo users
-
-**Where to look:**
-- Admin settings template (likely `admin/templates/admin/settings.html`)
-- The view/context for Instance Settings and Demo Accounts cards
+- Instance Settings: No current values shown (e.g., "Session timeout: 30 min")
+- Demo Accounts: No count shown (e.g., "3 demo users")
 
 **Acceptance criteria (remaining):**
-- [ ] Instance Settings card shows a summary (e.g., "Session timeout: 30 min")
-- [ ] Demo Accounts card shows a count (e.g., "3 demo users")
+- [ ] Instance Settings card shows key current values
+- [ ] Demo Accounts card shows a user count
 
 **Screenshot reference:** `CAL-002_step1_E1.png`.
 
-**Priority:** Review recommended (4 of 6 done, minor polish).
-**Confidence:** High.
+**Priority:** Review recommended (minor polish).
 
 ---
 
-## Items NOT filed as tickets (test artifacts or re-run needed)
+## IMPROVE-5: No Confirmation After Participant Creation (NEW)
 
-These appeared in the evaluation but need verification before acting.
+**Status:** NEW
+**Confidence:** Medium
+
+**What's wrong:** After creating a new participant (SCN-005 step 4), the user returns to the dashboard but there's no success confirmation. The dashboard looks identical to before creation. A new user (DS1b Casey, first week) has no idea if the participant was actually created.
+
+Note: This is separate from BUG-7 (404 error). Even when creation succeeds, there should be a visible confirmation.
+
+**Where to look:**
+- Post-create redirect handler
+- Dashboard template — add a flash/toast message slot
+- Django messages framework (likely already available)
+
+**What "fixed" looks like:**
+After successful creation:
+- A green banner: "Participant [Name] created successfully" (using Django messages)
+- OR redirect to the new participant's profile with a success toast
+- The new participant should appear in "Recently Viewed" on the dashboard
+
+**Acceptance criteria:**
+- [ ] After creating a participant, a visible success message appears
+- [ ] The message includes the participant's name
+- [ ] Message is accessible (announced by screen readers via `aria-live`)
+- [ ] The new participant appears in "Recently Viewed" on the dashboard
+
+**Screenshot reference:** `SCN-005_step4_DS1b.png` (dashboard identical after creation — no confirmation).
+
+**Priority:** Review recommended (usability polish).
+
+---
+
+## Items NOT Filed as Tickets (Likely Test Artifacts)
+
+These appeared in the evaluation but need verification before filing as bugs. Most are likely caused by the test runner environment, not real UX issues.
 
 | Finding | Why it's probably a test artifact | How to verify |
 |---------|----------------------------------|---------------|
-| SCN-047 steps 2-5: Stuck on login page | Test runner didn't submit login credentials on mobile viewport | Re-run SCN-047 with login step configured correctly |
-| SCN-010 steps 5-6: Create form not submitted / 404 | Test runner captured the form but didn't fill and submit it | Re-run SCN-010 with form submission enabled |
-| SCN-050 steps 3-7: Cascading failure | Skip link failure (BLOCKER-1) caused all downstream steps to fail | Fix BLOCKER-1 and BLOCKER-2 first, then re-run SCN-050 |
-| SCN-048 steps 3-4: Blank white screen | Playwright may not capture Chrome's offline error page | Test offline behaviour manually in a real browser |
-| SCN-005 step 4: "Recently Viewed" empty after create | Test runner may not have submitted the create form | Re-run with form submission, check if participant appears |
+| SCN-005 steps 1-2 identical screenshots | Duplicate capture — step 2 is "understand the page" (observational) | Check test runner step definitions |
+| SCN-010 steps 1-2 identical screenshots | Duplicate capture — step 2 is "correct spelling" but search term unchanged | Check if step 2 action executed |
+| SCN-047 steps 1-4 all show login page | Test runner may have failed to submit credentials at 375px viewport | Re-run SCN-047 with login step verified |
+| SCN-050 redirect loop (login → privacy → login) | Language carryover + focus issues cause cascading failures | Fix BUG-4 + BLOCKER-1/2 first, then re-run |
+| DITL-DS2 showing English instead of French | Test runner not setting `Accept-Language` before login | Re-run with explicit language header |
+| SCN-048 blank white pages | Playwright may not render Chrome's offline error page | Test offline behaviour manually in real browser |
+
+**Recommendation:** After fixing BLOCKER-1, BLOCKER-2, and BUG-4, re-run all scenarios with the isolation protocol (fresh browser context, explicit language, prerequisite checks). Many of these may resolve themselves.
 
 ---
 
-## Recommended Fix Order
+## All Active Tickets — Summary
 
-Fix in this order — each step unblocks the next:
+| ID | Severity | Description | Priority | Status |
+|----|----------|-------------|----------|--------|
+| BLOCKER-1 | BLOCKER | No skip-to-content link (WCAG 2.4.1) | Fix first | NOT FIXED |
+| BLOCKER-2 | BLOCKER | Focus goes to footer after login | Fix first | NOT FIXED |
+| BUG-3 | BUG | Audit log filter truncation and jargon | Review recommended | PARTIALLY FIXED |
+| BUG-4 | BUG | Language not tied to user account | Priority fix | NOT FIXED |
+| BUG-5 | BUG | Executive landing page exposes PII | Priority fix | NOT FIXED |
+| BUG-6 | BUG | Blank page on network failure | Priority fix | NOT FIXED |
+| BUG-7 | BUG | 404 after create participant submission | Priority fix | **NEW** |
+| IMPROVE-1 | IMPROVE | Settings cards — 2 missing indicators | Review recommended | PARTIALLY FIXED |
+| IMPROVE-5 | IMPROVE | No confirmation after participant creation | Review recommended | **NEW** |
 
-1. **BLOCKER-1 + BLOCKER-2** (skip link + focus) — unblocks all accessibility testing
-2. **BUG-5** (executive landing page) — quick redirect fix, high privacy impact
-3. **BUG-4** (language preference) — unblocks bilingual testing, prevents cross-scenario contamination
-4. **BUG-6** (offline handling) — minimum viable banner is a small change
-5. **BUG-3 remaining** (audit log polish) — cosmetic, lower priority
-6. **IMPROVE-1 remaining** (2 settings cards) — cosmetic, lower priority
-
-After fixes 1-3 are done, re-run **all scenarios** to get clean scores.
+**Total: 2 BLOCKERS | 5 BUGS | 2 IMPROVEMENTS**
+**New this round: BUG-7, IMPROVE-5**
