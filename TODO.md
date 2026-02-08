@@ -64,9 +64,44 @@ Weekly accountability reports for admins. Requires working email configuration (
 Tasks from the QA holdout repo that require code changes in this repo. Scenario data and persona definitions stay in `konote-qa-scenarios`.
 
 - [x] Automate objective scoring dimensions — axe-core for accessibility, action count for efficiency, doc lang for language. Objective scores override LLM for these 3 dimensions — 2026-02-08 (QA-T10)
-- [ ] CI/CD gate — run QA scenarios on every deploy, fail the build on any BLOCKER-band score (< 2.0), post satisfaction gap to a dashboard or PR comment. Requires scenario runner to exit with non-zero on blocker (QA-T11)
-- [ ] Track satisfaction gap over time — store historical per-persona scores, chart the gap per release, set target < 1.0 points. Could be a simple JSON log or a dashboard page (QA-T12)
-- [ ] Bidirectional ticket status — when a fix is merged in this repo, automatically update the corresponding issue status in konote-qa-scenarios. Could use GitHub Actions or a post-merge hook (QA-T14)
+- [x] CI/CD gate — GitHub Actions workflow runs scenarios on push to main, `qa_gate.py` fails build on BLOCKER scores — 2026-02-08 (QA-T11)
+- [x] Track satisfaction gap over time — `track_satisfaction.py` appends to history JSON, `chart_satisfaction.py` generates trend table, target < 1.0 gap — 2026-02-08 (QA-T12)
+- [x] Bidirectional ticket status — GitHub Actions workflow parses `QA:` in commit messages, syncs issues to konote-qa-scenarios via `gh` CLI — 2026-02-08 (QA-T14)
+
+### QA Scenario Runner Update — Full Coverage (see `tasks/qa-scenario-runner-update-plan.md`)
+
+The QA scenarios repo now has 32 scenarios, 11 personas, and 5 day-in-the-life narratives. The test runner only covers 10 scenarios in named test classes. These tasks bring it up to date.
+
+**Test Data (scenario_runner.py `_create_test_data`):**
+- [ ] Add DS1c test user (`staff_adhd`, Casey with ADHD) for SCN-058 (QA-DATA1)
+- [ ] Add DS4 test user (`staff_voice`, Riley Chen) for SCN-059 (QA-DATA2)
+- [ ] Add PM1 test user (`program_mgr`, Morgan Tremblay, cross-program) for SCN-035, SCN-042, SCN-070 (QA-DATA3)
+- [ ] Add E2 test user (`admin2`, Kwame Asante) for SCN-030 (QA-DATA4)
+- [ ] Add test clients: Benoit Tremblay (SCN-040), multi-program client (SCN-042), consent client with 5+ notes (SCN-070), batch-note client (SCN-015), phone-update client (SCN-020), lookup client (SCN-025) (QA-DATA5)
+
+**New Action Types (scenario_runner.py `_execute_actions`):**
+- [ ] `voice_command` — map Dragon "Click [text]" to Playwright click-by-text, "Go to [field]" to focus-by-label. Log intent for evaluator (QA-ACT1)
+- [ ] `dictate` — map Dragon dictation to `keyboard.type()`. Log for evaluator (QA-ACT2)
+- [ ] `intercept_network` — use `page.route()` to mock error responses (500, timeout). Needed by SCN-062 step 5 (QA-ACT3)
+- [ ] `close_tab` / `open_new_tab` — tab management for shared-device scenarios (SCN-049) (QA-ACT4)
+- [ ] `go_back` — alias for `page.go_back()`, used by SCN-025 (QA-ACT5)
+
+**New Test Classes (test_scenario_eval.py):**
+- [ ] Add CAL-004 and CAL-005 to TestCalibrationScenarios (QA-TEST1)
+- [ ] Add TestDailyScenarios: SCN-015, SCN-020, SCN-025 (QA-TEST2)
+- [ ] Add TestPeriodicScenarios: SCN-030, SCN-035 (QA-TEST3)
+- [ ] Add TestCrossRoleScenarios: SCN-040, SCN-042 (QA-TEST4)
+- [ ] Add TestEdgeCaseScenarios: SCN-045, SCN-046, SCN-049, SCN-070 (QA-TEST5)
+- [ ] Add TestAccessibilityMicro: SCN-051 through SCN-059, SCN-061, SCN-062 (QA-TEST6)
+- [ ] Add DITL-DS1 and DITL-R1 to TestDayInTheLife (QA-TEST7)
+
+**LLM Evaluator (llm_evaluator.py):**
+- [ ] Include `cognitive_load_checks` in prompt when present (QA-EVAL1)
+- [ ] Include `mechanical_checks` in prompt when present (QA-EVAL2)
+- [ ] Include `task_completion_criteria` in prompt when present (QA-EVAL3)
+
+**Optional (low priority):**
+- [ ] CAL-006 inter-rater reliability automation — run CAL-001 to CAL-005 with variant configs, compute ICC and agreement metrics (QA-IRR1)
 
 ## Roadmap — Future Extensions
 
@@ -146,6 +181,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] QA Infrastructure Phase 3 — CI/CD gate (QA-T11), satisfaction gap tracking (QA-T12), bidirectional ticket sync (QA-T14). GitHub Actions workflows, standalone scripts, JSON results serializer — 2026-02-08 (QA-T11, QA-T12, QA-T14)
 - [x] Test isolation (QA-ISO1) + objective scoring (QA-T10) — fresh context per scenario, locale from persona, auto-login, prerequisite validation, axe-core/action-count/lang objective scores override LLM — 2026-02-08 (QA-ISO1, QA-T10)
 - [x] Fix 14 pre-existing test failures + 4 errors — missing form fields, wrong assertions, missing DB declarations, template bugs, Playwright skip fix — 2026-02-07 (TEST-FIX1)
 - [x] Fix language bleed on shared browser — clear cookie on logout, set cookie on login to match user preference — 2026-02-07 (BUG-4)

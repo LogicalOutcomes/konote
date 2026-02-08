@@ -67,6 +67,16 @@ def pytest_sessionfinish(session, exitstatus):
         )
         generate_report(_all_results, output_path=report_path)
         print(f"\n\nSatisfaction report written to: {report_path}")
+
+        # Also write machine-readable JSON for qa_gate.py and track_satisfaction.py
+        try:
+            from .results_serializer import write_results_json
+
+            json_path = os.path.join(report_dir, f"{date_str}-results.json")
+            write_results_json(_all_results, json_path)
+            print(f"JSON results written to: {json_path}")
+        except Exception as exc:
+            print(f"WARNING: Could not write JSON results: {exc}")
     else:
         report_text = generate_report(_all_results)
         print("\n\n" + report_text)
