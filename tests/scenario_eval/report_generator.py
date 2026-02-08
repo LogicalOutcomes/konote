@@ -2,6 +2,9 @@
 
 Reports follow the gap-first format: headlines are about experience
 gaps between personas, not average scores.
+
+QA-T10: Reports now show objective scores alongside LLM scores,
+flagging divergences where they disagree.
 """
 from datetime import datetime
 
@@ -57,7 +60,51 @@ def generate_report(results, output_path=None):
         )
     lines.append("")
 
-    # --- Section 3: Calibration Check ---
+    # --- Section 3: Objective Scoring Summary (QA-T10) ---
+    lines.append("## Objective Scores")
+    lines.append("")
+    lines.append("Dimensions scored by measurement (not LLM): accessibility")
+    lines.append("(axe-core), efficiency (action count), language (doc lang).")
+    lines.append("")
+
+    has_objective = False
+    for r in results:
+        for e in r.step_evaluations:
+            if e.objective_scores:
+                has_objective = True
+                break
+        if has_objective:
+            break
+
+    if has_objective:
+        lines.append("| Scenario | Step | Dimension | Objective | LLM | Divergence |")
+        lines.append("|----------|------|-----------|-----------|-----|------------|")
+        for r in results:
+            for e in r.step_evaluations:
+                for dim_name, obj_score in e.objective_scores.items():
+                    if obj_score.score is None:
+                        continue
+                    llm_score = e.dimension_scores.get(dim_name)
+                    llm_val = f"{llm_score.score:.0f}" if llm_score and llm_score.score is not None else "—"
+                    obj_val = f"{obj_score.score:.0f}"
+                    # Flag significant divergence (>= 2 points)
+                    divergence = ""
+                    if llm_score and llm_score.score is not None:
+                        diff = abs(obj_score.score - llm_score.score)
+                        if diff >= 2.0:
+                            divergence = f"**{diff:.0f}pt gap**"
+                        elif diff >= 1.0:
+                            divergence = f"{diff:.0f}pt"
+                    lines.append(
+                        f"| {r.scenario_id} | {e.step_id} | {dim_name} "
+                        f"| {obj_val} | {llm_val} | {divergence} |"
+                    )
+        lines.append("")
+    else:
+        lines.append("*No objective scores recorded (axe-core may not have run).*")
+        lines.append("")
+
+    # --- Section 4: Calibration Check ---
     calibration = [r for r in results if r.scenario_id.startswith("CAL-")]
     if calibration:
         lines.append("## Calibration Check")
@@ -68,7 +115,7 @@ def generate_report(results, output_path=None):
                 lines.append(f"  - {e.persona_id}: {e.one_line_summary}")
         lines.append("")
 
-    # --- Section 4: Step-by-Step Details ---
+    # --- Section 5: Step-by-Step Details ---
     lines.append("## Step-by-Step Details")
     lines.append("")
     for r in results:
@@ -83,10 +130,17 @@ def generate_report(results, output_path=None):
             lines.append(f"**Step {e.step_id}** ({e.persona_id}) — {e.avg_dimension_score:.1f} {band_emoji(step_band)}")
             lines.append(f"  {e.one_line_summary}")
 
-            # Show dimension scores
-            for dim_name, dim_score in e.dimension_scores.items():
-                if dim_score.score is not None:
-                    lines.append(f"  - {dim_name}: {dim_score.score:.0f}/5 — {dim_score.reasoning}")
+            # Show effective dimension scores (objective overrides LLM)
+            for dim_name, dim_score in e.effective_dimension_scores.items():
+                if dim_score.score is None:
+                    continue
+                # Mark objective-sourced scores
+                source = ""
+                if dim_name in e.objective_scores:
+                    obj = e.objective_scores[dim_name]
+                    if obj.score is not None:
+                        source = " [objective]"
+                lines.append(f"  - {dim_name}: {dim_score.score:.0f}/5{source} — {dim_score.reasoning}")
 
             # Show improvement suggestions
             if e.improvement_suggestions:
@@ -97,7 +151,7 @@ def generate_report(results, output_path=None):
         lines.append("---")
         lines.append("")
 
-    # --- Section 5: Improvement Backlog ---
+    # --- Section 6: Improvement Backlog ---
     lines.append("## Improvement Backlog")
     lines.append("")
     lines.append("All suggestions from the evaluator, grouped by frequency:")

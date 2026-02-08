@@ -59,6 +59,15 @@ Weekly accountability reports for admins. Requires working email configuration (
 - [ ] Create weekly export summary email command (EXP2u)
 - [ ] Document cron/scheduled task setup in runbook (EXP2w)
 
+### QA Infrastructure (Phase 3) — from konote-qa-scenarios
+
+Tasks from the QA holdout repo that require code changes in this repo. Scenario data and persona definitions stay in `konote-qa-scenarios`.
+
+- [x] Automate objective scoring dimensions — axe-core for accessibility, action count for efficiency, doc lang for language. Objective scores override LLM for these 3 dimensions — 2026-02-08 (QA-T10)
+- [ ] CI/CD gate — run QA scenarios on every deploy, fail the build on any BLOCKER-band score (< 2.0), post satisfaction gap to a dashboard or PR comment. Requires scenario runner to exit with non-zero on blocker (QA-T11)
+- [ ] Track satisfaction gap over time — store historical per-persona scores, chart the gap per release, set target < 1.0 points. Could be a simple JSON log or a dashboard page (QA-T12)
+- [ ] Bidirectional ticket status — when a fix is merged in this repo, automatically update the corresponding issue status in konote-qa-scenarios. Could use GitHub Actions or a post-merge hook (QA-T14)
+
 ## Roadmap — Future Extensions
 
 ### Phase G: Agency Content Translation
@@ -108,6 +117,14 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 
 ## Parking Lot
 
+### QA Scenarios — Parking Lot
+
+From konote-qa-scenarios. These require test infrastructure or app features in this repo.
+
+- [ ] Stress testing — simulate 50+ concurrent users to find performance bottlenecks and connection pool limits (QA-T15)
+- [ ] Data migration scenario — test what happens when importing client data from a legacy system. Validates the Bulk Import feature (IMP1 series) once built (QA-T16)
+- [ ] Screenshot naming improvement — include page URL hash in screenshot filenames so each screenshot maps back to a specific route for easier debugging (QA-T20)
+
 ### Erasure — Deferred Execution for Tier 3
 
 - [ ] Add 24-hour delay before Tier 3 (full erasure) CASCADE delete executes — requires background task scheduler, see `tasks/erasure-hardening.md` section ERASE-H8 (ERASE-H8)
@@ -115,6 +132,10 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 ### Deployment Workflow Enhancements
 
 See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-design.md) for full details.
+
+### QA Test Isolation
+
+- [x] Test isolation for scenario runner — fresh browser context per scenario, locale from persona data, auto-login, prerequisite validation — 2026-02-08 (QA-ISO1)
 
 ### Privacy & Security
 
@@ -125,6 +146,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Test isolation (QA-ISO1) + objective scoring (QA-T10) — fresh context per scenario, locale from persona, auto-login, prerequisite validation, axe-core/action-count/lang objective scores override LLM — 2026-02-08 (QA-ISO1, QA-T10)
 - [x] Fix 14 pre-existing test failures + 4 errors — missing form fields, wrong assertions, missing DB declarations, template bugs, Playwright skip fix — 2026-02-07 (TEST-FIX1)
 - [x] Fix language bleed on shared browser — clear cookie on logout, set cookie on login to match user preference — 2026-02-07 (BUG-4)
 - [x] French translations complete — translated 93 remaining strings to Canadian French, 100% coverage (2146/2146 entries), .mo compiled, validation passed — 2026-02-07 (I18N-TRANS1)

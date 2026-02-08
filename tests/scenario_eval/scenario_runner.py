@@ -1,12 +1,21 @@
 """Execute scenario steps using Playwright and capture state.
 
 Extends BrowserTestBase from the existing UX walkthrough framework.
+
+QA-ISO1: Fresh browser context per scenario, locale from persona,
+         auto-login from persona data, prerequisite validation.
+QA-T10:  Objective scoring for accessibility, efficiency, language.
 """
+import logging
+
 from ..ux_walkthrough.browser_base import BrowserTestBase, TEST_PASSWORD
 
 from .llm_evaluator import evaluate_step, format_persona_for_prompt
+from .objective_scorer import compute_objective_scores, count_user_actions
 from .score_models import ScenarioResult, StepEvaluation
 from .state_capture import capture_step_state, capture_to_evaluation_context
+
+logger = logging.getLogger(__name__)
 
 
 def _get_moment_action(moment):
@@ -23,6 +32,41 @@ def _get_moment_action(moment):
     if evals:
         return "; ".join(evals)
     return ""
+
+
+def _get_persona_language(persona_data):
+    """Extract the expected language code from persona data.
+
+    Checks persona.language, persona.test_user.language, and falls back
+    to 'en' if not specified.
+
+    Returns:
+        Language code string, e.g. 'en', 'fr', 'en-CA', 'fr-CA'.
+    """
+    if not persona_data:
+        return "en"
+    # Direct language field
+    lang = persona_data.get("language", "")
+    if lang:
+        return lang
+    # From test_user config
+    test_user = persona_data.get("test_user", {})
+    lang = test_user.get("language", "")
+    if lang:
+        return lang
+    return "en"
+
+
+def _get_persona_username(persona_data):
+    """Extract the test username from persona data.
+
+    Returns:
+        Username string, or None if not specified.
+    """
+    if not persona_data:
+        return None
+    test_user = persona_data.get("test_user", {})
+    return test_user.get("username")
 
 
 class ScenarioRunner(BrowserTestBase):
@@ -121,16 +165,23 @@ class ScenarioRunner(BrowserTestBase):
                 client_file=james, program=self.program_a,
             )
 
-    def _setup_context_for_scenario(self, scenario):
-        """Create a browser context configured for the scenario's prerequisites.
+    # ------------------------------------------------------------------
+    # QA-ISO1: Fresh context per scenario with locale from persona
+    # ------------------------------------------------------------------
 
-        Reads device/accessibility settings from the scenario YAML and creates
-        a context with the appropriate viewport, touch emulation, forced colours,
-        and locale settings.
+    def _setup_context_for_scenario(self, scenario, personas=None):
+        """Always create a fresh browser context for this scenario.
+
+        QA-ISO1 fix: Previously only created a new context when there were
+        device/a11y prerequisites. Now ALWAYS creates a fresh context to
+        prevent cookie/session/language bleed between scenarios.
+
+        Reads locale from persona data (not just prerequisites), and sets
+        Accept-Language headers to match the persona's language.
         """
         prereqs = scenario.get("prerequisites", {})
         device = prereqs.get("device", {})
-        config = prereqs.get("config", [])
+        personas = personas or self.personas or {}
 
         context_kwargs = {}
 
@@ -153,20 +204,108 @@ class ScenarioRunner(BrowserTestBase):
             if a11y.get("high_contrast"):
                 context_kwargs["forced_colors"] = "active"
 
-        # French locale for bilingual scenarios
-        for user in users:
-            if user.get("language") == "fr" or user.get("username") == "staff_fr":
-                context_kwargs["locale"] = "fr-CA"
-                context_kwargs["extra_http_headers"] = {
-                    "Accept-Language": "fr-CA,fr;q=0.9,en;q=0.1"
-                }
+        # Locale from persona data (QA-ISO1: use persona as source of truth)
+        persona_id = scenario.get("persona", "")
+        persona_data = personas.get(persona_id, {})
+        persona_lang = _get_persona_language(persona_data)
 
-        # Close existing context and create a new one with settings
-        if context_kwargs:
-            self.page.close()
-            self._context.close()
-            self._context = self._browser.new_context(**context_kwargs)
-            self.page = self._context.new_page()
+        # Also check prerequisites users for explicit language override
+        for user in users:
+            user_lang = user.get("language", "")
+            if user_lang:
+                persona_lang = user_lang
+
+        # Set locale and Accept-Language header from persona language
+        if persona_lang.startswith("fr"):
+            locale_code = "fr-CA"
+            accept_lang = "fr-CA,fr;q=0.9,en;q=0.1"
+        else:
+            locale_code = "en-CA"
+            accept_lang = "en-CA,en;q=0.9"
+
+        context_kwargs["locale"] = locale_code
+        context_kwargs["extra_http_headers"] = {
+            "Accept-Language": accept_lang,
+        }
+
+        # Always close existing context and create a fresh one
+        self.page.close()
+        self._context.close()
+        self._context = self._browser.new_context(**context_kwargs)
+        self.page = self._context.new_page()
+
+    # ------------------------------------------------------------------
+    # QA-ISO1: Auto-login from persona data
+    # ------------------------------------------------------------------
+
+    def _auto_login_for_scenario(self, scenario, personas=None):
+        """Auto-login using the scenario's persona test_user.
+
+        If the scenario has a top-level `persona` field and that persona
+        has a `test_user.username`, log in automatically before steps.
+
+        Returns:
+            The username that was logged in, or None if no auto-login.
+        """
+        personas = personas or self.personas or {}
+        persona_id = scenario.get("persona", "")
+        if not persona_id:
+            return None
+
+        persona_data = personas.get(persona_id, {})
+        username = _get_persona_username(persona_data)
+        if not username:
+            return None
+
+        self.login_via_browser(username)
+        return username
+
+    # ------------------------------------------------------------------
+    # QA-ISO1: Prerequisite validation
+    # ------------------------------------------------------------------
+
+    def _validate_prerequisites(self, scenario):
+        """Check that required data exists before running a scenario.
+
+        Reads prerequisites.data from the scenario YAML and verifies
+        each requirement. Fails fast with a clear message if missing.
+        """
+        prereqs = scenario.get("prerequisites", {})
+        required_data = prereqs.get("data", [])
+
+        for requirement in required_data:
+            req_type = requirement.get("type", "")
+            req_name = requirement.get("name", "")
+
+            if req_type == "client":
+                from apps.clients.models import ClientFile
+                # Encrypted field — must check in Python
+                found = any(
+                    c.first_name == req_name
+                    for c in ClientFile.objects.all()
+                )
+                if not found:
+                    self.fail(
+                        f"PREREQUISITE MISSING: Client '{req_name}' not "
+                        f"found. Seed demo data or run the setup scenario "
+                        f"first. (Scenario: {scenario['id']})"
+                    )
+
+            elif req_type == "user":
+                from apps.auth_app.models import User
+                if not User.objects.filter(username=req_name).exists():
+                    self.fail(
+                        f"PREREQUISITE MISSING: User '{req_name}' not "
+                        f"found. (Scenario: {scenario['id']})"
+                    )
+
+            elif req_type == "program":
+                from apps.programs.models import Program
+                if not Program.objects.filter(name=req_name).exists():
+                    self.fail(
+                        f"PREREQUISITE MISSING: Program '{req_name}' not "
+                        f"found. (Scenario: {scenario['id']})"
+                    )
 
     def _seed_bulk_clients(self, count=150):
         """Create many active clients for executive dashboard scenarios.
@@ -194,8 +333,15 @@ class ScenarioRunner(BrowserTestBase):
                 client_file=client, program=program,
             )
 
+    # ------------------------------------------------------------------
+    # Scenario execution
+    # ------------------------------------------------------------------
+
     def run_scenario(self, scenario, personas=None, screenshot_dir=None):
         """Execute a full scenario and return a ScenarioResult.
+
+        QA-ISO1: Fresh context, auto-login, prerequisite validation.
+        QA-T10: Objective scores computed alongside LLM evaluation.
 
         Args:
             scenario: Parsed scenario dict from YAML.
@@ -207,8 +353,19 @@ class ScenarioRunner(BrowserTestBase):
         """
         personas = personas or self.personas or {}
 
-        # Configure browser context from scenario prerequisites
-        self._setup_context_for_scenario(scenario)
+        # QA-ISO1: Fresh browser context with locale from persona
+        self._setup_context_for_scenario(scenario, personas)
+
+        # QA-ISO1: Validate prerequisites before running
+        self._validate_prerequisites(scenario)
+
+        # QA-ISO1: Auto-login from persona data
+        current_user = self._auto_login_for_scenario(scenario, personas)
+
+        # Resolve expected language for objective scoring (QA-T10)
+        persona_id = scenario.get("persona", "")
+        persona_data = personas.get(persona_id, {})
+        expected_lang = _get_persona_language(persona_data)
 
         result = ScenarioResult(
             scenario_id=scenario["id"],
@@ -216,12 +373,15 @@ class ScenarioRunner(BrowserTestBase):
         )
 
         steps = scenario.get("steps", [])
-        current_user = None
         context_chain = []  # Accumulate context from previous steps
 
         for step in steps:
             step_id = step.get("id", 0)
-            actor = step.get("actor", scenario.get("persona", ""))
+            actor = step.get("actor", persona_id)
+
+            # Resolve this step's actor persona language for scoring
+            actor_data = personas.get(actor, persona_data)
+            step_expected_lang = _get_persona_language(actor_data)
 
             # Handle login / user switching
             actions = step.get("actions", [])
@@ -248,6 +408,13 @@ class ScenarioRunner(BrowserTestBase):
                 run_axe_fn=self.run_axe if hasattr(self, "run_axe") else None,
             )
 
+            # QA-T10: Compute objective scores
+            objective_scores = compute_objective_scores(
+                capture=capture,
+                actions=actions,
+                expected_lang=step_expected_lang,
+            )
+
             # Build context chain for cross-step evaluation
             prev_context = step.get("context_from_previous", "")
             if not prev_context and context_chain:
@@ -255,8 +422,7 @@ class ScenarioRunner(BrowserTestBase):
 
             # LLM evaluation (if enabled)
             if self.use_llm:
-                persona_data = personas.get(actor, {})
-                persona_desc = format_persona_for_prompt(persona_data)
+                persona_desc = format_persona_for_prompt(actor_data)
                 page_state_text = capture_to_evaluation_context(capture)
 
                 evaluation = evaluate_step(
@@ -268,14 +434,16 @@ class ScenarioRunner(BrowserTestBase):
                 if evaluation:
                     evaluation.scenario_id = scenario["id"]
                     evaluation.persona_id = actor
+                    evaluation.objective_scores = objective_scores
                     result.step_evaluations.append(evaluation)
             else:
-                # Dry-run mode — record capture info without LLM scoring
+                # Dry-run mode — record objective scores without LLM
                 placeholder = StepEvaluation(
                     scenario_id=scenario["id"],
                     step_id=step_id,
                     persona_id=actor,
                     one_line_summary=f"[DRY RUN] Captured: {capture.url}",
+                    objective_scores=objective_scores,
                 )
                 result.step_evaluations.append(placeholder)
 
@@ -300,7 +468,9 @@ class ScenarioRunner(BrowserTestBase):
         The LLM gets the full narrative context plus the page captures.
         """
         personas = personas or self.personas or {}
-        self._setup_context_for_scenario(scenario)
+
+        # QA-ISO1: Fresh context with locale from persona
+        self._setup_context_for_scenario(scenario, personas)
 
         result = ScenarioResult(
             scenario_id=scenario["id"],
@@ -316,6 +486,7 @@ class ScenarioRunner(BrowserTestBase):
         persona_data = personas.get(persona_id, {})
         test_user = persona_data.get("test_user", {})
         username = test_user.get("username", "staff")
+        expected_lang = _get_persona_language(persona_data)
 
         self.login_via_browser(username)
 
@@ -338,6 +509,13 @@ class ScenarioRunner(BrowserTestBase):
                 actor_persona=persona_id,
                 screenshot_dir=screenshot_dir,
                 run_axe_fn=self.run_axe if hasattr(self, "run_axe") else None,
+            )
+
+            # QA-T10: Objective scores (no actions for narrative pages)
+            objective_scores = compute_objective_scores(
+                capture=capture,
+                actions=None,
+                expected_lang=expected_lang,
             )
 
             if self.use_llm:
@@ -380,6 +558,7 @@ class ScenarioRunner(BrowserTestBase):
                 if evaluation:
                     evaluation.scenario_id = scenario["id"]
                     evaluation.persona_id = persona_id
+                    evaluation.objective_scores = objective_scores
                     result.step_evaluations.append(evaluation)
             else:
                 placeholder = StepEvaluation(
@@ -387,6 +566,7 @@ class ScenarioRunner(BrowserTestBase):
                     step_id=len(result.step_evaluations) + 1,
                     persona_id=persona_id,
                     one_line_summary=f"[DRY RUN] DITL capture: {capture.url}",
+                    objective_scores=objective_scores,
                 )
                 result.step_evaluations.append(placeholder)
 

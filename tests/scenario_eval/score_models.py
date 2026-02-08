@@ -43,11 +43,28 @@ class StepEvaluation:
     one_line_summary: str = ""
     improvement_suggestions: list = field(default_factory=list)
 
+    # Objective scores override LLM scores for measurable dimensions
+    objective_scores: dict = field(default_factory=dict)  # dimension -> DimensionScore
+
+    @property
+    def effective_dimension_scores(self):
+        """Dimension scores with objective overrides applied.
+
+        For dimensions where an objective score exists (accessibility,
+        efficiency, language), use the objective score instead of the
+        LLM's subjective score. For all other dimensions, use the LLM score.
+        """
+        merged = dict(self.dimension_scores)
+        for dim, obj_score in self.objective_scores.items():
+            if obj_score.score is not None:
+                merged[dim] = obj_score
+        return merged
+
     @property
     def avg_dimension_score(self):
-        """Average across all scored dimensions (skip None/N/A)."""
+        """Average across all scored dimensions, preferring objective scores."""
         scores = [
-            ds.score for ds in self.dimension_scores.values()
+            ds.score for ds in self.effective_dimension_scores.values()
             if ds.score is not None
         ]
         return mean(scores) if scores else 0.0
