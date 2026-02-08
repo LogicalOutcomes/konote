@@ -4,6 +4,50 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Completed 2026-02-08
+
+### Scenario Evaluation Fixes (from `qa/2026-02-08-improvement-tickets.md`)
+
+- [x] Skip-to-content link — improved CSS, added `clip-path` for robustness — 2026-02-08 (BLOCKER-1)
+- [x] Focus after login — JS auto-focuses `<main>` on page load — 2026-02-08 (BLOCKER-2)
+- [x] Executive redirect — `_login_redirect()` sends executives to aggregate dashboard — 2026-02-08 (BUG-5)
+- [x] Language preference — moved middleware after auth, overrides cookie with user profile — 2026-02-08 (BUG-4)
+- [x] Offline banner — `role="alert"` banner with "Try again" button — 2026-02-08 (BUG-6)
+- [x] Audit log "Auth" → "Account", filter grid widened — 2026-02-08 (BUG-3b)
+- [x] Settings cards — all 6 now show summary stats — 2026-02-08 (IMPROVE-1b)
+- [x] Search "no results" shows correct empty state — 2026-02-07 (BUG-1)
+- [x] Create buttons hidden for roles without permission — 2026-02-07 (BUG-2)
+- [x] Audit log badges show "Created"/"Logged in", IP hidden behind toggle — 2026-02-07 (BUG-3)
+- [x] Pre-select program when user has only one — 2026-02-07 (IMPROVE-2)
+- [x] 403 page warmer language — 2026-02-07 (IMPROVE-3)
+- [x] Dashboard "last updated" timestamp — 2026-02-07 (IMPROVE-4)
+- [x] 4 of 6 settings cards now show summary stats — 2026-02-07 (IMPROVE-1)
+
+### QA Infrastructure Phase 3 (from konote-qa-scenarios)
+
+- [x] Automate objective scoring dimensions — axe-core for accessibility, action count for efficiency, doc lang for language — 2026-02-08 (QA-T10)
+- [x] CI/CD gate — GitHub Actions workflow runs scenarios on push to main, `qa_gate.py` fails build on BLOCKER scores — 2026-02-08 (QA-T11)
+- [x] Track satisfaction gap over time — `track_satisfaction.py` appends to history JSON, `chart_satisfaction.py` generates trend table — 2026-02-08 (QA-T12)
+- [x] Bidirectional ticket status — GitHub Actions workflow parses `QA:` in commit messages — 2026-02-08 (QA-T14)
+- [x] Test isolation for scenario runner — fresh browser context per scenario, locale from persona data, auto-login — 2026-02-08 (QA-ISO1)
+- [x] Screenshot naming improvement — URL slug appended to filenames for route traceability — 2026-02-08 (QA-T20)
+- [x] CAL-006 inter-rater reliability automation — runs CAL-001 to CAL-005 with variant configs, computes ICC(2,1) — 2026-02-08 (QA-IRR1)
+
+### QA Scenario Runner — Full Coverage
+
+- [x] Add 4 test users: DS1c (Casey/ADHD), DS4 (Riley/voice), PM1 (Morgan/cross-program), E2 (Kwame/admin) — 2026-02-08 (QA-DATA1-4)
+- [x] Add 6 test clients: Benoit, Sofia, Priya, Li Wei, Fatima, Derek — 2026-02-08 (QA-DATA5)
+- [x] 5 new action types: voice_command, dictate, intercept_network, close/open tab, go_back/screenshot — 2026-02-08 (QA-ACT1-5)
+- [x] 7 new test classes covering 22 scenarios (daily, periodic, cross-role, edge case, accessibility, DITL) — 2026-02-08 (QA-TEST1-7)
+- [x] LLM evaluator prompt enhancements: cognitive_load_checks, mechanical_checks, task_completion_criteria — 2026-02-08 (QA-EVAL1-3)
+
+### Moved from Recently Done (2026-02-08 cleanup)
+
+- [x] Demo site setup — merged to main, registration link seeded, GitHub Pages verified, live demo tested — 2026-02-07 (DEMO1-4)
+- [x] CONF9 follow-ups — logger.exception() for audit, flash message on context switch, request-level cache for needs_program_selector, soft-filter vs hard-boundary docs — 2026-02-07 (CONF9a-d)
+
+---
+
 ## Completed 2026-02-07
 
 ### Moved from Recently Done (2026-02-07 cleanup #3)
