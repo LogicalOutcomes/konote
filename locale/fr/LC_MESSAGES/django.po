@@ -7382,10 +7382,14 @@ msgstr ""
 "Vous ne pouvez voir que les %(clients)s dans les %(progs)s auxquels vous "
 "êtes affecté"
 
-msgid "You have access to %(strong_open)s%(count)s%(strong_close)s client record."
-msgid_plural "You have access to %(strong_open)s%(count)s%(strong_close)s client records."
-msgstr[0] "Vous avez accès à %(strong_open)s%(count)s%(strong_close)s dossier client."
-msgstr[1] "Vous avez accès à %(strong_open)s%(count)s%(strong_close)s dossiers clients."
+msgid ""
+"You have access to %(strong_open)s%(count)s%(strong_close)s client record."
+msgid_plural ""
+"You have access to %(strong_open)s%(count)s%(strong_close)s client records."
+msgstr[0] ""
+"Vous avez accès à %(strong_open)s%(count)s%(strong_close)s dossier client."
+msgstr[1] ""
+"Vous avez accès à %(strong_open)s%(count)s%(strong_close)s dossiers clients."
 
 msgid ""
 "You may have a different role depending on which %(prog)s you are working "
@@ -7440,3 +7444,298 @@ msgid "%(counter)s elevated export is pending review"
 msgid_plural "%(counter)s elevated exports are pending review"
 msgstr[0] "%(counter)s exportation élevée est en attente de révision"
 msgstr[1] "%(counter)s exportations élevées sont en attente de révision"
+
+msgid "Achieved"
+msgstr "Atteint"
+
+msgid "Achievement Rate"
+msgstr "Taux de réussite"
+
+msgid "Achievement by Metric"
+msgstr "Réussite par indicateur"
+
+msgid "Age Demographics"
+msgstr "Démographie par âge"
+
+msgid "Age Group"
+msgstr "Groupe d’âge"
+
+msgid "CLIENT INFORMATION"
+msgstr "INFORMATIONS SUR LE CLIENT"
+
+msgid "CUSTOM FIELDS"
+msgstr "CHAMPS PERSONNALISÉS"
+
+msgid "Cancel Note"
+msgstr "Annuler la note"
+
+msgid "Client Record ID"
+msgstr "Identifiant du dossier client"
+
+msgid "Clients Achieving Target:"
+msgstr "Clients ayant atteint la cible :"
+
+msgid "Clients Measured:"
+msgstr "Clients mesurés :"
+
+msgid "Clients Met Target"
+msgstr "Clients ayant atteint la cible"
+
+msgid "Clients Met at Least One Target"
+msgstr "Clients ayant atteint au moins une cible"
+
+msgid "Clients with Data"
+msgstr "Clients avec des données"
+
+msgid "Content"
+msgstr "Contenu"
+
+msgid "Data Points"
+msgstr "Points de données"
+
+msgid "Data Retention Alert"
+msgstr "Alerte de conservation des données"
+
+msgid "Days Overdue"
+msgstr "Jours de retard"
+
+msgid "Determine if an erasure request should be initiated"
+msgstr "Déterminer si une demande d’effacement devrait être initiée"
+
+msgid "Draft Template:"
+msgstr "Modèle de brouillon :"
+
+msgid "EVENTS"
+msgstr "ÉVÉNEMENTS"
+
+msgid "Follow your organisation's data retention policy"
+msgstr "Suivre la politique de conservation des données de votre organisme"
+
+msgid "Funder Report"
+msgstr "Rapport au bailleur de fonds"
+
+msgid "Grouped By"
+msgstr "Regroupé par"
+
+msgid "Indicator Name"
+msgstr "Nom de l’indicateur"
+
+msgid "METRIC PROGRESS"
+msgstr "PROGRÈS DES INDICATEURS"
+
+msgid "Measured"
+msgstr "Mesuré"
+
+msgid "Metric Data"
+msgstr "Données des indicateurs"
+
+msgid "Metric Name"
+msgstr "Nom de l’indicateur"
+
+msgid "Metrics Included"
+msgstr "Indicateurs inclus"
+
+msgid "N/A"
+msgstr "S. O."
+
+msgid "New Clients This Period"
+msgstr "Nouveaux clients cette période"
+
+msgid "New Note"
+msgstr "Nouvelle note"
+
+msgid "Next Steps"
+msgstr "Prochaines étapes"
+
+msgid "No outcome indicators with targets defined for this programme."
+msgstr ""
+"Aucun indicateur de résultats avec des cibles définies pour ce programme."
+
+msgid "No target defined"
+msgstr "Aucune cible définie"
+
+msgid "Organisation Information"
+msgstr "Informations sur l’organisme"
+
+msgid "Organisation Name"
+msgstr "Nom de l’organisme"
+
+msgid "Outcome Achievement Rates"
+msgstr "Taux d’atteinte des résultats"
+
+msgid "Outcome Indicators"
+msgstr "Indicateurs de résultats"
+
+msgid "Overall Achievement Rate"
+msgstr "Taux de réussite global"
+
+msgid "Overall Summary"
+msgstr "Résumé général"
+
+msgid "PLAN SECTIONS & TARGETS"
+msgstr "SECTIONS DU PLAN ET CIBLES"
+
+msgid "PROGRAMME ENROLMENTS"
+msgstr "INSCRIPTIONS AUX PROGRAMMES"
+
+msgid "PROGRESS NOTES"
+msgstr "NOTES DE PROGRÈS"
+
+msgid "Percentage"
+msgstr "Pourcentage"
+
+msgid "Plan Sections & Targets"
+msgstr "Sections du plan et cibles"
+
+msgid "Please select a client or enter a name, not both."
+msgstr "Veuillez sélectionner un client ou saisir un nom, mais pas les deux."
+
+msgid "Primary Outcome"
+msgstr "Résultat principal"
+
+msgid "Privacy Officer:"
+msgstr "Responsable de la confidentialité :"
+
+msgid "Programme Description"
+msgstr "Description du programme"
+
+msgid "Programme/Service Name"
+msgstr "Nom du programme ou service"
+
+msgid "Programmes"
+msgstr "Programmes"
+
+msgid "Progress Report"
+msgstr "Rapport de progrès"
+
+msgid "Range: "
+msgstr "Plage : "
+
+msgid "Recent Events"
+msgstr "Événements récents"
+
+msgid "Recent Progress Notes"
+msgstr "Notes de progrès récentes"
+
+msgid "Reporting Period"
+msgstr "Période de déclaration"
+
+msgid "Review each record in the system"
+msgstr "Réviser chaque dossier dans le système"
+
+msgid "Secondary Outcomes"
+msgstr "Résultats secondaires"
+
+msgid "Service Statistics"
+msgstr "Statistiques de service"
+
+msgid "Start date and time is required."
+msgstr "La date et l’heure de début sont requises."
+
+msgid "Start date is required for all-day events."
+msgstr ""
+"La date de début est requise pour les événements d’une journée entière."
+
+msgid "Target Value"
+msgstr "Valeur cible"
+
+msgid "Target:"
+msgstr "Cible :"
+
+msgid "This report was generated using KoNote2's Funder Report Template."
+msgstr ""
+"Ce rapport a été généré à l’aide du modèle de rapport au bailleur de fonds "
+"de KoNote2."
+
+msgid "Toggle on to hide time fields and record date only."
+msgstr "Activer pour masquer les champs d’heure et n’enregistrer que la date."
+
+msgid "Total Individuals Served"
+msgstr "Total des personnes desservies"
+
+msgid "Total Service Contacts"
+msgstr "Total des contacts de service"
+
+msgid "Value must be at least %(min_value)s."
+msgstr "La valeur doit être d’au moins %(min_value)s."
+
+msgid "Value must be at most %(max_value)s."
+msgstr "La valeur doit être d’au plus %(max_value)s."
+
+msgid ""
+"Verify this format matches your funder's requirements before submission."
+msgstr ""
+"Vérifiez que ce format correspond aux exigences de votre bailleur de fonds "
+"avant la soumission."
+
+msgid ""
+"Verify this format matches your funder's specific requirements before "
+"submission."
+msgstr ""
+"Vérifiez que ce format correspond aux exigences spécifiques de votre "
+"bailleur de fonds avant la soumission."
+
+msgid "1 hour ago"
+msgstr "il y a 1 heure"
+
+msgid "1 minute ago"
+msgstr "il y a 1 minute"
+
+msgid "A server error occurred. Please try again later."
+msgstr "Une erreur de serveur est survenue. Veuillez réessayer plus tard."
+
+msgid "Could not connect to the server. Check your internet connection."
+msgstr ""
+"Impossible de se connecter au serveur. Vérifiez votre connexion Internet."
+
+msgid "Discard"
+msgstr "Supprimer"
+
+msgid "Dismiss message"
+msgstr "Fermer le message"
+
+msgid "Draft found"
+msgstr "Brouillon trouvé"
+
+msgid "Draft restored"
+msgstr "Brouillon restauré"
+
+msgid "Restore draft"
+msgstr "Restaurer le brouillon"
+
+msgid "Saving…"
+msgstr "Enregistrement…"
+
+msgid "Something went wrong. Please try again."
+msgstr "Une erreur est survenue. Veuillez réessayer."
+
+msgid "The requested item was not found."
+msgstr "L’élément demandé est introuvable."
+
+msgid "You do not have permission to view audit logs for this program."
+msgstr ""
+"Vous n’avez pas la permission de consulter les journaux de vérification de "
+"ce programme."
+
+msgid "You don't have permission to do that."
+msgstr "Vous n’avez pas la permission d’effectuer cette action."
+
+msgid "You have unsaved changes. Are you sure you want to leave?"
+msgstr ""
+"Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir "
+"quitter ?"
+
+msgid "You have unsaved work from {time}."
+msgstr "Vous avez du travail non enregistré datant de {time}."
+
+msgid "earlier"
+msgstr "plus tôt"
+
+msgid "just now"
+msgstr "à l’instant"
+
+msgid "{n} hours ago"
+msgstr "il y a {n} heures"
+
+msgid "{n} minutes ago"
+msgstr "il y a {n} minutes"

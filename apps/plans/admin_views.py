@@ -2,11 +2,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
-from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 
+from apps.auth_app.decorators import admin_required
 from apps.clients.models import ClientFile
+from apps.clients.views import get_client_queryset
 from apps.plans.admin_forms import (
     PlanTemplateForm,
     PlanTemplateSectionForm,
@@ -21,35 +22,22 @@ from apps.plans.models import (
 )
 
 
-def _admin_required(request):
-    """Return a 403 response if the user is not an admin, else None."""
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied.")
-    return None
-
-
 # ---------------------------------------------------------------------------
 # PLAN4 — Template CRUD
 # ---------------------------------------------------------------------------
 
 @login_required
+@admin_required
 def template_list(request):
     """List all plan templates."""
-    denied = _admin_required(request)
-    if denied:
-        return denied
-
     templates = PlanTemplate.objects.prefetch_related("sections").all()
     return render(request, "plans/template_list.html", {"templates": templates})
 
 
 @login_required
+@admin_required
 def template_create(request):
     """Create a new plan template."""
-    denied = _admin_required(request)
-    if denied:
-        return denied
-
     if request.method == "POST":
         form = PlanTemplateForm(request.POST)
         if form.is_valid():
@@ -66,12 +54,9 @@ def template_create(request):
 
 
 @login_required
+@admin_required
 def template_edit(request, template_id):
     """Edit an existing plan template."""
-    denied = _admin_required(request)
-    if denied:
-        return denied
-
     template = get_object_or_404(PlanTemplate, pk=template_id)
 
     if request.method == "POST":
@@ -91,12 +76,9 @@ def template_edit(request, template_id):
 
 
 @login_required
+@admin_required
 def template_detail(request, template_id):
     """Show a template with its sections and targets."""
-    denied = _admin_required(request)
-    if denied:
-        return denied
-
     template = get_object_or_404(
         PlanTemplate.objects.prefetch_related("sections__targets"),
         pk=template_id,
@@ -107,12 +89,9 @@ def template_detail(request, template_id):
 # --- Template sections ---
 
 @login_required
+@admin_required
 def template_section_create(request, template_id):
     """Add a section to a template."""
-    denied = _admin_required(request)
-    if denied:
-        return denied
-
     template = get_object_or_404(PlanTemplate, pk=template_id)
 
     if request.method == "POST":
@@ -134,12 +113,9 @@ def template_section_create(request, template_id):
 
 
 @login_required
+@admin_required
 def template_section_edit(request, section_id):
     """Edit a template section."""
-    denied = _admin_required(request)
-    if denied:
-        return denied
-
     section = get_object_or_404(PlanTemplateSection, pk=section_id)
     template = section.plan_template
 
@@ -161,12 +137,9 @@ def template_section_edit(request, section_id):
 
 
 @login_required
+@admin_required
 def template_section_delete(request, section_id):
     """Delete a template section after POST confirmation."""
-    denied = _admin_required(request)
-    if denied:
-        return denied
-
     section = get_object_or_404(PlanTemplateSection, pk=section_id)
     template = section.plan_template
 
@@ -185,12 +158,9 @@ def template_section_delete(request, section_id):
 # --- Template targets ---
 
 @login_required
+@admin_required
 def template_target_create(request, section_id):
     """Add a target to a template section."""
-    denied = _admin_required(request)
-    if denied:
-        return denied
-
     section = get_object_or_404(PlanTemplateSection, pk=section_id)
     template = section.plan_template
 
@@ -214,12 +184,9 @@ def template_target_create(request, section_id):
 
 
 @login_required
+@admin_required
 def template_target_edit(request, target_id):
     """Edit a template target."""
-    denied = _admin_required(request)
-    if denied:
-        return denied
-
     target = get_object_or_404(PlanTemplateTarget, pk=target_id)
     section = target.template_section
     template = section.plan_template
@@ -243,12 +210,9 @@ def template_target_edit(request, target_id):
 
 
 @login_required
+@admin_required
 def template_target_delete(request, target_id):
     """Delete a template target after POST confirmation."""
-    denied = _admin_required(request)
-    if denied:
-        return denied
-
     target = get_object_or_404(PlanTemplateTarget, pk=target_id)
     section = target.template_section
     template = section.plan_template
@@ -270,13 +234,11 @@ def template_target_delete(request, target_id):
 # ---------------------------------------------------------------------------
 
 @login_required
+@admin_required
 def template_apply_list(request, client_id):
     """Show active templates that can be applied to a client."""
-    denied = _admin_required(request)
-    if denied:
-        return denied
-
-    client_file = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client_file = get_object_or_404(base_queryset, pk=client_id)
     templates = PlanTemplate.objects.filter(status="active").prefetch_related("sections__targets")
 
     return render(request, "plans/template_apply.html", {
@@ -286,16 +248,14 @@ def template_apply_list(request, client_id):
 
 
 @login_required
+@admin_required
 def template_apply(request, client_id, template_id):
     """Apply a template to a client — copies sections and targets."""
-    denied = _admin_required(request)
-    if denied:
-        return denied
-
     if request.method != "POST":
         return redirect("plan_templates:template_apply_list", client_id=client_id)
 
-    client_file = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client_file = get_object_or_404(base_queryset, pk=client_id)
     template = get_object_or_404(
         PlanTemplate.objects.prefetch_related("sections__targets"),
         pk=template_id,

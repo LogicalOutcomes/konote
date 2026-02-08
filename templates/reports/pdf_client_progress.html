@@ -1,45 +1,46 @@
 {% extends "reports/pdf_base.html" %}
+{% load i18n %}
 
-{% block title %}Progress Report — {{ client.first_name }} {{ client.last_name }}{% endblock %}
+{% block title %}{% blocktrans with first=client.first_name last=client.last_name %}Progress Report — {{ first }} {{ last }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
 <!-- Cover Page -->
 <div class="pdf-cover">
-    <h1>Progress Report</h1>
+    <h1>{% trans "Progress Report" %}</h1>
     <div class="subtitle">{{ client.first_name }} {{ client.last_name }}</div>
     <div class="meta">
-        {% if client.record_id %}Record ID: {{ client.record_id }}<br>{% endif %}
-        Generated {{ generated_at|date:"Y-m-d" }} by {{ generated_by }}
+        {% if client.record_id %}{% blocktrans with rid=client.record_id %}Record ID: {{ rid }}{% endblocktrans %}<br>{% endif %}
+        {% blocktrans with date=generated_at|date:"Y-m-d" author=generated_by %}Generated {{ date }} by {{ author }}{% endblocktrans %}
     </div>
 </div>
 
 <!-- Client Information -->
-<h2>Client Information</h2>
+<h2>{% trans "Client Information" %}</h2>
 <dl>
-    <dt>Name</dt>
+    <dt>{% trans "Name" %}</dt>
     <dd>{{ client.first_name }} {{ client.last_name }}{% if client.middle_name %} ({{ client.middle_name }}){% endif %}</dd>
     {% if client.record_id %}
-    <dt>Record ID</dt>
+    <dt>{% trans "Record ID" %}</dt>
     <dd>{{ client.record_id }}</dd>
     {% endif %}
     {% if client.birth_date %}
-    <dt>Date of Birth</dt>
+    <dt>{% trans "Date of Birth" %}</dt>
     <dd>{{ client.birth_date }}</dd>
     {% endif %}
-    <dt>Status</dt>
+    <dt>{% trans "Status" %}</dt>
     <dd>
         {% if client.status == "active" %}
-            <span class="badge badge-success">Active</span>
+            <span class="badge badge-success">{% trans "Active" %}</span>
         {% elif client.status == "inactive" %}
-            <span class="badge badge-warning">Inactive</span>
+            <span class="badge badge-warning">{% trans "Inactive" %}</span>
         {% else %}
-            <span class="badge badge-neutral">Discharged</span>
+            <span class="badge badge-neutral">{% trans "Discharged" %}</span>
         {% endif %}
     </dd>
 </dl>
 
 {% if enrolments %}
-<h3>Programme Enrolments</h3>
+<h3>{% trans "Programme Enrolments" %}</h3>
 <ul class="enrolment-list">
     {% for e in enrolments %}
     <li>{{ e.program.name }}</li>
@@ -49,7 +50,7 @@
 
 <!-- Plan Sections & Targets -->
 {% if sections %}
-<h2>Plan Sections &amp; Targets</h2>
+<h2>{% trans "Plan Sections & Targets" %}</h2>
 {% for section in sections %}
 <div class="avoid-break">
     <h3>{{ section.name }}</h3>
@@ -66,24 +67,24 @@
 <!-- Metric Progress -->
 {% if metric_tables %}
 <div class="page-break"></div>
-<h2>Metric Progress</h2>
+<h2>{% trans "Metric Progress" %}</h2>
 {% for table in metric_tables %}
 <div class="avoid-break">
     <h3>{{ table.target_name }} — {{ table.metric_name }}</h3>
     {% if table.unit %}
     <div class="metric-summary">
-        Unit: {{ table.unit }}
-        {% if table.min_value != None %} · Min: {{ table.min_value }}{% endif %}
-        {% if table.max_value != None %} · Max: {{ table.max_value }}{% endif %}
-        · {{ table.rows|length }} measurement{{ table.rows|length|pluralize }}
+        {% blocktrans with unit=table.unit %}Unit: {{ unit }}{% endblocktrans %}
+        {% if table.min_value != None %} · {% blocktrans with val=table.min_value %}Min: {{ val }}{% endblocktrans %}{% endif %}
+        {% if table.max_value != None %} · {% blocktrans with val=table.max_value %}Max: {{ val }}{% endblocktrans %}{% endif %}
+        · {% blocktrans count counter=table.rows|length %}{{ counter }} measurement{% plural %}{{ counter }} measurements{% endblocktrans %}
     </div>
     {% endif %}
     <table>
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Value</th>
-                <th>Author</th>
+                <th scope="col">{% trans "Date" %}</th>
+                <th scope="col">{% trans "Value" %}</th>
+                <th scope="col">{% trans "Author" %}</th>
             </tr>
         </thead>
         <tbody>
@@ -103,7 +104,7 @@
 <!-- Progress Notes -->
 {% if notes %}
 <div class="page-break"></div>
-<h2>Recent Progress Notes</h2>
+<h2>{% trans "Recent Progress Notes" %}</h2>
 {% for note in notes %}
 <div class="timeline-item avoid-break">
     <div class="date">
@@ -122,7 +123,7 @@
 
 <!-- Events -->
 {% if events %}
-<h2>Recent Events</h2>
+<h2>{% trans "Recent Events" %}</h2>
 {% for event in events %}
 <div class="timeline-item avoid-break">
     <div class="date">

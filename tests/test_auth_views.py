@@ -429,3 +429,108 @@ class ImpersonationGuardTest(TestCase):
 
         self.demo_user.refresh_from_db()
         self.assertIsNotNone(self.demo_user.last_login_at)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local", RATELIMIT_ENABLE=False)
+class AccountLockoutTest(TestCase):
+    """Test the account lockout logic that blocks login after repeated failures.
+
+    The lockout system tracks failed login attempts per IP address using Django's
+    cache. After 5 failed attempts within 15 minutes, that IP is blocked from
+    further login attempts until the window expires.
+    """
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        from django.core.cache import cache
+
+        enc_module._fernet = None
+        cache.clear()
+        self.http = Client()
+        self.user = User.objects.create_user(
+            username="locktest", password="goodpass123", display_name="Lock Test"
+        )
+
+    def tearDown(self):
+        from django.core.cache import cache
+
+        enc_module._fernet = None
+        cache.clear()
+
+    def _fail_login(self, username="locktest", password="wrongpass"):
+        """Helper: send a failed login POST and return the response."""
+        return self.http.post("/auth/login/", {
+            "username": username,
+            "password": password,
+        })
+
+    def _succeed_login(self):
+        """Helper: send a successful login POST and return the response."""
+        return self.http.post("/auth/login/", {
+            "username": "locktest",
+            "password": "goodpass123",
+        })
+
+    def test_lockout_after_five_failed_attempts(self):
+        """After 5 failed login attempts, the 6th attempt should be blocked."""
+        # First 5 attempts should show "Invalid username or password" with
+        # decreasing remaining attempts
+        for i in range(5):
+            resp = self._fail_login()
+            self.assertEqual(resp.status_code, 200)
+
+        # The 6th attempt should be blocked with a lockout message
+        resp = self._fail_login()
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Too many failed login attempts")
+
+    def test_correct_credentials_blocked_during_lockout(self):
+        """Even correct credentials should be rejected while the IP is locked out."""
+        # Trigger lockout with 5 failed attempts
+        for i in range(5):
+            self._fail_login()
+
+        # Now try with correct credentials — should still be blocked
+        resp = self._succeed_login()
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Too many failed login attempts")
+
+    def test_successful_login_clears_counter(self):
+        """A successful login before reaching the threshold resets the counter."""
+        # Fail 3 times (below the threshold of 5)
+        for i in range(3):
+            self._fail_login()
+
+        # Successful login should clear the counter
+        resp = self._succeed_login()
+        self.assertEqual(resp.status_code, 302)  # Redirect on success
+
+        # Log out so we can try again
+        self.http.get("/auth/logout/")
+
+        # Now fail 4 more times — should NOT trigger lockout because the
+        # counter was reset by the successful login above
+        for i in range(4):
+            resp = self._fail_login()
+            self.assertEqual(resp.status_code, 200)
+            self.assertNotContains(resp, "Too many failed login attempts")
+
+    def test_cache_clearing_resets_lockout(self):
+        """Clearing the cache simulates the 15-minute timeout expiry."""
+        from django.core.cache import cache
+
+        # Trigger lockout
+        for i in range(5):
+            self._fail_login()
+
+        # Confirm locked out
+        resp = self._fail_login()
+        self.assertContains(resp, "Too many failed login attempts")
+
+        # Clear cache (simulates the 15-minute window expiring)
+        cache.clear()
+
+        # Should be able to log in again with correct credentials
+        resp = self._succeed_login()
+        self.assertEqual(resp.status_code, 302)  # Redirect on success

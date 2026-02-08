@@ -1,6 +1,7 @@
 {% extends "reports/pdf_base.html" %}
+{% load i18n %}
 
-{% block title %}Funder Report — {{ cmt_data.programme_name }}{% endblock %}
+{% block title %}{% blocktrans with name=cmt_data.programme_name %}Funder Report — {{ name }}{% endblocktrans %}{% endblock %}
 
 {% block styles %}
 {{ block.super }}
@@ -90,57 +91,57 @@
 {% block content %}
 <!-- Cover Page -->
 <div class="pdf-cover">
-    <h1>Funder Report</h1>
+    <h1>{% trans "Funder Report" %}</h1>
     <div class="subtitle">{{ cmt_data.programme_name }}</div>
     <div class="meta">
         {{ cmt_data.organisation_name }}<br>
         {{ cmt_data.reporting_period }}<br><br>
-        Generated {{ cmt_data.generated_at|date:"Y-m-d" }} by {{ generated_by }}
+        {% blocktrans with date=cmt_data.generated_at|date:"Y-m-d" author=generated_by %}Generated {{ date }} by {{ author }}{% endblocktrans %}
     </div>
     <div style="margin-top: 1cm; padding: 0.5cm; background-color: #fef3c7; border-radius: 4px; font-size: 10pt;">
-        <strong>Draft Template:</strong> Verify this format matches your funder's requirements before submission.
+        <strong>{% trans "Draft Template:" %}</strong> {% trans "Verify this format matches your funder's requirements before submission." %}
     </div>
 </div>
 
 <!-- Organisation Information -->
-<h2>Organisation Information</h2>
+<h2>{% trans "Organisation Information" %}</h2>
 <dl>
-    <dt>Organisation Name</dt>
+    <dt>{% trans "Organisation Name" %}</dt>
     <dd>{{ cmt_data.organisation_name }}</dd>
-    <dt>Programme/Service Name</dt>
+    <dt>{% trans "Programme/Service Name" %}</dt>
     <dd>{{ cmt_data.programme_name }}</dd>
     {% if cmt_data.programme_description %}
-    <dt>Programme Description</dt>
+    <dt>{% trans "Programme Description" %}</dt>
     <dd>{{ cmt_data.programme_description }}</dd>
     {% endif %}
-    <dt>Reporting Period</dt>
+    <dt>{% trans "Reporting Period" %}</dt>
     <dd>{{ cmt_data.reporting_period }}</dd>
 </dl>
 
 <!-- Service Statistics -->
-<div class="cmt-header">Service Statistics</div>
+<div class="cmt-header">{% trans "Service Statistics" %}</div>
 <div class="stat-grid">
     <div class="stat-box">
         <div class="value">{{ cmt_data.total_individuals_served|default:"0" }}</div>
-        <div class="label">Total Individuals Served</div>
+        <div class="label">{% trans "Total Individuals Served" %}</div>
     </div>
     <div class="stat-box">
         <div class="value">{{ cmt_data.new_clients_this_period|default:"0" }}</div>
-        <div class="label">New Clients This Period</div>
+        <div class="label">{% trans "New Clients This Period" %}</div>
     </div>
     <div class="stat-box">
         <div class="value">{{ cmt_data.total_contacts|default:"0" }}</div>
-        <div class="label">Total Service Contacts</div>
+        <div class="label">{% trans "Total Service Contacts" %}</div>
     </div>
 </div>
 
 <!-- Age Demographics -->
-<div class="cmt-header">Age Demographics</div>
+<div class="cmt-header">{% trans "Age Demographics" %}</div>
 <div style="margin: 0.5cm 0;">
     <div class="demo-row header">
-        <div>Age Group</div>
-        <div style="text-align: right;">Count</div>
-        <div style="text-align: right;">Percentage</div>
+        <div>{% trans "Age Group" %}</div>
+        <div style="text-align: right;">{% trans "Count" %}</div>
+        <div style="text-align: right;">{% trans "Percentage" %}</div>
     </div>
     {% for age_group, count in cmt_data.age_demographics.items %}
     <div class="demo-row">
@@ -157,13 +158,13 @@
             {% if cmt_data.age_demographics_total > 0 %}
             {% widthratio count cmt_data.age_demographics_total 100 %}%
             {% else %}
-            N/A
+            {% trans "N/A" %}
             {% endif %}
         </div>
     </div>
     {% endfor %}
     <div class="demo-row header">
-        <div>Total</div>
+        <div>{% trans "Total" %}</div>
         <div style="text-align: right;">{{ cmt_data.age_demographics_total }}</div>
         <div style="text-align: right;">100%</div>
     </div>
@@ -171,31 +172,31 @@
 
 <!-- Outcome Indicators -->
 <div class="page-break"></div>
-<h2>Outcome Indicators</h2>
+<h2>{% trans "Outcome Indicators" %}</h2>
 
 {% if cmt_data.primary_outcome %}
-<h3>Primary Outcome</h3>
+<h3>{% trans "Primary Outcome" %}</h3>
 <div class="outcome-card">
     <h4>{{ cmt_data.primary_outcome.name }}</h4>
     <div class="rate">{{ cmt_data.primary_outcome.achievement_rate }}%</div>
     <div class="details">
-        <strong>Target:</strong> {{ cmt_data.primary_outcome.target_value }}<br>
-        <strong>Clients Measured:</strong> {{ cmt_data.primary_outcome.clients_measured }}<br>
-        <strong>Clients Achieving Target:</strong> {{ cmt_data.primary_outcome.clients_achieved }} of {{ cmt_data.primary_outcome.clients_measured }}
+        <strong>{% trans "Target:" %}</strong> {{ cmt_data.primary_outcome.target_value }}<br>
+        <strong>{% trans "Clients Measured:" %}</strong> {{ cmt_data.primary_outcome.clients_measured }}<br>
+        <strong>{% trans "Clients Achieving Target:" %}</strong> {% blocktrans with achieved=cmt_data.primary_outcome.clients_achieved measured=cmt_data.primary_outcome.clients_measured %}{{ achieved }} of {{ measured }}{% endblocktrans %}
     </div>
 </div>
 {% endif %}
 
 {% if cmt_data.secondary_outcomes %}
-<h3>Secondary Outcomes</h3>
+<h3>{% trans "Secondary Outcomes" %}</h3>
 <table>
     <thead>
         <tr>
-            <th>Indicator Name</th>
-            <th>Target</th>
-            <th>Measured</th>
-            <th>Achieved</th>
-            <th>Rate</th>
+            <th scope="col">{% trans "Indicator Name" %}</th>
+            <th scope="col">{% trans "Target" %}</th>
+            <th scope="col">{% trans "Measured" %}</th>
+            <th scope="col">{% trans "Achieved" %}</th>
+            <th scope="col">{% trans "Rate" %}</th>
         </tr>
     </thead>
     <tbody>
@@ -213,27 +214,27 @@
 {% endif %}
 
 {% if not cmt_data.primary_outcome and not cmt_data.secondary_outcomes %}
-<p><em>No outcome indicators with targets defined for this programme.</em></p>
+<p><em>{% trans "No outcome indicators with targets defined for this programme." %}</em></p>
 {% endif %}
 
 <!-- Overall Summary -->
 {% if cmt_data.achievement_summary.total_clients > 0 %}
-<div class="cmt-header">Overall Summary</div>
+<div class="cmt-header">{% trans "Overall Summary" %}</div>
 <div class="summary-grid">
     <div class="summary-card">
         <div class="number">{{ cmt_data.achievement_summary.overall_rate }}%</div>
-        <div class="label">Overall Achievement Rate</div>
+        <div class="label">{% trans "Overall Achievement Rate" %}</div>
     </div>
     <div class="summary-card">
         <div class="number">{{ cmt_data.achievement_summary.clients_met_any_target }} / {{ cmt_data.achievement_summary.total_clients }}</div>
-        <div class="label">Clients Met at Least One Target</div>
+        <div class="label">{% trans "Clients Met at Least One Target" %}</div>
     </div>
 </div>
 {% endif %}
 
 <div class="footer-note">
-    <strong>Draft Template:</strong> This report was generated using KoNote2's Funder Report Template.
-    Verify this format matches your funder's specific requirements before submission.
-    Data reflects client outcomes recorded during the {{ cmt_data.reporting_period }} reporting period.
+    <strong>{% trans "Draft Template:" %}</strong> {% trans "This report was generated using KoNote2's Funder Report Template." %}
+    {% trans "Verify this format matches your funder's specific requirements before submission." %}
+    {% blocktrans with period=cmt_data.reporting_period %}Data reflects client outcomes recorded during the {{ period }} reporting period.{% endblocktrans %}
 </div>
 {% endblock %}

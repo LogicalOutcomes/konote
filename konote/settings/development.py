@@ -16,4 +16,5 @@ ALLOWED_HOSTS = ["*"]
 
 # Relax security for local dev
 SESSION_COOKIE_SECURE = False
+LANGUAGE_COOKIE_SECURE = False
 SECURE_SSL_REDIRECT = False

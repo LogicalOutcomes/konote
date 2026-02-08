@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from apps.auth_app.decorators import minimum_role
+from apps.auth_app.decorators import admin_required, minimum_role
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 
@@ -284,34 +284,10 @@ def client_detail(request, client_id):
     enrolments = ClientProgramEnrolment.objects.filter(
         client_file=client, status="enrolled", program_id__in=user_program_ids,
     ).select_related("program")
-    # Custom fields for Info tab — filter by role visibility and hide empty fields
-    groups = CustomFieldGroup.objects.filter(status="active").prefetch_related("fields")
-    custom_data = []
-    has_editable_fields = False
-    for group in groups:
-        if is_receptionist:
-            # Front desk staff only see fields with view or edit access
-            fields = group.fields.filter(status="active", front_desk_access__in=["view", "edit"])
-        else:
-            fields = group.fields.filter(status="active")
-        field_values = []
-        for field_def in fields:
-            try:
-                cdv = ClientDetailValue.objects.get(client_file=client, field_def=field_def)
-                value = cdv.get_value()
-            except ClientDetailValue.DoesNotExist:
-                value = ""
-            # Track if field is editable (staff can edit all, front desk only if access=edit)
-            is_editable = not is_receptionist or field_def.front_desk_access == "edit"
-            if is_editable:
-                has_editable_fields = True
-            # For display mode, skip empty fields — Edit button shows all fields
-            if not value:
-                continue
-            field_values.append({"field_def": field_def, "value": value, "is_editable": is_editable})
-        # Only include groups that have fields with values
-        if field_values:
-            custom_data.append({"group": group, "fields": field_values})
+    # Custom fields for Info tab — uses shared helper with hide_empty=True (display mode)
+    custom_fields_ctx = _get_custom_fields_context(client, user_role, hide_empty=True)
+    custom_data = custom_fields_ctx["custom_data"]
+    has_editable_fields = custom_fields_ctx["has_editable_fields"]
     # Breadcrumbs: Participants > [Name]
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
@@ -405,7 +381,8 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
 @login_required
 def client_custom_fields_display(request, client_id):
     """HTMX: Return read-only custom fields partial."""
-    client = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
     context = _get_custom_fields_context(client, user_role, hide_empty=True)
     return render(request, "clients/_custom_fields_display.html", context)
@@ -414,7 +391,8 @@ def client_custom_fields_display(request, client_id):
 @login_required
 def client_custom_fields_edit(request, client_id):
     """HTMX: Return editable custom fields form partial."""
-    client = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
     context = _get_custom_fields_context(client, user_role)
 
@@ -509,7 +487,8 @@ def client_save_custom_fields(request, client_id):
 @login_required
 def client_consent_display(request, client_id):
     """HTMX: Return read-only consent status partial."""
-    client = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
     is_receptionist = user_role == "receptionist"
     return render(request, "clients/_consent_display.html", {
@@ -524,7 +503,8 @@ def client_consent_edit(request, client_id):
     """HTMX: Return consent recording form partial."""
     from django.utils import timezone
 
-    client = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
     initial = {}
     if client.consent_given_at:
         initial["consent_date"] = client.consent_given_at.date()
@@ -547,7 +527,8 @@ def client_consent_save(request, client_id):
     """
     from django.utils import timezone
 
-    client = get_object_or_404(ClientFile, pk=client_id)
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
     user_role = getattr(request, "user_program_role", None)
     is_receptionist = user_role == "receptionist"
 
@@ -687,17 +668,15 @@ def client_search(request):
 # ---- Custom Field Admin (FIELD1) — admin only ----
 
 @login_required
+@admin_required
 def custom_field_admin(request):
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied.")
     groups = CustomFieldGroup.objects.all().prefetch_related("fields")
     return render(request, "clients/custom_fields_admin.html", {"groups": groups})
 
 
 @login_required
+@admin_required
 def custom_field_group_create(request):
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied.")
     if request.method == "POST":
         form = CustomFieldGroupForm(request.POST)
         if form.is_valid():
@@ -710,9 +689,8 @@ def custom_field_group_create(request):
 
 
 @login_required
+@admin_required
 def custom_field_group_edit(request, group_id):
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied.")
     group = get_object_or_404(CustomFieldGroup, pk=group_id)
     if request.method == "POST":
         form = CustomFieldGroupForm(request.POST, instance=group)
@@ -726,9 +704,8 @@ def custom_field_group_edit(request, group_id):
 
 
 @login_required
+@admin_required
 def custom_field_def_create(request):
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied.")
     if request.method == "POST":
         form = CustomFieldDefinitionForm(request.POST)
         if form.is_valid():
@@ -741,9 +718,8 @@ def custom_field_def_create(request):
 
 
 @login_required
+@admin_required
 def custom_field_def_edit(request, field_id):
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied.")
     from .models import CustomFieldDefinition
     field_def = get_object_or_404(CustomFieldDefinition, pk=field_id)
     if request.method == "POST":

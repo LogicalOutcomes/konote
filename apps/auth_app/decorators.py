@@ -1,9 +1,21 @@
 """Role-based access decorators for views."""
 from functools import wraps
 
+from django.http import HttpResponseForbidden
 from django.template.response import TemplateResponse
+from django.utils.translation import gettext as _
 
 from apps.auth_app.constants import ROLE_RANK
+
+
+def admin_required(view_func):
+    """Decorator: 403 if user is not an admin."""
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if not request.user.is_admin:
+            return HttpResponseForbidden(_("Access denied. Admin privileges required."))
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 
 def _get_user_highest_role(user):

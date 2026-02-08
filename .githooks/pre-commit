@@ -35,13 +35,19 @@ for po_file in $STAGED_PO; do
     MO_STAGED=$(git diff --cached --name-only | grep "^${mo_file}$" || true)
 
     if [ -z "$MO_STAGED" ]; then
-        # .mo is not staged -- check if it exists and is newer than .po
-        if [ -f "$mo_file" ]; then
-            # File exists but wasn't staged
-            ERRORS="${ERRORS}\n  - ${po_file} is staged but ${mo_file} is NOT staged"
-        else
+        if [ ! -f "$mo_file" ]; then
             # .mo file doesn't exist at all
             ERRORS="${ERRORS}\n  - ${po_file} is staged but ${mo_file} does NOT exist"
+        else
+            # .mo exists but isn't staged — check if it actually changed.
+            # When new .po entries have empty translations, the compiled .mo
+            # output is identical (empty msgstr entries are omitted from .mo).
+            # In that case the .mo is up-to-date and doesn't need staging.
+            MO_TREE_HASH=$(git hash-object "$mo_file" 2>/dev/null || echo "none")
+            MO_HEAD_HASH=$(git rev-parse "HEAD:${mo_file}" 2>/dev/null || echo "missing")
+            if [ "$MO_TREE_HASH" != "$MO_HEAD_HASH" ]; then
+                ERRORS="${ERRORS}\n  - ${po_file} is staged but ${mo_file} is NOT staged"
+            fi
         fi
     fi
 done

@@ -184,7 +184,7 @@
 
     <!-- Keyboard shortcuts modal -->
     <div class="modal-backdrop" id="shortcuts-backdrop" hidden></div>
-    <div class="keyboard-shortcuts-modal" id="shortcuts-modal" hidden role="dialog" aria-labelledby="shortcuts-title" aria-modal="true">
+    <div class="keyboard-shortcuts-modal" id="shortcuts-modal" hidden role="dialog" aria-labelledby="shortcuts-title" aria-modal="true" tabindex="-1">
         <button type="button" class="modal-close" id="close-shortcuts" aria-label="{% trans 'Close' %}">&times;</button>
         <h2 id="shortcuts-title">{% trans "Keyboard Shortcuts" %}</h2>
         <dl>
@@ -193,7 +193,7 @@
             <dt>g h</dt>
             <dd>{% trans "Go to Home" %}</dd>
             <dt>n</dt>
-            <dd>{% trans "New quick note (on client page)" %}</dd>
+            <dd>{% blocktrans with client=term.client %}New quick note (on {{ client }} page){% endblocktrans %}</dd>
             <dt>Ctrl+S</dt>
             <dd>{% trans "Save current form" %}</dd>
             <dt>Esc</dt>
@@ -207,6 +207,31 @@
     <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <!-- Chart.js — for analysis charts (loaded globally for HTMX compatibility) -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <!-- Translated strings for app.js (I18N-4) -->
+    <script>
+    window.KN = {
+        dismissMessage: "{% trans 'Dismiss message' %}",
+        errorGeneric: "{% trans 'Something went wrong. Please try again.' %}",
+        error403: "{% trans "You don't have permission to do that." %}",
+        error404: "{% trans 'The requested item was not found.' %}",
+        error500: "{% trans 'A server error occurred. Please try again later.' %}",
+        errorNetwork: "{% trans 'Could not connect to the server. Check your internet connection.' %}",
+        justNow: "{% trans 'just now' %}",
+        oneMinuteAgo: "{% trans '1 minute ago' %}",
+        minutesAgo: "{% trans '{n} minutes ago' %}",
+        oneHourAgo: "{% trans '1 hour ago' %}",
+        hoursAgo: "{% trans '{n} hours ago' %}",
+        earlier: "{% trans 'earlier' %}",
+        draftFound: "{% trans 'Draft found' %}",
+        unsavedWork: "{% trans 'You have unsaved work from {time}.' %}",
+        restoreDraft: "{% trans 'Restore draft' %}",
+        discard: "{% trans 'Discard' %}",
+        draftRestored: "{% trans 'Draft restored' %}",
+        saving: "{% trans 'Saving…' %}",
+        saved: "{% trans 'Saved' %}",
+        unsavedWarning: "{% trans 'You have unsaved changes. Are you sure you want to leave?' %}"
+    };
+    </script>
     <!-- App JS — CSRF handling, error handlers -->
     <script src="{% static 'js/app.js' %}"></script>
 

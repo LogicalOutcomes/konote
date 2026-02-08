@@ -323,7 +323,9 @@ class BrowserTestBase(StaticLiveServerTestCase):
         self.page.wait_for_load_state("networkidle")
         self.page.fill("#username", username)
         self.page.fill("#password", TEST_PASSWORD)
-        self.page.click("button[type='submit']")
+        # Use specific selector — the login page has language-switch submit
+        # buttons before the login form's submit button.
+        self.page.click("form[action*='login'] button[type='submit']")
         self.page.wait_for_load_state("networkidle")
 
     def switch_user(self, username):

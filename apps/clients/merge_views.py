@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 
-from apps.programs.views import admin_required
+from apps.auth_app.decorators import admin_required
 
 from .forms import MergeConfirmForm
 from .merge import (
@@ -21,12 +21,7 @@ from .views import get_client_queryset
 logger = logging.getLogger(__name__)
 
 
-def _get_client_ip(request):
-    """Get client IP, respecting X-Forwarded-For from reverse proxy."""
-    forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.META.get("REMOTE_ADDR", "")
+from konote.utils import get_client_ip as _get_client_ip
 
 
 @login_required

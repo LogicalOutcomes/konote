@@ -1,23 +1,13 @@
 """Admin settings views: dashboard, terminology, features, instance settings."""
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
 from django.shortcuts import redirect, render
-from django.utils.translation import gettext as _
-from django.utils.translation import gettext_lazy as _lazy
+from django.utils.translation import gettext as _, gettext_lazy as _lazy
+
+from apps.auth_app.decorators import admin_required
 
 from .forms import FeatureToggleForm, InstanceSettingsForm, TerminologyForm
 from .models import DEFAULT_TERMS, FeatureToggle, InstanceSetting, TerminologyOverride
-
-
-def admin_required(view_func):
-    """Decorator: 403 if user is not an admin."""
-    def wrapper(request, *args, **kwargs):
-        if not request.user.is_admin:
-            return HttpResponseForbidden(_("Access denied. Admin privileges required."))
-        return view_func(request, *args, **kwargs)
-    wrapper.__name__ = view_func.__name__
-    return wrapper
 
 
 # --- Dashboard ---

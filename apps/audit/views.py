@@ -8,17 +8,18 @@ from django.db import models
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
+from apps.auth_app.decorators import admin_required
 from apps.reports.csv_utils import sanitise_csv_row
 
 from .models import AuditLog
 
 
 @login_required
+@admin_required
 def audit_log_list(request):
     """Display paginated, filterable audit log."""
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied. Admin privileges required.")
 
     qs = AuditLog.objects.using("audit").all()
 
@@ -90,10 +91,9 @@ def audit_log_list(request):
 
 
 @login_required
+@admin_required
 def audit_log_export(request):
     """Export filtered audit log as CSV."""
-    if not request.user.is_admin:
-        return HttpResponseForbidden("Access denied. Admin privileges required.")
 
     qs = AuditLog.objects.using("audit").all()
 
@@ -195,7 +195,7 @@ def program_audit_log(request, program_id):
     ).first()
 
     if not role:
-        return HttpResponseForbidden("You do not have permission to view audit logs for this program.")
+        return HttpResponseForbidden(_("You do not have permission to view audit logs for this program."))
 
     # Get client IDs enrolled in this program
     client_ids = list(ClientProgramEnrolment.objects.filter(

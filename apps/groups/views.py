@@ -25,6 +25,7 @@ from apps.programs.models import UserProgramRole
 from .forms import (
     GroupForm,
     HighlightForm,
+    MembershipAddForm,
     ProjectMilestoneForm,
     ProjectOutcomeForm,
     SessionLogForm,
@@ -273,39 +274,42 @@ def membership_add(request, group_id):
         return HttpResponseForbidden(_("You do not have access to this group."))
 
     if request.method == "POST":
-        client_file_id = request.POST.get("client_file", "").strip()
-        member_name = request.POST.get("member_name", "").strip()
-        role = request.POST.get("role", "member")
-        if role not in ("member", "leader"):
-            role = "member"
+        form = MembershipAddForm(request.POST)
+        if form.is_valid():
+            client_file_id = form.cleaned_data["client_file"]
+            member_name = form.cleaned_data["member_name"]
+            role = form.cleaned_data["role"]
 
-        if client_file_id:
-            # Security: only allow adding clients the user can see
-            base_qs = get_client_queryset(request.user)
-            client = get_object_or_404(base_qs, pk=client_file_id)
-            # Check for duplicate membership
-            if GroupMembership.objects.filter(
-                group=group, client_file=client, status="active",
-            ).exists():
-                messages.warning(request, _("This client is already a member."))
+            if client_file_id:
+                # Security: only allow adding clients the user can see
+                base_qs = get_client_queryset(request.user)
+                client = get_object_or_404(base_qs, pk=client_file_id)
+                # Check for duplicate membership
+                if GroupMembership.objects.filter(
+                    group=group, client_file=client, status="active",
+                ).exists():
+                    messages.warning(request, _("This client is already a member."))
+                else:
+                    GroupMembership.objects.create(
+                        group=group,
+                        client_file=client,
+                        role=role,
+                    )
+                    messages.success(request, _("Member added."))
             else:
                 GroupMembership.objects.create(
                     group=group,
-                    client_file=client,
+                    member_name=member_name,
                     role=role,
                 )
                 messages.success(request, _("Member added."))
-        elif member_name:
-            GroupMembership.objects.create(
-                group=group,
-                member_name=member_name,
-                role=role,
-            )
-            messages.success(request, _("Member added."))
-        else:
-            messages.error(request, _("Please select a client or enter a name."))
 
-        return redirect("groups:group_detail", group_id=group.pk)
+            return redirect("groups:group_detail", group_id=group.pk)
+        else:
+            # Form validation failed -- show errors via messages
+            for error in form.non_field_errors():
+                messages.error(request, error)
+            return redirect("groups:group_detail", group_id=group.pk)
 
     # GET -- show the add-member form (filtered by demo/real separation)
     clients = get_client_queryset(request.user).filter(status="active").order_by("pk")

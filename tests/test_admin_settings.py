@@ -45,6 +45,8 @@ class AdminSettingsDashboardTest(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class TerminologyTest(TestCase):
+    databases = ["default", "audit"]
+
     def setUp(self):
         enc_module._fernet = None
         self.client = Client()
@@ -61,12 +63,12 @@ class TerminologyTest(TestCase):
     def test_admin_can_update_terminology(self):
         self.client.login(username="admin", password="testpass123")
         data = build_terminology_form_data()
-        data["client"] = "Participant"
+        data["client"] = "Beneficiary"
         resp = self.client.post("/admin/settings/terminology/", data)
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
             TerminologyOverride.objects.get(term_key="client").display_value,
-            "Participant",
+            "Beneficiary",
         )
 
     def test_default_value_deletes_override(self):
@@ -94,21 +96,21 @@ class BilingualTerminologyTest(TestCase):
     def test_get_default_terms_english(self):
         """Default terms in English use first value of tuple."""
         terms = get_default_terms_for_language("en")
-        self.assertEqual(terms["client"], "Client")
+        self.assertEqual(terms["client"], "Participant")
         self.assertEqual(terms["target"], "Target")
         self.assertEqual(terms["progress_note"], "Progress Note")
 
     def test_get_default_terms_french(self):
         """Default terms in French use second value of tuple."""
         terms = get_default_terms_for_language("fr")
-        self.assertEqual(terms["client"], "Client(e)")
+        self.assertEqual(terms["client"], "Participant(e)")
         self.assertEqual(terms["target"], "Objectif")
         self.assertEqual(terms["progress_note"], "Note de suivi")
 
     def test_get_all_terms_english_no_overrides(self):
         """get_all_terms returns English defaults when no overrides exist."""
         terms = TerminologyOverride.get_all_terms(lang="en")
-        self.assertEqual(terms["client"], "Client")
+        self.assertEqual(terms["client"], "Participant")
         self.assertEqual(terms["target"], "Target")
 
     def test_get_all_terms_french_no_overrides(self):
@@ -121,31 +123,31 @@ class BilingualTerminologyTest(TestCase):
         """English override is returned for English language."""
         TerminologyOverride.objects.create(
             term_key="client",
-            display_value="Participant",
+            display_value="Beneficiary",
             display_value_fr="",
         )
         terms = TerminologyOverride.get_all_terms(lang="en")
-        self.assertEqual(terms["client"], "Participant")
+        self.assertEqual(terms["client"], "Beneficiary")
 
     def test_get_all_terms_french_with_french_override(self):
         """French override is returned when French language is requested."""
         TerminologyOverride.objects.create(
             term_key="client",
-            display_value="Participant",
-            display_value_fr="Personne accompagnée",
+            display_value="Beneficiary",
+            display_value_fr="Bénéficiaire",
         )
         terms = TerminologyOverride.get_all_terms(lang="fr")
-        self.assertEqual(terms["client"], "Personne accompagnée")
+        self.assertEqual(terms["client"], "Bénéficiaire")
 
     def test_get_all_terms_french_falls_back_to_english(self):
         """French falls back to English override when French is empty."""
         TerminologyOverride.objects.create(
             term_key="client",
-            display_value="Participant",
+            display_value="Beneficiary",
             display_value_fr="",  # Empty French
         )
         terms = TerminologyOverride.get_all_terms(lang="fr")
-        self.assertEqual(terms["client"], "Participant")
+        self.assertEqual(terms["client"], "Beneficiary")
 
     def test_admin_can_set_french_terminology(self):
         """Admin can save both English and French terms."""
@@ -154,26 +156,26 @@ class BilingualTerminologyTest(TestCase):
         self.client.login(username="admin", password="testpass123")
 
         data = build_terminology_form_data()
-        data["client"] = "Participant"
-        data["client_fr"] = "Personne accompagnée"
+        data["client"] = "Beneficiary"
+        data["client_fr"] = "Bénéficiaire"
 
         resp = self.client.post("/admin/settings/terminology/", data)
         self.assertEqual(resp.status_code, 302)
 
         override = TerminologyOverride.objects.get(term_key="client")
-        self.assertEqual(override.display_value, "Participant")
-        self.assertEqual(override.display_value_fr, "Personne accompagnée")
+        self.assertEqual(override.display_value, "Beneficiary")
+        self.assertEqual(override.display_value_fr, "Bénéficiaire")
 
     def test_french_language_prefix_detection(self):
         """Language codes like 'fr-ca' are treated as French."""
         TerminologyOverride.objects.create(
             term_key="client",
-            display_value="Participant",
-            display_value_fr="Personne accompagnée",
+            display_value="Beneficiary",
+            display_value_fr="Bénéficiaire",
         )
         # fr-ca (Canadian French) should use French terms
         terms = TerminologyOverride.get_all_terms(lang="fr-ca")
-        self.assertEqual(terms["client"], "Personne accompagnée")
+        self.assertEqual(terms["client"], "Bénéficiaire")
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)

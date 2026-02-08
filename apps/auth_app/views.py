@@ -20,12 +20,7 @@ LOCKOUT_DURATION = 900  # 15 minutes in seconds
 FAILED_ATTEMPT_WINDOW = 900  # Track attempts for 15 minutes
 
 
-def _get_client_ip(request):
-    """Get client IP, respecting X-Forwarded-For from reverse proxy."""
-    forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.META.get("REMOTE_ADDR", "")
+from konote.utils import get_client_ip as _get_client_ip
 
 
 def _get_lockout_key(ip):

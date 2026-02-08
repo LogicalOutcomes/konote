@@ -1,5 +1,12 @@
 /* KoNote2 Web — minimal vanilla JS for interactions */
 
+// Translated strings helper — reads from window.KN (set in base.html)
+// Falls back to English if KN not loaded
+var KN = window.KN || {};
+function t(key, fallback) {
+    return KN[key] || fallback;
+}
+
 // Enable script execution in HTMX 2.0 swapped content (needed for Chart.js in Analysis tab)
 // This must be set before any HTMX swaps occur
 htmx.config.allowScriptTags = true;
@@ -85,7 +92,7 @@ document.body.addEventListener("htmx:configRequest", function (event) {
         var closeBtn = document.createElement("button");
         closeBtn.type = "button";
         closeBtn.className = "message-close";
-        closeBtn.setAttribute("aria-label", "Dismiss message");
+        closeBtn.setAttribute("aria-label", t("dismissMessage", "Dismiss message"));
         closeBtn.innerHTML = "&times;";
         closeBtn.addEventListener("click", function () {
             dismissMessage(messageEl);
@@ -167,22 +174,22 @@ document.addEventListener("click", function (event) {
 // Global HTMX error handler — show user-friendly message on network/server errors
 document.body.addEventListener("htmx:responseError", function (event) {
     var status = event.detail.xhr ? event.detail.xhr.status : 0;
-    var message = "Something went wrong. Please try again.";
+    var message = t("errorGeneric", "Something went wrong. Please try again.");
     if (status === 403) {
-        message = "You don't have permission to do that.";
+        message = t("error403", "You don't have permission to do that.");
     } else if (status === 404) {
-        message = "The requested item was not found.";
+        message = t("error404", "The requested item was not found.");
     } else if (status >= 500) {
-        message = "A server error occurred. Please try again later.";
+        message = t("error500", "A server error occurred. Please try again later.");
     } else if (status === 0) {
-        message = "Could not connect to the server. Check your internet connection.";
+        message = t("errorNetwork", "Could not connect to the server. Check your internet connection.");
     }
     showToast(message, true);
 });
 
 // Handle HTMX send errors (network failures before response)
 document.body.addEventListener("htmx:sendError", function () {
-    showToast("Could not connect to the server. Check your internet connection.", true);
+    showToast(t("errorNetwork", "Could not connect to the server. Check your internet connection."), true);
 });
 
 // Focus management for note detail expansion (accessibility)
@@ -409,33 +416,34 @@ document.addEventListener("click", function (event) {
             var diffMs = now - date;
             var diffMins = Math.floor(diffMs / 60000);
 
-            if (diffMins < 1) return "just now";
-            if (diffMins === 1) return "1 minute ago";
-            if (diffMins < 60) return diffMins + " minutes ago";
+            if (diffMins < 1) return t("justNow", "just now");
+            if (diffMins === 1) return t("oneMinuteAgo", "1 minute ago");
+            if (diffMins < 60) return t("minutesAgo", "{n} minutes ago").replace("{n}", diffMins);
 
             var diffHours = Math.floor(diffMins / 60);
-            if (diffHours === 1) return "1 hour ago";
-            if (diffHours < 24) return diffHours + " hours ago";
+            if (diffHours === 1) return t("oneHourAgo", "1 hour ago");
+            if (diffHours < 24) return t("hoursAgo", "{n} hours ago").replace("{n}", diffHours);
 
             // Show date for older drafts
             return date.toLocaleDateString();
         } catch (e) {
-            return "earlier";
+            return t("earlier", "earlier");
         }
     }
 
     // Create and show the draft recovery banner
     function showRecoveryBanner(form, draft) {
-        var savedTime = draft._savedAt ? formatSavedTime(draft._savedAt) : "earlier";
+        var savedTime = draft._savedAt ? formatSavedTime(draft._savedAt) : t("earlier", "earlier");
 
         var banner = document.createElement("article");
         banner.className = "draft-recovery-banner";
         banner.setAttribute("role", "alert");
         banner.innerHTML =
-            '<p><strong>Draft found</strong> — You have unsaved work from ' + savedTime + '.</p>' +
+            '<p><strong>' + t("draftFound", "Draft found") + '</strong> — ' +
+            t("unsavedWork", "You have unsaved work from {time}.").replace("{time}", savedTime) + '</p>' +
             '<div role="group">' +
-            '<button type="button" class="draft-restore">Restore draft</button>' +
-            '<button type="button" class="draft-discard outline secondary">Discard</button>' +
+            '<button type="button" class="draft-restore">' + t("restoreDraft", "Restore draft") + '</button>' +
+            '<button type="button" class="draft-discard outline secondary">' + t("discard", "Discard") + '</button>' +
             '</div>';
 
         // Insert banner before the form
@@ -445,7 +453,7 @@ document.addEventListener("click", function (event) {
         banner.querySelector(".draft-restore").addEventListener("click", function () {
             restoreFormData(form, draft);
             banner.remove();
-            showToast("Draft restored", false);
+            showToast(t("draftRestored", "Draft restored"), false);
         });
 
         // Handle discard
@@ -453,37 +461,6 @@ document.addEventListener("click", function (event) {
             clearDraft(form);
             banner.remove();
         });
-    }
-
-    // Initialize auto-save on a form
-    function initAutoSave(form) {
-        var key = getStorageKey(form);
-        if (!key) return; // Form doesn't have required data attributes
-
-        // Check for existing draft and show recovery banner
-        var draft = loadDraft(form);
-        if (draft && hasContent(draft)) {
-            showRecoveryBanner(form, draft);
-        }
-
-        // Set up auto-save on input
-        var debouncedSave = debounce(function () {
-            saveDraft(form);
-        }, AUTOSAVE_DELAY);
-
-        form.addEventListener("input", debouncedSave);
-        form.addEventListener("change", debouncedSave);
-
-        // Clear draft on successful form submission
-        form.addEventListener("submit", function () {
-            clearDraft(form);
-        });
-    }
-
-    // Find and initialize all auto-save forms
-    function setupAutoSave() {
-        var forms = document.querySelectorAll("form[data-autosave]");
-        forms.forEach(initAutoSave);
     }
 
     // Show autosave indicator
@@ -497,10 +474,10 @@ document.addEventListener("click", function (event) {
 
         if (status === "saving") {
             indicator.classList.add("saving");
-            if (statusText) statusText.textContent = "Saving…";
+            if (statusText) statusText.textContent = t("saving", "Saving…");
         } else if (status === "saved") {
             indicator.classList.add("saved");
-            if (statusText) statusText.textContent = "Saved";
+            if (statusText) statusText.textContent = t("saved", "Saved");
             // Hide after 2 seconds
             setTimeout(function() {
                 indicator.hidden = true;
@@ -577,7 +554,7 @@ document.addEventListener("click", function (event) {
             if (formDirty) {
                 e.preventDefault();
                 e.returnValue = ""; // Required for Chrome
-                return "You have unsaved changes. Are you sure you want to leave?";
+                return t("unsavedWarning", "You have unsaved changes. Are you sure you want to leave?");
             }
         });
     }
@@ -589,10 +566,82 @@ document.addEventListener("click", function (event) {
     }
 })();
 
+// --- Modal Focus Trap (A11Y-2 — WCAG 2.4.3) ---
+// Traps keyboard focus inside modal dialogs so Tab/Shift+Tab cycle within the modal
+(function() {
+    var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+    function trapFocus(modal) {
+        var focusableEls = modal.querySelectorAll(FOCUSABLE);
+        if (focusableEls.length === 0) return;
+
+        var firstEl = focusableEls[0];
+        var lastEl = focusableEls[focusableEls.length - 1];
+
+        function handleTab(e) {
+            if (e.key !== "Tab") return;
+
+            if (e.shiftKey) {
+                // Shift+Tab: if on first element, wrap to last
+                if (document.activeElement === firstEl || document.activeElement === modal) {
+                    e.preventDefault();
+                    lastEl.focus();
+                }
+            } else {
+                // Tab: if on last element, wrap to first
+                if (document.activeElement === lastEl) {
+                    e.preventDefault();
+                    firstEl.focus();
+                }
+            }
+        }
+
+        modal._focusTrapHandler = handleTab;
+        modal.addEventListener("keydown", handleTab);
+    }
+
+    function releaseFocus(modal) {
+        if (modal._focusTrapHandler) {
+            modal.removeEventListener("keydown", modal._focusTrapHandler);
+            delete modal._focusTrapHandler;
+        }
+    }
+
+    // Observe modal visibility changes via MutationObserver
+    function watchModal(modalId) {
+        var modal = document.getElementById(modalId);
+        if (!modal) return;
+
+        var observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.attributeName === "hidden") {
+                    if (!modal.hidden) {
+                        trapFocus(modal);
+                    } else {
+                        releaseFocus(modal);
+                    }
+                }
+            });
+        });
+        observer.observe(modal, { attributes: true, attributeFilter: ["hidden"] });
+    }
+
+    function setup() {
+        watchModal("shortcuts-modal");
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", setup);
+    } else {
+        setup();
+    }
+})();
+
 // --- Keyboard Shortcuts ---
 (function() {
     var pendingKey = null;
     var pendingTimeout = null;
+    var lastFocusedElement = null;
 
     function isInputFocused() {
         var active = document.activeElement;
@@ -605,6 +654,7 @@ document.addEventListener("click", function (event) {
         var modal = document.getElementById("shortcuts-modal");
         var backdrop = document.getElementById("shortcuts-backdrop");
         if (modal && backdrop) {
+            lastFocusedElement = document.activeElement;
             modal.hidden = false;
             backdrop.hidden = false;
             modal.focus();
@@ -617,6 +667,11 @@ document.addEventListener("click", function (event) {
         if (modal && backdrop) {
             modal.hidden = true;
             backdrop.hidden = true;
+            // Return focus to the element that opened the modal
+            if (lastFocusedElement && lastFocusedElement.focus) {
+                lastFocusedElement.focus();
+                lastFocusedElement = null;
+            }
         }
     }
 

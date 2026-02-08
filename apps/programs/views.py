@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from apps.auth_app.decorators import admin_required
 from apps.auth_app.models import User
 
 from .context import (
@@ -24,16 +25,6 @@ from .forms import CONFIDENTIAL_KEYWORDS, ProgramForm, UserProgramRoleForm
 from .models import Program, UserProgramRole
 
 logger = logging.getLogger(__name__)
-
-
-def admin_required(view_func):
-    """Decorator: 403 if user is not an admin."""
-    def wrapper(request, *args, **kwargs):
-        if not request.user.is_admin:
-            return HttpResponseForbidden("Access denied. Admin privileges required.")
-        return view_func(request, *args, **kwargs)
-    wrapper.__name__ = view_func.__name__
-    return wrapper
 
 
 @login_required
@@ -281,9 +272,4 @@ def _audit_program_switch(request, program):
         logger.exception("Failed to audit program context switch for user %s", request.user.pk)
 
 
-def _get_client_ip(request):
-    """Extract client IP from request headers."""
-    xff = request.META.get("HTTP_X_FORWARDED_FOR")
-    if xff:
-        return xff.split(",")[0].strip()
-    return request.META.get("REMOTE_ADDR", "unknown")
+from konote.utils import get_client_ip as _get_client_ip

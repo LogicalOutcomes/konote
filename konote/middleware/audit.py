@@ -4,6 +4,8 @@ import re
 
 from django.utils import timezone
 
+from konote.utils import get_client_ip
+
 logger = logging.getLogger(__name__)
 
 # HTTP methods that change state
@@ -155,10 +157,7 @@ class AuditMiddleware:
 
     def _get_client_ip(self, request):
         """Get client IP, respecting X-Forwarded-For from reverse proxy."""
-        forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
-        if forwarded:
-            return forwarded.split(",")[0].strip()
-        return request.META.get("REMOTE_ADDR", "")
+        return get_client_ip(request)
 
     def _extract_resource_type(self, path):
         """Extract resource type from URL path (e.g., /clients/5/ -> client)."""

@@ -29,12 +29,7 @@ from .views import get_client_queryset
 logger = logging.getLogger(__name__)
 
 
-def _get_client_ip(request):
-    """Get client IP, respecting X-Forwarded-For from reverse proxy."""
-    forwarded = request.META.get("HTTP_X_FORWARDED_FOR")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return request.META.get("REMOTE_ADDR", "")
+from konote.utils import get_client_ip as _get_client_ip
 
 
 def _user_is_pm_or_admin(user):

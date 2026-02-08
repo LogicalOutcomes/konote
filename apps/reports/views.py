@@ -18,6 +18,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.audit.models import AuditLog
+from apps.auth_app.decorators import admin_required
 from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.clients.views import get_client_queryset
@@ -36,14 +37,7 @@ from .utils import can_create_export, get_manageable_programs
 logger = logging.getLogger(__name__)
 
 
-def _get_client_ip(request):
-    """
-    Extract client IP address from request, handling reverse proxies.
-    """
-    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
-    if x_forwarded_for:
-        return x_forwarded_for.split(",")[0].strip()
-    return request.META.get("REMOTE_ADDR", "")
+from konote.utils import get_client_ip as _get_client_ip
 
 
 def _notify_admins_elevated_export(link, request):
@@ -734,6 +728,7 @@ def cmt_export_form(request):
 
 
 @login_required
+@admin_required
 def client_data_export(request):
     """
     Export all client data as CSV for data portability and migration.
@@ -755,9 +750,6 @@ def client_data_export(request):
         ClientProgramEnrolment,
         CustomFieldDefinition,
     )
-
-    if not request.user.is_admin:
-        return HttpResponseForbidden("You do not have permission to access this page.")
 
     if request.method != "POST":
         form = ClientDataExportForm()
@@ -1058,14 +1050,13 @@ def download_export(request, link_id):
 
 
 @login_required
+@admin_required
 def manage_export_links(request):
     """
     Admin view: list all active and recent secure export links.
 
     Shows link status, download counts, and revocation controls.
     """
-    if not request.user.is_admin:
-        return HttpResponseForbidden("You do not have permission to access this page.")
 
     # Show active links + recently expired (last 7 days)
     cutoff = timezone.now() - timedelta(days=7)
@@ -1088,6 +1079,7 @@ def manage_export_links(request):
 
 
 @login_required
+@admin_required
 def revoke_export_link(request, link_id):
     """
     Admin action: revoke a secure export link so it can no longer be downloaded.
@@ -1099,9 +1091,6 @@ def revoke_export_link(request, link_id):
     from django.http import HttpResponseNotAllowed
     from django.shortcuts import redirect
     from django.utils.translation import gettext as _
-
-    if not request.user.is_admin:
-        return HttpResponseForbidden("You do not have permission to revoke export links.")
 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])

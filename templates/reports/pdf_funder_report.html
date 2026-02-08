@@ -1,75 +1,76 @@
 {% extends "reports/pdf_base.html" %}
+{% load i18n %}
 
-{% block title %}Funder Report — {{ program.name }}{% endblock %}
+{% block title %}{% blocktrans with name=program.name %}Funder Report — {{ name }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
 <!-- Cover Page -->
 <div class="pdf-cover">
-    <h1>Funder Report</h1>
+    <h1>{% trans "Funder Report" %}</h1>
     <div class="subtitle">{{ program.name }}</div>
     <div class="meta">
-        {{ date_from }} to {{ date_to }}<br>
-        Generated {{ generated_at|date:"Y-m-d" }} by {{ generated_by }}
+        {% blocktrans with dfrom=date_from dto=date_to %}{{ dfrom }} to {{ dto }}{% endblocktrans %}<br>
+        {% blocktrans with date=generated_at|date:"Y-m-d" author=generated_by %}Generated {{ date }} by {{ author }}{% endblocktrans %}
     </div>
 </div>
 
 <!-- Summary -->
-<h2>Summary</h2>
+<h2>{% trans "Summary" %}</h2>
 <div class="summary-grid">
     <div class="summary-card">
         <div class="number">{{ total_clients }}</div>
-        <div class="label">Clients</div>
+        <div class="label">{% trans "Clients" %}</div>
     </div>
     <div class="summary-card">
         <div class="number">{{ total_data_points }}</div>
-        <div class="label">Data Points</div>
+        <div class="label">{% trans "Data Points" %}</div>
     </div>
 </div>
 
 <dl>
-    <dt>Programme</dt>
+    <dt>{% trans "Programme" %}</dt>
     <dd>{{ program.name }}</dd>
-    <dt>Date Range</dt>
-    <dd>{{ date_from }} to {{ date_to }}</dd>
-    <dt>Metrics Included</dt>
+    <dt>{% trans "Date Range" %}</dt>
+    <dd>{% blocktrans with dfrom=date_from dto=date_to %}{{ dfrom }} to {{ dto }}{% endblocktrans %}</dd>
+    <dt>{% trans "Metrics Included" %}</dt>
     <dd>{% for m in metrics %}{{ m.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd>
     {% if grouping_label %}
-    <dt>Grouped By</dt>
+    <dt>{% trans "Grouped By" %}</dt>
     <dd>{{ grouping_label }}</dd>
     {% endif %}
 </dl>
 
 {% if achievement_summary %}
 <!-- Achievement Rate Summary -->
-<h2>Outcome Achievement Rates</h2>
+<h2>{% trans "Outcome Achievement Rates" %}</h2>
 <div class="summary-grid">
     <div class="summary-card">
         <div class="number">{{ achievement_summary.overall_rate }}%</div>
-        <div class="label">Overall Achievement Rate</div>
+        <div class="label">{% trans "Overall Achievement Rate" %}</div>
     </div>
     <div class="summary-card">
         <div class="number">{{ achievement_summary.clients_met_any_target }} / {{ achievement_summary.total_clients }}</div>
-        <div class="label">Clients Met Target</div>
+        <div class="label">{% trans "Clients Met Target" %}</div>
     </div>
 </div>
 
 {% if achievement_summary.by_metric %}
-<h3>Achievement by Metric</h3>
+<h3>{% trans "Achievement by Metric" %}</h3>
 <table>
     <thead>
         <tr>
-            <th>Metric</th>
-            <th>Target Value</th>
-            <th>Clients with Data</th>
-            <th>Clients Met Target</th>
-            <th>Achievement Rate</th>
+            <th scope="col">{% trans "Metric" %}</th>
+            <th scope="col">{% trans "Target Value" %}</th>
+            <th scope="col">{% trans "Clients with Data" %}</th>
+            <th scope="col">{% trans "Clients Met Target" %}</th>
+            <th scope="col">{% trans "Achievement Rate" %}</th>
         </tr>
     </thead>
     <tbody>
         {% for metric in achievement_summary.by_metric %}
         <tr>
             <td>{{ metric.metric_name }}</td>
-            <td>{% if metric.has_target %}{{ metric.target_value }}{% else %}<em>No target defined</em>{% endif %}</td>
+            <td>{% if metric.has_target %}{{ metric.target_value }}{% else %}<em>{% trans "No target defined" %}</em>{% endif %}</td>
             <td>{{ metric.total_clients }}</td>
             <td>{% if metric.has_target %}{{ metric.clients_met_target }}{% else %}—{% endif %}</td>
             <td>{% if metric.has_target %}{{ metric.achievement_rate }}%{% else %}—{% endif %}</td>
@@ -82,21 +83,21 @@
 
 <!-- Data Table -->
 <div class="page-break"></div>
-<h2>Metric Data</h2>
+<h2>{% trans "Metric Data" %}</h2>
 
 {% if grouped_rows %}
 {# Display data grouped by demographic #}
 {% for group_name, group_rows in grouped_rows.items %}
 <h3>{{ grouping_label }}: {{ group_name }}</h3>
-<p class="group-summary">{{ group_rows|length }} data point{{ group_rows|length|pluralize }}</p>
+<p class="group-summary">{% blocktrans count counter=group_rows|length %}{{ counter }} data point{% plural %}{{ counter }} data points{% endblocktrans %}</p>
 <table>
     <thead>
         <tr>
-            <th>Client Record ID</th>
-            <th>Metric Name</th>
-            <th>Value</th>
-            <th>Date</th>
-            <th>Author</th>
+            <th scope="col">{% trans "Client Record ID" %}</th>
+            <th scope="col">{% trans "Metric Name" %}</th>
+            <th scope="col">{% trans "Value" %}</th>
+            <th scope="col">{% trans "Date" %}</th>
+            <th scope="col">{% trans "Author" %}</th>
         </tr>
     </thead>
     <tbody>
@@ -119,11 +120,11 @@
 <table>
     <thead>
         <tr>
-            <th>Client Record ID</th>
-            <th>Metric Name</th>
-            <th>Value</th>
-            <th>Date</th>
-            <th>Author</th>
+            <th scope="col">{% trans "Client Record ID" %}</th>
+            <th scope="col">{% trans "Metric Name" %}</th>
+            <th scope="col">{% trans "Value" %}</th>
+            <th scope="col">{% trans "Date" %}</th>
+            <th scope="col">{% trans "Author" %}</th>
         </tr>
     </thead>
     <tbody>
