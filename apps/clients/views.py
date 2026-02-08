@@ -195,7 +195,12 @@ def client_create(request):
             client.save()
             # Enrol in selected programs
             for program in form.cleaned_data["programs"]:
-                ClientProgramEnrolment.objects.create(client_file=client, program=program)
+                ClientProgramEnrolment.objects.create(
+                    client_file=client, program=program, status="enrolled",
+                )
+            # Allow immediate access on redirect — the RBAC middleware may
+            # not yet see the new enrollment depending on connection timing.
+            request.session["_just_created_client_id"] = client.pk
             display_name = f"{client.display_name} {client.last_name}"
             messages.success(
                 request,

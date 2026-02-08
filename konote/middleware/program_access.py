@@ -110,6 +110,16 @@ class ProgramAccessMiddleware:
             match = pattern.match(path)
             if match:
                 client_id = match.group("client_id")
+                # BUG-7: Allow immediate access to a just-created client.
+                # The enrollment may not be visible to the middleware query
+                # on the redirect request due to connection timing.
+                just_created = request.session.pop("_just_created_client_id", None)
+                if just_created is not None and str(just_created) == client_id:
+                    request.accessible_client_id = int(client_id)
+                    request.user_program_role = self._get_role_for_client(
+                        request.user, client_id,
+                    )
+                    break
                 if not self._user_can_access_client(request.user, client_id):
                     if request.user.is_admin:
                         return self._forbidden_response(
