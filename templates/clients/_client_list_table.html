@@ -57,12 +57,17 @@
 
 {% else %}
 <div class="empty-state">
-    {% if status_filter or program_filter %}
+    {% if search_query %}
+    <p>{% blocktrans with clients=term.client_plural|default:"participants" query=search_query %}No {{ clients }} found matching "{{ query }}". Try a different name or check the spelling.{% endblocktrans %}</p>
+    <a href="{% url 'clients:client_list' %}" role="button">{% trans "Clear search" %}</a>
+    {% elif status_filter or program_filter %}
     <p>{% blocktrans with clients=term.client_plural|default:"participants" %}No {{ clients }} match the selected filters.{% endblocktrans %}</p>
     <a href="{% url 'clients:client_list' %}" role="button">{% trans "Clear filters" %}</a>
     {% else %}
     <p>{% blocktrans with client=term.client|default:"participant" %}No {{ client }} files yet.{% endblocktrans %}</p>
+    {% if can_create %}
     <a href="{% url 'clients:client_create' %}" role="button">{% trans "Create the first one" %}</a>
+    {% endif %}
     {% endif %}
 </div>
 {% endif %}

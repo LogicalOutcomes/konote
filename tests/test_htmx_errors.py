@@ -53,11 +53,11 @@ class Error403ResponseTest(TestCase):
         enc_module._fernet = None
 
     def test_403_contains_access_denied_message(self):
-        """403 responses should contain 'Access Denied' heading."""
+        """403 responses should contain friendly access message."""
         self.client.force_login(self.receptionist)
         response = self.client.get("/clients/create/")
         self.assertEqual(response.status_code, 403)
-        self.assertContains(response, "Access Denied", status_code=403)
+        self.assertContains(response, "have access to this page", status_code=403)
 
     def test_403_contains_helpful_instructions(self):
         """403 responses should contain helpful next steps."""
@@ -73,7 +73,7 @@ class Error403ResponseTest(TestCase):
         self.client.force_login(self.other_staff)
         response = self.client.get(f"/clients/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 403)
-        self.assertContains(response, "Access Denied", status_code=403)
+        self.assertContains(response, "have access to this page", status_code=403)
 
     def test_403_htmx_request_returns_error_content(self):
         """HTMX requests should still get meaningful error content."""
@@ -316,7 +316,7 @@ class AdminRouteErrorTest(TestCase):
         self.client.force_login(self.staff_user)
         response = self.client.get("/admin/settings/")
         self.assertEqual(response.status_code, 403)
-        self.assertContains(response, "Access Denied", status_code=403)
+        self.assertContains(response, "have access to this page", status_code=403)
 
     def test_admin_can_access_admin_routes(self):
         """Admin users should be able to access admin routes."""

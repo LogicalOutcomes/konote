@@ -7,6 +7,9 @@
 <header class="page-header">
     <h1>{% trans "Executive Overview" %}</h1>
     <p class="page-subtitle">{% trans "Aggregate statistics across your programs. Individual client records are not accessible from this view to protect confidentiality." %}</p>
+    {% if data_refreshed_at %}
+    <p class="data-timestamp">{% trans "Last updated" %}: {{ data_refreshed_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+    {% endif %}
 </header>
 
 {# Overall summary cards #}
@@ -96,6 +99,12 @@
     color: var(--pico-muted-color);
     font-size: 0.95rem;
     max-width: 60ch;
+}
+
+.data-timestamp {
+    color: var(--pico-muted-color);
+    font-size: 0.8125rem;
+    margin-top: 0;
 }
 
 .stats-overview {

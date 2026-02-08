@@ -10,20 +10,43 @@ class AuditLog(models.Model):
     """
 
     ACTION_CHOICES = [
-        ("create", _("Create")),
-        ("update", _("Update")),
-        ("delete", _("Delete")),
-        ("login", _("Login")),
-        ("login_failed", _("Login Failed")),
-        ("logout", _("Logout")),
-        ("export", _("Export")),
-        ("view", _("View")),
-        ("post", _("POST")),
-        ("put", _("PUT")),
-        ("patch", _("PATCH")),
-        ("access_denied", _("Access Denied")),
-        ("cancel", _("Cancel")),
+        ("create", _("Created")),
+        ("update", _("Updated")),
+        ("delete", _("Deleted")),
+        ("login", _("Logged in")),
+        ("login_failed", _("Login failed")),
+        ("logout", _("Logged out")),
+        ("export", _("Exported")),
+        ("view", _("Viewed")),
+        ("post", _("Created")),
+        ("put", _("Updated")),
+        ("patch", _("Updated")),
+        ("access_denied", _("Access denied")),
+        ("cancel", _("Cancelled")),
     ]
+
+    # Human-readable labels for resource_type values
+    RESOURCE_TYPE_LABELS = {
+        "session": _("Login session"),
+        "clients": _("Client record"),
+        "notes": _("Progress note"),
+        "plans": _("Plan"),
+        "events": _("Event"),
+        "programs": _("Program"),
+        "groups": _("Group"),
+        "audit_log": _("Audit log"),
+        "export": _("Export"),
+        "erasure": _("Erasure request"),
+        "registration": _("Registration"),
+        "settings": _("Settings"),
+    }
+
+    @property
+    def resource_type_display(self):
+        """Return human-readable resource type label."""
+        return self.RESOURCE_TYPE_LABELS.get(
+            self.resource_type, self.resource_type.replace("_", " ").title()
+        )
 
     event_timestamp = models.DateTimeField()
     user_id = models.IntegerField(null=True, blank=True)

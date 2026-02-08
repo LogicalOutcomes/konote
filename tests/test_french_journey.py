@@ -592,7 +592,7 @@ class AdminSettingsFrenchTest(FrenchJourneyBaseTest):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Journal d'audit")  # Page title — plain apostrophe
         self.assertContains(resp, "Utilisateur")  # "User" filter label
-        self.assertContains(resp, "Type de ressource")  # "Resource Type" filter label
+        self.assertContains(resp, "enregistrement")  # "Record type" filter label
         self.assertContains(resp, "Toutes les actions")  # "All actions" filter option
         self.assertContains(resp, "Exporter en CSV")  # "Export CSV"
         self.assertContains(resp, "Filtrer")  # "Filter" button
@@ -618,7 +618,7 @@ class ErrorPagesFrenchTest(FrenchJourneyBaseTest):
         self._login_staff_fr()
         resp = self.http.get("/admin/settings/")
         self.assertEqual(resp.status_code, 403)
-        self.assertContains(resp, "Acc\u00e8s refus\u00e9", status_code=403)  # "Access Denied"
+        self.assertContains(resp, "pas acc\u00e8s", status_code=403)  # "You don't have access"
 
     def test_403_help_section_in_french(self):
         """403 page help section renders in French."""
@@ -644,7 +644,7 @@ class ErrorPagesFrenchTest(FrenchJourneyBaseTest):
         self._login_staff_fr()
         resp = self.http.get("/admin/settings/")
         content = resp.content.decode()
-        self.assertNotIn("Access Denied", content)
+        self.assertNotIn("have access to this page", content)
         self.assertNotIn("What you can do", content)
 
 

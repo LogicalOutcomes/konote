@@ -1,28 +1,24 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Access Denied" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% trans "Page not available" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
 <article class="error-page">
     <header>
-        <h1>{% trans "Access Denied" %}</h1>
+        <h1>{% trans "You don't have access to this page" %}</h1>
     </header>
 
     <div class="error-content">
         <p class="error-message">
-            {% if exception %}
-            {{ exception }}
-            {% else %}
-            {% trans "You don't have permission to access this page." %}
-            {% endif %}
+            {% trans "This page is available to staff members and program managers. If you need access, ask your program manager." %}
         </p>
 
         <div class="error-help">
             <h2>{% trans "What you can do" %}</h2>
             <ul>
                 <li>{% trans "Check that you're signed in with the correct account" %}</li>
-                <li>{% trans "Contact your administrator if you believe you should have access" %}</li>
+                <li>{% trans "Ask your program manager if you need access to this page" %}</li>
                 <li>{% trans "Return to a page you have access to using the links below" %}</li>
             </ul>
         </div>
@@ -53,7 +49,7 @@
         margin-bottom: var(--kn-space-lg);
     }
     .error-page header h1 {
-        color: var(--kn-danger-fg);
+        color: var(--kn-text);
         margin-bottom: 0;
     }
     .error-content {
