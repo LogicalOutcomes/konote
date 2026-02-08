@@ -88,7 +88,9 @@ def _get_next_sequence(report_dir, date_str):
         # Only the no-suffix file exists — next is "a"
         return "a"
     else:
-        # Advance to the next letter
+        # Advance to the next letter (cap at 'z' to avoid non-alpha chars)
+        if max_letter >= "z":
+            return "z"
         return chr(ord(max_letter) + 1)
 
 

@@ -553,6 +553,10 @@ class ScenarioRunner(BrowserTestBase):
         if not has_clients:
             return (False, "No clients visible in client list")
 
+        # Navigate back to dashboard so scenario steps start from expected state
+        self.page.goto(self.live_url("/"))
+        self.page.wait_for_load_state("networkidle")
+
         return (True, "")
 
     def _seed_bulk_clients(self, count=150):
