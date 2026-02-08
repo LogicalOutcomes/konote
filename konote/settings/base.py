@@ -204,6 +204,10 @@ LOCALE_PATHS = [
 
 # Persist language cookie for 1 year so users don't re-select each browser session
 LANGUAGE_COOKIE_AGE = 365 * 24 * 60 * 60
+LANGUAGE_COOKIE_PATH = "/"  # BUG-9: Must be "/" — Django defaults to "/admin/" which
+                            # causes the cookie to only be sent on admin pages, losing
+                            # the language preference on all other pages.
+LANGUAGE_COOKIE_DOMAIN = None  # Current domain only (secure default)
 LANGUAGE_COOKIE_SECURE = True
 LANGUAGE_COOKIE_HTTPONLY = True
 LANGUAGE_COOKIE_SAMESITE = "Lax"

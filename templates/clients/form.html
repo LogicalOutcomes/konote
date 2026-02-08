@@ -18,7 +18,7 @@
     <div class="grid">
         <div>
             <label for="id_first_name">{% trans "First Name" %} <abbr title="{% trans 'required' %}">*</abbr></label>
-            <input type="text" name="first_name" id="id_first_name" value="{{ form.first_name.value|default:'' }}" required
+            <input type="text" name="first_name" id="id_first_name" value="{{ form.first_name.value|default:'' }}" required autofocus
                    hx-get="{% url 'clients:check_duplicate' %}"
                    hx-trigger="input changed delay:1s[this.value.length >= 3 && document.getElementById('id_birth_date').value !== '']"
                    hx-target="#duplicate-banner"
