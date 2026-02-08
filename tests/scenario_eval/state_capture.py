@@ -29,6 +29,9 @@ class StepCapture:
     interactive_element_count: int = 0
     focus_element: str = ""
 
+    # Browser console output (QA-W2)
+    console_log: list = field(default_factory=list)
+
     # Duplicate screenshot detection (QA-W3)
     is_duplicate: bool = False
 
@@ -250,6 +253,14 @@ def capture_to_evaluation_context(capture, persona_description=""):
     if capture.document_lang:
         extra_meta += f"Document language: {capture.document_lang}\n"
 
+    # Browser console output (QA-W2)
+    console_str = ""
+    if capture.console_log:
+        console_lines = capture.console_log[:50]  # Cap at 50 lines for LLM
+        console_str = "\n".join(f"  {line}" for line in console_lines)
+        if len(capture.console_log) > 50:
+            console_str += f"\n  ... ({len(capture.console_log) - 50} more lines)"
+
     # Duplicate screenshot warning (QA-W3)
     duplicate_warning = ""
     if capture.is_duplicate:
@@ -277,8 +288,10 @@ Axe-core violations: {capture.axe_violation_count}
 {"" if not a11y_tree_str else f'''
 ### Accessibility Tree (Screen Reader View)
 {a11y_tree_str}
-'''}
-### Visible Text Content
+'''}{"" if not console_str else f'''### Browser Console Output
+{console_str}
+
+'''}### Visible Text Content
 {capture.visible_text[:5000]}
 """
 
