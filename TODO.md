@@ -70,7 +70,7 @@ Tasks from the QA holdout repo that require code changes in this repo. Scenario 
 
 ### QA Scenario Runner Update — Full Coverage (see `tasks/qa-scenario-runner-update-plan.md`)
 
-_All scenario runner tasks complete except optional IRR automation._
+_All scenario runner tasks complete._
 
 **Test Data (scenario_runner.py `_create_test_data`):**
 - [x] Add DS1c test user (`staff_adhd`, Casey with ADHD) for SCN-058 — 2026-02-08 (QA-DATA1)
@@ -100,8 +100,8 @@ _All scenario runner tasks complete except optional IRR automation._
 - [x] Include `mechanical_checks` in prompt when present — 2026-02-08 (QA-EVAL2)
 - [x] Include `task_completion_criteria` in prompt when present — 2026-02-08 (QA-EVAL3)
 
-**Optional (low priority):**
-- [ ] CAL-006 inter-rater reliability automation — run CAL-001 to CAL-005 with variant configs, compute ICC and agreement metrics (QA-IRR1)
+**Inter-Rater Reliability:**
+- [x] CAL-006 inter-rater reliability automation — runs CAL-001 to CAL-005 with variant configs, computes ICC(2,1) and agreement metrics — 2026-02-08 (QA-IRR1)
 
 ## Roadmap — Future Extensions
 

@@ -142,7 +142,7 @@ IMPORTANT: Respond ONLY with valid JSON. No markdown, no explanation outside the
 
 
 def evaluate_step(persona_desc, step, page_state_text,
-                  context_from_previous="", model=None):
+                  context_from_previous="", model=None, temperature=None):
     """Evaluate a single step using the Claude API.
 
     Args:
@@ -151,6 +151,7 @@ def evaluate_step(persona_desc, step, page_state_text,
         page_state_text: Formatted page state from capture_to_evaluation_context.
         context_from_previous: What happened in previous steps.
         model: Model ID to use (defaults to Haiku).
+        temperature: Sampling temperature (0.0-1.0). None uses API default.
 
     Returns:
         StepEvaluation dataclass, or None if API is unavailable.
@@ -164,12 +165,15 @@ def evaluate_step(persona_desc, step, page_state_text,
     )
 
     try:
-        response = client.messages.create(
-            model=model or DEFAULT_MODEL,
-            max_tokens=2000,
-            system=system_prompt,
-            messages=[{"role": "user", "content": user_message}],
-        )
+        kwargs = {
+            "model": model or DEFAULT_MODEL,
+            "max_tokens": 2000,
+            "system": system_prompt,
+            "messages": [{"role": "user", "content": user_message}],
+        }
+        if temperature is not None:
+            kwargs["temperature"] = temperature
+        response = client.messages.create(**kwargs)
 
         # Parse the JSON response
         response_text = response.content[0].text.strip()

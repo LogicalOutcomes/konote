@@ -453,3 +453,233 @@ class TestAccessibilityMicro(ScenarioRunner):
     def test_aria_live_fatigue(self):
         """SCN-062: ARIA Live Fatigue — too many announcements overwhelm user."""
         self._run_a11y("SCN-062")
+
+
+def _compute_icc(scores_matrix):
+    """Compute ICC(2,1) — two-way random, single measures.
+
+    Args:
+        scores_matrix: List of lists. Each inner list is one rater/variant's
+                       scores across all subjects/scenarios.
+                       Shape: [n_raters][n_subjects]
+
+    Returns:
+        ICC value (float), or None if computation fails.
+    """
+    import math
+
+    n_raters = len(scores_matrix)
+    if n_raters < 2:
+        return None
+    n_subjects = len(scores_matrix[0])
+    if n_subjects < 2:
+        return None
+
+    # Grand mean
+    all_scores = [s for rater in scores_matrix for s in rater]
+    grand_mean = sum(all_scores) / len(all_scores)
+
+    # Row means (per subject, averaged across raters)
+    row_means = []
+    for j in range(n_subjects):
+        row_means.append(sum(scores_matrix[i][j] for i in range(n_raters)) / n_raters)
+
+    # Column means (per rater, averaged across subjects)
+    col_means = []
+    for i in range(n_raters):
+        col_means.append(sum(scores_matrix[i]) / n_subjects)
+
+    # Mean squares
+    # MSR = mean square for rows (between subjects)
+    msr = n_raters * sum((rm - grand_mean) ** 2 for rm in row_means) / (n_subjects - 1)
+    # MSC = mean square for columns (between raters)
+    msc = n_subjects * sum((cm - grand_mean) ** 2 for cm in col_means) / (n_raters - 1)
+    # MSE = mean square error (residual)
+    ss_total = sum((scores_matrix[i][j] - grand_mean) ** 2
+                   for i in range(n_raters) for j in range(n_subjects))
+    ss_rows = n_raters * sum((rm - grand_mean) ** 2 for rm in row_means)
+    ss_cols = n_subjects * sum((cm - grand_mean) ** 2 for cm in col_means)
+    ss_error = ss_total - ss_rows - ss_cols
+    df_error = (n_raters - 1) * (n_subjects - 1)
+    if df_error == 0:
+        return None
+    mse = ss_error / df_error
+
+    # ICC(2,1) formula
+    denominator = msr + (n_raters - 1) * mse + n_raters * (msc - mse) / n_subjects
+    if abs(denominator) < 1e-10:
+        return None
+    icc = (msr - mse) / denominator
+
+    # Clamp to [-1, 1] range (can be slightly outside due to floating point)
+    return max(-1.0, min(1.0, icc))
+
+
+def _compute_agreement_pct(scores_matrix, tolerance=1.0):
+    """Compute percentage of score pairs within tolerance.
+
+    For each subject, checks all rater pairs. Returns the percentage
+    where the absolute difference is <= tolerance.
+    """
+    n_raters = len(scores_matrix)
+    n_subjects = len(scores_matrix[0])
+    total_pairs = 0
+    agree_pairs = 0
+
+    for j in range(n_subjects):
+        for i1 in range(n_raters):
+            for i2 in range(i1 + 1, n_raters):
+                total_pairs += 1
+                if abs(scores_matrix[i1][j] - scores_matrix[i2][j]) <= tolerance:
+                    agree_pairs += 1
+
+    if total_pairs == 0:
+        return 0.0
+    return (agree_pairs / total_pairs) * 100.0
+
+
+# Default variant configurations for IRR testing
+_DEFAULT_IRR_VARIANTS = [
+    {"name": "default", "model": "claude-haiku-4-5-20251001", "temperature": 0.3},
+    {"name": "higher-temp", "model": "claude-haiku-4-5-20251001", "temperature": 0.8},
+    {"name": "low-temp", "model": "claude-haiku-4-5-20251001", "temperature": 0.1},
+]
+
+_CALIBRATION_IDS = ["CAL-001", "CAL-002", "CAL-003", "CAL-004", "CAL-005"]
+
+
+@pytest.mark.scenario_eval
+@pytest.mark.browser
+class TestInterRaterReliability(ScenarioRunner):
+    """CAL-006: Inter-rater reliability across evaluator variants.
+
+    Runs CAL-001 through CAL-005 with different model/temperature
+    configurations. Computes ICC(2,1) and agreement metrics to validate
+    that the LLM evaluator produces consistent scores.
+
+    This is a slow, expensive test — run sparingly after evaluator changes.
+    """
+
+    def _load_variants(self):
+        """Load variant configurations from CAL-006 YAML or use defaults."""
+        holdout = os.environ.get("SCENARIO_HOLDOUT_DIR", "")
+        if not holdout or not os.path.isdir(holdout):
+            return _DEFAULT_IRR_VARIANTS, {"min_icc": 0.60, "min_agreement_pct": 70}
+
+        scenarios = discover_scenarios(holdout, ids=["CAL-006"])
+        cal6 = [s for _, s in scenarios if s["id"] == "CAL-006"]
+        if not cal6:
+            return _DEFAULT_IRR_VARIANTS, {"min_icc": 0.60, "min_agreement_pct": 70}
+
+        scenario = cal6[0]
+        variants = scenario.get("variants", _DEFAULT_IRR_VARIANTS)
+        pass_criteria = scenario.get("pass_criteria", {
+            "min_icc": 0.60, "min_agreement_pct": 70,
+        })
+        return variants, pass_criteria
+
+    def _run_calibration_with_variant(self, scenario_id, variant):
+        """Run a single calibration scenario with a specific variant config."""
+        holdout = os.environ.get("SCENARIO_HOLDOUT_DIR", "")
+        scenarios = discover_scenarios(holdout, ids=[scenario_id])
+        scn = [s for _, s in scenarios if s["id"] == scenario_id]
+        if not scn:
+            return None
+
+        scenario = scn[0]
+        self.personas = load_personas()
+        self.use_llm = True
+        self.eval_model = variant.get("model")
+        self.eval_temperature = variant.get("temperature")
+
+        screenshot_dir = os.path.join(holdout, "reports", "screenshots")
+        result = self.run_scenario(scenario, screenshot_dir=screenshot_dir)
+        return result
+
+    def test_inter_rater_reliability(self):
+        """CAL-006: ICC and agreement across evaluator variants.
+
+        Runs all calibration scenarios with each variant configuration,
+        then computes ICC(2,1) and pairwise agreement percentage.
+        """
+        holdout = os.environ.get("SCENARIO_HOLDOUT_DIR", "")
+        if not holdout or not os.path.isdir(holdout):
+            self.skipTest("SCENARIO_HOLDOUT_DIR not set")
+
+        if _should_skip_llm():
+            self.skipTest("IRR requires LLM evaluation (no --no-llm)")
+
+        variants, pass_criteria = self._load_variants()
+        min_icc = pass_criteria.get("min_icc", 0.60)
+        min_agreement = pass_criteria.get("min_agreement_pct", 70)
+
+        # Collect scores: variants x scenarios
+        # scores_matrix[variant_idx][scenario_idx] = avg_score
+        scores_matrix = []
+        variant_names = []
+
+        for variant in variants:
+            variant_name = variant.get("name", "unnamed")
+            variant_names.append(variant_name)
+            variant_scores = []
+
+            for scenario_id in _CALIBRATION_IDS:
+                result = self._run_calibration_with_variant(scenario_id, variant)
+                if result and result.avg_score > 0:
+                    variant_scores.append(result.avg_score)
+                    get_all_results().append(result)
+                else:
+                    variant_scores.append(0.0)
+
+            scores_matrix.append(variant_scores)
+
+        # Reset eval config
+        self.eval_model = None
+        self.eval_temperature = None
+
+        # Compute ICC
+        icc = _compute_icc(scores_matrix)
+        agreement = _compute_agreement_pct(scores_matrix)
+
+        # Build report
+        report_lines = [
+            "=" * 60,
+            "INTER-RATER RELIABILITY REPORT (CAL-006)",
+            "=" * 60,
+            "",
+            f"Variants tested: {len(variants)}",
+            f"Scenarios: {', '.join(_CALIBRATION_IDS)}",
+            "",
+            "Scores by variant:",
+        ]
+        for i, name in enumerate(variant_names):
+            scores_str = ", ".join(f"{s:.2f}" for s in scores_matrix[i])
+            report_lines.append(f"  {name}: [{scores_str}]")
+
+        report_lines.extend([
+            "",
+            f"ICC(2,1): {icc:.3f}" if icc is not None else "ICC(2,1): N/A",
+            f"Agreement (within 1.0): {agreement:.1f}%",
+            "",
+            f"Pass criteria: ICC >= {min_icc}, Agreement >= {min_agreement}%",
+        ])
+
+        # Write report to file
+        report_path = os.path.join(holdout, "reports", "irr-report.txt")
+        os.makedirs(os.path.dirname(report_path), exist_ok=True)
+        with open(report_path, "w") as f:
+            f.write("\n".join(report_lines))
+
+        # Print to test output
+        print("\n" + "\n".join(report_lines))
+
+        # Assertions
+        if icc is not None:
+            self.assertGreaterEqual(
+                icc, min_icc,
+                f"ICC(2,1) = {icc:.3f} — below threshold {min_icc}"
+            )
+        self.assertGreaterEqual(
+            agreement, min_agreement,
+            f"Agreement = {agreement:.1f}% — below threshold {min_agreement}%"
+        )

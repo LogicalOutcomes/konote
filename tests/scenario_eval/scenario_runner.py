@@ -83,6 +83,8 @@ class ScenarioRunner(BrowserTestBase):
     scenario_data = None
     personas = None
     use_llm = True  # Set to False for dry-run (captures only, no API calls)
+    eval_model = None  # Override LLM model for evaluation (None = default)
+    eval_temperature = None  # Override LLM temperature (None = API default)
 
     # CDP session for network throttling (lazy-created)
     _cdp_session = None
@@ -572,6 +574,8 @@ class ScenarioRunner(BrowserTestBase):
                     step=step,
                     page_state_text=page_state_text,
                     context_from_previous=prev_context,
+                    model=self.eval_model,
+                    temperature=self.eval_temperature,
                 )
                 if evaluation:
                     evaluation.scenario_id = scenario["id"]
@@ -696,6 +700,8 @@ class ScenarioRunner(BrowserTestBase):
                     step=step,
                     page_state_text=page_state_text,
                     context_from_previous=context,
+                    model=self.eval_model,
+                    temperature=self.eval_temperature,
                 )
                 if evaluation:
                     evaluation.scenario_id = scenario["id"]
