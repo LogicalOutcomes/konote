@@ -1,5 +1,4 @@
 """Views for Outcome Insights — programme-level and client-level qualitative analysis."""
-import json
 import logging
 
 from django.contrib.auth.decorators import login_required
@@ -80,7 +79,7 @@ def program_insights(request):
             "quotes": quotes,
             "data_tier": data_tier,
             "min_participants": MIN_PARTICIPANTS_FOR_QUOTES,
-            "chart_data_json": json.dumps(structured["descriptor_trend"]),
+            "chart_data_json": structured["descriptor_trend"],
             "show_results": True,
         })
 
@@ -148,7 +147,7 @@ def client_insights_partial(request, client_id):
         "structured": structured,
         "quotes": quotes,
         "data_tier": data_tier,
-        "chart_data_json": json.dumps(structured["descriptor_trend"]),
+        "chart_data_json": structured["descriptor_trend"],
         "ai_enabled": ai_enabled,
         "scope": "client",
     }
