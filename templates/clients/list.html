@@ -59,7 +59,7 @@
                         hx-push-url="true">
                     <option value="">{% blocktrans with programs=term.program_plural|default:"programs" %}All {{ programs }}{% endblocktrans %}</option>
                     {% for prog in accessible_programs %}
-                    <option value="{{ prog.pk }}"{% if program_filter == prog.pk|stringformat:"d" %} selected{% endif %}>{{ prog.name }}</option>
+                    <option value="{{ prog.pk }}"{% if program_filter == prog.pk|stringformat:"d" %} selected{% endif %}>{{ prog.translated_name }}</option>
                     {% endfor %}
                 </select>
             </div>

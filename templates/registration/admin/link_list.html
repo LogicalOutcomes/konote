@@ -35,7 +35,7 @@
                 <br><small class="secondary">{{ link.description|truncatechars:60 }}</small>
                 {% endif %}
             </td>
-            <td>{{ link.program.name }}</td>
+            <td>{{ link.program.translated_name }}</td>
             <td>
                 {% if link.is_open %}
                     <span class="badge badge-success">{% trans "Open" %}</span>

@@ -88,6 +88,12 @@ def home(request):
     # --- Accessible programs for search filters ---
     accessible_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
 
+    # BUG-12: Only show create button if user has at least "staff" role
+    from apps.auth_app.decorators import _get_user_highest_role
+    from apps.auth_app.constants import ROLE_RANK
+    user_role = _get_user_highest_role(request.user)
+    can_create = ROLE_RANK.get(user_role, 0) >= ROLE_RANK["staff"]
+
     return render(request, "clients/home.html", {
         "results": [],
         "query": "",
@@ -104,6 +110,7 @@ def home(request):
         "today": timezone.now().date(),
         "org_name": org_name,
         "accessible_programs": accessible_programs,
+        "can_create": can_create,
     })
 
 

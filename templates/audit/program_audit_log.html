@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Access Log" %} — {{ program.name }}{% endblock %}
+{% block title %}{% trans "Access Log" %} — {{ program.translated_name }}{% endblock %}
 
 {% block content %}
 <div class="container">
     <hgroup>
-        <h1>{% trans "Access Log" %} — {{ program.name }}</h1>
+        <h1>{% trans "Access Log" %} — {{ program.translated_name }}</h1>
         <p>{% trans "All access to participant records in this program. Each entry records who accessed which record, when, and what action they performed." %}</p>
     </hgroup>
 

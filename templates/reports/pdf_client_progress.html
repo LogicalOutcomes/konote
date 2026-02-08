@@ -43,7 +43,7 @@
 <h3>{% trans "Programme Enrolments" %}</h3>
 <ul class="enrolment-list">
     {% for e in enrolments %}
-    <li>{{ e.program.name }}</li>
+    <li>{{ e.program.translated_name }}</li>
     {% endfor %}
 </ul>
 {% endif %}

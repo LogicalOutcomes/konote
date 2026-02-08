@@ -5,7 +5,7 @@
 
 {% block content %}
 <hgroup>
-    <h1>{% if editing %}{% blocktrans with name=program.name %}Edit {{ name }}{% endblocktrans %}{% else %}{% blocktrans with program=term.program|default:"Program" %}New {{ program }}{% endblocktrans %}{% endif %}</h1>
+    <h1>{% if editing %}{% blocktrans with name=program.translated_name %}Edit {{ name }}{% endblocktrans %}{% else %}{% blocktrans with program=term.program|default:"Program" %}New {{ program }}{% endblocktrans %}{% endif %}</h1>
 </hgroup>
 
 <form method="post">

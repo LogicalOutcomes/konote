@@ -14,6 +14,11 @@ From Round 2 scenario run (2026-02-08): 14 of 22 scenarios failed.
 - [x] Seed missing demo clients + fix prerequisite validator — added Maria Santos, Priya Patel, Alex Chen, Aaliyah Thompson, Marcus Williams, David Park + 8 ARIA clients. Fixed `_validate_prerequisites()` to compare full names and handle `type: "clients"` (plural). Renamed SCN-010 client to "Sofia Reyes" to avoid conflict. See `tasks/qa-seed-missing-clients.md` (QA-DATA6)
 - [x] Fix screenshot timeout — all 3 screenshot calls now use 15s timeout with viewport-only fallback when `full_page=True` hangs. See `tasks/qa-fix-scn061-timeout.md` (QA-DATA7)
 
+### QA Round 2c — Verification
+
+- [ ] Manually test BLOCKER-1 + BLOCKER-2 with keyboard — skip-to-content link and post-login focus. 10 min each. Code is in place (skip link in base.html, focus management in app.js). (QA-VERIFY1)
+- [ ] Re-run QA scenarios after deploy to confirm all fixes visible in screenshots (QA-VERIFY2)
+
 ### Pre-Launch Checklist
 
 The core app is feature-complete. These tasks prepare for production use.
@@ -86,6 +91,15 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 - ~~Full offline PWA~~ → Paper forms acceptable; basic offline banner added (BUG-6)
 - ~~Multi-tenancy~~ → Fork required for coalition implementations
 
+## QA Backlog
+
+From Round 2c expert panel — lower priority items. See `tasks/qa-action-plan-2026-02-08.md`.
+
+- [ ] Fix audit log filter truncation — "All acti..." dropdown needs CSS min-width (BUG-3 → QA-W17)
+- [ ] Add status indicators to remaining 2 settings cards — Instance Settings + Demo Accounts (IMPROVE-1 → QA-W18)
+- [ ] Add onboarding guidance for new users — help link or first-run banner, not full wizard (IMPROVE-7 → QA-W19)
+- [ ] Reduce form tab stops — tabindex audit, skip non-essential fields. Not yet tested. (IMPROVE-6 → QA-W20)
+
 ## Parking Lot
 
 ### QA Scenarios — Parking Lot
@@ -112,6 +126,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] QA Round 2c — Tier 1+2 fixes (6 bugs) — accent search (BUG-13), program French names with `name_fr` field + 33 template updates (BUG-11), untranslated French strings (BUG-8), home page button permission (BUG-12), audit filter CSS (BUG-3), IMPROVE-5 confirmed already fixed — 2026-02-08 (QA-W9 through QA-W18)
 - [x] Fix BUG-7, BUG-9, BUG-10 from QA Round 2b — 404 after create (session flag bypass), language cookie path, autofocus on create form — 2026-02-08 (BUG-7, BUG-9, BUG-10)
 - [x] Participant suggestion field + AI feedback insights — encrypted suggestion field on every note, staff-assigned priority (noted/worth exploring/important/urgent), AI insights now categorise participant feedback (request/suggestion/concern/praise) with verbatim quotes, recurring pattern detection, 3-item focus rule — 2026-02-08 (VOICE1)
 - [x] QA process improvements — pre-flight check (W1), console capture (W2), duplicate screenshot detection (W3), action verification with retry (W4), DITL key_moments coverage (W5), report naming sequence suffix (W6), 404 fix + personalised flash message (W7), aria-live on messages (W8) — 2026-02-08 (QA-W1 through QA-W8)

@@ -67,7 +67,7 @@
                 {% endif %}
             </td>
             <td>{{ sub.first_name }} {{ sub.last_name }}</td>
-            <td>{{ sub.registration_link.program.name }}</td>
+            <td>{{ sub.registration_link.program.translated_name }}</td>
             <td>{{ sub.submitted_at|date:"Y-m-d H:i" }}</td>
             <td>
                 <span class="badge badge-{{ sub.get_status_display_class }}">

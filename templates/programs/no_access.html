@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ program.name }} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{{ program.translated_name }} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
 <hgroup>
     <h1>
         <span class="program-dot" style="background-color: {{ program.colour_hex }}" aria-hidden="true"></span>
-        {{ program.name }}
+        {{ program.translated_name }}
     </h1>
 </hgroup>
 

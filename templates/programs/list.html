@@ -37,7 +37,7 @@
         <tr>
             <td>
                 <span class="program-dot" style="background-color: {{ item.program.colour_hex }}" aria-hidden="true"></span>
-                <a href="{% url 'programs:program_detail' program_id=item.program.pk %}">{{ item.program.name }}</a>
+                <a href="{% url 'programs:program_detail' program_id=item.program.pk %}">{{ item.program.translated_name }}</a>
             </td>
             <td>{{ item.program.description|default:"—"|truncatewords:10 }}</td>
             <td>{{ item.manager_name|default:"—" }}</td>

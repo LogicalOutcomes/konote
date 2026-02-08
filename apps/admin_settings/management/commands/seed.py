@@ -176,6 +176,7 @@ class Command(BaseCommand):
                 "description": "One-on-one job coaching, resume building, and interview preparation for adults seeking stable employment.",
                 "colour_hex": "#3B82F6",
                 "service_model": "individual",
+                "name_fr": "Emploi accompagn\u00e9",
             },
         )
         housing, _ = Program.objects.get_or_create(
@@ -184,6 +185,7 @@ class Command(BaseCommand):
                 "description": "Case management to help adults find and maintain stable housing, including landlord mediation and referrals.",
                 "colour_hex": "#F59E0B",
                 "service_model": "individual",
+                "name_fr": "Stabilit\u00e9 du logement",
             },
         )
         youth, _ = Program.objects.get_or_create(
@@ -192,6 +194,7 @@ class Command(BaseCommand):
                 "description": "Group activities, homework help, and mentorship for youth aged 13-18.",
                 "colour_hex": "#10B981",
                 "service_model": "both",
+                "name_fr": "Centre jeunesse sans rendez-vous",
             },
         )
         newcomer, _ = Program.objects.get_or_create(
@@ -200,6 +203,7 @@ class Command(BaseCommand):
                 "description": "Settlement support for newcomers including service navigation, English conversation circles, and community orientation.",
                 "colour_hex": "#8B5CF6",
                 "service_model": "individual",
+                "name_fr": "Connexions nouveaux arrivants",
             },
         )
         kitchen, _ = Program.objects.get_or_create(
@@ -208,6 +212,7 @@ class Command(BaseCommand):
                 "description": "Weekly cooking sessions focused on affordable, healthy meals. Open to participants from any program.",
                 "colour_hex": "#14B8A6",
                 "service_model": "group",
+                "name_fr": "Cuisine communautaire",
             },
         )
 
@@ -224,6 +229,20 @@ class Command(BaseCommand):
             if expected and prog.service_model != expected:
                 prog.service_model = expected
                 prog.save(update_fields=["service_model"])
+
+        # Ensure French names are set on existing programs (idempotent update)
+        _french_names = {
+            "Supported Employment": "Emploi accompagn\u00e9",
+            "Housing Stability": "Stabilit\u00e9 du logement",
+            "Youth Drop-In": "Centre jeunesse sans rendez-vous",
+            "Newcomer Connections": "Connexions nouveaux arrivants",
+            "Community Kitchen": "Cuisine communautaire",
+        }
+        for prog in [employment, housing, youth, newcomer, kitchen]:
+            expected_fr = _french_names.get(prog.name)
+            if expected_fr and prog.name_fr != expected_fr:
+                prog.name_fr = expected_fr
+                prog.save(update_fields=["name_fr"])
         all_programs = [employment, housing, youth, newcomer, kitchen]
 
         # --- Demo Users ---

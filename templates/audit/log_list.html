@@ -5,13 +5,12 @@
 
 {% block extra_head %}
 <style>
-    /* BUG-3b: Prevent filter dropdowns from truncating labels */
+    /* BUG-3: Prevent filter dropdowns from truncating labels */
     .audit-filters .grid {
-        grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
     }
     .audit-filters select {
-        min-width: 0;
-        text-overflow: ellipsis;
+        min-width: 12rem;
     }
 </style>
 {% endblock %}

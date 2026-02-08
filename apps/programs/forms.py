@@ -36,7 +36,7 @@ CONFIDENTIAL_KEYWORDS = [
 class ProgramForm(forms.ModelForm):
     class Meta:
         model = Program
-        fields = ["name", "description", "colour_hex", "service_model", "status", "is_confidential"]
+        fields = ["name", "name_fr", "description", "colour_hex", "service_model", "status", "is_confidential"]
         widgets = {
             "colour_hex": forms.TextInput(attrs={"type": "color"}),
             "description": forms.Textarea(attrs={"rows": 3}),

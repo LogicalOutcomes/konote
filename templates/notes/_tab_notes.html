@@ -54,7 +54,7 @@
                 <select name="program">
                     <option value="">{% trans "All programs" %}</option>
                     {% for prog in accessible_programs %}
-                    <option value="{{ prog.pk }}" {% if filter_program == prog.pk|stringformat:"d" %}selected{% endif %}>{{ prog.name }}</option>
+                    <option value="{{ prog.pk }}" {% if filter_program == prog.pk|stringformat:"d" %}selected{% endif %}>{{ prog.translated_name }}</option>
                     {% endfor %}
                 </select>
             </label>
