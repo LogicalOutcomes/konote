@@ -40,11 +40,19 @@ jobs:
           playwright install-deps chromium
 
       - name: Run QA scenario tests
-        run: pytest tests/scenario_eval/ -v --no-llm || true
+        id: run-scenarios
+        continue-on-error: true
+        run: pytest tests/scenario_eval/ -v --no-llm
         env:
           SCENARIO_HOLDOUT_DIR: ${{ github.workspace }}/qa-scenarios
           SCENARIO_NO_LLM: '1'
           DJANGO_SETTINGS_MODULE: konote.settings.test
 
       - name: Check for blocker scenarios
-        run: python scripts/qa_gate.py ${{ github.workspace }}/qa-scenarios/reports/
+        run: |
+          if [ "${{ steps.run-scenarios.outcome }}" = "failure" ]; then
+            echo "WARNING: pytest exited with an error (possible crash or import failure)"
+          fi
+          python scripts/qa_gate.py ${{ github.workspace }}/qa-scenarios/reports/
+        env:
+          PYTEST_OUTCOME: ${{ steps.run-scenarios.outcome }}

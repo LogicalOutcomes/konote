@@ -4,8 +4,8 @@ Reads the most recent *-results.json file from a report directory and
 checks whether any scenarios were flagged as blockers (red band).
 
 Exit codes:
-    0 — No blockers found (or no results file found — graceful skip).
-    1 — One or more blocker scenarios detected.
+    0 — No blockers found.
+    1 — Blocker scenarios detected, or pytest crashed with no results.
 
 Usage:
     python scripts/qa_gate.py [report_dir] [--summary-only]
@@ -73,8 +73,15 @@ def main():
 
     report_dir = args[0] if args else "."
 
+    # Check if pytest reported a crash (set by the CI workflow)
+    pytest_crashed = os.environ.get("PYTEST_OUTCOME") == "failure"
+
     # Validate directory
     if not os.path.isdir(report_dir):
+        if pytest_crashed:
+            print(f"FAILED: Report directory does not exist and pytest crashed: {report_dir}")
+            print("Pytest likely failed before producing results (import error, missing dependency).")
+            sys.exit(1)
         print(f"WARNING: Report directory does not exist: {report_dir}")
         print("Skipping QA gate check (no results to evaluate).")
         sys.exit(0)
@@ -82,6 +89,10 @@ def main():
     # Find latest results file
     results_path = find_latest_results(report_dir)
     if results_path is None:
+        if pytest_crashed:
+            print(f"FAILED: No results found and pytest crashed.")
+            print("Pytest likely failed before producing results (import error, missing dependency).")
+            sys.exit(1)
         print(f"WARNING: No *-results.json files found in {report_dir}")
         print("Skipping QA gate check (no results to evaluate).")
         sys.exit(0)
