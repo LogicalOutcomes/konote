@@ -108,6 +108,18 @@ class ProgressNote(models.Model):
     _notes_text_encrypted = models.BinaryField(default=b"", blank=True)
     _summary_encrypted = models.BinaryField(default=b"", blank=True)
     _participant_reflection_encrypted = models.BinaryField(default=b"", blank=True)
+    _participant_suggestion_encrypted = models.BinaryField(default=b"", blank=True)
+
+    SUGGESTION_PRIORITY_CHOICES = [
+        ("", "---------"),
+        ("noted", _("Noted")),
+        ("worth_exploring", _("Worth exploring")),
+        ("important", _("Important")),
+        ("urgent", _("Urgent")),
+    ]
+    suggestion_priority = models.CharField(
+        max_length=20, choices=SUGGESTION_PRIORITY_CHOICES, default="", blank=True,
+    )
 
     @property
     def notes_text(self):
@@ -135,6 +147,16 @@ class ProgressNote(models.Model):
     @participant_reflection.setter
     def participant_reflection(self, value):
         self._participant_reflection_encrypted = encrypt_field(value)
+
+    @property
+    def participant_suggestion(self):
+        """The participant's suggestion for programme improvement (decrypted)."""
+        return decrypt_field(self._participant_suggestion_encrypted)
+
+    @participant_suggestion.setter
+    def participant_suggestion(self, value):
+        self._participant_suggestion_encrypted = encrypt_field(value)
+
     ENGAGEMENT_CHOICES = [
         ("", "---------"),
         ("disengaged", _("Disengaged")),

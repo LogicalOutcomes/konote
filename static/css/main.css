@@ -2376,6 +2376,50 @@ article[aria-label="notification"].fading-out {
     }
 }
 
+/* Participant suggestion section — light, present but not demanding */
+.participant-suggestion {
+    border-left: 4px solid #f59e0b;
+    padding: var(--kn-space-base) var(--kn-space-lg);
+    margin: var(--kn-space-xl) 0;
+}
+.participant-suggestion h3 {
+    margin: 0 0 var(--kn-space-xs) 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: #b45309;
+    display: flex;
+    align-items: center;
+    gap: var(--kn-space-sm);
+}
+.participant-suggestion .suggestion-icon { font-size: 1.1rem; }
+.participant-suggestion .suggestion-prompt {
+    font-size: 0.875rem;
+    color: var(--kn-text-secondary);
+    margin: 0 0 var(--kn-space-sm) 0;
+    line-height: 1.4;
+}
+.participant-suggestion .suggestion-prompt em {
+    color: var(--kn-text);
+    font-weight: 500;
+}
+.participant-suggestion textarea {
+    background: var(--kn-card-bg);
+    border-color: var(--kn-border);
+    margin-bottom: 0;
+}
+.participant-suggestion textarea:focus {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 2px #fef3c7;
+}
+.participant-suggestion textarea::placeholder { font-style: italic; color: var(--kn-text-muted); }
+.suggestion-priority-row { margin-top: var(--kn-space-sm); }
+.suggestion-priority-row select { max-width: 200px; }
+.suggestion-priority-row small { font-size: 0.75rem; }
+@media (max-width: 480px) {
+    .participant-suggestion { padding: var(--kn-space-sm) var(--kn-space-base); margin: var(--kn-space-lg) 0; }
+    .participant-suggestion h3 { font-size: 0.875rem; }
+}
+
 /* ============================================
    CLIENT VOICE — Goal callout & progress pills
    ============================================ */
@@ -2577,3 +2621,35 @@ article[aria-label="notification"].fading-out {
 }
 .ai-narrative { line-height: 1.6; }
 .ai-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+/* Participant feedback categories */
+.participant-feedback-grid { display: flex; flex-direction: column; gap: 0.75rem; }
+.feedback-item {
+    border: 1px solid var(--kn-border, #dee2e6);
+    border-radius: var(--kn-radius, 4px);
+    padding: 0.75rem 1rem;
+}
+.feedback-item summary {
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.feedback-item summary small { font-weight: 400; }
+.feedback-category-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 3px;
+    white-space: nowrap;
+}
+.feedback-badge--request { background: #e3f2fd; color: #1565c0; }
+.feedback-badge--suggestion { background: #e8f5e9; color: #2e7d32; }
+.feedback-badge--complaint, .feedback-badge--concern { background: #fff3e0; color: #e65100; }
+.feedback-badge--praise { background: #f3e5f5; color: #7b1fa2; }
+.insight-quote--compact { margin: 0.5rem 0 0; padding: 0.3rem 0.75rem; }
+.feedback-item .insight-quote--compact:last-child { margin-bottom: 0; }

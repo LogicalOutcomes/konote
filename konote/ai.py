@@ -215,11 +215,42 @@ def generate_outcome_insights(program_name, date_range, structured_data, quotes)
         "- If the most frequent theme appears in fewer than 3 quotes, "
         "say 'no dominant themes emerged.'\n"
         "- Use Canadian English spelling (programme, colour, centre).\n\n"
+        "PARTICIPANT FEEDBACK — this is critical:\n"
+        "Read the quotes carefully for actionable feedback. Categorise what "
+        "participants are saying into these categories:\n"
+        "- 'request': things participants are asking for or need\n"
+        "- 'suggestion': ideas participants have for improving the programme\n"
+        "- 'concern': things participants are unhappy about or struggling with "
+        "in the programme/service itself (not personal life struggles). "
+        "Never use the word 'complaint' — frame all critical feedback as "
+        "concerns or unmet needs.\n"
+        "- 'praise': things participants appreciate about the programme\n"
+        "Each finding must include a short description AND at least one "
+        "verbatim supporting quote. Only include categories that have evidence "
+        "in the quotes — do not invent feedback.\n"
+        "Some quotes have source='suggestion' — these are direct responses to "
+        "'If you could change one thing about this programme, what would it be?' "
+        "and may include a staff-assigned priority. Pay special attention to these.\n\n"
+        "RECURRING PATTERNS — important:\n"
+        "Pay special attention to feedback that individually appears minor but "
+        "recurs across multiple participants. Surface these as findings with "
+        "accurate counts. A low-priority item mentioned by 5+ participants is "
+        "more actionable than a high-priority item mentioned once.\n\n"
+        "FOCUS: Return at most 3 participant_feedback items in the main list, "
+        "prioritised by: (1) any urgent/safety items, (2) highest-frequency "
+        "recurring patterns, (3) highest staff-rated priority. Quality over "
+        "quantity — 3 actionable findings are better than 10 vague ones.\n\n"
         "Return a JSON object with these keys:\n"
         "- summary: 2-3 paragraphs of narrative text\n"
         "- themes: array of 3-5 theme strings with counts\n"
         "- cited_quotes: array of {text, note_id, context} — verbatim only\n"
-        "- recommendations: 1 paragraph of staff observations\n\n"
+        "- participant_feedback: array of objects (max 3), each with:\n"
+        "    - category: one of 'request', 'suggestion', 'concern', 'praise'\n"
+        "    - finding: 1 sentence describing the feedback\n"
+        "    - count: how many participants expressed this\n"
+        "    - supporting_quotes: array of {text, note_id} — verbatim only\n"
+        "- recommendations: 1 paragraph of staff observations based on the "
+        "feedback above\n\n"
         "Return ONLY the JSON object, no other text."
     )
 
@@ -300,6 +331,38 @@ def validate_insights_response(response, original_quotes):
     # Ensure themes is a list
     if not isinstance(response.get("themes"), list):
         response["themes"] = []
+
+    # Validate participant_feedback — optional key (older cached responses won't have it)
+    valid_categories = {"request", "suggestion", "concern", "complaint", "praise"}
+    if isinstance(response.get("participant_feedback"), list):
+        verified_feedback = []
+        for item in response["participant_feedback"]:
+            if not isinstance(item, dict):
+                continue
+            if item.get("category") not in valid_categories:
+                continue
+            if not item.get("finding"):
+                continue
+            # Verify supporting quotes are verbatim
+            if isinstance(item.get("supporting_quotes"), list):
+                verified_sq = []
+                for sq in item["supporting_quotes"]:
+                    if not isinstance(sq, dict) or "text" not in sq:
+                        continue
+                    is_verbatim = any(sq["text"] in orig for orig in original_texts)
+                    if is_verbatim:
+                        verified_sq.append(sq)
+                    else:
+                        logger.info("Feedback quote not verbatim, skipping: %s", sq.get("text", "")[:80])
+                item["supporting_quotes"] = verified_sq
+            else:
+                item["supporting_quotes"] = []
+            # Only keep feedback items that still have at least one verified quote
+            if item["supporting_quotes"]:
+                verified_feedback.append(item)
+        response["participant_feedback"] = verified_feedback
+    else:
+        response["participant_feedback"] = []
 
     return response
 

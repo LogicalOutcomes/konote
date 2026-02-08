@@ -96,6 +96,19 @@ class FullNoteForm(forms.Form):
         label=_("Participant's reflection"),
         help_text=_("Record their words, not your interpretation."),
     )
+    participant_suggestion = forms.CharField(
+        widget=forms.Textarea(attrs={
+            "rows": 2,
+            "placeholder": _('e.g. "Tea is always cold" or "Loves the Friday group" or "Wishes sessions were longer"'),
+        }),
+        required=False,
+        label=_("What they'd change"),
+    )
+    suggestion_priority = forms.ChoiceField(
+        choices=ProgressNote.SUGGESTION_PRIORITY_CHOICES,
+        required=False,
+        label=_("Priority"),
+    )
     consent_confirmed = forms.BooleanField(
         required=True,
         label=_("We created this note together"),

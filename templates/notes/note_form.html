@@ -133,6 +133,29 @@
         <small class="reflection-help">{% trans "Record their words, not your interpretation. Even a brief phrase captures their voice." %}</small>
     </div>
 
+    <!-- Participant feedback / suggestion -->
+    <div class="participant-suggestion" role="region" aria-labelledby="suggestion-heading">
+        <h3 id="suggestion-heading">
+            <span class="suggestion-icon" aria-hidden="true">💡</span>
+            {% trans "What they'd change" %}
+        </h3>
+        <p class="suggestion-prompt">
+            <em>"{% trans "If you could change one thing about this programme, what would it be?" %}"</em>
+        </p>
+        <label for="{{ form.participant_suggestion.id_for_label }}" class="visually-hidden">
+            {% trans "What they'd change" %}
+        </label>
+        {{ form.participant_suggestion }}
+        {% if form.participant_suggestion.errors %}<small class="error" id="suggestion-error" role="alert">{{ form.participant_suggestion.errors.0 }}</small>{% endif %}
+
+        <div class="suggestion-priority-row" id="suggestion-priority-row" hidden>
+            <label for="{{ form.suggestion_priority.id_for_label }}">{% trans "Priority" %}</label>
+            {{ form.suggestion_priority }}
+            <small>{% trans "Urgent = safety/access · Important = affects many · Worth exploring = good idea · Noted = heard and recorded" %}</small>
+            {% if form.suggestion_priority.errors %}<small class="error" id="priority-error" role="alert">{{ form.suggestion_priority.errors.0 }}</small>{% endif %}
+        </div>
+    </div>
+
     <!-- Sticky footer with confirmation and save -->
     <div class="sticky-form-footer{% if form.consent_confirmed.errors %} has-error{% endif %}" role="region" aria-label="{% trans 'Confirm and save' %}">
         <div class="sticky-form-footer-inner">
@@ -171,6 +194,15 @@ document.querySelectorAll(".target-selector").forEach(function (cb) {
         }
     });
 });
+
+// Show priority dropdown only when suggestion has content
+var suggestionField = document.querySelector('[name="participant_suggestion"]');
+var priorityRow = document.getElementById('suggestion-priority-row');
+if (suggestionField && priorityRow) {
+    function togglePriority() { priorityRow.hidden = !suggestionField.value.trim(); }
+    suggestionField.addEventListener('input', togglePriority);
+    togglePriority(); // Handle pre-filled values on page load
+}
 
 // Auto-fill interaction type from template's default
 var templateSelect = document.querySelector('[name="template"]');

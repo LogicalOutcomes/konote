@@ -339,6 +339,8 @@ def note_create(request, client_id):
                     template=form.cleaned_data.get("template"),
                     summary=form.cleaned_data.get("summary", ""),
                     participant_reflection=form.cleaned_data.get("participant_reflection", ""),
+                    participant_suggestion=form.cleaned_data.get("participant_suggestion", ""),
+                    suggestion_priority=form.cleaned_data.get("suggestion_priority", ""),
                     engagement_observation=form.cleaned_data.get("engagement_observation", ""),
                     follow_up_date=form.cleaned_data.get("follow_up_date"),
                 )

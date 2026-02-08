@@ -8439,3 +8439,58 @@ msgstr ""
 
 msgid "Please select at least one programme."
 msgstr ""
+
+msgid "%(name)s's %(term)s file created successfully."
+msgstr ""
+
+msgid "Concern"
+msgstr ""
+
+msgid "If you could change one thing about this programme, what would it be?"
+msgstr ""
+
+msgid "Important"
+msgstr ""
+
+msgid "Noted"
+msgstr ""
+
+msgid "Participant Feedback"
+msgstr ""
+
+msgid "Praise"
+msgstr ""
+
+msgid "Priority"
+msgstr ""
+
+msgid "Reflection:"
+msgstr ""
+
+msgid "Request"
+msgstr ""
+
+msgid "Suggestion"
+msgstr ""
+
+msgid "Suggestion:"
+msgstr ""
+
+msgid "Urgent"
+msgstr ""
+
+msgid ""
+"Urgent = safety/access · Important = affects many · Worth exploring = good "
+"idea · Noted = heard and recorded"
+msgstr ""
+
+msgid "What they'd change"
+msgstr ""
+
+msgid "Worth exploring"
+msgstr ""
+
+msgid ""
+"e.g. \"Tea is always cold\" or \"Loves the Friday group\" or \"Wishes "
+"sessions were longer\""
+msgstr ""

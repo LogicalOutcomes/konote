@@ -249,7 +249,7 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
 
         quotes.append(quote)
 
-    # Also collect from participant_reflection on ProgressNote
+    # Also collect from participant_reflection and participant_suggestion on ProgressNote
     if len(quotes) < max_quotes:
         notes_qs = ProgressNote.objects.filter(status="default")
         if client_file:
@@ -270,28 +270,44 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
             if len(quotes) >= max_quotes:
                 break
 
+            # Collect participant_reflection
             text = note.participant_reflection
-            if not text:
-                continue
+            if text:
+                text = text.strip()
+                word_count = len(text.split())
+                normalised = text.lower().strip()
+                if word_count >= 10 and normalised not in seen_texts:
+                    seen_texts.add(normalised)
+                    quote = {
+                        "text": text,
+                        "target_name": "",
+                        "note_id": note.pk,
+                    }
+                    if include_dates:
+                        quote["date"] = note.effective_date
+                    quotes.append(quote)
 
-            text = text.strip()
-            word_count = len(text.split())
-            if word_count < 10:
-                continue
+            if len(quotes) >= max_quotes:
+                break
 
-            normalised = text.lower().strip()
-            if normalised in seen_texts:
-                continue
-            seen_texts.add(normalised)
-
-            quote = {
-                "text": text,
-                "target_name": "",  # Reflections are note-level, not target-specific
-                "note_id": note.pk,
-            }
-            if include_dates:
-                quote["date"] = note.effective_date
-
-            quotes.append(quote)
+            # Collect participant_suggestion (tagged as suggestion for the AI)
+            suggestion = note.participant_suggestion
+            if suggestion:
+                suggestion = suggestion.strip()
+                word_count = len(suggestion.split())
+                normalised = suggestion.lower().strip()
+                if word_count >= 5 and normalised not in seen_texts:
+                    seen_texts.add(normalised)
+                    priority = note.suggestion_priority if note.suggestion_priority else ""
+                    quote = {
+                        "text": suggestion,
+                        "target_name": "",
+                        "source": "suggestion",
+                        "priority": priority,
+                        "note_id": note.pk,
+                    }
+                    if include_dates:
+                        quote["date"] = note.effective_date
+                    quotes.append(quote)
 
     return quotes

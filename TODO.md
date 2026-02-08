@@ -112,6 +112,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Participant suggestion field + AI feedback insights — encrypted suggestion field on every note, staff-assigned priority (noted/worth exploring/important/urgent), AI insights now categorise participant feedback (request/suggestion/concern/praise) with verbatim quotes, recurring pattern detection, 3-item focus rule — 2026-02-08 (VOICE1)
 - [x] QA process improvements — pre-flight check (W1), console capture (W2), duplicate screenshot detection (W3), action verification with retry (W4), DITL key_moments coverage (W5), report naming sequence suffix (W6), 404 fix + personalised flash message (W7), aria-live on messages (W8) — 2026-02-08 (QA-W1 through QA-W8)
 - [x] QA Scenario Runner full coverage — 4 test users, 6 test clients, 7 action types (voice/dictate/intercept/tabs/back/screenshot), 5 new test classes + 2 updated (22 new scenarios), LLM evaluator prompt enhancements (cognitive/mechanical/completion checks) — 2026-02-08 (QA-DATA1-5, QA-ACT1-5, QA-TEST1-7, QA-EVAL1-3)
 - [x] QA Infrastructure Phase 3 — CI/CD gate (QA-T11), satisfaction gap tracking (QA-T12), bidirectional ticket sync (QA-T14). GitHub Actions workflows, standalone scripts, JSON results serializer — 2026-02-08 (QA-T11, QA-T12, QA-T14)
@@ -135,14 +136,14 @@ For detailed history, see `tasks/ARCHIVE.md`. Summary of completed work:
 | Area | What's Done |
 |------|-------------|
 | **Core app (Phases 1-8)** | Clients, plans, notes, events, charts, admin, security, UX |
-| **Client voice & qualitative** | Client-goal fields, progress descriptors, engagement observation, qualitative summary |
+| **Client voice & qualitative** | Client-goal fields, progress descriptors, engagement observation, participant reflection, participant suggestion with priority, qualitative summary |
 | **Groups** | Service groups, activity groups, projects — session logs, attendance, highlights, milestones, outcomes |
 | **Confidential programs** | Isolation, guided setup, Django admin filtering, audit logging, small-cell suppression, DV-ready documentation |
 | **Duplicate detection & merge** | Phone + name/DOB matching, cross-program dedup, admin merge tool with full data transfer |
 | **Demo data** | 5 programs, 15 clients, 3 groups, cross-enrolments, approachable metrics |
 | **Secure export** | Bug fix, audit logging, warnings, secure links, permission alignment |
 | **French** | 2,146 system strings (100% translated), bilingual login, language switcher, translate_strings command |
-| **Reporting** | Funder reports, aggregation, demographics, fiscal year, PDF exports |
+| **Reporting** | Funder reports, aggregation, demographics, fiscal year, PDF exports, AI participant feedback (categorised with verbatim quotes) |
 | **Documentation** | Getting started, security ops, deployment guides (Azure, Railway, Elest.io, FullHost) |
 | **Registration** | Self-service public forms with duplicate detection and capacity limits |
 | **Privacy** | Tiered client data erasure (anonymise/purge/delete), multi-PM approval, erasure codes, PDF receipts, PIPEDA compliance |
