@@ -4,12 +4,27 @@
 
 - [ ] Decide product name — should web version be called "KoNote" (not "KoNote2"). See `tasks/naming-versioning.md` (NAME1)
 - [ ] Update konote-website git remote URL — repo was renamed to `konote2-website` but local remote still points to old `konote2` name (NAME2)
+- [ ] 14 pre-existing test failures + 4 errors in full suite — none from new code, all existed before code review work. See details below (TEST-FIX1)
 
 ## Active Work
 
 ### Code Review Remaining (from 2026-02-07 review — see `tasks/code-review-2026-02-07.md`)
 
-_No remaining code review items._
+_All review items complete. 74 new tests added. Pre-existing test failures below._
+
+### Pre-Existing Test Failures (TEST-FIX1)
+
+**Failures (14):**
+- [ ] `test_attendance_report_date_filter` — expects "No attendance data" but template shows table with 0 sessions (TEST-FIX1a)
+- [ ] `test_admin_can_create_program` + `test_admin_can_edit_program` — POST returns 200 not 302, form validation likely failing (TEST-FIX1b)
+- [ ] `MetricExportTest` + `MetricImportUpdateTest` — 3 failures in `apps/plans/tests.py` (TEST-FIX1c)
+- [ ] `test_phone_match_found` — in `test_confidential_isolation.py` (TEST-FIX1d)
+- [ ] `test_create_erasure_request` — in `test_erasure.py` (TEST-FIX1e)
+- [ ] `test_audit_log_in_french` + `test_client_data_export_in_french` — in `test_french_journey.py` (TEST-FIX1f)
+
+**Errors (4):**
+- [ ] `EmailNotificationWarningTests` — 2 errors in `test_erasure.py` (TEST-FIX1g)
+- [ ] `FocusManagementBrowserTest` + `ResponsiveLayoutBrowserTest` — need Playwright installed (TEST-FIX1h)
 
 ### Scenario Evaluation Fixes (from 2026-02-07 — see `tasks/2026-02-07-improvement-tickets.md`)
 

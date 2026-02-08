@@ -55,18 +55,40 @@ class SessionLogForm(forms.Form):
 
 
 # ---------------------------------------------------------------------------
-# 3. HighlightForm (plain Form)
+# 3. SessionAttendanceForm (dynamic fields per member)
 # ---------------------------------------------------------------------------
 
-class HighlightForm(forms.Form):
-    """Per-member observation during a session."""
+class SessionAttendanceForm(forms.Form):
+    """Dynamic attendance + highlight fields for each group member.
 
-    membership_id = forms.IntegerField(widget=forms.HiddenInput)
-    notes = forms.CharField(
-        widget=forms.Textarea(attrs={"rows": 2}),
-        required=False,
-        label=_("Observation"),
-    )
+    Creates present_{pk} (BooleanField) and highlight_{pk} (CharField) fields
+    for every active membership passed via the ``members`` kwarg.
+    """
+
+    def __init__(self, *args, members=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._members = list(members or [])
+        for member in self._members:
+            self.fields[f"present_{member.pk}"] = forms.BooleanField(
+                required=False,
+                label=member.display_name,
+            )
+            self.fields[f"highlight_{member.pk}"] = forms.CharField(
+                required=False,
+                max_length=500,
+                label=_("Highlight for %(name)s") % {"name": member.display_name},
+            )
+
+    def get_attendance_data(self):
+        """Return list of (membership, present, highlight_notes) tuples."""
+        result = []
+        for member in self._members:
+            present = self.cleaned_data.get(f"present_{member.pk}", False)
+            highlight = self.cleaned_data.get(
+                f"highlight_{member.pk}", ""
+            ).strip()
+            result.append((member, present, highlight))
+        return result
 
 
 # ---------------------------------------------------------------------------

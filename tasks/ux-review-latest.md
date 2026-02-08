@@ -1,20 +1,38 @@
 # KoNote2 UX Walkthrough Report
 
-**Generated:** 2026-02-07 14:55:05  
+**Generated:** 2026-02-07 20:40:41  
 **Command:** `pytest tests/ux_walkthrough/ -v`
 
 ## Summary
 
 | Metric | This Run | Previous |
 |--------|----------|----------|
-| Pages visited | 311 | 311 (same) |
-| Critical issues | 0 |
-| Warnings | 13 | 13 (same) |
-| Info items | 20 | 20 (same) |
+| Pages visited | 326 | 326 (same) |
+| Critical issues | 4 | 4 (same) |
+| Warnings | 21 | 21 (same) |
+| Info items | 37 | 37 (same) |
 
 ## Critical Issues
 
-_No critical issues found._
+- **[Browser] Colour Contrast** `/clients/`
+  [dark] Client list: Contrast violation (serious) on `.filter-bar > summary`
+  _Fix any of the following:
+  Element has insufficient color contrast of 4.2 (foreground color: #7b8495, background color: #12252c, font size: 9.8pt (13.125px), font weight: normal). Expected contrast r_
+
+- **[Browser] Colour Contrast** `/clients/1/`
+  [dark] Client detail: Contrast violation (serious) on `.tab-active`
+  _Fix any of the following:
+  Element has insufficient color contrast of 3.19 (foreground color: #0d7377, background color: #13171f, font size: 9.8pt (13.125px), font weight: normal). Expected contrast _
+
+- **[Browser] Colour Contrast** `/notes/client/1/`
+  [dark] Notes timeline: Contrast violation (serious) on `.tab-active`
+  _Fix any of the following:
+  Element has insufficient color contrast of 3.19 (foreground color: #0d7377, background color: #13171f, font size: 9.8pt (13.125px), font weight: normal). Expected contrast _
+
+- **[Browser] Colour Contrast** `/clients/3/`
+  [light] Client detail: Contrast violation (serious) on `.quick-info-section > .quick-info > .quick-info-item > dt`
+  _Fix any of the following:
+  Element has insufficient color contrast of 4.26 (foreground color: #64748b, background color: #ecf4f4, font size: 8.4pt (11.25px), font weight: normal). Expected contrast r_
 
 ## Warning Issues
 
@@ -56,6 +74,33 @@ _No critical issues found._
 
 - **[Admin] Assign worker to program** `/programs/3/roles/add/`
   No <html> element found
+
+- **[Direct Service] Target history for Bob (403)** `/plans/targets/2/history/`
+  403 page has no links — user may be stuck
+
+- **[Direct Service] Group detail (other program, 403)** `/groups/2/`
+  403 page has no links — user may be stuck
+
+- **[Direct Service] Milestone edit (other program, 403)** `/groups/milestone/1/edit/`
+  403 page has no links — user may be stuck
+
+- **[Direct Service] Session log (other program, 403)** `/groups/2/session/`
+  403 page has no links — user may be stuck
+
+- **[Direct Service] Target history (other program, 403)** `/plans/targets/2/history/`
+  403 page has no links — user may be stuck
+
+- **[Browser] Focus Management** `/clients/3/`
+  Custom fields: Focus lost after switching to edit mode
+  _Focus on: None_
+
+- **[Browser] Focus Management** `/plans/client/7/`
+  Plan section: Focus lost after clicking Edit
+  _Focus on: None_
+
+- **[Browser] Responsive Layout** `/plans/client/3/`
+  [mobile] Plan view: Horizontal overflow detected
+  _scrollWidth=466, clientWidth=375 at 375x667_
 
 ## Info Issues
 
@@ -104,20 +149,71 @@ _No critical issues found._
 - **[Admin (FR)] Audit log** `/admin/audit/`
   Table missing <caption> or aria-label
 
-- **[Browser] Focus Management** `/clients/1/`
-  Consent: No consent edit button found
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "Skip to main content" is 1x1px (min 44x44)
 
-- **[Browser] Focus Management** `/clients/3/`
-  Custom fields: No edit button found (may not have editable fields)
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "KoNote2" is 77x38px (min 44x44)
 
-- **[Browser] Focus Management** `/notes/client/5/`
-  Note expansion: No note card link found
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <button> "" is 39x13px (min 44x44)
 
-- **[Browser] Focus Management** `/plans/client/7/`
-  Plan section: No edit button found
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "Home" is 55x38px (min 44x44)
 
-- **[Browser] Focus Management** `/clients/search/`
-  Search: No #client-search input found
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "Participants" is 91x38px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "Info" is 48x38px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "Plan1" is 69x38px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "Progress Note1" is 128x38px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "Events2" is 83x38px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "Analysis" is 72x38px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "Edit" is 343x36px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "← Back to List" is 75x18px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "Export PDF" is 343x36px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "Export All Data" is 343x36px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <button> "✎ Edit" is 70x28px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/`
+  [mobile] Client list: Touch target too small — <a> "Skip to main content" is 1x1px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/`
+  [mobile] Client list: Touch target too small — <a> "KoNote2" is 77x38px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/`
+  [mobile] Client list: Touch target too small — <button> "" is 39x13px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/`
+  [mobile] Client list: Touch target too small — <select> "All statuses" is 309x41px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/`
+  [mobile] Client list: Touch target too small — <select> "All Programs" is 309x41px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/`
+  [mobile] Client list: Touch target too small — <a> "Clear filters" is 94x36px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/`
+  [mobile] Client list: Touch target too small — <a> "Jane Doe" is 62x20px (min 44x44)
 
 ## Known Limitations
 
@@ -263,6 +359,7 @@ _No critical issues found._
 | Client list (Housing only) | `/clients/` | 200 | None |
 | Direct access to Bob's profile (403) | `/clients/2/` | 403 | None |
 | Access Jane's profile (own program) | `/clients/1/` | 200 | None |
+| Target history for Bob (403) | `/plans/targets/2/history/` | 403 | 1 issue(s) |
 | Search for Bob (should find no results) | `/clients/search/?q=Bob` | 200 | None |
 | Client create form | `/clients/create/` | 200 | None |
 | View new client profile | `/clients/3/` | 200 | None |
@@ -271,6 +368,11 @@ _No critical issues found._
 | Search client list by note text | `/clients/?q=seemed+well` | 200 | None |
 | Dedicated search by note text | `/clients/search/?q=seemed+well` | 200 | None |
 | Search for other program's note content | `/clients/search/?q=vocational` | 200 | None |
+| Group detail (other program, 403) | `/groups/2/` | 403 | 1 issue(s) |
+| Milestone edit (other program, 403) | `/groups/milestone/1/edit/` | 403 | 1 issue(s) |
+| Own program group (200) | `/groups/1/` | 200 | None |
+| Session log (other program, 403) | `/groups/2/session/` | 403 | 1 issue(s) |
+| Target history (other program, 403) | `/plans/targets/2/history/` | 403 | 1 issue(s) |
 
 ### Admin (FR)
 
@@ -551,6 +653,7 @@ _No critical issues found._
 | Direct Service | Direct access to Bob (403) | `/clients/2/` | 403 | None |
 | Direct Service | HTMX partial for Bob (403) | `/clients/2/custom-fields/display/` | 403 | None |
 | Direct Service | Jane's profile (own program) | `/clients/1/` | 200 | None |
+| Direct Service | Target history blocked | `/plans/targets/2/history/` | 403 | None |
 | Direct Service | Search for Bob (no results expected) | `/clients/search/?q=Bob` | 200 | None |
 
 ### Morning Intake Flow
@@ -584,23 +687,106 @@ _No critical issues found._
 | Direct Service | Dedicated search by note content | `/clients/search/?q=seemed+well` | 200 | None |
 | Direct Service | Note search isolation (no cross-program leak) | `/clients/search/?q=vocational` | 200 | None |
 
+### Group Permission Leakage
+
+| Role | Step | URL | Status | Issues |
+|------|------|-----|--------|--------|
+| Direct Service | Group detail blocked | `/groups/2/` | 403 | None |
+| Direct Service | Membership remove blocked | `/groups/member/1/remove/` | 403 | None |
+| Direct Service | Milestone create blocked | `/groups/2/milestone/` | 403 | None |
+| Direct Service | Milestone edit blocked | `/groups/milestone/1/edit/` | 403 | None |
+| Direct Service | Outcome create blocked | `/groups/2/outcome/` | 403 | None |
+| Direct Service | Own program group accessible | `/groups/1/` | 200 | None |
+| Direct Service | Session log blocked | `/groups/2/session/` | 403 | None |
+| Direct Service | Target history blocked | `/plans/targets/2/history/` | 403 | None |
+
 ## Browser-Based Findings
 
 _Tested with Playwright (headless Chromium) + axe-core._
 
+### Colour Contrast
+
+- **[CRITICAL]** `/clients/` — [dark] Client list: Contrast violation (serious) on `.filter-bar > summary`
+  _Fix any of the following:
+  Element has insufficient color contrast of 4.2 (foreground color: #7b8495, background color: #12252c, font size: 9.8pt (13.125px), font weight: normal). Expected contrast r_
+
+- **[CRITICAL]** `/clients/1/` — [dark] Client detail: Contrast violation (serious) on `.tab-active`
+  _Fix any of the following:
+  Element has insufficient color contrast of 3.19 (foreground color: #0d7377, background color: #13171f, font size: 9.8pt (13.125px), font weight: normal). Expected contrast _
+
+- **[CRITICAL]** `/notes/client/1/` — [dark] Notes timeline: Contrast violation (serious) on `.tab-active`
+  _Fix any of the following:
+  Element has insufficient color contrast of 3.19 (foreground color: #0d7377, background color: #13171f, font size: 9.8pt (13.125px), font weight: normal). Expected contrast _
+
+- **[CRITICAL]** `/clients/3/` — [light] Client detail: Contrast violation (serious) on `.quick-info-section > .quick-info > .quick-info-item > dt`
+  _Fix any of the following:
+  Element has insufficient color contrast of 4.26 (foreground color: #64748b, background color: #ecf4f4, font size: 8.4pt (11.25px), font weight: normal). Expected contrast r_
+
 ### Focus Management
 
-- **[INFO]** `/clients/1/` — Consent: No consent edit button found
+- **[WARNING]** `/clients/3/` — Custom fields: Focus lost after switching to edit mode
+  _Focus on: None_
 
-- **[INFO]** `/clients/3/` — Custom fields: No edit button found (may not have editable fields)
+- **[WARNING]** `/plans/client/7/` — Plan section: Focus lost after clicking Edit
+  _Focus on: None_
 
-- **[INFO]** `/notes/client/5/` — Note expansion: No note card link found
+### Responsive Layout
 
-- **[INFO]** `/plans/client/7/` — Plan section: No edit button found
+- **[WARNING]** `/plans/client/3/` — [mobile] Plan view: Horizontal overflow detected
+  _scrollWidth=466, clientWidth=375 at 375x667_
 
-- **[INFO]** `/clients/search/` — Search: No #client-search input found
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Skip to main content" is 1x1px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "KoNote2" is 77x38px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <button> "" is 39x13px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Home" is 55x38px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Participants" is 91x38px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Info" is 48x38px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Plan1" is 69x38px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Progress Note1" is 128x38px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Events2" is 83x38px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Analysis" is 72x38px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Edit" is 343x36px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "← Back to List" is 75x18px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Export PDF" is 343x36px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Export All Data" is 343x36px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <button> "✎ Edit" is 70x28px (min 44x44)
+
+- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "Skip to main content" is 1x1px (min 44x44)
+
+- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "KoNote2" is 77x38px (min 44x44)
+
+- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <button> "" is 39x13px (min 44x44)
+
+- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <select> "All statuses" is 309x41px (min 44x44)
+
+- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <select> "All Programs" is 309x41px (min 44x44)
+
+- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "Clear filters" is 94x36px (min 44x44)
+
+- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "Jane Doe" is 62x20px (min 44x44)
 
 ## Recommendations
+
+### Immediate (Critical)
+
+1. Fix: [dark] Client list: Contrast violation (serious) on `.filter-bar > summary` on `/clients/`
+1. Fix: [dark] Client detail: Contrast violation (serious) on `.tab-active` on `/clients/1/`
+1. Fix: [dark] Notes timeline: Contrast violation (serious) on `.tab-active` on `/notes/client/1/`
+1. Fix: [light] Client detail: Contrast violation (serious) on `.quick-info-section > .quick-info > .quick-info-item > dt` on `/clients/3/`
 
 ### Short-term (Warnings)
 
@@ -617,6 +803,14 @@ _Tested with Playwright (headless Chromium) + axe-core._
 - No <main> landmark element found (`/programs/3/roles/add/`)
 - No <nav> element found on full page (`/programs/3/roles/add/`)
 - No <html> element found (`/programs/3/roles/add/`)
+- 403 page has no links — user may be stuck (`/plans/targets/2/history/`)
+- 403 page has no links — user may be stuck (`/groups/2/`)
+- 403 page has no links — user may be stuck (`/groups/milestone/1/edit/`)
+- 403 page has no links — user may be stuck (`/groups/2/session/`)
+- 403 page has no links — user may be stuck (`/plans/targets/2/history/`)
+- Custom fields: Focus lost after switching to edit mode (`/clients/3/`)
+- Plan section: Focus lost after clicking Edit (`/plans/client/7/`)
+- [mobile] Plan view: Horizontal overflow detected (`/plans/client/3/`)
 
 ---
 

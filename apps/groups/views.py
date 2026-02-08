@@ -24,10 +24,10 @@ from apps.programs.models import UserProgramRole
 
 from .forms import (
     GroupForm,
-    HighlightForm,
     MembershipAddForm,
     ProjectMilestoneForm,
     ProjectOutcomeForm,
+    SessionAttendanceForm,
     SessionLogForm,
 )
 from .models import (
@@ -202,7 +202,8 @@ def session_log(request, group_id):
 
     if request.method == "POST":
         form = SessionLogForm(request.POST)
-        if form.is_valid():
+        attendance_form = SessionAttendanceForm(request.POST, members=members)
+        if form.is_valid() and attendance_form.is_valid():
             with transaction.atomic():
                 # 1. Create the session
                 session = GroupSession(
@@ -214,20 +215,13 @@ def session_log(request, group_id):
                 session.notes = form.cleaned_data["notes"]
                 session.save()
 
-                # 2. Record attendance for each member
-                for member in members:
-                    present = request.POST.get(f"present_{member.pk}") == "on"
+                # 2. Record attendance and highlights for each member
+                for member, present, highlight_notes in attendance_form.get_attendance_data():
                     GroupSessionAttendance.objects.create(
                         group_session=session,
                         membership=member,
                         present=present,
                     )
-
-                # 3. Save any non-empty highlights
-                for member in members:
-                    highlight_notes = request.POST.get(
-                        f"highlight_{member.pk}", "",
-                    ).strip()
                     if highlight_notes:
                         highlight = GroupSessionHighlight(
                             group_session=session,
@@ -240,6 +234,7 @@ def session_log(request, group_id):
             return redirect("groups:group_detail", group_id=group.pk)
     else:
         form = SessionLogForm(initial={"session_date": timezone.now().date()})
+        attendance_form = SessionAttendanceForm(members=members)
 
     # Build attendance data -- all checked by default (Rec #9)
     attendance_data = [
@@ -249,6 +244,7 @@ def session_log(request, group_id):
     return render(request, "groups/session_log.html", {
         "group": group,
         "form": form,
+        "attendance_form": attendance_form,
         "attendance_data": attendance_data,
         "members": members,
         "breadcrumbs": [

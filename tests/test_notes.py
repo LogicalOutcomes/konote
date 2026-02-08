@@ -376,3 +376,94 @@ class NoteViewsTest(TestCase):
         resp = self.http.get(f"/notes/client/{client_no_consent.pk}/new/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Consent Required")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class QualitativeSummaryTest(TestCase):
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
+        self.receptionist = User.objects.create_user(username="recep", password="pass", is_admin=False)
+
+        self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role="receptionist")
+
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Jane"
+        self.client_file.last_name = "Doe"
+        self.client_file.status = "active"
+        self.client_file.consent_given_at = timezone.now()
+        self.client_file.consent_type = "written"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(client_file=self.client_file, program=self.prog)
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_qualitative_summary_permission_denied_no_program(self):
+        """Staff user without any program role cannot access qualitative summary."""
+        no_role_user = User.objects.create_user(username="norole", password="pass", is_admin=False)
+        self.http.login(username="norole", password="pass")
+        resp = self.http.get(f"/notes/client/{self.client_file.pk}/qualitative/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_qualitative_summary_happy_path_empty(self):
+        """Staff with program role gets 200 even when no plan targets exist."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/client/{self.client_file.pk}/qualitative/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_qualitative_summary_shows_descriptor_distribution(self):
+        """Descriptor distribution counts appear when progress notes have descriptors."""
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Goals", program=self.prog,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Housing",
+        )
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.staff, interaction_type="session",
+        )
+        ProgressNoteTarget.objects.create(
+            progress_note=note, plan_target=target,
+            progress_descriptor="shifting",
+        )
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/client/{self.client_file.pk}/qualitative/")
+        self.assertEqual(resp.status_code, 200)
+        # The view renders descriptor labels — "Something's shifting" is the label
+        # for the "shifting" value. Check that the page contains descriptor content.
+        self.assertContains(resp, "shifting")
+
+    def test_qualitative_summary_shows_client_words(self):
+        """Recent client words appear on the qualitative summary page."""
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Goals", program=self.prog,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Employment",
+        )
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.staff, interaction_type="session",
+        )
+        pnt = ProgressNoteTarget(progress_note=note, plan_target=target)
+        pnt.client_words = "I feel more confident about interviews now."
+        pnt.save()
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/client/{self.client_file.pk}/qualitative/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "I feel more confident about interviews now.")
+
+    def test_qualitative_summary_receptionist_blocked(self):
+        """Receptionist role is blocked by minimum_role('staff') decorator."""
+        self.http.login(username="recep", password="pass")
+        resp = self.http.get(f"/notes/client/{self.client_file.pk}/qualitative/")
+        self.assertEqual(resp.status_code, 403)
