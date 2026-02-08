@@ -23,15 +23,15 @@
     </tbody>
 </table>
 
-<h2>{% blocktrans %}Client: {{ record_id }}{% endblocktrans %}</h2>
+<h2>{% blocktrans %}Participant: {{ record_id }}{% endblocktrans %}</h2>
 <form method="get" style="margin-bottom: 1rem;">
-    <label for="client">{% trans "Check different client:" %}</label>
+    <label for="client">{% trans "Check different participant:" %}</label>
     <input type="text" name="client" id="client" value="{{ record_id }}" placeholder="{% trans "e.g., DEMO-001" %}">
     <button type="submit">{% trans "Check" %}</button>
 </form>
 
 {% if client_data %}
-<table aria-label="{% blocktrans %}Client {{ record_id }} diagnostics{% endblocktrans %}">
+<table aria-label="{% blocktrans %}Participant {{ record_id }} diagnostics{% endblocktrans %}">
     <tbody>
         <tr>
             <th scope="row">{% trans "Active targets" %}</th>
@@ -62,7 +62,7 @@
     </tbody>
 </table>
 {% else %}
-<p><mark>{% blocktrans %}Client "{{ record_id }}" not found.{% endblocktrans %}</mark></p>
+<p><mark>{% blocktrans %}Participant "{{ record_id }}" not found.{% endblocktrans %}</mark></p>
 {% endif %}
 
 <h2>{% trans "Diagnosis" %}</h2>
@@ -96,7 +96,7 @@
         </tr>
         {% empty %}
         <tr>
-            <td colspan="5"><em>{% trans "No target/metric combinations found for this client." %}</em></td>
+            <td colspan="5"><em>{% trans "No target/metric combinations found for this participant." %}</em></td>
         </tr>
         {% endfor %}
     </tbody>

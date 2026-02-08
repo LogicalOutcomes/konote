@@ -325,7 +325,7 @@ def erasure_reject(request, pk):
     # Must be PM in one of the required programs
     user_pm_ids = set(_get_user_pm_program_ids(request.user))
     if not (set(er.programs_required) & user_pm_ids):
-        return HttpResponseForbidden(_("You are not a program manager for this client's programs."))
+        return HttpResponseForbidden(_("You are not a program manager for this participant's programs."))
 
     er.status = "rejected"
     er.save(update_fields=["status"])

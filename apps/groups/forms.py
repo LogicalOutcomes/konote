@@ -146,7 +146,7 @@ class MembershipAddForm(forms.Form):
 
     client_file = forms.IntegerField(
         required=False,
-        label=_("Client"),
+        label=_("Participant"),
     )
     member_name = forms.CharField(
         max_length=255,
@@ -168,10 +168,10 @@ class MembershipAddForm(forms.Form):
 
         if client_file and member_name:
             raise forms.ValidationError(
-                _("Please select a client or enter a name, not both.")
+                _("Please select a participant or enter a name, not both.")
             )
         if not client_file and not member_name:
             raise forms.ValidationError(
-                _("Please select a client or enter a name.")
+                _("Please select a participant or enter a name.")
             )
         return cleaned_data

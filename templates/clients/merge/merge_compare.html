@@ -12,9 +12,9 @@
 
 {# Summary cards — creation dates and activity counts #}
 <div class="grid">
-    <article aria-label="{% blocktrans with name=client_a.display_name %}Client A: {{ name }}{% endblocktrans %}">
+    <article aria-label="{% blocktrans with name=client_a.display_name %}Participant A: {{ name }}{% endblocktrans %}">
         <header>
-            <strong>{% trans "Client A" %}: {{ client_a.display_name }} {{ client_a.last_name }}</strong>
+            <strong>{% trans "Participant A" %}: {{ client_a.display_name }} {{ client_a.last_name }}</strong>
             {% if client_a.record_id %}<br><small>{% trans "Record ID" %}: {{ client_a.record_id }}</small>{% endif %}
         </header>
         <p>
@@ -28,9 +28,9 @@
             {{ comparison.counts_a.enrolments }} {% trans "enrolments" %}
         </p>
     </article>
-    <article aria-label="{% blocktrans with name=client_b.display_name %}Client B: {{ name }}{% endblocktrans %}">
+    <article aria-label="{% blocktrans with name=client_b.display_name %}Participant B: {{ name }}{% endblocktrans %}">
         <header>
-            <strong>{% trans "Client B" %}: {{ client_b.display_name }} {{ client_b.last_name }}</strong>
+            <strong>{% trans "Participant B" %}: {{ client_b.display_name }} {{ client_b.last_name }}</strong>
             {% if client_b.record_id %}<br><small>{% trans "Record ID" %}: {{ client_b.record_id }}</small>{% endif %}
         </header>
         <p>
@@ -58,11 +58,11 @@
         <label>
             <input type="radio" name="pii_{{ field.field_name }}" value="{{ client_a.pk }}"
                    {% if form.initial.primary == client_a.pk %}checked{% endif %}>
-            {% blocktrans with val=field.value_a id=client_a.pk %}Keep "{{ val }}" from Client A (Record #{{ id }}){% endblocktrans %}
+            {% blocktrans with val=field.value_a id=client_a.pk %}Keep "{{ val }}" from Participant A (Record #{{ id }}){% endblocktrans %}
         </label>
         <label>
             <input type="radio" name="pii_{{ field.field_name }}" value="{{ client_b.pk }}">
-            {% blocktrans with val=field.value_b id=client_b.pk %}Keep "{{ val }}" from Client B (Record #{{ id }}){% endblocktrans %}
+            {% blocktrans with val=field.value_b id=client_b.pk %}Keep "{{ val }}" from Participant B (Record #{{ id }}){% endblocktrans %}
         </label>
     </fieldset>
     {% endif %}
@@ -77,11 +77,11 @@
         <legend>{{ conflict.field_name }} — {% trans "choose which to keep" %}</legend>
         <label>
             <input type="radio" name="custom_{{ conflict.field_def_id }}" value="{{ client_a.pk }}" checked>
-            {% blocktrans with val=conflict.value_a id=client_a.pk %}Keep "{{ val }}" from Client A (Record #{{ id }}){% endblocktrans %}
+            {% blocktrans with val=conflict.value_a id=client_a.pk %}Keep "{{ val }}" from Participant A (Record #{{ id }}){% endblocktrans %}
         </label>
         <label>
             <input type="radio" name="custom_{{ conflict.field_def_id }}" value="{{ client_b.pk }}">
-            {% blocktrans with val=conflict.value_b id=client_b.pk %}Keep "{{ val }}" from Client B (Record #{{ id }}){% endblocktrans %}
+            {% blocktrans with val=conflict.value_b id=client_b.pk %}Keep "{{ val }}" from Participant B (Record #{{ id }}){% endblocktrans %}
         </label>
     </fieldset>
     {% endfor %}
@@ -106,14 +106,14 @@
             <input type="radio" name="primary" value="{{ client_a.pk }}" checked
                    onchange="document.querySelector('[name=primary]').value=this.value">
             {% blocktrans with name=client_a.display_name last=client_a.last_name id=client_a.pk %}
-            Keep Client A: {{ name }} {{ last }} (Record #{{ id }})
+            Keep Participant A: {{ name }} {{ last }} (Record #{{ id }})
             {% endblocktrans %}
         </label>
         <label>
             <input type="radio" name="primary" value="{{ client_b.pk }}"
                    onchange="document.querySelector('[name=primary]').value=this.value">
             {% blocktrans with name=client_b.display_name last=client_b.last_name id=client_b.pk %}
-            Keep Client B: {{ name }} {{ last }} (Record #{{ id }})
+            Keep Participant B: {{ name }} {{ last }} (Record #{{ id }})
             {% endblocktrans %}
         </label>
     </fieldset>

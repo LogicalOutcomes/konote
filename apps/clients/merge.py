@@ -291,19 +291,19 @@ def _validate_merge_preconditions(kept, archived):
     errors = []
 
     if kept.is_anonymised:
-        errors.append(_("The primary client record has been anonymised and cannot be merged."))
+        errors.append(_("The primary participant record has been anonymised and cannot be merged."))
     if archived.is_anonymised:
-        errors.append(_("The secondary client record has been anonymised and cannot be merged."))
+        errors.append(_("The secondary participant record has been anonymised and cannot be merged."))
 
     if kept.is_demo != archived.is_demo:
-        errors.append(_("Cannot merge a demo client with a real client."))
+        errors.append(_("Cannot merge a demo participant with a real participant."))
 
     # Check for ANY confidential enrolment (current or historical)
     confidential_ids = _get_all_confidential_client_ids()
     if kept.pk in confidential_ids:
-        errors.append(_("The primary client has a confidential programme enrolment and cannot be merged."))
+        errors.append(_("The primary participant has a confidential programme enrolment and cannot be merged."))
     if archived.pk in confidential_ids:
-        errors.append(_("The secondary client has a confidential programme enrolment and cannot be merged."))
+        errors.append(_("The secondary participant has a confidential programme enrolment and cannot be merged."))
 
     # Check for pending erasure requests
     pending_statuses = ["pending"]
@@ -312,7 +312,7 @@ def _validate_merge_preconditions(kept, archived):
         status__in=pending_statuses,
     ).exists():
         errors.append(
-            _("One of these clients has a pending data erasure request. "
+            _("One of these participants has a pending data erasure request. "
               "Complete or cancel the erasure before merging.")
         )
 
@@ -352,7 +352,7 @@ def execute_merge(kept, archived, pii_choices, field_resolutions, user, ip_addre
         ClientFile.objects.filter(pk__in=lock_ids).select_for_update().order_by("pk")
     )
     if len(locked) != 2:
-        raise ValueError(_("One or both client records no longer exist."))
+        raise ValueError(_("One or both participant records no longer exist."))
     # Re-assign to locked instances
     kept = locked[0] if locked[0].pk == kept.pk else locked[1]
     archived = locked[0] if locked[0].pk == archived.pk else locked[1]

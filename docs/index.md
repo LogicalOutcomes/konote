@@ -42,6 +42,7 @@ Welcome! Find what you need based on what you're trying to do.
 
 - [Privacy Policy Template](privacy-policy-template.md) — customise before going live
 - [Agency Setup](administering-KoNote2.md#agency-configuration) — terminology, features, programs
+- [Registration Forms](administering-KoNote2.md#set-up-registration-forms) — public signup forms, reviewing submissions
 - [User Management](administering-KoNote2.md#user-management) — creating accounts, assigning roles
 - [Backup & Restore](administering-KoNote2.md#backup-and-restore) — protecting your data
 - [Security Operations](administering-KoNote2.md#security-operations) — audit logs, encryption keys

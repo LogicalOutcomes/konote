@@ -247,7 +247,7 @@ def submission_approve(request, pk):
 
         messages.success(
             request,
-            _("Approved! Client record created for %(first)s %(last)s.") % {
+            _("Approved! Participant record created for %(first)s %(last)s.") % {
                 "first": client.first_name,
                 "last": client.last_name,
             },
@@ -320,13 +320,13 @@ def submission_merge(request, pk):
 
         client_id = request.POST.get("client_id")
         if not client_id:
-            messages.error(request, _("No client selected for merge."))
+            messages.error(request, _("No participant selected for merge."))
             return redirect("registration:submission_detail", pk=pk)
 
         try:
             existing_client = get_client_queryset(request.user).get(pk=client_id)
         except ClientFile.DoesNotExist:
-            messages.error(request, _("Selected client not found."))
+            messages.error(request, _("Selected participant not found."))
             return redirect("registration:submission_detail", pk=pk)
 
         # Use the utility function to merge
@@ -334,7 +334,7 @@ def submission_merge(request, pk):
 
         messages.success(
             request,
-            _("Merged with existing client %(first)s %(last)s.") % {
+            _("Merged with existing participant %(first)s %(last)s.") % {
                 "first": client.first_name,
                 "last": client.last_name,
             },

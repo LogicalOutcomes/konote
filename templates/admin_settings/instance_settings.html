@@ -31,7 +31,7 @@
 
     <fieldset>
         <legend>{% trans "Document Storage" %}</legend>
-        <p><small>{% trans 'Connect to an external document storage system (SharePoint or Google Drive) to show a "Open Documents Folder" button on client records.' %}</small></p>
+        <p><small>{% trans 'Connect to an external document storage system (SharePoint or Google Drive) to show a "Open Documents Folder" button on participant records.' %}</small></p>
 
         {% for field in form %}
             {% if field.name == "document_storage_provider" or field.name == "document_storage_url_template" %}

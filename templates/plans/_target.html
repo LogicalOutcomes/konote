@@ -4,7 +4,7 @@
     {% if target.client_goal %}
     <br><small><strong>{% trans "In their words:" %}</strong> "{{ target.client_goal|truncatewords:30 }}"</small>
     {% else %}
-    <br><small class="secondary"><em>{% trans "No client words recorded yet" %}</em></small>
+    <br><small class="secondary"><em>{% trans "No participant words recorded yet" %}</em></small>
     {% endif %}
     {% if target.description %}
     <br><small>{{ target.description|truncatewords:20 }}</small>

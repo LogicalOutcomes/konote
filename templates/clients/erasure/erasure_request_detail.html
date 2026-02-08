@@ -73,14 +73,14 @@
         <dt>{% trans "Erasure Level" %}</dt>
         <dd>{{ er.get_erasure_tier_display }}</dd>
 
-        <dt>{% trans "Client" %}</dt>
+        <dt>{% trans "Participant" %}</dt>
         <dd>
             {% if er.client_file %}
             <a href="{% url 'clients:client_detail' client_id=er.client_file.pk %}">{{ er.client_file }}</a>
             {% elif er.status == "anonymised" %}
-            {% blocktrans with pk=er.client_pk %}Client #{{ pk }} (anonymised){% endblocktrans %}
+            {% blocktrans with pk=er.client_pk %}Participant #{{ pk }} (anonymised){% endblocktrans %}
             {% else %}
-            {% blocktrans with pk=er.client_pk %}Client #{{ pk }} (deleted){% endblocktrans %}
+            {% blocktrans with pk=er.client_pk %}Participant #{{ pk }} (deleted){% endblocktrans %}
             {% endif %}
         </dd>
 
@@ -104,7 +104,7 @@
 
     {% if can_download_receipt %}
     <a href="{% url 'erasure_receipt_pdf' pk=er.pk %}" role="button" class="outline secondary" style="font-size: 0.875rem;">{% trans "Download PDF Receipt" %}</a>
-    <small class="secondary">{% trans "Download a copy of this request including client details before erasure proceeds. The system does not retain a copy." %}</small>
+    <small class="secondary">{% trans "Download a copy of this request including participant details before erasure proceeds. The system does not retain a copy." %}</small>
     {% endif %}
 </article>
 

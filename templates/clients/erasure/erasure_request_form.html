@@ -11,7 +11,7 @@
 
 <article aria-label="warning" class="warning" style="border-left: 4px solid var(--pico-del-color); background: var(--pico-del-color-bg, rgba(255,0,0,0.05));">
     <strong>{% trans "This action cannot be undone." %}</strong>
-    {% trans "Once all programme managers approve, client data will be permanently anonymised or erased depending on the level selected below." %}
+    {% trans "Once all programme managers approve, participant data will be permanently anonymised or erased depending on the level selected below." %}
 </article>
 
 {# Retention status #}
@@ -28,14 +28,14 @@
 {% else %}
 <article>
     <strong>{% trans "No retention period set." %}</strong>
-    <small class="secondary">{% trans "Consider setting a retention expiry date on this client record. Full erasure is only available after the retention period expires." %}</small>
+    <small class="secondary">{% trans "Consider setting a retention expiry date on this participant record. Full erasure is only available after the retention period expires." %}</small>
 </article>
 {% endif %}
 
 {% if active_alerts %}
 <article aria-label="active alerts" class="warning">
     <strong>{% trans "Active Alerts" %}</strong>
-    <p>{% trans "This client has active alerts. Review them before proceeding." %}</p>
+    <p>{% trans "This participant has active alerts. Review them before proceeding." %}</p>
     <ul>
         {% for alert in active_alerts %}
         <li>{{ alert.content|truncatewords:20 }} <small>({{ alert.created_at|date:"Y-m-d" }})</small></li>

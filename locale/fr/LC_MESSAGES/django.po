@@ -8171,7 +8171,9 @@ msgid "Try again"
 msgstr "Réessayer"
 
 msgid "You appear to be offline. Your changes may not be saved."
-msgstr "Vous semblez être hors ligne. Vos modifications pourraient ne pas être enregistrées."
+msgstr ""
+"Vous semblez être hors ligne. Vos modifications pourraient ne pas être "
+"enregistrées."
 
 #: templates/admin_settings/dashboard.html
 msgid "%(count)s setting customised"
@@ -8184,3 +8186,253 @@ msgid "%(count)s demo user"
 msgid_plural "%(count)s demo users"
 msgstr[0] "%(count)s utilisateur de démonstration"
 msgstr[1] "%(count)s utilisateurs de démonstration"
+
+msgid ""
+"A new participant data erasure request has been submitted and requires your "
+"approval."
+msgstr ""
+
+msgid ""
+"A participant with a similar name and date of birth already has a record."
+msgstr ""
+
+msgid ""
+"Aggregate statistics across your programs. Individual participant records "
+"are not accessible from this view to protect confidentiality."
+msgstr ""
+
+msgid ""
+"All access to participant records in this program. Each entry records who "
+"accessed which record, when, and what action they performed."
+msgstr ""
+
+msgid ""
+"All demo users and demo participants in one place. Demo data is isolated "
+"from real data."
+msgstr ""
+
+msgid "Approved! Participant record created for %(first)s %(last)s."
+msgstr ""
+
+msgid "Cannot merge a demo participant with a real participant."
+msgstr ""
+
+msgid "Check different participant:"
+msgstr ""
+
+msgid ""
+"Connect to an external document storage system (SharePoint or Google Drive) "
+"to show a \"Open Documents Folder\" button on participant records."
+msgstr ""
+
+msgid ""
+"Consider setting a retention expiry date on this participant record. Full "
+"erasure is only available after the retention period expires."
+msgstr ""
+
+msgid ""
+"Customise the words used throughout the system (e.g. rename \"Participant\" "
+"to \"Client\")."
+msgstr ""
+
+msgid "Demo participant list"
+msgstr ""
+
+msgid ""
+"Download a copy of this request including participant details before erasure"
+" proceeds. The system does not retain a copy."
+msgstr ""
+
+msgid ""
+"Explain why this data should be erased. Do not include participant names."
+msgstr ""
+
+msgid "Export Participant Data"
+msgstr ""
+
+msgid ""
+"Export all participant data as a CSV file for data portability, backup, or "
+"migration to another system."
+msgstr ""
+
+msgid "External system where participant documents are stored."
+msgstr ""
+
+msgid "Filter by participant status, or export all."
+msgstr ""
+
+msgid "Leave blank to export participants from all programmes."
+msgstr ""
+
+msgid "Manage event categories for participant timelines."
+msgstr ""
+
+msgid "Merged with existing participant %(first)s %(last)s."
+msgstr ""
+
+msgid "New Participants This Period"
+msgstr ""
+
+msgid "No demo participants found. Run the seed command to create demo data."
+msgstr ""
+
+msgid "No participant selected for merge."
+msgstr ""
+
+msgid "No participant words recorded yet"
+msgstr ""
+
+msgid ""
+"No potential duplicates found. All participant records appear to be unique."
+msgstr ""
+
+msgid "No target/metric combinations found for this participant."
+msgstr ""
+
+msgid ""
+"Once all program managers approve, the participant's data will be "
+"permanently deleted."
+msgstr ""
+
+msgid ""
+"Once all programme managers approve, participant data will be permanently "
+"anonymised or erased depending on the level selected below."
+msgstr ""
+
+msgid "One or both participant records no longer exist."
+msgstr ""
+
+msgid "Participant"
+msgstr ""
+
+msgid "Participant A"
+msgstr ""
+
+msgid "Participant B"
+msgstr ""
+
+msgid "Participant Count"
+msgstr ""
+
+msgid "Participant Data"
+msgstr ""
+
+msgid "Participant Data Export"
+msgstr ""
+
+msgid "Participant Erasure Request"
+msgstr ""
+
+msgid "Participant Information"
+msgstr ""
+
+msgid "Participant discharged"
+msgstr ""
+
+msgid "Participant record"
+msgstr ""
+
+msgid "Participant requested"
+msgstr ""
+
+msgid "Participant status"
+msgstr ""
+
+msgid "Participant tabs"
+msgstr ""
+
+msgid "Participant:"
+msgstr ""
+
+msgid "Participants"
+msgstr ""
+
+msgid "Participants Met Target"
+msgstr ""
+
+msgid "Participants Met at Least One Target"
+msgstr ""
+
+msgid "Please select a participant or enter a name, not both."
+msgstr ""
+
+msgid "Please select a participant or enter a name."
+msgstr ""
+
+msgid ""
+"Required. Provide context such as participant request date, retention policy"
+" reference, etc."
+msgstr ""
+
+msgid ""
+"Review potential duplicate participant records and merge them into a single "
+"record. All data from the archived record will be transferred to the kept "
+"record."
+msgstr ""
+
+msgid "Selected participant not found."
+msgstr ""
+
+msgid ""
+"The primary participant has a confidential programme enrolment and cannot be"
+" merged."
+msgstr ""
+
+msgid ""
+"The primary participant record has been anonymised and cannot be merged."
+msgstr ""
+
+msgid ""
+"The secondary participant has a confidential programme enrolment and cannot "
+"be merged."
+msgstr ""
+
+msgid ""
+"The secondary participant record has been anonymised and cannot be merged."
+msgstr ""
+
+msgid ""
+"There are no participants matching the selected filters. Try adjusting your "
+"filters or leave them blank to export all participants."
+msgstr ""
+
+msgid "This participant has active alerts. Review them before proceeding."
+msgstr ""
+
+msgid "This participant is already a member."
+msgstr ""
+
+msgid ""
+"This receipt should be stored securely by the privacy officer as the only "
+"record linking the erasure code to the participant's identity."
+msgstr ""
+
+msgid "Too many participants"
+msgstr ""
+
+msgid ""
+"Under PIPEDA, individuals have the right to access their personal "
+"information. This export includes all data held for this participant."
+msgstr ""
+
+msgid ""
+"View all demo users and demo participants. Impersonate demo users for "
+"testing."
+msgstr ""
+
+msgid "What does the participant want to work on?"
+msgstr ""
+
+msgid "You are not a program manager for this participant's programs."
+msgstr ""
+
+msgid "You do not have access to this participant."
+msgstr ""
+
+msgid ""
+"Your agency has too many participant records for automatic duplicate "
+"scanning. Please contact support for assistance with duplicate detection."
+msgstr ""
+
+msgid "e.g. participant, note"
+msgstr ""

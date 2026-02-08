@@ -6,6 +6,7 @@ This guide covers everything administrators need to configure, maintain, and sec
 |--------------|----------|
 | Set up my agency's instance | [Agency Configuration](#agency-configuration) |
 | Choose which outcome metrics to use | [Manage Outcome Metrics](#manage-outcome-metrics) |
+| Set up public registration forms | [Registration Forms](#set-up-registration-forms) |
 | Create user accounts | [User Management](#user-management) |
 | Back up my data | [Backup and Restore](#backup-and-restore) |
 | Run security checks | [Security Operations](#security-operations) |
@@ -243,6 +244,85 @@ Capture agency-specific information not in the standard client form.
    - **Required:** Staff must fill in
    - **Sensitive:** Contains private information
    - **Choices:** (for dropdowns) "Government, Private, Foundation"
+
+---
+
+### Set Up Registration Forms
+
+Registration forms let people sign up for your programs through a public web page — no login required. You create a registration link, share it or embed it on your website, and submissions come into KoNote2 for your team to review.
+
+#### How It Works
+
+1. **You create a registration link** tied to a specific program
+2. **You share the link** (or embed it on your website as an iframe)
+3. **Someone fills out the form** — their information is saved and encrypted
+4. **Your team reviews the submission** — and can approve, reject, waitlist, or merge with an existing client
+
+When a submission is approved, KoNote2 automatically creates a new client record and enrols them in the program.
+
+#### Create a Registration Link
+
+1. Click **Admin** → **Registration**
+2. Click **+ New Registration Link**
+3. Fill in:
+
+| Field | What it does |
+|-------|--------------|
+| **Program** | Which program registrants will be enrolled in (required) |
+| **Title** | Heading shown on the form (e.g., "Summer Program Registration") |
+| **Description** | Instructions or welcome message shown above the form |
+| **Field groups** | Which custom fields to include (optional — basic name/email/phone are always shown) |
+| **Auto-approve** | If checked, submissions create clients immediately without staff review |
+| **Max registrations** | Capacity limit — form closes when reached (leave blank for unlimited) |
+| **Closes at** | Deadline — form closes after this date (leave blank for no deadline) |
+
+4. Click **Save**
+
+You'll get a **public URL** (e.g., `https://yoursite.com/register/abc123/`) and an **embed code** you can paste into your website.
+
+**Tip:** Confidential programs cannot have registration links — this is a safety feature.
+
+#### Sharing the Registration Link
+
+**Direct link:** Copy the URL and share it by email, social media, or your website.
+
+**Embed on a website:** Copy the iframe embed code and paste it into your website's HTML. The form will appear directly on your page.
+
+#### Reviewing Submissions
+
+When someone submits a registration form (and auto-approve is off):
+
+1. Click **Admin** → **Submissions**
+2. You'll see submissions organised by status: **Pending**, **Approved**, **Rejected**, **Waitlisted**
+3. Click a submission to see the details
+
+**For each submission, you can:**
+
+| Action | What happens |
+|--------|-------------|
+| **Approve** | Creates a new client record and enrols them in the program |
+| **Merge** | Links the submission to an existing client (avoids duplicates) |
+| **Waitlist** | Parks the submission — you can approve or reject it later |
+| **Reject** | Marks it as rejected with a reason — no client is created |
+
+**Duplicate detection:** KoNote2 automatically flags submissions that match an existing client's email or name. This helps you avoid creating duplicates — use the **Merge** option when a match is found.
+
+#### Auto-Approve vs. Manual Review
+
+| Mode | Best for |
+|------|----------|
+| **Manual review** (default) | Programs where staff need to screen applicants, check eligibility, or manage capacity |
+| **Auto-approve** | Open programs where anyone who registers should be enrolled immediately |
+
+With auto-approve on, each submission instantly creates a client record and enrols them. Staff can still see all submissions under **Admin → Submissions**.
+
+#### Tips
+
+- Each registration link is tied to **one program** — create separate links for different programs
+- Custom field groups let you collect additional information (demographics, referral source, etc.)
+- Registration links can be deactivated without deleting them — toggle **Is Active** off
+- All submissions are encrypted — personal information is protected the same way as client records
+- Every submission gets a unique reference number (e.g., REG-A1B2C3D4) shown on the confirmation page
 
 ---
 

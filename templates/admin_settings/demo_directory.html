@@ -6,7 +6,7 @@
 {% block content %}
 <hgroup>
     <h1>{% trans "Demo Account Directory" %}</h1>
-    <p>{% trans "All demo users and demo clients in one place. Demo data is isolated from real data." %}</p>
+    <p>{% trans "All demo users and demo participants in one place. Demo data is isolated from real data." %}</p>
 </hgroup>
 
 {# ---- Demo Users ---- #}
@@ -55,11 +55,11 @@
 {% endif %}
 
 {# ---- Demo Clients ---- #}
-<h2>{% blocktrans count counter=demo_client_count %}{{ counter }} Demo Client{% plural %}{{ counter }} Demo Clients{% endblocktrans %}</h2>
+<h2>{% blocktrans count counter=demo_client_count %}{{ counter }} Demo Participant{% plural %}{{ counter }} Demo Participants{% endblocktrans %}</h2>
 
 {% if client_data %}
 <figure>
-<table role="grid" aria-label="{% trans 'Demo client list' %}">
+<table role="grid" aria-label="{% trans 'Demo participant list' %}">
     <thead>
         <tr>
             <th scope="col">{% trans "Record ID" %}</th>
@@ -89,7 +89,7 @@
 </table>
 </figure>
 {% else %}
-<p>{% trans "No demo clients found. Run the seed command to create demo data." %}</p>
+<p>{% trans "No demo participants found. Run the seed command to create demo data." %}</p>
 {% endif %}
 
 <a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline">{% trans "Back to Settings" %}</a>

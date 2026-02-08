@@ -111,13 +111,13 @@ class InstanceSettingsForm(forms.Form):
         choices=DOCUMENT_STORAGE_CHOICES,
         initial="none",
         label=_("Document Storage Provider"),
-        help_text=_("External system where client documents are stored."),
+        help_text=_("External system where participant documents are stored."),
     )
     document_storage_url_template = forms.CharField(
         max_length=500, required=False, label=_("URL Template"),
         help_text=_('URL with {record_id} placeholder. Example for SharePoint: '
-                  'https://contoso.sharepoint.com/sites/KoNote2/Clients/{record_id}/'),
-        widget=forms.TextInput(attrs={"placeholder": "https://example.com/clients/{record_id}/"}),
+                  'https://contoso.sharepoint.com/sites/KoNote2/Participants/{record_id}/'),
+        widget=forms.TextInput(attrs={"placeholder": "https://example.com/participants/{record_id}/"}),
     )
 
     # Privacy officer contact (PIPEDA compliance)

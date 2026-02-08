@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Export Client Data" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% trans "Export Participant Data" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% trans "Export Client Data" %}</h1>
+    <h1>{% trans "Export Participant Data" %}</h1>
     <p>{% blocktrans with name=client_name %}Export all data for {{ name }}.{% endblocktrans %}</p>
 </hgroup>
 
 <article aria-label="{% trans 'Privacy notice' %}" style="border-left: 4px solid var(--pico-color-blue-500); padding: 1rem; margin-bottom: 1.5rem;">
     <strong><span aria-hidden="true">&#x1F6C8;</span> {% trans "PIPEDA Data Portability" %}</strong>
     <p style="margin-bottom: 0;">
-        {% trans "Under PIPEDA, individuals have the right to access their personal information. This export includes all data held for this client." %}
+        {% trans "Under PIPEDA, individuals have the right to access their personal information. This export includes all data held for this participant." %}
     </p>
 </article>
 
@@ -84,7 +84,7 @@
 
     <div class="grid">
         <button type="submit">
-            <span aria-hidden="true">&#x1F4E5;</span> {% trans "Export Client Data" %}
+            <span aria-hidden="true">&#x1F4E5;</span> {% trans "Export Participant Data" %}
         </button>
         <a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="secondary">
             {% trans "Cancel" %}

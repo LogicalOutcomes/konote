@@ -6,17 +6,17 @@
 {% block content %}
 <h1>{% trans "Merge Duplicates" %}</h1>
 
-<p>{% trans "Review potential duplicate client records and merge them into a single record. All data from the archived record will be transferred to the kept record." %}</p>
+<p>{% trans "Review potential duplicate participant records and merge them into a single record. All data from the archived record will be transferred to the kept record." %}</p>
 
 {% if too_many %}
-<article aria-label="{% trans 'Too many clients' %}">
+<article aria-label="{% trans 'Too many participants' %}">
     <header><strong>{% trans "Automatic scanning unavailable" %}</strong></header>
-    <p>{% trans "Your agency has too many client records for automatic duplicate scanning. Please contact support for assistance with duplicate detection." %}</p>
+    <p>{% trans "Your agency has too many participant records for automatic duplicate scanning. Please contact support for assistance with duplicate detection." %}</p>
 </article>
 
 {% elif total_count == 0 %}
 <article aria-label="{% trans 'No duplicates' %}">
-    <p>{% trans "No potential duplicates found. All client records appear to be unique." %}</p>
+    <p>{% trans "No potential duplicates found. All participant records appear to be unique." %}</p>
 </article>
 
 {% else %}
@@ -33,8 +33,8 @@
 <table role="grid" aria-label="{% trans 'Phone match candidates' %}">
     <thead>
         <tr>
-            <th scope="col">{% trans "Client A" %}</th>
-            <th scope="col">{% trans "Client B" %}</th>
+            <th scope="col">{% trans "Participant A" %}</th>
+            <th scope="col">{% trans "Participant B" %}</th>
             <th scope="col">{% trans "Match Type" %}</th>
             <th scope="col">{% trans "Actions" %}</th>
         </tr>
@@ -74,8 +74,8 @@
 <table role="grid" aria-label="{% trans 'Name and DOB match candidates' %}">
     <thead>
         <tr>
-            <th scope="col">{% trans "Client A" %}</th>
-            <th scope="col">{% trans "Client B" %}</th>
+            <th scope="col">{% trans "Participant A" %}</th>
+            <th scope="col">{% trans "Participant B" %}</th>
             <th scope="col">{% trans "Match Type" %}</th>
             <th scope="col">{% trans "Actions" %}</th>
         </tr>

@@ -50,7 +50,7 @@ class PlanTargetForm(forms.Form):
 
     client_goal = forms.CharField(
         required=False,
-        label=_("What does the client want to work on?"),
+        label=_("What does the participant want to work on?"),
         help_text=_("Write what they said, in their own words."),
         widget=forms.TextInput(attrs={"placeholder": _("In their own words…")}),
     )

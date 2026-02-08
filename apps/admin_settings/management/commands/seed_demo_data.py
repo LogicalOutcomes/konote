@@ -1072,7 +1072,7 @@ class Command(BaseCommand):
                 "program": program,
                 "title": "Program Registration",
                 "description": description,
-                "auto_approve": False,
+                "auto_approve": True,
                 "created_by": created_by,
             },
         )
@@ -1085,10 +1085,11 @@ class Command(BaseCommand):
         if created:
             self.stdout.write("  Created demo registration link (slug: demo)")
         else:
-            # Update title/description on existing links too
+            # Update existing links to match current seed defaults
             link.title = "Program Registration"
             link.description = description
-            link.save(update_fields=["title", "description"])
+            link.auto_approve = True
+            link.save(update_fields=["title", "description", "auto_approve"])
             self.stdout.write("  Updated demo registration link.")
 
     def _seed_client_data(

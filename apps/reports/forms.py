@@ -257,14 +257,14 @@ class ClientDataExportForm(ExportRecipientMixin, forms.Form):
         required=False,
         label=_("Programme"),
         empty_label=_("— All programmes —"),
-        help_text=_("Leave blank to export clients from all programmes."),
+        help_text=_("Leave blank to export participants from all programmes."),
     )
 
     status = forms.ChoiceField(
         choices=STATUS_CHOICES,
         required=False,
-        label=_("Client status"),
-        help_text=_("Filter by client status, or export all."),
+        label=_("Participant status"),
+        help_text=_("Filter by participant status, or export all."),
     )
 
     include_custom_fields = forms.BooleanField(

@@ -112,11 +112,11 @@ def terminology_reset(request, term_key):
 
 DEFAULT_FEATURES = {
     "programs": _lazy("Programs module"),
-    "custom_fields": _lazy("Custom client fields"),
+    "custom_fields": _lazy("Custom participant fields"),
     "alerts": _lazy("Metric alerts"),
     "events": _lazy("Event tracking"),
     "funder_reports": _lazy("Funder report exports"),
-    "require_client_consent": _lazy("Require client consent before notes (PIPEDA/PHIPA)"),
+    "require_client_consent": _lazy("Require participant consent before notes (PIPEDA/PHIPA)"),
 }
 
 # Features that default to enabled (most default to disabled)

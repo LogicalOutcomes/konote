@@ -12,7 +12,7 @@
 <div class="settings-grid">
     <article>
         <header>{% trans "Terminology" %}</header>
-        <p>{% trans 'Customise the words used throughout the system (e.g. rename "Client" to "Participant").' %}</p>
+        <p>{% trans 'Customise the words used throughout the system (e.g. rename "Participant" to "Client").' %}</p>
         <p class="settings-indicator">
             {% if terminology_overrides %}
                 {% blocktrans count count=terminology_overrides %}{{ count }} term customised{% plural %}{{ count }} terms customised{% endblocktrans %}
@@ -59,7 +59,7 @@
 
     <article>
         <header>{% trans "Demo Accounts" %}</header>
-        <p>{% trans "View all demo users and demo clients. Impersonate demo users for testing." %}</p>
+        <p>{% trans "View all demo users and demo participants. Impersonate demo users for testing." %}</p>
         <p class="settings-indicator">
             {% if demo_users %}
                 {% blocktrans count count=demo_users %}{{ count }} demo user{% plural %}{{ count }} demo users{% endblocktrans %}

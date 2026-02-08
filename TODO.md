@@ -158,7 +158,7 @@ From konote-qa-scenarios. These require test infrastructure or app features in t
 
 - [ ] Stress testing — simulate 50+ concurrent users to find performance bottlenecks and connection pool limits (QA-T15)
 - [ ] Data migration scenario — test what happens when importing client data from a legacy system. Validates the Bulk Import feature (IMP1 series) once built (QA-T16)
-- [ ] Screenshot naming improvement — include page URL hash in screenshot filenames so each screenshot maps back to a specific route for easier debugging (QA-T20)
+- [x] Screenshot naming improvement — URL slug appended to filenames (e.g., `SCN-005_step1_DS1b_clients.png`) for route traceability — 2026-02-08 (QA-T20)
 
 ### Erasure — Deferred Execution for Tier 3
 

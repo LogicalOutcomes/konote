@@ -6,7 +6,7 @@
 {% block content %}
 <header class="page-header">
     <h1>{% trans "Executive Overview" %}</h1>
-    <p class="page-subtitle">{% trans "Aggregate statistics across your programs. Individual client records are not accessible from this view to protect confidentiality." %}</p>
+    <p class="page-subtitle">{% trans "Aggregate statistics across your programs. Individual participant records are not accessible from this view to protect confidentiality." %}</p>
     {% if data_refreshed_at %}
     <p class="data-timestamp">{% trans "Last updated" %}: {{ data_refreshed_at|date:"SHORT_DATETIME_FORMAT" }}</p>
     {% endif %}

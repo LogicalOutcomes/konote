@@ -42,7 +42,7 @@
 </div>
 
 <!-- Tabs — HTMX-powered, no full page reload -->
-<nav aria-label="{% trans 'Client tabs' %}">
+<nav aria-label="{% trans 'Participant tabs' %}">
     <ul class="tab-bar">
         <li>{% if active_tab == "info" %}<a href="{% url 'clients:client_detail' client_id=client.pk %}" class="tab-active" aria-current="page">{% trans "Info" %}</a>{% else %}<a href="{% url 'clients:client_detail' client_id=client.pk %}" hx-get="{% url 'clients:client_detail' client_id=client.pk %}" hx-target="#tab-content" hx-swap="innerHTML" hx-push-url="true">{% trans "Info" %}</a>{% endif %}</li>
         {% if user_role != "receptionist" %}

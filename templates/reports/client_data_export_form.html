@@ -1,25 +1,25 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Client Data Export" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% trans "Participant Data Export" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% trans "Client Data Export" %}</h1>
-    <p>{% trans "Export all client data as a CSV file for data portability, backup, or migration to another system." %}</p>
+    <h1>{% trans "Participant Data Export" %}</h1>
+    <p>{% trans "Export all participant data as a CSV file for data portability, backup, or migration to another system." %}</p>
 </hgroup>
 
 {% if no_data %}
 <article aria-label="{% trans 'No results' %}">
-    <p><strong>{% trans "No data found." %}</strong> {% trans "There are no clients matching the selected filters. Try adjusting your filters or leave them blank to export all clients." %}</p>
+    <p><strong>{% trans "No data found." %}</strong> {% trans "There are no participants matching the selected filters. Try adjusting your filters or leave them blank to export all participants." %}</p>
 </article>
 {% endif %}
 
 {% if total_client_count %}
-<article aria-label="{% trans 'Client Count' %}" style="margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'Participant Count' %}" style="margin-bottom: 1.5rem;">
     <strong><span aria-hidden="true">📋</span> {% trans "Export Preview" %}</strong>
     <p style="margin-bottom: 0;">
-        {% blocktrans with strong_open="<strong>" strong_close="</strong>" count count=total_client_count %}You have access to {{ strong_open }}{{ count }}{{ strong_close }} client record.{% plural %}You have access to {{ strong_open }}{{ count }}{{ strong_close }} client records.{% endblocktrans %}
+        {% blocktrans with strong_open="<strong>" strong_close="</strong>" count count=total_client_count %}You have access to {{ strong_open }}{{ count }}{{ strong_close }} participant record.{% plural %}You have access to {{ strong_open }}{{ count }}{{ strong_close }} participant records.{% endblocktrans %}
         {% trans "Use the filters below to narrow down the export." %}
     </p>
 </article>
