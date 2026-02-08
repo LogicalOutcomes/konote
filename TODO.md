@@ -36,7 +36,7 @@ _All review items complete. 74 new tests added. Pre-existing test failures below
 - [x] Search "no results" shows wrong empty state — says "No Participant files yet" instead of "No participants found" — 2026-02-07 (BUG-1)
 - [x] Hide create buttons from roles without permission — receptionist sees New Participant but gets 403 — 2026-02-07 (BUG-2)
 - [x] Audit log uses developer jargon — shows "POST" instead of "Created", exposes IP Address column — 2026-02-07 (BUG-3)
-- [ ] Language preference not tied to user account — cookie-based, bleeds between users on same browser (BUG-4)
+- [x] Language preference not tied to user account — cookie-based, bleeds between users on same browser — 2026-02-07 (BUG-4)
 
 **Improvements:**
 - [x] Settings page needs state indicators — cards don't show current state like "4 of 6 enabled" — 2026-02-07 (IMPROVE-1)
@@ -135,6 +135,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Fix language bleed on shared browser — clear cookie on logout, set cookie on login to match user preference — 2026-02-07 (BUG-4)
 - [x] French translations complete — translated 93 remaining strings to Canadian French, 100% coverage (2146/2146 entries), .mo compiled, validation passed — 2026-02-07 (I18N-TRANS1)
 - [x] Code review MEDIUM remaining — admin_required decorator across all views (QUAL8), translated access denied messages (I18N-8), modal focus trap (A11Y-2), 20 JS strings translatable (I18N-4), 29 audit log view tests (TEST-4) — 2026-02-07
 - [x] Code review MEDIUM fixes — QUAL5-7, A11Y-1, I18N-1/2/3/5/6/7/9/10: dev cookie fix, group forms, dedup client fields, scope on th, PDF/email/form/CSV translations, breadcrumbs, privacy.html blocktrans — 2026-02-07
