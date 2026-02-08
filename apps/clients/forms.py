@@ -160,9 +160,9 @@ class ErasureRequestForm(forms.Form):
     """Form for requesting client data erasure with tier selection and acknowledgements."""
 
     REASON_CATEGORY_CHOICES = [
-        ("client_requested", _("Client requested")),
+        ("client_requested", _("Participant requested")),
         ("retention_expired", _("Retention period expired")),
-        ("discharged", _("Client discharged")),
+        ("discharged", _("Participant discharged")),
         ("other", _("Other")),
     ]
 
@@ -186,21 +186,21 @@ class ErasureRequestForm(forms.Form):
     request_reason = forms.CharField(
         widget=forms.Textarea(attrs={
             "rows": 3,
-            "placeholder": _("Explain why this data should be erased. Do not include client names."),
+            "placeholder": _("Explain why this data should be erased. Do not include participant names."),
         }),
         label=_("Details"),
-        help_text=_("Required. Provide context such as client request date, retention policy reference, etc."),
+        help_text=_("Required. Provide context such as participant request date, retention policy reference, etc."),
     )
 
     # Acknowledgement checkboxes — all three required
     ack_permanent = forms.BooleanField(
-        label=_("I understand all data for this client will be permanently "
+        label=_("I understand all data for this participant will be permanently "
                 "anonymised or erased once all programme managers approve."),
         required=True,
     )
     ack_authorised = forms.BooleanField(
         label=_("I have verified this erasure request is authorised and documented "
-                "(e.g., client request, retention policy, privacy officer approval)."),
+                "(e.g., participant request, retention policy, privacy officer approval)."),
         required=True,
     )
     ack_notify = forms.BooleanField(

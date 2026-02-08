@@ -56,7 +56,7 @@
     <dd>{{ er.get_reason_category_display }} — {{ er.request_reason }}</dd>
 </dl>
 
-<h2>{% trans "Client Information" %}</h2>
+<h2>{% trans "Participant Information" %}</h2>
 
 <dl>
     <dt>{% trans "Full Name" %}</dt>
@@ -130,7 +130,7 @@
 
 <div class="footer-note">
     <p>{% trans "This document was generated before data erasure. The system does not retain a copy." %}</p>
-    <p>{% trans "This receipt should be stored securely by the privacy officer as the only record linking the erasure code to the client's identity." %}</p>
+    <p>{% trans "This receipt should be stored securely by the privacy officer as the only record linking the erasure code to the participant's identity." %}</p>
     <p>{% trans "Generated:" %} {% now "Y-m-d H:i" %}</p>
 </div>
 {% endblock %}

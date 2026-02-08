@@ -1,12 +1,12 @@
 {% extends "reports/pdf_base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Client Data Export" %} — {{ client.first_name }} {{ client.last_name }}{% endblock %}
+{% block title %}{% trans "Participant Data Export" %} — {{ client.first_name }} {{ client.last_name }}{% endblock %}
 
 {% block content %}
 <!-- Cover Page -->
 <div class="pdf-cover">
-    <h1>{% trans "Client Data Export" %}</h1>
+    <h1>{% trans "Participant Data Export" %}</h1>
     <div class="subtitle">{{ client.first_name }} {{ client.last_name }}</div>
     <div class="meta">
         {% if client.record_id %}{% trans "Record ID" %}: {{ client.record_id }}<br>{% endif %}
@@ -18,7 +18,7 @@
 </div>
 
 <!-- Client Information -->
-<h2>{% trans "Client Information" %}</h2>
+<h2>{% trans "Participant Information" %}</h2>
 <dl>
     <dt>{% trans "Name" %}</dt>
     <dd>{{ client.first_name }} {{ client.last_name }}{% if client.middle_name %} ({{ client.middle_name }}){% endif %}</dd>

@@ -29,7 +29,7 @@ class AuditLog(models.Model):
     RESOURCE_TYPE_LABELS = {
         "auth": _("Account"),
         "session": _("Account"),
-        "clients": _("Client record"),
+        "clients": _("Participant record"),
         "notes": _("Progress note"),
         "plans": _("Plan"),
         "events": _("Event"),

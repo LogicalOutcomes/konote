@@ -284,7 +284,7 @@ def membership_add(request, group_id):
                 if GroupMembership.objects.filter(
                     group=group, client_file=client, status="active",
                 ).exists():
-                    messages.warning(request, _("This client is already a member."))
+                    messages.warning(request, _("This participant is already a member."))
                 else:
                     GroupMembership.objects.create(
                         group=group,

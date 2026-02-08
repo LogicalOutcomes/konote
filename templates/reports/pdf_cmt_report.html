@@ -127,7 +127,7 @@
     </div>
     <div class="stat-box">
         <div class="value">{{ cmt_data.new_clients_this_period|default:"0" }}</div>
-        <div class="label">{% trans "New Clients This Period" %}</div>
+        <div class="label">{% trans "New Participants This Period" %}</div>
     </div>
     <div class="stat-box">
         <div class="value">{{ cmt_data.total_contacts|default:"0" }}</div>
@@ -227,7 +227,7 @@
     </div>
     <div class="summary-card">
         <div class="number">{{ cmt_data.achievement_summary.clients_met_any_target }} / {{ cmt_data.achievement_summary.total_clients }}</div>
-        <div class="label">{% trans "Clients Met at Least One Target" %}</div>
+        <div class="label">{% trans "Participants Met at Least One Target" %}</div>
     </div>
 </div>
 {% endif %}
