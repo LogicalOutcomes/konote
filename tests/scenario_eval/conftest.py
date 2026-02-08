@@ -1,4 +1,5 @@
 """Pytest configuration for scenario evaluation tests."""
+import glob
 import os
 from datetime import datetime
 
@@ -49,6 +50,50 @@ def holdout_dir():
     return path
 
 
+def _get_next_sequence(report_dir, date_str):
+    """Return a sequence suffix so multiple runs on the same day get unique filenames.
+
+    First run of the day: "" (no suffix)
+    Second run: "a"
+    Third run: "b"
+    ...and so on through the alphabet.
+    """
+    # Check for existing report files matching this date
+    pattern = os.path.join(report_dir, f"{date_str}*-satisfaction-report.md")
+    existing = glob.glob(pattern)
+    if not existing:
+        return ""
+
+    # Find the highest sequence letter already used
+    # Filenames look like: 2026-02-08-satisfaction-report.md (no letter)
+    #                   or: 2026-02-08a-satisfaction-report.md (letter "a")
+    max_letter = None
+    for filepath in existing:
+        basename = os.path.basename(filepath)
+        # Strip the date prefix and the "-satisfaction-report.md" suffix
+        after_date = basename[len(date_str):]  # e.g. "-satisfaction-report.md" or "a-satisfaction-report.md"
+        if after_date.startswith("-satisfaction-report.md"):
+            # This is the original (no-letter) file
+            if max_letter is None:
+                max_letter = ""  # Marks that the no-suffix file exists
+        elif len(after_date) > 1 and after_date[0].isalpha() and after_date[1] == "-":
+            letter = after_date[0]
+            if max_letter is None or max_letter == "" or letter > max_letter:
+                max_letter = letter
+
+    if max_letter is None:
+        # Shouldn't happen since existing is non-empty, but be safe
+        return ""
+    elif max_letter == "":
+        # Only the no-suffix file exists — next is "a"
+        return "a"
+    else:
+        # Advance to the next letter (cap at 'z' to avoid non-alpha chars)
+        if max_letter >= "z":
+            return "z"
+        return chr(ord(max_letter) + 1)
+
+
 def pytest_sessionfinish(session, exitstatus):
     """Generate a satisfaction report after all tests complete."""
     if not _all_results:
@@ -62,17 +107,22 @@ def pytest_sessionfinish(session, exitstatus):
         report_dir = os.path.join(holdout, "reports")
         os.makedirs(report_dir, exist_ok=True)
         date_str = datetime.now().strftime("%Y-%m-%d")
+        seq = _get_next_sequence(report_dir, date_str)
+        date_prefix = f"{date_str}{seq}"
+
         report_path = os.path.join(
-            report_dir, f"{date_str}-satisfaction-report.md"
+            report_dir, f"{date_prefix}-satisfaction-report.md"
         )
         generate_report(_all_results, output_path=report_path)
+        if seq:
+            print(f"\n\nRun sequence: {date_str} run '{seq}' (multiple runs today)")
         print(f"\n\nSatisfaction report written to: {report_path}")
 
         # Also write machine-readable JSON for qa_gate.py and track_satisfaction.py
         try:
             from .results_serializer import write_results_json
 
-            json_path = os.path.join(report_dir, f"{date_str}-results.json")
+            json_path = os.path.join(report_dir, f"{date_prefix}-results.json")
             write_results_json(_all_results, json_path)
             print(f"JSON results written to: {json_path}")
         except Exception as exc:

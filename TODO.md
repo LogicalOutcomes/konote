@@ -7,17 +7,6 @@
 
 ## Active Work
 
-### QA Process Improvements (see `tasks/qa-process-improvement-plan.md`)
-
-- [ ] Add pre-flight check to scenario runner — login, language, dashboard, test data (QA-W1)
-- [ ] Capture browser console logs alongside screenshots (QA-W2)
-- [ ] Detect and flag duplicate consecutive screenshots (QA-W3)
-- [ ] Add action verification — confirm fills, clicks, and logins actually executed (QA-W4)
-- [ ] Capture screenshots at DITL key moments (QA-W5)
-- [ ] Report naming with sequence suffix for multiple runs per day (QA-W6)
-- [ ] Fix 404 after create participant form submission (QA-W7 / BUG-7)
-- [ ] Add post-creation confirmation flash message (QA-W8 / IMPROVE-5)
-
 ### Pre-Launch Checklist
 
 The core app is feature-complete. These tasks prepare for production use.
@@ -32,7 +21,7 @@ The core app is feature-complete. These tasks prepare for production use.
 - [ ] Redeploy to Railway — push to `main`, Railway auto-deploys. See `docs/deploy-railway.md` (OPS-RAIL1)
 - [ ] Redeploy to FullHost — push to `main`, then trigger redeploy via API or dashboard. See `docs/deploy-fullhost.md` (OPS-FH1)
 - [ ] Code review round — open Claude Code in VS Code, say "review the codebase for code quality, security, and consistency issues" — see `tasks/code-review-process.md` (REV1)
-- [ ] Scenario QA evaluation — persona-based satisfaction scoring against a live test server. Slow (~60s), run sparingly after major UX changes. Run `/run-scenario-server` in this repo to capture screenshots and page state (no API key needed), then open the `konote-qa-scenarios` repo in a separate VS Code window and run `/run-scenarios` there for Claude to evaluate the results. See `tasks/scenario-eval-howto.md` (QA-SCEN1)
+- [ ] Scenario QA evaluation — 3-step pipeline, run after major UX changes. Step 1: `/run-scenario-server` here (captures screenshots + writes manifest). Step 2: `/run-scenarios` in qa-scenarios window (evaluates + writes handoff). Step 3: `/process-qa-report` back here (expert panel + action plan + updates TODO). Pipeline log at `qa/pipeline-log.txt`. See `tasks/scenario-eval-howto.md` (QA-SCEN1)
 
 ## Coming Up
 
@@ -116,6 +105,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] QA process improvements — pre-flight check (W1), console capture (W2), duplicate screenshot detection (W3), action verification with retry (W4), DITL key_moments coverage (W5), report naming sequence suffix (W6), 404 fix + personalised flash message (W7), aria-live on messages (W8) — 2026-02-08 (QA-W1 through QA-W8)
 - [x] QA Scenario Runner full coverage — 4 test users, 6 test clients, 7 action types (voice/dictate/intercept/tabs/back/screenshot), 5 new test classes + 2 updated (22 new scenarios), LLM evaluator prompt enhancements (cognitive/mechanical/completion checks) — 2026-02-08 (QA-DATA1-5, QA-ACT1-5, QA-TEST1-7, QA-EVAL1-3)
 - [x] QA Infrastructure Phase 3 — CI/CD gate (QA-T11), satisfaction gap tracking (QA-T12), bidirectional ticket sync (QA-T14). GitHub Actions workflows, standalone scripts, JSON results serializer — 2026-02-08 (QA-T11, QA-T12, QA-T14)
 - [x] Test isolation (QA-ISO1) + objective scoring (QA-T10) — fresh context per scenario, locale from persona, auto-login, prerequisite validation, axe-core/action-count/lang objective scores override LLM — 2026-02-08 (QA-ISO1, QA-T10)

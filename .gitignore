@@ -35,6 +35,9 @@ Thumbs.db
 nul
 _ul
 
+# QA pipeline transient files (improvement tickets and pipeline log ARE tracked)
+qa/.qa-handoff*.json
+
 # Docker volumes
 pgdata/
 audit_pgdata/

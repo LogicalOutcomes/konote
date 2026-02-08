@@ -196,7 +196,14 @@ def client_create(request):
             # Enrol in selected programs
             for program in form.cleaned_data["programs"]:
                 ClientProgramEnrolment.objects.create(client_file=client, program=program)
-            messages.success(request, _("%(term)s file created.") % {"term": request.get_term("client")})
+            display_name = f"{client.display_name} {client.last_name}"
+            messages.success(
+                request,
+                _("%(name)s's %(term)s file created successfully.") % {
+                    "name": display_name,
+                    "term": request.get_term("client").lower(),
+                },
+            )
             return redirect("clients:client_detail", client_id=client.pk)
     else:
         form = ClientFileForm(available_programs=available_programs)

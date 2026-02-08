@@ -138,11 +138,13 @@
 
     <main id="main-content" class="container" tabindex="-1">
         {% if messages %}
+        <div role="status" aria-live="polite" aria-atomic="false">
         {% for message in messages %}
         <article aria-label="notification" {% if message.tags %}class="{{ message.tags }}"{% endif %}>
             {{ message }}
         </article>
         {% endfor %}
+        </div>
         {% endif %}
 
         {% block content %}{% endblock %}

@@ -29,6 +29,12 @@ class StepCapture:
     interactive_element_count: int = 0
     focus_element: str = ""
 
+    # Browser console output (QA-W2)
+    console_log: list = field(default_factory=list)
+
+    # Duplicate screenshot detection (QA-W3)
+    is_duplicate: bool = False
+
     # Round 3: extra captures for mobile, a11y tree, and bilingual scenarios
     accessibility_tree: dict = field(default_factory=dict)
     has_horizontal_scroll: bool = False
@@ -62,7 +68,8 @@ def _url_to_slug(url, max_length=60):
 
 
 def capture_step_state(page, scenario_id, step_id, actor_persona,
-                       screenshot_dir=None, run_axe_fn=None):
+                       screenshot_dir=None, run_axe_fn=None,
+                       previous_screenshot_path=None):
     """Capture the full state of the page after a step executes.
 
     Args:
@@ -72,6 +79,9 @@ def capture_step_state(page, scenario_id, step_id, actor_persona,
         actor_persona: Persona ID (e.g., 'DS1').
         screenshot_dir: Directory to save screenshots (optional).
         run_axe_fn: Callable that runs axe-core and returns results (optional).
+        previous_screenshot_path: Path to the previous step's screenshot for
+            duplicate detection (optional). If provided and the new screenshot
+            is byte-identical, sets is_duplicate=True and renames the file.
 
     Returns:
         StepCapture dataclass with all captured data.
@@ -165,6 +175,29 @@ def capture_step_state(page, scenario_id, step_id, actor_persona,
         capture.screenshot_path = os.path.join(screenshot_dir, filename)
         page.screenshot(path=capture.screenshot_path, full_page=True)
 
+        # Duplicate screenshot detection (QA-W3)
+        if previous_screenshot_path and Path(previous_screenshot_path).is_file():
+            try:
+                current_bytes = Path(capture.screenshot_path).read_bytes()
+                previous_bytes = Path(previous_screenshot_path).read_bytes()
+                if current_bytes == previous_bytes:
+                    capture.is_duplicate = True
+                    print(
+                        f"WARNING: {scenario_id} step {step_id} screenshot "
+                        f"identical to previous step — action may not have "
+                        f"executed"
+                    )
+                    # Rename to flag the duplicate visually in the output dir
+                    dup_filename = (
+                        f"{scenario_id}_step{step_id}_{actor_persona}"
+                        f"_{slug}_DUPLICATE.png"
+                    )
+                    dup_path = os.path.join(screenshot_dir, dup_filename)
+                    Path(capture.screenshot_path).rename(dup_path)
+                    capture.screenshot_path = dup_path
+            except OSError:
+                pass  # If file read fails, skip detection silently
+
     # Axe-core accessibility check
     if run_axe_fn:
         try:
@@ -220,8 +253,24 @@ def capture_to_evaluation_context(capture, persona_description=""):
     if capture.document_lang:
         extra_meta += f"Document language: {capture.document_lang}\n"
 
-    return f"""## Page State After Step {capture.step_id}
+    # Browser console output (QA-W2)
+    console_str = ""
+    if capture.console_log:
+        console_lines = capture.console_log[:50]  # Cap at 50 lines for LLM
+        console_str = "\n".join(f"  {line}" for line in console_lines)
+        if len(capture.console_log) > 50:
+            console_str += f"\n  ... ({len(capture.console_log) - 50} more lines)"
 
+    # Duplicate screenshot warning (QA-W3)
+    duplicate_warning = ""
+    if capture.is_duplicate:
+        duplicate_warning = (
+            "\n**DUPLICATE: This screenshot is identical to the previous "
+            "step — the action may not have executed.**\n"
+        )
+
+    return f"""## Page State After Step {capture.step_id}
+{duplicate_warning}
 URL: {capture.url}
 Page title: {capture.page_title}
 Interactive elements on page: {capture.interactive_element_count}
@@ -239,8 +288,10 @@ Axe-core violations: {capture.axe_violation_count}
 {"" if not a11y_tree_str else f'''
 ### Accessibility Tree (Screen Reader View)
 {a11y_tree_str}
-'''}
-### Visible Text Content
+'''}{"" if not console_str else f'''### Browser Console Output
+{console_str}
+
+'''}### Visible Text Content
 {capture.visible_text[:5000]}
 """
 

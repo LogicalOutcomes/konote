@@ -5,9 +5,12 @@ Extends BrowserTestBase from the existing UX walkthrough framework.
 QA-ISO1: Fresh browser context per scenario, locale from persona,
          auto-login from persona data, prerequisite validation.
 QA-T10:  Objective scoring for accessibility, efficiency, language.
+QA-W4:   Action verification — retry fill/click/login_as on failure.
+QA-W5:   DITL key_moments screenshot coverage.
 """
 import logging
 import os
+import re
 
 from django.utils import timezone
 
@@ -19,6 +22,16 @@ from .score_models import ScenarioResult, StepEvaluation
 from .state_capture import capture_step_state, capture_to_evaluation_context
 
 logger = logging.getLogger(__name__)
+
+
+def _slugify(text, max_length=40):
+    """Create a filesystem-safe slug from text.
+
+    Converts to lowercase, replaces non-alphanumeric characters with
+    hyphens, and truncates to max_length.
+    """
+    slug = re.sub(r"[^a-z0-9]+", "-", text.lower()).strip("-")
+    return slug[:max_length].rstrip("-")
 
 
 def _get_moment_action(moment):
@@ -378,6 +391,20 @@ class ScenarioRunner(BrowserTestBase):
         self._context = self._browser.new_context(**context_kwargs)
         self.page = self._context.new_page()
 
+        # QA-W2: Capture browser console output for diagnostics
+        self._console_messages = []
+
+        def _on_console(msg):
+            level = msg.type  # 'log', 'warning', 'error', 'info', etc.
+            text = msg.text
+            self._console_messages.append(f"[{level}] {text}")
+
+        def _on_page_error(error):
+            self._console_messages.append(f"[exception] {error}")
+
+        self.page.on("console", _on_console)
+        self.page.on("pageerror", _on_page_error)
+
     # ------------------------------------------------------------------
     # QA-ISO1: Auto-login from persona data
     # ------------------------------------------------------------------
@@ -451,6 +478,87 @@ class ScenarioRunner(BrowserTestBase):
                         f"found. (Scenario: {scenario['id']})"
                     )
 
+    # ------------------------------------------------------------------
+    # QA-W1: Pre-flight check — verify login, language, and data
+    # ------------------------------------------------------------------
+
+    def _run_preflight(self, persona, personas=None):
+        """Verify the browser is logged in and ready before running steps.
+
+        Runs AFTER _setup_context_for_scenario() and _auto_login_for_scenario()
+        to validate that login succeeded, the correct language is active,
+        and the dashboard loads with visible test data.
+
+        Args:
+            persona: Persona ID string (e.g. 'DS1').
+            personas: Dict of persona_id -> persona_data.
+
+        Returns:
+            Tuple of (success: bool, reason: str).
+        """
+        personas = personas or self.personas or {}
+        persona_data = personas.get(persona, {})
+        expected_lang = _get_persona_language(persona_data)
+
+        # 1. Verify login succeeded (URL should NOT be the login page)
+        current_url = self.page.url
+        if "/auth/login" in current_url:
+            return (False, f"Still on login page ({current_url})")
+
+        # 2. Verify a user badge or welcome indicator is present
+        has_user_indicator = self.page.evaluate("""() => {
+            const badge = document.querySelector(
+                '[data-user-badge], .user-badge, .user-menu, '
+                + 'nav [data-username], .navbar .dropdown'
+            );
+            return !!badge;
+        }""")
+        if not has_user_indicator:
+            # Also check visible text for display name as fallback
+            body_text = self.page.evaluate(
+                "() => (document.body.innerText || '').substring(0, 3000)"
+            )
+            display_name = persona_data.get("display_name", "")
+            username = _get_persona_username(persona_data)
+            if display_name and display_name not in body_text:
+                if not username or username not in body_text:
+                    return (False, "No user badge or display name found on page")
+
+        # 3. Verify correct language is set
+        doc_lang = self.page.evaluate(
+            "() => document.documentElement.lang || ''"
+        )
+        if expected_lang.startswith("fr") and not doc_lang.startswith("fr"):
+            return (False, f"Expected French (fr), got lang='{doc_lang}'")
+        if expected_lang.startswith("en") and doc_lang.startswith("fr"):
+            return (False, f"Expected English (en), got lang='{doc_lang}'")
+
+        # 4. Verify dashboard loaded (check for main content area)
+        has_main_content = self.page.evaluate("""() => {
+            const main = document.querySelector('main, [role="main"], .main-content');
+            return main && main.innerText.trim().length > 10;
+        }""")
+        if not has_main_content:
+            return (False, "Dashboard main content area is empty or missing")
+
+        # 5. Verify at least one client is accessible (navigate to client list)
+        self.page.goto(self.live_url("/clients/"))
+        self.page.wait_for_load_state("networkidle")
+        has_clients = self.page.evaluate("""() => {
+            const rows = document.querySelectorAll(
+                'table tbody tr, .client-card, [data-client-id]'
+            );
+            return rows.length > 0;
+        }""")
+        if not has_clients:
+            return (False, "No clients visible in client list")
+
+        # Navigate back to dashboard so scenario steps start from expected state
+        self.page.goto(self.live_url("/"))
+        self.page.wait_for_load_state("networkidle")
+
+        return (True, "")
+
     def _seed_bulk_clients(self, count=150):
         """Create many active clients for executive dashboard scenarios.
 
@@ -476,6 +584,38 @@ class ScenarioRunner(BrowserTestBase):
             ClientProgramEnrolment.objects.create(
                 client_file=client, program=program,
             )
+
+    # ------------------------------------------------------------------
+    # QA-W4: Action verification — retry + log on failure
+    # ------------------------------------------------------------------
+
+    def _verify_action(self, action_type, expected, actual, action_detail=""):
+        """Check if an action produced the expected result.
+
+        If verification fails, returns False so the caller can retry once.
+        Logs ACTION_FAILED if the retry also fails.
+
+        Args:
+            action_type: 'fill', 'click', or 'login_as'.
+            expected: The expected value or state description.
+            actual: The actual value or state observed.
+            action_detail: Human-readable description of the action.
+
+        Returns:
+            True if expected matches actual, False otherwise.
+        """
+        if expected == actual:
+            return True
+
+        logger.warning(
+            "ACTION_VERIFY: %s mismatch — expected %r, got %r (%s)",
+            action_type, expected, actual, action_detail,
+        )
+        return False
+
+    def _log_action_failed(self, action_type, detail):
+        """Log a failed action after retry was also unsuccessful."""
+        logger.warning("ACTION_FAILED: %s — %s", action_type, detail)
 
     # ------------------------------------------------------------------
     # Scenario execution
@@ -511,6 +651,31 @@ class ScenarioRunner(BrowserTestBase):
         persona_data = personas.get(persona_id, {})
         expected_lang = _get_persona_language(persona_data)
 
+        # QA-W1: Pre-flight check — verify login, language, and data
+        preflight_ok, preflight_reason = self._run_preflight(
+            persona_id, personas
+        )
+        if not preflight_ok:
+            logger.warning(
+                "Preflight FAILED for %s in %s: %s",
+                persona_id, scenario["id"], preflight_reason,
+            )
+            result = ScenarioResult(
+                scenario_id=scenario["id"],
+                title=scenario.get("title", ""),
+            )
+            result.step_evaluations.append(
+                StepEvaluation(
+                    scenario_id=scenario["id"],
+                    step_id=0,
+                    persona_id=persona_id,
+                    one_line_summary=(
+                        f"BLOCKED: preflight failed — {preflight_reason}"
+                    ),
+                )
+            )
+            return result
+
         result = ScenarioResult(
             scenario_id=scenario["id"],
             title=scenario.get("title", ""),
@@ -539,6 +704,22 @@ class ScenarioRunner(BrowserTestBase):
                             self.login_via_browser(new_user)
                         current_user = new_user
 
+                        # QA-W4: Verify login — should not be on login page
+                        try:
+                            post_login_url = self.page.url
+                            if "/auth/login" in post_login_url:
+                                # Retry once
+                                self.login_via_browser(new_user)
+                                post_login_url = self.page.url
+                                if "/auth/login" in post_login_url:
+                                    self._log_action_failed(
+                                        "login_as",
+                                        f"user={new_user} — still on "
+                                        f"login page after retry",
+                                    )
+                        except Exception:
+                            pass  # Verification failed — don't crash
+
             # Execute Playwright actions
             self._execute_actions(actions)
 
@@ -551,6 +732,21 @@ class ScenarioRunner(BrowserTestBase):
                 screenshot_dir=screenshot_dir,
                 run_axe_fn=self.run_axe if hasattr(self, "run_axe") else None,
             )
+
+            # QA-W2: Attach console messages and clear buffer for next step
+            if hasattr(self, "_console_messages"):
+                capture.console_log = list(self._console_messages)
+                self._console_messages.clear()
+
+                # Write console log file alongside screenshot (only if non-empty)
+                if capture.console_log and screenshot_dir:
+                    log_filename = (
+                        f"{scenario['id']}_step{step_id}_{actor}_console.log"
+                    )
+                    log_path = os.path.join(screenshot_dir, log_filename)
+                    os.makedirs(screenshot_dir, exist_ok=True)
+                    with open(log_path, "w", encoding="utf-8") as f:
+                        f.write("\n".join(capture.console_log))
 
             # QA-T10: Compute objective scores
             objective_scores = compute_objective_scores(
@@ -657,6 +853,22 @@ class ScenarioRunner(BrowserTestBase):
                 run_axe_fn=self.run_axe if hasattr(self, "run_axe") else None,
             )
 
+            # QA-W2: Attach console messages and clear buffer for next step
+            if hasattr(self, "_console_messages"):
+                capture.console_log = list(self._console_messages)
+                self._console_messages.clear()
+
+                if capture.console_log and screenshot_dir:
+                    step_num = len(result.step_evaluations) + 1
+                    log_filename = (
+                        f"{scenario['id']}_step{step_num}"
+                        f"_{persona_id}_console.log"
+                    )
+                    log_path = os.path.join(screenshot_dir, log_filename)
+                    os.makedirs(screenshot_dir, exist_ok=True)
+                    with open(log_path, "w", encoding="utf-8") as f:
+                        f.write("\n".join(capture.console_log))
+
             # QA-T10: Objective scores (no actions for narrative pages)
             objective_scores = compute_objective_scores(
                 capture=capture,
@@ -718,6 +930,139 @@ class ScenarioRunner(BrowserTestBase):
                 )
                 result.step_evaluations.append(placeholder)
 
+        # QA-W5: Capture screenshots for each key_moment defined in YAML
+        key_moments = scenario.get("key_moments", [])
+        for i, moment in enumerate(key_moments):
+            moment_url = moment.get("url") or moment.get("page", "")
+            if not moment_url:
+                logger.info(
+                    "DITL %s: key_moment %d has no url/page — skipping",
+                    scenario["id"], i,
+                )
+                continue
+
+            # Build a descriptive slug for the screenshot filename
+            moment_label = moment.get("label", moment.get("event", ""))
+            slug = _slugify(moment_label) if moment_label else f"page{i}"
+
+            try:
+                if moment_url.startswith("/"):
+                    moment_url = self.live_url(moment_url)
+                self.page.goto(moment_url)
+                self.page.wait_for_load_state("networkidle")
+
+                # Check for 404 / error page and skip if so
+                status_text = self.page.evaluate(
+                    "() => document.title || ''"
+                )
+                if "404" in status_text or "Not Found" in status_text:
+                    logger.info(
+                        "DITL %s: key_moment %d (%s) returned 404 — skipping",
+                        scenario["id"], i, moment_url,
+                    )
+                    continue
+
+                # Capture screenshot with a descriptive filename
+                capture = capture_step_state(
+                    page=self.page,
+                    scenario_id=scenario["id"],
+                    step_id=len(result.step_evaluations) + 1,
+                    actor_persona=persona_id,
+                    screenshot_dir=screenshot_dir,
+                    run_axe_fn=(
+                        self.run_axe if hasattr(self, "run_axe") else None
+                    ),
+                )
+
+                # QA-W5: Also save a clearly-named screenshot file
+                if screenshot_dir:
+                    moment_filename = (
+                        f"{scenario['id']}_moment{i}_{persona_id}_{slug}.png"
+                    )
+                    moment_path = os.path.join(screenshot_dir, moment_filename)
+                    os.makedirs(screenshot_dir, exist_ok=True)
+                    self.page.screenshot(path=moment_path, full_page=True)
+
+                # Attach console messages
+                if hasattr(self, "_console_messages"):
+                    capture.console_log = list(self._console_messages)
+                    self._console_messages.clear()
+
+                # Objective scores for this moment's capture
+                objective_scores = compute_objective_scores(
+                    capture=capture,
+                    actions=None,
+                    expected_lang=expected_lang,
+                )
+
+                if self.use_llm:
+                    persona_desc = format_persona_for_prompt(persona_data)
+                    page_state_text = capture_to_evaluation_context(capture)
+
+                    narrative = scenario.get("narrative", "")
+                    moment_texts = "\n".join(
+                        f"- {m.get('time', '')}: {m.get('event', '')} — "
+                        f"{_get_moment_action(m)}"
+                        for m in moments
+                    )
+                    eval_focus = "\n".join(
+                        f"- {f}"
+                        for f in scenario.get("evaluation_focus", [])
+                    )
+
+                    step = {
+                        "id": len(result.step_evaluations) + 1,
+                        "actor": persona_id,
+                        "intent": (
+                            f"Key moment: {moment_label or slug} — "
+                            f"{narrative[:150]}"
+                        ),
+                        "satisfaction_criteria": scenario.get(
+                            "evaluation_focus", []
+                        ),
+                        "frustration_triggers": [],
+                    }
+
+                    context = (
+                        f"NARRATIVE CONTEXT:\n{narrative}\n\n"
+                        f"DAY'S MOMENTS:\n{moment_texts}\n\n"
+                        f"EVALUATION FOCUS:\n{eval_focus}\n\n"
+                        f"KEY MOMENT {i}: {moment_label}\n\n"
+                        f"SCORING NOTE: {scenario.get('scoring_note', '')}"
+                    )
+
+                    evaluation = evaluate_step(
+                        persona_desc=persona_desc,
+                        step=step,
+                        page_state_text=page_state_text,
+                        context_from_previous=context,
+                        model=self.eval_model,
+                        temperature=self.eval_temperature,
+                    )
+                    if evaluation:
+                        evaluation.scenario_id = scenario["id"]
+                        evaluation.persona_id = persona_id
+                        evaluation.objective_scores = objective_scores
+                        result.step_evaluations.append(evaluation)
+                else:
+                    placeholder = StepEvaluation(
+                        scenario_id=scenario["id"],
+                        step_id=len(result.step_evaluations) + 1,
+                        persona_id=persona_id,
+                        one_line_summary=(
+                            f"[DRY RUN] DITL moment {i}: {capture.url}"
+                        ),
+                        objective_scores=objective_scores,
+                    )
+                    result.step_evaluations.append(placeholder)
+
+            except Exception as exc:
+                logger.warning(
+                    "DITL %s: key_moment %d failed — %s: %s",
+                    scenario["id"], i, type(exc).__name__, exc,
+                )
+                continue  # Don't abort — proceed to next moment
+
         return result
 
     def _execute_actions(self, actions):
@@ -759,6 +1104,38 @@ class ScenarioRunner(BrowserTestBase):
                 except Exception:
                     pass  # Field not found — the LLM evaluator will note the issue
 
+                # QA-W4: Verify fill — check the field has the expected value
+                try:
+                    actual_value = self.page.input_value(selector, timeout=2000)
+                    if not self._verify_action(
+                        "fill", value, actual_value,
+                        f"selector={selector}",
+                    ):
+                        # Retry once
+                        try:
+                            self.page.fill(selector, "", timeout=2000)
+                            self.page.fill(selector, value, timeout=5000)
+                            actual_value = self.page.input_value(
+                                selector, timeout=2000,
+                            )
+                            if not self._verify_action(
+                                "fill", value, actual_value,
+                                f"selector={selector} (retry)",
+                            ):
+                                self._log_action_failed(
+                                    "fill",
+                                    f"selector={selector}, "
+                                    f"expected={value!r}, "
+                                    f"got={actual_value!r}",
+                                )
+                        except Exception:
+                            self._log_action_failed(
+                                "fill",
+                                f"selector={selector} — retry failed",
+                            )
+                except Exception:
+                    pass  # Verification itself failed — don't crash
+
             elif "clear" in action:
                 selector = action["clear"]
                 try:
@@ -768,10 +1145,56 @@ class ScenarioRunner(BrowserTestBase):
 
             elif "click" in action:
                 selector = action["click"]
+                # QA-W4: Record pre-click state for verification
+                try:
+                    pre_click_url = self.page.url
+                    pre_click_text = self.page.evaluate(
+                        "() => (document.body.innerText || '').substring(0, 500)"
+                    )
+                except Exception:
+                    pre_click_url = ""
+                    pre_click_text = ""
+
                 try:
                     self.page.click(selector, timeout=5000)
                 except Exception:
                     pass  # Click failed — the LLM evaluator will note the issue
+
+                # QA-W4: Verify click — URL changed OR page content changed
+                try:
+                    # Brief wait for navigation/DOM update after click
+                    self.page.wait_for_timeout(300)
+                    post_click_url = self.page.url
+                    post_click_text = self.page.evaluate(
+                        "() => (document.body.innerText || '').substring(0, 500)"
+                    )
+                    url_changed = post_click_url != pre_click_url
+                    dom_changed = post_click_text != pre_click_text
+                    if not url_changed and not dom_changed:
+                        # Retry once
+                        try:
+                            self.page.click(selector, timeout=5000)
+                            self.page.wait_for_timeout(300)
+                            retry_url = self.page.url
+                            retry_text = self.page.evaluate(
+                                "() => (document.body.innerText || '')"
+                                ".substring(0, 500)"
+                            )
+                            retry_url_changed = retry_url != pre_click_url
+                            retry_dom_changed = retry_text != pre_click_text
+                            if not retry_url_changed and not retry_dom_changed:
+                                self._log_action_failed(
+                                    "click",
+                                    f"selector={selector} — no URL or DOM "
+                                    f"change detected after retry",
+                                )
+                        except Exception:
+                            self._log_action_failed(
+                                "click",
+                                f"selector={selector} — retry failed",
+                            )
+                except Exception:
+                    pass  # Verification itself failed — don't crash
 
             elif "press" in action:
                 key = action["press"]

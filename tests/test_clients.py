@@ -76,6 +76,33 @@ class ClientViewsTest(TestCase):
         self.assertEqual(cf.last_name, "User")
         self.assertTrue(ClientProgramEnrolment.objects.filter(client_file=cf, program=self.prog_a).exists())
 
+    def test_create_client_redirect_to_profile(self):
+        """After creating a participant, redirect to profile with success message (QA-W7/W8)."""
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.post("/clients/create/", {
+            "first_name": "Test",
+            "last_name": "Redirect",
+            "preferred_name": "",
+            "middle_name": "",
+            "birth_date": "",
+            "record_id": "R002",
+            "status": "active",
+            "programs": [self.prog_a.pk],
+        }, follow=True)
+        # Should redirect to profile page (not 404)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Test")
+        self.assertContains(resp, "Redirect")
+        # Should include personalised success message with participant name
+        messages_list = list(resp.context["messages"])
+        self.assertEqual(len(messages_list), 1)
+        self.assertIn("Test Redirect", str(messages_list[0]))
+        self.assertIn("created successfully", str(messages_list[0]))
+        # Should be added to recently-viewed session
+        cf = ClientFile.objects.last()
+        session = self.client.session
+        self.assertIn(cf.pk, session.get("recent_clients", []))
+
     def test_create_client_with_preferred_name(self):
         """Preferred name is saved and used as display_name."""
         self.client.login(username="admin", password="testpass123")
