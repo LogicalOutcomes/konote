@@ -63,7 +63,7 @@ Weekly accountability reports for admins. Requires working email configuration (
 
 Tasks from the QA holdout repo that require code changes in this repo. Scenario data and persona definitions stay in `konote-qa-scenarios`.
 
-- [ ] Automate objective scoring dimensions — integrate axe-core for accessibility scores, count clicks/actions for efficiency, check locale headers for language dimension. Goal: reduce subjective scoring where measurable alternatives exist (QA-T10)
+- [x] Automate objective scoring dimensions — axe-core for accessibility, action count for efficiency, doc lang for language. Objective scores override LLM for these 3 dimensions — 2026-02-08 (QA-T10)
 - [ ] CI/CD gate — run QA scenarios on every deploy, fail the build on any BLOCKER-band score (< 2.0), post satisfaction gap to a dashboard or PR comment. Requires scenario runner to exit with non-zero on blocker (QA-T11)
 - [ ] Track satisfaction gap over time — store historical per-persona scores, chart the gap per release, set target < 1.0 points. Could be a simple JSON log or a dashboard page (QA-T12)
 - [ ] Bidirectional ticket status — when a fix is merged in this repo, automatically update the corresponding issue status in konote-qa-scenarios. Could use GitHub Actions or a post-merge hook (QA-T14)
@@ -135,7 +135,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ### QA Test Isolation
 
-- [ ] Test isolation for scenario runner — fresh browser context, locale override, prerequisite validation, demo data cleanup between scenarios. See `tasks/test-isolation.md` (QA-ISO1)
+- [x] Test isolation for scenario runner — fresh browser context per scenario, locale from persona data, auto-login, prerequisite validation — 2026-02-08 (QA-ISO1)
 
 ### Privacy & Security
 
@@ -146,6 +146,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Test isolation (QA-ISO1) + objective scoring (QA-T10) — fresh context per scenario, locale from persona, auto-login, prerequisite validation, axe-core/action-count/lang objective scores override LLM — 2026-02-08 (QA-ISO1, QA-T10)
 - [x] Fix 14 pre-existing test failures + 4 errors — missing form fields, wrong assertions, missing DB declarations, template bugs, Playwright skip fix — 2026-02-07 (TEST-FIX1)
 - [x] Fix language bleed on shared browser — clear cookie on logout, set cookie on login to match user preference — 2026-02-07 (BUG-4)
 - [x] French translations complete — translated 93 remaining strings to Canadian French, 100% coverage (2146/2146 entries), .mo compiled, validation passed — 2026-02-07 (I18N-TRANS1)
