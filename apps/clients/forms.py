@@ -59,8 +59,9 @@ class ClientFileForm(forms.Form):
     programs = forms.ModelMultipleChoiceField(
         queryset=Program.objects.none(),
         widget=forms.CheckboxSelectMultiple,
-        required=False,
+        required=True,
         label=_("Programmes"),
+        error_messages={"required": _("Please select at least one programme.")},
     )
 
     def __init__(self, *args, available_programs=None, **kwargs):

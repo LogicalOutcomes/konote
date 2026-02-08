@@ -19,7 +19,8 @@
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
 </head>
 <body>
-    <main class="container" style="max-width: 500px; margin-top: 3rem;">
+    <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
+    <main id="main-content" class="container" style="max-width: 500px; margin-top: 3rem;" tabindex="-1">
         <div class="login-wordmark">{{ site.product_name|default:"KoNote2" }}</div>
 
         <article>
