@@ -1,6 +1,10 @@
 """URL configuration for KoNote2 Web."""
+import os
+
+from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
+from django.views.static import serve
 
 from apps.audit.views import program_audit_log
 from apps.auth_app.views import switch_language
@@ -36,4 +40,11 @@ urlpatterns = [
     path("privacy/", privacy_view, name="privacy"),
     path("help/", help_view, name="help"),
     path("django-admin/", admin.site.urls),
+    # Service worker — served from root so its scope covers all pages
+    path(
+        "sw.js",
+        serve,
+        {"document_root": os.path.join(settings.BASE_DIR, "static"), "path": "sw.js"},
+        name="service-worker",
+    ),
 ]
