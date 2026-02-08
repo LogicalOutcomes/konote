@@ -203,7 +203,53 @@ is stored in **[COUNTRY/REGION]**.
 
 ---
 
-## 7. Third-Party Authentication (If Applicable)
+## 7. AI-Assisted Analysis (If Applicable)
+
+> **Complete this section if you enable the AI report summary feature. Delete if not using AI features.**
+
+### 7.1 Purpose
+
+KoNote2's Outcome Insights feature can optionally use AI to generate draft narrative summaries of programme outcomes. This helps staff identify patterns in service delivery and prepare reports. The feature is off by default and must be explicitly enabled by an administrator.
+
+### 7.2 Data Sent to the AI Provider
+
+Before any data is sent, KoNote2 removes personally identifying information:
+
+| Data Type | What Is Sent | What Is Removed |
+|-----------|-------------|-----------------|
+| **Statistics** | Aggregate counts and percentages (e.g., "60% of participants reported improvement") | Nothing — these are already anonymous |
+| **Quotes** | Short excerpts from progress notes, with all identifying details scrubbed | Client names, staff names, email addresses, phone numbers, SIN numbers, postal codes, and street addresses |
+| **Context** | Programme name, date range, goal/target names | Nothing — these are organisational terms, not personal data |
+
+**The following are never sent:** client names, dates of birth, contact information, full case records, unprocessed notes, database credentials, or encryption keys.
+
+### 7.3 AI Provider
+
+**Provider:** [YOUR AI PROVIDER — e.g., OpenRouter, local Ollama instance, OpenAI]
+**Data Processing Location:** [LOCATION — e.g., US-based cloud, on-premises]
+
+> **Note:** If PIPEDA requires Canadian data residency, consider using a locally hosted AI (such as Ollama) that processes all data on your own servers.
+
+| Provider Type | Data Leaves Your Servers? | Recommended For |
+|--------------|--------------------------|-----------------|
+| **Local (Ollama)** | No — all processing on-premises | Maximum data control |
+| **Cloud (OpenRouter, OpenAI)** | Yes — de-identified excerpts only | Convenience, higher quality output |
+
+### 7.4 Data Retention by AI Provider
+
+De-identified data sent to cloud AI providers is subject to the provider's data retention policies. [ORGANISATION NAME] selects providers whose terms do not retain input data for training purposes. See the provider's terms of service for details:
+
+- [PROVIDER PRIVACY POLICY URL]
+
+### 7.5 Consent and Transparency
+
+- AI-generated content is clearly labelled as "AI-Generated Draft" in the interface
+- Staff must review and edit all AI-generated content before use
+- The feature can be disabled at any time by an administrator without affecting existing data
+
+---
+
+## 8. Third-Party Authentication (If Applicable)
 
 > **Complete this section if using Azure AD SSO. Delete if using local authentication only.**
 
@@ -218,9 +264,9 @@ If your organisation uses Azure AD single sign-on:
 
 ---
 
-## 8. Cookies and Session Management
+## 9. Cookies and Session Management
 
-### 8.1 Essential Cookies
+### 9.1 Essential Cookies
 
 We use only essential cookies required for the application to function:
 
@@ -229,7 +275,7 @@ We use only essential cookies required for the application to function:
 | `sessionid` | Maintains your login session | [SESSION DURATION - default: 30 minutes of inactivity] |
 | `csrftoken` | Prevents cross-site request forgery attacks | 1 year |
 
-### 8.2 No Tracking Cookies
+### 9.2 No Tracking Cookies
 
 We do not use:
 - Advertising cookies
@@ -238,7 +284,7 @@ We do not use:
 
 ---
 
-## 9. Data Retention
+## 10. Data Retention
 
 | Data Type | Retention Period | Rationale |
 |-----------|------------------|-----------|
@@ -251,7 +297,7 @@ We do not use:
 
 > **Note:** Retention periods should align with your organisation's record retention policy and applicable regulations (e.g., funder requirements, professional standards).
 
-### 9.1 Data Erasure
+### 10.1 Data Erasure
 
 KoNote2 supports formal data erasure requests in compliance with PIPEDA:
 
@@ -266,7 +312,7 @@ KoNote2 supports formal data erasure requests in compliance with PIPEDA:
 
 Self-approval is prevented — the person requesting erasure cannot also be the sole approver. A single rejection from any programme manager cancels the entire request.
 
-### 9.2 Data Deletion on Retention Expiry
+### 10.2 Data Deletion on Retention Expiry
 
 After retention periods expire, data is securely deleted:
 - Database records permanently deleted with verification
@@ -275,7 +321,7 @@ After retention periods expire, data is securely deleted:
 
 ---
 
-## 10. Your Rights Under PIPEDA
+## 11. Your Rights Under PIPEDA
 
 You have the right to:
 
@@ -285,7 +331,7 @@ You have the right to:
 4. **Withdrawal of Consent** — Withdraw consent for specific uses (where consent is the legal basis)
 5. **Complaint** — File a complaint with the Office of the Privacy Commissioner of Canada
 
-### 10.1 For Clients
+### 11.1 For Clients
 
 If you are a client whose information is recorded in this system, contact us at **[CONTACT EMAIL]** to:
 - Request access to your records
@@ -293,19 +339,19 @@ If you are a client whose information is recorded in this system, contact us at 
 - Ask questions about how your information is used
 - Withdraw consent (subject to legal and service requirements)
 
-### 10.2 For Staff
+### 11.2 For Staff
 
 Contact your system administrator or **[PRIVACY OFFICER EMAIL]** for:
 - Access to your employment-related data
 - Questions about workplace privacy
 
-### 10.3 Response Time
+### 11.3 Response Time
 
 We respond to access requests within **30 days** as required by PIPEDA. If we need additional time, we will notify you of the extension and the reasons.
 
 ---
 
-## 11. Data Breach Response
+## 12. Data Breach Response
 
 In the event of a data breach involving personal information:
 
@@ -318,13 +364,13 @@ In the event of a data breach involving personal information:
 4. **Documentation** — Maintain records of all breaches regardless of notification requirement
 5. **Remediation** — Implement measures to prevent recurrence
 
-### 11.1 Breach Contact
+### 12.1 Breach Contact
 
 Report suspected breaches to: **[SECURITY CONTACT EMAIL]**
 
 ---
 
-## 12. Changes to This Policy
+## 13. Changes to This Policy
 
 We may update this Privacy Policy to reflect changes in our practices or legal requirements. When we make changes:
 
@@ -334,7 +380,7 @@ We may update this Privacy Policy to reflect changes in our practices or legal r
 
 ---
 
-## 13. Contact Us
+## 14. Contact Us
 
 **Privacy Officer:** [NAME]
 **Email:** [EMAIL]
@@ -363,6 +409,7 @@ Before publishing this privacy policy, ensure you have:
 - [ ] Documented your backup procedures
 - [ ] Set appropriate retention periods based on your policies and regulations
 - [ ] Designated a privacy officer and contact information
+- [ ] If using AI features: completed Section 7 with your AI provider details
 - [ ] Reviewed with legal counsel or privacy advisor
 - [ ] Configured your instance's session timeout to match the policy
 - [ ] Published the policy on your instance (link from login page or footer)

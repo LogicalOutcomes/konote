@@ -17,7 +17,8 @@ Welcome to KoNote2! This guide covers the everyday tasks you'll do as a staff me
 5. [Writing Progress Notes](#writing-progress-notes)
 6. [Recording Events](#recording-events)
 7. [Viewing the Outcome Plan](#viewing-the-outcome-plan)
-8. [Tips & Shortcuts](#tips--shortcuts)
+8. [Outcome Insights](#outcome-insights)
+9. [Tips & Shortcuts](#tips--shortcuts)
 
 ---
 
@@ -258,6 +259,43 @@ Staff can view plans but typically cannot edit them. Plan changes are made by pr
 
 ---
 
+## Outcome Insights
+
+Outcome Insights shows you the bigger picture — patterns across all participants in a programme.
+
+### Viewing programme insights
+
+1. Click **Insights** in the main navigation.
+2. Choose a **Programme** and a **Time period** (3, 6, or 12 months).
+3. Click **Show Insights**.
+
+You'll see:
+
+- **Progress Trend** — A chart showing how progress descriptors are changing month by month
+- **Progress Snapshot** — Where participants are right now (Good place, Shifting, Holding, Harder)
+- **Engagement** — How people are showing up in sessions
+- **What participants are saying** — Anonymous quotes from progress notes, with goal context
+
+This helps you spot patterns: Are people generally moving forward? Is a particular programme area seeing more struggle? What themes come up in participants' own words?
+
+### Client-level insights
+
+You can also see insights for one person:
+
+1. Open their file.
+2. Go to the **Analysis** tab.
+3. Scroll down to **Qualitative Insights**.
+
+This shows their personal trend and quotes over time.
+
+### AI report summaries (if enabled)
+
+If your admin has turned on AI assistance, you'll see a **Draft report summary** button. This generates a narrative paragraph you can use as a starting point for reports.
+
+**Always review the draft.** It's a first pass, not a finished product. The AI never sees participant names — all identifying information is scrubbed before anything is sent.
+
+---
+
 ## Tips & Shortcuts
 
 ### Keyboard navigation
@@ -306,6 +344,7 @@ Staff can view plans but typically cannot edit them. Plan changes are made by pr
 | Flag a safety concern | Events tab → + New Alert |
 | See who needs attention | Check Priority Items on home page |
 | View progress charts | Client file → Analysis tab |
+| See programme patterns | Insights (main navigation) |
 
 ---
 

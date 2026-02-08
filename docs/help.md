@@ -13,6 +13,7 @@ Welcome to KoNote2! This guide helps you find what you need quickly.
 | Record an event or alert | [Events and Alerts](#events-and-alerts) |
 | View or edit a client's plan | [Outcome Plans](#outcome-plans) |
 | See progress charts | [Analysis and Reports](#analysis-and-reports) |
+| See programme patterns | [Outcome Insights](#outcome-insights) |
 | Change my password | [Account Settings](#account-settings) |
 | Get admin help | [Administrator Tasks](#administrator-tasks) |
 
@@ -252,6 +253,47 @@ If you need something updated in a plan, let your supervisor know.
 
 Charts automatically update when new metric values are recorded in progress notes.
 
+### Outcome Insights
+
+Outcome Insights helps you see patterns across your programme — how participants are doing overall, what's changing, and what their own words reveal.
+
+1. Click **Insights** in the main navigation
+2. Choose a **Programme** from the dropdown
+3. Choose a **Time period** (3 months, 6 months, 12 months, or a custom range)
+4. Click **Show Insights**
+
+You'll see:
+
+| Section | What It Shows |
+|---------|---------------|
+| **Progress Trend** | A chart showing how participant progress descriptors have changed over time (percentages) |
+| **Progress Snapshot** | Distribution of current descriptors (e.g., "Good place", "Shifting", "Holding", "Harder") |
+| **Engagement** | How participants are engaging in sessions |
+| **What participants are saying** | Direct quotes from progress notes (anonymised, with goal context) |
+
+**Data volume matters:** Insights become more reliable with more data. You need at least 20 notes across 3 months for trend analysis, and at least 50 notes for full insights.
+
+**Privacy protection:** At programme level, participant quotes only appear when 15 or more participants have notes in the selected period. This prevents anyone from being identified from their words.
+
+#### AI Report Summaries (Optional)
+
+If your administrator has enabled AI assistance, you can click **Draft report summary** to generate a narrative draft. This uses AI to summarise the patterns into a paragraph you can include in reports.
+
+**Important:**
+- Always review and edit the draft before using it — AI summaries are starting points, not final text
+- The draft is labelled "AI-Generated" so it's clear it needs human review
+- No participant names are sent to the AI — all identifying information is removed first
+
+### Client-Level Insights
+
+You can also see insights for an individual participant:
+
+1. Open the participant's file
+2. Go to the **Analysis** tab
+3. Scroll down to the **Qualitative Insights** section
+
+This shows the same trend chart and quotes, but for that one person. Unlike programme-level insights, dates are shown and there's no minimum participant threshold.
+
 ### Exporting Data
 
 **Program managers and admins** can export data:
@@ -469,6 +511,7 @@ For security, KoNote2 logs you out after inactivity. Log in again to continue. Y
 | Flag a safety concern | Events tab → + New Alert |
 | See who needs attention | Check Priority Items on home page |
 | View progress charts | Client file → Analysis tab |
+| See programme patterns | Insights (main navigation) |
 | Change terminology | Admin → Settings → Terminology |
 | Add a user | Admin → Invites |
 
