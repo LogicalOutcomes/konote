@@ -188,7 +188,7 @@ def _call_insights_api(system_prompt, user_message, max_tokens=2048):
 
 
 def generate_outcome_insights(program_name, date_range, structured_data, quotes):
-    """Generate a funder-ready narrative draft from qualitative data.
+    """Generate a report-ready narrative draft from qualitative outcome data.
 
     Args:
         program_name: str
@@ -200,9 +200,10 @@ def generate_outcome_insights(program_name, date_range, structured_data, quotes)
         dict {summary, themes, cited_quotes, recommendations} or None on failure.
     """
     system = (
-        "You write concise funder report drafts for Canadian nonprofits. "
+        "You write concise programme report drafts for Canadian nonprofits. "
         "You will receive programme outcome data including descriptor trends, "
-        "engagement patterns, and participant quotes. Write a narrative summary.\n\n"
+        "engagement patterns, and participant quotes. Write a narrative summary "
+        "that helps staff understand service patterns and outcomes.\n\n"
         "RULES — follow these exactly:\n"
         "- Use ONLY the numbers provided. Never calculate new statistics.\n"
         "- Report explicit counts: '3 of 20 participants mentioned...' not "

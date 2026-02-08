@@ -7870,8 +7870,8 @@ msgstr "Période personnalisée"
 msgid "Descriptor trend data"
 msgstr "Données de tendance des descripteurs"
 
-msgid "Draft funder summary"
-msgstr "Ébauche de résumé pour le bailleur de fonds"
+msgid "Draft report summary"
+msgstr "Ébauche de résumé pour le rapport"
 
 msgid "Engagement"
 msgstr "Engagement"
@@ -7947,10 +7947,10 @@ msgid "Review and edit before including in reports."
 msgstr "Réviser et modifier avant d'inclure dans les rapports."
 
 msgid ""
-"See patterns in participant progress and generate funder report summaries."
+"See patterns in participant progress and generate report-ready summaries."
 msgstr ""
 "Visualisez les tendances du progrès des participants et générez des résumés "
-"pour les rapports aux bailleurs de fonds."
+"prêts à inclure dans vos rapports."
 
 msgid "Shifting"
 msgstr "En transition"
