@@ -43,7 +43,7 @@
         <hgroup>
             <h3>{{ section.name }}</h3>
             {% if section.program %}
-            <p><small>{{ term.program|default:"Programme" }}: {{ section.program.name }}</small></p>
+            <p><small>{{ term.program|default:"Programme" }}: {{ section.program.translated_name }}</small></p>
             {% endif %}
         </hgroup>
         <nav aria-label="{% trans 'Section actions' %}">

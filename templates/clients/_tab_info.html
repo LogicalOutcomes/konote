@@ -43,7 +43,7 @@
             <dt>{{ term.program_plural|default:"Programs" }}</dt>
             <dd>
                 {% for e in enrolments %}
-                <span class="program-dot" style="background-color: {{ e.program.colour_hex }}" aria-hidden="true"></span>{{ e.program.name }}{% if not forloop.last %}, {% endif %}
+                <span class="program-dot" style="background-color: {{ e.program.colour_hex }}" aria-hidden="true"></span>{{ e.program.translated_name }}{% if not forloop.last %}, {% endif %}
                 {% endfor %}
             </dd>
         </div>

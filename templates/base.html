@@ -245,6 +245,14 @@
     <!-- App JS — CSRF handling, error handlers -->
     <script src="{% static 'js/app.js' %}"></script>
 
+    <!-- Service worker — shows offline page when navigation fails (BUG-6) -->
+    <script>
+    if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw.js", { scope: "/" })
+            .catch(function() { /* Service worker not critical */ });
+    }
+    </script>
+
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

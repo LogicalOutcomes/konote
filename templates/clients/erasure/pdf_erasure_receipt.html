@@ -119,7 +119,7 @@
     <tbody>
         {% for a in approvals %}
         <tr>
-            <td>{% if a.program %}{{ a.program.name }}{% else %}{% trans "Deleted programme" %}{% endif %}</td>
+            <td>{% if a.program %}{{ a.program.translated_name }}{% else %}{% trans "Deleted programme" %}{% endif %}</td>
             <td>{{ a.approved_by_display }}</td>
             <td>{{ a.approved_at|date:"Y-m-d H:i" }}</td>
         </tr>

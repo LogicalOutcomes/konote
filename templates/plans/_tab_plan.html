@@ -44,7 +44,7 @@
 <div class="program-group" style="border-left: 3px solid {{ group.program.colour_hex|default:'var(--pico-muted-border-color)' }};">
     <h2 class="program-group-heading">
         <span class="program-dot" style="background-color: {{ group.program.colour_hex }}" aria-hidden="true"></span>
-        {{ group.program.name }}
+        {{ group.program.translated_name }}
     </h2>
     {% for section in group.sections %}
     <article class="section-card" id="section-{{ section.pk }}" aria-label="{{ term.section|default:'Section' }}: {{ section.name }}">

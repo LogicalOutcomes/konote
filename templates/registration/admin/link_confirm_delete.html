@@ -13,7 +13,7 @@
     <p>{% trans "This will permanently delete the registration link and all its submissions." %}</p>
     <p>
         <strong>{% trans "Submissions:" %}</strong> {{ link.submissions.count }}<br>
-        <strong>{{ term.program|default:"Program" }}:</strong> {{ link.program.name }}
+        <strong>{{ term.program|default:"Program" }}:</strong> {{ link.program.translated_name }}
     </p>
 </article>
 

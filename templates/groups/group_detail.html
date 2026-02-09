@@ -18,7 +18,7 @@
     <p>
         {{ group.get_group_type_display }}
         {% if group.program %}
-            — {{ group.program.name }}
+            — {{ group.program.translated_name }}
         {% endif %}
         {% if user_role_for_program %}
             — <small>{% trans "Your role:" %} {{ user_role_for_program }}</small>

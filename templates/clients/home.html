@@ -33,7 +33,7 @@
         </div>
     </form>
     <div class="search-actions" role="group">
-        <a href="{% url 'clients:client_create' %}" role="button">+ {% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}</a>
+        {% if can_create %}<a href="{% url 'clients:client_create' %}" role="button">+ {% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}</a>{% endif %}
         <a href="{% url 'clients:client_list' %}" role="button" class="outline">{% trans "View All" %}</a>
     </div>
 </div>
@@ -69,7 +69,7 @@
                     hx-indicator="#loading-bar">
                 <option value="">{% blocktrans with programs=term.program_plural|default:"programs" %}All {{ programs }}{% endblocktrans %}</option>
                 {% for prog in accessible_programs %}
-                <option value="{{ prog.pk }}">{{ prog.name }}</option>
+                <option value="{{ prog.pk }}">{{ prog.translated_name }}</option>
                 {% endfor %}
             </select>
         </div>

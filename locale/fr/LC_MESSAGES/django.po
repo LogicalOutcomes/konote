@@ -8191,306 +8191,372 @@ msgid ""
 "A new participant data erasure request has been submitted and requires your "
 "approval."
 msgstr ""
+"Une nouvelle demande d'effacement de données d'un participant a été soumise "
+"et nécessite votre approbation."
 
 msgid ""
 "A participant with a similar name and date of birth already has a record."
 msgstr ""
+"Un participant avec un nom et une date de naissance similaires possède déjà "
+"un dossier."
 
 msgid ""
 "Aggregate statistics across your programs. Individual participant records "
 "are not accessible from this view to protect confidentiality."
 msgstr ""
+"Statistiques agrégées de vos programmes. Les dossiers individuels des "
+"participants ne sont pas accessibles depuis cette vue afin de protéger la "
+"confidentialité."
 
 msgid ""
 "All access to participant records in this program. Each entry records who "
 "accessed which record, when, and what action they performed."
 msgstr ""
+"Tous les accès aux dossiers des participants dans ce programme. Chaque "
+"entrée indique qui a consulté quel dossier, quand et quelle action a été "
+"effectuée."
 
 msgid ""
 "All demo users and demo participants in one place. Demo data is isolated "
 "from real data."
 msgstr ""
+"Tous les utilisateurs et participants de démonstration en un seul endroit. "
+"Les données de démonstration sont isolées des données réelles."
 
 msgid "Approved! Participant record created for %(first)s %(last)s."
-msgstr ""
+msgstr "Approuvé! Dossier du participant créé pour %(first)s %(last)s."
 
 msgid "Cannot merge a demo participant with a real participant."
-msgstr ""
+msgstr "Impossible de fusionner un participant de démonstration avec un participant réel."
 
 msgid "Check different participant:"
-msgstr ""
+msgstr "Vérifier un autre participant :"
 
 msgid ""
 "Connect to an external document storage system (SharePoint or Google Drive) "
 "to show a \"Open Documents Folder\" button on participant records."
 msgstr ""
+"Connectez-vous à un système de stockage de documents externe (SharePoint ou "
+"Google Drive) pour afficher un bouton « Ouvrir le dossier de documents » sur "
+"les dossiers des participants."
 
 msgid ""
 "Consider setting a retention expiry date on this participant record. Full "
 "erasure is only available after the retention period expires."
 msgstr ""
+"Envisagez de définir une date d'expiration de conservation pour ce dossier "
+"de participant. L'effacement complet n'est disponible qu'après l'expiration "
+"de la période de conservation."
 
 msgid ""
 "Customise the words used throughout the system (e.g. rename \"Participant\" "
 "to \"Client\")."
 msgstr ""
+"Personnalisez les mots utilisés dans le système (par ex. renommer "
+"« Participant » en « Client »)."
 
 msgid "Demo participant list"
-msgstr ""
+msgstr "Liste des participants de démonstration"
 
 msgid ""
 "Download a copy of this request including participant details before erasure"
 " proceeds. The system does not retain a copy."
 msgstr ""
+"Téléchargez une copie de cette demande incluant les détails du participant "
+"avant que l'effacement ne soit effectué. Le système ne conserve pas de copie."
 
 msgid ""
 "Explain why this data should be erased. Do not include participant names."
 msgstr ""
+"Expliquez pourquoi ces données doivent être effacées. N'incluez pas les noms "
+"des participants."
 
 msgid "Export Participant Data"
-msgstr ""
+msgstr "Exporter les données du participant"
 
 msgid ""
 "Export all participant data as a CSV file for data portability, backup, or "
 "migration to another system."
 msgstr ""
+"Exportez toutes les données du participant sous forme de fichier CSV pour la "
+"portabilité des données, la sauvegarde ou la migration vers un autre système."
 
 msgid "External system where participant documents are stored."
-msgstr ""
+msgstr "Système externe où les documents des participants sont stockés."
 
 msgid "Filter by participant status, or export all."
-msgstr ""
+msgstr "Filtrer par statut du participant, ou tout exporter."
 
 msgid "Leave blank to export participants from all programmes."
-msgstr ""
+msgstr "Laissez vide pour exporter les participants de tous les programmes."
 
 msgid "Manage event categories for participant timelines."
-msgstr ""
+msgstr "Gérer les catégories d'événements pour les chronologies des participants."
 
 msgid "Merged with existing participant %(first)s %(last)s."
-msgstr ""
+msgstr "Fusionné avec le participant existant %(first)s %(last)s."
 
 msgid "New Participants This Period"
-msgstr ""
+msgstr "Nouveaux participants cette période"
 
 msgid "No demo participants found. Run the seed command to create demo data."
-msgstr ""
+msgstr "Aucun participant de démonstration trouvé. Exécutez la commande seed pour créer des données de démonstration."
 
 msgid "No participant selected for merge."
-msgstr ""
+msgstr "Aucun participant sélectionné pour la fusion."
 
 msgid "No participant words recorded yet"
-msgstr ""
+msgstr "Aucune parole de participant enregistrée pour le moment"
 
 msgid ""
 "No potential duplicates found. All participant records appear to be unique."
 msgstr ""
+"Aucun doublon potentiel trouvé. Tous les dossiers de participants semblent "
+"être uniques."
 
 msgid "No target/metric combinations found for this participant."
-msgstr ""
+msgstr "Aucune combinaison cible/indicateur trouvée pour ce participant."
 
 msgid ""
 "Once all program managers approve, the participant's data will be "
 "permanently deleted."
 msgstr ""
+"Une fois que tous les gestionnaires de programme auront approuvé, les "
+"données du participant seront définitivement supprimées."
 
 msgid ""
 "Once all programme managers approve, participant data will be permanently "
 "anonymised or erased depending on the level selected below."
 msgstr ""
+"Une fois que tous les gestionnaires de programme auront approuvé, les "
+"données du participant seront définitivement anonymisées ou effacées selon "
+"le niveau sélectionné ci-dessous."
 
 msgid "One or both participant records no longer exist."
-msgstr ""
+msgstr "Un ou les deux dossiers de participants n'existent plus."
 
 msgid "Participant"
-msgstr ""
+msgstr "Participant"
 
 msgid "Participant A"
-msgstr ""
+msgstr "Participant A"
 
 msgid "Participant B"
-msgstr ""
+msgstr "Participant B"
 
 msgid "Participant Count"
-msgstr ""
+msgstr "Nombre de participants"
 
 msgid "Participant Data"
-msgstr ""
+msgstr "Données du participant"
 
 msgid "Participant Data Export"
-msgstr ""
+msgstr "Exportation des données du participant"
 
 msgid "Participant Erasure Request"
-msgstr ""
+msgstr "Demande d'effacement du participant"
 
 msgid "Participant Information"
-msgstr ""
+msgstr "Renseignements sur le participant"
 
 msgid "Participant discharged"
-msgstr ""
+msgstr "Participant ayant reçu son congé"
 
 msgid "Participant record"
-msgstr ""
+msgstr "Dossier du participant"
 
 msgid "Participant requested"
-msgstr ""
+msgstr "Demandé par le participant"
 
 msgid "Participant status"
-msgstr ""
+msgstr "Statut du participant"
 
 msgid "Participant tabs"
-msgstr ""
+msgstr "Onglets du participant"
 
 msgid "Participant:"
-msgstr ""
+msgstr "Participant :"
 
 msgid "Participants"
-msgstr ""
+msgstr "Participants"
 
 msgid "Participants Met Target"
-msgstr ""
+msgstr "Participants ayant atteint la cible"
 
 msgid "Participants Met at Least One Target"
-msgstr ""
+msgstr "Participants ayant atteint au moins une cible"
 
 msgid "Please select a participant or enter a name, not both."
-msgstr ""
+msgstr "Veuillez sélectionner un participant ou saisir un nom, pas les deux."
 
 msgid "Please select a participant or enter a name."
-msgstr ""
+msgstr "Veuillez sélectionner un participant ou saisir un nom."
 
 msgid ""
 "Required. Provide context such as participant request date, retention policy"
 " reference, etc."
 msgstr ""
+"Obligatoire. Fournissez le contexte, par exemple la date de la demande du "
+"participant, la référence à la politique de conservation, etc."
 
 msgid ""
 "Review potential duplicate participant records and merge them into a single "
 "record. All data from the archived record will be transferred to the kept "
 "record."
 msgstr ""
+"Examinez les dossiers de participants potentiellement en double et "
+"fusionnez-les en un seul dossier. Toutes les données du dossier archivé "
+"seront transférées vers le dossier conservé."
 
 msgid "Selected participant not found."
-msgstr ""
+msgstr "Participant sélectionné introuvable."
 
 msgid ""
 "The primary participant has a confidential programme enrolment and cannot be"
 " merged."
 msgstr ""
+"Le participant principal est inscrit à un programme confidentiel et ne peut "
+"pas être fusionné."
 
 msgid ""
 "The primary participant record has been anonymised and cannot be merged."
 msgstr ""
+"Le dossier du participant principal a été anonymisé et ne peut pas être "
+"fusionné."
 
 msgid ""
 "The secondary participant has a confidential programme enrolment and cannot "
 "be merged."
 msgstr ""
+"Le participant secondaire est inscrit à un programme confidentiel et ne peut "
+"pas être fusionné."
 
 msgid ""
 "The secondary participant record has been anonymised and cannot be merged."
 msgstr ""
+"Le dossier du participant secondaire a été anonymisé et ne peut pas être "
+"fusionné."
 
 msgid ""
 "There are no participants matching the selected filters. Try adjusting your "
 "filters or leave them blank to export all participants."
 msgstr ""
+"Aucun participant ne correspond aux filtres sélectionnés. Essayez d'ajuster "
+"vos filtres ou laissez-les vides pour exporter tous les participants."
 
 msgid "This participant has active alerts. Review them before proceeding."
-msgstr ""
+msgstr "Ce participant a des alertes actives. Veuillez les examiner avant de continuer."
 
 msgid "This participant is already a member."
-msgstr ""
+msgstr "Ce participant est déjà membre."
 
 msgid ""
 "This receipt should be stored securely by the privacy officer as the only "
 "record linking the erasure code to the participant's identity."
 msgstr ""
+"Ce reçu doit être conservé en toute sécurité par le responsable de la "
+"protection de la vie privée comme seul document reliant le code d'effacement "
+"à l'identité du participant."
 
 msgid "Too many participants"
-msgstr ""
+msgstr "Trop de participants"
 
 msgid ""
 "Under PIPEDA, individuals have the right to access their personal "
 "information. This export includes all data held for this participant."
 msgstr ""
+"En vertu de la LPRPDE, les personnes ont le droit d'accéder à leurs "
+"renseignements personnels. Cette exportation comprend toutes les données "
+"détenues pour ce participant."
 
 msgid ""
 "View all demo users and demo participants. Impersonate demo users for "
 "testing."
 msgstr ""
+"Voir tous les utilisateurs et participants de démonstration. Se connecter en "
+"tant qu'utilisateur de démonstration pour les tests."
 
 msgid "What does the participant want to work on?"
-msgstr ""
+msgstr "Sur quoi le participant souhaite-t-il travailler?"
 
 msgid "You are not a program manager for this participant's programs."
-msgstr ""
+msgstr "Vous n'êtes pas gestionnaire de programme pour les programmes de ce participant."
 
 msgid "You do not have access to this participant."
-msgstr ""
+msgstr "Vous n'avez pas accès à ce participant."
 
 msgid ""
 "Your agency has too many participant records for automatic duplicate "
 "scanning. Please contact support for assistance with duplicate detection."
 msgstr ""
+"Votre organisme a trop de dossiers de participants pour l'analyse "
+"automatique des doublons. Veuillez contacter le soutien technique pour "
+"obtenir de l'aide avec la détection des doublons."
 
 msgid "e.g. participant, note"
-msgstr ""
+msgstr "par ex. participant, note"
 
 msgid "Please select at least one programme."
-msgstr ""
+msgstr "Veuillez sélectionner au moins un programme."
 
 msgid "%(name)s's %(term)s file created successfully."
-msgstr ""
+msgstr "Le dossier %(term)s de %(name)s a été créé avec succès."
 
 msgid "Concern"
-msgstr ""
+msgstr "Préoccupation"
 
 msgid "If you could change one thing about this programme, what would it be?"
-msgstr ""
+msgstr "Si vous pouviez changer une chose dans ce programme, qu'est-ce que ce serait?"
 
 msgid "Important"
-msgstr ""
+msgstr "Important"
 
 msgid "Noted"
-msgstr ""
+msgstr "Noté"
 
 msgid "Participant Feedback"
-msgstr ""
+msgstr "Rétroaction des participants"
 
 msgid "Praise"
-msgstr ""
+msgstr "Éloge"
 
 msgid "Priority"
-msgstr ""
+msgstr "Priorité"
 
 msgid "Reflection:"
-msgstr ""
+msgstr "Réflexion :"
 
 msgid "Request"
-msgstr ""
+msgstr "Demande"
 
 msgid "Suggestion"
-msgstr ""
+msgstr "Suggestion"
 
 msgid "Suggestion:"
-msgstr ""
+msgstr "Suggestion :"
 
 msgid "Urgent"
-msgstr ""
+msgstr "Urgent"
 
 msgid ""
 "Urgent = safety/access · Important = affects many · Worth exploring = good "
 "idea · Noted = heard and recorded"
 msgstr ""
+"Urgent = sécurité/accès · Important = touche plusieurs personnes · À "
+"explorer = bonne idée · Noté = entendu et consigné"
 
 msgid "What they'd change"
-msgstr ""
+msgstr "Ce qu'ils changeraient"
 
 msgid "Worth exploring"
-msgstr ""
+msgstr "À explorer"
 
 msgid ""
 "e.g. \"Tea is always cold\" or \"Loves the Friday group\" or \"Wishes "
 "sessions were longer\""
 msgstr ""
+"par ex. « Le thé est toujours froid » ou « Adore le groupe du vendredi » ou "
+"« Souhaite que les séances soient plus longues »"
+
+msgid "French name (displayed when language is French)"
+msgstr "Nom en français (affiché lorsque la langue est le français)"

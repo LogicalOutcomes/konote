@@ -1,0 +1,6 @@
+2026-02-08 14:40 — Step 1: 114 screenshots captured (37/38 scenarios, 1 skipped: CAL-006)
+2026-02-08 18:00 — Step 2: Evaluation complete (Round 2, report 2026-02-08b). Gap: 1.5 (↓0.8 from Round 1), Coverage: 14/28 (50%), Blockers: 0 (2 need verification), New tickets: 6 (BUG-9–13, IMPROVE-7), Fixed: 5. Handoff written to .qa-handoff.json.
+2026-02-08 15:30 — Step 1: 0 screenshots captured (0/38 scenarios, 38 skipped: CAL-001, CAL-002, CAL-003, CAL-004, CAL-005, CAL-006, SCN-005, SCN-010, SCN-015, SCN-020, SCN-025, SCN-030, SCN-035, SCN-040, SCN-042, SCN-045, SCN-046, SCN-047, SCN-048, SCN-049, SCN-050, SCN-051, SCN-052, SCN-053, SCN-054, SCN-055, SCN-056, SCN-057, SCN-058, SCN-059, SCN-061, SCN-062, SCN-070, DITL-DS1, DITL-DS2, DITL-DS3, DITL-E1, DITL-R1)
+2026-02-08 15:06 — Step 1: 77 screenshots captured (21/33 scenarios, 12 skipped: SCN-020, SCN-025, SCN-042, SCN-046, SCN-049, SCN-054, SCN-055, SCN-056, SCN-059, SCN-061, SCN-062, SCN-070)
+2026-02-08 12:54 — Step 2: Evaluation complete (Round 2b). Gap: 1.5, Coverage: 14/28 (50%), Blockers: 0, New bugs: 4. Report: 2026-02-08b. Handoff written to .qa-handoff.json.
+2026-02-08 19:45 — Step 2: Evaluation complete (Round 2c, report 2026-02-08d). Gap: 1.3 (↓0.2 from Round 2b), Coverage: 24/32 (75%), Blockers: 0, New tickets: 0, Fixed: 0. 114 screenshots from fresh run. Handoff written to .qa-handoff.json.

@@ -78,7 +78,7 @@
     <tbody>
         {% for e in enrolments %}
         <tr>
-            <td>{{ e.program.name }}</td>
+            <td>{{ e.program.translated_name }}</td>
             <td>{{ e.get_status_display }}</td>
             <td>{{ e.enrolled_at|date:"Y-m-d" }}</td>
             <td>{% if e.unenrolled_at %}{{ e.unenrolled_at|date:"Y-m-d" }}{% else %}—{% endif %}</td>

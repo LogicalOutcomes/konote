@@ -14,6 +14,10 @@ class Program(models.Model):
     ]
 
     name = models.CharField(max_length=255)
+    name_fr = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_("French name (displayed when language is French)"),
+    )
     description = models.TextField(default="", blank=True)
     colour_hex = models.CharField(max_length=7, default="#3B82F6")
     service_model = models.CharField(
@@ -45,6 +49,15 @@ class Program(models.Model):
         app_label = "programs"
         db_table = "programs"
         ordering = ["name"]
+
+    @property
+    def translated_name(self):
+        """Return French name when active language is French, else English."""
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.name_fr:
+            return self.name_fr
+        return self.name
 
     def __str__(self):
         return self.name

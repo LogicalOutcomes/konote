@@ -1,4 +1,6 @@
 """Client CRUD views."""
+import unicodedata
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -18,6 +20,12 @@ from .validators import (
     normalize_phone_number, normalize_postal_code,
     validate_phone_number, validate_postal_code,
 )
+
+
+def _strip_accents(text):
+    """Remove accent marks for accent-insensitive search (BUG-13)."""
+    nfkd = unicodedata.normalize("NFKD", text)
+    return "".join(c for c in nfkd if not unicodedata.combining(c))
 
 
 def get_client_queryset(user):
@@ -65,7 +73,7 @@ def _find_clients_with_matching_notes(client_ids, query_lower):
     """Return set of client IDs whose progress notes contain the search query.
 
     Encrypted fields can't be searched in SQL, so we decrypt each note's text
-    fields in memory and check for a case-insensitive substring match.
+    fields in memory and check for a case- and accent-insensitive substring match.
     Stops checking a client as soon as one matching note is found.
     """
     matched = set()
@@ -78,12 +86,12 @@ def _find_clients_with_matching_notes(client_ids, query_lower):
         if cid in matched:
             continue  # already found a match for this client
         for text in [note.notes_text or "", note.summary or "", note.participant_reflection or ""]:
-            if query_lower in text.lower():
+            if query_lower in _strip_accents(text.lower()):
                 matched.add(cid)
                 break
         else:
             for entry in note.target_entries.all():
-                if query_lower in (entry.notes or "").lower():
+                if query_lower in _strip_accents((entry.notes or "").lower()):
                     matched.add(cid)
                     break
     return matched
@@ -100,7 +108,7 @@ def client_list(request):
     # Get filter values from query params
     status_filter = request.GET.get("status", "")
     program_filter = request.GET.get("program", "")
-    search_query = request.GET.get("q", "").strip().lower()
+    search_query = _strip_accents(request.GET.get("q", "").strip().lower())
 
     # Decrypt names and build display list — two passes when searching:
     # 1. Apply status/program filters, match by name/record ID
@@ -129,9 +137,10 @@ def client_list(request):
         item = {"client": client, "name": name, "programs": programs}
 
         # Apply text search (name, record ID, or — via second pass — note content)
+        # BUG-13: accent-insensitive — strip accents from name/record before comparing
         if search_query:
             record = (client.record_id or "").lower()
-            if search_query in name.lower() or search_query in record:
+            if search_query in _strip_accents(name.lower()) or search_query in _strip_accents(record):
                 client_data.append(item)
             else:
                 unmatched[client.pk] = item
@@ -596,7 +605,7 @@ def client_search(request):
     """
     from datetime import datetime
 
-    query = request.GET.get("q", "").strip().lower()
+    query = _strip_accents(request.GET.get("q", "").strip().lower())
     status_filter = request.GET.get("status", "").strip()
     program_filter = request.GET.get("program", "").strip()
     date_from = request.GET.get("date_from", "").strip()
@@ -655,9 +664,10 @@ def client_search(request):
         item = {"client": client, "name": name, "programs": programs}
 
         # Apply text search (name, record ID, or — via second pass — note content)
+        # BUG-13: accent-insensitive — strip accents from name/record before comparing
         if query:
             record = (client.record_id or "").lower()
-            if query in name.lower() or query in record:
+            if query in _strip_accents(name.lower()) or query in _strip_accents(record):
                 results.append(item)
             else:
                 unmatched[client.pk] = item

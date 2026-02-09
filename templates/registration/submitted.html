@@ -44,7 +44,7 @@
     <div style="margin: 2rem 0;">
         {% if auto_approved %}
         <p>
-            {% blocktrans with program=registration_link.program.name %}
+            {% blocktrans with program=registration_link.program.translated_name %}
             You have been registered for <strong>{{ program }}</strong>.
             {% endblocktrans %}
         </p>

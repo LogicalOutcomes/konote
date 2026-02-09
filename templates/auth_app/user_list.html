@@ -34,7 +34,7 @@
                     <span class="badge badge-info">{% trans "Admin" %}</span>
                 {% endif %}
                 {% for role in item.roles %}
-                    <span class="badge badge-neutral">{{ role.get_role_display }} ({{ role.program.name }})</span>
+                    <span class="badge badge-neutral">{{ role.get_role_display }} ({{ role.program.translated_name }})</span>
                 {% empty %}
                     {% if not item.user.is_admin %}
                     <span class="badge badge-warning">{% trans "No roles" %}</span>

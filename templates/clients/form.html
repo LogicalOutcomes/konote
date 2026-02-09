@@ -95,7 +95,7 @@
             <input type="checkbox" name="programs" value="{{ program.pk }}"
                    {% if program.pk in form.programs.value or program.pk|stringformat:"d" in form.programs.value %}checked{% endif %}>
             <span class="program-dot" style="background-color: {{ program.colour_hex }}" aria-hidden="true"></span>
-            {{ program.name }}
+            {{ program.translated_name }}
         </label>
         {% endfor %}
     </fieldset>

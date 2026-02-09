@@ -10,7 +10,7 @@
         <br>
         {% if note.author %}{{ note.author.display_name|default:note.author }}{% else %}{% trans "(unknown author)" %}{% endif %}
         {% if note.author_program %}
-            <small>({{ note.author_program.name }})</small>
+            <small>({{ note.author_program.translated_name }})</small>
         {% endif %}
         {% if note.template %}
             <small>| {% trans "Template:" %} {{ note.template.name }}</small>

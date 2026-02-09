@@ -22,7 +22,7 @@
     <tbody>
         {% for role in roles %}
         <tr>
-            <td>{{ role.program.name }}</td>
+            <td>{{ role.program.translated_name }}</td>
             <td><span class="badge badge-info">{{ role.get_role_display }}</span></td>
             <td>
                 <form method="post"
@@ -31,7 +31,7 @@
                     {% csrf_token %}
                     <button type="submit" class="outline secondary"
                             style="padding: 0.25rem 0.5rem; margin: 0;"
-                            onclick="return confirm('{% blocktrans with prog=role.program.name %}Remove role from {{ prog }}?{% endblocktrans %}')">
+                            onclick="return confirm('{% blocktrans with prog=role.program.translated_name %}Remove role from {{ prog }}?{% endblocktrans %}')">
                         {% trans "Remove" %}
                     </button>
                 </form>
