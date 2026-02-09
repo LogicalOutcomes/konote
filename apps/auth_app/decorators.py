@@ -1,4 +1,5 @@
 """Role-based access decorators for views."""
+import logging
 from functools import wraps
 
 from django.http import HttpResponseForbidden
@@ -6,6 +7,17 @@ from django.template.response import TemplateResponse
 from django.utils.translation import gettext as _
 
 from apps.auth_app.constants import ROLE_RANK
+from apps.auth_app.permissions import (
+    ALL_PERMISSION_KEYS,
+    ALLOW,
+    DENY,
+    GATED,
+    PER_FIELD,
+    SCOPED,
+    can_access,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def admin_required(view_func):
@@ -41,12 +53,34 @@ def _get_user_highest_role(user):
     return max(client_roles, key=lambda r: ROLE_RANK.get(r, 0))
 
 
+def _get_user_highest_role_any(user):
+    """Return the user's highest role across all programs, INCLUDING executive.
+
+    Unlike _get_user_highest_role, this includes executive roles.
+    Used by requires_permission_global where the matrix itself decides
+    what each role can do (executives may have ALLOW for some keys).
+    """
+    from apps.programs.models import UserProgramRole
+
+    roles = set(
+        UserProgramRole.objects.filter(
+            user=user, status="active",
+        ).values_list("role", flat=True)
+    )
+    if not roles:
+        return None
+    return max(roles, key=lambda r: ROLE_RANK.get(r, 0))
+
+
 def minimum_role(min_role):
     """Decorator: require at least this program role to access the view.
 
     Uses request.user_program_role if set by ProgramAccessMiddleware
     (client-scoped routes). Falls back to the user's highest role across
     all programs for routes without a client_id in the URL.
+
+    DEPRECATED: Use @requires_permission("key") instead. This decorator
+    is kept for views not yet migrated to the permission matrix.
     """
     min_rank = ROLE_RANK.get(min_role, 0)
 
@@ -68,12 +102,192 @@ def minimum_role(min_role):
     return decorator
 
 
+def _render_403(request, message):
+    """Render 403 page with message. Shared by permission decorators."""
+    response = TemplateResponse(
+        request, "403.html", {"exception": message}, status=403,
+    )
+    response.render()
+    return response
+
+
+def _check_client_access_block(request, get_client_fn, args, kwargs):
+    """Check ClientAccessBlock for DV safety. Returns 403 response or None.
+
+    Fail closed: if we can't verify the block list, deny access.
+    ClientAccessBlock exists for DV safety — never skip silently.
+    """
+    if get_client_fn is None:
+        return None
+    try:
+        client = get_client_fn(request, *args, **kwargs)
+        if client is not None:
+            from apps.clients.models import ClientAccessBlock
+            if ClientAccessBlock.objects.filter(
+                user=request.user, client_file=client, is_active=True
+            ).exists():
+                return _render_403(request, _("Access to this client has been restricted."))
+    except Exception:
+        return _render_403(request, _("Unable to verify access permissions."))
+    return None
+
+
+def requires_permission(permission_key, get_programme_fn=None, get_client_fn=None):
+    """Decorator: check permission matrix for the user's role in the relevant programme.
+
+    Replaces @minimum_role and @programme_role_required. Reads from
+    permissions.py via can_access() — changes to the matrix immediately
+    affect enforcement.
+
+    Args:
+        permission_key: key like "note.create" from PERMISSIONS matrix
+        get_programme_fn: function(request, *args, **kwargs) -> Programme.
+                          If None, uses user's highest role across all programs.
+        get_client_fn: optional function for ClientAccessBlock check.
+
+    Usage:
+        @requires_permission("note.create", _get_programme_from_client)
+        def note_create(request, client_id):
+            ...
+
+        @requires_permission("client.create")  # no programme — uses highest role
+        def client_create(request):
+            ...
+    """
+    # Validate at import time that the key exists in the matrix
+    if permission_key not in ALL_PERMISSION_KEYS:
+        raise ValueError(
+            f"Unknown permission key '{permission_key}'. "
+            f"Valid keys: {sorted(ALL_PERMISSION_KEYS)}"
+        )
+
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            # --- Determine the user's role ---
+            user_role = None
+
+            if get_programme_fn is not None:
+                # Programme-scoped: get role in the specific programme
+                from apps.programs.models import UserProgramRole
+                try:
+                    programme = get_programme_fn(request, *args, **kwargs)
+                except Exception as e:
+                    return _render_403(
+                        request,
+                        f"Unable to determine programme for this resource: {str(e)}"
+                    )
+
+                # Check ClientAccessBlock (DV safety)
+                block_response = _check_client_access_block(
+                    request, get_client_fn, args, kwargs
+                )
+                if block_response is not None:
+                    return block_response
+
+                role_obj = UserProgramRole.objects.filter(
+                    user=request.user,
+                    program=programme,
+                    status="active"
+                ).first()
+
+                if not role_obj:
+                    return _render_403(
+                        request,
+                        _("You do not have access to this programme.")
+                    )
+
+                user_role = role_obj.role
+                # Store for compatibility with views that read this attribute
+                request.user_programme_role = role_obj.role
+            else:
+                # No programme in URL — use highest role across all programmes
+                # Check ClientAccessBlock if client function provided
+                block_response = _check_client_access_block(
+                    request, get_client_fn, args, kwargs
+                )
+                if block_response is not None:
+                    return block_response
+
+                user_role = _get_user_highest_role_any(request.user)
+                if user_role is not None:
+                    request.user_programme_role = user_role
+
+            if user_role is None:
+                return _render_403(
+                    request,
+                    _("You do not have any programme roles.")
+                )
+
+            # --- Check the matrix ---
+            level = can_access(user_role, permission_key)
+
+            if level == DENY:
+                return _render_403(
+                    request,
+                    _("Access denied. Your role does not have permission for this action.")
+                )
+
+            if level in (ALLOW, SCOPED):
+                return view_func(request, *args, **kwargs)
+
+            if level == GATED:
+                # Future: check for documented justification.
+                # For now, treat as ALLOW with a log warning.
+                logger.warning(
+                    "GATED permission '%s' treated as ALLOW for user %s (role=%s). "
+                    "Justification UI not yet implemented.",
+                    permission_key, request.user.pk, user_role,
+                )
+                return view_func(request, *args, **kwargs)
+
+            if level == PER_FIELD:
+                # Future: delegate to field-level check.
+                # For now, treat as ALLOW with a log warning.
+                logger.warning(
+                    "PER_FIELD permission '%s' treated as ALLOW for user %s (role=%s). "
+                    "Field-level check not yet implemented.",
+                    permission_key, request.user.pk, user_role,
+                )
+                return view_func(request, *args, **kwargs)
+
+            # Unknown level — fail closed
+            logger.error(
+                "Unknown permission level '%s' for key '%s', role '%s'. Denying access.",
+                level, permission_key, user_role,
+            )
+            return _render_403(
+                request,
+                _("Access denied. Unable to determine permission level.")
+            )
+
+        return wrapper
+    return decorator
+
+
+def requires_permission_global(permission_key):
+    """Like requires_permission but always uses user's highest role across all programmes.
+
+    For views like group_list, insights, etc. that aren't scoped to a single
+    client or programme. The matrix itself decides what each role can do.
+
+    Usage:
+        @requires_permission_global("group.view_roster")
+        def group_list(request):
+            ...
+    """
+    return requires_permission(permission_key, get_programme_fn=None, get_client_fn=None)
+
+
 def programme_role_required(min_role, get_programme_fn, get_client_fn=None):
     """Decorator: check user's role in a SPECIFIC programme, not across all programmes.
 
     This fixes the security hole where a user with receptionist in Programme A
     and staff in Programme B could access Programme A's clinical data because
     their highest role across all programmes is "staff".
+
+    DEPRECATED: Use @requires_permission("key", get_programme_fn) instead.
+    Kept for views not yet migrated to the permission matrix.
 
     Args:
         min_role: minimum role name (e.g., "staff")
@@ -100,37 +314,17 @@ def programme_role_required(min_role, get_programme_fn, get_client_fn=None):
                 programme = get_programme_fn(request, *args, **kwargs)
             except Exception as e:
                 # If we can't determine the programme, deny access
-                message = f"Unable to determine programme for this resource: {str(e)}"
-                response = TemplateResponse(
-                    request, "403.html", {"exception": message}, status=403,
+                return _render_403(
+                    request,
+                    f"Unable to determine programme for this resource: {str(e)}"
                 )
-                response.render()
-                return response
 
             # Optional: check negative access list (ClientAccessBlock)
-            if get_client_fn is not None:
-                try:
-                    client = get_client_fn(request, *args, **kwargs)
-                    if client is not None:
-                        from apps.clients.models import ClientAccessBlock
-                        if ClientAccessBlock.objects.filter(
-                            user=request.user, client_file=client, is_active=True
-                        ).exists():
-                            message = _("Access to this client has been restricted.")
-                            response = TemplateResponse(
-                                request, "403.html", {"exception": message}, status=403,
-                            )
-                            response.render()
-                            return response
-                except Exception:
-                    # Fail closed: if we can't verify the block list, deny access.
-                    # ClientAccessBlock exists for DV safety — never skip silently.
-                    message = _("Unable to verify access permissions.")
-                    response = TemplateResponse(
-                        request, "403.html", {"exception": message}, status=403,
-                    )
-                    response.render()
-                    return response
+            block_response = _check_client_access_block(
+                request, get_client_fn, args, kwargs
+            )
+            if block_response is not None:
+                return block_response
 
             # Get user's role in THIS programme (not highest across all)
             role_obj = UserProgramRole.objects.filter(
@@ -140,12 +334,10 @@ def programme_role_required(min_role, get_programme_fn, get_client_fn=None):
             ).first()
 
             if not role_obj:
-                message = _("You do not have access to this programme.")
-                response = TemplateResponse(
-                    request, "403.html", {"exception": message}, status=403,
+                return _render_403(
+                    request,
+                    _("You do not have access to this programme.")
                 )
-                response.render()
-                return response
 
             user_rank = ROLE_RANK.get(role_obj.role, 0)
             if user_rank < min_rank:
@@ -153,11 +345,7 @@ def programme_role_required(min_role, get_programme_fn, get_client_fn=None):
                     "Your role ({role}) in this programme cannot access this resource. "
                     "Required: {min_role} or higher."
                 ).format(role=role_obj.get_role_display(), min_role=min_role)
-                response = TemplateResponse(
-                    request, "403.html", {"exception": message}, status=403,
-                )
-                response.render()
-                return response
+                return _render_403(request, message)
 
             # Store for use in view
             request.user_programme_role = role_obj.role

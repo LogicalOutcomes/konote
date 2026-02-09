@@ -2,6 +2,11 @@
 
 This file defines what each role can do with each resource type.
 Every permission check in the codebase should reference this file.
+
+Enforcement layers:
+- @requires_permission("key") decorator reads from can_access()
+- {% has_permission "key" %} template tag reads from can_access()
+- @admin_required is a SEPARATE system — admin keys here are documentation only
 """
 
 from apps.auth_app.constants import ROLE_RANK
@@ -13,35 +18,40 @@ SCOPED = "scoped"      # Allowed if assigned to specific group/client
 GATED = "gated"        # Allowed with documented reason (just-in-time access)
 PER_FIELD = "per_field"  # Check field-level configuration
 
-# --- Phase 1: Current permissions (what the system enforces now) ---
+# --- Permissions matrix (single source of truth) ---
 
 PERMISSIONS = {
     "receptionist": {
         # Tier 1: Operational only — can check people in, see names, safety info only
-        "client.view_name": ALLOW,
-        "client.view_contact": ALLOW,
+        "client.view_name": ALLOW,  # Enforced by get_visible_fields() via can_access()
+        "client.view_contact": ALLOW,  # Enforced by get_visible_fields() via can_access()
         "client.view_safety": ALLOW,  # Allergies, medical alert CONDITIONS (not treatments),
                                       # emergency contacts, staff alerts. Does NOT include
                                       # medications — medications reveal diagnosis and are
                                       # clinical data (use client.view_medications).
+                                      # Enforced by get_visible_fields() via can_access()
         "client.view_medications": DENY,  # Medications reveal diagnosis (clinical data)
-        "client.view_clinical": DENY,  # No diagnosis, treatment plans, notes
-        "client.edit": DENY,
+        "client.view_clinical": DENY,  # Enforced by get_visible_fields() via can_access(). No diagnosis, treatment plans, notes
+        "client.edit": DENY,  # Enforced by @requires_permission
+        "client.create": ALLOW,  # Front desk does intake. Enforced by @requires_permission
+        "client.edit_contact": ALLOW,  # Phone + email ONLY — not address or emergency contact
+                                       # (safety implications for DV). Replace with PER_FIELD in Phase 2.
+                                       # Enforced by @requires_permission
 
-        "attendance.check_in": ALLOW,  # Primary function
+        "attendance.check_in": ALLOW,  # Primary function. Enforced by view-level check
         "attendance.view_report": DENY,
 
-        "group.view_roster": DENY,  # Group type reveals diagnosis
+        "group.view_roster": DENY,  # Confirmed correct (expert review): group type reveals diagnosis
         "group.view_detail": DENY,
         "group.log_session": DENY,
         "group.edit": DENY,
         "group.manage_members": DENY,
 
-        "note.view": DENY,
-        "note.create": DENY,
+        "note.view": DENY,  # Enforced by @requires_permission
+        "note.create": DENY,  # Confirmed correct: receptionists don't write clinical notes
         "note.edit": DENY,
 
-        "plan.view": DENY,
+        "plan.view": DENY,  # Enforced by @requires_permission
         "plan.edit": DENY,
 
         "metric.view_individual": DENY,
@@ -71,11 +81,11 @@ PERMISSIONS = {
         "client.delete": DENY,  # Handled by admin erasure workflow
         "plan.delete": DENY,   # Plans should be archived, not deleted
 
-        # System administration (admin-only via @admin_required)
-        "user.manage": DENY,
-        "settings.manage": DENY,
-        "programme.manage": DENY,
-        "audit.view": DENY,
+        # System administration (admin-only via @admin_required — separate system)
+        "user.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
+        "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
+        "programme.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
+        "audit.view": DENY,  # Enforced by @admin_required (not matrix-driven)
     },
 
     "staff": {
@@ -87,7 +97,9 @@ PERMISSIONS = {
                                       # emergency contacts, staff alerts. NOT medications.
         "client.view_medications": SCOPED,  # Same access pattern as clinical data
         "client.view_clinical": SCOPED,  # Phase 1: programme. Phase 2: assigned groups/clients
-        "client.edit": SCOPED,
+        "client.edit": SCOPED,  # Enforced by @requires_permission
+        "client.create": SCOPED,  # Creates in own programme, especially outreach. Enforced by @requires_permission
+        "client.edit_contact": SCOPED,  # Phone + email within own programme. Enforced by @requires_permission
 
         "attendance.check_in": SCOPED,
         "attendance.view_report": SCOPED,
@@ -96,14 +108,16 @@ PERMISSIONS = {
         "group.view_detail": SCOPED,
         "group.log_session": SCOPED,
         "group.edit": DENY,  # Can't change group config
-        "group.manage_members": DENY,  # PM adds/removes members
+        "group.manage_members": SCOPED,  # Facilitators manage own group rosters.
+                                         # All changes must create audit entry (PHIPA — group type reveals diagnosis).
+                                         # Enforced by @requires_permission
 
-        "note.view": SCOPED,
-        "note.create": SCOPED,
-        "note.edit": SCOPED,  # Own notes only
+        "note.view": SCOPED,  # Enforced by @requires_permission. Migrate from @programme_role_required
+        "note.create": SCOPED,  # Enforced by @requires_permission
+        "note.edit": SCOPED,  # Own notes only. Enforced by @requires_permission
 
-        "plan.view": SCOPED,
-        "plan.edit": SCOPED,
+        "plan.view": SCOPED,  # Enforced by @requires_permission
+        "plan.edit": SCOPED,  # Enforced by @requires_permission
 
         "metric.view_individual": SCOPED,
         "metric.view_aggregate": SCOPED,
@@ -111,19 +125,23 @@ PERMISSIONS = {
         "report.programme_report": DENY,
         "report.data_extract": DENY,
 
-        "event.view": SCOPED,
+        "event.view": SCOPED,  # Enforced by @requires_permission
         "event.create": SCOPED,
 
         "alert.view": SCOPED,
         "alert.create": SCOPED,
-        "alert.cancel": SCOPED,  # Own alerts only (or admin)
+        "alert.cancel": DENY,  # Two-person safety rule. Staff posts "recommend cancellation"
+                                # with assessment; PM reviews and cancels.
+                                # See alert recommendation workflow (Wave 5).
+                                # Enforcement deferred to Wave 5 — needs recommend-cancellation
+                                # workflow first, or staff will stop creating alerts.
 
         "custom_field.view": SCOPED,
         "custom_field.edit": SCOPED,
 
         # Clinical records
         "consent.view": SCOPED,
-        "consent.manage": SCOPED,
+        "consent.manage": SCOPED,  # Enforced by @requires_permission
         "intake.view": SCOPED,
         "intake.edit": SCOPED,
 
@@ -132,11 +150,11 @@ PERMISSIONS = {
         "client.delete": DENY,  # Handled by admin erasure workflow
         "plan.delete": DENY,   # Plans should be archived, not deleted
 
-        # System administration (admin-only via @admin_required)
-        "user.manage": DENY,
-        "settings.manage": DENY,
-        "programme.manage": DENY,
-        "audit.view": DENY,
+        # System administration (admin-only via @admin_required — separate system)
+        "user.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
+        "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
+        "programme.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
+        "audit.view": DENY,  # Enforced by @admin_required (not matrix-driven)
     },
 
     "program_manager": {
@@ -150,6 +168,8 @@ PERMISSIONS = {
         "client.view_medications": ALLOW,  # Same access pattern as clinical data
         "client.view_clinical": ALLOW,  # Phase 3: GATED (just-in-time with reason)
         "client.edit": DENY,  # Phase 3: managers don't edit client records
+        "client.create": SCOPED,  # Intake in smaller programmes. Enforced by @requires_permission
+        "client.edit_contact": DENY,  # PMs don't edit individual contact info
 
         "attendance.check_in": DENY,
         "attendance.view_report": ALLOW,  # Aggregate attendance
@@ -158,26 +178,28 @@ PERMISSIONS = {
         "group.view_detail": ALLOW,  # Phase 3: GATED for session content
         "group.log_session": DENY,
         "group.edit": ALLOW,  # Can configure groups
-        "group.manage_members": ALLOW,  # Can add/remove members
+        "group.manage_members": ALLOW,  # Can add/remove members. Enforced by @requires_permission
 
-        "note.view": ALLOW,  # Phase 3: GATED with documented reason
-        "note.create": DENY,
-        "note.edit": DENY,
+        "note.view": ALLOW,  # Phase 3: GATED with documented reason. Enforced by @requires_permission
+        "note.create": DENY,  # Confirmed correct (expert review): managers don't write clinical notes
+        "note.edit": DENY,  # Confirmed correct (expert review): managers don't edit clinical notes
 
-        "plan.view": ALLOW,  # Phase 3: GATED
+        "plan.view": ALLOW,  # Phase 3: GATED. Enforced by @requires_permission
         "plan.edit": DENY,
 
         "metric.view_individual": ALLOW,  # Phase 3: GATED
         "metric.view_aggregate": ALLOW,
 
-        "report.programme_report": ALLOW,  # Primary use case
+        "report.programme_report": ALLOW,  # Primary use case. Enforced by can_create_export()
         "report.data_extract": DENY,  # Phase 3: request-only (requires admin approval)
 
-        "event.view": ALLOW,  # Phase 3: GATED
+        "event.view": ALLOW,  # Phase 3: GATED. Enforced by @requires_permission
         "event.create": DENY,
 
         "alert.view": ALLOW,
-        "alert.create": DENY,
+        "alert.create": ALLOW,  # Supervisors should flag safety concerns when reviewing
+                                # case files. No barriers to creating safety alerts.
+                                # Enforced by @requires_permission
         "alert.cancel": ALLOW,  # Can cancel any alert in their programme
 
         "custom_field.view": ALLOW,  # Phase 3: GATED
@@ -185,7 +207,9 @@ PERMISSIONS = {
 
         # Clinical records
         "consent.view": ALLOW,
-        "consent.manage": ALLOW,
+        "consent.manage": SCOPED,  # PMs do intake in smaller programmes. Consent records
+                                   # immutable after creation — can only withdraw and re-record.
+                                   # Enforced by @requires_permission
         "intake.view": ALLOW,
         "intake.edit": DENY,
 
@@ -194,11 +218,14 @@ PERMISSIONS = {
         "client.delete": DENY,  # Handled by admin erasure workflow
         "plan.delete": DENY,   # Plans should be archived, not deleted
 
-        # System administration (admin-only via @admin_required)
-        "user.manage": DENY,
-        "settings.manage": DENY,
-        "programme.manage": DENY,
-        "audit.view": DENY,
+        # System administration — SCOPED for programme managers (own programme only)
+        "user.manage": SCOPED,  # Own programme team. CANNOT elevate roles
+                                # (receptionist->staff) or create PM/executive accounts.
+                                # Requires custom enforcement — see no-elevation constraint.
+                                # Enforced by @requires_permission + custom view logic
+        "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
+        "programme.manage": SCOPED,  # Own programme only. Enforced by @requires_permission
+        "audit.view": SCOPED,  # QA oversight for own programme. Enforced by @requires_permission
     },
 
     "executive": {
@@ -209,6 +236,8 @@ PERMISSIONS = {
         "client.view_medications": DENY,  # No individual clinical data
         "client.view_clinical": DENY,
         "client.edit": DENY,
+        "client.create": DENY,  # Executives don't do intake
+        "client.edit_contact": DENY,
 
         "attendance.check_in": DENY,
         "attendance.view_report": ALLOW,  # Aggregate only, org-wide
@@ -219,17 +248,17 @@ PERMISSIONS = {
         "group.edit": DENY,
         "group.manage_members": DENY,
 
-        "note.view": DENY,
+        "note.view": DENY,  # Enforced by @requires_permission
         "note.create": DENY,
         "note.edit": DENY,
 
-        "plan.view": DENY,
+        "plan.view": DENY,  # Enforced by @requires_permission
         "plan.edit": DENY,
 
         "metric.view_individual": DENY,
         "metric.view_aggregate": ALLOW,  # Org-wide
 
-        "report.programme_report": ALLOW,  # View only (managers generate)
+        "report.programme_report": ALLOW,  # View only (managers generate). Enforced by can_create_export()
         "report.data_extract": DENY,
 
         "event.view": DENY,
@@ -253,13 +282,21 @@ PERMISSIONS = {
         "client.delete": DENY,  # Handled by admin erasure workflow
         "plan.delete": DENY,   # Plans should be archived, not deleted
 
-        # System administration (admin-only via @admin_required)
-        "user.manage": DENY,
-        "settings.manage": DENY,
-        "programme.manage": DENY,
+        # System administration — DENY by default for executives.
+        # Override to ALLOW for agencies where executive is operational ED (not board member).
+        "user.manage": DENY,  # Override to ALLOW if executive is operational ED
+        "settings.manage": DENY,  # Override to ALLOW if executive is operational ED
+        "programme.manage": DENY,  # Override to ALLOW if executive is operational ED
         "audit.view": ALLOW,   # Board oversight — executives can review audit trail
     },
 }
+
+# All valid permission keys (computed once at import time for validation)
+ALL_PERMISSION_KEYS = frozenset(
+    key
+    for role_perms in PERMISSIONS.values()
+    for key in role_perms.keys()
+)
 
 
 def can_access(role, permission):
@@ -331,6 +368,8 @@ def permission_to_plain_english(perm_key, perm_level):
         "client.view_medications": "See client medications (clinical data — reveals diagnosis)",
         "client.view_clinical": "See clinical information (diagnosis, treatment plans, notes)",
         "client.edit": "Edit client records",
+        "client.create": "Create new client records",
+        "client.edit_contact": "Update client phone number and email",
 
         "attendance.check_in": "Check clients in and out",
         "attendance.view_report": "View attendance reports",
@@ -376,9 +415,9 @@ def permission_to_plain_english(perm_key, perm_level):
         "plan.delete": "Delete treatment plans (plans should be archived, not deleted)",
 
         # System administration
-        "user.manage": "Create, edit, or deactivate user accounts (admin-only)",
-        "settings.manage": "Change system configuration, feature toggles, and terminology (admin-only)",
-        "programme.manage": "Create, edit, or archive programmes (admin-only)",
+        "user.manage": "Create, edit, or deactivate user accounts",
+        "settings.manage": "Change system configuration, feature toggles, and terminology",
+        "programme.manage": "Create, edit, or archive programmes",
         "audit.view": "View the audit log",
     }
 
