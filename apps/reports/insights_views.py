@@ -11,8 +11,12 @@ from django.utils.translation import gettext as _
 from apps.auth_app.decorators import minimum_role, requires_permission
 from apps.programs.access import get_accessible_programs, get_client_or_403
 from apps.programs.models import UserProgramRole
+from apps.notes.models import ProgressNote
 from .insights import get_structured_insights, collect_quotes, MIN_PARTICIPANTS_FOR_QUOTES
 from .insights_forms import InsightsFilterForm
+
+# Map DB values to human-readable labels for suggestion priorities
+_PRIORITY_LABELS = dict(ProgressNote.SUGGESTION_PRIORITY_CHOICES)
 
 logger = logging.getLogger(__name__)
 
@@ -97,12 +101,23 @@ def program_insights(request):
                 include_dates=False,  # Privacy: no dates at programme level
             )
 
+        # Separate suggestions from other quotes so they display under their own heading
+        suggestions = []
+        other_quotes = []
+        for q in quotes:
+            if q.get("source") == "suggestion":
+                q["priority_label"] = _PRIORITY_LABELS.get(q.get("priority", ""), "")
+                suggestions.append(q)
+            else:
+                other_quotes.append(q)
+
         context.update({
             "program": program,
             "date_from": date_from,
             "date_to": date_to,
             "structured": structured,
-            "quotes": quotes,
+            "quotes": other_quotes,
+            "suggestions": suggestions,
             "data_tier": data_tier,
             "min_participants": MIN_PARTICIPANTS_FOR_QUOTES,
             "chart_data_json": structured["descriptor_trend"],
@@ -166,12 +181,23 @@ def client_insights_partial(request, client_id):
     from apps.admin_settings.models import FeatureToggle
     ai_enabled = is_ai_available() and FeatureToggle.get_all_flags().get("ai_assist", False)
 
+    # Separate suggestions from other quotes
+    suggestions = []
+    other_quotes = []
+    for q in quotes:
+        if q.get("source") == "suggestion":
+            q["priority_label"] = _PRIORITY_LABELS.get(q.get("priority", ""), "")
+            suggestions.append(q)
+        else:
+            other_quotes.append(q)
+
     context = {
         "client": client,
         "date_from": date_from,
         "date_to": date_to,
         "structured": structured,
-        "quotes": quotes,
+        "quotes": other_quotes,
+        "suggestions": suggestions,
         "data_tier": data_tier,
         "chart_data_json": structured["descriptor_trend"],
         "ai_enabled": ai_enabled,

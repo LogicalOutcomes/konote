@@ -49,6 +49,17 @@
     <span class="pill pill--engagement">{{ label }}: {{ count }}</span>
     {% endfor %}
 </div>
+{% if suggestions %}
+{% for s in suggestions %}
+<blockquote class="insight-quote">
+    <p>&ldquo;{{ s.text }}&rdquo;</p>
+    <cite>
+        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span> &middot; {% endif %}
+        <a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>
+    </cite>
+</blockquote>
+{% endfor %}
+{% endif %}
 {% endif %}
 
 {% else %}
@@ -128,6 +139,20 @@
     <span class="pill pill--engagement">{{ label }}: {{ count }}</span>
     {% endfor %}
 </div>
+{% if suggestions %}
+{% for s in suggestions %}
+<blockquote class="insight-quote">
+    <p>&ldquo;{{ s.text }}&rdquo;</p>
+    <cite>
+        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span> &middot; {% endif %}
+        {% if s.date %}{{ s.date }} &middot; {% endif %}
+        <a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>
+    </cite>
+</blockquote>
+{% endfor %}
+{% elif not is_executive_only and structured.participant_count >= min_participants %}
+<p class="muted">{% trans "No suggestion text long enough to display. Short suggestions (under 5 words) are counted above but not shown." %}</p>
+{% endif %}
 {% endif %}
 
 {# ── Quotes ── #}

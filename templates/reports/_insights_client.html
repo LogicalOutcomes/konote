@@ -57,6 +57,21 @@
 </details>
 {% endif %}
 
+{# Suggestions with priority badges #}
+{% if suggestions %}
+<h3>{% trans "Their Suggestions" %}</h3>
+{% for s in suggestions|slice:":5" %}
+<blockquote class="insight-quote">
+    <p>&ldquo;{{ s.text }}&rdquo;</p>
+    <cite>
+        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span> &middot; {% endif %}
+        {% if s.date %}{{ s.date }} &middot; {% endif %}
+        <a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>
+    </cite>
+</blockquote>
+{% endfor %}
+{% endif %}
+
 {# Quotes with dates (client-level is not privacy-restricted) #}
 {% if quotes %}
 <h3>{% trans "In their words" %}</h3>
