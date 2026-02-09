@@ -220,14 +220,14 @@ class SafeLocaleMiddlewareBehaviourTest(TestCase):
     def test_safe_locale_falls_back_on_missing_translation(self):
         """If the French .mo file is missing the canary string, middleware falls back to English.
 
-        The middleware checks whether 'Funder Report Export' gets translated when
+        The middleware checks whether 'Programme Outcome Report' gets translated when
         French is active. If the string is unchanged (meaning our .mo file did not
         load), it falls back to English.
         """
         self.http.cookies[settings.LANGUAGE_COOKIE_NAME] = "fr"
 
         # Patch gettext to return the English string unchanged (simulates missing .mo)
-        with patch("django.utils.translation.gettext", return_value="Funder Report Export"):
+        with patch("django.utils.translation.gettext", return_value="Programme Outcome Report"):
             resp = self.http.get("/auth/login/")
         # Request should still succeed
         self.assertEqual(resp.status_code, 200)

@@ -777,7 +777,7 @@ def cmt_export_form(request):
 
     Access: admin (any program) or program_manager (their programs only).
 
-    CMT reports are structured for United Way Canada's funder reporting
+    CMT reports are structured for United Way Canada's reporting
     requirements, including:
     - Organisation and programme information
     - Service statistics (individuals served, contacts)
