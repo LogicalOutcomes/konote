@@ -1,9 +1,8 @@
 """Group-based service delivery models.
 
-Supports three group types:
-- Service groups: ongoing groups tied to a program (e.g., weekly support circle)
-- Activity groups: one-off or recurring activities (e.g., field trips, workshops)
-- Projects: goal-oriented work with milestones and outcomes
+Supports two group types:
+- Groups: attendance tracking and session notes (e.g., drop-ins, workshops)
+- Projects: goal-oriented work with milestones, outcomes, and deadlines
 """
 
 from django.conf import settings
@@ -18,11 +17,10 @@ from konote.encryption import decrypt_field, encrypt_field
 # ---------------------------------------------------------------------------
 
 class Group(models.Model):
-    """A group that delivers services, activities, or projects."""
+    """A group that delivers services or projects."""
 
     GROUP_TYPE_CHOICES = [
-        ("service_group", _("Service Group")),
-        ("activity_group", _("Activity Group")),
+        ("group", _("Group")),
         ("project", _("Project")),
     ]
 

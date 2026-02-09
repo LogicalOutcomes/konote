@@ -28,7 +28,13 @@ class GroupForm(forms.ModelForm):
             qs = qs.filter(pk__in=user_program_ids)
         self.fields["program"].queryset = qs
         self.fields["program"].required = False
-        self.fields["program"].empty_label = _("No programme")
+        self.fields["program"].empty_label = _("No program")
+
+        # Radio buttons for group type (descriptions rendered in template)
+        self.fields["group_type"].widget = forms.RadioSelect(
+            choices=Group.GROUP_TYPE_CHOICES,
+        )
+        self.fields["group_type"].initial = "group"
 
 
 # ---------------------------------------------------------------------------

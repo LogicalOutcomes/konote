@@ -9,7 +9,6 @@
 
 ### QA Round 2c — Verification
 
-- [ ] Manually test BLOCKER-1 + BLOCKER-2 with keyboard — skip-to-content link and post-login focus. 10 min each. Code is in place (skip link in base.html, focus management in app.js). (QA-VERIFY1)
 - [ ] Re-run QA scenarios after deploy to confirm all fixes visible in screenshots (QA-VERIFY2)
 
 ### Pre-Launch Checklist
@@ -26,7 +25,7 @@ The core app is feature-complete. These tasks prepare for production use.
 - [ ] Redeploy to Railway — push to `main`, Railway auto-deploys. See `docs/deploy-railway.md` (OPS-RAIL1)
 - [ ] Redeploy to FullHost — push to `main`, then trigger redeploy via API or dashboard. See `docs/deploy-fullhost.md` (OPS-FH1)
 - [ ] Code review round — open Claude Code in VS Code, say "review the codebase for code quality, security, and consistency issues" — see `tasks/code-review-process.md` (REV1)
-- [ ] Scenario QA evaluation — 3-step pipeline, run after major UX changes. Step 1: `/run-scenario-server` here (captures screenshots + writes manifest). Step 2: `/run-scenarios` in qa-scenarios window (evaluates + writes handoff). Step 3: `/process-qa-report` back here (expert panel + action plan + updates TODO). Pipeline log at `qa/pipeline-log.txt`. See `tasks/scenario-eval-howto.md` (QA-SCEN1)
+- [ ] **Full QA Suite** — Run after major releases or UI changes. Creates 4 reports. **Step 1:** `/run-scenario-server` here (captures scenario screenshots). **Step 2:** Switch to qa-scenarios, run `/run-scenarios` (evaluates scenarios, creates satisfaction report + improvement tickets). **Step 3:** Back here, run `/capture-page-states` (captures page screenshots). **Step 4:** Switch to qa-scenarios, run `/run-page-audit` (evaluates pages, creates page audit report + tickets). **Step 5 (optional):** Back here, run `/process-qa-report` (expert panel + action plan). All reports saved to `qa-scenarios/reports/` with date stamps. Takes ~6-9 hours total. (QA-FULL1)
 
 ## Coming Up
 
@@ -117,6 +116,8 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Fix BLOCKER-1 skip link conflict — implemented Option B (auto-focus main content, remove skip link) per expert panel consensus. Removed duplicate focus block, added aria-label, visible focus indicator. Both Playwright tests pass. Expert rationale: more efficient for screen reader users, satisfies WCAG 2.4.1 via programmatic focus — 2026-02-08 (QA-FIX1)
+- [x] Playwright tests for BLOCKER-1/2 — BLOCKER-2 verified working (focus on #main-content, not footer), BLOCKER-1 code exists but conflicts with BLOCKER-2 fix (skip link not first Tab stop due to auto-focus). Automated tests at tests/test_blocker_a11y.py — 2026-02-08 (QA-VERIFY1)
 - [x] QA Round 2c — Tier 1+2 fixes (6 bugs) — accent search (BUG-13), program French names with `name_fr` field + 33 template updates (BUG-11), untranslated French strings (BUG-8), home page button permission (BUG-12), audit filter CSS (BUG-3), IMPROVE-5 confirmed already fixed — 2026-02-08 (QA-W9 through QA-W18)
 - [x] Fix BUG-7, BUG-9, BUG-10 from QA Round 2b — 404 after create (session flag bypass), language cookie path, autofocus on create form — 2026-02-08 (BUG-7, BUG-9, BUG-10)
 - [x] Participant suggestion field + AI feedback insights — encrypted suggestion field on every note, staff-assigned priority (noted/worth exploring/important/urgent), AI insights now categorise participant feedback (request/suggestion/concern/praise) with verbatim quotes, recurring pattern detection, 3-item focus rule — 2026-02-08 (VOICE1)
@@ -139,7 +140,7 @@ For detailed history, see `tasks/ARCHIVE.md`. Summary of completed work:
 |------|-------------|
 | **Core app (Phases 1-8)** | Clients, plans, notes, events, charts, admin, security, UX |
 | **Client voice & qualitative** | Client-goal fields, progress descriptors, engagement observation, participant reflection, participant suggestion with priority, qualitative summary |
-| **Groups** | Service groups, activity groups, projects — session logs, attendance, highlights, milestones, outcomes |
+| **Groups** | Groups and projects — session logs, attendance, highlights, milestones, outcomes |
 | **Confidential programs** | Isolation, guided setup, Django admin filtering, audit logging, small-cell suppression, DV-ready documentation |
 | **Duplicate detection & merge** | Phone + name/DOB matching, cross-program dedup, admin merge tool with full data transfer |
 | **Demo data** | 5 programs, 15 clients, 3 groups, cross-enrolments, approachable metrics |

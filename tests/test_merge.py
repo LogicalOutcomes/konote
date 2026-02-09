@@ -290,7 +290,7 @@ class MergeExecutionTest(TestCase):
 
     def test_handles_group_membership_conflicts(self):
         """Duplicate active group memberships are deactivated, no constraint violation."""
-        group = Group.objects.create(name="Basketball", group_type="activity")
+        group = Group.objects.create(name="Basketball", group_type="group")
         GroupMembership.objects.create(
             client_file=self.kept, group=group, member_name="Jane", status="active",
         )

@@ -1,6 +1,7 @@
 """Program CRUD views — list visible to all users, management admin-only."""
 import json
 import logging
+from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -117,6 +118,34 @@ def program_detail(request, program_id):
     roles = UserProgramRole.objects.filter(program=program).select_related("user").order_by("status", "user__display_name")
     role_form = UserProgramRoleForm(program=program) if request.user.is_admin else None
 
+    # Get this user's role in the program (for template permission checks)
+    user_program_role = UserProgramRole.objects.filter(
+        user=request.user, program=program, status="active"
+    ).values_list("role", flat=True).first()
+    is_receptionist = user_program_role == "receptionist"
+
+    # Program health summary for non-receptionists (matches Insights RBAC)
+    program_summary = None
+    has_export_access = False
+    if not is_receptionist:
+        from apps.reports.insights import get_structured_insights
+        from apps.reports.utils import can_create_export
+        has_export_access = can_create_export(request.user, "metrics", program=program)
+        today = date.today()
+        summary = get_structured_insights(
+            program=program,
+            date_from=today - timedelta(days=180),
+            date_to=today,
+        )
+        # Extract top descriptor for display
+        top_descriptor = None
+        descriptors = summary.get("descriptor_distribution", {})
+        if descriptors:
+            top_label = max(descriptors, key=descriptors.get)
+            top_descriptor = {"label": top_label, "percentage": descriptors[top_label]}
+        summary["top_descriptor"] = top_descriptor
+        program_summary = summary
+
     # Groups linked to this program (for group/both service models)
     groups = None
     if program.service_model in ("group", "both"):
@@ -134,8 +163,11 @@ def program_detail(request, program_id):
         "roles": roles,
         "role_form": role_form,
         "is_admin": request.user.is_admin,
+        "is_receptionist": is_receptionist,
+        "has_export_access": has_export_access,
         "user_has_access": user_has_access,
         "groups": groups,
+        "program_summary": program_summary,
     })
 
 

@@ -26,8 +26,6 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
-
     <!-- Loading bar — shown during HTMX requests -->
     <div id="loading-bar" class="loading-bar htmx-indicator"></div>
 
@@ -79,7 +77,7 @@
             {% if has_export_access %}
             <li><a href="/reports/export/"{% if nav_active == "reports" %} class="nav-active"{% endif %}>{% trans "Reports" %}</a></li>
             {% endif %}
-            {% if features.groups %}
+            {% if features.groups and not is_executive_only %}
             <li><a href="/groups/"{% if nav_active == "groups" %} class="nav-active"{% endif %}>{{ term.group_plural|default:"Groups" }}</a></li>
             {% endif %}
             {% if user.is_admin %}
@@ -136,7 +134,7 @@
         <button type="button" class="offline-retry">{% trans "Try again" %}</button>
     </div>
 
-    <main id="main-content" class="container" tabindex="-1">
+    <main id="main-content" class="container" tabindex="-1" aria-label="{% trans 'Main content' %}">
         {% if messages %}
         <div role="status" aria-live="polite" aria-atomic="false">
         {% for message in messages %}

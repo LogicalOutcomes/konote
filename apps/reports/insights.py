@@ -16,8 +16,9 @@ import logging
 from collections import Counter, defaultdict
 from datetime import date
 
-from django.db.models import Count, Q
-from django.db.models.functions import TruncMonth
+from django.conf import settings
+from django.db.models import Count, DateTimeField, Q
+from django.db.models.functions import Coalesce, TruncMonth
 
 from apps.clients.models import ClientProgramEnrolment
 from apps.notes.models import ProgressNote, ProgressNoteTarget
@@ -50,8 +51,11 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
           descriptor_trend: list of {month, harder, holding, shifting, good_place}
                            (all as percentages)
     """
-    # Build base note queryset
-    notes_qs = ProgressNote.objects.filter(status="default")
+    # Build base note queryset — use effective date (backdate if set, else created_at)
+    # so backdated notes appear at their session date, not their entry date.
+    notes_qs = ProgressNote.objects.filter(status="default").annotate(
+        _effective_date=Coalesce("backdate", "created_at", output_field=DateTimeField()),
+    )
     if client_file:
         notes_qs = notes_qs.filter(client_file=client_file)
     if program:
@@ -60,9 +64,9 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
             client_file__enrolments__status="enrolled",
         )
     if date_from:
-        notes_qs = notes_qs.filter(created_at__date__gte=date_from)
+        notes_qs = notes_qs.filter(_effective_date__date__gte=date_from)
     if date_to:
-        notes_qs = notes_qs.filter(created_at__date__lte=date_to)
+        notes_qs = notes_qs.filter(_effective_date__date__lte=date_to)
 
     # Basic counts
     note_count = notes_qs.count()
@@ -70,7 +74,7 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
 
     # Distinct months
     month_dates = (
-        notes_qs.annotate(month=TruncMonth("created_at"))
+        notes_qs.annotate(month=TruncMonth("_effective_date"))
         .values("month")
         .distinct()
     )
@@ -114,7 +118,13 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
     # ── Descriptor trend by month (percentages) ──
     descriptor_by_month = (
         targets_qs.exclude(progress_descriptor="")
-        .annotate(month=TruncMonth("progress_note__created_at"))
+        .annotate(
+            _effective_date=Coalesce(
+                "progress_note__backdate", "progress_note__created_at",
+                output_field=DateTimeField(),
+            ),
+        )
+        .annotate(month=TruncMonth("_effective_date"))
         .values("month", "progress_descriptor")
         .annotate(count=Count("id"))
         .order_by("month")
@@ -166,8 +176,9 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
         list of dicts with keys: text, target_name, note_id, date (if include_dates).
         Returns empty list if programme-level and <15 active participants.
     """
-    # Privacy gate: check participant count for programme-level
-    if program and not client_file:
+    # Privacy gate: check participant count for programme-level.
+    # Demo data is not real people — skip the gate in demo mode.
+    if program and not client_file and not getattr(settings, "DEMO_MODE", False):
         participant_count = (
             ClientProgramEnrolment.objects.filter(
                 program=program,
@@ -184,10 +195,15 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
             )
             return []
 
-    # Build queryset for ProgressNoteTarget entries
+    # Build queryset for ProgressNoteTarget entries — use effective date
     targets_qs = ProgressNoteTarget.objects.filter(
         progress_note__status="default",
-    ).select_related("progress_note", "plan_target")
+    ).select_related("progress_note", "plan_target").annotate(
+        _effective_date=Coalesce(
+            "progress_note__backdate", "progress_note__created_at",
+            output_field=DateTimeField(),
+        ),
+    )
 
     if client_file:
         targets_qs = targets_qs.filter(progress_note__client_file=client_file)
@@ -197,12 +213,12 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
             progress_note__client_file__enrolments__status="enrolled",
         )
     if date_from:
-        targets_qs = targets_qs.filter(progress_note__created_at__date__gte=date_from)
+        targets_qs = targets_qs.filter(_effective_date__date__gte=date_from)
     if date_to:
-        targets_qs = targets_qs.filter(progress_note__created_at__date__lte=date_to)
+        targets_qs = targets_qs.filter(_effective_date__date__lte=date_to)
 
     # Order by most recent first
-    targets_qs = targets_qs.order_by("-progress_note__created_at")
+    targets_qs = targets_qs.order_by("-_effective_date")
 
     # Collect quotes from client_words field
     quotes = []
@@ -251,7 +267,9 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
 
     # Also collect from participant_reflection and participant_suggestion on ProgressNote
     if len(quotes) < max_quotes:
-        notes_qs = ProgressNote.objects.filter(status="default")
+        notes_qs = ProgressNote.objects.filter(status="default").annotate(
+            _effective_date=Coalesce("backdate", "created_at", output_field=DateTimeField()),
+        )
         if client_file:
             notes_qs = notes_qs.filter(client_file=client_file)
         if program:
@@ -260,11 +278,11 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
                 client_file__enrolments__status="enrolled",
             )
         if date_from:
-            notes_qs = notes_qs.filter(created_at__date__gte=date_from)
+            notes_qs = notes_qs.filter(_effective_date__date__gte=date_from)
         if date_to:
-            notes_qs = notes_qs.filter(created_at__date__lte=date_to)
+            notes_qs = notes_qs.filter(_effective_date__date__lte=date_to)
 
-        notes_qs = notes_qs.order_by("-created_at")
+        notes_qs = notes_qs.order_by("-_effective_date")
 
         for note in notes_qs[:max_records]:
             if len(quotes) >= max_quotes:

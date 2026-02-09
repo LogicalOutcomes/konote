@@ -36,6 +36,52 @@
 
 <hr>
 
+{% if program_summary %}
+<section aria-labelledby="program-health-heading">
+    <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--kn-space-base);">
+        <h2 id="program-health-heading" style="margin-bottom: 0;">{% trans "Program Health" %}</h2>
+        <small class="secondary">{% trans "Last 6 months" %}</small>
+    </header>
+
+    {% if program_summary.note_count > 0 %}
+    <div class="stats-row">
+        <dl class="stat-card">
+            <dt>{% trans "Active" %} {{ term.client_plural|default:"Participants" }}</dt>
+            <dd class="stat-value">{{ program_summary.participant_count }}</dd>
+            <dd class="stat-subtext">{% trans "with notes recorded" %}</dd>
+        </dl>
+
+        <dl class="stat-card">
+            <dt>{% trans "Progress Notes" %}</dt>
+            <dd class="stat-value">{{ program_summary.note_count }}</dd>
+            <dd class="stat-subtext">{% trans "last 6 months" %}</dd>
+        </dl>
+
+        {% if program_summary.top_descriptor %}
+        <dl class="stat-card">
+            <dt>{% trans "Top Outcome" %}</dt>
+            <dd class="stat-value">{{ program_summary.top_descriptor.percentage }}%</dd>
+            <dd class="stat-subtext">{{ program_summary.top_descriptor.label }}</dd>
+        </dl>
+        {% endif %}
+    </div>
+
+    <div role="group">
+        <a href="{% url 'reports:program_insights' %}?program={{ program.pk }}&time_period=6m"
+           role="button" class="outline">{% trans "View Program Results" %} &rarr;</a>
+        {% if has_export_access %}
+        <a href="{% url 'reports:export_form' %}"
+           role="button" class="outline secondary">{% trans "Export Program Data" %} &rarr;</a>
+        {% endif %}
+    </div>
+    {% else %}
+    <p><em>{% trans "No notes recorded yet for this program in the last 6 months." %}</em></p>
+    {% endif %}
+</section>
+
+<hr>
+{% endif %}
+
 <h2>{% trans "Assigned Staff" %}</h2>
 
 {% if is_admin %}
@@ -76,17 +122,19 @@
             <tr>
                 <th scope="col">{% trans "Name" %}</th>
                 <th scope="col">{% trans "Members" %}</th>
-                <th scope="col">{% trans "Actions" %}</th>
+                {% if not is_receptionist and not is_executive_only %}<th scope="col">{% trans "Actions" %}</th>{% endif %}
             </tr>
         </thead>
         <tbody>
             {% for group in groups %}
             <tr>
-                <td><a href="{% url 'groups:group_detail' group_id=group.pk %}">{{ group.name }}</a></td>
+                <td>{% if is_receptionist or is_executive_only %}{{ group.name }}{% else %}<a href="{% url 'groups:group_detail' group_id=group.pk %}">{{ group.name }}</a>{% endif %}</td>
                 <td data-label="{% trans 'Members' %}">{{ group.member_count }}</td>
+                {% if not is_receptionist and not is_executive_only %}
                 <td data-label="{% trans 'Actions' %}">
                     <a href="{% url 'groups:session_log' group_id=group.pk %}" role="button" class="outline small">{% trans "Log Session" %}</a>
                 </td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
@@ -96,7 +144,9 @@
     <p><em>{% trans "No groups created yet." %}</em></p>
     {% endif %}
 
+    {% if not is_receptionist and not is_executive_only %}
     <a href="{% url 'groups:group_create' %}" role="button" class="outline">{% trans "Create Group" %}</a>
+    {% endif %}
 </section>
 {% endif %}
 {% endblock %}

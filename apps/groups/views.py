@@ -17,7 +17,7 @@ from apps.reports.csv_utils import sanitise_csv_row, sanitise_filename
 
 from django.urls import reverse
 
-from apps.auth_app.decorators import minimum_role
+from apps.auth_app.decorators import minimum_role, programme_role_required
 from apps.clients.models import ClientFile
 from apps.clients.views import _get_user_program_ids, get_client_queryset
 from apps.programs.models import UserProgramRole
@@ -39,6 +39,29 @@ from .models import (
     ProjectMilestone,
     ProjectOutcome,
 )
+
+
+# ---------------------------------------------------------------------------
+# Helper functions for programme_role_required decorator
+# ---------------------------------------------------------------------------
+
+
+def _get_programme_from_group(request, group_id, **kwargs):
+    """Extract programme from group_id in URL kwargs."""
+    return get_object_or_404(Group, pk=group_id).program
+
+
+def _get_programme_from_group_or_related(request, group_id=None, membership_id=None, milestone_id=None, **kwargs):
+    """Extract programme from group_id, membership_id, or milestone_id in URL kwargs."""
+    if group_id:
+        return get_object_or_404(Group, pk=group_id).program
+    if membership_id:
+        membership = get_object_or_404(GroupMembership, pk=membership_id)
+        return membership.group.program
+    if milestone_id:
+        milestone = get_object_or_404(ProjectMilestone, pk=milestone_id)
+        return milestone.group.program
+    raise ValueError("No group_id, membership_id, or milestone_id in URL kwargs")
 
 
 def _get_user_role_for_group(request, group):
@@ -83,7 +106,7 @@ def group_list(request):
 # ---------------------------------------------------------------------------
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_group)
 def group_detail(request, group_id):
     """Detail view: roster, recent sessions, and project extras."""
     group = get_object_or_404(Group, pk=group_id)
@@ -158,7 +181,7 @@ def group_create(request):
 # ---------------------------------------------------------------------------
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_group)
 def group_edit(request, group_id):
     """Edit an existing group."""
     group = get_object_or_404(Group, pk=group_id)
@@ -185,7 +208,7 @@ def group_edit(request, group_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_group)
 def session_log(request, group_id):
     """Log a group session with attendance and optional highlights.
 
@@ -261,7 +284,7 @@ def session_log(request, group_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_group)
 def membership_add(request, group_id):
     """Add a member to a group (existing client or named non-client)."""
     group = get_object_or_404(Group, pk=group_id)
@@ -325,7 +348,7 @@ def membership_add(request, group_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_group_or_related)
 def membership_remove(request, membership_id):
     """Deactivate a membership (POST only)."""
     membership = get_object_or_404(GroupMembership, pk=membership_id)
@@ -344,7 +367,7 @@ def membership_remove(request, membership_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_group)
 def milestone_create(request, group_id):
     """Create a milestone for a project-type group."""
     group = get_object_or_404(Group, pk=group_id, group_type="project")
@@ -372,7 +395,7 @@ def milestone_create(request, group_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_group_or_related)
 def milestone_edit(request, milestone_id):
     """Edit an existing project milestone."""
     milestone = get_object_or_404(ProjectMilestone, pk=milestone_id)
@@ -400,7 +423,7 @@ def milestone_edit(request, milestone_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_group)
 def outcome_create(request, group_id):
     """Record an outcome for a project-type group."""
     group = get_object_or_404(Group, pk=group_id, group_type="project")
@@ -434,7 +457,7 @@ def outcome_create(request, group_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_group)
 def attendance_report(request, group_id):
     """Attendance report: member x session matrix with CSV export.
 

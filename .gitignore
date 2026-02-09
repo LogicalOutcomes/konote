@@ -33,7 +33,7 @@ venv/
 .DS_Store
 Thumbs.db
 nul
-_ul
+_ul*
 
 # QA pipeline transient files (improvement tickets and pipeline log ARE tracked)
 qa/.qa-handoff*.json

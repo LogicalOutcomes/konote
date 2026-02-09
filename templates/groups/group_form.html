@@ -11,7 +11,32 @@
 <form method="post">
     {% csrf_token %}
 
+    {# Group type — radio buttons with descriptions #}
+    <fieldset>
+        <legend><strong>{% trans "What type of group is this?" %}</strong></legend>
+        {% for radio in form.group_type %}
+        <label style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
+            <input type="radio" name="{{ form.group_type.html_name }}" value="{{ radio.choice_value }}"
+                   {% if radio.is_checked %}checked{% endif %}
+                   style="margin-top: 0.25rem;">
+            <span>
+                {{ radio.choice_label }}
+                {% if radio.choice_value == "group" %}
+                <br><small class="secondary">{% trans "Attendance tracking and session notes." %}</small>
+                {% elif radio.choice_value == "project" %}
+                <br><small class="secondary">{% trans "Milestones, outcomes, and deadlines." %}</small>
+                {% endif %}
+            </span>
+        </label>
+        {% endfor %}
+        {% if form.group_type.errors %}
+        <small class="badge badge-danger">{{ form.group_type.errors.0 }}</small>
+        {% endif %}
+    </fieldset>
+
+    {# Remaining fields (name, program, description) #}
     {% for field in form %}
+    {% if field.name != "group_type" %}
     <label for="{{ field.id_for_label }}">
         {{ field.label }}
         {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
@@ -22,6 +47,7 @@
     {% endif %}
     {% if field.errors %}
     <small class="badge badge-danger">{{ field.errors.0 }}</small>
+    {% endif %}
     {% endif %}
     {% endfor %}
 

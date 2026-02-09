@@ -592,16 +592,32 @@ CLIENT_GOALS = {
 # ---------------------------------------------------------------------------
 
 CLIENT_WORDS_SAMPLES = [
-    "It's hard",
-    "I don't know if this is working",
-    "I almost didn't come today",
-    "I showed up today",
-    "I'm trying",
-    "It's getting a bit easier",
-    "I actually wanted to come today",
-    "Something feels different",
-    "I told my friend about what we talked about",
-    "I'm starting to believe this might work",
+    "It's hard right now and I don't know if I can keep going with this",
+    "I don't know if this is working but I'm trying to stay with it anyway",
+    "I almost didn't come today but I'm glad I made myself show up here",
+    "I showed up today even though everything in me wanted to stay home instead",
+    "I'm trying to take it one day at a time like we talked about last session",
+    "It's getting a bit easier now that I have a plan to follow each week",
+    "I actually wanted to come today which is new for me if I'm being honest",
+    "Something feels different this time like maybe things are actually changing for me",
+    "I told my friend about what we talked about and they said it made sense to them",
+    "I'm starting to believe this might actually work out in the end for me somehow",
+]
+
+PARTICIPANT_REFLECTIONS = [
+    "I think the biggest thing I'm learning is that it's okay to ask for help when I need it",
+    "Today I realised I've actually come a long way since we first started working together",
+    "I want to keep practising what we talked about because it really does make a difference",
+    "I feel like I'm finally starting to understand what I need to do to move forward from here",
+    "The hardest part is still showing up but once I'm here I always feel better about things",
+]
+
+PARTICIPANT_SUGGESTIONS = [
+    "It would help to have more evening sessions for people who work during the day",
+    "Maybe we could do a group session where people share what's working for them",
+    "I think having a buddy system would help new people feel less alone at the start",
+    "It would be nice to have some written materials I can take home and review later",
+    "I wish there was a way to check in between sessions when things get really hard",
 ]
 
 
@@ -912,6 +928,13 @@ CLIENT_EVENTS = {
 class Command(BaseCommand):
     help = "Populate demo clients with plans, notes, events, and alerts for charts/reports."
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--force",
+            action="store_true",
+            help="Delete existing demo notes/plans/events and regenerate from scratch.",
+        )
+
     def _populate_custom_fields(self):
         """Populate custom field values for demo clients (always runs, idempotent)."""
         fields_updated = 0
@@ -982,11 +1005,35 @@ class Command(BaseCommand):
             pass  # Workers not yet created — full seed below will handle it
 
         # Check if rich data already exists
-        if ProgressNote.objects.filter(
+        force = options.get("force", False)
+        demo_notes_exist = ProgressNote.objects.filter(
             client_file__record_id__startswith="DEMO-"
-        ).exists():
-            self.stdout.write("  Demo rich data already exists. Skipping.")
+        ).exists()
+
+        if demo_notes_exist and not force:
+            self.stdout.write("  Demo rich data already exists. Skipping. (Use --force to regenerate.)")
             return
+
+        if demo_notes_exist and force:
+            # Delete demo notes (cascades to ProgressNoteTarget, MetricValue)
+            note_count = ProgressNote.objects.filter(
+                client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
+            # Delete demo plans (cascades to PlanTarget, PlanTargetRevision, PlanTargetMetric)
+            plan_count = PlanSection.objects.filter(
+                client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
+            # Delete demo events and alerts
+            event_count = Event.objects.filter(
+                client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
+            alert_count = Alert.objects.filter(
+                client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
+            self.stdout.write(
+                f"  --force: Deleted {note_count} notes, {plan_count} plans, "
+                f"{event_count} events, {alert_count} alerts for demo clients."
+            )
 
         # Fetch workers
         try:
@@ -1244,6 +1291,32 @@ class Command(BaseCommand):
                 engagement_observation=engagement,
             )
 
+            # Set created_at to match backdate so notes appear historical.
+            # Must use .update() because auto_now_add prevents .save().
+            ProgressNote.objects.filter(pk=note.pk).update(created_at=backdate)
+
+            # Add participant reflection to ~half of full notes
+            needs_save = False
+            if not is_quick and note_idx % 2 == 0:
+                reflection_idx = min(
+                    int(progress_fraction * len(PARTICIPANT_REFLECTIONS)),
+                    len(PARTICIPANT_REFLECTIONS) - 1,
+                )
+                note.participant_reflection = PARTICIPANT_REFLECTIONS[reflection_idx]
+                needs_save = True
+
+            # Add participant suggestion to ~1/3 of full notes
+            if not is_quick and note_idx % 3 == 1:
+                suggestion_idx = note_idx % len(PARTICIPANT_SUGGESTIONS)
+                note.participant_suggestion = PARTICIPANT_SUGGESTIONS[suggestion_idx]
+                note.suggestion_priority = random.choice(
+                    ["noted", "worth_exploring", "important"]
+                )
+                needs_save = True
+
+            if needs_save:
+                note.save()
+
             # For full notes, record metrics against each target
             if not is_quick:
                 # Qualitative progress descriptor
@@ -1393,7 +1466,7 @@ class Command(BaseCommand):
                 )
 
     # ------------------------------------------------------------------
-    # Demo groups: service groups, activity groups, and projects
+    # Demo groups: groups and projects
     # ------------------------------------------------------------------
 
     def _create_demo_groups(self, workers, programs_by_name, now):
@@ -1407,14 +1480,14 @@ class Command(BaseCommand):
             return ClientFile.objects.filter(record_id=rid).first()
 
         # -------------------------------------------------------
-        # Group 1: Wednesday After-School Circle (service_group)
+        # Group 1: Wednesday After-School Circle (group)
         # Under Youth Drop-In, facilitated by Noor
         # -------------------------------------------------------
         youth_program = programs_by_name.get("Youth Drop-In")
         circle, created = Group.objects.get_or_create(
             name="Wednesday After-School Circle",
             defaults={
-                "group_type": "service_group",
+                "group_type": "group",
                 "program": youth_program,
                 "description": (
                     "Weekly peer support and activities for youth. "
@@ -1501,14 +1574,14 @@ class Command(BaseCommand):
                 h2.save()
 
         # -------------------------------------------------------
-        # Group 2: Thursday Kitchen Session (activity_group)
+        # Group 2: Thursday Kitchen Session (group)
         # Under Community Kitchen, facilitated by Noor
         # -------------------------------------------------------
         kitchen_program = programs_by_name.get("Community Kitchen")
         kitchen, created = Group.objects.get_or_create(
             name="Thursday Kitchen Session",
             defaults={
-                "group_type": "activity_group",
+                "group_type": "group",
                 "program": kitchen_program,
                 "description": (
                     "Weekly cooking sessions. Learn affordable, healthy recipes. "

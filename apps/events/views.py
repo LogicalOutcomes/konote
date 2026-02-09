@@ -14,7 +14,7 @@ from apps.programs.access import (
     get_client_or_403,
     get_user_program_ids,
 )
-from apps.auth_app.decorators import admin_required
+from apps.auth_app.decorators import admin_required, minimum_role
 from apps.programs.models import UserProgramRole
 
 from .forms import AlertCancelForm, AlertForm, EventForm, EventTypeForm
@@ -78,6 +78,7 @@ def event_type_edit(request, type_id):
 # ---------------------------------------------------------------------------
 
 @login_required
+@minimum_role("staff")
 def event_list(request, client_id):
     """Combined timeline: events + notes for a client, sorted chronologically."""
     client = _get_client_or_403(request, client_id)
@@ -129,6 +130,7 @@ def event_list(request, client_id):
 
 
 @login_required
+@minimum_role("staff")
 def event_create(request, client_id):
     """Create an event for a client."""
     client = _get_client_or_403(request, client_id)
@@ -156,6 +158,7 @@ def event_create(request, client_id):
 # ---------------------------------------------------------------------------
 
 @login_required
+@minimum_role("staff")
 def alert_create(request, client_id):
     """Create an alert for a client."""
     client = _get_client_or_403(request, client_id)
@@ -181,6 +184,7 @@ def alert_create(request, client_id):
 
 
 @login_required
+@minimum_role("staff")
 def alert_cancel(request, alert_id):
     """Cancel an alert with a reason (never delete). Only author or admin can cancel."""
     alert = get_object_or_404(Alert, pk=alert_id)
