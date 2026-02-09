@@ -1,6 +1,7 @@
 """Program CRUD views — list visible to all users, management admin-only."""
 import json
 import logging
+from datetime import date, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -123,6 +124,25 @@ def program_detail(request, program_id):
     ).values_list("role", flat=True).first()
     is_receptionist = user_program_role == "receptionist"
 
+    # Program health summary for non-receptionists (matches Insights RBAC)
+    program_summary = None
+    if not is_receptionist:
+        from apps.reports.insights import get_structured_insights
+        today = date.today()
+        summary = get_structured_insights(
+            program=program,
+            date_from=today - timedelta(days=180),
+            date_to=today,
+        )
+        # Extract top descriptor for display
+        top_descriptor = None
+        descriptors = summary.get("descriptor_distribution", {})
+        if descriptors:
+            top_label = max(descriptors, key=descriptors.get)
+            top_descriptor = {"label": top_label, "percentage": descriptors[top_label]}
+        summary["top_descriptor"] = top_descriptor
+        program_summary = summary
+
     # Groups linked to this program (for group/both service models)
     groups = None
     if program.service_model in ("group", "both"):
@@ -143,6 +163,7 @@ def program_detail(request, program_id):
         "is_receptionist": is_receptionist,
         "user_has_access": user_has_access,
         "groups": groups,
+        "program_summary": program_summary,
     })
 
 
