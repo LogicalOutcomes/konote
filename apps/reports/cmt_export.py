@@ -345,8 +345,8 @@ def generate_cmt_csv_rows(cmt_data: dict[str, Any]) -> list[list[str]]:
     rows = []
 
     # Header section
-    rows.append(["FUNDER REPORT TEMPLATE"])
-    rows.append(["DRAFT — Verify this format matches your funder's requirements before submission"])
+    rows.append(["PROGRAMME OUTCOME REPORT TEMPLATE"])
+    rows.append(["DRAFT — Verify this format matches reporting requirements before submission"])
     rows.append([f"Generated: {cmt_data['generated_at'].strftime('%Y-%m-%d %H:%M')}"])
     rows.append([])
 
