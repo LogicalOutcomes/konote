@@ -17,10 +17,11 @@ PER_FIELD = "per_field"  # Check field-level configuration
 
 PERMISSIONS = {
     "receptionist": {
-        # Tier 1: Operational only — can check people in, see names, no clinical data
+        # Tier 1: Operational only — can check people in, see names, safety info only
         "client.view_name": ALLOW,
         "client.view_contact": ALLOW,
-        "client.view_clinical": DENY,  # No diagnosis, DOB, custom fields
+        "client.view_safety": ALLOW,  # Allergies, emergency contacts, medical alerts
+        "client.view_clinical": DENY,  # No diagnosis, treatment plans, notes
         "client.edit": DENY,
 
         "attendance.check_in": ALLOW,  # Primary function
@@ -61,6 +62,7 @@ PERMISSIONS = {
         # Phase 1: scoped to programme (existing behaviour preserved)
         "client.view_name": ALLOW,
         "client.view_contact": ALLOW,
+        "client.view_safety": ALLOW,  # Allergies, emergency contacts, medical alerts
         "client.view_clinical": SCOPED,  # Phase 1: programme. Phase 2: assigned groups/clients
         "client.edit": SCOPED,
 
@@ -103,6 +105,7 @@ PERMISSIONS = {
         # Phase 3: aggregate-only default with gated individual access
         "client.view_name": ALLOW,
         "client.view_contact": ALLOW,
+        "client.view_safety": ALLOW,  # Allergies, emergency contacts, medical alerts
         "client.view_clinical": ALLOW,  # Phase 3: GATED (just-in-time with reason)
         "client.edit": DENY,  # Phase 3: managers don't edit client records
 
@@ -143,6 +146,7 @@ PERMISSIONS = {
         # Tier 4: Org-wide aggregate only — no individual client data
         "client.view_name": DENY,
         "client.view_contact": DENY,
+        "client.view_safety": DENY,  # Executives see aggregate data only, no individual safety info
         "client.view_clinical": DENY,
         "client.edit": DENY,
 
@@ -246,7 +250,8 @@ def permission_to_plain_english(perm_key, perm_level):
     TRANSLATIONS = {
         "client.view_name": "See client names",
         "client.view_contact": "See client contact information",
-        "client.view_clinical": "See clinical information (diagnosis, treatment plans, etc.)",
+        "client.view_safety": "See safety information (allergies, emergency contacts, medical alerts)",
+        "client.view_clinical": "See clinical information (diagnosis, treatment plans, notes)",
         "client.edit": "Edit client records",
 
         "attendance.check_in": "Check clients in and out",
