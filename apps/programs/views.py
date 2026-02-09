@@ -126,8 +126,11 @@ def program_detail(request, program_id):
 
     # Program health summary for non-receptionists (matches Insights RBAC)
     program_summary = None
+    has_export_access = False
     if not is_receptionist:
         from apps.reports.insights import get_structured_insights
+        from apps.reports.utils import can_create_export
+        has_export_access = can_create_export(request.user, "metrics", program=program)
         today = date.today()
         summary = get_structured_insights(
             program=program,
@@ -161,6 +164,7 @@ def program_detail(request, program_id):
         "role_form": role_form,
         "is_admin": request.user.is_admin,
         "is_receptionist": is_receptionist,
+        "has_export_access": has_export_access,
         "user_has_access": user_has_access,
         "groups": groups,
         "program_summary": program_summary,

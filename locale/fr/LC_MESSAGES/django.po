@@ -4112,14 +4112,21 @@ msgid "Cancellation Reason"
 msgstr "Raison de l'annulation"
 
 # groups/models.py — Group Types & Choices
-msgid "Service Group"
-msgstr "Groupe de services"
-
-msgid "Activity Group"
-msgstr "Groupe d'activités"
+msgid "Group"
+msgstr "Groupe"
 
 msgid "Project"
 msgstr "Projet"
+
+# groups/group_form.html — Group type selection
+msgid "What type of group is this?"
+msgstr "Quel type de groupe est-ce?"
+
+msgid "Attendance tracking and session notes."
+msgstr "Suivi de présence et notes de séance."
+
+msgid "Milestones, outcomes, and deadlines."
+msgstr "Jalons, résultats et échéances."
 
 msgid "Member"
 msgstr "Membre"
@@ -7771,9 +7778,6 @@ msgstr "Demande d'effacement"
 msgid "Exported"
 msgstr "Exporté"
 
-msgid "Group"
-msgstr "Groupe"
-
 msgid "Logged in"
 msgstr "Connecté"
 
@@ -8575,22 +8579,22 @@ msgid "French name (displayed when language is French)"
 msgstr "Nom en français (affiché lorsque la langue est le français)"
 
 msgid "Export Program Data"
-msgstr ""
+msgstr "Exporter les données du programme"
 
 msgid "No notes recorded yet for this program in the last 6 months."
-msgstr ""
+msgstr "Aucune note enregistrée pour ce programme au cours des 6 derniers mois."
 
 msgid "Program Health"
-msgstr ""
+msgstr "Santé du programme"
 
 msgid "Top Outcome"
-msgstr ""
+msgstr "Résultat principal"
 
 msgid "View Program Results"
-msgstr ""
+msgstr "Voir les résultats du programme"
 
 msgid "last 6 months"
-msgstr ""
+msgstr "6 derniers mois"
 
 msgid "with notes recorded"
-msgstr ""
+msgstr "avec des notes enregistrées"
