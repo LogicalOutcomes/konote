@@ -9,7 +9,7 @@
 
 ### QA Round 2c — Verification
 
-- [ ] Manually test BLOCKER-1 + BLOCKER-2 with keyboard — skip-to-content link and post-login focus. 10 min each. Code is in place (skip link in base.html, focus management in app.js). (QA-VERIFY1)
+- [ ] Fix BLOCKER-1 skip link conflict — skip link exists but not reachable as first Tab stop because app.js moves focus to #main-content on load. Options: (a) remove auto-focus and let skip link work, (b) keep current focus-to-main (better UX), or (c) only auto-focus when no hash/autofocus elements. Test file at tests/test_blocker_a11y.py. (QA-FIX1)
 - [ ] Re-run QA scenarios after deploy to confirm all fixes visible in screenshots (QA-VERIFY2)
 
 ### Pre-Launch Checklist
@@ -117,6 +117,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Playwright tests for BLOCKER-1/2 — BLOCKER-2 verified working (focus on #main-content, not footer), BLOCKER-1 code exists but conflicts with BLOCKER-2 fix (skip link not first Tab stop due to auto-focus). Automated tests at tests/test_blocker_a11y.py — 2026-02-08 (QA-VERIFY1)
 - [x] QA Round 2c — Tier 1+2 fixes (6 bugs) — accent search (BUG-13), program French names with `name_fr` field + 33 template updates (BUG-11), untranslated French strings (BUG-8), home page button permission (BUG-12), audit filter CSS (BUG-3), IMPROVE-5 confirmed already fixed — 2026-02-08 (QA-W9 through QA-W18)
 - [x] Fix BUG-7, BUG-9, BUG-10 from QA Round 2b — 404 after create (session flag bypass), language cookie path, autofocus on create form — 2026-02-08 (BUG-7, BUG-9, BUG-10)
 - [x] Participant suggestion field + AI feedback insights — encrypted suggestion field on every note, staff-assigned priority (noted/worth exploring/important/urgent), AI insights now categorise participant feedback (request/suggestion/concern/praise) with verbatim quotes, recurring pattern detection, 3-item focus rule — 2026-02-08 (VOICE1)
