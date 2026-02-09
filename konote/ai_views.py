@@ -83,7 +83,7 @@ def generate_narrative_view(request):
 
     form = GenerateNarrativeForm(request.POST)
     if not form.is_valid():
-        return render(request, "ai/_error.html", {"message": "Please select a programme and date range."})
+        return render(request, "ai/_error.html", {"message": "Please select a program and date range."})
 
     program_id = form.cleaned_data["program_id"]
     date_from = form.cleaned_data["date_from"]
@@ -92,7 +92,7 @@ def generate_narrative_view(request):
     try:
         program = Program.objects.get(pk=program_id)
     except Program.DoesNotExist:
-        return HttpResponseBadRequest("Programme not found.")
+        return HttpResponseBadRequest("Program not found.")
 
     # Build aggregate stats from metric values — no PII, just numbers
     values = (
@@ -186,13 +186,13 @@ def outcome_insights_view(request):
 
     if not program_id or not date_from_str or not date_to_str:
         return render(request, "reports/_insights_ai.html", {
-            "error": "Please select a programme and date range first.",
+            "error": "Please select a program and date range first.",
         })
 
     try:
         program = Program.objects.get(pk=program_id)
     except Program.DoesNotExist:
-        return HttpResponseBadRequest("Programme not found.")
+        return HttpResponseBadRequest("Program not found.")
 
     try:
         dt_from = date.fromisoformat(date_from_str)
@@ -228,7 +228,7 @@ def outcome_insights_view(request):
         })
 
     # PII-scrub quotes before sending to AI
-    # Collect known names from clients in this programme
+    # Collect known names from clients in this program
     from apps.clients.models import ClientFile, ClientProgramEnrolment
     client_ids = (
         ClientProgramEnrolment.objects.filter(program=program, status="enrolled")

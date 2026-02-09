@@ -1,0 +1,47 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+{% load portal_tags %}
+
+{% block title %}{% trans "Milestones" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Milestones" %}</h1>
+<p>{% trans "These are the goals you've reached. Every one of them matters." %}</p>
+
+{% if milestones %}
+<div class="portal-milestones-list">
+    {% for milestone in milestones %}
+    <article class="portal-milestone-card">
+        <div class="portal-milestone-icon" aria-hidden="true">
+            &#10003;{# Checkmark character #}
+        </div>
+        <div class="portal-milestone-content">
+            <h2>{{ milestone.name }}</h2>
+
+            {% if milestone.completion_date %}
+            <p class="portal-milestone-date">
+                {% trans "Completed:" %}
+                <time datetime="{{ milestone.completion_date|date:'Y-m-d' }}">
+                    {{ milestone.completion_date|portal_date }}
+                </time>
+            </p>
+            {% endif %}
+
+            {% if milestone.client_goal %}
+            <blockquote>
+                <p>"{{ milestone.client_goal }}"</p>
+            </blockquote>
+            {% endif %}
+
+            <p class="portal-milestone-congrats">{% trans "You did it!" %}</p>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+{% else %}
+<article class="portal-empty-state">
+    <p>{% trans "No milestones yet — but you're on your way! Milestones will show up here as you reach your goals." %}</p>
+</article>
+{% endif %}
+{% endblock %}

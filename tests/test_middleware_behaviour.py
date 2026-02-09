@@ -91,13 +91,13 @@ class AuditMiddlewareBehaviourTest(TestCase):
 
     # 3. Access denied (403) creates an audit log with action="access_denied"
     def test_audit_logs_access_denied(self):
-        """User WITHOUT programme access gets 403, and an 'access_denied' audit entry is created."""
-        # Create a second user with no programme role
+        """User WITHOUT program access gets 403, and an 'access_denied' audit entry is created."""
+        # Create a second user with no program role
         outsider = User.objects.create_user(
             username="outsider", password="testpass123",
             display_name="Outsider", is_admin=False,
         )
-        # Give outsider a role in a DIFFERENT programme so they are authenticated but cannot access
+        # Give outsider a role in a DIFFERENT program so they are authenticated but cannot access
         other_program = Program.objects.create(name="Other Program", status="active")
         UserProgramRole.objects.create(
             user=outsider, program=other_program, role="staff", status="active",
@@ -220,14 +220,14 @@ class SafeLocaleMiddlewareBehaviourTest(TestCase):
     def test_safe_locale_falls_back_on_missing_translation(self):
         """If the French .mo file is missing the canary string, middleware falls back to English.
 
-        The middleware checks whether 'Programme Outcome Report' gets translated when
+        The middleware checks whether 'Program Outcome Report' gets translated when
         French is active. If the string is unchanged (meaning our .mo file did not
         load), it falls back to English.
         """
         self.http.cookies[settings.LANGUAGE_COOKIE_NAME] = "fr"
 
         # Patch gettext to return the English string unchanged (simulates missing .mo)
-        with patch("django.utils.translation.gettext", return_value="Programme Outcome Report"):
+        with patch("django.utils.translation.gettext", return_value="Program Outcome Report"):
             resp = self.http.get("/auth/login/")
         # Request should still succeed
         self.assertEqual(resp.status_code, 200)

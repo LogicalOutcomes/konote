@@ -7,7 +7,9 @@
     <a href="{% url 'clients:client_list' %}" class="back-link">&larr; {% trans "Back to List" %}</a>
     {% if not is_receptionist and not client.is_anonymised %}
     <a href="{% url 'reports:client_progress_pdf' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Export PDF" %}</a>
+    {% if user.is_admin %}
     <a href="{% url 'reports:client_export' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Export All Data" %}</a>
+    {% endif %}
     {% endif %}
     {% if pending_erasure %}
     <span class="badge badge-warning">{% trans "Erasure Pending" %}</span>
@@ -87,20 +89,20 @@
 </section>
 {% endif %}
 
-{# Cross-programme sharing consent — visible to staff and above #}
+{# Cross-program sharing consent — visible to staff and above #}
 {% if not is_receptionist and not client.is_anonymised %}
 <section>
     <details>
-        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Cross-Programme Sharing" %}</h2></summary>
+        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Cross-Program Sharing" %}</h2></summary>
         <div style="margin-top: var(--kn-space-base);">
-            {% if client.cross_programme_sharing_consent %}
+            {% if client.cross_program_sharing_consent %}
             <p><span class="badge badge-success">{% trans "Consent given" %}</span></p>
-            <p class="secondary">{% trans "This participant has consented to sharing clinical information across programmes." %}</p>
+            <p class="secondary">{% trans "This participant has consented to sharing clinical information across programs." %}</p>
             {% else %}
             <p><span class="badge badge-neutral">{% trans "No consent" %}</span></p>
-            <p class="secondary">{% trans "Clinical notes are only visible within the programme where they were recorded. Under Ontario privacy law (PHIPA), express consent is required before clinical information can be shared across programmes." %}</p>
+            <p class="secondary">{% trans "Clinical notes are only visible within the program where they were recorded. Under Ontario privacy law (PHIPA), express consent is required before clinical information can be shared across programs." %}</p>
             {% endif %}
-            <small class="secondary"><em>{% trans "Note: Cross-programme note filtering will be enforced in a future update. This setting is being recorded now for when enforcement is enabled." %}</em></small>
+            <small class="secondary"><em>{% trans "Note: Cross-program note filtering will be enforced in a future update. This setting is being recorded now for when enforcement is enabled." %}</em></small>
         </div>
     </details>
 </section>

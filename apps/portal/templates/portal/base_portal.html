@@ -1,0 +1,116 @@
+{% load i18n %}
+{% load static %}
+{% get_current_language as CURRENT_LANG %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{% trans "My Account" %}{% endblock %}</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
+    <link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="any">
+    <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+    <meta name="theme-color" content="#0d7377">
+
+    <!-- CSRF token for HTMX -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
+    <!-- Pico CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+
+    <!-- Portal-specific styles -->
+    <link rel="stylesheet" href="{% static 'css/portal.css' %}">
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
+
+    <!-- Quick-exit button — fixed position, always visible -->
+    {% block quick_exit %}
+    <button id="quick-exit"
+            onclick="quickExit()"
+            aria-label="{% trans 'Leave this page quickly' %}"
+            class="quick-exit-btn">
+        {% trans "Leave quickly" %}
+    </button>
+    {% endblock %}
+
+    <!-- Language toggle nav -->
+    <nav class="portal-lang-nav" aria-label="{% trans 'Language selection' %}">
+        <div class="container">
+            <form action="{% url 'switch_language' %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.path }}">
+                {% if CURRENT_LANG == "en" %}
+                <input type="hidden" name="language" value="fr">
+                <button type="submit" class="lang-link" lang="fr" hreflang="fr">Fran&ccedil;ais</button>
+                {% else %}
+                <input type="hidden" name="language" value="en">
+                <button type="submit" class="lang-link" lang="en" hreflang="en">English</button>
+                {% endif %}
+            </form>
+        </div>
+    </nav>
+
+    <!-- Portal navigation — only shown when logged in -->
+    {% if participant %}
+    <nav class="portal-nav container" aria-label="{% trans 'Main navigation' %}">
+        <ul>
+            <li><a href="{% url 'portal:dashboard' %}" {% if portal_page == 'dashboard' %}aria-current="page"{% endif %}>{% trans "Home" %}</a></li>
+            <li><a href="{% url 'portal:goals' %}" {% if portal_page == 'goals' %}aria-current="page"{% endif %}>{% trans "My Goals" %}</a></li>
+            <li><a href="{% url 'portal:progress' %}" {% if portal_page == 'progress' %}aria-current="page"{% endif %}>{% trans "My Progress" %}</a></li>
+            <li><a href="{% url 'portal:settings' %}" {% if portal_page == 'settings' %}aria-current="page"{% endif %}>{% trans "Settings" %}</a></li>
+        </ul>
+        <ul>
+            <li>
+                <form method="post" action="{% url 'portal:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="portal-logout-btn">{% trans "Log out" %}</button>
+                </form>
+            </li>
+        </ul>
+    </nav>
+    {% endif %}
+
+    <main id="main-content" class="container" tabindex="-1">
+        <!-- Flash messages -->
+        {% if messages %}
+        <div class="portal-messages" role="status" aria-live="polite">
+            {% for message in messages %}
+            <article class="portal-message portal-message-{{ message.tags }}">
+                {{ message }}
+            </article>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="container portal-footer" role="contentinfo">
+        <p>
+            <a href="{% url 'portal:safety_help' %}">{% trans "Staying safe online" %}</a>
+        </p>
+        <p class="portal-footer-small">
+            {% trans "If you are in danger, call 911." %}
+        </p>
+    </footer>
+
+    <!-- Session timeout warning -->
+    {% include "portal/_session_timeout_warning.html" %}
+
+    <!-- Portal JavaScript -->
+    <script src="{% static 'js/portal.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

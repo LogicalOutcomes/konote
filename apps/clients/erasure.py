@@ -44,11 +44,11 @@ def build_data_summary(client_file):
         ).count(),
     }
 
-    # Programme names (not PII — programme names are organisational, not personal)
+    # Program names (not PII — program names are organisational, not personal)
     enrolments = ClientProgramEnrolment.objects.filter(
         client_file=client_file,
     ).select_related("program")
-    summary["programmes"] = list({e.program.name for e in enrolments if e.program})
+    summary["programs"] = list({e.program.name for e in enrolments if e.program})
 
     # Service period (earliest enrolment → latest activity)
     first_enrolment = enrolments.order_by("enrolled_at").first()
@@ -376,7 +376,7 @@ def _log_erasure_audit(erasure_request, client_pk, record_id, action, ip_address
 def _execute_tier1_anonymise(erasure_request, ip_address):
     """Tier 1: Strip all PII, keep all service records intact.
 
-    The client record survives as [ANONYMISED] with programme enrolments,
+    The client record survives as [ANONYMISED] with program enrolments,
     progress notes, plans, metrics, events, and alerts all preserved.
     No identifying information remains linked to the record.
     """
@@ -403,7 +403,7 @@ def _execute_tier2_anonymise_purge(erasure_request, ip_address):
     """Tier 2: Strip all PII AND blank all narrative content.
 
     Like Tier 1 but also removes text from notes, alerts, and events.
-    Numeric metrics, plan structure, and programme enrolments survive.
+    Numeric metrics, plan structure, and program enrolments survive.
     """
     client = erasure_request.client_file
     if client is None:

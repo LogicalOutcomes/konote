@@ -18,7 +18,7 @@ This task file covers hardening improvements identified by the expert panel, ord
 
 **Fix:** In `erasure_receipt_pdf()` view, add access check:
 - Requester of this erasure request, OR
-- PM in at least one of the required programmes, OR
+- PM in at least one of the required programs, OR
 - Admin
 
 **File:** `apps/clients/erasure_views.py` — `erasure_receipt_pdf()` function
@@ -292,7 +292,7 @@ Template: Add pagination links at bottom of table.
 The panel reviewed these items and determined no changes needed:
 
 - **`client_record_id` in tombstone** — Internal reference numbers, not PII
-- **Programme names in data summary** — Organisational, not personal
+- **Program names in data summary** — Organisational, not personal
 - **Blanking all custom field values in Tier 1** — Conservative approach correct for PII
 - **No automated data subject notification** — Agencies handle externally (letter/phone)
 - **`_log_audit` private import** — Code smell only, no functional risk

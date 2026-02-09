@@ -1,0 +1,46 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Verify Your Identity" %}{% endblock %}
+
+{# No quick-exit on MFA page — no sensitive data visible yet #}
+{% block quick_exit %}{% endblock %}
+
+{% block content %}
+<article class="portal-login-card">
+    <header>
+        <h1>{% trans "Verify Your Identity" %}</h1>
+        {% if mfa_method == "totp" %}
+        <p>{% trans "Enter the 6-digit code from your authenticator app." %}</p>
+        {% else %}
+        <p>{% trans "We sent a code to your email. Enter it below." %}</p>
+        {% endif %}
+    </header>
+
+    {% if error %}
+    <p role="alert" class="portal-alert portal-alert-error">{{ error }}</p>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <label for="mfa-code">{% trans "6-digit code" %}</label>
+        <input type="text" id="mfa-code" name="code"
+               inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+               autocomplete="one-time-code" required autofocus
+               placeholder="000000"
+               aria-describedby="code-help">
+        {% if mfa_method == "totp" %}
+        <small id="code-help">{% trans "Open your authenticator app and enter the code shown. The code changes every 30 seconds." %}</small>
+        {% else %}
+        <small id="code-help">{% trans "Check your email for a message with your code. It may take a minute to arrive." %}</small>
+        {% endif %}
+
+        <button type="submit">{% trans "Verify" %}</button>
+    </form>
+
+    <p>
+        <a href="{% url 'portal:login' %}">&larr; {% trans "Back to sign in" %}</a>
+    </p>
+</article>
+{% endblock %}

@@ -4,7 +4,7 @@ This module contains the business logic for merging duplicate client records.
 Views call these functions; they never modify client data directly.
 
 Security rules:
-  - Clients with ANY confidential programme enrolment (current or historical)
+  - Clients with ANY confidential program enrolment (current or historical)
     are excluded from merge candidates and cannot be merged.
   - Demo/real separation is enforced.
   - Both clients must be free of pending ErasureRequests.
@@ -37,7 +37,7 @@ def _get_all_confidential_client_ids():
     """Return set of client IDs with ANY confidential enrolment (current or historical).
 
     This is broader than the matching.py filter, which only checks status='enrolled'.
-    A client who was ever in a confidential programme retains a privacy interest.
+    A client who was ever in a confidential program retains a privacy interest.
     """
     return set(
         ClientProgramEnrolment.objects.filter(
@@ -47,7 +47,7 @@ def _get_all_confidential_client_ids():
 
 
 def _get_program_names(client):
-    """Return list of Standard programme names this client is enrolled in."""
+    """Return list of Standard program names this client is enrolled in."""
     return list(
         ClientProgramEnrolment.objects.filter(
             client_file=client,
@@ -88,7 +88,7 @@ def find_merge_candidates(user):
 
     Each pair dict: {client_a: {...}, client_b: {...}, match_type: str}
 
-    Confidential programme clients (current or historical) are excluded.
+    Confidential program clients (current or historical) are excluded.
     Demo/real separation is enforced by _iter_matchable_clients().
     """
     # Additional filter: exclude clients with any historical confidential enrolment
@@ -268,7 +268,7 @@ def build_comparison(client_a, client_b):
     )
     overlapping_program_ids = enrolments_a & enrolments_b
 
-    # Post-merge programme list (all programmes both clients are in)
+    # Post-merge program list (all programs both clients are in)
     from apps.programs.models import Program
 
     all_program_ids = enrolments_a | enrolments_b
@@ -301,9 +301,9 @@ def _validate_merge_preconditions(kept, archived):
     # Check for ANY confidential enrolment (current or historical)
     confidential_ids = _get_all_confidential_client_ids()
     if kept.pk in confidential_ids:
-        errors.append(_("The primary participant has a confidential programme enrolment and cannot be merged."))
+        errors.append(_("The primary participant has a confidential program enrolment and cannot be merged."))
     if archived.pk in confidential_ids:
-        errors.append(_("The secondary participant has a confidential programme enrolment and cannot be merged."))
+        errors.append(_("The secondary participant has a confidential program enrolment and cannot be merged."))
 
     # Check for pending erasure requests
     pending_statuses = ["pending"]
@@ -408,7 +408,7 @@ def execute_merge(kept, archived, pii_choices, field_resolutions, user, ip_addre
 
     for enrolment in archived_enrolments:
         if enrolment.program_id in kept_enrolment_programs:
-            # Both enrolled in same programme — keep earlier enrolled_at on kept's,
+            # Both enrolled in same program — keep earlier enrolled_at on kept's,
             # mark archived's as unenrolled to preserve the history
             kept_enrolment = ClientProgramEnrolment.objects.get(
                 client_file=kept, program_id=enrolment.program_id,

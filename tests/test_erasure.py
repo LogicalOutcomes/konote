@@ -158,7 +158,7 @@ class BuildDataSummaryTests(TestCase):
             self.assertIn(key, summary)
             self.assertIsInstance(summary[key], int, f"{key} should be an integer, got {type(summary[key])}")
         # Non-count fields are optional lists/dicts
-        self.assertIsInstance(summary.get("programmes", []), list)
+        self.assertIsInstance(summary.get("programs", []), list)
 
 
 @override_settings(FIELD_ENCRYPTION_KEY="ly6OqAlMm32VVf08PoPJigrLCIxGd_tW1-kfWhXxXj8=")
@@ -1381,7 +1381,7 @@ class ErasureCodeTests(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY="ly6OqAlMm32VVf08PoPJigrLCIxGd_tW1-kfWhXxXj8=")
 class EnhancedDataSummaryTests(TestCase):
-    """Test enhanced build_data_summary with programme names and service period."""
+    """Test enhanced build_data_summary with program names and service period."""
 
     databases = {"default", "audit"}
 
@@ -1398,10 +1398,10 @@ class EnhancedDataSummaryTests(TestCase):
     def tearDown(self):
         enc_module._fernet = None
 
-    def test_summary_includes_programme_names(self):
+    def test_summary_includes_program_names(self):
         summary = build_data_summary(self.cf)
-        self.assertIn("programmes", summary)
-        self.assertIn("Youth Resilience", summary["programmes"])
+        self.assertIn("programs", summary)
+        self.assertIn("Youth Resilience", summary["programs"])
 
     def test_summary_includes_counts(self):
         summary = build_data_summary(self.cf)
@@ -1496,7 +1496,7 @@ class EmailNotificationWarningTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         msgs = [str(m) for m in resp.context["messages"]]
         self.assertTrue(
-            any("notify the programme managers manually" in m.lower() for m in msgs),
+            any("notify the program managers manually" in m.lower() for m in msgs),
             f"Expected email failure warning in messages: {msgs}",
         )
 

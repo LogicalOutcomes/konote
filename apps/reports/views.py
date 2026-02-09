@@ -314,7 +314,7 @@ def export_form(request):
     # Parse the grouping choice
     grouping_type, grouping_field = parse_grouping_choice(group_by_value)
 
-    # Find clients matching user's demo status enrolled in the selected programme
+    # Find clients matching user's demo status enrolled in the selected program
     # Security: Demo users can only export demo clients; real users only real clients
     accessible_client_ids = get_client_queryset(request.user).values_list("pk", flat=True)
     client_ids = ClientProgramEnrolment.objects.filter(
@@ -475,7 +475,7 @@ def export_form(request):
             # Aggregate CSV — summary statistics only
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
-            writer.writerow(sanitise_csv_row([f"# Programme: {program.name}"]))
+            writer.writerow(sanitise_csv_row([f"# Program: {program.name}"]))
             writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
             writer.writerow(sanitise_csv_row([f"# Total Participants: {total_clients_display}"]))
             writer.writerow(sanitise_csv_row(["# Export Mode: Aggregate Summary"]))
@@ -579,7 +579,7 @@ def export_form(request):
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
             # Summary header rows (prefixed with # so spreadsheet apps treat them as comments)
-            writer.writerow(sanitise_csv_row([f"# Programme: {program.name}"]))
+            writer.writerow(sanitise_csv_row([f"# Program: {program.name}"]))
             writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
             writer.writerow(sanitise_csv_row([f"# Total Clients: {total_clients_display}"]))
             writer.writerow(sanitise_csv_row([f"# Total Data Points: {total_data_points_display}"]))
@@ -779,7 +779,7 @@ def cmt_export_form(request):
 
     CMT reports are structured for United Way Canada's reporting
     requirements, including:
-    - Organisation and programme information
+    - Organisation and program information
     - Service statistics (individuals served, contacts)
     - Age demographics (CMT standard categories)
     - Outcome achievement rates
@@ -902,7 +902,7 @@ def client_data_export(request):
     This export includes:
     - Core demographics (record ID, name, birth date, status)
     - Custom field values (optional)
-    - Programme enrolments (optional)
+    - Program enrolments (optional)
     - Consent and retention information (optional)
 
     Admin-only access. All exports are audit logged.
@@ -949,7 +949,7 @@ def client_data_export(request):
     if status_filter:
         clients_qs = clients_qs.filter(status=status_filter)
 
-    # Apply programme filter
+    # Apply program filter
     if program:
         enrolled_client_ids = ClientProgramEnrolment.objects.filter(
             program=program
@@ -991,7 +991,7 @@ def client_data_export(request):
     writer.writerow(sanitise_csv_row([f"# Export Date: {export_date}"]))
     writer.writerow(sanitise_csv_row([f"# Total Clients: {len(clients)}"]))
     if program:
-        writer.writerow(sanitise_csv_row([f"# Programme Filter: {program.name}"]))
+        writer.writerow(sanitise_csv_row([f"# Program Filter: {program.name}"]))
     if status_filter:
         writer.writerow(sanitise_csv_row([f"# Status Filter: {status_filter}"]))
     writer.writerow([])
@@ -1018,7 +1018,7 @@ def client_data_export(request):
         ])
 
     if include_enrolments:
-        headers.append("Programme Enrolments")
+        headers.append("Program Enrolments")
 
     if include_custom_fields:
         for field in custom_fields:

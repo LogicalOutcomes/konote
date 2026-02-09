@@ -1,0 +1,57 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Set Up Two-Step Verification" %}{% endblock %}
+
+{% block content %}
+<article>
+    <header>
+        <h1>{% trans "Set Up Two-Step Verification" %}</h1>
+        <p>{% trans "This adds an extra layer of security to your account. You will need a free authenticator app on your phone." %}</p>
+    </header>
+
+    <section aria-labelledby="step1-heading">
+        <h2 id="step1-heading">{% trans "Step 1: Scan this code" %}</h2>
+        <p>{% trans "Open your authenticator app (like Google Authenticator or Microsoft Authenticator) and scan this code:" %}</p>
+
+        <div class="portal-qr-code" aria-label="{% trans 'QR code for authenticator app' %}">
+            {% if qr_code_svg %}
+            {{ qr_code_svg|safe }}
+            {% elif qr_code_url %}
+            <img src="{{ qr_code_url }}" alt="{% trans 'QR code to scan with your authenticator app' %}" width="200" height="200">
+            {% endif %}
+        </div>
+
+        <details>
+            <summary>{% trans "Can't scan the code? Enter this key instead" %}</summary>
+            <p>{% trans "Type this key into your authenticator app:" %}</p>
+            <code class="portal-manual-key">{{ manual_key }}</code>
+        </details>
+    </section>
+
+    <hr>
+
+    <section aria-labelledby="step2-heading">
+        <h2 id="step2-heading">{% trans "Step 2: Enter the code" %}</h2>
+        <p>{% trans "Your authenticator app will show a 6-digit code. Enter it here to finish setup." %}</p>
+
+        {% if error %}
+        <p role="alert" class="portal-alert portal-alert-error">{{ error }}</p>
+        {% endif %}
+
+        <form method="post" action="{% url 'portal:mfa_setup' %}">
+            {% csrf_token %}
+
+            <label for="mfa-code">{% trans "6-digit code" %}</label>
+            <input type="text" id="mfa-code" name="mfa_code"
+                   inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+                   autocomplete="one-time-code" required autofocus
+                   placeholder="000000"
+                   aria-describedby="code-help">
+            <small id="code-help">{% trans "The code changes every 30 seconds." %}</small>
+
+            <button type="submit">{% trans "Verify and finish setup" %}</button>
+        </form>
+    </section>
+</article>
+{% endblock %}

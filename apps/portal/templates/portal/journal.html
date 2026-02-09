@@ -1,0 +1,41 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+{% load portal_tags %}
+
+{% block title %}{% trans "My Journal" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "My Journal" %}</h1>
+
+<div class="portal-privacy-notice" role="note" aria-label="{% trans 'Privacy notice' %}">
+    <p><strong>{% trans "Only you can see this." %}</strong>
+    {% trans "Your worker and other staff cannot read your journal." %}</p>
+</div>
+
+<p>
+    <a href="{% url 'portal:journal_new' %}" role="button">{% trans "Write something new" %}</a>
+</p>
+
+{% if journal_entries %}
+<div class="portal-journal-list">
+    {% for entry in journal_entries %}
+    <article class="portal-journal-entry">
+        <header>
+            <h2>
+                <time datetime="{{ entry.created_at|date:'Y-m-d' }}">
+                    {{ entry.created_at|portal_date }}
+                </time>
+            </h2>
+        </header>
+
+        <p class="portal-journal-content">{{ entry.content }}</p>
+    </article>
+    {% endfor %}
+</div>
+
+{% else %}
+<article class="portal-empty-state">
+    <p>{% trans "Your journal is empty. Whenever you feel like writing something down, this is the place." %}</p>
+</article>
+{% endif %}
+{% endblock %}

@@ -18,7 +18,7 @@ This review examines KoNote2's workflows from the perspective of three user role
 |----------|-----------------|---------|---------------|
 | Event form → Related Note | ~~"Quick Note - 2026-02-03"~~ | **FIXED** | Now shows 40-char preview |
 | Full Note form → Template | "Intake Template" | No description of what sections it includes | Add section count or description |
-| Plan Section form → Programme | "Youth Services" | Staff may not know which programme to pick | Add client count or description |
+| Plan Section form → Program | "Youth Services" | Staff may not know which program to pick | Add client count or description |
 | Event form → Event Type | "Crisis" | Works OK, but could show colour dot | Consider colour indicator |
 
 ### 2. Missing `__str__` Methods (Developer Oversight)

@@ -46,13 +46,13 @@ export form    --->   SECURE_EXPORT_DIR  --->  created in DB   --->  download pa
 
 | Export Type | URL | Who Can Use It |
 |---|---|---|
-| Metric Report | `/reports/export/` | Admins (any programme) or Programme Managers (their programmes) |
-| CMT Report | `/reports/cmt-export/` | Admins (any programme) or Programme Managers (their programmes) |
+| Metric Report | `/reports/export/` | Admins (any program) or Program Managers (their programs) |
+| CMT Report | `/reports/cmt-export/` | Admins (any program) or Program Managers (their programs) |
 | Client Data | `/reports/client-data-export/` | Admins only |
 
 **What happens behind the scenes:**
 
-1. The export view validates the form (programme, date range, recipient, etc.)
+1. The export view validates the form (program, date range, recipient, etc.)
 2. The data is queried and formatted as CSV or PDF
 3. The helper function `_save_export_and_create_link()` in `apps/reports/views.py`:
    - Creates the export directory if it does not exist (`SECURE_EXPORT_DIR`)
@@ -198,7 +198,7 @@ Every step of the lifecycle is logged in the audit database:
 
 | Event | Audit Action | Resource Type | What's Recorded |
 |---|---|---|---|
-| Export created | `export` | `metric_report`, `cmt_report`, or `client_data` | Who, what programme, filters used, client count, recipient, link ID |
+| Export created | `export` | `metric_report`, `cmt_report`, or `client_data` | Who, what program, filters used, client count, recipient, link ID |
 | File downloaded | `export` | `export_download` | Who downloaded, link ID, original creator, export type, client count |
 | Link revoked | `update` | `export_link_revoked` | Who revoked, link ID, original creator, export type, client count |
 
@@ -213,7 +213,7 @@ All audit entries include:
 Individual client exports (`/reports/client/{id}/export/`) work differently from the bulk exports described above. They stream the file directly to the browser (no SecureExportLink is created) because:
 
 - They export a single client's data (not bulk)
-- They require the user to have an active programme role for that client
+- They require the user to have an active program role for that client
 - They are always audit logged
 
 ## Key Files

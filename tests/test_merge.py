@@ -86,7 +86,7 @@ class MergeCandidatesTest(TestCase):
         self.assertEqual(results["name_dob_count"], 1)
 
     def test_excludes_confidential_clients(self):
-        """Client currently enrolled in a confidential programme must not appear."""
+        """Client currently enrolled in a confidential program must not appear."""
         self._make_client("Jane", "Doe", phone="(613) 555-9999", program=self.prog_a)
         self._make_client("Janet", "Doe", phone="(613) 555-9999", program=self.conf_prog)
         results = find_merge_candidates(self.admin)
@@ -94,7 +94,7 @@ class MergeCandidatesTest(TestCase):
         self.assertEqual(results["name_dob_count"], 0)
 
     def test_excludes_historically_confidential_clients(self):
-        """Client who was unenrolled from a confidential programme must not appear."""
+        """Client who was unenrolled from a confidential program must not appear."""
         c1 = self._make_client("Jane", "Doe", phone="(613) 555-8888", program=self.prog_a)
         c2 = self._make_client("Janet", "Doe", phone="(613) 555-8888", program=self.prog_b)
         # Also give c2 a HISTORICAL confidential enrolment (unenrolled)
@@ -187,7 +187,7 @@ class MergeComparisonTest(TestCase):
         self.assertEqual(len(comp["field_conflicts"]), 1)
         self.assertEqual(comp["field_conflicts"][0]["value_a"], "Hospital")
 
-    def test_shows_post_merge_programmes(self):
+    def test_shows_post_merge_programs(self):
         prog_b = Program.objects.create(name="Youth Services", colour_hex="#3B82F6")
         ClientProgramEnrolment.objects.create(client_file=self.client_b, program=prog_b)
         comp = build_comparison(self.client_a, self.client_b)
@@ -255,7 +255,7 @@ class MergeExecutionTest(TestCase):
         self.assertEqual(PlanTarget.objects.filter(client_file=self.kept).count(), 1)
 
     def test_handles_enrolment_conflicts_preserves_history(self):
-        """Duplicate enrolment in same programme is marked unenrolled, not deleted."""
+        """Duplicate enrolment in same program is marked unenrolled, not deleted."""
         execute_merge(self.kept, self.archived, {}, {}, self.admin, "127.0.0.1")
         enrolments = ClientProgramEnrolment.objects.filter(
             client_file=self.kept, program=self.prog,

@@ -678,7 +678,7 @@ KoNote2 intentionally **does not allow deleting clients through normal use**. Th
 
 | Scenario | What to do |
 |----------|------------|
-| Client leaves programme | **Discharge** them — status changes to "Discharged" |
+| Client leaves program | **Discharge** them — status changes to "Discharged" |
 | Client no longer active | Set status to **"Inactive"** |
 | Entered by mistake | Mark as "Inactive" and add a note explaining the error |
 | Client requests data deletion (PIPEDA/GDPR) | Use the **Erase Client Data** workflow on the client detail page. Requires multi-PM approval. See `docs/security-operations.md#erasure-workflow-security`. |
@@ -689,7 +689,7 @@ Discharged and inactive clients:
 - Keep all notes, plans, and events intact
 - Can be reactivated if the client returns
 
-**Exception — legally required erasure:** For PIPEDA/GDPR right-to-erasure requests, KoNote2 provides a formal erasure workflow. This requires approval from all programme managers for the client's enrolled programmes, permanently deletes the client's data, and preserves an audit record with record counts only (no PII). See `docs/security-operations.md#erasure-workflow-security` for the full state machine and invariants.
+**Exception — legally required erasure:** For PIPEDA/GDPR right-to-erasure requests, KoNote2 provides a formal erasure workflow. This requires approval from all program managers for the client's enrolled programs, permanently deletes the client's data, and preserves an audit record with record counts only (no PII). See `docs/security-operations.md#erasure-workflow-security` for the full state machine and invariants.
 
 ---
 
@@ -719,7 +719,7 @@ Some privacy regulations require the ability to permanently delete personal data
 **A:** Yes. Changes apply immediately to all users.
 
 ### Q: How do I delete a client?
-**A:** You cannot delete clients through normal use — by design. KoNote2 preserves all client records to maintain audit trails and prevent accidental data loss. Instead, discharge the client or mark them as inactive. **Exception:** If a client requests data deletion under PIPEDA or GDPR, use the **Erase Client Data** workflow on their detail page. This requires approval from all relevant programme managers and permanently deletes the client's data. See [Data Retention](#data-retention) and `docs/security-operations.md#erasure-workflow-security` for details.
+**A:** You cannot delete clients through normal use — by design. KoNote2 preserves all client records to maintain audit trails and prevent accidental data loss. Instead, discharge the client or mark them as inactive. **Exception:** If a client requests data deletion under PIPEDA or GDPR, use the **Erase Client Data** workflow on their detail page. This requires approval from all relevant program managers and permanently deletes the client's data. See [Data Retention](#data-retention) and `docs/security-operations.md#erasure-workflow-security` for details.
 
 ### Q: What if I delete a program?
 **A:** You can't delete programs with active clients. Deactivate instead.

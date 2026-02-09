@@ -129,11 +129,11 @@ def erasure_request_create(request, client_id):
 
             messages.success(request, _("Erasure request created."))
             if email_sent:
-                messages.info(request, _("Programme managers have been notified by email."))
+                messages.info(request, _("Program managers have been notified by email."))
             else:
                 messages.warning(
                     request,
-                    _("Email notification failed. Please notify the programme managers manually."),
+                    _("Email notification failed. Please notify the program managers manually."),
                 )
             return redirect("erasure_request_detail", pk=er.pk)
     else:
@@ -298,7 +298,7 @@ def erasure_approve(request, pk):
         if not email_sent:
             messages.warning(
                 request,
-                _("Email notification failed. Please notify involved programme managers manually."),
+                _("Email notification failed. Please notify involved program managers manually."),
             )
         return redirect("erasure_history")
     else:
@@ -458,7 +458,7 @@ def erasure_receipt_pdf(request, pk):
         "er": er,
         "client": client,
         "org_name": org_name,
-        "programmes": er.data_summary.get("programmes", []),
+        "programs": er.data_summary.get("programs", er.data_summary.get("programmes", [])),
         "data_summary": er.data_summary,
         "approvals": er.approvals.select_related("approved_by"),
     }
@@ -591,7 +591,7 @@ def _notify_erasure_completed(erasure_request, request):
         + "\n"
         + _("Requested by: %(name)s") % {"name": erasure_request.requested_by_display}
         + "\n"
-        + _("All programme manager approvals were received.")
+        + _("All program manager approvals were received.")
         + "\n\n"
         + _("This action cannot be undone.")
     )

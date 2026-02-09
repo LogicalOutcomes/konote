@@ -12,9 +12,9 @@ Through manual testing, discovered three critical permissions failures:
 
 ## Root Cause
 
-The permissions decorator `@minimum_role("staff")` checks user's **highest role across ALL programmes**, not their role in the specific programme for the resource.
+The permissions decorator `@minimum_role("staff")` checks user's **highest role across ALL programs**, not their role in the specific program for the resource.
 
-**Example:** Sam is Front Desk in Youth Programme + Staff in Adult Programme → Sam's highest role is "staff" → Sam can access Youth Programme groups with clinical data.
+**Example:** Sam is Front Desk in Youth Program + Staff in Adult Program → Sam's highest role is "staff" → Sam can access Youth Program groups with clinical data.
 
 ## Phase 1 Implementation Plan
 
@@ -22,12 +22,12 @@ The permissions decorator `@minimum_role("staff")` checks user's **highest role 
 **Full plan:** `C:\Users\gilli\.claude\plans\sequential-gliding-kahan.md`
 
 ### Fix 1: Block Front Desk from Clinical Data
-- Add `@programme_role_required()` decorator that checks role in SPECIFIC programme
+- Add `@program_role_required()` decorator that checks role in SPECIFIC program
 - Update all 11 group views + 7 note views to use new decorator
 - **Status:** Starting now
 
 ### Fix 2: Split Reports
-- **Programme Report** (new) → aggregate only, PDF, for funders/board/donors
+- **Program Report** (new) → aggregate only, PDF, for funders/board/donors
   - Total clients, sessions, achievement rates, demographic summaries
   - NO client names, NO record IDs, NO individual data
 - **Data Extract** (rename existing) → hide, restrict to admin, add warnings
@@ -46,8 +46,8 @@ The permissions decorator `@minimum_role("staff")` checks user's **highest role 
 
 ## Verification Tests
 
-1. **Front Desk isolation** — dual-role user (receptionist + staff) blocked from receptionist programme's clinical data
-2. **Programme Report** — verify PDF has only aggregates, no client names/IDs
+1. **Front Desk isolation** — dual-role user (receptionist + staff) blocked from receptionist program's clinical data
+2. **Program Report** — verify PDF has only aggregates, no client names/IDs
 3. **Data Extract hidden** — managers get 403, only admins see warning banner
 4. **Review screen** — changing role shows updated capabilities
 5. **Permissions validation** — all roles have all keys defined

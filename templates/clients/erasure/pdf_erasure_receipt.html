@@ -77,10 +77,10 @@
     {% endif %}
 </dl>
 
-{% if programmes %}
-<h2>{% trans "Programmes Enrolled" %}</h2>
+{% if programs %}
+<h2>{% trans "Programs Enrolled" %}</h2>
 <ul>
-    {% for prog_name in programmes %}
+    {% for prog_name in programs %}
     <li>{{ prog_name }}</li>
     {% endfor %}
 </ul>
@@ -101,7 +101,7 @@
         <tr><td>{% trans "Events" %}</td><td>{{ data_summary.events|default:"0" }}</td></tr>
         <tr><td>{% trans "Alerts" %}</td><td>{{ data_summary.alerts|default:"0" }}</td></tr>
         <tr><td>{% trans "Custom Field Values" %}</td><td>{{ data_summary.custom_field_values|default:"0" }}</td></tr>
-        <tr><td>{% trans "Programme Enrolments" %}</td><td>{{ data_summary.enrolments|default:"0" }}</td></tr>
+        <tr><td>{% trans "Program Enrolments" %}</td><td>{{ data_summary.enrolments|default:"0" }}</td></tr>
         <tr><td>{% trans "Metric Values" %}</td><td>{{ data_summary.metric_values|default:"0" }}</td></tr>
     </tbody>
 </table>
@@ -111,7 +111,7 @@
 <table>
     <thead>
         <tr>
-            <th scope="col">{% trans "Programme" %}</th>
+            <th scope="col">{% trans "Program" %}</th>
             <th scope="col">{% trans "Approved By" %}</th>
             <th scope="col">{% trans "Date" %}</th>
         </tr>
@@ -119,7 +119,7 @@
     <tbody>
         {% for a in approvals %}
         <tr>
-            <td>{% if a.program %}{{ a.program.translated_name }}{% else %}{% trans "Deleted programme" %}{% endif %}</td>
+            <td>{% if a.program %}{{ a.program.translated_name }}{% else %}{% trans "Deleted program" %}{% endif %}</td>
             <td>{{ a.approved_by_display }}</td>
             <td>{{ a.approved_at|date:"Y-m-d H:i" }}</td>
         </tr>

@@ -1,0 +1,44 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Invite Status" %}{% endblock %}
+
+{# No quick-exit on invite pages — no sensitive data visible #}
+{% block quick_exit %}{% endblock %}
+
+{% block content %}
+<article class="portal-login-card">
+    <header>
+        <h1>{% trans "Invite Status" %}</h1>
+    </header>
+
+    {% if status == "accepted" %}
+    <p>{% trans "This invite has already been used." %}</p>
+    <p>{% trans "If you already created your account, you can sign in below." %}</p>
+
+    {% elif status == "expired" %}
+    <p>{% trans "This invite has expired. Please ask your worker for a new one." %}</p>
+
+    {% elif status == "revoked" %}
+    <p>{% trans "This invite is no longer active." %}</p>
+    <p>{% trans "If you think this is a mistake, please talk to your worker." %}</p>
+
+    {% elif status == "already_has_access" %}
+    <p>{% trans "You already have a portal account." %}</p>
+    <p>{% trans "You can sign in using the link below." %}</p>
+
+    {% endif %}
+
+    <p>
+        <a href="{% url 'portal:login' %}" role="button">{% trans "Go to sign in" %}</a>
+    </p>
+
+    <hr>
+
+    <p>
+        <a href="{% url 'portal:safety_help' %}">{% trans "Staying safe online" %}</a>
+        <br>
+        <small>{% trans "Tips for using this site safely on shared devices." %}</small>
+    </p>
+</article>
+{% endblock %}

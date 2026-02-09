@@ -1,7 +1,7 @@
-"""Programme Outcome Report Template (CMT format) export functionality.
+"""Program Outcome Report Template (CMT format) export functionality.
 
-Generates standardised programme reports with common nonprofit reporting fields:
-- Organisation and programme information
+Generates standardised program reports with common nonprofit reporting fields:
+- Organisation and program information
 - Reporting period (fiscal year)
 - Service statistics (unique clients, total contacts)
 - Demographic breakdowns (age groups, custom fields)
@@ -12,7 +12,7 @@ matches their specific reporting requirements before submission. Different
 recipients (United Way chapters, government agencies, foundations) may require
 different formats, fields, or calculations.
 
-Canadian spelling conventions used throughout (programme, organisation, colour).
+Canadian spelling conventions used throughout (organisation, colour).
 """
 from datetime import date
 from typing import Any
@@ -125,7 +125,7 @@ def get_new_clients_count(
     the reporting period.
 
     Args:
-        program: The Programme object to filter by.
+        program: The Program object to filter by.
         date_from: Start of reporting period.
         date_to: End of reporting period.
 
@@ -179,16 +179,16 @@ def generate_cmt_data(
     user=None,
 ) -> dict[str, Any]:
     """
-    Build the complete CMT data structure for a programme.
+    Build the complete CMT data structure for a program.
 
     This function aggregates all the data needed for a United Way CMT report:
-    - Organisation and programme information
+    - Organisation and program information
     - Service statistics
     - Demographic breakdowns
     - Outcome achievement rates
 
     Args:
-        program: The Programme object to report on.
+        program: The Program object to report on.
         date_from: Start of reporting period.
         date_to: End of reporting period.
         fiscal_year_label: Optional label like "FY 2025-26". If not provided,
@@ -213,7 +213,7 @@ def generate_cmt_data(
     if not organisation_name:
         organisation_name = InstanceSetting.get("agency_name", "Organisation Name")
 
-    # Get enrolled client IDs for the programme
+    # Get enrolled client IDs for the program
     enrolled_client_ids = list(
         ClientProgramEnrolment.objects.filter(
             program=program,
@@ -302,8 +302,8 @@ def generate_cmt_data(
 
         # Organisation information
         "organisation_name": organisation_name,
-        "programme_name": program.name,
-        "programme_description": program.description or "",
+        "program_name": program.name,
+        "program_description": program.description or "",
 
         # Service statistics
         "total_individuals_served": total_individuals_served,
@@ -330,7 +330,7 @@ def generate_cmt_csv_rows(cmt_data: dict[str, Any]) -> list[list[str]]:
     Generate CSV rows for CMT export.
 
     The CSV format follows a structured layout with header sections and data:
-    - Organisation and programme info
+    - Organisation and program info
     - Reporting period
     - Service statistics
     - Demographics
@@ -345,7 +345,7 @@ def generate_cmt_csv_rows(cmt_data: dict[str, Any]) -> list[list[str]]:
     rows = []
 
     # Header section
-    rows.append(["PROGRAMME OUTCOME REPORT TEMPLATE"])
+    rows.append(["PROGRAM OUTCOME REPORT TEMPLATE"])
     rows.append(["DRAFT — Verify this format matches reporting requirements before submission"])
     rows.append([f"Generated: {cmt_data['generated_at'].strftime('%Y-%m-%d %H:%M')}"])
     rows.append([])
@@ -353,9 +353,9 @@ def generate_cmt_csv_rows(cmt_data: dict[str, Any]) -> list[list[str]]:
     # Organisation information
     rows.append(["ORGANISATION INFORMATION"])
     rows.append(["Organisation Name", cmt_data["organisation_name"]])
-    rows.append(["Programme/Service Name", cmt_data["programme_name"]])
-    if cmt_data["programme_description"]:
-        rows.append(["Programme Description", cmt_data["programme_description"]])
+    rows.append(["Program/Service Name", cmt_data["program_name"]])
+    if cmt_data["program_description"]:
+        rows.append(["Program Description", cmt_data["program_description"]])
     rows.append(["Reporting Period", cmt_data["reporting_period"]])
     rows.append([])
 
@@ -406,7 +406,7 @@ def generate_cmt_csv_rows(cmt_data: dict[str, Any]) -> list[list[str]]:
         rows.append([])
 
     if not cmt_data["primary_outcome"] and not cmt_data["secondary_outcomes"]:
-        rows.append(["No outcome indicators with targets defined for this programme."])
+        rows.append(["No outcome indicators with targets defined for this program."])
         rows.append([])
 
     # Overall summary

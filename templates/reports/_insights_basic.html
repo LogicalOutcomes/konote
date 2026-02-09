@@ -15,7 +15,7 @@
 {% if structured.note_count == 0 %}
 {# ── No data at all ── #}
 <article class="insights-notice" role="status">
-    <p>{% trans "No progress notes found for this programme in the selected time period. Try a longer time period or check that notes have been recorded." %}</p>
+    <p>{% trans "No progress notes found for this program in the selected time period. Try a longer time period or check that notes have been recorded." %}</p>
 </article>
 
 {% elif data_tier == "sparse" %}
@@ -179,7 +179,7 @@
 </p>
 {% elif data_tier != "sparse" and structured.participant_count < min_participants %}
 <p class="insights-privacy-note">
-    {% blocktrans with count=min_participants %}Individual quotes are not shown for programmes with fewer than {{ count }} active participants, to protect confidentiality. Quotes are available on each participant's Analysis tab.{% endblocktrans %}
+    {% blocktrans with count=min_participants %}Individual quotes are not shown for programs with fewer than {{ count }} active participants, to protect confidentiality. Quotes are available on each participant's Analysis tab.{% endblocktrans %}
 </p>
 {% endif %}
 

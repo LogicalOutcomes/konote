@@ -1,4 +1,4 @@
-"""Forms for Outcome Insights — programme + time period selection."""
+"""Forms for Outcome Insights — program + time period selection."""
 from datetime import date, timedelta
 
 from django import forms
@@ -17,13 +17,13 @@ TIME_PERIOD_CHOICES = [
 
 
 class InsightsFilterForm(forms.Form):
-    """Simple two-choice form: programme + time period."""
+    """Simple two-choice form: program + time period."""
 
     program = forms.ModelChoiceField(
         queryset=Program.objects.filter(status="active"),
         required=True,
-        label=_("Programme"),
-        empty_label=_("— Select a programme —"),
+        label=_("Program"),
+        empty_label=_("— Select a program —"),
     )
 
     time_period = forms.ChoiceField(
@@ -45,7 +45,7 @@ class InsightsFilterForm(forms.Form):
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
-        # Scope to programmes the user has active roles in
+        # Scope to programs the user has active roles in
         if user:
             from apps.programs.access import get_accessible_programs
             self.fields["program"].queryset = get_accessible_programs(user)

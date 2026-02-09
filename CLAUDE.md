@@ -22,7 +22,7 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 - PII fields use property accessors: `client.first_name = "Jane"` (not `_first_name_encrypted`)
 - All `/admin/*` routes are admin-only (enforced by RBAC middleware)
 - Audit logs go to separate database: `AuditLog.objects.using("audit")`
-- Canadian spelling: colour, centre, behaviour, organisation
+- Canadian spelling: colour, centre, behaviour, organisation, **program** (never "programme" in English — "programme" is British/French only). French translations correctly use "programme".
 
 ## Development Rules (from expert review)
 

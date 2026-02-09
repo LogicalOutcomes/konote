@@ -261,12 +261,12 @@ Staff can view plans but typically cannot edit them. Plan changes are made by pr
 
 ## Outcome Insights
 
-Outcome Insights shows you the bigger picture — patterns across all participants in a programme.
+Outcome Insights shows you the bigger picture — patterns across all participants in a program.
 
-### Viewing programme insights
+### Viewing program insights
 
 1. Click **Insights** in the main navigation.
-2. Choose a **Programme** and a **Time period** (3, 6, or 12 months).
+2. Choose a **Program** and a **Time period** (3, 6, or 12 months).
 3. Click **Show Insights**.
 
 You'll see:
@@ -276,7 +276,7 @@ You'll see:
 - **Engagement** — How people are showing up in sessions
 - **What participants are saying** — Anonymous quotes from progress notes, with goal context
 
-This helps you spot patterns: Are people generally moving forward? Is a particular programme area seeing more struggle? What themes come up in participants' own words?
+This helps you spot patterns: Are people generally moving forward? Is a particular program area seeing more struggle? What themes come up in participants' own words?
 
 ### Client-level insights
 
@@ -344,7 +344,7 @@ If your admin has turned on AI assistance, you'll see a **Draft report summary**
 | Flag a safety concern | Events tab → + New Alert |
 | See who needs attention | Check Priority Items on home page |
 | View progress charts | Client file → Analysis tab |
-| See programme patterns | Insights (main navigation) |
+| See program patterns | Insights (main navigation) |
 
 ---
 

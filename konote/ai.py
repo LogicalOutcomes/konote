@@ -20,7 +20,7 @@ _SAFETY_FOOTER = (
     "\n\nIMPORTANT: You are a nonprofit outcome-tracking assistant. "
     "Never ask for, guess, or reference any client identifying information "
     "(names, dates of birth, addresses, or record IDs). "
-    "Work only with the programme context and metrics provided."
+    "Work only with the program context and metrics provided."
 )
 
 
@@ -120,7 +120,7 @@ def improve_outcome(draft_text):
 
 def generate_narrative(program_name, date_range, aggregate_stats):
     """
-    Turn aggregate programme metrics into a professional outcome summary.
+    Turn aggregate program metrics into a professional outcome summary.
 
     Args:
         program_name: str
@@ -131,15 +131,15 @@ def generate_narrative(program_name, date_range, aggregate_stats):
         str — narrative paragraph, or None on failure
     """
     system = (
-        "You write concise, professional programme outcome summaries for "
+        "You write concise, professional program outcome summaries for "
         "Canadian nonprofits. "
-        "Given a programme name, date range, and aggregated metric data, write a "
+        "Given a program name, date range, and aggregated metric data, write a "
         "single paragraph (3–5 sentences) summarising client outcomes. "
-        "Use Canadian English spelling (programme, colour, centre). "
+        "Use Canadian English spelling (colour, centre). "
         "Do not invent data — only reference the numbers provided."
     )
     user_msg = (
-        f"Programme: {program_name}\n"
+        f"Program: {program_name}\n"
         f"Period: {date_range}\n\n"
         f"Aggregate metrics:\n{json.dumps(aggregate_stats, indent=2)}"
     )
@@ -201,8 +201,8 @@ def generate_outcome_insights(program_name, date_range, structured_data, quotes)
         dict {summary, themes, cited_quotes, recommendations} or None on failure.
     """
     system = (
-        "You write concise programme report drafts for Canadian nonprofits. "
-        "You will receive programme outcome data including descriptor trends, "
+        "You write concise program report drafts for Canadian nonprofits. "
+        "You will receive program outcome data including descriptor trends, "
         "engagement patterns, and participant quotes. Write a narrative summary "
         "that helps staff understand service patterns and outcomes.\n\n"
         "RULES — follow these exactly:\n"
@@ -215,22 +215,22 @@ def generate_outcome_insights(program_name, date_range, structured_data, quotes)
         "- Rank themes by frequency. Only report the top 3.\n"
         "- If the most frequent theme appears in fewer than 3 quotes, "
         "say 'no dominant themes emerged.'\n"
-        "- Use Canadian English spelling (programme, colour, centre).\n\n"
+        "- Use Canadian English spelling (colour, centre).\n\n"
         "PARTICIPANT FEEDBACK — this is critical:\n"
         "Read the quotes carefully for actionable feedback. Categorise what "
         "participants are saying into these categories:\n"
         "- 'request': things participants are asking for or need\n"
-        "- 'suggestion': ideas participants have for improving the programme\n"
+        "- 'suggestion': ideas participants have for improving the program\n"
         "- 'concern': things participants are unhappy about or struggling with "
-        "in the programme/service itself (not personal life struggles). "
+        "in the program/service itself (not personal life struggles). "
         "Never use the word 'complaint' — frame all critical feedback as "
         "concerns or unmet needs.\n"
-        "- 'praise': things participants appreciate about the programme\n"
+        "- 'praise': things participants appreciate about the program\n"
         "Each finding must include a short description AND at least one "
         "verbatim supporting quote. Only include categories that have evidence "
         "in the quotes — do not invent feedback.\n"
         "Some quotes have source='suggestion' — these are direct responses to "
-        "'If you could change one thing about this programme, what would it be?' "
+        "'If you could change one thing about this program, what would it be?' "
         "and may include a staff-assigned priority. Pay special attention to these.\n\n"
         "RECURRING PATTERNS — important:\n"
         "Pay special attention to feedback that individually appears minor but "
@@ -256,7 +256,7 @@ def generate_outcome_insights(program_name, date_range, structured_data, quotes)
     )
 
     user_msg = (
-        f"Programme: {program_name}\n"
+        f"Program: {program_name}\n"
         f"Period: {date_range}\n\n"
         f"Descriptor trends (percentages by month):\n"
         f"{json.dumps(structured_data.get('descriptor_trend', []), indent=2)}\n\n"

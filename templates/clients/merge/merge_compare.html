@@ -89,13 +89,13 @@
 
     {# Section 3: Enrolment summary #}
     {% if comparison.post_merge_programs %}
-    <article aria-label="{% trans 'Programme visibility after merge' %}">
+    <article aria-label="{% trans 'Program visibility after merge' %}">
         <header><strong>{% trans "After merge" %}</strong></header>
         <p>
             {% trans "The merged record will be enrolled in:" %}
             <strong>{{ comparison.post_merge_programs|join:", " }}</strong>
         </p>
-        <p><small>{% trans "Staff in all listed programmes will be able to see all combined records." %}</small></p>
+        <p><small>{% trans "Staff in all listed programs will be able to see all combined records." %}</small></p>
     </article>
     {% endif %}
 
@@ -128,7 +128,7 @@
 
         {% if comparison.post_merge_programs %}
         <p>
-            <strong>{% trans "After merge, staff in the following programmes will see all combined records:" %}</strong>
+            <strong>{% trans "After merge, staff in the following programs will see all combined records:" %}</strong>
             {{ comparison.post_merge_programs|join:", " }}
         </p>
         {% endif %}

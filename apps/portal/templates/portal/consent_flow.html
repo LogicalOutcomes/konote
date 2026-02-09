@@ -1,0 +1,121 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Getting Started" %}{% endblock %}
+
+{% block content %}
+<article class="portal-consent">
+    {# Progress indicator #}
+    <nav aria-label="{% trans 'Setup progress' %}" class="portal-consent-progress">
+        <ol>
+            <li {% if consent_step == 1 %}aria-current="step" class="active"{% elif consent_step > 1 %}class="done"{% endif %}>
+                <span class="step-number">1</span>
+                <span class="step-label">{% trans "What you see" %}</span>
+            </li>
+            <li {% if consent_step == 2 %}aria-current="step" class="active"{% elif consent_step > 2 %}class="done"{% endif %}>
+                <span class="step-number">2</span>
+                <span class="step-label">{% trans "What you won't see" %}</span>
+            </li>
+            <li {% if consent_step == 3 %}aria-current="step" class="active"{% elif consent_step > 3 %}class="done"{% endif %}>
+                <span class="step-number">3</span>
+                <span class="step-label">{% trans "Who sees what" %}</span>
+            </li>
+            <li {% if consent_step == 4 %}aria-current="step" class="active"{% endif %}>
+                <span class="step-number">4</span>
+                <span class="step-label">{% trans "You're in control" %}</span>
+            </li>
+        </ol>
+    </nav>
+
+    {% if consent_step == 1 %}
+    {# ── Screen 1: What you'll see ── #}
+    <header>
+        <h1>{% trans "What you'll see here" %}</h1>
+    </header>
+
+    <p>{% trans "This is your personal space. Here you can:" %}</p>
+    <ul>
+        <li>{% trans "See the goals you're working on" %}</li>
+        <li>{% trans "Track your progress over time" %}</li>
+        <li>{% trans "Read what you've said in your own words" %}</li>
+        <li>{% trans "Celebrate your milestones" %}</li>
+    </ul>
+
+    <p>{% trans "Everything here is about you and your journey." %}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="consent_step" value="1">
+        <button type="submit">{% trans "I understand — next" %}</button>
+    </form>
+
+    {% elif consent_step == 2 %}
+    {# ── Screen 2: What you won't see ── #}
+    <header>
+        <h1>{% trans "What you won't see" %}</h1>
+    </header>
+
+    <p>{% trans "To keep things simple and safe, some things are not shown here:" %}</p>
+    <ul>
+        <li>{% trans "Staff notes about your sessions" %}</li>
+        <li>{% trans "Other people's information" %}</li>
+        <li>{% trans "Internal team discussions" %}</li>
+    </ul>
+
+    <p>{% trans "If you ever have questions about what's in your file, just ask your worker." %}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="consent_step" value="2">
+        <button type="submit">{% trans "I understand — next" %}</button>
+    </form>
+
+    {% elif consent_step == 3 %}
+    {# ── Screen 3: Who sees what you write ── #}
+    <header>
+        <h1>{% trans "Who sees what you write" %}</h1>
+    </header>
+
+    <ul>
+        <li>
+            <strong>{% trans "Your journal" %}</strong>
+            — {% trans "Only you can see this. It's your private space to write." %}
+        </li>
+        <li>
+            <strong>{% trans "Messages to your worker" %}</strong>
+            — {% trans "Your worker will see these next time they check." %}
+        </li>
+    </ul>
+
+    <p>{% trans "One important thing:" %}</p>
+    <p><strong>{% trans "If you share something that suggests you or someone else might be in danger, your worker may need to act on that." %}</strong>
+    {% trans "This is to keep everyone safe." %}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="consent_step" value="3">
+        <button type="submit">{% trans "I understand — next" %}</button>
+    </form>
+
+    {% elif consent_step == 4 %}
+    {# ── Screen 4: You're in control ── #}
+    <header>
+        <h1>{% trans "You're in control" %}</h1>
+    </header>
+
+    <ul>
+        <li>{% trans "You can stop using this anytime — it won't affect your services." %}</li>
+        <li>{% trans "You can ask your worker to remove your account." %}</li>
+        <li>{% trans "You choose what to write and when." %}</li>
+    </ul>
+
+    <p>{% trans "This space is here to help you, not to add pressure." %}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="consent_step" value="4">
+        <button type="submit">{% trans "I understand — let's get started" %}</button>
+    </form>
+    {% endif %}
+</article>
+{% endblock %}

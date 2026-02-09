@@ -12,11 +12,11 @@ I need you to critically review and stress-test my permissions redesign plan for
 
 ## What's Been Done (Already Committed)
 
-1. **New `@programme_role_required()` decorator** — checks user's role in the SPECIFIC programme for a resource, not their highest role across all programmes. This fixed the critical security hole where Front Desk in Programme A + Staff in Programme B could access Programme A's clinical data.
+1. **New `@program_role_required()` decorator** — checks user's role in the SPECIFIC program for a resource, not their highest role across all programs. This fixed the critical security hole where Front Desk in Program A + Staff in Program B could access Program A's clinical data.
 
-2. **9 group views updated** — `group_detail`, `group_edit`, `session_log`, `membership_add`, `membership_remove`, `milestone_create`, `milestone_edit`, `outcome_create`, `attendance_report` now use programme-specific role checking. `group_list` and `group_create` kept with `@minimum_role("staff")` because they don't operate on a specific group resource.
+2. **9 group views updated** — `group_detail`, `group_edit`, `session_log`, `membership_add`, `membership_remove`, `milestone_create`, `milestone_edit`, `outcome_create`, `attendance_report` now use program-specific role checking. `group_list` and `group_create` kept with `@minimum_role("staff")` because they don't operate on a specific group resource.
 
-3. **Note views left unchanged** — Expert panel concluded notes are client-scoped (not programme-scoped). The middleware's "circle of care" model is correct for Canadian nonprofits: all clinical staff serving a shared client see all notes across all programmes for coordination and safety.
+3. **Note views left unchanged** — Expert panel concluded notes are client-scoped (not program-scoped). The middleware's "circle of care" model is correct for Canadian nonprofits: all clinical staff serving a shared client see all notes across all programs for coordination and safety.
 
 4. **Event/alert views blocked** — Added `@minimum_role("staff")` to `event_list`, `event_create`, `alert_create`, `alert_cancel`. These contain sensitive clinical info (safety concerns, risk assessments).
 
@@ -27,7 +27,7 @@ I need you to critically review and stress-test my permissions redesign plan for
 ## What's NOT Done Yet
 
 These are planned but not built:
-- Programme Report (aggregate-only, PDF, for funders/board/donors)
+- Program Report (aggregate-only, PDF, for funders/board/donors)
 - Data Extract rename and restriction (admin-only, warning banner)
 - Permission review screen (plain-language CAN/CANNOT after role changes)
 - Privacy settings dashboard (matrix showing who can see what)
@@ -47,7 +47,7 @@ Read the full plan at: `C:\Users\gilli\.claude\plans\sequential-gliding-kahan.md
 
 Also read:
 - `apps/auth_app/permissions.py` — the actual permissions matrix
-- `apps/auth_app/decorators.py` — the decorators including `programme_role_required`
+- `apps/auth_app/decorators.py` — the decorators including `program_role_required`
 - `apps/groups/views.py` — to see how the decorator is applied
 - `apps/events/views.py` — to see the minimum_role fix
 - `tasks/permissions-phase1-implementation.md` — tracking document
@@ -58,7 +58,7 @@ Use the convening-experts skill. Convene a panel that includes at least a privac
 
 1. **Does the safety/clinical split make sense?** What about information that's ambiguous — e.g., "client is in a DV shelter" (is that safety info or clinical info? Front Desk needs to know for mail handling, but it also reveals the reason for service).
 
-2. **Is the circle-of-care model for notes correct?** The expert panel said yes, but I'm not 100% sure. If a client is in Youth Programme (counselling for sexual abuse) AND Adult Housing Programme, should the housing worker see the counselling notes? The panel said yes for safety/coordination. But what about client consent?
+2. **Is the circle-of-care model for notes correct?** The expert panel said yes, but I'm not 100% sure. If a client is in Youth Program (counselling for sexual abuse) AND Adult Housing Program, should the housing worker see the counselling notes? The panel said yes for safety/coordination. But what about client consent?
 
 3. **What about the administrator who IS the only staff member?** In a 3-person agency (ED + 2 staff), the ED does everything — admin, clinical work, reporting. The entire governance model breaks down. What do we actually do?
 
@@ -66,7 +66,7 @@ Use the convening-experts skill. Convene a panel that includes at least a privac
 
 5. **What happens when someone's role changes?** If Sam moves from Staff to Front Desk (e.g., light duties after injury), do they lose access to all the notes they wrote? Can they still see their own notes? What about notes about them if they're also receiving services from the agency (dual relationship)?
 
-6. **Is the Programme Report actually useful?** Will funders accept a PDF with just aggregate numbers? Or will they demand the individual-level data anyway? If so, have we just created busywork?
+6. **Is the Program Report actually useful?** Will funders accept a PDF with just aggregate numbers? Or will they demand the individual-level data anyway? If so, have we just created busywork?
 
 7. **What about the front desk seeing the client list at all?** The current system shows all client names to Front Desk. But in a DV shelter, even knowing someone is a client is sensitive. Should the client list be filtered differently for Front Desk?
 

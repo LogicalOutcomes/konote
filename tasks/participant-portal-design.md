@@ -2,7 +2,7 @@
 
 ## Vision
 
-A secure, participant-facing portal where people enrolled in nonprofit programmes can track their own progress, see their goals, celebrate milestones, and optionally add their own reflections. Designed *for* participants, not as a window into staff records.
+A secure, participant-facing portal where people enrolled in nonprofit programs can track their own progress, see their goals, celebrate milestones, and optionally add their own reflections. Designed *for* participants, not as a window into staff records.
 
 This is client-informed practice: participants are partners in their own journey, not passive subjects of case management.
 
@@ -16,7 +16,7 @@ This is client-informed practice: participants are partners in their own journey
 | Progress descriptors over time | `ProgressNoteTarget.progress_descriptor` | "Holding steady" → "Something's shifting" → "In a good place" |
 | Metric scores as charts | `MetricValue.value` + `MetricDefinition` | Visual progress on outcomes like housing stability, PHQ-9, etc. |
 | Their reflections (captured by staff) | `ProgressNote.participant_reflection` | What they said they're taking away from sessions |
-| Their suggestions | `ProgressNote.participant_suggestion` | What they suggested for programme improvement |
+| Their suggestions | `ProgressNote.participant_suggestion` | What they suggested for program improvement |
 | What they said about each goal | `ProgressNoteTarget.client_words` | Their own words about their goals, captured during sessions |
 | Active plan sections | `PlanSection.name` | "Social Skills", "Employment Goals" — section names only |
 | Target names and descriptions | `PlanTarget.name`, `PlanTarget.description` | The goal itself (not staff-internal notes about it) |
@@ -411,11 +411,11 @@ The participant can optionally write their own reflections:
 - Staff can revoke portal access immediately if safety concerns arise
 - No information about other participants is ever exposed
 - Group membership shows group names only, never other members
-- If a participant is in a confidential programme, the programme name should be reviewed before it appears in the portal (some programme names reveal diagnosis)
+- If a participant is in a confidential program, the program name should be reviewed before it appears in the portal (some program names reveal diagnosis)
 
 ## Questions for expert review
 
-1. **Programme name visibility**: Should participants see the names of programmes they're enrolled in? Some programme names (e.g., "Substance Use Recovery") reveal clinical information that could be seen by someone looking over the participant's shoulder.
+1. **Program name visibility**: Should participants see the names of programs they're enrolled in? Some program names (e.g., "Substance Use Recovery") reveal clinical information that could be seen by someone looking over the participant's shoulder.
 
 2. **Reflection editing**: Should participants be able to edit/delete their own reflections after posting? Or is immutability better for clinical integrity?
 
@@ -427,6 +427,6 @@ The participant can optionally write their own reflections:
 
 6. **Staff visibility of portal usage**: Should staff see when a participant last logged in? This could be useful (engagement indicator) or problematic (surveillance feeling).
 
-7. **Consent for specific data**: Should participants be able to choose which goals/programmes are visible in their portal, or is it all-or-nothing?
+7. **Consent for specific data**: Should participants be able to choose which goals/programs are visible in their portal, or is it all-or-nothing?
 
 8. **MFA burden**: TOTP requires a smartphone with an authenticator app. Is this a barrier for the population served? Should email-based MFA be an alternative?

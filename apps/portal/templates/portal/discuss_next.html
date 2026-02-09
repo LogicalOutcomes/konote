@@ -1,0 +1,33 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "What I Want to Talk About Next Time" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "What I Want to Talk About Next Time" %}</h1>
+<p>{% trans "Write down anything you want to bring up at your next session. Your worker will be able to see this." %}</p>
+
+{% if success %}
+<p role="status" class="portal-alert portal-alert-success">{% trans "Saved! Your worker will see this before your next session." %}</p>
+{% endif %}
+
+<form method="post" action="{% url 'portal:discuss_next' %}">
+    {% csrf_token %}
+
+    <label for="discussion-topics">{% trans "What's on your mind?" %}</label>
+    <textarea id="discussion-topics" name="topics" rows="6"
+              aria-describedby="topics-help"
+              placeholder="{% trans 'For example: I want to talk about my housing situation...' %}">{% if form.topics.value %}{{ form.topics.value }}{% elif existing_topics %}{{ existing_topics }}{% endif %}</textarea>
+    <small id="topics-help">{% trans "You can come back and change this anytime before your next session." %}</small>
+
+    {% if form.topics.errors %}
+    <p role="alert" class="portal-alert portal-alert-error">{{ form.topics.errors.0 }}</p>
+    {% endif %}
+
+    <button type="submit">{% trans "Save" %}</button>
+</form>
+
+<p>
+    <a href="{% url 'portal:dashboard' %}">&larr; {% trans "Back to Home" %}</a>
+</p>
+{% endblock %}

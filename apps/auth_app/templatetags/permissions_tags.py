@@ -18,7 +18,7 @@ def has_permission(context, permission_key):
     """Check if the current user has a given permission.
 
     Returns True if the user's highest role has non-DENY access for this key.
-    For users with roles in multiple programmes, uses the highest role
+    For users with roles in multiple programs, uses the highest role
     (most permissive) since template-level checks control UI visibility,
     not data access.
 

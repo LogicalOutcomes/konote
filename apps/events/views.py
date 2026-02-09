@@ -15,7 +15,7 @@ from apps.programs.access import (
     get_client_or_403,
     get_user_program_ids,
 )
-from apps.auth_app.decorators import admin_required, minimum_role, programme_role_required, requires_permission
+from apps.auth_app.decorators import admin_required, minimum_role, program_role_required, requires_permission
 from apps.programs.models import Program, UserProgramRole
 
 from .forms import AlertCancelForm, AlertForm, EventForm, EventTypeForm
@@ -28,12 +28,12 @@ _get_author_program = get_author_program
 
 
 # ---------------------------------------------------------------------------
-# Helper functions for programme_role_required decorator
+# Helper functions for program_role_required decorator
 # ---------------------------------------------------------------------------
 
 
-def _get_programme_from_client(request, client_id, **kwargs):
-    """Find the shared programme where user has the highest role."""
+def _get_program_from_client(request, client_id, **kwargs):
+    """Find the shared program where user has the highest role."""
     client = get_object_or_404(ClientFile, pk=client_id)
 
     user_roles = UserProgramRole.objects.filter(
@@ -56,15 +56,15 @@ def _get_programme_from_client(request, client_id, **kwargs):
                 best_program_id = program_id
 
     if best_program_id is None:
-        raise ValueError(f"User has no shared programme with client {client_id}")
+        raise ValueError(f"User has no shared program with client {client_id}")
 
     return Program.objects.get(pk=best_program_id)
 
 
-def _get_programme_from_alert(request, alert_id, **kwargs):
-    """Extract programme via alert → client."""
+def _get_program_from_alert(request, alert_id, **kwargs):
+    """Extract program via alert → client."""
     alert = get_object_or_404(Alert, pk=alert_id)
-    return _get_programme_from_client(request, alert.client_file_id)
+    return _get_program_from_client(request, alert.client_file_id)
 
 
 # ---------------------------------------------------------------------------
@@ -119,7 +119,7 @@ def event_type_edit(request, type_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@requires_permission("event.view", _get_programme_from_client)
+@requires_permission("event.view", _get_program_from_client)
 def event_list(request, client_id):
     """Combined timeline: events + notes for a client, sorted chronologically."""
     client = _get_client_or_403(request, client_id)
@@ -171,7 +171,7 @@ def event_list(request, client_id):
 
 
 @login_required
-@requires_permission("event.create", _get_programme_from_client)
+@requires_permission("event.create", _get_program_from_client)
 def event_create(request, client_id):
     """Create an event for a client."""
     client = _get_client_or_403(request, client_id)
@@ -199,7 +199,7 @@ def event_create(request, client_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@requires_permission("alert.create", _get_programme_from_client)
+@requires_permission("alert.create", _get_program_from_client)
 def alert_create(request, client_id):
     """Create an alert for a client."""
     client = _get_client_or_403(request, client_id)
@@ -225,7 +225,7 @@ def alert_create(request, client_id):
 
 
 @login_required
-@programme_role_required("staff", _get_programme_from_alert)
+@program_role_required("staff", _get_program_from_alert)
 def alert_cancel(request, alert_id):
     """Cancel an alert with a reason (never delete). Only author or admin can cancel."""
     alert = get_object_or_404(Alert, pk=alert_id)

@@ -41,7 +41,7 @@ class PlanCRUDBaseTest(TestCase):
             username="other_mgr", password="pass", display_name="Other Manager"
         )
 
-        # Programmes
+        # Programs
         self.program = Program.objects.create(name="Housing Support")
         self.other_program = Program.objects.create(name="Youth Services")
 
@@ -95,7 +95,7 @@ class SectionCreateTest(PlanCRUDBaseTest):
         self.assertFalse(PlanSection.objects.filter(name="Should Not Work").exists())
 
     def test_other_program_manager_cannot_create_section(self):
-        """Manager of a different programme cannot edit this client's plan."""
+        """Manager of a different program cannot edit this client's plan."""
         self.http.login(username="other_mgr", password="pass")
         url = reverse("plans:section_create", args=[self.client_file.pk])
         resp = self.http.post(url, {

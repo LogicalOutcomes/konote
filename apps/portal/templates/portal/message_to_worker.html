@@ -1,0 +1,53 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Message My Worker" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Message My Worker" %}</h1>
+
+<div class="portal-notice" role="note">
+    <p>{% trans "Your worker will see this next time they check. This is not for emergencies." %}</p>
+</div>
+
+<div class="portal-crisis-resources" role="complementary" aria-label="{% trans 'Crisis resources' %}">
+    <h2>{% trans "If you need help right now" %}</h2>
+    <ul>
+        <li>
+            <strong>{% trans "Emergency:" %}</strong> {% trans "Call" %} <a href="tel:911">911</a>
+        </li>
+        <li>
+            <strong>{% trans "Talk Suicide Canada:" %}</strong>
+            <a href="tel:1-833-456-4566">1-833-456-4566</a>
+            — {% trans "24 hours a day, 7 days a week" %}
+        </li>
+        <li>
+            <strong>{% trans "211 Ontario:" %}</strong>
+            <a href="tel:211">211</a>
+            — {% trans "Community and social services information" %}
+        </li>
+    </ul>
+</div>
+
+<hr>
+
+{% if success %}
+<p role="status" class="portal-alert portal-alert-success">{% trans "Your message has been sent. Your worker will see it next time they check." %}</p>
+{% endif %}
+
+<form method="post" action="{% url 'portal:message_to_worker' %}">
+    {% csrf_token %}
+
+    <label for="message">{% trans "Your message" %}</label>
+    <textarea id="message" name="message" rows="6" required
+              aria-describedby="message-help"
+              placeholder="{% trans 'Write your message here...' %}">{% if form.message.value %}{{ form.message.value }}{% endif %}</textarea>
+    <small id="message-help">{% trans "Write whatever is on your mind. Your worker will read this." %}</small>
+
+    {% if form.message.errors %}
+    <p role="alert" class="portal-alert portal-alert-error">{{ form.message.errors.0 }}</p>
+    {% endif %}
+
+    <button type="submit">{% trans "Send message" %}</button>
+</form>
+{% endblock %}

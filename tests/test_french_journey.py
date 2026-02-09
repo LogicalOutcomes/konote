@@ -59,7 +59,7 @@ class FrenchJourneyBaseTest(TestCase):
             is_admin=False,
         )
 
-        # Programme
+        # Program
         self.program = Program.objects.create(name="Programme de soutien", colour_hex="#10B981")
         UserProgramRole.objects.create(user=self.admin, program=self.program, role="program_manager")
         UserProgramRole.objects.create(user=self.staff, program=self.program, role="staff")

@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 from django.db.models import Q
 
-from apps.auth_app.decorators import programme_role_required, requires_permission
+from apps.auth_app.decorators import program_role_required, requires_permission
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.plans.models import PlanTarget, PlanTargetMetric
 from apps.programs.access import (
@@ -40,28 +40,46 @@ _get_client_or_403 = get_client_or_403
 _get_author_program = get_author_program
 
 
+def _portal_access_reminder(request, client):
+    """B14: Remind staff that this participant has portal access."""
+    try:
+        if hasattr(client, 'portal_account') and client.portal_account.is_active:
+            messages.info(
+                request,
+                _("Reminder: %(name)s has portal access — "
+                  "their updated progress will be visible next time they log in.")
+                % {"name": client.display_name},
+            )
+    except Exception:
+        logger.warning(
+            "Portal reminder check failed for client %s",
+            client.pk,
+            exc_info=True,
+        )
+
+
 # ---------------------------------------------------------------------------
-# Helper functions for programme_role_required decorator
+# Helper functions for program_role_required decorator
 # ---------------------------------------------------------------------------
 
 
-def _get_programme_from_client(request, client_id, **kwargs):
-    """Extract programme from client_id in URL kwargs.
+def _get_program_from_client(request, client_id, **kwargs):
+    """Extract program from client_id in URL kwargs.
 
-    A client can be enrolled in multiple programmes. We return the shared
-    programme where the user has the highest role, so the most permissive
-    valid access is used. If no shared programme exists, raises ValueError
+    A client can be enrolled in multiple programs. We return the shared
+    program where the user has the highest role, so the most permissive
+    valid access is used. If no shared program exists, raises ValueError
     which the decorator converts to a 403.
 
-    Note: admin status does NOT bypass programme role requirements (PERM-S2).
-    Admins need programme roles to access client data, just like everyone else.
+    Note: admin status does NOT bypass program role requirements (PERM-S2).
+    Admins need program roles to access client data, just like everyone else.
     """
     from apps.auth_app.constants import ROLE_RANK
     from apps.programs.models import Program
 
     client = get_object_or_404(ClientFile, pk=client_id)
 
-    # Get user's active programme roles (programme_id, role)
+    # Get user's active program roles (program_id, role)
     user_roles = UserProgramRole.objects.filter(
         user=request.user, status="active"
     ).values_list("program_id", "role")
@@ -72,7 +90,7 @@ def _get_programme_from_client(request, client_id, **kwargs):
         ).values_list("program_id", flat=True)
     )
 
-    # Find shared programmes and pick the one where user has highest role
+    # Find shared programs and pick the one where user has highest role
     best_program_id = None
     best_rank = -1
     for program_id, role in user_roles:
@@ -83,18 +101,18 @@ def _get_programme_from_client(request, client_id, **kwargs):
                 best_program_id = program_id
 
     if best_program_id is None:
-        raise ValueError(f"User has no shared programme with client {client_id}")
+        raise ValueError(f"User has no shared program with client {client_id}")
 
     return Program.objects.get(pk=best_program_id)
 
 
-def _get_programme_from_note(request, note_id, **kwargs):
-    """Extract programme from note_id in URL kwargs.
+def _get_program_from_note(request, note_id, **kwargs):
+    """Extract program from note_id in URL kwargs.
 
-    Looks up the note's client_file, then delegates to _get_programme_from_client.
+    Looks up the note's client_file, then delegates to _get_program_from_client.
     """
     note = get_object_or_404(ProgressNote, pk=note_id)
-    return _get_programme_from_client(request, note.client_file_id)
+    return _get_program_from_client(request, note.client_file_id)
 
 
 def _check_client_consent(client):
@@ -197,7 +215,7 @@ def _get_search_snippet(text, query, context_chars=80):
 
 
 @login_required
-@requires_permission("note.view", _get_programme_from_client)
+@requires_permission("note.view", _get_program_from_client)
 def note_list(request, client_id):
     """Notes timeline for a client with filtering and pagination."""
     client = _get_client_or_403(request, client_id)
@@ -294,7 +312,7 @@ def note_list(request, client_id):
         "search_query": search_query,
         "active_filter_count": active_filter_count,
         "active_tab": "notes",
-        "user_role": getattr(request, "user_programme_role", None) or getattr(request, "user_program_role", None),
+        "user_role": getattr(request, "user_program_role", None),
         "breadcrumbs": breadcrumbs,
         "show_program_ui": program_ctx["show_program_ui"],
         "accessible_programs": program_ctx["accessible_programs"],
@@ -305,7 +323,7 @@ def note_list(request, client_id):
 
 
 @login_required
-@requires_permission("note.create", _get_programme_from_client)
+@requires_permission("note.create", _get_program_from_client)
 def quick_note_create(request, client_id):
     """Create a quick note for a client."""
     client = _get_client_or_403(request, client_id)
@@ -341,6 +359,7 @@ def quick_note_create(request, client_id):
                 ).update(follow_up_completed_at=timezone.now())
 
             messages.success(request, _("Quick note saved."))
+            _portal_access_reminder(request, client)
             return redirect("notes:note_list", client_id=client.pk)
     else:
         form = QuickNoteForm()
@@ -360,7 +379,7 @@ def quick_note_create(request, client_id):
 
 
 @login_required
-@requires_permission("note.create", _get_programme_from_client)
+@requires_permission("note.create", _get_program_from_client)
 def note_create(request, client_id):
     """Create a full structured progress note with target entries and metric values."""
     client = _get_client_or_403(request, client_id)
@@ -451,6 +470,7 @@ def note_create(request, client_id):
                 ).exclude(pk=note.pk).update(follow_up_completed_at=timezone.now())
 
             messages.success(request, _("Progress note saved."))
+            _portal_access_reminder(request, client)
             return redirect("notes:note_list", client_id=client.pk)
     else:
         form = FullNoteForm(initial={"session_date": timezone.localdate()})
@@ -478,7 +498,7 @@ def note_create(request, client_id):
 
 
 @login_required
-@requires_permission("note.view", _get_programme_from_note)
+@requires_permission("note.view", _get_program_from_note)
 def note_detail(request, note_id):
     """HTMX partial: expanded view of a single note."""
     try:
@@ -542,7 +562,7 @@ def note_detail(request, note_id):
 
 
 @login_required
-@requires_permission("note.view", _get_programme_from_note)
+@requires_permission("note.view", _get_program_from_note)
 def note_summary(request, note_id):
     """HTMX partial: collapsed summary of a single note (reverses note_detail expand)."""
     try:
@@ -569,7 +589,7 @@ def note_summary(request, note_id):
 
 
 @login_required
-@requires_permission("note.edit", _get_programme_from_note)
+@requires_permission("note.edit", _get_program_from_note)
 def note_cancel(request, note_id):
     """Cancel a progress note (staff: own notes within 24h, program_manager: any in their program)."""
     note = get_object_or_404(ProgressNote, pk=note_id)
@@ -579,8 +599,7 @@ def note_cancel(request, note_id):
 
     user = request.user
     # Permission check — program managers can cancel any note in their programs
-    # Use programme_role_required's attribute first, fall back to middleware's
-    user_role = getattr(request, "user_programme_role", None) or getattr(request, "user_program_role", None)
+    user_role = getattr(request, "user_program_role", None)
     if user_role != "program_manager":
         if note.author_id != user.pk:
             return HttpResponseForbidden("You can only cancel your own notes.")
@@ -631,7 +650,7 @@ def note_cancel(request, note_id):
 
 
 @login_required
-@requires_permission("note.view", _get_programme_from_client)
+@requires_permission("note.view", _get_program_from_client)
 def qualitative_summary(request, client_id):
     """Show qualitative progress summary — descriptor distribution and recent client words per target."""
     client = _get_client_or_403(request, client_id)

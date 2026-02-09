@@ -1,0 +1,52 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+{% load portal_tags %}
+
+{% block title %}{% trans "What I've Been Saying" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "What I've Been Saying" %}</h1>
+<p>{% trans "Here are the things you've shared in your own words during your sessions." %}</p>
+
+{% if reflections %}
+<div class="portal-words-timeline">
+    {% regroup reflections by session_date as sessions %}
+    {% for session in sessions %}
+    <section aria-labelledby="session-{{ forloop.counter }}">
+        <h2 id="session-{{ forloop.counter }}" class="portal-session-date">
+            <time datetime="{{ session.grouper|date:'Y-m-d' }}">{{ session.grouper|portal_date }}</time>
+        </h2>
+
+        <ul class="portal-words-list">
+            {% for entry in session.list %}
+            <li class="portal-word-entry">
+                {% if entry.participant_reflection %}
+                <blockquote>
+                    <p>"{{ entry.participant_reflection }}"</p>
+                </blockquote>
+                {% endif %}
+
+                {% if entry.client_words %}
+                <blockquote>
+                    <p>"{{ entry.client_words }}"</p>
+                </blockquote>
+                {% endif %}
+
+                {% if entry.goal_name %}
+                <p class="portal-word-context">
+                    <small>{% trans "About:" %} {{ entry.goal_name }}</small>
+                </p>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endfor %}
+</div>
+
+{% else %}
+<article class="portal-empty-state">
+    <p>{% trans "Nothing here yet. When you share your thoughts during sessions, they'll appear here so you can look back on them." %}</p>
+</article>
+{% endif %}
+{% endblock %}

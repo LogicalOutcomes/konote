@@ -82,6 +82,7 @@ class Command(BaseCommand):
             ("analysis_charts", True),
             ("ai_assist", False),
             ("groups", True),
+            ("participant_portal", False),
         ]
         created = 0
         for key, enabled in defaults:
@@ -91,6 +92,13 @@ class Command(BaseCommand):
             if was_created:
                 created += 1
         self.stdout.write(f"  Feature toggles: {created} created.")
+
+        # In demo mode, enable the participant portal so the demo button works
+        if settings.DEMO_MODE:
+            FeatureToggle.objects.filter(feature_key="participant_portal").update(
+                is_enabled=True
+            )
+            self.stdout.write("  → participant_portal enabled for demo mode.")
 
     def _seed_instance_settings(self):
         from apps.admin_settings.models import InstanceSetting
@@ -372,6 +380,47 @@ class Command(BaseCommand):
         from django.core.management import call_command
 
         call_command("seed_demo_data", stdout=self.stdout)
+
+        # Create a demo participant portal account for Jordan Rivera (DEMO-001)
+        self._seed_demo_portal_participant()
+
+    def _seed_demo_portal_participant(self):
+        """Create a demo ParticipantUser so the portal can be tested."""
+        from apps.clients.models import ClientFile
+        from apps.plans.models import MetricDefinition
+        from apps.portal.models import ParticipantUser
+
+        demo_client = ClientFile.objects.filter(record_id="DEMO-001").first()
+        if not demo_client:
+            self.stdout.write("  ⚠ DEMO-001 not found — skipping portal participant.")
+            return
+
+        if not ParticipantUser.objects.filter(client_file=demo_client).exists():
+            participant = ParticipantUser.objects.create_participant(
+                email="jordan.demo@example.com",
+                client_file=demo_client,
+                display_name="Jordan",
+                password="demo1234",
+            )
+            participant.mfa_method = "exempt"
+            participant.journal_disclosure_shown = True
+            participant.save(update_fields=["mfa_method", "journal_disclosure_shown"])
+            self.stdout.write("  Demo portal participant: Jordan (DEMO-001) created.")
+        else:
+            self.stdout.write("  Demo portal participant: already exists.")
+
+        # Make some metrics portal-visible so the demo shows charts
+        portal_metrics = [
+            "Confidence in your job search",
+            "How ready do you feel for work?",
+            "Job Applications (past month)",
+            "Goal Progress (1-10)",
+            "Cooking confidence",
+        ]
+        updated = MetricDefinition.objects.filter(
+            name__in=portal_metrics
+        ).update(portal_visibility="yes")
+        self.stdout.write(f"  Portal visibility: {updated} metrics set to visible.")
 
     def _update_demo_client_fields(self):
         """Populate custom field values and consent for demo clients."""

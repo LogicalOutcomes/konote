@@ -1,0 +1,58 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Something Doesn't Look Right" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Something doesn't look right?" %}</h1>
+
+{% if not show_form %}
+{# Step 1: Ask how they'd like to handle it #}
+<p>{% trans "That's okay — we want to make sure your information is correct." %}</p>
+<p>{% trans "Would you like to talk about this with your worker at your next session?" %}</p>
+
+<div class="portal-correction-options">
+    <a href="{% url 'portal:discuss_next' %}" role="button">
+        {% trans "Yes, I'll bring it up next time" %}
+    </a>
+
+    <form method="get" action="{% url 'portal:correction_request' %}">
+        <input type="hidden" name="form" value="1">
+        <button type="submit" class="secondary">
+            {% trans "I'd like to submit a request now" %}
+        </button>
+    </form>
+</div>
+
+{% else %}
+{# Step 2: Correction request form #}
+<p>{% trans "Tell us what doesn't look right. Your worker will review this and follow up with you." %}</p>
+
+{% if success %}
+<p role="status" class="portal-alert portal-alert-success">
+    {% trans "Your request has been submitted. Your worker will follow up with you." %}
+</p>
+{% else %}
+
+<form method="post" action="{% url 'portal:correction_request' %}?form=1">
+    {% csrf_token %}
+
+    <label for="description">{% trans "What would you like to change or correct?" %}</label>
+    <textarea id="description" name="description" rows="6" required
+              aria-describedby="description-help"
+              placeholder="{% trans 'For example: My goal says X but I think it should say Y...' %}">{% if form.description.value %}{{ form.description.value }}{% endif %}</textarea>
+    <small id="description-help">{% trans "Describe what you think is wrong and what it should say. There's no wrong way to write this." %}</small>
+
+    {% if form.description.errors %}
+    <p role="alert" class="portal-alert portal-alert-error">{{ form.description.errors.0 }}</p>
+    {% endif %}
+
+    <button type="submit">{% trans "Submit request" %}</button>
+</form>
+{% endif %}
+{% endif %}
+
+<p>
+    <a href="{% url 'portal:goals' %}">&larr; {% trans "Back to My Goals" %}</a>
+</p>
+{% endblock %}

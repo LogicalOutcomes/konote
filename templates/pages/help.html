@@ -82,7 +82,7 @@
                 <ul>
                     <li><strong>{% trans "Status" %}</strong> — {% trans "Active, Inactive, or Discharged" %}</li>
                     {% if features.programs %}
-                    <li><strong>{{ term.program|capfirst }}</strong> — {% blocktrans with prog=term.program|default:"programme" %}Filter by specific {{ prog }}{% endblocktrans %}</li>
+                    <li><strong>{{ term.program|capfirst }}</strong> — {% blocktrans with prog=term.program|default:"program" %}Filter by specific {{ prog }}{% endblocktrans %}</li>
                     {% endif %}
                     <li><strong>{% trans "Date range" %}</strong> — {% trans "Created after/before certain dates" %}</li>
                 </ul>
@@ -107,7 +107,7 @@
             <tbody>
                 <tr>
                     <td><strong>{% trans "Info" %}</strong></td>
-                    <td>{% trans "Basic information," %} {% if features.programs %}{% blocktrans with prog=term.program|default:"programme" %}{{ prog }} enrolments,{% endblocktrans %}{% endif %} {% trans "custom fields" %}</td>
+                    <td>{% trans "Basic information," %} {% if features.programs %}{% blocktrans with prog=term.program|default:"program" %}{{ prog }} enrolments,{% endblocktrans %}{% endif %} {% trans "custom fields" %}</td>
                 </tr>
                 <tr>
                     <td><strong>{% trans "Notes" %}</strong></td>
@@ -261,7 +261,7 @@
         <h3>{% trans "Exporting Data" %}</h3>
         <p><strong>{% trans "Program managers and administrators" %}</strong> {% trans "can export data:" %}</p>
         <ul>
-            <li><strong>{% trans "Metric Export (CSV)" %}</strong> — {% blocktrans with metric=term.metric|default:"Metric" prog=term.program|default:"Programme" metrics=term.metric_plural|default:"Metrics" %}Export {{ metric }} data filtered by {{ prog }}, {{ metrics }}, and date range{% endblocktrans %}</li>
+            <li><strong>{% trans "Metric Export (CSV)" %}</strong> — {% blocktrans with metric=term.metric|default:"Metric" prog=term.program|default:"Program" metrics=term.metric_plural|default:"Metrics" %}Export {{ metric }} data filtered by {{ prog }}, {{ metrics }}, and date range{% endblocktrans %}</li>
             <li><strong>{% blocktrans with client=term.client|default:"Participant" %}{{ client }} Data Export{% endblocktrans %}</strong> — {% blocktrans with client=term.client|default:"Participant" %}Download a {{ client }}'s complete data (for GDPR/privacy requests){% endblocktrans %}</li>
             <li><strong>{% trans "PDF Reports" %}</strong> — {% trans "Generate printable progress reports" %}</li>
         </ul>
@@ -272,12 +272,12 @@
     <section id="insights">
         <h2>{% trans "Outcome Insights" %}</h2>
 
-        <p>{% blocktrans with notes=term.progress_note_plural|default:"Progress Notes" prog=term.program|default:"Programme" %}Outcome Insights helps you see patterns across a {{ prog }} — how participants are progressing, what's changing over time, and what their own words reveal. It draws from {{ notes }} that have already been recorded.{% endblocktrans %}</p>
+        <p>{% blocktrans with notes=term.progress_note_plural|default:"Progress Notes" prog=term.program|default:"Program" %}Outcome Insights helps you see patterns across a {{ prog }} — how participants are progressing, what's changing over time, and what their own words reveal. It draws from {{ notes }} that have already been recorded.{% endblocktrans %}</p>
 
-        <h3>{% trans "Viewing Programme Insights" %}</h3>
+        <h3>{% trans "Viewing Program Insights" %}</h3>
         <ol>
             <li>{% trans "Click" %} <strong>{% trans "Insights" %}</strong> {% trans "in the main navigation" %}</li>
-            <li>{% blocktrans with prog=term.program|default:"Programme" %}Choose a {{ prog }} from the dropdown{% endblocktrans %}</li>
+            <li>{% blocktrans with prog=term.program|default:"Program" %}Choose a {{ prog }} from the dropdown{% endblocktrans %}</li>
             <li>{% trans "Choose a time period (3, 6, or 12 months, or a custom range)" %}</li>
             <li>{% trans "Click" %} <strong>{% trans "Show Insights" %}</strong></li>
         </ol>
@@ -309,7 +309,7 @@
             </tbody>
         </table>
 
-        <p><strong>{% trans "Privacy protection:" %}</strong> {% blocktrans with clients=term.client_plural|default:"Participants" %}At programme level, quotes only appear when 15 or more {{ clients }} have notes in the selected period. This prevents anyone from being identified from their words.{% endblocktrans %}</p>
+        <p><strong>{% trans "Privacy protection:" %}</strong> {% blocktrans with clients=term.client_plural|default:"Participants" %}At program level, quotes only appear when 15 or more {{ clients }} have notes in the selected period. This prevents anyone from being identified from their words.{% endblocktrans %}</p>
 
         <h3>{% trans "AI Report Summaries (Optional)" %}</h3>
         <p>{% trans "If your administrator has enabled AI assistance, you can click" %} <strong>{% trans "Draft report summary" %}</strong> {% trans "to generate a narrative draft you can include in reports." %}</p>
@@ -400,11 +400,11 @@
             </tbody>
         </table>
 
-        <p><strong>{% trans "Note:" %}</strong> {% blocktrans with prog=term.program|default:"Programme" client=term.client|default:"Participant" %}Administrators without a {{ prog }} assignment cannot see {{ client }} data. This is a security feature.{% endblocktrans %}</p>
+        <p><strong>{% trans "Note:" %}</strong> {% blocktrans with prog=term.program|default:"Program" client=term.client|default:"Participant" %}Administrators without a {{ prog }} assignment cannot see {{ client }} data. This is a security feature.{% endblocktrans %}</p>
 
         <h3>{% trans "Different Roles in Different Programs" %}</h3>
-        <p>{% blocktrans with prog=term.program|default:"Programme" %}You may have a different role depending on which {{ prog }} you are working in. For example, you might be a Program Manager in one {{ prog }} and Direct Service staff in another.{% endblocktrans %}</p>
-        <p>{% blocktrans with progs=term.program_plural|default:"Programmes" prog=term.program|default:"Programme" %}Your current role is shown as a badge next to your name in the navigation bar. If you switch {{ progs }}, the badge updates to reflect your role in that {{ prog }}.{% endblocktrans %}</p>
+        <p>{% blocktrans with prog=term.program|default:"Program" %}You may have a different role depending on which {{ prog }} you are working in. For example, you might be a Program Manager in one {{ prog }} and Direct Service staff in another.{% endblocktrans %}</p>
+        <p>{% blocktrans with progs=term.program_plural|default:"Programs" prog=term.program|default:"Program" %}Your current role is shown as a badge next to your name in the navigation bar. If you switch {{ progs }}, the badge updates to reflect your role in that {{ prog }}.{% endblocktrans %}</p>
     </section>
 
     {% if user.is_admin %}
@@ -428,7 +428,7 @@
                 </tr>
                 {% if features.programs %}
                 <tr>
-                    <td>{% blocktrans with progs=term.program_plural|default:"Programmes" %}Manage {{ progs }}{% endblocktrans %}</td>
+                    <td>{% blocktrans with progs=term.program_plural|default:"Programs" %}Manage {{ progs }}{% endblocktrans %}</td>
                     <td>{% trans "Admin" %} → {{ term.program_plural|capfirst }}</td>
                 </tr>
                 {% endif %}
@@ -476,7 +476,7 @@
             <li>{% trans "Check your spelling" %}</li>
             <li>{% trans "Try searching by record ID instead of name" %}</li>
             <li>{% trans "Check filters — you may have a status filter active" %}</li>
-            <li>{% blocktrans with clients=term.client_plural|default:"Participants" progs=term.program_plural|default:"Programmes" %}You can only see {{ clients }} in {{ progs }} you're assigned to{% endblocktrans %}</li>
+            <li>{% blocktrans with clients=term.client_plural|default:"Participants" progs=term.program_plural|default:"Programs" %}You can only see {{ clients }} in {{ progs }} you're assigned to{% endblocktrans %}</li>
         </ul>
 
         <h3>{% blocktrans with client=term.client|default:"Participant" plan=term.plan|default:"Plan" %}I can't edit a {{ client }}'s {{ plan }}{% endblocktrans %}</h3>
@@ -561,7 +561,7 @@
                     <td>{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}{{ client }} {{ file }}{% endblocktrans %} → {% trans "Analysis tab" %}</td>
                 </tr>
                 <tr>
-                    <td>{% blocktrans with prog=term.program|default:"Programme" %}See {{ prog }} patterns{% endblocktrans %}</td>
+                    <td>{% blocktrans with prog=term.program|default:"Program" %}See {{ prog }} patterns{% endblocktrans %}</td>
                     <td>{% trans "Insights" %} ({% trans "main navigation" %})</td>
                 </tr>
             </tbody>

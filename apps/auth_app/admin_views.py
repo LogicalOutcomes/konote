@@ -17,7 +17,7 @@ from .forms import UserCreateForm, UserEditForm, UserProgramRoleForm
 from .models import User
 
 # Roles that PMs are NOT allowed to assign (no-elevation constraint).
-# PMs with user.manage: SCOPED can manage staff in their own programme
+# PMs with user.manage: SCOPED can manage staff in their own program
 # but cannot create PM/executive accounts or elevate receptionist to staff.
 _PM_BLOCKED_ROLE_ASSIGNMENTS = {"program_manager", "executive"}
 
@@ -172,7 +172,7 @@ def user_role_add(request, user_id):
     """Add a program role assignment (POST only).
 
     No-elevation constraint: non-admin users with user.manage: SCOPED
-    (programme managers) cannot assign PM or executive roles, and cannot
+    (program managers) cannot assign PM or executive roles, and cannot
     elevate receptionist to staff. This constraint is enforced here even
     though PMs currently can't reach this view (@admin_required blocks
     them). When PM access is wired in Wave 5, this guard will be active.

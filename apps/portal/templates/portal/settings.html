@@ -1,0 +1,69 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Settings" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Settings" %}</h1>
+
+{# Language preference #}
+<section aria-labelledby="lang-heading">
+    <h2 id="lang-heading">{% trans "Language" %}</h2>
+    <p>{% trans "Choose your preferred language." %}</p>
+
+    <form method="post" action="{% url 'switch_language' %}">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <fieldset>
+            <legend class="visually-hidden">{% trans "Language preference" %}</legend>
+            <label>
+                <input type="radio" name="language" value="en"
+                       {% if LANGUAGE_CODE == 'en' %}checked{% endif %}>
+                English
+            </label>
+            <label>
+                <input type="radio" name="language" value="fr"
+                       {% if LANGUAGE_CODE == 'fr' %}checked{% endif %}>
+                Fran&ccedil;ais
+            </label>
+        </fieldset>
+        <button type="submit">{% trans "Save language" %}</button>
+    </form>
+</section>
+
+<hr>
+
+{# Password #}
+<section aria-labelledby="password-heading">
+    <h2 id="password-heading">{% trans "Password" %}</h2>
+    <p>{% trans "Keep your account secure by using a strong password." %}</p>
+    <a href="{% url 'portal:change_password' %}" role="button" class="secondary">
+        {% trans "Change my password" %}
+    </a>
+</section>
+
+<hr>
+
+{# MFA information #}
+<section aria-labelledby="mfa-heading">
+    <h2 id="mfa-heading">{% trans "Two-step verification" %}</h2>
+
+    {% if mfa_enabled %}
+    <p>{% trans "Two-step verification is turned on. You use an authenticator app to sign in." %}</p>
+    {% else %}
+    <p>{% trans "Two-step verification is not set up yet. It adds extra security to your account." %}</p>
+    <a href="{% url 'portal:mfa_setup' %}" role="button" class="secondary">
+        {% trans "Set up two-step verification" %}
+    </a>
+    {% endif %}
+</section>
+
+<hr>
+
+{# Remove account #}
+<section aria-labelledby="remove-heading">
+    <h2 id="remove-heading">{% trans "Remove my account" %}</h2>
+    <p>{% trans "If you no longer want to use this portal, talk to your worker. They can remove your account for you." %}</p>
+    <p>{% trans "Removing your account won't affect your services." %}</p>
+</section>
+{% endblock %}
