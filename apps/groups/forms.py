@@ -28,7 +28,7 @@ class GroupForm(forms.ModelForm):
             qs = qs.filter(pk__in=user_program_ids)
         self.fields["program"].queryset = qs
         self.fields["program"].required = False
-        self.fields["program"].empty_label = _("No programme")
+        self.fields["program"].empty_label = _("No program")
 
 
 # ---------------------------------------------------------------------------

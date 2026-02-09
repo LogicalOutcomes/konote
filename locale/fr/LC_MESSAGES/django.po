@@ -2776,7 +2776,7 @@ msgid "Show this help"
 msgstr "Afficher cette aide"
 
 #: apps/plans/forms.py — Plan form fields
-msgid "No programme"
+msgid "No program"
 msgstr "Aucun programme"
 
 msgid "Section name"

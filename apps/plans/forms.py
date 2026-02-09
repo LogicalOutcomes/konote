@@ -13,7 +13,7 @@ class PlanSectionForm(forms.ModelForm):
     program = forms.ModelChoiceField(
         queryset=Program.objects.filter(status="active"),
         required=False,
-        empty_label=_("No programme"),
+        empty_label=_("No program"),
     )
 
     class Meta:
