@@ -102,13 +102,19 @@
             </li>
             {% endif %}
             {% include "_program_switcher.html" %}
-            <li>
+            <li class="nav-user-dropdown">
                 <details class="dropdown" role="list" dir="rtl">
                     <summary aria-haspopup="listbox">{{ user.display_name }}{% if active_program_role_display %} <span class="badge badge-neutral nav-role-badge">{{ active_program_role_display }}</span>{% endif %}</summary>
                     <ul role="listbox">
                         <li><a href="/auth/logout/">{% trans "Sign Out" %}</a></li>
                     </ul>
                 </details>
+            </li>
+            <li class="nav-user-mobile">
+                <span class="nav-user-name">{{ user.display_name }}{% if active_program_role_display %} <span class="badge badge-neutral nav-role-badge">{{ active_program_role_display }}</span>{% endif %}</span>
+            </li>
+            <li class="nav-signout-mobile">
+                <a href="/auth/logout/">{% trans "Sign Out" %}</a>
             </li>
             <li>
                 <!-- Language link — canada.ca convention -->
