@@ -57,9 +57,10 @@ def user_roles(request):
     - has_program_roles: whether the user has any active program assignments
     - is_admin_only: admin with no program roles (cannot see client data)
     - is_executive_only: executive role with no other roles (dashboard only)
+    - is_receptionist_only: all program roles are receptionist (no group/clinical access)
     """
     if not hasattr(request, "user") or not request.user.is_authenticated:
-        return {"has_program_roles": False, "is_admin_only": False, "is_executive_only": False}
+        return {"has_program_roles": False, "is_admin_only": False, "is_executive_only": False, "is_receptionist_only": False}
 
     from apps.programs.models import UserProgramRole
 
@@ -68,13 +69,21 @@ def user_roles(request):
     )
     has_roles = bool(roles)
 
-    # Export access: admins and program managers can create reports
-    has_export_access = request.user.is_admin or "program_manager" in roles
+    # Export access: admins, program managers, and executives can create reports
+    has_export_access = (
+        request.user.is_admin
+        or "program_manager" in roles
+        or "executive" in roles
+    )
+
+    # Receptionist-only: user has program roles but all of them are receptionist
+    is_receptionist_only = has_roles and roles == {"receptionist"}
 
     return {
         "has_program_roles": has_roles,
         "is_admin_only": request.user.is_admin and not has_roles,
         "is_executive_only": UserProgramRole.is_executive_only(request.user, roles=roles),
+        "is_receptionist_only": is_receptionist_only,
         "has_export_access": has_export_access,
     }
 

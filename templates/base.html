@@ -77,7 +77,7 @@
             {% if has_export_access %}
             <li><a href="/reports/export/"{% if nav_active == "reports" %} class="nav-active"{% endif %}>{% trans "Reports" %}</a></li>
             {% endif %}
-            {% if features.groups and not is_executive_only %}
+            {% if features.groups and not is_executive_only and not is_receptionist_only %}
             <li><a href="/groups/"{% if nav_active == "groups" %} class="nav-active"{% endif %}>{{ term.group_plural|default:"Groups" }}</a></li>
             {% endif %}
             {% if user.is_admin %}
