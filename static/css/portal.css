@@ -43,7 +43,7 @@
     padding: 2rem;
     border-radius: 8px;
     max-width: 400px;
-    text-align: centre;
+    text-align: center;
 }
 
 /* Portal navigation — simpler than staff nav */
@@ -51,7 +51,7 @@
     padding: 0.5rem 1rem;
     display: flex;
     justify-content: space-between;
-    align-items: centre;
+    align-items: center;
     border-bottom: 1px solid var(--pico-muted-border-color, #ddd);
 }
 
@@ -65,7 +65,7 @@
     min-height: 44px;
     min-width: 44px;
     display: inline-flex;
-    align-items: centre;
+    align-items: center;
 }
 
 /* Dashboard cards */
@@ -98,7 +98,7 @@
 /* Milestone celebrations */
 .milestone-item {
     display: flex;
-    align-items: centre;
+    align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 0;
     border-bottom: 1px solid var(--pico-muted-border-color, #ddd);
@@ -136,12 +136,12 @@
     margin-bottom: 1rem;
     display: flex;
     justify-content: space-between;
-    align-items: centre;
+    align-items: center;
 }
 
 /* Correction request soft step */
 .soft-step {
-    text-align: centre;
+    text-align: center;
     padding: 2rem 1rem;
 }
 

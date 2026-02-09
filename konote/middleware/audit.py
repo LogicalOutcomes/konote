@@ -186,7 +186,7 @@ class AuditMiddleware:
             AuditLog.objects.using("audit").create(
                 event_timestamp=timezone.now(),
                 user_id=None,
-                user_display=f"Portal: {request.participant_user.display_name}",
+                user_display=f"Portal: {request.participant_user.pk}",
                 ip_address=self._get_client_ip(request),
                 action=action,
                 resource_type="portal",

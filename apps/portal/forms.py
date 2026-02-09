@@ -204,6 +204,18 @@ class PortalPasswordResetConfirmForm(forms.Form):
 class InviteAcceptForm(forms.Form):
     """Registration form shown when a participant accepts a portal invite."""
 
+    verbal_code = forms.CharField(
+        label=_("Verification code"),
+        max_length=4,
+        required=False,
+        widget=forms.TextInput(attrs={
+            "inputmode": "numeric",
+            "pattern": "[0-9]{4}",
+            "placeholder": "0000",
+            "autocomplete": "off",
+        }),
+        help_text=_("Enter the 4-digit code your worker gave you."),
+    )
     email = forms.EmailField(
         label=_("Email"),
         widget=forms.EmailInput(attrs={

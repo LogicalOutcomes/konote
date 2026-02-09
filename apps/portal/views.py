@@ -110,7 +110,7 @@ def _audit_portal_event(request, action, resource_type="portal", metadata=None):
         AuditLog.objects.using("audit").create(
             event_timestamp=timezone.now(),
             user_id=None,  # Not a staff user
-            user_display=f"[portal] {participant.display_name}" if participant else "[portal] anonymous",
+            user_display=f"[portal] {participant.pk}" if participant else "[portal] anonymous",
             ip_address=get_client_ip(request),
             action=action,
             resource_type=resource_type,
@@ -206,6 +206,7 @@ def portal_login(request):
             if participant.mfa_method and participant.mfa_method not in ("none", "exempt"):
                 # Store participant ID temporarily for MFA verification
                 request.session["_portal_mfa_pending_id"] = str(participant.pk)
+                request.session["_portal_mfa_pending_at"] = timezone.now().isoformat()
                 return redirect("portal:mfa_verify")
 
             # No MFA — complete login
@@ -215,6 +216,7 @@ def portal_login(request):
             participant.save(update_fields=[
                 "failed_login_count", "locked_until", "last_login",
             ])
+            request.session.cycle_key()  # Prevent session fixation
             request.session["_portal_participant_id"] = str(participant.pk)
             _audit_portal_event(request, "portal_login", metadata={
                 "participant_id": str(participant.pk),
@@ -233,6 +235,7 @@ def portal_login(request):
 
 
 @portal_feature_required
+@require_POST
 def portal_logout(request):
     """Clear the portal session and redirect to login."""
     participant_id = request.session.get("_portal_participant_id")
@@ -240,8 +243,7 @@ def portal_logout(request):
         _audit_portal_event(request, "portal_logout", metadata={
             "participant_id": participant_id,
         })
-    request.session.pop("_portal_participant_id", None)
-    request.session.pop("_portal_mfa_pending_id", None)
+    request.session.flush()
     return redirect("portal:login")
 
 
@@ -297,9 +299,24 @@ def accept_invite(request, token):
 
     error = None
 
+    # Determine if verbal code is required for this invite
+    requires_verbal_code = bool(invite.verbal_code)
+
     if request.method == "POST":
         form = InviteAcceptForm(request.POST)
         if form.is_valid():
+            # Enforce verbal code when the invite has one set
+            if requires_verbal_code:
+                submitted_code = form.cleaned_data.get("verbal_code", "").strip()
+                if submitted_code != invite.verbal_code:
+                    error = _("The verification code is incorrect. Please check with your worker.")
+                    return render(request, "portal/accept_invite.html", {
+                        "form": form,
+                        "invite": invite,
+                        "error": error,
+                        "requires_verbal_code": requires_verbal_code,
+                    })
+
             email = form.cleaned_data["email"].strip().lower()
             display_name = form.cleaned_data["display_name"].strip()
             password = form.cleaned_data["password"]
@@ -328,6 +345,7 @@ def accept_invite(request, token):
                 })
 
                 # Log them in and start consent flow
+                request.session.cycle_key()  # Prevent session fixation
                 request.session["_portal_participant_id"] = str(participant.pk)
                 return redirect("portal:consent_flow")
     else:
@@ -337,6 +355,7 @@ def accept_invite(request, token):
         "form": form,
         "invite": invite,
         "error": error,
+        "requires_verbal_code": requires_verbal_code,
     })
 
 
@@ -464,13 +483,29 @@ def mfa_verify(request):
 
     # Check for pending MFA session
     participant_id = request.session.get("_portal_mfa_pending_id")
+    mfa_started_at = request.session.get("_portal_mfa_pending_at")
     if not participant_id:
         return redirect("portal:login")
+
+    # Expire MFA challenge after 5 minutes
+    if mfa_started_at:
+        from django.utils.dateparse import parse_datetime
+        try:
+            started = parse_datetime(mfa_started_at)
+            if started and (timezone.now() - started).total_seconds() > 300:
+                request.session.pop("_portal_mfa_pending_id", None)
+                request.session.pop("_portal_mfa_pending_at", None)
+                request.session.pop("_portal_mfa_attempts", None)
+                return redirect("portal:login")
+        except (ValueError, TypeError):
+            pass
 
     try:
         participant = ParticipantUser.objects.get(pk=participant_id, is_active=True)
     except ParticipantUser.DoesNotExist:
         request.session.pop("_portal_mfa_pending_id", None)
+        request.session.pop("_portal_mfa_pending_at", None)
+        request.session.pop("_portal_mfa_attempts", None)
         return redirect("portal:login")
 
     error = None
@@ -479,6 +514,19 @@ def mfa_verify(request):
         form = MFAVerifyForm(request.POST)
         if form.is_valid():
             import pyotp
+
+            # Check brute-force attempt limit (5 attempts max)
+            attempts = request.session.get("_portal_mfa_attempts", 0) + 1
+            request.session["_portal_mfa_attempts"] = attempts
+            if attempts > 5:
+                request.session.pop("_portal_mfa_pending_id", None)
+                request.session.pop("_portal_mfa_pending_at", None)
+                request.session.pop("_portal_mfa_attempts", None)
+                _audit_portal_event(request, "portal_mfa_lockout", metadata={
+                    "participant_id": participant_id,
+                    "attempts": attempts,
+                })
+                return redirect("portal:login")
 
             code = form.cleaned_data["code"]
             totp_secret = participant.totp_secret
@@ -493,6 +541,9 @@ def mfa_verify(request):
                         "failed_login_count", "locked_until", "last_login",
                     ])
                     request.session.pop("_portal_mfa_pending_id", None)
+                    request.session.pop("_portal_mfa_pending_at", None)
+                    request.session.pop("_portal_mfa_attempts", None)
+                    request.session.cycle_key()  # Prevent session fixation
                     request.session["_portal_participant_id"] = str(participant.pk)
                     _audit_portal_event(request, "portal_login", metadata={
                         "participant_id": str(participant.pk),
@@ -500,7 +551,13 @@ def mfa_verify(request):
                     })
                     return redirect("portal:dashboard")
                 else:
-                    error = _("Invalid code. Please try again.")
+                    remaining = 5 - attempts
+                    if remaining > 0:
+                        error = _("Invalid code. %(remaining)d attempts remaining.") % {
+                            "remaining": remaining,
+                        }
+                    else:
+                        error = _("Invalid code. Please try again.")
             else:
                 error = _("MFA is not configured. Please contact support.")
     else:
@@ -581,7 +638,9 @@ def password_change(request):
                 error = _("Your current password is incorrect.")
             else:
                 participant.set_password(new_password)
-                participant.save()
+                participant.save(update_fields=["password"])
+                # Rotate session so compromised sessions are invalidated
+                request.session.cycle_key()
                 success = True
                 _audit_portal_event(request, "portal_password_changed", metadata={
                     "participant_id": str(participant.pk),

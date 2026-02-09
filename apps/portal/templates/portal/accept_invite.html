@@ -77,13 +77,16 @@
         <small role="alert" class="portal-field-error">{{ form.password_confirm.errors.0 }}</small>
         {% endif %}
 
-        {% if invite.verbal_code_required %}
-        <label for="verbal-code">{% trans "Verbal code" %}</label>
+        {% if requires_verbal_code %}
+        <label for="verbal-code">{% trans "Verification code" %}</label>
         <input type="text" id="verbal-code" name="verbal_code"
                required
+               inputmode="numeric"
+               pattern="[0-9]{4}"
+               maxlength="4"
                autocomplete="off"
                aria-describedby="verbal-code-help">
-        <small id="verbal-code-help">{% trans "Enter the code your worker gave you in person. This helps confirm your identity." %}</small>
+        <small id="verbal-code-help">{% trans "Enter the 4-digit code your worker gave you in person. This helps confirm your identity." %}</small>
         {% if form.verbal_code.errors %}
         <small role="alert" class="portal-field-error">{{ form.verbal_code.errors.0 }}</small>
         {% endif %}
