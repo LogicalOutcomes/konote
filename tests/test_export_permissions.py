@@ -791,3 +791,104 @@ class ExecutiveAggregateExportTest(TestCase):
         resp = self.http_client.get("/reports/export/")
         self.assertEqual(resp.status_code, 200)
         self.assertFalse(resp.context.get("is_aggregate_only"))
+
+
+# ═════════════════════════════════════════════════════════════════════
+# 11. Individual client export permission tests (SECURITY FIX)
+# ═════════════════════════════════════════════════════════════════════
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class IndividualClientExportPermissionTest(TestCase):
+    """Verify individual client export is restricted by report.data_extract permission.
+
+    Previously this endpoint only checked @minimum_role("staff"), allowing any
+    Direct Service Worker to export complete client data (names, notes, plans,
+    metrics). The fix uses @requires_permission("report.data_extract") which is
+    DENY for all roles — only admins can access it.
+    """
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http_client = Client()
+
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+
+        self.admin = User.objects.create_user(
+            username="admin", password="testpass123", is_admin=True, display_name="Admin"
+        )
+        self.pm_user = User.objects.create_user(
+            username="pm", password="testpass123", is_admin=False, display_name="PM"
+        )
+        self.staff_user = User.objects.create_user(
+            username="staff", password="testpass123", is_admin=False, display_name="Staff"
+        )
+        self.exec_user = User.objects.create_user(
+            username="exec", password="testpass123", is_admin=False, display_name="Exec"
+        )
+        self.receptionist = User.objects.create_user(
+            username="frontdesk", password="testpass123", is_admin=False, display_name="FD"
+        )
+
+        self.program_a = Program.objects.create(name="Program A")
+
+        UserProgramRole.objects.create(
+            user=self.pm_user, program=self.program_a, role="program_manager"
+        )
+        UserProgramRole.objects.create(
+            user=self.staff_user, program=self.program_a, role="staff"
+        )
+        UserProgramRole.objects.create(
+            user=self.exec_user, program=self.program_a, role="executive"
+        )
+        UserProgramRole.objects.create(
+            user=self.receptionist, program=self.program_a, role="receptionist"
+        )
+
+        # Admin needs a programme role to pass ProgramAccessMiddleware
+        # (admins without programme roles are blocked from client URLs)
+        UserProgramRole.objects.create(
+            user=self.admin, program=self.program_a, role="program_manager"
+        )
+
+        # Create a client for the export endpoint
+        self.client_file = ClientFile.objects.create()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program_a
+        )
+
+    def _export_url(self):
+        return f"/reports/client/{self.client_file.pk}/export/"
+
+    def test_admin_can_access_individual_client_export(self):
+        self.http_client.login(username="admin", password="testpass123")
+        resp = self.http_client.get(self._export_url())
+        self.assertEqual(resp.status_code, 200)
+
+    def test_staff_gets_403_on_individual_client_export(self):
+        """Staff must NOT be able to export individual client data."""
+        self.http_client.login(username="staff", password="testpass123")
+        resp = self.http_client.get(self._export_url())
+        self.assertEqual(resp.status_code, 403)
+
+    def test_pm_gets_403_on_individual_client_export(self):
+        """Program managers cannot export individual client data (Phase 3: request-only)."""
+        self.http_client.login(username="pm", password="testpass123")
+        resp = self.http_client.get(self._export_url())
+        self.assertEqual(resp.status_code, 403)
+
+    def test_executive_redirected_from_individual_client_export(self):
+        """Executives are redirected away from client URLs by ProgramAccessMiddleware."""
+        self.http_client.login(username="exec", password="testpass123")
+        resp = self.http_client.get(self._export_url())
+        # ProgramAccessMiddleware redirects executives to dashboard (302)
+        self.assertEqual(resp.status_code, 302)
+
+    def test_receptionist_gets_403_on_individual_client_export(self):
+        """Receptionists cannot export individual client data."""
+        self.http_client.login(username="frontdesk", password="testpass123")
+        resp = self.http_client.get(self._export_url())
+        self.assertEqual(resp.status_code, 403)

@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
-from apps.auth_app.decorators import minimum_role
+from apps.auth_app.decorators import admin_required, minimum_role
 from apps.clients.models import ClientDetailValue, ClientProgramEnrolment
 from apps.events.models import Event
 from apps.notes.models import MetricValue, ProgressNote
@@ -465,9 +465,13 @@ def _generate_client_csv(client, data):
 
 
 @login_required
-@minimum_role("staff")
+@admin_required
 def client_export(request, client_id):
-    """Export all data for an individual client (PIPEDA data portability)."""
+    """Export all data for an individual client (PIPEDA data portability).
+
+    Restricted to admin only — report.data_extract is DENY for all roles
+    in the permissions matrix. Matches client_data_export access level.
+    """
     client = _get_client_or_403(request, client_id)
     if client is None:
         return HttpResponseForbidden("You do not have access to this client.")
