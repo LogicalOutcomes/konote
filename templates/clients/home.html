@@ -113,6 +113,7 @@
         <dd class="stat-value">{{ active_count }}</dd>
         <dd class="stat-subtext">{% blocktrans with total=total_count %}of {{ total }} total{% endblocktrans %}</dd>
     </dl>
+    {% if not is_receptionist %}
     <dl class="stat-card{% if alert_count > 0 %} stat-card-alert{% endif %}">
         <dt>{% if alert_count > 0 %}<span class="stat-icon" aria-hidden="true">&#9888;</span> {% endif %}{% trans "Active Alerts" %}</dt>
         <dd class="stat-value">{{ alert_count }}</dd>
@@ -133,11 +134,13 @@
         <dd class="stat-value">{{ follow_up_count }}</dd>
         <dd class="stat-subtext">{% trans "need your attention" %}</dd>
     </dl>
+    {% endif %}
 </div>
 
 <!-- Two-column dashboard -->
 <div class="dashboard-grid">
-    <!-- Priority items (alerts + needs attention) -->
+    <!-- Priority items (alerts + needs attention) — hidden from Front Desk -->
+    {% if not is_receptionist %}
     <article>
         <header class="card-header">
             <span>{% trans "Priority Items" %}</span>
@@ -194,6 +197,7 @@
         <p class="empty-message"><em>{% trans "All caught up! No items need attention." %}</em></p>
         {% endif %}
     </article>
+    {% endif %}
 
     <!-- Recent activity -->
     <article>
