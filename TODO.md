@@ -2,27 +2,10 @@
 
 ## Flagged
 
-- [ ] **SHIP-BLOCKER:** Note views still use `@minimum_role("staff")` with global role fallback — same bug fixed in groups, unfixed in notes. Receptionist in Programme A + staff in Programme B can read clinical notes. See `tasks/permissions-review-prompt.md` (PERM-S1)
-- [ ] **SHIP-BLOCKER:** Admin bypass in `get_client_or_403` contradicts permissions matrix — `if user.is_admin: return client` lets admins see all client data in all programmes. Admin should mean system config, not client data access (PERM-S2)
-- [ ] **SHIP-BLOCKER:** No field-level enforcement for receptionist — `get_client_or_403` returns full `ClientFile` object. If template renders clinical fields, receptionist sees them. Need `client.get_visible_fields(role)` or template-level filtering (PERM-S3)
 - [ ] Decide product name — should web version be called "KoNote" (not "KoNote2"). See `tasks/naming-versioning.md` (NAME1)
 - [ ] Update konote-website git remote URL — repo was renamed to `konote2-website` but local remote still points to old `konote2` name (NAME2)
 
 ## Active Work
-
-### Permissions Redesign — Phase 1 (Ship-Blockers)
-
-- [ ] 🔨 Fix note views — apply `programme_role_required` so receptionist can't read clinical notes via global role fallback (PERM-S1)
-- [ ] 🔨 Remove admin bypass from `get_client_or_403` + add negative access list — require admin to have programme role for client data access, add `ClientAccessBlock` model checked first (PERM-S2 + PERM-M3)
-- [ ] 🔨 Add field-level filtering + cross-programme consent — receptionist templates must not render clinical fields, add `cross_programme_sharing_consent` on ClientFile (PERM-S3 + PERM-M1)
-
-### Permissions Redesign — Phase 1 (Must-Add Before First Agency)
-
-- [ ] 🔨 Narrow safety category + add missing matrix entries — remove medications from safety, add `user.manage`, `settings.manage`, `audit.view`, `consent.manage`, `intake.*`, delete permissions (PERM-M2 + PERM-M4)
-
-### Permissions Redesign — Systemic Fix
-
-- [ ] 🔨 Create Privacy-by-Design checklist — 5 questions to answer before any new feature ships (PERM-SYS1)
 
 ### QA Round 2c — Verification
 
@@ -141,6 +124,8 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Permissions redesign Phase 1 — fixed cross-programme note leaks (programme_role_required), removed admin bypass from client access, added field-level visibility for receptionist, ClientAccessBlock model, cross-programme sharing consent, expanded permissions matrix, privacy-by-design checklist — 2026-02-08 (PERM-S1, PERM-S2, PERM-S3, PERM-M1, PERM-M2, PERM-M3, PERM-M4, PERM-SYS1)
+- [x] Front Desk permissions hardening — hide Groups nav link, block clinical data on home dashboard, grant Executive access to Insights and Reports — 2026-02-08 (UI-PERM1)
 - [x] Fix BLOCKER-1 skip link conflict — implemented Option B (auto-focus main content, remove skip link) per expert panel consensus. Removed duplicate focus block, added aria-label, visible focus indicator. Both Playwright tests pass. Expert rationale: more efficient for screen reader users, satisfies WCAG 2.4.1 via programmatic focus — 2026-02-08 (QA-FIX1)
 - [x] Playwright tests for BLOCKER-1/2 — BLOCKER-2 verified working (focus on #main-content, not footer), BLOCKER-1 code exists but conflicts with BLOCKER-2 fix (skip link not first Tab stop due to auto-focus). Automated tests at tests/test_blocker_a11y.py — 2026-02-08 (QA-VERIFY1)
 - [x] QA Round 2c — Tier 1+2 fixes (6 bugs) — accent search (BUG-13), program French names with `name_fr` field + 33 template updates (BUG-11), untranslated French strings (BUG-8), home page button permission (BUG-12), audit filter CSS (BUG-3), IMPROVE-5 confirmed already fixed — 2026-02-08 (QA-W9 through QA-W18)
@@ -150,9 +135,6 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 - [x] QA Scenario Runner full coverage — 4 test users, 6 test clients, 7 action types (voice/dictate/intercept/tabs/back/screenshot), 5 new test classes + 2 updated (22 new scenarios), LLM evaluator prompt enhancements (cognitive/mechanical/completion checks) — 2026-02-08 (QA-DATA1-5, QA-ACT1-5, QA-TEST1-7, QA-EVAL1-3)
 - [x] QA Infrastructure Phase 3 — CI/CD gate (QA-T11), satisfaction gap tracking (QA-T12), bidirectional ticket sync (QA-T14). GitHub Actions workflows, standalone scripts, JSON results serializer — 2026-02-08 (QA-T11, QA-T12, QA-T14)
 - [x] Test isolation (QA-ISO1) + objective scoring (QA-T10) — fresh context per scenario, locale from persona, auto-login, prerequisite validation, axe-core/action-count/lang objective scores override LLM — 2026-02-08 (QA-ISO1, QA-T10)
-- [x] Fix 14 pre-existing test failures + 4 errors — missing form fields, wrong assertions, missing DB declarations, template bugs, Playwright skip fix — 2026-02-07 (TEST-FIX1)
-- [x] Fix language bleed on shared browser — clear cookie on logout, set cookie on login to match user preference — 2026-02-07 (BUG-4)
-- [x] French translations complete — translated 93 remaining strings to Canadian French, 100% coverage (2146/2146 entries), .mo compiled, validation passed — 2026-02-07 (I18N-TRANS1)
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 
 ---
@@ -179,4 +161,5 @@ For detailed history, see `tasks/ARCHIVE.md`. Summary of completed work:
 | **Canadian localisation** | Postal codes, provinces, phone formats, date/currency by locale |
 | **Deployment** | Railway (auto-deploy), FullHost (HTTPS verified), Docker Compose for Azure/Elest.io |
 | **QA** | Scenario runner (22 scenarios, 7 action types), CI/CD gate, satisfaction tracking, inter-rater reliability, objective scoring |
+| **Permissions** | Programme-scoped access, field-level visibility, ClientAccessBlock, cross-programme consent, expanded permissions matrix, privacy-by-design checklist |
 | **Code review** | 74 tests added, CRITICAL/HIGH/MEDIUM fixes, admin_required, demo isolation, focus trap, i18n |
