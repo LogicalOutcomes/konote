@@ -48,34 +48,44 @@ _get_author_program = get_author_program
 def _get_programme_from_client(request, client_id, **kwargs):
     """Extract programme from client_id in URL kwargs.
 
-    A client can be enrolled in multiple programmes. We return the first
-    programme the requesting user shares with the client (same logic as
-    get_author_program). If no shared programme exists, raises ValueError
+    A client can be enrolled in multiple programmes. We return the shared
+    programme where the user has the highest role, so the most permissive
+    valid access is used. If no shared programme exists, raises ValueError
     which the decorator converts to a 403.
+
+    Note: admin status does NOT bypass programme role requirements (PERM-S2).
+    Admins need programme roles to access client data, just like everyone else.
     """
+    from apps.auth_app.constants import ROLE_RANK
     from apps.programs.models import Program
+
     client = get_object_or_404(ClientFile, pk=client_id)
-    user_program_ids = set(
-        UserProgramRole.objects.filter(user=request.user, status="active")
-        .values_list("program_id", flat=True)
-    )
+
+    # Get user's active programme roles (programme_id, role)
+    user_roles = UserProgramRole.objects.filter(
+        user=request.user, status="active"
+    ).values_list("program_id", "role")
+
     client_program_ids = set(
         ClientProgramEnrolment.objects.filter(
             client_file=client, status="enrolled"
         ).values_list("program_id", flat=True)
     )
-    shared = user_program_ids & client_program_ids
-    if shared:
-        return Program.objects.filter(pk__in=shared).first()
-    # Admin bypass -- admins may not share a programme but should still have access
-    if request.user.is_admin:
-        # Return the client's first programme so the decorator has something to check
-        first_enrolment = ClientProgramEnrolment.objects.filter(
-            client_file=client, status="enrolled"
-        ).first()
-        if first_enrolment:
-            return first_enrolment.program
-    raise ValueError(f"User has no shared programme with client {client_id}")
+
+    # Find shared programmes and pick the one where user has highest role
+    best_program_id = None
+    best_rank = -1
+    for program_id, role in user_roles:
+        if program_id in client_program_ids:
+            rank = ROLE_RANK.get(role, 0)
+            if rank > best_rank:
+                best_rank = rank
+                best_program_id = program_id
+
+    if best_program_id is None:
+        raise ValueError(f"User has no shared programme with client {client_id}")
+
+    return Program.objects.get(pk=best_program_id)
 
 
 def _get_programme_from_note(request, note_id, **kwargs):

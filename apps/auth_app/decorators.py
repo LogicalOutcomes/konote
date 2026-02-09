@@ -68,7 +68,7 @@ def minimum_role(min_role):
     return decorator
 
 
-def programme_role_required(min_role, get_programme_fn):
+def programme_role_required(min_role, get_programme_fn, get_client_fn=None):
     """Decorator: check user's role in a SPECIFIC programme, not across all programmes.
 
     This fixes the security hole where a user with receptionist in Programme A
@@ -79,6 +79,8 @@ def programme_role_required(min_role, get_programme_fn):
         min_role: minimum role name (e.g., "staff")
         get_programme_fn: function that extracts programme from view args.
                           Example: lambda req, group_id: get_object_or_404(Group, pk=group_id).program
+        get_client_fn: optional function that extracts client for access block check.
+                       If provided, checks ClientAccessBlock before allowing access.
 
     Usage:
         @programme_role_required("staff", lambda req, group_id: get_object_or_404(Group, pk=group_id).program)
@@ -104,6 +106,31 @@ def programme_role_required(min_role, get_programme_fn):
                 )
                 response.render()
                 return response
+
+            # Optional: check negative access list (ClientAccessBlock)
+            if get_client_fn is not None:
+                try:
+                    client = get_client_fn(request, *args, **kwargs)
+                    if client is not None:
+                        from apps.clients.models import ClientAccessBlock
+                        if ClientAccessBlock.objects.filter(
+                            user=request.user, client_file=client, is_active=True
+                        ).exists():
+                            message = _("Access to this client has been restricted.")
+                            response = TemplateResponse(
+                                request, "403.html", {"exception": message}, status=403,
+                            )
+                            response.render()
+                            return response
+                except Exception:
+                    # Fail closed: if we can't verify the block list, deny access.
+                    # ClientAccessBlock exists for DV safety — never skip silently.
+                    message = _("Unable to verify access permissions.")
+                    response = TemplateResponse(
+                        request, "403.html", {"exception": message}, status=403,
+                    )
+                    response.render()
+                    return response
 
             # Get user's role in THIS programme (not highest across all)
             role_obj = UserProgramRole.objects.filter(

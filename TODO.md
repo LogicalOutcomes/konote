@@ -29,13 +29,23 @@ The core app is feature-complete. These tasks prepare for production use.
 
 ## Coming Up
 
+### Spelling Fix: "programme" → "program"
+
+- [ ] Fix Canadian spelling — rename all 661 "programme" → "program" across 84 files. Includes Python identifiers (decorator, variables, permission keys), templates, docs, translations. Migration needed for `cross_programme_sharing_consent` field. Do NOT touch migration files. See analysis in conversation. (SPELL1)
+
+### Permissions Redesign — Phase 1 Follow-up
+
+- [ ] Translate 10+ French strings — consent status, access denied, PHIPA legal text, cross-programme sharing UI. Run `translate_strings`. (PERM-FU3)
+- [ ] Extract `_get_programme_from_client` to access.py — identical 20-line function duplicated in notes, events, plans views. Security-critical code should live in one place. (PERM-FU5)
+- [ ] Migrate remaining `@minimum_role` views — report views (pdf_views.py, insights_views.py), client CRUD (client_create, client_edit, consent views), erasure views (5 views). Erasure views highest priority (irreversible actions). (PERM-FU1)
+
 ### Permissions Redesign — Phase 2
 
-- [ ] DV-safe Front Desk interface — per-programme config: `programme.receptionist_mode = "full_list" | "search_only"`. Search-only returns appointment info, never displays roster (PERM-P1)
+- [ ] DV-safe Front Desk interface — per-program config: `program.receptionist_mode = "full_list" | "search_only"`. Search-only returns appointment info, never displays roster (PERM-P1)
 - [ ] Consent model expansion — track consent scope (what), grantor (who), date, and withdrawal. Audit log for all consent changes (PERM-P2)
 - [ ] Data extract governance — logging + board-designate visibility. Optional 48-hour delay before extract delivered. Don't build dual authorization unless funder/regulator requires it (PERM-P3)
 - [ ] Role transition audit trail — never update `UserProgramRole.role` in place. Deactivate old, create new. History is the audit trail (PERM-P4)
-- [ ] Reposition Programme Report as supervision tool — add caseload counts per worker, average session frequency, "no contact in 30 days" counts. Market internally, not as funder deliverable (PERM-P5)
+- [ ] Reposition Program Report as supervision tool — add caseload counts per worker, average session frequency, "no contact in 30 days" counts. Market internally, not as funder deliverable (PERM-P5)
 
 ### Export Monitoring
 
@@ -124,7 +134,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
-- [x] Permissions redesign Phase 1 — fixed cross-programme note leaks (programme_role_required), removed admin bypass from client access, added field-level visibility for receptionist, ClientAccessBlock model, cross-programme sharing consent, expanded permissions matrix, privacy-by-design checklist — 2026-02-08 (PERM-S1, PERM-S2, PERM-S3, PERM-M1, PERM-M2, PERM-M3, PERM-M4, PERM-SYS1)
+- [x] Permissions redesign Phase 1 — fixed cross-program note leaks (program_role_required), removed admin bypass from client access, added field-level visibility for receptionist, ClientAccessBlock model, cross-program sharing consent, expanded permissions matrix, privacy-by-design checklist — 2026-02-08 (PERM-S1, PERM-S2, PERM-S3, PERM-M1, PERM-M2, PERM-M3, PERM-M4, PERM-SYS1)
 - [x] Front Desk permissions hardening — hide Groups nav link, block clinical data on home dashboard, grant Executive access to Insights and Reports — 2026-02-08 (UI-PERM1)
 - [x] Fix BLOCKER-1 skip link conflict — implemented Option B (auto-focus main content, remove skip link) per expert panel consensus. Removed duplicate focus block, added aria-label, visible focus indicator. Both Playwright tests pass. Expert rationale: more efficient for screen reader users, satisfies WCAG 2.4.1 via programmatic focus — 2026-02-08 (QA-FIX1)
 - [x] Playwright tests for BLOCKER-1/2 — BLOCKER-2 verified working (focus on #main-content, not footer), BLOCKER-1 code exists but conflicts with BLOCKER-2 fix (skip link not first Tab stop due to auto-focus). Automated tests at tests/test_blocker_a11y.py — 2026-02-08 (QA-VERIFY1)
@@ -161,5 +171,5 @@ For detailed history, see `tasks/ARCHIVE.md`. Summary of completed work:
 | **Canadian localisation** | Postal codes, provinces, phone formats, date/currency by locale |
 | **Deployment** | Railway (auto-deploy), FullHost (HTTPS verified), Docker Compose for Azure/Elest.io |
 | **QA** | Scenario runner (22 scenarios, 7 action types), CI/CD gate, satisfaction tracking, inter-rater reliability, objective scoring |
-| **Permissions** | Programme-scoped access, field-level visibility, ClientAccessBlock, cross-programme consent, expanded permissions matrix, privacy-by-design checklist |
+| **Permissions** | Program-scoped access, field-level visibility, ClientAccessBlock, cross-program consent, expanded permissions matrix, privacy-by-design checklist |
 | **Code review** | 74 tests added, CRITICAL/HIGH/MEDIUM fixes, admin_required, demo isolation, focus trap, i18n |

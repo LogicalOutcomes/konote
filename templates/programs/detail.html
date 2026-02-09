@@ -115,6 +115,20 @@
 <section aria-labelledby="groups-heading">
     <h2 id="groups-heading">{% trans "Groups" %}</h2>
 
+    {% if is_receptionist %}
+    {# Front Desk: summary only — group names can reveal clinical info #}
+    {% if group_count %}
+    <p>
+        {% blocktrans count count=group_count %}{{ count }} active group{% plural %}{{ count }} active groups{% endblocktrans %}
+        {% if program_manager_name %}
+        — {% blocktrans with name=program_manager_name %}for group inquiries, contact <strong>{{ name }}</strong>{% endblocktrans %}
+        {% endif %}
+    </p>
+    {% else %}
+    <p><em>{% trans "No groups created yet." %}</em></p>
+    {% endif %}
+    {% else %}
+
     {% if groups %}
     <figure>
     <table role="grid" aria-label="{% trans 'Groups in this program' %}">
@@ -122,15 +136,15 @@
             <tr>
                 <th scope="col">{% trans "Name" %}</th>
                 <th scope="col">{% trans "Members" %}</th>
-                {% if not is_receptionist and not is_executive_only %}<th scope="col">{% trans "Actions" %}</th>{% endif %}
+                {% if not is_executive_only %}<th scope="col">{% trans "Actions" %}</th>{% endif %}
             </tr>
         </thead>
         <tbody>
             {% for group in groups %}
             <tr>
-                <td>{% if is_receptionist or is_executive_only %}{{ group.name }}{% else %}<a href="{% url 'groups:group_detail' group_id=group.pk %}">{{ group.name }}</a>{% endif %}</td>
+                <td>{% if is_executive_only %}{{ group.name }}{% else %}<a href="{% url 'groups:group_detail' group_id=group.pk %}">{{ group.name }}</a>{% endif %}</td>
                 <td data-label="{% trans 'Members' %}">{{ group.member_count }}</td>
-                {% if not is_receptionist and not is_executive_only %}
+                {% if not is_executive_only %}
                 <td data-label="{% trans 'Actions' %}">
                     <a href="{% url 'groups:session_log' group_id=group.pk %}" role="button" class="outline small">{% trans "Log Session" %}</a>
                 </td>
@@ -144,8 +158,9 @@
     <p><em>{% trans "No groups created yet." %}</em></p>
     {% endif %}
 
-    {% if not is_receptionist and not is_executive_only %}
+    {% if not is_executive_only %}
     <a href="{% url 'groups:group_create' %}" role="button" class="outline">{% trans "Create Group" %}</a>
+    {% endif %}
     {% endif %}
 </section>
 {% endif %}
