@@ -6585,6 +6585,18 @@ msgstr "Aucune donnée de présence pour cette période."
 msgid "No groups created yet."
 msgstr "Aucun groupe créé pour le moment."
 
+#, python-format
+msgid "%(count)s active group"
+msgid_plural "%(count)s active groups"
+msgstr[0] "%(count)s groupe actif"
+msgstr[1] "%(count)s groupes actifs"
+
+#, python-format
+msgid "for group inquiries, contact <strong>%(name)s</strong>"
+msgstr ""
+"pour toute question sur les groupes, communiquez avec "
+"<strong>%(name)s</strong>"
+
 msgid "Present"
 msgstr "Présent"
 
@@ -8582,7 +8594,8 @@ msgid "Export Program Data"
 msgstr "Exporter les données du programme"
 
 msgid "No notes recorded yet for this program in the last 6 months."
-msgstr "Aucune note enregistrée pour ce programme au cours des 6 derniers mois."
+msgstr ""
+"Aucune note enregistrée pour ce programme au cours des 6 derniers mois."
 
 msgid "Program Health"
 msgstr "Santé du programme"
@@ -8598,3 +8611,40 @@ msgstr "6 derniers mois"
 
 msgid "with notes recorded"
 msgstr "avec des notes enregistrées"
+
+msgid "Access denied. You do not have the required role for this action."
+msgstr ""
+
+msgid "Client consents to sharing clinical information across programmes"
+msgstr ""
+
+msgid ""
+"Clinical notes are only visible within the programme where they were "
+"recorded. Under Ontario privacy law (PHIPA), express consent is required "
+"before clinical information can be shared across programmes."
+msgstr ""
+
+msgid "Consent given"
+msgstr ""
+
+msgid "Cross-Programme Sharing"
+msgstr ""
+
+msgid "Main content"
+msgstr ""
+
+msgid "No consent"
+msgstr ""
+
+msgid ""
+"Required under Ontario privacy law (PHIPA) before clinical notes from one "
+"programme can be viewed by staff in another programme."
+msgstr ""
+
+msgid ""
+"This participant has consented to sharing clinical information across "
+"programmes."
+msgstr ""
+
+msgid "You do not have access to this programme."
+msgstr ""

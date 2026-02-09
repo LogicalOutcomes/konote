@@ -148,6 +148,7 @@ def program_detail(request, program_id):
 
     # Groups linked to this program (for group/both service models)
     groups = None
+    group_count = 0
     if program.service_model in ("group", "both"):
         from django.db.models import Q
         groups = (
@@ -157,6 +158,11 @@ def program_detail(request, program_id):
             ))
             .order_by("name")
         )
+        group_count = groups.count()
+
+    # Program Manager name for Front Desk groups summary
+    pm_role = roles.filter(role="program_manager", status="active").first()
+    program_manager_name = pm_role.user.display_name if pm_role else None
 
     return render(request, "programs/detail.html", {
         "program": program,
@@ -167,6 +173,8 @@ def program_detail(request, program_id):
         "has_export_access": has_export_access,
         "user_has_access": user_has_access,
         "groups": groups,
+        "group_count": group_count,
+        "program_manager_name": program_manager_name,
         "program_summary": program_summary,
     })
 
