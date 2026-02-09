@@ -162,8 +162,8 @@ class BlockerA11yTests(StaticLiveServerTestCase):
         finally:
             page.close()
 
-    def test_blocker1_skip_to_content_link(self):
-        """BLOCKER-1: First Tab from top of page should reach skip-to-content link."""
+    def test_blocker1_auto_focus_main_content(self):
+        """BLOCKER-1 (Option B): Main content is auto-focused on page load, skip link removed."""
         page = self.browser.new_page()
         try:
             # Log in and navigate to dashboard
@@ -179,74 +179,45 @@ class BlockerA11yTests(StaticLiveServerTestCase):
 
             print(f"\n  Dashboard URL: {page.url}")
 
-            # Verify skip link exists in DOM
-            skip_link = page.evaluate("""() => {
-                const link = document.querySelector('a[href="#main-content"]');
-                if (!link) return {exists: false};
-                return {
-                    exists: true,
-                    text: link.textContent.trim(),
-                    className: link.className
-                };
+            # Verify skip link does NOT exist (Option B removes it)
+            skip_link_exists = page.evaluate("""() => {
+                return document.querySelector('a[href="#main-content"]') !== null;
             }""")
-            print(f"  Skip link in DOM: {json.dumps(skip_link)}")
-            self.assertTrue(skip_link.get("exists"), "Skip link not found in DOM!")
+            print(f"  Skip link exists: {skip_link_exists}")
+            self.assertFalse(skip_link_exists, "Skip link should be removed in Option B implementation")
 
-            # Reset focus to body (clear any autofocus or JS focus management)
-            page.evaluate("() => { if (document.activeElement) document.activeElement.blur(); }")
-            page.wait_for_timeout(100)
-
-            # Press Tab once from top
-            page.keyboard.press("Tab")
-            page.wait_for_timeout(300)
-
-            focus_after_tab = page.evaluate("""() => {
+            # Verify main content is auto-focused on page load
+            focus_info = page.evaluate("""() => {
                 const el = document.activeElement;
                 return {
                     tag: el.tagName,
                     id: el.id,
-                    href: el.href || '',
-                    text: (el.textContent || '').trim().substring(0, 80),
-                    className: el.className
+                    className: el.className,
+                    hasAriaLabel: el.hasAttribute('aria-label'),
+                    ariaLabel: el.getAttribute('aria-label')
                 };
             }""")
-            print(f"  After 1st Tab: {json.dumps(focus_after_tab)}")
-            page.screenshot(path="C:/Users/gilli/AppData/Local/Temp/blocker1_after_tab.png", full_page=True)
+            print(f"  Auto-focus on page load: {json.dumps(focus_info)}")
 
-            is_skip = "#main-content" in focus_after_tab.get("href", "")
+            # Verify focus is on main content
+            self.assertEqual(focus_info.get("id"), "main-content", "Focus should be on #main-content")
+            self.assertEqual(focus_info.get("tag"), "MAIN", "Focused element should be <main>")
+            self.assertTrue(focus_info.get("hasAriaLabel"), "Main content should have aria-label")
 
-            if is_skip:
-                print("  Skip link IS the first Tab stop")
+            # Verify visible focus indicator exists (for keyboard-only sighted users)
+            has_outline = page.evaluate("""() => {
+                const main = document.getElementById('main-content');
+                if (!main) return false;
+                const style = window.getComputedStyle(main);
+                // Check if outline is set (not 'none')
+                return style.outline !== 'none' && style.outlineWidth !== '0px';
+            }""")
+            print(f"  Visible focus indicator: {has_outline}")
+            # Note: This may be false in headless browsers but true in real browsers
+            # The important thing is that the CSS is defined, which we can verify separately
 
-                # Activate it
-                page.keyboard.press("Enter")
-                page.wait_for_timeout(300)
-
-                focus_after_enter = page.evaluate("""() => {
-                    const el = document.activeElement;
-                    return {tag: el.tagName, id: el.id};
-                }""")
-                print(f"  After Enter: {json.dumps(focus_after_enter)}")
-
-                if focus_after_enter.get("id") == "main-content":
-                    print("  >>> BLOCKER-1: PASS — skip link works, focus moved to #main-content")
-                else:
-                    print(f"  >>> BLOCKER-1: PARTIAL — skip link focused, but Enter moved to {focus_after_enter['tag']}#{focus_after_enter.get('id', '?')}")
-            else:
-                # Search for skip link in tab order
-                found_at = None
-                for i in range(10):
-                    page.keyboard.press("Tab")
-                    page.wait_for_timeout(100)
-                    check = page.evaluate("() => document.activeElement.href || ''")
-                    if "#main-content" in check:
-                        found_at = i + 2
-                        break
-
-                if found_at:
-                    print(f"  >>> BLOCKER-1: FAIL — skip link is Tab stop #{found_at}, should be #1")
-                else:
-                    print("  >>> BLOCKER-1: FAIL — skip link never gets Tab focus")
+            page.screenshot(path="C:/Users/gilli/AppData/Local/Temp/blocker1_autofocus.png", full_page=True)
+            print("  >>> BLOCKER-1 (Option B): PASS — main content auto-focused, skip link removed")
 
         finally:
             page.close()

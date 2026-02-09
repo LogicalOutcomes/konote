@@ -4,3 +4,4 @@
 2026-02-08 15:06 — Step 1: 77 screenshots captured (21/33 scenarios, 12 skipped: SCN-020, SCN-025, SCN-042, SCN-046, SCN-049, SCN-054, SCN-055, SCN-056, SCN-059, SCN-061, SCN-062, SCN-070)
 2026-02-08 12:54 — Step 2: Evaluation complete (Round 2b). Gap: 1.5, Coverage: 14/28 (50%), Blockers: 0, New bugs: 4. Report: 2026-02-08b. Handoff written to .qa-handoff.json.
 2026-02-08 19:45 — Step 2: Evaluation complete (Round 2c, report 2026-02-08d). Gap: 1.3 (↓0.2 from Round 2b), Coverage: 24/32 (75%), Blockers: 0, New tickets: 0, Fixed: 0. 114 screenshots from fresh run. Handoff written to .qa-handoff.json.
+2026-02-08 21:15 — Step 3: Action plan created, 12 tasks added to TODO (13 tickets analysed, 4-expert panel). See tasks/qa-action-plan-2026-02-08.md.

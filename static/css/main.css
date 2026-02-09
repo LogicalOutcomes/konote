@@ -35,9 +35,11 @@
     outline: 3px solid var(--kn-text-inverse);
     outline-offset: -3px;
 }
-/* Remove outline from main when focused programmatically */
+/* Visible focus indicator for keyboard navigation (WCAG 2.4.11 - Focus Appearance) */
+/* When main content is auto-focused, keyboard users need visual confirmation of position */
 #main-content:focus {
-    outline: none;
+    outline: 2px solid var(--kn-primary);
+    outline-offset: 4px;
 }
 
 /* ---- Demo mode banner ---- */
@@ -2218,6 +2220,7 @@ article[aria-label="notification"].fading-out {
     color: var(--kn-text-muted);
     cursor: pointer;
     transition: all var(--kn-transition);
+    width: auto;
 }
 
 .keyboard-shortcuts-btn:hover {

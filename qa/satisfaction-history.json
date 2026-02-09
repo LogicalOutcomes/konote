@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "round": "Round 1",
+    "date": "2026-02-07",
+    "satisfaction_gap": 2.3,
+    "ds3_score": 1.5,
+    "ds1b_score": 3.8,
+    "coverage_pct": 69
+  },
+  {
+    "round": "Round 2b",
+    "date": "2026-02-08",
+    "satisfaction_gap": 1.5,
+    "ds3_score": 2.0,
+    "ds1b_score": 3.5,
+    "coverage_pct": 50
+  },
+  {
+    "round": "Round 2c",
+    "date": "2026-02-08",
+    "satisfaction_gap": 1.3,
+    "ds3_score": 1.9,
+    "ds1b_score": 3.2,
+    "coverage_pct": 75
+  }
+]

@@ -26,8 +26,6 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
-    <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
-
     <!-- Loading bar — shown during HTMX requests -->
     <div id="loading-bar" class="loading-bar htmx-indicator"></div>
 
@@ -136,7 +134,7 @@
         <button type="button" class="offline-retry">{% trans "Try again" %}</button>
     </div>
 
-    <main id="main-content" class="container" tabindex="-1">
+    <main id="main-content" class="container" tabindex="-1" aria-label="{% trans 'Main content' %}">
         {% if messages %}
         <div role="status" aria-live="polite" aria-atomic="false">
         {% for message in messages %}
