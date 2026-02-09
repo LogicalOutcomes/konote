@@ -2248,6 +2248,7 @@ article[aria-label="notification"].fading-out {
     border: 1px solid var(--kn-border-light);
     border-radius: var(--kn-radius-badge);
     padding: 0.125rem 0.5rem;
+    margin: 0; /* Reset Pico's [type="button"] { margin-bottom: var(--pico-spacing) } */
     font-size: 0.75rem;
     color: var(--kn-text-muted);
     cursor: pointer;
