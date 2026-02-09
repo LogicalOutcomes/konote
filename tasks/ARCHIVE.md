@@ -6,6 +6,14 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ## Completed 2026-02-08
 
+### Moved from Recently Done (2026-02-08 cleanup #2)
+
+- [x] Code review MEDIUM remaining — admin_required decorator across all views (QUAL8), translated access denied messages (I18N-8), modal focus trap (A11Y-2), 20 JS strings translatable (I18N-4), 29 audit log view tests (TEST-4) — 2026-02-07
+- [x] Code review MEDIUM fixes — QUAL5-7, A11Y-1, I18N-1/2/3/5/6/7/9/10: dev cookie fix, group forms, dedup client fields, scope on th, PDF/email/form/CSV translations, breadcrumbs, privacy.html blocktrans — 2026-02-07
+- [x] Code review HIGH fixes — audit "cancel" action, consolidated `_get_client_ip()` and `admin_required`, dead JS code removed, encryption key rotation + lockout tests — 2026-02-07 (QUAL1-4, TEST1-2)
+- [x] Code review CRITICAL fixes — demo/real data isolation in client HTMX views, admin_required on registration views, plan template + submission merge bypasses — 2026-02-07 (SEC1-4)
+- [x] Per-Program Roles cleanup — audit logging, dead code removal, ROLE_RANK constants, help.html blocktrans, admin notices, query caching — 2026-02-07 (ROLE1-8)
+
 ### Scenario Evaluation Fixes (from `qa/2026-02-08-improvement-tickets.md`)
 
 - [x] Skip-to-content link — improved CSS, added `clip-path` for robustness — 2026-02-08 (BLOCKER-1)

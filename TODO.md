@@ -7,13 +7,6 @@
 
 ## Active Work
 
-### QA Scenario Fixes
-
-From Round 2 scenario run (2026-02-08): 14 of 22 scenarios failed.
-
-- [x] Seed missing demo clients + fix prerequisite validator — added Maria Santos, Priya Patel, Alex Chen, Aaliyah Thompson, Marcus Williams, David Park + 8 ARIA clients. Fixed `_validate_prerequisites()` to compare full names and handle `type: "clients"` (plural). Renamed SCN-010 client to "Sofia Reyes" to avoid conflict. See `tasks/qa-seed-missing-clients.md` (QA-DATA6)
-- [x] Fix screenshot timeout — all 3 screenshot calls now use 15s timeout with viewport-only fallback when `full_page=True` hangs. See `tasks/qa-fix-scn061-timeout.md` (QA-DATA7)
-
 ### QA Round 2c — Verification
 
 - [ ] Manually test BLOCKER-1 + BLOCKER-2 with keyboard — skip-to-content link and post-login focus. 10 min each. Code is in place (skip link in base.html, focus management in app.js). (QA-VERIFY1)
@@ -95,8 +88,6 @@ Build after secure export is stable. See `tasks/secure-export-import-plan.md` fo
 
 From Round 2c expert panel — lower priority items. See `tasks/qa-action-plan-2026-02-08.md`.
 
-- [ ] Fix audit log filter truncation — "All acti..." dropdown needs CSS min-width (BUG-3 → QA-W17)
-- [ ] Add status indicators to remaining 2 settings cards — Instance Settings + Demo Accounts (IMPROVE-1 → QA-W18)
 - [ ] Add onboarding guidance for new users — help link or first-run banner, not full wizard (IMPROVE-7 → QA-W19)
 - [ ] Reduce form tab stops — tabindex audit, skip non-essential fields. Not yet tested. (IMPROVE-6 → QA-W20)
 
@@ -136,11 +127,6 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 - [x] Fix 14 pre-existing test failures + 4 errors — missing form fields, wrong assertions, missing DB declarations, template bugs, Playwright skip fix — 2026-02-07 (TEST-FIX1)
 - [x] Fix language bleed on shared browser — clear cookie on logout, set cookie on login to match user preference — 2026-02-07 (BUG-4)
 - [x] French translations complete — translated 93 remaining strings to Canadian French, 100% coverage (2146/2146 entries), .mo compiled, validation passed — 2026-02-07 (I18N-TRANS1)
-- [x] Code review MEDIUM remaining — admin_required decorator across all views (QUAL8), translated access denied messages (I18N-8), modal focus trap (A11Y-2), 20 JS strings translatable (I18N-4), 29 audit log view tests (TEST-4) — 2026-02-07
-- [x] Code review MEDIUM fixes — QUAL5-7, A11Y-1, I18N-1/2/3/5/6/7/9/10: dev cookie fix, group forms, dedup client fields, scope on th, PDF/email/form/CSV translations, breadcrumbs, privacy.html blocktrans — 2026-02-07
-- [x] Code review HIGH fixes — audit "cancel" action, consolidated `_get_client_ip()` and `admin_required`, dead JS code removed, encryption key rotation + lockout tests — 2026-02-07 (QUAL1-4, TEST1-2)
-- [x] Code review CRITICAL fixes — demo/real data isolation in client HTMX views, admin_required on registration views, plan template + submission merge bypasses — 2026-02-07 (SEC1-4)
-- [x] Per-Program Roles cleanup — audit logging, dead code removal, ROLE_RANK constants, help.html blocktrans, admin notices, query caching — 2026-02-07 (ROLE1-8)
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 
 ---
