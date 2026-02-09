@@ -130,6 +130,11 @@ def switch_language(request):
         request.user.preferred_language = lang_code
         request.user.save(update_fields=["preferred_language"])
 
+    # Save to portal participant profile if present
+    if hasattr(request, "participant_user") and request.participant_user:
+        request.participant_user.preferred_language = lang_code
+        request.participant_user.save(update_fields=["preferred_language"])
+
     # Redirect back to referring page (with safety check)
     next_url = request.POST.get("next", request.META.get("HTTP_REFERER", "/"))
     if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
@@ -310,6 +315,33 @@ def demo_login(request, role):
     lang_code = sync_language_on_login(request, user)
     response = _login_redirect(user, request.session)
     return _set_language_cookie(response, lang_code)
+
+
+def demo_portal_login(request):
+    """Quick-login as the demo participant. Only available when DEMO_MODE is enabled."""
+    if not settings.DEMO_MODE:
+        raise Http404
+
+    from apps.clients.models import ClientFile
+    from apps.portal.models import ParticipantUser
+
+    demo_client = ClientFile.objects.filter(record_id="DEMO-001").first()
+    if not demo_client:
+        raise Http404
+
+    try:
+        participant = ParticipantUser.objects.get(
+            client_file=demo_client, is_active=True
+        )
+    except ParticipantUser.DoesNotExist:
+        raise Http404
+
+    # Set portal session (same pattern as portal_login view)
+    participant.last_login = timezone.now()
+    participant.save(update_fields=["last_login"])
+    request.session["_portal_participant_id"] = str(participant.pk)
+
+    return redirect("/my/")
 
 
 @login_required

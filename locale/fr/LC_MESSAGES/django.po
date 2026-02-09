@@ -8945,3 +8945,62 @@ msgstr ""
 
 msgid "you@example.com"
 msgstr ""
+
+msgid "Client consents to sharing clinical information across programs"
+msgstr ""
+
+msgid "Please select at least one program."
+msgstr ""
+
+msgid "You do not have any program roles."
+msgstr ""
+
+msgid "Cross-Program Sharing"
+msgstr ""
+
+msgid "Participant Portal"
+msgstr ""
+
+msgid "See what participants see when they check their goals and progress"
+msgstr ""
+
+msgid ""
+"After merge, staff in the following programs will see all combined records:"
+msgstr ""
+
+msgid ""
+"Clinical notes are only visible within the program where they were recorded."
+" Under Ontario privacy law (PHIPA), express consent is required before "
+"clinical information can be shared across programs."
+msgstr ""
+
+msgid ""
+"Note: Cross-program note filtering will be enforced in a future update. This"
+" setting is being recorded now for when enforcement is enabled."
+msgstr ""
+
+msgid ""
+"Once all program managers approve, participant data will be permanently "
+"anonymised or erased depending on the level selected below."
+msgstr ""
+
+msgid "Program visibility after merge"
+msgstr ""
+
+msgid ""
+"Removes name, date of birth, and other identifying fields. Keeps notes, "
+"metrics, plans, and program data for reporting."
+msgstr ""
+
+msgid ""
+"Required under Ontario privacy law (PHIPA) before clinical notes from one "
+"program can be viewed by staff in another program."
+msgstr ""
+
+msgid "Staff in all listed programs will be able to see all combined records."
+msgstr ""
+
+msgid ""
+"This participant has consented to sharing clinical information across "
+"programs."
+msgstr ""

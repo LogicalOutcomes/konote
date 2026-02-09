@@ -238,6 +238,8 @@ FIELD_ENCRYPTION_KEY = require_env("FIELD_ENCRYPTION_KEY")
 
 # Portal — participant-facing portal configuration
 EMAIL_HASH_KEY = os.environ.get("EMAIL_HASH_KEY", "")
+if not EMAIL_HASH_KEY and DEMO_MODE:
+    EMAIL_HASH_KEY = "demo-email-hash-key-not-for-production"
 PORTAL_DOMAIN = os.environ.get("PORTAL_DOMAIN", "")
 STAFF_DOMAIN = os.environ.get("STAFF_DOMAIN", "")
 

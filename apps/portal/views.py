@@ -12,7 +12,7 @@ import logging
 from functools import wraps
 
 from django.conf import settings
-from django.http import Http404, HttpResponse, JsonResponse
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -203,7 +203,7 @@ def portal_login(request):
                 })
 
             # Password correct — check if MFA is required
-            if participant.mfa_method and participant.mfa_method != "none":
+            if participant.mfa_method and participant.mfa_method not in ("none", "exempt"):
                 # Store participant ID temporarily for MFA verification
                 request.session["_portal_mfa_pending_id"] = str(participant.pk)
                 return redirect("portal:mfa_verify")
@@ -228,6 +228,7 @@ def portal_login(request):
     return render(request, "portal/login.html", {
         "form": form,
         "error": error,
+        "demo_mode": settings.DEMO_MODE,
     })
 
 
@@ -553,23 +554,7 @@ def settings_view(request):
     """Portal settings — language preference, MFA status, password change link."""
     participant = request.participant_user
 
-    if request.method == "POST":
-        # Handle language preference update
-        language = request.POST.get("preferred_language")
-        if language in [code for code, _name in settings.LANGUAGES]:
-            participant.preferred_language = language
-            participant.save(update_fields=["preferred_language"])
-            from django.utils import translation
-
-            translation.activate(language)
-            response = redirect("portal:settings")
-            response.set_cookie(
-                settings.LANGUAGE_COOKIE_NAME,
-                language,
-                max_age=settings.LANGUAGE_COOKIE_AGE,
-                path=settings.LANGUAGE_COOKIE_PATH,
-            )
-            return response
+    # Language switching is handled by switch_language view (template posts there).
 
     return render(request, "portal/settings.html", {
         "participant": participant,
@@ -650,10 +635,17 @@ def password_reset_confirm(request):
     if request.method == "POST":
         form = PortalPasswordResetConfirmForm(request.POST)
         if form.is_valid():
-            # Code verification will be implemented with the email service.
-            # For now, this is the form + view structure.
-            # TODO: verify code against stored reset token, then set password
-            pass
+            # TODO: verify code against stored reset token, then set password.
+            # Token verification requires a password_reset_token field on
+            # ParticipantUser, which will be added with the email service.
+            error = _(
+                "Password reset is not available yet. "
+                "Please contact your worker for help with your password."
+            )
+            logger.info(
+                "password_reset_confirm submitted but token verification "
+                "not yet implemented"
+            )
     else:
         form = PortalPasswordResetConfirmForm()
 

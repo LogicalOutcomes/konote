@@ -9,6 +9,7 @@ urlpatterns = [
     path("logout/", views.logout_view, name="logout"),
     # Demo login (only works when DEMO_MODE is enabled)
     path("demo-login/<str:role>/", views.demo_login, name="demo_login"),
+    path("demo-portal-login/", views.demo_portal_login, name="demo_portal_login"),
     # User management (admin only)
     path("users/", admin_views.user_list, name="user_list"),
     path("users/new/", admin_views.user_create, name="user_create"),

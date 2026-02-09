@@ -64,5 +64,14 @@
         <br>
         <small>{% trans "Tips for using this site safely on shared devices." %}</small>
     </p>
+
+    {% if demo_mode %}
+    <hr>
+    <section class="portal-demo-section">
+        <p><strong>{% trans "Try the Demo" %}</strong></p>
+        <p><small>{% trans "Sign in instantly as a demo participant" %}</small></p>
+        <a href="/auth/demo-portal-login/" role="button">{% trans "Sign in as Jordan" %}</a>
+    </section>
+    {% endif %}
 </article>
 {% endblock %}
