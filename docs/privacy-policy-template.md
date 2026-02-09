@@ -31,9 +31,9 @@ We collect personal information about clients to deliver and track services:
 | **Identifiers** | Name, date of birth, client ID | Directly identifying PII |
 | **Contact Information** | Address, phone number, email address | Directly identifying PII |
 | **Demographic Data** | Age, gender, language preference | Indirectly identifying |
-| **Service Records** | Programme enrolment, case notes, progress metrics | Sensitive service data |
+| **Service Records** | Program enrolment, case notes, progress metrics | Sensitive service data |
 | **Consent Records** | Consent forms, consent dates, scope of consent | Legal records |
-| **Custom Fields** | Organisation-defined fields (varies by programme) | Variable sensitivity |
+| **Custom Fields** | Organisation-defined fields (varies by program) | Variable sensitivity |
 
 ### 2.2 Staff and User Information
 
@@ -124,14 +124,14 @@ Access to client information is controlled through a role-based permission syste
 
 | Role | Access Level |
 |------|--------------|
-| **Administrator** | System settings and user management. No client data access unless also assigned a programme role. |
-| **Programme Manager** | Full access to assigned programme(s) and their clients. Can edit plans and export data. |
-| **Staff** | Access to clients in assigned programmes. Can write notes and record events. |
+| **Administrator** | System settings and user management. No client data access unless also assigned a program role. |
+| **Program Manager** | Full access to assigned program(s) and their clients. Can edit plans and export data. |
+| **Staff** | Access to clients in assigned programs. Can write notes and record events. |
 | **Front Desk** | Limited client information only. Cannot view full records or export data. |
 
 ### 4.2 Client Assignment
 
-Staff can only access client records for programmes they are assigned to. Assignment is programme-based: users are assigned to one or more programmes and can access all clients enrolled in those programmes.
+Staff can only access client records for programs they are assigned to. Assignment is program-based: users are assigned to one or more programs and can access all clients enrolled in those programs.
 
 ### 4.3 Administrative Access
 
@@ -209,7 +209,7 @@ is stored in **[COUNTRY/REGION]**.
 
 ### 7.1 Purpose
 
-KoNote2's Outcome Insights feature can optionally use AI to generate draft narrative summaries of programme outcomes. This helps staff identify patterns in service delivery and prepare reports. The feature is off by default and must be explicitly enabled by an administrator.
+KoNote2's Outcome Insights feature can optionally use AI to generate draft narrative summaries of program outcomes. This helps staff identify patterns in service delivery and prepare reports. The feature is off by default and must be explicitly enabled by an administrator.
 
 ### 7.2 Data Sent to the AI Provider
 
@@ -219,7 +219,7 @@ Before any data is sent, KoNote2 removes personally identifying information:
 |-----------|-------------|-----------------|
 | **Statistics** | Aggregate counts and percentages (e.g., "60% of participants reported improvement") | Nothing — these are already anonymous |
 | **Quotes** | Short excerpts from progress notes, with all identifying details scrubbed | Client names, staff names, email addresses, phone numbers, SIN numbers, postal codes, and street addresses |
-| **Context** | Programme name, date range, goal/target names | Nothing — these are organisational terms, not personal data |
+| **Context** | Program name, date range, goal/target names | Nothing — these are organisational terms, not personal data |
 
 **The following are never sent:** client names, dates of birth, contact information, full case records, unprocessed notes, database credentials, or encryption keys.
 
@@ -302,15 +302,15 @@ We do not use:
 KoNote2 supports formal data erasure requests in compliance with PIPEDA:
 
 1. **Request** — Any staff member can initiate an erasure request for a client
-2. **Approval** — All programme managers for that client's programmes must approve the request
+2. **Approval** — All program managers for that client's programs must approve the request
 3. **Execution** — Once approved, all client data is permanently and irreversibly deleted, including:
    - Client profile and contact information
    - All notes, plans, events, and alerts
    - All metric recordings and custom field values
-   - Programme enrolment records
+   - Program enrolment records
 4. **Audit Trail** — The audit log records that an erasure occurred (date, who requested, who approved) but retains no personal information about the erased client
 
-Self-approval is prevented — the person requesting erasure cannot also be the sole approver. A single rejection from any programme manager cancels the entire request.
+Self-approval is prevented — the person requesting erasure cannot also be the sole approver. A single rejection from any program manager cancels the entire request.
 
 ### 10.2 Data Deletion on Retention Expiry
 

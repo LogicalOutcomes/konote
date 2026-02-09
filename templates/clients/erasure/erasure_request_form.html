@@ -11,7 +11,7 @@
 
 <article aria-label="warning" class="warning" style="border-left: 4px solid var(--pico-del-color); background: var(--pico-del-color-bg, rgba(255,0,0,0.05));">
     <strong>{% trans "This action cannot be undone." %}</strong>
-    {% trans "Once all programme managers approve, participant data will be permanently anonymised or erased depending on the level selected below." %}
+    {% trans "Once all program managers approve, participant data will be permanently anonymised or erased depending on the level selected below." %}
 </article>
 
 {# Retention status #}
@@ -63,7 +63,7 @@
                 <tr><td>{% trans "Events" %}</td><td>{{ data_summary.events|default:"0" }}</td></tr>
                 <tr><td>{% trans "Alerts" %}</td><td>{{ data_summary.alerts|default:"0" }}</td></tr>
                 <tr><td>{% trans "Custom Field Values" %}</td><td>{{ data_summary.custom_field_values|default:"0" }}</td></tr>
-                <tr><td>{% trans "Programme Enrolments" %}</td><td>{{ data_summary.enrolments|default:"0" }}</td></tr>
+                <tr><td>{% trans "Program Enrolments" %}</td><td>{{ data_summary.enrolments|default:"0" }}</td></tr>
                 <tr><td>{% trans "Metric Values" %}</td><td>{{ data_summary.metric_values|default:"0" }}</td></tr>
             </tbody>
         </table>
@@ -89,9 +89,9 @@
                 <span>
                     {{ radio.choice_label }}
                     {% if radio.choice_value == "anonymise" %}
-                    <br><small class="secondary">{% trans "Removes name, date of birth, and other identifying fields. Keeps notes, metrics, plans, and programme data for reporting." %}</small>
+                    <br><small class="secondary">{% trans "Removes name, date of birth, and other identifying fields. Keeps notes, metrics, plans, and program data for reporting." %}</small>
                     {% elif radio.choice_value == "anonymise_purge" %}
-                    <br><small class="secondary">{% trans "Removes identifying fields AND all narrative content (notes, alerts, event descriptions). Keeps numeric metrics and programme enrolments." %}</small>
+                    <br><small class="secondary">{% trans "Removes identifying fields AND all narrative content (notes, alerts, event descriptions). Keeps numeric metrics and program enrolments." %}</small>
                     {% elif radio.choice_value == "full_erasure" %}
                     <br><small class="secondary">{% trans "Permanently deletes all records. Only a statistical summary is preserved." %}
                     {% if not available_tiers.full_erasure.available %}<br><em>{{ available_tiers.full_erasure.reason }}</em>{% endif %}

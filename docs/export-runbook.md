@@ -119,7 +119,7 @@ docker compose exec web python manage.py cleanup_expired_exports
 
 | Scenario | Explanation | Solution |
 |---|---|---|
-| User tries to create a metric/CMT export | They are not an admin or programme manager | Assign them the `program_manager` role for the relevant programme |
+| User tries to create a metric/CMT export | They are not an admin or program manager | Assign them the `program_manager` role for the relevant program |
 | User tries to create a client data export | They are not an admin | Only admins can export client data. This is by design -- it contains full PII |
 | User tries to download someone else's export link | Only the creator and admins can download | The creator should share the file directly, or an admin can download it |
 | Receptionist tries to export individual client data | Receptionists do not have export access | Staff role or higher is required for individual client exports |
@@ -128,10 +128,10 @@ docker compose exec web python manage.py cleanup_expired_exports
 
 | Export Type | Minimum Role |
 |---|---|
-| Metric Report | Programme Manager (for their programmes) or Admin (any programme) |
-| CMT Report | Programme Manager (for their programmes) or Admin (any programme) |
+| Metric Report | Program Manager (for their programs) or Admin (any program) |
+| CMT Report | Program Manager (for their programs) or Admin (any program) |
 | Client Data Export | Admin only |
-| Individual Client Export | Staff (must have programme role for that client) |
+| Individual Client Export | Staff (must have program role for that client) |
 
 ### PDF generation failures
 
@@ -155,7 +155,7 @@ docker compose exec web python manage.py cleanup_expired_exports
 - Beyond that, performance may degrade
 
 **What to do if exports time out:**
-1. Apply filters to reduce the number of clients (filter by programme, status, or date range)
+1. Apply filters to reduce the number of clients (filter by program, status, or date range)
 2. If your agency has more than 2,000 active clients, contact your technical support for optimisation options
 3. Check your server's request timeout settings (e.g., Gunicorn's `--timeout` flag)
 

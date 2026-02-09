@@ -1,4 +1,4 @@
-"""Views for Outcome Insights — programme-level and client-level qualitative analysis."""
+"""Views for Outcome Insights — program-level and client-level qualitative analysis."""
 import logging
 
 from django.contrib.auth.decorators import login_required
@@ -20,7 +20,7 @@ _PRIORITY_LABELS = dict(ProgressNote.SUGGESTION_PRIORITY_CHOICES)
 
 logger = logging.getLogger(__name__)
 
-# Roles that can view programme-level aggregate insights
+# Roles that can view program-level aggregate insights
 _INSIGHTS_ROLES = {"staff", "program_manager", "executive"}
 
 
@@ -41,9 +41,9 @@ def _get_data_tier(note_count, month_count):
 
 @login_required
 def program_insights(request):
-    """Programme-level Outcome Insights page.
+    """Program-level Outcome Insights page.
 
-    GET: Show form. If programme + time period are in query params, show results.
+    GET: Show form. If program + time period are in query params, show results.
 
     Access: staff, program_manager, and executive roles. Executives see
     aggregate data only (quotes suppressed because note.view is DENY).
@@ -90,7 +90,7 @@ def program_insights(request):
 
         data_tier = _get_data_tier(structured["note_count"], structured["month_count"])
 
-        # Quotes: privacy-gated, no dates at programme level
+        # Quotes: privacy-gated, no dates at program level
         # Executives cannot see quotes (note.view is DENY for executives)
         quotes = []
         if data_tier != "sparse" and not is_executive_only:
@@ -98,7 +98,7 @@ def program_insights(request):
                 program=program,
                 date_from=date_from,
                 date_to=date_to,
-                include_dates=False,  # Privacy: no dates at programme level
+                include_dates=False,  # Privacy: no dates at program level
             )
 
         # Separate suggestions from other quotes so they display under their own heading

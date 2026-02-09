@@ -60,7 +60,7 @@ def sanitise_filename(raw_name):
 
     Args:
         raw_name: The raw string to use in a filename (e.g. a record_id or
-                  programme name).
+                  program name).
 
     Returns:
         A sanitised string containing only [A-Za-z0-9_.-] characters.

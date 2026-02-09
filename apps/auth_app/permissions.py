@@ -13,7 +13,7 @@ from apps.auth_app.constants import ROLE_RANK
 
 # Permission levels
 DENY = "deny"          # Never allowed
-ALLOW = "allow"        # Always allowed (within programme scope)
+ALLOW = "allow"        # Always allowed (within program scope)
 SCOPED = "scoped"      # Allowed if assigned to specific group/client
 GATED = "gated"        # Allowed with documented reason (just-in-time access)
 PER_FIELD = "per_field"  # Check field-level configuration
@@ -57,7 +57,7 @@ PERMISSIONS = {
         "metric.view_individual": DENY,
         "metric.view_aggregate": DENY,
 
-        "report.programme_report": DENY,  # Managers generate, not front desk
+        "report.program_report": DENY,  # Managers generate, not front desk
         "report.data_extract": DENY,
 
         "event.view": DENY,
@@ -84,27 +84,27 @@ PERMISSIONS = {
         # System administration (admin-only via @admin_required — separate system)
         "user.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
-        "programme.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
+        "program.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "audit.view": DENY,  # Enforced by @admin_required (not matrix-driven)
     },
 
     "staff": {
         # Tier 2: Clinical access — scoped to assigned groups/clients (Phase 2)
-        # Phase 1: scoped to programme (existing behaviour preserved)
+        # Phase 1: scoped to program (existing behaviour preserved)
         "client.view_name": ALLOW,
         "client.view_contact": ALLOW,
         "client.view_safety": ALLOW,  # Allergies, medical alert CONDITIONS (not treatments),
                                       # emergency contacts, staff alerts. NOT medications.
         "client.view_medications": SCOPED,  # Same access pattern as clinical data
-        "client.view_clinical": SCOPED,  # Phase 1: programme. Phase 2: assigned groups/clients
+        "client.view_clinical": SCOPED,  # Phase 1: program. Phase 2: assigned groups/clients
         "client.edit": SCOPED,  # Enforced by @requires_permission
-        "client.create": SCOPED,  # Creates in own programme, especially outreach. Enforced by @requires_permission
-        "client.edit_contact": SCOPED,  # Phone + email within own programme. Enforced by @requires_permission
+        "client.create": SCOPED,  # Creates in own program, especially outreach. Enforced by @requires_permission
+        "client.edit_contact": SCOPED,  # Phone + email within own program. Enforced by @requires_permission
 
         "attendance.check_in": SCOPED,
         "attendance.view_report": SCOPED,
 
-        "group.view_roster": SCOPED,  # Phase 1: programme. Phase 2: assigned groups only
+        "group.view_roster": SCOPED,  # Phase 1: program. Phase 2: assigned groups only
         "group.view_detail": SCOPED,
         "group.log_session": SCOPED,
         "group.edit": DENY,  # Can't change group config
@@ -112,7 +112,7 @@ PERMISSIONS = {
                                          # All changes must create audit entry (PHIPA — group type reveals diagnosis).
                                          # Enforced by @requires_permission
 
-        "note.view": SCOPED,  # Enforced by @requires_permission. Migrate from @programme_role_required
+        "note.view": SCOPED,  # Enforced by @requires_permission. Migrate from @program_role_required
         "note.create": SCOPED,  # Enforced by @requires_permission
         "note.edit": SCOPED,  # Own notes only. Enforced by @requires_permission
 
@@ -122,7 +122,7 @@ PERMISSIONS = {
         "metric.view_individual": SCOPED,
         "metric.view_aggregate": SCOPED,
 
-        "report.programme_report": DENY,
+        "report.program_report": DENY,
         "report.data_extract": DENY,
 
         "event.view": SCOPED,  # Enforced by @requires_permission
@@ -153,7 +153,7 @@ PERMISSIONS = {
         # System administration (admin-only via @admin_required — separate system)
         "user.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
-        "programme.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
+        "program.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "audit.view": DENY,  # Enforced by @admin_required (not matrix-driven)
     },
 
@@ -168,7 +168,7 @@ PERMISSIONS = {
         "client.view_medications": ALLOW,  # Same access pattern as clinical data
         "client.view_clinical": ALLOW,  # Phase 3: GATED (just-in-time with reason)
         "client.edit": DENY,  # Phase 3: managers don't edit client records
-        "client.create": SCOPED,  # Intake in smaller programmes. Enforced by @requires_permission
+        "client.create": SCOPED,  # Intake in smaller programs. Enforced by @requires_permission
         "client.edit_contact": DENY,  # PMs don't edit individual contact info
 
         "attendance.check_in": DENY,
@@ -190,7 +190,7 @@ PERMISSIONS = {
         "metric.view_individual": ALLOW,  # Phase 3: GATED
         "metric.view_aggregate": ALLOW,
 
-        "report.programme_report": ALLOW,  # Primary use case. Enforced by can_create_export()
+        "report.program_report": ALLOW,  # Primary use case. Enforced by can_create_export()
         "report.data_extract": DENY,  # Phase 3: request-only (requires admin approval)
 
         "event.view": ALLOW,  # Phase 3: GATED. Enforced by @requires_permission
@@ -200,14 +200,14 @@ PERMISSIONS = {
         "alert.create": ALLOW,  # Supervisors should flag safety concerns when reviewing
                                 # case files. No barriers to creating safety alerts.
                                 # Enforced by @requires_permission
-        "alert.cancel": ALLOW,  # Can cancel any alert in their programme
+        "alert.cancel": ALLOW,  # Can cancel any alert in their program
 
         "custom_field.view": ALLOW,  # Phase 3: GATED
         "custom_field.edit": DENY,
 
         # Clinical records
         "consent.view": ALLOW,
-        "consent.manage": SCOPED,  # PMs do intake in smaller programmes. Consent records
+        "consent.manage": SCOPED,  # PMs do intake in smaller programs. Consent records
                                    # immutable after creation — can only withdraw and re-record.
                                    # Enforced by @requires_permission
         "intake.view": ALLOW,
@@ -218,14 +218,14 @@ PERMISSIONS = {
         "client.delete": DENY,  # Handled by admin erasure workflow
         "plan.delete": DENY,   # Plans should be archived, not deleted
 
-        # System administration — SCOPED for programme managers (own programme only)
-        "user.manage": SCOPED,  # Own programme team. CANNOT elevate roles
+        # System administration — SCOPED for program managers (own program only)
+        "user.manage": SCOPED,  # Own program team. CANNOT elevate roles
                                 # (receptionist->staff) or create PM/executive accounts.
                                 # Requires custom enforcement — see no-elevation constraint.
                                 # Enforced by @requires_permission + custom view logic
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
-        "programme.manage": SCOPED,  # Own programme only. Enforced by @requires_permission
-        "audit.view": SCOPED,  # QA oversight for own programme. Enforced by @requires_permission
+        "program.manage": SCOPED,  # Own program only. Enforced by @requires_permission
+        "audit.view": SCOPED,  # QA oversight for own program. Enforced by @requires_permission
     },
 
     "executive": {
@@ -258,7 +258,7 @@ PERMISSIONS = {
         "metric.view_individual": DENY,
         "metric.view_aggregate": ALLOW,  # Org-wide
 
-        "report.programme_report": ALLOW,  # View only (managers generate). Enforced by can_create_export()
+        "report.program_report": ALLOW,  # View only (managers generate). Enforced by can_create_export()
         "report.data_extract": DENY,
 
         "event.view": DENY,
@@ -286,7 +286,7 @@ PERMISSIONS = {
         # Override to ALLOW for agencies where executive is operational ED (not board member).
         "user.manage": DENY,  # Override to ALLOW if executive is operational ED
         "settings.manage": DENY,  # Override to ALLOW if executive is operational ED
-        "programme.manage": DENY,  # Override to ALLOW if executive is operational ED
+        "program.manage": DENY,  # Override to ALLOW if executive is operational ED
         "audit.view": ALLOW,   # Board oversight — executives can review audit trail
     },
 }
@@ -390,7 +390,7 @@ def permission_to_plain_english(perm_key, perm_level):
         "metric.view_individual": "See individual client metrics and outcomes",
         "metric.view_aggregate": "See aggregate metrics and reports",
 
-        "report.programme_report": "Generate programme outcome reports",
+        "report.program_report": "Generate program outcome reports",
         "report.data_extract": "Export client data extracts",
 
         "event.view": "View client events and timeline",
@@ -417,7 +417,7 @@ def permission_to_plain_english(perm_key, perm_level):
         # System administration
         "user.manage": "Create, edit, or deactivate user accounts",
         "settings.manage": "Change system configuration, feature toggles, and terminology",
-        "programme.manage": "Create, edit, or archive programmes",
+        "program.manage": "Create, edit, or archive programs",
         "audit.view": "View the audit log",
     }
 

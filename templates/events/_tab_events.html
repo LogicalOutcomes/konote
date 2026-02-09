@@ -2,7 +2,7 @@
 <!-- Partial: Events tab content -->
 {% if is_admin_only %}
 <p class="notice" role="status">
-    <small>{% blocktrans with programme=term.program|default:"programme" %}You are an administrator without {{ programme }} assignments. To see data, ask another admin to assign you a {{ programme }} role.{% endblocktrans %}</small>
+    <small>{% blocktrans with program=term.program|default:"program" %}You are an administrator without {{ program }} assignments. To see data, ask another admin to assign you a {{ program }} role.{% endblocktrans %}</small>
 </p>
 {% endif %}
 <div class="action-bar">

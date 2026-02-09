@@ -49,7 +49,7 @@ def first_name(self, value):
 ### What Is NOT Encrypted (and Why)
 
 - **Metric values** -- Numeric or categorical data (e.g. "3", "improved", "yes/no"). Without client identity (which is encrypted), metric values are not personally identifiable. Encrypting them would break reporting and aggregation queries.
-- **Programme names, outcome definitions, target descriptions** -- Organisational data, not PII.
+- **Program names, outcome definitions, target descriptions** -- Organisational data, not PII.
 - **Dates, timestamps, status fields** -- Required for database queries and filtering.
 - **User accounts** -- Except email addresses, which are encrypted.
 
@@ -86,7 +86,7 @@ Run checks explicitly with `python manage.py check` (basic) or `python manage.py
 | File | Test Count | What It Covers |
 |------|-----------|----------------|
 | `test_security.py` | PII exposure tests | Client data not in database plaintext, encryption round-trip, ciphertext validation |
-| `test_rbac.py` | 19 tests | Role permissions, front desk access control, programme restrictions, admin-only routes |
+| `test_rbac.py` | 19 tests | Role permissions, front desk access control, program restrictions, admin-only routes |
 | `test_htmx_errors.py` | 21 tests | Error responses, HTMX partials, form validation feedback |
 | `test_encryption.py` | Key validation tests | Fernet key format, encrypt/decrypt functions, unicode round-trip, memoryview handling |
 
@@ -104,11 +104,11 @@ Test data is temporary -- created during test execution, automatically deleted a
 
 ### Permission Matrix
 
-| Action | Front Desk | Staff | Programme Manager | Executive | Admin |
+| Action | Front Desk | Staff | Program Manager | Executive | Admin |
 |--------|:----------:|:-----:|:-----------------:|:---------:|:-----:|
-| See client records | Limited fields | Full records | Their programmes | No (dashboard only) | No (config only) |
-| Create metrics export | No | No | Their programmes | No | Any programme |
-| Create CMT export | No | No | Their programmes | No | Any programme |
+| See client records | Limited fields | Full records | Their programs | No (dashboard only) | No (config only) |
+| Create metrics export | No | No | Their programs | No | Any program |
+| Create CMT export | No | No | Their programs | No | Any program |
 | Create client data export | No | No | No | No | Yes |
 | Download own export | N/A | N/A | Yes | N/A | Yes |
 | Download others' exports | No | No | No | No | Yes |
@@ -116,18 +116,18 @@ Test data is temporary -- created during test execution, automatically deleted a
 
 ### Design Rationale
 
-- **Programme managers can export** because they already see the data -- export follows existing access, not elevated access. Requiring an admin to generate every funder report creates an unnecessary bottleneck.
-- **Exports are scoped to programmes** -- a PM for "Youth Services" cannot export from "Housing Support." The programme dropdown only shows programmes the user manages. This is enforced server-side by the form's queryset, not just in the UI.
+- **Program managers can export** because they already see the data -- export follows existing access, not elevated access. Requiring an admin to generate every funder report creates an unnecessary bottleneck.
+- **Exports are scoped to programs** -- a PM for "Youth Services" cannot export from "Housing Support." The program dropdown only shows programs the user manages. This is enforced server-side by the form's queryset, not just in the UI.
 - **`client_data_export` stays admin-only** -- this is a full PII dump for data migration and audit purposes, not day-to-day reporting.
 - **Executives see aggregate dashboards only** -- no access to individual client records.
-- **Only the creator can download their export link** -- export links are deferred downloads, not a sharing mechanism. Sharing with others would bypass programme scoping.
+- **Only the creator can download their export link** -- export links are deferred downloads, not a sharing mechanism. Sharing with others would bypass program scoping.
 
 ### Implementation References
 
 | Component | Location |
 |-----------|----------|
 | Central permission check | `can_create_export(user, export_type, program)` in `apps/reports/utils.py` |
-| Programme scoping for forms | `get_manageable_programs(user)` in `apps/reports/utils.py` |
+| Program scoping for forms | `get_manageable_programs(user)` in `apps/reports/utils.py` |
 | Nav visibility control | `has_export_access` template context variable |
 | Server-side queryset filtering | Form querysets in export views |
 | Audit logging | All exports logged with creator, recipient, and link ID |
@@ -135,7 +135,7 @@ Test data is temporary -- created during test execution, automatically deleted a
 
 RBAC is enforced by two middleware classes:
 
-- `konote.middleware.program_access.ProgramAccessMiddleware` -- enforces programme-level access control
+- `konote.middleware.program_access.ProgramAccessMiddleware` -- enforces program-level access control
 - `konote.middleware.audit.AuditMiddleware` -- logs all data access to the audit database
 
 Both are verified as present by `KoNote.E002` and by `ConfigurationDriftTest` in `tests/test_security.py`.
@@ -185,7 +185,7 @@ Both are verified as present by `KoNote.E002` and by `ConfigurationDriftTest` in
 
 ```
 Request created (by staff+)
-  -> Pending approval (all PMs for client's programmes notified by email)
+  -> Pending approval (all PMs for client's programs notified by email)
     -> Each PM: approve or reject
       -> If any PM rejects -> Request rejected (all parties notified)
       -> If all PMs approve -> Erasure executed
@@ -210,10 +210,10 @@ The system supports three tiers of erasure, determined at request time:
 
 - **Self-approval prevention:** Requester cannot self-approve their own erasure request. Enforced in `record_approval()` in `apps/clients/erasure.py`.
 - **Single rejection rule:** One rejection = entire request rejected.
-- **Deadlock detection:** If the requester is the only active PM for all remaining unapproved programmes, `is_deadlocked()` returns `True`. An admin can then approve as a fallback.
+- **Deadlock detection:** If the requester is the only active PM for all remaining unapproved programs, `is_deadlocked()` returns `True`. An admin can then approve as a fallback.
 - **Non-destructive audit:** `ErasureRequest` survives deletion via `on_delete=SET_NULL`. It stores `client_pk`, `client_record_id`, `data_summary` (record counts only), `programs_required`, and `requested_by_display`.
 - **Audit-first execution:** The audit log entry is written before the data is deleted. If audit logging fails, erasure does not proceed.
-- **What auditors see after erasure:** `ErasureRequest` record with reason, all `ErasureApproval` records (who, when, which programme), and `data_summary` with record counts -- no PII.
+- **What auditors see after erasure:** `ErasureRequest` record with reason, all `ErasureApproval` records (who, when, which program), and `data_summary` with record counts -- no PII.
 - **Email notifications:** Best-effort (failures are logged but do not block erasure).
 - **Concurrency control:** `record_approval()` uses `select_for_update()` to prevent concurrent double-execution of the same erasure.
 

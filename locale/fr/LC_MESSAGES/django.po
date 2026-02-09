@@ -9004,3 +9004,117 @@ msgid ""
 "This participant has consented to sharing clinical information across "
 "programs."
 msgstr ""
+
+msgid "About Program Outcome Reports"
+msgstr ""
+
+msgid "Add program enrolment history as additional columns."
+msgstr ""
+
+msgid ""
+"Email notification failed. Please notify involved program managers manually."
+msgstr ""
+
+msgid ""
+"Email notification failed. Please notify the program managers manually."
+msgstr ""
+
+msgid ""
+"Generate a report of aggregate metric data for a program and date range."
+msgstr ""
+
+msgid ""
+"Generate a standardised program outcome report with service statistics, "
+"demographics, and outcomes."
+msgstr ""
+
+msgid "If you could change one thing about this program, what would it be?"
+msgstr ""
+
+msgid "Include program enrolments"
+msgstr ""
+
+msgid ""
+"KoNote2's Outcome Insights feature can optionally use AI to generate draft "
+"narrative summaries of program outcomes. This feature is off by default and "
+"must be enabled by your administrator."
+msgstr ""
+
+msgid "Leave blank to export participants from all programs."
+msgstr ""
+
+msgid "Name shown in participant portal. Leave blank to use program name."
+msgstr ""
+
+msgid "No outcome indicators with targets defined for this program."
+msgstr ""
+
+msgid ""
+"No progress notes found for this program in the selected time period. Try a "
+"longer time period or check that notes have been recorded."
+msgstr ""
+
+msgid ""
+"Once all program managers approve, the client's identifying information will"
+" be permanently removed."
+msgstr ""
+
+msgid "Organisation and program information"
+msgstr ""
+
+msgid "PROGRAM ENROLMENTS"
+msgstr ""
+
+msgid "Program Description"
+msgstr ""
+
+msgid "Program Outcome Report"
+msgstr ""
+
+msgid "Program Outcome Report Template"
+msgstr ""
+
+msgid "Program enrolments"
+msgstr ""
+
+msgid "Program managers have been notified by email."
+msgstr ""
+
+msgid "Program/Service Name"
+msgstr ""
+
+msgid "Programs Enrolled"
+msgstr ""
+
+msgid ""
+"Removes identifying fields AND all narrative content (notes, alerts, event "
+"descriptions). Keeps numeric metrics and program enrolments."
+msgstr ""
+
+msgid ""
+"The primary participant has a confidential program enrolment and cannot be "
+"merged."
+msgstr ""
+
+msgid ""
+"The secondary participant has a confidential program enrolment and cannot be"
+" merged."
+msgstr ""
+
+msgid ""
+"There are no metric values matching the selected program, metrics, and date "
+"range. Try adjusting your filters."
+msgstr ""
+
+msgid ""
+"This report was generated using KoNote2's Program Outcome Report Template."
+msgstr ""
+
+msgid "Viewing Program Insights"
+msgstr ""
+
+msgid "— All programs —"
+msgstr ""
+
+msgid "— Select a program —"
+msgstr ""

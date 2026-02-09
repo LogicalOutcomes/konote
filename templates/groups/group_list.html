@@ -18,7 +18,7 @@
         <tr>
             <th scope="col">{% trans "Name" %}</th>
             <th scope="col">{% trans "Type" %}</th>
-            <th scope="col">{{ term.program|default:"Programme" }}</th>
+            <th scope="col">{{ term.program|default:"Program" }}</th>
             <th scope="col">{% trans "Members" %}</th>
             <th scope="col">{% trans "Status" %}</th>
         </tr>
@@ -30,7 +30,7 @@
                 <a href="{% url 'groups:group_detail' group_id=group.pk %}">{{ group.name }}</a>
             </td>
             <td data-label="{% trans 'Type' %}">{{ group.get_group_type_display }}</td>
-            <td data-label="{{ term.program|default:'Programme' }}">{{ group.program.translated_name|default:"—" }}</td>
+            <td data-label="{{ term.program|default:'Program' }}">{{ group.program.translated_name|default:"—" }}</td>
             <td data-label="{% trans 'Members' %}">{{ group.member_count }}</td>
             <td data-label="{% trans 'Status' %}">
                 {% if group.status == "active" %}

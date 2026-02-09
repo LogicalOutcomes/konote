@@ -25,7 +25,7 @@ from apps.notes.models import ProgressNote, ProgressNoteTarget
 
 logger = logging.getLogger(__name__)
 
-# Minimum number of active participants for programme-level quote display.
+# Minimum number of active participants for program-level quote display.
 # Below this threshold, individual quotes risk re-identification.
 MIN_PARTICIPANTS_FOR_QUOTES = 15
 
@@ -36,7 +36,7 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
     No decryption is performed. No ceiling on note volume.
 
     Args:
-        program: Program instance (for programme-level insights).
+        program: Program instance (for program-level insights).
         client_file: ClientFile instance (for client-level insights).
         date_from: Start date (inclusive).
         date_to: End date (inclusive).
@@ -183,18 +183,18 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
     """Decrypt text fields and surface notable quotes.
 
     Args:
-        program: Program instance (programme-level).
+        program: Program instance (program-level).
         client_file: ClientFile instance (client-level).
         date_from: Start date.
         date_to: End date.
         max_quotes: Maximum quotes to return.
-        include_dates: Whether to include dates (False for programme-level privacy).
+        include_dates: Whether to include dates (False for program-level privacy).
 
     Returns:
         list of dicts with keys: text, target_name, note_id, date (if include_dates).
-        Returns empty list if programme-level and <15 active participants.
+        Returns empty list if program-level and <15 active participants.
     """
-    # Privacy gate: check participant count for programme-level.
+    # Privacy gate: check participant count for program-level.
     # Demo data is not real people — skip the gate in demo mode.
     if program and not client_file and not getattr(settings, "DEMO_MODE", False):
         participant_count = (
@@ -208,7 +208,7 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
         )
         if participant_count < MIN_PARTICIPANTS_FOR_QUOTES:
             logger.info(
-                "Skipping quotes for programme %s: %d participants (minimum %d)",
+                "Skipping quotes for program %s: %d participants (minimum %d)",
                 program.name, participant_count, MIN_PARTICIPANTS_FOR_QUOTES,
             )
             return []

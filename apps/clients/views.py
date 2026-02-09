@@ -245,8 +245,8 @@ def client_edit(request, client_id):
             client.phone = form.cleaned_data.get("phone", "")
             client.record_id = form.cleaned_data["record_id"]
             client.status = form.cleaned_data["status"]
-            client.cross_programme_sharing_consent = form.cleaned_data.get(
-                "cross_programme_sharing_consent", False
+            client.cross_program_sharing_consent = form.cleaned_data.get(
+                "cross_program_sharing_consent", False
             )
             client.save()
             # Sync enrolments — only touch programs the user has access to.
@@ -282,7 +282,7 @@ def client_edit(request, client_id):
                 "record_id": client.record_id,
                 "status": client.status,
                 "programs": current_program_ids,
-                "cross_programme_sharing_consent": client.cross_programme_sharing_consent,
+                "cross_program_sharing_consent": client.cross_program_sharing_consent,
             },
             available_programs=available_programs,
         )

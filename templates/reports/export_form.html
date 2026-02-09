@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Programme Outcome Report" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% trans "Program Outcome Report" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% trans "Programme Outcome Report" %}</h1>
-    <p>{% trans "Generate a report of aggregate metric data for a programme and date range." %}</p>
+    <h1>{% trans "Program Outcome Report" %}</h1>
+    <p>{% trans "Generate a report of aggregate metric data for a program and date range." %}</p>
 </hgroup>
 
 {% if no_data %}
 <article aria-label="{% trans 'No results' %}">
-    <p><strong>{% trans "No data found." %}</strong> {% trans "There are no metric values matching the selected programme, metrics, and date range. Try adjusting your filters." %}</p>
+    <p><strong>{% trans "No data found." %}</strong> {% trans "There are no metric values matching the selected program, metrics, and date range. Try adjusting your filters." %}</p>
 </article>
 {% endif %}
 
@@ -49,7 +49,7 @@
     </article>
     {% endif %}
 
-    {# Programme dropdown #}
+    {# Program dropdown #}
     <label for="{{ form.program.id_for_label }}">
         {{ form.program.label }}
         {{ form.program }}

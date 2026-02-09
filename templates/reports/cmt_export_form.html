@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Programme Outcome Report Template" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% trans "Program Outcome Report Template" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% trans "Programme Outcome Report Template" %}</h1>
-    <p>{% trans "Generate a standardised programme outcome report with service statistics, demographics, and outcomes." %}</p>
+    <h1>{% trans "Program Outcome Report Template" %}</h1>
+    <p>{% trans "Generate a standardised program outcome report with service statistics, demographics, and outcomes." %}</p>
 </hgroup>
 
 <article class="pico-background-yellow-50" aria-label="{% trans 'Draft Template Notice' %}" role="alert" style="border-left: 4px solid var(--pico-color-yellow-500); padding: 1rem; margin-bottom: 1.5rem;">
     <strong><span aria-hidden="true">⚠️</span> {% trans "Draft Template — Customise for Your Needs" %}</strong>
     <p style="margin-bottom: 0;">
         {% blocktrans %}
-        This is a generic programme outcome report template. Before submitting externally, verify it matches
+        This is a generic program outcome report template. Before submitting externally, verify it matches
         the recipient's specific reporting requirements. Different recipients (United Way chapters, government agencies,
         foundations) may require different formats, fields, or calculations.
         {% endblocktrans %}
@@ -27,10 +27,10 @@
     </p>
 </article>
 
-<article aria-label="{% trans 'About Programme Outcome Reports' %}">
+<article aria-label="{% trans 'About Program Outcome Reports' %}">
     <h2>{% trans "What's included in this report?" %}</h2>
     <ul>
-        <li>{% trans "Organisation and programme information" %}</li>
+        <li>{% trans "Organisation and program information" %}</li>
         <li>{% trans "Service statistics (total individuals served, new clients, total contacts)" %}</li>
         <li>{% trans "Age demographics using common nonprofit categories" %}</li>
         <li>{% trans "Outcome achievement rates for all metrics with defined targets" %}</li>
@@ -48,7 +48,7 @@
     </article>
     {% endif %}
 
-    {# Programme dropdown #}
+    {# Program dropdown #}
     <label for="{{ form.program.id_for_label }}">
         {{ form.program.label }}
         {{ form.program }}
@@ -115,7 +115,7 @@
     <summary>{% trans "About This Report Template" %}</summary>
     <p>
         {% blocktrans %}
-        This is a draft programme outcome report template based on common Canadian
+        This is a draft program outcome report template based on common Canadian
         nonprofit reporting requirements. It includes service statistics, demographics,
         and outcome achievement rates.
         {% endblocktrans %}

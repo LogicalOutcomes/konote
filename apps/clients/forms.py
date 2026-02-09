@@ -60,17 +60,17 @@ class ClientFileForm(forms.Form):
         queryset=Program.objects.none(),
         widget=forms.CheckboxSelectMultiple,
         required=True,
-        label=_("Programmes"),
-        error_messages={"required": _("Please select at least one programme.")},
+        label=_("Programs"),
+        error_messages={"required": _("Please select at least one program.")},
     )
 
-    # Cross-programme sharing consent (PHIPA compliance)
-    cross_programme_sharing_consent = forms.BooleanField(
+    # Cross-program sharing consent (PHIPA compliance)
+    cross_program_sharing_consent = forms.BooleanField(
         required=False,
-        label=_("Client consents to sharing clinical information across programmes"),
+        label=_("Client consents to sharing clinical information across programs"),
         help_text=_(
             "Required under Ontario privacy law (PHIPA) before clinical notes "
-            "from one programme can be viewed by staff in another programme."
+            "from one program can be viewed by staff in another program."
         ),
     )
 
@@ -206,7 +206,7 @@ class ErasureRequestForm(forms.Form):
     # Acknowledgement checkboxes — all three required
     ack_permanent = forms.BooleanField(
         label=_("I understand all data for this participant will be permanently "
-                "anonymised or erased once all programme managers approve."),
+                "anonymised or erased once all program managers approve."),
         required=True,
     )
     ack_authorised = forms.BooleanField(
@@ -215,7 +215,7 @@ class ErasureRequestForm(forms.Form):
         required=True,
     )
     ack_notify = forms.BooleanField(
-        label=_("I understand all programme managers will be notified and must "
+        label=_("I understand all program managers will be notified and must "
                 "approve before erasure proceeds."),
         required=True,
     )

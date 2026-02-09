@@ -2,7 +2,7 @@
 
 These checks run at startup (and during ``manage.py check``) to warn about
 configuration issues that could compromise portal security or expose
-sensitive programme names to participants.
+sensitive program names to participants.
 
 Run with:
     python manage.py check --deploy
@@ -35,10 +35,10 @@ def check_session_cookie_domain(app_configs, **kwargs):
 
 
 @register()
-def check_programme_portal_names(app_configs, **kwargs):
-    """Warn if active programmes with sensitive names lack a portal alias.
+def check_program_portal_names(app_configs, **kwargs):
+    """Warn if active programs with sensitive names lack a portal alias.
 
-    Programme names like "Substance Use Recovery" or "Mental Health Outreach"
+    Program names like "Substance Use Recovery" or "Mental Health Outreach"
     reveal clinical information when displayed in the participant portal.
     Agencies should set ``portal_display_name`` to a neutral alternative
     (e.g. "Wellness" or "Support Services").
@@ -69,14 +69,44 @@ def check_programme_portal_names(app_configs, **kwargs):
                 name_lower = program.name.lower()
                 if any(kw in name_lower for kw in SENSITIVE_KEYWORDS):
                     errors.append(Warning(
-                        f'Programme "{program.name}" may reveal clinical '
+                        f'Program "{program.name}" may reveal clinical '
                         f"information in participant portal.",
                         hint=(
-                            "Set portal_display_name on this programme to use "
+                            "Set portal_display_name on this program to use "
                             "a neutral name in the portal."
                         ),
                         id="portal.W002",
                     ))
+    except Exception:
+        pass  # Don't break startup if models aren't migrated yet
+
+    return errors
+
+
+@register()
+def check_email_hash_key(app_configs, **kwargs):
+    """Warn if EMAIL_HASH_KEY is empty while the portal feature is enabled.
+
+    An empty EMAIL_HASH_KEY means participant email lookups use HMAC
+    with an empty secret, which defeats the purpose of hashing.
+    """
+    from django.conf import settings as django_settings
+
+    errors = []
+    try:
+        from apps.admin_settings.models import FeatureToggle
+
+        flags = FeatureToggle.get_all_flags()
+        if flags.get("participant_portal") and not django_settings.EMAIL_HASH_KEY:
+            errors.append(Warning(
+                "EMAIL_HASH_KEY is empty but participant_portal is enabled.",
+                hint=(
+                    "Set EMAIL_HASH_KEY to a cryptographically random secret "
+                    "in your environment variables. Without it, participant "
+                    "email lookups use an empty HMAC key."
+                ),
+                id="portal.W003",
+            ))
     except Exception:
         pass  # Don't break startup if models aren't migrated yet
 

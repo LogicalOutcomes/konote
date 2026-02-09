@@ -632,8 +632,8 @@ class ExecutiveAggregateExportTest(TestCase):
             username="exec", password="testpass123", is_admin=False, display_name="Exec User"
         )
 
-        # Programme
-        self.program = Program.objects.create(name="Test Programme")
+        # Program
+        self.program = Program.objects.create(name="Test Program")
 
         # Roles
         UserProgramRole.objects.create(
@@ -845,8 +845,8 @@ class IndividualClientExportPermissionTest(TestCase):
             user=self.receptionist, program=self.program_a, role="receptionist"
         )
 
-        # Admin needs a programme role to pass ProgramAccessMiddleware
-        # (admins without programme roles are blocked from client URLs)
+        # Admin needs a program role to pass ProgramAccessMiddleware
+        # (admins without program roles are blocked from client URLs)
         UserProgramRole.objects.create(
             user=self.admin, program=self.program_a, role="program_manager"
         )

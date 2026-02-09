@@ -539,7 +539,7 @@ If you've lost your encryption key and have no backup:
 
 - Encrypted PII fields (names, emails, birth dates) are **permanently unrecoverable**
 - Encrypted progress note content is **permanently unrecoverable**
-- Non-encrypted data (metric values, programme assignments, dates) remains accessible
+- Non-encrypted data (metric values, program assignments, dates) remains accessible
 - You will need to re-enter client identifying information manually
 - This constitutes a loss of personal information — notify the Privacy Commissioner and affected clients as required under PIPEDA
 

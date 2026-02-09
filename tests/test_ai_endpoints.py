@@ -141,13 +141,13 @@ class GenerateNarrativeViewTest(AIEndpointBaseTest):
         self.http.login(username="staff", password="pass")
         resp = self.http.post(self.url, {})
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Please select a programme")
+        self.assertContains(resp, "Please select a program")
 
     def test_missing_date_range_returns_error(self):
         self.http.login(username="staff", password="pass")
         resp = self.http.post(self.url, {"program_id": self.program.pk})
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Please select a programme")
+        self.assertContains(resp, "Please select a program")
 
     def test_invalid_program_returns_400(self):
         self.http.login(username="staff", password="pass")

@@ -13,7 +13,7 @@ Welcome to KoNote2! This guide helps you find what you need quickly.
 | Record an event or alert | [Events and Alerts](#events-and-alerts) |
 | View or edit a client's plan | [Outcome Plans](#outcome-plans) |
 | See progress charts | [Analysis and Reports](#analysis-and-reports) |
-| See programme patterns | [Outcome Insights](#outcome-insights) |
+| See program patterns | [Outcome Insights](#outcome-insights) |
 | Review registration submissions | [Registration Forms](#registration-forms) |
 | Change my password | [Account Settings](#account-settings) |
 | Get admin help | [Administrator Tasks](#administrator-tasks) |
@@ -303,10 +303,10 @@ Charts automatically update when new metric values are recorded in progress note
 
 ### Outcome Insights
 
-Outcome Insights helps you see patterns across your programme — how participants are doing overall, what's changing, and what their own words reveal.
+Outcome Insights helps you see patterns across your program — how participants are doing overall, what's changing, and what their own words reveal.
 
 1. Click **Insights** in the main navigation
-2. Choose a **Programme** from the dropdown
+2. Choose a **Program** from the dropdown
 3. Choose a **Time period** (3 months, 6 months, 12 months, or a custom range)
 4. Click **Show Insights**
 
@@ -321,7 +321,7 @@ You'll see:
 
 **Data volume matters:** Insights become more reliable with more data. You need at least 20 notes across 3 months for trend analysis, and at least 50 notes for full insights.
 
-**Privacy protection:** At programme level, participant quotes only appear when 15 or more participants have notes in the selected period. This prevents anyone from being identified from their words.
+**Privacy protection:** At program level, participant quotes only appear when 15 or more participants have notes in the selected period. This prevents anyone from being identified from their words.
 
 #### AI Report Summaries (Optional)
 
@@ -340,7 +340,7 @@ You can also see insights for an individual participant:
 2. Go to the **Analysis** tab
 3. Scroll down to the **Qualitative Insights** section
 
-This shows the same trend chart and quotes, but for that one person. Unlike programme-level insights, dates are shown and there's no minimum participant threshold.
+This shows the same trend chart and quotes, but for that one person. Unlike program-level insights, dates are shown and there's no minimum participant threshold.
 
 ### Exporting Data
 
@@ -560,7 +560,7 @@ For security, KoNote2 logs you out after inactivity. Log in again to continue. Y
 | Flag a safety concern | Events tab → + New Alert |
 | See who needs attention | Check Priority Items on home page |
 | View progress charts | Client file → Analysis tab |
-| See programme patterns | Insights (main navigation) |
+| See program patterns | Insights (main navigation) |
 | Review registrations | Admin → Submissions |
 | Create a registration form | Admin → Registration |
 | Change terminology | Admin → Settings → Terminology |

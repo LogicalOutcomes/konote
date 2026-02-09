@@ -1,4 +1,4 @@
-"""Outcome achievement rate calculations for programme reporting.
+"""Outcome achievement rate calculations for program reporting.
 
 Calculates what percentage of clients met their outcome targets.
 Uses latest or average metric values to determine if clients achieved their goals.
@@ -185,10 +185,10 @@ def get_program_achievement_rate(
     use_latest: bool = True,
 ) -> dict[str, Any]:
     """
-    Calculate what percentage of clients in a programme met the target.
+    Calculate what percentage of clients in a program met the target.
 
     Args:
-        program: The programme to analyse.
+        program: The program to analyse.
         metric_def: The metric definition to evaluate.
         target_value: The target threshold value.
         date_from: Start of date range (inclusive).
@@ -202,7 +202,7 @@ def get_program_achievement_rate(
             - clients_met_target: Clients whose value met target
             - achievement_rate: Percentage (0.0-100.0) with 1 decimal place
     """
-    # Get clients enrolled in the programme
+    # Get clients enrolled in the program
     client_ids = ClientProgramEnrolment.objects.filter(
         program=program, status="enrolled"
     ).values_list("client_file_id", flat=True)
@@ -214,7 +214,7 @@ def get_program_achievement_rate(
 
     notes = ProgressNote.objects.filter(note_filter)
 
-    # Get all metric values for this metric in the programme
+    # Get all metric values for this metric in the program
     metric_values = MetricValue.objects.filter(
         metric_def=metric_def,
         progress_note_target__progress_note__in=notes,
@@ -280,13 +280,13 @@ def get_achievement_summary(
     use_latest: bool = True,
 ) -> dict[str, Any]:
     """
-    Calculate achievement rates for all metrics in a programme.
+    Calculate achievement rates for all metrics in a program.
 
     For each metric, uses max_value as the target threshold when available.
     Metrics without defined targets are included but marked as having no target.
 
     Args:
-        program: The programme to analyse.
+        program: The program to analyse.
         date_from: Start of date range (inclusive).
         date_to: End of date range (inclusive).
         metric_defs: Optional list of specific metrics to include. If None,
@@ -307,7 +307,7 @@ def get_achievement_summary(
                 - clients_met_target: Clients meeting target for this metric
                 - achievement_rate: Percentage for this metric
     """
-    # Get clients enrolled in the programme
+    # Get clients enrolled in the program
     client_ids = ClientProgramEnrolment.objects.filter(
         program=program, status="enrolled"
     ).values_list("client_file_id", flat=True)

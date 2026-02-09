@@ -154,16 +154,16 @@ class ClientFile(models.Model):
     def phone(self, value):
         self._phone_encrypted = encrypt_field(value)
 
-    # Cross-programme sharing consent (PHIPA compliance)
+    # Cross-program sharing consent (PHIPA compliance)
     # NOTE: This field is captured but NOT YET ENFORCED in views.
     # Phase 2 (PERM-P2) will add enforcement: notes will be filtered by
-    # authoring programme unless this flag is True or the note is a safety alert.
-    # Until then, notes remain visible across all shared programmes.
-    cross_programme_sharing_consent = models.BooleanField(
+    # authoring program unless this flag is True or the note is a safety alert.
+    # Until then, notes remain visible across all shared programs.
+    cross_program_sharing_consent = models.BooleanField(
         default=False,
         help_text=(
             "Client has given express consent for clinical information to be "
-            "shared across programmes. Required under PHIPA for multi-programme agencies."
+            "shared across programs. Required under PHIPA for multi-program agencies."
         ),
     )
 

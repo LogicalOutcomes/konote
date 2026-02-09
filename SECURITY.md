@@ -200,9 +200,9 @@ python manage.py test
 | File | Coverage |
 |------|----------|
 | `tests/test_security.py` | PII exposure, encryption round-trip, ciphertext validation |
-| `tests/test_rbac.py` | Role permissions, programme restrictions, admin-only routes |
+| `tests/test_rbac.py` | Role permissions, program restrictions, admin-only routes |
 | `tests/test_encryption.py` | Fernet key format, encrypt/decrypt functions |
-| `tests/test_export_permissions.py` | Role-based export access, programme scoping, download permissions |
+| `tests/test_export_permissions.py` | Role-based export access, program scoping, download permissions |
 | `tests/test_erasure.py` | Erasure workflow, approval logic, deadlock detection, audit preservation |
 | `tests/test_demo_data_separation.py` | Demo/real user isolation, queryset filtering |
 | `tests/test_secure_export.py` | Elevated export delay, link expiry, download authorisation |

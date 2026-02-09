@@ -30,7 +30,7 @@ class PlanPermissionHelperTest(TestCase):
         self.client_file.first_name = "Test"
         self.client_file.last_name = "Client"
         self.client_file.save()
-        # Enrol client in programme
+        # Enrol client in program
         from apps.clients.models import ClientProgramEnrolment
         ClientProgramEnrolment.objects.create(
             client_file=self.client_file, program=self.program, status="enrolled"

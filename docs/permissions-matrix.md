@@ -11,9 +11,9 @@
 |------|-------------|-------|
 | **Front Desk** | Reception staff who check people in | Operational only — names, contact, safety info |
 | **Direct Service** | Counsellors, case workers, facilitators | Full clinical access to assigned clients/groups |
-| **Program Manager** | Programme leads, supervisors | Administrative view across their programme(s) |
+| **Program Manager** | Program leads, supervisors | Administrative view across their program(s) |
 | **Executive** | Directors, board members, funders | Org-wide aggregate data only — no individual records |
-| **Administrator** | System administrators | System configuration only — NO client data unless also assigned a programme role |
+| **Administrator** | System administrators | System configuration only — NO client data unless also assigned a program role |
 
 ---
 
@@ -40,7 +40,7 @@
 | Edit plans | — | Scoped | — | — | — |
 | View individual metrics | — | Scoped | Yes | — | — |
 | View aggregate metrics | — | Scoped | Yes | Yes | — |
-| Generate programme reports | — | — | Yes | Yes (view) | — |
+| Generate program reports | — | — | Yes | Yes (view) | — |
 | Export data extracts | — | — | — | — | — |
 | View events | — | Scoped | Yes | — | — |
 | Create events | — | Scoped | — | — | — |
@@ -59,7 +59,7 @@
 | Delete plans | — | — | — | — | — |
 | **Manage users** | — | — | — | — | Yes |
 | **System settings** | — | — | — | — | Yes |
-| **Manage programmes** | — | — | — | — | Yes |
+| **Manage programs** | — | — | — | — | Yes |
 | **View audit log** | — | — | — | Yes | Yes |
 | **Create/edit custom field definitions** | — | — | — | — | Yes |
 | **Manage note templates** | — | — | — | — | Yes |
@@ -72,8 +72,8 @@
 | **Toggle features** | — | — | — | — | Yes |
 
 **Legend:**
-- **Yes** = Always allowed (within their programme scope)
-- **Scoped** = Only for their assigned clients/groups within their programme
+- **Yes** = Always allowed (within their program scope)
+- **Scoped** = Only for their assigned clients/groups within their program
 - **Per field** = Depends on each field's individual access setting
 - **—** = Not allowed
 
@@ -83,13 +83,13 @@
 
 ### Scoped Access (Direct Service)
 
-"Scoped" means the person can only see data for clients and groups they are **assigned to** within their programme. Phase 1 scopes to the whole programme; Phase 2 will narrow this to specific group/client assignments.
+"Scoped" means the person can only see data for clients and groups they are **assigned to** within their program. Phase 1 scopes to the whole program; Phase 2 will narrow this to specific group/client assignments.
 
-### Administrator Is Not a Programme Role
+### Administrator Is Not a Program Role
 
-Administrator (`is_admin=True`) is a **system-level flag**, not a programme role. It grants access to configuration pages (users, settings, templates, terminology) but **not** to any client data.
+Administrator (`is_admin=True`) is a **system-level flag**, not a program role. It grants access to configuration pages (users, settings, templates, terminology) but **not** to any client data.
 
-If an admin also needs to see client records, they must be assigned a programme role (e.g., Program Manager in Programme A). Their client access follows the rules of that programme role — the admin flag doesn't give them extra clinical access.
+If an admin also needs to see client records, they must be assigned a program role (e.g., Program Manager in Program A). Their client access follows the rules of that program role — the admin flag doesn't give them extra clinical access.
 
 ### Front Desk Custom Field Access
 
@@ -98,13 +98,13 @@ Each custom field definition has a `front_desk_access` setting:
 - **view** — Front Desk can see but not edit
 - **edit** — Front Desk can see and edit
 
-### Programme Isolation
+### Program Isolation
 
-Every user only sees clients enrolled in programmes where they have an active role. Confidential programmes are invisible to staff in other programmes.
+Every user only sees clients enrolled in programs where they have an active role. Confidential programs are invisible to staff in other programs.
 
 ### Negative Access Blocks
 
-A `ClientAccessBlock` (for conflict of interest or safety reasons) **overrides all other access**. Even admins with programme roles are blocked. This is checked first, before any other permission.
+A `ClientAccessBlock` (for conflict of interest or safety reasons) **overrides all other access**. Even admins with program roles are blocked. This is checked first, before any other permission.
 
 ### Executive Aggregate-Only
 
@@ -121,4 +121,4 @@ Executives see org-wide numbers and reports but **never** individual client name
 | Program Manager: view plans | ALLOW | GATED | Phase 3 |
 | Program Manager: view group session content | ALLOW | GATED | Phase 3 |
 | Program Manager: export data | DENY | Request-only (requires admin approval) | Phase 3 |
-| Direct Service: scoping | Programme-wide | Assigned groups/clients only | Phase 2 |
+| Direct Service: scoping | Program-wide | Assigned groups/clients only | Phase 2 |

@@ -91,13 +91,13 @@ class AuditMiddlewareBehaviourTest(TestCase):
 
     # 3. Access denied (403) creates an audit log with action="access_denied"
     def test_audit_logs_access_denied(self):
-        """User WITHOUT programme access gets 403, and an 'access_denied' audit entry is created."""
-        # Create a second user with no programme role
+        """User WITHOUT program access gets 403, and an 'access_denied' audit entry is created."""
+        # Create a second user with no program role
         outsider = User.objects.create_user(
             username="outsider", password="testpass123",
             display_name="Outsider", is_admin=False,
         )
-        # Give outsider a role in a DIFFERENT programme so they are authenticated but cannot access
+        # Give outsider a role in a DIFFERENT program so they are authenticated but cannot access
         other_program = Program.objects.create(name="Other Program", status="active")
         UserProgramRole.objects.create(
             user=outsider, program=other_program, role="staff", status="active",

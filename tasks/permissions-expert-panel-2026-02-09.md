@@ -13,8 +13,8 @@
 | 3 | Add `privacy.access_request` | New | DENY | DENY | ALLOW | ALLOW | PIPEDA s. 8 obligation. Separate from `report.data_extract`. |
 | 4 | Add `consent.withdraw` | New | DENY | DENY | GATED | DENY | Consent withdrawal triggers legal obligations. Higher bar than routine consent. |
 | 5 | Add `note.co_sign` | New | DENY | DENY | ALLOW | DENY | Clinical supervision workflow. PM reviews without editing. |
-| 6 | Change executive admin | Modify | - | - | - | ALLOW x3 | `user.manage`, `settings.manage`, `programme.manage` all DENY→ALLOW. |
-| 7 | Change PM admin (scoped) | Modify | - | - | SCOPED x3 | - | `programme.manage`, `audit.view`, `user.manage` DENY→SCOPED. No role elevation. |
+| 6 | Change executive admin | Modify | - | - | - | ALLOW x3 | `user.manage`, `settings.manage`, `program.manage` all DENY→ALLOW. |
+| 7 | Change PM admin (scoped) | Modify | - | - | SCOPED x3 | - | `program.manage`, `audit.view`, `user.manage` DENY→SCOPED. No role elevation. |
 
 ## Comments to add in permissions.py
 

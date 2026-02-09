@@ -1,12 +1,12 @@
 {% extends "reports/pdf_base.html" %}
 {% load i18n %}
 
-{% block title %}{% blocktrans with name=program.translated_name %}Programme Outcome Report — {{ name }}{% endblocktrans %}{% endblock %}
+{% block title %}{% blocktrans with name=program.translated_name %}Program Outcome Report — {{ name }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
 <!-- Cover Page -->
 <div class="pdf-cover">
-    <h1>{% trans "Programme Outcome Report" %}</h1>
+    <h1>{% trans "Program Outcome Report" %}</h1>
     <div class="subtitle">{{ program.translated_name }}</div>
     <div class="meta">
         {% blocktrans with dfrom=date_from dto=date_to %}{{ dfrom }} to {{ dto }}{% endblocktrans %}<br>
@@ -28,7 +28,7 @@
 </div>
 
 <dl>
-    <dt>{% trans "Programme" %}</dt>
+    <dt>{% trans "Program" %}</dt>
     <dd>{{ program.translated_name }}</dd>
     <dt>{% trans "Date Range" %}</dt>
     <dd>{% blocktrans with dfrom=date_from dto=date_to %}{{ dfrom }} to {{ dto }}{% endblocktrans %}</dd>

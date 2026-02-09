@@ -58,7 +58,7 @@ A qualified security person reviews the application and runs dynamic testing (fo
 Options for human review:
 
 - **Freelance Django security specialist** — typically $500–$2,000 CAD for a focused review
-- **Cybersecurity student capstone project** — many university programmes require students to complete a real-world security assessment
+- **Cybersecurity student capstone project** — many university programs require students to complete a real-world security assessment
 - **OWASP chapter volunteer** — local OWASP chapters sometimes offer pro-bono reviews for nonprofits
 - **Pro-bono engagement** — organisations like CyberPeace Institute and nonprofit tech networks sometimes connect agencies with volunteer security professionals
 

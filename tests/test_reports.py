@@ -529,7 +529,7 @@ class GetProgramAchievementRateTest(TestCase):
         return client
 
     def test_no_clients_returns_zero(self):
-        """Programme with no client data should return 0% achievement."""
+        """Program with no client data should return 0% achievement."""
         result = get_program_achievement_rate(
             self.program, self.metric, 10.0
         )
@@ -663,7 +663,7 @@ class GetAchievementSummaryTest(TestCase):
         return client
 
     def test_empty_program_returns_zeros(self):
-        """Programme with no data should return zero counts."""
+        """Program with no data should return zero counts."""
         result = get_achievement_summary(self.program)
         self.assertEqual(result["total_clients"], 0)
         self.assertEqual(result["clients_met_any_target"], 0)
@@ -1451,7 +1451,7 @@ class GenerateCMTDataTests(TestCase):
         enc_module._fernet = None
         self.program = Program.objects.create(
             name="Test Program",
-            description="A test programme for CMT export",
+            description="A test program for CMT export",
             status="active",
         )
         self.metric = MetricDefinition.objects.create(
@@ -1467,7 +1467,7 @@ class GenerateCMTDataTests(TestCase):
         )
 
     def test_empty_program_returns_zeros(self):
-        """Programme with no data should return zero counts."""
+        """Program with no data should return zero counts."""
         from apps.reports.cmt_export import generate_cmt_data
         cmt_data = generate_cmt_data(
             self.program,
@@ -1621,7 +1621,7 @@ class CMTExportViewTests(TestCase):
         self.assertEqual(resp.status_code, 403)
 
     def test_cmt_export_form_displays_program_dropdown(self):
-        """CMT export form should display programme dropdown."""
+        """CMT export form should display program dropdown."""
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get("/reports/cmt-export/")
         self.assertContains(resp, "Programme")

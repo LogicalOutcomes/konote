@@ -38,7 +38,7 @@ permissions.py says:
 "executive": {
     "user.manage": DENY,
     "settings.manage": DENY,
-    "programme.manage": DENY,
+    "program.manage": DENY,
     "audit.view": ALLOW,   # Board oversight
 }
 ```
@@ -48,7 +48,7 @@ This means executives can view the audit log but **cannot manage users, settings
 - Configures program settings
 - Has full system admin access
 
-If the intent is that executives use a separate admin account or delegate to IT, that's fine — but it should be documented. If the intent is that the `executive` role IS the admin role, then `user.manage`, `settings.manage`, and `programme.manage` should be ALLOW.
+If the intent is that executives use a separate admin account or delegate to IT, that's fine — but it should be documented. If the intent is that the `executive` role IS the admin role, then `user.manage`, `settings.manage`, and `program.manage` should be ALLOW.
 
 **Question for konote-web:** Is there a separate `admin` role not listed in permissions.py? Or is `executive` intended to be the top role without admin powers?
 
@@ -59,7 +59,7 @@ permissions.py says:
 "program_manager": {
     "user.manage": DENY,
     "settings.manage": DENY,
-    "programme.manage": DENY,
+    "program.manage": DENY,
     "audit.view": DENY,
 }
 ```
@@ -71,21 +71,21 @@ This means a Program Manager (PM1 — Morgan Tremblay) **cannot**:
 
 This seems too restrictive. In nonprofit agencies, PMs typically configure their own programs and manage their team's accounts. If a PM can't do these things, who does? The ED? IT?
 
-**Question for konote-web:** Should `programme.manage` be SCOPED (own program only) for program managers? Should `audit.view` be SCOPED?
+**Question for konote-web:** Should `program.manage` be SCOPED (own program only) for program managers? Should `audit.view` be SCOPED?
 
-### PERM-4: No `report.funder_report` vs `report.programme_report` distinction
+### PERM-4: No `report.funder_report` vs `report.program_report` distinction
 
 permissions.py has:
 ```python
-"report.programme_report": ALLOW,  # for PM and executive
+"report.program_report": ALLOW,  # for PM and executive
 "report.data_extract": DENY,       # for PM and executive
 ```
 
-But the persona YAML distinguishes between `reports` (programme outcome reports) and `funder_reports` (aggregate, no PII). The QA scenarios test that funder reports strip PII for executives. There's no separate permission key for funder reports in permissions.py.
+But the persona YAML distinguishes between `reports` (program outcome reports) and `funder_reports` (aggregate, no PII). The QA scenarios test that funder reports strip PII for executives. There's no separate permission key for funder reports in permissions.py.
 
 **Recommendation:** Either:
 - Add `report.funder_report` as a separate key (if funder reports have different access rules)
-- Or document that `report.programme_report` covers both, with PII stripping handled by the view logic rather than a permission check
+- Or document that `report.program_report` covers both, with PII stripping handled by the view logic rather than a permission check
 
 ---
 
@@ -111,9 +111,9 @@ The persona and the scenario contradict each other. Blocked until PERM-1 is reso
 | `audit.view` | DENY | `audit_log: true` |
 | `user.manage` | DENY | `manage_users: true` |
 | `settings.manage` | DENY | `settings: true` (program config) |
-| `programme.manage` | DENY | `manage_programs: true` |
+| `program.manage` | DENY | `manage_programs: true` |
 
-**Impact:** SCN-070 step 5 has PM1 accessing `/reports/` — that's fine (`report.programme_report: ALLOW`). But if any future scenario has PM1 configuring programs or managing users, it will hit a 403 that the persona doesn't expect.
+**Impact:** SCN-070 step 5 has PM1 accessing `/reports/` — that's fine (`report.program_report: ALLOW`). But if any future scenario has PM1 configuring programs or managing users, it will hit a 403 that the persona doesn't expect.
 
 Blocked until PERM-3 is resolved.
 
@@ -123,7 +123,7 @@ Blocked until PERM-3 is resolved.
 |-----------|---------------|---------------|
 | `user.manage` | DENY | `manage_users: true` |
 | `settings.manage` | DENY | `admin: true` |
-| `programme.manage` | DENY | `manage_programs: true` |
+| `program.manage` | DENY | `manage_programs: true` |
 
 `audit.view: ALLOW` is correctly reflected in both (`audit_log: true`).
 
@@ -193,7 +193,7 @@ These permissions exist in permissions.py but no scenario explicitly tests them.
 
 ### SCN-070: Consent Withdrawal
 
-- **Step 1-5 (PM1):** `consent.manage: ALLOW`, `report.programme_report: ALLOW` — consistent. But `report.data_extract: DENY` in permissions.py while the persona says `export_data: true`. **Conflict:** PM1 scenario expects export to work, but permissions.py denies data extract. This needs clarification — is the privacy export a different permission from `report.data_extract`?
+- **Step 1-5 (PM1):** `consent.manage: ALLOW`, `report.program_report: ALLOW` — consistent. But `report.data_extract: DENY` in permissions.py while the persona says `export_data: true`. **Conflict:** PM1 scenario expects export to work, but permissions.py denies data extract. This needs clarification — is the privacy export a different permission from `report.data_extract`?
 - **Step 6 (E1):** `audit.view: ALLOW` for executive — consistent. No issue.
 
 ---
@@ -223,8 +223,8 @@ Or add `client.edit_contact` alongside the existing `client.edit`:
 |----|----------|---------|
 | PERM-1 | Add `client.create` to permissions.py? | Yes (receptionist DENY, staff SCOPED) or No (handled by view logic) |
 | PERM-2 | Should executives manage users/settings/programs? | Add admin role, or change to ALLOW, or keep DENY and document who does admin |
-| PERM-3 | Should PMs manage own program and view audit log? | SCOPED for `programme.manage` + `audit.view`, or keep DENY |
-| PERM-4 | Separate `report.funder_report` from `report.programme_report`? | Add key, or document PII stripping is view logic |
+| PERM-3 | Should PMs manage own program and view audit log? | SCOPED for `program.manage` + `audit.view`, or keep DENY |
+| PERM-4 | Separate `report.funder_report` from `report.program_report`? | Add key, or document PII stripping is view logic |
 | PERM-5 | Add `client.edit_contact` for receptionists? | Yes (ALLOW for receptionist), or rewrite SCN-025 step 4 |
 | PERM-6 | Is the privacy data export (SCN-070) a different permission from `report.data_extract`? | Add `privacy.export` key, or use `report.data_extract: ALLOW` for PM |
 

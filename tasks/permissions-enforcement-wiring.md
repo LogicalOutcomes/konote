@@ -8,7 +8,7 @@
 
 ## Background
 
-`permissions.py` defines a 4-role × 40+ key matrix, but only 1 of 40+ permission checks actually reads from it. The rest are hardcoded: 29 `@programme_role_required("staff")`, 14 `@minimum_role("staff")`, 66 `@admin_required`, plus middleware and template checks. This means changing `permissions.py` has no effect on runtime behaviour for 97.5% of permissions.
+`permissions.py` defines a 4-role × 40+ key matrix, but only 1 of 40+ permission checks actually reads from it. The rest are hardcoded: 29 `@program_role_required("staff")`, 14 `@minimum_role("staff")`, 66 `@admin_required`, plus middleware and template checks. This means changing `permissions.py` has no effect on runtime behaviour for 97.5% of permissions.
 
 This plan wires enforcement to the matrix AND applies the 8 matrix changes recommended by three expert panels.
 
@@ -73,17 +73,17 @@ All matrix changes batched into one edit:
    - NOTE: This value change is applied now in the matrix but enforcement is deferred to Wave 5 (needs recommend-cancellation workflow first, or staff will stop creating alerts).
 
 7. **Change PM admin powers** to SCOPED:
-   - `programme.manage`: DENY → SCOPED, comment: `# Own program only.`
+   - `program.manage`: DENY → SCOPED, comment: `# Own program only.`
    - `audit.view`: DENY → SCOPED, comment: `# QA oversight for own program.`
    - `user.manage`: DENY → SCOPED, comment: `# Own program team. CANNOT elevate roles (receptionist→staff) or create PM/executive accounts. Requires custom enforcement — see no-elevation constraint.`
 
 8. **Executive admin documentation** (values stay DENY):
    - `user.manage`: add comment: `# DENY by default. Override to ALLOW for agencies where executive is operational ED (not board member).`
    - `settings.manage`: same comment pattern
-   - `programme.manage`: same comment pattern
+   - `program.manage`: same comment pattern
 
 9. **Add enforcement-mechanism comments** to existing keys (examples):
-   - `note.view` for staff: `# Enforced by @programme_role_required("staff"). Migrate to @requires_permission.`
+   - `note.view` for staff: `# Enforced by @program_role_required("staff"). Migrate to @requires_permission.`
    - `client.view_clinical` for receptionist: `# Enforced by get_visible_fields() via can_access().`
    - admin keys: `# Enforced by @admin_required (separate system — not matrix-driven).`
 
@@ -98,39 +98,39 @@ All matrix changes batched into one edit:
 Create the new decorator alongside the existing ones (don't delete old ones yet):
 
 ```python
-def requires_permission(permission_key, get_programme_fn=None, get_client_fn=None):
-    """Decorator: check permission matrix for the user's role in the relevant programme.
+def requires_permission(permission_key, get_program_fn=None, get_client_fn=None):
+    """Decorator: check permission matrix for the user's role in the relevant program.
 
-    Replaces @minimum_role and @programme_role_required. Reads from
+    Replaces @minimum_role and @program_role_required. Reads from
     permissions.py via can_access() — changes to the matrix immediately
     affect enforcement.
 
     Args:
         permission_key: key like "note.create" from PERMISSIONS matrix
-        get_programme_fn: function(request, *args, **kwargs) → Programme.
+        get_program_fn: function(request, *args, **kwargs) → Program.
                           If None, uses user's highest role across all programs.
         get_client_fn: optional function for ClientAccessBlock check.
     """
 ```
 
 Must handle:
-- Determine user's role in relevant programme (reuse existing logic from `programme_role_required`)
+- Determine user's role in relevant program (reuse existing logic from `program_role_required`)
 - Call `can_access(role, permission_key)` from permissions.py
 - DENY → 403 (render 403.html with message)
 - ALLOW → proceed
-- SCOPED → proceed (program-scoping already handled by middleware + programme lookup)
+- SCOPED → proceed (program-scoping already handled by middleware + program lookup)
 - GATED → future: check for documented justification. For now, treat as ALLOW with a log warning.
 - PER_FIELD → future: delegate to field-level check. For now, treat as ALLOW with a log warning.
-- Maintain ClientAccessBlock checking (from `programme_role_required`)
-- Fail closed on any error (from `programme_role_required`)
+- Maintain ClientAccessBlock checking (from `program_role_required`)
+- Fail closed on any error (from `program_role_required`)
 - Validate that `permission_key` exists in the PERMISSIONS matrix at import time (catch typos early)
-- Store `request.user_programme_role` for use in views (maintain compatibility)
+- Store `request.user_program_role` for use in views (maintain compatibility)
 
-Also add a helper for views that don't have a programme in the URL:
+Also add a helper for views that don't have a program in the URL:
 
 ```python
 def requires_permission_global(permission_key):
-    """Like requires_permission but uses user's highest role across all programmes.
+    """Like requires_permission but uses user's highest role across all programs.
     For views like group_list, insights, etc. that aren't scoped to a single client.
     """
 ```
@@ -198,7 +198,7 @@ These are the **compliance risk** — current decorators (`@minimum_role("staff"
 
 - All note views: `@requires_permission("note.view")`, `@requires_permission("note.create")`, `@requires_permission("note.edit")`
 - All plan views: same pattern
-- Report views: `@requires_permission("report.programme_report")`, `@requires_permission("report.data_extract")`
+- Report views: `@requires_permission("report.program_report")`, `@requires_permission("report.data_extract")`
 - Insight views: `@requires_permission("metric.view_aggregate")` or appropriate key
 
 #### Stream 2F: PM admin enforcement (custom logic)
@@ -240,7 +240,7 @@ Update `user_roles()` to also expose permissions:
 **File:** `apps/auth_app/checks.py` (NEW) — register in `apps/auth_app/apps.py`
 
 System check that:
-1. Warns on any remaining `@minimum_role` or `@programme_role_required` usage in view files (W020)
+1. Warns on any remaining `@minimum_role` or `@program_role_required` usage in view files (W020)
 2. Validates every permission key used in `@requires_permission` decorators exists in the matrix (E020)
 3. Checks every key in the matrix is referenced by at least one `@requires_permission` decorator (W021 — dead key detection)
 
@@ -286,7 +286,7 @@ Build the workflow that unblocks `alert.cancel → DENY` for staff:
 5. After this ships, wire `alert.cancel` → `@requires_permission("alert.cancel")` (which now reads DENY for staff from the matrix)
 
 #### Stream 5B: Migrate remaining ~35 views
-**Files:** All remaining view files with `@minimum_role` or `@programme_role_required`
+**Files:** All remaining view files with `@minimum_role` or `@program_role_required`
 
 Systematic migration, batched by app. Each swap should be a no-behaviour-change commit (the matrix already has the values the hardcoded decorators enforce).
 

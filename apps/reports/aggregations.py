@@ -120,7 +120,7 @@ def count_clients_by_program(
     active_only: bool = True,
 ) -> int:
     """
-    Count unique clients enrolled in a programme within a date range.
+    Count unique clients enrolled in a program within a date range.
 
     Args:
         program: A Program instance to filter by.
@@ -129,7 +129,7 @@ def count_clients_by_program(
         active_only: If True, only count clients with active enrolment status.
 
     Returns:
-        Count of unique clients enrolled in the programme.
+        Count of unique clients enrolled in the program.
     """
     enrolment_filter = {"program": program}
     if active_only:
@@ -301,7 +301,7 @@ def get_metric_values_for_program(
     active_enrolments_only: bool = True,
 ) -> QuerySet[MetricValue]:
     """
-    Get all MetricValue objects for clients enrolled in a programme.
+    Get all MetricValue objects for clients enrolled in a program.
 
     This is a utility function to build the base queryset for aggregation.
 
@@ -315,7 +315,7 @@ def get_metric_values_for_program(
     Returns:
         QuerySet of MetricValue objects with related objects prefetched.
     """
-    # Get client IDs for the programme
+    # Get client IDs for the program
     enrolment_filter = {"program": program}
     if active_enrolments_only:
         enrolment_filter["status"] = "enrolled"
@@ -351,7 +351,7 @@ def count_notes_by_program(
     note_type: str | None = None,
 ) -> int:
     """
-    Count progress notes for clients in a programme.
+    Count progress notes for clients in a program.
 
     Args:
         program: A Program instance to filter by.

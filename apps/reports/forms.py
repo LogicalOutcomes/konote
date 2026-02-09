@@ -103,7 +103,7 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         queryset=Program.objects.filter(status="active"),
         required=True,
         label=_("Program"),
-        empty_label=_("— Select a programme —"),
+        empty_label=_("— Select a program —"),
     )
 
     # Fiscal year quick-select (optional — overrides manual dates when selected)
@@ -207,7 +207,7 @@ class CMTExportForm(ExportRecipientMixin, forms.Form):
     Form for United Way CMT (Community Monitoring Tool) export.
 
     This form is simpler than the full metric export form, as CMT reports
-    have a fixed structure. Users select a programme and fiscal year,
+    have a fixed structure. Users select a program and fiscal year,
     and the report is generated with all applicable data.
     """
 
@@ -216,8 +216,8 @@ class CMTExportForm(ExportRecipientMixin, forms.Form):
     program = forms.ModelChoiceField(
         queryset=Program.objects.filter(status="active"),
         required=True,
-        label=_("Programme"),
-        empty_label=_("— Select a programme —"),
+        label=_("Program"),
+        empty_label=_("— Select a program —"),
     )
 
     fiscal_year = forms.ChoiceField(
@@ -295,9 +295,9 @@ class ClientDataExportForm(ExportRecipientMixin, forms.Form):
     program = forms.ModelChoiceField(
         queryset=Program.objects.filter(status="active"),
         required=False,
-        label=_("Programme"),
-        empty_label=_("— All programmes —"),
-        help_text=_("Leave blank to export participants from all programmes."),
+        label=_("Program"),
+        empty_label=_("— All programs —"),
+        help_text=_("Leave blank to export participants from all programs."),
     )
 
     status = forms.ChoiceField(
@@ -317,8 +317,8 @@ class ClientDataExportForm(ExportRecipientMixin, forms.Form):
     include_enrolments = forms.BooleanField(
         required=False,
         initial=True,
-        label=_("Include programme enrolments"),
-        help_text=_("Add programme enrolment history as additional columns."),
+        label=_("Include program enrolments"),
+        help_text=_("Add program enrolment history as additional columns."),
     )
 
     include_consent = forms.BooleanField(

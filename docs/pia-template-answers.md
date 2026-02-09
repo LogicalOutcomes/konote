@@ -14,13 +14,13 @@ This document provides template answers for common Privacy Impact Assessment (PI
 
 ### Q1. What personal information does the system collect?
 
-**A:** KoNote2 collects the following personal information about programme participants: first name, middle name, last name, preferred name, date of birth, and contact information (email, phone). It also stores progress notes written by caseworkers, outcome measurements, and any custom fields defined by the agency. Custom fields can be marked as "sensitive" by the agency administrator, which triggers additional encryption protection.
+**A:** KoNote2 collects the following personal information about program participants: first name, middle name, last name, preferred name, date of birth, and contact information (email, phone). It also stores progress notes written by caseworkers, outcome measurements, and any custom fields defined by the agency. Custom fields can be marked as "sensitive" by the agency administrator, which triggers additional encryption protection.
 
 ---
 
 ### Q2. What is the purpose of collecting this information?
 
-**A:** Personal information is collected to deliver [programme/service name] services to participants, track progress toward agreed-upon outcomes, generate reports for funders, and meet regulatory record-keeping requirements. The purpose of each data collection is specified during programme setup by the agency administrator.
+**A:** Personal information is collected to deliver [program/service name] services to participants, track progress toward agreed-upon outcomes, generate reports for funders, and meet regulatory record-keeping requirements. The purpose of each data collection is specified during program setup by the agency administrator.
 
 ---
 
@@ -34,10 +34,10 @@ This document provides template answers for common Privacy Impact Assessment (PI
 
 **A:** Access is controlled by four role levels, enforced on the server (not just in the user interface):
 
-- **Front desk** — Can see limited client fields (e.g., name, programme enrolment) but not full records or progress notes.
-- **Staff** — Can see full records for clients in their assigned programmes only.
-- **Programme manager** — Can see and export data for clients in their programmes.
-- **Admin** — Can configure the system, manage users, and export data across all programmes. Admins do not automatically see client records unless they also have a programme role.
+- **Front desk** — Can see limited client fields (e.g., name, program enrolment) but not full records or progress notes.
+- **Staff** — Can see full records for clients in their assigned programs only.
+- **Program manager** — Can see and export data for clients in their programs.
+- **Admin** — Can configure the system, manage users, and export data across all programs. Admins do not automatically see client records unless they also have a program role.
 
 All data access is logged to a separate audit database.
 
@@ -57,13 +57,13 @@ All data access is logged to a separate audit database.
 
 ### Q7. How long is personal information retained?
 
-**A:** KoNote2 stores personal information until it is explicitly deleted by an authorised user through the erasure workflow. [Your agency should define and document specific retention periods based on programme requirements, funder agreements, and applicable legislation. For example: "Client records are retained for 7 years after the last service date, then deleted through the erasure process."]
+**A:** KoNote2 stores personal information until it is explicitly deleted by an authorised user through the erasure workflow. [Your agency should define and document specific retention periods based on program requirements, funder agreements, and applicable legislation. For example: "Client records are retained for 7 years after the last service date, then deleted through the erasure process."]
 
 ---
 
 ### Q8. How is personal information deleted when no longer needed?
 
-**A:** KoNote2 includes a formal erasure workflow. A staff member or programme manager requests erasure, and all programme managers for the client's programmes must approve. Upon approval, all personally identifiable information is permanently deleted — not just marked inactive. This includes the client record, all progress notes, outcome measurements, custom field values, and alerts. An audit record of the erasure is preserved (recording who requested it, who approved it, and counts of deleted records) but contains no personal information.
+**A:** KoNote2 includes a formal erasure workflow. A staff member or program manager requests erasure, and all program managers for the client's programs must approve. Upon approval, all personally identifiable information is permanently deleted — not just marked inactive. This includes the client record, all progress notes, outcome measurements, custom field values, and alerts. An audit record of the erasure is preserved (recording who requested it, who approved it, and counts of deleted records) but contains no personal information.
 
 ---
 
@@ -130,7 +130,7 @@ This document describes KoNote2's built-in privacy features. Your PIA should als
 - Your agency's privacy policies and procedures
 - Staff training and acceptable use policies
 - Physical security of devices used to access KoNote2
-- Consent forms and procedures specific to your programmes
+- Consent forms and procedures specific to your programs
 - Data sharing agreements with partner agencies or funders
 - Your agency's specific retention schedule
 - Your breach response plan and notification procedures

@@ -1,4 +1,4 @@
-"""PDF export views for client progress reports, programme outcome reports, and individual client data export."""
+"""PDF export views for client progress reports, program outcome reports, and individual client data export."""
 import csv
 import io
 
@@ -48,7 +48,7 @@ def client_progress_pdf(request, client_id):
     if client is None:
         return HttpResponseForbidden("You do not have access to this client.")
 
-    # Programme enrolments
+    # Program enrolments
     enrolments = ClientProgramEnrolment.objects.filter(
         client_file=client, status="enrolled"
     ).select_related("program")
@@ -146,11 +146,11 @@ def generate_outcome_report_pdf(
     total_clients_display=None, total_data_points_display=None,
     is_aggregate=False, aggregate_rows=None, demographic_aggregate_rows=None,
 ):
-    """Generate a PDF programme outcome report. Called from export_form view.
+    """Generate a PDF program outcome report. Called from export_form view.
 
     Args:
         request: The HTTP request.
-        program: The Programme object.
+        program: The Program object.
         selected_metrics: List of MetricDefinition objects.
         date_from: Start date for the report.
         date_to: End date for the report.
@@ -244,12 +244,12 @@ def generate_cmt_pdf(request, cmt_data):
         "generated_by": request.user.display_name,
     }
 
-    safe_name = sanitise_filename(cmt_data["programme_name"].replace(" ", "_"))
+    safe_name = sanitise_filename(cmt_data["program_name"].replace(" ", "_"))
     fy_label = sanitise_filename(cmt_data["reporting_period"].replace(" ", "_"))
     filename = f"CMT_Report_{safe_name}_{fy_label}.pdf"
 
     audit_pdf_export(request, "export", "cmt_report_pdf", {
-        "programme": cmt_data["programme_name"],
+        "program": cmt_data["program_name"],
         "organisation": cmt_data["organisation_name"],
         "reporting_period": cmt_data["reporting_period"],
         "total_individuals_served": cmt_data["total_individuals_served"],
@@ -395,8 +395,8 @@ def _generate_client_csv(client, data):
 
     # Enrolments
     if data["enrolments"]:
-        writer.writerow(sanitise_csv_row(["=== %s ===" % _("PROGRAMME ENROLMENTS")]))
-        writer.writerow(sanitise_csv_row([_("Programme"), _("Status"), _("Enrolled"), _("Unenrolled")]))
+        writer.writerow(sanitise_csv_row(["=== %s ===" % _("PROGRAM ENROLMENTS")]))
+        writer.writerow(sanitise_csv_row([_("Program"), _("Status"), _("Enrolled"), _("Unenrolled")]))
         for e in data["enrolments"]:
             writer.writerow(sanitise_csv_row([
                 e.program.name,
