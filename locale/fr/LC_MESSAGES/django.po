@@ -811,28 +811,11 @@ msgstr ""
 "Aucune donnée de mesure enregistrée pour le moment. Enregistrez des mesures "
 "via les notes de suivi pour voir les graphiques ici."
 
-#: templates/reports/export_form.html
-msgid "Programme Outcome Report"
-msgstr "Rapport sur les résultats du programme"
-
-msgid ""
-"Generate a report of aggregate metric data for a programme and date range."
-msgstr ""
-"Générez un rapport des données de mesure agrégées pour un programme et une "
-"plage de dates."
-
 msgid "No results"
 msgstr "Aucun résultat"
 
 msgid "No data found."
 msgstr "Aucune donnée trouvée."
-
-msgid ""
-"There are no metric values matching the selected programme, metrics, and "
-"date range. Try adjusting your filters."
-msgstr ""
-"Il n'y a aucune valeur de mesure correspondant au programme, aux mesures et "
-"à la plage de dates sélectionnés. Essayez d'ajuster vos filtres."
 
 msgid "Form errors"
 msgstr "Erreurs de formulaire"
@@ -1326,9 +1309,6 @@ msgstr "Alertes de mesures"
 
 msgid "Event tracking"
 msgstr "Suivi des événements"
-
-msgid "Programme outcome report exports"
-msgstr "Exportations de rapports sur les résultats du programme"
 
 msgid "Require client consent before notes (PIPEDA/PHIPA)"
 msgstr "Exiger le consentement du participant avant les notes (PIPEDA/LPRPS)"
@@ -1853,41 +1833,11 @@ msgstr "Créer le lien"
 msgid "Are you sure you want to delete \"%(title)s\"?"
 msgstr "Êtes-vous sûr de vouloir supprimer « %(title)s »?"
 
-#: templates/reports/cmt_export_form.html
-msgid "Programme Outcome Report Template"
-msgstr "Modèle de rapport sur les résultats du programme"
-
-msgid ""
-"Generate a standardised programme outcome report with service statistics, "
-"demographics, and outcomes."
-msgstr ""
-"Générez un rapport standardisé sur les résultats du programme avec les "
-"statistiques de service, les données démographiques et les résultats."
-
 msgid "Draft Template Notice"
 msgstr "Avis de modèle provisoire"
 
-msgid ""
-"This is a generic programme outcome report template. Before submitting "
-"externally, verify it matches the recipient's specific reporting "
-"requirements. Different recipients (United Way chapters, government "
-"agencies, foundations) may require different formats, fields, or "
-"calculations."
-msgstr ""
-"Ceci est un modèle de rapport générique sur les résultats du programme. "
-"Avant de soumettre à l'externe, vérifiez qu'il correspond aux exigences "
-"spécifiques du destinataire. Différents destinataires (chapitres Centraide, "
-"agences gouvernementales, fondations) peuvent exiger des formats, champs ou "
-"calculs différents."
-
-msgid "About Programme Outcome Reports"
-msgstr "À propos des rapports sur les résultats du programme"
-
 msgid "What's included in this report?"
 msgstr "Qu'est-ce qui est inclus dans ce rapport?"
-
-msgid "Organisation and programme information"
-msgstr "Informations sur l'organisation et le programme"
 
 msgid ""
 "Service statistics (total individuals served, new clients, total contacts)"
@@ -1909,16 +1859,6 @@ msgstr "Générer le rapport des résultats"
 
 msgid "About This Report Template"
 msgstr "À propos de ce modèle de rapport"
-
-msgid ""
-"This is a draft programme outcome report template based on common Canadian "
-"nonprofit reporting requirements. It includes service statistics, "
-"demographics, and outcome achievement rates."
-msgstr ""
-"Ceci est un modèle provisoire de rapport sur les résultats du programme basé"
-" sur les exigences courantes de rapportage des OBNL canadiens. Il comprend "
-"les statistiques de service, les données démographiques et les taux "
-"d'atteinte des résultats."
 
 msgid ""
 "<strong>Important:</strong> External recipients may require different "
@@ -4282,11 +4222,6 @@ msgid "Add custom field values as additional columns."
 msgstr ""
 "Ajouter les valeurs des champs personnalisés comme colonnes supplémentaires."
 
-msgid "Add programme enrolment history as additional columns."
-msgstr ""
-"Ajouter l'historique des inscriptions aux programmes comme colonnes "
-"supplémentaires."
-
 msgid "Additional Details"
 msgstr "Détails supplémentaires"
 
@@ -4351,10 +4286,6 @@ msgstr ""
 msgid "All members are checked by default. Uncheck anyone who was absent."
 msgstr ""
 "Tous les membres sont cochés par défaut. Décochez ceux qui étaient absents."
-
-msgid "All programme manager approvals were received."
-msgstr ""
-"Toutes les approbations des gestionnaires de programme ont été reçues."
 
 msgid "An unexpected error occurred. Our team has been notified."
 msgstr "Une erreur inattendue s'est produite. Notre équipe a été avisée."
@@ -4691,9 +4622,6 @@ msgstr ""
 msgid "Delete Registration Link"
 msgstr "Supprimer le lien d'inscription"
 
-msgid "Deleted programme"
-msgstr "Programme supprimé"
-
 msgid "Demo Account Directory"
 msgstr "Répertoire des comptes de démonstration"
 
@@ -4788,19 +4716,6 @@ msgstr "Courriel"
 
 msgid "Email match"
 msgstr "Correspondance de courriel"
-
-msgid ""
-"Email notification failed. Please notify involved programme managers "
-"manually."
-msgstr ""
-"L'envoi du courriel a échoué. Veuillez aviser manuellement les gestionnaires"
-" de programme concernés."
-
-msgid ""
-"Email notification failed. Please notify the programme managers manually."
-msgstr ""
-"L'envoi du courriel a échoué. Veuillez aviser manuellement les gestionnaires"
-" de programme."
 
 msgid ""
 "Email notification to the requester failed. Please notify them manually."
@@ -5104,9 +5019,6 @@ msgstr "Inclure les valeurs de mesure"
 msgid "Include plan sections and targets"
 msgstr "Inclure les sections du plan et les cibles"
 
-msgid "Include programme enrolments"
-msgstr "Inclure les inscriptions aux programmes"
-
 msgid "Include progress notes"
 msgstr "Inclure les notes d'évolution"
 
@@ -5142,9 +5054,6 @@ msgstr "Dernière mise à jour"
 
 msgid "Lead Worker"
 msgstr "Intervenant principal"
-
-msgid "Leave blank to export clients from all programmes."
-msgstr "Laisser vide pour exporter les participants de tous les programmes."
 
 msgid "Leave blank to keep current password."
 msgstr "Laissez vide pour conserver le mot de passe actuel."
@@ -5352,28 +5261,6 @@ msgstr "Notes cette semaine"
 msgid "Observation"
 msgstr "Observation"
 
-msgid ""
-"Once all programme managers approve, client data will be permanently "
-"anonymised or erased depending on the level selected below."
-msgstr ""
-"Une fois que tous les gestionnaires de programme auront approuvé, les "
-"données du participant seront définitivement anonymisées ou effacées selon "
-"le niveau sélectionné ci-dessous."
-
-msgid ""
-"Once all programme managers approve, the client's data will be permanently "
-"deleted."
-msgstr ""
-"Une fois que tous les gestionnaires de programme auront approuvé, les "
-"données du participant seront définitivement supprimées."
-
-msgid ""
-"Once all programme managers approve, the client's identifying information "
-"will be permanently removed."
-msgstr ""
-"Une fois que tous les gestionnaires de programme auront approuvé, les "
-"renseignements identifiants du participant seront définitivement supprimés."
-
 msgid "Optionally break down results by age range or a custom field."
 msgstr ""
 "Ventiler optionnellement les résultats par tranche d'âge ou par champ "
@@ -5522,21 +5409,6 @@ msgstr "Programme créé."
 msgid "Program updated."
 msgstr "Programme mis à jour."
 
-msgid "Programme"
-msgstr "Programme"
-
-msgid "Programme Enrolments"
-msgstr "Inscriptions aux programmes"
-
-msgid "Programme enrolments"
-msgstr "Inscriptions aux programmes"
-
-msgid "Programme managers have been notified by email."
-msgstr "Les gestionnaires de programme ont été avisés par courriel."
-
-msgid "Programmes Enrolled"
-msgstr "Programmes inscrits"
-
 msgid "Programs"
 msgstr "Programmes"
 
@@ -5637,22 +5509,6 @@ msgstr "Détails du rejet"
 
 msgid "Rejection Reason"
 msgstr "Motif du rejet"
-
-msgid ""
-"Removes identifying fields AND all narrative content (notes, alerts, event "
-"descriptions). Keeps numeric metrics and programme enrolments."
-msgstr ""
-"Supprime les champs identifiants ET tout le contenu narratif (notes, "
-"alertes, descriptions d'événements). Conserve les mesures numériques et les "
-"inscriptions aux programmes."
-
-msgid ""
-"Removes name, date of birth, and other identifying fields. Keeps notes, "
-"metrics, plans, and programme data for reporting."
-msgstr ""
-"Supprime le nom, la date de naissance et les autres champs identifiants. "
-"Conserve les notes, les mesures, les plans et les données de programme pour "
-"les rapports."
 
 msgid "Request Data Erasure"
 msgstr "Demander l'effacement des données"
@@ -6268,14 +6124,8 @@ msgstr ""
 msgid "values recorded in"
 msgstr "valeurs enregistrées dans"
 
-msgid "— All programmes —"
-msgstr "— Tous les programmes —"
-
 msgid "— All statuses —"
 msgstr "— Tous les statuts —"
-
-msgid "— Select a programme —"
-msgstr "— Sélectionner un programme —"
 
 msgid "— Select recipient —"
 msgstr "— Sélectionner un destinataire —"
@@ -6306,24 +6156,10 @@ msgstr ""
 "Dossiers fusionnés avec succès. Toutes les données ont été combinées dans ce"
 " dossier."
 
-msgid ""
-"The primary client has a confidential programme enrolment and cannot be "
-"merged."
-msgstr ""
-"Le participant principal est inscrit à un programme confidentiel et ne peut "
-"pas être fusionné."
-
 msgid "The primary client record has been anonymised and cannot be merged."
 msgstr ""
 "Le dossier du participant principal a été anonymisé et ne peut pas être "
 "fusionné."
-
-msgid ""
-"The secondary client has a confidential programme enrolment and cannot be "
-"merged."
-msgstr ""
-"Le participant secondaire est inscrit à un programme confidentiel et ne peut"
-" pas être fusionné."
 
 msgid "The secondary client record has been anonymised and cannot be merged."
 msgstr ""
@@ -6338,13 +6174,6 @@ msgstr "&larr; Retour à la liste des candidats"
 
 msgid "After merge"
 msgstr "Après la fusion"
-
-msgid ""
-"After merge, staff in the following programmes will see all combined "
-"records:"
-msgstr ""
-"Après la fusion, le personnel des programmes suivants verra tous les "
-"dossiers combinés :"
 
 msgid ""
 "All notes, events, plans, enrolments, and custom fields from the archived "
@@ -6417,9 +6246,6 @@ msgstr "Correspondance téléphonique"
 msgid "Phone match candidates"
 msgstr "Candidats correspondant par téléphone"
 
-msgid "Programme visibility after merge"
-msgstr "Visibilité des programmes après la fusion"
-
 msgid ""
 "Review potential duplicate client records and merge them into a single "
 "record. All data from the archived record will be transferred to the kept "
@@ -6428,12 +6254,6 @@ msgstr ""
 "Examinez les dossiers participants potentiellement en double et fusionnez-"
 "les en un seul dossier. Toutes les données du dossier archivé seront "
 "transférées au dossier conservé."
-
-msgid ""
-"Staff in all listed programmes will be able to see all combined records."
-msgstr ""
-"Le personnel de tous les programmes listés pourra voir tous les dossiers "
-"combinés."
 
 msgid "The merged record will be enrolled in:"
 msgstr "Le dossier fusionné sera inscrit à :"
@@ -7584,10 +7404,6 @@ msgstr "Nouvelle note"
 msgid "Next Steps"
 msgstr "Prochaines étapes"
 
-msgid "No outcome indicators with targets defined for this programme."
-msgstr ""
-"Aucun indicateur de résultats avec des cibles définies pour ce programme."
-
 msgid "No target defined"
 msgstr "Aucune cible définie"
 
@@ -7633,15 +7449,6 @@ msgstr "Résultat principal"
 msgid "Privacy Officer:"
 msgstr "Responsable de la confidentialité :"
 
-msgid "Programme Description"
-msgstr "Description du programme"
-
-msgid "Programme/Service Name"
-msgstr "Nom du programme ou service"
-
-msgid "Programmes"
-msgstr "Programmes"
-
 msgid "Progress Report"
 msgstr "Rapport de progrès"
 
@@ -7678,12 +7485,6 @@ msgstr "Valeur cible"
 
 msgid "Target:"
 msgstr "Cible :"
-
-msgid ""
-"This report was generated using KoNote2's Programme Outcome Report Template."
-msgstr ""
-"Ce rapport a été généré à l'aide du modèle de rapport sur les résultats du "
-"programme de KoNote2."
 
 msgid "Toggle on to hide time fields and record date only."
 msgstr "Activer pour masquer les champs d’heure et n’enregistrer que la date."
@@ -8019,15 +7820,6 @@ msgstr[1] "%(total)s suggestions enregistrées durant cette période."
 
 #: templates/reports/_insights_basic.html
 msgid ""
-"No progress notes found for this programme in the selected time period. Try "
-"a longer time period or check that notes have been recorded."
-msgstr ""
-"Aucune note de progrès trouvée pour ce programme durant la période "
-"sélectionnée. Essayez une période plus longue ou vérifiez que des notes ont "
-"été enregistrées."
-
-#: templates/reports/_insights_basic.html
-msgid ""
 "Individual quotes are not shown in the executive view to protect participant"
 " confidentiality. Trends and aggregate data are shown above."
 msgstr ""
@@ -8110,16 +7902,6 @@ msgstr ""
 "sur"
 
 msgid ""
-"KoNote2's Outcome Insights feature can optionally use AI to generate draft "
-"narrative summaries of programme outcomes. This feature is off by default "
-"and must be enabled by your administrator."
-msgstr ""
-"La fonctionnalité Analyses des résultats de KoNote2 peut utiliser l'IA pour "
-"générer des ébauches de résumés narratifs des résultats du programme. Cette "
-"fonctionnalité est désactivée par défaut et doit être activée par votre "
-"administrateur."
-
-msgid ""
 "No participant names are sent to the AI — all identifying information is "
 "removed first"
 msgstr ""
@@ -8134,9 +7916,6 @@ msgstr "Les noms du personnel sont également retirés"
 
 msgid "Unprocessed progress notes or full case records"
 msgstr "Notes de progrès non traitées ou dossiers complets"
-
-msgid "Viewing Programme Insights"
-msgstr "Consulter les analyses du programme"
 
 msgid "What is never sent"
 msgstr "Ce qui n'est jamais envoyé"
@@ -8347,9 +8126,6 @@ msgstr "Système externe où les documents des participants sont stockés."
 msgid "Filter by participant status, or export all."
 msgstr "Filtrer par statut du participant, ou tout exporter."
 
-msgid "Leave blank to export participants from all programmes."
-msgstr "Laissez vide pour exporter les participants de tous les programmes."
-
 msgid "Manage event categories for participant timelines."
 msgstr ""
 "Gérer les catégories d'événements pour les chronologies des participants."
@@ -8386,14 +8162,6 @@ msgid ""
 msgstr ""
 "Une fois que tous les gestionnaires de programme auront approuvé, les "
 "données du participant seront définitivement supprimées."
-
-msgid ""
-"Once all programme managers approve, participant data will be permanently "
-"anonymised or erased depending on the level selected below."
-msgstr ""
-"Une fois que tous les gestionnaires de programme auront approuvé, les "
-"données du participant seront définitivement anonymisées ou effacées selon "
-"le niveau sélectionné ci-dessous."
 
 msgid "One or both participant records no longer exist."
 msgstr "Un ou les deux dossiers de participants n'existent plus."
@@ -8475,24 +8243,10 @@ msgid "Selected participant not found."
 msgstr "Participant sélectionné introuvable."
 
 msgid ""
-"The primary participant has a confidential programme enrolment and cannot be"
-" merged."
-msgstr ""
-"Le participant principal est inscrit à un programme confidentiel et ne peut "
-"pas être fusionné."
-
-msgid ""
 "The primary participant record has been anonymised and cannot be merged."
 msgstr ""
 "Le dossier du participant principal a été anonymisé et ne peut pas être "
 "fusionné."
-
-msgid ""
-"The secondary participant has a confidential programme enrolment and cannot "
-"be merged."
-msgstr ""
-"Le participant secondaire est inscrit à un programme confidentiel et ne peut"
-" pas être fusionné."
 
 msgid ""
 "The secondary participant record has been anonymised and cannot be merged."
@@ -8563,19 +8317,11 @@ msgstr ""
 msgid "e.g. participant, note"
 msgstr "par ex. participant, note"
 
-msgid "Please select at least one programme."
-msgstr "Veuillez sélectionner au moins un programme."
-
 msgid "%(name)s's %(term)s file created successfully."
 msgstr "Le dossier %(term)s de %(name)s a été créé avec succès."
 
 msgid "Concern"
 msgstr "Préoccupation"
-
-msgid "If you could change one thing about this programme, what would it be?"
-msgstr ""
-"Si vous pouviez changer une chose dans ce programme, qu'est-ce que ce "
-"serait?"
 
 msgid "Important"
 msgstr "Important"
@@ -8655,19 +8401,7 @@ msgstr "avec des notes enregistrées"
 msgid "Access denied. You do not have the required role for this action."
 msgstr ""
 
-msgid "Client consents to sharing clinical information across programmes"
-msgstr ""
-
-msgid ""
-"Clinical notes are only visible within the programme where they were "
-"recorded. Under Ontario privacy law (PHIPA), express consent is required "
-"before clinical information can be shared across programmes."
-msgstr ""
-
 msgid "Consent given"
-msgstr ""
-
-msgid "Cross-Programme Sharing"
 msgstr ""
 
 msgid "Main content"
@@ -8676,25 +8410,7 @@ msgstr ""
 msgid "No consent"
 msgstr ""
 
-msgid ""
-"Required under Ontario privacy law (PHIPA) before clinical notes from one "
-"programme can be viewed by staff in another programme."
-msgstr ""
-
-msgid ""
-"This participant has consented to sharing clinical information across "
-"programmes."
-msgstr ""
-
-msgid "You do not have access to this programme."
-msgstr ""
-
 msgid "Access to this client has been restricted."
-msgstr ""
-
-msgid ""
-"Note: Cross-programme note filtering will be enforced in a future update. "
-"This setting is being recorded now for when enforcement is enabled."
 msgstr ""
 
 msgid "Unable to verify access permissions."
@@ -8802,9 +8518,6 @@ msgstr ""
 msgid "Must be at least 8 characters."
 msgstr ""
 
-msgid "Name shown in participant portal. Leave blank to use programme name."
-msgstr ""
-
 msgid "New password"
 msgstr ""
 
@@ -8893,9 +8606,6 @@ msgid "Write a message to your worker..."
 msgstr ""
 
 msgid "Write anything you'd like to remember..."
-msgstr ""
-
-msgid "You do not have any programme roles."
 msgstr ""
 
 msgid "Your current password is incorrect."

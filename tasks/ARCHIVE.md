@@ -4,6 +4,12 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Completed 2026-02-09
+
+- [x] QA scenario runner full coverage — 4 test users, 6 clients, 7 action types, 22 scenarios, LLM evaluator — 2026-02-08 (QA-DATA1 through QA-EVAL3)
+
+---
+
 ## Completed 2026-02-08
 
 ### Moved from Recently Done (2026-02-08 cleanup #3)

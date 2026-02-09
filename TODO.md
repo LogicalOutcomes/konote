@@ -4,6 +4,7 @@
 
 - [ ] Decide product name — "KoNote" vs "KoNote2". See `tasks/naming-versioning.md` (NAME1)
 - [ ] Update konote-website git remote URL — repo renamed but local remote still points to old name (NAME2)
+- [ ] Approve Agency Permissions Interview questionnaire — must be finalised before first agency deployment. See `tasks/agency-permissions-interview.md` (ONBOARD-APPROVE)
 
 ## Active Work
 
@@ -22,20 +23,15 @@
 ### Aggregate Export + Funder Rename
 
 - [ ] Run `translate_strings` for new aggregate export strings (I18N-AGG1)
-- [ ] Update "Reporting" in What's Been Built — rename "Funder reports" to "Program outcome reports" (DOC-AGG1)
 - [ ] Add tests for aggregate export path — verify executives get aggregate-only exports (TEST-AGG1)
-- [ ] Rename `generate_funder_pdf` to `generate_program_pdf` to match funder→program rename (RENAME-AGG1)
 
 ### Pre-Launch Checklist
 
+- [ ] Complete Agency Permissions Interview — signed Configuration Summary required before each new agency deployment (ONBOARD-GATE)
 - [ ] Verify email is configured — needed for exports, erasure alerts, password resets (OPS3)
 - [ ] Test backup restore from a real database dump (OPS4)
 
 ## Coming Up
-
-### Spelling Fix
-
-- [ ] Rename all 661 "programme" → "program" across 84 files, including migration (SPELL1)
 
 ### Permissions Enforcement Wiring — See `tasks/permissions-enforcement-wiring.md`
 
@@ -72,17 +68,22 @@
 
 ### Permissions Follow-up
 
-- [ ] Translate 10+ French strings — consent status, access denied, PHIPA text (PERM-FU3)
 - [ ] Extract `_get_program_from_client` to access.py — duplicated in 3 views (PERM-FU5)
 
 ### Agency Onboarding — See `tasks/agency-permissions-interview.md`
 
 - [ ] Split interview into two sessions — Session A (60 min) and Session B (45 min) (ONBOARD1)
 - [ ] Add privacy prerequisites to prep sheet (ONBOARD2)
-- [ ] Add missing scenarios — referral call, transfer, multi-site, emergency (ONBOARD3)
+- [ ] Add missing scenarios — referral call, transfer, multi-site, portal, emergency (ONBOARD3)
 - [ ] Create one-page recording sheet (ONBOARD4)
 - [ ] Update admin section for scoped admin tiers (ONBOARD5)
 - [ ] Fix jargon — "scoped" → "limited to", safer language for DV contexts (ONBOARD6)
+- [ ] Add breach notification, data retention, and PHIPA questions to Session A (ONBOARD7)
+- [ ] Add warm-up question and "what system do you use now?" to opening (ONBOARD8)
+- [ ] Create deployment checklist template — verifiable gate for each new agency (ONBOARD9)
+- [ ] Create visual one-page summary template — quick-reference for agency ED and board (ONBOARD10)
+- [ ] Add version number and date to questionnaire header (ONBOARD11)
+- [ ] Document pre-populate workflow — consultant fills recording tables from prep sheet before meeting (ONBOARD12)
 
 ### Permissions Phase 2
 
@@ -127,6 +128,7 @@
 
 ## Recently Done
 
+- [x] Rename "programme" → "program" across 102 files + migration + .po cleanup — 2026-02-09 (SPELL1, RENAME-AGG1, DOC-AGG1, PERM-FU3)
 - [x] Fix Progress Trend chart — apostrophe in JS string caused SyntaxError, used `escapejs` — 2026-02-09 (BUG-CHART1)
 - [x] Permissions redesign Phase 1 — cross-program note leaks, field-level visibility, ClientAccessBlock, expanded matrix — 2026-02-08 (PERM-S1 through PERM-SYS1)
 - [x] Front Desk permissions hardening — hide Groups nav, block clinical data on dashboard — 2026-02-08 (UI-PERM1)
@@ -136,6 +138,4 @@
 - [x] Fix BUG-7, BUG-9, BUG-10 — 404 after create, language cookie, autofocus — 2026-02-08 (BUG-7, BUG-9, BUG-10)
 - [x] Participant suggestion field + AI feedback insights — encrypted suggestions, priority levels, categorised feedback — 2026-02-08 (VOICE1)
 - [x] QA process improvements — pre-flight, console capture, duplicate detection, action verification, DITL coverage, report naming, 404 fix, aria-live — 2026-02-08 (QA-W1 through QA-W8)
-- [x] QA scenario runner full coverage — 4 test users, 6 clients, 7 action types, 22 scenarios, LLM evaluator — 2026-02-08 (QA-DATA1 through QA-EVAL3)
-
 _Older completed tasks: [tasks/ARCHIVE.md](tasks/ARCHIVE.md). Reference: [tasks/whats-been-built.md](tasks/whats-been-built.md). Recurring chores: [tasks/recurring-tasks.md](tasks/recurring-tasks.md)._
