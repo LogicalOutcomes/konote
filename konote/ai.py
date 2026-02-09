@@ -120,7 +120,7 @@ def improve_outcome(draft_text):
 
 def generate_narrative(program_name, date_range, aggregate_stats):
     """
-    Turn aggregate programme metrics into a funder-ready narrative paragraph.
+    Turn aggregate programme metrics into a professional outcome summary.
 
     Args:
         program_name: str
@@ -131,7 +131,8 @@ def generate_narrative(program_name, date_range, aggregate_stats):
         str — narrative paragraph, or None on failure
     """
     system = (
-        "You write concise, professional funder reports for Canadian nonprofits. "
+        "You write concise, professional programme outcome summaries for "
+        "Canadian nonprofits. "
         "Given a programme name, date range, and aggregated metric data, write a "
         "single paragraph (3–5 sentences) summarising client outcomes. "
         "Use Canadian English spelling (programme, colour, centre). "

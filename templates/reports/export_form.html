@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Funder Report Export" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% trans "Programme Outcome Report" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% trans "Funder Report Export" %}</h1>
+    <h1>{% trans "Programme Outcome Report" %}</h1>
     <p>{% trans "Generate a report of aggregate metric data for a programme and date range." %}</p>
 </hgroup>
 
@@ -15,6 +15,14 @@
 </article>
 {% endif %}
 
+{% if is_aggregate_only %}
+<article aria-label="{% trans 'Aggregate Export Info' %}" style="margin-bottom: 1.5rem;">
+    <strong><span aria-hidden="true">📊</span> {% trans "Aggregate Data Only" %}</strong>
+    <p style="margin-bottom: 0;">
+        {% trans "This export contains summary statistics only: averages, counts, minimums, and maximums per metric. No individual participant record IDs, names, or staff information are included." %}
+    </p>
+</article>
+{% else %}
 <article aria-label="{% trans 'Export Info' %}" style="margin-bottom: 1.5rem;">
     <strong><span aria-hidden="true">📋</span> {% trans "About This Export" %}</strong>
     <p style="margin-bottom: 0;">
@@ -28,6 +36,7 @@
         {% blocktrans with strong_open="<strong>" strong_close="</strong>" %}The exported file will contain: {{ strong_open }}client record IDs{{ strong_close }}, {{ strong_open }}metric values{{ strong_close }}, {{ strong_open }}dates of service{{ strong_close }}, and {{ strong_open }}staff names{{ strong_close }}. If demographic grouping is selected, it may also include {{ strong_open }}birth dates{{ strong_close }} (for age calculations) or {{ strong_open }}custom field values{{ strong_close }}. Handle the exported file according to your organisation's data protection policies.{% endblocktrans %}
     </p>
 </article>
+{% endif %}
 
 <form method="post">
     {% csrf_token %}

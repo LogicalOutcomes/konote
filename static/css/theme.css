@@ -29,6 +29,7 @@
     --kn-danger-fg: #842029;
     --kn-neutral-bg: #e9ecef;
     --kn-neutral-fg: #495057;
+    --kn-success-subtle: rgba(26, 90, 50, 0.10);
 
     /* --- Surfaces --- */
     --kn-page-bg: #f7f6f3;
@@ -98,6 +99,7 @@
         --kn-danger-fg: #feb2b2;
         --kn-neutral-bg: #2d3748;
         --kn-neutral-fg: #cbd5e0;
+        --kn-success-subtle: rgba(39, 174, 96, 0.15);
 
         --kn-page-bg: var(--pico-background-color);
         --kn-card-bg: #1e2533;

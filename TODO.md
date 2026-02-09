@@ -11,6 +11,13 @@
 
 - [ ] Re-run QA scenarios after deploy to confirm all fixes visible in screenshots (QA-VERIFY2)
 
+### Aggregate Export + Funder Rename
+
+- [ ] Run `translate_strings` for new aggregate export strings — export_form.html, pdf_funder_report.html, forms.py all have untranslated {% trans %} tags (I18N-AGG1)
+- [ ] Update "Reporting" row in What's Been Built table — rename "Funder reports" to "Programme outcome reports" to match code rename (DOC-AGG1)
+- [ ] Add tests for aggregate export path — verify executives get aggregate-only exports and can't access individual client data through export views (TEST-AGG1)
+- [ ] Rename `generate_funder_pdf` function and `funder_report_` filename prefix — should be `generate_programme_pdf` / `programme_report_` to match the funder→programme rename everywhere else (RENAME-AGG1)
+
 ### Pre-Launch Checklist
 
 The core app is feature-complete. These tasks prepare for production use.

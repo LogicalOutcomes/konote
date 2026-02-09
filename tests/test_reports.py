@@ -1580,7 +1580,7 @@ class GenerateCMTCSVRowsTests(TestCase):
         # Flatten rows to a single string for easier searching
         flat_text = " ".join(" ".join(str(cell) for cell in row) for row in rows)
 
-        self.assertIn("FUNDER REPORT TEMPLATE", flat_text)
+        self.assertIn("PROGRAMME OUTCOME REPORT TEMPLATE", flat_text)
         self.assertIn("ORGANISATION INFORMATION", flat_text)
         self.assertIn("SERVICE STATISTICS", flat_text)
         self.assertIn("AGE DEMOGRAPHICS", flat_text)
@@ -1612,7 +1612,7 @@ class CMTExportViewTests(TestCase):
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get("/reports/cmt-export/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Funder Report Template")
+        self.assertContains(resp, "Programme Outcome Report Template")
 
     def test_nonadmin_cannot_access_cmt_export(self):
         """Non-admin users should not be able to access CMT export."""
@@ -1666,7 +1666,7 @@ class CMTExportViewTests(TestCase):
         link = SecureExportLink.objects.latest("created_at")
         download_resp = self.client.get(f"/reports/download/{link.id}/")
         content = self._get_download_content(download_resp)
-        self.assertIn("FUNDER REPORT TEMPLATE", content)
+        self.assertIn("PROGRAMME OUTCOME REPORT TEMPLATE", content)
         self.assertIn("Test Program", content)
         self.assertIn("SERVICE STATISTICS", content)
         self.assertIn("AGE DEMOGRAPHICS", content)

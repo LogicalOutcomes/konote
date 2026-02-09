@@ -3,6 +3,23 @@ from datetime import date
 from typing import List, Tuple
 
 
+def is_aggregate_only_user(user):
+    """Check if this user should only receive aggregate (non-individual) export data.
+
+    Executives can see aggregate metrics but not individual client data.
+    If a user has BOTH executive and another role (e.g., program_manager),
+    they get the higher-access role's output (individual data).
+
+    Returns:
+        True if user should only see aggregate data in exports.
+    """
+    from apps.programs.models import UserProgramRole
+
+    if user.is_admin:
+        return False
+    return UserProgramRole.is_executive_only(user)
+
+
 def can_create_export(user, export_type, program=None):
     """
     Check if a user can create an export of the given type.

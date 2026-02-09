@@ -9,12 +9,34 @@ from .demographics import get_demographic_field_choices
 from .utils import get_fiscal_year_choices, get_fiscal_year_range, get_current_fiscal_year
 
 
-# Recipient choices for audit logging — tracks who is receiving exported data
-RECIPIENT_CHOICES = [
+# --- Context-specific recipient choices ---
+# Different export types have different legitimate audiences.
+# Individual client data should NEVER be offered to funders.
+# Funders need aggregate outcomes, not individual clinical records.
+
+AGGREGATE_RECIPIENT_CHOICES = [
     ("", _("— Select recipient —")),
     ("self", _("Keeping for my records")),
     ("colleague", _("Sharing with colleague")),
     ("funder", _("Sharing with funder")),
+    ("board", _("Sharing with board")),
+    ("other", _("Other")),
+]
+
+CLINICAL_RECIPIENT_CHOICES = [
+    ("", _("— Select recipient —")),
+    ("self", _("Keeping for my records")),
+    ("colleague", _("Sharing with colleague")),
+    ("client", _("Client access request (PIPEDA)")),
+    ("supervisor", _("Sharing with supervisor")),
+    ("other", _("Other")),
+]
+
+ADMIN_RECIPIENT_CHOICES = [
+    ("", _("— Select recipient —")),
+    ("self", _("Keeping for my records")),
+    ("migration", _("Data migration")),
+    ("audit", _("Audit or compliance review")),
     ("other", _("Other")),
 ]
 
@@ -25,12 +47,17 @@ class ExportRecipientMixin:
 
     Security requirement: All exports must document who is receiving
     the data. This creates accountability and enables audit review.
+
+    Subclasses set recipient_choices to control which audiences are
+    offered. Individual-level exports must NOT include "funder".
     """
+
+    recipient_choices = AGGREGATE_RECIPIENT_CHOICES  # default; override per form
 
     def add_recipient_fields(self):
         """Add recipient fields to the form. Call in __init__ after super()."""
         self.fields["recipient"] = forms.ChoiceField(
-            choices=RECIPIENT_CHOICES,
+            choices=self.recipient_choices,
             required=True,
             label=_("Who is receiving this data?"),
             help_text=_("Required for audit purposes."),
@@ -40,7 +67,7 @@ class ExportRecipientMixin:
             required=False,
             max_length=200,
             label=_("Recipient details"),
-            help_text=_("Name of colleague, funder, or other recipient."),
+            help_text=_("Name of recipient or organisation."),
             widget=forms.TextInput(attrs={"placeholder": _("e.g., United Way, Jane Smith")}),
         )
 
@@ -49,20 +76,28 @@ class ExportRecipientMixin:
         recipient = self.cleaned_data.get("recipient", "")
         detail = self.cleaned_data.get("recipient_detail", "").strip()
 
+        labels = {
+            "self": "Self (personal records)",
+            "colleague": "Colleague",
+            "funder": "Funder",
+            "board": "Board",
+            "client": "Client access request (PIPEDA)",
+            "supervisor": "Supervisor",
+            "migration": "Data migration",
+            "audit": "Audit/compliance",
+        }
+        base = labels.get(recipient, recipient.title() if recipient else "Not specified")
         if recipient == "self":
-            return "Self (personal records)"
-        elif recipient == "colleague":
-            return f"Colleague: {detail}" if detail else "Colleague (unspecified)"
-        elif recipient == "funder":
-            return f"Funder: {detail}" if detail else "Funder (unspecified)"
-        elif recipient == "other":
-            return f"Other: {detail}" if detail else "Other (unspecified)"
-        else:
-            return "Not specified"
+            return base
+        if detail:
+            return f"{base}: {detail}"
+        return f"{base} (unspecified)" if recipient else "Not specified"
 
 
 class MetricExportForm(ExportRecipientMixin, forms.Form):
     """Filter form for the aggregate metric CSV export."""
+
+    recipient_choices = AGGREGATE_RECIPIENT_CHOICES
 
     program = forms.ModelChoiceField(
         queryset=Program.objects.filter(status="active"),
@@ -176,6 +211,8 @@ class CMTExportForm(ExportRecipientMixin, forms.Form):
     and the report is generated with all applicable data.
     """
 
+    recipient_choices = AGGREGATE_RECIPIENT_CHOICES
+
     program = forms.ModelChoiceField(
         queryset=Program.objects.filter(status="active"),
         required=True,
@@ -243,7 +280,10 @@ class ClientDataExportForm(ExportRecipientMixin, forms.Form):
 
     This export is designed for data portability and migration, allowing
     agencies to extract all their client data in a standard format.
+    Admin-only. Never for funders.
     """
+
+    recipient_choices = ADMIN_RECIPIENT_CHOICES
 
     STATUS_CHOICES = [
         ("", _("— All statuses —")),
@@ -300,7 +340,11 @@ class IndividualClientExportForm(ExportRecipientMixin, forms.Form):
 
     Under PIPEDA, individuals have the right to access all personal information
     held about them. This form lets staff export everything for one client.
+
+    Funders are NOT a valid recipient for individual client data.
     """
+
+    recipient_choices = CLINICAL_RECIPIENT_CHOICES
 
     FORMAT_CHOICES = [
         ("pdf", _("PDF (printable report)")),

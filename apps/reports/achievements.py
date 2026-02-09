@@ -1,6 +1,6 @@
-"""Outcome achievement rate calculations for funder reporting.
+"""Outcome achievement rate calculations for programme reporting.
 
-Calculates what percentage of clients met their outcome targets — a key funder metric.
+Calculates what percentage of clients met their outcome targets.
 Uses latest or average metric values to determine if clients achieved their goals.
 """
 from datetime import date, datetime, time

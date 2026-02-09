@@ -3,7 +3,7 @@
 Verifies that export access follows the role model:
 - Admin: system config + any export + manage/revoke links
 - Program Manager: metrics/CMT exports scoped to their programs + download own
-- Executive: metrics/CMT exports scoped to their programs (report.programme_report: ALLOW)
+- Executive: aggregate-only exports scoped to their programs
 - Staff/Front Desk: no export access
 """
 import os
@@ -20,7 +20,7 @@ from datetime import timedelta
 from apps.auth_app.models import User
 from apps.programs.models import Program, UserProgramRole
 from apps.reports.models import SecureExportLink
-from apps.reports.utils import can_create_export, get_manageable_programs
+from apps.reports.utils import can_create_export, get_manageable_programs, is_aggregate_only_user
 import konote.encryption as enc_module
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -541,3 +541,253 @@ class ExportAccessContextTest(TestCase):
     def test_executive_has_export_access(self):
         ctx = self._get_context("exec")
         self.assertTrue(ctx.get("has_export_access"))
+
+
+# ═════════════════════════════════════════════════════════════════════
+# 9. is_aggregate_only_user() helper tests
+# ═════════════════════════════════════════════════════════════════════
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class IsAggregateOnlyUserTest(TestCase):
+    """Test the is_aggregate_only_user() permission helper."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.admin = User.objects.create_user(
+            username="admin", password="testpass123", is_admin=True, display_name="Admin"
+        )
+        self.exec_user = User.objects.create_user(
+            username="exec", password="testpass123", is_admin=False, display_name="Exec"
+        )
+        self.pm_user = User.objects.create_user(
+            username="pm", password="testpass123", is_admin=False, display_name="PM"
+        )
+        self.dual_user = User.objects.create_user(
+            username="dual", password="testpass123", is_admin=False, display_name="Dual"
+        )
+
+        self.program_a = Program.objects.create(name="Program A")
+        self.program_b = Program.objects.create(name="Program B")
+
+        UserProgramRole.objects.create(
+            user=self.exec_user, program=self.program_a, role="executive"
+        )
+        UserProgramRole.objects.create(
+            user=self.pm_user, program=self.program_a, role="program_manager"
+        )
+        # Dual user: executive in program A, PM in program B
+        UserProgramRole.objects.create(
+            user=self.dual_user, program=self.program_a, role="executive"
+        )
+        UserProgramRole.objects.create(
+            user=self.dual_user, program=self.program_b, role="program_manager"
+        )
+
+    def test_admin_is_not_aggregate_only(self):
+        self.assertFalse(is_aggregate_only_user(self.admin))
+
+    def test_executive_is_aggregate_only(self):
+        self.assertTrue(is_aggregate_only_user(self.exec_user))
+
+    def test_pm_is_not_aggregate_only(self):
+        self.assertFalse(is_aggregate_only_user(self.pm_user))
+
+    def test_dual_role_user_is_not_aggregate_only(self):
+        """User with both executive and PM roles gets individual data (PM wins)."""
+        self.assertFalse(is_aggregate_only_user(self.dual_user))
+
+
+# ═════════════════════════════════════════════════════════════════════
+# 10. Executive aggregate export content tests
+# ═════════════════════════════════════════════════════════════════════
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ExecutiveAggregateExportTest(TestCase):
+    """Verify executive exports contain ONLY aggregate data — no client IDs or author names.
+
+    This is the critical security test for the metric.view_individual=DENY fix.
+    """
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.export_dir = tempfile.mkdtemp(prefix="konote_test_exports_")
+        self.http_client = Client()
+
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+        from apps.plans.models import MetricDefinition, PlanSection, PlanTarget, PlanTargetMetric
+
+        # Users
+        self.admin = User.objects.create_user(
+            username="admin", password="testpass123", is_admin=True, display_name="Admin User"
+        )
+        self.pm_user = User.objects.create_user(
+            username="pm", password="testpass123", is_admin=False, display_name="PM User"
+        )
+        self.exec_user = User.objects.create_user(
+            username="exec", password="testpass123", is_admin=False, display_name="Exec User"
+        )
+
+        # Programme
+        self.program = Program.objects.create(name="Test Programme")
+
+        # Roles
+        UserProgramRole.objects.create(
+            user=self.pm_user, program=self.program, role="program_manager"
+        )
+        UserProgramRole.objects.create(
+            user=self.exec_user, program=self.program, role="executive"
+        )
+
+        # Client
+        self.client_file = ClientFile.objects.create()
+        self.client_file.first_name = "Jane"
+        self.client_file.last_name = "Doe"
+        self.client_file.save()
+
+        # Enrolment
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program
+        )
+
+        # Metric
+        self.metric_def = MetricDefinition.objects.create(
+            name="Test Engagement", is_enabled=True
+        )
+
+        # Plan chain
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Test Section", program=self.program,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file,
+        )
+        target.name = "Improve engagement"
+        target.description = "Test target"
+        target.save()
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=self.metric_def)
+
+        # Progress note with metric value
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick", author=self.pm_user,
+        )
+        note_target = ProgressNoteTarget.objects.create(
+            progress_note=note, plan_target=target,
+        )
+        MetricValue.objects.create(
+            progress_note_target=note_target, metric_def=self.metric_def, value="8",
+        )
+
+    def tearDown(self):
+        shutil.rmtree(self.export_dir, ignore_errors=True)
+
+    def _submit_export(self, username):
+        """Submit the metric export form and return the CSV content."""
+        settings.SECURE_EXPORT_DIR = self.export_dir
+        self.http_client.login(username=username, password="testpass123")
+        resp = self.http_client.post("/reports/export/", {
+            "program": self.program.pk,
+            "date_from": "2020-01-01",
+            "date_to": "2030-12-31",
+            "metrics": [self.metric_def.pk],
+            "format": "csv",
+            "recipient": "self",
+        })
+        return resp
+
+    # ── Executive: aggregate only ────────────────────────────────
+
+    def test_executive_csv_has_no_record_ids(self):
+        """Executive export must NOT contain any client record ID."""
+        resp = self._submit_export("exec")
+        self.assertEqual(resp.status_code, 200)
+        # Find the secure link and read the file content
+        link = SecureExportLink.objects.order_by("-created_at").first()
+        self.assertIsNotNone(link)
+        with open(link.file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        # The client record_id format is like REC-XXXX or a numeric ID —
+        # but more importantly, "Client Record ID" header should be absent
+        self.assertNotIn("Client Record ID", content)
+        self.assertNotIn(self.client_file.record_id, content)
+
+    def test_executive_csv_has_aggregate_headers(self):
+        """Executive export must contain aggregate column headers."""
+        resp = self._submit_export("exec")
+        self.assertEqual(resp.status_code, 200)
+        link = SecureExportLink.objects.order_by("-created_at").first()
+        with open(link.file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        self.assertIn("Metric Name", content)
+        self.assertIn("Participants Measured", content)
+        self.assertIn("Average", content)
+        self.assertIn("Min", content)
+        self.assertIn("Max", content)
+
+    def test_executive_csv_has_no_author_names(self):
+        """Executive export must NOT contain any staff author names."""
+        resp = self._submit_export("exec")
+        self.assertEqual(resp.status_code, 200)
+        link = SecureExportLink.objects.order_by("-created_at").first()
+        with open(link.file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        self.assertNotIn("PM User", content)
+        self.assertNotIn("Author", content)
+
+    def test_executive_csv_has_aggregate_mode_header(self):
+        """Executive export must indicate aggregate mode in the header."""
+        resp = self._submit_export("exec")
+        self.assertEqual(resp.status_code, 200)
+        link = SecureExportLink.objects.order_by("-created_at").first()
+        with open(link.file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        self.assertIn("Aggregate Summary", content)
+
+    # ── Admin: individual data ───────────────────────────────────
+
+    def test_admin_still_gets_individual_data(self):
+        """Admin export must still contain individual client data (regression test)."""
+        resp = self._submit_export("admin")
+        self.assertEqual(resp.status_code, 200)
+        link = SecureExportLink.objects.order_by("-created_at").first()
+        with open(link.file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        self.assertIn("Client Record ID", content)
+        self.assertIn(self.client_file.record_id, content)
+
+    def test_pm_still_gets_individual_data(self):
+        """PM export must still contain individual client data (regression test)."""
+        resp = self._submit_export("pm")
+        self.assertEqual(resp.status_code, 200)
+        link = SecureExportLink.objects.order_by("-created_at").first()
+        with open(link.file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        self.assertIn("Client Record ID", content)
+        self.assertIn(self.client_file.record_id, content)
+
+    # ── Form template context ────────────────────────────────────
+
+    def test_executive_form_shows_aggregate_banner(self):
+        """GET as executive should set is_aggregate_only in template context."""
+        self.http_client.login(username="exec", password="testpass123")
+        resp = self.http_client.get("/reports/export/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.context.get("is_aggregate_only"))
+
+    def test_admin_form_does_not_show_aggregate_banner(self):
+        """GET as admin should NOT set is_aggregate_only."""
+        self.http_client.login(username="admin", password="testpass123")
+        resp = self.http_client.get("/reports/export/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(resp.context.get("is_aggregate_only"))
+
+    def test_pm_form_does_not_show_aggregate_banner(self):
+        """GET as PM should NOT set is_aggregate_only."""
+        self.http_client.login(username="pm", password="testpass123")
+        resp = self.http_client.get("/reports/export/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(resp.context.get("is_aggregate_only"))

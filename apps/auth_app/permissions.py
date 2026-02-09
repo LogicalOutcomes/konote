@@ -351,7 +351,7 @@ def permission_to_plain_english(perm_key, perm_level):
         "metric.view_individual": "See individual client metrics and outcomes",
         "metric.view_aggregate": "See aggregate metrics and reports",
 
-        "report.programme_report": "Generate programme reports (for funders/board)",
+        "report.programme_report": "Generate programme outcome reports",
         "report.data_extract": "Export client data extracts",
 
         "event.view": "View client events and timeline",
