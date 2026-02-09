@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
-from apps.auth_app.decorators import minimum_role
+from apps.auth_app.decorators import minimum_role, requires_permission
 from apps.clients.models import ClientDetailValue, ClientProgramEnrolment
 from apps.events.models import Event
 from apps.notes.models import MetricValue, ProgressNote

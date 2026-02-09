@@ -8,7 +8,7 @@ from django.template.response import TemplateResponse
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from apps.auth_app.decorators import minimum_role
+from apps.auth_app.decorators import minimum_role, requires_permission
 from apps.programs.access import get_accessible_programs, get_client_or_403
 from apps.programs.models import UserProgramRole
 from .insights import get_structured_insights, collect_quotes, MIN_PARTICIPANTS_FOR_QUOTES
@@ -121,7 +121,7 @@ def program_insights(request):
 
 
 @login_required
-@minimum_role("staff")
+@requires_permission("metric.view_individual")
 def client_insights_partial(request, client_id):
     """Client-level insights — HTMX partial for the Analysis tab."""
     client = get_client_or_403(request, client_id)

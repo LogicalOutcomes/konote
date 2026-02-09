@@ -16,6 +16,11 @@ from .decorators import admin_required
 from .forms import UserCreateForm, UserEditForm, UserProgramRoleForm
 from .models import User
 
+# Roles that PMs are NOT allowed to assign (no-elevation constraint).
+# PMs with user.manage: SCOPED can manage staff in their own programme
+# but cannot create PM/executive accounts or elevate receptionist to staff.
+_PM_BLOCKED_ROLE_ASSIGNMENTS = {"program_manager", "executive"}
+
 
 @login_required
 @admin_required
@@ -164,13 +169,44 @@ def user_roles(request, user_id):
 @login_required
 @admin_required
 def user_role_add(request, user_id):
-    """Add a program role assignment (POST only)."""
+    """Add a program role assignment (POST only).
+
+    No-elevation constraint: non-admin users with user.manage: SCOPED
+    (programme managers) cannot assign PM or executive roles, and cannot
+    elevate receptionist to staff. This constraint is enforced here even
+    though PMs currently can't reach this view (@admin_required blocks
+    them). When PM access is wired in Wave 5, this guard will be active.
+    """
     edit_user = get_object_or_404(User, pk=user_id)
     if request.method == "POST":
         form = UserProgramRoleForm(request.POST)
         if form.is_valid():
             program = form.cleaned_data["program"]
             role = form.cleaned_data["role"]
+
+            # No-elevation constraint for non-admin users
+            if not request.user.is_admin:
+                if role in _PM_BLOCKED_ROLE_ASSIGNMENTS:
+                    messages.error(
+                        request,
+                        _("You cannot assign the %(role)s role. "
+                          "Only administrators can assign manager or executive roles.")
+                        % {"role": role},
+                    )
+                    return redirect("auth_app:user_roles", user_id=edit_user.pk)
+
+                # PMs cannot change receptionist to staff (grants clinical access)
+                existing_role = UserProgramRole.objects.filter(
+                    user=edit_user, program=program, status="active",
+                ).values_list("role", flat=True).first()
+                if existing_role == "receptionist" and role == "staff":
+                    messages.error(
+                        request,
+                        _("Elevating receptionist to staff grants clinical data access. "
+                          "Only administrators can make this change."),
+                    )
+                    return redirect("auth_app:user_roles", user_id=edit_user.pk)
+
             obj, created = UserProgramRole.objects.get_or_create(
                 user=edit_user,
                 program=program,

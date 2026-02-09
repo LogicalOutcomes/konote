@@ -199,7 +199,9 @@ def requires_permission(permission_key, get_programme_fn=None, get_client_fn=Non
 
                 user_role = role_obj.role
                 # Store for compatibility with views that read this attribute
+                # (both spellings used across codebase)
                 request.user_programme_role = role_obj.role
+                request.user_program_role = role_obj.role
             else:
                 # No programme in URL — use highest role across all programmes
                 # Check ClientAccessBlock if client function provided
@@ -212,6 +214,7 @@ def requires_permission(permission_key, get_programme_fn=None, get_client_fn=Non
                 user_role = _get_user_highest_role_any(request.user)
                 if user_role is not None:
                     request.user_programme_role = user_role
+                    request.user_program_role = user_role
 
             if user_role is None:
                 return _render_403(
