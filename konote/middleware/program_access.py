@@ -101,6 +101,9 @@ class ProgramAccessMiddleware:
             for pattern in NOTE_URL_PATTERNS:
                 if pattern.match(path):
                     return redirect("clients:executive_dashboard")
+            # Block access to group views (contain individual member names)
+            if path.startswith("/groups/"):
+                return redirect("clients:executive_dashboard")
             # Also redirect from staff dashboard (root) and client list
             if path in ("/", "/clients/", "/clients"):
                 return redirect("clients:executive_dashboard")

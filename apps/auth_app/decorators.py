@@ -19,15 +19,26 @@ def admin_required(view_func):
 
 
 def _get_user_highest_role(user):
-    """Return the user's highest role across all active program assignments."""
+    """Return the user's highest client-access role across all programs.
+
+    The executive role is excluded because it does not grant access to
+    individual client data.  If the user only has executive roles, None
+    is returned so that minimum_role checks will deny access.
+    """
     from apps.programs.models import UserProgramRole
 
-    roles = UserProgramRole.objects.filter(
-        user=user, status="active",
-    ).values_list("role", flat=True)
+    roles = set(
+        UserProgramRole.objects.filter(
+            user=user, status="active",
+        ).values_list("role", flat=True)
+    )
     if not roles:
         return None
-    return max(roles, key=lambda r: ROLE_RANK.get(r, 0))
+    # Only consider roles that grant client-level data access
+    client_roles = roles & UserProgramRole.CLIENT_ACCESS_ROLES
+    if not client_roles:
+        return None
+    return max(client_roles, key=lambda r: ROLE_RANK.get(r, 0))
 
 
 def minimum_role(min_role):
