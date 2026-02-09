@@ -117,6 +117,12 @@ def program_detail(request, program_id):
     roles = UserProgramRole.objects.filter(program=program).select_related("user").order_by("status", "user__display_name")
     role_form = UserProgramRoleForm(program=program) if request.user.is_admin else None
 
+    # Get this user's role in the program (for template permission checks)
+    user_program_role = UserProgramRole.objects.filter(
+        user=request.user, program=program, status="active"
+    ).values_list("role", flat=True).first()
+    is_receptionist = user_program_role == "receptionist"
+
     # Groups linked to this program (for group/both service models)
     groups = None
     if program.service_model in ("group", "both"):
@@ -134,6 +140,7 @@ def program_detail(request, program_id):
         "roles": roles,
         "role_form": role_form,
         "is_admin": request.user.is_admin,
+        "is_receptionist": is_receptionist,
         "user_has_access": user_has_access,
         "groups": groups,
     })

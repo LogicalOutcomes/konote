@@ -76,17 +76,19 @@
             <tr>
                 <th scope="col">{% trans "Name" %}</th>
                 <th scope="col">{% trans "Members" %}</th>
-                <th scope="col">{% trans "Actions" %}</th>
+                {% if not is_receptionist %}<th scope="col">{% trans "Actions" %}</th>{% endif %}
             </tr>
         </thead>
         <tbody>
             {% for group in groups %}
             <tr>
-                <td><a href="{% url 'groups:group_detail' group_id=group.pk %}">{{ group.name }}</a></td>
+                <td>{% if is_receptionist %}{{ group.name }}{% else %}<a href="{% url 'groups:group_detail' group_id=group.pk %}">{{ group.name }}</a>{% endif %}</td>
                 <td data-label="{% trans 'Members' %}">{{ group.member_count }}</td>
+                {% if not is_receptionist %}
                 <td data-label="{% trans 'Actions' %}">
                     <a href="{% url 'groups:session_log' group_id=group.pk %}" role="button" class="outline small">{% trans "Log Session" %}</a>
                 </td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>
@@ -96,7 +98,9 @@
     <p><em>{% trans "No groups created yet." %}</em></p>
     {% endif %}
 
+    {% if not is_receptionist %}
     <a href="{% url 'groups:group_create' %}" role="button" class="outline">{% trans "Create Group" %}</a>
+    {% endif %}
 </section>
 {% endif %}
 {% endblock %}
