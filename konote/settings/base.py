@@ -91,6 +91,7 @@ TEMPLATES = [
                 "django.template.context_processors.i18n",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "konote.context_processors.nav_active",
                 "konote.context_processors.terminology",
                 "konote.context_processors.features",
                 "konote.context_processors.instance_settings",
