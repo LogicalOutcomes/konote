@@ -3,6 +3,34 @@ from django.core.cache import cache
 from django.utils.translation import get_language
 
 
+def nav_active(request):
+    """Auto-detect which nav item to highlight based on the URL path.
+
+    Views that explicitly pass nav_active in their context will override this.
+    """
+    path = request.path
+
+    # Order matters — more specific prefixes first
+    if path.startswith("/reports/insights/"):
+        section = "insights"
+    elif path.startswith("/reports/"):
+        section = "reports"
+    elif path.startswith("/programs/"):
+        section = "programs"
+    elif path.startswith("/groups/"):
+        section = "groups"
+    elif path.startswith(("/admin/", "/erasure/", "/merge/")):
+        section = "admin"
+    elif path.startswith(("/clients/", "/plans/", "/notes/", "/events/")):
+        section = "clients"
+    elif path == "/":
+        section = "clients"
+    else:
+        section = ""
+
+    return {"nav_active": section}
+
+
 def terminology(request):
     """Inject terminology overrides into all templates.
 

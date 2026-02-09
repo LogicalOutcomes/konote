@@ -57,6 +57,21 @@
 </details>
 {% endif %}
 
+{# Suggestions with priority badges #}
+{% if suggestions %}
+<h3>{% trans "Their Suggestions" %}</h3>
+{% for s in suggestions|slice:":5" %}
+<blockquote class="insight-quote">
+    <p>&ldquo;{{ s.text }}&rdquo;</p>
+    <cite>
+        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span> &middot; {% endif %}
+        {% if s.date %}{{ s.date }} &middot; {% endif %}
+        <a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>
+    </cite>
+</blockquote>
+{% endfor %}
+{% endif %}
+
 {# Quotes with dates (client-level is not privacy-restricted) #}
 {% if quotes %}
 <h3>{% trans "In their words" %}</h3>
@@ -81,29 +96,38 @@
 {% if structured.descriptor_trend and data_tier != "sparse" %}
 {{ chart_data_json|json_script:"client-trend-data" }}
 <script>
+{# Chart.js is loaded AFTER block content in base.html, so defer until ready #}
 (function() {
-    var rawData = JSON.parse(document.getElementById('client-trend-data').textContent);
-    if (!Array.isArray(rawData) || rawData.length === 0) return;
-    var ctx = document.getElementById('client-descriptor-trend');
-    if (!ctx) return;
-    new Chart(ctx.getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: rawData.map(function(r) { return r.month; }),
-            datasets: [
-                { label: '{% trans "Harder right now" %}', data: rawData.map(function(r) { return r.harder; }), borderColor: '#e74c3c', tension: 0.3, fill: false },
-                { label: '{% trans "Holding steady" %}', data: rawData.map(function(r) { return r.holding; }), borderColor: '#f39c12', tension: 0.3, fill: false },
-                { label: '{% trans "Something\'s shifting" %}', data: rawData.map(function(r) { return r.shifting; }), borderColor: '#3498db', tension: 0.3, fill: false },
-                { label: '{% trans "In a good place" %}', data: rawData.map(function(r) { return r.good_place; }), borderColor: '#27ae60', tension: 0.3, fill: false },
-            ],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.parsed.y + '%'; } } } },
-            scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + '%'; } } } },
-        },
-    });
+    function initClientTrendChart() {
+        var rawData = JSON.parse(document.getElementById('client-trend-data').textContent);
+        if (!Array.isArray(rawData) || rawData.length === 0) return;
+        var ctx = document.getElementById('client-descriptor-trend');
+        if (!ctx) return;
+        new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: rawData.map(function(r) { return r.month; }),
+                datasets: [
+                    { label: '{% trans "Harder right now" %}', data: rawData.map(function(r) { return r.harder; }), borderColor: '#e74c3c', tension: 0.3, fill: false },
+                    { label: '{% trans "Holding steady" %}', data: rawData.map(function(r) { return r.holding; }), borderColor: '#f39c12', tension: 0.3, fill: false },
+                    { label: '{% trans "Something\'s shifting" %}', data: rawData.map(function(r) { return r.shifting; }), borderColor: '#3498db', tension: 0.3, fill: false },
+                    { label: '{% trans "In a good place" %}', data: rawData.map(function(r) { return r.good_place; }), borderColor: '#27ae60', tension: 0.3, fill: false },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' }, tooltip: { callbacks: { label: function(c) { return c.dataset.label + ': ' + c.parsed.y + '%'; } } } },
+                scales: { y: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + '%'; } } } },
+            },
+        });
+    }
+
+    if (typeof Chart !== 'undefined') {
+        initClientTrendChart();
+    } else {
+        window.addEventListener('load', initClientTrendChart);
+    }
 })();
 </script>
 {% endif %}

@@ -85,62 +85,71 @@
 
 {{ chart_data|json_script:"chart-data" }}
 <script>
+{# Chart.js is loaded AFTER block content in base.html, so defer until ready #}
 (function() {
-    var chartData = JSON.parse(document.getElementById('chart-data').textContent);
-    if (!Array.isArray(chartData)) {
-        console.error('[Chart] Data is not an array:', typeof chartData);
-        return;
-    }
-    /* Find all chart canvases dynamically — works for both grouped and flat layouts */
-    var canvases = document.querySelectorAll('canvas[id^="chart-"]');
-    chartData.forEach(function(chart, index) {
-    if (index >= canvases.length) return;
-    const ctx = canvases[index].getContext('2d');
-    const datasets = [{
-        label: chart.metric_name + (chart.unit ? ' (' + chart.unit + ')' : ''),
-        data: chart.data_points.map(function(p) { return p.value; }),
-        borderColor: 'rgb(59, 130, 246)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        fill: true,
-        tension: 0.3,
-    }];
-    if (chart.min_value !== null) {
-        datasets.push({
-            label: '{% trans "Minimum" %}' + ' (' + chart.min_value + ')',
-            data: Array(chart.data_points.length).fill(chart.min_value),
-            borderColor: 'rgba(239, 68, 68, 0.5)',
-            borderDash: [5, 5],
-            pointRadius: 0,
-            fill: false,
-        });
-    }
-    if (chart.max_value !== null) {
-        datasets.push({
-            label: '{% trans "Maximum" %}' + ' (' + chart.max_value + ')',
-            data: Array(chart.data_points.length).fill(chart.max_value),
-            borderColor: 'rgba(34, 197, 94, 0.5)',
-            borderDash: [5, 5],
-            pointRadius: 0,
-            fill: false,
-        });
-    }
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: chart.data_points.map(function(p) { return p.date; }),
-            datasets: datasets,
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: { legend: { position: 'bottom' } },
-            scales: {
-                y: { beginAtZero: false, title: { display: true, text: chart.unit || '{% trans "Value" %}' } },
-                x: { title: { display: true, text: '{% trans "Date" %}' } },
+    function initAnalysisCharts() {
+        var chartData = JSON.parse(document.getElementById('chart-data').textContent);
+        if (!Array.isArray(chartData)) {
+            console.error('[Chart] Data is not an array:', typeof chartData);
+            return;
+        }
+        /* Find all chart canvases dynamically — works for both grouped and flat layouts */
+        var canvases = document.querySelectorAll('canvas[id^="chart-"]');
+        chartData.forEach(function(chart, index) {
+        if (index >= canvases.length) return;
+        const ctx = canvases[index].getContext('2d');
+        const datasets = [{
+            label: chart.metric_name + (chart.unit ? ' (' + chart.unit + ')' : ''),
+            data: chart.data_points.map(function(p) { return p.value; }),
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.3,
+        }];
+        if (chart.min_value !== null) {
+            datasets.push({
+                label: '{% trans "Minimum" %}' + ' (' + chart.min_value + ')',
+                data: Array(chart.data_points.length).fill(chart.min_value),
+                borderColor: 'rgba(239, 68, 68, 0.5)',
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false,
+            });
+        }
+        if (chart.max_value !== null) {
+            datasets.push({
+                label: '{% trans "Maximum" %}' + ' (' + chart.max_value + ')',
+                data: Array(chart.data_points.length).fill(chart.max_value),
+                borderColor: 'rgba(34, 197, 94, 0.5)',
+                borderDash: [5, 5],
+                pointRadius: 0,
+                fill: false,
+            });
+        }
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chart.data_points.map(function(p) { return p.date; }),
+                datasets: datasets,
             },
-        },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                scales: {
+                    y: { beginAtZero: false, title: { display: true, text: chart.unit || '{% trans "Value" %}' } },
+                    x: { title: { display: true, text: '{% trans "Date" %}' } },
+                },
+            },
+        });
     });
-});
+    }
+
+    if (typeof Chart !== 'undefined') {
+        initAnalysisCharts();
+    } else {
+        window.addEventListener('load', initAnalysisCharts);
+    }
 })();
 </script>
 {% else %}
