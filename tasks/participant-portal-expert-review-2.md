@@ -66,7 +66,7 @@ if settings.SESSION_COOKIE_DOMAIN is not None:
 | Task | Who | Frequency | Time per instance | Training |
 |------|-----|-----------|-------------------|----------|
 | Invite participant | Direct service staff | Per participant | 10 min (incl. consent + MFA setup) | Medium |
-| Programme alias config | Admin | Once per programme | 2 min | Low |
+| Program alias config | Admin | Once per program | 2 min | Low |
 | Password reset | Self-service (no staff) | N/A | N/A | N/A |
 | Review correction request | Direct service staff | Occasional | 5 min | Medium |
 | Revoke access (safety) | Staff or PM | Rare | 2 min | High (knowing WHEN) |
@@ -78,7 +78,7 @@ if settings.SESSION_COOKIE_DOMAIN is not None:
 1. **Password reset: Self-service only.** Email-based code. No staff involvement.
 2. **Invite flow: <10 minutes.** Must complete consent + account + MFA in one sitting.
 3. **No bulk invites.** Consent must be individual and face-to-face.
-4. **Programme aliases: Smart defaults.** Don't block portal if unconfigured. Flag sensitive keywords ("substance", "mental health", "HIV", "DV", "violence") with a warning nudge.
+4. **Program aliases: Smart defaults.** Don't block portal if unconfigured. Flag sensitive keywords ("substance", "mental health", "HIV", "DV", "violence") with a warning nudge.
 5. **Feature toggle:** `features.participant_portal` — off by default, per agency.
 6. **Pre-session prompts:** Inline in staff client view, not a separate inbox.
 7. **"Message to Worker" notice:** "This is not for emergencies" + crisis hotline displayed.

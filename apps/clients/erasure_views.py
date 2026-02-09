@@ -458,7 +458,7 @@ def erasure_receipt_pdf(request, pk):
         "er": er,
         "client": client,
         "org_name": org_name,
-        "programmes": er.data_summary.get("programs", er.data_summary.get("programmes", [])),
+        "programs": er.data_summary.get("programs", er.data_summary.get("programmes", [])),
         "data_summary": er.data_summary,
         "approvals": er.approvals.select_related("approved_by"),
     }

@@ -83,7 +83,7 @@ def portal_date(value):
 
 @register.filter
 def portal_display_name(program):
-    """Return the portal-friendly display name for a programme.
+    """Return the portal-friendly display name for a program.
 
     Prefers portal_display_name if set, falls back to translated_name
     (which handles English/French automatically).

@@ -352,6 +352,3 @@ def program_role_required(min_role, get_program_fn, get_client_fn=None):
         return wrapper
     return decorator
 
-
-# Canadian spelling alias — views use "programme" per project conventions
-programme_role_required = program_role_required

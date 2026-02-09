@@ -1479,7 +1479,7 @@ class GenerateCMTDataTests(TestCase):
         self.assertEqual(cmt_data["total_individuals_served"], 0)
         self.assertEqual(cmt_data["new_clients_this_period"], 0)
         self.assertEqual(cmt_data["total_contacts"], 0)
-        self.assertEqual(cmt_data["programme_name"], "Test Program")
+        self.assertEqual(cmt_data["program_name"], "Test Program")
         self.assertEqual(cmt_data["reporting_period"], "FY 2025-26")
 
     def test_cmt_data_includes_all_age_groups(self):
@@ -1545,8 +1545,8 @@ class GenerateCMTCSVRowsTests(TestCase):
         cmt_data = {
             "generated_at": timezone.now(),
             "organisation_name": "Test Org",
-            "programme_name": "Test Program",
-            "programme_description": "",
+            "program_name": "Test Program",
+            "program_description": "",
             "reporting_period": "FY 2025-26",
             "total_individuals_served": 50,
             "new_clients_this_period": 10,
@@ -1580,7 +1580,7 @@ class GenerateCMTCSVRowsTests(TestCase):
         # Flatten rows to a single string for easier searching
         flat_text = " ".join(" ".join(str(cell) for cell in row) for row in rows)
 
-        self.assertIn("PROGRAMME OUTCOME REPORT TEMPLATE", flat_text)
+        self.assertIn("PROGRAM OUTCOME REPORT TEMPLATE", flat_text)
         self.assertIn("ORGANISATION INFORMATION", flat_text)
         self.assertIn("SERVICE STATISTICS", flat_text)
         self.assertIn("AGE DEMOGRAPHICS", flat_text)
@@ -1612,7 +1612,7 @@ class CMTExportViewTests(TestCase):
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get("/reports/cmt-export/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Programme Outcome Report Template")
+        self.assertContains(resp, "Program Outcome Report Template")
 
     def test_nonadmin_cannot_access_cmt_export(self):
         """Non-admin users should not be able to access CMT export."""
@@ -1624,7 +1624,7 @@ class CMTExportViewTests(TestCase):
         """CMT export form should display program dropdown."""
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get("/reports/cmt-export/")
-        self.assertContains(resp, "Programme")
+        self.assertContains(resp, "Program")
         self.assertContains(resp, "Test Program")
 
     def test_cmt_export_form_displays_fiscal_year_dropdown(self):
@@ -1666,7 +1666,7 @@ class CMTExportViewTests(TestCase):
         link = SecureExportLink.objects.latest("created_at")
         download_resp = self.client.get(f"/reports/download/{link.id}/")
         content = self._get_download_content(download_resp)
-        self.assertIn("PROGRAMME OUTCOME REPORT TEMPLATE", content)
+        self.assertIn("PROGRAM OUTCOME REPORT TEMPLATE", content)
         self.assertIn("Test Program", content)
         self.assertIn("SERVICE STATISTICS", content)
         self.assertIn("AGE DEMOGRAPHICS", content)
@@ -1787,7 +1787,7 @@ class ClientDataExportViewTests(TestCase):
         download_resp = self.client.get(f"/reports/download/{link.id}/")
         content = self._get_download_content(download_resp)
         self.assertIn("TEST-001", content)
-        self.assertIn(f"Programme Filter: {self.program.name}", content)
+        self.assertIn(f"Program Filter: {self.program.name}", content)
 
     def test_client_data_export_with_status_filter(self):
         """Export can be filtered by client status."""

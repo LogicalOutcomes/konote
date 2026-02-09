@@ -8,14 +8,14 @@
 
 - [ ] Does this feature display client information? Which roles can see it?
 - [ ] Does a receptionist see anything they don't need for checking people in/out?
-- [ ] Does a programme manager see individual client data they don't need?
+- [ ] Does a program manager see individual client data they don't need?
 - [ ] Are there fields that reveal diagnosis indirectly (medications, group names, referral reasons)?
 
-## 2. Does it cross programme boundaries?
+## 2. Does it cross program boundaries?
 
-- [ ] Does this feature let someone in Programme A see data from Programme B?
-- [ ] If yes: is there documented client consent for cross-programme sharing?
-- [ ] Could the feature leak programme membership itself? (e.g., showing "enrolled in Youth Counselling" reveals reason for service)
+- [ ] Does this feature let someone in Program A see data from Program B?
+- [ ] If yes: is there documented client consent for cross-program sharing?
+- [ ] Could the feature leak program membership itself? (e.g., showing "enrolled in Youth Counselling" reveals reason for service)
 
 ## 3. Does it export or extract data?
 
@@ -27,7 +27,7 @@
 ## 4. Would it expose a DV client?
 
 - [ ] Could this feature reveal that someone IS a client? (In a DV shelter, even the client list is sensitive)
-- [ ] Could it reveal a client's location? (Address fields, programme location, check-in records)
+- [ ] Could it reveal a client's location? (Address fields, program location, check-in records)
 - [ ] Could someone use this feature to find out if a specific person is receiving services?
 - [ ] Apply the "angry ex-partner" test (see below)
 
@@ -61,7 +61,7 @@
 | | Intake forms |
 | | Metrics and events |
 
-## The "Angry Ex-Partner" Test (for DV Programmes)
+## The "Angry Ex-Partner" Test (for DV Programs)
 
 If an abusive ex-partner gained 5 minutes of access to a front desk workstation, could they:
 
@@ -70,4 +70,4 @@ If an abusive ex-partner gained 5 minutes of access to a front desk workstation,
 | Confirm their ex is a client here? | Search-only interface, never confirm or deny |
 | Find their ex's address or phone number? | Address suppression for flagged clients |
 | Read session notes about what their ex disclosed? | Clinical data blocked for receptionist role |
-| See which programme their ex is in? | Programme names shouldn't reveal service type on screens visible to receptionist |
+| See which program their ex is in? | Program names shouldn't reveal service type on screens visible to receptionist |

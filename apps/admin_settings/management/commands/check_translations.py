@@ -48,7 +48,7 @@ class Command(BaseCommand):
         ("Cancel", "Annuler"),
         ("First Name", "nom"),
         # Export/reports (the SafeLocaleMiddleware canary string)
-        ("Programme Outcome Report", "résultats"),
+        ("Program Outcome Report", "résultats"),
         # Accessibility
         ("Skip to main content", "Passer au contenu"),
     ]

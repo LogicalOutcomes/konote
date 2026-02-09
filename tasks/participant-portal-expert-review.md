@@ -13,7 +13,7 @@
 | ParticipantUser separate from User | **Yes** | Very high |
 | MFA model | **Tiered (4 levels)** | High |
 | Reflection model | **Two features, not toggle** | High |
-| Programme names in portal | **Mandatory aliases** | Very high |
+| Program names in portal | **Mandatory aliases** | Very high |
 | Group visibility | **Defer to later phase** | High |
 | Quick-exit button | **Mandatory** | Very high |
 | Session timeout | **30 min idle / 4 hr absolute** | High |
@@ -39,14 +39,14 @@
 - Each section on its own page
 - Grade 6 reading level for all text
 
-### 3. Programme aliases: Mandatory before portal access
-- Every programme must have a portal-display name configured
-- Prevents clinical information disclosure via programme names
+### 3. Program aliases: Mandatory before portal access
+- Every program must have a portal-display name configured
+- Prevents clinical information disclosure via program names
 - Block portal invites until alias is configured
 
 ### 4. Group visibility: Defer entirely
 - Risk-to-value ratio too high for initial release
-- Requires same alias infrastructure as programmes
+- Requires same alias infrastructure as programs
 - Revisit in Phase D
 
 ### 5. Quick-exit button: Mandatory from day one
@@ -86,7 +86,7 @@
 ## Adjusted Phasing
 
 ### Phase A: Foundation
-- As designed + subdomain routing, quick-exit, visual consent, programme alias config, tiered MFA, neutral title/favicon, safety help page
+- As designed + subdomain routing, quick-exit, visual consent, program alias config, tiered MFA, neutral title/favicon, safety help page
 
 ### Phase B: Core Value
 - Goals and progress (no groups)

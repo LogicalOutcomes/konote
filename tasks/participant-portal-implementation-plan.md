@@ -36,7 +36,7 @@ These were debated across two expert panels (8 experts total) and are settled.
 | D2 | ParticipantUser separate from staff User | **Yes** | Structural isolation — staff decorators auto-deny portal users |
 | D3 | MFA model | **Tiered (4 levels)** | TOTP > email code > admin exemption > staff-assisted login |
 | D4 | Reflection model | **Two features, not a toggle** | "My Journal" (private) + "Message to My Worker" (shared) |
-| D5 | Programme names in portal | **Smart-default aliases** | Default = programme name; flag sensitive keywords with warning |
+| D5 | Program names in portal | **Smart-default aliases** | Default = program name; flag sensitive keywords with warning |
 | D6 | Group visibility | **Defer to Phase D** | Risk-to-value ratio too high for initial release |
 | D7 | Quick-exit button | **Mandatory from day one** | Fixed-position, sendBeacon logout, redirect to Google.ca |
 | D8 | Session timeout | **30 min idle / 4 hr absolute** | Generous enough for population; no persistent sessions |
@@ -235,7 +235,7 @@ portal_visibility = models.CharField(
 ```python
 portal_display_name = models.CharField(
     max_length=255, blank=True, default="",
-    help_text="Name shown in participant portal. Leave blank to use programme name.",
+    help_text="Name shown in participant portal. Leave blank to use program name.",
 )
 ```
 
@@ -405,11 +405,11 @@ When participant taps "Something doesn't look right?":
 | A9: Portal login page | Light agency branding, generic `<title>`, generic favicon. |
 | A10: Quick-exit button | Fixed-position on every page. sendBeacon + location.replace. |
 | A11: "Staying safe online" page | Pre-auth, no login required. How to use private browsing, clear history. |
-| A12: Django system checks | `portal.W001` (SESSION_COOKIE_DOMAIN), `portal.W002` (programme aliases). |
+| A12: Django system checks | `portal.W001` (SESSION_COOKIE_DOMAIN), `portal.W002` (program aliases). |
 | A13: Audit logging extension | AuditMiddleware logs `participant_user_id` + `portal_access=True`. |
 | A14: SafeLocaleMiddleware tweak | Read `participant_user.preferred_language` for portal requests. |
 | A15: Staff-side "Invite to Portal" button | On client detail page. Generates invite link. Consent confirmation. **Must check for existing portal account** — if client already has one, show "already has access" with option to resend invite or reactivate. |
-| A16: Programme portal_display_name field | Add field to Program model. Smart default with keyword warning. |
+| A16: Program portal_display_name field | Add field to Program model. Smart default with keyword warning. |
 | A17: Migrations | makemigrations + migrate for all new models and field additions. |
 | A18: Security test suite | IDOR tests, session isolation test, CSRF cross-domain test, brute force test, timing test. |
 | A19: Basic dashboard | Greeting with preferred name. "Portal is being set up" placeholder for future content. |
@@ -517,7 +517,7 @@ Portal works at `/my/` on the main domain. No domain enforcement (middleware doe
 
 | Category | One-time | Ongoing |
 |----------|----------|---------|
-| Admin: configure programme aliases | 5 min per programme | Rare |
+| Admin: configure program aliases | 5 min per program | Rare |
 | Admin: enable portal feature toggle | 1 min | One-time |
 | Staff: invite a participant | 10 min (consent + MFA setup) | Per participant |
 | Staff: review correction requests | 5 min each | Occasional |

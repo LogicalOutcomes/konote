@@ -150,7 +150,7 @@ class ProgressNote(models.Model):
 
     @property
     def participant_suggestion(self):
-        """The participant's suggestion for programme improvement (decrypted)."""
+        """The participant's suggestion for program improvement (decrypted)."""
         return decrypt_field(self._participant_suggestion_encrypted)
 
     @participant_suggestion.setter

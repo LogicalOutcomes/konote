@@ -115,7 +115,7 @@ DEFAULT_FEATURES = {
     "custom_fields": _lazy("Custom participant fields"),
     "alerts": _lazy("Metric alerts"),
     "events": _lazy("Event tracking"),
-    "programme_reports": _lazy("Program outcome report exports"),
+    "program_reports": _lazy("Program outcome report exports"),
     "require_client_consent": _lazy("Require participant consent before notes (PIPEDA/PHIPA)"),
 }
 

@@ -51,8 +51,8 @@ class SafeLocaleMiddleware(LocaleMiddleware):
                 # Try a project-specific translation to verify our .mo file works.
                 # We use a KoNote-only string (not a Django built-in) so this
                 # fails if our .mo catalog is missing, even if Django's is loaded.
-                test_str = translation.gettext("Programme Outcome Report")
-                if test_str == "Programme Outcome Report":
+                test_str = translation.gettext("Program Outcome Report")
+                if test_str == "Program Outcome Report":
                     # Our project .mo file didn't load — French string was not translated
                     logger.warning(
                         "French .mo catalog may be missing: project string not translated."

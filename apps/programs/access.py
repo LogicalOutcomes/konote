@@ -54,7 +54,7 @@ def get_author_program(user, client):
 
     Used when creating notes/events to tag them with the authoring program.
     Picks the program where the user has the highest role so notes are
-    attributed to the most appropriate programme context.
+    attributed to the most appropriate program context.
     """
     from apps.auth_app.constants import ROLE_RANK
 
@@ -90,7 +90,7 @@ def get_client_or_403(request, client_id):
 
     Note: admin status does NOT grant automatic access to client data.
     Admins manage system settings (users, features, terminology) but need
-    programme roles to access client records, just like everyone else.
+    program roles to access client records, just like everyone else.
 
     This checks *access* to the client record. Data filtering (which
     programs' notes/events/plans you see) is handled separately in each view.
@@ -110,7 +110,7 @@ def get_client_or_403(request, client_id):
     if client.is_demo != user.is_demo:
         return None
 
-    # NOTE: admin bypass removed (PERM-S2) — admins need programme roles like everyone else
+    # NOTE: admin bypass removed (PERM-S2) — admins need program roles like everyone else
 
     user_program_ids = set(
         UserProgramRole.objects.filter(user=user, status="active")

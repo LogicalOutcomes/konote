@@ -128,11 +128,11 @@ class ProgramAccessMiddleware:
                         return self._forbidden_response(
                             request,
                             "Administrators cannot access individual client records. "
-                            "Ask another admin to assign you a programme role if you need client access."
+                            "Ask another admin to assign you a program role if you need client access."
                         )
                     return self._forbidden_response(
                         request,
-                        "Access denied. You are not assigned to this client's programme."
+                        "Access denied. You are not assigned to this client's program."
                     )
                 # Store for use in views
                 request.accessible_client_id = int(client_id)
@@ -152,11 +152,11 @@ class ProgramAccessMiddleware:
                             return self._forbidden_response(
                                 request,
                                 "Administrators cannot access individual client records. "
-                                "Ask another admin to assign you a programme role if you need client access."
+                                "Ask another admin to assign you a program role if you need client access."
                             )
                         return self._forbidden_response(
                             request,
-                            "Access denied. You are not assigned to this client's programme."
+                            "Access denied. You are not assigned to this client's program."
                         )
                     request.accessible_client_id = client_id
                     request.user_program_role = self._get_role_for_client(request.user, client_id)
