@@ -8002,6 +8002,41 @@ msgstr "Ce que disent les participants"
 msgid "participants"
 msgstr "participants"
 
+#: templates/reports/_insights_basic.html
+msgid "Participant Suggestions"
+msgstr "Suggestions des participants"
+
+#: templates/reports/_insights_basic.html
+msgid "%(total)s suggestion recorded this period."
+msgid_plural "%(total)s suggestions recorded this period."
+msgstr[0] "%(total)s suggestion enregistrée durant cette période."
+msgstr[1] "%(total)s suggestions enregistrées durant cette période."
+
+#: templates/reports/_insights_basic.html
+msgid ""
+"No progress notes found for this programme in the selected time period. Try "
+"a longer time period or check that notes have been recorded."
+msgstr ""
+"Aucune note de progrès trouvée pour ce programme durant la période "
+"sélectionnée. Essayez une période plus longue ou vérifiez que des notes ont "
+"été enregistrées."
+
+#: templates/reports/_insights_basic.html
+msgid ""
+"Individual quotes are not shown in the executive view to protect participant"
+" confidentiality. Trends and aggregate data are shown above."
+msgstr ""
+"Les citations individuelles ne sont pas affichées dans la vue exécutive afin"
+" de protéger la confidentialité des participants. Les tendances et les "
+"données agrégées sont affichées ci-dessus."
+
+#: templates/reports/_insights_basic.html
+msgid ""
+"Use the AI summary below for a narrative overview of participant feedback."
+msgstr ""
+"Utilisez le résumé généré par l'IA ci-dessous pour un aperçu narratif des "
+"commentaires des participants."
+
 msgid ""
 "A chart showing how progress descriptors have changed over time "
 "(percentages)"
@@ -8647,4 +8682,33 @@ msgid ""
 msgstr ""
 
 msgid "You do not have access to this programme."
+msgstr ""
+
+msgid "Access to this client has been restricted."
+msgstr ""
+
+msgid ""
+"Note: Cross-programme note filtering will be enforced in a future update. "
+"This setting is being recorded now for when enforcement is enabled."
+msgstr ""
+
+msgid "Unable to verify access permissions."
+msgstr ""
+
+msgid "Audit or compliance review"
+msgstr ""
+
+msgid "Client access request (PIPEDA)"
+msgstr ""
+
+msgid "Data migration"
+msgstr ""
+
+msgid "Name of recipient or organisation."
+msgstr ""
+
+msgid "Sharing with board"
+msgstr ""
+
+msgid "Sharing with supervisor"
 msgstr ""

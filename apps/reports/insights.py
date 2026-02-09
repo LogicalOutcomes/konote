@@ -115,6 +115,22 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
         pct = round(row["count"] / descriptor_total * 100, 1) if descriptor_total else 0
         descriptor_distribution[label] = pct
 
+    # ── Suggestion counts (from ProgressNote.suggestion_priority — plaintext) ──
+    suggestion_counts = (
+        notes_qs.exclude(suggestion_priority="")
+        .values("suggestion_priority")
+        .annotate(count=Count("id"))
+    )
+    suggestion_labels = dict(ProgressNote.SUGGESTION_PRIORITY_CHOICES)
+    suggestion_distribution = {}
+    suggestion_total = 0
+    for row in suggestion_counts:
+        if not row["suggestion_priority"]:
+            continue
+        label = suggestion_labels.get(row["suggestion_priority"], row["suggestion_priority"])
+        suggestion_distribution[label] = row["count"]
+        suggestion_total += row["count"]
+
     # ── Descriptor trend by month (percentages) ──
     descriptor_by_month = (
         targets_qs.exclude(progress_descriptor="")
@@ -157,6 +173,8 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
         "descriptor_distribution": descriptor_distribution,
         "engagement_distribution": engagement_distribution,
         "descriptor_trend": descriptor_trend,
+        "suggestion_total": suggestion_total,
+        "suggestion_distribution": suggestion_distribution,
     }
 
 
