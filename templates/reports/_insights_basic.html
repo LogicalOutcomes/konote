@@ -210,6 +210,11 @@
 {{ chart_data_json|json_script:"descriptor-trend-data" }}
 <script>
 {# Chart.js is loaded AFTER block content in base.html, so defer until ready #}
+{# Labels use escapejs to safely handle apostrophes in translated strings #}
+{% trans "Harder right now" as lbl_harder %}
+{% trans "Holding steady" as lbl_holding %}
+{% trans "Something's shifting" as lbl_shifting %}
+{% trans "In a good place" as lbl_good %}
 (function() {
     function initDescriptorTrendChart() {
         var rawData = JSON.parse(document.getElementById('descriptor-trend-data').textContent);
@@ -224,7 +229,7 @@
                 labels: rawData.map(function(r) { return r.month; }),
                 datasets: [
                     {
-                        label: '{% trans "Harder right now" %}',
+                        label: '{{ lbl_harder|escapejs }}',
                         data: rawData.map(function(r) { return r.harder; }),
                         borderColor: '#e74c3c',
                         backgroundColor: 'rgba(231, 76, 60, 0.1)',
@@ -232,7 +237,7 @@
                         fill: false,
                     },
                     {
-                        label: '{% trans "Holding steady" %}',
+                        label: '{{ lbl_holding|escapejs }}',
                         data: rawData.map(function(r) { return r.holding; }),
                         borderColor: '#f39c12',
                         backgroundColor: 'rgba(243, 156, 18, 0.1)',
@@ -240,7 +245,7 @@
                         fill: false,
                     },
                     {
-                        label: '{% trans "Something\'s shifting" %}',
+                        label: '{{ lbl_shifting|escapejs }}',
                         data: rawData.map(function(r) { return r.shifting; }),
                         borderColor: '#3498db',
                         backgroundColor: 'rgba(52, 152, 219, 0.1)',
@@ -248,7 +253,7 @@
                         fill: false,
                     },
                     {
-                        label: '{% trans "In a good place" %}',
+                        label: '{{ lbl_good|escapejs }}',
                         data: rawData.map(function(r) { return r.good_place; }),
                         borderColor: '#27ae60',
                         backgroundColor: 'rgba(39, 174, 96, 0.1)',
@@ -272,11 +277,11 @@
                     y: {
                         beginAtZero: true,
                         max: 100,
-                        title: { display: true, text: '{% trans "Percentage" %}' },
+                        title: { display: true, text: '{% trans "Percentage" as lbl_pct %}{{ lbl_pct|escapejs }}' },
                         ticks: { callback: function(v) { return v + '%'; } }
                     },
                     x: {
-                        title: { display: true, text: '{% trans "Month" %}' }
+                        title: { display: true, text: '{% trans "Month" as lbl_month %}{{ lbl_month|escapejs }}' }
                     },
                 },
             },

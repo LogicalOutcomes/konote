@@ -181,6 +181,7 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Fix Progress Trend chart (for real this time) — apostrophe in "Something's shifting" broke JS string, causing silent SyntaxError. Used `escapejs` filter. Both programme and client chart templates fixed. — 2026-02-09 (BUG-CHART1)
 - [x] Permissions redesign Phase 1 — fixed cross-program note leaks (program_role_required), removed admin bypass from client access, added field-level visibility for receptionist, ClientAccessBlock model, cross-program sharing consent, expanded permissions matrix, privacy-by-design checklist — 2026-02-08 (PERM-S1, PERM-S2, PERM-S3, PERM-M1, PERM-M2, PERM-M3, PERM-M4, PERM-SYS1)
 - [x] Front Desk permissions hardening — hide Groups nav link, block clinical data on home dashboard, grant Executive access to Insights and Reports — 2026-02-08 (UI-PERM1)
 - [x] Fix BLOCKER-1 skip link conflict — implemented Option B (auto-focus main content, remove skip link) per expert panel consensus. Removed duplicate focus block, added aria-label, visible focus indicator. Both Playwright tests pass. Expert rationale: more efficient for screen reader users, satisfies WCAG 2.4.1 via programmatic focus — 2026-02-08 (QA-FIX1)
