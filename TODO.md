@@ -2,10 +2,27 @@
 
 ## Flagged
 
+- [ ] **SHIP-BLOCKER:** Note views still use `@minimum_role("staff")` with global role fallback — same bug fixed in groups, unfixed in notes. Receptionist in Programme A + staff in Programme B can read clinical notes. See `tasks/permissions-review-prompt.md` (PERM-S1)
+- [ ] **SHIP-BLOCKER:** Admin bypass in `get_client_or_403` contradicts permissions matrix — `if user.is_admin: return client` lets admins see all client data in all programmes. Admin should mean system config, not client data access (PERM-S2)
+- [ ] **SHIP-BLOCKER:** No field-level enforcement for receptionist — `get_client_or_403` returns full `ClientFile` object. If template renders clinical fields, receptionist sees them. Need `client.get_visible_fields(role)` or template-level filtering (PERM-S3)
 - [ ] Decide product name — should web version be called "KoNote" (not "KoNote2"). See `tasks/naming-versioning.md` (NAME1)
 - [ ] Update konote-website git remote URL — repo was renamed to `konote2-website` but local remote still points to old `konote2` name (NAME2)
 
 ## Active Work
+
+### Permissions Redesign — Phase 1 (Ship-Blockers)
+
+- [ ] 🔨 Fix note views — apply `programme_role_required` so receptionist can't read clinical notes via global role fallback (PERM-S1)
+- [ ] 🔨 Remove admin bypass from `get_client_or_403` + add negative access list — require admin to have programme role for client data access, add `ClientAccessBlock` model checked first (PERM-S2 + PERM-M3)
+- [ ] 🔨 Add field-level filtering + cross-programme consent — receptionist templates must not render clinical fields, add `cross_programme_sharing_consent` on ClientFile (PERM-S3 + PERM-M1)
+
+### Permissions Redesign — Phase 1 (Must-Add Before First Agency)
+
+- [ ] 🔨 Narrow safety category + add missing matrix entries — remove medications from safety, add `user.manage`, `settings.manage`, `audit.view`, `consent.manage`, `intake.*`, delete permissions (PERM-M2 + PERM-M4)
+
+### Permissions Redesign — Systemic Fix
+
+- [ ] 🔨 Create Privacy-by-Design checklist — 5 questions to answer before any new feature ships (PERM-SYS1)
 
 ### QA Round 2c — Verification
 
@@ -28,6 +45,14 @@ The core app is feature-complete. These tasks prepare for production use.
 - [ ] **Full QA Suite** — Run after major releases or UI changes. Creates 4 reports. **Step 1:** `/run-scenario-server` here (captures scenario screenshots). **Step 2:** Switch to qa-scenarios, run `/run-scenarios` (evaluates scenarios, creates satisfaction report + improvement tickets). **Step 3:** Back here, run `/capture-page-states` (captures page screenshots). **Step 4:** Switch to qa-scenarios, run `/run-page-audit` (evaluates pages, creates page audit report + tickets). **Step 5 (optional):** Back here, run `/process-qa-report` (expert panel + action plan). All reports saved to `qa-scenarios/reports/` with date stamps. Takes ~6-9 hours total. (QA-FULL1)
 
 ## Coming Up
+
+### Permissions Redesign — Phase 2
+
+- [ ] DV-safe Front Desk interface — per-programme config: `programme.receptionist_mode = "full_list" | "search_only"`. Search-only returns appointment info, never displays roster (PERM-P1)
+- [ ] Consent model expansion — track consent scope (what), grantor (who), date, and withdrawal. Audit log for all consent changes (PERM-P2)
+- [ ] Data extract governance — logging + board-designate visibility. Optional 48-hour delay before extract delivered. Don't build dual authorization unless funder/regulator requires it (PERM-P3)
+- [ ] Role transition audit trail — never update `UserProgramRole.role` in place. Deactivate old, create new. History is the audit trail (PERM-P4)
+- [ ] Reposition Programme Report as supervision tool — add caseload counts per worker, average session frequency, "no contact in 30 days" counts. Market internally, not as funder deliverable (PERM-P5)
 
 ### Export Monitoring
 

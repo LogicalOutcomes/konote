@@ -154,6 +154,53 @@ class ClientFile(models.Model):
     def phone(self, value):
         self._phone_encrypted = encrypt_field(value)
 
+    # Cross-programme sharing consent (PHIPA compliance)
+    cross_programme_sharing_consent = models.BooleanField(
+        default=False,
+        help_text=(
+            "Client has given express consent for clinical information to be "
+            "shared across programmes. Required under PHIPA for multi-programme agencies."
+        ),
+    )
+
+    def get_visible_fields(self, role):
+        """Return dict of field visibility for a given role.
+
+        Core model fields are categorised as either "safety" (visible to all
+        roles including receptionist) or "clinical" (hidden from receptionist).
+
+        Custom fields (EAV) are NOT covered here — they use the per-field
+        front_desk_access setting on CustomFieldDefinition instead.
+
+        Usage in templates:
+            {% if visible_fields.birth_date %}{{ client.birth_date }}{% endif %}
+        """
+        from apps.auth_app.permissions import can_access, ALLOW, SCOPED, GATED
+
+        # Safety fields — visible to all roles including receptionist.
+        # These are needed for check-in, emergency contact, and safety purposes.
+        safety_fields = {
+            'first_name', 'last_name', 'preferred_name', 'display_name',
+            'middle_name', 'phone', 'record_id', 'status',
+        }
+
+        # Clinical fields — only visible to staff and above.
+        # birth_date reveals age which is clinical context in a treatment setting.
+        clinical_fields = {'birth_date'}
+
+        visible = {}
+
+        # Safety fields always visible
+        for f in safety_fields:
+            visible[f] = True
+
+        # Clinical fields depend on role permission
+        clinical_access = can_access(role, 'client.view_clinical')
+        for f in clinical_fields:
+            visible[f] = clinical_access in (ALLOW, SCOPED, GATED)
+
+        return visible
+
 
 class ClientProgramEnrolment(models.Model):
     """Links a client to a program."""
@@ -175,6 +222,46 @@ class ClientProgramEnrolment(models.Model):
 
     def __str__(self):
         return f"{self.client_file} → {self.program}"
+
+
+class ClientAccessBlock(models.Model):
+    """Block a specific user from accessing a specific client's records.
+
+    Used for conflict of interest, dual relationships, and DV safety.
+    Checked FIRST in get_client_or_403 — overrides all other access.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="access_blocks",
+    )
+    client_file = models.ForeignKey(
+        "ClientFile",
+        on_delete=models.CASCADE,
+        related_name="access_blocks",
+    )
+    reason = models.TextField(
+        help_text="Why this block exists (e.g., conflict of interest, safety concern)",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="created_access_blocks",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        app_label = "clients"
+        db_table = "client_access_blocks"
+        unique_together = ("user", "client_file")
+        verbose_name = "Client Access Block"
+        verbose_name_plural = "Client Access Blocks"
+
+    def __str__(self):
+        return f"Block: {self.user} cannot access {self.client_file}"
 
 
 class CustomFieldGroup(models.Model):

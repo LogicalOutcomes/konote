@@ -101,6 +101,19 @@
     </fieldset>
     {% endif %}
 
+    {# Cross-programme sharing consent — only shown when editing an existing client #}
+    {% if editing %}
+    <fieldset>
+        <legend>{% trans "Cross-Programme Sharing" %}</legend>
+        <label>
+            <input type="checkbox" name="cross_programme_sharing_consent" id="id_cross_programme_sharing_consent"
+                   {% if form.cross_programme_sharing_consent.value %}checked{% endif %}>
+            {% trans "Client consents to sharing clinical information across programmes" %}
+        </label>
+        <small class="secondary">{% trans "Required under Ontario privacy law (PHIPA) before clinical notes from one programme can be viewed by staff in another programme." %}</small>
+    </fieldset>
+    {% endif %}
+
     <div role="group">
         <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% blocktrans with client=term.client|default:"Participant" %}Create {{ client }}{% endblocktrans %}{% endif %}</button>
         {% if editing %}

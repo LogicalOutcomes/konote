@@ -64,6 +64,16 @@ class ClientFileForm(forms.Form):
         error_messages={"required": _("Please select at least one programme.")},
     )
 
+    # Cross-programme sharing consent (PHIPA compliance)
+    cross_programme_sharing_consent = forms.BooleanField(
+        required=False,
+        label=_("Client consents to sharing clinical information across programmes"),
+        help_text=_(
+            "Required under Ontario privacy law (PHIPA) before clinical notes "
+            "from one programme can be viewed by staff in another programme."
+        ),
+    )
+
     def __init__(self, *args, available_programs=None, **kwargs):
         super().__init__(*args, **kwargs)
         if available_programs is not None:

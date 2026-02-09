@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 from django.db.models import Q
 
-from apps.auth_app.decorators import minimum_role
+from apps.auth_app.decorators import programme_role_required
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.plans.models import PlanTarget, PlanTargetMetric
 from apps.programs.access import (
@@ -38,6 +38,53 @@ from .models import MetricValue, ProgressNote, ProgressNoteTarget, ProgressNoteT
 # Use shared access helpers from apps.programs.access
 _get_client_or_403 = get_client_or_403
 _get_author_program = get_author_program
+
+
+# ---------------------------------------------------------------------------
+# Helper functions for programme_role_required decorator
+# ---------------------------------------------------------------------------
+
+
+def _get_programme_from_client(request, client_id, **kwargs):
+    """Extract programme from client_id in URL kwargs.
+
+    A client can be enrolled in multiple programmes. We return the first
+    programme the requesting user shares with the client (same logic as
+    get_author_program). If no shared programme exists, raises ValueError
+    which the decorator converts to a 403.
+    """
+    from apps.programs.models import Program
+    client = get_object_or_404(ClientFile, pk=client_id)
+    user_program_ids = set(
+        UserProgramRole.objects.filter(user=request.user, status="active")
+        .values_list("program_id", flat=True)
+    )
+    client_program_ids = set(
+        ClientProgramEnrolment.objects.filter(
+            client_file=client, status="enrolled"
+        ).values_list("program_id", flat=True)
+    )
+    shared = user_program_ids & client_program_ids
+    if shared:
+        return Program.objects.filter(pk__in=shared).first()
+    # Admin bypass -- admins may not share a programme but should still have access
+    if request.user.is_admin:
+        # Return the client's first programme so the decorator has something to check
+        first_enrolment = ClientProgramEnrolment.objects.filter(
+            client_file=client, status="enrolled"
+        ).first()
+        if first_enrolment:
+            return first_enrolment.program
+    raise ValueError(f"User has no shared programme with client {client_id}")
+
+
+def _get_programme_from_note(request, note_id, **kwargs):
+    """Extract programme from note_id in URL kwargs.
+
+    Looks up the note's client_file, then delegates to _get_programme_from_client.
+    """
+    note = get_object_or_404(ProgressNote, pk=note_id)
+    return _get_programme_from_client(request, note.client_file_id)
 
 
 def _check_client_consent(client):
@@ -140,7 +187,7 @@ def _get_search_snippet(text, query, context_chars=80):
 
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_client)
 def note_list(request, client_id):
     """Notes timeline for a client with filtering and pagination."""
     client = _get_client_or_403(request, client_id)
@@ -237,7 +284,7 @@ def note_list(request, client_id):
         "search_query": search_query,
         "active_filter_count": active_filter_count,
         "active_tab": "notes",
-        "user_role": getattr(request, "user_program_role", None),
+        "user_role": getattr(request, "user_programme_role", None) or getattr(request, "user_program_role", None),
         "breadcrumbs": breadcrumbs,
         "show_program_ui": program_ctx["show_program_ui"],
         "accessible_programs": program_ctx["accessible_programs"],
@@ -248,7 +295,7 @@ def note_list(request, client_id):
 
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_client)
 def quick_note_create(request, client_id):
     """Create a quick note for a client."""
     client = _get_client_or_403(request, client_id)
@@ -303,7 +350,7 @@ def quick_note_create(request, client_id):
 
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_client)
 def note_create(request, client_id):
     """Create a full structured progress note with target entries and metric values."""
     client = _get_client_or_403(request, client_id)
@@ -421,7 +468,7 @@ def note_create(request, client_id):
 
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_note)
 def note_detail(request, note_id):
     """HTMX partial: expanded view of a single note."""
     try:
@@ -472,7 +519,7 @@ def note_detail(request, note_id):
 
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_note)
 def note_summary(request, note_id):
     """HTMX partial: collapsed summary of a single note (reverses note_detail expand)."""
     try:
@@ -499,7 +546,7 @@ def note_summary(request, note_id):
 
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_note)
 def note_cancel(request, note_id):
     """Cancel a progress note (staff: own notes within 24h, program_manager: any in their program)."""
     note = get_object_or_404(ProgressNote, pk=note_id)
@@ -509,7 +556,8 @@ def note_cancel(request, note_id):
 
     user = request.user
     # Permission check — program managers can cancel any note in their programs
-    user_role = getattr(request, "user_program_role", None)
+    # Use programme_role_required's attribute first, fall back to middleware's
+    user_role = getattr(request, "user_programme_role", None) or getattr(request, "user_program_role", None)
     if user_role != "program_manager":
         if note.author_id != user.pk:
             return HttpResponseForbidden("You can only cancel your own notes.")
@@ -560,7 +608,7 @@ def note_cancel(request, note_id):
 
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_client)
 def qualitative_summary(request, client_id):
     """Show qualitative progress summary — descriptor distribution and recent client words per target."""
     client = _get_client_or_403(request, client_id)

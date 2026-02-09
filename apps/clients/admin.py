@@ -3,6 +3,7 @@ from django.contrib import admin
 from apps.programs.models import UserProgramRole
 
 from .models import (
+    ClientAccessBlock,
     ClientDetailValue,
     ClientFile,
     ClientProgramEnrolment,
@@ -125,6 +126,13 @@ class ClientProgramEnrolmentAdmin(admin.ModelAdmin):
             program_ids = _get_accessible_program_ids(request.user)
             return obj.program_id in program_ids
         return super().has_delete_permission(request, obj)
+
+
+@admin.register(ClientAccessBlock)
+class ClientAccessBlockAdmin(admin.ModelAdmin):
+    list_display = ("user", "client_file", "reason", "created_by", "created_at", "is_active")
+    list_filter = ("is_active",)
+    raw_id_fields = ("user", "client_file", "created_by")
 
 
 @admin.register(CustomFieldGroup)
