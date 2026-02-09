@@ -8723,3 +8723,225 @@ msgid ""
 "and maximums per metric. No individual participant record IDs, names, or "
 "staff information are included."
 msgstr ""
+
+msgid "A goal or plan target"
+msgstr ""
+
+msgid "A score or measurement"
+msgstr ""
+
+msgid "Accepted"
+msgstr ""
+
+msgid "Access denied. Unable to determine permission level."
+msgstr ""
+
+msgid "Access denied. Your role does not have permission for this action."
+msgstr ""
+
+msgid "Anything you'd like to bring up at your next meeting..."
+msgstr ""
+
+msgid "Client file is required."
+msgstr ""
+
+msgid "Confirm new password"
+msgstr ""
+
+msgid "Confirm password"
+msgstr ""
+
+msgid "Corrected"
+msgstr ""
+
+msgid "Current password"
+msgstr ""
+
+msgid "Describe what you think is incorrect and what it should say..."
+msgstr ""
+
+msgid "Discussed"
+msgstr ""
+
+msgid "Email code"
+msgstr ""
+
+msgid "Email is required."
+msgstr ""
+
+msgid "Enter the 6-digit code from your authenticator app."
+msgstr ""
+
+msgid "Enter the 6-digit code we sent to your email."
+msgstr ""
+
+msgid "Enter the email address you used to create your account."
+msgstr ""
+
+msgid "Exempt"
+msgstr ""
+
+msgid "Goal"
+msgstr ""
+
+msgid "Hidden from participant portal"
+msgstr ""
+
+msgid "How your information is used"
+msgstr ""
+
+msgid "Invalid code. Please try again."
+msgstr ""
+
+msgid "Invalid email or password."
+msgstr ""
+
+msgid "MFA is not configured. Please contact support."
+msgstr ""
+
+msgid "Must be at least 8 characters."
+msgstr ""
+
+msgid "Name shown in participant portal. Leave blank to use programme name."
+msgstr ""
+
+msgid "New password"
+msgstr ""
+
+msgid "No change needed"
+msgstr ""
+
+msgid ""
+"No suggestion text long enough to display. Short suggestions (under 5 words)"
+" are counted above but not shown."
+msgstr ""
+
+msgid "Only when self-reported"
+msgstr ""
+
+msgid "Optionally link this entry to one of your goals."
+msgstr ""
+
+msgid "Please describe what needs to be corrected."
+msgstr ""
+
+msgid "Please enter both your email and password."
+msgstr ""
+
+msgid "Please write something before saving."
+msgstr ""
+
+msgid "Please write something before sending."
+msgstr ""
+
+msgid "Pre-session"
+msgstr ""
+
+msgid "Reflection"
+msgstr ""
+
+msgid "Reset code"
+msgstr ""
+
+msgid "Something recorded about what I said"
+msgstr ""
+
+msgid "TOTP"
+msgstr ""
+
+msgid "The code must be 6 digits."
+msgstr ""
+
+msgid "Their Suggestions"
+msgstr ""
+
+msgid "This email is already associated with an account."
+msgstr ""
+
+msgid "This is how your name will appear in the portal."
+msgstr ""
+
+msgid "This will be your login email."
+msgstr ""
+
+msgid "Verification code"
+msgstr ""
+
+msgid ""
+"Visibility in participant portal. Default: hidden until explicitly enabled."
+msgstr ""
+
+msgid "Visible in participant portal"
+msgstr ""
+
+msgid "What needs to be changed?"
+msgstr ""
+
+msgid "What should we call you?"
+msgstr ""
+
+msgid "What would you like corrected?"
+msgstr ""
+
+msgid "What would you like to discuss next time?"
+msgstr ""
+
+msgid "What's on your mind?"
+msgstr ""
+
+msgid "Write a message to your worker..."
+msgstr ""
+
+msgid "Write anything you'd like to remember..."
+msgstr ""
+
+msgid "You do not have any programme roles."
+msgstr ""
+
+msgid "Your current password is incorrect."
+msgstr ""
+
+msgid "Your first name or nickname"
+msgstr ""
+
+msgid "Your message"
+msgstr ""
+
+msgid "Your privacy"
+msgstr ""
+
+msgid "Your rights"
+msgstr ""
+
+msgid "correction request"
+msgstr ""
+
+msgid "correction requests"
+msgstr ""
+
+msgid "journal entries"
+msgstr ""
+
+msgid "journal entry"
+msgstr ""
+
+msgid "participant account"
+msgstr ""
+
+msgid "participant accounts"
+msgstr ""
+
+msgid "participant message"
+msgstr ""
+
+msgid "participant messages"
+msgstr ""
+
+msgid "portal invite"
+msgstr ""
+
+msgid "portal invites"
+msgstr ""
+
+msgid "you@example.com"
+msgstr ""

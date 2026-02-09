@@ -1,0 +1,74 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+{% load portal_tags %}
+
+{% block title %}{% trans "Home" %}{% endblock %}
+
+{% block content %}
+{# Warm greeting #}
+<header class="portal-dashboard-header">
+    <h1>{% trans "Hi," %} {{ participant|portal_display_name }}!</h1>
+
+    {% if highlight_message %}
+    <p class="portal-highlight">{{ highlight_message }}</p>
+    {% endif %}
+</header>
+
+{# New since last visit banner #}
+{% if new_count and new_count > 0 %}
+{% include "portal/_new_since_banner.html" %}
+{% endif %}
+
+{# Main navigation cards #}
+<section aria-label="{% trans 'What would you like to do?' %}">
+    <div class="portal-nav-cards">
+
+        <a href="{% url 'portal:goals' %}" class="portal-card">
+            <article>
+                <h2>{% trans "My Goals" %}</h2>
+                <p>{% trans "See the goals you're working on." %}</p>
+            </article>
+        </a>
+
+        <a href="{% url 'portal:progress' %}" class="portal-card">
+            <article>
+                <h2>{% trans "My Progress" %}</h2>
+                <p>{% trans "See how far you've come." %}</p>
+            </article>
+        </a>
+
+        <a href="{% url 'portal:my_words' %}" class="portal-card">
+            <article>
+                <h2>{% trans "What I've Been Saying" %}</h2>
+                <p>{% trans "Read what you've shared in your own words." %}</p>
+            </article>
+        </a>
+
+        <a href="{% url 'portal:milestones' %}" class="portal-card">
+            <article>
+                <h2>{% trans "Milestones" %}</h2>
+                <p>{% trans "Celebrate what you've achieved." %}</p>
+            </article>
+        </a>
+
+        {% if features.portal_journal %}
+        <a href="{% url 'portal:journal' %}" class="portal-card">
+            <article>
+                <h2>{% trans "My Journal" %}</h2>
+                <p>{% trans "A private space to write your thoughts." %}</p>
+            </article>
+        </a>
+        {% endif %}
+
+        {% if features.portal_messaging %}
+        <a href="{% url 'portal:message_to_worker' %}" class="portal-card">
+            <article>
+                <h2>{% trans "Message My Worker" %}</h2>
+                <p>{% trans "Send a message for your worker to read." %}</p>
+            </article>
+        </a>
+        {% endif %}
+
+    </div>
+</section>
+{% endblock %}

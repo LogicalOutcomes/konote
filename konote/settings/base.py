@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "apps.reports",
     "apps.registration",
     "apps.groups",
+    "apps.portal",
 ]
 
 MIDDLEWARE = [
@@ -67,6 +68,8 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.portal.middleware.DomainEnforcementMiddleware",
+    "apps.portal.middleware.PortalAuthMiddleware",
     # SafeLocaleMiddleware after Auth so it can read user.preferred_language (BUG-4)
     "konote.middleware.safe_locale.SafeLocaleMiddleware",
     "konote.middleware.audit.AuditMiddleware",
@@ -232,6 +235,11 @@ LOGOUT_REDIRECT_URL = "/auth/login/"
 
 # PII encryption key (Fernet) — required; no fallback
 FIELD_ENCRYPTION_KEY = require_env("FIELD_ENCRYPTION_KEY")
+
+# Portal — participant-facing portal configuration
+EMAIL_HASH_KEY = os.environ.get("EMAIL_HASH_KEY", "")
+PORTAL_DOMAIN = os.environ.get("PORTAL_DOMAIN", "")
+STAFF_DOMAIN = os.environ.get("STAFF_DOMAIN", "")
 
 # Secure export file storage — outside web root, ephemeral on Railway
 # Files are temporary (24hr links) so ephemeral /tmp storage is acceptable

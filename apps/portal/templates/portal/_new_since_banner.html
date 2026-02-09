@@ -1,0 +1,29 @@
+{% load i18n %}
+{#
+  "New since last visit" banner — included in dashboard.html.
+  Shown when new_count > 0.
+  Dismissible via JavaScript.
+#}
+<div id="new-since-banner"
+     class="portal-new-banner"
+     role="status"
+     aria-live="polite">
+    <p>
+        {% blocktrans count counter=new_count %}
+        You have <strong>{{ counter }}</strong> new update since your last visit.
+        {% plural %}
+        You have <strong>{{ counter }}</strong> new updates since your last visit.
+        {% endblocktrans %}
+    </p>
+
+    <div class="portal-new-banner-actions">
+        <a href="{% url 'portal:my_words' %}">{% trans "See what's new" %}</a>
+
+        <button type="button"
+                class="portal-banner-dismiss"
+                onclick="dismissBanner()"
+                aria-label="{% trans 'Dismiss this notice' %}">
+            &times;
+        </button>
+    </div>
+</div>

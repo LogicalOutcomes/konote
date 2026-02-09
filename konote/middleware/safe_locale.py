@@ -37,6 +37,12 @@ class SafeLocaleMiddleware(LocaleMiddleware):
                 if pref:
                     translation.activate(pref)
                     request.LANGUAGE_CODE = pref
+            # Portal participant language preference
+            elif hasattr(request, "participant_user") and request.participant_user:
+                pref = getattr(request.participant_user, "preferred_language", "")
+                if pref:
+                    translation.activate(pref)
+                    request.LANGUAGE_CODE = pref
 
             # Test that translations actually work by calling gettext
             # This catches corrupted .mo files that load but fail on use

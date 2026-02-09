@@ -1,0 +1,115 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "How I'm Doing" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "How I'm Doing" %}</h1>
+<p>{% trans "These charts show your progress over time." %}</p>
+
+{% if chart_data %}
+<div id="portal-charts" class="portal-charts">
+    {# Charts are rendered by JavaScript from the data below #}
+</div>
+{% else %}
+<article class="portal-empty-state">
+    <p>{% trans "No progress data to show yet. As you work with your worker, your progress will appear here." %}</p>
+</article>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if chart_data %}
+{{ chart_data|json_script:"chart-data" }}
+<script>
+(function() {
+    var allData = JSON.parse(document.getElementById('chart-data').textContent);
+    var container = document.getElementById('portal-charts');
+
+    // allData is expected to be an array of chart objects:
+    // [{ metric_name, labels, values, x_label, y_label, begin_at_zero, start_value, current_value }, ...]
+    if (!Array.isArray(allData)) {
+        allData = [allData];
+    }
+
+    allData.forEach(function(chartInfo, index) {
+        // Create a section for each chart
+        var section = document.createElement('section');
+        section.setAttribute('aria-labelledby', 'chart-heading-' + index);
+
+        var heading = document.createElement('h2');
+        heading.id = 'chart-heading-' + index;
+        heading.textContent = chartInfo.metric_name || ('Chart ' + (index + 1));
+        section.appendChild(heading);
+
+        // Show start and current value summary
+        if (chartInfo.start_value !== undefined && chartInfo.current_value !== undefined) {
+            var summary = document.createElement('p');
+            summary.className = 'portal-chart-summary';
+            summary.textContent = chartInfo.start_label + ': ' + chartInfo.start_value +
+                ' \u2192 ' + chartInfo.current_label + ': ' + chartInfo.current_value;
+            section.appendChild(summary);
+        }
+
+        var wrapper = document.createElement('div');
+        wrapper.className = 'portal-chart-container';
+
+        var canvas = document.createElement('canvas');
+        canvas.id = 'progress-chart-' + index;
+        canvas.setAttribute('aria-label', chartInfo.metric_name || 'Progress chart');
+        canvas.setAttribute('role', 'img');
+        wrapper.appendChild(canvas);
+        section.appendChild(wrapper);
+
+        container.appendChild(section);
+
+        // Render the chart
+        var ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartInfo.labels,
+                datasets: [{
+                    label: chartInfo.metric_name || '',
+                    data: chartInfo.values,
+                    borderColor: '#0d7377',
+                    backgroundColor: 'rgba(13, 115, 119, 0.1)',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            title: function(items) { return items[0].label; }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: !!(chartInfo.x_label),
+                            text: chartInfo.x_label || ''
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: !!(chartInfo.y_label),
+                            text: chartInfo.y_label || ''
+                        },
+                        beginAtZero: chartInfo.begin_at_zero || false
+                    }
+                }
+            }
+        });
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}

@@ -18,6 +18,10 @@ class Program(models.Model):
         max_length=255, blank=True, default="",
         help_text=_("French name (displayed when language is French)"),
     )
+    portal_display_name = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_("Name shown in participant portal. Leave blank to use programme name."),
+    )
     description = models.TextField(default="", blank=True)
     colour_hex = models.CharField(max_length=7, default="#3B82F6")
     service_model = models.CharField(

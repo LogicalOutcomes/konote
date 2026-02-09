@@ -30,6 +30,15 @@ class MetricDefinition(models.Model):
     min_value = models.FloatField(null=True, blank=True, help_text="Minimum valid value.")
     max_value = models.FloatField(null=True, blank=True, help_text="Maximum valid value.")
     unit = models.CharField(max_length=50, default="", blank=True, help_text="e.g., 'score', 'days', '%'")
+    portal_visibility = models.CharField(
+        max_length=20, default="no",
+        choices=[
+            ("yes", _("Visible in participant portal")),
+            ("no", _("Hidden from participant portal")),
+            ("self_reported", _("Only when self-reported")),
+        ],
+        help_text=_("Visibility in participant portal. Default: hidden until explicitly enabled."),
+    )
     status = models.CharField(
         max_length=20, default="active",
         choices=[("active", _("Active")), ("deactivated", _("Deactivated"))],

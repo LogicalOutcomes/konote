@@ -1,0 +1,55 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+{% load portal_tags %}
+
+{% block title %}{% trans "My Goals" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "My Goals" %}</h1>
+<p>{% trans "These are the areas you're working on with your worker." %}</p>
+
+{% if sections %}
+{% for section in sections %}
+<section aria-labelledby="section-{{ section.id }}">
+    <h2 id="section-{{ section.id }}">{{ section.name }}</h2>
+
+    {% if section.targets %}
+    <div class="portal-goals-list">
+        {% for target in section.targets %}
+        <a href="{% url 'portal:goal_detail' target.id %}" class="portal-card portal-goal-card">
+            <article>
+                <h3>{{ target.name }}</h3>
+
+                {% if target.client_goal %}
+                <p class="portal-goal-words">
+                    <em>"{{ target.client_goal }}"</em>
+                </p>
+                {% endif %}
+
+                {% if target.latest_descriptor %}
+                <p class="portal-goal-status">
+                    {% trans "Current progress:" %} <strong>{{ target.latest_descriptor }}</strong>
+                </p>
+                {% endif %}
+            </article>
+        </a>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>{% trans "No goals in this area yet." %}</p>
+    {% endif %}
+</section>
+{% endfor %}
+
+{% else %}
+<article class="portal-empty-state">
+    <p>{% trans "No goals have been added yet. Your worker will add goals as you work on them together." %}</p>
+</article>
+{% endif %}
+
+<hr>
+
+<p class="portal-concern-link">
+    <a href="{% url 'portal:correction_request' %}">{% trans "Something doesn't look right?" %}</a>
+</p>
+{% endblock %}

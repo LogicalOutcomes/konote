@@ -1,0 +1,36 @@
+{% load i18n %}
+{#
+  Session timeout warning — included in base_portal.html.
+  Shown by portal.js after 25 minutes of inactivity.
+  Uses the <dialog> element for native accessibility.
+#}
+<dialog id="session-timeout-dialog"
+        aria-labelledby="timeout-title"
+        aria-describedby="timeout-description"
+        class="portal-timeout-dialog">
+    <article>
+        <header>
+            <h2 id="timeout-title">{% trans "Are you still here?" %}</h2>
+        </header>
+
+        <p id="timeout-description">
+            {% trans "You haven't done anything for a while. For your safety, we'll log you out soon." %}
+        </p>
+
+        <footer>
+            <form method="post" action="{% url 'portal:logout' %}">
+                {% csrf_token %}
+                <button type="submit" class="secondary portal-timeout-logout">
+                    {% trans "Log out" %}
+                </button>
+            </form>
+
+            <button type="button"
+                    id="timeout-stay-btn"
+                    onclick="resetSessionTimer()"
+                    autofocus>
+                {% trans "I'm still here" %}
+            </button>
+        </footer>
+    </article>
+</dialog>

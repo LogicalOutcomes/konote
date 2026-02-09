@@ -35,6 +35,7 @@ urlpatterns = [
     path("erasure/", include("apps.clients.erasure_urls")),
     path("merge/", include("apps.clients.merge_urls")),
     path("ai/", include("konote.ai_urls")),
+    path("my/", include("apps.portal.urls")),
     path("", include("apps.registration.urls")),
     path("", include("apps.clients.urls_home")),
     path("privacy/", privacy_view, name="privacy"),

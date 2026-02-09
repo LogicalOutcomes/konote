@@ -1,0 +1,110 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Staying Safe Online" %}{% endblock %}
+
+{# This page is accessible without login — no sensitive data shown #}
+
+{% block content %}
+<h1>{% trans "Staying Safe Online" %}</h1>
+<p>{% trans "Here are some tips to help you use this site safely, especially if you share a device with someone else." %}</p>
+
+{# Private browsing #}
+<section aria-labelledby="private-heading">
+    <h2 id="private-heading">{% trans "Use private browsing" %}</h2>
+    <p>{% trans "Private browsing (also called incognito mode) stops the browser from saving your history." %}</p>
+
+    <details>
+        <summary>{% trans "How to open private browsing" %}</summary>
+        <ul>
+            <li>
+                <strong>Chrome:</strong>
+                {% trans "Press Ctrl + Shift + N (or tap the three dots at the top right, then 'New incognito window')" %}
+            </li>
+            <li>
+                <strong>Safari (iPhone):</strong>
+                {% trans "Tap the tabs button at the bottom right, then tap 'Private'" %}
+            </li>
+            <li>
+                <strong>Edge:</strong>
+                {% trans "Press Ctrl + Shift + N (or tap the three dots, then 'New InPrivate window')" %}
+            </li>
+            <li>
+                <strong>Firefox:</strong>
+                {% trans "Press Ctrl + Shift + P (or tap the three lines, then 'New Private Window')" %}
+            </li>
+        </ul>
+        <p>{% trans "When you close a private window, the browser won't remember what you looked at." %}</p>
+    </details>
+</section>
+
+<hr>
+
+{# Clear history #}
+<section aria-labelledby="history-heading">
+    <h2 id="history-heading">{% trans "Clear your browser history" %}</h2>
+    <p>{% trans "If you didn't use private browsing, you can delete your history afterwards." %}</p>
+
+    <details>
+        <summary>{% trans "How to clear your history" %}</summary>
+        <ul>
+            <li>
+                <strong>Chrome:</strong>
+                {% trans "Press Ctrl + H, then click 'Clear browsing data'" %}
+            </li>
+            <li>
+                <strong>Safari (iPhone):</strong>
+                {% trans "Go to Settings, then Safari, then 'Clear History and Website Data'" %}
+            </li>
+            <li>
+                <strong>Edge:</strong>
+                {% trans "Press Ctrl + H, then click 'Clear browsing data'" %}
+            </li>
+            <li>
+                <strong>Firefox:</strong>
+                {% trans "Press Ctrl + Shift + Delete" %}
+            </li>
+        </ul>
+    </details>
+</section>
+
+<hr>
+
+{# Shared devices #}
+<section aria-labelledby="shared-heading">
+    <h2 id="shared-heading">{% trans "Using shared devices" %}</h2>
+    <ul>
+        <li>{% trans "Always log out when you're done." %}</li>
+        <li>{% trans "Don't save your password in the browser if others use the same device." %}</li>
+        <li>{% trans "Use the 'Leave quickly' button at the top of the page if you need to close the site fast." %}</li>
+    </ul>
+</section>
+
+<hr>
+
+{# Crisis resources #}
+<section aria-labelledby="crisis-heading">
+    <h2 id="crisis-heading">{% trans "If you need help right now" %}</h2>
+    <ul>
+        <li>
+            <strong>{% trans "Emergency:" %}</strong>
+            {% trans "Call" %} <a href="tel:911">911</a>
+        </li>
+        <li>
+            <strong>{% trans "Talk Suicide Canada:" %}</strong>
+            <a href="tel:1-833-456-4566">1-833-456-4566</a>
+            — {% trans "24 hours a day, 7 days a week" %}
+        </li>
+        <li>
+            <strong>{% trans "211 Ontario:" %}</strong>
+            <a href="tel:211">211</a>
+            — {% trans "Community and social services information" %}
+        </li>
+        <li>
+            <strong>{% trans "Kids Help Phone:" %}</strong>
+            <a href="tel:1-800-668-6868">1-800-668-6868</a>
+            — {% trans "For young people" %}
+        </li>
+    </ul>
+</section>
+{% endblock %}

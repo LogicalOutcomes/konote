@@ -1,0 +1,136 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+{% load portal_tags %}
+
+{% block title %}{{ target.name }} — {% trans "My Goals" %}{% endblock %}
+
+{% block content %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul class="portal-breadcrumb">
+        <li><a href="{% url 'portal:goals' %}">{% trans "My Goals" %}</a></li>
+        <li aria-current="page">{{ target.name }}</li>
+    </ul>
+</nav>
+
+<article class="portal-goal-detail">
+    <header>
+        <h1>{{ target.name }}</h1>
+
+        {% if target.description %}
+        <p>{{ target.description }}</p>
+        {% endif %}
+    </header>
+
+    {% if target.client_goal %}
+    <section aria-labelledby="my-goal-heading">
+        <h2 id="my-goal-heading">{% trans "In my own words" %}</h2>
+        <blockquote>
+            <p>"{{ target.client_goal }}"</p>
+        </blockquote>
+    </section>
+    {% endif %}
+
+    {# Progress descriptor timeline #}
+    {% if descriptors %}
+    <section aria-labelledby="progress-heading">
+        <h2 id="progress-heading">{% trans "My progress" %}</h2>
+        <ol class="portal-progress-timeline" aria-label="{% trans 'Progress over time' %}">
+            {% for entry in descriptors %}
+            <li class="portal-timeline-entry {% if forloop.first %}portal-timeline-latest{% endif %}">
+                <time datetime="{{ entry.date|date:'Y-m-d' }}">{{ entry.date|portal_date }}</time>
+                <span class="portal-descriptor">{{ entry.descriptor }}</span>
+            </li>
+            {% endfor %}
+        </ol>
+    </section>
+    {% endif %}
+
+    {# Metric chart #}
+    {% if chart_data %}
+    <section aria-labelledby="chart-heading">
+        <h2 id="chart-heading">{% trans "Progress chart" %}</h2>
+        <div class="portal-chart-container">
+            <canvas id="goal-chart"
+                    aria-label="{% trans 'Chart showing your progress over time' %}"
+                    role="img"></canvas>
+        </div>
+    </section>
+    {% endif %}
+
+    {# What I said about this goal #}
+    {% if client_words %}
+    <section aria-labelledby="words-heading">
+        <h2 id="words-heading">{% trans "What I said about this goal" %}</h2>
+        <ul class="portal-words-list">
+            {% for entry in client_words %}
+            <li>
+                <time datetime="{{ entry.date|date:'Y-m-d' }}">{{ entry.date|portal_date }}</time>
+                <blockquote>
+                    <p>"{{ entry.text }}"</p>
+                </blockquote>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+</article>
+
+<hr>
+
+<p class="portal-concern-link">
+    <a href="{% url 'portal:correction_request' %}">{% trans "Something doesn't look right?" %}</a>
+</p>
+
+<p>
+    <a href="{% url 'portal:goals' %}">&larr; {% trans "Back to My Goals" %}</a>
+</p>
+{% endblock %}
+
+{% block extra_js %}
+{% if chart_data %}
+{{ chart_data|json_script:"chart-data" }}
+<script>
+(function() {
+    var rawData = JSON.parse(document.getElementById('chart-data').textContent);
+    var ctx = document.getElementById('goal-chart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: rawData.labels,
+            datasets: [{
+                label: rawData.metric_name || '',
+                data: rawData.values,
+                borderColor: '#0d7377',
+                backgroundColor: 'rgba(13, 115, 119, 0.1)',
+                fill: true,
+                tension: 0.3,
+                pointRadius: 6,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        title: function(items) { return items[0].label; }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: rawData.x_label || '' }
+                },
+                y: {
+                    title: { display: true, text: rawData.y_label || '' },
+                    beginAtZero: rawData.begin_at_zero || false
+                }
+            }
+        }
+    });
+})();
+</script>
+{% endif %}
+{% endblock %}

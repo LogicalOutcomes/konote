@@ -39,6 +39,12 @@ class AuditMiddleware:
     def __call__(self, request):
         response = self.get_response(request)
 
+        # Log portal participant access
+        if hasattr(request, "participant_user") and request.participant_user:
+            if request.method in AUDITABLE_METHODS or request.path.startswith("/my/"):
+                self._log_portal_request(request, response)
+            return response
+
         if not hasattr(request, "user") or not request.user.is_authenticated:
             return response
 
@@ -171,3 +177,29 @@ class AuditMiddleware:
             if part.isdigit():
                 return int(part)
         return None
+
+    def _log_portal_request(self, request, response):
+        """Log portal participant access to audit database."""
+        try:
+            from apps.audit.models import AuditLog
+            action = request.method.lower() if request.method in AUDITABLE_METHODS else "view"
+            AuditLog.objects.using("audit").create(
+                event_timestamp=timezone.now(),
+                user_id=None,
+                user_display=f"Portal: {request.participant_user.display_name}",
+                ip_address=self._get_client_ip(request),
+                action=action,
+                resource_type="portal",
+                resource_id=None,
+                program_id=None,
+                is_demo_context=False,
+                is_confidential_context=False,
+                metadata={
+                    "path": request.path,
+                    "status_code": response.status_code,
+                    "participant_user_id": str(request.participant_user.id),
+                    "portal_access": True,
+                },
+            )
+        except Exception as e:
+            logger.error("Portal audit logging failed for %s %s: %s", request.method, request.path, e)

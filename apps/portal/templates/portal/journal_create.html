@@ -1,0 +1,31 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "New Journal Entry" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Write something new" %}</h1>
+
+<div class="portal-privacy-notice" role="note" aria-label="{% trans 'Privacy notice' %}">
+    <p><strong>{% trans "Only you can see this." %}</strong>
+    {% trans "Your worker and other staff cannot read your journal." %}</p>
+</div>
+
+<form method="post" action="{% url 'portal:journal_new' %}">
+    {% csrf_token %}
+    <label for="id_content">{% trans "What's on your mind?" %}</label>
+    <textarea id="id_content" name="content" rows="6" required
+              placeholder="{% trans 'Write whatever you want — this is just for you.' %}"></textarea>
+
+    {% if form.plan_target %}
+    <label for="id_plan_target">{% trans "Link to a goal (optional)" %}</label>
+    {{ form.plan_target }}
+    {% endif %}
+
+    <button type="submit">{% trans "Save" %}</button>
+</form>
+
+<p>
+    <a href="{% url 'portal:journal' %}">&larr; {% trans "Back to My Journal" %}</a>
+</p>
+{% endblock %}

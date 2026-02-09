@@ -341,6 +341,17 @@ def quick_note_create(request, client_id):
                 ).update(follow_up_completed_at=timezone.now())
 
             messages.success(request, _("Quick note saved."))
+            # B14: Portal access reminder
+            try:
+                if hasattr(client, 'portal_account') and client.portal_account.is_active:
+                    from django.contrib import messages as django_messages
+                    django_messages.info(
+                        request,
+                        f"Reminder: {client.display_name} has portal access — "
+                        f"their updated progress will be visible next time they log in."
+                    )
+            except Exception:
+                pass  # Don't break note creation if portal models aren't ready
             return redirect("notes:note_list", client_id=client.pk)
     else:
         form = QuickNoteForm()
@@ -451,6 +462,17 @@ def note_create(request, client_id):
                 ).exclude(pk=note.pk).update(follow_up_completed_at=timezone.now())
 
             messages.success(request, _("Progress note saved."))
+            # B14: Portal access reminder
+            try:
+                if hasattr(client, 'portal_account') and client.portal_account.is_active:
+                    from django.contrib import messages as django_messages
+                    django_messages.info(
+                        request,
+                        f"Reminder: {client.display_name} has portal access — "
+                        f"their updated progress will be visible next time they log in."
+                    )
+            except Exception:
+                pass  # Don't break note creation if portal models aren't ready
             return redirect("notes:note_list", client_id=client.pk)
     else:
         form = FullNoteForm(initial={"session_date": timezone.localdate()})

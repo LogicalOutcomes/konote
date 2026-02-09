@@ -1,0 +1,26 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Before You Start Writing" %}{% endblock %}
+
+{% block content %}
+<article class="portal-disclosure">
+    <header>
+        <h1>{% trans "Before you start writing" %}</h1>
+    </header>
+
+    <p>{% trans "These notes are just for you. Your worker won't see them." %}</p>
+
+    <p>{% trans "In some situations — like a court order — the agency could be required to share records, and these notes could be included. This doesn't happen often, but we want you to know before you start writing." %}</p>
+
+    <div class="portal-disclosure-actions">
+        <form method="post" action="{% url 'portal:journal_disclosure' %}">
+            {% csrf_token %}
+            <input type="hidden" name="acknowledged" value="1">
+            <button type="submit">{% trans "I understand, let me write" %}</button>
+        </form>
+
+        <a href="{% url 'portal:dashboard' %}" role="button" class="secondary">{% trans "Maybe later" %}</a>
+    </div>
+</article>
+{% endblock %}

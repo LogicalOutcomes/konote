@@ -492,7 +492,7 @@ When participant taps "Something doesn't look right?":
 
 - Add second custom domain in Railway dashboard (e.g., `myjourney.agencyname.org`)
 - Both domains point to same service
-- Add env vars: `PORTAL_DOMAIN`, `STAFF_DOMAIN`
+- Add env vars: `PORTAL_DOMAIN`, `STAFF_DOMAIN`, `EMAIL_HASH_KEY` (cryptographic secret for HMAC email hashing)
 - Add `PORTAL_DOMAIN` to `ALLOWED_HOSTS`
 - SSL handled by Railway automatically for both domains
 
@@ -501,7 +501,7 @@ When participant taps "Something doesn't look right?":
 - Add `server_name` alias in nginx for portal subdomain
 - Both subdomains proxy to same Docker container
 - SSL: Let's Encrypt covers both subdomains (add SAN or separate cert)
-- Add env vars same as Railway
+- Add env vars same as Railway (`PORTAL_DOMAIN`, `STAFF_DOMAIN`, `EMAIL_HASH_KEY`)
 
 ### Data residency
 
@@ -528,6 +528,17 @@ Portal works at `/my/` on the main domain. No domain enforcement (middleware doe
 
 ---
 
+## Known limitations
+
+These are documented trade-offs, not bugs. They do not need to be fixed before shipping.
+
+- **Fernet key rotation:** If the encryption key is compromised or needs rotation, every encrypted field across 5+ models needs re-encryption via a data migration. No automated rotation mechanism exists. Mitigated by standard key management practices (env vars, not in code).
+- **Correction requests are informal:** The portal's "Something doesn't look right?" button is a conversation starter, not a formal PHIPA s.55 correction request process. Formal correction requests and refusals should follow the agency's existing privacy policy, off-system. The IPC complaint right is documented in the agency's privacy policy, not in the portal software.
+- **Mandatory reporting:** "Message to My Worker" includes a duty-to-act notice, but mandatory reporting workflows are a professional obligation of the worker, not a software feature. Training materials should note: "Treat messages from participants the same as in-person disclosures with respect to your mandatory reporting obligations."
+- **90-day deactivation:** Deactivating a login does not violate PHIPA access rights (participants can still request information through the agency). Journal entries are never deleted on deactivation. Reactivation through a simplified process (not a full new invite) is a nice-to-have for Phase D.
+
+---
+
 ## Reference documents
 
 | Document | Purpose |
@@ -535,3 +546,4 @@ Portal works at `/my/` on the main domain. No domain enforcement (middleware doe
 | [participant-portal-design.md](participant-portal-design.md) | Original design with data model details and wireframe |
 | [participant-portal-expert-review.md](participant-portal-expert-review.md) | Panel 1: privacy law, security architecture, social service tech, trauma-informed UX |
 | [participant-portal-expert-review-2.md](participant-portal-expert-review-2.md) | Panel 2: Django implementation, nonprofit operations, pen testing, social work ethics |
+| Panels 3-4 (inline, 2026-02-09) | Panel 3: operations, Django production, digital equity, Canadian privacy law, failure modes. Panel 4: meta-review stress-testing Panel 3 findings — confirmed 9 changes, rejected 6 over-engineered recommendations. Results incorporated into this document. |

@@ -1,0 +1,103 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Create Your Account" %}{% endblock %}
+
+{# No quick-exit on registration — no sensitive data visible yet #}
+{% block quick_exit %}{% endblock %}
+
+{% block content %}
+<article class="portal-login-card">
+    <header>
+        <h1>{% trans "Create Your Account" %}</h1>
+        <p>{% trans "You've been invited to join the portal. Fill out the form below to get started." %}</p>
+    </header>
+
+    {# Consent summary #}
+    <section aria-labelledby="consent-heading">
+        <h2 id="consent-heading">{% trans "Before you begin" %}</h2>
+        <p>{% trans "By creating an account, you agree that:" %}</p>
+        <ul>
+            <li>{% trans "This portal lets you see your goals and track your progress." %}</li>
+            <li>{% trans "Your worker can see messages you send them." %}</li>
+            <li>{% trans "Your journal entries are private — only you can see them." %}</li>
+            <li>{% trans "If you share something that suggests someone may be in danger, your worker may need to act on that." %}</li>
+            <li>{% trans "You can stop using this portal at any time. It won't affect your services." %}</li>
+        </ul>
+    </section>
+
+    <hr>
+
+    {% if error %}
+    <p role="alert" class="portal-alert portal-alert-error">{{ error }}</p>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <label for="display-name">{% trans "Display name" %}</label>
+        <input type="text" id="display-name" name="display_name"
+               value="{{ form.display_name.value|default:'' }}"
+               required autofocus
+               autocomplete="name"
+               aria-describedby="display-name-help">
+        <small id="display-name-help">{% trans "This is the name you'll see on screen. It can be your first name, a nickname, or anything you like." %}</small>
+        {% if form.display_name.errors %}
+        <small role="alert" class="portal-field-error">{{ form.display_name.errors.0 }}</small>
+        {% endif %}
+
+        <label for="email">{% trans "Email" %}</label>
+        <input type="email" id="email" name="email"
+               value="{{ form.email.value|default:'' }}"
+               required
+               autocomplete="email"
+               aria-describedby="email-help">
+        <small id="email-help">{% trans "You'll use this email to sign in." %}</small>
+        {% if form.email.errors %}
+        <small role="alert" class="portal-field-error">{{ form.email.errors.0 }}</small>
+        {% endif %}
+
+        <label for="password">{% trans "Password" %}</label>
+        <input type="password" id="password" name="password"
+               required
+               autocomplete="new-password"
+               aria-describedby="password-help">
+        <small id="password-help">{% trans "Choose a strong password. Use at least 8 characters with a mix of letters and numbers." %}</small>
+        {% if form.password.errors %}
+        <small role="alert" class="portal-field-error">{{ form.password.errors.0 }}</small>
+        {% endif %}
+
+        <label for="password-confirm">{% trans "Confirm password" %}</label>
+        <input type="password" id="password-confirm" name="password_confirm"
+               required
+               autocomplete="new-password"
+               aria-describedby="password-confirm-help">
+        <small id="password-confirm-help">{% trans "Type your password again to make sure it's right." %}</small>
+        {% if form.password_confirm.errors %}
+        <small role="alert" class="portal-field-error">{{ form.password_confirm.errors.0 }}</small>
+        {% endif %}
+
+        {% if invite.verbal_code_required %}
+        <label for="verbal-code">{% trans "Verbal code" %}</label>
+        <input type="text" id="verbal-code" name="verbal_code"
+               required
+               autocomplete="off"
+               aria-describedby="verbal-code-help">
+        <small id="verbal-code-help">{% trans "Enter the code your worker gave you in person. This helps confirm your identity." %}</small>
+        {% if form.verbal_code.errors %}
+        <small role="alert" class="portal-field-error">{{ form.verbal_code.errors.0 }}</small>
+        {% endif %}
+        {% endif %}
+
+        <button type="submit">{% trans "Create my account" %}</button>
+    </form>
+
+    <hr>
+
+    <p>
+        <a href="{% url 'portal:safety_help' %}">{% trans "Staying safe online" %}</a>
+        <br>
+        <small>{% trans "Tips for using this site safely on shared devices." %}</small>
+    </p>
+</article>
+{% endblock %}

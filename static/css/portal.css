@@ -1,0 +1,153 @@
+/* Portal-specific styles — layered on top of Pico CSS */
+
+/* Quick-exit button — always visible, high contrast */
+#quick-exit {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+    background: var(--pico-del-color, #c62828);
+    color: #fff;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+#quick-exit:hover,
+#quick-exit:focus {
+    background: #b71c1c;
+    outline: 3px solid #fff;
+    outline-offset: 2px;
+}
+
+/* Session timeout warning overlay */
+#session-timeout-warning {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#session-timeout-warning[hidden] {
+    display: none;
+}
+
+#session-timeout-warning .warning-content {
+    background: var(--pico-background-color, #fff);
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 400px;
+    text-align: centre;
+}
+
+/* Portal navigation — simpler than staff nav */
+.portal-nav {
+    padding: 0.5rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: centre;
+    border-bottom: 1px solid var(--pico-muted-border-color, #ddd);
+}
+
+.portal-nav .language-toggle {
+    font-size: 0.85rem;
+}
+
+/* Larger touch targets for mobile */
+.portal-nav a,
+.portal-card a {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: centre;
+}
+
+/* Dashboard cards */
+.portal-card {
+    border: 1px solid var(--pico-muted-border-color, #ddd);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.portal-card h2 {
+    margin-top: 0;
+    font-size: 1.1rem;
+}
+
+/* Progress descriptor badges */
+.descriptor-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.descriptor-harder { background: #ffebee; color: #c62828; }
+.descriptor-holding { background: #fff3e0; color: #e65100; }
+.descriptor-shifting { background: #e8f5e9; color: #2e7d32; }
+.descriptor-good { background: #e3f2fd; color: #1565c0; }
+
+/* Milestone celebrations */
+.milestone-item {
+    display: flex;
+    align-items: centre;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--pico-muted-border-color, #ddd);
+}
+
+.milestone-check {
+    color: #2e7d32;
+    font-size: 1.5rem;
+}
+
+/* Journal "only you" notice */
+.privacy-notice {
+    background: #f3e5f5;
+    border-left: 4px solid #7b1fa2;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.9rem;
+}
+
+/* Crisis resources highlight */
+.crisis-notice {
+    background: #fff3e0;
+    border-left: 4px solid #e65100;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: 0 4px 4px 0;
+}
+
+/* New since last visit banner */
+.new-since-banner {
+    background: #e3f2fd;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: centre;
+}
+
+/* Correction request soft step */
+.soft-step {
+    text-align: centre;
+    padding: 2rem 1rem;
+}
+
+.soft-step .options {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}

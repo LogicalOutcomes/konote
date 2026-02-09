@@ -82,6 +82,7 @@ class Command(BaseCommand):
             ("analysis_charts", True),
             ("ai_assist", False),
             ("groups", True),
+            ("participant_portal", False),
         ]
         created = 0
         for key, enabled in defaults:
