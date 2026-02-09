@@ -13,14 +13,15 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
-from apps.auth_app.decorators import admin_required
+from apps.auth_app.constants import ROLE_RANK
+from apps.auth_app.decorators import admin_required, programme_role_required
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.access import (
     build_program_display_context,
     get_client_or_403,
     get_user_program_ids,
 )
-from apps.programs.models import UserProgramRole
+from apps.programs.models import Program, UserProgramRole
 
 from .forms import (
     MetricAssignmentForm,
@@ -41,23 +42,67 @@ from .models import (
 
 
 # ---------------------------------------------------------------------------
-# Permission helper
+# Permission helpers
 # ---------------------------------------------------------------------------
 
+
+def _get_programme_from_client(request, client_id, **kwargs):
+    """Find the shared programme where user has the highest role.
+
+    Used by programme_role_required decorator. Picks the most permissive
+    valid programme so the user isn't arbitrarily denied.
+    """
+    client = get_object_or_404(ClientFile, pk=client_id)
+
+    user_roles = UserProgramRole.objects.filter(
+        user=request.user, status="active"
+    ).values_list("program_id", "role")
+
+    client_program_ids = set(
+        ClientProgramEnrolment.objects.filter(
+            client_file=client, status="enrolled"
+        ).values_list("program_id", flat=True)
+    )
+
+    best_program_id = None
+    best_rank = -1
+    for program_id, role in user_roles:
+        if program_id in client_program_ids:
+            rank = ROLE_RANK.get(role, 0)
+            if rank > best_rank:
+                best_rank = rank
+                best_program_id = program_id
+
+    if best_program_id is None:
+        raise ValueError(f"User has no shared programme with client {client_id}")
+
+    return Program.objects.get(pk=best_program_id)
+
+
+def _get_programme_from_section(request, section_id, **kwargs):
+    """Extract programme via section → client."""
+    section = get_object_or_404(PlanSection, pk=section_id)
+    return _get_programme_from_client(request, section.client_file_id)
+
+
+def _get_programme_from_target(request, target_id, **kwargs):
+    """Extract programme via target → client."""
+    target = get_object_or_404(PlanTarget, pk=target_id)
+    return _get_programme_from_client(request, target.client_file_id)
+
+
 def _can_edit_plan(user, client_file):
+    """Return True if the user may modify this client's plan.
+
+    Programme managers can edit plan structure (sections, targets, metrics).
+    Staff and front desk cannot edit plans.
+
+    Note: admin status does NOT bypass programme role checks (PERM-S2).
+    Admins need a programme manager role to edit plans.
     """
-    Return True if the user may modify this client's plan.
-    Admins can always edit. Programme managers can edit plan structure
-    (sections, targets, metrics). Staff and front desk cannot edit plans.
-    """
-    # Admins can always edit plans
-    if user.is_admin:
-        return True
-    # Get programmes this client is enrolled in
     enrolled_program_ids = ClientProgramEnrolment.objects.filter(
         client_file=client_file, status="enrolled"
     ).values_list("program_id", flat=True)
-    # Only programme managers can edit plan structure
     return UserProgramRole.objects.filter(
         user=user,
         program_id__in=enrolled_program_ids,
@@ -72,6 +117,7 @@ def _can_edit_plan(user, client_file):
 # ---------------------------------------------------------------------------
 
 @login_required
+@programme_role_required("staff", _get_programme_from_client)
 def plan_view(request, client_id):
     """Full plan tab — all sections with targets and metrics."""
     client = get_client_or_403(request, client_id)
@@ -135,6 +181,7 @@ def plan_view(request, client_id):
 # ---------------------------------------------------------------------------
 
 @login_required
+@programme_role_required("staff", _get_programme_from_client)
 def section_create(request, client_id):
     """Add a new section to a client's plan."""
     client = get_client_or_403(request, client_id)
@@ -165,6 +212,7 @@ def section_create(request, client_id):
 
 
 @login_required
+@programme_role_required("staff", _get_programme_from_section)
 def section_edit(request, section_id):
     """HTMX inline edit — GET returns edit form partial, POST saves and returns section partial."""
     section = get_object_or_404(PlanSection, pk=section_id)
@@ -190,6 +238,7 @@ def section_edit(request, section_id):
 
 
 @login_required
+@programme_role_required("staff", _get_programme_from_section)
 def section_status(request, section_id):
     """HTMX dialog to change section status with reason."""
     section = get_object_or_404(PlanSection, pk=section_id)
@@ -219,6 +268,7 @@ def section_status(request, section_id):
 # ---------------------------------------------------------------------------
 
 @login_required
+@programme_role_required("staff", _get_programme_from_section)
 def target_create(request, section_id):
     """Add a new target to a section."""
     section = get_object_or_404(PlanSection, pk=section_id)
@@ -260,6 +310,7 @@ def target_create(request, section_id):
 
 
 @login_required
+@programme_role_required("staff", _get_programme_from_target)
 def target_edit(request, target_id):
     """Edit a target. Creates a revision with OLD values before saving."""
     target = get_object_or_404(PlanTarget, pk=target_id)
@@ -302,6 +353,7 @@ def target_edit(request, target_id):
 
 
 @login_required
+@programme_role_required("staff", _get_programme_from_target)
 def target_status(request, target_id):
     """HTMX dialog to change target status with reason. Creates a revision."""
     target = get_object_or_404(PlanTarget, pk=target_id)
@@ -346,6 +398,7 @@ def target_status(request, target_id):
 # ---------------------------------------------------------------------------
 
 @login_required
+@programme_role_required("staff", _get_programme_from_target)
 def target_metrics(request, target_id):
     """Assign metrics to a target — checkboxes grouped by category."""
     target = get_object_or_404(PlanTarget, pk=target_id)
@@ -506,6 +559,7 @@ def metric_edit(request, metric_id):
 # ---------------------------------------------------------------------------
 
 @login_required
+@programme_role_required("staff", _get_programme_from_target)
 def target_history(request, target_id):
     """Show revision history for a target."""
     target = get_object_or_404(PlanTarget, pk=target_id)

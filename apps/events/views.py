@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from apps.auth_app.constants import ROLE_RANK
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.access import (
     build_program_display_context,
@@ -14,8 +15,8 @@ from apps.programs.access import (
     get_client_or_403,
     get_user_program_ids,
 )
-from apps.auth_app.decorators import admin_required, minimum_role
-from apps.programs.models import UserProgramRole
+from apps.auth_app.decorators import admin_required, minimum_role, programme_role_required
+from apps.programs.models import Program, UserProgramRole
 
 from .forms import AlertCancelForm, AlertForm, EventForm, EventTypeForm
 from .models import Alert, Event, EventType
@@ -24,6 +25,46 @@ from .models import Alert, Event, EventType
 # Use shared access helpers from apps.programs.access
 _get_client_or_403 = get_client_or_403
 _get_author_program = get_author_program
+
+
+# ---------------------------------------------------------------------------
+# Helper functions for programme_role_required decorator
+# ---------------------------------------------------------------------------
+
+
+def _get_programme_from_client(request, client_id, **kwargs):
+    """Find the shared programme where user has the highest role."""
+    client = get_object_or_404(ClientFile, pk=client_id)
+
+    user_roles = UserProgramRole.objects.filter(
+        user=request.user, status="active"
+    ).values_list("program_id", "role")
+
+    client_program_ids = set(
+        ClientProgramEnrolment.objects.filter(
+            client_file=client, status="enrolled"
+        ).values_list("program_id", flat=True)
+    )
+
+    best_program_id = None
+    best_rank = -1
+    for program_id, role in user_roles:
+        if program_id in client_program_ids:
+            rank = ROLE_RANK.get(role, 0)
+            if rank > best_rank:
+                best_rank = rank
+                best_program_id = program_id
+
+    if best_program_id is None:
+        raise ValueError(f"User has no shared programme with client {client_id}")
+
+    return Program.objects.get(pk=best_program_id)
+
+
+def _get_programme_from_alert(request, alert_id, **kwargs):
+    """Extract programme via alert → client."""
+    alert = get_object_or_404(Alert, pk=alert_id)
+    return _get_programme_from_client(request, alert.client_file_id)
 
 
 # ---------------------------------------------------------------------------
@@ -78,7 +119,7 @@ def event_type_edit(request, type_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_client)
 def event_list(request, client_id):
     """Combined timeline: events + notes for a client, sorted chronologically."""
     client = _get_client_or_403(request, client_id)
@@ -130,7 +171,7 @@ def event_list(request, client_id):
 
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_client)
 def event_create(request, client_id):
     """Create an event for a client."""
     client = _get_client_or_403(request, client_id)
@@ -158,7 +199,7 @@ def event_create(request, client_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_client)
 def alert_create(request, client_id):
     """Create an alert for a client."""
     client = _get_client_or_403(request, client_id)
@@ -184,7 +225,7 @@ def alert_create(request, client_id):
 
 
 @login_required
-@minimum_role("staff")
+@programme_role_required("staff", _get_programme_from_alert)
 def alert_cancel(request, alert_id):
     """Cancel an alert with a reason (never delete). Only author or admin can cancel."""
     alert = get_object_or_404(Alert, pk=alert_id)

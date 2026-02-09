@@ -155,6 +155,10 @@ class ClientFile(models.Model):
         self._phone_encrypted = encrypt_field(value)
 
     # Cross-programme sharing consent (PHIPA compliance)
+    # NOTE: This field is captured but NOT YET ENFORCED in views.
+    # Phase 2 (PERM-P2) will add enforcement: notes will be filtered by
+    # authoring programme unless this flag is True or the note is a safety alert.
+    # Until then, notes remain visible across all shared programmes.
     cross_programme_sharing_consent = models.BooleanField(
         default=False,
         help_text=(
