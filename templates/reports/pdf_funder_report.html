@@ -1,12 +1,12 @@
 {% extends "reports/pdf_base.html" %}
 {% load i18n %}
 
-{% block title %}{% blocktrans with name=program.translated_name %}Funder Report — {{ name }}{% endblocktrans %}{% endblock %}
+{% block title %}{% blocktrans with name=program.translated_name %}Programme Outcome Report — {{ name }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
 <!-- Cover Page -->
 <div class="pdf-cover">
-    <h1>{% trans "Funder Report" %}</h1>
+    <h1>{% trans "Programme Outcome Report" %}</h1>
     <div class="subtitle">{{ program.translated_name }}</div>
     <div class="meta">
         {% blocktrans with dfrom=date_from dto=date_to %}{{ dfrom }} to {{ dto }}{% endblocktrans %}<br>
@@ -83,6 +83,65 @@
 
 <!-- Data Table -->
 <div class="page-break"></div>
+
+{% if is_aggregate %}
+{# ── Aggregate summary (executives) — NO individual client data ── #}
+<h2>{% trans "Metric Summary" %}</h2>
+<table>
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Metric Name" %}</th>
+            <th scope="col">{% trans "Participants Measured" %}</th>
+            <th scope="col">{% trans "Data Points" %}</th>
+            <th scope="col">{% trans "Average" %}</th>
+            <th scope="col">{% trans "Min" %}</th>
+            <th scope="col">{% trans "Max" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in aggregate_rows %}
+        <tr>
+            <td>{{ row.metric_name }}</td>
+            <td>{{ row.clients_measured }}</td>
+            <td>{{ row.data_points }}</td>
+            <td>{{ row.avg }}</td>
+            <td>{{ row.min }}</td>
+            <td>{{ row.max }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if demographic_aggregate_rows %}
+<h3>{% trans "Breakdown by" %} {{ grouping_label }}</h3>
+<table>
+    <thead>
+        <tr>
+            <th scope="col">{{ grouping_label }}</th>
+            <th scope="col">{% trans "Metric Name" %}</th>
+            <th scope="col">{% trans "Participants Measured" %}</th>
+            <th scope="col">{% trans "Average" %}</th>
+            <th scope="col">{% trans "Min" %}</th>
+            <th scope="col">{% trans "Max" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in demographic_aggregate_rows %}
+        <tr>
+            <td>{{ row.demographic_group }}</td>
+            <td>{{ row.metric_name }}</td>
+            <td>{{ row.clients_measured }}</td>
+            <td>{{ row.avg }}</td>
+            <td>{{ row.min }}</td>
+            <td>{{ row.max }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% else %}
+{# ── Individual data (admin, PM) ── #}
 <h2>{% trans "Metric Data" %}</h2>
 
 {% if grouped_rows %}
@@ -139,5 +198,7 @@
         {% endfor %}
     </tbody>
 </table>
+{% endif %}
+
 {% endif %}
 {% endblock %}

@@ -1,4 +1,4 @@
-"""PDF export views for client progress reports, funder reports, and individual client data export."""
+"""PDF export views for client progress reports, programme outcome reports, and individual client data export."""
 import csv
 import io
 
@@ -140,12 +140,13 @@ def client_progress_pdf(request, client_id):
     return render_pdf("reports/pdf_client_progress.html", context, filename)
 
 
-def generate_funder_pdf(
+def generate_outcome_report_pdf(
     request, program, selected_metrics, date_from, date_to, rows, unique_clients,
     grouping_type="none", grouping_label=None, achievement_summary=None,
     total_clients_display=None, total_data_points_display=None,
+    is_aggregate=False, aggregate_rows=None, demographic_aggregate_rows=None,
 ):
-    """Generate a PDF funder report. Called from export_form view.
+    """Generate a PDF programme outcome report. Called from export_form view.
 
     Args:
         request: The HTTP request.
@@ -153,20 +154,23 @@ def generate_funder_pdf(
         selected_metrics: List of MetricDefinition objects.
         date_from: Start date for the report.
         date_to: End date for the report.
-        rows: List of row dicts with metric data.
+        rows: List of row dicts with metric data (empty for aggregate).
         unique_clients: Set of unique client IDs in the report.
         grouping_type: "none", "age_range", or "custom_field".
-        grouping_label: Human-readable label for the grouping (e.g., "Age Range", "Gender").
-        achievement_summary: Optional dict from get_achievement_summary() with achievement rates.
-        total_clients_display: Suppressed client count (str or int) for confidential programs.
-        total_data_points_display: Suppressed data points count for confidential programs.
+        grouping_label: Human-readable label for the grouping.
+        achievement_summary: Optional dict with achievement rates.
+        total_clients_display: Suppressed client count for confidential programs.
+        total_data_points_display: Suppressed data points count.
+        is_aggregate: If True, show aggregate summary instead of individual rows.
+        aggregate_rows: List of aggregate row dicts (metric stats).
+        demographic_aggregate_rows: List of demographic breakdown row dicts.
     """
     if not is_pdf_available():
         return _pdf_unavailable_response(request)
 
-    # Group rows by demographic if grouping is enabled
+    # Group rows by demographic if grouping is enabled (individual path only)
     grouped_rows = {}
-    if grouping_type != "none" and grouping_label:
+    if not is_aggregate and grouping_type != "none" and grouping_label:
         for row in rows:
             group = row.get("demographic_group", "Unknown")
             if group not in grouped_rows:
@@ -193,10 +197,13 @@ def generate_funder_pdf(
         "grouping_label": grouping_label,
         "grouped_rows": grouped_rows if grouping_type != "none" else None,
         "achievement_summary": achievement_summary,
+        "is_aggregate": is_aggregate,
+        "aggregate_rows": aggregate_rows or [],
+        "demographic_aggregate_rows": demographic_aggregate_rows or [],
     }
 
     safe_prog_name = sanitise_filename(program.name.replace(" ", "_"))
-    filename = f"funder_report_{safe_prog_name}_{date_from}_{date_to}.pdf"
+    filename = f"outcome_report_{safe_prog_name}_{date_from}_{date_to}.pdf"
 
     audit_metadata = {
         "program": program.name,
@@ -213,7 +220,7 @@ def generate_funder_pdf(
         audit_metadata["include_achievement_rate"] = True
         audit_metadata["achievement_rate"] = achievement_summary.get("overall_rate")
 
-    audit_pdf_export(request, "export", "funder_report_pdf", audit_metadata)
+    audit_pdf_export(request, "export", "outcome_report_pdf", audit_metadata)
 
     return render_pdf("reports/pdf_funder_report.html", context, filename)
 

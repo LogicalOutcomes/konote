@@ -463,7 +463,7 @@ def attendance_report(request, group_id):
 
     Shows attendance for a date range (default: last 3 months).
     Sortable by attendance rate so staff can see who's been missing.
-    CSV export for funder reporting.
+    CSV export for programme reporting.
     """
     group = get_object_or_404(Group, pk=group_id)
     user_program_ids = _get_user_program_ids(request.user)

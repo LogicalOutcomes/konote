@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Funder Report Template" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% trans "Programme Outcome Report Template" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% trans "Funder Report Template" %}</h1>
-    <p>{% trans "Generate a standardised funder report with service statistics, demographics, and outcomes." %}</p>
+    <h1>{% trans "Programme Outcome Report Template" %}</h1>
+    <p>{% trans "Generate a standardised programme outcome report with service statistics, demographics, and outcomes." %}</p>
 </hgroup>
 
 <article class="pico-background-yellow-50" aria-label="{% trans 'Draft Template Notice' %}" role="alert" style="border-left: 4px solid var(--pico-color-yellow-500); padding: 1rem; margin-bottom: 1.5rem;">
-    <strong><span aria-hidden="true">⚠️</span> {% trans "Draft Template — Customise for Your Funder" %}</strong>
+    <strong><span aria-hidden="true">⚠️</span> {% trans "Draft Template — Customise for Your Needs" %}</strong>
     <p style="margin-bottom: 0;">
         {% blocktrans %}
-        This is a generic funder report template. Before submitting to your funder, verify it matches
-        their specific reporting requirements. Different funders (United Way chapters, government agencies,
+        This is a generic programme outcome report template. Before submitting externally, verify it matches
+        the recipient's specific reporting requirements. Different recipients (United Way chapters, government agencies,
         foundations) may require different formats, fields, or calculations.
         {% endblocktrans %}
     </p>
@@ -27,7 +27,7 @@
     </p>
 </article>
 
-<article aria-label="{% trans 'About Funder Reports' %}">
+<article aria-label="{% trans 'About Programme Outcome Reports' %}">
     <h2>{% trans "What's included in this report?" %}</h2>
     <ul>
         <li>{% trans "Organisation and programme information" %}</li>
@@ -108,23 +108,23 @@
         </label>
     </fieldset>
 
-    <button type="submit">{% trans "Generate Funder Report" %}</button>
+    <button type="submit">{% trans "Generate Outcome Report" %}</button>
 </form>
 
 <details>
     <summary>{% trans "About This Report Template" %}</summary>
     <p>
         {% blocktrans %}
-        This is a draft funder report template based on common Canadian nonprofit
-        reporting requirements. It includes service statistics, demographics, and
-        outcome achievement rates that many funders request.
+        This is a draft programme outcome report template based on common Canadian
+        nonprofit reporting requirements. It includes service statistics, demographics,
+        and outcome achievement rates.
         {% endblocktrans %}
     </p>
     <p>
-        {% blocktrans with strong_open="<strong>" strong_close="</strong>" %}{{ strong_open }}Important:{{ strong_close }} Your funder may require different formats, additional fields, or specific calculations. Always verify this template matches your funder's actual reporting template before submission. You may need to adjust or supplement this data.{% endblocktrans %}
+        {% blocktrans with strong_open="<strong>" strong_close="</strong>" %}{{ strong_open }}Important:{{ strong_close }} External recipients may require different formats, additional fields, or specific calculations. Always verify this template matches the actual reporting requirements before submission. You may need to adjust or supplement this data.{% endblocktrans %}
     </p>
     <h3>{% trans "Default Age Categories" %}</h3>
-    <p>{% trans "This template uses these common age groupings (adjust if your funder requires different categories):" %}</p>
+    <p>{% trans "This template uses these common age groupings (adjust if your reporting requirements differ):" %}</p>
     <ul>
         <li>{% trans "Child (0-12)" %}</li>
         <li>{% trans "Youth (13-17)" %}</li>

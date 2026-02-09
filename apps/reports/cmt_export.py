@@ -1,6 +1,6 @@
-"""Funder Report Template export functionality.
+"""Programme Outcome Report Template (CMT format) export functionality.
 
-Generates standardised funder reports with common nonprofit reporting fields:
+Generates standardised programme reports with common nonprofit reporting fields:
 - Organisation and programme information
 - Reporting period (fiscal year)
 - Service statistics (unique clients, total contacts)
@@ -8,9 +8,9 @@ Generates standardised funder reports with common nonprofit reporting fields:
 - Outcome achievement rates
 
 IMPORTANT: This is a draft template. Organisations should verify this format
-matches their specific funder's requirements before submission. Different funders
-(United Way chapters, government agencies, foundations) may require different
-formats, fields, or calculations.
+matches their specific reporting requirements before submission. Different
+recipients (United Way chapters, government agencies, foundations) may require
+different formats, fields, or calculations.
 
 Canadian spelling conventions used throughout (programme, organisation, colour).
 """

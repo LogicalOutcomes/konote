@@ -32,7 +32,8 @@ from .demographics import aggregate_by_demographic, get_age_range, parse_groupin
 from .suppression import suppress_small_cell
 from .forms import CMTExportForm, ClientDataExportForm, MetricExportForm
 from .models import SecureExportLink
-from .utils import can_create_export, get_manageable_programs
+from .aggregations import aggregate_metrics
+from .utils import can_create_export, get_manageable_programs, is_aggregate_only_user
 
 logger = logging.getLogger(__name__)
 
@@ -230,6 +231,52 @@ def _get_grouping_label(group_by_value, grouping_field):
     return "Demographic Group"
 
 
+def _write_achievement_csv(writer, achievement_summary, program):
+    """Write the achievement rate summary section to a CSV writer.
+
+    Used by both aggregate and individual export paths. The achievement
+    data is already aggregate (counts and percentages) so it's safe for
+    all roles.
+    """
+    writer.writerow([])  # blank separator
+    writer.writerow(sanitise_csv_row(["# ===== ACHIEVEMENT RATE SUMMARY ====="]))
+    ach_total = suppress_small_cell(achievement_summary["total_clients"], program)
+    ach_met = suppress_small_cell(achievement_summary["clients_met_any_target"], program)
+    if isinstance(ach_total, str) or isinstance(ach_met, str):
+        writer.writerow(sanitise_csv_row([
+            f"# Overall: {ach_met} of {ach_total} clients met at least one target"
+        ]))
+    elif achievement_summary["total_clients"] > 0:
+        writer.writerow(sanitise_csv_row([
+            f"# Overall: {ach_met} of "
+            f"{ach_total} clients "
+            f"({achievement_summary['overall_rate']}%) met at least one target"
+        ]))
+    else:
+        writer.writerow(sanitise_csv_row(["# No client data available for achievement calculation"]))
+
+    for metric in achievement_summary.get("by_metric", []):
+        m_total = suppress_small_cell(metric["total_clients"], program)
+        m_met = suppress_small_cell(metric.get("clients_met_target", 0), program)
+        if metric["has_target"]:
+            if isinstance(m_total, str) or isinstance(m_met, str):
+                writer.writerow(sanitise_csv_row([
+                    f"# {metric['metric_name']}: {m_met} of {m_total} clients "
+                    f"met target of {metric['target_value']}"
+                ]))
+            else:
+                writer.writerow(sanitise_csv_row([
+                    f"# {metric['metric_name']}: {m_met} of "
+                    f"{m_total} clients ({metric['achievement_rate']}%) "
+                    f"met target of {metric['target_value']}"
+                ]))
+        else:
+            writer.writerow(sanitise_csv_row([
+                f"# {metric['metric_name']}: {m_total} clients "
+                "(no target defined)"
+            ]))
+
+
 @login_required
 def export_form(request):
     """
@@ -241,13 +288,21 @@ def export_form(request):
     if not can_create_export(request.user, "metrics"):
         return HttpResponseForbidden("You do not have permission to access this page.")
 
+    is_aggregate = is_aggregate_only_user(request.user)
+
     if request.method != "POST":
         form = MetricExportForm(user=request.user)
-        return render(request, "reports/export_form.html", {"form": form})
+        return render(request, "reports/export_form.html", {
+            "form": form,
+            "is_aggregate_only": is_aggregate,
+        })
 
     form = MetricExportForm(request.POST, user=request.user)
     if not form.is_valid():
-        return render(request, "reports/export_form.html", {"form": form})
+        return render(request, "reports/export_form.html", {
+            "form": form,
+            "is_aggregate_only": is_aggregate,
+        })
 
     program = form.cleaned_data["program"]
     selected_metrics = form.cleaned_data["metrics"]
@@ -300,42 +355,14 @@ def export_form(request):
             {
                 "form": form,
                 "no_data": True,
+                "is_aggregate_only": is_aggregate,
             },
-        )
-
-    # Build demographic lookup for each client if grouping is enabled
-    client_demographic_map = {}
-    if grouping_type != "none":
-        client_demographic_map = _build_demographic_map(
-            metric_values, grouping_type, grouping_field, date_to
         )
 
     # Get grouping label for display
     grouping_label = _get_grouping_label(group_by_value, grouping_field)
 
-    # Count unique clients in the result set
-    unique_clients = set()
-    rows = []
-    for mv in metric_values:
-        note = mv.progress_note_target.progress_note
-        client = note.client_file
-        unique_clients.add(client.pk)
-
-        row = {
-            "record_id": client.record_id,
-            "metric_name": mv.metric_def.name,
-            "value": mv.value,
-            "date": note.effective_date.strftime("%Y-%m-%d"),
-            "author": note.author.display_name,
-        }
-
-        # Add demographic group if grouping is enabled
-        if grouping_type != "none":
-            row["demographic_group"] = client_demographic_map.get(client.pk, "Unknown")
-
-        rows.append(row)
-
-    # Calculate achievement rates if requested
+    # Calculate achievement rates if requested (aggregate — safe for all roles)
     achievement_summary = None
     if include_achievement:
         achievement_summary = get_achievement_summary(
@@ -358,106 +385,241 @@ def export_form(request):
     if grouping_type != "none":
         filters_dict["grouped_by"] = grouping_label
 
-    # Apply small-cell suppression for confidential programs
-    total_clients_display = suppress_small_cell(len(unique_clients), program)
-    total_data_points_display = suppress_small_cell(len(rows), program)
+    # ── Aggregate-only path (executives) ─────────────────────────────
+    # Executives see summary statistics only — no client record IDs,
+    # no author names, no individual data points.
+    # Permission reference: metric.view_individual = DENY,
+    #                       metric.view_aggregate = ALLOW
+    if is_aggregate:
+        # Build per-metric aggregate stats using existing infrastructure
+        agg_by_metric = aggregate_metrics(metric_values, group_by="metric")
 
-    if export_format == "pdf":
-        from .pdf_views import generate_funder_pdf
-        pdf_response = generate_funder_pdf(
-            request, program, selected_metrics,
-            date_from, date_to, rows, unique_clients,
-            grouping_type=grouping_type,
-            grouping_label=grouping_label,
-            achievement_summary=achievement_summary,
-            total_clients_display=total_clients_display,
-            total_data_points_display=total_data_points_display,
-        )
-        safe_name = sanitise_filename(program.name.replace(" ", "_"))
-        filename = f"funder_report_{safe_name}_{date_from}_{date_to}.pdf"
-        content = pdf_response.content
-    else:
-        # Build CSV in memory buffer (not directly into HttpResponse)
-        csv_buffer = io.StringIO()
-        writer = csv.writer(csv_buffer)
-        # Summary header rows (prefixed with # so spreadsheet apps treat them as comments)
-        writer.writerow(sanitise_csv_row([f"# Programme: {program.name}"]))
-        writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
-        writer.writerow(sanitise_csv_row([f"# Total Clients: {total_clients_display}"]))
-        writer.writerow(sanitise_csv_row([f"# Total Data Points: {total_data_points_display}"]))
+        # Count unique clients per metric for the summary
+        unique_clients = set()
+        metric_client_sets = {}  # metric_def_id → set of client_ids
+        for mv in metric_values:
+            client_id = mv.progress_note_target.progress_note.client_file_id
+            unique_clients.add(client_id)
+            mid = mv.metric_def_id
+            if mid not in metric_client_sets:
+                metric_client_sets[mid] = set()
+            metric_client_sets[mid].add(client_id)
+
+        # Total data points for audit (sum of valid values across all metrics)
+        total_data_points_count = sum(s.get("valid_count", 0) for s in agg_by_metric.values())
+
+        # Build aggregate rows — one per metric, NO client identifiers
+        aggregate_rows = []
+        seen_metrics = set()
+        for mv in metric_values:
+            mid = mv.metric_def_id
+            if mid in seen_metrics:
+                continue
+            seen_metrics.add(mid)
+            stats = agg_by_metric.get(str(mid), {})
+            avg_val = round(stats["avg"], 1) if stats.get("avg") is not None else "N/A"
+            aggregate_rows.append({
+                "metric_name": mv.metric_def.name,
+                "clients_measured": suppress_small_cell(len(metric_client_sets.get(mid, set())), program),
+                "data_points": suppress_small_cell(stats.get("valid_count", 0), program),
+                "avg": avg_val,
+                "min": stats.get("min", "N/A"),
+                "max": stats.get("max", "N/A"),
+            })
+
+        # Build demographic breakdown if grouping is enabled
+        demographic_aggregate_rows = []
         if grouping_type != "none":
-            writer.writerow(sanitise_csv_row([f"# Grouped By: {grouping_label}"]))
+            for mv_metric_def in selected_metrics:
+                # Filter metric values for this specific metric
+                metric_specific_mvs = metric_values.filter(metric_def=mv_metric_def)
+                if not metric_specific_mvs.exists():
+                    continue
+                demo_agg = aggregate_by_demographic(
+                    metric_specific_mvs, grouping_type, grouping_field, date_to,
+                )
+                for group_label, stats in demo_agg.items():
+                    client_count = len(stats.get("client_ids", set()))
+                    avg_val = round(stats["avg"], 1) if stats.get("avg") is not None else "N/A"
+                    demographic_aggregate_rows.append({
+                        "demographic_group": group_label,
+                        "metric_name": mv_metric_def.name,
+                        "clients_measured": suppress_small_cell(client_count, program),
+                        "avg": avg_val,
+                        "min": stats.get("min", "N/A"),
+                        "max": stats.get("max", "N/A"),
+                    })
 
-        # Achievement rate summary if requested
-        if achievement_summary:
+        total_clients_display = suppress_small_cell(len(unique_clients), program)
+
+        if export_format == "pdf":
+            from .pdf_views import generate_outcome_report_pdf
+            pdf_response = generate_outcome_report_pdf(
+                request, program, selected_metrics,
+                date_from, date_to, [], unique_clients,
+                grouping_type=grouping_type,
+                grouping_label=grouping_label,
+                achievement_summary=achievement_summary,
+                total_clients_display=total_clients_display,
+                total_data_points_display=suppress_small_cell(
+                    sum(s.get("valid_count", 0) for s in agg_by_metric.values()), program,
+                ),
+                is_aggregate=True,
+                aggregate_rows=aggregate_rows,
+                demographic_aggregate_rows=demographic_aggregate_rows or None,
+            )
+            safe_name = sanitise_filename(program.name.replace(" ", "_"))
+            filename = f"outcome_report_{safe_name}_{date_from}_{date_to}.pdf"
+            content = pdf_response.content
+        else:
+            # Aggregate CSV — summary statistics only
+            csv_buffer = io.StringIO()
+            writer = csv.writer(csv_buffer)
+            writer.writerow(sanitise_csv_row([f"# Programme: {program.name}"]))
+            writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
+            writer.writerow(sanitise_csv_row([f"# Total Participants: {total_clients_display}"]))
+            writer.writerow(sanitise_csv_row(["# Export Mode: Aggregate Summary"]))
+            if grouping_type != "none":
+                writer.writerow(sanitise_csv_row([f"# Grouped By: {grouping_label}"]))
+
+            # Achievement rate summary (same as individual path — already aggregate)
+            if achievement_summary:
+                _write_achievement_csv(writer, achievement_summary, program)
+
             writer.writerow([])  # blank separator
-            writer.writerow(sanitise_csv_row(["# ===== ACHIEVEMENT RATE SUMMARY ====="]))
-            ach_total = suppress_small_cell(achievement_summary["total_clients"], program)
-            ach_met = suppress_small_cell(achievement_summary["clients_met_any_target"], program)
-            if isinstance(ach_total, str) or isinstance(ach_met, str):
-                writer.writerow(sanitise_csv_row([
-                    f"# Overall: {ach_met} of {ach_total} clients met at least one target"
-                ]))
-            elif achievement_summary["total_clients"] > 0:
-                writer.writerow(sanitise_csv_row([
-                    f"# Overall: {ach_met} of "
-                    f"{ach_total} clients "
-                    f"({achievement_summary['overall_rate']}%) met at least one target"
-                ]))
-            else:
-                writer.writerow(sanitise_csv_row(["# No client data available for achievement calculation"]))
 
-            for metric in achievement_summary.get("by_metric", []):
-                m_total = suppress_small_cell(metric["total_clients"], program)
-                m_met = suppress_small_cell(metric.get("clients_met_target", 0), program)
-                if metric["has_target"]:
-                    if isinstance(m_total, str) or isinstance(m_met, str):
-                        writer.writerow(sanitise_csv_row([
-                            f"# {metric['metric_name']}: {m_met} of {m_total} clients "
-                            f"met target of {metric['target_value']}"
-                        ]))
-                    else:
-                        writer.writerow(sanitise_csv_row([
-                            f"# {metric['metric_name']}: {m_met} of "
-                            f"{m_total} clients ({metric['achievement_rate']}%) "
-                            f"met target of {metric['target_value']}"
-                        ]))
-                else:
+            # Aggregate data table — NO client record IDs, NO author names
+            writer.writerow(sanitise_csv_row([
+                "Metric Name", "Participants Measured", "Data Points", "Average", "Min", "Max",
+            ]))
+            for agg_row in aggregate_rows:
+                writer.writerow(sanitise_csv_row([
+                    agg_row["metric_name"],
+                    agg_row["clients_measured"],
+                    agg_row["data_points"],
+                    agg_row["avg"],
+                    agg_row["min"],
+                    agg_row["max"],
+                ]))
+
+            # Demographic breakdown table
+            if demographic_aggregate_rows:
+                writer.writerow([])
+                writer.writerow(sanitise_csv_row([f"# ===== BREAKDOWN BY {grouping_label.upper()} ====="]))
+                writer.writerow(sanitise_csv_row([
+                    grouping_label, "Metric Name", "Participants Measured", "Average", "Min", "Max",
+                ]))
+                for demo_row in demographic_aggregate_rows:
                     writer.writerow(sanitise_csv_row([
-                        f"# {metric['metric_name']}: {m_total} clients "
-                        "(no target defined)"
+                        demo_row["demographic_group"],
+                        demo_row["metric_name"],
+                        demo_row["clients_measured"],
+                        demo_row["avg"],
+                        demo_row["min"],
+                        demo_row["max"],
                     ]))
 
-        writer.writerow([])  # blank separator
+            safe_prog = sanitise_filename(program.name.replace(" ", "_"))
+            filename = f"metric_export_{safe_prog}_{date_from}_{date_to}.csv"
+            content = csv_buffer.getvalue()
 
-        # Column headers — include demographic column if grouping enabled
+        rows = []  # No individual rows for aggregate exports
+
+    # ── Individual path (admin, PM) ──────────────────────────────────
+    else:
+        # Build demographic lookup for each client if grouping is enabled
+        client_demographic_map = {}
         if grouping_type != "none":
-            writer.writerow(sanitise_csv_row([grouping_label, "Client Record ID", "Metric Name", "Value", "Date", "Author"]))
-        else:
-            writer.writerow(sanitise_csv_row(["Client Record ID", "Metric Name", "Value", "Date", "Author"]))
+            client_demographic_map = _build_demographic_map(
+                metric_values, grouping_type, grouping_field, date_to
+            )
 
-        for row in rows:
+        # Count unique clients in the result set
+        unique_clients = set()
+        rows = []
+        for mv in metric_values:
+            note = mv.progress_note_target.progress_note
+            client = note.client_file
+            unique_clients.add(client.pk)
+
+            row = {
+                "record_id": client.record_id,
+                "metric_name": mv.metric_def.name,
+                "value": mv.value,
+                "date": note.effective_date.strftime("%Y-%m-%d"),
+                "author": note.author.display_name,
+            }
+
+            # Add demographic group if grouping is enabled
             if grouping_type != "none":
-                writer.writerow(sanitise_csv_row([
-                    row.get("demographic_group", "Unknown"),
-                    row["record_id"],
-                    row["metric_name"],
-                    row["value"],
-                    row["date"],
-                    row["author"],
-                ]))
-            else:
-                writer.writerow(sanitise_csv_row([
-                    row["record_id"],
-                    row["metric_name"],
-                    row["value"],
-                    row["date"],
-                    row["author"],
-                ]))
+                row["demographic_group"] = client_demographic_map.get(client.pk, "Unknown")
 
-        safe_prog = sanitise_filename(program.name.replace(" ", "_"))
-        filename = f"metric_export_{safe_prog}_{date_from}_{date_to}.csv"
-        content = csv_buffer.getvalue()
+            rows.append(row)
+
+        # Apply small-cell suppression for confidential programs
+        total_clients_display = suppress_small_cell(len(unique_clients), program)
+        total_data_points_display = suppress_small_cell(len(rows), program)
+
+        if export_format == "pdf":
+            from .pdf_views import generate_outcome_report_pdf
+            pdf_response = generate_outcome_report_pdf(
+                request, program, selected_metrics,
+                date_from, date_to, rows, unique_clients,
+                grouping_type=grouping_type,
+                grouping_label=grouping_label,
+                achievement_summary=achievement_summary,
+                total_clients_display=total_clients_display,
+                total_data_points_display=total_data_points_display,
+            )
+            safe_name = sanitise_filename(program.name.replace(" ", "_"))
+            filename = f"outcome_report_{safe_name}_{date_from}_{date_to}.pdf"
+            content = pdf_response.content
+        else:
+            # Build CSV in memory buffer (not directly into HttpResponse)
+            csv_buffer = io.StringIO()
+            writer = csv.writer(csv_buffer)
+            # Summary header rows (prefixed with # so spreadsheet apps treat them as comments)
+            writer.writerow(sanitise_csv_row([f"# Programme: {program.name}"]))
+            writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
+            writer.writerow(sanitise_csv_row([f"# Total Clients: {total_clients_display}"]))
+            writer.writerow(sanitise_csv_row([f"# Total Data Points: {total_data_points_display}"]))
+            if grouping_type != "none":
+                writer.writerow(sanitise_csv_row([f"# Grouped By: {grouping_label}"]))
+
+            # Achievement rate summary if requested
+            if achievement_summary:
+                _write_achievement_csv(writer, achievement_summary, program)
+
+            writer.writerow([])  # blank separator
+
+            # Column headers — include demographic column if grouping enabled
+            if grouping_type != "none":
+                writer.writerow(sanitise_csv_row([grouping_label, "Client Record ID", "Metric Name", "Value", "Date", "Author"]))
+            else:
+                writer.writerow(sanitise_csv_row(["Client Record ID", "Metric Name", "Value", "Date", "Author"]))
+
+            for row in rows:
+                if grouping_type != "none":
+                    writer.writerow(sanitise_csv_row([
+                        row.get("demographic_group", "Unknown"),
+                        row["record_id"],
+                        row["metric_name"],
+                        row["value"],
+                        row["date"],
+                        row["author"],
+                    ]))
+                else:
+                    writer.writerow(sanitise_csv_row([
+                        row["record_id"],
+                        row["metric_name"],
+                        row["value"],
+                        row["date"],
+                        row["author"],
+                    ]))
+
+            safe_prog = sanitise_filename(program.name.replace(" ", "_"))
+            filename = f"metric_export_{safe_prog}_{date_from}_{date_to}.csv"
+            content = csv_buffer.getvalue()
 
     # Save to file and create secure download link
     link = _save_export_and_create_link(
@@ -478,7 +640,8 @@ def export_form(request):
         "date_from": str(date_from),
         "date_to": str(date_to),
         "total_clients": len(unique_clients),
-        "total_data_points": len(rows),
+        "total_data_points": total_data_points_count if is_aggregate else len(rows),
+        "export_mode": "aggregate" if is_aggregate else "individual",
         "recipient": recipient,
         "secure_link_id": str(link.id),
     }

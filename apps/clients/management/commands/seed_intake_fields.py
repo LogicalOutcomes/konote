@@ -192,7 +192,7 @@ INTAKE_FIELD_GROUPS = [
         ],
     ),
     # -------------------------------------------------------------------------
-    # Demographics (for funder equity reporting) — FRONT DESK: NONE
+    # Demographics (for equity reporting) — FRONT DESK: NONE
     # Stage 3: As trust builds (optional, staff explains equity purpose)
     # All fields optional with "Prefer not to answer"
     # -------------------------------------------------------------------------

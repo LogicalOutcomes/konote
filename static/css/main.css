@@ -2644,7 +2644,7 @@ article[aria-label="notification"].fading-out {
     font-weight: 500;
 }
 .pill--descriptor { background: var(--kn-primary-subtle, #e8f0fe); color: var(--kn-primary, #2c3e50); }
-.pill--engagement { background: var(--kn-success-subtle); color: var(--kn-success-fg, #27ae60); }
+.pill--engagement { background: var(--kn-success-subtle, #e8f5e9); color: var(--kn-success-fg, #27ae60); }
 @media (prefers-color-scheme: dark) {
     .pill--descriptor { color: #5cc8cc; }
     .pill--engagement { color: var(--kn-success-fg); }

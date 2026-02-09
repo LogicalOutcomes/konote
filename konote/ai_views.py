@@ -74,7 +74,7 @@ def improve_outcome_view(request):
 @login_required
 @ratelimit(key="user", rate="20/h", method="POST", block=True)
 def generate_narrative_view(request):
-    """Generate a funder narrative from aggregate metrics."""
+    """Generate an outcome narrative from aggregate metrics."""
     if not _ai_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
