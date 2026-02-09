@@ -139,7 +139,7 @@ For detailed history, see `tasks/ARCHIVE.md`. Summary of completed work:
 |------|-------------|
 | **Core app (Phases 1-8)** | Clients, plans, notes, events, charts, admin, security, UX |
 | **Client voice & qualitative** | Client-goal fields, progress descriptors, engagement observation, participant reflection, participant suggestion with priority, qualitative summary |
-| **Groups** | Service groups, activity groups, projects — session logs, attendance, highlights, milestones, outcomes |
+| **Groups** | Groups and projects — session logs, attendance, highlights, milestones, outcomes |
 | **Confidential programs** | Isolation, guided setup, Django admin filtering, audit logging, small-cell suppression, DV-ready documentation |
 | **Duplicate detection & merge** | Phone + name/DOB matching, cross-program dedup, admin merge tool with full data transfer |
 | **Demo data** | 5 programs, 15 clients, 3 groups, cross-enrolments, approachable metrics |

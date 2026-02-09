@@ -30,6 +30,12 @@ class GroupForm(forms.ModelForm):
         self.fields["program"].required = False
         self.fields["program"].empty_label = _("No program")
 
+        # Radio buttons for group type (descriptions rendered in template)
+        self.fields["group_type"].widget = forms.RadioSelect(
+            choices=Group.GROUP_TYPE_CHOICES,
+        )
+        self.fields["group_type"].initial = "group"
+
 
 # ---------------------------------------------------------------------------
 # 2. SessionLogForm (plain Form -- notes is encrypted, not a model field)

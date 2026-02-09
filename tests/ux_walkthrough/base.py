@@ -256,7 +256,7 @@ class UxWalkthroughBase(TestCase):
 
         cls.group_a = Group.objects.create(
             name="Housing Workshop", program=cls.program_a,
-            group_type="standard",
+            group_type="group",
         )
         cls.group_b = Group.objects.create(
             name="Youth Coding Club", program=cls.program_b,

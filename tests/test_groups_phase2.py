@@ -45,7 +45,7 @@ class ProgramDetailGroupsSectionTest(TestCase):
             name="Youth Group", service_model="group",
         )
         Group.objects.create(
-            name="Monday Group", program=program, group_type="service_group",
+            name="Monday Group", program=program, group_type="group",
         )
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get(f"/programs/{program.pk}/")
@@ -59,7 +59,7 @@ class ProgramDetailGroupsSectionTest(TestCase):
             name="Youth Centre", service_model="both",
         )
         Group.objects.create(
-            name="Art Workshop", program=program, group_type="service_group",
+            name="Art Workshop", program=program, group_type="group",
         )
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get(f"/programs/{program.pk}/")
@@ -93,7 +93,7 @@ class AttendanceReportTest(TestCase):
             user=self.staff, program=self.program, role="staff", status="active",
         )
         self.group = Group.objects.create(
-            name="Monday Group", program=self.program, group_type="service_group",
+            name="Monday Group", program=self.program, group_type="group",
         )
         # Create a member (non-client for simplicity)
         self.member = GroupMembership.objects.create(
@@ -176,7 +176,7 @@ class GroupDetailSessionCountsTest(TestCase):
             user=self.staff, program=self.program, role="staff", status="active",
         )
         self.group = Group.objects.create(
-            name="Test Group", program=self.program, group_type="service_group",
+            name="Test Group", program=self.program, group_type="group",
         )
 
     def tearDown(self):
@@ -236,7 +236,7 @@ class SessionLogHappyPathTest(TestCase):
             user=self.staff, program=self.program, role="staff", status="active",
         )
         self.group = Group.objects.create(
-            name="Monday Group", program=self.program, group_type="service_group",
+            name="Monday Group", program=self.program, group_type="group",
         )
         self.member1 = GroupMembership.objects.create(
             group=self.group, member_name="Alice", role="member",
