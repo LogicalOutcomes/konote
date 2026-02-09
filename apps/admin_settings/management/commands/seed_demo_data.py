@@ -1296,13 +1296,14 @@ class Command(BaseCommand):
             ProgressNote.objects.filter(pk=note.pk).update(created_at=backdate)
 
             # Add participant reflection to ~half of full notes
+            needs_save = False
             if not is_quick and note_idx % 2 == 0:
                 reflection_idx = min(
                     int(progress_fraction * len(PARTICIPANT_REFLECTIONS)),
                     len(PARTICIPANT_REFLECTIONS) - 1,
                 )
                 note.participant_reflection = PARTICIPANT_REFLECTIONS[reflection_idx]
-                note.save()
+                needs_save = True
 
             # Add participant suggestion to ~1/3 of full notes
             if not is_quick and note_idx % 3 == 1:
@@ -1311,6 +1312,9 @@ class Command(BaseCommand):
                 note.suggestion_priority = random.choice(
                     ["noted", "worth_exploring", "important"]
                 )
+                needs_save = True
+
+            if needs_save:
                 note.save()
 
             # For full notes, record metrics against each target
