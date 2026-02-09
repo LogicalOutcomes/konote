@@ -35,7 +35,9 @@ The core app is feature-complete. These tasks prepare for production use.
 
 ### Permissions Redesign — Phase 1 Follow-up
 
-- [ ] Migrate report views to `programme_role_required` — `client_export` in pdf_views.py and `client_insights_partial` in insights_views.py still use `@minimum_role("staff")` with global fallback. Lower risk (views also call `get_client_or_403` internally) but should be fixed for consistency (PERM-FU1)
+- [ ] Translate 10+ French strings — consent status, access denied, PHIPA legal text, cross-programme sharing UI. Run `translate_strings`. (PERM-FU3)
+- [ ] Extract `_get_programme_from_client` to access.py — identical 20-line function duplicated in notes, events, plans views. Security-critical code should live in one place. (PERM-FU5)
+- [ ] Migrate remaining `@minimum_role` views — report views (pdf_views.py, insights_views.py), client CRUD (client_create, client_edit, consent views), erasure views (5 views). Erasure views highest priority (irreversible actions). (PERM-FU1)
 
 ### Permissions Redesign — Phase 2
 

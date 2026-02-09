@@ -50,22 +50,32 @@ def get_accessible_programs(user, active_program_ids=None):
 
 
 def get_author_program(user, client):
-    """Return the first program the user shares with this client, or None.
+    """Return the shared program where user has the highest role, or None.
 
     Used when creating notes/events to tag them with the authoring program.
+    Picks the program where the user has the highest role so notes are
+    attributed to the most appropriate programme context.
     """
-    user_program_ids = set(
-        UserProgramRole.objects.filter(user=user, status="active")
-        .values_list("program_id", flat=True)
-    )
+    from apps.auth_app.constants import ROLE_RANK
+
+    user_roles = UserProgramRole.objects.filter(
+        user=user, status="active"
+    ).values_list("program_id", "role")
     client_program_ids = set(
         ClientProgramEnrolment.objects.filter(
             client_file=client, status="enrolled"
         ).values_list("program_id", flat=True)
     )
-    shared = user_program_ids & client_program_ids
-    if shared:
-        return Program.objects.filter(pk__in=shared).first()
+    best_program_id = None
+    best_rank = -1
+    for program_id, role in user_roles:
+        if program_id in client_program_ids:
+            rank = ROLE_RANK.get(role, 0)
+            if rank > best_rank:
+                best_rank = rank
+                best_program_id = program_id
+    if best_program_id is not None:
+        return Program.objects.get(pk=best_program_id)
     return None
 
 

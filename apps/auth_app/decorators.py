@@ -123,7 +123,14 @@ def programme_role_required(min_role, get_programme_fn, get_client_fn=None):
                             response.render()
                             return response
                 except Exception:
-                    pass  # If we can't determine the client, skip block check
+                    # Fail closed: if we can't verify the block list, deny access.
+                    # ClientAccessBlock exists for DV safety — never skip silently.
+                    message = _("Unable to verify access permissions.")
+                    response = TemplateResponse(
+                        request, "403.html", {"exception": message}, status=403,
+                    )
+                    response.render()
+                    return response
 
             # Get user's role in THIS programme (not highest across all)
             role_obj = UserProgramRole.objects.filter(
