@@ -493,12 +493,15 @@ def note_detail(request, note_id):
                 "Data integrity issue: note %s has no author",
                 note_id
             )
-            return render(request, "notes/_note_detail.html", {
+            error_context = {
                 "note": note,
                 "client": None,
                 "target_entries": [],
                 "error": "This note has a data integrity issue. Please contact support.",
-            })
+            }
+            if request.headers.get("HX-Request"):
+                return render(request, "notes/_note_detail.html", error_context)
+            return render(request, "notes/note_detail_page.html", error_context)
 
         # Middleware already verified access; this is a redundant safety check
         client = _get_client_or_403(request, note.client_file_id)
@@ -515,11 +518,21 @@ def note_detail(request, note_id):
             .select_related("plan_target")
             .prefetch_related("metric_values__metric_def")
         )
-        return render(request, "notes/_note_detail.html", {
+        context = {
             "note": note,
             "client": client,
             "target_entries": target_entries,
-        })
+        }
+        # HTMX requests get the partial; regular page loads get the full page
+        if request.headers.get("HX-Request"):
+            return render(request, "notes/_note_detail.html", context)
+        client_url = reverse("clients:client_detail", kwargs={"client_id": client.pk})
+        context["breadcrumbs"] = [
+            {"label": f"{client.display_name} {client.last_name}", "url": client_url},
+            {"label": _("Notes"), "url": reverse("notes:note_list", kwargs={"client_id": client.pk})},
+            {"label": note.get_interaction_type_display()},
+        ]
+        return render(request, "notes/note_detail_page.html", context)
     except Exception as e:
         logger.exception(
             "Unexpected error in note_detail for user=%s note_id=%s: %s",

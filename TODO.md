@@ -40,16 +40,56 @@ The core app is feature-complete. These tasks prepare for production use.
 
 - [ ] Fix Canadian spelling — rename all 661 "programme" → "program" across 84 files. Includes Python identifiers (decorator, variables, permission keys), templates, docs, translations. Migration needed for `cross_programme_sharing_consent` field. Do NOT touch migration files. See analysis in conversation. (SPELL1)
 
+### Permissions Enforcement Wiring — See `tasks/permissions-enforcement-wiring.md`
+
+Three expert panels identified that `permissions.py` is disconnected from enforcement (97.5% of checks don't read it). This plan wires enforcement + applies 8 matrix changes. Structured by parallelism, not priority.
+
+**Wave 1 — Foundation (3 parallel streams, no file overlap)**
+- [ ] Update permissions.py — add `client.create`, `client.edit_contact`, change 5 values, add enforcement-mechanism comments. See task file for full list. (WIRE-1A)
+- [ ] Create `@requires_permission` decorator in decorators.py — reads `can_access()` from matrix instead of hardcoded role names (WIRE-1B)
+- [ ] Create `{% has_permission %}` template tag — new templatetags module in auth_app (WIRE-1C)
+
+**Wave 2 — Wire affected views (6 parallel streams, different files)**
+- [ ] Wire client views — client_create, contact edit in clients/views.py (WIRE-2A)
+- [ ] Wire group views — manage_members in groups/views.py + verify HTMX audit trail (WIRE-2B)
+- [ ] Wire alert/event views — alert.create in events/views.py (WIRE-2C)
+- [ ] Wire consent views — consent.manage + add immutability enforcement (WIRE-2D)
+- [ ] Wire executive-facing views — notes, plans, reports views (compliance priority — decorators currently more permissive than matrix) (WIRE-2E)
+- [ ] Add PM no-elevation constraint — custom logic in admin_views.py for user.manage: SCOPED (WIRE-2F)
+
+**Wave 3 — UI layer (3 parallel streams)**
+- [ ] Update context processor — expose `user_permissions` dict alongside existing flags (WIRE-3A)
+- [ ] Update middleware — replace hardcoded `is_executive_only()` redirect with matrix check (WIRE-3B)
+- [ ] Add Django system check — warn on remaining hardcoded decorators, validate permission keys (WIRE-3C)
+
+**Wave 4 — Template migration (2 parallel streams)**
+- [ ] Update base.html nav — replace `is_executive_only`/`is_receptionist_only` with `{% has_permission %}` (WIRE-4A)
+- [ ] Update ~10 other templates — same pattern across tab partials, program views, reports (WIRE-4B)
+
+**Wave 5 — Feature work + remaining migration (2 parallel streams)**
+- [ ] Build alert recommend-cancellation workflow — staff recommends, PM approves, notification. Unblocks alert.cancel → DENY. (WIRE-5A)
+- [ ] Migrate remaining ~35 views — systematic decorator swap by app, no behaviour change (WIRE-5B)
+
+**Wave 6 — Verification + QA (3 parallel streams)**
+- [ ] Parametrized permission enforcement test — for each key, verify response matches matrix (WIRE-6A)
+- [ ] Update QA personas to match permissions.py — only after enforcement is wired (WIRE-6B)
+- [ ] Rewrite affected QA scenarios — SCN-010 (receptionist creates), SCN-025 (contact edit), new coverage (WIRE-6C)
+
 ### Permissions Redesign — Phase 1 Follow-up
 
 - [ ] Translate 10+ French strings — consent status, access denied, PHIPA legal text, cross-programme sharing UI. Run `translate_strings`. (PERM-FU3)
 - [ ] Extract `_get_programme_from_client` to access.py — identical 20-line function duplicated in notes, events, plans views. Security-critical code should live in one place. (PERM-FU5)
-- [ ] Migrate remaining `@minimum_role` views — report views (pdf_views.py, insights_views.py), client CRUD (client_create, client_edit, consent views), erasure views (5 views). Erasure views highest priority (irreversible actions). (PERM-FU1)
 
 ### Permissions Redesign — Phase 2
 
+- [ ] Discharge access transitions — after client exits program, access transitions to read-only then restricted. PHIPA compliance. Data model change. (PERM-P6)
+- [ ] Privacy access request workflow — PIPEDA s. 8 legal obligation. Add `privacy.access_request` key when feature is built. (PERM-P7)
+- [ ] Front Desk `client.edit` → PER_FIELD — admin UI for configuring which fields front desk can edit. Replaces `client.edit_contact` bridge. (PERM-P8)
 - [ ] DV-safe Front Desk interface — per-program config: `program.receptionist_mode = "full_list" | "search_only"`. Search-only returns appointment info, never displays roster (PERM-P1)
-- [ ] Consent model expansion — track consent scope (what), grantor (who), date, and withdrawal. Audit log for all consent changes (PERM-P2)
+- [ ] `group.view_schedule` — separate from `group.view_roster` so front desk knows when groups meet without seeing who's in them (PERM-P9)
+- [ ] Consent model expansion — track consent scope (what), grantor (who), date, and withdrawal. Add `consent.withdraw` key when GATED infrastructure exists. Audit log for all consent changes (PERM-P2)
+- [ ] PM `client.view_clinical` → GATED — requires justification UI (document reason + review trail) (PERM-P10)
+- [ ] Rename SCOPED → PROGRAM + split `note.edit_own`/`note.edit_any` — label should match behaviour. Phase 1 SCOPED = program-wide, not caseload. (PERM-P11)
 - [ ] Data extract governance — logging + board-designate visibility. Optional 48-hour delay before extract delivered. Don't build dual authorization unless funder/regulator requires it (PERM-P3)
 - [ ] Role transition audit trail — never update `UserProgramRole.role` in place. Deactivate old, create new. History is the audit trail (PERM-P4)
 - [ ] Reposition Program Report as supervision tool — add caseload counts per worker, average session frequency, "no contact in 30 days" counts. Market internally, not as funder deliverable (PERM-P5)
