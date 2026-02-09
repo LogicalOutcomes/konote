@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 from django.db.models import Q
 
-from apps.auth_app.decorators import programme_role_required
+from apps.auth_app.decorators import programme_role_required, requires_permission
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.plans.models import PlanTarget, PlanTargetMetric
 from apps.programs.access import (
@@ -197,7 +197,7 @@ def _get_search_snippet(text, query, context_chars=80):
 
 
 @login_required
-@programme_role_required("staff", _get_programme_from_client)
+@requires_permission("note.view", _get_programme_from_client)
 def note_list(request, client_id):
     """Notes timeline for a client with filtering and pagination."""
     client = _get_client_or_403(request, client_id)
@@ -305,7 +305,7 @@ def note_list(request, client_id):
 
 
 @login_required
-@programme_role_required("staff", _get_programme_from_client)
+@requires_permission("note.create", _get_programme_from_client)
 def quick_note_create(request, client_id):
     """Create a quick note for a client."""
     client = _get_client_or_403(request, client_id)
@@ -360,7 +360,7 @@ def quick_note_create(request, client_id):
 
 
 @login_required
-@programme_role_required("staff", _get_programme_from_client)
+@requires_permission("note.create", _get_programme_from_client)
 def note_create(request, client_id):
     """Create a full structured progress note with target entries and metric values."""
     client = _get_client_or_403(request, client_id)
@@ -478,7 +478,7 @@ def note_create(request, client_id):
 
 
 @login_required
-@programme_role_required("staff", _get_programme_from_note)
+@requires_permission("note.view", _get_programme_from_note)
 def note_detail(request, note_id):
     """HTMX partial: expanded view of a single note."""
     try:
@@ -529,7 +529,7 @@ def note_detail(request, note_id):
 
 
 @login_required
-@programme_role_required("staff", _get_programme_from_note)
+@requires_permission("note.view", _get_programme_from_note)
 def note_summary(request, note_id):
     """HTMX partial: collapsed summary of a single note (reverses note_detail expand)."""
     try:
@@ -556,7 +556,7 @@ def note_summary(request, note_id):
 
 
 @login_required
-@programme_role_required("staff", _get_programme_from_note)
+@requires_permission("note.edit", _get_programme_from_note)
 def note_cancel(request, note_id):
     """Cancel a progress note (staff: own notes within 24h, program_manager: any in their program)."""
     note = get_object_or_404(ProgressNote, pk=note_id)
@@ -618,7 +618,7 @@ def note_cancel(request, note_id):
 
 
 @login_required
-@programme_role_required("staff", _get_programme_from_client)
+@requires_permission("note.view", _get_programme_from_client)
 def qualitative_summary(request, client_id):
     """Show qualitative progress summary — descriptor distribution and recent client words per target."""
     client = _get_client_or_403(request, client_id)

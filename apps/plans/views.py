@@ -14,7 +14,7 @@ from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
 from apps.auth_app.constants import ROLE_RANK
-from apps.auth_app.decorators import admin_required, programme_role_required
+from apps.auth_app.decorators import admin_required, programme_role_required, requires_permission
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.access import (
     build_program_display_context,
@@ -117,7 +117,7 @@ def _can_edit_plan(user, client_file):
 # ---------------------------------------------------------------------------
 
 @login_required
-@programme_role_required("staff", _get_programme_from_client)
+@requires_permission("plan.view", _get_programme_from_client)
 def plan_view(request, client_id):
     """Full plan tab — all sections with targets and metrics."""
     client = get_client_or_403(request, client_id)
@@ -181,7 +181,7 @@ def plan_view(request, client_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@programme_role_required("staff", _get_programme_from_client)
+@requires_permission("plan.edit", _get_programme_from_client)
 def section_create(request, client_id):
     """Add a new section to a client's plan."""
     client = get_client_or_403(request, client_id)
@@ -212,7 +212,7 @@ def section_create(request, client_id):
 
 
 @login_required
-@programme_role_required("staff", _get_programme_from_section)
+@requires_permission("plan.edit", _get_programme_from_section)
 def section_edit(request, section_id):
     """HTMX inline edit — GET returns edit form partial, POST saves and returns section partial."""
     section = get_object_or_404(PlanSection, pk=section_id)
@@ -238,7 +238,7 @@ def section_edit(request, section_id):
 
 
 @login_required
-@programme_role_required("staff", _get_programme_from_section)
+@requires_permission("plan.edit", _get_programme_from_section)
 def section_status(request, section_id):
     """HTMX dialog to change section status with reason."""
     section = get_object_or_404(PlanSection, pk=section_id)
@@ -268,7 +268,7 @@ def section_status(request, section_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@programme_role_required("staff", _get_programme_from_section)
+@requires_permission("plan.edit", _get_programme_from_section)
 def target_create(request, section_id):
     """Add a new target to a section."""
     section = get_object_or_404(PlanSection, pk=section_id)
@@ -310,7 +310,7 @@ def target_create(request, section_id):
 
 
 @login_required
-@programme_role_required("staff", _get_programme_from_target)
+@requires_permission("plan.edit", _get_programme_from_target)
 def target_edit(request, target_id):
     """Edit a target. Creates a revision with OLD values before saving."""
     target = get_object_or_404(PlanTarget, pk=target_id)
@@ -353,7 +353,7 @@ def target_edit(request, target_id):
 
 
 @login_required
-@programme_role_required("staff", _get_programme_from_target)
+@requires_permission("plan.edit", _get_programme_from_target)
 def target_status(request, target_id):
     """HTMX dialog to change target status with reason. Creates a revision."""
     target = get_object_or_404(PlanTarget, pk=target_id)
@@ -398,7 +398,7 @@ def target_status(request, target_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@programme_role_required("staff", _get_programme_from_target)
+@requires_permission("plan.edit", _get_programme_from_target)
 def target_metrics(request, target_id):
     """Assign metrics to a target — checkboxes grouped by category."""
     target = get_object_or_404(PlanTarget, pk=target_id)
@@ -559,7 +559,7 @@ def metric_edit(request, metric_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@programme_role_required("staff", _get_programme_from_target)
+@requires_permission("plan.view", _get_programme_from_target)
 def target_history(request, target_id):
     """Show revision history for a target."""
     target = get_object_or_404(PlanTarget, pk=target_id)

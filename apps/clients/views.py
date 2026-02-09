@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from apps.auth_app.decorators import admin_required, minimum_role
+from apps.auth_app.decorators import admin_required, minimum_role, requires_permission
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 
@@ -183,7 +183,7 @@ def client_list(request):
 
 
 @login_required
-@minimum_role("staff")
+@requires_permission("client.create")
 def client_create(request):
     available_programs = _get_accessible_programs(request.user)
     if request.method == "POST":
@@ -538,7 +538,7 @@ def client_consent_display(request, client_id):
 
 
 @login_required
-@minimum_role("staff")
+@requires_permission("consent.manage")
 def client_consent_edit(request, client_id):
     """HTMX: Return consent recording form partial."""
     from django.utils import timezone
@@ -559,7 +559,7 @@ def client_consent_edit(request, client_id):
 
 
 @login_required
-@minimum_role("staff")
+@requires_permission("consent.manage")
 def client_consent_save(request, client_id):
     """Save consent record for a client.
 
@@ -575,6 +575,21 @@ def client_consent_save(request, client_id):
     if request.method == "POST":
         form = ConsentRecordForm(request.POST)
         if form.is_valid():
+            # Immutability: consent records can't be edited after creation.
+            # To change consent, withdraw first (set consent_given_at=None)
+            # then re-record. This prevents accidental overwrites.
+            if client.consent_given_at is not None:
+                messages.error(request, _(
+                    "Consent has already been recorded. To update, withdraw "
+                    "existing consent first, then record new consent."
+                ))
+                if request.headers.get("HX-Request"):
+                    return render(request, "clients/_consent_display.html", {
+                        "client": client,
+                        "is_receptionist": is_receptionist,
+                    })
+                return redirect("clients:client_detail", client_id=client.pk)
+
             # Combine date with current time for the timestamp
             consent_date = form.cleaned_data["consent_date"]
             client.consent_given_at = timezone.make_aware(
@@ -775,7 +790,7 @@ def custom_field_def_edit(request, field_id):
 
 
 @login_required
-@minimum_role("staff")
+@requires_permission("client.create")
 def check_duplicate(request):
     """HTMX endpoint: check for duplicate clients.
 

@@ -17,7 +17,7 @@ from apps.reports.csv_utils import sanitise_csv_row, sanitise_filename
 
 from django.urls import reverse
 
-from apps.auth_app.decorators import minimum_role, programme_role_required
+from apps.auth_app.decorators import minimum_role, programme_role_required, requires_permission
 from apps.clients.models import ClientFile
 from apps.clients.views import _get_user_program_ids, get_client_queryset
 from apps.programs.models import UserProgramRole
@@ -284,7 +284,7 @@ def session_log(request, group_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@programme_role_required("staff", _get_programme_from_group)
+@requires_permission("group.manage_members", _get_programme_from_group)
 def membership_add(request, group_id):
     """Add a member to a group (existing client or named non-client)."""
     group = get_object_or_404(Group, pk=group_id)
@@ -348,7 +348,7 @@ def membership_add(request, group_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@programme_role_required("staff", _get_programme_from_group_or_related)
+@requires_permission("group.manage_members", _get_programme_from_group_or_related)
 def membership_remove(request, membership_id):
     """Deactivate a membership (POST only)."""
     membership = get_object_or_404(GroupMembership, pk=membership_id)

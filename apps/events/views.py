@@ -15,7 +15,7 @@ from apps.programs.access import (
     get_client_or_403,
     get_user_program_ids,
 )
-from apps.auth_app.decorators import admin_required, minimum_role, programme_role_required
+from apps.auth_app.decorators import admin_required, minimum_role, programme_role_required, requires_permission
 from apps.programs.models import Program, UserProgramRole
 
 from .forms import AlertCancelForm, AlertForm, EventForm, EventTypeForm
@@ -119,7 +119,7 @@ def event_type_edit(request, type_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@programme_role_required("staff", _get_programme_from_client)
+@requires_permission("event.view", _get_programme_from_client)
 def event_list(request, client_id):
     """Combined timeline: events + notes for a client, sorted chronologically."""
     client = _get_client_or_403(request, client_id)
@@ -171,7 +171,7 @@ def event_list(request, client_id):
 
 
 @login_required
-@programme_role_required("staff", _get_programme_from_client)
+@requires_permission("event.create", _get_programme_from_client)
 def event_create(request, client_id):
     """Create an event for a client."""
     client = _get_client_or_403(request, client_id)
@@ -199,7 +199,7 @@ def event_create(request, client_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@programme_role_required("staff", _get_programme_from_client)
+@requires_permission("alert.create", _get_programme_from_client)
 def alert_create(request, client_id):
     """Create an alert for a client."""
     client = _get_client_or_403(request, client_id)
