@@ -2220,6 +2220,7 @@ article[aria-label="notification"].fading-out {
     color: var(--kn-text-muted);
     cursor: pointer;
     transition: all var(--kn-transition);
+    display: inline-flex;
     width: auto;
 }
 
