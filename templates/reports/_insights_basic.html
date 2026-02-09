@@ -209,76 +209,85 @@
 {% if structured.descriptor_trend and data_tier != "sparse" %}
 {{ chart_data_json|json_script:"descriptor-trend-data" }}
 <script>
+{# Chart.js is loaded AFTER block content in base.html, so defer until ready #}
 (function() {
-    var rawData = JSON.parse(document.getElementById('descriptor-trend-data').textContent);
-    if (!Array.isArray(rawData) || rawData.length === 0) return;
+    function initDescriptorTrendChart() {
+        var rawData = JSON.parse(document.getElementById('descriptor-trend-data').textContent);
+        if (!Array.isArray(rawData) || rawData.length === 0) return;
 
-    var ctx = document.getElementById('descriptor-trend-chart');
-    if (!ctx) return;
+        var ctx = document.getElementById('descriptor-trend-chart');
+        if (!ctx) return;
 
-    new Chart(ctx.getContext('2d'), {
-        type: 'line',
-        data: {
-            labels: rawData.map(function(r) { return r.month; }),
-            datasets: [
-                {
-                    label: '{% trans "Harder right now" %}',
-                    data: rawData.map(function(r) { return r.harder; }),
-                    borderColor: '#e74c3c',
-                    backgroundColor: 'rgba(231, 76, 60, 0.1)',
-                    tension: 0.3,
-                    fill: false,
-                },
-                {
-                    label: '{% trans "Holding steady" %}',
-                    data: rawData.map(function(r) { return r.holding; }),
-                    borderColor: '#f39c12',
-                    backgroundColor: 'rgba(243, 156, 18, 0.1)',
-                    tension: 0.3,
-                    fill: false,
-                },
-                {
-                    label: '{% trans "Something\'s shifting" %}',
-                    data: rawData.map(function(r) { return r.shifting; }),
-                    borderColor: '#3498db',
-                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
-                    tension: 0.3,
-                    fill: false,
-                },
-                {
-                    label: '{% trans "In a good place" %}',
-                    data: rawData.map(function(r) { return r.good_place; }),
-                    borderColor: '#27ae60',
-                    backgroundColor: 'rgba(39, 174, 96, 0.1)',
-                    tension: 0.3,
-                    fill: false,
-                },
-            ],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom' },
-                tooltip: {
-                    callbacks: {
-                        label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y + '%'; }
+        new Chart(ctx.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: rawData.map(function(r) { return r.month; }),
+                datasets: [
+                    {
+                        label: '{% trans "Harder right now" %}',
+                        data: rawData.map(function(r) { return r.harder; }),
+                        borderColor: '#e74c3c',
+                        backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                        tension: 0.3,
+                        fill: false,
+                    },
+                    {
+                        label: '{% trans "Holding steady" %}',
+                        data: rawData.map(function(r) { return r.holding; }),
+                        borderColor: '#f39c12',
+                        backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                        tension: 0.3,
+                        fill: false,
+                    },
+                    {
+                        label: '{% trans "Something\'s shifting" %}',
+                        data: rawData.map(function(r) { return r.shifting; }),
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.3,
+                        fill: false,
+                    },
+                    {
+                        label: '{% trans "In a good place" %}',
+                        data: rawData.map(function(r) { return r.good_place; }),
+                        borderColor: '#27ae60',
+                        backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                        tension: 0.3,
+                        fill: false,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(ctx) { return ctx.dataset.label + ': ' + ctx.parsed.y + '%'; }
+                        }
                     }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100,
-                    title: { display: true, text: '{% trans "Percentage" %}' },
-                    ticks: { callback: function(v) { return v + '%'; } }
                 },
-                x: {
-                    title: { display: true, text: '{% trans "Month" %}' }
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: { display: true, text: '{% trans "Percentage" %}' },
+                        ticks: { callback: function(v) { return v + '%'; } }
+                    },
+                    x: {
+                        title: { display: true, text: '{% trans "Month" %}' }
+                    },
                 },
             },
-        },
-    });
+        });
+    }
+
+    if (typeof Chart !== 'undefined') {
+        initDescriptorTrendChart();
+    } else {
+        window.addEventListener('load', initDescriptorTrendChart);
+    }
 })();
 </script>
 {% endif %}
