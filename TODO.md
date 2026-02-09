@@ -25,7 +25,7 @@ The core app is feature-complete. These tasks prepare for production use.
 - [ ] Redeploy to Railway — push to `main`, Railway auto-deploys. See `docs/deploy-railway.md` (OPS-RAIL1)
 - [ ] Redeploy to FullHost — push to `main`, then trigger redeploy via API or dashboard. See `docs/deploy-fullhost.md` (OPS-FH1)
 - [ ] Code review round — open Claude Code in VS Code, say "review the codebase for code quality, security, and consistency issues" — see `tasks/code-review-process.md` (REV1)
-- [ ] Scenario QA evaluation — 3-step pipeline, run after major UX changes. Step 1: `/run-scenario-server` here (captures screenshots + writes manifest). Step 2: `/run-scenarios` in qa-scenarios window (evaluates + writes handoff). Step 3: `/process-qa-report` back here (expert panel + action plan + updates TODO). Pipeline log at `qa/pipeline-log.txt`. See `tasks/scenario-eval-howto.md` (QA-SCEN1)
+- [ ] **Full QA Suite** — Run after major releases or UI changes. Creates 4 reports. **Step 1:** `/run-scenario-server` here (captures scenario screenshots). **Step 2:** Switch to qa-scenarios, run `/run-scenarios` (evaluates scenarios, creates satisfaction report + improvement tickets). **Step 3:** Back here, run `/capture-page-states` (captures page screenshots). **Step 4:** Switch to qa-scenarios, run `/run-page-audit` (evaluates pages, creates page audit report + tickets). **Step 5 (optional):** Back here, run `/process-qa-report` (expert panel + action plan). All reports saved to `qa-scenarios/reports/` with date stamps. Takes ~6-9 hours total. (QA-FULL1)
 
 ## Coming Up
 
