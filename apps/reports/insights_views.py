@@ -4,14 +4,20 @@ import logging
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
+from django.template.response import TemplateResponse
 from django.urls import reverse
+from django.utils.translation import gettext as _
 
 from apps.auth_app.decorators import minimum_role
 from apps.programs.access import get_accessible_programs, get_client_or_403
+from apps.programs.models import UserProgramRole
 from .insights import get_structured_insights, collect_quotes, MIN_PARTICIPANTS_FOR_QUOTES
 from .insights_forms import InsightsFilterForm
 
 logger = logging.getLogger(__name__)
+
+# Roles that can view programme-level aggregate insights
+_INSIGHTS_ROLES = {"staff", "program_manager", "executive"}
 
 
 def _get_data_tier(note_count, month_count):
@@ -30,17 +36,36 @@ def _get_data_tier(note_count, month_count):
 
 
 @login_required
-@minimum_role("staff")
 def program_insights(request):
     """Programme-level Outcome Insights page.
 
     GET: Show form. If programme + time period are in query params, show results.
+
+    Access: staff, program_manager, and executive roles. Executives see
+    aggregate data only (quotes suppressed because note.view is DENY).
     """
+    # Check role access — allow staff, PM, and executive (not receptionist)
+    user_roles = set(
+        UserProgramRole.objects.filter(user=request.user, status="active")
+        .values_list("role", flat=True)
+    )
+    if not (request.user.is_admin or user_roles & _INSIGHTS_ROLES):
+        message = _("Access denied. You do not have the required role for this action.")
+        response = TemplateResponse(
+            request, "403.html", {"exception": message}, status=403,
+        )
+        response.render()
+        return response
+
+    # Executive-only users see aggregates but not individual note quotes
+    is_executive_only = user_roles and user_roles <= {"executive"}
+
     form = InsightsFilterForm(request.GET or None, user=request.user)
 
     context = {
         "form": form,
         "nav_active": "insights",
+        "is_executive_only": is_executive_only,
         "breadcrumbs": [
             {"url": "", "label": "Outcome Insights"},
         ],
@@ -62,8 +87,9 @@ def program_insights(request):
         data_tier = _get_data_tier(structured["note_count"], structured["month_count"])
 
         # Quotes: privacy-gated, no dates at programme level
+        # Executives cannot see quotes (note.view is DENY for executives)
         quotes = []
-        if data_tier != "sparse":
+        if data_tier != "sparse" and not is_executive_only:
             quotes = collect_quotes(
                 program=program,
                 date_from=date_from,

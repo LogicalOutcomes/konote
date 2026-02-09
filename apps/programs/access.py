@@ -74,11 +74,15 @@ def get_client_or_403(request, client_id):
 
     Checks:
     1. Client exists (404 if not)
-    2. Demo/real data separation (user.is_demo must match client.is_demo)
-    3. Admin bypass — admins can access any client (for system administration)
-    4. User shares at least one program with the client
+    2. Negative access list — blocked users are denied regardless of roles
+    3. Demo/real data separation (user.is_demo must match client.is_demo)
+    4. User shares at least one active program with the client
 
-    Note: this checks *access* to the client record. Data filtering (which
+    Note: admin status does NOT grant automatic access to client data.
+    Admins manage system settings (users, features, terminology) but need
+    programme roles to access client records, just like everyone else.
+
+    This checks *access* to the client record. Data filtering (which
     programs' notes/events/plans you see) is handled separately in each view.
 
     All views should use this single canonical function instead of their
@@ -87,13 +91,16 @@ def get_client_or_403(request, client_id):
     client = get_object_or_404(ClientFile, pk=client_id)
     user = request.user
 
+    # Check negative access list FIRST — overrides all other access
+    from apps.clients.models import ClientAccessBlock
+    if ClientAccessBlock.objects.filter(user=user, client_file=client, is_active=True).exists():
+        return None
+
     # Demo/real data separation
     if client.is_demo != user.is_demo:
         return None
 
-    # Admins can access any client (for system administration)
-    if user.is_admin:
-        return client
+    # NOTE: admin bypass removed (PERM-S2) — admins need programme roles like everyone else
 
     user_program_ids = set(
         UserProgramRole.objects.filter(user=user, status="active")

@@ -32,7 +32,7 @@
 {# Quick info row - high-frequency data for front desk #}
 <section class="quick-info-section">
     <dl class="quick-info">
-        {% if client.birth_date %}
+        {% if visible_fields.birth_date and client.birth_date %}
         <div class="quick-info-item">
             <dt>{% trans "DOB" %}</dt>
             <dd>{{ client.birth_date }}</dd>
@@ -82,6 +82,24 @@
         <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Privacy Consent" %}</h2></summary>
         <div style="margin-top: var(--kn-space-base);">
             {% include "clients/_consent_display.html" %}
+        </div>
+    </details>
+</section>
+{% endif %}
+
+{# Cross-programme sharing consent — visible to staff and above #}
+{% if not is_receptionist and not client.is_anonymised %}
+<section>
+    <details>
+        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Cross-Programme Sharing" %}</h2></summary>
+        <div style="margin-top: var(--kn-space-base);">
+            {% if client.cross_programme_sharing_consent %}
+            <p><span class="badge badge-success">{% trans "Consent given" %}</span></p>
+            <p class="secondary">{% trans "This participant has consented to sharing clinical information across programmes." %}</p>
+            {% else %}
+            <p><span class="badge badge-neutral">{% trans "No consent" %}</span></p>
+            <p class="secondary">{% trans "Clinical notes are only visible within the programme where they were recorded. Under Ontario privacy law (PHIPA), express consent is required before clinical information can be shared across programmes." %}</p>
+            {% endif %}
         </div>
     </details>
 </section>

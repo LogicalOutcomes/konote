@@ -29,6 +29,14 @@ The core app is feature-complete. These tasks prepare for production use.
 
 ## Coming Up
 
+### Permissions Redesign — Phase 2
+
+- [ ] DV-safe Front Desk interface — per-programme config: `programme.receptionist_mode = "full_list" | "search_only"`. Search-only returns appointment info, never displays roster (PERM-P1)
+- [ ] Consent model expansion — track consent scope (what), grantor (who), date, and withdrawal. Audit log for all consent changes (PERM-P2)
+- [ ] Data extract governance — logging + board-designate visibility. Optional 48-hour delay before extract delivered. Don't build dual authorization unless funder/regulator requires it (PERM-P3)
+- [ ] Role transition audit trail — never update `UserProgramRole.role` in place. Deactivate old, create new. History is the audit trail (PERM-P4)
+- [ ] Reposition Programme Report as supervision tool — add caseload counts per worker, average session frequency, "no contact in 30 days" counts. Market internally, not as funder deliverable (PERM-P5)
+
 ### Export Monitoring
 
 Weekly accountability reports for admins. Requires working email configuration (OPS3).
@@ -116,6 +124,8 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 
 ## Recently Done
 
+- [x] Permissions redesign Phase 1 — fixed cross-programme note leaks (programme_role_required), removed admin bypass from client access, added field-level visibility for receptionist, ClientAccessBlock model, cross-programme sharing consent, expanded permissions matrix, privacy-by-design checklist — 2026-02-08 (PERM-S1, PERM-S2, PERM-S3, PERM-M1, PERM-M2, PERM-M3, PERM-M4, PERM-SYS1)
+- [x] Front Desk permissions hardening — hide Groups nav link, block clinical data on home dashboard, grant Executive access to Insights and Reports — 2026-02-08 (UI-PERM1)
 - [x] Fix BLOCKER-1 skip link conflict — implemented Option B (auto-focus main content, remove skip link) per expert panel consensus. Removed duplicate focus block, added aria-label, visible focus indicator. Both Playwright tests pass. Expert rationale: more efficient for screen reader users, satisfies WCAG 2.4.1 via programmatic focus — 2026-02-08 (QA-FIX1)
 - [x] Playwright tests for BLOCKER-1/2 — BLOCKER-2 verified working (focus on #main-content, not footer), BLOCKER-1 code exists but conflicts with BLOCKER-2 fix (skip link not first Tab stop due to auto-focus). Automated tests at tests/test_blocker_a11y.py — 2026-02-08 (QA-VERIFY1)
 - [x] QA Round 2c — Tier 1+2 fixes (6 bugs) — accent search (BUG-13), program French names with `name_fr` field + 33 template updates (BUG-11), untranslated French strings (BUG-8), home page button permission (BUG-12), audit filter CSS (BUG-3), IMPROVE-5 confirmed already fixed — 2026-02-08 (QA-W9 through QA-W18)
@@ -125,9 +135,6 @@ See [deployment workflow design](docs/plans/2026-02-05-deployment-workflow-desig
 - [x] QA Scenario Runner full coverage — 4 test users, 6 test clients, 7 action types (voice/dictate/intercept/tabs/back/screenshot), 5 new test classes + 2 updated (22 new scenarios), LLM evaluator prompt enhancements (cognitive/mechanical/completion checks) — 2026-02-08 (QA-DATA1-5, QA-ACT1-5, QA-TEST1-7, QA-EVAL1-3)
 - [x] QA Infrastructure Phase 3 — CI/CD gate (QA-T11), satisfaction gap tracking (QA-T12), bidirectional ticket sync (QA-T14). GitHub Actions workflows, standalone scripts, JSON results serializer — 2026-02-08 (QA-T11, QA-T12, QA-T14)
 - [x] Test isolation (QA-ISO1) + objective scoring (QA-T10) — fresh context per scenario, locale from persona, auto-login, prerequisite validation, axe-core/action-count/lang objective scores override LLM — 2026-02-08 (QA-ISO1, QA-T10)
-- [x] Fix 14 pre-existing test failures + 4 errors — missing form fields, wrong assertions, missing DB declarations, template bugs, Playwright skip fix — 2026-02-07 (TEST-FIX1)
-- [x] Fix language bleed on shared browser — clear cookie on logout, set cookie on login to match user preference — 2026-02-07 (BUG-4)
-- [x] French translations complete — translated 93 remaining strings to Canadian French, 100% coverage (2146/2146 entries), .mo compiled, validation passed — 2026-02-07 (I18N-TRANS1)
 _Older completed tasks moved to [tasks/ARCHIVE.md](tasks/ARCHIVE.md)._
 
 ---
@@ -154,4 +161,5 @@ For detailed history, see `tasks/ARCHIVE.md`. Summary of completed work:
 | **Canadian localisation** | Postal codes, provinces, phone formats, date/currency by locale |
 | **Deployment** | Railway (auto-deploy), FullHost (HTTPS verified), Docker Compose for Azure/Elest.io |
 | **QA** | Scenario runner (22 scenarios, 7 action types), CI/CD gate, satisfaction tracking, inter-rater reliability, objective scoring |
+| **Permissions** | Programme-scoped access, field-level visibility, ClientAccessBlock, cross-programme consent, expanded permissions matrix, privacy-by-design checklist |
 | **Code review** | 74 tests added, CRITICAL/HIGH/MEDIUM fixes, admin_required, demo isolation, focus trap, i18n |

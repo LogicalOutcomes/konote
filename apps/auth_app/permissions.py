@@ -20,7 +20,11 @@ PERMISSIONS = {
         # Tier 1: Operational only — can check people in, see names, safety info only
         "client.view_name": ALLOW,
         "client.view_contact": ALLOW,
-        "client.view_safety": ALLOW,  # Allergies, emergency contacts, medical alerts
+        "client.view_safety": ALLOW,  # Allergies, medical alert CONDITIONS (not treatments),
+                                      # emergency contacts, staff alerts. Does NOT include
+                                      # medications — medications reveal diagnosis and are
+                                      # clinical data (use client.view_medications).
+        "client.view_medications": DENY,  # Medications reveal diagnosis (clinical data)
         "client.view_clinical": DENY,  # No diagnosis, treatment plans, notes
         "client.edit": DENY,
 
@@ -55,6 +59,23 @@ PERMISSIONS = {
 
         "custom_field.view": PER_FIELD,  # Uses field.front_desk_access setting
         "custom_field.edit": PER_FIELD,
+
+        # Clinical records
+        "consent.view": DENY,
+        "consent.manage": DENY,
+        "intake.view": DENY,
+        "intake.edit": DENY,
+
+        # Delete permissions (destructive actions — almost always admin-only)
+        "note.delete": DENY,   # Notes are clinical records — cancel, don't delete
+        "client.delete": DENY,  # Handled by admin erasure workflow
+        "plan.delete": DENY,   # Plans should be archived, not deleted
+
+        # System administration (admin-only via @admin_required)
+        "user.manage": DENY,
+        "settings.manage": DENY,
+        "programme.manage": DENY,
+        "audit.view": DENY,
     },
 
     "staff": {
@@ -62,7 +83,9 @@ PERMISSIONS = {
         # Phase 1: scoped to programme (existing behaviour preserved)
         "client.view_name": ALLOW,
         "client.view_contact": ALLOW,
-        "client.view_safety": ALLOW,  # Allergies, emergency contacts, medical alerts
+        "client.view_safety": ALLOW,  # Allergies, medical alert CONDITIONS (not treatments),
+                                      # emergency contacts, staff alerts. NOT medications.
+        "client.view_medications": SCOPED,  # Same access pattern as clinical data
         "client.view_clinical": SCOPED,  # Phase 1: programme. Phase 2: assigned groups/clients
         "client.edit": SCOPED,
 
@@ -97,6 +120,23 @@ PERMISSIONS = {
 
         "custom_field.view": SCOPED,
         "custom_field.edit": SCOPED,
+
+        # Clinical records
+        "consent.view": SCOPED,
+        "consent.manage": SCOPED,
+        "intake.view": SCOPED,
+        "intake.edit": SCOPED,
+
+        # Delete permissions (destructive actions — almost always admin-only)
+        "note.delete": DENY,   # Notes are clinical records — cancel, don't delete
+        "client.delete": DENY,  # Handled by admin erasure workflow
+        "plan.delete": DENY,   # Plans should be archived, not deleted
+
+        # System administration (admin-only via @admin_required)
+        "user.manage": DENY,
+        "settings.manage": DENY,
+        "programme.manage": DENY,
+        "audit.view": DENY,
     },
 
     "program_manager": {
@@ -105,7 +145,9 @@ PERMISSIONS = {
         # Phase 3: aggregate-only default with gated individual access
         "client.view_name": ALLOW,
         "client.view_contact": ALLOW,
-        "client.view_safety": ALLOW,  # Allergies, emergency contacts, medical alerts
+        "client.view_safety": ALLOW,  # Allergies, medical alert CONDITIONS (not treatments),
+                                      # emergency contacts, staff alerts. NOT medications.
+        "client.view_medications": ALLOW,  # Same access pattern as clinical data
         "client.view_clinical": ALLOW,  # Phase 3: GATED (just-in-time with reason)
         "client.edit": DENY,  # Phase 3: managers don't edit client records
 
@@ -140,6 +182,23 @@ PERMISSIONS = {
 
         "custom_field.view": ALLOW,  # Phase 3: GATED
         "custom_field.edit": DENY,
+
+        # Clinical records
+        "consent.view": ALLOW,
+        "consent.manage": ALLOW,
+        "intake.view": ALLOW,
+        "intake.edit": DENY,
+
+        # Delete permissions (destructive actions — almost always admin-only)
+        "note.delete": DENY,   # Notes are clinical records — cancel, don't delete
+        "client.delete": DENY,  # Handled by admin erasure workflow
+        "plan.delete": DENY,   # Plans should be archived, not deleted
+
+        # System administration (admin-only via @admin_required)
+        "user.manage": DENY,
+        "settings.manage": DENY,
+        "programme.manage": DENY,
+        "audit.view": DENY,
     },
 
     "executive": {
@@ -147,6 +206,7 @@ PERMISSIONS = {
         "client.view_name": DENY,
         "client.view_contact": DENY,
         "client.view_safety": DENY,  # Executives see aggregate data only, no individual safety info
+        "client.view_medications": DENY,  # No individual clinical data
         "client.view_clinical": DENY,
         "client.edit": DENY,
 
@@ -181,6 +241,23 @@ PERMISSIONS = {
 
         "custom_field.view": DENY,
         "custom_field.edit": DENY,
+
+        # Clinical records
+        "consent.view": DENY,
+        "consent.manage": DENY,
+        "intake.view": DENY,
+        "intake.edit": DENY,
+
+        # Delete permissions (destructive actions — almost always admin-only)
+        "note.delete": DENY,   # Notes are clinical records — cancel, don't delete
+        "client.delete": DENY,  # Handled by admin erasure workflow
+        "plan.delete": DENY,   # Plans should be archived, not deleted
+
+        # System administration (admin-only via @admin_required)
+        "user.manage": DENY,
+        "settings.manage": DENY,
+        "programme.manage": DENY,
+        "audit.view": ALLOW,   # Board oversight — executives can review audit trail
     },
 }
 
@@ -250,7 +327,8 @@ def permission_to_plain_english(perm_key, perm_level):
     TRANSLATIONS = {
         "client.view_name": "See client names",
         "client.view_contact": "See client contact information",
-        "client.view_safety": "See safety information (allergies, emergency contacts, medical alerts)",
+        "client.view_safety": "See safety information (allergies, medical alert conditions, emergency contacts, staff alerts — NOT medications)",
+        "client.view_medications": "See client medications (clinical data — reveals diagnosis)",
         "client.view_clinical": "See clinical information (diagnosis, treatment plans, notes)",
         "client.edit": "Edit client records",
 
@@ -285,6 +363,23 @@ def permission_to_plain_english(perm_key, perm_level):
 
         "custom_field.view": "View custom fields",
         "custom_field.edit": "Edit custom fields",
+
+        # Clinical records
+        "consent.view": "View client consent records",
+        "consent.manage": "Record or withdraw client consent",
+        "intake.view": "View intake forms (may contain detailed clinical history)",
+        "intake.edit": "Edit intake forms",
+
+        # Delete permissions
+        "note.delete": "Delete progress notes (notes should be cancelled, not deleted)",
+        "client.delete": "Delete/erase client records (admin-only via erasure workflow)",
+        "plan.delete": "Delete treatment plans (plans should be archived, not deleted)",
+
+        # System administration
+        "user.manage": "Create, edit, or deactivate user accounts (admin-only)",
+        "settings.manage": "Change system configuration, feature toggles, and terminology (admin-only)",
+        "programme.manage": "Create, edit, or archive programmes (admin-only)",
+        "audit.view": "View the audit log",
     }
 
     base = TRANSLATIONS.get(perm_key, perm_key)

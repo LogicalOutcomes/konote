@@ -40,50 +40,69 @@ def home(request):
     active_count = accessible.filter(status="active").count()
     total_count = accessible.count()
 
-    # --- Active alerts (across all accessible clients) ---
-    accessible_ids = list(accessible.values_list("pk", flat=True))
-    active_alerts = Alert.objects.filter(
-        client_file_id__in=accessible_ids,
-        status="default",
-    ).select_related("client_file").order_by("-created_at")[:5]
-    alert_count = active_alerts.count()
+    # --- Check user role to determine if clinical data should be shown ---
+    # BUG-12: Get user's highest role across all programs
+    user_role = _get_user_highest_role(request.user)
+    is_receptionist = user_role == "receptionist"
 
-    # --- Notes recorded today ---
-    today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    notes_today_count = ProgressNote.objects.filter(
-        client_file_id__in=accessible_ids,
-        created_at__gte=today_start,
-    ).count()
+    # --- Clinical data (hidden from Front Desk) ---
+    # Security: Front Desk should not see alerts, notes, or follow-ups
+    if is_receptionist:
+        # Front Desk sees only basic client counts
+        active_alerts = []
+        alert_count = 0
+        notes_today_count = 0
+        pending_follow_ups = []
+        follow_up_count = 0
+        needs_attention = []
+        needs_attention_count = 0
+    else:
+        # Clinical staff sees full dashboard
+        accessible_ids = list(accessible.values_list("pk", flat=True))
 
-    # --- Pending follow-ups for this user ---
-    pending_follow_ups = ProgressNote.objects.filter(
-        author=request.user,
-        follow_up_date__lte=timezone.now().date(),
-        follow_up_completed_at__isnull=True,
-        status="default",
-    ).select_related("client_file").order_by("follow_up_date")[:10]
-    follow_up_count = pending_follow_ups.count()
-
-    # --- Clients not seen in 30+ days ---
-    thirty_days_ago = timezone.now() - timedelta(days=30)
-    # Get clients with recent notes
-    clients_with_recent_notes = set(
-        ProgressNote.objects.filter(
+        # --- Active alerts (across all accessible clients) ---
+        active_alerts = Alert.objects.filter(
             client_file_id__in=accessible_ids,
-            created_at__gte=thirty_days_ago,
-        ).values_list("client_file_id", flat=True)
-    )
-    # Active clients without recent notes
-    needs_attention = []
-    for c in accessible.filter(status="active")[:200]:
-        if c.pk not in clients_with_recent_notes:
-            needs_attention.append({
-                "client": c,
-                "name": f"{c.first_name} {c.last_name}",
-            })
-        if len(needs_attention) >= 10:
-            break
-    needs_attention_count = len(needs_attention)
+            status="default",
+        ).select_related("client_file").order_by("-created_at")[:5]
+        alert_count = active_alerts.count()
+
+        # --- Notes recorded today ---
+        today_start = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        notes_today_count = ProgressNote.objects.filter(
+            client_file_id__in=accessible_ids,
+            created_at__gte=today_start,
+        ).count()
+
+        # --- Pending follow-ups for this user ---
+        pending_follow_ups = ProgressNote.objects.filter(
+            author=request.user,
+            follow_up_date__lte=timezone.now().date(),
+            follow_up_completed_at__isnull=True,
+            status="default",
+        ).select_related("client_file").order_by("follow_up_date")[:10]
+        follow_up_count = pending_follow_ups.count()
+
+        # --- Clients not seen in 30+ days ---
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        # Get clients with recent notes
+        clients_with_recent_notes = set(
+            ProgressNote.objects.filter(
+                client_file_id__in=accessible_ids,
+                created_at__gte=thirty_days_ago,
+            ).values_list("client_file_id", flat=True)
+        )
+        # Active clients without recent notes
+        needs_attention = []
+        for c in accessible.filter(status="active")[:200]:
+            if c.pk not in clients_with_recent_notes:
+                needs_attention.append({
+                    "client": c,
+                    "name": f"{c.first_name} {c.last_name}",
+                })
+            if len(needs_attention) >= 10:
+                break
+        needs_attention_count = len(needs_attention)
 
     # --- Organization name (placeholder — will come from settings later) ---
     org_name = "LogicalOutcomes"
@@ -92,7 +111,7 @@ def home(request):
     accessible_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
 
     # BUG-12: Only show create button if user has at least "staff" role
-    user_role = _get_user_highest_role(request.user)
+    # (user_role already calculated above for is_receptionist check)
     can_create = ROLE_RANK.get(user_role, 0) >= ROLE_RANK["staff"]
 
     return render(request, "clients/home.html", {
@@ -112,6 +131,7 @@ def home(request):
         "org_name": org_name,
         "accessible_programs": accessible_programs,
         "can_create": can_create,
+        "is_receptionist": is_receptionist,
     })
 
 

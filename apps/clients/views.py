@@ -245,6 +245,9 @@ def client_edit(request, client_id):
             client.phone = form.cleaned_data.get("phone", "")
             client.record_id = form.cleaned_data["record_id"]
             client.status = form.cleaned_data["status"]
+            client.cross_programme_sharing_consent = form.cleaned_data.get(
+                "cross_programme_sharing_consent", False
+            )
             client.save()
             # Sync enrolments — only touch programs the user has access to.
             # Confidential program enrolments the user can't see are preserved.
@@ -279,6 +282,7 @@ def client_edit(request, client_id):
                 "record_id": client.record_id,
                 "status": client.status,
                 "programs": current_program_ids,
+                "cross_programme_sharing_consent": client.cross_programme_sharing_consent,
             },
             available_programs=available_programs,
         )
@@ -332,6 +336,13 @@ def client_detail(request, client_id):
 
     is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
 
+    # PERM-S3: Field-level visibility based on role.
+    # Determines which core model fields (e.g. birth_date) the user can see.
+    # Custom fields use their own front_desk_access setting instead.
+    from apps.auth_app.decorators import _get_user_highest_role
+    effective_role = user_role or _get_user_highest_role(request.user)
+    visible_fields = client.get_visible_fields(effective_role) if effective_role else client.get_visible_fields("receptionist")
+
     context = {
         "client": client,
         "enrolments": enrolments,
@@ -342,6 +353,7 @@ def client_detail(request, client_id):
         "is_receptionist": is_receptionist,
         "is_pm_or_admin": is_pm_or_admin,
         "pending_erasure": pending_erasure,
+        "visible_fields": visible_fields,
         "document_folder_url": get_document_folder_url(client),
         "breadcrumbs": breadcrumbs,
         **tab_counts,  # notes_count, events_count, targets_count

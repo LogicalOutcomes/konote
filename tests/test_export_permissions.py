@@ -3,7 +3,8 @@
 Verifies that export access follows the role model:
 - Admin: system config + any export + manage/revoke links
 - Program Manager: metrics/CMT exports scoped to their programs + download own
-- Staff/Front Desk/Executive: no export access
+- Executive: metrics/CMT exports scoped to their programs (report.programme_report: ALLOW)
+- Staff/Front Desk: no export access
 """
 import os
 import shutil
@@ -139,10 +140,20 @@ class CanCreateExportHelperTest(TestCase):
 
     # ── Executive ────────────────────────────────────────────────
 
-    def test_executive_cannot_create_any_export(self):
+    def test_executive_cannot_create_client_data_export(self):
         self.assertFalse(can_create_export(self.exec_user, "client_data"))
-        self.assertFalse(can_create_export(self.exec_user, "metrics"))
-        self.assertFalse(can_create_export(self.exec_user, "cmt"))
+
+    def test_executive_can_create_metrics_export(self):
+        self.assertTrue(can_create_export(self.exec_user, "metrics"))
+
+    def test_executive_can_create_cmt_export(self):
+        self.assertTrue(can_create_export(self.exec_user, "cmt"))
+
+    def test_executive_can_export_own_program(self):
+        self.assertTrue(can_create_export(self.exec_user, "metrics", program=self.program_a))
+
+    def test_executive_cannot_export_other_program(self):
+        self.assertFalse(can_create_export(self.exec_user, "metrics", program=self.program_b))
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -242,10 +253,10 @@ class MetricsExportPermissionTest(TestCase):
         resp = self.http_client.get("/reports/export/")
         self.assertEqual(resp.status_code, 403)
 
-    def test_executive_gets_403_on_metrics_export(self):
+    def test_executive_can_access_metrics_export(self):
         self.http_client.login(username="exec", password="testpass123")
         resp = self.http_client.get("/reports/export/")
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 200)
 
     def test_receptionist_gets_403_on_metrics_export(self):
         self.http_client.login(username="frontdesk", password="testpass123")
@@ -306,10 +317,10 @@ class CMTExportPermissionTest(TestCase):
         resp = self.http_client.get("/reports/cmt-export/")
         self.assertEqual(resp.status_code, 403)
 
-    def test_executive_gets_403_on_cmt_export(self):
+    def test_executive_can_access_cmt_export(self):
         self.http_client.login(username="exec", password="testpass123")
         resp = self.http_client.get("/reports/cmt-export/")
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 200)
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -527,6 +538,6 @@ class ExportAccessContextTest(TestCase):
         ctx = self._get_context("staff")
         self.assertFalse(ctx.get("has_export_access"))
 
-    def test_executive_does_not_have_export_access(self):
+    def test_executive_has_export_access(self):
         ctx = self._get_context("exec")
-        self.assertFalse(ctx.get("has_export_access"))
+        self.assertTrue(ctx.get("has_export_access"))

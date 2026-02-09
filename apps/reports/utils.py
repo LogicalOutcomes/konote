@@ -9,8 +9,8 @@ def can_create_export(user, export_type, program=None):
 
     Permission rules:
     - client_data: admin only (full PII dump for migration/audit)
-    - metrics / cmt: admin (any program) or program_manager (their programs only)
-    - All other roles (staff, receptionist, executive): no export access
+    - metrics / cmt: admin (any program), program_manager or executive (their programs)
+    - All other roles (staff, receptionist): no export access
 
     Args:
         user: The User instance.
@@ -31,7 +31,7 @@ def can_create_export(user, export_type, program=None):
 
     if export_type in ("metrics", "cmt"):
         qs = UserProgramRole.objects.filter(
-            user=user, role="program_manager", status="active"
+            user=user, role__in=["program_manager", "executive"], status="active"
         )
         if program:
             return qs.filter(program=program).exists()
@@ -44,8 +44,8 @@ def get_manageable_programs(user):
     """
     Return programs the user can export from.
 
-    Admins see all active programs. Program managers see only the
-    programs they manage.
+    Admins see all active programs. Program managers and executives
+    see the programs they are assigned to.
 
     Returns:
         QuerySet of Program objects.
@@ -56,7 +56,7 @@ def get_manageable_programs(user):
         return Program.objects.filter(status="active")
 
     managed_ids = UserProgramRole.objects.filter(
-        user=user, role="program_manager", status="active"
+        user=user, role__in=["program_manager", "executive"], status="active"
     ).values_list("program_id", flat=True)
     return Program.objects.filter(pk__in=managed_ids, status="active")
 
