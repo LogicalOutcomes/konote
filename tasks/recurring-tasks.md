@@ -4,6 +4,7 @@ Chores to run periodically. Not tracked in TODO.md — check back here as needed
 
 | Task | When | How |
 |------|------|-----|
+| Agency Permissions Interview | Before every new agency deployment | Complete interview, get ED sign-off on Configuration Summary. See `tasks/agency-permissions-interview.md` (ONBOARD-RECUR) |
 | UX walkthrough | After UI changes | `pytest tests/ux_walkthrough/ -v`, review `tasks/ux-review-latest.md` (UX-WALK1) |
 | French translation review | After adding strings | Have a French speaker spot-check. Run `python manage.py check_translations` (I18N-REV1) |
 | Redeploy to Railway | After merging to main | Push to `main`, Railway auto-deploys. See `docs/deploy-railway.md` (OPS-RAIL1) |
