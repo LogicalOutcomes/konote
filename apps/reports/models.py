@@ -56,6 +56,15 @@ class SecureExportLink(models.Model):
     recipient = models.CharField(max_length=200)
     filename = models.CharField(max_length=255, default="export.csv")
 
+    # PII tracking — True when export contains individual client data
+    # (record IDs, names, per-client metric rows, author names).
+    # Used by download_export() to re-validate that the downloader still
+    # has permission to access individual data (defense-in-depth).
+    # DEFAULT=TRUE (deny by default): any export that forgets to set this
+    # is treated as containing PII. Only explicitly aggregate exports
+    # should set contains_pii=False.
+    contains_pii = models.BooleanField(default=True)
+
     # Elevated export tracking (Phase 4 — fields added now for forward compat)
     is_elevated = models.BooleanField(default=False)
     admin_notified_at = models.DateTimeField(null=True, blank=True)

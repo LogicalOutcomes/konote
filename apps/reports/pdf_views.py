@@ -39,8 +39,15 @@ def _pdf_unavailable_response(request):
 
 
 @login_required
+@admin_required
 def client_progress_pdf(request, client_id):
-    """Generate a PDF progress report for an individual client."""
+    """Generate a PDF progress report for an individual client.
+
+    Restricted to admin only — this is a downloadable file containing full
+    client PII (name, DOB, record ID, notes, metrics, author names).
+    Downloadable exports are high-risk because files leave the system.
+    Staff view individual client data through in-app views with RBAC instead.
+    """
     if not is_pdf_available():
         return _pdf_unavailable_response(request)
 

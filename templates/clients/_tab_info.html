@@ -5,11 +5,9 @@
     <a href="{% url 'clients:client_edit' client_id=client.pk %}" role="button" class="outline">{% trans "Edit" %}</a>
     {% endif %}
     <a href="{% url 'clients:client_list' %}" class="back-link">&larr; {% trans "Back to List" %}</a>
-    {% if not is_receptionist and not client.is_anonymised %}
+    {% if user.is_admin and not client.is_anonymised %}
     <a href="{% url 'reports:client_progress_pdf' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Export PDF" %}</a>
-    {% if user.is_admin %}
     <a href="{% url 'reports:client_export' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Export All Data" %}</a>
-    {% endif %}
     {% endif %}
     {% if pending_erasure %}
     <span class="badge badge-warning">{% trans "Erasure Pending" %}</span>

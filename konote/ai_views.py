@@ -79,7 +79,7 @@ def generate_narrative_view(request):
         return HttpResponseForbidden("AI features are not enabled.")
 
     from apps.notes.models import MetricValue
-    from apps.programs.models import Program
+    from apps.programs.models import Program, UserProgramRole
 
     form = GenerateNarrativeForm(request.POST)
     if not form.is_valid():
@@ -93,6 +93,14 @@ def generate_narrative_view(request):
         program = Program.objects.get(pk=program_id)
     except Program.DoesNotExist:
         return HttpResponseBadRequest("Program not found.")
+
+    # Verify user has access to this program (admin sees all)
+    if not request.user.is_admin:
+        has_role = UserProgramRole.objects.filter(
+            user=request.user, program=program, status="active",
+        ).exists()
+        if not has_role:
+            return HttpResponseForbidden("You do not have access to this program.")
 
     # Build aggregate stats from metric values — no PII, just numbers
     values = (
@@ -148,15 +156,27 @@ def suggest_note_structure_view(request):
         return HttpResponseForbidden("AI features are not enabled.")
 
     from apps.plans.models import PlanTarget
+    from apps.programs.models import UserProgramRole
 
     form = SuggestNoteStructureForm(request.POST)
     if not form.is_valid():
         return render(request, "ai/_error.html", {"message": "No target selected."})
 
     try:
-        target = PlanTarget.objects.get(pk=form.cleaned_data["target_id"])
+        target = PlanTarget.objects.select_related("plan_section__program").get(
+            pk=form.cleaned_data["target_id"]
+        )
     except PlanTarget.DoesNotExist:
         return HttpResponseBadRequest("Target not found.")
+
+    # Verify user has access to the program that owns this target
+    program = target.plan_section.program if target.plan_section else None
+    if program and not request.user.is_admin:
+        has_role = UserProgramRole.objects.filter(
+            user=request.user, program=program, status="active",
+        ).exists()
+        if not has_role:
+            return HttpResponseForbidden("You do not have access to this program.")
 
     metric_names = list(target.metrics.filter(status="active").values_list("name", flat=True))
 
@@ -170,11 +190,16 @@ def suggest_note_structure_view(request):
 @login_required
 @ratelimit(key="user", rate="10/h", method="POST", block=True)
 def outcome_insights_view(request):
-    """Generate AI narrative draft from qualitative outcome data. HTMX POST."""
+    """Generate AI narrative draft from qualitative outcome data. HTMX POST.
+
+    Access control: user must have an active role (staff+) in the requested
+    program. Without this check, any authenticated user could POST with an
+    arbitrary program_id and receive AI-processed quotes from that program.
+    """
     if not _ai_enabled():
         return HttpResponseForbidden("AI features are not enabled.")
 
-    from apps.programs.models import Program
+    from apps.programs.models import Program, UserProgramRole
     from apps.reports.insights import get_structured_insights, collect_quotes
     from apps.reports.pii_scrub import scrub_pii
     from apps.reports.models import InsightSummary
@@ -193,6 +218,14 @@ def outcome_insights_view(request):
         program = Program.objects.get(pk=program_id)
     except Program.DoesNotExist:
         return HttpResponseBadRequest("Program not found.")
+
+    # Verify user has access to this program (admin sees all)
+    if not request.user.is_admin:
+        has_role = UserProgramRole.objects.filter(
+            user=request.user, program=program, status="active",
+        ).exists()
+        if not has_role:
+            return HttpResponseForbidden("You do not have access to this program.")
 
     try:
         dt_from = date.fromisoformat(date_from_str)
@@ -249,10 +282,12 @@ def outcome_insights_view(request):
 
     scrubbed_quotes = []
     for q in quotes:
+        # Data minimization: only send scrubbed text and target name to AI.
+        # note_id is deliberately excluded — internal IDs should not reach
+        # external services (prevents correlation if AI provider is breached).
         scrubbed_quotes.append({
             "text": scrub_pii(q["text"], known_names),
             "target_name": q.get("target_name", ""),
-            "note_id": q["note_id"],
         })
 
     date_range = f"{dt_from} to {dt_to}"

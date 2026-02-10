@@ -52,6 +52,7 @@ def _create_link(user, export_dir, **overrides):
         export_type=export_type,
         client_count=client_count,
         includes_notes=overrides.pop("includes_notes", False),
+        contains_pii=overrides.pop("contains_pii", True),
         recipient=recipient,
         filename=filename,
         file_path=file_path,

@@ -18,7 +18,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.audit.models import AuditLog
-from apps.auth_app.decorators import admin_required
+from apps.auth_app.decorators import admin_required, requires_permission
 from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.clients.views import get_client_queryset
@@ -96,7 +96,7 @@ def _notify_admins_elevated_export(link, request):
 
 def _save_export_and_create_link(request, content, filename, export_type,
                                   client_count, includes_notes, recipient,
-                                  filters_dict=None):
+                                  filters_dict=None, contains_pii=True):
     """
     Save export content to a temp file and create a SecureExportLink.
 
@@ -109,6 +109,11 @@ def _save_export_and_create_link(request, content, filename, export_type,
         includes_notes: Whether clinical note content is included.
         recipient: Who is receiving the data (from ExportRecipientMixin).
         filters_dict: Optional dict of filter parameters for audit.
+        contains_pii: Whether the export contains individual client data
+                      (record IDs, names, per-client rows). Defaults to True
+                      (deny-by-default). Aggregate-only exports must explicitly
+                      set False. Used by download_export() for defense-in-depth
+                      re-validation — non-admins cannot download PII exports.
 
     Returns:
         SecureExportLink instance.
@@ -136,6 +141,7 @@ def _save_export_and_create_link(request, content, filename, export_type,
         filters_json=json.dumps(filters_dict or {}),
         client_count=client_count,
         includes_notes=includes_notes,
+        contains_pii=contains_pii,
         recipient=recipient,
         filename=filename,
         file_path=file_path,
@@ -631,6 +637,7 @@ def export_form(request):
         includes_notes=False,
         recipient=recipient,
         filters_dict=filters_dict,
+        contains_pii=not is_aggregate,
     )
 
     # Audit log with recipient tracking
@@ -681,8 +688,14 @@ def _get_client_or_403(request, client_id):
 
 
 @login_required
+@requires_permission("metric.view_individual")
 def client_analysis(request, client_id):
-    """Show progress charts for a client's metric data."""
+    """Show progress charts for a client's metric data.
+
+    Requires metric.view_individual permission — executives (DENY) cannot
+    access individual metric charts. Staff and PMs see metrics for clinical
+    purposes through this in-app view.
+    """
     client = _get_client_or_403(request, client_id)
     if client is None:
         return HttpResponseForbidden("You do not have access to this client.")
@@ -811,6 +824,10 @@ def cmt_export_form(request):
         user=request.user,
     )
 
+    # Capture raw integer count before suppression — needed for
+    # client_count (PositiveIntegerField) and is_elevated check.
+    raw_client_count = cmt_data.get("total_individuals_served", 0)
+
     # Apply small-cell suppression for confidential programs
     cmt_data["total_individuals_served"] = suppress_small_cell(
         cmt_data["total_individuals_served"], program,
@@ -844,12 +861,13 @@ def cmt_export_form(request):
         content = csv_buffer.getvalue()
 
     # Save to file and create secure download link
+    # CMT reports are always aggregate — no individual client data
     link = _save_export_and_create_link(
         request=request,
         content=content,
         filename=filename,
         export_type="cmt",
-        client_count=cmt_data.get("total_individuals_served", 0),
+        client_count=raw_client_count,
         includes_notes=False,
         recipient=recipient,
         filters_dict={
@@ -858,6 +876,7 @@ def cmt_export_form(request):
             "date_from": str(date_from),
             "date_to": str(date_to),
         },
+        contains_pii=False,
     )
 
     # Audit log with recipient tracking
@@ -1102,6 +1121,7 @@ def client_data_export(request):
             "include_enrolments": include_enrolments,
             "include_consent": include_consent,
         },
+        contains_pii=True,
     )
 
     # Audit log with recipient tracking
@@ -1145,6 +1165,10 @@ def download_export(request, link_id):
     The export creator can download their own link. Admins can download
     any link (for oversight and client_data_export which only admin creates).
     Every download is logged with who actually downloaded the file.
+
+    Defense-in-depth: exports containing PII (individual client data) require
+    admin access at download time, even if the creator originally had permission.
+    This guards against role changes between creation and download.
     """
     link = get_object_or_404(SecureExportLink, id=link_id)
 
@@ -1152,6 +1176,19 @@ def download_export(request, link_id):
     can_download = (request.user == link.created_by) or request.user.is_admin
     if not can_download:
         return HttpResponseForbidden("You do not have permission to download this export.")
+
+    # Defense-in-depth: re-validate PII access at download time.
+    # Only admins may download exports containing individual client data.
+    # This catches: (1) legacy links created before this fix, (2) role
+    # demotions between export creation and download.
+    if link.contains_pii and not request.user.is_admin:
+        logger.warning(
+            "Blocked non-admin download of PII export link=%s user=%s",
+            link.id, request.user.pk,
+        )
+        return HttpResponseForbidden(
+            "This export contains individual client data. Only administrators can download it."
+        )
 
     # Check link validity (revoked / expired)
     if not link.is_valid():
