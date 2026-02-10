@@ -1,4 +1,4 @@
-# Canadian Hosting Options for KoNote2
+# Canadian Hosting Options for KoNote
 
 Research conducted 2026-02-04. Evaluating Canadian-owned hosting providers for nonprofits requiring data residency compliance.
 
@@ -16,7 +16,7 @@ Research conducted 2026-02-04. Evaluating Canadian-owned hosting providers for n
 
 ## Current Encryption Status
 
-> **Important:** As of February 2026, KoNote2 encrypts client identifying information (names, birth dates, sensitive custom fields) but **does NOT encrypt progress note content** at the application level.
+> **Important:** As of February 2026, KoNote encrypts client identifying information (names, birth dates, sensitive custom fields) but **does NOT encrypt progress note content** at the application level.
 >
 > This means:
 > - Canadian hosting is recommended to satisfy PIPEDA/PHIPA data residency requirements
@@ -47,7 +47,7 @@ Research conducted 2026-02-04. Evaluating Canadian-owned hosting providers for n
 - Simplest management for non-technical users
 - Pay-as-you-go pricing
 - Automatic scaling during busy periods
-- KoNote2 already has deployment manifest (`fullhost-manifest.jps`)
+- KoNote already has deployment manifest (`fullhost-manifest.jps`)
 
 **Cons:**
 - No SOC 2 or government certifications documented
@@ -170,7 +170,7 @@ If choosing a VPS option (CanSpace, WHC, Canadian Web Hosting), ongoing manageme
 1. Order VPS, wait for provisioning email
 2. SSH into server (Claude provides commands)
 3. Install Docker and Docker Compose
-4. Clone KoNote2, configure `.env` file
+4. Clone KoNote, configure `.env` file
 5. Run `docker-compose up -d`
 6. Point domain DNS to server
 7. Create admin user
@@ -179,7 +179,7 @@ If choosing a VPS option (CanSpace, WHC, Canadian Web Hosting), ongoing manageme
 | Task | Frequency | Time | Complexity |
 |------|-----------|------|------------|
 | Download database backup | Weekly | 5 min | Copy commands from Claude |
-| Update KoNote2 | Monthly | 5 min | 4 commands |
+| Update KoNote | Monthly | 5 min | 4 commands |
 | Server security updates | Monthly | 10 min | Copy commands from Claude |
 
 Claude can provide exact commands for all tasks and troubleshoot errors.

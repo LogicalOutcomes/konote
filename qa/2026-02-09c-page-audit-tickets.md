@@ -1,4 +1,4 @@
-# KoNote2 Page Audit -- Improvement Tickets (2026-02-09c)
+# KoNote Page Audit -- Improvement Tickets (2026-02-09c)
 
 **Date:** 2026-02-09 (sequence c)
 **Source:** Page audit evaluation across all auditable pages, personas, states, and breakpoints

@@ -1,14 +1,14 @@
 """
-Django system checks for KoNote2 security.
+Django system checks for KoNote security.
 
 These checks run automatically with every manage.py command (runserver, migrate, etc.).
 They catch configuration issues early, before the app starts serving requests.
 
 Check IDs:
-    KoNote2.E001 — FIELD_ENCRYPTION_KEY not configured (Error)
-    KoNote2.E002 — Security middleware missing (Error)
-    KoNote2.W001 — DEBUG=True in production (Warning, deploy only)
-    KoNote2.W002 — SESSION_COOKIE_SECURE=False (Warning, deploy only)
+    KoNote.E001 — FIELD_ENCRYPTION_KEY not configured (Error)
+    KoNote.E002 — Security middleware missing (Error)
+    KoNote.W001 — DEBUG=True in production (Warning, deploy only)
+    KoNote.W002 — SESSION_COOKIE_SECURE=False (Warning, deploy only)
 
 Run checks manually:
     python manage.py check           # Basic checks
@@ -30,7 +30,7 @@ def check_encryption_key(app_configs, **kwargs):
             Error(
                 "FIELD_ENCRYPTION_KEY is not configured.",
                 hint="Set FIELD_ENCRYPTION_KEY environment variable to a valid Fernet key.",
-                id="KoNote2.E001",
+                id="KoNote.E001",
             )
         )
     else:
@@ -43,7 +43,7 @@ def check_encryption_key(app_configs, **kwargs):
                 Error(
                     f"FIELD_ENCRYPTION_KEY is invalid: {e}",
                     hint="Generate a new key with: python -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\"",
-                    id="KoNote2.E001",
+                    id="KoNote.E001",
                 )
             )
 
@@ -68,7 +68,7 @@ def check_middleware_chain(app_configs, **kwargs):
                 Error(
                     f"{mw_path} is not in MIDDLEWARE.",
                     hint=f"Add '{mw_path}' to MIDDLEWARE in settings. This provides {description}.",
-                    id="KoNote2.E002",
+                    id="KoNote.E002",
                 )
             )
 
@@ -85,7 +85,7 @@ def check_debug_mode(app_configs, **kwargs):
             Warning(
                 "DEBUG is True.",
                 hint="Set DEBUG=False in production to hide error details and improve security.",
-                id="KoNote2.W001",
+                id="KoNote.W001",
             )
         )
 
@@ -102,7 +102,7 @@ def check_secure_cookies(app_configs, **kwargs):
             Warning(
                 "SESSION_COOKIE_SECURE is False.",
                 hint="Set SESSION_COOKIE_SECURE=True when using HTTPS to prevent session hijacking.",
-                id="KoNote2.W002",
+                id="KoNote.W002",
             )
         )
 
@@ -111,7 +111,7 @@ def check_secure_cookies(app_configs, **kwargs):
             Warning(
                 "CSRF_COOKIE_SECURE is False.",
                 hint="Set CSRF_COOKIE_SECURE=True when using HTTPS.",
-                id="KoNote2.W003",
+                id="KoNote.W003",
             )
         )
 
@@ -129,7 +129,7 @@ def check_password_hasher(app_configs, **kwargs):
             Warning(
                 "Argon2 is not the primary password hasher.",
                 hint="Add 'django.contrib.auth.hashers.Argon2PasswordHasher' as the first entry in PASSWORD_HASHERS for stronger password security.",
-                id="KoNote2.W004",
+                id="KoNote.W004",
             )
         )
 

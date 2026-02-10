@@ -2,7 +2,7 @@
 
 ## Visual Direction Statement
 
-> KoNote2's visual identity is calm, clear, and professional. It uses a teal-anchored colour palette with warm neutrals to create an interface that feels trustworthy during long working sessions. The design prioritises readability, accessibility, and emotional restraint — this is software for human services work, and the interface reflects that gravity.
+> KoNote's visual identity is calm, clear, and professional. It uses a teal-anchored colour palette with warm neutrals to create an interface that feels trustworthy during long working sessions. The design prioritises readability, accessibility, and emotional restraint — this is software for human services work, and the interface reflects that gravity.
 
 ## Consensus Decisions (all 3 reviews agree)
 
@@ -19,7 +19,7 @@
 
 ## Architecture: Per-Agency Theming
 
-Each agency runs their own KoNote2 instance and will want their own brand identity. The design system supports this through a clean separation:
+Each agency runs their own KoNote instance and will want their own brand identity. The design system supports this through a clean separation:
 
 | File | Purpose | Agency customisable? |
 |------|---------|---------------------|
@@ -28,7 +28,7 @@ Each agency runs their own KoNote2 instance and will want their own brand identi
 | Phase 6 admin (CUST3) | UI for agencies to set primary colour, logo, product name | Generates CSS variable overrides |
 
 **How it works:**
-1. `theme.css` defines all `--kn-*` variables as the KoNote2 default theme (teal)
+1. `theme.css` defines all `--kn-*` variables as the KoNote default theme (teal)
 2. `main.css` references `--kn-*` variables but never hardcodes colours
 3. Agencies can either: replace `theme.css` entirely, or use the admin UI (Phase 6) to override specific variables via an inline `<style>` block in `base.html`
 4. The admin-generated overrides sit after `theme.css` in the cascade, so they win
@@ -108,7 +108,7 @@ Create `static/css/theme.css` with all `--kn-*` variables and Pico overrides (~8
 Change `.badge--active` etc. to `.badge-success`, `.badge-info`, `.badge-warning`, `.badge-danger`, `.badge-neutral` using the `--kn-*` tokens.
 
 ### DES3: Redesign login page
-- Add "KoNote2" wordmark (text-based, styled with CSS — no image needed yet)
+- Add "KoNote" wordmark (text-based, styled with CSS — no image needed yet)
 - Brand teal accent (border or background element)
 - Warm background colour
 - Extend base.html instead of standalone page (get the `{% load static %}` tag for free)

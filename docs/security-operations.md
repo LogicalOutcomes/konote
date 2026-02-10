@@ -1,10 +1,10 @@
 # Security Operations Guide
 
-**Last updated:** February 2026 | **Applies to:** KoNote2 v1.x
+**Last updated:** February 2026 | **Applies to:** KoNote v1.x
 
-> **Disclaimer:** This document describes KoNote2's security features and how to operate them. It is not legal advice. Consult your privacy officer or legal counsel for your specific compliance requirements.
+> **Disclaimer:** This document describes KoNote's security features and how to operate them. It is not legal advice. Consult your privacy officer or legal counsel for your specific compliance requirements.
 
-This guide is for IT staff, managed service providers, and technical consultants who are setting up, maintaining, or troubleshooting a KoNote2 deployment. For a non-technical overview, see the [Security Overview](security-overview.md). For technical architecture details, see [Security Architecture](security-architecture.md).
+This guide is for IT staff, managed service providers, and technical consultants who are setting up, maintaining, or troubleshooting a KoNote deployment. For a non-technical overview, see the [Security Overview](security-overview.md). For technical architecture details, see [Security Architecture](security-architecture.md).
 
 ---
 
@@ -22,7 +22,7 @@ This guide is for IT staff, managed service providers, and technical consultants
 
 ## Security Checks
 
-KoNote2 runs security checks automatically with every `manage.py` command (runserver, migrate, etc.). You can also run them explicitly.
+KoNote runs security checks automatically with every `manage.py` command (runserver, migrate, etc.). You can also run them explicitly.
 
 ### Basic Check (Development)
 
@@ -30,7 +30,7 @@ KoNote2 runs security checks automatically with every `manage.py` command (runse
 python manage.py check
 ```
 
-This runs Django's system checks plus KoNote2's custom security checks. All checks must pass for the server to start.
+This runs Django's system checks plus KoNote's custom security checks. All checks must pass for the server to start.
 
 **Expected output (success):**
 ```
@@ -147,7 +147,7 @@ Exits with code 1 if any warnings are present. Use this in CI pipelines to enfor
 
 ## Audit Logging
 
-Every significant action in KoNote2 is logged to a separate audit database. This provides a record for compliance and incident investigation.
+Every significant action in KoNote is logged to a separate audit database. This provides a record for compliance and incident investigation.
 
 ### What Gets Logged
 
@@ -387,7 +387,7 @@ python manage.py rotate_encryption_key --old-key="YOUR_OLD_KEY" --new-key="YOUR_
 
 ## Authentication Security
 
-KoNote2 supports two authentication modes. Each has different multi-factor authentication (MFA) options.
+KoNote supports two authentication modes. Each has different multi-factor authentication (MFA) options.
 
 ### Which Authentication Mode Should You Use?
 
@@ -401,38 +401,38 @@ KoNote2 supports two authentication modes. Each has different multi-factor authe
 
 If your agency uses Microsoft 365, use Azure AD SSO. This gives you:
 
-- **Multi-factor authentication** — configured in Azure, not in KoNote2
+- **Multi-factor authentication** — configured in Azure, not in KoNote
 - **Conditional access policies** — restrict logins by location, device, or risk level
 - **Centralised user management** — add/remove users through your existing Microsoft admin
-- **Audit logging through Azure** — in addition to KoNote2's own audit logs
+- **Audit logging through Azure** — in addition to KoNote's own audit logs
 
 #### How It Works
 
-1. A user clicks "Sign in with Microsoft" on the KoNote2 login page
+1. A user clicks "Sign in with Microsoft" on the KoNote login page
 2. They are redirected to Microsoft's login page
 3. Microsoft handles password verification and MFA (SMS, authenticator app, security key, etc.)
-4. The user is redirected back to KoNote2, now authenticated
+4. The user is redirected back to KoNote, now authenticated
 
 #### Enabling MFA for Azure AD Users
 
-MFA is configured in Azure, not in KoNote2. To enable it:
+MFA is configured in Azure, not in KoNote. To enable it:
 
 1. Sign in to the [Azure Portal](https://portal.azure.com)
 2. Navigate to **Microsoft Entra ID** (formerly Azure Active Directory) > **Security** > **Authentication methods**
 3. Enable MFA for all users or specific security groups
 4. Configure allowed authentication methods (authenticator app is recommended)
 
-Once enabled, all users signing into KoNote2 through Microsoft will be prompted for MFA. No changes are needed in KoNote2 itself.
+Once enabled, all users signing into KoNote through Microsoft will be prompted for MFA. No changes are needed in KoNote itself.
 
-#### Azure AD Setup for KoNote2
+#### Azure AD Setup for KoNote
 
-To connect KoNote2 to your Azure AD:
+To connect KoNote to your Azure AD:
 
 1. Create an **App Registration** in Microsoft Entra ID
-2. Set the redirect URI to your KoNote2 instance (e.g., `https://konote.youragency.ca/auth/callback`)
+2. Set the redirect URI to your KoNote instance (e.g., `https://konote.youragency.ca/auth/callback`)
 3. Copy the Application (client) ID and Directory (tenant) ID
 4. Create a client secret
-5. Add the following environment variables to KoNote2:
+5. Add the following environment variables to KoNote:
    - `AZURE_AD_CLIENT_ID` — your Application (client) ID
    - `AZURE_AD_CLIENT_SECRET` — your client secret
    - `AZURE_AD_TENANT_ID` — your Directory (tenant) ID
@@ -446,11 +446,11 @@ Local auth is suitable for:
 - Development and testing environments
 - Small agencies without Microsoft 365
 - Demos and trials
-- Agencies evaluating KoNote2 before committing to Azure AD
+- Agencies evaluating KoNote before committing to Azure AD
 
 #### Security Measures for Local Auth
 
-Even without MFA, KoNote2 enforces strong security for local passwords:
+Even without MFA, KoNote enforces strong security for local passwords:
 
 | Measure | Detail |
 |---------|--------|
@@ -562,7 +562,7 @@ If you've lost your encryption key and have no backup:
 
 - [Security Overview](security-overview.md) — Non-technical summary for boards and funders
 - [Security Architecture](security-architecture.md) — Technical details for developers and security reviewers
-- [Independent Review Guide](independent-review.md) — How to verify KoNote2's security claims
+- [Independent Review Guide](independent-review.md) — How to verify KoNote's security claims
 - [PIA Template Answers](pia-template-answers.md) — Pre-written answers for Privacy Impact Assessments
 - [Deploying KoNote](deploying-konote.md) — Deployment options and setup
 - [Administering KoNote](administering-konote.md) — Day-to-day administration

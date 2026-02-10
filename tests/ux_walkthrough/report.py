@@ -148,7 +148,7 @@ class ReportGenerator:
         prev = self._read_previous_counts(filepath)
 
         lines = [
-            "# KoNote2 UX Walkthrough Report\n",
+            "# KoNote UX Walkthrough Report\n",
             f"**Generated:** {now}  ",
             "**Command:** `pytest tests/ux_walkthrough/ -v`\n",
             "## Summary\n",

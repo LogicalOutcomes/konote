@@ -1,6 +1,6 @@
-# Administering KoNote2
+# Administering KoNote
 
-This guide covers everything administrators need to configure, maintain, and secure their KoNote2 instance.
+This guide covers everything administrators need to configure, maintain, and secure their KoNote instance.
 
 | I want to... | Go to... |
 |--------------|----------|
@@ -15,22 +15,37 @@ This guide covers everything administrators need to configure, maintain, and sec
 
 ## Agency Configuration
 
-After deployment, configure KoNote2 to match your organisation's needs. All setup is done through the web interface — no technical knowledge required.
+After deployment, configure KoNote to match your organisation's needs. All setup is done through the web interface — no technical knowledge required.
 
 **Time estimate:** 30–45 minutes for basic setup.
+
+### Creating the First Admin Account
+
+Every new KoNote instance starts with no users. You need to create the first admin from the command line before anyone can log in:
+
+```bash
+# Docker:
+docker-compose exec web python manage.py createsuperuser
+
+# Direct / Railway:
+python manage.py createsuperuser
+```
+
+You'll be prompted for a **username** and **password**. This creates a user with full admin access (`is_admin=True`).
+
+> **Demo mode shortcut:** If `DEMO_MODE=true`, the seed process automatically creates a `demo-admin` user with password `demo1234`. You can log in with that immediately and skip this step.
 
 ### First Login
 
 **Azure AD (Office 365):**
-1. Navigate to your KoNote2 URL
+1. Navigate to your KoNote URL
 2. Click **Login with Azure AD**
 3. Enter your work email and password
+4. An admin must then assign your program roles through the web interface
 
 **Local authentication:**
-1. Navigate to your KoNote2 URL
-2. Enter username and password (provided during setup)
-
-Your account starts as Staff. An admin must promote you to Admin to access configuration.
+1. Navigate to your KoNote URL
+2. Enter the username and password you created above
 
 ---
 
@@ -43,7 +58,7 @@ Control your organisation's branding and behaviour.
 
 | Field | What it does | Example |
 |-------|--------------|---------|
-| **Product Name** | Shown in header and titles | "Youth Housing — KoNote2" |
+| **Product Name** | Shown in header and titles | "Youth Housing — KoNote" |
 | **Support Email** | Displayed in footer | support@agency.ca |
 | **Logo URL** | Your organisation's logo | https://example.com/logo.png |
 | **Date Format** | How dates appear | 2026-02-03 (ISO) |
@@ -134,7 +149,7 @@ Changes to templates don't affect existing client plans.
 
 ### Manage Outcome Metrics
 
-Metrics are standardised measurements attached to plan targets (e.g., "PHQ-9 Score", "Housing Stability"). KoNote2 ships with a built-in library, and you can add your own.
+Metrics are standardised measurements attached to plan targets (e.g., "PHQ-9 Score", "Housing Stability"). KoNote ships with a built-in library, and you can add your own.
 
 **Browse the metric library:**
 1. Click **gear icon** → **Metric Library**
@@ -151,7 +166,7 @@ This workflow lets you review all metrics in Excel, decide which to enable, edit
 
 | Column | What it means |
 |--------|---------------|
-| **id** | System identifier — don't change this (it's how KoNote2 matches rows back) |
+| **id** | System identifier — don't change this (it's how KoNote matches rows back) |
 | **name** | What staff see when recording outcomes |
 | **definition** | How to score/measure it — guides staff on consistent data entry |
 | **category** | Grouping: mental_health, housing, employment, substance_use, youth, general, custom |
@@ -167,7 +182,7 @@ This workflow lets you review all metrics in Excel, decide which to enable, edit
    - Add new rows at the bottom (leave the `id` column blank for new metrics)
 5. Save the file as CSV
 6. Go back to **Metric Library** → click **Import from CSV**
-7. Upload your edited file — KoNote2 shows a preview:
+7. Upload your edited file — KoNote shows a preview:
    - Rows with an ID are marked **Update** (overwrites the existing metric)
    - Rows without an ID are marked **New** (creates a new metric)
 8. Review the preview, then click **Import**
@@ -189,7 +204,7 @@ This workflow lets you review all metrics in Excel, decide which to enable, edit
 
 Note templates define the structure for progress notes. When staff write a note, they see a dropdown labelled **"This note is for..."** with options like "Standard session" or "Crisis intervention." Each option is a template you create here.
 
-**Default templates:** KoNote2 comes with six templates pre-configured:
+**Default templates:** KoNote comes with six templates pre-configured:
 
 | Template | Use case |
 |----------|----------|
@@ -249,7 +264,7 @@ Capture agency-specific information not in the standard client form.
 
 ### Set Up Registration Forms
 
-Registration forms let people sign up for your programs through a public web page — no login required. You create a registration link, share it or embed it on your website, and submissions come into KoNote2 for your team to review.
+Registration forms let people sign up for your programs through a public web page — no login required. You create a registration link, share it or embed it on your website, and submissions come into KoNote for your team to review.
 
 #### How It Works
 
@@ -258,7 +273,7 @@ Registration forms let people sign up for your programs through a public web pag
 3. **Someone fills out the form** — their information is saved and encrypted
 4. **Your team reviews the submission** — and can approve, reject, waitlist, or merge with an existing client
 
-When a submission is approved, KoNote2 automatically creates a new client record and enrols them in the program.
+When a submission is approved, KoNote automatically creates a new client record and enrols them in the program.
 
 #### Create a Registration Link
 
@@ -305,7 +320,7 @@ When someone submits a registration form (and auto-approve is off):
 | **Waitlist** | Parks the submission — you can approve or reject it later |
 | **Reject** | Marks it as rejected with a reason — no client is created |
 
-**Duplicate detection:** KoNote2 automatically flags submissions that match an existing client's email or name. This helps you avoid creating duplicates — use the **Merge** option when a match is found.
+**Duplicate detection:** KoNote automatically flags submissions that match an existing client's email or name. This helps you avoid creating duplicates — use the **Merge** option when a match is found.
 
 #### Auto-Approve vs. Manual Review
 
@@ -328,7 +343,34 @@ With auto-approve on, each submission instantly creates a client record and enro
 
 ## User Management
 
-### Create User Accounts
+There are three ways to create user accounts, depending on the situation:
+
+| Method | Best for | How it works |
+|--------|----------|-------------|
+| **Invite link** (recommended) | Onboarding new staff | Admin creates a link; the new person sets up their own username and password |
+| **Direct creation** | Quick setup, temporary accounts | Admin fills in all details including password |
+| **Azure AD SSO** | Organisations using Microsoft 365 | Users are created automatically on first login |
+
+### Invite a New User (Recommended)
+
+Invite links are the easiest way to onboard staff. The new person chooses their own username and password.
+
+1. Click **gear icon** → **User Management**
+2. Click **Invite User**
+3. Choose:
+   - **Role** — receptionist, staff, program manager, executive, or admin
+   - **Programs** — which programs they'll have access to
+   - **Link expiry** — how many days the invite is valid (default: 7)
+4. Click **Create Invite**
+5. Copy the generated link and send it to the new person
+
+When they open the link, they'll set up their display name, username, and password. They're logged in immediately with the correct role and program access.
+
+> **Tip:** Each invite link can only be used once. If it expires or the person needs a new one, create another invite.
+
+### Create a User Directly
+
+For quick setup when you want to control the credentials:
 
 1. Click **gear icon** → **User Management**
 2. Click **+ New User**
@@ -390,7 +432,7 @@ They can no longer log in, but historical data is preserved.
 
 ## Backup and Restore
 
-KoNote2 stores data in **two PostgreSQL databases**:
+KoNote stores data in **two PostgreSQL databases**:
 - **Main database** — clients, programs, plans, notes
 - **Audit database** — immutable log of every change
 
@@ -415,38 +457,38 @@ Store it separately from database backups:
 **Docker Compose:**
 ```bash
 # Main database
-docker compose exec db pg_dump -U KoNote2 KoNote2 > backup_main_$(date +%Y-%m-%d).sql
+docker compose exec db pg_dump -U konote konote > backup_main_$(date +%Y-%m-%d).sql
 
 # Audit database
-docker compose exec audit_db pg_dump -U audit_writer KoNote2_audit > backup_audit_$(date +%Y-%m-%d).sql
+docker compose exec audit_db pg_dump -U audit_writer konote_audit > backup_audit_$(date +%Y-%m-%d).sql
 ```
 
 **Plain PostgreSQL:**
 ```bash
-pg_dump -h hostname -U KoNote2 -d KoNote2 > backup_main_$(date +%Y-%m-%d).sql
-pg_dump -h hostname -U audit_writer -d KoNote2_audit > backup_audit_$(date +%Y-%m-%d).sql
+pg_dump -h hostname -U konote -d konote > backup_main_$(date +%Y-%m-%d).sql
+pg_dump -h hostname -U audit_writer -d konote_audit > backup_audit_$(date +%Y-%m-%d).sql
 ```
 
 ### Automated Backups
 
 **Windows Task Scheduler:**
 
-Save as `C:\KoNote2\backup_KoNote2.ps1`:
+Save as `C:\KoNote\backup_KoNote.ps1`:
 
 ```powershell
-$BackupDir = "C:\Backups\KoNote2"
-$KoNote2Dir = "C:\KoNote2\KoNote2-web"
+$BackupDir = "C:\Backups\KoNote"
+$KoNoteDir = "C:\KoNote\KoNote-web"
 $Date = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 
 if (-not (Test-Path $BackupDir)) { New-Item -ItemType Directory -Path $BackupDir -Force }
 
-Set-Location $KoNote2Dir
+Set-Location $KoNoteDir
 
 # Main database
-docker compose exec -T db pg_dump -U KoNote2 KoNote2 | Out-File -FilePath "$BackupDir\backup_main_$Date.sql" -Encoding utf8
+docker compose exec -T db pg_dump -U konote konote | Out-File -FilePath "$BackupDir\backup_main_$Date.sql" -Encoding utf8
 
 # Audit database
-docker compose exec -T audit_db pg_dump -U audit_writer KoNote2_audit | Out-File -FilePath "$BackupDir\backup_audit_$Date.sql" -Encoding utf8
+docker compose exec -T audit_db pg_dump -U audit_writer konote_audit | Out-File -FilePath "$BackupDir\backup_audit_$Date.sql" -Encoding utf8
 
 # Clean up backups older than 30 days
 Get-ChildItem -Path $BackupDir -Filter "backup_*.sql" | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) } | Remove-Item -Force
@@ -456,23 +498,23 @@ Schedule via Task Scheduler to run daily at 2:00 AM.
 
 **Linux/Mac Cron:**
 
-Save as `/home/user/backup_KoNote2.sh`:
+Save as `/home/user/backup_KoNote.sh`:
 
 ```bash
 #!/bin/bash
-BACKUP_DIR="/backups/KoNote2"
+BACKUP_DIR="/backups/KoNote"
 DATE=$(date +%Y-%m-%d_%H-%M-%S)
 
 mkdir -p "$BACKUP_DIR"
 
-docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T db pg_dump -U KoNote2 KoNote2 > "$BACKUP_DIR/backup_main_$DATE.sql"
-docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T audit_db pg_dump -U audit_writer KoNote2_audit > "$BACKUP_DIR/backup_audit_$DATE.sql"
+docker compose -f /path/to/KoNote-web/docker-compose.yml exec -T db pg_dump -U konote konote > "$BACKUP_DIR/backup_main_$DATE.sql"
+docker compose -f /path/to/KoNote-web/docker-compose.yml exec -T audit_db pg_dump -U audit_writer konote_audit > "$BACKUP_DIR/backup_audit_$DATE.sql"
 
 # Clean up old backups
 find "$BACKUP_DIR" -name "backup_*.sql" -mtime +30 -delete
 ```
 
-Add to crontab: `0 2 * * * /home/user/backup_KoNote2.sh`
+Add to crontab: `0 2 * * * /home/user/backup_KoNote.sh`
 
 ### Cloud Provider Backups
 
@@ -488,14 +530,14 @@ Add to crontab: `0 2 * * * /home/user/backup_KoNote2.sh`
 docker compose down
 
 # Remove old volumes (WARNING: deletes current data)
-docker volume rm KoNote2-web_pgdata KoNote2-web_audit_pgdata
+docker volume rm KoNote-web_pgdata KoNote-web_audit_pgdata
 
 # Start fresh containers
 docker compose up -d
 
 # Wait 10 seconds, then restore
-docker compose exec -T db psql -U KoNote2 KoNote2 < backup_main_2026-02-03.sql
-docker compose exec -T audit_db psql -U audit_writer KoNote2_audit < backup_audit_2026-02-03.sql
+docker compose exec -T db psql -U konote konote < backup_main_2026-02-03.sql
+docker compose exec -T audit_db psql -U audit_writer konote_audit < backup_audit_2026-02-03.sql
 ```
 
 ### Backup Retention Policy
@@ -523,7 +565,7 @@ docker compose exec -T audit_db psql -U audit_writer KoNote2_audit < backup_audi
 
 ### Security Checks
 
-KoNote2 runs security checks automatically. You can also run them explicitly:
+KoNote runs security checks automatically. You can also run them explicitly:
 
 ```bash
 python manage.py check --deploy
@@ -533,11 +575,11 @@ python manage.py check --deploy
 
 | ID | Severity | What It Checks |
 |----|----------|----------------|
-| `KoNote2.E001` | Error | Encryption key exists and valid |
-| `KoNote2.E002` | Error | Security middleware loaded |
-| `KoNote2.W001` | Warning | DEBUG=True in production |
-| `KoNote2.W002` | Warning | Session cookies not secure |
-| `KoNote2.W003` | Warning | CSRF cookies not secure |
+| `KoNote.E001` | Error | Encryption key exists and valid |
+| `KoNote.E002` | Error | Security middleware loaded |
+| `KoNote.W001` | Warning | DEBUG=True in production |
+| `KoNote.W002` | Warning | Session cookies not secure |
+| `KoNote.W003` | Warning | CSRF cookies not secure |
 
 Errors prevent server start. Warnings indicate security gaps.
 
@@ -663,11 +705,11 @@ ORDER BY event_timestamp DESC;
 
 ### Why Clients Can't Be Deleted (by Default)
 
-KoNote2 intentionally **does not allow deleting clients through normal use**. This is a safety feature, not a limitation.
+KoNote intentionally **does not allow deleting clients through normal use**. This is a safety feature, not a limitation.
 
 **Why this matters:**
 
-| Concern | How KoNote2 handles it |
+| Concern | How KoNote handles it |
 |---------|----------------------|
 | Accidental deletion | Not possible — there is no delete button in normal workflows |
 | Audit trail | Client history stays intact for compliance |
@@ -689,7 +731,7 @@ Discharged and inactive clients:
 - Keep all notes, plans, and events intact
 - Can be reactivated if the client returns
 
-**Exception — legally required erasure:** For PIPEDA/GDPR right-to-erasure requests, KoNote2 provides a formal erasure workflow. This requires approval from all program managers for the client's enrolled programs, permanently deletes the client's data, and preserves an audit record with record counts only (no PII). See `docs/security-operations.md#erasure-workflow-security` for the full state machine and invariants.
+**Exception — legally required erasure:** For PIPEDA/GDPR right-to-erasure requests, KoNote provides a formal erasure workflow. This requires approval from all program managers for the client's enrolled programs, permanently deletes the client's data, and preserves an audit record with record counts only (no PII). See `docs/security-operations.md#erasure-workflow-security` for the full state machine and invariants.
 
 ---
 
@@ -719,7 +761,7 @@ Some privacy regulations require the ability to permanently delete personal data
 **A:** Yes. Changes apply immediately to all users.
 
 ### Q: How do I delete a client?
-**A:** You cannot delete clients through normal use — by design. KoNote2 preserves all client records to maintain audit trails and prevent accidental data loss. Instead, discharge the client or mark them as inactive. **Exception:** If a client requests data deletion under PIPEDA or GDPR, use the **Erase Client Data** workflow on their detail page. This requires approval from all relevant program managers and permanently deletes the client's data. See [Data Retention](#data-retention) and `docs/security-operations.md#erasure-workflow-security` for details.
+**A:** You cannot delete clients through normal use — by design. KoNote preserves all client records to maintain audit trails and prevent accidental data loss. Instead, discharge the client or mark them as inactive. **Exception:** If a client requests data deletion under PIPEDA or GDPR, use the **Erase Client Data** workflow on their detail page. This requires approval from all relevant program managers and permanently deletes the client's data. See [Data Retention](#data-retention) and `docs/security-operations.md#erasure-workflow-security` for details.
 
 ### Q: What if I delete a program?
 **A:** You can't delete programs with active clients. Deactivate instead.
@@ -740,5 +782,5 @@ Some privacy regulations require the ability to permanently delete personal data
 
 ---
 
-**Version 2.0** — KoNote2
+**Version 2.0** — KoNote
 Last updated: 2026-02-05

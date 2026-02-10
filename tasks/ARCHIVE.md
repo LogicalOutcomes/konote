@@ -236,7 +236,7 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 - [x] Create security-operations.md — security tests, audit logs, key rotation — 2026-02-03 (DOC9)
 - [x] Enhance README Quick Start — add key generation commands — 2026-02-03 (DOC10)
 - [x] Add inline comments to .env.example — explain each variable — 2026-02-03 (DOC11)
-- [x] "What KoNote2 Is and Isn't" documentation page — set scope expectations — 2026-02-03 (DOC6)
+- [x] "What KoNote Is and Isn't" documentation page — set scope expectations — 2026-02-03 (DOC6)
 - [x] Show custom fields in read-only mode by default with edit toggle — 2026-02-03 (UX12)
 - [x] Add date-only toggle to event form — 2026-02-03 (UX13)
 - [x] Style permission error pages with navigation and helpful text — 2026-02-03 (UX14)

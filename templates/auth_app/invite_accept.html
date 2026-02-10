@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% trans "Create Your Account" %} — {{ site.product_name|default:"KoNote2" }}</title>
+    <title>{% trans "Create Your Account" %} — {{ site.product_name|default:"KoNote" }}</title>
 
     <!-- Favicon + manifest -->
     <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
@@ -21,7 +21,7 @@
 <body>
     <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
     <main id="main-content" class="container" style="max-width: 500px; margin-top: 3rem;" tabindex="-1">
-        <div class="login-wordmark">{{ site.product_name|default:"KoNote2" }}</div>
+        <div class="login-wordmark">{{ site.product_name|default:"KoNote" }}</div>
         <p class="login-tagline">{% trans "Create your account" %}</p>
 
         <article>

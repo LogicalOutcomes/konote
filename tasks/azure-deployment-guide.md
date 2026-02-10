@@ -1,6 +1,6 @@
-# Deploying KoNote2 on Azure (Canada)
+# Deploying KoNote on Azure (Canada)
 
-Step-by-step guide to hosting KoNote2 on Microsoft Azure in a Canadian data centre. No command line required — everything is done through the Azure portal.
+Step-by-step guide to hosting KoNote on Microsoft Azure in a Canadian data centre. No command line required — everything is done through the Azure portal.
 
 ## Why Azure?
 
@@ -42,23 +42,23 @@ A resource group is a folder that holds all your Azure resources together.
 3. Search for **"Resource group"** and click **Create**
 4. Fill in:
    - **Subscription**: Select your subscription
-   - **Resource group name**: `KoNote2-production` (or your agency name)
+   - **Resource group name**: `KoNote-production` (or your agency name)
    - **Region**: `Canada Central` (Toronto) or `Canada East` (Quebec)
 5. Click **Review + create**, then **Create**
 
-**What just happened?** You created a container to hold all the KoNote2 components. Everything we create next goes in this folder.
+**What just happened?** You created a container to hold all the KoNote components. Everything we create next goes in this folder.
 
 ---
 
 ## Step 2: Create the Main Database
 
-KoNote2 needs a PostgreSQL database for client and note data.
+KoNote needs a PostgreSQL database for client and note data.
 
 1. In the Azure portal search bar, type **"Azure Database for PostgreSQL"**
 2. Click **Create** → Select **Flexible server**
 3. Fill in the **Basics** tab:
-   - **Resource group**: Select `KoNote2-production`
-   - **Server name**: `KoNote2-db` (must be globally unique — add your agency initials if taken)
+   - **Resource group**: Select `KoNote-production`
+   - **Server name**: `KoNote-db` (must be globally unique — add your agency initials if taken)
    - **Region**: `Canada Central` (same as your resource group)
    - **PostgreSQL version**: `16`
    - **Workload type**: `Development` (can upgrade later)
@@ -67,7 +67,7 @@ KoNote2 needs a PostgreSQL database for client and note data.
      - Storage: **32 GB** (minimum)
      - Click **Save**
    - **Authentication method**: `PostgreSQL authentication only`
-   - **Admin username**: `KoNote2admin`
+   - **Admin username**: `konoteadmin`
    - **Password**: Create a strong password and **save it somewhere safe**
 4. Click **Next: Networking**
 5. Under **Firewall rules**:
@@ -83,18 +83,18 @@ KoNote2 needs a PostgreSQL database for client and note data.
 
 ## Step 3: Create the Audit Database
 
-KoNote2 uses a separate database for audit logs (security best practice).
+KoNote uses a separate database for audit logs (security best practice).
 
 1. Once your database server is created, go to it in the portal
 2. In the left menu, click **Databases**
 3. Click **+ Add**
-4. Name: `KoNote2_audit`
+4. Name: `konote_audit`
 5. Click **Save**
 
 Also create the main application database:
 
 1. Click **+ Add** again
-2. Name: `KoNote2`
+2. Name: `KoNote`
 3. Click **Save**
 
 **What just happened?** You created two databases on your server — one for application data, one for audit logs. They're isolated from each other for security.
@@ -103,18 +103,18 @@ Also create the main application database:
 
 ## Step 4: Create the App Service
 
-The App Service runs your KoNote2 application.
+The App Service runs your KoNote application.
 
 1. In the Azure portal search bar, type **"App Services"**
 2. Click **Create** → **Web App**
 3. Fill in the **Basics** tab:
-   - **Resource group**: Select `KoNote2-production`
-   - **Name**: `KoNote2-app` (this becomes your URL: `KoNote2-app.azurewebsites.net`)
+   - **Resource group**: Select `KoNote-production`
+   - **Name**: `KoNote-app` (this becomes your URL: `KoNote-app.azurewebsites.net`)
    - **Publish**: `Docker Container`
    - **Operating System**: `Linux`
    - **Region**: `Canada Central`
    - **Pricing plan**: Click **Create new**
-     - Name: `KoNote2-plan`
+     - Name: `KoNote-plan`
      - **Sku and size**: Click **Change size** → Select **B1** (Basic) → Click **Apply**
 4. Click **Next: Database** → Skip (we already created it)
 5. Click **Next: Docker**
@@ -126,30 +126,30 @@ The App Service runs your KoNote2 application.
 
 **Wait 2-3 minutes** for the App Service to deploy.
 
-**What just happened?** You created a web server that will run KoNote2. It's currently running a placeholder — we'll connect your actual application next.
+**What just happened?** You created a web server that will run KoNote. It's currently running a placeholder — we'll connect your actual application next.
 
 ---
 
 ## Step 5: Configure Environment Variables
 
-KoNote2 needs configuration values to connect to the database and encrypt data.
+KoNote needs configuration values to connect to the database and encrypt data.
 
-1. Go to your App Service (`KoNote2-app`)
+1. Go to your App Service (`KoNote-app`)
 2. In the left menu, click **Configuration** (under Settings)
 3. Click **+ New application setting** for each of these:
 
 | Name | Value |
 |------|-------|
-| `DATABASE_URL` | `postgres://KoNote2admin:YOUR_PASSWORD@KoNote2-db.postgres.database.azure.com:5432/KoNote2?sslmode=require` |
-| `AUDIT_DATABASE_URL` | `postgres://KoNote2admin:YOUR_PASSWORD@KoNote2-db.postgres.database.azure.com:5432/KoNote2_audit?sslmode=require` |
+| `DATABASE_URL` | `postgres://konoteadmin:YOUR_PASSWORD@konote-db.postgres.database.azure.com:5432/konote?sslmode=require` |
+| `AUDIT_DATABASE_URL` | `postgres://konoteadmin:YOUR_PASSWORD@konote-db.postgres.database.azure.com:5432/konote_audit?sslmode=require` |
 | `SECRET_KEY` | Generate a new one: 50+ random characters |
 | `FIELD_ENCRYPTION_KEY` | Your existing encryption key (CRITICAL: use the same one!) |
-| `ALLOWED_HOSTS` | `KoNote2-app.azurewebsites.net` |
+| `ALLOWED_HOSTS` | `KoNote-app.azurewebsites.net` |
 | `AUTH_MODE` | `azure` |
 | `AZURE_CLIENT_ID` | Your existing Azure AD client ID |
 | `AZURE_CLIENT_SECRET` | Your existing Azure AD client secret |
 | `AZURE_TENANT_ID` | Your Azure AD tenant ID |
-| `AZURE_REDIRECT_URI` | `https://KoNote2-app.azurewebsites.net/auth/callback/` |
+| `AZURE_REDIRECT_URI` | `https://KoNote-app.azurewebsites.net/auth/callback/` |
 | `DEBUG` | `False` |
 
 4. Click **Save** at the top
@@ -157,7 +157,7 @@ KoNote2 needs configuration values to connect to the database and encrypt data.
 
 **CRITICAL:** Use your existing `FIELD_ENCRYPTION_KEY` if you're migrating data. If you use a different key, existing encrypted data becomes unreadable.
 
-**What just happened?** You told KoNote2 how to connect to the database, encrypt data, and authenticate users. These values are stored securely — they're not visible in your code.
+**What just happened?** You told KoNote how to connect to the database, encrypt data, and authenticate users. These values are stored securely — they're not visible in your code.
 
 ---
 
@@ -167,10 +167,10 @@ Your Azure AD app needs to know about the new URL.
 
 1. Go to [Azure Active Directory](https://portal.azure.com/#blade/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/Overview)
 2. Click **App registrations** in the left menu
-3. Find and click your KoNote2 app registration
+3. Find and click your KoNote app registration
 4. Click **Authentication** in the left menu
 5. Under **Redirect URIs**, click **Add URI**
-6. Add: `https://KoNote2-app.azurewebsites.net/auth/callback/`
+6. Add: `https://KoNote-app.azurewebsites.net/auth/callback/`
 7. Click **Save**
 
 **What just happened?** You told Azure AD that it's okay to redirect users back to your new Azure-hosted URL after they sign in.
@@ -181,13 +181,13 @@ Your Azure AD app needs to know about the new URL.
 
 Connect your GitHub repository for automatic deployments.
 
-1. Go to your App Service (`KoNote2-app`)
+1. Go to your App Service (`KoNote-app`)
 2. In the left menu, click **Deployment Center**
 3. Under **Source**, select **GitHub**
 4. Click **Authorize** and sign in to GitHub
 5. Select:
    - **Organization**: Your GitHub account
-   - **Repository**: `KoNote2-web`
+   - **Repository**: `KoNote-web`
    - **Branch**: `main`
 6. Under **Build provider**, select **GitHub Actions**
 7. Click **Save**
@@ -204,7 +204,7 @@ Azure will create a GitHub Actions workflow file in your repository. The first d
 
 After the first deployment, you need to set up the database tables.
 
-1. Go to your App Service (`KoNote2-app`)
+1. Go to your App Service (`KoNote-app`)
 2. In the left menu, click **SSH** (under Development Tools)
 3. Click **Go →** to open a terminal
 4. Run these commands:
@@ -223,7 +223,7 @@ Running migrations:
   ...
 ```
 
-**What just happened?** You created all the database tables KoNote2 needs. This only needs to be done once (or when you upgrade to a new version with database changes).
+**What just happened?** You created all the database tables KoNote needs. This only needs to be done once (or when you upgrade to a new version with database changes).
 
 ---
 
@@ -237,18 +237,18 @@ python manage.py createsuperuser
 
 2. Enter a username, display name, and password when prompted
 
-**What just happened?** You created an administrator account that can configure KoNote2 settings.
+**What just happened?** You created an administrator account that can configure KoNote settings.
 
 ---
 
 ## Step 10: Test Your Deployment
 
-1. Open your browser and go to: `https://KoNote2-app.azurewebsites.net`
-2. You should see the KoNote2 login page
+1. Open your browser and go to: `https://KoNote-app.azurewebsites.net`
+2. You should see the KoNote login page
 3. Click **Sign in with Microsoft** (or use your local admin account)
 4. Verify you can access the dashboard
 
-**Congratulations!** KoNote2 is now running on Azure in Canada.
+**Congratulations!** KoNote is now running on Azure in Canada.
 
 ---
 
@@ -259,7 +259,7 @@ After confirming everything works:
 - [ ] **Restrict database firewall** — In your PostgreSQL server settings, remove public access and add only your App Service's outbound IPs
 - [ ] **Enable Azure Defender** — Go to Microsoft Defender for Cloud and enable database protection
 - [ ] **Set up backup alerts** — In PostgreSQL settings, verify automated backups are enabled (they should be by default)
-- [ ] **Configure custom domain** (optional) — Add your own domain like `KoNote2.youragency.ca`
+- [ ] **Configure custom domain** (optional) — Add your own domain like `KoNote.youragency.ca`
 - [ ] **Enable HTTPS only** — In App Service → Configuration → General settings, set "HTTPS Only" to On
 
 ---
@@ -292,7 +292,7 @@ Detailed migration steps depend on your Railway setup — ask for help when you'
 - Usually a missing environment variable or database connection issue
 
 ### "Invalid redirect URI" on login
-- Verify the redirect URI in Azure AD matches exactly: `https://KoNote2-app.azurewebsites.net/auth/callback/`
+- Verify the redirect URI in Azure AD matches exactly: `https://KoNote-app.azurewebsites.net/auth/callback/`
 - Check for trailing slashes — they matter!
 
 ### Database connection errors
@@ -309,5 +309,5 @@ Detailed migration steps depend on your Railway setup — ask for help when you'
 ## Support
 
 - **Azure documentation**: [docs.microsoft.com/azure](https://docs.microsoft.com/azure)
-- **KoNote2 issues**: Check `tasks/` folder or create an issue on GitHub
+- **KoNote issues**: Check `tasks/` folder or create an issue on GitHub
 - **Azure support**: Available through your Azure subscription (paid plans include support)

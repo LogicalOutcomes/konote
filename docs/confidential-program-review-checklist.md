@@ -70,13 +70,13 @@ Use this checklist once a year (or after any security incident) to verify that c
 - [ ] Encryption keys are backed up securely and separately from database backups
 - [ ] Database backups are stored in a location with access restricted to authorised personnel only
 - [ ] Hosting provider's data processing agreement is current and on file
-- [ ] No confidential client data has been copied to spreadsheets, emails, or other systems outside KoNote2
+- [ ] No confidential client data has been copied to spreadsheets, emails, or other systems outside KoNote
 
 ---
 
 ## 7. Staff Training
 
-- [ ] Confidential program staff understand what "confidential" means in KoNote2
+- [ ] Confidential program staff understand what "confidential" means in KoNote
 - [ ] Confidential program staff know how to report a suspected privacy breach
 - [ ] Standard program staff understand they will not see confidential program clients (so they don't assume the system is broken)
 - [ ] New staff hired since last review have been oriented on confidential program policies

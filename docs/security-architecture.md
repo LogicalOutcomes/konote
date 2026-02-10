@@ -1,14 +1,14 @@
 # Security Architecture
 
-**Last updated:** February 2026 | **Applies to:** KoNote2 v1.x
+**Last updated:** February 2026 | **Applies to:** KoNote v1.x
 
-This document describes KoNote2's security architecture in technical detail. It is intended for developers, security reviewers, and penetration testers. For operational guidance, see the [Security Operations Guide](security-operations.md). For a non-technical overview, see the [Security Overview](security-overview.md).
+This document describes KoNote's security architecture in technical detail. It is intended for developers, security reviewers, and penetration testers. For operational guidance, see the [Security Operations Guide](security-operations.md). For a non-technical overview, see the [Security Overview](security-overview.md).
 
 ---
 
 ## 1. Encryption Implementation
 
-KoNote2 uses Fernet encryption from Python's `cryptography` library for application-level PII encryption.
+KoNote uses Fernet encryption from Python's `cryptography` library for application-level PII encryption.
 
 **Algorithm details:**
 
@@ -64,7 +64,7 @@ def first_name(self, value):
 
 ## 2. System Check IDs
 
-KoNote2 registers custom Django system checks that run on every `manage.py` command, including server startup.
+KoNote registers custom Django system checks that run on every `manage.py` command, including server startup.
 
 | ID | Severity | What It Checks | How to Fix |
 |----|----------|----------------|------------|
@@ -229,7 +229,7 @@ The system supports three tiers of erasure, determined at request time:
 
 ## 7. CSRF Protection
 
-Django enables CSRF protection by default via `CsrfViewMiddleware`. KoNote2 uses HTMX for dynamic interactions, which requires explicit CSRF token handling:
+Django enables CSRF protection by default via `CsrfViewMiddleware`. KoNote uses HTMX for dynamic interactions, which requires explicit CSRF token handling:
 
 - The CSRF token is included in HTMX requests via the `hx-headers` attribute or Django's `{% csrf_token %}` template tag
 - All HTMX POST requests include the CSRF token in the `X-CSRFToken` header

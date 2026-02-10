@@ -1,6 +1,6 @@
 # Permissions Review Decisions (2026-02-09)
 
-Two rounds of expert panel review of the KoNote2 RBAC permission structure. Goal: conservative defaults that protect client confidentiality while being practical for most Canadian nonprofits.
+Two rounds of expert panel review of the KoNote RBAC permission structure. Goal: conservative defaults that protect client confidentiality while being practical for most Canadian nonprofits.
 
 ---
 

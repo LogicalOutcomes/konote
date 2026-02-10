@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-03
 **Method:** Expert panel convening (4 perspectives)
-**Focus:** Can a nonprofit program manager or ED set up KoNote2 without developer help?
+**Focus:** Can a nonprofit program manager or ED set up KoNote without developer help?
 
 ---
 

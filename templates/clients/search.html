@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% blocktrans with clients=term.client_plural|default:"Participants" %}Search {{ clients }}{% endblocktrans %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% blocktrans with clients=term.client_plural|default:"Participants" %}Search {{ clients }}{% endblocktrans %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <div class="page-header">

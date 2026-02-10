@@ -1,4 +1,4 @@
-"""URL configuration for KoNote2 Web."""
+"""URL configuration for KoNote Web."""
 import os
 
 from django.conf import settings

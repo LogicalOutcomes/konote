@@ -12,7 +12,7 @@ When data is encrypted by your application before it reaches the database, the h
 
 ---
 
-## Current State (KoNote2-web)
+## Current State (KoNote-web)
 
 ### Already Encrypted
 | Model | Fields |
@@ -244,6 +244,6 @@ This adds legal friction but doesn't completely solve the problem. The hybrid ap
 
 ---
 
-## Note About KoNote2Redux
+## Note About KoNoteRedux
 
-If you also use the **KoNote2Redux desktop application**, it already encrypts all data locally with AES-256-GCM. The CLOUD Act concern doesn't apply to the desktop app since data stays on users' computers.
+If you also use the **KoNoteRedux desktop application**, it already encrypts all data locally with AES-256-GCM. The CLOUD Act concern doesn't apply to the desktop app since data stays on users' computers.

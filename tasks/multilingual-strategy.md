@@ -1,8 +1,8 @@
-# Multilingual Strategy for KoNote2
+# Multilingual Strategy for KoNote
 
 ## Overview
 
-KoNote2 is open source. Agencies must be able to set up and run bilingual (or multilingual) instances without our involvement. This document defines the architecture and roadmap.
+KoNote is open source. Agencies must be able to set up and run bilingual (or multilingual) instances without our involvement. This document defines the architecture and roadmap.
 
 ## Design Principles
 
@@ -24,7 +24,7 @@ The first screen shows both languages with equal prominence:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                                                             │
-│                        KoNote2                              │
+│                        KoNote                              │
 │                                                             │
 │         ┌─────────────────┐  ┌─────────────────┐           │
 │         │                 │  │                 │           │
@@ -55,7 +55,7 @@ Clear text in navbar, not a hidden flag icon:
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
-│ KoNote2     Clients  Notes  Plans  Reports     [EN | FR]   Alex ▼│
+│ KoNote     Clients  Notes  Plans  Reports     [EN | FR]   Alex ▼│
 └──────────────────────────────────────────────────────────────────┘
 ```
 

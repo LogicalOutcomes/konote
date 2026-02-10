@@ -86,7 +86,7 @@ class Command(BaseCommand):
         from apps.admin_settings.models import InstanceSetting
         privacy_officer_name = InstanceSetting.get("privacy_officer_name", "")
         privacy_officer_email = InstanceSetting.get("privacy_officer_email", "")
-        product_name = InstanceSetting.get("product_name", "KoNote2")
+        product_name = InstanceSetting.get("product_name", "KoNote")
 
         context = {
             "expired_list": expired_list,

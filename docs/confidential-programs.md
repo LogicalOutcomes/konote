@@ -1,6 +1,6 @@
 # Confidential Programs & Duplicate Matching
 
-This guide explains how KoNote2 handles sensitive programs and prevents duplicate client records across programs.
+This guide explains how KoNote handles sensitive programs and prevents duplicate client records across programs.
 
 > **Who is this for?** Administrators setting up programs, and program managers working with sensitive services (counselling, mental health, addiction, domestic violence support).
 
@@ -18,7 +18,7 @@ This guide explains how KoNote2 handles sensitive programs and prevents duplicat
 
 ## Standard vs. Confidential Programs
 
-KoNote2 has two types of programs. The type is chosen when a program is created and affects who can see client records.
+KoNote has two types of programs. The type is chosen when a program is created and affects who can see client records.
 
 | | Standard Programs | Confidential Programs |
 |---|-------------------|----------------------|
@@ -41,7 +41,7 @@ Multi-service agencies often run casual programs (basketball, employment) alongs
 2. Enter the program name
 3. Look for the **"Is this a confidential program?"** section
 
-**Automatic suggestion:** If your program name contains words like "counselling," "mental health," "addiction," "domestic violence," or "shelter," KoNote2 will suggest marking it as confidential. This is a suggestion — you make the final decision.
+**Automatic suggestion:** If your program name contains words like "counselling," "mental health," "addiction," "domestic violence," or "shelter," KoNote will suggest marking it as confidential. This is a suggestion — you make the final decision.
 
 4. Check **"Yes, this is a confidential program"** if needed
 5. Click **Create**
@@ -56,7 +56,7 @@ If you need to reverse this setting, your agency must complete a formal Privacy 
 
 ## Duplicate Detection
 
-When staff create a new client in a **standard** program, KoNote2 automatically checks whether that person might already have a record. This prevents duplicate records without requiring staff to manually search.
+When staff create a new client in a **standard** program, KoNote automatically checks whether that person might already have a record. This prevents duplicate records without requiring staff to manually search.
 
 ### How matching works
 
@@ -146,20 +146,20 @@ Your agency should complete a PIA before activating confidential programs for hi
 
 ### When to use a separate instance instead
 
-KoNote2's confidential program isolation protects against system-level disclosure — searches, matching, admin browsing, and reports. It does **not** protect against:
+KoNote's confidential program isolation protects against system-level disclosure — searches, matching, admin browsing, and reports. It does **not** protect against:
 - A threat actor with administrative access to your hosting platform
 - Physical access to the server
 - Credential theft of a confidential program staff member
 
-For the rare case where a known threat actor has hosting platform admin access, we recommend a **separate KoNote2 instance** with independent hosting credentials.
+For the rare case where a known threat actor has hosting platform admin access, we recommend a **separate KoNote instance** with independent hosting credentials.
 
 ---
 
 ## Privacy Impact Assessment
 
-KoNote2 ships with a pre-filled PIA template at [Privacy Impact Assessment Template](pia-template-answers.md). This template walks your agency through:
+KoNote ships with a pre-filled PIA template at [Privacy Impact Assessment Template](pia-template-answers.md). This template walks your agency through:
 
-1. **What data does KoNote2 collect?** (Pre-filled from your configuration)
+1. **What data does KoNote collect?** (Pre-filled from your configuration)
 2. **Who has access?** (Pre-filled from user roles and program assignments)
 3. **What safeguards are in place?** (Pre-filled: encryption, audit logging, confidential isolation)
 4. **What are the residual risks?** (Pre-filled honestly: hosting provider access, credential compromise)
@@ -171,7 +171,7 @@ Complete this assessment with your Privacy Officer before going live with confid
 
 ## Soft-Filter vs. Hard-Boundary Access Controls
 
-KoNote2 uses two distinct levels of access control. Privacy officers should understand the difference when assessing risk.
+KoNote uses two distinct levels of access control. Privacy officers should understand the difference when assessing risk.
 
 ### Soft-filter (standard programs)
 
@@ -229,7 +229,7 @@ Agencies using confidential programs should conduct an annual review. See the [A
 
 ## Legal & Regulatory Basis (Ontario)
 
-| Law | Requirement | How KoNote2 meets it |
+| Law | Requirement | How KoNote meets it |
 |-----|-------------|---------------------|
 | **PHIPA** | Access controls commensurate with sensitivity, audit logging, breach notification | Role-based access, immutable audit logs, program-level isolation |
 | **PIPEDA** | Limit collection, use, and disclosure of personal information | Program-scoped access — staff only see clients in their programs |
@@ -241,7 +241,7 @@ No Ontario statute requires a physically separate database for DV programs. The 
 
 ## Related Documentation
 
-- [Administering KoNote2](administering-KoNote2.md) — general admin setup
+- [Administering KoNote](administering-KoNote.md) — general admin setup
 - [Security Operations](security-operations.md) — encryption, audit logging, incident response
 - [Privacy Policy Template](privacy-policy-template.md) — customise for your organisation
 - [Privacy Impact Assessment Template](pia-template-answers.md) — pre-filled PIA for your agency

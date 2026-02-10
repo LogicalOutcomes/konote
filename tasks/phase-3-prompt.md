@@ -1,12 +1,12 @@
 # Phase 3 Prompt: Outcomes — Plans & Targets
 
-Copy this prompt into a new Claude Code conversation. Open the `KoNote2-web` project folder first.
+Copy this prompt into a new Claude Code conversation. Open the `KoNote-web` project folder first.
 
 ---
 
 ## Prompt
 
-I'm building KoNote2 Web, a nonprofit client management system. Phases 1-2 are done (foundation + client/program CRUD). I need you to build **Phase 3: Plans & Targets** — this is the core feature users love most.
+I'm building KoNote Web, a nonprofit client management system. Phases 1-2 are done (foundation + client/program CRUD). I need you to build **Phase 3: Plans & Targets** — this is the core feature users love most.
 
 ### Context
 

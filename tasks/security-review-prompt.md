@@ -1,6 +1,6 @@
 # Security Review Agent Prompt
 
-You are conducting a **security review** for KoNote2 Web, a Django-based nonprofit case management system that handles sensitive client data (PII).
+You are conducting a **security review** for KoNote Web, a Django-based nonprofit case management system that handles sensitive client data (PII).
 
 ## Context
 

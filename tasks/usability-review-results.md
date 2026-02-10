@@ -1,4 +1,4 @@
-# KoNote2 Web — Usability Review for Non-Profit Community Organizations
+# KoNote Web — Usability Review for Non-Profit Community Organizations
 
 **Review Date:** 2026-02-03
 **Reviewer:** Claude Code (automated analysis)
@@ -8,7 +8,7 @@
 
 ## Executive Summary
 
-KoNote2 Web is a **well-designed outcome management system** with thoughtful accommodations for nonprofit diversity. Its terminology customization, feature toggles, and simple server-rendered UI make it adaptable to many contexts. However, several gaps may limit its suitability for certain organization types.
+KoNote Web is a **well-designed outcome management system** with thoughtful accommodations for nonprofit diversity. Its terminology customization, feature toggles, and simple server-rendered UI make it adaptable to many contexts. However, several gaps may limit its suitability for certain organization types.
 
 **Overall Assessment:** ✅ Appropriate for small-to-medium nonprofits (10–50 staff, up to 2,000 clients) with outcome-focused programming. Some organization types will face friction.
 
@@ -277,7 +277,7 @@ Power users cannot navigate quickly via keyboard commands.
 
 ## Conclusion
 
-KoNote2 Web is **appropriate for outcome-focused Canadian nonprofits** in the small-to-medium range, particularly:
+KoNote Web is **appropriate for outcome-focused Canadian nonprofits** in the small-to-medium range, particularly:
 - Youth services
 - Mental health programs
 - Housing support
@@ -299,7 +299,7 @@ Following a multi-expert panel review (Nonprofit Technology Consultant, Product 
 
 ### Core Principle
 
-> **KoNote2 is an outcome tracking system.** It helps small nonprofits demonstrate program impact to funders. It does not replace your calendar, your file storage, or your email. It does one job extremely well.
+> **KoNote is an outcome tracking system.** It helps small nonprofits demonstrate program impact to funders. It does not replace your calendar, your file storage, or your email. It does one job extremely well.
 
 ### Decision Matrix
 
@@ -318,7 +318,7 @@ Following a multi-expert panel review (Nonprofit Technology Consultant, Product 
 **Phase A: Market Access (Next Release)**
 1. French UI translation (Django i18n) — unlocks 25% of Canadian market
 2. Document Link field on client records — immediate value, minimal effort
-3. "What KoNote2 Is and Isn't" documentation — set expectations, reduce feature requests
+3. "What KoNote Is and Isn't" documentation — set expectations, reduce feature requests
 
 **Phase B: Core Value Enhancement (Following Quarter)**
 4. Funder report builder with aggregation:

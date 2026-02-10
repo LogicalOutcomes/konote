@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Help" %} - {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% trans "Help" %} - {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <div class="help-page">
-    <h1>{% trans "KoNote2 Help" %}</h1>
+    <h1>{% trans "KoNote Help" %}</h1>
 
-    <p>{% trans "Welcome to KoNote2! This guide helps you find what you need quickly." %}</p>
+    <p>{% trans "Welcome to KoNote! This guide helps you find what you need quickly." %}</p>
 
     <!-- Quick Navigation -->
     <nav class="help-nav" aria-label="{% trans 'Help navigation' %}">
@@ -133,7 +133,7 @@
     <section id="notes">
         <h2>{{ term.progress_note_plural|capfirst }}</h2>
 
-        <p>{% blocktrans with notes=term.progress_note_plural|default:"Progress Notes" clients=term.client_plural|default:"Participants" %}{{ notes }} document your interactions with {{ clients }}. KoNote2 offers two types:{% endblocktrans %}</p>
+        <p>{% blocktrans with notes=term.progress_note_plural|default:"Progress Notes" clients=term.client_plural|default:"Participants" %}{{ notes }} document your interactions with {{ clients }}. KoNote offers two types:{% endblocktrans %}</p>
 
         <h3>{{ term.quick_note|capfirst }}s</h3>
         <p>{% blocktrans with qnotes=term.quick_note|default:"Quick Note" %}Use {{ qnotes }}s for brief check-ins or short updates.{% endblocktrans %}</p>
@@ -412,7 +412,7 @@
     <section id="admin">
         <h2>{% trans "Administrator Tasks" %}</h2>
 
-        <p>{% trans "As an administrator, you can configure KoNote2 through the" %} <strong>{% trans "Admin" %}</strong> {% trans "menu:" %}</p>
+        <p>{% trans "As an administrator, you can configure KoNote through the" %} <strong>{% trans "Admin" %}</strong> {% trans "menu:" %}</p>
 
         <table>
             <thead>
@@ -424,7 +424,7 @@
             <tbody>
                 <tr>
                     <td>{% trans "Create users" %}</td>
-                    <td>{% trans "Admin" %} → {% trans "Invites" %}</td>
+                    <td>{% trans "Admin" %} → {% trans "New Users" %}</td>
                 </tr>
                 {% if features.programs %}
                 <tr>
@@ -468,7 +468,7 @@
         <h2>{% trans "Troubleshooting" %}</h2>
 
         <h3>{% trans "I can't log in" %}</h3>
-        <p><strong>{% trans "Azure AD:" %}</strong> {% trans "Check that your work email is registered with KoNote2. Contact your administrator." %}</p>
+        <p><strong>{% trans "Azure AD:" %}</strong> {% trans "Check that your work email is registered with KoNote. Contact your administrator." %}</p>
         <p><strong>{% trans "Local login:" %}</strong> {% trans "Confirm your credentials. If forgotten, ask your administrator to reset your password." %}</p>
 
         <h3>{% blocktrans with client=term.client|default:"Participant" %}I can't find a {{ client }}{% endblocktrans %}</h3>
@@ -496,7 +496,7 @@
         <p>{% blocktrans with metric=term.metric|default:"Metric" notes=term.progress_note_plural|default:"Progress Notes" metrics=term.metric_plural|default:"Metrics" target=term.target|default:"Target" %}Charts require {{ metric }} values recorded in {{ notes }}. If no {{ metrics }} have been recorded for a {{ target }}, charts will be empty.{% endblocktrans %}</p>
 
         <h3>{% trans "The page timed out" %}</h3>
-        <p>{% trans "For security, KoNote2 logs you out after inactivity. Log in again to continue. Your unsaved work may be lost." %}</p>
+        <p>{% trans "For security, KoNote logs you out after inactivity. Log in again to continue. Your unsaved work may be lost." %}</p>
     </section>
 
     <!-- Getting More Help -->

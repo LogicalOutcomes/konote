@@ -1,5 +1,10 @@
 /* Portal-specific styles — layered on top of Pico CSS */
 
+/* ---- Base typography — cap Pico's fluid scale for desktop ---- */
+:root {
+    --pico-font-size: clamp(16px, 1vw + 14px, 17px);
+}
+
 /* ---- Skip navigation (accessibility — WCAG 2.4.1) ---- */
 /* Duplicated from main.css because portal uses a separate base template */
 .visually-hidden-focusable {
@@ -44,6 +49,8 @@
 .portal-lang-nav .container {
     display: flex;
     justify-content: flex-end;
+    /* Leave room for the fixed quick-exit button */
+    padding-right: 10rem;
 }
 .portal-lang-nav .lang-link {
     background: none;
@@ -111,6 +118,8 @@
 /* Portal navigation — simpler than staff nav */
 .portal-nav {
     padding: 0.5rem 1rem;
+    /* Leave room for the fixed quick-exit button */
+    padding-right: 10rem;
     display: flex;
     justify-content: space-between;
     align-items: center;

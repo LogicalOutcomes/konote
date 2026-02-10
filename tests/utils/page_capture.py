@@ -1,7 +1,7 @@
 """
 Shared utilities for page state capture (QA page audit).
 
-Captures screenshots of every KoNote2 page for every authorized persona
+Captures screenshots of every KoNote page for every authorized persona
 at multiple breakpoints. Screenshots feed into the /run-page-audit skill
 in the konote-qa-scenarios repo.
 """

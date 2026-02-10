@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% if is_edit %}{% trans "Edit" %}{% else %}{% trans "Create" %}{% endif %} {% trans "Template" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% if is_edit %}{% trans "Edit" %}{% else %}{% trans "Create" %}{% endif %} {% trans "Template" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <h1>{% if is_edit %}{% trans "Edit Template" %}{% else %}{% trans "Create Template" %}{% endif %}</h1>

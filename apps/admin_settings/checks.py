@@ -6,8 +6,8 @@ They catch missing translations early — especially useful when Claude Code or
 other AI tools are the primary developer and will see the warnings.
 
 Check IDs:
-    KoNote2.W010 — Translation gap detected (Warning)
-    KoNote2.W011 — .mo file missing or stale (Warning)
+    KoNote.W010 — Translation gap detected (Warning)
+    KoNote.W011 — .mo file missing or stale (Warning)
 
 Run checks manually:
     python manage.py check
@@ -65,7 +65,7 @@ def check_translation_coverage(app_configs, **kwargs):
                 f"translatable items but django.po has {po_entry_count} "
                 f"entries (gap: {gap}).",
                 hint="Run: python manage.py translate_strings",
-                id="KoNote2.W010",
+                id="KoNote.W010",
             )
         )
 
@@ -92,7 +92,7 @@ def check_mo_file_health(app_configs, **kwargs):
             Warning(
                 "French translation file (django.mo) is missing.",
                 hint="Run: python manage.py translate_strings",
-                id="KoNote2.W011",
+                id="KoNote.W011",
             )
         )
     elif po_path.stat().st_mtime > mo_path.stat().st_mtime:
@@ -101,7 +101,7 @@ def check_mo_file_health(app_configs, **kwargs):
                 "French translation file (django.mo) is older than "
                 "django.po — translations may be stale.",
                 hint="Run: python manage.py translate_strings",
-                id="KoNote2.W011",
+                id="KoNote.W011",
             )
         )
 

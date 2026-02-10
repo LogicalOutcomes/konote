@@ -1,4 +1,4 @@
-/* KoNote2 Web — minimal vanilla JS for interactions */
+/* KoNote Web — minimal vanilla JS for interactions */
 
 // Translated strings helper — reads from window.KN (set in base.html)
 // Falls back to English if KN not loaded
@@ -289,7 +289,7 @@ document.addEventListener("click", function (event) {
 // Saves form data to localStorage as user types, restores on page load
 (function () {
     var AUTOSAVE_DELAY = 1000; // Save 1 second after user stops typing
-    var STORAGE_PREFIX = "KoNote2_draft_";
+    var STORAGE_PREFIX = "KoNote_draft_";
 
     // Debounce helper
     function debounce(fn, delay) {

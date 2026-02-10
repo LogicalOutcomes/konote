@@ -1,6 +1,6 @@
 # Before You Enter Real Data
 
-A checkpoint to verify your KoNote2 setup is ready for actual client information.
+A checkpoint to verify your KoNote setup is ready for actual client information.
 
 **Why this matters:** Once you enter real client data, their names, emails, and personal information are encrypted with your `FIELD_ENCRYPTION_KEY`. If that key is lost and you don't have it backed up, that data is gone forever. This checklist ensures you're protected.
 
@@ -14,7 +14,7 @@ Complete these items before entering any real client information:
 
 - [ ] I have copied my `FIELD_ENCRYPTION_KEY` to a secure location
 - [ ] The backup is stored separately from my database backups
-- [ ] I can access this backup without logging into KoNote2
+- [ ] I can access this backup without logging into KoNote
 
 **Where to store it:**
 - Password manager (1Password, Bitwarden, LastPass)
@@ -39,7 +39,7 @@ Complete these items before entering any real client information:
 
 ### 3. User Accounts Set Up
 
-- [ ] I have created accounts for all staff who will use KoNote2
+- [ ] I have created accounts for all staff who will use KoNote
 - [ ] Each user has the correct role (Admin, Case Manager, Front Desk)
 - [ ] Test users and demo accounts have been removed or disabled
 

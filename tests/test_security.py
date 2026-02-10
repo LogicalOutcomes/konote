@@ -1,5 +1,5 @@
 """
-Security tests for KoNote2 Web.
+Security tests for KoNote Web.
 
 These tests verify that security properties hold across the application:
 - PII fields are properly encrypted and not exposed

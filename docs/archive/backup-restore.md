@@ -1,11 +1,11 @@
-# Backup and Restore Guide for KoNote2 Web
+# Backup and Restore Guide for KoNote Web
 
 ## What You Need to Know
 
-KoNote2 Web stores data in **two PostgreSQL databases**:
+KoNote Web stores data in **two PostgreSQL databases**:
 
-1. **Main database** (`KoNote2`) — application data including users, clients, programs, plans, notes, and settings
-2. **Audit database** (`KoNote2_audit`) — append-only log of every data change (required for compliance)
+1. **Main database** (`konote`) — application data including users, clients, programs, plans, notes, and settings
+2. **Audit database** (`konote_audit`) — append-only log of every data change (required for compliance)
 
 Additionally, client information (names, emails, birth dates) is encrypted using the **FIELD_ENCRYPTION_KEY**. If you lose this key, encrypted data cannot be recovered.
 
@@ -56,21 +56,21 @@ Use `pg_dump` to back up both databases. Docker Compose makes this simple becaus
 #### Back Up the Main Database
 
 ```bash
-docker compose exec db pg_dump -U KoNote2 KoNote2 > backup_main_$(date +\%Y-\%m-\%d).sql
+docker compose exec db pg_dump -U konote konote > backup_main_$(date +\%Y-\%m-\%d).sql
 ```
 
 This creates a file like `backup_main_2026-02-02.sql` in your current directory.
 
 **What this does:**
 - Connects to the `db` container
-- Runs `pg_dump` as the `KoNote2` user
-- Exports the `KoNote2` database to a `.sql` file
+- Runs `pg_dump` as the `konote` user
+- Exports the `konote` database to a `.sql` file
 - Filename includes today's date
 
 #### Back Up the Audit Database
 
 ```bash
-docker compose exec audit_db pg_dump -U audit_writer KoNote2_audit > backup_audit_$(date +\%Y-\%m-\%d).sql
+docker compose exec audit_db pg_dump -U audit_writer konote_audit > backup_audit_$(date +\%Y-\%m-\%d).sql
 ```
 
 This creates `backup_audit_2026-02-02.sql`.
@@ -96,7 +96,7 @@ Railway provides built-in database backups. You can also use `railway run` to ba
 #### Use Railway's Built-In Backups (Recommended)
 
 1. Log into the [Railway dashboard](https://railway.app)
-2. Select your KoNote2 project
+2. Select your KoNote project
 3. Click the **Postgres** service (main database)
 4. Scroll down to **Backups** — Railway automatically keeps daily backups for 7 days
 5. To restore: click the backup and select **Restore**
@@ -123,7 +123,7 @@ brew install railway  # Mac
 railway login
 
 # Link to your project directory
-cd /path/to/KoNote2-web
+cd /path/to/KoNote-web
 railway link
 
 # Backup main database
@@ -142,12 +142,12 @@ If you're running PostgreSQL directly on a server (not Docker Compose), use `pg_
 #### Back Up the Main Database
 
 ```bash
-pg_dump -h hostname_or_ip -U KoNote2 -d KoNote2 > backup_main_$(date +%Y-%m-%d).sql
+pg_dump -h hostname_or_ip -U konote -d konote > backup_main_$(date +%Y-%m-%d).sql
 ```
 
 Replace:
 - `hostname_or_ip` — database server address (e.g., `db.example.com` or `192.168.1.10`)
-- `KoNote2` — your database username
+- `konote` — your database username
 - Port 5432 is assumed; if different, add `-p 5433`
 
 **You will be prompted for the password.** Enter the database password.
@@ -155,7 +155,7 @@ Replace:
 #### Back Up the Audit Database
 
 ```bash
-pg_dump -h hostname_or_ip -U audit_writer -d KoNote2_audit > backup_audit_$(date +%Y-%m-%d).sql
+pg_dump -h hostname_or_ip -U audit_writer -d konote_audit > backup_audit_$(date +%Y-%m-%d).sql
 ```
 
 ---
@@ -168,7 +168,7 @@ Azure provides managed PostgreSQL with automated backups.
 
 1. Open the [Azure portal](https://portal.azure.com)
 2. Navigate to **Azure Database for PostgreSQL servers**
-3. Select your KoNote2 server
+3. Select your KoNote server
 4. Under **Backup** — Azure automatically retains backups for 7 days
 5. To restore: click **Restore** and choose a backup point
 
@@ -182,7 +182,7 @@ az postgres server list --output table
 az postgres server backup create \
   --resource-group your-resource-group \
   --server-name your-server-name \
-  --backup-name "KoNote2-main-$(date +%Y-%m-%d)"
+  --backup-name "KoNote-main-$(date +%Y-%m-%d)"
 ```
 
 ---
@@ -209,8 +209,8 @@ docker compose down
 **Warning: This deletes all data in the database. Make sure your backup is safe first.**
 
 ```bash
-docker volume rm KoNote2-web_pgdata        # Main database
-docker volume rm KoNote2-web_audit_pgdata  # Audit database
+docker volume rm KoNote-web_pgdata        # Main database
+docker volume rm KoNote-web_audit_pgdata  # Audit database
 ```
 
 #### Step 3: Start the Containers
@@ -226,7 +226,7 @@ Docker will recreate the containers and volumes.
 Wait 10 seconds for the database to initialise, then:
 
 ```bash
-docker compose exec -T db psql -U KoNote2 KoNote2 < backup_main_2026-02-02.sql
+docker compose exec -T db psql -U konote konote < backup_main_2026-02-02.sql
 ```
 
 The `-T` flag disables pseudo-terminal allocation (required for piped input).
@@ -234,7 +234,7 @@ The `-T` flag disables pseudo-terminal allocation (required for piped input).
 #### Step 5: Restore the Audit Database
 
 ```bash
-docker compose exec -T audit_db psql -U audit_writer KoNote2_audit < backup_audit_2026-02-02.sql
+docker compose exec -T audit_db psql -U audit_writer konote_audit < backup_audit_2026-02-02.sql
 ```
 
 #### Step 6: Verify the Restore
@@ -242,7 +242,7 @@ docker compose exec -T audit_db psql -U audit_writer KoNote2_audit < backup_audi
 Connect to the restored database:
 
 ```bash
-docker compose exec db psql -U KoNote2 KoNote2
+docker compose exec db psql -U konote konote
 
 # Inside psql, check table counts
 SELECT count(*) FROM public.auth_user;
@@ -262,14 +262,14 @@ If you're migrating to a new server:
 ```bash
 psql -U postgres
 
-CREATE DATABASE KoNote2;
-CREATE DATABASE KoNote2_audit;
+CREATE DATABASE konote;
+CREATE DATABASE konote_audit;
 
-CREATE USER KoNote2 WITH PASSWORD 'your-password';
+CREATE USER konote WITH PASSWORD 'your-password';
 CREATE USER audit_writer WITH PASSWORD 'your-password';
 
-GRANT ALL PRIVILEGES ON DATABASE KoNote2 TO KoNote2;
-GRANT ALL PRIVILEGES ON DATABASE KoNote2_audit TO audit_writer;
+GRANT ALL PRIVILEGES ON DATABASE konote TO konote;
+GRANT ALL PRIVILEGES ON DATABASE konote_audit TO audit_writer;
 
 \q
 ```
@@ -277,19 +277,19 @@ GRANT ALL PRIVILEGES ON DATABASE KoNote2_audit TO audit_writer;
 #### Step 2: Restore the Main Database
 
 ```bash
-psql -U KoNote2 -d KoNote2 < backup_main_2026-02-02.sql
+psql -U konote -d konote < backup_main_2026-02-02.sql
 ```
 
 #### Step 3: Restore the Audit Database
 
 ```bash
-psql -U audit_writer -d KoNote2_audit < backup_audit_2026-02-02.sql
+psql -U audit_writer -d konote_audit < backup_audit_2026-02-02.sql
 ```
 
 #### Step 4: Verify
 
 ```bash
-psql -U KoNote2 -d KoNote2 -c "SELECT count(*) FROM public.auth_user;"
+psql -U konote -d konote -c "SELECT count(*) FROM public.auth_user;"
 ```
 
 ---
@@ -299,7 +299,7 @@ psql -U KoNote2 -d KoNote2 -c "SELECT count(*) FROM public.auth_user;"
 If your Railway database is corrupted:
 
 1. Log into [Railway dashboard](https://railway.app)
-2. Select your KoNote2 project
+2. Select your KoNote project
 3. Click the **Postgres** service
 4. Scroll to **Backups**
 5. Click the backup you want to restore
@@ -314,18 +314,18 @@ If your Railway database is corrupted:
 
 ### Option 1: Windows Task Scheduler (Windows Servers)
 
-If you're running KoNote2 on Windows (not using WSL):
+If you're running KoNote on Windows (not using WSL):
 
 #### Create a Backup Script
 
-Save this as `C:\KoNote2\backup_KoNote2.ps1`:
+Save this as `C:\KoNote\backup_KoNote.ps1`:
 
 ```powershell
-# KoNote2 Backup Script for Windows
+# KoNote Backup Script for Windows
 # Run this with Task Scheduler
 
-$BackupDir = "C:\Backups\KoNote2"
-$KoNote2Dir = "C:\KoNote2\KoNote2-web"  # Adjust to your installation path
+$BackupDir = "C:\Backups\KoNote"
+$KoNoteDir = "C:\KoNote\KoNote-web"  # Adjust to your installation path
 $Date = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
 $LogFile = "$BackupDir\backup_log.txt"
 
@@ -338,17 +338,17 @@ if (-not (Test-Path $BackupDir)) {
 Add-Content -Path $LogFile -Value "=== Backup started: $Date ==="
 
 try {
-    # Change to KoNote2 directory (required for docker compose)
-    Set-Location $KoNote2Dir
+    # Change to KoNote directory (required for docker compose)
+    Set-Location $KoNoteDir
 
     # Main database backup
     $MainBackup = "$BackupDir\backup_main_$Date.sql"
-    docker compose exec -T db pg_dump -U KoNote2 KoNote2 | Out-File -FilePath $MainBackup -Encoding utf8
+    docker compose exec -T db pg_dump -U konote konote | Out-File -FilePath $MainBackup -Encoding utf8
     Add-Content -Path $LogFile -Value "Main database backed up: $MainBackup"
 
     # Audit database backup
     $AuditBackup = "$BackupDir\backup_audit_$Date.sql"
-    docker compose exec -T audit_db pg_dump -U audit_writer KoNote2_audit | Out-File -FilePath $AuditBackup -Encoding utf8
+    docker compose exec -T audit_db pg_dump -U audit_writer konote_audit | Out-File -FilePath $AuditBackup -Encoding utf8
     Add-Content -Path $LogFile -Value "Audit database backed up: $AuditBackup"
 
     # Verify backups have content (more than 1 KB)
@@ -379,7 +379,7 @@ try {
 1. Press **Windows + R**, type `taskschd.msc`, press Enter
 2. In the right panel, click **Create Task** (not "Create Basic Task")
 3. **General tab:**
-   - Name: `KoNote2 Daily Backup`
+   - Name: `KoNote Daily Backup`
    - Check **Run whether user is logged on or not**
    - Check **Run with highest privileges**
 4. **Triggers tab:**
@@ -391,7 +391,7 @@ try {
    - Click **New**
    - Action: **Start a program**
    - Program: `powershell.exe`
-   - Arguments: `-ExecutionPolicy Bypass -File "C:\KoNote2\backup_KoNote2.ps1"`
+   - Arguments: `-ExecutionPolicy Bypass -File "C:\KoNote\backup_KoNote.ps1"`
    - Click OK
 6. **Settings tab:**
    - Check **If the task fails, restart every:** 10 minutes, up to 3 times
@@ -404,24 +404,24 @@ Run the task manually first:
 
 1. In Task Scheduler, right-click the task
 2. Click **Run**
-3. Check `C:\Backups\KoNote2\backup_log.txt` for results
+3. Check `C:\Backups\KoNote\backup_log.txt` for results
 4. Verify `.sql` files were created
 
 ---
 
 ### Option 2: Cron Job (Linux/Mac or WSL on Windows)
 
-If you're running KoNote2 on a Linux server or WSL (Windows Subsystem for Linux):
+If you're running KoNote on a Linux server or WSL (Windows Subsystem for Linux):
 
 #### Create a Backup Script
 
-Save this as `/home/user/backup_KoNote2.sh`:
+Save this as `/home/user/backup_KoNote.sh`:
 
 ```bash
 #!/bin/bash
 
 # Backup directory
-BACKUP_DIR="/backups/KoNote2"
+BACKUP_DIR="/backups/KoNote"
 mkdir -p "$BACKUP_DIR"
 
 # Date for filename
@@ -434,7 +434,7 @@ echo "=== Backup started: $DATE ===" >> "$LOG_FILE"
 
 # Main database backup
 # Note: -T flag is required for non-interactive (cron) execution
-docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T db pg_dump -U KoNote2 KoNote2 > "$BACKUP_DIR/backup_main_$DATE.sql"
+docker compose -f /path/to/KoNote-web/docker-compose.yml exec -T db pg_dump -U konote konote > "$BACKUP_DIR/backup_main_$DATE.sql"
 
 if [ $? -ne 0 ]; then
     echo "ERROR: Main database backup failed" >> "$LOG_FILE"
@@ -442,7 +442,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Audit database backup
-docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T audit_db pg_dump -U audit_writer KoNote2_audit > "$BACKUP_DIR/backup_audit_$DATE.sql"
+docker compose -f /path/to/KoNote-web/docker-compose.yml exec -T audit_db pg_dump -U audit_writer konote_audit > "$BACKUP_DIR/backup_audit_$DATE.sql"
 
 if [ $? -ne 0 ]; then
     echo "ERROR: Audit database backup failed" >> "$LOG_FILE"
@@ -466,7 +466,7 @@ echo "" >> "$LOG_FILE"
 #### Make It Executable
 
 ```bash
-chmod +x /home/user/backup_KoNote2.sh
+chmod +x /home/user/backup_KoNote.sh
 ```
 
 #### Schedule with Cron
@@ -478,7 +478,7 @@ crontab -e
 Add this line to run backups daily at 2:00 AM:
 
 ```
-0 2 * * * /home/user/backup_KoNote2.sh 2>&1
+0 2 * * * /home/user/backup_KoNote.sh 2>&1
 ```
 
 #### Verify Cron Is Running
@@ -520,7 +520,7 @@ Add this to your Windows backup script after creating the `.sql` files:
 # First, install Azure CLI: https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-windows
 
 $StorageAccount = "your-storage-account"
-$Container = "KoNote2-backups"
+$Container = "KoNote-backups"
 
 # Upload main backup
 az storage blob upload `
@@ -544,7 +544,7 @@ Add-Content -Path $LogFile -Value "Uploaded to Azure Blob Storage"
 **Setup steps:**
 
 1. In Azure Portal, create a **Storage Account**
-2. Create a **Container** named `KoNote2-backups`
+2. Create a **Container** named `KoNote-backups`
 3. Set **Access level** to Private
 4. Run `az login` once on the server to authenticate
 
@@ -619,7 +619,7 @@ function Send-BackupAlert {
 }
 
 # In your catch block, add:
-# Send-BackupAlert -Subject "KoNote2 Backup FAILED" -Body "Backup failed at $Date. Check $LogFile for details."
+# Send-BackupAlert -Subject "KoNote Backup FAILED" -Body "Backup failed at $Date. Check $LogFile for details."
 ```
 
 #### Email Alerts (Linux/Mac)
@@ -639,7 +639,7 @@ send_alert() {
 }
 
 # Add this after any error:
-# send_alert "KoNote2 Backup FAILED" "Backup failed at $DATE. Check $LOG_FILE for details."
+# send_alert "KoNote Backup FAILED" "Backup failed at $DATE. Check $LOG_FILE for details."
 ```
 
 #### Slack/Teams Webhook Alerts
@@ -658,10 +658,10 @@ send_slack_alert() {
 }
 
 # On failure:
-# send_slack_alert "🚨 KoNote2 backup failed at $DATE. Check server logs."
+# send_slack_alert "🚨 KoNote backup failed at $DATE. Check server logs."
 
 # On success (optional, for peace of mind):
-# send_slack_alert "✅ KoNote2 backup completed: $DATE"
+# send_slack_alert "✅ KoNote backup completed: $DATE"
 ```
 
 ```powershell
@@ -675,7 +675,7 @@ function Send-TeamsAlert {
 }
 
 # On failure:
-# Send-TeamsAlert "🚨 KoNote2 backup failed at $Date. Check server logs."
+# Send-TeamsAlert "🚨 KoNote backup failed at $Date. Check server logs."
 ```
 
 #### Simple Health Check (Monitor Backup Recency)
@@ -686,7 +686,7 @@ Create a script that checks if backups are recent. Run this weekly or use a moni
 
 ```powershell
 # Check if backups are fresh (run weekly via Task Scheduler)
-$BackupDir = "C:\Backups\KoNote2"
+$BackupDir = "C:\Backups\KoNote"
 $MaxAge = 2  # Alert if no backup in last 2 days
 
 $LatestBackup = Get-ChildItem -Path $BackupDir -Filter "backup_main_*.sql" |
@@ -694,14 +694,14 @@ $LatestBackup = Get-ChildItem -Path $BackupDir -Filter "backup_main_*.sql" |
     Select-Object -First 1
 
 if (-not $LatestBackup) {
-    Send-BackupAlert -Subject "KoNote2: NO BACKUPS FOUND" -Body "No backup files exist in $BackupDir"
+    Send-BackupAlert -Subject "KoNote: NO BACKUPS FOUND" -Body "No backup files exist in $BackupDir"
     exit 1
 }
 
 $Age = (Get-Date) - $LatestBackup.LastWriteTime
 
 if ($Age.Days -ge $MaxAge) {
-    Send-BackupAlert -Subject "KoNote2: STALE BACKUP" `
+    Send-BackupAlert -Subject "KoNote: STALE BACKUP" `
         -Body "Latest backup is $($Age.Days) days old: $($LatestBackup.Name)"
     exit 1
 }
@@ -715,14 +715,14 @@ Write-Host "Backup health check passed. Latest: $($LatestBackup.Name)"
 #!/bin/bash
 # Check if backups are fresh
 
-BACKUP_DIR="/backups/KoNote2"
+BACKUP_DIR="/backups/KoNote"
 MAX_AGE_DAYS=2
 ADMIN_EMAIL="admin@yourorg.ca"
 
 LATEST=$(find "$BACKUP_DIR" -name "backup_main_*.sql" -mtime -$MAX_AGE_DAYS | head -1)
 
 if [ -z "$LATEST" ]; then
-    echo "No recent backup found" | mail -s "KoNote2: STALE BACKUP" "$ADMIN_EMAIL"
+    echo "No recent backup found" | mail -s "KoNote: STALE BACKUP" "$ADMIN_EMAIL"
     exit 1
 fi
 
@@ -747,7 +747,7 @@ Example cron job for 30-day retention:
 
 ```bash
 # In backup script, after backing up:
-find /backups/KoNote2 -name "backup_*.sql" -mtime +30 -delete
+find /backups/KoNote -name "backup_*.sql" -mtime +30 -delete
 ```
 
 ---
@@ -767,16 +767,16 @@ services:
   db_test:
     image: postgres:16-alpine
     environment:
-      - POSTGRES_DB=KoNote2_test
-      - POSTGRES_USER=KoNote2
-      - POSTGRES_PASSWORD=KoNote2
+      - POSTGRES_DB=konote_test
+      - POSTGRES_USER=konote
+      - POSTGRES_PASSWORD=konote
     ports:
       - "5433:5432"
 
   audit_db_test:
     image: postgres:16-alpine
     environment:
-      - POSTGRES_DB=KoNote2_audit_test
+      - POSTGRES_DB=konote_audit_test
       - POSTGRES_USER=audit_writer
       - POSTGRES_PASSWORD=audit_pass
     ports:
@@ -792,14 +792,14 @@ docker compose -f docker-compose.test.yml up -d
 4. Restore your backups:
 
 ```bash
-docker compose -f docker-compose.test.yml exec -T db_test psql -U KoNote2 KoNote2_test < backup_main_2026-02-02.sql
-docker compose -f docker-compose.test.yml exec -T audit_db_test psql -U audit_writer KoNote2_audit_test < backup_audit_2026-02-02.sql
+docker compose -f docker-compose.test.yml exec -T db_test psql -U konote konote_test < backup_main_2026-02-02.sql
+docker compose -f docker-compose.test.yml exec -T audit_db_test psql -U audit_writer konote_audit_test < backup_audit_2026-02-02.sql
 ```
 
 5. Verify the data:
 
 ```bash
-docker compose -f docker-compose.test.yml exec db_test psql -U KoNote2 KoNote2_test -c "SELECT count(*) FROM public.auth_user;"
+docker compose -f docker-compose.test.yml exec db_test psql -U konote konote_test -c "SELECT count(*) FROM public.auth_user;"
 ```
 
 6. Clean up:
@@ -833,7 +833,7 @@ brew install postgresql
 
 Check your username and password:
 
-- **Docker Compose main DB**: username `KoNote2`, password `KoNote2` (or check `docker-compose.yml`)
+- **Docker Compose main DB**: username `konote`, password `konote` (or check `docker-compose.yml`)
 - **Docker Compose audit DB**: username `audit_writer`, password `audit_pass`
 - **Railway**: Use `railway run` — credentials come from environment
 - **Azure**: Check Azure portal for connection string
@@ -844,10 +844,10 @@ Verify the database name:
 
 ```bash
 # Docker Compose
-docker compose exec db psql -U KoNote2 -l
+docker compose exec db psql -U konote -l
 ```
 
-This lists all databases. Look for `KoNote2` and `KoNote2_audit`.
+This lists all databases. Look for `konote` and `konote_audit`.
 
 ### Restore Takes a Long Time
 

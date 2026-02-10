@@ -1,8 +1,8 @@
 # deploy-fullhost.ps1
-# Deploy KoNote2 to FullHost using the Jelastic REST API
+# Deploy KoNote to FullHost using the Jelastic REST API
 #
 # Usage:
-#   .\deploy-fullhost.ps1 -ApiToken "your-token" -EnvName "KoNote2-prod" -OrgName "My Nonprofit"
+#   .\deploy-fullhost.ps1 -ApiToken "your-token" -EnvName "KoNote-prod" -OrgName "My Nonprofit"
 #
 # Prerequisites:
 #   1. FullHost account: https://app.vap.fullhost.cloud/
@@ -36,7 +36,7 @@ $ErrorActionPreference = "Stop"
 $BSTR = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($AdminPassword)
 $AdminPasswordPlain = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($BSTR)
 
-Write-Host "=== KoNote2 FullHost Deployment ===" -ForegroundColor Cyan
+Write-Host "=== KoNote FullHost Deployment ===" -ForegroundColor Cyan
 Write-Host ""
 
 # Generate secure keys
@@ -72,14 +72,14 @@ $nodesJson = @"
         "nodeGroup": "cp",
         "fixedCloudlets": 2,
         "flexibleCloudlets": 8,
-        "displayName": "KoNote2 App",
+        "displayName": "KoNote App",
         "docker": {
             "image": "ghcr.io/gilliankerr/konote-redux:fullhost-latest"
         },
         "env": {
             "JELASTIC_ENVIRONMENT": "true",
             "DJANGO_SETTINGS_MODULE": "konote.settings.production",
-            "KoNote2_MODE": "production",
+            "KONOTE_MODE": "production",
             "DEMO_MODE": "true",
             "AUTH_MODE": "local",
             "PORT": "8000"
@@ -95,8 +95,8 @@ $nodesJson = @"
             "image": "postgres:15-alpine"
         },
         "env": {
-            "POSTGRES_DB": "KoNote2",
-            "POSTGRES_USER": "KoNote2",
+            "POSTGRES_DB": "konote",
+            "POSTGRES_USER": "konote",
             "POSTGRES_PASSWORD": "$DbPassword"
         }
     },
@@ -110,7 +110,7 @@ $nodesJson = @"
             "image": "postgres:15-alpine"
         },
         "env": {
-            "POSTGRES_DB": "KoNote2_audit",
+            "POSTGRES_DB": "konote_audit",
             "POSTGRES_USER": "audit_writer",
             "POSTGRES_PASSWORD": "$AuditDbPassword"
         }
@@ -183,8 +183,8 @@ Write-Host "Step 3: Configuring application environment variables..." -Foregroun
 $appVars = @{
     SECRET_KEY = $SecretKey
     FIELD_ENCRYPTION_KEY = $EncryptionKey
-    DATABASE_URL = "postgresql://KoNote2:$DbPassword@$($dbNode.intIP):5432/KoNote2"
-    AUDIT_DATABASE_URL = "postgresql://audit_writer:$AuditDbPassword@$($auditDbNode.intIP):5432/KoNote2_audit"
+    DATABASE_URL = "postgresql://konote:$DbPassword@$($dbNode.intIP):5432/konote"
+    AUDIT_DATABASE_URL = "postgresql://audit_writer:$AuditDbPassword@$($auditDbNode.intIP):5432/konote_audit"
     ALLOWED_HOSTS = "$envDomain,127.0.0.1,localhost"
     ORG_NAME = $OrgName
     DEFAULT_CLIENT_TERM = $ClientTerm
@@ -278,7 +278,7 @@ try {
 Write-Host ""
 Write-Host "=== Deployment Complete! ===" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Your KoNote2 URL: https://$envDomain" -ForegroundColor Green
+Write-Host "Your KoNote URL: https://$envDomain" -ForegroundColor Green
 Write-Host ""
 Write-Host "Login with:" -ForegroundColor White
 Write-Host "  Email: $AdminEmail"

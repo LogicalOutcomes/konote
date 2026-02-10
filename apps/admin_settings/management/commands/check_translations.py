@@ -69,7 +69,7 @@ class Command(BaseCommand):
         lang = options["lang"]
         strict = options["strict"]
 
-        self.stdout.write(f"\nKoNote2 Translation Check (language: {lang})")
+        self.stdout.write(f"\nKoNote Translation Check (language: {lang})")
         self.stdout.write("=" * 55)
 
         errors = []

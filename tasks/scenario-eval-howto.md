@@ -32,7 +32,7 @@ Example prompt:
 
 ## Why a Separate Window?
 
-**Holdout separation.** The scenarios in `konote-qa-scenarios` are deliberately kept outside the main codebase so that when Claude is writing KoNote2 code, it can't see the test scenarios and optimise for them. Using a separate window keeps the two contexts apart:
+**Holdout separation.** The scenarios in `konote-qa-scenarios` are deliberately kept outside the main codebase so that when Claude is writing KoNote code, it can't see the test scenarios and optimise for them. Using a separate window keeps the two contexts apart:
 
 - **konote-web window** = writing code (Claude can't see scenarios)
 - **konote-qa-scenarios window** = evaluating QA (Claude can see scenarios + screenshots)

@@ -26,7 +26,7 @@ The expert panels initially recommended DV programs use a separate system. The p
 - One system with proper isolation is more secure, more reliable, and more maintainable than two systems where one gets neglected.
 - Legally defensible under PHIPA, PIPEDA, and FIPPA, provided safeguards are in place.
 
-**Separate KoNote2 instance** is recommended only for the rare case where a known threat actor has administrative access to the agency's hosting platform itself.
+**Separate KoNote instance** is recommended only for the rare case where a known threat actor has administrative access to the agency's hosting platform itself.
 
 ---
 
@@ -197,7 +197,7 @@ This test file is marked as critical — CI blocks deployment if any test fails.
 **4. PIA template ships with the feature.**
 
 A pre-filled Privacy Impact Assessment template that walks the agency through:
-1. What data does KoNote2 collect? (Pre-filled from configuration)
+1. What data does KoNote collect? (Pre-filled from configuration)
 2. Who has access? (Pre-filled from user roles and program assignments)
 3. What are the safeguards? (Pre-filled: encryption, audit logging, confidential isolation)
 4. What are the residual risks? (Pre-filled honestly: hosting provider access, credential compromise)
@@ -256,9 +256,9 @@ No consent checkbox. No consent form for matching. The only consent that matters
 | HIFIS | Yes | Manual merge by admin | Consent directives |
 | Apricot | Yes | Master client index (admin-only) | Form-level permissions |
 | EMHware | N/A (clinical only) | None (clinician-managed caseloads) | Per-clinician isolation |
-| **KoNote2 (proposed)** | **Yes** | **Automatic phone + name + DOB** | **Query-level filtering + admin isolation + audit** |
+| **KoNote (proposed)** | **Yes** | **Automatic phone + name + DOB** | **Query-level filtering + admin isolation + audit** |
 
-KoNote2's duplicate detection would be more sophisticated than any current Canadian nonprofit case management system. The confidential program isolation matches sector standard (Penelope) and exceeds it with admin filtering, audit logging, and comprehensive testing.
+KoNote's duplicate detection would be more sophisticated than any current Canadian nonprofit case management system. The confidential program isolation matches sector standard (Penelope) and exceeds it with admin filtering, audit logging, and comprehensive testing.
 
 ---
 
@@ -268,7 +268,7 @@ KoNote2's duplicate detection would be more sophisticated than any current Canad
 - **PIPEDA:** Requires limiting collection, use, and disclosure. Met by program-scoped access.
 - **FIPPA:** Requires reasonable safeguards against unauthorized access. Met by query-level filtering + encryption.
 - **No Ontario statute requires a physically separate database for DV programs.** The requirement is adequate safeguards, which this design provides.
-- **A Privacy Impact Assessment is required** when introducing new technology for personal health information. KoNote2 ships a PIA template.
+- **A Privacy Impact Assessment is required** when introducing new technology for personal health information. KoNote ships a PIA template.
 
 ---
 
@@ -305,13 +305,13 @@ KoNote2's duplicate detection would be more sophisticated than any current Canad
 
 > **Confidential Programs**
 >
-> KoNote2 supports confidential programs for sensitive services including counselling, mental health, addiction, sexual health, and domestic violence support. Clients in confidential programs are completely invisible to all staff outside that program — they cannot be searched, matched, merged, or discovered through any part of the system.
+> KoNote supports confidential programs for sensitive services including counselling, mental health, addiction, sexual health, and domestic violence support. Clients in confidential programs are completely invisible to all staff outside that program — they cannot be searched, matched, merged, or discovered through any part of the system.
 >
 > This design aligns with how leading Canadian case management systems handle sensitive programs and meets Ontario privacy law requirements (PHIPA, PIPEDA).
 >
-> Before activating a confidential program, your agency should complete a Privacy Impact Assessment. KoNote2 provides a template pre-filled with your configuration.
+> Before activating a confidential program, your agency should complete a Privacy Impact Assessment. KoNote provides a template pre-filled with your configuration.
 >
-> For the rare case where a known threat actor has administrative access to your agency's hosting platform, we recommend a separate KoNote2 instance with independent hosting credentials.
+> For the rare case where a known threat actor has administrative access to your agency's hosting platform, we recommend a separate KoNote instance with independent hosting credentials.
 
 ### For developers (in CLAUDE.md or technical docs)
 

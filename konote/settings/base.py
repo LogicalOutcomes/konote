@@ -1,5 +1,5 @@
 """
-Base Django settings for KoNote2 Web.
+Base Django settings for KoNote Web.
 Shared across all environments.
 """
 import os
@@ -46,7 +46,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    # KoNote2 apps
+    # KoNote apps
     "apps.auth_app",
     "apps.programs",
     "apps.clients",
@@ -267,7 +267,7 @@ EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() == "true"
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "KoNote2 <noreply@konote2.app>")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "KoNote <noreply@konote.app>")
 
 # Azure AD / Entra ID settings
 AZURE_CLIENT_ID = os.environ.get("AZURE_CLIENT_ID", "")
@@ -278,7 +278,7 @@ AZURE_REDIRECT_URI = os.environ.get("AZURE_REDIRECT_URI", "")
 # OpenRouter AI (optional — features hidden when key is empty)
 OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 OPENROUTER_MODEL = os.environ.get("OPENROUTER_MODEL", "anthropic/claude-sonnet-4-20250514")
-OPENROUTER_SITE_URL = os.environ.get("OPENROUTER_SITE_URL", "https://KoNote2.app")
+OPENROUTER_SITE_URL = os.environ.get("OPENROUTER_SITE_URL", "https://konote.app")
 
 # Logging — errors to stderr so they appear in Railway logs
 LOGGING = {

@@ -16,6 +16,7 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from apps.admin_settings.models import FeatureToggle
@@ -247,12 +248,14 @@ def portal_logout(request):
     return redirect("portal:login")
 
 
+@csrf_exempt  # sendBeacon cannot include CSRF tokens
 @portal_feature_required
 @require_POST
 def emergency_logout(request):
     """Quick logout via sendBeacon — for panic/safety button.
 
     Returns 204 No Content (no redirect, since sendBeacon is fire-and-forget).
+    csrf_exempt is safe here — this only destroys the session; no state change.
     """
     request.session.pop("_portal_participant_id", None)
     request.session.pop("_portal_mfa_pending_id", None)
@@ -461,7 +464,7 @@ def mfa_setup(request):
         totp = pyotp.TOTP(secret)
         provisioning_uri = totp.provisioning_uri(
             name=participant.display_name,
-            issuer_name="KoNote2 Portal",
+            issuer_name="KoNote Portal",
         )
 
         return render(request, "portal/mfa_setup.html", {
@@ -628,14 +631,11 @@ def dashboard(request):
 
 @portal_login_required
 def settings_view(request):
-    """Portal settings — language preference, MFA status, password change link."""
+    """Portal settings — MFA status, password change link."""
     participant = request.participant_user
-
-    # Language switching is handled by switch_language view (template posts there).
 
     return render(request, "portal/settings.html", {
         "participant": participant,
-        "languages": settings.LANGUAGES,
     })
 
 

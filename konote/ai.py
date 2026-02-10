@@ -44,7 +44,7 @@ def _call_openrouter(system_prompt, user_message, max_tokens=1024):
                 "Authorization": f"Bearer {settings.OPENROUTER_API_KEY}",
                 "Content-Type": "application/json",
                 "HTTP-Referer": getattr(settings, "OPENROUTER_SITE_URL", ""),
-                "X-Title": "KoNote2",
+                "X-Title": "KoNote",
             },
             json={
                 "model": getattr(settings, "OPENROUTER_MODEL", "anthropic/claude-sonnet-4-20250514"),

@@ -1,6 +1,6 @@
 {
-    "name": "KoNote2",
-    "short_name": "KoNote2",
+    "name": "KoNote",
+    "short_name": "KoNote",
     "description": "Participant Outcome Management",
     "start_url": "/",
     "display": "standalone",

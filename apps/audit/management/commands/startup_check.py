@@ -1,8 +1,8 @@
 """
-Startup security check for KoNote2 Web.
+Startup security check for KoNote Web.
 
 Runs critical security checks before the application starts. Behaviour depends
-on KoNote2_MODE environment variable:
+on KONOTE_MODE environment variable:
 
 - production (default): Block startup if critical checks fail
 - demo: Warn loudly but allow startup for evaluation purposes
@@ -11,7 +11,7 @@ This command is called automatically by entrypoint.sh. It does NOT replace the
 full security_audit command, which should still be run periodically.
 
 Usage:
-    python manage.py startup_check  # Uses KoNote2_MODE from environment
+    python manage.py startup_check  # Uses KONOTE_MODE from environment
 """
 
 import os
@@ -39,15 +39,15 @@ class Command(BaseCommand):
     ]
 
     def handle(self, *args, **options):
-        mode = os.environ.get("KoNote2_MODE", "production").lower()
+        mode = os.environ.get("KONOTE_MODE", "production").lower()
 
         if mode not in ("production", "demo"):
             self.stderr.write(
-                f"Invalid KoNote2_MODE: '{mode}'. Must be 'production' or 'demo'."
+                f"Invalid KONOTE_MODE: '{mode}'. Must be 'production' or 'demo'."
             )
             sys.exit(1)
 
-        self.stdout.write(f"\nKoNote2 Startup Security Check (mode: {mode})")
+        self.stdout.write(f"\nKoNote Startup Security Check (mode: {mode})")
         self.stdout.write("=" * 55)
 
         critical_failures = []
@@ -88,7 +88,7 @@ class Command(BaseCommand):
         if all_issues:
             self.stdout.write(self.style.WARNING(
                 "\n" + "=" * 55 +
-                "\n  KoNote2 IS RUNNING IN DEMO MODE" +
+                "\n  KoNote IS RUNNING IN DEMO MODE" +
                 "\n" + "=" * 55
             ))
             self.stdout.write(self.style.WARNING(
@@ -99,7 +99,7 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.WARNING(
                 "\n  DO NOT use this instance for real client data."
-                "\n  Set KoNote2_MODE=production when ready for production use."
+                "\n  Set KONOTE_MODE=production when ready for production use."
                 "\n"
             ))
             self.stdout.write("=" * 55 + "\n")
@@ -126,8 +126,8 @@ class Command(BaseCommand):
                 self.stdout.write(self.style.ERROR(f"    - {failure}"))
 
             self.stdout.write(self.style.ERROR(
-                "\n  Fix these issues before starting KoNote2 in production."
-                "\n  For evaluation/demo, set KoNote2_MODE=demo"
+                "\n  Fix these issues before starting KoNote in production."
+                "\n  For evaluation/demo, set KONOTE_MODE=demo"
                 "\n"
             ))
             self.stdout.write("=" * 55 + "\n")
@@ -142,7 +142,7 @@ class Command(BaseCommand):
             self.stdout.write("")
 
         self.stdout.write(self.style.SUCCESS(
-            "Security checks passed. Starting KoNote2 in production mode.\n"
+            "Security checks passed. Starting KoNote in production mode.\n"
         ))
         sys.exit(0)
 

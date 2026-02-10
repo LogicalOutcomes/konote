@@ -130,10 +130,23 @@ def switch_language(request):
         request.user.preferred_language = lang_code
         request.user.save(update_fields=["preferred_language"])
 
-    # Save to portal participant profile if present
-    if hasattr(request, "participant_user") and request.participant_user:
-        request.participant_user.preferred_language = lang_code
-        request.participant_user.save(update_fields=["preferred_language"])
+    # Save to portal participant profile if present.
+    # PortalAuthMiddleware only loads participant_user for /my/* paths,
+    # but this view is at /i18n/switch/ — so fall back to the session.
+    participant = getattr(request, "participant_user", None)
+    if not participant:
+        participant_id = request.session.get("_portal_participant_id")
+        if participant_id:
+            from apps.portal.models import ParticipantUser
+            try:
+                participant = ParticipantUser.objects.get(
+                    pk=participant_id, is_active=True
+                )
+            except ParticipantUser.DoesNotExist:
+                participant = None
+    if participant:
+        participant.preferred_language = lang_code
+        participant.save(update_fields=["preferred_language"])
 
     # Redirect back to referring page (with safety check)
     next_url = request.POST.get("next", request.META.get("HTTP_REFERER", "/"))

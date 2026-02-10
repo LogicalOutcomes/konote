@@ -1,18 +1,18 @@
 # Independent Review Guide
 
-**Last updated:** February 2026 | **Applies to:** KoNote2 v1.x
+**Last updated:** February 2026 | **Applies to:** KoNote v1.x
 
-KoNote2 is open-source software that handles sensitive client information for nonprofit social service agencies. Any agency considering adoption — or already using KoNote2 — can get an independent security review at any time, no vendor permission needed. This is a key advantage over proprietary case management tools where you have to trust the vendor's claims. This guide explains what you can verify, how to do it, and provides ready-made review prompts you can copy and paste.
+KoNote is open-source software that handles sensitive client information for nonprofit social service agencies. Any agency considering adoption — or already using KoNote — can get an independent security review at any time, no vendor permission needed. This is a key advantage over proprietary case management tools where you have to trust the vendor's claims. This guide explains what you can verify, how to do it, and provides ready-made review prompts you can copy and paste.
 
 ---
 
 ## What You Can Verify
 
-These are the specific security and privacy claims KoNote2 makes. Each one is verifiable in the source code.
+These are the specific security and privacy claims KoNote makes. Each one is verifiable in the source code.
 
 **1. Encryption at rest** — All client names, progress notes, and outcome ratings are encrypted using Fernet, which combines AES-128-CBC encryption with HMAC-SHA256 authentication (a method that detects tampering). Encrypted fields are stored as unreadable ciphertext in the database. A database breach alone does not expose client data.
 
-**2. Key management** — Agencies control their own encryption key. The key is stored outside the application code as an environment variable and never appears in the source repository. No one — including the KoNote2 developers — can read your encrypted data without your key.
+**2. Key management** — Agencies control their own encryption key. The key is stored outside the application code as an environment variable and never appears in the source repository. No one — including the KoNote developers — can read your encrypted data without your key.
 
 **3. Audit logging** — Every data access, export, and administrative action is logged to a separate audit database. When configured as recommended, these logs are append-only and cannot be modified or deleted through the application, creating a reliable record for compliance reviews.
 
@@ -22,13 +22,13 @@ These are the specific security and privacy claims KoNote2 makes. Each one is ve
 
 **6. Demo/real data separation** — Demo users never see real client data and real users never see demo data. This separation is enforced at the database query level, not just the interface, so it cannot be accidentally circumvented.
 
-> **Note:** The review prompts below check the code. KoNote2 also includes a `security_audit` management command that checks the actual data in your database. Both matter — code review verifies the design, the audit command verifies the reality.
+> **Note:** The review prompts below check the code. KoNote also includes a `security_audit` management command that checks the actual data in your database. Both matter — code review verifies the design, the audit command verifies the reality.
 
 ---
 
 ## Three-Tier Review Model
 
-KoNote2 uses three tiers of security review, each catching different kinds of issues.
+KoNote uses three tiers of security review, each catching different kinds of issues.
 
 ### Tier 1: Automated (Every Code Change)
 
@@ -93,7 +93,7 @@ The following prompts are designed to be copied and pasted into any AI assistant
 
 #### Prompt 1: Security Review
 
-> You are reviewing an open-source Django web application called KoNote2 that stores sensitive client information for nonprofit social service agencies. Please conduct a security-focused code review and produce a report covering:
+> You are reviewing an open-source Django web application called KoNote that stores sensitive client information for nonprofit social service agencies. Please conduct a security-focused code review and produce a report covering:
 >
 > **1. Encryption Implementation**
 > - Are client names, notes, and ratings actually encrypted at rest?
@@ -129,7 +129,7 @@ The following prompts are designed to be copied and pasted into any AI assistant
 
 #### Prompt 2: Privacy & Compliance Review
 
-> You are reviewing KoNote2, an open-source Django application that stores sensitive client data for Canadian nonprofits. Please review for privacy compliance and produce a report covering:
+> You are reviewing KoNote, an open-source Django application that stores sensitive client data for Canadian nonprofits. Please review for privacy compliance and produce a report covering:
 >
 > **1. Data Minimisation** — Does the application collect only what's needed? Are there fields that store more data than necessary?
 >
@@ -157,7 +157,7 @@ The following prompts are designed to be copied and pasted into any AI assistant
 
 #### Prompt 3: Deployment & Operations Review
 
-> You are reviewing KoNote2, an open-source Django application intended to be self-hosted by small nonprofits with limited IT resources. Please review for deployment reliability and produce a report covering:
+> You are reviewing KoNote, an open-source Django application intended to be self-hosted by small nonprofits with limited IT resources. Please review for deployment reliability and produce a report covering:
 >
 > **1. First-Run Experience** — Can someone with basic Docker knowledge get this running? Are the instructions clear and complete? What could go wrong?
 >
@@ -175,7 +175,7 @@ The following prompts are designed to be copied and pasted into any AI assistant
 
 #### Prompt 4: Accessibility & Usability Review
 
-> You are reviewing KoNote2, an open-source Django web application used by caseworkers at nonprofit social service agencies. These users are typically not tech-savvy and may be using the system under time pressure. Please review for accessibility and usability and produce a report covering:
+> You are reviewing KoNote, an open-source Django web application used by caseworkers at nonprofit social service agencies. These users are typically not tech-savvy and may be using the system under time pressure. Please review for accessibility and usability and produce a report covering:
 >
 > **1. WCAG 2.2 AA Compliance** — Semantic HTML, colour contrast, keyboard navigation, screen reader support, form labels, focus management in HTMX interactions.
 >
@@ -195,7 +195,7 @@ The following prompts are designed to be copied and pasted into any AI assistant
 
 You do not need to be a developer to run a review. Here is the process, step by step.
 
-1. **Go to the KoNote2 GitHub repository** — [github.com/[org]/konote-web](https://github.com/[org]/konote-web)
+1. **Go to the KoNote GitHub repository** — [github.com/[org]/konote-web](https://github.com/[org]/konote-web)
 2. **Download the code** — Click the green "Code" button on GitHub, then "Download ZIP." Alternatively, if you have Git installed, clone the repository.
 3. **Open your preferred AI assistant** — Claude, ChatGPT, Gemini, or any tool that can analyse code.
 4. **Upload the code** — Upload the ZIP file to the AI tool, or if you are using a code-aware tool like Claude Code or Cursor, point it at the cloned repository folder.
@@ -220,12 +220,12 @@ As new releases are published, review reports will be added to this table.
 
 ## Re-Reviewing After Updates
 
-Because KoNote2 is open source, every code change is visible and auditable on GitHub. Agencies can re-run their review after any update to verify that nothing has regressed. The process is the same — download the updated code, paste a review prompt, and compare the new report against the previous one.
+Because KoNote is open source, every code change is visible and auditable on GitHub. Agencies can re-run their review after any update to verify that nothing has regressed. The process is the same — download the updated code, paste a review prompt, and compare the new report against the previous one.
 
 For agencies that want continuous assurance, the Tier 1 automated tools (CodeRabbit, Semgrep, Dependabot) run on every code change and their results are always visible on the GitHub repository. You do not need to re-run a manual review to know that automated checks are passing.
 
 ---
 
-**KoNote2** — Participant Outcome Management
+**KoNote** — Participant Outcome Management
 
 *Open source. Independently verifiable. No vendor trust required.*

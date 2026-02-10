@@ -1,4 +1,4 @@
-# KoNote2 Improvement Tickets — Round 3 (2026-02-09a)
+# KoNote Improvement Tickets — Round 3 (2026-02-09a)
 
 **Date:** 2026-02-09
 **Round:** Round 3 (full evaluation, fresh screenshots from 13:46:19)

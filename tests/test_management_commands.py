@@ -335,9 +335,9 @@ class StartupCheckTest(TestCase):
         enc_module._fernet = None
 
     def test_demo_mode_exits_zero(self):
-        """startup_check with KoNote2_MODE=demo always exits 0."""
+        """startup_check with KONOTE_MODE=demo always exits 0."""
         out = io.StringIO()
-        with unittest.mock.patch.dict(os.environ, {"KoNote2_MODE": "demo"}):
+        with unittest.mock.patch.dict(os.environ, {"KONOTE_MODE": "demo"}):
             with self.assertRaises(SystemExit) as ctx:
                 call_command("startup_check", stdout=out)
             self.assertEqual(ctx.exception.code, 0)
@@ -346,7 +346,7 @@ class StartupCheckTest(TestCase):
     def test_invalid_mode_exits_one(self):
         """startup_check with an invalid mode exits 1."""
         err = io.StringIO()
-        with unittest.mock.patch.dict(os.environ, {"KoNote2_MODE": "invalid"}):
+        with unittest.mock.patch.dict(os.environ, {"KONOTE_MODE": "invalid"}):
             with self.assertRaises(SystemExit) as ctx:
                 call_command("startup_check", stderr=err)
             self.assertEqual(ctx.exception.code, 1)

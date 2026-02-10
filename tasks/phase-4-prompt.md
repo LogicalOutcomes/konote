@@ -1,12 +1,12 @@
 # Phase 4 Prompt: Progress Notes
 
-Copy this prompt into a new Claude Code conversation. Open the `KoNote2-web` project folder first.
+Copy this prompt into a new Claude Code conversation. Open the `KoNote-web` project folder first.
 
 ---
 
 ## Prompt
 
-I'm building KoNote2 Web, a nonprofit client management system. Phases 1-3 are done (foundation, client/program CRUD, plans/targets/metrics). I need you to build **Phase 4: Progress Notes** — this is how staff record their work with clients.
+I'm building KoNote Web, a nonprofit client management system. Phases 1-3 are done (foundation, client/program CRUD, plans/targets/metrics). I need you to build **Phase 4: Progress Notes** — this is how staff record their work with clients.
 
 ### Context
 

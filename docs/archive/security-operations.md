@@ -1,6 +1,6 @@
 # Security Operations Guide
 
-KoNote2 includes automated security checks and comprehensive audit logging to help you protect client data and meet compliance requirements. This guide explains how to use these tools.
+KoNote includes automated security checks and comprehensive audit logging to help you protect client data and meet compliance requirements. This guide explains how to use these tools.
 
 ---
 
@@ -18,7 +18,7 @@ KoNote2 includes automated security checks and comprehensive audit logging to he
 
 ## Security Checks
 
-KoNote2 runs security checks automatically with every `manage.py` command (runserver, migrate, etc.). You can also run them explicitly.
+KoNote runs security checks automatically with every `manage.py` command (runserver, migrate, etc.). You can also run them explicitly.
 
 ### Basic Check (Development)
 
@@ -26,7 +26,7 @@ KoNote2 runs security checks automatically with every `manage.py` command (runse
 python manage.py check
 ```
 
-This runs Django's system checks plus KoNote2's custom security checks. All checks must pass for the server to start.
+This runs Django's system checks plus KoNote's custom security checks. All checks must pass for the server to start.
 
 **Expected output (success):**
 ```
@@ -38,7 +38,7 @@ System check identified no issues (0 silenced).
 SystemCheckError: System check identified some issues:
 
 ERRORS:
-?: (KoNote2.E001) FIELD_ENCRYPTION_KEY is not configured.
+?: (KoNote.E001) FIELD_ENCRYPTION_KEY is not configured.
     HINT: Set FIELD_ENCRYPTION_KEY environment variable to a valid Fernet key.
 ```
 
@@ -54,12 +54,12 @@ This adds deployment-specific checks for production security settings (HTTPS coo
 
 | ID | Severity | What It Checks | How to Fix |
 |----|----------|----------------|------------|
-| `KoNote2.E001` | Error | Encryption key exists and is valid | Generate key: `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"` and add to `.env` |
-| `KoNote2.E002` | Error | Security middleware is loaded | Check `MIDDLEWARE` in settings includes `ProgramAccessMiddleware` and `AuditMiddleware` |
-| `KoNote2.W001` | Warning | DEBUG=True (deploy check only) | Set `DEBUG=False` in production |
-| `KoNote2.W002` | Warning | Session cookies not secure | Set `SESSION_COOKIE_SECURE=True` when using HTTPS |
-| `KoNote2.W003` | Warning | CSRF cookies not secure | Set `CSRF_COOKIE_SECURE=True` when using HTTPS |
-| `KoNote2.W004` | Warning | Argon2 not primary hasher | Add `Argon2PasswordHasher` first in `PASSWORD_HASHERS` |
+| `KoNote.E001` | Error | Encryption key exists and is valid | Generate key: `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"` and add to `.env` |
+| `KoNote.E002` | Error | Security middleware is loaded | Check `MIDDLEWARE` in settings includes `ProgramAccessMiddleware` and `AuditMiddleware` |
+| `KoNote.W001` | Warning | DEBUG=True (deploy check only) | Set `DEBUG=False` in production |
+| `KoNote.W002` | Warning | Session cookies not secure | Set `SESSION_COOKIE_SECURE=True` when using HTTPS |
+| `KoNote.W003` | Warning | CSRF cookies not secure | Set `CSRF_COOKIE_SECURE=True` when using HTTPS |
+| `KoNote.W004` | Warning | Argon2 not primary hasher | Add `Argon2PasswordHasher` first in `PASSWORD_HASHERS` |
 
 **Errors (E)** prevent the server from starting.
 **Warnings (W)** allow the server to start but indicate security gaps.
@@ -78,7 +78,7 @@ python manage.py security_audit
 
 **Example output:**
 ```
-KoNote2 Security Audit
+KoNote Security Audit
 ==================================================
 
 [ENC] Encryption Checks
@@ -155,7 +155,7 @@ Exits with code 1 if any warnings are present. Use this in CI pipelines to enfor
 
 ## Running Security Tests
 
-KoNote2 includes automated tests that verify security properties. These tests create temporary data that is cleaned up automatically.
+KoNote includes automated tests that verify security properties. These tests create temporary data that is cleaned up automatically.
 
 ### Run All Security Tests
 
@@ -196,7 +196,7 @@ The test suite creates temporary users, programs, and clients to verify security
 
 ## Audit Logging
 
-Every significant action in KoNote2 is logged to a separate audit database. This provides an immutable record for compliance and incident investigation.
+Every significant action in KoNote is logged to a separate audit database. This provides an immutable record for compliance and incident investigation.
 
 ### What Gets Logged
 
@@ -223,7 +223,7 @@ Connect to the audit database and run queries:
 
 ```bash
 # Connect to audit database (adjust credentials as needed)
-psql -d KoNote2_audit -U audit_writer
+psql -d konote_audit -U audit_writer
 ```
 
 **Recent entries:**
@@ -407,7 +407,7 @@ If you've lost your encryption key and have no backup:
 
 ## Privacy Compliance Support
 
-KoNote2's security features support compliance with privacy regulations including PIPEDA (Canada), PHIPA (Ontario health), and GDPR (EU). However, **compliance depends on how you configure and use the system**.
+KoNote's security features support compliance with privacy regulations including PIPEDA (Canada), PHIPA (Ontario health), and GDPR (EU). However, **compliance depends on how you configure and use the system**.
 
 ### Security Features That Support Compliance
 
@@ -421,7 +421,7 @@ KoNote2's security features support compliance with privacy regulations includin
 
 ### What You Still Need to Do
 
-KoNote2 provides technical controls, but compliance also requires:
+KoNote provides technical controls, but compliance also requires:
 
 - **Privacy policies** — Document what data you collect and why
 - **Consent procedures** — Obtain and record client consent
@@ -436,7 +436,7 @@ KoNote2 provides technical controls, but compliance also requires:
 - [Information and Privacy Commissioner of Ontario — PHIPA](https://www.ipc.on.ca/health/)
 - [GDPR Official Text](https://gdpr-info.eu/)
 
-> **Disclaimer:** This documentation describes KoNote2's security features. It is not legal advice. Consult your privacy officer, legal counsel, or a qualified privacy professional to ensure your specific implementation meets your jurisdiction's requirements.
+> **Disclaimer:** This documentation describes KoNote's security features. It is not legal advice. Consult your privacy officer, legal counsel, or a qualified privacy professional to ensure your specific implementation meets your jurisdiction's requirements.
 
 ---
 

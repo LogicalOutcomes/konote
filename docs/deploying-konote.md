@@ -1,12 +1,12 @@
-# Deploying KoNote2
+# Deploying KoNote
 
-This guide covers everything you need to get KoNote2 running — from local development to cloud production. Choose your path:
+This guide covers everything you need to get KoNote running — from local development to cloud production. Choose your path:
 
 | I want to... | Go to... |
 |--------------|----------|
 | Choose a hosting platform | [Choosing a Hosting Platform](#choosing-a-hosting-platform) |
 | Check if my nonprofit qualifies for free Azure | [Checking Nonprofit Eligibility](#checking-nonprofit-eligibility-for-azure-credits) |
-| Try KoNote2 locally | [Local Development (Docker)](#local-development-docker) |
+| Try KoNote locally | [Local Development (Docker)](#local-development-docker) |
 | Deploy to Railway | [Deploy to Railway](#deploy-to-railway) |
 | Deploy to Azure | [Deploy to Azure](#deploy-to-azure) |
 | Deploy to Elestio | [Deploy to Elestio](#deploy-to-elestio) |
@@ -55,7 +55,7 @@ These estimates assume light usage — a small nonprofit with staff working most
 **Pros:** Canadian data centres, enterprise-grade, Azure AD integration, nonprofit credits available
 **Cons:** Most complex setup, higher base cost
 
-**Nonprofit discount:** Microsoft offers $2,000 USD/year (~$2,700 CAD) in Azure credits through [Microsoft for Nonprofits](https://nonprofit.microsoft.com). If you qualify, Azure could be nearly free for 2+ years of KoNote2 hosting. See [Checking Nonprofit Eligibility](#checking-nonprofit-eligibility-for-azure-credits) below.
+**Nonprofit discount:** Microsoft offers $2,000 USD/year (~$2,700 CAD) in Azure credits through [Microsoft for Nonprofits](https://nonprofit.microsoft.com). If you qualify, Azure could be nearly free for 2+ years of KoNote hosting. See [Checking Nonprofit Eligibility](#checking-nonprofit-eligibility-for-azure-credits) below.
 
 #### Elestio (~$50–80/month)
 | Resource | Cost |
@@ -152,7 +152,7 @@ For a 200-client nonprofit with predictable 9–5 usage, any model works fine. A
 
 ### Checking Nonprofit Eligibility for Azure Credits
 
-Microsoft offers **$2,000 USD/year (~$2,700 CAD)** in Azure credits to eligible nonprofits — enough to cover 2+ years of KoNote2 hosting.
+Microsoft offers **$2,000 USD/year (~$2,700 CAD)** in Azure credits to eligible nonprofits — enough to cover 2+ years of KoNote hosting.
 
 #### Who Qualifies
 
@@ -203,17 +203,17 @@ If you've ever:
 - Used Excel competently (formulas, sorting, multiple sheets)
 - Followed step-by-step software instructions
 
-...you have the skills to set up KoNote2. Every step shows you exactly what to type and what to expect.
+...you have the skills to set up KoNote. Every step shows you exactly what to type and what to expect.
 
 ---
 
 ## Understanding Your Responsibility
 
-KoNote2 stores sensitive client information. By running your own instance, you're taking on responsibility for protecting that data.
+KoNote stores sensitive client information. By running your own instance, you're taking on responsibility for protecting that data.
 
-### What KoNote2 Does Automatically
+### What KoNote Does Automatically
 
-When configured correctly, KoNote2:
+When configured correctly, KoNote:
 
 - **Encrypts client names, emails, birth dates, and phone numbers** — Even if someone accessed your database directly, they'd see scrambled text
 - **Blocks common security mistakes** — The server won't start if critical security settings are missing
@@ -240,7 +240,7 @@ Consider engaging IT support if:
 
 ## Automatic Platform Detection
 
-KoNote2 automatically detects which platform it's running on and configures itself appropriately:
+KoNote automatically detects which platform it's running on and configures itself appropriately:
 
 | Platform | How It's Detected | What's Auto-Configured |
 |----------|-------------------|------------------------|
@@ -249,7 +249,7 @@ KoNote2 automatically detects which platform it's running on and configures itse
 | **Elestio** | `ELESTIO_VM_NAME` variable | Production settings, `.elest.io` domains allowed |
 | **Docker/Self-hosted** | `DATABASE_URL` is set | Production settings, localhost allowed by default |
 
-This means you only need to set the **essential** variables for each platform — KoNote2 handles the rest.
+This means you only need to set the **essential** variables for each platform — KoNote handles the rest.
 
 ### Essential Variables (All Platforms)
 
@@ -276,7 +276,7 @@ Email is needed for export notifications and the erasure approval workflow. Conf
 
 | Software | What It Does | Where to Get It |
 |----------|--------------|-----------------|
-| **Git** | Downloads the KoNote2 code | [git-scm.com](https://git-scm.com/download/win) |
+| **Git** | Downloads the KoNote code | [git-scm.com](https://git-scm.com/download/win) |
 | **Python 3.12+** | Runs the application | [python.org](https://www.python.org/downloads/) |
 
 ### For Local Development
@@ -305,15 +305,15 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 
 ## Local Development (Docker)
 
-Docker handles PostgreSQL, the web server, and all dependencies automatically. This is the recommended path for trying KoNote2.
+Docker handles PostgreSQL, the web server, and all dependencies automatically. This is the recommended path for trying KoNote.
 
 **Time estimate:** 30–45 minutes
 
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/KoNote2-web.git
-cd KoNote2-web
+git clone https://github.com/your-org/KoNote-web.git
+cd KoNote-web
 ```
 
 ### Step 2: Create Environment File
@@ -330,13 +330,13 @@ Edit `.env` and add your generated keys:
 SECRET_KEY=your-generated-secret-key-here
 FIELD_ENCRYPTION_KEY=your-generated-encryption-key-here
 
-POSTGRES_USER=KoNote2
+POSTGRES_USER=konote
 POSTGRES_PASSWORD=MySecurePassword123
-POSTGRES_DB=KoNote2
+POSTGRES_DB=konote
 
 AUDIT_POSTGRES_USER=audit_writer
 AUDIT_POSTGRES_PASSWORD=AnotherPassword456
-AUDIT_POSTGRES_DB=KoNote2_audit
+AUDIT_POSTGRES_DB=konote_audit
 ```
 
 ### Step 4: Start the Containers
@@ -354,13 +354,23 @@ docker-compose exec web python manage.py migrate
 docker-compose exec web python manage.py migrate --database=audit
 ```
 
-### Step 6: Create Admin User
+### Step 6: Create Your First Admin User
+
+Every new KoNote instance needs an initial admin account. Since there are no users yet, you create one from the command line:
 
 ```bash
 docker-compose exec web python manage.py createsuperuser
 ```
 
-### Step 7: Access KoNote2
+You'll be prompted for:
+- **Username** — your login name (e.g., `admin` or your name)
+- **Password** — minimum 8 characters (you'll be asked to confirm it)
+
+This creates a user with full admin access. Once logged in, you can create additional users through the web interface using **invite links** (recommended) or direct user creation. See [User Management](administering-konote.md#user-management) for details.
+
+> **Demo mode shortcut:** If you set `DEMO_MODE=true` in your `.env`, the `seed` command (Step 7.5) automatically creates a `demo-admin` user with password `demo1234` — so you can skip this step and log in with that instead.
+
+### Step 7: Access KoNote
 
 Open **http://localhost:8000** and log in.
 
@@ -395,12 +405,12 @@ Railway automatically builds and deploys from GitHub. Best for small organisatio
 
 1. Go to [railway.app](https://railway.app) and sign in with GitHub
 2. Click **New Project** → **Deploy from GitHub repo**
-3. Select **KoNote2-web**
+3. Select **KoNote-web**
 4. Click **Deploy**
 
 ### Step 2: Add PostgreSQL Databases
 
-KoNote2 needs **two** PostgreSQL databases (main + audit).
+KoNote needs **two** PostgreSQL databases (main + audit).
 
 1. Click **+ Add** → **Add from Marketplace** → **PostgreSQL**
 2. Wait for it to initialise
@@ -420,24 +430,38 @@ In your Railway project, click **Variables** on your app service and add:
 
 **Note:** The `${{ServiceName.DATABASE_URL}}` syntax tells Railway to pull the URL from your Postgres service. Check your database service names in the Railway dashboard.
 
-**Password requirements:** When you create your admin account, use at least 10 characters. KoNote2 enforces this — shorter passwords will be rejected.
+**Password requirements:** When you create your admin account, use at least 10 characters. KoNote enforces this — shorter passwords will be rejected.
 
 Optional variables (auto-detected, only set if needed):
 - `ALLOWED_HOSTS` — Auto-includes `.railway.app` domains
 - `AUTH_MODE` — Defaults to `local`, set to `azure` for SSO
-- `KoNote2_MODE` — Set to `production` for strict security checks (blocks startup if SECRET_KEY or encryption key are missing)
+- `KONOTE_MODE` — Set to `production` for strict security checks (blocks startup if SECRET_KEY or encryption key are missing)
 
 ### Step 4: Redeploy
 
 Click **Redeploy** and wait for the build to complete (~60 seconds). The container automatically runs database migrations, seeds sample data, runs security checks, and starts the web server — no manual steps needed.
 
-### Step 5: Verify
+### Step 5: Create Your First Admin User
 
-Click the generated domain (e.g., `KoNote2-web-production-xxxx.up.railway.app`). You should see the login page.
+The container automatically runs migrations and seed data, but you still need an admin account to log in.
+
+**If `DEMO_MODE=true`** (recommended for evaluation): The seed process creates a `demo-admin` user with password `demo1234`. You can log in immediately — skip to Step 6.
+
+**For production (no demo mode):** Use the Railway CLI to create your admin:
+
+```bash
+railway run python manage.py createsuperuser
+```
+
+You'll be prompted for a username and password. This creates a user with full admin access. Once logged in, you can invite additional staff through the web interface. See [User Management](administering-konote.md#user-management).
+
+### Step 6: Verify
+
+Click the generated domain (e.g., `KoNote-web-production-xxxx.up.railway.app`). You should see the login page.
 
 If `DEMO_MODE` is `true`, you'll see demo login buttons for six sample users (one per role: admin, program manager, case worker, front desk, auditor, and a demo user). These are pre-loaded with sample clients and data so you can explore the system immediately.
 
-### Step 6: HTTPS
+### Step 7: HTTPS
 
 Railway handles HTTPS automatically — no certificate setup needed. Your `.railway.app` domain and any custom domains you add are served over HTTPS by default.
 
@@ -455,7 +479,7 @@ Railway automatically provisions an SSL certificate for custom domains.
 
 ### Moving to Production Use
 
-Your KoNote2 instance comes pre-loaded with demo users and sample data so you can explore how everything works. When your organisation is ready to use it for real:
+Your KoNote instance comes pre-loaded with demo users and sample data so you can explore how everything works. When your organisation is ready to use it for real:
 
 1. **Create real staff accounts** — Go to Admin → Users and invite your team. These are regular (non-demo) accounts.
 2. **Real staff never see demo data** — Demo clients and demo users are completely separate. Your real staff will see an empty client list, ready for your actual clients.
@@ -500,7 +524,7 @@ Azure Container Apps provides enterprise-grade hosting with Azure AD integration
 ### Step 1: Create Resource Group
 
 ```bash
-az group create --name KoNote2-prod --location canadacentral
+az group create --name KoNote-prod --location canadacentral
 ```
 
 ### Step 2: Create PostgreSQL Databases
@@ -508,17 +532,17 @@ az group create --name KoNote2-prod --location canadacentral
 ```bash
 # Main database
 az postgres flexible-server create \
-  --resource-group KoNote2-prod \
-  --name KoNote2-db \
+  --resource-group KoNote-prod \
+  --name KoNote-db \
   --location canadacentral \
-  --admin-user KoNote2 \
+  --admin-user konote \
   --admin-password <YOUR_PASSWORD> \
   --version 16
 
 # Audit database
 az postgres flexible-server create \
-  --resource-group KoNote2-prod \
-  --name KoNote2-audit-db \
+  --resource-group KoNote-prod \
+  --name KoNote-audit-db \
   --location canadacentral \
   --admin-user audit_writer \
   --admin-password <YOUR_AUDIT_PASSWORD> \
@@ -529,45 +553,45 @@ Create the databases:
 
 ```bash
 az postgres flexible-server db create \
-  --resource-group KoNote2-prod \
-  --server-name KoNote2-db \
-  --database-name KoNote2
+  --resource-group KoNote-prod \
+  --server-name KoNote-db \
+  --database-name konote
 
 az postgres flexible-server db create \
-  --resource-group KoNote2-prod \
-  --server-name KoNote2-audit-db \
-  --database-name KoNote2_audit
+  --resource-group KoNote-prod \
+  --server-name KoNote-audit-db \
+  --database-name konote_audit
 ```
 
 ### Step 3: Create Container Registry
 
 ```bash
 az acr create \
-  --resource-group KoNote2-prod \
-  --name KoNote2registry \
+  --resource-group KoNote-prod \
+  --name KoNoteregistry \
   --sku Basic
 ```
 
 ### Step 4: Build and Push Docker Image
 
 ```bash
-docker build -t KoNote2:latest .
-az acr login --name KoNote2registry
-docker tag KoNote2:latest KoNote2registry.azurecr.io/KoNote2:latest
-docker push KoNote2registry.azurecr.io/KoNote2:latest
+docker build -t KoNote:latest .
+az acr login --name KoNoteregistry
+docker tag KoNote:latest KoNoteregistry.azurecr.io/KoNote:latest
+docker push KoNoteregistry.azurecr.io/KoNote:latest
 ```
 
 ### Step 5: Create Container App
 
 ```bash
 az containerapp create \
-  --name KoNote2-web \
-  --resource-group KoNote2-prod \
-  --environment KoNote2-env \
-  --image KoNote2registry.azurecr.io/KoNote2:latest \
+  --name KoNote-web \
+  --resource-group KoNote-prod \
+  --environment KoNote-env \
+  --image KoNoteregistry.azurecr.io/KoNote:latest \
   --target-port 8000 \
   --ingress external \
-  --registry-server KoNote2registry.azurecr.io \
+  --registry-server KoNoteregistry.azurecr.io \
   --cpu 0.5 \
   --memory 1Gi
 ```
@@ -580,8 +604,8 @@ In Azure Portal, go to your Container App → Containers → Environment variabl
 |----------|-------|
 | `SECRET_KEY` | Your generated key |
 | `FIELD_ENCRYPTION_KEY` | Your generated key |
-| `DATABASE_URL` | `postgresql://KoNote2:PASSWORD@KoNote2-db.postgres.database.azure.com:5432/KoNote2` |
-| `AUDIT_DATABASE_URL` | `postgresql://audit_writer:PASSWORD@KoNote2-audit-db.postgres.database.azure.com:5432/KoNote2_audit` |
+| `DATABASE_URL` | `postgresql://konote:PASSWORD@konote-db.postgres.database.azure.com:5432/konote` |
+| `AUDIT_DATABASE_URL` | `postgresql://audit_writer:PASSWORD@KoNote-audit-db.postgres.database.azure.com:5432/konote_audit` |
 
 Optional (auto-detected):
 - `ALLOWED_HOSTS` — Auto-includes `.azurewebsites.net` domains; add custom domains if needed
@@ -593,16 +617,33 @@ Create a temporary Azure Container Instance to run migrations:
 
 ```bash
 az container create \
-  --resource-group KoNote2-prod \
-  --name KoNote2-migrate \
-  --image KoNote2registry.azurecr.io/KoNote2:latest \
+  --resource-group KoNote-prod \
+  --name KoNote-migrate \
+  --image KoNoteregistry.azurecr.io/KoNote:latest \
   --environment-variables DATABASE_URL="..." AUDIT_DATABASE_URL="..." SECRET_KEY="..." FIELD_ENCRYPTION_KEY="..." \
   --command-line "/bin/bash -c 'python manage.py migrate && python manage.py migrate --database=audit'"
 ```
 
 Delete the container after it completes.
 
-### Step 8: Configure Custom Domain
+### Step 8: Create Your First Admin User
+
+Create a temporary container to run the admin creation command:
+
+```bash
+az container create \
+  --resource-group KoNote-prod \
+  --name KoNote-admin \
+  --image KoNoteregistry.azurecr.io/KoNote:latest \
+  --environment-variables DATABASE_URL="..." SECRET_KEY="..." FIELD_ENCRYPTION_KEY="..." \
+  --command-line "/bin/bash -c 'python manage.py createsuperuser --username admin'"
+```
+
+You'll be prompted for a password. Delete the container after it completes.
+
+Once logged in, you can invite additional staff through the web interface using invite links. See [User Management](administering-konote.md#user-management).
+
+### Step 9: Configure Custom Domain
 
 1. Go to Container App → Custom domains
 2. Add your domain
@@ -629,8 +670,8 @@ Add these in the Elestio dashboard:
 |----------|-------|
 | `SECRET_KEY` | Your generated key |
 | `FIELD_ENCRYPTION_KEY` | Your generated key |
-| `DATABASE_URL` | `postgresql://KoNote2:KoNote2@db:5432/KoNote2` |
-| `AUDIT_DATABASE_URL` | `postgresql://audit_writer:audit_pass@audit_db:5432/KoNote2_audit` |
+| `DATABASE_URL` | `postgresql://konote:konote@db:5432/konote` |
+| `AUDIT_DATABASE_URL` | `postgresql://audit_writer:audit_pass@audit_db:5432/konote_audit` |
 
 Optional (auto-detected):
 - `ALLOWED_HOSTS` — Auto-includes `.elest.io` domains; add custom domains if needed
@@ -640,7 +681,7 @@ Optional (auto-detected):
 
 1. Go to Repository settings in Elestio
 2. Connect to your GitHub account
-3. Select the `KoNote2-web` repository
+3. Select the `KoNote-web` repository
 4. Choose the `main` branch
 
 ### Step 4: Run Initial Setup
@@ -650,12 +691,23 @@ In the Elestio console, run:
 ```bash
 python manage.py migrate
 python manage.py migrate --database=audit
+python manage.py seed
 python manage.py lockdown_audit_db
 ```
 
-KoNote2 auto-detects Elestio and uses production settings automatically.
+KoNote auto-detects Elestio and uses production settings automatically.
 
-### Step 5: Configure Domain and TLS
+### Step 5: Create Your First Admin User
+
+In the Elestio console, run:
+
+```bash
+python manage.py createsuperuser
+```
+
+Enter a username and password when prompted. This creates the initial admin account. Once logged in, you can invite additional staff through the web interface. See [User Management](administering-konote.md#user-management).
+
+### Step 6: Configure Domain and TLS
 
 1. Point your domain's DNS to Elestio's IP
 2. In Elestio, add your custom domain
@@ -680,7 +732,7 @@ For complete step-by-step instructions, see the **[FullHost Deployment Guide](de
 4. Click **Install** and wait 5–10 minutes
 5. **Save the encryption key** shown on the success screen
 
-That's it — you'll have a working KoNote2 instance at a URL like `https://konote2-abc123.jls-can1.cloudjiffy.net`.
+That's it — you'll have a working KoNote instance at a URL like `https://konote2-abc123.jls-can1.cloudjiffy.net`.
 
 ### Why FullHost?
 
@@ -700,7 +752,7 @@ That's it — you'll have a working KoNote2 instance at a URL like `https://kono
 
 ## PDF Report Setup
 
-KoNote2 can generate PDF reports using WeasyPrint. This is optional — the app works fully without it.
+KoNote can generate PDF reports using WeasyPrint. This is optional — the app works fully without it.
 
 ### Quick Check
 
@@ -750,7 +802,7 @@ Complete this checklist before entering any real client information.
 
 - [ ] I have copied my `FIELD_ENCRYPTION_KEY` to a secure location (password manager, encrypted file)
 - [ ] The backup is stored **separately** from my database backups
-- [ ] I can retrieve the key without logging into KoNote2
+- [ ] I can retrieve the key without logging into KoNote
 
 **Test yourself:** Close this document. Can you retrieve your encryption key from your backup? If not, fix that now.
 
@@ -767,7 +819,9 @@ Complete this checklist before entering any real client information.
 
 ### 3. User Accounts Set Up
 
-- [ ] All staff accounts created with correct roles
+- [ ] First admin user created via `python manage.py createsuperuser`
+- [ ] Additional staff invited using **Admin → Users → Invite** (creates invite links they can use to set up their own accounts)
+- [ ] All staff assigned to correct programs with correct roles
 - [ ] Test users and demo accounts removed or disabled
 
 ### 3.5. Seed Data Loaded
@@ -873,5 +927,5 @@ Usually caused by missing environment variables.
 
 Once your deployment is running:
 
-1. **[Administering KoNote2](administering-KoNote2.md)** — Configure your agency's settings
-2. **[Using KoNote2](using-KoNote2.md)** — Train your staff
+1. **[Administering KoNote](administering-KoNote.md)** — Configure your agency's settings
+2. **[Using KoNote](using-KoNote.md)** — Train your staff

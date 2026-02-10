@@ -1,4 +1,4 @@
-# KoNote2 Improvement Tickets — Round 2 (2026-02-08b)
+# KoNote Improvement Tickets — Round 2 (2026-02-08b)
 
 **Date:** 2026-02-08 (report "b" — supersedes earlier 2026-02-08b draft)
 **Round:** Round 2 (post-fix re-evaluation with full screenshot analysis)

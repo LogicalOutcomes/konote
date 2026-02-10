@@ -1,12 +1,12 @@
-# KoNote2 Design Principles
+# KoNote Design Principles
 
-This document explains the research-based design philosophy behind KoNote2, particularly around participant engagement in documentation.
+This document explains the research-based design philosophy behind KoNote, particularly around participant engagement in documentation.
 
 ---
 
 ## Documentation as Intervention
 
-KoNote2 is built on a core principle: **progress notes are part of the service, not administrative overhead**.
+KoNote is built on a core principle: **progress notes are part of the service, not administrative overhead**.
 
 Traditional record-keeping treats documentation as something staff do *about* participants, often after the session ends. This creates several problems:
 
@@ -15,7 +15,7 @@ Traditional record-keeping treats documentation as something staff do *about* pa
 - Notes capture only the staff member's perspective
 - The therapeutic relationship is interrupted rather than strengthened
 
-KoNote2 takes a different approach. Documentation happens *with* the participant, captures their voice, and reinforces what was accomplished together.
+KoNote takes a different approach. Documentation happens *with* the participant, captures their voice, and reinforces what was accomplished together.
 
 ---
 
@@ -69,11 +69,11 @@ This informed our decision to use a single, open-ended question rather than leng
 
 ---
 
-## How This Shapes KoNote2
+## How This Shapes KoNote
 
 ### The "One Good Question" Approach
 
-Rather than implementing formal rating scales (which require licensing and training), KoNote2 uses a single reflective question:
+Rather than implementing formal rating scales (which require licensing and training), KoNote uses a single reflective question:
 
 > *"What's one thing you're taking away from today?"*
 
@@ -94,9 +94,9 @@ This isn't just friendlier language. It prompts staff to actually document with 
 
 ### Participant-Defined Outcomes
 
-KoNote2's outcome tracking is built around goals and targets that the participant helps define. The metrics attached to those targets are then recorded in progress notes — so the data being collected is data the participant cares about.
+KoNote's outcome tracking is built around goals and targets that the participant helps define. The metrics attached to those targets are then recorded in progress notes — so the data being collected is data the participant cares about.
 
-This differs from systems where funders define metrics and staff collect data on behalf of the organisation. In KoNote2, outcome tracking serves the participant's goals first.
+This differs from systems where funders define metrics and staff collect data on behalf of the organisation. In KoNote, outcome tracking serves the participant's goals first.
 
 ---
 
@@ -139,7 +139,7 @@ Over time, it becomes natural. Documentation stops feeling like paperwork and st
 
 ### Training Recommendations
 
-When onboarding staff to KoNote2, include:
+When onboarding staff to KoNote, include:
 
 1. **The "why"** — Staff who understand the research basis are more likely to adopt the practice
 2. **Live demonstration** — Show what collaborative documentation looks like
@@ -186,6 +186,6 @@ The reflection prompt can be customised through terminology settings if your age
 
 ---
 
-**KoNote2** — Participant Outcome Management
+**KoNote** — Participant Outcome Management
 
 *Documentation that strengthens relationships, not just records.*

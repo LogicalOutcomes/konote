@@ -1,6 +1,6 @@
-# Getting Started with KoNote2
+# Getting Started with KoNote
 
-This guide walks you through setting up KoNote2 for local development. Choose between:
+This guide walks you through setting up KoNote for local development. Choose between:
 
 - **[Option A: Docker Setup](#option-a-docker-setup-recommended)** — Faster, fewer dependencies to install manually
 - **[Option B: Manual Setup](#option-b-manual-setup)** — More control, better for debugging
@@ -16,7 +16,7 @@ If you've ever:
 - Used Excel competently (formulas, sorting, multiple sheets)
 - Followed step-by-step software instructions
 
-...you have the skills to set up KoNote2. No command-line experience is required — every step shows you exactly what to type and what to expect.
+...you have the skills to set up KoNote. No command-line experience is required — every step shows you exactly what to type and what to expect.
 
 > **Realistic time estimate:** Plan for **up to 2 hours** for your first Docker setup. The technical steps take 30-45 minutes, but you'll also be learning new concepts along the way. That's normal. Take breaks, re-read steps, and don't rush. Once it's running, you won't need to do this again.
 
@@ -24,11 +24,11 @@ If you've ever:
 
 ## Before You Begin: Understanding Your Responsibility
 
-KoNote2 stores sensitive client information. By setting up and running your own instance, you're taking on responsibility for protecting that data. This section helps you understand what that means.
+KoNote stores sensitive client information. By setting up and running your own instance, you're taking on responsibility for protecting that data. This section helps you understand what that means.
 
-### What KoNote2 Does Automatically
+### What KoNote Does Automatically
 
-KoNote2 has security protections built in. When configured correctly, it:
+KoNote has security protections built in. When configured correctly, it:
 
 - **Encrypts client names, emails, birth dates, and phone numbers** — Even if someone accessed your database directly, they'd see scrambled text, not readable data
 - **Blocks most common security mistakes** — The server won't start if critical security settings are missing
@@ -40,7 +40,7 @@ KoNote2 has security protections built in. When configured correctly, it:
 
 Software protections only work if you set things up correctly and maintain them. You are responsible for:
 
-| Your Responsibility | Why It Matters | How KoNote2 Helps |
+| Your Responsibility | Why It Matters | How KoNote Helps |
 |---------------------|----------------|------------------|
 | **Keep the encryption key safe** | If you lose it, all client data becomes unreadable — permanently | Clear warnings in setup; no default key to fall back on |
 | **Use HTTPS in production** | Without it, data travels unprotected over the internet | Built-in support for HTTPS; warnings if cookies aren't secure |
@@ -98,8 +98,8 @@ Before you begin, make sure you have:
 
 | Software | What It Does | Where to Get It |
 |----------|--------------|-----------------|
-| **Git** | Downloads the KoNote2 code from the internet | [git-scm.com/download/win](https://git-scm.com/download/win) |
-| **Python 3.12+** | Runs the KoNote2 application | [python.org/downloads](https://www.python.org/downloads/) |
+| **Git** | Downloads the KoNote code from the internet | [git-scm.com/download/win](https://git-scm.com/download/win) |
+| **Python 3.12+** | Runs the KoNote application | [python.org/downloads](https://www.python.org/downloads/) |
 | **Docker Desktop** *(Option A only)* | Runs databases and services automatically | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/) |
 
 ### Time Required
@@ -113,7 +113,7 @@ Before you begin, make sure you have:
 |--------------------------------|--------------------------------|
 | You're new to software setup | You have IT support available |
 | You want the fastest path | You need to debug issues closely |
-| You're just trying KoNote2 out | You'll deploy to a server later |
+| You're just trying KoNote out | You'll deploy to a server later |
 
 > **Recommendation:** Most nonprofits should start with **Option A: Docker Setup**. It handles the complex parts automatically.
 
@@ -124,7 +124,7 @@ Before you begin, make sure you have:
 ### All Platforms
 
 - **Git** — to clone the repository
-- **Python 3.12 or higher** — KoNote2 requires Python 3.12+
+- **Python 3.12 or higher** — KoNote requires Python 3.12+
 
 ### For Docker Setup (Option A)
 
@@ -132,7 +132,7 @@ Before you begin, make sure you have:
 
 ### For Manual Setup (Option B)
 
-- **PostgreSQL 16** — KoNote2 requires two separate databases
+- **PostgreSQL 16** — KoNote requires two separate databases
 
 ---
 
@@ -143,20 +143,20 @@ Docker handles PostgreSQL, the web server, and all dependencies automatically.
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/KoNote2-web.git
-cd KoNote2-web
+git clone https://github.com/your-org/KoNote-web.git
+cd KoNote-web
 ```
 
 **Expected output:**
 ```
-Cloning into 'KoNote2-web'...
+Cloning into 'KoNote-web'...
 remote: Enumerating objects: 245, done.
 remote: Counting objects: 100% (245/245), done.
 remote: Compressing objects: 100% (167/167), done.
 Receiving objects: 100% (245/245), 156.00 KiB | 2.60 MiB/s, done.
 ```
 
-> **What just happened?** You downloaded a copy of all the KoNote2 code to your computer. The `cd` command moved you into that folder.
+> **What just happened?** You downloaded a copy of all the KoNote code to your computer. The `cd` command moved you into that folder.
 
 ### Step 2: Create Environment File
 
@@ -191,7 +191,7 @@ Copy each output and paste it into your `.env` file on the appropriate line.
 
 > **What just happened?**
 >
-> You created two unique passwords that only your KoNote2 installation knows:
+> You created two unique passwords that only your KoNote installation knows:
 >
 > - **SECRET_KEY** — Like a master password for your browser sessions. If someone got this, they could impersonate logged-in users.
 > - **FIELD_ENCRYPTION_KEY** — The "lock" for client personal information. Names, emails, and birth dates are scrambled in the database using this key. **If you lose this key, that data is gone forever.**
@@ -203,13 +203,13 @@ Copy each output and paste it into your `.env` file on the appropriate line.
 Edit your `.env` file and replace the placeholder passwords:
 
 ```ini
-POSTGRES_USER=KoNote2
+POSTGRES_USER=konote
 POSTGRES_PASSWORD=MySecurePassword123    # <-- Replace this!
-POSTGRES_DB=KoNote2
+POSTGRES_DB=konote
 
 AUDIT_POSTGRES_USER=audit_writer
 AUDIT_POSTGRES_PASSWORD=AnotherPassword456    # <-- Replace this too!
-AUDIT_POSTGRES_DB=KoNote2_audit
+AUDIT_POSTGRES_DB=konote_audit
 ```
 
 > **Tip:** Use different passwords for each database. A password manager can generate secure random passwords for you.
@@ -223,14 +223,14 @@ docker-compose up -d
 **Expected output:**
 ```
 [+] Running 4/4
- ✔ Container KoNote2-db-1        Started
- ✔ Container KoNote2-audit_db-1  Started
- ✔ Container KoNote2-web-1       Started
- ✔ Container KoNote2-caddy-1     Started
+ ✔ Container KoNote-db-1        Started
+ ✔ Container KoNote-audit_db-1  Started
+ ✔ Container KoNote-web-1       Started
+ ✔ Container KoNote-caddy-1     Started
 ```
 
 This starts:
-- **web** — The KoNote2 application on port 8000
+- **web** — The KoNote application on port 8000
 - **db** — Main PostgreSQL database
 - **audit_db** — Audit log database
 - **caddy** — Reverse proxy (for production HTTPS)
@@ -256,17 +256,25 @@ Running migrations:
   Applying sessions.0001_initial... OK
 ```
 
-> **What just happened?** "Migrations" create the database tables that KoNote2 needs to store data. The first command sets up the main database (for clients, programs, notes). The second sets up the audit database (which records who changed what, for security).
+> **What just happened?** "Migrations" create the database tables that KoNote needs to store data. The first command sets up the main database (for clients, programs, notes). The second sets up the audit database (which records who changed what, for security).
 
-### Step 7: Create Admin User
+### Step 7: Create Your First Admin User
+
+Every new instance needs an initial admin account. Since there are no users yet, you create one from the command line:
 
 ```bash
 docker-compose exec web python manage.py createsuperuser
 ```
 
-Follow the prompts to create your first user.
+You'll be prompted for:
+- **Username** — your login name (e.g., `admin` or your name)
+- **Password** — minimum 8 characters (you'll be asked to confirm it)
 
-### Step 8: Access KoNote2
+This creates a user with full admin access. Once logged in, you can create additional users through the web interface using **invite links** (Admin → Users → Invite) or direct user creation.
+
+> **Demo mode shortcut:** If `DEMO_MODE=true` in your `.env`, the `seed` command creates a `demo-admin` user with password `demo1234` — you can use that instead.
+
+### Step 8: Access KoNote
 
 Open your browser to **http://localhost:8000** and log in with the user you just created.
 
@@ -289,20 +297,20 @@ For more control over your development environment, or if you prefer not to use 
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/KoNote2-web.git
-cd KoNote2-web
+git clone https://github.com/your-org/KoNote-web.git
+cd KoNote-web
 ```
 
 **Expected output:**
 ```
-Cloning into 'KoNote2-web'...
+Cloning into 'KoNote-web'...
 remote: Enumerating objects: 245, done.
 remote: Counting objects: 100% (245/245), done.
 remote: Compressing objects: 100% (167/167), done.
 Receiving objects: 100% (245/245), 156.00 KiB | 2.60 MiB/s, done.
 ```
 
-> **What just happened?** You downloaded a copy of all the KoNote2 code to your computer. The `cd` command moved you into that folder.
+> **What just happened?** You downloaded a copy of all the KoNote code to your computer. The `cd` command moved you into that folder.
 
 ### Step 2: Install Python 3.12
 
@@ -340,10 +348,10 @@ source venv/bin/activate
 **How to know it worked:** Your command prompt changes to show `(venv)` at the beginning:
 ```
 # Before activation:
-C:\Users\YourName\KoNote2-web>
+C:\Users\YourName\KoNote-web>
 
 # After activation:
-(venv) C:\Users\YourName\KoNote2-web>
+(venv) C:\Users\YourName\KoNote-web>
 ```
 
 ### Step 4: Install Dependencies
@@ -376,7 +384,7 @@ sudo systemctl start postgresql
 
 ### Step 6: Create Databases
 
-KoNote2 uses two databases: one for application data, one for audit logs.
+KoNote uses two databases: one for application data, one for audit logs.
 
 **Using psql (command line):**
 
@@ -385,14 +393,14 @@ KoNote2 uses two databases: one for application data, one for audit logs.
 psql -U postgres
 
 # Create main database and user (replace MySecurePassword123 with your own password)
-CREATE DATABASE KoNote2;
-CREATE USER KoNote2 WITH PASSWORD 'MySecurePassword123';
-GRANT ALL PRIVILEGES ON DATABASE KoNote2 TO KoNote2;
+CREATE DATABASE konote;
+CREATE USER konote WITH PASSWORD 'MySecurePassword123';
+GRANT ALL PRIVILEGES ON DATABASE konote TO konote;
 
 # Create audit database and user (replace AnotherPassword456 with your own password)
-CREATE DATABASE KoNote2_audit;
+CREATE DATABASE konote_audit;
 CREATE USER audit_writer WITH PASSWORD 'AnotherPassword456';
-GRANT ALL PRIVILEGES ON DATABASE KoNote2_audit TO audit_writer;
+GRANT ALL PRIVILEGES ON DATABASE konote_audit TO audit_writer;
 
 # Exit psql
 \q
@@ -403,8 +411,8 @@ GRANT ALL PRIVILEGES ON DATABASE KoNote2_audit TO audit_writer;
 **Using pgAdmin (graphical):**
 1. Open pgAdmin and connect to your local server
 2. Right-click "Databases" → Create → Database
-3. Name: `KoNote2`, Owner: `postgres`
-4. Repeat for `KoNote2_audit`
+3. Name: `konote`, Owner: `postgres`
+4. Repeat for `konote_audit`
 5. Create users under Login/Group Roles with appropriate passwords
 
 ### Step 7: Create Environment File
@@ -427,8 +435,8 @@ SECRET_KEY=REPLACE_THIS_run_command_in_step_9
 FIELD_ENCRYPTION_KEY=REPLACE_THIS_run_command_in_step_9
 
 # Database connections (use passwords from Step 6)
-DATABASE_URL=postgresql://KoNote2:MySecurePassword123@localhost:5432/KoNote2
-AUDIT_DATABASE_URL=postgresql://audit_writer:AnotherPassword456@localhost:5432/KoNote2_audit
+DATABASE_URL=postgresql://konote:MySecurePassword123@localhost:5432/konote
+AUDIT_DATABASE_URL=postgresql://audit_writer:AnotherPassword456@localhost:5432/konote_audit
 
 # Authentication mode
 AUTH_MODE=local
@@ -462,7 +470,7 @@ xK7mP2nQ5rT8vW0yB3dF6hJ9kL4sA1cE7gI0jM2nO=
 
 > **What just happened?**
 >
-> You created two unique passwords that only your KoNote2 installation knows:
+> You created two unique passwords that only your KoNote installation knows:
 >
 > - **SECRET_KEY** — Like a master password for your browser sessions. Keeps user logins secure.
 > - **FIELD_ENCRYPTION_KEY** — The "lock" for client personal information. Names, emails, and birth dates are scrambled in the database using this key.
@@ -487,15 +495,21 @@ Running migrations:
   Applying sessions.0001_initial... OK
 ```
 
-> **What just happened?** "Migrations" create the database tables that KoNote2 needs to store data. You'll see messages listing each table being created. The first command sets up the main database (for clients, programs, notes). The second sets up the audit database (which records who changed what, for security).
+> **What just happened?** "Migrations" create the database tables that KoNote needs to store data. You'll see messages listing each table being created. The first command sets up the main database (for clients, programs, notes). The second sets up the audit database (which records who changed what, for security).
 
-### Step 11: Create Admin User
+### Step 11: Create Your First Admin User
+
+Every new instance needs an initial admin account:
 
 ```bash
 python manage.py createsuperuser
 ```
 
-Enter an email, username, and password when prompted.
+You'll be prompted for:
+- **Username** — your login name (e.g., `admin` or your name)
+- **Password** — minimum 8 characters (you'll be asked to confirm it)
+
+This creates a user with full admin access. Once logged in, you can invite additional staff through the web interface (Admin → Users → Invite).
 
 ### Step 12: Start the Development Server
 
@@ -518,7 +532,7 @@ Quit the server with CTRL-BREAK.
 ### Step 13: Verify Your Setup
 
 1. Open **http://localhost:8000** in your browser
-2. You should see the KoNote2 login page
+2. You should see the KoNote login page
 3. Log in with the superuser you created
 4. You should see the home page with client search
 
@@ -528,7 +542,7 @@ Quit the server with CTRL-BREAK.
 
 ### Required Variables
 
-These must be set for KoNote2 to start.
+These must be set for KoNote to start.
 
 | Variable | Purpose | How to Generate |
 |----------|---------|-----------------|
@@ -614,7 +628,7 @@ The test suite creates temporary test data (users, programs, clients) that is au
 
 ## Troubleshooting
 
-### KoNote2.E001: FIELD_ENCRYPTION_KEY not configured
+### KoNote.E001: FIELD_ENCRYPTION_KEY not configured
 
 **Cause:** Your `.env` file is missing or has an empty `FIELD_ENCRYPTION_KEY`.
 
@@ -629,7 +643,7 @@ The test suite creates temporary test data (users, programs, clients) that is au
    ```
    (Use your actual generated key, not this example!)
 
-### KoNote2.E001: FIELD_ENCRYPTION_KEY is invalid
+### KoNote.E001: FIELD_ENCRYPTION_KEY is invalid
 
 **Cause:** The key in your `.env` file is not a valid Fernet key (wrong format or length).
 
@@ -645,7 +659,7 @@ The test suite creates temporary test data (users, programs, clients) that is au
    - macOS: `brew services list`
    - Linux: `sudo systemctl status postgresql`
 2. Verify your `DATABASE_URL` credentials match what you set in Step 6
-3. Test connection: `psql -U KoNote2 -d KoNote2 -h localhost`
+3. Test connection: `psql -U konote -d konote -h localhost`
 
 ### ModuleNotFoundError: No module named 'django'
 
@@ -697,14 +711,14 @@ Terms you'll encounter during setup, explained in plain language:
 | **Terminal** | A text-based window where you type commands. On Windows, this is "Command Prompt" or "PowerShell". You type a command, press Enter, and see the result as text. |
 | **Repository (repo)** | A folder containing all the code for a project, stored online (like GitHub). When you "clone" a repo, you download a copy to your computer. |
 | **Clone** | To download a copy of code from the internet (GitHub) to your computer. Think of it like downloading a zip file, but it also keeps track of version history. |
-| **Migration** | A script that creates or updates database tables. When you "run migrations," you're telling the database what types of data KoNote2 will store. |
+| **Migration** | A script that creates or updates database tables. When you "run migrations," you're telling the database what types of data KoNote will store. |
 | **Container** | A self-contained package that includes an application and everything it needs to run. Docker containers are like mini virtual computers that run inside your computer. |
 | **Environment variables** | Settings stored in a file (`.env`) that tell the application how to behave. Like a configuration file with passwords and preferences. |
 | **Virtual environment (venv)** | An isolated space on your computer where Python packages are installed, keeping them separate from other projects. |
-| **Dependencies** | Other software packages that KoNote2 needs to work. When you run `pip install`, you're downloading these packages. |
-| **PostgreSQL** | The database software that stores all your data. Think of it as a very powerful spreadsheet that KoNote2 uses to save client information. |
+| **Dependencies** | Other software packages that KoNote needs to work. When you run `pip install`, you're downloading these packages. |
+| **PostgreSQL** | The database software that stores all your data. Think of it as a very powerful spreadsheet that KoNote uses to save client information. |
 | **Encryption key** | A password used to scramble data so only you can read it. Like a key to a lockbox — without it, the contents are unreadable. |
-| **Django** | The web framework (toolkit) that KoNote2 is built with. You don't need to know Django, but you'll see its name in commands and logs. |
+| **Django** | The web framework (toolkit) that KoNote is built with. You don't need to know Django, but you'll see its name in commands and logs. |
 | **HTMX** | A small tool that makes web pages feel snappier by updating only parts of a page instead of reloading everything. |
 
 ---

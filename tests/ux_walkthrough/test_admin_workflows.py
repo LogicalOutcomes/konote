@@ -1,7 +1,7 @@
 """Admin workflow UX walkthrough tests — scenario-based.
 
 Walks through every administrator workflow as if a new admin is setting
-up KoNote2 for the first time.  Each scenario creates data, verifies the
+up KoNote for the first time.  Each scenario creates data, verifies the
 CRUD cycle works, checks UX quality (labels, headings, CSRF, a11y), and
 records results into the shared walkthrough report.
 

@@ -34,7 +34,7 @@ $session = $response.session
 
 ## Deployment Options
 
-There are two ways to deploy KoNote2 to FullHost:
+There are two ways to deploy KoNote to FullHost:
 
 ### Option A: JPS Manifest (One-Click Deploy)
 
@@ -49,11 +49,11 @@ Claude Code can deploy using the Jelastic REST API. This is useful for:
 
 **Create a Docker environment with API:**
 ```powershell
-# Example: Create KoNote2 environment
+# Example: Create KoNote environment
 $body = @{
     session = "YOUR_SESSION_TOKEN"
-    env = '{"shortdomain":"KoNote2-prod","region":"default"}'
-    nodes = '[{"nodeType":"docker","fixedCloudlets":4,"flexibleCloudlets":8,"docker":{"image":"ghcr.io/your-org/KoNote2-web:latest"}}]'
+    env = '{"shortdomain":"KoNote-prod","region":"default"}'
+    nodes = '[{"nodeType":"docker","fixedCloudlets":4,"flexibleCloudlets":8,"docker":{"image":"ghcr.io/your-org/KoNote-web:latest"}}]'
 }
 Invoke-RestMethod -Uri "https://app.vap.fullhost.cloud/1.0/environment/control/rest/createenvironment" -Method POST -Body $body
 ```
@@ -62,7 +62,7 @@ Invoke-RestMethod -Uri "https://app.vap.fullhost.cloud/1.0/environment/control/r
 ```powershell
 $body = @{
     session = "YOUR_SESSION_TOKEN"
-    envName = "KoNote2-prod"
+    envName = "KoNote-prod"
     nodeId = "12345"  # Get from environment info
     vars = '{"DATABASE_URL":"postgres://...","SECRET_KEY":"..."}'
 }
@@ -78,7 +78,7 @@ Invoke-RestMethod -Uri "https://app.vap.fullhost.cloud/1.0/environment/control/r
 **Files created:**
 - `fullhost-manifest.jps` — JPS manifest for one-click deployment
 - `docs/deploy-fullhost.md` — Step-by-step guide for non-technical users
-- `docs/deploying-KoNote2.md` — Updated with FullHost option
+- `docs/deploying-KoNote.md` — Updated with FullHost option
 - `konote/wsgi.py` — Auto-detects FullHost environment
 - `konote/settings/production.py` — Auto-allows FullHost domains
 
@@ -92,14 +92,14 @@ The manifest currently references a placeholder repository. Update to the actual
 
 ```yaml
 # Change this line:
-baseUrl: https://raw.githubusercontent.com/konote/KoNote2-web/main
+baseUrl: https://raw.githubusercontent.com/konote/KoNote-web/main
 
 # To your actual repository:
-baseUrl: https://raw.githubusercontent.com/YOUR_ORG/KoNote2-web/main
+baseUrl: https://raw.githubusercontent.com/YOUR_ORG/KoNote-web/main
 ```
 
 Also update the deploy button URLs in:
-- `docs/deploying-KoNote2.md` (line ~297)
+- `docs/deploying-KoNote.md` (line ~297)
 - `docs/deploy-fullhost.md` (Step 2, Option A)
 
 ### 2. Create a FullHost Account
@@ -115,7 +115,7 @@ Also update the deploy button URLs in:
 1. Log in to [app.fullhost.cloud](https://app.fullhost.cloud)
 2. Click **Import** in the top menu
 3. Select the **URL** tab
-4. Paste: `https://raw.githubusercontent.com/YOUR_ORG/KoNote2-web/main/fullhost-manifest.jps`
+4. Paste: `https://raw.githubusercontent.com/YOUR_ORG/KoNote-web/main/fullhost-manifest.jps`
 5. Click **Import**
 
 **Option B: File Upload**
@@ -139,7 +139,7 @@ After the manifest runs (~10 minutes):
 
 ### 5. Verify Environment Detection
 
-Check that KoNote2 auto-detected FullHost:
+Check that KoNote auto-detected FullHost:
 
 1. In FullHost, click on the app container
 2. Click **Web SSH** or **Terminal**
@@ -156,10 +156,10 @@ Once the manifest works via direct import, test the deploy button:
 
 1. Create a test markdown file with the button:
    ```markdown
-   [![Deploy to FullHost](https://www.fullhost.com/deploy-button.svg)](https://app.fullhost.cloud/install?manifest=https://raw.githubusercontent.com/YOUR_ORG/KoNote2-web/main/fullhost-manifest.jps)
+   [![Deploy to FullHost](https://www.fullhost.com/deploy-button.svg)](https://app.fullhost.cloud/install?manifest=https://raw.githubusercontent.com/YOUR_ORG/KoNote-web/main/fullhost-manifest.jps)
    ```
 2. Click the button
-3. Verify it opens the FullHost installer with the KoNote2 manifest pre-loaded
+3. Verify it opens the FullHost installer with the KoNote manifest pre-loaded
 
 ### 7. Document Any Issues
 
@@ -233,7 +233,7 @@ The following files have been created/updated:
 - Login works, all pages load (Home, Clients, Programs, Admin)
 
 **Bugs found and fixed:**
-1. **Wrong repo name** — Manifest/script referenced `KoNote2-Redux` (doesn't exist), fixed to `KoNote-Redux`
+1. **Wrong repo name** — Manifest/script referenced `KoNote-Redux` (doesn't exist), fixed to `KoNote-Redux`
 2. **ALLOWED_HOSTS missing 127.0.0.1** — FullHost health checks use `127.0.0.1:8000`, causing 400 errors. Fixed by adding `127.0.0.1,localhost` to ALLOWED_HOSTS
 3. **Admin user creation crashes** — `User.objects.filter(email=...)` fails because email is encrypted. Fixed to use `filter(is_superuser=True)` and `create_superuser(username='admin', ...)`
 4. **Startup wait too short** — 30 seconds wasn't enough for migrations + seed. Increased to 60 seconds
@@ -303,6 +303,6 @@ Once testing is complete:
 
 - [fullhost-manifest.jps](../fullhost-manifest.jps)
 - [docs/deploy-fullhost.md](../docs/deploy-fullhost.md)
-- [docs/deploying-KoNote2.md](../docs/deploying-KoNote2.md)
+- [docs/deploying-KoNote.md](../docs/deploying-KoNote.md)
 - [konote/wsgi.py](../konote/wsgi.py)
 - [konote/settings/production.py](../konote/settings/production.py)

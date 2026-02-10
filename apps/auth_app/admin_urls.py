@@ -2,7 +2,7 @@ from django.urls import path
 
 from . import admin_views
 
-# These are included under /admin/settings/users/ in KoNote2/urls.py
+# These are included under /admin/settings/users/ in KoNote/urls.py
 # but use auth_app namespace via the main urls.py app_name
 urlpatterns = [
     path("", admin_views.user_list, name="user_list"),

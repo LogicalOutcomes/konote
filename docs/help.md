@@ -1,6 +1,6 @@
-# KoNote2 Help
+# KoNote Help
 
-Welcome to KoNote2! This guide helps you find what you need quickly.
+Welcome to KoNote! This guide helps you find what you need quickly.
 
 ---
 
@@ -25,12 +25,12 @@ Welcome to KoNote2! This guide helps you find what you need quickly.
 ### First Time Login
 
 **If your agency uses Microsoft (Azure AD):**
-1. Go to your KoNote2 web address
+1. Go to your KoNote web address
 2. Click **Login with Azure AD**
 3. Sign in with your work email and password
 
 **If your agency uses local login:**
-1. Go to your KoNote2 web address
+1. Go to your KoNote web address
 2. Enter your username and password
 3. Click **Login**
 
@@ -105,7 +105,7 @@ When you open a client's file, you'll see several tabs:
 
 ## Progress Notes
 
-Progress notes document your interactions with clients. KoNote2 offers two types:
+Progress notes document your interactions with clients. KoNote offers two types:
 
 ### Quick Notes
 
@@ -216,7 +216,7 @@ The client will appear in **Priority Items** on the home page until the alert is
 
 ## Registration Forms
 
-Registration forms let people sign up for your programs through a public web page — no login required. When someone submits a form, their information comes into KoNote2 for review.
+Registration forms let people sign up for your programs through a public web page — no login required. When someone submits a form, their information comes into KoNote for review.
 
 ### How Registration Works
 
@@ -226,7 +226,7 @@ Registration forms let people sign up for your programs through a public web pag
 4. The submission appears under **Admin → Submissions** for review
 5. Staff approve, reject, waitlist, or merge the submission
 
-When approved, KoNote2 automatically creates a client record and enrols the person in the program.
+When approved, KoNote automatically creates a client record and enrols the person in the program.
 
 **Auto-approve:** If the administrator turned on auto-approve for a link, submissions skip the review step — clients are created immediately.
 
@@ -247,7 +247,7 @@ If your role allows you to review submissions:
 | **Waitlist** | Parks the submission for later — you can approve or reject it later |
 | **Reject** | Marks the submission as rejected (with a reason). No client is created |
 
-**Duplicate detection:** KoNote2 highlights submissions that match an existing client's email or name. If a match is found, use **Merge** instead of Approve to avoid creating a duplicate record.
+**Duplicate detection:** KoNote highlights submissions that match an existing client's email or name. If a match is found, use **Merge** instead of Approve to avoid creating a duplicate record.
 
 ### Creating Registration Links (Administrators)
 
@@ -257,7 +257,7 @@ If your role allows you to review submissions:
 4. Optionally: add custom field groups, set a capacity limit, or set a deadline
 5. Save — you'll get a shareable URL and an embed code for your website
 
-For full setup details, see [Administering KoNote2 — Registration Forms](administering-KoNote2.md#set-up-registration-forms).
+For full setup details, see [Administering KoNote — Registration Forms](administering-KoNote.md#set-up-registration-forms).
 
 ---
 
@@ -366,7 +366,7 @@ If your agency uses **Azure AD**:
 
 ### Session Timeout
 
-For security, KoNote2 automatically logs you out after a period of inactivity. The timer appears in the footer. Activity (clicking, typing) resets the timer.
+For security, KoNote automatically logs you out after a period of inactivity. The timer appears in the footer. Activity (clicking, typing) resets the timer.
 
 ---
 
@@ -402,7 +402,7 @@ Your access depends on your assigned role:
 
 ## Administrator Tasks
 
-If you're an administrator, you can configure KoNote2 through the **Admin** menu:
+If you're an administrator, you can configure KoNote through the **Admin** menu:
 
 ### Quick Links
 
@@ -463,7 +463,7 @@ Every significant action is logged for compliance.
 2. Filter by date, user, or action type
 3. Export if needed for reporting
 
-For detailed administrator documentation, see [Administering KoNote2](administering-KoNote2.md).
+For detailed administrator documentation, see [Administering KoNote](administering-KoNote.md).
 
 ---
 
@@ -471,7 +471,7 @@ For detailed administrator documentation, see [Administering KoNote2](administer
 
 ### Your Data is Protected
 
-KoNote2 protects sensitive information through:
+KoNote protects sensitive information through:
 
 - **Encryption** — Client names, birthdates, and sensitive fields are encrypted
 - **Role-based access** — You only see clients in programs you're assigned to
@@ -491,7 +491,7 @@ KoNote2 protects sensitive information through:
 
 ### I can't log in
 
-**Azure AD:** Check that your work email is registered with KoNote2. Contact your administrator.
+**Azure AD:** Check that your work email is registered with KoNote. Contact your administrator.
 
 **Local login:** Confirm your credentials. If forgotten, ask your administrator to reset your password.
 
@@ -522,7 +522,7 @@ Charts require metric values recorded in progress notes. If no metrics have been
 
 ### The page timed out
 
-For security, KoNote2 logs you out after inactivity. Log in again to continue. Your unsaved work may be lost.
+For security, KoNote logs you out after inactivity. Log in again to continue. Your unsaved work may be lost.
 
 ---
 
@@ -530,13 +530,13 @@ For security, KoNote2 logs you out after inactivity. Log in again to continue. Y
 
 ### In-App Resources
 
-- **Quick Reference Card** — See [Using KoNote2](using-KoNote2.md#quick-reference-card)
+- **Quick Reference Card** — See [Using KoNote](using-KoNote.md#quick-reference-card)
 - **Keyboard shortcuts** — Press `?` anywhere in the app
 
 ### Documentation
 
-- [Staff Training Guide](using-KoNote2.md) — Daily tasks in detail
-- [Administrator Guide](administering-KoNote2.md) — Configuration and maintenance
+- [Staff Training Guide](using-KoNote.md) — Daily tasks in detail
+- [Administrator Guide](administering-KoNote.md) — Configuration and maintenance
 - [Technical Documentation](technical-documentation.md) — For developers
 
 ### Contact Support
@@ -582,6 +582,6 @@ For security, KoNote2 logs you out after inactivity. Log in again to continue. Y
 
 ---
 
-**KoNote2** — Participant Outcome Management
+**KoNote** — Participant Outcome Management
 
 Last updated: 2026-02-04

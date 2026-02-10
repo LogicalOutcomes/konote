@@ -3,9 +3,9 @@ services:
     build: .
     environment:
       - DJANGO_SETTINGS_MODULE=konote.settings.production
-      - KoNote2_MODE=${KoNote2_MODE:-production}
-      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-KoNote2}
-      - AUDIT_DATABASE_URL=postgresql://${AUDIT_POSTGRES_USER}:${AUDIT_POSTGRES_PASSWORD}@audit_db:5432/${AUDIT_POSTGRES_DB:-KoNote2_audit}
+      - KONOTE_MODE=${KONOTE_MODE:-production}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-konote}
+      - AUDIT_DATABASE_URL=postgresql://${AUDIT_POSTGRES_USER}:${AUDIT_POSTGRES_PASSWORD}@audit_db:5432/${AUDIT_POSTGRES_DB:-konote_audit}
       - SECRET_KEY=${SECRET_KEY}
       - FIELD_ENCRYPTION_KEY=${FIELD_ENCRYPTION_KEY}
       - AUTH_MODE=${AUTH_MODE:-local}
@@ -27,7 +27,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:-KoNote2}
+      - POSTGRES_DB=${POSTGRES_DB:-konote}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     healthcheck:
@@ -42,11 +42,11 @@ services:
       - audit_pgdata:/var/lib/postgresql/data
       - ./scripts/audit_db_init.sql:/docker-entrypoint-initdb.d/01-init.sql
     environment:
-      - POSTGRES_DB=${AUDIT_POSTGRES_DB:-KoNote2_audit}
+      - POSTGRES_DB=${AUDIT_POSTGRES_DB:-konote_audit}
       - POSTGRES_USER=${AUDIT_POSTGRES_USER}
       - POSTGRES_PASSWORD=${AUDIT_POSTGRES_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${AUDIT_POSTGRES_USER} -d ${AUDIT_POSTGRES_DB:-KoNote2_audit}"]
+      test: ["CMD-SHELL", "pg_isready -U ${AUDIT_POSTGRES_USER} -d ${AUDIT_POSTGRES_DB:-konote_audit}"]
       interval: 5s
       timeout: 5s
       retries: 5

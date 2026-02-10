@@ -4,7 +4,7 @@
 
 ## Overview
 
-A consultant-assisted setup workflow that uses Claude to analyze agency documents, generate configuration recommendations, and apply settings to a new KoNote2 instance. This is not a traditional click-through wizard — the intelligence lives in a Claude skill, and KoNote2 receives a configuration file.
+A consultant-assisted setup workflow that uses Claude to analyze agency documents, generate configuration recommendations, and apply settings to a new KoNote instance. This is not a traditional click-through wizard — the intelligence lives in a Claude skill, and KoNote receives a configuration file.
 
 ---
 
@@ -59,7 +59,7 @@ A consultant-assisted setup workflow that uses Claude to analyze agency document
 └─────────────────────────────────────────────────────────────┘
                            ↓
 ┌─────────────────────────────────────────────────────────────┐
-│  PHASE 4: Apply Configuration (KoNote2)                      │
+│  PHASE 4: Apply Configuration (KoNote)                      │
 │                                                             │
 │  Command: python manage.py apply_setup setup_config.json    │
 │                                                             │
@@ -86,7 +86,7 @@ A consultant-assisted setup workflow that uses Claude to analyze agency document
 
 ## Phase 0: Hosting Selection Guide
 
-Before deploying KoNote2, help the organisation choose the right hosting provider. See [canadian-hosting-research.md](canadian-hosting-research.md) for detailed research.
+Before deploying KoNote, help the organisation choose the right hosting provider. See [canadian-hosting-research.md](canadian-hosting-research.md) for detailed research.
 
 ### Decision Questions
 
@@ -147,7 +147,7 @@ The Claude skill generates this JSON; the management command consumes it.
 ```json
 {
   "instance_settings": {
-    "product_name": "Youth Services - KoNote2",
+    "product_name": "Youth Services - KoNote",
     "support_email": "support@agency.ca",
     "logo_url": "https://agency.ca/logo.png",
     "date_format": "YYYY-MM-DD"
@@ -299,7 +299,7 @@ python manage.py apply_setup setup_config.json --dry-run  # Preview without chan
 
 ## Claude Skill Design (Future)
 
-The skill would be created in Claude's skill system, not in the KoNote2 codebase.
+The skill would be created in Claude's skill system, not in the KoNote codebase.
 
 ### Skill Inputs
 - PDF/Word documents via `markitdown` or `pdf` skill
@@ -310,7 +310,7 @@ The skill would be created in Claude's skill system, not in the KoNote2 codebase
 ### Skill Outputs
 
 **1. Draft Configuration**
-- Maps agency outcomes to KoNote2's 24-metric library
+- Maps agency outcomes to KoNote's 24-metric library
 - Extracts program names and descriptions
 - Suggests terminology based on document language
 - Proposes plan template structure from evaluation framework

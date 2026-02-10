@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}{{ site.product_name|default:"KoNote2" }}{% endblock %}</title>
+    <title>{% block title %}{{ site.product_name|default:"KoNote" }}{% endblock %}</title>
 
     <!-- Favicon -->
     <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
@@ -39,7 +39,7 @@
     <nav class="container-fluid">
         <ul>
             <li><a href="/" class="contrast">
-                <strong>{{ site.product_name|default:"KoNote2" }}</strong>
+                <strong>{{ site.product_name|default:"KoNote" }}</strong>
             </a></li>
         </ul>
         <ul>
@@ -52,7 +52,7 @@
     <nav class="container-fluid">
         <ul>
             <li><a href="/" class="contrast">
-                <strong>{{ site.product_name|default:"KoNote2" }}</strong>
+                <strong>{{ site.product_name|default:"KoNote" }}</strong>
             </a></li>
             <li>
                 <!-- Mobile menu toggle -->
@@ -92,7 +92,7 @@
                         <li><a href="/admin/registration/">{% trans "Registration Links" %}</a></li>
                         <li><a href="/admin/submissions/">{% trans "Pending Submissions" %}{% if pending_submissions_count %} <span class="badge badge-warning">{{ pending_submissions_count }}</span>{% endif %}</a></li>
                         <li><a href="/admin/settings/">{% trans "Settings" %}</a></li>
-                        <li><a href="/auth/invites/">{% trans "Invites" %}</a></li>
+                        <li><a href="/auth/invites/">{% trans "New Users" %}</a></li>
                         <li><a href="/admin/audit/">{% trans "Audit Log" %}</a></li>
                         <li><a href="/merge/">{% trans "Merge Duplicates" %}</a></li>
                         <li><a href="/erasure/">{% blocktrans with term=term.client|default:"Participant" %}Erase {{ term }} Data{% endblocktrans %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>
@@ -162,7 +162,7 @@
     <footer class="container site-footer" role="contentinfo">
         <div class="site-footer-inner">
             <div class="site-footer-brand">
-                <strong>{{ site.product_name|default:"KoNote2" }}</strong>
+                <strong>{{ site.product_name|default:"KoNote" }}</strong>
                 {% if site.support_email %}<span>{% trans "Support:" %} <a href="mailto:{{ site.support_email }}">{{ site.support_email }}</a></span>{% endif %}
             </div>
             <div class="site-footer-links">

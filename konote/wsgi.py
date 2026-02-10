@@ -1,4 +1,4 @@
-"""WSGI config for KoNote2 Web."""
+"""WSGI config for KoNote Web."""
 import os
 from django.core.wsgi import get_wsgi_application
 

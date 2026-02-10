@@ -4,13 +4,13 @@
 
 ## Product Name: KoNote
 
-**Recommendation:** Drop "KoNote2" and call the web version simply **KoNote**.
+**Recommendation:** Drop "KoNote" and call the web version simply **KoNote**.
 
 **Rationale:**
 - This is a ground-up rewrite, not an incremental upgrade — it deserves the name
 - You were involved in the original and own the naming rights
 - Only one organization uses the original — no user base to confuse
-- "KoNote2" creates awkward versioning ("KoNote2 v1.2") and adds an unnecessary syllable
+- "KoNote" creates awkward versioning ("KoNote v1.2") and adds an unnecessary syllable
 - New users (99.9% of future audience) encounter a clean, simple name with no baggage
 
 **Prerequisite:** Get David's agreement to carry the name forward.
@@ -47,10 +47,10 @@ Use **SemVer** (`MAJOR.MINOR.PATCH`), starting fresh at 1.0.0:
 
 ## Rename Scope (when ready)
 
-These references to "KoNote2" will need updating:
+These references to "KoNote" will need updating:
 
 - UI strings and page titles
-- Environment variables (e.g. `KoNote2_MODE`)
+- Environment variables (e.g. `KONOTE_MODE`)
 - README and documentation
 - Website and marketing materials
 
@@ -59,4 +59,4 @@ The Python module name `konote` does **not** need to change — it's already cor
 ## Status
 
 - [ ] Discuss with David — get agreement to use "KoNote" for the web version
-- [ ] Rename "KoNote2" references in codebase (deferred until after agreement)
+- [ ] Rename "KoNote" references in codebase (deferred until after agreement)
