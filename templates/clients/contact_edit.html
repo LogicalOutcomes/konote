@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Edit Contact" %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+<hgroup>
+    <h1>{% blocktrans with first=client.display_name last=client.last_name %}Edit Contact — {{ first }} {{ last }}{% endblocktrans %}</h1>
+    <p>{% trans "Update phone number for this participant." %}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div>
+        <label for="id_phone">{% trans "Phone Number" %}</label>
+        <input type="tel" name="phone" id="id_phone" value="{{ form.phone.value|default:'' }}" placeholder="(613) 555-1234" autofocus>
+        {% if form.phone.errors %}<small class="badge badge-danger">{{ form.phone.errors.0 }}</small>{% endif %}
+    </div>
+
+    <div role="group">
+        <button type="submit">{% trans "Save Changes" %}</button>
+        <a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

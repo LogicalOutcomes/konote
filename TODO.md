@@ -21,18 +21,18 @@ _All tasks complete — section can be removed on next cleanup._
 
 ### Permissions Enforcement Wiring — See `tasks/permissions-enforcement-wiring.md`
 
-**Wave 1 — Foundation (3 parallel streams)**
-- [ ] Update permissions.py — add `client.create`, `client.edit_contact`, change 5 values (WIRE-1A)
-- [ ] Create `@requires_permission` decorator in decorators.py (WIRE-1B)
-- [ ] Create `{% has_permission %}` template tag (WIRE-1C)
+**Wave 1 — Foundation (3 parallel streams)** ✅
+- [x] Update permissions.py — add `client.create`, `client.edit_contact`, change 5 values (WIRE-1A)
+- [x] Create `@requires_permission` decorator in decorators.py (WIRE-1B)
+- [x] Create `{% has_permission %}` template tag (WIRE-1C)
 
-**Wave 2 — Wire affected views (6 parallel streams)**
-- [ ] Wire client views — client_create, contact edit (WIRE-2A)
-- [ ] Wire group views — manage_members + HTMX audit trail (WIRE-2B)
-- [ ] Wire alert/event views — alert.create (WIRE-2C)
-- [ ] Wire consent views — consent.manage + immutability enforcement (WIRE-2D)
-- [ ] Wire executive-facing views — notes, plans, reports (WIRE-2E)
-- [ ] Add PM no-elevation constraint — user.manage: SCOPED (WIRE-2F)
+**Wave 2 — Wire affected views (6 parallel streams)** ✅
+- [x] Wire client views — client_create, contact edit (WIRE-2A)
+- [x] Wire group views — manage_members + HTMX audit trail (WIRE-2B)
+- [x] Wire alert/event views — alert.create (WIRE-2C)
+- [x] Wire consent views — consent.manage + immutability enforcement (WIRE-2D)
+- [x] Wire executive-facing views — notes, plans, reports (WIRE-2E)
+- [x] Add PM no-elevation constraint — user.manage: SCOPED (WIRE-2F)
 
 **Wave 3 — UI layer (3 parallel streams)**
 - [ ] Update context processor — expose `user_permissions` dict (WIRE-3A)

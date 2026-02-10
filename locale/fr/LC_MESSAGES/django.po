@@ -9866,3 +9866,17 @@ msgstr "consultez d’abord notre page de sécurité"
 
 msgid "New Users"
 msgstr "Nouveaux utilisateurs"
+
+msgid "Contact information updated."
+msgstr "Coordonnées mises à jour."
+
+msgid "Edit Contact"
+msgstr "Modifier les coordonnées"
+
+msgid "Update phone number for this participant."
+msgstr "Modifier le numéro de téléphone de ce participant."
+
+#: templates/clients/contact_edit.html
+#, python-format
+msgid "Edit Contact — %(first)s %(last)s"
+msgstr "Modifier les coordonnées — %(first)s %(last)s"

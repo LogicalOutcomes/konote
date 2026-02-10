@@ -35,6 +35,28 @@ class ConsentRecordForm(forms.Form):
     )
 
 
+class ClientContactForm(forms.Form):
+    """Narrow form for editing client phone number only.
+
+    Used by receptionists (client.edit_contact: ALLOW) and staff (SCOPED).
+    Does NOT include address or emergency contact — safety implications for DV.
+    Replace with PER_FIELD form in Phase 2.
+    """
+
+    phone = forms.CharField(
+        max_length=20, required=False,
+        label=_("Phone Number"),
+        widget=forms.TextInput(attrs={"type": "tel", "placeholder": _("(613) 555-1234")}),
+    )
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get("phone", "").strip()
+        if phone:
+            validate_phone_number(phone)
+            phone = normalize_phone_number(phone)
+        return phone
+
+
 class ClientFileForm(forms.Form):
     """Form for client PII — plain form since fields are encrypted properties."""
 
