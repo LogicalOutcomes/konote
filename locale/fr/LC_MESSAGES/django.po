@@ -8399,280 +8399,295 @@ msgid "with notes recorded"
 msgstr "avec des notes enregistrées"
 
 msgid "Access denied. You do not have the required role for this action."
-msgstr ""
+msgstr "Accès refusé. Vous n’avez pas le rôle requis pour cette action."
 
 msgid "Consent given"
-msgstr ""
+msgstr "Consentement donné"
 
 msgid "Main content"
-msgstr ""
+msgstr "Contenu principal"
 
 msgid "No consent"
-msgstr ""
+msgstr "Aucun consentement"
 
 msgid "Access to this client has been restricted."
-msgstr ""
+msgstr "L’accès à ce dossier a été restreint."
 
 msgid "Unable to verify access permissions."
-msgstr ""
+msgstr "Impossible de vérifier les autorisations d’accès."
 
 msgid "Aggregate Data Only"
-msgstr ""
+msgstr "Données agrégées seulement"
 
 msgid "Aggregate Export Info"
-msgstr ""
+msgstr "Information sur l’exportation agrégée"
 
 msgid "Average"
-msgstr ""
+msgstr "Moyenne"
 
 msgid "Breakdown by"
-msgstr ""
+msgstr "Répartition par"
 
 msgid "Metric Summary"
-msgstr ""
+msgstr "Résumé des indicateurs"
 
 msgid "Participants Measured"
-msgstr ""
+msgstr "Participants mesurés"
 
 msgid ""
 "This export contains summary statistics only: averages, counts, minimums, "
 "and maximums per metric. No individual participant record IDs, names, or "
 "staff information are included."
 msgstr ""
+"Cette exportation ne contient que des statistiques sommaires : moyennes, "
+"totaux, minimums et maximums par indicateur. Aucun identifiant de "
+"participant, nom ou information sur le personnel n’est inclus."
 
 msgid "A goal or plan target"
-msgstr ""
+msgstr "Un objectif ou une cible du plan"
 
 msgid "A score or measurement"
-msgstr ""
+msgstr "Un score ou une mesure"
 
 msgid "Accepted"
-msgstr ""
+msgstr "Accepté"
 
 msgid "Access denied. Unable to determine permission level."
-msgstr ""
+msgstr "Accès refusé. Impossible de déterminer le niveau de permission."
 
 msgid "Access denied. Your role does not have permission for this action."
 msgstr ""
+"Accès refusé. Votre rôle ne dispose pas de la permission pour cette action."
 
 msgid "Anything you'd like to bring up at your next meeting..."
-msgstr ""
+msgstr "Ce que vous aimeriez aborder à votre prochaine rencontre..."
 
 msgid "Client file is required."
-msgstr ""
+msgstr "Le dossier du client est requis."
 
 msgid "Confirm new password"
-msgstr ""
+msgstr "Confirmer le nouveau mot de passe"
 
 msgid "Confirm password"
-msgstr ""
+msgstr "Confirmer le mot de passe"
 
 msgid "Corrected"
-msgstr ""
+msgstr "Corrigé"
 
 msgid "Current password"
-msgstr ""
+msgstr "Mot de passe actuel"
 
 msgid "Describe what you think is incorrect and what it should say..."
-msgstr ""
+msgstr "Décrivez ce qui vous semble incorrect et ce que ça devrait dire..."
 
 msgid "Discussed"
-msgstr ""
+msgstr "Discuté"
 
 msgid "Email code"
-msgstr ""
+msgstr "Code par courriel"
 
 msgid "Email is required."
-msgstr ""
+msgstr "L’adresse courriel est requise."
 
 msgid "Enter the 6-digit code from your authenticator app."
-msgstr ""
+msgstr "Entrez le code à 6 chiffres de votre application d’authentification."
 
 msgid "Enter the 6-digit code we sent to your email."
-msgstr ""
+msgstr "Entrez le code à 6 chiffres que nous avons envoyé à votre courriel."
 
 msgid "Enter the email address you used to create your account."
 msgstr ""
+"Entrez l’adresse courriel que vous avez utilisée pour créer votre compte."
 
 msgid "Exempt"
-msgstr ""
+msgstr "Exempté"
 
 msgid "Goal"
-msgstr ""
+msgstr "Objectif"
 
 msgid "Hidden from participant portal"
-msgstr ""
+msgstr "Masqué du portail des participants"
 
 msgid "How your information is used"
-msgstr ""
+msgstr "Comment vos renseignements sont utilisés"
 
 msgid "Invalid code. Please try again."
-msgstr ""
+msgstr "Code invalide. Veuillez réessayer."
 
 msgid "Invalid email or password."
-msgstr ""
+msgstr "Adresse courriel ou mot de passe invalide."
 
 msgid "MFA is not configured. Please contact support."
 msgstr ""
+"L’authentification multifacteur n’est pas configurée. Veuillez contacter le "
+"support."
 
 msgid "Must be at least 8 characters."
-msgstr ""
+msgstr "Doit contenir au moins 8 caractères."
 
 msgid "New password"
-msgstr ""
+msgstr "Nouveau mot de passe"
 
 msgid "No change needed"
-msgstr ""
+msgstr "Aucun changement nécessaire"
 
 msgid ""
 "No suggestion text long enough to display. Short suggestions (under 5 words)"
 " are counted above but not shown."
 msgstr ""
+"Aucun texte de suggestion assez long à afficher. Les suggestions courtes "
+"(moins de 5 mots) sont comptées ci-dessus mais non affichées."
 
 msgid "Only when self-reported"
-msgstr ""
+msgstr "Seulement lorsque auto-déclaré"
 
 msgid "Optionally link this entry to one of your goals."
-msgstr ""
+msgstr "Vous pouvez associer cette entrée à l’un de vos objectifs."
 
 msgid "Please describe what needs to be corrected."
-msgstr ""
+msgstr "Veuillez décrire ce qui doit être corrigé."
 
 msgid "Please enter both your email and password."
-msgstr ""
+msgstr "Veuillez entrer votre adresse courriel et votre mot de passe."
 
 msgid "Please write something before saving."
-msgstr ""
+msgstr "Veuillez écrire quelque chose avant d’enregistrer."
 
 msgid "Please write something before sending."
-msgstr ""
+msgstr "Veuillez écrire quelque chose avant d’envoyer."
 
 msgid "Pre-session"
-msgstr ""
+msgstr "Pré-séance"
 
 msgid "Reflection"
-msgstr ""
+msgstr "Réflexion"
 
 msgid "Reset code"
-msgstr ""
+msgstr "Code de réinitialisation"
 
 msgid "Something recorded about what I said"
-msgstr ""
+msgstr "Quelque chose enregistré à propos de ce que j’ai dit"
 
 msgid "TOTP"
-msgstr ""
+msgstr "TOTP"
 
 msgid "The code must be 6 digits."
-msgstr ""
+msgstr "Le code doit être de 6 chiffres."
 
 msgid "Their Suggestions"
-msgstr ""
+msgstr "Leurs suggestions"
 
 msgid "This email is already associated with an account."
-msgstr ""
+msgstr "Cette adresse courriel est déjà associée à un compte."
 
 msgid "This is how your name will appear in the portal."
-msgstr ""
+msgstr "C’est ainsi que votre nom apparaîtra dans le portail."
 
 msgid "This will be your login email."
-msgstr ""
+msgstr "Ce sera votre adresse courriel de connexion."
 
 msgid "Verification code"
-msgstr ""
+msgstr "Code de vérification"
 
 msgid ""
 "Visibility in participant portal. Default: hidden until explicitly enabled."
 msgstr ""
+"Visibilité dans le portail des participants. Par défaut : masqué jusqu’à "
+"activation explicite."
 
 msgid "Visible in participant portal"
-msgstr ""
+msgstr "Visible dans le portail des participants"
 
 msgid "What needs to be changed?"
-msgstr ""
+msgstr "Que faut-il changer ?"
 
 msgid "What should we call you?"
-msgstr ""
+msgstr "Comment devrions-nous vous appeler ?"
 
 msgid "What would you like corrected?"
-msgstr ""
+msgstr "Que souhaitez-vous faire corriger ?"
 
 msgid "What would you like to discuss next time?"
-msgstr ""
+msgstr "De quoi aimeriez-vous discuter la prochaine fois ?"
 
 msgid "What's on your mind?"
-msgstr ""
+msgstr "À quoi pensez-vous ?"
 
 msgid "Write a message to your worker..."
-msgstr ""
+msgstr "Écrivez un message à votre intervenant(e)..."
 
 msgid "Write anything you'd like to remember..."
-msgstr ""
+msgstr "Écrivez tout ce dont vous aimeriez vous souvenir..."
 
 msgid "Your current password is incorrect."
-msgstr ""
+msgstr "Votre mot de passe actuel est incorrect."
 
 msgid "Your first name or nickname"
-msgstr ""
+msgstr "Votre prénom ou surnom"
 
 msgid "Your message"
-msgstr ""
+msgstr "Votre message"
 
 msgid "Your privacy"
-msgstr ""
+msgstr "Votre vie privée"
 
 msgid "Your rights"
-msgstr ""
+msgstr "Vos droits"
 
 msgid "correction request"
-msgstr ""
+msgstr "demande de correction"
 
 msgid "correction requests"
-msgstr ""
+msgstr "demandes de correction"
 
 msgid "journal entries"
-msgstr ""
+msgstr "entrées de journal"
 
 msgid "journal entry"
-msgstr ""
+msgstr "entrée de journal"
 
 msgid "participant account"
-msgstr ""
+msgstr "compte de participant"
 
 msgid "participant accounts"
-msgstr ""
+msgstr "comptes de participants"
 
 msgid "participant message"
-msgstr ""
+msgstr "message de participant"
 
 msgid "participant messages"
-msgstr ""
+msgstr "messages de participants"
 
 msgid "portal invite"
-msgstr ""
+msgstr "invitation au portail"
 
 msgid "portal invites"
-msgstr ""
+msgstr "invitations au portail"
 
 msgid "you@example.com"
-msgstr ""
+msgstr "vous@exemple.com"
 
 msgid "Client consents to sharing clinical information across programs"
 msgstr ""
+"Le participant consent au partage de renseignements cliniques entre les "
+"programmes"
 
 msgid "Please select at least one program."
 msgstr "Veuillez sélectionner au moins un programme."
 
 msgid "You do not have any program roles."
-msgstr ""
+msgstr "Vous n’avez aucun rôle de programme."
 
 msgid "Cross-Program Sharing"
-msgstr ""
+msgstr "Partage entre programmes"
 
 msgid "Participant Portal"
-msgstr ""
+msgstr "Portail des participants"
 
 msgid "See what participants see when they check their goals and progress"
 msgstr ""
+"Voyez ce que les participants voient lorsqu’ils consultent leurs objectifs "
+"et leur progression"
 
 msgid ""
 "After merge, staff in the following programs will see all combined records:"
@@ -8685,11 +8700,17 @@ msgid ""
 " Under Ontario privacy law (PHIPA), express consent is required before "
 "clinical information can be shared across programs."
 msgstr ""
+"Les notes cliniques ne sont visibles que dans le programme où elles ont été "
+"enregistrées. En vertu de la loi ontarienne sur la protection de la vie "
+"privée (LPRPS), un consentement exprès est requis avant que les "
+"renseignements cliniques puissent être partagés entre les programmes."
 
 msgid ""
 "Note: Cross-program note filtering will be enforced in a future update. This"
 " setting is being recorded now for when enforcement is enabled."
 msgstr ""
+"Remarque : Le filtrage des notes entre programmes sera appliqué dans une "
+"mise à jour future. Ce paramètre est enregistré dès maintenant."
 
 msgid ""
 "Once all program managers approve, participant data will be permanently "
@@ -8714,6 +8735,9 @@ msgid ""
 "Required under Ontario privacy law (PHIPA) before clinical notes from one "
 "program can be viewed by staff in another program."
 msgstr ""
+"Requis en vertu de la loi ontarienne sur la protection de la vie privée "
+"(LPRPS) avant que les notes cliniques d’un programme puissent être "
+"consultées par le personnel d’un autre programme."
 
 msgid "Staff in all listed programs will be able to see all combined records."
 msgstr ""
@@ -8724,6 +8748,8 @@ msgid ""
 "This participant has consented to sharing clinical information across "
 "programs."
 msgstr ""
+"Ce participant a consenti au partage de renseignements cliniques entre les "
+"programmes."
 
 msgid "About Program Outcome Reports"
 msgstr "À propos des rapports sur les résultats du programme"
@@ -8781,6 +8807,8 @@ msgstr "Laissez vide pour exporter les participants de tous les programmes."
 
 msgid "Name shown in participant portal. Leave blank to use program name."
 msgstr ""
+"Nom affiché dans le portail des participants. Laissez vide pour utiliser le "
+"nom du programme."
 
 msgid "No outcome indicators with targets defined for this program."
 msgstr ""
@@ -8805,7 +8833,7 @@ msgid "Organisation and program information"
 msgstr "Informations sur l'organisation et le programme"
 
 msgid "PROGRAM ENROLMENTS"
-msgstr ""
+msgstr "INSCRIPTIONS AUX PROGRAMMES"
 
 msgid "Program Description"
 msgstr "Description du programme"
@@ -8873,51 +8901,58 @@ msgid "— Select a program —"
 msgstr "— Sélectionner un programme —"
 
 msgid "Enter the 4-digit code your worker gave you."
-msgstr ""
+msgstr "Entrez le code à 4 chiffres que votre intervenant(e) vous a donné."
 
 msgid "Invalid code. %(remaining)d attempts remaining."
-msgstr ""
+msgstr "Code invalide. %(remaining)d tentatives restantes."
 
 msgid "The verification code is incorrect. Please check with your worker."
 msgstr ""
+"Le code de vérification est incorrect. Veuillez vérifier avec votre "
+"intervenant(e)."
 
 msgid "view only"
 msgstr "lecture seule"
 
 msgid "e.g., Jane Smith, Clinical Supervisor"
-msgstr ""
+msgstr "p. ex., Jane Smith, superviseure clinique"
 
 msgid "e.g., New CRM system, IT Department"
-msgstr ""
+msgstr "p. ex., nouveau système CRM, département informatique"
 
 msgid "Backup or disaster recovery"
-msgstr ""
+msgstr "Sauvegarde ou reprise après sinistre"
 
 msgid "Data migration to another system"
-msgstr ""
+msgstr "Migration de données vers un autre système"
 
 msgid "— Select reason —"
-msgstr ""
+msgstr "— Sélectionner la raison —"
 
 msgid ""
 "Because this export contains individual client data, a 10-minute delay will "
 "be applied before the download link becomes active. Administrators will be "
 "notified by email."
 msgstr ""
+"Comme cette exportation contient des données individuelles, un délai de 10 "
+"minutes sera appliqué avant que le lien de téléchargement ne devienne actif."
+" Les administrateurs seront avisés par courriel."
 
 msgid "French version. Leave blank to use the English text."
-msgstr ""
+msgstr "Version française. Laissez vide pour utiliser le texte anglais."
 
 msgid "Portal Footer Text (English)"
-msgstr ""
+msgstr "Texte du pied de page du portail (anglais)"
 
 msgid "Portal Footer Text (French)"
-msgstr ""
+msgstr "Texte du pied de page du portail (français)"
 
 msgid ""
 "See what participants see when they check their goals and progress (if this "
 "is enabled)"
 msgstr ""
+"Voyez ce que les participants voient lorsqu’ils consultent leurs objectifs "
+"et leur progression (si cette fonction est activée)"
 
 msgid "211 Ontario:"
 msgstr "211 Ontario :"
@@ -8926,7 +8961,7 @@ msgid "24 hours a day, 7 days a week"
 msgstr "24 heures sur 24, 7 jours sur 7"
 
 msgid "6-digit code"
-msgstr ""
+msgstr "Code à 6 chiffres"
 
 msgid "A private space to write your thoughts."
 msgstr "Un espace privé pour écrire vos réflexions."
@@ -8953,56 +8988,62 @@ msgid "Back to sign in"
 msgstr "Retour à la connexion"
 
 msgid "Before You Start Writing"
-msgstr ""
+msgstr "Avant de commencer à écrire"
 
 msgid "Before you begin"
-msgstr ""
+msgstr "Avant de commencer"
 
 msgid "Before you start writing"
-msgstr ""
+msgstr "Avant de commencer à écrire"
 
 msgid "By creating an account, you agree that:"
-msgstr ""
+msgstr "En créant un compte, vous acceptez que :"
 
 msgid "Call"
 msgstr "Appelez"
 
 msgid "Can't scan the code? Enter this key instead"
-msgstr ""
+msgstr "Vous ne pouvez pas scanner le code ? Entrez cette clé à la place"
 
 msgid "Celebrate what you've achieved."
 msgstr "Célébrez vos accomplissements."
 
 msgid "Celebrate your milestones"
-msgstr ""
+msgstr "Célébrez vos jalons"
 
 msgid "Change Password"
-msgstr ""
+msgstr "Changer le mot de passe"
 
 msgid "Change Your Password"
-msgstr ""
+msgstr "Changer votre mot de passe"
 
 msgid "Change my password"
 msgstr "Changer mon mot de passe"
 
 msgid "Chart showing your progress over time"
-msgstr ""
+msgstr "Graphique montrant votre progression au fil du temps"
 
 msgid "Check your email and then use the code to set a new password."
 msgstr ""
+"Vérifiez votre courriel, puis utilisez le code pour définir un nouveau mot "
+"de passe."
 
 msgid ""
 "Check your email for a message with your code. It may take a minute to "
 "arrive."
 msgstr ""
+"Vérifiez votre courriel pour un message avec votre code. Cela peut prendre "
+"une minute."
 
 msgid "Choose a new password. Use at least 8 characters."
-msgstr ""
+msgstr "Choisissez un nouveau mot de passe. Utilisez au moins 8 caractères."
 
 msgid ""
 "Choose a strong password. Use at least 8 characters with a mix of letters "
 "and numbers."
 msgstr ""
+"Choisissez un mot de passe robuste. Utilisez au moins 8 caractères avec un "
+"mélange de lettres et de chiffres."
 
 msgid "Choose your preferred language."
 msgstr "Choisissez votre langue préférée."
@@ -9014,27 +9055,29 @@ msgid "Community and social services information"
 msgstr "Information sur les services communautaires et sociaux"
 
 msgid "Completed:"
-msgstr ""
+msgstr "Terminé :"
 
 msgid "Create my account"
-msgstr ""
+msgstr "Créer mon compte"
 
 msgid "Crisis resources"
-msgstr ""
+msgstr "Ressources de crise"
 
 msgid "Current progress:"
-msgstr ""
+msgstr "Progression actuelle :"
 
 msgid ""
 "Describe what you think is wrong and what it should say. There's no wrong "
 "way to write this."
 msgstr ""
+"Décrivez ce qui vous semble incorrect et ce que ça devrait dire. Il n’y a "
+"pas de mauvaise façon de l’écrire."
 
 msgid "Dismiss this notice"
-msgstr ""
+msgstr "Fermer cet avis"
 
 msgid "Display name"
-msgstr ""
+msgstr "Nom affiché"
 
 msgid "Don't save your password in the browser if others use the same device."
 msgstr ""
@@ -9048,28 +9091,34 @@ msgid ""
 "Enter the 4-digit code your worker gave you in person. This helps confirm "
 "your identity."
 msgstr ""
+"Entrez le code à 4 chiffres que votre intervenant(e) vous a donné en "
+"personne. Cela aide à confirmer votre identité."
 
 msgid "Enter the 6-digit code from your authenticator app"
 msgstr "Entrez le code à 6 chiffres de votre application d'authentification"
 
 msgid "Enter the code from your email and choose a new password."
 msgstr ""
+"Entrez le code de votre courriel et choisissez un nouveau mot de passe."
 
 msgid "Enter the password you use now."
-msgstr ""
+msgstr "Entrez le mot de passe que vous utilisez actuellement."
 
 msgid ""
 "Enter your email address and we'll send you a code to reset your password."
 msgstr ""
+"Entrez votre adresse courriel et nous vous enverrons un code pour "
+"réinitialiser votre mot de passe."
 
 msgid "Everything here is about you and your journey."
-msgstr ""
+msgstr "Tout ici concerne vous et votre parcours."
 
 msgid "For example: I want to talk about my housing situation..."
-msgstr ""
+msgstr "Par exemple : Je veux parler de ma situation de logement..."
 
 msgid "For example: My goal says X but I think it should say Y..."
 msgstr ""
+"Par exemple : Mon objectif dit X mais je pense qu’il devrait dire Y..."
 
 msgid "For young people"
 msgstr "Pour les jeunes"
@@ -9079,9 +9128,11 @@ msgstr "Mot de passe oublié ?"
 
 msgid "Go to Settings, then Safari, then 'Clear History and Website Data'"
 msgstr ""
+"Allez dans Réglages, puis Safari, puis « Effacer historique, données de site"
+" »"
 
 msgid "Go to sign in"
-msgstr ""
+msgstr "Aller à la connexion"
 
 msgid ""
 "Here are some tips to help you use this site safely, especially if you share"
@@ -9093,12 +9144,13 @@ msgstr ""
 msgid ""
 "Here are the things you've shared in your own words during your sessions."
 msgstr ""
+"Voici ce que vous avez partagé dans vos propres mots lors de vos séances."
 
 msgid "Hi,"
 msgstr "Bonjour,"
 
 msgid "How I'm Doing"
-msgstr ""
+msgstr "Comment je vais"
 
 msgid "How to clear your history"
 msgstr "Comment effacer votre historique"
@@ -9107,28 +9159,31 @@ msgid "How to open private browsing"
 msgstr "Comment ouvrir la navigation privée"
 
 msgid "I have my code"
-msgstr ""
+msgstr "J’ai mon code"
 
 msgid "I understand — let's get started"
-msgstr ""
+msgstr "Je comprends — commençons"
 
 msgid "I understand — next"
-msgstr ""
+msgstr "Je comprends — suivant"
 
 msgid "I understand, let me write"
-msgstr ""
+msgstr "Je comprends, laissez-moi écrire"
 
 msgid "I'd like to submit a request now"
-msgstr ""
+msgstr "Je souhaite soumettre une demande maintenant"
 
 msgid "I'm still here"
 msgstr "Je suis toujours là"
 
 msgid "If we found your account, you'll receive a code at your email address."
 msgstr ""
+"Si nous avons trouvé votre compte, vous recevrez un code à votre adresse "
+"courriel."
 
 msgid "If you already created your account, you can sign in below."
 msgstr ""
+"Si vous avez déjà créé votre compte, vous pouvez vous connecter ci-dessous."
 
 msgid ""
 "If you didn't use private browsing, you can delete your history afterwards."
@@ -9139,6 +9194,8 @@ msgstr ""
 msgid ""
 "If you ever have questions about what's in your file, just ask your worker."
 msgstr ""
+"Si vous avez des questions sur le contenu de votre dossier, parlez-en à "
+"votre intervenant(e)."
 
 msgid "If you need help right now"
 msgstr "Si vous avez besoin d'aide maintenant"
@@ -9154,29 +9211,38 @@ msgid ""
 "If you share something that suggests someone may be in danger, your worker "
 "may need to act on that."
 msgstr ""
+"Si vous partagez quelque chose qui suggère que quelqu’un pourrait être en "
+"danger, votre intervenant(e) pourrait devoir agir."
 
 msgid ""
 "If you share something that suggests you or someone else might be in danger,"
 " your worker may need to act on that."
 msgstr ""
+"Si vous partagez quelque chose qui suggère que vous ou quelqu’un d’autre "
+"pourrait être en danger, votre intervenant(e) pourrait devoir agir."
 
 msgid "If you think this is a mistake, please talk to your worker."
 msgstr ""
+"Si vous pensez que c’est une erreur, parlez-en à votre intervenant(e)."
 
 msgid "In my own words"
-msgstr ""
+msgstr "Dans mes propres mots"
 
 msgid ""
 "In some situations — like a court order — the agency could be required to "
 "share records, and these notes could be included. This doesn't happen often,"
 " but we want you to know before you start writing."
 msgstr ""
+"Dans certaines situations — comme une ordonnance du tribunal — l’organisme "
+"pourrait être tenu de partager des dossiers, et ces notes pourraient être "
+"incluses. Cela n’arrive pas souvent, mais nous voulons que vous le sachiez "
+"avant de commencer à écrire."
 
 msgid "Internal team discussions"
-msgstr ""
+msgstr "Discussions internes de l’équipe"
 
 msgid "Invite Status"
-msgstr ""
+msgstr "Statut de l’invitation"
 
 msgid "Keep your account secure by using a strong password."
 msgstr "Protégez votre compte en utilisant un mot de passe fort."
@@ -9197,7 +9263,7 @@ msgid "Leave this page quickly"
 msgstr "Quitter cette page rapidement"
 
 msgid "Link to a goal (optional)"
-msgstr ""
+msgstr "Lier à un objectif (facultatif)"
 
 msgid "Log out"
 msgstr "Déconnexion"
@@ -9206,13 +9272,13 @@ msgid "Main navigation"
 msgstr "Navigation principale"
 
 msgid "Maybe later"
-msgstr ""
+msgstr "Peut-être plus tard"
 
 msgid "Message My Worker"
 msgstr "Écrire à mon intervenant(e)"
 
 msgid "Messages to your worker"
-msgstr ""
+msgstr "Messages à votre intervenant(e)"
 
 msgid "My Account"
 msgstr "Mon compte"
@@ -9227,47 +9293,58 @@ msgid "My Progress"
 msgstr "Ma progression"
 
 msgid "My progress"
-msgstr ""
+msgstr "Ma progression"
 
 msgid "New Journal Entry"
-msgstr ""
+msgstr "Nouvelle entrée de journal"
 
 msgid ""
 "No goals have been added yet. Your worker will add goals as you work on them"
 " together."
 msgstr ""
+"Aucun objectif n’a encore été ajouté. Votre intervenant(e) ajoutera des "
+"objectifs à mesure que vous travaillerez ensemble."
 
 msgid "No goals in this area yet."
-msgstr ""
+msgstr "Aucun objectif dans ce domaine pour le moment."
 
 msgid ""
 "No milestones yet — but you're on your way! Milestones will show up here as "
 "you reach your goals."
 msgstr ""
+"Aucun jalon pour le moment — mais vous êtes en bonne voie ! Les jalons "
+"apparaîtront ici à mesure que vous atteindrez vos objectifs."
 
 msgid ""
 "No progress data to show yet. As you work with your worker, your progress "
 "will appear here."
 msgstr ""
+"Aucune donnée de progression à afficher pour le moment. Au fur et à mesure "
+"de votre travail avec votre intervenant(e), votre progression apparaîtra "
+"ici."
 
 msgid ""
 "Nothing here yet. When you share your thoughts during sessions, they'll "
 "appear here so you can look back on them."
 msgstr ""
+"Rien ici pour le moment. Lorsque vous partagerez vos réflexions lors des "
+"séances, elles apparaîtront ici pour que vous puissiez les relire."
 
 msgid "One important thing:"
-msgstr ""
+msgstr "Une chose importante :"
 
 msgid "Only you can see this."
-msgstr ""
+msgstr "Vous seul(e) pouvez voir ceci."
 
 msgid "Only you can see this. It's your private space to write."
-msgstr ""
+msgstr "Vous seul(e) pouvez voir ceci. C’est votre espace privé pour écrire."
 
 msgid ""
 "Open your authenticator app (like Google Authenticator or Microsoft "
 "Authenticator) and scan this code:"
 msgstr ""
+"Ouvrez votre application d’authentification (comme Google Authenticator ou "
+"Microsoft Authenticator) et scannez ce code :"
 
 msgid "Open your authenticator app and enter the code shown."
 msgstr ""
@@ -9277,28 +9354,37 @@ msgid ""
 "Open your authenticator app and enter the code shown. The code changes every"
 " 30 seconds."
 msgstr ""
+"Ouvrez votre application d’authentification et entrez le code affiché. Le "
+"code change toutes les 30 secondes."
 
 msgid "Other people's information"
-msgstr ""
+msgstr "Renseignements d’autres personnes"
 
 msgid "Press Ctrl + H, then click 'Clear browsing data'"
 msgstr ""
+"Appuyez sur Ctrl + H, puis cliquez sur « Effacer les données de navigation »"
 
 msgid "Press Ctrl + Shift + Delete"
-msgstr ""
+msgstr "Appuyez sur Ctrl + Maj + Suppr"
 
 msgid ""
 "Press Ctrl + Shift + N (or tap the three dots at the top right, then 'New "
 "incognito window')"
 msgstr ""
+"Appuyez sur Ctrl + Maj + N (ou appuyez sur les trois points en haut à "
+"droite, puis « Nouvelle fenêtre de navigation privée »)"
 
 msgid ""
 "Press Ctrl + Shift + N (or tap the three dots, then 'New InPrivate window')"
 msgstr ""
+"Appuyez sur Ctrl + Maj + N (ou appuyez sur les trois points, puis « Nouvelle"
+" fenêtre InPrivate »)"
 
 msgid ""
 "Press Ctrl + Shift + P (or tap the three lines, then 'New Private Window')"
 msgstr ""
+"Appuyez sur Ctrl + Maj + P (ou appuyez sur les trois lignes, puis « Nouvelle"
+" fenêtre privée »)"
 
 msgid ""
 "Private browsing (also called incognito mode) stops the browser from saving "
@@ -9308,16 +9394,16 @@ msgstr ""
 "d'enregistrer votre historique."
 
 msgid "Progress chart"
-msgstr ""
+msgstr "Graphique de progression"
 
 msgid "QR code for authenticator app"
-msgstr ""
+msgstr "Code QR pour l’application d’authentification"
 
 msgid "QR code to scan with your authenticator app"
-msgstr ""
+msgstr "Code QR à scanner avec votre application d’authentification"
 
 msgid "Read what you've said in your own words"
-msgstr ""
+msgstr "Relisez ce que vous avez dit dans vos propres mots"
 
 msgid "Remove my account"
 msgstr "Supprimer mon compte"
@@ -9326,55 +9412,56 @@ msgid "Removing your account won't affect your services."
 msgstr "La suppression de votre compte n'affectera pas vos services."
 
 msgid "Reset Password"
-msgstr ""
+msgstr "Réinitialiser le mot de passe"
 
 msgid "Reset Your Password"
-msgstr ""
+msgstr "Réinitialiser votre mot de passe"
 
 msgid "Save language"
 msgstr "Enregistrer la langue"
 
 msgid "Saved! Your worker will see this before your next session."
 msgstr ""
+"Enregistré ! Votre intervenant(e) verra ceci avant votre prochaine séance."
 
 msgid "See how far you've come."
 msgstr "Voyez le chemin parcouru."
 
 msgid "See the goals you're working on"
-msgstr ""
+msgstr "Consultez les objectifs sur lesquels vous travaillez"
 
 msgid "See the goals you're working on."
 msgstr "Consultez les objectifs sur lesquels vous travaillez."
 
 msgid "See what's new"
-msgstr ""
+msgstr "Voir les nouveautés"
 
 msgid "Send a message for your worker to read."
 msgstr "Envoyez un message à votre intervenant(e)."
 
 msgid "Send me a code"
-msgstr ""
+msgstr "Envoyez-moi un code"
 
 msgid "Send message"
-msgstr ""
+msgstr "Envoyer le message"
 
 msgid "Set New Password"
-msgstr ""
+msgstr "Définir un nouveau mot de passe"
 
 msgid "Set Up Two-Step Verification"
-msgstr ""
+msgstr "Configurer la vérification en deux étapes"
 
 msgid "Set a New Password"
-msgstr ""
+msgstr "Définir un nouveau mot de passe"
 
 msgid "Set my new password"
-msgstr ""
+msgstr "Définir mon nouveau mot de passe"
 
 msgid "Set up two-step verification"
 msgstr "Configurer la vérification en deux étapes"
 
 msgid "Setup progress"
-msgstr ""
+msgstr "Progression de la configuration"
 
 msgid "Sign in as Jordan"
 msgstr "Se connecter en tant que Jordan"
@@ -9387,13 +9474,13 @@ msgid "Sign in to see your goals and progress."
 msgstr "Connectez-vous pour voir vos objectifs et votre progression."
 
 msgid "Something Doesn't Look Right"
-msgstr ""
+msgstr "Quelque chose ne semble pas correct"
 
 msgid "Something doesn't look right?"
-msgstr ""
+msgstr "Quelque chose ne semble pas correct ?"
 
 msgid "Staff notes about your sessions"
-msgstr ""
+msgstr "Notes du personnel à propos de vos séances"
 
 msgid "Staying Safe Online"
 msgstr "Sécurité en ligne"
@@ -9402,76 +9489,92 @@ msgid "Staying safe online"
 msgstr "Sécurité en ligne"
 
 msgid "Step 1: Scan this code"
-msgstr ""
+msgstr "Étape 1 : Scannez ce code"
 
 msgid "Step 2: Enter the code"
-msgstr ""
+msgstr "Étape 2 : Entrez le code"
 
 msgid "Submit request"
-msgstr ""
+msgstr "Soumettre la demande"
 
 msgid "Talk Suicide Canada:"
 msgstr "Parlons suicide Canada :"
 
 msgid "Tap the tabs button at the bottom right, then tap 'Private'"
 msgstr ""
+"Appuyez sur le bouton d’onglets en bas à droite, puis appuyez sur « Privé »"
 
 msgid ""
 "Tell us what doesn't look right. Your worker will review this and follow up "
 "with you."
 msgstr ""
+"Dites-nous ce qui ne semble pas correct. Votre intervenant(e) examinera ceci"
+" et fera un suivi avec vous."
 
 msgid "That's okay — we want to make sure your information is correct."
 msgstr ""
+"C’est normal — nous voulons nous assurer que vos renseignements sont "
+"corrects."
 
 msgid "The code changes every 30 seconds."
-msgstr ""
+msgstr "Le code change toutes les 30 secondes."
 
 msgid "The email address you used when you created your account."
 msgstr ""
+"L’adresse courriel que vous avez utilisée lors de la création de votre "
+"compte."
 
 msgid "The email address your worker set up for you."
 msgstr "L'adresse courriel que votre intervenant(e) a configurée pour vous."
 
 msgid "These are the areas you're working on with your worker."
 msgstr ""
+"Ce sont les domaines sur lesquels vous travaillez avec votre intervenant(e)."
 
 msgid "These are the goals you've reached. Every one of them matters."
-msgstr ""
+msgstr "Ce sont les objectifs que vous avez atteints. Chacun d’eux compte."
 
 msgid "These charts show your progress over time."
-msgstr ""
+msgstr "Ces graphiques montrent votre progression au fil du temps."
 
 msgid "These notes are just for you. Your worker won't see them."
 msgstr ""
+"Ces notes sont juste pour vous. Votre intervenant(e) ne les verra pas."
 
 msgid ""
 "This adds an extra layer of security to your account. You will need a free "
 "authenticator app on your phone."
 msgstr ""
+"Cela ajoute une couche de sécurité supplémentaire à votre compte. Vous aurez"
+" besoin d’une application d’authentification gratuite sur votre téléphone."
 
 msgid "This invite has expired. Please ask your worker for a new one."
 msgstr ""
+"Cette invitation a expiré. Veuillez demander une nouvelle invitation à votre"
+" intervenant(e)."
 
 msgid "This invite is no longer active."
-msgstr ""
+msgstr "Cette invitation n’est plus active."
 
 msgid ""
 "This is the name you'll see on screen. It can be your first name, a "
 "nickname, or anything you like."
 msgstr ""
+"C’est le nom que vous verrez à l’écran. Ce peut être votre prénom, un surnom"
+" ou ce que vous voulez."
 
 msgid "This is to keep everyone safe."
-msgstr ""
+msgstr "C’est pour assurer la sécurité de tous."
 
 msgid "This is your personal space. Here you can:"
-msgstr ""
+msgstr "C’est votre espace personnel. Ici, vous pouvez :"
 
 msgid "This portal lets you see your goals and track your progress."
 msgstr ""
+"Ce portail vous permet de voir vos objectifs et de suivre votre progression."
 
 msgid "This space is here to help you, not to add pressure."
-msgstr ""
+msgstr "Cet espace est là pour vous aider, pas pour ajouter de la pression."
 
 msgid "Tips for using this site safely on shared devices."
 msgstr ""
@@ -9479,9 +9582,11 @@ msgstr ""
 
 msgid "To keep things simple and safe, some things are not shown here:"
 msgstr ""
+"Pour garder les choses simples et sécuritaires, certaines choses ne sont pas"
+" affichées ici :"
 
 msgid "Track your progress over time"
-msgstr ""
+msgstr "Suivez votre progression au fil du temps"
 
 msgid "Two-step verification"
 msgstr "Vérification en deux étapes"
@@ -9500,18 +9605,23 @@ msgstr ""
 "d'authentification pour vous connecter."
 
 msgid "Type this key into your authenticator app:"
-msgstr ""
+msgstr "Tapez cette clé dans votre application d’authentification :"
 
 msgid "Type your new password again to make sure it's right."
 msgstr ""
+"Tapez votre nouveau mot de passe à nouveau pour vous assurer qu’il est "
+"correct."
 
 msgid "Type your password again to make sure it's right."
 msgstr ""
+"Tapez votre mot de passe à nouveau pour vous assurer qu’il est correct."
 
 msgid ""
 "Use a strong password to keep your account safe. Choose at least 8 "
 "characters with a mix of letters and numbers."
 msgstr ""
+"Utilisez un mot de passe robuste pour protéger votre compte. Choisissez au "
+"moins 8 caractères avec un mélange de lettres et de chiffres."
 
 msgid "Use private browsing"
 msgstr "Utiliser la navigation privée"
@@ -9520,6 +9630,8 @@ msgid ""
 "Use the 'Leave quickly' button at the top of the page if you need to close "
 "the site fast."
 msgstr ""
+"Utilisez le bouton « Quitter rapidement » en haut de la page si vous devez "
+"fermer le site rapidement."
 
 msgid "Using shared devices"
 msgstr "Utilisation d'appareils partagés"
@@ -9528,149 +9640,176 @@ msgid "Verify"
 msgstr "Vérifier"
 
 msgid "Verify Your Identity"
-msgstr ""
+msgstr "Vérifiez votre identité"
 
 msgid "Verify and finish setup"
-msgstr ""
+msgstr "Vérifier et terminer la configuration"
 
 msgid "We sent a code to your email. Enter it below."
-msgstr ""
+msgstr "Nous avons envoyé un code à votre courriel. Entrez-le ci-dessous."
 
 msgid "What I Want to Talk About Next Time"
-msgstr ""
+msgstr "Ce dont je veux parler la prochaine fois"
 
 msgid "What I said about this goal"
-msgstr ""
+msgstr "Ce que j’ai dit à propos de cet objectif"
 
 msgid "What I've Been Saying"
-msgstr ""
+msgstr "Ce que j’ai dit"
 
 msgid "What would you like to change or correct?"
-msgstr ""
+msgstr "Que souhaitez-vous changer ou corriger ?"
 
 msgid "What would you like to do?"
 msgstr "Que souhaitez-vous faire ?"
 
 msgid "What you see"
-msgstr ""
+msgstr "Ce que vous voyez"
 
 msgid "What you won't see"
-msgstr ""
+msgstr "Ce que vous ne verrez pas"
 
 msgid "What you'll see here"
-msgstr ""
+msgstr "Ce que vous verrez ici"
 
 msgid ""
 "When you close a private window, the browser won't remember what you looked "
 "at."
 msgstr ""
+"Lorsque vous fermez une fenêtre privée, le navigateur ne se souviendra pas "
+"de ce que vous avez consulté."
 
 msgid "Who sees what"
-msgstr ""
+msgstr "Qui voit quoi"
 
 msgid "Who sees what you write"
-msgstr ""
+msgstr "Qui voit ce que vous écrivez"
 
 msgid ""
 "Would you like to talk about this with your worker at your next session?"
 msgstr ""
+"Aimeriez-vous en parler avec votre intervenant(e) à votre prochaine séance ?"
 
 msgid ""
 "Write down anything you want to bring up at your next session. Your worker "
 "will be able to see this."
 msgstr ""
+"Écrivez tout ce que vous souhaitez aborder à votre prochaine séance. Votre "
+"intervenant(e) pourra le lire."
 
 msgid "Write something new"
-msgstr ""
+msgstr "Écrire quelque chose de nouveau"
 
 msgid "Write whatever is on your mind. Your worker will read this."
-msgstr ""
+msgstr "Écrivez ce qui vous préoccupe. Votre intervenant(e) lira ceci."
 
 msgid "Write whatever you want — this is just for you."
-msgstr ""
+msgstr "Écrivez ce que vous voulez — c’est juste pour vous."
 
 msgid "Write your message here..."
-msgstr ""
+msgstr "Écrivez votre message ici..."
 
 msgid "Yes, I'll bring it up next time"
-msgstr ""
+msgstr "Oui, j’en parlerai la prochaine fois"
 
 msgid "You already have a portal account."
-msgstr ""
+msgstr "Vous avez déjà un compte portail."
 
 msgid "You can ask your worker to remove your account."
 msgstr ""
+"Vous pouvez demander à votre intervenant(e) de supprimer votre compte."
 
 msgid "You can come back and change this anytime before your next session."
 msgstr ""
+"Vous pouvez revenir et changer ceci à tout moment avant votre prochaine "
+"séance."
 
 msgid "You can sign in using the link below."
-msgstr ""
+msgstr "Vous pouvez vous connecter en utilisant le lien ci-dessous."
 
 msgid "You can stop using this anytime — it won't affect your services."
 msgstr ""
+"Vous pouvez arrêter d’utiliser ceci à tout moment — cela n’affectera pas vos"
+" services."
 
 msgid ""
 "You can stop using this portal at any time. It won't affect your services."
 msgstr ""
+"Vous pouvez arrêter d’utiliser ce portail à tout moment. Cela n’affectera "
+"pas vos services."
 
 msgid "You choose what to write and when."
-msgstr ""
+msgstr "C’est vous qui choisissez quoi écrire et quand."
 
 msgid "You did it!"
-msgstr ""
+msgstr "Vous l’avez fait !"
 
 msgid ""
 "You haven't done anything for a while. For your safety, we'll log you out "
 "soon."
 msgstr ""
+"Vous n’avez rien fait depuis un moment. Pour votre sécurité, nous allons "
+"bientôt vous déconnecter."
 
 msgid "You'll use this email to sign in."
-msgstr ""
+msgstr "Vous utiliserez cette adresse courriel pour vous connecter."
 
 msgid "You're in control"
-msgstr ""
+msgstr "Vous êtes en contrôle"
 
 msgid ""
 "You've been invited to join the portal. Fill out the form below to get "
 "started."
 msgstr ""
+"Vous avez été invité(e) à rejoindre le portail. Remplissez le formulaire ci-"
+"dessous pour commencer."
 
 msgid ""
 "Your authenticator app will show a 6-digit code. Enter it here to finish "
 "setup."
 msgstr ""
+"Votre application d’authentification affichera un code à 6 chiffres. Entrez-"
+"le ici pour terminer la configuration."
 
 msgid "Your journal"
-msgstr ""
+msgstr "Votre journal"
 
 msgid "Your journal entries are private — only you can see them."
-msgstr ""
+msgstr "Vos entrées de journal sont privées — vous seul(e) pouvez les voir."
 
 msgid ""
 "Your journal is empty. Whenever you feel like writing something down, this "
 "is the place."
 msgstr ""
+"Votre journal est vide. Chaque fois que vous avez envie d’écrire quelque "
+"chose, c’est l’endroit."
 
 msgid ""
 "Your message has been sent. Your worker will see it next time they check."
 msgstr ""
+"Votre message a été envoyé. Votre intervenant(e) le verra la prochaine fois "
+"qu’il ou elle vérifiera."
 
 msgid "Your password has been changed."
-msgstr ""
+msgstr "Votre mot de passe a été changé."
 
 msgid "Your request has been submitted. Your worker will follow up with you."
 msgstr ""
+"Votre demande a été soumise. Votre intervenant(e) fera un suivi avec vous."
 
 msgid "Your worker and other staff cannot read your journal."
 msgstr ""
+"Votre intervenant(e) et le personnel ne peuvent pas lire votre journal."
 
 msgid "Your worker can see messages you send them."
-msgstr ""
+msgstr "Votre intervenant(e) peut voir les messages que vous lui envoyez."
 
 msgid "Your worker will see these next time they check."
 msgstr ""
+"Votre intervenant(e) verra ceci la prochaine fois qu’il ou elle vérifiera."
 
 msgid ""
 "Your worker will see this next time they check. This is not for emergencies."
 msgstr ""
+"Votre intervenant(e) verra ceci la prochaine fois qu’il ou elle vérifiera. "
+"Ceci n’est pas pour les urgences."
