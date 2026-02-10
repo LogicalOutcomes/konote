@@ -86,10 +86,20 @@ def user_roles(request):
     - is_admin_only: admin with no program roles (cannot see client data)
     - is_executive_only: executive role with no other roles (dashboard only)
     - is_receptionist_only: all program roles are receptionist (no group/clinical access)
+    - user_permissions: dict of permission keys (dots → underscores) to resolved levels
+      e.g. user_permissions.note_view, user_permissions.client_edit
     """
     if not hasattr(request, "user") or not request.user.is_authenticated:
-        return {"has_program_roles": False, "is_admin_only": False, "is_executive_only": False, "is_receptionist_only": False}
+        return {
+            "has_program_roles": False,
+            "is_admin_only": False,
+            "is_executive_only": False,
+            "is_receptionist_only": False,
+            "user_permissions": {},
+        }
 
+    from apps.auth_app.constants import ROLE_RANK
+    from apps.auth_app.permissions import DENY, PERMISSIONS
     from apps.programs.models import UserProgramRole
 
     roles = set(
@@ -107,12 +117,23 @@ def user_roles(request):
     # Receptionist-only: user has program roles but all of them are receptionist
     is_receptionist_only = has_roles and roles == {"receptionist"}
 
+    # Build user_permissions dict using the user's highest role.
+    # Keys use underscores so templates can access e.g. user_permissions.note_view
+    user_permissions = {}
+    if has_roles:
+        highest_role = max(roles, key=lambda r: ROLE_RANK.get(r, 0))
+        role_perms = PERMISSIONS.get(highest_role, {})
+        for perm_key, level in role_perms.items():
+            template_key = perm_key.replace(".", "_")
+            user_permissions[template_key] = level != DENY
+
     return {
         "has_program_roles": has_roles,
         "is_admin_only": request.user.is_admin and not has_roles,
         "is_executive_only": UserProgramRole.is_executive_only(request.user, roles=roles),
         "is_receptionist_only": is_receptionist_only,
         "has_export_access": has_export_access,
+        "user_permissions": user_permissions,
     }
 
 

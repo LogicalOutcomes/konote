@@ -34,10 +34,10 @@ _All tasks complete — section can be removed on next cleanup._
 - [x] Wire executive-facing views — notes, plans, reports (WIRE-2E)
 - [x] Add PM no-elevation constraint — user.manage: SCOPED (WIRE-2F)
 
-**Wave 3 — UI layer (3 parallel streams)**
-- [ ] Update context processor — expose `user_permissions` dict (WIRE-3A)
-- [ ] Update middleware — replace `is_executive_only()` redirect with matrix check (WIRE-3B)
-- [ ] Add Django system check — warn on hardcoded decorators, validate permission keys (WIRE-3C)
+**Wave 3 — UI layer (3 parallel streams)** ✅
+- [x] Update context processor — expose `user_permissions` dict (WIRE-3A)
+- [x] Update middleware — replace `is_executive_only()` redirect with matrix check (WIRE-3B)
+- [x] Add Django system check — warn on hardcoded decorators, validate permission keys (WIRE-3C)
 
 **Wave 4 — Template migration (2 parallel streams)**
 - [ ] Update base.html nav — replace role checks with `{% has_permission %}` (WIRE-4A)
