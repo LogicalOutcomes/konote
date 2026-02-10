@@ -1,4 +1,4 @@
-# KoNote2 UX Review: Usability Issues by Role
+# KoNote UX Review: Usability Issues by Role
 
 *Review date: 2026-02-03*
 
@@ -6,7 +6,7 @@
 
 ## Executive Summary
 
-This review examines KoNote2's workflows from the perspective of three user roles: **Direct service staff** (primary users), **Front Desk staff**, and **Administrators**. The goal is to identify usability friction points like the recently-fixed "related notes dropdown" issue, where technical data representations (dates only) replaced human-readable content.
+This review examines KoNote's workflows from the perspective of three user roles: **Direct service staff** (primary users), **Front Desk staff**, and **Administrators**. The goal is to identify usability friction points like the recently-fixed "related notes dropdown" issue, where technical data representations (dates only) replaced human-readable content.
 
 ---
 
@@ -154,7 +154,7 @@ These models have no `__str__` method and will display as "Object (1)" if ever s
 
 The footer currently shows only:
 ```
-KoNote2 — Participant Outcome Management
+KoNote — Participant Outcome Management
 ```
 
 This wastes valuable screen real estate and misses opportunities for user support.
@@ -165,7 +165,7 @@ This wastes valuable screen real estate and misses opportunities for user suppor
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  LEFT                         CENTRE                              RIGHT    │
 │  ─────                        ──────                              ─────    │
-│  KoNote2 © 2026               Keyboard shortcuts (?)              Logged in │
+│  KoNote © 2026               Keyboard shortcuts (?)              Logged in │
 │  Agency Name                  Privacy Policy                     as: Jane  │
 │  Support: help@agency.org     Help Centre                        Session:  │
 │                                                                   28 min   │
@@ -236,7 +236,7 @@ Clicking the session indicator should offer:
 | **Public registration** | Agency name prominent, privacy policy required, no session |
 | **Normal pages** | Full footer as described |
 | **Note entry forms** | Sticky consent footer *above* page footer; page footer remains |
-| **Print view** | Hide footer entirely or show minimal "Printed from KoNote2" |
+| **Print view** | Hide footer entirely or show minimal "Printed from KoNote" |
 
 ### Accessibility Requirements
 
@@ -252,7 +252,7 @@ On small screens, condense to:
 
 ```
 ┌─────────────────────────────┐
-│  KoNote2 · Privacy · Help    │
+│  KoNote · Privacy · Help    │
 │  Jane D. · 28 min · [?]     │
 └─────────────────────────────┘
 ```

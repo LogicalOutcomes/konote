@@ -1,4 +1,4 @@
-# Security Review Report: KoNote2 Web
+# Security Review Report: KoNote Web
 
 **Review Date:** 2026-02-03
 **Reviewer:** Claude (automated security review)

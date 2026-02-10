@@ -6,7 +6,7 @@ Copy everything below the line into a new Claude Code conversation.
 
 ## Task
 
-I need you to critically review and stress-test my permissions redesign plan for KoNote2, a case management system for Canadian nonprofits serving vulnerable populations (mental health, addictions, housing, domestic violence). Small agencies, 5-15 staff, mixed technical literacy.
+I need you to critically review and stress-test my permissions redesign plan for KoNote, a case management system for Canadian nonprofits serving vulnerable populations (mental health, addictions, housing, domestic violence). Small agencies, 5-15 staff, mixed technical literacy.
 
 **Your job:** Find holes, contradictions, things that won't work in practice, things I've missed, and things that are over-engineered. Be blunt. I'm tired and I need someone to tell me what's wrong, not what's right.
 

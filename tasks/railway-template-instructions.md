@@ -12,9 +12,9 @@ The current Railway deployment requires users to manually add two PostgreSQL dat
 
 Create a Railway Template that provisions everything automatically:
 
-- KoNote2 app service
-- KoNote2-DB (main database)
-- KoNote2-Audit-DB (audit database)
+- KoNote app service
+- KoNote-DB (main database)
+- KoNote-Audit-DB (audit database)
 - Pre-wired environment variable references
 
 Users click one button, enter two secrets, done.
@@ -34,33 +34,33 @@ The docker-compose.yml already implements this correctly. Railway needs to match
 ### Step 1: Create a fresh Railway project
 
 1. Go to [railway.app](https://railway.app) → **New Project** → **Empty Project**
-2. Name it something like "KoNote2 Template Source"
+2. Name it something like "KoNote Template Source"
 
 ### Step 2: Add the three services
 
 **Add the app:**
 
-1. Click **+ Add** → **GitHub Repo** → select `KoNote2-web`
-2. Click on the service → **Settings** → rename to `KoNote2`
+1. Click **+ Add** → **GitHub Repo** → select `KoNote-web`
+2. Click on the service → **Settings** → rename to `KoNote`
 
 **Add main database:**
 
 1. Click **+ Add** → **Database** → **PostgreSQL**
-2. Click on it → **Settings** → rename to `KoNote2-DB`
+2. Click on it → **Settings** → rename to `KoNote-DB`
 
 **Add audit database:**
 
 1. Click **+ Add** → **Database** → **PostgreSQL**
-2. Click on it → **Settings** → rename to `KoNote2-Audit-DB`
+2. Click on it → **Settings** → rename to `KoNote-Audit-DB`
 
 ### Step 3: Configure environment variables
 
-Click on **KoNote2** service → **Variables** → add these:
+Click on **KoNote** service → **Variables** → add these:
 
 | Variable | Value |
 |----------|-------|
-| `DATABASE_URL` | `${{KoNote2-DB.DATABASE_URL}}` |
-| `AUDIT_DATABASE_URL` | `${{KoNote2-Audit-DB.DATABASE_URL}}` |
+| `DATABASE_URL` | `${{KoNote-DB.DATABASE_URL}}` |
+| `AUDIT_DATABASE_URL` | `${{KoNote-Audit-DB.DATABASE_URL}}` |
 | `SECRET_KEY` | _(leave blank — user provides at deploy time)_ |
 | `FIELD_ENCRYPTION_KEY` | _(leave blank — user provides at deploy time)_ |
 | `DJANGO_SETTINGS_MODULE` | `konote.settings.production` |
@@ -77,7 +77,7 @@ Click on **KoNote2** service → **Variables** → add these:
 1. Click project name (top left) → **Settings** → **General**
 2. Scroll to **Publish as Template**
 3. Fill in:
-   - **Name:** KoNote2 Participant Outcome Management
+   - **Name:** KoNote Participant Outcome Management
    - **Description:** Secure client outcome tracking for nonprofits. Includes app + main database + separate audit database for compliance.
    - **Icon:** Choose something appropriate
 4. Mark `SECRET_KEY` and `FIELD_ENCRYPTION_KEY` as **required user input**
@@ -97,7 +97,7 @@ After publishing, Railway provides:
 
 ## After Template is Created
 
-Update `docs/deploying-KoNote2.md` to replace the manual steps with:
+Update `docs/deploying-KoNote.md` to replace the manual steps with:
 
 ```markdown
 ### Deploy to Railway (Recommended)

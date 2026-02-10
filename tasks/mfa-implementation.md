@@ -2,7 +2,7 @@
 
 ## Overview
 
-Document MFA options for KoNote2 and implement TOTP support for local authentication.
+Document MFA options for KoNote and implement TOTP support for local authentication.
 
 ## Current State
 
@@ -28,16 +28,16 @@ Document MFA options for KoNote2 and implement TOTP support for local authentica
 ### How It Works
 
 1. Agency configures Azure Entra ID (formerly Azure AD) as identity provider
-2. KoNote2 redirects login to Microsoft
+2. KoNote redirects login to Microsoft
 3. Microsoft handles MFA (SMS, authenticator app, security key, etc.)
-4. User is redirected back to KoNote2 with authentication token
+4. User is redirected back to KoNote with authentication token
 
 ### Agency Setup Steps
 
 1. Create an App Registration in Azure Entra ID
-2. Configure redirect URI to point to KoNote2
+2. Configure redirect URI to point to KoNote
 3. Enable MFA in Azure Entra ID security settings (free with Microsoft 365)
-4. Add `AZURE_*` environment variables to KoNote2
+4. Add `AZURE_*` environment variables to KoNote
 
 ### Documentation to Add
 
@@ -46,14 +46,14 @@ Add to `docs/security-operations.md`:
 ```markdown
 ## Multi-Factor Authentication with Azure AD
 
-If your agency uses Microsoft 365, you can enable MFA for KoNote2 through Azure Entra ID:
+If your agency uses Microsoft 365, you can enable MFA for KoNote through Azure Entra ID:
 
 1. Sign in to the [Azure Portal](https://portal.azure.com)
 2. Navigate to Azure Active Directory → Security → MFA
 3. Enable MFA for all users or specific security groups
 4. Configure allowed authentication methods (authenticator app recommended)
 
-Once enabled, all users signing into KoNote2 will be prompted for MFA through Microsoft.
+Once enabled, all users signing into KoNote will be prompted for MFA through Microsoft.
 ```
 
 ---

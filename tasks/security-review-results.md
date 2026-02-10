@@ -2,7 +2,7 @@
 
 **Review Date:** 2026-02-03
 **Reviewer:** Claude (automated security review)
-**Version:** KoNote2 Web (main branch, commit 05920b4)
+**Version:** KoNote Web (main branch, commit 05920b4)
 
 ---
 

@@ -1,4 +1,4 @@
-# KoNote2 Improvement Tickets — 2026-02-08 (Updated)
+# KoNote Improvement Tickets — 2026-02-08 (Updated)
 
 Developer-facing handoff from the full scenario evaluation.
 Each item has: what's wrong, where to look, what "fixed" looks like, and priority.

@@ -216,7 +216,7 @@ Then open http://localhost:8000 in your browser.
    ```
    SECRET_KEY=paste-your-generated-key-here
    FIELD_ENCRYPTION_KEY=paste-your-generated-key-here
-   DATABASE_URL=postgresql://KoNote2:password@localhost:5432/KoNote2
+   DATABASE_URL=postgresql://konote:password@localhost:5432/konote
    AUDIT_DATABASE_URL=postgresql://audit_writer:password@localhost:5432/konote_audit
    AUTH_MODE=local
    ```

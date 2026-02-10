@@ -39,7 +39,7 @@ The key insight: **don't rely on anyone remembering to run the command. Rely on 
 ```
 $ python manage.py translate_strings
 
-KoNote2 Translation Sync
+KoNote Translation Sync
 ========================
 
 [1/3] Extracting strings...

@@ -1,12 +1,12 @@
 # Phase 7 Prompt: Hardening & Deployment
 
-Copy this prompt into a new Claude Code conversation. Open the `KoNote2-web` project folder first.
+Copy this prompt into a new Claude Code conversation. Open the `KoNote-web` project folder first.
 
 ---
 
 ## Prompt
 
-I'm building KoNote2 Web, a nonprofit client management system. Phases 1-6 are done (all features built). I need you to do **Phase 7: Security Hardening & Deployment Guides**.
+I'm building KoNote Web, a nonprofit client management system. Phases 1-6 are done (all features built). I need you to do **Phase 7: Security Hardening & Deployment Guides**.
 
 ### Context
 

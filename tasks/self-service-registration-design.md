@@ -135,7 +135,7 @@ class RegistrationSubmission(models.Model):
    - ☐ Auto-approve registrations (default: off)
    - Max registrations: 25
    - Closes: 2025-09-01
-6. Saves → gets shareable link: `https://agency.KoNote2.ca/register/soccer-fall-2025`
+6. Saves → gets shareable link: `https://agency.KoNote.ca/register/soccer-fall-2025`
 7. Shares link on website, flyers, social media
 
 ### Submitting a Registration (Public)

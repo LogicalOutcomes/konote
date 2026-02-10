@@ -203,9 +203,9 @@ Copy each output and paste it into your `.env` file on the appropriate line.
 Edit your `.env` file and replace the placeholder passwords:
 
 ```ini
-POSTGRES_USER=KoNote2
+POSTGRES_USER=konote
 POSTGRES_PASSWORD=MySecurePassword123    # <-- Replace this!
-POSTGRES_DB=KoNote2
+POSTGRES_DB=konote
 
 AUDIT_POSTGRES_USER=audit_writer
 AUDIT_POSTGRES_PASSWORD=AnotherPassword456    # <-- Replace this too!
@@ -393,9 +393,9 @@ KoNote2 uses two databases: one for application data, one for audit logs.
 psql -U postgres
 
 # Create main database and user (replace MySecurePassword123 with your own password)
-CREATE DATABASE KoNote2;
-CREATE USER KoNote2 WITH PASSWORD 'MySecurePassword123';
-GRANT ALL PRIVILEGES ON DATABASE KoNote2 TO KoNote2;
+CREATE DATABASE konote;
+CREATE USER konote WITH PASSWORD 'MySecurePassword123';
+GRANT ALL PRIVILEGES ON DATABASE konote TO konote;
 
 # Create audit database and user (replace AnotherPassword456 with your own password)
 CREATE DATABASE konote_audit;
@@ -411,7 +411,7 @@ GRANT ALL PRIVILEGES ON DATABASE konote_audit TO audit_writer;
 **Using pgAdmin (graphical):**
 1. Open pgAdmin and connect to your local server
 2. Right-click "Databases" → Create → Database
-3. Name: `KoNote2`, Owner: `postgres`
+3. Name: `konote`, Owner: `postgres`
 4. Repeat for `konote_audit`
 5. Create users under Login/Group Roles with appropriate passwords
 
@@ -435,7 +435,7 @@ SECRET_KEY=REPLACE_THIS_run_command_in_step_9
 FIELD_ENCRYPTION_KEY=REPLACE_THIS_run_command_in_step_9
 
 # Database connections (use passwords from Step 6)
-DATABASE_URL=postgresql://KoNote2:MySecurePassword123@localhost:5432/KoNote2
+DATABASE_URL=postgresql://konote:MySecurePassword123@localhost:5432/konote
 AUDIT_DATABASE_URL=postgresql://audit_writer:AnotherPassword456@localhost:5432/konote_audit
 
 # Authentication mode
@@ -659,7 +659,7 @@ The test suite creates temporary test data (users, programs, clients) that is au
    - macOS: `brew services list`
    - Linux: `sudo systemctl status postgresql`
 2. Verify your `DATABASE_URL` credentials match what you set in Step 6
-3. Test connection: `psql -U KoNote2 -d KoNote2 -h localhost`
+3. Test connection: `psql -U konote -d konote -h localhost`
 
 ### ModuleNotFoundError: No module named 'django'
 

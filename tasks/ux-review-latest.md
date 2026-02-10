@@ -1,4 +1,4 @@
-# KoNote2 UX Walkthrough Report
+# KoNote UX Walkthrough Report
 
 **Generated:** 2026-02-09 10:38:45  
 **Command:** `pytest tests/ux_walkthrough/ -v`
@@ -730,13 +730,13 @@
   Search: No #client-search input found
 
 - **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "KoNote2" is 77x38px (min 44x44)
+  [mobile] Client detail: Touch target too small — <a> "KoNote" is 77x38px (min 44x44)
 
 - **[Browser] Responsive Layout** `/clients/5/`
   [mobile] Client detail: Touch target too small — <a> "Sign In" is 61x38px (min 44x44)
 
 - **[Browser] Responsive Layout** `/clients/`
-  [mobile] Client list: Touch target too small — <a> "KoNote2" is 77x38px (min 44x44)
+  [mobile] Client list: Touch target too small — <a> "KoNote" is 77x38px (min 44x44)
 
 - **[Browser] Responsive Layout** `/clients/`
   [mobile] Client list: Touch target too small — <a> "Sign In" is 61x38px (min 44x44)
@@ -1244,11 +1244,11 @@ _Tested with Playwright (headless Chromium) + axe-core._
 
 ### Responsive Layout
 
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "KoNote2" is 77x38px (min 44x44)
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "KoNote" is 77x38px (min 44x44)
 
 - **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Sign In" is 61x38px (min 44x44)
 
-- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "KoNote2" is 77x38px (min 44x44)
+- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "KoNote" is 77x38px (min 44x44)
 
 - **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "Sign In" is 61x38px (min 44x44)
 

@@ -1,6 +1,6 @@
 # Documentation Improvement Plan
 
-**Goal:** Make KoNote2 adoption-ready for organizations cloning from a public GitHub repository.
+**Goal:** Make KoNote adoption-ready for organizations cloning from a public GitHub repository.
 
 **Problem:** The current documentation is deployment-ready but development-unfriendly. Organizations can deploy to Railway/Azure/Elestio, but struggle with local setup, environment configuration, and security testing.
 
@@ -78,9 +78,9 @@ A comprehensive guide for first-time local setup. Target audience: Someone cloni
 ### Proposed Structure
 
 ```markdown
-# Getting Started with KoNote2
+# Getting Started with KoNote
 
-This guide walks you through setting up KoNote2 for local development on Windows, macOS, or Linux.
+This guide walks you through setting up KoNote for local development on Windows, macOS, or Linux.
 
 ## Prerequisites
 
@@ -188,11 +188,11 @@ A practical guide for running security checks, understanding audit logs, and man
 ```markdown
 # Security Operations Guide
 
-KoNote2 includes automated security checks and comprehensive audit logging. This guide explains how to use them.
+KoNote includes automated security checks and comprehensive audit logging. This guide explains how to use them.
 
 ## Security Checks
 
-KoNote2 runs security checks automatically with every `manage.py` command. You can also run them explicitly.
+KoNote runs security checks automatically with every `manage.py` command. You can also run them explicitly.
 
 ### Quick Check (Development)
 ```bash
@@ -239,7 +239,7 @@ ERRORS:
 
 ## Running Security Tests
 
-KoNote2 has automated security tests that verify RBAC, encryption, and audit logging.
+KoNote has automated security tests that verify RBAC, encryption, and audit logging.
 
 ### Run All Security Tests
 ```bash
@@ -259,7 +259,7 @@ pytest tests/test_security.py tests/test_rbac.py tests/test_encryption.py -v
 
 ## Audit Logging
 
-Every significant action in KoNote2 is logged to a separate audit database.
+Every significant action in KoNote is logged to a separate audit database.
 
 ### What Gets Logged
 - User logins and logouts
@@ -431,7 +431,7 @@ A new developer should be able to:
 2. **Test fixtures documentation:** Brief overview only. A one-paragraph explanation of what the test database contains (sample users, programs, clients) is enough. Detailed field-by-field documentation is developer-focused and can be added later if requested.
 
 3. **Compliance mapping:** High-level principles with disclaimer. Include a "Privacy Compliance Support" section that:
-   - Lists KoNote2's security features
+   - Lists KoNote's security features
    - Maps them to general privacy principles (not specific PIPEDA sections)
    - Explicitly states this is not legal advice
    - Links to official guidance (Office of the Privacy Commissioner of Canada)

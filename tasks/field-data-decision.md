@@ -23,7 +23,7 @@ A panel of three experts (Nonprofit Technology Consultant, Lean Product Strategi
 
 2. **Agencies won't ask by tool name** — They'll say "data entry takes forever," not "we need KoBoToolbox integration." Document the pain point so you can respond when asked.
 
-3. **Stage 1-2 adoption focus** — KoNote2 is still establishing core adoption. Advanced integrations won't attract new users (they evaluate on core features) and won't retain users (they haven't hit this friction yet).
+3. **Stage 1-2 adoption focus** — KoNote is still establishing core adoption. Advanced integrations won't attract new users (they evaluate on core features) and won't retain users (they haven't hit this friction yet).
 
 4. **Tool choice should follow demand** — When an agency requests this, ask which tool they actually use. Build for real tools, not hypothetical ones.
 
@@ -49,4 +49,4 @@ When ready to build, add to the README or a docs page:
 
 > **Field Data Collection (Extensible)**
 >
-> KoNote2 can be extended to import data from field collection tools. If your agency would benefit from integration with a specific tool, open an issue describing your current workflow.
+> KoNote can be extended to import data from field collection tools. If your agency would benefit from integration with a specific tool, open an issue describing your current workflow.

@@ -1,12 +1,12 @@
 # Phase 6 Prompt: Customisation Admin
 
-Copy this prompt into a new Claude Code conversation. Open the `KoNote2-web` project folder first.
+Copy this prompt into a new Claude Code conversation. Open the `KoNote-web` project folder first.
 
 ---
 
 ## Prompt
 
-I'm building KoNote2 Web, a nonprofit client management system. Phases 1-5 are done. I need you to build **Phase 6: Customisation Admin** — this is how agencies make the system their own without editing code.
+I'm building KoNote Web, a nonprofit client management system. Phases 1-5 are done. I need you to build **Phase 6: Customisation Admin** — this is how agencies make the system their own without editing code.
 
 ### Context
 

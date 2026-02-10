@@ -73,7 +73,7 @@ class URLTemplateValidationTests(TestCase):
         """SharePoint URLs accepted."""
         form = InstanceSettingsForm(data={
             'document_storage_provider': 'sharepoint',
-            'document_storage_url_template': 'https://contoso.sharepoint.com/sites/KoNote2/Clients/{record_id}/'
+            'document_storage_url_template': 'https://contoso.sharepoint.com/sites/KoNote/Clients/{record_id}/'
         })
         self.assertTrue(form.is_valid())
 
@@ -89,7 +89,7 @@ class URLTemplateValidationTests(TestCase):
         """Template must contain {record_id}."""
         form = InstanceSettingsForm(data={
             'document_storage_provider': 'sharepoint',
-            'document_storage_url_template': 'https://contoso.sharepoint.com/sites/KoNote2/Clients/'
+            'document_storage_url_template': 'https://contoso.sharepoint.com/sites/KoNote/Clients/'
         })
         self.assertFalse(form.is_valid())
         self.assertIn('record_id', str(form.errors))

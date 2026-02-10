@@ -1,12 +1,12 @@
 # Phase 5 Prompt: Visualisation, Events & Audit
 
-Copy this prompt into a new Claude Code conversation. Open the `KoNote2-web` project folder first.
+Copy this prompt into a new Claude Code conversation. Open the `KoNote-web` project folder first.
 
 ---
 
 ## Prompt
 
-I'm building KoNote2 Web, a nonprofit client management system. Phases 1-4 are done (foundation, clients, plans, notes). I need you to build **Phase 5: Charts, Events & Audit Viewer**.
+I'm building KoNote Web, a nonprofit client management system. Phases 1-4 are done (foundation, clients, plans, notes). I need you to build **Phase 5: Charts, Events & Audit Viewer**.
 
 ### Context
 

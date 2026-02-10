@@ -457,7 +457,7 @@ Store it separately from database backups:
 **Docker Compose:**
 ```bash
 # Main database
-docker compose exec db pg_dump -U KoNote2 KoNote2 > backup_main_$(date +%Y-%m-%d).sql
+docker compose exec db pg_dump -U konote konote > backup_main_$(date +%Y-%m-%d).sql
 
 # Audit database
 docker compose exec audit_db pg_dump -U audit_writer konote_audit > backup_audit_$(date +%Y-%m-%d).sql
@@ -465,7 +465,7 @@ docker compose exec audit_db pg_dump -U audit_writer konote_audit > backup_audit
 
 **Plain PostgreSQL:**
 ```bash
-pg_dump -h hostname -U KoNote2 -d KoNote2 > backup_main_$(date +%Y-%m-%d).sql
+pg_dump -h hostname -U konote -d konote > backup_main_$(date +%Y-%m-%d).sql
 pg_dump -h hostname -U audit_writer -d konote_audit > backup_audit_$(date +%Y-%m-%d).sql
 ```
 
@@ -485,7 +485,7 @@ if (-not (Test-Path $BackupDir)) { New-Item -ItemType Directory -Path $BackupDir
 Set-Location $KoNote2Dir
 
 # Main database
-docker compose exec -T db pg_dump -U KoNote2 KoNote2 | Out-File -FilePath "$BackupDir\backup_main_$Date.sql" -Encoding utf8
+docker compose exec -T db pg_dump -U konote konote | Out-File -FilePath "$BackupDir\backup_main_$Date.sql" -Encoding utf8
 
 # Audit database
 docker compose exec -T audit_db pg_dump -U audit_writer konote_audit | Out-File -FilePath "$BackupDir\backup_audit_$Date.sql" -Encoding utf8
@@ -507,7 +507,7 @@ DATE=$(date +%Y-%m-%d_%H-%M-%S)
 
 mkdir -p "$BACKUP_DIR"
 
-docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T db pg_dump -U KoNote2 KoNote2 > "$BACKUP_DIR/backup_main_$DATE.sql"
+docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T db pg_dump -U konote konote > "$BACKUP_DIR/backup_main_$DATE.sql"
 docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T audit_db pg_dump -U audit_writer konote_audit > "$BACKUP_DIR/backup_audit_$DATE.sql"
 
 # Clean up old backups
@@ -536,7 +536,7 @@ docker volume rm KoNote2-web_pgdata KoNote2-web_audit_pgdata
 docker compose up -d
 
 # Wait 10 seconds, then restore
-docker compose exec -T db psql -U KoNote2 KoNote2 < backup_main_2026-02-03.sql
+docker compose exec -T db psql -U konote konote < backup_main_2026-02-03.sql
 docker compose exec -T audit_db psql -U audit_writer konote_audit < backup_audit_2026-02-03.sql
 ```
 

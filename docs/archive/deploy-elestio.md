@@ -87,7 +87,7 @@ Environment variables are how you pass secrets and settings to the application w
 |---|---|---|
 | `SECRET_KEY` | Django's secret key (from step 1 Prerequisites) | `django-insecure-...` |
 | `FIELD_ENCRYPTION_KEY` | Key for encrypting client PII (from Prerequisites) | `gAAAAABl...` |
-| `DATABASE_URL` | Connection string for the main app database | `postgresql://KoNote2:KoNote2@db:5432/KoNote2` |
+| `DATABASE_URL` | Connection string for the main app database | `postgresql://konote:konote@db:5432/konote` |
 | `AUDIT_DATABASE_URL` | Connection string for the audit database | `postgresql://audit_writer:audit_pass@audit_db:5432/konote_audit` |
 | `DJANGO_SETTINGS_MODULE` | Tells Django to use production settings | `konote.settings.production` |
 | `ALLOWED_HOSTS` | Domain names the app will accept requests for (comma-separated) | `KoNote2.myorganisation.ca` |
@@ -119,8 +119,8 @@ KoNote2 Web uses **two separate PostgreSQL databases**:
 3. Create two PostgreSQL instances:
    - First instance:
      - Name: `db` (or `KoNote2-db`)
-     - Database: `KoNote2`
-     - User: `KoNote2`
+     - Database: `konote`
+     - User: `konote`
      - Password: generate a secure password
    - Second instance:
      - Name: `audit_db` (or `KoNote2-audit-db`)
@@ -133,7 +133,7 @@ KoNote2 Web uses **two separate PostgreSQL databases**:
 **Option B: Use Databases in docker-compose.yml (Simpler for Testing)**
 
 The `docker-compose.yml` file already includes PostgreSQL definitions for both databases. If you use this approach:
-- The main database is called `db` with credentials `KoNote2:KoNote2`
+- The main database is called `db` with credentials `konote:konote`
 - The audit database is called `audit_db` with credentials `audit_writer:audit_pass`
 - The environment variables in `docker-compose.yml` will automatically connect the app to these databases
 
@@ -284,7 +284,7 @@ PostgreSQL has a backup tool. To back up your databases regularly:
 
 ```bash
 # Backup the main database
-pg_dump -h <DATABASE_HOST> -U KoNote2 -d KoNote2 > backup-main-$(date +%Y%m%d).sql
+pg_dump -h <DATABASE_HOST> -U konote -d konote > backup-main-$(date +%Y%m%d).sql
 
 # Backup the audit database
 pg_dump -h <AUDIT_DATABASE_HOST> -U audit_writer -d konote_audit > backup-audit-$(date +%Y%m%d).sql

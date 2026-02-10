@@ -4,7 +4,7 @@
 
 KoNote2 Web stores data in **two PostgreSQL databases**:
 
-1. **Main database** (`KoNote2`) — application data including users, clients, programs, plans, notes, and settings
+1. **Main database** (`konote`) — application data including users, clients, programs, plans, notes, and settings
 2. **Audit database** (`konote_audit`) — append-only log of every data change (required for compliance)
 
 Additionally, client information (names, emails, birth dates) is encrypted using the **FIELD_ENCRYPTION_KEY**. If you lose this key, encrypted data cannot be recovered.
@@ -56,15 +56,15 @@ Use `pg_dump` to back up both databases. Docker Compose makes this simple becaus
 #### Back Up the Main Database
 
 ```bash
-docker compose exec db pg_dump -U KoNote2 KoNote2 > backup_main_$(date +\%Y-\%m-\%d).sql
+docker compose exec db pg_dump -U konote konote > backup_main_$(date +\%Y-\%m-\%d).sql
 ```
 
 This creates a file like `backup_main_2026-02-02.sql` in your current directory.
 
 **What this does:**
 - Connects to the `db` container
-- Runs `pg_dump` as the `KoNote2` user
-- Exports the `KoNote2` database to a `.sql` file
+- Runs `pg_dump` as the `konote` user
+- Exports the `konote` database to a `.sql` file
 - Filename includes today's date
 
 #### Back Up the Audit Database
@@ -142,12 +142,12 @@ If you're running PostgreSQL directly on a server (not Docker Compose), use `pg_
 #### Back Up the Main Database
 
 ```bash
-pg_dump -h hostname_or_ip -U KoNote2 -d KoNote2 > backup_main_$(date +%Y-%m-%d).sql
+pg_dump -h hostname_or_ip -U konote -d konote > backup_main_$(date +%Y-%m-%d).sql
 ```
 
 Replace:
 - `hostname_or_ip` — database server address (e.g., `db.example.com` or `192.168.1.10`)
-- `KoNote2` — your database username
+- `konote` — your database username
 - Port 5432 is assumed; if different, add `-p 5433`
 
 **You will be prompted for the password.** Enter the database password.
@@ -226,7 +226,7 @@ Docker will recreate the containers and volumes.
 Wait 10 seconds for the database to initialise, then:
 
 ```bash
-docker compose exec -T db psql -U KoNote2 KoNote2 < backup_main_2026-02-02.sql
+docker compose exec -T db psql -U konote konote < backup_main_2026-02-02.sql
 ```
 
 The `-T` flag disables pseudo-terminal allocation (required for piped input).
@@ -242,7 +242,7 @@ docker compose exec -T audit_db psql -U audit_writer konote_audit < backup_audit
 Connect to the restored database:
 
 ```bash
-docker compose exec db psql -U KoNote2 KoNote2
+docker compose exec db psql -U konote konote
 
 # Inside psql, check table counts
 SELECT count(*) FROM public.auth_user;
@@ -262,13 +262,13 @@ If you're migrating to a new server:
 ```bash
 psql -U postgres
 
-CREATE DATABASE KoNote2;
+CREATE DATABASE konote;
 CREATE DATABASE konote_audit;
 
-CREATE USER KoNote2 WITH PASSWORD 'your-password';
+CREATE USER konote WITH PASSWORD 'your-password';
 CREATE USER audit_writer WITH PASSWORD 'your-password';
 
-GRANT ALL PRIVILEGES ON DATABASE KoNote2 TO KoNote2;
+GRANT ALL PRIVILEGES ON DATABASE konote TO konote;
 GRANT ALL PRIVILEGES ON DATABASE konote_audit TO audit_writer;
 
 \q
@@ -277,7 +277,7 @@ GRANT ALL PRIVILEGES ON DATABASE konote_audit TO audit_writer;
 #### Step 2: Restore the Main Database
 
 ```bash
-psql -U KoNote2 -d KoNote2 < backup_main_2026-02-02.sql
+psql -U konote -d konote < backup_main_2026-02-02.sql
 ```
 
 #### Step 3: Restore the Audit Database
@@ -289,7 +289,7 @@ psql -U audit_writer -d konote_audit < backup_audit_2026-02-02.sql
 #### Step 4: Verify
 
 ```bash
-psql -U KoNote2 -d KoNote2 -c "SELECT count(*) FROM public.auth_user;"
+psql -U konote -d konote -c "SELECT count(*) FROM public.auth_user;"
 ```
 
 ---
@@ -343,7 +343,7 @@ try {
 
     # Main database backup
     $MainBackup = "$BackupDir\backup_main_$Date.sql"
-    docker compose exec -T db pg_dump -U KoNote2 KoNote2 | Out-File -FilePath $MainBackup -Encoding utf8
+    docker compose exec -T db pg_dump -U konote konote | Out-File -FilePath $MainBackup -Encoding utf8
     Add-Content -Path $LogFile -Value "Main database backed up: $MainBackup"
 
     # Audit database backup
@@ -434,7 +434,7 @@ echo "=== Backup started: $DATE ===" >> "$LOG_FILE"
 
 # Main database backup
 # Note: -T flag is required for non-interactive (cron) execution
-docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T db pg_dump -U KoNote2 KoNote2 > "$BACKUP_DIR/backup_main_$DATE.sql"
+docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T db pg_dump -U konote konote > "$BACKUP_DIR/backup_main_$DATE.sql"
 
 if [ $? -ne 0 ]; then
     echo "ERROR: Main database backup failed" >> "$LOG_FILE"
@@ -767,9 +767,9 @@ services:
   db_test:
     image: postgres:16-alpine
     environment:
-      - POSTGRES_DB=KoNote2_test
-      - POSTGRES_USER=KoNote2
-      - POSTGRES_PASSWORD=KoNote2
+      - POSTGRES_DB=konote_test
+      - POSTGRES_USER=konote
+      - POSTGRES_PASSWORD=konote
     ports:
       - "5433:5432"
 
@@ -792,14 +792,14 @@ docker compose -f docker-compose.test.yml up -d
 4. Restore your backups:
 
 ```bash
-docker compose -f docker-compose.test.yml exec -T db_test psql -U KoNote2 KoNote2_test < backup_main_2026-02-02.sql
+docker compose -f docker-compose.test.yml exec -T db_test psql -U konote konote_test < backup_main_2026-02-02.sql
 docker compose -f docker-compose.test.yml exec -T audit_db_test psql -U audit_writer konote_audit_test < backup_audit_2026-02-02.sql
 ```
 
 5. Verify the data:
 
 ```bash
-docker compose -f docker-compose.test.yml exec db_test psql -U KoNote2 KoNote2_test -c "SELECT count(*) FROM public.auth_user;"
+docker compose -f docker-compose.test.yml exec db_test psql -U konote konote_test -c "SELECT count(*) FROM public.auth_user;"
 ```
 
 6. Clean up:
@@ -833,7 +833,7 @@ brew install postgresql
 
 Check your username and password:
 
-- **Docker Compose main DB**: username `KoNote2`, password `KoNote2` (or check `docker-compose.yml`)
+- **Docker Compose main DB**: username `konote`, password `konote` (or check `docker-compose.yml`)
 - **Docker Compose audit DB**: username `audit_writer`, password `audit_pass`
 - **Railway**: Use `railway run` — credentials come from environment
 - **Azure**: Check Azure portal for connection string
@@ -844,10 +844,10 @@ Verify the database name:
 
 ```bash
 # Docker Compose
-docker compose exec db psql -U KoNote2 -l
+docker compose exec db psql -U konote -l
 ```
 
-This lists all databases. Look for `KoNote2` and `konote_audit`.
+This lists all databases. Look for `konote` and `konote_audit`.
 
 ### Restore Takes a Long Time
 

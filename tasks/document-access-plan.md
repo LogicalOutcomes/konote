@@ -2,13 +2,13 @@
 
 **Status:** Draft for review
 **Created:** 2026-02-03
-**Purpose:** Enable staff to access client documents stored in external systems (SharePoint, Google Drive) from within KoNote2
+**Purpose:** Enable staff to access client documents stored in external systems (SharePoint, Google Drive) from within KoNote
 
 ---
 
 ## Executive Summary
 
-After expert panel review, the original "Document Link" feature (DOC5) has been redesigned. Instead of staff manually linking individual documents to client records, KoNote2 will provide a single "Open Documents Folder" button that navigates to the client's folder in the organization's document storage system.
+After expert panel review, the original "Document Link" feature (DOC5) has been redesigned. Instead of staff manually linking individual documents to client records, KoNote will provide a single "Open Documents Folder" button that navigates to the client's folder in the organization's document storage system.
 
 **Key Decision:** Don't build per-document linking. Build folder-level access instead.
 
@@ -35,7 +35,7 @@ The proposed workflow for linking a single document:
 6. Right-click file → "Copy link"
 7. SharePoint asks: "Who should this link work for?" (4 confusing options)
 8. Copy the generated link
-9. Switch to KoNote2, find client, find "Add Document"
+9. Switch to KoNote, find client, find "Add Document"
 10. Paste link, add title, select type, save
 
 **Conclusion:** 10 steps across 3 systems. Staff will abandon this after the first few clients.
@@ -115,12 +115,12 @@ SharePoint URLs are path-based and predictable:
 ```
 Template: https://{tenant}.sharepoint.com/sites/{site}/Clients/{record_id}/
 
-Example:  https://contoso.sharepoint.com/sites/KoNote2/Clients/REC-2024-042/
+Example:  https://contoso.sharepoint.com/sites/KoNote/Clients/REC-2024-042/
 ```
 
 **Folder structure required in SharePoint:**
 ```
-📁 KoNote2 (SharePoint site)
+📁 KoNote (SharePoint site)
   📁 Clients/
     📁 REC-2024-001/
       📄 Consent Form.pdf
@@ -129,7 +129,7 @@ Example:  https://contoso.sharepoint.com/sites/KoNote2/Clients/REC-2024-042/
       📄 ...
 ```
 
-**Permissions:** Set at folder level. Staff with access to a client in KoNote2 should be in the SharePoint group for that client's folder (or a parent folder).
+**Permissions:** Set at folder level. Staff with access to a client in KoNote should be in the SharePoint group for that client's folder (or a parent folder).
 
 #### Google Drive (Google Workspace)
 
@@ -218,7 +218,7 @@ Provider: [SharePoint / OneDrive ▼]
 
 URL Template:
 ┌─────────────────────────────────────────────────────────────────┐
-│ https://contoso.sharepoint.com/sites/KoNote2/Clients/{record_id}/│
+│ https://contoso.sharepoint.com/sites/KoNote/Clients/{record_id}/│
 └─────────────────────────────────────────────────────────────────┘
 
 ℹ️ Use {record_id} where the client's Record ID should appear.
@@ -294,31 +294,31 @@ def get_document_folder_url(client):
 
 1. **Create document library structure:**
    ```
-   SharePoint site: https://[tenant].sharepoint.com/sites/KoNote2
+   SharePoint site: https://[tenant].sharepoint.com/sites/KoNote
 
    Create folder: Clients/
    ```
 
 2. **Create client folders:**
-   - When creating a new client in KoNote2, note the Record ID
+   - When creating a new client in KoNote, note the Record ID
    - In SharePoint, create folder: `Clients/[Record ID]/`
    - Example: `Clients/REC-2024-042/`
 
 3. **Set permissions:**
    - Option A: Give all staff access to `/Clients/` folder
-   - Option B: Create SharePoint groups matching KoNote2 programs
+   - Option B: Create SharePoint groups matching KoNote programs
    - Option C: Set per-client folder permissions (most restrictive)
 
-4. **Configure KoNote2:**
+4. **Configure KoNote:**
    - Go to Admin → Settings → Instance Settings
    - Provider: SharePoint / OneDrive
-   - URL Template: `https://[tenant].sharepoint.com/sites/KoNote2/Clients/{record_id}/`
+   - URL Template: `https://[tenant].sharepoint.com/sites/KoNote/Clients/{record_id}/`
    - Click "Test" to verify
 
 ### Google Drive Setup Guide
 
 1. **Create Shared Drive:**
-   - In Google Drive, create Shared Drive: "KoNote2 Documents"
+   - In Google Drive, create Shared Drive: "KoNote Documents"
    - This ensures consistent access for team members
 
 2. **Create client folders:**
@@ -330,7 +330,7 @@ def get_document_folder_url(client):
    - Add staff to Shared Drive with appropriate access level
    - Or manage per-folder if needed
 
-4. **Configure KoNote2:**
+4. **Configure KoNote:**
    - Go to Admin → Settings → Instance Settings
    - Provider: Google Drive
    - URL Template: `https://drive.google.com/drive/search?q={record_id}`
@@ -340,14 +340,14 @@ def get_document_folder_url(client):
 
 ## Security Considerations
 
-### What KoNote2 Stores
+### What KoNote Stores
 
 - Provider type (sharepoint, google_drive, none)
 - URL template string (not sensitive — just a pattern)
 
-**No client document URLs are stored in KoNote2.** URLs are generated at render time from the template + Record ID.
+**No client document URLs are stored in KoNote.** URLs are generated at render time from the template + Record ID.
 
-### What KoNote2 Does NOT Handle
+### What KoNote Does NOT Handle
 
 - Document storage
 - Document permissions
@@ -360,15 +360,15 @@ All of these remain the responsibility of the external storage system (SharePoin
 
 ### Permission Synchronization
 
-KoNote2 roles and external storage permissions are separate:
+KoNote roles and external storage permissions are separate:
 
 | Scenario | Result |
 |----------|--------|
-| Staff has KoNote2 access, lacks SharePoint access | Sees button, but SharePoint shows "Access Denied" |
-| Staff lacks KoNote2 access, has SharePoint access | Cannot reach client page, cannot see button |
+| Staff has KoNote access, lacks SharePoint access | Sees button, but SharePoint shows "Access Denied" |
+| Staff lacks KoNote access, has SharePoint access | Cannot reach client page, cannot see button |
 | Staff has both | Full access works |
 
-**Recommendation:** Document for agencies that SharePoint/Google Drive permissions should align with KoNote2 program roles.
+**Recommendation:** Document for agencies that SharePoint/Google Drive permissions should align with KoNote program roles.
 
 ---
 
@@ -384,7 +384,7 @@ KoNote2 roles and external storage permissions are separate:
 **Reason:** Expert panel unanimously concluded adoption would be <5% due to workflow friction.
 
 ### Document Upload/Storage
-- ❌ File upload to KoNote2 servers
+- ❌ File upload to KoNote servers
 - ❌ Virus scanning
 - ❌ Storage management
 - ❌ Backup of documents
@@ -393,7 +393,7 @@ KoNote2 roles and external storage permissions are separate:
 
 ### SharePoint/Google Drive API Integration
 - ❌ OAuth connection to storage provider
-- ❌ Folder listing within KoNote2
+- ❌ Folder listing within KoNote
 - ❌ Document preview/iframe
 - ❌ Automatic folder creation
 
@@ -446,7 +446,7 @@ KoNote2 roles and external storage permissions are separate:
 - [ ] Write setup guide for SharePoint
 - [ ] Write setup guide for Google Drive
 - [ ] Update agency-setup.md with document storage section
-- [ ] Add to "What KoNote2 Is and Isn't" documentation
+- [ ] Add to "What KoNote Is and Isn't" documentation
 
 ---
 

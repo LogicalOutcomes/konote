@@ -1,12 +1,12 @@
 # Phase 2 Prompt: Core Data — Programs & Clients
 
-Copy this prompt into a new Claude Code conversation. Open the `KoNote2-web` project folder first.
+Copy this prompt into a new Claude Code conversation. Open the `KoNote-web` project folder first.
 
 ---
 
 ## Prompt
 
-I'm building a nonprofit client management system called KoNote2 Web. Phase 1 (foundation) is done — Django 5 project with PostgreSQL, Docker, security middleware, and all data models. I need you to build **Phase 2: Programs & Client Management**.
+I'm building a nonprofit client management system called KoNote Web. Phase 1 (foundation) is done — Django 5 project with PostgreSQL, Docker, security middleware, and all data models. I need you to build **Phase 2: Programs & Client Management**.
 
 ### Context
 

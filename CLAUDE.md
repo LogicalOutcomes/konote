@@ -1,4 +1,4 @@
-# KoNote2 Web — Project Instructions
+# KoNote Web — Project Instructions
 
 ## What This Is
 

@@ -330,9 +330,9 @@ Edit `.env` and add your generated keys:
 SECRET_KEY=your-generated-secret-key-here
 FIELD_ENCRYPTION_KEY=your-generated-encryption-key-here
 
-POSTGRES_USER=KoNote2
+POSTGRES_USER=konote
 POSTGRES_PASSWORD=MySecurePassword123
-POSTGRES_DB=KoNote2
+POSTGRES_DB=konote
 
 AUDIT_POSTGRES_USER=audit_writer
 AUDIT_POSTGRES_PASSWORD=AnotherPassword456
@@ -535,7 +535,7 @@ az postgres flexible-server create \
   --resource-group KoNote2-prod \
   --name KoNote2-db \
   --location canadacentral \
-  --admin-user KoNote2 \
+  --admin-user konote \
   --admin-password <YOUR_PASSWORD> \
   --version 16
 
@@ -555,7 +555,7 @@ Create the databases:
 az postgres flexible-server db create \
   --resource-group KoNote2-prod \
   --server-name KoNote2-db \
-  --database-name KoNote2
+  --database-name konote
 
 az postgres flexible-server db create \
   --resource-group KoNote2-prod \
@@ -604,7 +604,7 @@ In Azure Portal, go to your Container App → Containers → Environment variabl
 |----------|-------|
 | `SECRET_KEY` | Your generated key |
 | `FIELD_ENCRYPTION_KEY` | Your generated key |
-| `DATABASE_URL` | `postgresql://KoNote2:PASSWORD@KoNote2-db.postgres.database.azure.com:5432/KoNote2` |
+| `DATABASE_URL` | `postgresql://konote:PASSWORD@konote-db.postgres.database.azure.com:5432/konote` |
 | `AUDIT_DATABASE_URL` | `postgresql://audit_writer:PASSWORD@KoNote2-audit-db.postgres.database.azure.com:5432/konote_audit` |
 
 Optional (auto-detected):
@@ -670,7 +670,7 @@ Add these in the Elestio dashboard:
 |----------|-------|
 | `SECRET_KEY` | Your generated key |
 | `FIELD_ENCRYPTION_KEY` | Your generated key |
-| `DATABASE_URL` | `postgresql://KoNote2:KoNote2@db:5432/KoNote2` |
+| `DATABASE_URL` | `postgresql://konote:konote@db:5432/konote` |
 | `AUDIT_DATABASE_URL` | `postgresql://audit_writer:audit_pass@audit_db:5432/konote_audit` |
 
 Optional (auto-detected):

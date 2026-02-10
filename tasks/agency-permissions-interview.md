@@ -1,6 +1,6 @@
 # Agency Permissions Setup Interview
 
-**Purpose:** Walk a new agency through all the decisions they need to make about who can see and do what in KoNote2. The result is a completed Configuration Worksheet that maps directly to system settings.
+**Purpose:** Walk a new agency through all the decisions they need to make about who can see and do what in KoNote. The result is a completed Configuration Worksheet that maps directly to system settings.
 
 **Time:** 60-90 minutes
 **Who should be in the room:** Executive Director (or designate), at least one Program Manager, Front Desk lead (if applicable), privacy officer (if they have one)
@@ -11,9 +11,9 @@
 
 ### Send the Agency a Prep Sheet (1 week ahead)
 
-> **Getting Ready for Your KoNote2 Permissions Setup**
+> **Getting Ready for Your KoNote Permissions Setup**
 >
-> Next week we'll walk through how to set up who can see and do what in KoNote2. To make the most of our time, please think about:
+> Next week we'll walk through how to set up who can see and do what in KoNote. To make the most of our time, please think about:
 >
 > 1. **Your staff roles** — a list of job titles and which program(s) each person works in
 > 2. **Your programs/services** — the distinct programs you run (e.g., housing support, youth drop-in, counselling)
@@ -29,9 +29,9 @@
 
 ### Section 1: Your People
 
-**Goal:** Map real job titles to KoNote2's roles, and identify your system administrator(s).
+**Goal:** Map real job titles to KoNote's roles, and identify your system administrator(s).
 
-KoNote2 has two layers of access:
+KoNote has two layers of access:
 
 1. **Program roles** — what client data you can see (one role per program, per person)
 2. **System Administrator** — a separate flag that lets someone manage users, settings, and programs (but does NOT automatically grant access to client data)
@@ -94,7 +94,7 @@ Program Managers already get some admin-like powers for their own program (manag
 #### Common Tensions to Explore
 
 - **"Our front desk person also does counselling."** → They'll be Receptionist in the intake flow but Staff in their counselling program. Two role assignments.
-- **"Our ED reads all the client files."** → This is a privacy risk worth discussing. KoNote2 supports it (give them a Staff or PM role), but the question is whether they *should*. See Section 5.
+- **"Our ED reads all the client files."** → This is a privacy risk worth discussing. KoNote supports it (give them a Staff or PM role), but the question is whether they *should*. See Section 5.
 - **"We're too small for roles — everyone does everything."** → Fine. Assign everyone as Staff. But still designate at least one person as PM (for reporting) and consider whether front desk volunteers should see clinical notes.
 - **"Our admin needs to troubleshoot issues with client records."** → Consider giving them a PM role in one program (limited scope) rather than Staff in all programs (full clinical access everywhere). They can see enough to troubleshoot without having blanket access.
 
@@ -113,7 +113,7 @@ Program Managers already get some admin-like powers for their own program (manag
 
 **2.1** "What distinct programs or services do you run? Think of it as: if a funder asked 'what do you do?', what would the list be?"
 
-*Each distinct service with its own staff, clients, or reporting becomes a KoNote2 program.*
+*Each distinct service with its own staff, clients, or reporting becomes a KoNote program.*
 
 **2.2** "For each program, would someone be harmed if an unauthorized person found out they were enrolled?"
 
@@ -127,7 +127,7 @@ Program Managers already get some admin-like powers for their own program (manag
 
 **2.3** "Do any staff work across programs? Which ones?"
 
-*This matters because KoNote2 can restrict what people see based on their program. If a housing worker also helps in the DV program, they'll need access to both — but the system will keep those contexts separate.*
+*This matters because KoNote can restrict what people see based on their program. If a housing worker also helps in the DV program, they'll need access to both — but the system will keep those contexts separate.*
 
 **2.4** "What do you call your programs internally? And would you want clients to see different names?"
 
@@ -154,7 +154,7 @@ Program Managers already get some admin-like powers for their own program (manag
 
 **Goal:** Make the hardest privacy decision — what does the person who answers the phone need to know?
 
-This is where agencies differ the most. KoNote2's default gives front desk (Receptionist role) access to:
+This is where agencies differ the most. KoNote's default gives front desk (Receptionist role) access to:
 - Client name
 - Phone number and email
 - Emergency contact
@@ -238,7 +238,7 @@ Based on the scenarios, confirm these choices:
 
 **Goal:** Decide the scope of PM access — especially for agencies with multiple programs.
 
-KoNote2's default gives Program Managers:
+KoNote's default gives Program Managers:
 - Full client data for clients in their program (including clinical notes)
 - Ability to view (not write) clinical notes for oversight purposes
 - Aggregate reporting for their program
@@ -255,7 +255,7 @@ KoNote2's default gives Program Managers:
 
 **4.3** "Should PMs be able to create or cancel safety alerts?"
 
-*KoNote2 uses a two-person safety rule by default: Staff create alerts, PMs cancel them. This prevents one person from both raising and dismissing a safety concern. Does this work for your agency, or are you too small for two-person rules?*
+*KoNote uses a two-person safety rule by default: Staff create alerts, PMs cancel them. This prevents one person from both raising and dismissing a safety concern. Does this work for your agency, or are you too small for two-person rules?*
 
 **4.4** "Should PMs manage their own program's user accounts, or should that be centralized?"
 
@@ -312,7 +312,7 @@ KoNote2's default gives Program Managers:
 
 "Has it ever happened that a staff member personally knew a client? What did you do?"
 
-*KoNote2 can block specific staff-client pairs. If Worker A is blocked from Client B's file, they'll get a "you don't have access to this file" message — no details about why, no indication the client exists.*
+*KoNote can block specific staff-client pairs. If Worker A is blocked from Client B's file, they'll get a "you don't have access to this file" message — no details about why, no indication the client exists.*
 
 **6.2** "Do you want to set up any blocks now, or just know the feature exists for when it's needed?"
 
@@ -330,7 +330,7 @@ KoNote2's default gives Program Managers:
 
 "Under Canadian privacy law, clients have the right to see what information you hold about them. Who handles those requests currently?"
 
-*KoNote2 can support this with a designated permission. Options:*
+*KoNote can support this with a designated permission. Options:*
 - Program Managers handle requests for their program
 - A single privacy officer handles all requests
 - Executive Director handles requests
@@ -339,7 +339,7 @@ KoNote2's default gives Program Managers:
 
 "When a staff member leaves your agency, what's your current process for revoking their access?"
 
-*KoNote2 supports deactivating users and removing program assignments. Important to have a process — not just a feature.*
+*KoNote supports deactivating users and removing program assignments. Important to have a process — not just a feature.*
 
 #### Record
 
@@ -356,7 +356,7 @@ KoNote2's default gives Program Managers:
 
 **Goal:** Quick pass through optional features — on or off for this agency.
 
-KoNote2 has features that can be turned on or off for each agency. Walk through the list:
+KoNote has features that can be turned on or off for each agency. Walk through the list:
 
 | Feature | What It Does | Default | Your Choice |
 |---|---|---|---|
@@ -405,7 +405,7 @@ Write up a one-page summary of all decisions made, organized as:
 
 Send the Configuration Summary to the ED or designated decision-maker with:
 
-> "Please review these permission settings. Once you confirm, we'll configure your KoNote2 instance to match. You can change any of these settings later, but it's important to start with intentional choices rather than defaults."
+> "Please review these permission settings. Once you confirm, we'll configure your KoNote instance to match. You can change any of these settings later, but it's important to start with intentional choices rather than defaults."
 
 ### 3. Configure the System
 

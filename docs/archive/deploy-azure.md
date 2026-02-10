@@ -68,7 +68,7 @@ The audit database is intentionally read-only and isolated. This prevents accide
    - **Region:** Same as your resource group.
    - **PostgreSQL version:** 16 (match your docker-compose.yml)
 4. **Administrator account:**
-   - **Admin username:** `KoNote2`
+   - **Admin username:** `konote`
    - **Password:** Generate a strong password. Save it in a secure location (password manager).
 5. Click "Review + create", then "Create".
 6. Wait for deployment (5–10 minutes).
@@ -85,7 +85,7 @@ az postgres flexible-server create \
   --resource-group KoNote2-prod \
   --name KoNote2-db \
   --location canadacentral \
-  --admin-user KoNote2 \
+  --admin-user konote \
   --admin-password <YOUR_STRONG_PASSWORD> \
   --version 16
 
@@ -110,7 +110,7 @@ Once each PostgreSQL server is created, you need to create the actual databases 
 1. Go to your first PostgreSQL server (`KoNote2-db`).
 2. In the left menu, click "Databases".
 3. Click "+ Add".
-4. **Database name:** `KoNote2`
+4. **Database name:** `konote`
 5. Click "Save".
 6. Repeat for the audit server (`KoNote2-audit-db`):
    - Database name: `konote_audit`
@@ -121,7 +121,7 @@ Once each PostgreSQL server is created, you need to create the actual databases 
 az postgres flexible-server db create \
   --resource-group KoNote2-prod \
   --server-name KoNote2-db \
-  --database-name KoNote2
+  --database-name konote
 
 az postgres flexible-server db create \
   --resource-group KoNote2-prod \
@@ -311,7 +311,7 @@ Before setting environment variables, collect these values:
 |----------|-------|--------|
 | `SECRET_KEY` | (generated in Step 4a) | Your secure location |
 | `FIELD_ENCRYPTION_KEY` | (generated in Step 4a) | Your secure location |
-| `DATABASE_URL` | `postgresql://KoNote2:<PASSWORD>@<SERVER_NAME>.postgres.database.azure.com:5432/KoNote2` | From Step 2 (main DB) |
+| `DATABASE_URL` | `postgresql://konote:<PASSWORD>@<SERVER_NAME>.postgres.database.azure.com:5432/konote` | From Step 2 (main DB) |
 | `AUDIT_DATABASE_URL` | `postgresql://audit_writer:<AUDIT_PASSWORD>@<SERVER_NAME_AUDIT>.postgres.database.azure.com:5432/konote_audit` | From Step 2 (audit DB) |
 | `DJANGO_SETTINGS_MODULE` | `konote.settings.production` | Fixed |
 | `AUTH_MODE` | `azure` (for Azure AD) or `local` | Your choice |
@@ -326,7 +326,7 @@ Before setting environment variables, collect these values:
 If your main PostgreSQL server is named `KoNote2-db` (Azure appends a suffix), the full server name is shown in the Azure Portal under "Server name". Let's say it's `KoNote2-db-xyz123.postgres.database.azure.com`:
 
 ```
-postgresql://KoNote2:YourStrongPassword@KoNote2-db-xyz123.postgres.database.azure.com:5432/KoNote2
+postgresql://konote:YourStrongPassword@konote-db-xyz123.postgres.database.azure.com:5432/konote
 ```
 
 ### Set Environment Variables in Container App
@@ -353,7 +353,7 @@ az containerapp update \
   --resource-group KoNote2-prod \
   --set-env-vars \
     DJANGO_SETTINGS_MODULE=konote.settings.production \
-    DATABASE_URL="postgresql://KoNote2:PASSWORD@KoNote2-db-xyz123.postgres.database.azure.com:5432/KoNote2" \
+    DATABASE_URL="postgresql://konote:PASSWORD@konote-db-xyz123.postgres.database.azure.com:5432/konote" \
     AUDIT_DATABASE_URL="postgresql://audit_writer:AUDIT_PASSWORD@KoNote2-audit-db-xyz123.postgres.database.azure.com:5432/konote_audit" \
     AUTH_MODE=local \
     ALLOWED_HOSTS="your-domain.com,www.your-domain.com"
@@ -621,7 +621,7 @@ If you created an Azure AD client secret (Step 8), mark your calendar 30 days be
 - Verify server names and passwords are correct in DATABASE_URL and AUDIT_DATABASE_URL.
 - Test connectivity from your local machine using `psql`:
   ```bash
-  psql -h <server-name>.postgres.database.azure.com -U KoNote2 -d KoNote2
+  psql -h <server-name>.postgres.database.azure.com -U konote -d konote
   ```
 - Check PostgreSQL firewall rules (Step 2).
 

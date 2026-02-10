@@ -1,4 +1,4 @@
-# KoNote2 — Independent Code Review Framework
+# KoNote — Independent Code Review Framework
 
 **Version:** 1.0
 **Created:** 2026-02-06
@@ -8,9 +8,9 @@
 
 ## Why This Framework Exists
 
-KoNote2 handles sensitive client data for nonprofits. A single security review is not enough — the codebase has multiple dimensions of quality that each require focused attention. This framework defines **10 review dimensions**, a **two-tier review model** (continuous + periodic), and **reusable prompts** that work with any AI code review tool.
+KoNote handles sensitive client data for nonprofits. A single security review is not enough — the codebase has multiple dimensions of quality that each require focused attention. This framework defines **10 review dimensions**, a **two-tier review model** (continuous + periodic), and **reusable prompts** that work with any AI code review tool.
 
-The goal: any agency deploying KoNote2 can run these reviews themselves, and the development team can use them as ongoing quality gates.
+The goal: any agency deploying KoNote can run these reviews themselves, and the development team can use them as ongoing quality gates.
 
 ---
 
@@ -20,7 +20,7 @@ The goal: any agency deploying KoNote2 can run these reviews themselves, and the
 
 Each dimension addresses a different aspect of application quality. They are ordered by risk — the first five relate to data safety; the last five relate to operational quality.
 
-| # | Dimension | Why It Matters for KoNote2 | Risk Level |
+| # | Dimension | Why It Matters for KoNote | Risk Level |
 |---|-----------|---------------------------|------------|
 | 1 | **Security (OWASP)** | Handles PII; target for data breaches | Critical |
 | 2 | **Data Privacy (PIPEDA)** | Canadian privacy law; breach notification required within 72 hours | Critical |
@@ -57,7 +57,7 @@ Every review prompt follows the same five-section structure. This makes them por
    Who the reviewer is pretending to be (persona + expertise level)
 
 2. APPLICATION CONTEXT
-   What KoNote2 is, its threat model, tech stack, and constraints
+   What KoNote is, its threat model, tech stack, and constraints
 
 3. SCOPE
    Which files to review, which to skip, and what's out of bounds
@@ -92,7 +92,7 @@ Every review prompt follows the same five-section structure. This makes them por
 | Check | Tool | What It Catches |
 |-------|------|-----------------|
 | `python manage.py check --deploy` | Django | Missing security middleware, debug mode, insecure cookies |
-| `python manage.py security_audit --json --fail-on-warn` | KoNote2 custom | Encryption config, RBAC, audit logging, plaintext PII |
+| `python manage.py security_audit --json --fail-on-warn` | KoNote custom | Encryption config, RBAC, audit logging, plaintext PII |
 | `pip-audit` | pip-audit | Known CVEs in dependencies |
 | `pytest` (full suite) | pytest | RBAC regressions, encryption round-trip, demo data isolation |
 | HTMX endpoint spot-check | Manual / AI | New HTMX endpoints respect CSRF and RBAC |
@@ -151,7 +151,7 @@ data protection.
 
 ## Application Context
 
-KoNote2 is a Django 5 web application that stores sensitive client information
+KoNote is a Django 5 web application that stores sensitive client information
 (names, dates of birth, progress notes, outcome ratings) for nonprofit social
 service agencies in Canada. Each agency runs its own instance.
 
@@ -302,7 +302,7 @@ agencies handling client records.
 
 ## Application Context
 
-KoNote2 is used by Canadian nonprofits to manage participant outcomes —
+KoNote is used by Canadian nonprofits to manage participant outcomes —
 tracking client progress, recording session notes, and generating reports
 for funders. It stores the following PII:
 
@@ -462,7 +462,7 @@ used by Ontario organisations.
 
 ## Application Context
 
-KoNote2 is used by nonprofit caseworkers in Ontario, Canada. The user base
+KoNote is used by nonprofit caseworkers in Ontario, Canada. The user base
 includes:
 - Staff with visual impairments (screen readers, magnification)
 - Staff with motor impairments (keyboard-only navigation)
@@ -656,7 +656,7 @@ self-healing.
 
 ## Application Context
 
-KoNote2 is deployed via Docker Compose to various hosting providers
+KoNote is deployed via Docker Compose to various hosting providers
 (Azure, Railway, Elest.io, self-hosted). Each deployment is a single
 agency instance.
 
@@ -836,7 +836,7 @@ Each review references the previous one and tracks:
 | PR that changes templates or CSS | Prompt C (Accessibility) |
 | PR that changes Dockerfile or entrypoint | Prompt D (Deployment) |
 | Quarterly review | All four prompts, one at a time |
-| New agency evaluating KoNote2 | Prompt A (Security) — they care most about data safety |
+| New agency evaluating KoNote | Prompt A (Security) — they care most about data safety |
 | Before a major release | All four prompts + full test suite |
 | After adding a new dependency | `pip-audit` + brief Prompt A with focus on A06 |
 | UX concern raised by users | Use existing `tasks/UX-REVIEW.md` framework |
@@ -845,7 +845,7 @@ Each review references the previous one and tracks:
 
 ## Part 7: Relationship to Existing Review Infrastructure
 
-This framework builds on what already exists in the KoNote2 codebase:
+This framework builds on what already exists in the KoNote codebase:
 
 | Existing Asset | How This Framework Uses It |
 |---------------|---------------------------|
@@ -872,7 +872,7 @@ You are a [specialist type] with expertise in [specific domain].
 
 ## Application Context
 
-KoNote2 is a Django 5 web application that [brief description relevant
+KoNote is a Django 5 web application that [brief description relevant
 to this dimension]. It handles [relevant data types] for [relevant users].
 
 [Key architectural facts relevant to this dimension]
