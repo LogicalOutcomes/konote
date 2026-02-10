@@ -1,4 +1,4 @@
-// KoNote2 — Minimal service worker for offline fallback only.
+// KoNote — Minimal service worker for offline fallback only.
 // NOT a full PWA — only caches the offline page.
 var CACHE_NAME = "konote-offline-v1";
 var OFFLINE_URL = "/static/offline.html";
