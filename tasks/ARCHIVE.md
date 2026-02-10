@@ -6,6 +6,12 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ## Completed 2026-02-10
 
+### Moved from Recently Done (2026-02-10 QA regression cleanup)
+
+- [x] Fix BUG-9 regression — French create form: added name_fr to QA programs, set preferred_language on French user, comprehensive form test — 2026-02-10 (QA-W22)
+- [x] Decide product name — "KoNote" (not "KoNote2"). Renamed across all tasks/, qa/, CLAUDE.md, TODO.md — 2026-02-10 (NAME1)
+- [x] Rename "programme" → "program" across 102 files + migration + .po cleanup — 2026-02-09 (SPELL1, RENAME-AGG1, DOC-AGG1, PERM-FU3)
+
 ### Moved from Recently Done (2026-02-10 cleanup)
 
 - [x] Front Desk permissions hardening — hide Groups nav, block clinical data on dashboard — 2026-02-08 (UI-PERM1)

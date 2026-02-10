@@ -9,12 +9,6 @@
 
 ### QA Round 3 — Regressions
 
-- [ ] Fix BUG-7 / IMPROVE-5 — QA false positive: app code is fixed (unit tests pass for admin + staff), but QA runner navigates to literal `{client_id}` instead of resolved ID (TEST-5). Fix the QA test runner to resolve URL variables from previous steps (QA-W21, QA-W25)
-- [ ] Reframe BUG-8 — "Safety concern noted" is user-entered alert content (test data), not a translatable UI string. QA runner detecting test fixture language, not an app bug. Close or fix QA seed data (QA-W23)
-- [ ] Verify BLOCKER-1 + BLOCKER-2 — skip link and post-login focus need keyboard/JAWS testing (QA-W27)
-
-### Aggregate Export + Funder Rename
-
 _All tasks complete — section can be removed on next cleanup._
 
 ### Pre-Launch Checklist
@@ -130,6 +124,9 @@ _All tasks complete — section can be removed on next cleanup._
 
 ## Recently Done
 
+- [x] Fix TEST-5 — QA runner now resolves `{client_id}` etc. from previous step URLs instead of navigating to literal placeholders — 2026-02-10 (QA-W21, QA-W25)
+- [x] Close BUG-8 — "Safety concern noted" is user-entered alert content (test data), not a translatable UI string. Not a bug. — 2026-02-10 (QA-W23)
+- [x] Fix BLOCKER-1 + verify BLOCKER-2 — skip link added to base.html for all pages; post-login focus confirmed working in app.js — 2026-02-10 (QA-W27)
 - [x] Translate strings + fix aggregate export test — 14 portal strings translated, test record_id fix, .mo compiled — 2026-02-10 (I18N-AGG1)
 - [x] Verify aggregate export tests — 9/9 pass: executive CSV has no record IDs, no author names, aggregate headers only — 2026-02-10 (TEST-AGG1)
 - [x] Fix BUG-11 — program `name_fr` field + `translated_name` property, seed data with French names, 33 templates updated — 2026-02-10 (QA-W24)
@@ -137,7 +134,4 @@ _All tasks complete — section can be removed on next cleanup._
 - [x] Fix BUG-3 — audit log filter dropdown CSS min-width increased from 0 to 12rem — 2026-02-10 (QA-W28)
 - [x] Fix IMPROVE-1 — Instance Settings and Demo Accounts cards now show status text — 2026-02-10 (QA-W29)
 - [x] Update konote-website git remote URL — repo renamed to konote-website — 2026-02-10 (NAME2)
-- [x] Fix BUG-9 regression — French create form: added name_fr to QA programs, set preferred_language on French user, comprehensive form test — 2026-02-10 (QA-W22)
-- [x] Decide product name — "KoNote" (not "KoNote2"). Renamed across all tasks/, qa/, CLAUDE.md, TODO.md — 2026-02-10 (NAME1)
-- [x] Rename "programme" → "program" across 102 files + migration + .po cleanup — 2026-02-09 (SPELL1, RENAME-AGG1, DOC-AGG1, PERM-FU3)
 _Older completed tasks: [tasks/ARCHIVE.md](tasks/ARCHIVE.md). Reference: [tasks/whats-been-built.md](tasks/whats-been-built.md). Recurring chores: [tasks/recurring-tasks.md](tasks/recurring-tasks.md)._

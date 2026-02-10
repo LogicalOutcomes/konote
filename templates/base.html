@@ -26,6 +26,9 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
+    <!-- BLOCKER-1: Skip-to-content link — WCAG 2.4.1 bypass block -->
+    <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
+
     <!-- Loading bar — shown during HTMX requests -->
     <div id="loading-bar" class="loading-bar htmx-indicator"></div>
 
