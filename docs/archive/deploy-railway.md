@@ -1,6 +1,6 @@
-# Deploy KoNote2 Web to Railway
+# Deploy KoNote Web to Railway
 
-This guide walks you through deploying KoNote2 Web to Railway — a hosting service that automatically builds and deploys your app from GitHub.
+This guide walks you through deploying KoNote Web to Railway — a hosting service that automatically builds and deploys your app from GitHub.
 
 ## What You'll Need
 
@@ -15,7 +15,7 @@ This guide walks you through deploying KoNote2 Web to Railway — a hosting serv
 1. Go to [railway.app](https://railway.app) and sign in (use GitHub to sign in quickly)
 2. Click **"New Project"** button in the top-right corner
 3. Select **"Deploy from GitHub repo"**
-4. Find and click **KoNote2-web** in your list of repositories
+4. Find and click **KoNote-web** in your list of repositories
 5. Click **"Deploy"** — Railway will start building from your Dockerfile
 
 This process takes 2–3 minutes. Your project will fail to start because we haven't set up the environment variables and databases yet. That's expected.
@@ -24,7 +24,7 @@ This process takes 2–3 minutes. Your project will fail to start because we hav
 
 ## Step 2: Add Two PostgreSQL Databases
 
-KoNote2 Web needs **two separate PostgreSQL databases**:
+KoNote Web needs **two separate PostgreSQL databases**:
 - **Main database** (for app data: clients, programs, notes)
 - **Audit database** (for immutable audit logs)
 
@@ -112,7 +112,7 @@ In your Railway project, look for the **"Variables"** tab. We'll set up six envi
 4. Click **"Add Variable"**
 
 ### DATABASE_URL
-This tells KoNote2 where to find the main database.
+This tells KoNote where to find the main database.
 
 1. In the Railway dashboard, click on the **first PostgreSQL plugin** (it will have a name like `PostgreSQL` or `PostgreSQL_2`)
 2. On the right side, look for a box with connection details — find the line that says **DATABASE_URL**
@@ -124,7 +124,7 @@ This tells KoNote2 where to find the main database.
 8. Click **"Add Variable"**
 
 ### AUDIT_DATABASE_URL
-This tells KoNote2 where to find the audit database.
+This tells KoNote where to find the audit database.
 
 1. In the Railway dashboard, click on the **second PostgreSQL plugin**
 2. Find the **DATABASE_URL** value and copy it (same as above)
@@ -168,9 +168,9 @@ If deployment fails, see **Troubleshooting** below.
 ## Step 6: Verify the App Works
 
 1. In your Railway project, look for a **"Domain"** section
-2. You should see a URL like `KoNote2-web-production-xxxx.up.railway.app`
+2. You should see a URL like `KoNote-web-production-xxxx.up.railway.app`
 3. Click it (or copy and paste into your browser)
-4. You should see the **KoNote2 login page**
+4. You should see the **KoNote login page**
 
 If you get an error page, check the **Logs** tab to see what went wrong.
 
@@ -197,7 +197,7 @@ If your organisation uses Microsoft Azure AD (Office 365), users can sign in wit
 ### Get Your App URL First
 
 1. In Railway, find the **Domain** section
-2. Copy the full URL (e.g., `https://outcomes.myorganisation.ca` or `https://KoNote2-web-production-xxxx.up.railway.app`)
+2. Copy the full URL (e.g., `https://outcomes.myorganisation.ca` or `https://KoNote-web-production-xxxx.up.railway.app`)
 
 ### Register Your App in Azure
 
@@ -206,7 +206,7 @@ If your organisation uses Microsoft Azure AD (Office 365), users can sign in wit
 3. Click **"App registrations"**
 4. Click **"New registration"**
 5. Fill in:
-   - **Name:** `KoNote2 Web` (or whatever you want)
+   - **Name:** `KoNote Web` (or whatever you want)
    - **Supported account types:** "Accounts in this organizational directory only"
    - **Redirect URI:** Set to `Web` and paste: `https://your-app-url/auth/callback/` (replace `your-app-url` with your actual URL)
 6. Click **"Register"**

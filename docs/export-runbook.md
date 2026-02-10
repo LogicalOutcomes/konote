@@ -1,6 +1,6 @@
 # Export Runbook
 
-Operational guide for managing the KoNote2 secure export system. Covers setup, scheduled maintenance, common issues, monitoring, and troubleshooting.
+Operational guide for managing the KoNote secure export system. Covers setup, scheduled maintenance, common issues, monitoring, and troubleshooting.
 
 For a detailed explanation of how the export system works internally, see [SecureExportLink Lifecycle](secure-export-link-lifecycle.md).
 
@@ -28,7 +28,7 @@ These environment variables must be set in your hosting environment (Railway, Az
 | `EMAIL_HOST_USER` | Yes (production) | (empty) | SMTP username (often an email address). |
 | `EMAIL_HOST_PASSWORD` | Yes (production) | (empty) | SMTP password or app-specific password. |
 | `EMAIL_USE_TLS` | No | `True` | Whether to use TLS encryption for email. Keep this as `True`. |
-| `DEFAULT_FROM_EMAIL` | No | `KoNote2 <noreply@konote2.app>` | The "From" address on notification emails. |
+| `DEFAULT_FROM_EMAIL` | No | `KoNote <noreply@konote2.app>` | The "From" address on notification emails. |
 
 **If email is not configured:** Exports will still work, but admin notifications for elevated exports will fail silently (a warning is logged). Admins will not be alerted when large exports are created.
 

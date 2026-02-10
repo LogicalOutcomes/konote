@@ -1,6 +1,6 @@
-# KoNote2 Web — Technical Documentation
+# KoNote Web — Technical Documentation
 
-This document provides a comprehensive technical reference for developers, system administrators, and AI assistants working with the KoNote2 Web codebase.
+This document provides a comprehensive technical reference for developers, system administrators, and AI assistants working with the KoNote Web codebase.
 
 ---
 
@@ -28,7 +28,7 @@ This document provides a comprehensive technical reference for developers, syste
 
 ## Architecture Overview
 
-KoNote2 Web is a Django 5.1 application following a server-rendered architecture:
+KoNote Web is a Django 5.1 application following a server-rendered architecture:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -82,7 +82,7 @@ KoNote2 Web is a Django 5.1 application following a server-rendered architecture
 ## Project Structure
 
 ```
-KoNote2-web/
+KoNote-web/
 ├── konote/                    # Project configuration
 │   ├── settings/
 │   │   ├── base.py            # Shared settings
@@ -142,7 +142,7 @@ KoNote2-web/
 
 ### Dual-Database Strategy
 
-KoNote2 Web uses two PostgreSQL databases:
+KoNote Web uses two PostgreSQL databases:
 
 | Database | Purpose | Access Pattern |
 |----------|---------|----------------|
@@ -190,11 +190,11 @@ For production, the audit database user should have INSERT-only permissions:
 
 ```sql
 -- Create audit user with limited permissions
-CREATE USER KoNote2_audit WITH PASSWORD 'secure_password';
-GRANT CONNECT ON DATABASE KoNote2_audit TO KoNote2_audit;
-GRANT USAGE ON SCHEMA public TO KoNote2_audit;
-GRANT INSERT ON audit_auditlog TO KoNote2_audit;
-GRANT USAGE, SELECT ON SEQUENCE audit_auditlog_id_seq TO KoNote2_audit;
+CREATE USER konote_audit WITH PASSWORD 'secure_password';
+GRANT CONNECT ON DATABASE konote_audit TO konote_audit;
+GRANT USAGE ON SCHEMA public TO konote_audit;
+GRANT INSERT ON audit_auditlog TO konote_audit;
+GRANT USAGE, SELECT ON SEQUENCE audit_auditlog_id_seq TO konote_audit;
 -- No UPDATE, DELETE, or TRUNCATE permissions
 ```
 
@@ -1029,18 +1029,18 @@ Before deploying changes:
 
 ## Extensions & Customization
 
-KoNote2 Web is designed as a lightweight, focused outcome tracking system for small-to-medium nonprofit programs (up to ~2,000 clients). This section covers common extension scenarios and guidance for organizations with needs beyond the core feature set.
+KoNote Web is designed as a lightweight, focused outcome tracking system for small-to-medium nonprofit programs (up to ~2,000 clients). This section covers common extension scenarios and guidance for organizations with needs beyond the core feature set.
 
 ### Target Use Cases
 
-KoNote2 is **well-suited for:**
+KoNote is **well-suited for:**
 - Youth services (group homes, shelters, drop-ins)
 - Mental health counselling programs
 - Housing first / supportive housing
 - Employment services
 - Small-to-medium agencies (10–50 staff, up to 2,000 clients)
 
-KoNote2 is **not designed for:**
+KoNote is **not designed for:**
 - Large-scale agencies (2,000+ active clients)
 - Multi-organization coalitions (without forking)
 - Document-heavy services (legal clinics, medical records)
@@ -1052,7 +1052,7 @@ KoNote2 is **not designed for:**
 
 **The Problem:** Staff working in the field — coaches at sports programs, outreach workers, youth workers at community drop-ins — need to record attendance and quick notes without reliable internet.
 
-**Design Decision:** KoNote2 does not include a full Progressive Web App (PWA) with offline sync. The complexity of offline-first architecture (service workers, conflict resolution, data merging) is significant and outside the core scope.
+**Design Decision:** KoNote does not include a full Progressive Web App (PWA) with offline sync. The complexity of offline-first architecture (service workers, conflict resolution, data merging) is significant and outside the core scope.
 
 **Recommended Approaches:**
 
@@ -1070,7 +1070,7 @@ KoNote2 is **not designed for:**
                                             │
                                             ▼
                                 ┌─────────────────────────┐
-                                │   KoNote2 Import Job     │
+                                │   KoNote Import Job     │
                                 │   - Scheduled or manual │
                                 │   - Maps to Quick Notes │
                                 └─────────────────────────┘
@@ -1078,8 +1078,8 @@ KoNote2 is **not designed for:**
 
 **Integration Points:**
 - KoBoToolbox REST API: `GET /api/v2/assets/{uid}/data/`
-- KoNote2 would need: `/api/field-import/` endpoint accepting standardized JSON
-- Mapping: KoBoToolbox submission → KoNote2 Quick Note with metrics
+- KoNote would need: `/api/field-import/` endpoint accepting standardized JSON
+- Mapping: KoBoToolbox submission → KoNote Quick Note with metrics
 
 **Implementation Effort:** Medium (2–3 weeks for import endpoint + documentation)
 
@@ -1097,7 +1097,7 @@ For organizations already using Microsoft 365, SharePoint Lists now supports off
                                             │ Webhook
                                             ▼
                                 ┌─────────────────────────┐
-                                │   KoNote2 Import API     │
+                                │   KoNote Import API     │
                                 │   - Webhook receiver    │
                                 │   - Maps list → notes   │
                                 └─────────────────────────┘
@@ -1114,7 +1114,7 @@ For organizations already using Microsoft 365, SharePoint Lists now supports off
 **Architecture:**
 - Create AppSheet form: Select Client → Record Metric → Add Note
 - AppSheet works offline, syncs to Google Sheet when online
-- KoNote2 imports from Google Sheet via Apps Script webhook
+- KoNote imports from Google Sheet via Apps Script webhook
 
 **Pros:** Low cost; excellent offline; drag-and-drop form builder
 
@@ -1122,7 +1122,7 @@ For organizations already using Microsoft 365, SharePoint Lists now supports off
 
 #### Option 4: Bounded "Field Mode" (Future Enhancement)
 
-If demand warrants, KoNote2 could add a minimal field entry mode:
+If demand warrants, KoNote could add a minimal field entry mode:
 
 **Scope Boundaries:**
 - Cache client list for user's assigned programs only (read-only)
@@ -1134,7 +1134,7 @@ If demand warrants, KoNote2 could add a minimal field entry mode:
 **Technical Approach:**
 ```javascript
 // Minimal service worker for field mode only
-const FIELD_CACHE = 'KoNote2-field-v1';
+const FIELD_CACHE = 'KoNote-field-v1';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -1168,7 +1168,7 @@ self.addEventListener('install', (event) => {
 
 #### How Internationalisation Works
 
-KoNote2 uses Django's built-in internationalisation support:
+KoNote uses Django's built-in internationalisation support:
 
 **Settings (konote/settings/base.py)**
 
@@ -1275,7 +1275,7 @@ class TerminologyOverride(models.Model):
 
 ### Customizing for Coalitions / Networks
 
-**KoNote2's Architecture:** Single-organization. Each deployment serves one agency with shared users, programs, and clients.
+**KoNote's Architecture:** Single-organization. Each deployment serves one agency with shared users, programs, and clients.
 
 **Coalition Requirements Typically Include:**
 - Multiple member organizations sharing some data
@@ -1369,7 +1369,7 @@ For coalitions that don't need shared client records:
 
 ```
 ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
-│   Org A KoNote2  │  │   Org B KoNote2  │  │   Org C KoNote2  │
+│   Org A KoNote  │  │   Org B KoNote  │  │   Org C KoNote  │
 │   (separate)    │  │   (separate)    │  │   (separate)    │
 └────────┬────────┘  └────────┬────────┘  └────────┬────────┘
          │                    │                    │
@@ -1585,13 +1585,13 @@ class InstanceSetting(models.Model):
 - SharePoint/Google Drive API integration
 - Document preview or iframe embedding
 
-**Why:** Documents live in SharePoint/Google Drive. KoNote2 provides a doorway, not a replacement.
+**Why:** Documents live in SharePoint/Google Drive. KoNote provides a doorway, not a replacement.
 
 ---
 
 ### Scheduling & Calendar
 
-**Design Decision:** Out of scope. KoNote2 is an outcome tracking system, not a scheduling system.
+**Design Decision:** Out of scope. KoNote is an outcome tracking system, not a scheduling system.
 
 **Rationale:**
 - Calendar features (recurring events, conflicts, reminders, timezone handling) represent a separate product category
@@ -1606,7 +1606,7 @@ class InstanceSetting(models.Model):
 | Group sessions | Google Calendar, Outlook | Link in events |
 | Program scheduling | When2Meet, Doodle | External |
 
-**Documentation:** Create a "Recommended Tools" page listing scheduling options that complement KoNote2.
+**Documentation:** Create a "Recommended Tools" page listing scheduling options that complement KoNote.
 
 ---
 
@@ -1654,7 +1654,7 @@ When considering a new feature or extension:
 | Is complexity bounded and maintainable? | Proceed carefully | Find simpler approach |
 | Does it require multi-tenancy changes? | Fork required | May fit core product |
 
-**Guiding Principle:** KoNote2 should do one thing extremely well — track outcomes and generate funder reports — rather than becoming a bloated "do everything" platform.
+**Guiding Principle:** KoNote should do one thing extremely well — track outcomes and generate funder reports — rather than becoming a bloated "do everything" platform.
 
 ---
 
@@ -1666,9 +1666,9 @@ When considering a new feature or extension:
 - [Pico CSS Documentation](https://picocss.com/docs)
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [KoBoToolbox Documentation](https://support.kobotoolbox.org/)
-- [Original KoNote2 Repository](https://github.com/LogicalOutcomes/KoNote2)
+- [Original KoNote Repository](https://github.com/LogicalOutcomes/KoNote)
 
 ---
 
-**Version 1.3** — KoNote2 Web Technical Documentation
+**Version 1.3** — KoNote Web Technical Documentation
 Last updated: 2026-02-05

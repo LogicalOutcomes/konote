@@ -3,7 +3,7 @@
 ## Flagged
 
 - [ ] Update konote-website git remote URL — repo renamed but local remote still points to old name (NAME2)
-- [ ] Fix inconsistent env var rename — `startup_check.py:101` uses `KoNote_MODE` instead of `KONOTE_MODE` (NAME3)
+
 - [ ] Approve Agency Permissions Interview questionnaire — must be finalised before first agency deployment. See `tasks/agency-permissions-interview.md` (ONBOARD-APPROVE)
 - [ ] Decide who runs the export command — KoNote team only, or self-hosted agencies too? Shapes the entire SEC3 design. See `tasks/agency-data-offboarding.md` (SEC3-Q1)
 
@@ -111,6 +111,7 @@
 ### Repository Housekeeping
 
 - [ ] Rename original CoNote GitHub repo to "CoNote Classic" and add a redirect/link to this repo — (REPO1)
+- [ ] Delete temp folders (Tempkonote-pushrepo/ and Tempkonote-push 2/) once OneDrive sync is complete (CLEANUP1)
 
 ### QA
 
@@ -134,6 +135,7 @@
 
 ## Recently Done
 
+- [x] Decide product name — "KoNote" (not "KoNote2"). Renamed across all tasks/, qa/, CLAUDE.md, TODO.md — 2026-02-10 (NAME1)
 - [x] Rename "programme" → "program" across 102 files + migration + .po cleanup — 2026-02-09 (SPELL1, RENAME-AGG1, DOC-AGG1, PERM-FU3)
 - [x] Fix Progress Trend chart — apostrophe in JS string caused SyntaxError, used `escapejs` — 2026-02-09 (BUG-CHART1)
 - [x] Permissions redesign Phase 1 — cross-program note leaks, field-level visibility, ClientAccessBlock, expanded matrix — 2026-02-08 (PERM-S1 through PERM-SYS1)

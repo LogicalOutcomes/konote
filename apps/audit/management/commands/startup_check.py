@@ -99,7 +99,7 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.WARNING(
                 "\n  DO NOT use this instance for real client data."
-                "\n  Set KoNote_MODE=production when ready for production use."
+                "\n  Set KONOTE_MODE=production when ready for production use."
                 "\n"
             ))
             self.stdout.write("=" * 55 + "\n")
@@ -127,7 +127,7 @@ class Command(BaseCommand):
 
             self.stdout.write(self.style.ERROR(
                 "\n  Fix these issues before starting KoNote in production."
-                "\n  For evaluation/demo, set KoNote_MODE=demo"
+                "\n  For evaluation/demo, set KONOTE_MODE=demo"
                 "\n"
             ))
             self.stdout.write("=" * 55 + "\n")

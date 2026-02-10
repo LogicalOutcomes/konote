@@ -1,4 +1,4 @@
-# Deployment Reliability Review — KoNote2
+# Deployment Reliability Review — KoNote
 
 **Date:** 2026-02-06
 **External Reviewer:** Jules (Google AI coding agent)

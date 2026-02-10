@@ -1,6 +1,6 @@
 # SecureExportLink Lifecycle
 
-How export download links are created, used, and cleaned up in KoNote2.
+How export download links are created, used, and cleaned up in KoNote.
 
 ## Overview
 
@@ -242,4 +242,4 @@ Individual client exports (`/reports/client/{id}/export/`) work differently from
 | Link expiry | `SECURE_EXPORT_LINK_EXPIRY_HOURS` | `24` | Hours before a download link expires |
 | Elevated delay | `ELEVATED_EXPORT_DELAY_MINUTES` | `10` | Minutes before an elevated export can be downloaded |
 | Email backend | `EMAIL_BACKEND` | Console (dev) | Must be SMTP in production for notifications |
-| From address | `DEFAULT_FROM_EMAIL` | `KoNote2 <noreply@konote2.app>` | Sender address for notification emails |
+| From address | `DEFAULT_FROM_EMAIL` | `KoNote <noreply@konote2.app>` | Sender address for notification emails |

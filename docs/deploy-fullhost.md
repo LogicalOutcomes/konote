@@ -1,6 +1,6 @@
-# Deploy KoNote2 on FullHost (Canadian Hosting)
+# Deploy KoNote on FullHost (Canadian Hosting)
 
-This guide walks you through deploying your own KoNote2 instance on FullHost, a Canadian-owned hosting provider with data centres in Canada.
+This guide walks you through deploying your own KoNote instance on FullHost, a Canadian-owned hosting provider with data centres in Canada.
 
 **Time required:** About 15 minutes
 **Technical skill required:** None — just follow the steps
@@ -21,10 +21,10 @@ This guide walks you through deploying your own KoNote2 instance on FullHost, a 
 
 You'll need:
 
-1. **An email address** — For your FullHost account and KoNote2 admin login
-2. **Your organisation name** — As you want it displayed in KoNote2
+1. **An email address** — For your FullHost account and KoNote admin login
+2. **Your organisation name** — As you want it displayed in KoNote
 3. **A term for the people you serve** — clients, participants, members, etc.
-4. **A password** — For your KoNote2 admin account (minimum 10 characters)
+4. **A password** — For your KoNote admin account (minimum 10 characters)
 
 ---
 
@@ -37,13 +37,13 @@ You'll need:
 5. Click the link in the email to verify your account
 6. Set a password for your FullHost account
 
-**Note:** This creates your FullHost hosting account. You'll create a separate KoNote2 admin account later.
+**Note:** This creates your FullHost hosting account. You'll create a separate KoNote admin account later.
 
-**Recommended:** Enable multi-factor authentication (MFA) on your FullHost account. Your FullHost login controls your entire KoNote2 environment — databases, encryption keys, and all client data. Go to your FullHost account settings and enable two-factor authentication before proceeding.
+**Recommended:** Enable multi-factor authentication (MFA) on your FullHost account. Your FullHost login controls your entire KoNote environment — databases, encryption keys, and all client data. Go to your FullHost account settings and enable two-factor authentication before proceeding.
 
 ---
 
-## Step 2: Deploy KoNote2
+## Step 2: Deploy KoNote
 
 ### Option A: One-Click Deploy (Easiest)
 
@@ -53,7 +53,7 @@ You'll need:
 
 2. If prompted, log in to your FullHost account
 
-3. You'll see the **KoNote2 Setup** screen
+3. You'll see the **KoNote Setup** screen
 
 ### Option B: Manual Import
 
@@ -115,9 +115,9 @@ xK9mP2nQ4rS6tU8vW0xY2zA4bC6dE8fG0hI2jK4lM6n=
 2. Save it somewhere secure (password manager, printed in a safe, etc.)
 3. **Do not store it in the same place as your database backups**
 
-If you ever need to restore KoNote2 from a backup, you'll need this key to decrypt client data. **If you lose this key, encrypted client data cannot be recovered.**
+If you ever need to restore KoNote from a backup, you'll need this key to decrypt client data. **If you lose this key, encrypted client data cannot be recovered.**
 
-**Tip:** If you misplace the key, you can retrieve it later from your FullHost dashboard. Click on the KoNote2 App container, then **Variables** — look for `FIELD_ENCRYPTION_KEY`. But it's still best to save a copy outside of FullHost.
+**Tip:** If you misplace the key, you can retrieve it later from your FullHost dashboard. Click on the KoNote App container, then **Variables** — look for `FIELD_ENCRYPTION_KEY`. But it's still best to save a copy outside of FullHost.
 
 ---
 
@@ -127,7 +127,7 @@ SSL must be enabled manually after installation. There are two parts:
 
 ### 6a. Enable SSL on the Load Balancer
 
-1. In the FullHost dashboard, find your KoNote2 environment
+1. In the FullHost dashboard, find your KoNote environment
 2. Click **Settings** (gear icon) on the environment
 3. Click **Custom SSL** in the left sidebar
 4. At the top, click the **yellow link** that says "following the link and clicking Enable button"
@@ -147,18 +147,18 @@ It may take a few minutes to activate. Once done, your site will be accessible o
 
 **Note:** Login will not work until SSL is enabled — the app requires HTTPS for security.
 
-**Important — Do NOT add a public IP to the app container.** If the KoNote2 App node has a public/external IP address, HTTPS will not work. The SSL certificate is managed by FullHost's Shared Load Balancer (SLB), which sits in front of your containers. A public IP on the app container makes traffic bypass the SLB, skipping SSL entirely. If you accidentally add one, go to the app node's settings and remove the public IP.
+**Important — Do NOT add a public IP to the app container.** If the KoNote App node has a public/external IP address, HTTPS will not work. The SSL certificate is managed by FullHost's Shared Load Balancer (SLB), which sits in front of your containers. A public IP on the app container makes traffic bypass the SLB, skipping SSL entirely. If you accidentally add one, go to the app node's settings and remove the public IP.
 
 ---
 
-## Step 7: Log In to KoNote2
+## Step 7: Log In to KoNote
 
-1. Click the link in the success message, or go to your KoNote2 URL (shown on screen)
+1. Click the link in the success message, or go to your KoNote URL (shown on screen)
 2. Your username is **admin** (not your email)
 3. Enter the **password** you chose during setup
 4. Click **"Log In"**
 
-You're in! You'll see the KoNote2 dashboard.
+You're in! You'll see the KoNote dashboard.
 
 ---
 
@@ -177,7 +177,7 @@ See the [Getting Started Guide](getting-started.md) for detailed instructions.
 
 ## Moving to Production Use
 
-Your KoNote2 instance comes pre-loaded with demo users and sample data so you can explore how everything works. When your organisation is ready to use it for real:
+Your KoNote instance comes pre-loaded with demo users and sample data so you can explore how everything works. When your organisation is ready to use it for real:
 
 1. **Create real staff accounts** — Go to Admin → Users and invite your team. These are regular (non-demo) accounts.
 2. **Real staff never see demo data** — Demo clients and demo users are completely separate. Your real staff will see an empty client list, ready for your actual clients.
@@ -190,7 +190,7 @@ Your KoNote2 instance comes pre-loaded with demo users and sample data so you ca
 
 We strongly recommend enabling automatic backups for your client data:
 
-1. In the FullHost dashboard, click on your KoNote2 environment
+1. In the FullHost dashboard, click on your KoNote environment
 2. Click **Settings** (gear icon)
 3. Click **Backup** in the left sidebar
 4. Enable automatic backups and choose a schedule (daily recommended)
@@ -247,7 +247,7 @@ New FullHost accounts receive **$25 in free credits** — enough for roughly 1 m
 ### Monitoring Your Costs
 
 1. Log in to [app.fullhost.cloud](https://app.fullhost.cloud)
-2. Click on your KoNote2 environment
+2. Click on your KoNote environment
 3. Click **"Statistics"** to see resource usage
 4. Click **"Billing"** in the top menu to see current charges
 
@@ -255,7 +255,7 @@ New FullHost accounts receive **$25 in free credits** — enough for roughly 1 m
 
 ## Custom Domain (Optional)
 
-By default, your KoNote2 URL looks like:
+By default, your KoNote URL looks like:
 ```
 https://konote2-abc123.jls-can1.cloudjiffy.net
 ```
@@ -264,7 +264,7 @@ To use your own domain (like `outcomes.mynonprofit.org`):
 
 ### Step 1: Add Domain in FullHost
 
-1. Go to your KoNote2 environment in FullHost
+1. Go to your KoNote environment in FullHost
 2. Click **Settings** (gear icon)
 3. Click **Custom Domains**
 4. Enter your domain name
@@ -281,7 +281,7 @@ Go to wherever you manage your domain (GoDaddy, Cloudflare, etc.) and add that C
 
 ### Step 3: Wait for DNS
 
-DNS changes can take 1–48 hours to take effect. Once working, you can access KoNote2 at your custom domain with automatic HTTPS.
+DNS changes can take 1–48 hours to take effect. Once working, you can access KoNote at your custom domain with automatic HTTPS.
 
 ---
 
@@ -309,7 +309,7 @@ We recommend:
 
 ## Troubleshooting
 
-### "Application Error" when visiting KoNote2
+### "Application Error" when visiting KoNote
 
 1. In FullHost, check if all three containers are running (green status)
 2. Click on the app container and check **Logs** for error messages
@@ -317,7 +317,7 @@ We recommend:
 
 ### Forgot Admin Password
 
-1. In FullHost, click on your app container (KoNote2 App)
+1. In FullHost, click on your app container (KoNote App)
 2. Click **"Web SSH"** (or **"Terminal"**)
 3. Run:
    ```
@@ -344,7 +344,7 @@ If HTTP works but HTTPS doesn't, check these two things:
 - This is the most common cause — without it, port 443 isn't listening at all
 
 **2. App container has a public IP address**
-- Check whether the **KoNote2 App** container has a **public IP address** assigned
+- Check whether the **KoNote App** container has a **public IP address** assigned
 - If it does, the public IP bypasses FullHost's SSL proxy
 - Go to the app container → **Settings** → remove the public/external IP
 - Wait a minute for DNS to update, then try HTTPS again
@@ -353,18 +353,18 @@ The FullHost Shared Load Balancer handles SSL. It only works when traffic goes t
 
 ### Need More Help?
 
-- **KoNote2 Documentation:** [github.com/gilliankerr/KoNote-Redux/docs](https://github.com/gilliankerr/KoNote-Redux/docs)
+- **KoNote Documentation:** [github.com/gilliankerr/KoNote-Redux/docs](https://github.com/gilliankerr/KoNote-Redux/docs)
 - **FullHost Support:** [fullhost.com/support](https://www.fullhost.com/support/)
 
 ---
 
-## Updating KoNote2
+## Updating KoNote
 
-When new versions of KoNote2 are released:
+When new versions of KoNote are released:
 
 1. **Back up your data first** (see Backing Up section above)
-2. In FullHost, click on your KoNote2 environment
-3. Click on the **KoNote2 App** container
+2. In FullHost, click on your KoNote environment
+3. Click on the **KoNote App** container
 4. Click **"Redeploy"**
 5. Ensure the image tag is set to `fullhost-latest`
 6. Click **"Redeploy"** to pull the latest version
@@ -383,10 +383,10 @@ The container will restart automatically and run any new database migrations. Th
 
 ## Deleting Your Instance
 
-If you need to remove KoNote2:
+If you need to remove KoNote:
 
 1. **Download your data first** (see Backing Up section)
-2. In FullHost, go to your KoNote2 environment
+2. In FullHost, go to your KoNote environment
 3. Click **Settings** (gear icon)
 4. Scroll to bottom and click **"Delete Environment"**
 5. Confirm deletion
@@ -397,6 +397,6 @@ This removes all data permanently. FullHost will stop charging you.
 
 ## Getting Help
 
-- **KoNote2 Issues:** [github.com/gilliankerr/KoNote-Redux/issues](https://github.com/gilliankerr/KoNote-Redux/issues)
+- **KoNote Issues:** [github.com/gilliankerr/KoNote-Redux/issues](https://github.com/gilliankerr/KoNote-Redux/issues)
 - **FullHost Support:** [fullhost.com/support](https://www.fullhost.com/support/)
 - **Community Forum:** [github.com/gilliankerr/KoNote-Redux/discussions](https://github.com/gilliankerr/KoNote-Redux/discussions)

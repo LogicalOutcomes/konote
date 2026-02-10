@@ -334,7 +334,7 @@ class DocumentStorageSettingsTest(TestCase):
             "date_format": "Y-m-d",
             "session_timeout_minutes": "30",
             "document_storage_provider": "sharepoint",
-            "document_storage_url_template": "https://contoso.sharepoint.com/sites/KoNote2/Clients/{record_id}/",
+            "document_storage_url_template": "https://contoso.sharepoint.com/sites/konote/Clients/{record_id}/",
         })
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
@@ -343,7 +343,7 @@ class DocumentStorageSettingsTest(TestCase):
         )
         self.assertEqual(
             InstanceSetting.get("document_storage_url_template"),
-            "https://contoso.sharepoint.com/sites/KoNote2/Clients/{record_id}/",
+            "https://contoso.sharepoint.com/sites/konote/Clients/{record_id}/",
         )
 
     def test_admin_can_configure_google_drive(self):
@@ -438,7 +438,7 @@ class DocumentFolderUrlHelperTest(TestCase):
         )
         InstanceSetting.objects.create(
             setting_key="document_storage_url_template",
-            setting_value="https://contoso.sharepoint.com/sites/KoNote2/Clients/{record_id}/",
+            setting_value="https://contoso.sharepoint.com/sites/konote/Clients/{record_id}/",
         )
         cache.clear()
 
@@ -451,7 +451,7 @@ class DocumentFolderUrlHelperTest(TestCase):
         url = get_document_folder_url(client)
         self.assertEqual(
             url,
-            "https://contoso.sharepoint.com/sites/KoNote2/Clients/REC-2024-042/",
+            "https://contoso.sharepoint.com/sites/konote/Clients/REC-2024-042/",
         )
 
     def test_returns_none_when_client_has_no_record_id(self):
@@ -465,7 +465,7 @@ class DocumentFolderUrlHelperTest(TestCase):
         )
         InstanceSetting.objects.create(
             setting_key="document_storage_url_template",
-            setting_value="https://contoso.sharepoint.com/sites/KoNote2/Clients/{record_id}/",
+            setting_value="https://contoso.sharepoint.com/sites/konote/Clients/{record_id}/",
         )
         cache.clear()
 

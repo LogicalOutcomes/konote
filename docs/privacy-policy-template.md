@@ -1,6 +1,6 @@
-# Privacy Policy Template for KoNote2
+# Privacy Policy Template for KoNote
 
-> **Setup Instructions:** This privacy policy template must be customised by each organisation before deploying KoNote2. Replace all `[PLACEHOLDER]` values with your organisation's specific information. Review the entire document with your privacy officer or legal counsel before publishing.
+> **Setup Instructions:** This privacy policy template must be customised by each organisation before deploying KoNote. Replace all `[PLACEHOLDER]` values with your organisation's specific information. Review the entire document with your privacy officer or legal counsel before publishing.
 
 ---
 
@@ -172,7 +172,7 @@ Audit logs are reviewed **[FREQUENCY - e.g., monthly]** for:
 
 ## 6. Hosting and Data Location
 
-> **Important:** Each organisation hosts their own instance of KoNote2 on infrastructure they select and control. Complete this section based on your hosting choices.
+> **Important:** Each organisation hosts their own instance of KoNote on infrastructure they select and control. Complete this section based on your hosting choices.
 
 ### 6.1 Hosting Platform
 
@@ -209,11 +209,11 @@ is stored in **[COUNTRY/REGION]**.
 
 ### 7.1 Purpose
 
-KoNote2's Outcome Insights feature can optionally use AI to generate draft narrative summaries of program outcomes. This helps staff identify patterns in service delivery and prepare reports. The feature is off by default and must be explicitly enabled by an administrator.
+KoNote's Outcome Insights feature can optionally use AI to generate draft narrative summaries of program outcomes. This helps staff identify patterns in service delivery and prepare reports. The feature is off by default and must be explicitly enabled by an administrator.
 
 ### 7.2 Data Sent to the AI Provider
 
-Before any data is sent, KoNote2 removes personally identifying information:
+Before any data is sent, KoNote removes personally identifying information:
 
 | Data Type | What Is Sent | What Is Removed |
 |-----------|-------------|-----------------|
@@ -299,7 +299,7 @@ We do not use:
 
 ### 10.1 Data Erasure
 
-KoNote2 supports formal data erasure requests in compliance with PIPEDA:
+KoNote supports formal data erasure requests in compliance with PIPEDA:
 
 1. **Request** — Any staff member can initiate an erasure request for a client
 2. **Approval** — All program managers for that client's programs must approve the request
@@ -416,4 +416,4 @@ Before publishing this privacy policy, ensure you have:
 
 ---
 
-*This privacy policy template is provided as part of KoNote2. Each organisation is responsible for customising this policy to reflect their specific practices, hosting configuration, and regulatory requirements.*
+*This privacy policy template is provided as part of KoNote. Each organisation is responsible for customising this policy to reflect their specific practices, hosting configuration, and regulatory requirements.*

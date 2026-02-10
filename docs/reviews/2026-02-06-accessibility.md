@@ -1,4 +1,4 @@
-# Accessibility Review Report: KoNote2
+# Accessibility Review Report: KoNote
 
 **Date:** 2026-02-06
 **External Reviewer:** Jules (Google AI coding agent)

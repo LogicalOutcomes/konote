@@ -1,6 +1,6 @@
 # Quick Start for Staff
 
-Welcome to KoNote2! This guide covers the everyday tasks you'll do as a staff member: finding clients, writing notes, and tracking progress.
+Welcome to KoNote! This guide covers the everyday tasks you'll do as a staff member: finding clients, writing notes, and tracking progress.
 
 > **Who is this for?** Case managers, direct service staff, support workers, and other front-line staff who work directly with clients.
 >
@@ -26,14 +26,14 @@ Welcome to KoNote2! This guide covers the everyday tasks you'll do as a staff me
 
 ### If your agency uses Microsoft (Azure AD)
 
-1. Go to your KoNote2 web address (provided by your admin).
+1. Go to your KoNote web address (provided by your admin).
 2. Click **Login with Azure AD**.
 3. Enter your work email and password.
 4. You're in!
 
 ### If your agency uses local login
 
-1. Go to your KoNote2 web address.
+1. Go to your KoNote web address.
 2. Enter your **username** and **password**.
 3. Click **Login**.
 
@@ -114,7 +114,7 @@ Click any tab name to switch views. The page updates without a full reload.
 
 ## Writing Progress Notes
 
-Progress notes record what happened during your interaction with a client. KoNote2 offers two types:
+Progress notes record what happened during your interaction with a client. KoNote offers two types:
 
 ### Quick Note (for brief updates)
 
@@ -154,7 +154,7 @@ Use this when you need to document a structured session with targets and metrics
 
 ### Why Participant Engagement Matters
 
-You might wonder why KoNote2 prompts you to ask the participant a question and capture their response. There are three good reasons:
+You might wonder why KoNote prompts you to ask the participant a question and capture their response. There are three good reasons:
 
 1. **It strengthens the relationship.** When you ask "What's one thing you're taking away from today?", you're showing that their perspective matters. This simple act builds trust.
 
@@ -348,5 +348,5 @@ If your admin has turned on AI assistance, you'll see a **Draft report summary**
 
 ---
 
-**Version 2.0** — KoNote2
+**Version 2.0** — KoNote
 Last updated: 2026-02-04

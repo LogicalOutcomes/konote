@@ -1,14 +1,14 @@
-# KoNote2 Security Overview
+# KoNote Security Overview
 
-**Last updated:** February 2026 | **Applies to:** KoNote2 v1.x
+**Last updated:** February 2026 | **Applies to:** KoNote v1.x
 
-> **Disclaimer:** This document describes KoNote2's security features. It is not legal advice. Consult your privacy officer or legal counsel to ensure your implementation meets your jurisdiction's requirements.
+> **Disclaimer:** This document describes KoNote's security features. It is not legal advice. Consult your privacy officer or legal counsel to ensure your implementation meets your jurisdiction's requirements.
 
 ---
 
-## What KoNote2 Protects
+## What KoNote Protects
 
-KoNote2 stores sensitive client information -- names, dates of birth, contact information, progress notes, and outcome measurements. This is the kind of data that privacy legislation like PIPEDA and PHIPA is designed to protect.
+KoNote stores sensitive client information -- names, dates of birth, contact information, progress notes, and outcome measurements. This is the kind of data that privacy legislation like PIPEDA and PHIPA is designed to protect.
 
 All personally identifiable information is encrypted in the database using AES encryption. Even if someone gained direct access to the database, they would see scrambled data, not client records. The encryption key is stored separately from the database, so compromising one does not compromise the other.
 
@@ -16,7 +16,7 @@ All personally identifiable information is encrypted in the database using AES e
 
 ## How Security Works
 
-KoNote2 uses multiple layers of protection. Each layer addresses a different type of risk.
+KoNote uses multiple layers of protection. Each layer addresses a different type of risk.
 
 - **Encryption at rest** -- All client names, notes, and outcome ratings are encrypted using Fernet, which combines AES-128 encryption with HMAC authentication (a method that detects tampering). Encrypted fields are stored as unreadable ciphertext in the database. A database breach alone does not expose client data.
 
@@ -54,7 +54,7 @@ During setup, agencies choose a protection level based on their resources and ri
 
 ## Trust, But Verify
 
-KoNote2 is open-source software licensed under the MIT licence. Unlike proprietary case management tools, any agency can verify our security claims independently -- no vendor permission needed.
+KoNote is open-source software licensed under the MIT licence. Unlike proprietary case management tools, any agency can verify our security claims independently -- no vendor permission needed.
 
 Three ways to verify:
 
@@ -68,7 +68,7 @@ We also run automated security scanning tools on every code change. Results are 
 
 ## Authentication Options
 
-KoNote2 supports two ways for users to sign in.
+KoNote supports two ways for users to sign in.
 
 - **Azure AD Single Sign-On (recommended for agencies using Microsoft 365)** -- Users sign in with their existing Microsoft account. Multi-factor authentication is handled by Microsoft and can be required by your organisation's IT policies.
 
@@ -80,9 +80,9 @@ While PIPEDA does not explicitly mandate multi-factor authentication, the Privac
 
 ## Compliance Support
 
-KoNote2 provides technical safeguards, but compliance also requires organisational measures. The table below shows the division of responsibility.
+KoNote provides technical safeguards, but compliance also requires organisational measures. The table below shows the division of responsibility.
 
-| KoNote2 provides | Your agency still needs |
+| KoNote provides | Your agency still needs |
 |---|---|
 | Encryption of personally identifiable information | Privacy policies tailored to your services |
 | Role-based access control | Consent procedures for data collection |
@@ -91,13 +91,13 @@ KoNote2 provides technical safeguards, but compliance also requires organisation
 | Data erasure workflows (PIPEDA/PHIPA) | Data retention policies |
 | Export monitoring and controls | Data processing agreements with your hosting provider |
 
-For agencies completing Privacy Impact Assessments, see the PIA Template Answers document for pre-written responses covering KoNote2's technical controls.
+For agencies completing Privacy Impact Assessments, see the PIA Template Answers document for pre-written responses covering KoNote's technical controls.
 
 ---
 
 ## Further Reading
 
-- [Security Operations Guide](security-operations.md) -- for IT staff setting up and maintaining KoNote2
+- [Security Operations Guide](security-operations.md) -- for IT staff setting up and maintaining KoNote
 - [Independent Review Guide](independent-review.md) -- for verifying security claims
 - [Security Architecture](security-architecture.md) -- for developers and security reviewers
 - [PIA Template Answers](pia-template-answers.md) -- pre-written answers for Privacy Impact Assessments

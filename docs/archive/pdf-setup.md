@@ -1,6 +1,6 @@
 # PDF Report Generation Setup
 
-KoNote2 can generate PDF reports for client progress and funder reports. This feature requires **WeasyPrint**, which has native library dependencies.
+KoNote can generate PDF reports for client progress and funder reports. This feature requires **WeasyPrint**, which has native library dependencies.
 
 ## Is PDF Required?
 
@@ -122,7 +122,7 @@ sudo apt install fonts-liberation fonts-dejavu
 
 ## Development Without PDF
 
-If you're developing KoNote2 and don't need PDF functionality:
+If you're developing KoNote and don't need PDF functionality:
 
 1. **The app runs fine without GTK** — all other features work
 2. **PDF views show a helpful error page** — users aren't confused

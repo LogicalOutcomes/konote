@@ -1,4 +1,4 @@
-# KoNote2 Permissions Matrix
+# KoNote Permissions Matrix
 
 > **Source of truth:** [permissions.py](../apps/auth_app/permissions.py)
 > **Last updated:** 2026-02-09
