@@ -63,7 +63,7 @@
 {# Remove account #}
 <section aria-labelledby="remove-heading">
     <h2 id="remove-heading">{% trans "Remove my account" %}</h2>
-    <p>{% trans "If you no longer want to use this portal, talk to your worker. They can remove your account for you." %}</p>
+    <p>{% blocktrans with worker_term=term.worker %}If you no longer want to use this portal, talk to your {{ worker_term }}. They can remove your account for you.{% endblocktrans %}</p>
     <p>{% trans "Removing your account won't affect your services." %}</p>
 </section>
 {% endblock %}

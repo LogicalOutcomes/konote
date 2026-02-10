@@ -377,3 +377,27 @@ class CorrectionRequestForm(forms.Form):
                 _("Please describe what needs to be corrected.")
             )
         return text
+
+
+# ---------------------------------------------------------------------------
+# Staff-side forms
+# ---------------------------------------------------------------------------
+
+
+class StaffPortalNoteForm(forms.Form):
+    """Form for staff to leave a note visible in the participant's portal."""
+
+    content = forms.CharField(
+        label=_("Note for participant"),
+        widget=forms.Textarea(attrs={
+            "rows": 3,
+            "placeholder": _("Write an encouraging note or update..."),
+        }),
+        max_length=2000,
+    )
+
+    def clean_content(self):
+        text = self.cleaned_data.get("content", "").strip()
+        if not text:
+            raise forms.ValidationError(_("Note cannot be empty."))
+        return text

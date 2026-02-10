@@ -7,13 +7,13 @@
 <h1>{% trans "How I'm Doing" %}</h1>
 <p>{% trans "These charts show your progress over time." %}</p>
 
-{% if chart_data %}
+{% if has_data %}
 <div id="portal-charts" class="portal-charts">
     {# Charts are rendered by JavaScript from the data below #}
 </div>
 {% else %}
 <article class="portal-empty-state">
-    <p>{% trans "No progress data to show yet. As you work with your worker, your progress will appear here." %}</p>
+    <p>{% blocktrans with worker_term=term.worker %}No progress data to show yet. As you work with your {{ worker_term }}, your progress will appear here.{% endblocktrans %}</p>
 </article>
 {% endif %}
 {% endblock %}
@@ -41,6 +41,14 @@
         heading.id = 'chart-heading-' + index;
         heading.textContent = chartInfo.metric_name || ('Chart ' + (index + 1));
         section.appendChild(heading);
+
+        // Show plain-language description if available
+        if (chartInfo.description) {
+            var desc = document.createElement('p');
+            desc.className = 'portal-metric-description';
+            desc.textContent = chartInfo.description;
+            section.appendChild(desc);
+        }
 
         // Show start and current value summary
         if (chartInfo.start_value !== undefined && chartInfo.current_value !== undefined) {

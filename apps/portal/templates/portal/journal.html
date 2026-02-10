@@ -9,7 +9,7 @@
 
 <div class="portal-privacy-notice" role="note" aria-label="{% trans 'Privacy notice' %}">
     <p><strong>{% trans "Only you can see this." %}</strong>
-    {% trans "Your worker and other staff cannot read your journal." %}</p>
+    {% blocktrans with worker_term=term.worker %}Your {{ worker_term }} and other staff cannot read your journal.{% endblocktrans %}</p>
 </div>
 
 <p>

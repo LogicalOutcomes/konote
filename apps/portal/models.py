@@ -389,7 +389,52 @@ class ParticipantMessage(models.Model):
 
 
 # ---------------------------------------------------------------------------
-# E) CorrectionRequest — participant requests a correction to their record
+# E) StaffPortalNote — staff leave notes/encouragement for participants
+# ---------------------------------------------------------------------------
+
+class StaffPortalNote(models.Model):
+    """A note from staff to a participant, visible in the portal.
+
+    Simple encouragement/update mechanism. Content is Fernet-encrypted
+    since it may reference the participant's situation.
+    """
+
+    client_file = models.ForeignKey(
+        "clients.ClientFile",
+        on_delete=models.CASCADE,
+        related_name="staff_portal_notes",
+    )
+    from_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="portal_notes_written",
+    )
+    _content_encrypted = models.BinaryField(default=b"")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "portal"
+        db_table = "portal_staff_notes"
+        ordering = ["-created_at"]
+        verbose_name = _("staff portal note")
+        verbose_name_plural = _("staff portal notes")
+
+    def __str__(self):
+        return f"Note for {self.client_file} by {self.from_user}"
+
+    @property
+    def content(self):
+        return decrypt_field(self._content_encrypted)
+
+    @content.setter
+    def content(self, value):
+        self._content_encrypted = encrypt_field(value)
+
+
+# ---------------------------------------------------------------------------
+# F) CorrectionRequest — participant requests a correction to their record
 # ---------------------------------------------------------------------------
 
 class CorrectionRequest(models.Model):

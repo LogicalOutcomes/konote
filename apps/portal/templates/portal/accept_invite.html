@@ -19,9 +19,9 @@
         <p>{% trans "By creating an account, you agree that:" %}</p>
         <ul>
             <li>{% trans "This portal lets you see your goals and track your progress." %}</li>
-            <li>{% trans "Your worker can see messages you send them." %}</li>
+            <li>{% blocktrans with worker_term=term.worker %}Your {{ worker_term }} can see messages you send them.{% endblocktrans %}</li>
             <li>{% trans "Your journal entries are private — only you can see them." %}</li>
-            <li>{% trans "If you share something that suggests someone may be in danger, your worker may need to act on that." %}</li>
+            <li>{% blocktrans with worker_term=term.worker %}If you share something that suggests someone may be in danger, your {{ worker_term }} may need to act on that.{% endblocktrans %}</li>
             <li>{% trans "You can stop using this portal at any time. It won't affect your services." %}</li>
         </ul>
     </section>
@@ -86,7 +86,7 @@
                maxlength="4"
                autocomplete="off"
                aria-describedby="verbal-code-help">
-        <small id="verbal-code-help">{% trans "Enter the 4-digit code your worker gave you in person. This helps confirm your identity." %}</small>
+        <small id="verbal-code-help">{% blocktrans with worker_term=term.worker %}Enter the 4-digit code your {{ worker_term }} gave you in person. This helps confirm your identity.{% endblocktrans %}</small>
         {% if form.verbal_code.errors %}
         <small role="alert" class="portal-field-error">{{ form.verbal_code.errors.0 }}</small>
         {% endif %}

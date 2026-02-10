@@ -9,7 +9,7 @@
 {% if not show_form %}
 {# Step 1: Ask how they'd like to handle it #}
 <p>{% trans "That's okay — we want to make sure your information is correct." %}</p>
-<p>{% trans "Would you like to talk about this with your worker at your next session?" %}</p>
+<p>{% blocktrans with worker_term=term.worker %}Would you like to talk about this with your {{ worker_term }} at your next session?{% endblocktrans %}</p>
 
 <div class="portal-correction-options">
     <a href="{% url 'portal:discuss_next' %}" role="button">
@@ -26,11 +26,11 @@
 
 {% else %}
 {# Step 2: Correction request form #}
-<p>{% trans "Tell us what doesn't look right. Your worker will review this and follow up with you." %}</p>
+<p>{% blocktrans with worker_term=term.worker %}Tell us what doesn't look right. Your {{ worker_term }} will review this and follow up with you.{% endblocktrans %}</p>
 
 {% if success %}
 <p role="status" class="portal-alert portal-alert-success">
-    {% trans "Your request has been submitted. Your worker will follow up with you." %}
+    {% blocktrans with worker_term=term.worker %}Your request has been submitted. Your {{ worker_term }} will follow up with you.{% endblocktrans %}
 </p>
 {% else %}
 

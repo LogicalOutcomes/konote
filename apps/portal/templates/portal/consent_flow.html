@@ -62,7 +62,7 @@
         <li>{% trans "Internal team discussions" %}</li>
     </ul>
 
-    <p>{% trans "If you ever have questions about what's in your file, just ask your worker." %}</p>
+    <p>{% blocktrans with worker_term=term.worker %}If you ever have questions about what's in your file, just ask your {{ worker_term }}.{% endblocktrans %}</p>
 
     <form method="post">
         {% csrf_token %}
@@ -82,13 +82,13 @@
             — {% trans "Only you can see this. It's your private space to write." %}
         </li>
         <li>
-            <strong>{% trans "Messages to your worker" %}</strong>
-            — {% trans "Your worker will see these next time they check." %}
+            <strong>{% blocktrans with worker_term=term.worker %}Messages to your {{ worker_term }}{% endblocktrans %}</strong>
+            — {% blocktrans with worker_term=term.worker %}Your {{ worker_term }} will see these next time they check.{% endblocktrans %}
         </li>
     </ul>
 
     <p>{% trans "One important thing:" %}</p>
-    <p><strong>{% trans "If you share something that suggests you or someone else might be in danger, your worker may need to act on that." %}</strong>
+    <p><strong>{% blocktrans with worker_term=term.worker %}If you share something that suggests you or someone else might be in danger, your {{ worker_term }} may need to act on that.{% endblocktrans %}</strong>
     {% trans "This is to keep everyone safe." %}</p>
 
     <form method="post">
@@ -105,7 +105,7 @@
 
     <ul>
         <li>{% trans "You can stop using this anytime — it won't affect your services." %}</li>
-        <li>{% trans "You can ask your worker to remove your account." %}</li>
+        <li>{% blocktrans with worker_term=term.worker %}You can ask your {{ worker_term }} to remove your account.{% endblocktrans %}</li>
         <li>{% trans "You choose what to write and when." %}</li>
     </ul>
 

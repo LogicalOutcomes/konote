@@ -8,6 +8,8 @@ DEFAULT_TERMS = {
     # People & files
     "client": ("Participant", "Participant(e)"),
     "client_plural": ("Participants", "Participant(e)s"),
+    "worker": ("Worker", "Intervenant(e)"),
+    "worker_plural": ("Workers", "Intervenant(e)s"),
     "file": ("File", "Dossier"),
     "file_plural": ("Files", "Dossiers"),
     # Plans & structure

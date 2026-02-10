@@ -138,6 +138,11 @@
     margin-bottom: 1rem;
 }
 
+.portal-card svg {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #0d7377;
+}
 .portal-card h2 {
     margin-top: 0;
     font-size: 1.1rem;
@@ -152,10 +157,11 @@
     font-weight: 500;
 }
 
-.descriptor-harder { background: #ffebee; color: #c62828; }
-.descriptor-holding { background: #fff3e0; color: #e65100; }
-.descriptor-shifting { background: #e8f5e9; color: #2e7d32; }
-.descriptor-good { background: #e3f2fd; color: #1565c0; }
+/* Warm/neutral palette — avoids alarming red/green judgement colours */
+.descriptor-harder { background: #f5f0eb; color: #5d4e37; }
+.descriptor-holding { background: #eef0f2; color: #4a5568; }
+.descriptor-shifting { background: #edf5f0; color: #3b6b4f; }
+.descriptor-good { background: #ebf4f5; color: #2c6b6f; }
 
 /* Milestone celebrations */
 .milestone-item {
@@ -191,14 +197,21 @@
 }
 
 /* New since last visit banner */
-.new-since-banner {
+.portal-new-banner {
     background: #e3f2fd;
     padding: 0.75rem 1rem;
     border-radius: 4px;
     margin-bottom: 1rem;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
+    gap: 1rem;
+}
+.portal-new-detail {
+    margin: 0.25rem 0 0 1rem;
+    padding: 0;
+    font-size: 0.9rem;
+    color: var(--pico-muted-color, #555);
 }
 
 /* Portal footer contact block */
@@ -207,6 +220,64 @@
     color: var(--pico-muted-color, #666);
     margin-top: 0.5rem;
     white-space: pre-line;
+}
+
+/* Staff notes — encouragement from worker */
+.portal-staff-notes {
+    margin-bottom: 1.5rem;
+}
+.portal-staff-note {
+    background: #f0f7f7;
+    border-left: 4px solid #0d7377;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    border-radius: 0 4px 4px 0;
+}
+.portal-staff-note time {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--pico-muted-color, #666);
+    margin-top: 0.25rem;
+}
+
+/* Metric description — plain-language explanation for participants */
+.portal-metric-description {
+    font-size: 0.95rem;
+    color: var(--pico-muted-color, #555);
+    margin-bottom: 1rem;
+    font-style: italic;
+}
+
+/* Sent message history */
+.portal-sent-message {
+    border-bottom: 1px solid var(--pico-muted-border-color, #ddd);
+    padding: 0.75rem 0;
+}
+.portal-sent-message time {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--pico-muted-color, #666);
+    margin-bottom: 0.25rem;
+}
+.portal-msg-read {
+    color: #2c6b6f;
+}
+
+/* Safety notice on login page */
+.portal-safety-notice {
+    background: #f5f0eb;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+/* Crisis resources — collapsible */
+.portal-crisis-resources summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: #e65100;
 }
 
 /* Correction request soft step */

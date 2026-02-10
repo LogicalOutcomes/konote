@@ -17,11 +17,11 @@
     <p>{% trans "If you already created your account, you can sign in below." %}</p>
 
     {% elif status == "expired" %}
-    <p>{% trans "This invite has expired. Please ask your worker for a new one." %}</p>
+    <p>{% blocktrans with worker_term=term.worker %}This invite has expired. Please ask your {{ worker_term }} for a new one.{% endblocktrans %}</p>
 
     {% elif status == "revoked" %}
     <p>{% trans "This invite is no longer active." %}</p>
-    <p>{% trans "If you think this is a mistake, please talk to your worker." %}</p>
+    <p>{% blocktrans with worker_term=term.worker %}If you think this is a mistake, please talk to your {{ worker_term }}.{% endblocktrans %}</p>
 
     {% elif status == "already_has_access" %}
     <p>{% trans "You already have a portal account." %}</p>

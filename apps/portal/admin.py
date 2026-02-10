@@ -1,7 +1,7 @@
 """Django admin registration for participant portal models."""
 from django.contrib import admin
 
-from .models import CorrectionRequest, ParticipantUser, PortalInvite
+from .models import CorrectionRequest, ParticipantUser, PortalInvite, StaffPortalNote
 
 
 @admin.register(ParticipantUser)
@@ -68,3 +68,13 @@ class CorrectionRequestAdmin(admin.ModelAdmin):
     readonly_fields = ["created_at", "resolved_at"]
     # Exclude encrypted binary field from the form
     exclude = ["_description_encrypted"]
+
+
+@admin.register(StaffPortalNote)
+class StaffPortalNoteAdmin(admin.ModelAdmin):
+    """Admin view for staff portal notes."""
+
+    list_display = ["client_file", "from_user", "is_active", "created_at"]
+    list_filter = ["is_active"]
+    readonly_fields = ["created_at"]
+    exclude = ["_content_encrypted"]
