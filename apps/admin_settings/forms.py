@@ -130,11 +130,25 @@ class InstanceSettingsForm(forms.Form):
         help_text=_("Contact email for privacy requests and data access inquiries."),
     )
 
+    # Participant portal footer contact
+    portal_footer_text = forms.CharField(
+        max_length=500, required=False, label=_("Portal Footer Text (English)"),
+        help_text=_("Shown at the bottom of the participant portal. "
+                     "Example: Your contact is Casey Worker casey@ngo.org"),
+        widget=forms.Textarea(attrs={"rows": 2}),
+    )
+    portal_footer_text_fr = forms.CharField(
+        max_length=500, required=False, label=_("Portal Footer Text (French)"),
+        help_text=_("French version. Leave blank to use the English text."),
+        widget=forms.Textarea(attrs={"rows": 2}),
+    )
+
     SETTING_KEYS = [
         "product_name", "support_email", "logo_url",
         "date_format", "session_timeout_minutes",
         "document_storage_provider", "document_storage_url_template",
         "privacy_officer_name", "privacy_officer_email",
+        "portal_footer_text", "portal_footer_text_fr",
     ]
 
     def __init__(self, *args, **kwargs):

@@ -469,13 +469,30 @@ class Command(BaseCommand):
     )
 
     def _extract_templates(self, base_dir):
-        """Scan templates/**/*.html for {% trans %} strings and count blocktrans blocks."""
+        """Scan templates/**/*.html for {% trans %} strings and count blocktrans blocks.
+
+        Scans both the top-level templates/ directory AND app-level
+        templates (apps/*/templates/) so that all Django template dirs
+        are covered including apps with APP_DIRS=True.
+        """
         strings = set()
         file_count = 0
         blocktrans_count = 0
-        template_dir = base_dir / "templates"
 
-        if not template_dir.exists():
+        # Collect all template directories: top-level + app-level
+        template_dirs = []
+        top_level = base_dir / "templates"
+        if top_level.exists():
+            template_dirs.append(top_level)
+
+        apps_dir = base_dir / "apps"
+        if apps_dir.exists():
+            for app_dir in apps_dir.iterdir():
+                app_templates = app_dir / "templates"
+                if app_templates.exists():
+                    template_dirs.append(app_templates)
+
+        if not template_dirs:
             return strings, file_count, blocktrans_count
 
         comment_pattern = re.compile(
@@ -483,20 +500,21 @@ class Command(BaseCommand):
             re.DOTALL,
         )
 
-        for html_file in template_dir.rglob("*.html"):
-            try:
-                content = html_file.read_text(encoding="utf-8")
-            except (UnicodeDecodeError, OSError):
-                continue
+        for template_dir in template_dirs:
+            for html_file in template_dir.rglob("*.html"):
+                try:
+                    content = html_file.read_text(encoding="utf-8")
+                except (UnicodeDecodeError, OSError):
+                    continue
 
-            content = comment_pattern.sub("", content)
+                content = comment_pattern.sub("", content)
 
-            matches = self.TEMPLATE_PATTERN.findall(content)
-            bt_matches = self.BLOCKTRANS_PATTERN.findall(content)
-            if matches or bt_matches:
-                strings.update(matches)
-                blocktrans_count += len(bt_matches)
-                file_count += 1
+                matches = self.TEMPLATE_PATTERN.findall(content)
+                bt_matches = self.BLOCKTRANS_PATTERN.findall(content)
+                if matches or bt_matches:
+                    strings.update(matches)
+                    blocktrans_count += len(bt_matches)
+                    file_count += 1
 
         return strings, file_count, blocktrans_count
 

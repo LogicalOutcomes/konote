@@ -210,7 +210,7 @@ clients_qs = get_client_queryset(request.user)
 **Tasks:** (COMPLETED 2026-02-05)
 - [x] Fix demo/real separation in client_data_export view (EXP0a)
 - [x] Fix demo/real separation in metric export view (EXP0b)
-- [x] Fix demo/real separation in CMT export view (EXP0c)
+- [x] Fix demo/real separation in funder report export view (EXP0c)
 - [x] Add test: demo user cannot export real clients (EXP0d)
 
 ### Phase 1: Audit Logging
@@ -247,7 +247,7 @@ This creates a **concrete statement of intent** that's harder to falsify than ge
 - [x] Add recipient field to export forms (EXP2a)
 - [x] Add recipient and IP to client_data_export audit log (EXP2b)
 - [x] Add recipient and IP to export_form (metric export) audit log (EXP2c)
-- [x] Add recipient and IP to cmt_export_form audit log (EXP2d)
+- [x] Add recipient and IP to funder_report_form audit log (EXP2d)
 
 ### Phase 2: Warning Dialogs
 
@@ -289,7 +289,7 @@ class SecureExportLink(models.Model):
     )
 
     # What was exported
-    export_type = models.CharField(max_length=50)  # client_data, metrics, cmt
+    export_type = models.CharField(max_length=50)  # client_data, metrics, funder_report
     filters_json = models.TextField()
     client_count = models.PositiveIntegerField()
     includes_notes = models.BooleanField(default=False)

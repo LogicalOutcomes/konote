@@ -119,7 +119,7 @@ docker compose exec web python manage.py cleanup_expired_exports
 
 | Scenario | Explanation | Solution |
 |---|---|---|
-| User tries to create a metric/CMT export | They are not an admin or program manager | Assign them the `program_manager` role for the relevant program |
+| User tries to create a metric/funder report export | They are not an admin or program manager | Assign them the `program_manager` role for the relevant program |
 | User tries to create a client data export | They are not an admin | Only admins can export client data. This is by design -- it contains full PII |
 | User tries to download someone else's export link | Only the creator and admins can download | The creator should share the file directly, or an admin can download it |
 | Receptionist tries to export individual client data | Receptionists do not have export access | Staff role or higher is required for individual client exports |
@@ -129,7 +129,7 @@ docker compose exec web python manage.py cleanup_expired_exports
 | Export Type | Minimum Role |
 |---|---|
 | Metric Report | Program Manager (for their programs) or Admin (any program) |
-| CMT Report | Program Manager (for their programs) or Admin (any program) |
+| Funder Report | Program Manager (for their programs) or Admin (any program) |
 | Client Data Export | Admin only |
 | Individual Client Export | Staff (must have program role for that client) |
 

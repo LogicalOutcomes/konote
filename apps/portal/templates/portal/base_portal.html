@@ -100,9 +100,11 @@
         <p>
             <a href="{% url 'portal:safety_help' %}">{% trans "Staying safe online" %}</a>
         </p>
-        <p class="portal-footer-small">
-            {% trans "If you are in danger, call 911." %}
-        </p>
+        {% if CURRENT_LANG == "fr" and site.portal_footer_text_fr %}
+        <p class="portal-footer-contact">{{ site.portal_footer_text_fr }}</p>
+        {% elif site.portal_footer_text %}
+        <p class="portal-footer-contact">{{ site.portal_footer_text }}</p>
+        {% endif %}
     </footer>
 
     <!-- Session timeout warning -->

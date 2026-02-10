@@ -289,7 +289,7 @@ GRANT USAGE, SELECT ON SEQUENCE audit_auditlog_id_seq TO KoNote2_audit;
 
 - Metric CSV export with filters
 - Client data export (all PII, custom fields, enrolments)
-- CMT funder report export
+- Funder report export
 - Client analysis charts (Chart.js)
 - PDF reports (WeasyPrint)
 
@@ -648,7 +648,7 @@ MIDDLEWARE = [
 
 ```
 /reports/export/                GET, POST   Metric CSV export
-/reports/cmt-export/            GET, POST   CMT funder report export
+/reports/funder-report/         GET, POST   Funder report export
 /reports/client-data-export/    GET, POST   Client data CSV export (admin)
 /reports/client/<id>/analysis/  GET         Client analysis charts
 /reports/client/<id>/pdf/       GET         Client progress PDF
@@ -1398,7 +1398,7 @@ For coalitions that don't need shared client records:
 
 | Funder Type | Requirements |
 |-------------|--------------|
-| United Way | Demographic breakdowns, outcome achievement rates, CMT format |
+| Community Foundation | Demographic breakdowns, outcome achievement rates, funder report format |
 | Provincial (MCSS, MCCSS) | Specific templates, fiscal year grouping, service hours |
 | Federal grants | Logic model alignment, indicator tracking |
 | Foundations | Custom KPIs, narrative + quantitative |
@@ -1456,8 +1456,8 @@ def report_by_demographics(metrics_qs, demographic_field):
 # apps/reports/templates_config.py
 
 REPORT_TEMPLATES = {
-    'united_way_cmt': {
-        'name': 'United Way CMT Export',
+    'funder_outcome_report': {
+        'name': 'Funder Outcome Report',
         'columns': ['outcome_indicator', 'baseline', 'target', 'actual', 'variance'],
         'grouping': 'outcome',
         'demographics': True,

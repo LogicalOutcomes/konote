@@ -407,7 +407,7 @@
 - **[Program Manager] Metrics export form** `/reports/export/`
   Server error (500) — view crashed
 
-- **[Program Manager] CMT export form** `/reports/cmt-export/`
+- **[Program Manager] Funder report form** `/reports/funder-report/`
   Server error (500) — view crashed
 
 - **[Program Manager] Events tab** `/events/client/1/`
@@ -967,7 +967,7 @@
 | Target status | `/plans/targets/1/status/` | 500 | 1 issue(s) |
 | Target history | `/plans/targets/1/history/` | 500 | 1 issue(s) |
 | Metrics export form | `/reports/export/` | 500 | 1 issue(s) |
-| CMT export form | `/reports/cmt-export/` | 500 | 1 issue(s) |
+| Funder report form | `/reports/funder-report/` | 500 | 1 issue(s) |
 | Events tab | `/events/client/1/` | 500 | 1 issue(s) |
 | Event create form | `/events/client/1/create/` | 500 | 1 issue(s) |
 | Client analysis | `/reports/client/1/analysis/` | 500 | 1 issue(s) |
@@ -1387,7 +1387,7 @@ _Tested with Playwright (headless Chromium) + axe-core._
 1. Fix: Server error (500) on HTMX partial on `/plans/targets/1/status/`
 1. Fix: Server error (500) on HTMX partial on `/plans/targets/1/history/`
 1. Fix: Server error (500) — view crashed on `/reports/export/`
-1. Fix: Server error (500) — view crashed on `/reports/cmt-export/`
+1. Fix: Server error (500) — view crashed on `/reports/funder-report/`
 1. Fix: Server error (500) — view crashed on `/events/client/1/`
 1. Fix: Server error (500) — view crashed on `/events/client/1/create/`
 1. Fix: Server error (500) — view crashed on `/reports/client/1/analysis/`

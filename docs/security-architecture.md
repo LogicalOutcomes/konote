@@ -108,7 +108,7 @@ Test data is temporary -- created during test execution, automatically deleted a
 |--------|:----------:|:-----:|:-----------------:|:---------:|:-----:|
 | See client records | Limited fields | Full records | Their programs | No (dashboard only) | No (config only) |
 | Create metrics export | No | No | Their programs | No | Any program |
-| Create CMT export | No | No | Their programs | No | Any program |
+| Create funder report export | No | No | Their programs | No | Any program |
 | Create client data export | No | No | No | No | Yes |
 | Download own export | N/A | N/A | Yes | N/A | Yes |
 | Download others' exports | No | No | No | No | Yes |

@@ -126,7 +126,7 @@ The brute-force protection (5 attempts = 15-min lockout) in `apps/auth_app/views
 
 | ID | What | File(s) |
 |----|------|---------|
-| I18N-1 | PDF templates entirely untranslated (25-40+ strings each) | `templates/reports/pdf_client_progress.html`, `pdf_funder_report.html`, `pdf_cmt_report.html` |
+| I18N-1 | PDF templates entirely untranslated (25-40+ strings each) | `templates/reports/pdf_client_progress.html`, `pdf_funder_report.html`, `pdf_funder_outcome_report.html` |
 | I18N-2 | PDF base template hardcoded to `lang="en-CA"` | `templates/reports/pdf_base.html` |
 | I18N-3 | Retention alert email untranslated | `templates/email/expired_retention_alert.html` |
 | I18N-4 | ~20 JavaScript strings not translatable | `static/js/app.js` |
