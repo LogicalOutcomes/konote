@@ -5,7 +5,7 @@ These fields represent what most Canadian nonprofits would expect on a client
 intake form, based on:
 - PIPEDA privacy requirements (consent, purpose limitation)
 - AODA accessibility requirements (accommodation needs)
-- Common funder demographics (United Way, Trillium, municipal funders)
+- Common funder demographics (community foundations, Trillium, municipal funders)
 - Practical service delivery needs (contact, emergency, baseline status)
 
 Field groups are organized for two use cases:

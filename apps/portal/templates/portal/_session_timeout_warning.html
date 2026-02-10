@@ -1,9 +1,9 @@
 {% load i18n %}
-{#
+{% comment %}
   Session timeout warning — included in base_portal.html.
   Shown by portal.js after 25 minutes of inactivity.
   Uses the <dialog> element for native accessibility.
-#}
+{% endcomment %}
 <dialog id="session-timeout-dialog"
         aria-labelledby="timeout-title"
         aria-describedby="timeout-description"

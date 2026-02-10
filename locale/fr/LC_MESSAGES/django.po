@@ -4157,8 +4157,8 @@ msgid "Waitlisted"
 msgstr "Sur la liste d'attente"
 
 # reports/forms.py — Placeholder
-msgid "e.g., United Way, Jane Smith"
-msgstr "p. ex., Centraide, Jeanne Dupont"
+msgid "e.g., Community Foundation, Jane Smith"
+msgstr "p. ex., Fondation communautaire, Jeanne Dupont"
 
 # reports/models.py — Export Types
 msgid "Client Data"
@@ -4167,8 +4167,8 @@ msgstr "Données du participant"
 msgid "Metric Report"
 msgstr "Rapport de mesures"
 
-msgid "CMT Report"
-msgstr "Rapport CMT"
+msgid "Funder Report"
+msgstr "Rapport pour bailleur de fonds"
 
 msgid "%(name)s added."
 msgstr "%(name)s ajouté(e)."
@@ -8883,3 +8883,24 @@ msgstr ""
 
 msgid "view only"
 msgstr "lecture seule"
+
+msgid "e.g., Jane Smith, Clinical Supervisor"
+msgstr ""
+
+msgid "e.g., New CRM system, IT Department"
+msgstr ""
+
+msgid "Backup or disaster recovery"
+msgstr ""
+
+msgid "Data migration to another system"
+msgstr ""
+
+msgid "— Select reason —"
+msgstr ""
+
+msgid ""
+"Because this export contains individual client data, a 10-minute delay will "
+"be applied before the download link becomes active. Administrators will be "
+"notified by email."
+msgstr ""

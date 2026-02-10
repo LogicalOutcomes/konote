@@ -77,7 +77,7 @@
             {% if has_export_access %}
             <li><a href="/reports/export/"{% if nav_active == "reports" %} class="nav-active"{% endif %}>{% trans "Reports" %}</a></li>
             {% endif %}
-            {% if features.groups and not is_executive_only and not is_receptionist_only %}
+            {% if features.groups and not is_executive_only and not is_receptionist_only and not is_admin_only %}
             <li><a href="/groups/"{% if nav_active == "groups" %} class="nav-active"{% endif %}>{{ term.group_plural|default:"Groups" }}</a></li>
             {% endif %}
             {% if user.is_admin %}
@@ -96,7 +96,6 @@
                         <li><a href="/admin/audit/">{% trans "Audit Log" %}</a></li>
                         <li><a href="/merge/">{% trans "Merge Duplicates" %}</a></li>
                         <li><a href="/erasure/">{% blocktrans with term=term.client|default:"Participant" %}Erase {{ term }} Data{% endblocktrans %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>
-                        <li><a href="/reports/client-data-export/">{% blocktrans with term=term.client|default:"Participant" %}Export {{ term }} Data{% endblocktrans %}</a></li>
                     </ul>
                 </details>
             </li>
