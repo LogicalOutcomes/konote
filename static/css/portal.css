@@ -44,6 +44,8 @@
 .portal-lang-nav .container {
     display: flex;
     justify-content: flex-end;
+    /* Leave room for the fixed quick-exit button */
+    padding-right: 10rem;
 }
 .portal-lang-nav .lang-link {
     background: none;
@@ -111,6 +113,8 @@
 /* Portal navigation — simpler than staff nav */
 .portal-nav {
     padding: 0.5rem 1rem;
+    /* Leave room for the fixed quick-exit button */
+    padding-right: 10rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
