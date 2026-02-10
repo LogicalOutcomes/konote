@@ -354,11 +354,21 @@ docker-compose exec web python manage.py migrate
 docker-compose exec web python manage.py migrate --database=audit
 ```
 
-### Step 6: Create Admin User
+### Step 6: Create Your First Admin User
+
+Every new KoNote2 instance needs an initial admin account. Since there are no users yet, you create one from the command line:
 
 ```bash
 docker-compose exec web python manage.py createsuperuser
 ```
+
+You'll be prompted for:
+- **Username** — your login name (e.g., `admin` or your name)
+- **Password** — minimum 8 characters (you'll be asked to confirm it)
+
+This creates a user with full admin access. Once logged in, you can create additional users through the web interface using **invite links** (recommended) or direct user creation. See [User Management](administering-konote.md#user-management) for details.
+
+> **Demo mode shortcut:** If you set `DEMO_MODE=true` in your `.env`, the `seed` command (Step 7.5) automatically creates a `demo-admin` user with password `demo1234` — so you can skip this step and log in with that instead.
 
 ### Step 7: Access KoNote2
 
@@ -431,13 +441,27 @@ Optional variables (auto-detected, only set if needed):
 
 Click **Redeploy** and wait for the build to complete (~60 seconds). The container automatically runs database migrations, seeds sample data, runs security checks, and starts the web server — no manual steps needed.
 
-### Step 5: Verify
+### Step 5: Create Your First Admin User
+
+The container automatically runs migrations and seed data, but you still need an admin account to log in.
+
+**If `DEMO_MODE=true`** (recommended for evaluation): The seed process creates a `demo-admin` user with password `demo1234`. You can log in immediately — skip to Step 6.
+
+**For production (no demo mode):** Use the Railway CLI to create your admin:
+
+```bash
+railway run python manage.py createsuperuser
+```
+
+You'll be prompted for a username and password. This creates a user with full admin access. Once logged in, you can invite additional staff through the web interface. See [User Management](administering-konote.md#user-management).
+
+### Step 6: Verify
 
 Click the generated domain (e.g., `KoNote2-web-production-xxxx.up.railway.app`). You should see the login page.
 
 If `DEMO_MODE` is `true`, you'll see demo login buttons for six sample users (one per role: admin, program manager, case worker, front desk, auditor, and a demo user). These are pre-loaded with sample clients and data so you can explore the system immediately.
 
-### Step 6: HTTPS
+### Step 7: HTTPS
 
 Railway handles HTTPS automatically — no certificate setup needed. Your `.railway.app` domain and any custom domains you add are served over HTTPS by default.
 
@@ -602,7 +626,24 @@ az container create \
 
 Delete the container after it completes.
 
-### Step 8: Configure Custom Domain
+### Step 8: Create Your First Admin User
+
+Create a temporary container to run the admin creation command:
+
+```bash
+az container create \
+  --resource-group KoNote2-prod \
+  --name KoNote2-admin \
+  --image KoNote2registry.azurecr.io/KoNote2:latest \
+  --environment-variables DATABASE_URL="..." SECRET_KEY="..." FIELD_ENCRYPTION_KEY="..." \
+  --command-line "/bin/bash -c 'python manage.py createsuperuser --username admin'"
+```
+
+You'll be prompted for a password. Delete the container after it completes.
+
+Once logged in, you can invite additional staff through the web interface using invite links. See [User Management](administering-konote.md#user-management).
+
+### Step 9: Configure Custom Domain
 
 1. Go to Container App → Custom domains
 2. Add your domain
@@ -650,12 +691,23 @@ In the Elestio console, run:
 ```bash
 python manage.py migrate
 python manage.py migrate --database=audit
+python manage.py seed
 python manage.py lockdown_audit_db
 ```
 
 KoNote2 auto-detects Elestio and uses production settings automatically.
 
-### Step 5: Configure Domain and TLS
+### Step 5: Create Your First Admin User
+
+In the Elestio console, run:
+
+```bash
+python manage.py createsuperuser
+```
+
+Enter a username and password when prompted. This creates the initial admin account. Once logged in, you can invite additional staff through the web interface. See [User Management](administering-konote.md#user-management).
+
+### Step 6: Configure Domain and TLS
 
 1. Point your domain's DNS to Elestio's IP
 2. In Elestio, add your custom domain
@@ -767,7 +819,9 @@ Complete this checklist before entering any real client information.
 
 ### 3. User Accounts Set Up
 
-- [ ] All staff accounts created with correct roles
+- [ ] First admin user created via `python manage.py createsuperuser`
+- [ ] Additional staff invited using **Admin → Users → Invite** (creates invite links they can use to set up their own accounts)
+- [ ] All staff assigned to correct programs with correct roles
 - [ ] Test users and demo accounts removed or disabled
 
 ### 3.5. Seed Data Loaded

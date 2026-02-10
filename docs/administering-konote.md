@@ -19,18 +19,33 @@ After deployment, configure KoNote2 to match your organisation's needs. All setu
 
 **Time estimate:** 30–45 minutes for basic setup.
 
+### Creating the First Admin Account
+
+Every new KoNote2 instance starts with no users. You need to create the first admin from the command line before anyone can log in:
+
+```bash
+# Docker:
+docker-compose exec web python manage.py createsuperuser
+
+# Direct / Railway:
+python manage.py createsuperuser
+```
+
+You'll be prompted for a **username** and **password**. This creates a user with full admin access (`is_admin=True`).
+
+> **Demo mode shortcut:** If `DEMO_MODE=true`, the seed process automatically creates a `demo-admin` user with password `demo1234`. You can log in with that immediately and skip this step.
+
 ### First Login
 
 **Azure AD (Office 365):**
 1. Navigate to your KoNote2 URL
 2. Click **Login with Azure AD**
 3. Enter your work email and password
+4. An admin must then assign your program roles through the web interface
 
 **Local authentication:**
 1. Navigate to your KoNote2 URL
-2. Enter username and password (provided during setup)
-
-Your account starts as Staff. An admin must promote you to Admin to access configuration.
+2. Enter the username and password you created above
 
 ---
 
@@ -328,7 +343,34 @@ With auto-approve on, each submission instantly creates a client record and enro
 
 ## User Management
 
-### Create User Accounts
+There are three ways to create user accounts, depending on the situation:
+
+| Method | Best for | How it works |
+|--------|----------|-------------|
+| **Invite link** (recommended) | Onboarding new staff | Admin creates a link; the new person sets up their own username and password |
+| **Direct creation** | Quick setup, temporary accounts | Admin fills in all details including password |
+| **Azure AD SSO** | Organisations using Microsoft 365 | Users are created automatically on first login |
+
+### Invite a New User (Recommended)
+
+Invite links are the easiest way to onboard staff. The new person chooses their own username and password.
+
+1. Click **gear icon** → **User Management**
+2. Click **Invite User**
+3. Choose:
+   - **Role** — receptionist, staff, program manager, executive, or admin
+   - **Programs** — which programs they'll have access to
+   - **Link expiry** — how many days the invite is valid (default: 7)
+4. Click **Create Invite**
+5. Copy the generated link and send it to the new person
+
+When they open the link, they'll set up their display name, username, and password. They're logged in immediately with the correct role and program access.
+
+> **Tip:** Each invite link can only be used once. If it expires or the person needs a new one, create another invite.
+
+### Create a User Directly
+
+For quick setup when you want to control the credentials:
 
 1. Click **gear icon** → **User Management**
 2. Click **+ New User**

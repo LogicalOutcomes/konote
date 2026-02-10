@@ -258,13 +258,21 @@ Running migrations:
 
 > **What just happened?** "Migrations" create the database tables that KoNote2 needs to store data. The first command sets up the main database (for clients, programs, notes). The second sets up the audit database (which records who changed what, for security).
 
-### Step 7: Create Admin User
+### Step 7: Create Your First Admin User
+
+Every new instance needs an initial admin account. Since there are no users yet, you create one from the command line:
 
 ```bash
 docker-compose exec web python manage.py createsuperuser
 ```
 
-Follow the prompts to create your first user.
+You'll be prompted for:
+- **Username** — your login name (e.g., `admin` or your name)
+- **Password** — minimum 8 characters (you'll be asked to confirm it)
+
+This creates a user with full admin access. Once logged in, you can create additional users through the web interface using **invite links** (Admin → Users → Invite) or direct user creation.
+
+> **Demo mode shortcut:** If `DEMO_MODE=true` in your `.env`, the `seed` command creates a `demo-admin` user with password `demo1234` — you can use that instead.
 
 ### Step 8: Access KoNote2
 
@@ -489,13 +497,19 @@ Running migrations:
 
 > **What just happened?** "Migrations" create the database tables that KoNote2 needs to store data. You'll see messages listing each table being created. The first command sets up the main database (for clients, programs, notes). The second sets up the audit database (which records who changed what, for security).
 
-### Step 11: Create Admin User
+### Step 11: Create Your First Admin User
+
+Every new instance needs an initial admin account:
 
 ```bash
 python manage.py createsuperuser
 ```
 
-Enter an email, username, and password when prompted.
+You'll be prompted for:
+- **Username** — your login name (e.g., `admin` or your name)
+- **Password** — minimum 8 characters (you'll be asked to confirm it)
+
+This creates a user with full admin access. Once logged in, you can invite additional staff through the web interface (Admin → Users → Invite).
 
 ### Step 12: Start the Development Server
 
