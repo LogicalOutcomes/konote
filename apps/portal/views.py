@@ -464,7 +464,7 @@ def mfa_setup(request):
         totp = pyotp.TOTP(secret)
         provisioning_uri = totp.provisioning_uri(
             name=participant.display_name,
-            issuer_name="KoNote2 Portal",
+            issuer_name="KoNote Portal",
         )
 
         return render(request, "portal/mfa_setup.html", {

@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% block title %}{% trans "Registration" %}{% endblock %} — {{ site.product_name|default:"KoNote2" }}</title>
+    <title>{% block title %}{% trans "Registration" %}{% endblock %} — {{ site.product_name|default:"KoNote" }}</title>
 
     <!-- Favicon + manifest -->
     <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
@@ -94,7 +94,7 @@
 
     <!-- Simple header for public pages -->
     <header class="container" style="padding: 1rem 0; text-align: center; border-bottom: 1px solid var(--pico-muted-border-color);">
-        <strong>{{ site.product_name|default:"KoNote2" }}</strong>
+        <strong>{{ site.product_name|default:"KoNote" }}</strong>
     </header>
 
     <main id="main-content" class="container" style="max-width: 640px; margin: 2rem auto;" tabindex="-1">
@@ -105,7 +105,7 @@
         <small>
             {% trans "Your information is collected and stored securely." %}
             <br>
-            {{ site.product_name|default:"KoNote2" }} — {% trans "Participant Outcome Management" %}
+            {{ site.product_name|default:"KoNote" }} — {% trans "Participant Outcome Management" %}
         </small>
     </footer>
 

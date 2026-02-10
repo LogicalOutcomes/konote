@@ -45,7 +45,7 @@ from django.core.management.base import BaseCommand
 # ── Translation prompt ──────────────────────────────────────────────────
 
 SYSTEM_PROMPT = """\
-You are a translator for a Canadian nonprofit client management system called KoNote2.
+You are a translator for a Canadian nonprofit client management system called KoNote.
 
 Rules:
 - Translate English to Canadian French
@@ -105,7 +105,7 @@ class Command(BaseCommand):
         skip_translate = options["no_translate"]
         lang = options["lang"]
 
-        self.stdout.write("\nKoNote2 Translation Sync")
+        self.stdout.write("\nKoNote Translation Sync")
         self.stdout.write("=" * 40)
 
         base_dir = Path(settings.BASE_DIR)

@@ -1,5 +1,5 @@
 @echo off
-echo Setting up KoNote2 development environment...
+echo Setting up KoNote development environment...
 echo.
 
 REM Activate custom git hooks

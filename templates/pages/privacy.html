@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Privacy Policy" %} - {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% trans "Privacy Policy" %} - {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <div class="privacy-page">
     <h1>{% trans "Privacy Policy" %}</h1>
 
     <div class="notice">
-        <p>{% trans "This page describes how KoNote2 protects your data. Each organisation should customise this policy for their specific practices and hosting configuration." %}</p>
+        <p>{% trans "This page describes how KoNote protects your data. Each organisation should customise this policy for their specific practices and hosting configuration." %}</p>
         <p>{% trans "Administrators: See the full privacy policy template in the deployment documentation for a version you can tailor to your organisation." %}</p>
     </div>
 
@@ -103,7 +103,7 @@
             <li>{% trans "Cookies are HTTP-only (not accessible to JavaScript) and secure (HTTPS only)" %}</li>
         </ul>
 
-        <p>{% trans "KoNote2 uses only essential cookies required for the application to function. No advertising, tracking, or analytics cookies are used." %}</p>
+        <p>{% trans "KoNote uses only essential cookies required for the application to function. No advertising, tracking, or analytics cookies are used." %}</p>
     </section>
 
     <section id="audit">
@@ -123,7 +123,7 @@
     <section id="erasure">
         <h2>{% trans "Data Erasure" %}</h2>
 
-        <p>{% trans "KoNote2 supports formal data erasure requests in compliance with PIPEDA:" %}</p>
+        <p>{% trans "KoNote supports formal data erasure requests in compliance with PIPEDA:" %}</p>
         <ul>
             <li>{% blocktrans with client=term.client %}Any staff member can initiate an erasure request for a {{ client }}{% endblocktrans %}</li>
             <li>{% blocktrans with client=term.client program_plural=term.program_plural %}All program managers for that {{ client }}'s {{ program_plural }} must approve the request{% endblocktrans %}</li>
@@ -147,7 +147,7 @@
     <section id="ai-analysis">
         <h2>{% trans "AI-Assisted Analysis (Optional)" %}</h2>
 
-        <p>{% trans "KoNote2's Outcome Insights feature can optionally use AI to generate draft narrative summaries of program outcomes. This feature is off by default and must be enabled by your administrator." %}</p>
+        <p>{% trans "KoNote's Outcome Insights feature can optionally use AI to generate draft narrative summaries of program outcomes. This feature is off by default and must be enabled by your administrator." %}</p>
 
         <h3>{% trans "What is sent to the AI" %}</h3>
         <ul>

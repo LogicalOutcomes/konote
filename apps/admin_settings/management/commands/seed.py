@@ -104,7 +104,7 @@ class Command(BaseCommand):
         from apps.admin_settings.models import InstanceSetting
 
         defaults = {
-            "product_name": "KoNote2",
+            "product_name": "KoNote",
             "logo_url": "",
             "date_format": "YYYY-MM-DD",
             "time_format": "h:mma",

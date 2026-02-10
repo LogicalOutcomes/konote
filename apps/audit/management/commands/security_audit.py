@@ -1,5 +1,5 @@
 """
-Security audit command for KoNote2 Web.
+Security audit command for KoNote Web.
 
 Runs comprehensive security checks across encryption, RBAC, audit logging,
 configuration, and document storage. Designed to work for any developer
@@ -623,7 +623,7 @@ class Command(BaseCommand):
 
     def _output_text(self, results):
         """Output results as formatted text."""
-        self.stdout.write("\nKoNote2 Security Audit")
+        self.stdout.write("\nKoNote Security Audit")
         self.stdout.write("=" * 50)
 
         # Group by category

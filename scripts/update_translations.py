@@ -142,7 +142,7 @@ def main():
     )
     args = parser.parse_args()
 
-    print(f"\nKoNote2 Translation Update")
+    print(f"\nKoNote Translation Update")
     print(f"{'=' * 55}")
     print(f"  Language:   {args.lang}")
     print(f"  Commit:     {'no' if args.no_commit else 'yes'}")

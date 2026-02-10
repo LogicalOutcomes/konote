@@ -4,6 +4,7 @@
 
 - [ ] Decide product name — "KoNote" vs "KoNote2". See `tasks/naming-versioning.md` (NAME1)
 - [ ] Update konote-website git remote URL — repo renamed but local remote still points to old name (NAME2)
+- [ ] Fix inconsistent env var rename — `startup_check.py:101` uses `KoNote_MODE` instead of `KONOTE_MODE` (NAME3)
 - [ ] Approve Agency Permissions Interview questionnaire — must be finalised before first agency deployment. See `tasks/agency-permissions-interview.md` (ONBOARD-APPROVE)
 - [ ] Decide who runs the export command — KoNote team only, or self-hosted agencies too? Shapes the entire SEC3 design. See `tasks/agency-data-offboarding.md` (SEC3-Q1)
 

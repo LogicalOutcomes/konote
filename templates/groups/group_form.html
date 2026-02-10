@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% if editing %}{% blocktrans with group=term.group|default:"Group" %}Edit {{ group }}{% endblocktrans %}{% else %}{% blocktrans with group=term.group|default:"Group" %}Add {{ group }}{% endblocktrans %}{% endif %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% if editing %}{% blocktrans with group=term.group|default:"Group" %}Edit {{ group }}{% endblocktrans %}{% else %}{% blocktrans with group=term.group|default:"Group" %}Add {{ group }}{% endblocktrans %}{% endif %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>

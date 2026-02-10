@@ -1,5 +1,5 @@
 """
-Pytest configuration for KoNote2 Web.
+Pytest configuration for KoNote Web.
 
 This file configures Django before any test collection happens,
 preventing the ImproperlyConfigured error when tests import Django models.

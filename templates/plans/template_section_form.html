@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% if is_edit %}{% trans "Edit" %}{% else %}{% trans "Add" %}{% endif %} {{ term.section|default:"Section" }} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% if is_edit %}{% trans "Edit" %}{% else %}{% trans "Add" %}{% endif %} {{ term.section|default:"Section" }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <nav aria-label="{% trans 'Breadcrumb' %}">

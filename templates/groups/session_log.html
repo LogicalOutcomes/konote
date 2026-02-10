@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% blocktrans with name=group.name %}Log Session — {{ name }}{% endblocktrans %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% blocktrans with name=group.name %}Log Session — {{ name }}{% endblocktrans %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 {% include "_breadcrumbs.html" %}

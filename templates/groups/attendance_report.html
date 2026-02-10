@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% blocktrans with name=group.name %}Attendance Report — {{ name }}{% endblocktrans %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% blocktrans with name=group.name %}Attendance Report — {{ name }}{% endblocktrans %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <p><a href="{% url 'groups:group_detail' group_id=group.pk %}" class="back-link">&larr; {% blocktrans with name=group.name %}Back to {{ name }}{% endblocktrans %}</a></p>

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% blocktrans with section=term.section|default:"Section" %}Delete {{ section }}{% endblocktrans %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+{% block title %}{% blocktrans with section=term.section|default:"Section" %}Delete {{ section }}{% endblocktrans %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <nav aria-label="{% trans 'Breadcrumb' %}">

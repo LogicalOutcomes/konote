@@ -27,7 +27,7 @@ MIN_LENGTH = 3
 # Strings that are OK to leave untranslated (brand names, technical terms, etc.)
 ALLOWLIST = {
     # Brand / product names
-    "KoNote2", "KoNote", "Microsoft", "Azure", "GitHub", "Google",
+    "KoNote", "Microsoft", "Azure", "GitHub", "Google",
     "Pico", "Chart.js", "HTMX", "Django",
     # Language names (always shown in their own language)
     "English", "Français",

@@ -187,7 +187,7 @@ class MoFileHealthCheckTest(SimpleTestCase):
             with override_settings(BASE_DIR=tmp, LOCALE_PATHS=[]):
                 warnings = check_mo_file_health(None)
                 self.assertEqual(len(warnings), 1)
-                self.assertEqual(warnings[0].id, "KoNote2.W011")
+                self.assertEqual(warnings[0].id, "KoNote.W011")
                 self.assertIn("missing", warnings[0].msg.lower())
 
     def test_warns_when_mo_is_stale(self):
@@ -210,7 +210,7 @@ class MoFileHealthCheckTest(SimpleTestCase):
             with override_settings(BASE_DIR=tmp, LOCALE_PATHS=[]):
                 warnings = check_mo_file_health(None)
                 self.assertEqual(len(warnings), 1)
-                self.assertEqual(warnings[0].id, "KoNote2.W011")
+                self.assertEqual(warnings[0].id, "KoNote.W011")
                 self.assertIn("stale", warnings[0].msg.lower())
 
     @override_settings(BASE_DIR=None)
