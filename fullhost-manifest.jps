@@ -1,8 +1,8 @@
 type: install
 name: KoNote
 version: 1.0.0
-baseUrl: https://raw.githubusercontent.com/gilliankerr/KoNote-Redux/main
-logo: https://raw.githubusercontent.com/gilliankerr/KoNote-Redux/main/static/img/logo.png
+baseUrl: https://raw.githubusercontent.com/gilliankerr/KoNote/main
+logo: https://raw.githubusercontent.com/gilliankerr/KoNote/main/static/img/logo.png
 
 description:
   text: |
@@ -80,7 +80,7 @@ nodes:
     fixedCloudlets: 2
     flexibleCloudlets: 8
     displayName: KoNote App
-    image: ghcr.io/gilliankerr/konote-redux:fullhost-latest
+    image: ghcr.io/gilliankerr/konote:fullhost-latest
     env:
       JELASTIC_ENVIRONMENT: "true"
       DJANGO_SETTINGS_MODULE: konote.settings.production
@@ -171,7 +171,7 @@ onInstall:
         2. Invite your team members
         3. Configure your programs and outcomes
 
-        **Need help?** Visit [KoNote Documentation](https://github.com/gilliankerr/KoNote-Redux/docs)
+        **Need help?** Visit [KoNote Documentation](https://github.com/gilliankerr/KoNote/docs)
 
 actions:
   setDatabasePasswords:

@@ -26,6 +26,9 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body>
+    <!-- BLOCKER-1: Skip-to-content link — WCAG 2.4.1 bypass block -->
+    <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
+
     <!-- Loading bar — shown during HTMX requests -->
     <div id="loading-bar" class="loading-bar htmx-indicator"></div>
 
@@ -166,7 +169,7 @@
                 {% if site.support_email %}<span>{% trans "Support:" %} <a href="mailto:{{ site.support_email }}">{{ site.support_email }}</a></span>{% endif %}
             </div>
             <div class="site-footer-links">
-                <a href="https://github.com/gilliankerr/KoNote-Redux" target="_blank" rel="noopener">GitHub</a>
+                <a href="https://github.com/gilliankerr/KoNote" target="_blank" rel="noopener">GitHub</a>
                 <a href="{% url 'privacy' %}">{% trans "Privacy" %}</a>
                 <a href="{% url 'help' %}">{% trans "Help" %}</a>
                 <button type="button" class="keyboard-shortcuts-btn" id="show-shortcuts" aria-label="{% trans 'Keyboard shortcuts' %}">?</button>

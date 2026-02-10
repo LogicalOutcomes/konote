@@ -775,6 +775,7 @@ class ScenarioRunner(BrowserTestBase):
 
         steps = scenario.get("steps", [])
         context_chain = []  # Accumulate context from previous steps
+        context_vars = {}   # TEST-5: accumulate entity IDs from URLs
 
         for step in steps:
             step_id = step.get("id", 0)
@@ -813,7 +814,7 @@ class ScenarioRunner(BrowserTestBase):
                             pass  # Verification failed — don't crash
 
             # Execute Playwright actions
-            self._execute_actions(actions)
+            self._execute_actions(actions, context_vars=context_vars)
 
             # Capture page state
             capture = capture_step_state(
@@ -1164,7 +1165,48 @@ class ScenarioRunner(BrowserTestBase):
 
         return result
 
-    def _execute_actions(self, actions):
+    # ------------------------------------------------------------------
+    # URL variable resolution (TEST-5)
+    # ------------------------------------------------------------------
+
+    # Common URL patterns → variable names.  After any navigation,
+    # the runner extracts IDs from the current URL and stores them
+    # so later steps can use {client_id}, {group_id}, etc.
+    _URL_VAR_PATTERNS = [
+        (re.compile(r"/clients/(\d+)"), "client_id"),
+        (re.compile(r"/groups/(\d+)"), "group_id"),
+        (re.compile(r"/programs/(\d+)"), "program_id"),
+        (re.compile(r"/notes/(\d+)"), "note_id"),
+        (re.compile(r"/plans/(\d+)"), "plan_id"),
+        (re.compile(r"/events/(\d+)"), "event_id"),
+        (re.compile(r"/alerts/(\d+)"), "alert_id"),
+    ]
+
+    def _extract_url_vars(self, url, context_vars):
+        """Extract entity IDs from a URL path into context_vars."""
+        for pattern, var_name in self._URL_VAR_PATTERNS:
+            m = pattern.search(url)
+            if m:
+                context_vars[var_name] = m.group(1)
+
+    @staticmethod
+    def _resolve_url_variables(url, context_vars):
+        """Replace {variable} placeholders in a URL with values from context.
+
+        Unresolved placeholders are left as-is (the page will 404 and the
+        evaluator will note the issue, same as before).
+        """
+        if not context_vars or "{" not in url:
+            return url
+        try:
+            return url.format_map(context_vars)
+        except KeyError:
+            # Some placeholders unresolved — do partial substitution
+            for key, value in context_vars.items():
+                url = url.replace("{" + key + "}", str(value))
+            return url
+
+    def _execute_actions(self, actions, context_vars=None):
         """Execute a list of Playwright actions from a scenario step.
 
         Actions are simple dicts like:
@@ -1176,7 +1218,14 @@ class ScenarioRunner(BrowserTestBase):
             - clear: "#selector"
             - wait_for: "networkidle"
             - wait_htmx: true
+
+        context_vars is a dict that accumulates entity IDs extracted
+        from URLs (TEST-5).  {client_id}, {group_id}, etc. in goto
+        URLs are resolved from this dict before navigation.
         """
+        if context_vars is None:
+            context_vars = {}
+
         for action in actions:
             if isinstance(action, str):
                 # Simple string action — skip (e.g., comments)
@@ -1190,11 +1239,15 @@ class ScenarioRunner(BrowserTestBase):
                 continue
 
             if "goto" in action:
-                url = action["goto"]
+                url = self._resolve_url_variables(
+                    action["goto"], context_vars,
+                )
                 if url.startswith("/"):
                     url = self.live_url(url)
                 self.page.goto(url)
                 self._wait_for_idle()
+                # TEST-5: extract IDs from the resulting URL
+                self._extract_url_vars(self.page.url, context_vars)
 
             elif "fill" in action:
                 selector, value = action["fill"]
@@ -1258,6 +1311,12 @@ class ScenarioRunner(BrowserTestBase):
                     self.page.click(selector, timeout=5000)
                 except Exception:
                     pass  # Click failed — the LLM evaluator will note the issue
+
+                # TEST-5: extract IDs from URL after click-navigation
+                try:
+                    self._extract_url_vars(self.page.url, context_vars)
+                except Exception:
+                    pass
 
                 # QA-W4: Verify click — URL changed OR page content changed
                 try:

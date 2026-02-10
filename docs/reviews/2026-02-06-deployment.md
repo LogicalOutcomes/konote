@@ -117,6 +117,6 @@ These are documentation items the deploying agency needs:
 
 - **Framework:** `tasks/code-review-framework.md` Prompt D (Deployment)
 - **Tool:** Jules (jules.google) — Gemini-powered code review agent
-- **Repo:** github.com/gilliankerr/KoNote-Redux (public, main branch)
+- **Repo:** github.com/gilliankerr/KoNote (public, main branch)
 - **Previous reviews:** Security, Privacy, Accessibility (all 2026-02-06)
 - **Next scheduled:** After infrastructure changes (Dockerfile, entrypoint, Docker Compose)

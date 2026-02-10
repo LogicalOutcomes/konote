@@ -49,7 +49,7 @@ You'll need:
 
 1. Click this button:
 
-   [![Deploy to FullHost](https://www.fullhost.com/deploy-button.svg)](https://app.fullhost.cloud/install?manifest=https://raw.githubusercontent.com/gilliankerr/KoNote-Redux/main/fullhost-manifest.jps)
+   [![Deploy to FullHost](https://www.fullhost.com/deploy-button.svg)](https://app.fullhost.cloud/install?manifest=https://raw.githubusercontent.com/gilliankerr/KoNote/main/fullhost-manifest.jps)
 
 2. If prompted, log in to your FullHost account
 
@@ -64,7 +64,7 @@ If the button doesn't work:
 3. Select the **"URL"** tab
 4. Paste this URL:
    ```
-   https://raw.githubusercontent.com/gilliankerr/KoNote-Redux/main/fullhost-manifest.jps
+   https://raw.githubusercontent.com/gilliankerr/KoNote/main/fullhost-manifest.jps
    ```
 5. Click **"Import"**
 
@@ -353,7 +353,7 @@ The FullHost Shared Load Balancer handles SSL. It only works when traffic goes t
 
 ### Need More Help?
 
-- **KoNote Documentation:** [github.com/gilliankerr/KoNote-Redux/docs](https://github.com/gilliankerr/KoNote-Redux/docs)
+- **KoNote Documentation:** [github.com/gilliankerr/KoNote/docs](https://github.com/gilliankerr/KoNote/docs)
 - **FullHost Support:** [fullhost.com/support](https://www.fullhost.com/support/)
 
 ---
@@ -397,6 +397,6 @@ This removes all data permanently. FullHost will stop charging you.
 
 ## Getting Help
 
-- **KoNote Issues:** [github.com/gilliankerr/KoNote-Redux/issues](https://github.com/gilliankerr/KoNote-Redux/issues)
+- **KoNote Issues:** [github.com/gilliankerr/KoNote/issues](https://github.com/gilliankerr/KoNote/issues)
 - **FullHost Support:** [fullhost.com/support](https://www.fullhost.com/support/)
-- **Community Forum:** [github.com/gilliankerr/KoNote-Redux/discussions](https://github.com/gilliankerr/KoNote-Redux/discussions)
+- **Community Forum:** [github.com/gilliankerr/KoNote/discussions](https://github.com/gilliankerr/KoNote/discussions)

@@ -4,6 +4,26 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Completed 2026-02-10
+
+### Moved from Recently Done (2026-02-10 QA regression cleanup)
+
+- [x] Fix BUG-9 regression — French create form: added name_fr to QA programs, set preferred_language on French user, comprehensive form test — 2026-02-10 (QA-W22)
+- [x] Decide product name — "KoNote" (not "KoNote2"). Renamed across all tasks/, qa/, CLAUDE.md, TODO.md — 2026-02-10 (NAME1)
+- [x] Rename "programme" → "program" across 102 files + migration + .po cleanup — 2026-02-09 (SPELL1, RENAME-AGG1, DOC-AGG1, PERM-FU3)
+
+### Moved from Recently Done (2026-02-10 cleanup)
+
+- [x] Front Desk permissions hardening — hide Groups nav, block clinical data on dashboard — 2026-02-08 (UI-PERM1)
+- [x] Fix BLOCKER-1 skip link — auto-focus main content per expert panel consensus — 2026-02-08 (QA-FIX1)
+- [x] Playwright tests for BLOCKER-1/2 — focus verification automated — 2026-02-08 (QA-VERIFY1)
+- [x] QA Round 2c — 6 bug fixes: accent search, French names, untranslated strings, button permissions, audit CSS — 2026-02-08 (QA-W9 through QA-W18)
+- [x] Fix BUG-7, BUG-9, BUG-10 — 404 after create, language cookie, autofocus — 2026-02-08 (BUG-7, BUG-9, BUG-10)
+- [x] Participant suggestion field + AI feedback insights — encrypted suggestions, priority levels, categorised feedback — 2026-02-08 (VOICE1)
+- [x] QA process improvements — pre-flight, console capture, duplicate detection, action verification, DITL coverage, report naming, 404 fix, aria-live — 2026-02-08 (QA-W1 through QA-W8)
+
+---
+
 ## Completed 2026-02-09
 
 - [x] QA scenario runner full coverage — 4 test users, 6 clients, 7 action types, 22 scenarios, LLM evaluator — 2026-02-08 (QA-DATA1 through QA-EVAL3)
