@@ -9822,46 +9822,47 @@ msgstr ""
 "Ceci n’est pas pour les urgences."
 
 msgid "If someone might check your browsing history,"
-msgstr ""
+msgstr "Si quelqu’un pourrait vérifier votre historique de navigation,"
 
 msgid "Note cannot be empty."
-msgstr ""
+msgstr "La note ne peut pas être vide."
 
 msgid "Note for participant"
-msgstr ""
+msgstr "Note pour le participant"
 
 msgid "Portal Note"
-msgstr ""
+msgstr "Note du portail"
 
 msgid "Read"
-msgstr ""
+msgstr "Lire"
 
 msgid "Recent portal notes"
-msgstr ""
+msgstr "Notes récentes du portail"
 
 msgid "Save note"
-msgstr ""
+msgstr "Enregistrer la note"
 
 msgid "This note will appear on the participant's portal dashboard."
 msgstr ""
+"Cette note apparaîtra sur le tableau de bord du portail du participant."
 
 msgid "Write a portal note"
-msgstr ""
+msgstr "Écrire une note du portail"
 
 msgid "Write an encouraging note or update..."
-msgstr ""
+msgstr "Écrivez une note encourageante ou une mise à jour…"
 
 msgid "Your recent messages"
-msgstr ""
+msgstr "Vos messages récents"
 
 msgid "staff portal note"
-msgstr ""
+msgstr "note du portail du personnel"
 
 msgid "staff portal notes"
-msgstr ""
+msgstr "notes du portail du personnel"
 
 msgid "visit our safety page first"
-msgstr ""
+msgstr "consultez d’abord notre page de sécurité"
 
 msgid "New Users"
 msgstr "Nouveaux utilisateurs"

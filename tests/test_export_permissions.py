@@ -668,7 +668,7 @@ class ExecutiveAggregateExportTest(TestCase):
         )
 
         # Client
-        self.client_file = ClientFile.objects.create()
+        self.client_file = ClientFile.objects.create(record_id="REC-TEST-001")
         self.client_file.first_name = "Jane"
         self.client_file.last_name = "Doe"
         self.client_file.save()
