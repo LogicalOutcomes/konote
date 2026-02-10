@@ -1037,6 +1037,19 @@ details.search-filters-panel[open] summary {
     outline: 2px solid var(--kn-primary);
     outline-offset: 2px;
 }
+.demo-btn-portal {
+    background: var(--kn-primary, #0d7377);
+    color: #fff;
+    border-color: var(--kn-primary, #0d7377);
+    grid-column: 1 / -1;
+    max-width: 16rem;
+    margin: 0 auto;
+}
+.demo-btn-portal:hover {
+    background: var(--kn-primary-hover, #0b5f62);
+    color: #fff;
+    border-color: var(--kn-primary-hover, #0b5f62);
+}
 
 /* Navbar language form — inline, no extra spacing */
 .nav-lang-form {
@@ -1093,6 +1106,10 @@ button.outline.secondary:hover {
         color: var(--kn-text);
         border-color: rgba(255, 255, 255, 0.3);
         background: var(--kn-primary-subtle);
+    }
+    .demo-btn-portal,
+    .demo-btn-portal:hover {
+        color: #fff;
     }
 }
 

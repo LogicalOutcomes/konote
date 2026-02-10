@@ -36,6 +36,15 @@
         {% blocktrans with strong_open="<strong>" strong_close="</strong>" %}The exported file will contain: {{ strong_open }}client record IDs{{ strong_close }}, {{ strong_open }}metric values{{ strong_close }}, {{ strong_open }}dates of service{{ strong_close }}, and {{ strong_open }}staff names{{ strong_close }}. If demographic grouping is selected, it may also include {{ strong_open }}birth dates{{ strong_close }} (for age calculations) or {{ strong_open }}custom field values{{ strong_close }}. Handle the exported file according to your organisation's data protection policies.{% endblocktrans %}
     </p>
 </article>
+
+{% if is_pm_export %}
+<article class="pico-background-yellow-50" aria-label="{% trans 'Elevated export notice' %}" style="border-left: 4px solid var(--pico-color-orange-500); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong><span aria-hidden="true">&#x23F3;</span> {% trans "Elevated Export — Delay Applied" %}</strong>
+    <p style="margin-bottom: 0;">
+        {% trans "Because this export contains individual client data, a 10-minute delay will be applied before the download link becomes active. Administrators will be notified by email." %}
+    </p>
+</article>
+{% endif %}
 {% endif %}
 
 <form method="post">

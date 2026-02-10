@@ -6,9 +6,15 @@ from typing import List, Tuple
 def is_aggregate_only_user(user):
     """Check if this user should only receive aggregate (non-individual) export data.
 
-    Only admins can access individual client data in report exports.
-    All other roles (program_manager, executive) receive aggregate
-    summaries only — no record IDs, no author names, no per-client rows.
+    Only program managers can access individual client data in report
+    exports (with friction — elevated delay + admin notification).
+    Admins without PM roles, executives, and all other roles receive
+    aggregate summaries only — no record IDs, no author names, no
+    per-client rows.
+
+    The admin role is for system configuration (metrics, templates,
+    settings) — not for routine access to client data. An admin who
+    also holds a PM role gets individual access via the PM role.
 
     This is a PHIPA/privacy safeguard: report downloads are high-risk
     because files leave the system. Individual data access for clinical
@@ -17,7 +23,33 @@ def is_aggregate_only_user(user):
     Returns:
         True if user should only see aggregate data in exports.
     """
-    return not user.is_admin
+    from apps.programs.models import UserProgramRole
+
+    has_pm_role = UserProgramRole.objects.filter(
+        user=user, role="program_manager", status="active"
+    ).exists()
+    return not has_pm_role
+
+
+def can_download_pii_export(user):
+    """Check if this user can download exports containing individual client data.
+
+    Used as defense-in-depth at download time. Admins retain download
+    ability for oversight (they manage/revoke export links and may need
+    to verify contents). Program managers can download their own PII
+    exports.
+
+    Returns:
+        True if the user can download PII-containing exports.
+    """
+    if user.is_admin:
+        return True
+
+    from apps.programs.models import UserProgramRole
+
+    return UserProgramRole.objects.filter(
+        user=user, role="program_manager", status="active"
+    ).exists()
 
 
 def can_create_export(user, export_type, program=None):
@@ -25,13 +57,12 @@ def can_create_export(user, export_type, program=None):
     Check if a user can create an export of the given type.
 
     Permission rules:
-    - client_data: admin only (full PII dump for migration/audit)
-    - metrics / cmt: admin (any program), program_manager or executive (their programs)
+    - metrics / funder_report: admin (any program), program_manager or executive (their programs)
     - All other roles (staff, receptionist): no export access
 
     Args:
         user: The User instance.
-        export_type: One of "client_data", "metrics", "cmt".
+        export_type: One of "metrics", "funder_report".
         program: Optional Program instance — when provided, checks whether
                  the user manages that specific program.
 
@@ -40,13 +71,10 @@ def can_create_export(user, export_type, program=None):
     """
     from apps.programs.models import UserProgramRole
 
-    if export_type == "client_data":
-        return user.is_admin
-
     if user.is_admin:
         return True
 
-    if export_type in ("metrics", "cmt"):
+    if export_type in ("metrics", "funder_report"):
         qs = UserProgramRole.objects.filter(
             user=user, role__in=["program_manager", "executive"], status="active"
         )

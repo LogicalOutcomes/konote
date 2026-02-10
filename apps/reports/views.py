@@ -1,4 +1,4 @@
-"""Report views — aggregate metric CSV export, CMT export, client analysis charts, and secure links."""
+"""Report views — aggregate metric CSV export, funder report, client analysis charts, and secure links."""
 import csv
 import io
 import json
@@ -26,14 +26,19 @@ from apps.notes.models import MetricValue, ProgressNote
 from apps.plans.models import PlanTarget, PlanTargetMetric
 from apps.programs.models import UserProgramRole
 from .achievements import get_achievement_summary, format_achievement_summary
-from .cmt_export import generate_cmt_data, generate_cmt_csv_rows
+from .funder_report import generate_funder_report_data, generate_funder_report_csv_rows
 from .csv_utils import sanitise_csv_row, sanitise_filename
 from .demographics import aggregate_by_demographic, get_age_range, parse_grouping_choice
 from .suppression import suppress_small_cell
-from .forms import CMTExportForm, ClientDataExportForm, MetricExportForm
+from .forms import FunderReportForm, MetricExportForm
 from .models import SecureExportLink
 from .aggregations import aggregate_metrics
-from .utils import can_create_export, get_manageable_programs, is_aggregate_only_user
+from .utils import (
+    can_create_export,
+    can_download_pii_export,
+    get_manageable_programs,
+    is_aggregate_only_user,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -104,7 +109,7 @@ def _save_export_and_create_link(request, content, filename, export_type,
         request: The HTTP request (for user info).
         content: File content — str for CSV, bytes for PDF.
         filename: Display filename for downloads (e.g., "export_2026-02-05.csv").
-        export_type: One of "client_data", "metrics", "cmt".
+        export_type: One of "metrics", "funder_report".
         client_count: Number of clients in the export.
         includes_notes: Whether clinical note content is included.
         recipient: Who is receiving the data (from ExportRecipientMixin).
@@ -132,7 +137,18 @@ def _save_export_and_create_link(request, content, filename, export_type,
         f.write(content)
 
     expiry_hours = getattr(settings, "SECURE_EXPORT_LINK_EXPIRY_HOURS", 24)
-    is_elevated = client_count >= 100 or includes_notes
+    # PM individual exports are ALWAYS elevated (delay + admin notification)
+    # to add friction for PII access. Other exports use the standard threshold.
+    from apps.programs.models import UserProgramRole
+
+    creator_is_pm = UserProgramRole.objects.filter(
+        user=request.user, role="program_manager", status="active"
+    ).exists()
+    is_elevated = (
+        client_count >= 100
+        or includes_notes
+        or (contains_pii and creator_is_pm)
+    )
     link = SecureExportLink.objects.create(
         id=link_id,
         created_by=request.user,
@@ -295,12 +311,14 @@ def export_form(request):
         return HttpResponseForbidden("You do not have permission to access this page.")
 
     is_aggregate = is_aggregate_only_user(request.user)
+    is_pm_export = not is_aggregate and not request.user.is_admin
 
     if request.method != "POST":
         form = MetricExportForm(user=request.user)
         return render(request, "reports/export_form.html", {
             "form": form,
             "is_aggregate_only": is_aggregate,
+            "is_pm_export": is_pm_export,
         })
 
     form = MetricExportForm(request.POST, user=request.user)
@@ -308,6 +326,7 @@ def export_form(request):
         return render(request, "reports/export_form.html", {
             "form": form,
             "is_aggregate_only": is_aggregate,
+            "is_pm_export": is_pm_export,
         })
 
     program = form.cleaned_data["program"]
@@ -362,6 +381,7 @@ def export_form(request):
                 "form": form,
                 "no_data": True,
                 "is_aggregate_only": is_aggregate,
+                "is_pm_export": is_pm_export,
             },
         )
 
@@ -781,32 +801,31 @@ def client_analysis(request, client_id):
 
 
 @login_required
-def cmt_export_form(request):
+def funder_report_form(request):
     """
-    United Way CMT (Community Monitoring Tool) export.
+    Funder report export — aggregate program outcome report.
 
-    GET  — display the CMT export form.
-    POST — generate and return the CMT-formatted report.
+    GET  — display the funder report form.
+    POST — generate and return the formatted report.
 
     Access: admin (any program) or program_manager (their programs only).
 
-    CMT reports are structured for United Way Canada's reporting
-    requirements, including:
+    Reports include:
     - Organisation and program information
     - Service statistics (individuals served, contacts)
-    - Age demographics (CMT standard categories)
+    - Age demographics
     - Outcome achievement rates
     """
-    if not can_create_export(request.user, "cmt"):
+    if not can_create_export(request.user, "funder_report"):
         return HttpResponseForbidden("You do not have permission to access this page.")
 
     if request.method != "POST":
-        form = CMTExportForm(user=request.user)
-        return render(request, "reports/cmt_export_form.html", {"form": form})
+        form = FunderReportForm(user=request.user)
+        return render(request, "reports/funder_report_form.html", {"form": form})
 
-    form = CMTExportForm(request.POST, user=request.user)
+    form = FunderReportForm(request.POST, user=request.user)
     if not form.is_valid():
-        return render(request, "reports/cmt_export_form.html", {"form": form})
+        return render(request, "reports/funder_report_form.html", {"form": form})
 
     program = form.cleaned_data["program"]
     date_from = form.cleaned_data["date_from"]
@@ -814,9 +833,9 @@ def cmt_export_form(request):
     fiscal_year_label = form.cleaned_data["fiscal_year_label"]
     export_format = form.cleaned_data["format"]
 
-    # Generate CMT data
+    # Generate report data
     # Security: Pass user for demo/real filtering
-    cmt_data = generate_cmt_data(
+    report_data = generate_funder_report_data(
         program,
         date_from=date_from,
         date_to=date_to,
@@ -826,47 +845,47 @@ def cmt_export_form(request):
 
     # Capture raw integer count before suppression — needed for
     # client_count (PositiveIntegerField) and is_elevated check.
-    raw_client_count = cmt_data.get("total_individuals_served", 0)
+    raw_client_count = report_data.get("total_individuals_served", 0)
 
     # Apply small-cell suppression for confidential programs
-    cmt_data["total_individuals_served"] = suppress_small_cell(
-        cmt_data["total_individuals_served"], program,
+    report_data["total_individuals_served"] = suppress_small_cell(
+        report_data["total_individuals_served"], program,
     )
-    cmt_data["new_clients_this_period"] = suppress_small_cell(
-        cmt_data["new_clients_this_period"], program,
+    report_data["new_clients_this_period"] = suppress_small_cell(
+        report_data["new_clients_this_period"], program,
     )
     # Suppress age demographic counts individually
-    if program.is_confidential and "age_demographics" in cmt_data:
-        for age_group, count in cmt_data["age_demographics"].items():
+    if program.is_confidential and "age_demographics" in report_data:
+        for age_group, count in report_data["age_demographics"].items():
             if isinstance(count, int):
-                cmt_data["age_demographics"][age_group] = suppress_small_cell(count, program)
+                report_data["age_demographics"][age_group] = suppress_small_cell(count, program)
 
     recipient = form.get_recipient_display()
     safe_name = sanitise_filename(program.name.replace(" ", "_"))
     safe_fy = sanitise_filename(fiscal_year_label.replace(" ", "_"))
 
     if export_format == "pdf":
-        from .pdf_views import generate_cmt_pdf
-        pdf_response = generate_cmt_pdf(request, cmt_data)
-        filename = f"CMT_Report_{safe_name}_{safe_fy}.pdf"
+        from .pdf_views import generate_funder_report_pdf
+        pdf_response = generate_funder_report_pdf(request, report_data)
+        filename = f"Funder_Report_{safe_name}_{safe_fy}.pdf"
         content = pdf_response.content
     else:
         # Build CSV in memory buffer
         csv_buffer = io.StringIO()
         writer = csv.writer(csv_buffer)
-        csv_rows = generate_cmt_csv_rows(cmt_data)
+        csv_rows = generate_funder_report_csv_rows(report_data)
         for row in csv_rows:
             writer.writerow(sanitise_csv_row(row))
-        filename = f"CMT_Report_{safe_name}_{safe_fy}.csv"
+        filename = f"Funder_Report_{safe_name}_{safe_fy}.csv"
         content = csv_buffer.getvalue()
 
     # Save to file and create secure download link
-    # CMT reports are always aggregate — no individual client data
+    # Funder reports are always aggregate — no individual client data
     link = _save_export_and_create_link(
         request=request,
         content=content,
         filename=filename,
-        export_type="cmt",
+        export_type="funder_report",
         client_count=raw_client_count,
         includes_notes=False,
         recipient=recipient,
@@ -885,7 +904,7 @@ def cmt_export_form(request):
         user_id=request.user.pk,
         user_display=request.user.display_name,
         action="export",
-        resource_type="cmt_report",
+        resource_type="funder_report",
         ip_address=_get_client_ip(request),
         is_demo_context=getattr(request.user, "is_demo", False),
         metadata={
@@ -894,7 +913,7 @@ def cmt_export_form(request):
             "date_from": str(date_from),
             "date_to": str(date_to),
             "format": export_format,
-            "total_individuals_served": cmt_data["total_individuals_served"],
+            "total_individuals_served": report_data["total_individuals_served"],
             "recipient": recipient,
             "secure_link_id": str(link.id),
         },
@@ -908,250 +927,6 @@ def cmt_export_form(request):
         "download_url": download_url,
     })
 
-
-@login_required
-@admin_required
-def client_data_export(request):
-    """
-    Export all client data as CSV for data portability and migration.
-
-    GET  — display the export filter form.
-    POST — generate and return a CSV with all client data.
-
-    This export includes:
-    - Core demographics (record ID, name, birth date, status)
-    - Custom field values (optional)
-    - Program enrolments (optional)
-    - Consent and retention information (optional)
-
-    Admin-only access. All exports are audit logged.
-    """
-    from apps.clients.models import (
-        ClientDetailValue,
-        ClientFile,
-        ClientProgramEnrolment,
-        CustomFieldDefinition,
-    )
-
-    if request.method != "POST":
-        form = ClientDataExportForm()
-        # Show accessible client count for preview
-        accessible_clients = get_client_queryset(request.user)
-        total_client_count = accessible_clients.count()
-        return render(request, "reports/client_data_export_form.html", {
-            "form": form,
-            "total_client_count": total_client_count,
-        })
-
-    form = ClientDataExportForm(request.POST)
-    if not form.is_valid():
-        # Preserve client count on validation failure
-        accessible_clients = get_client_queryset(request.user)
-        total_client_count = accessible_clients.count()
-        return render(request, "reports/client_data_export_form.html", {
-            "form": form,
-            "total_client_count": total_client_count,
-        })
-
-    # Get filter options
-    program = form.cleaned_data.get("program")
-    status_filter = form.cleaned_data.get("status")
-    include_custom_fields = form.cleaned_data.get("include_custom_fields", True)
-    include_enrolments = form.cleaned_data.get("include_enrolments", True)
-    include_consent = form.cleaned_data.get("include_consent", True)
-
-    # Build base queryset — filter by user's demo status for security
-    # Security: Demo users can only export demo clients; real users only real clients
-    clients_qs = get_client_queryset(request.user)
-
-    # Apply status filter
-    if status_filter:
-        clients_qs = clients_qs.filter(status=status_filter)
-
-    # Apply program filter
-    if program:
-        enrolled_client_ids = ClientProgramEnrolment.objects.filter(
-            program=program
-        ).values_list("client_file_id", flat=True)
-        clients_qs = clients_qs.filter(pk__in=enrolled_client_ids)
-
-    # Load all clients into memory for decryption
-    # Note: This is required because encrypted fields cannot be queried in SQL.
-    # Acceptable for up to ~2,000 clients per export.
-    clients = list(clients_qs)
-
-    if not clients:
-        return render(
-            request,
-            "reports/client_data_export_form.html",
-            {"form": form, "no_data": True},
-        )
-
-    # Get custom field definitions if needed
-    custom_fields = []
-    if include_custom_fields:
-        custom_fields = list(
-            CustomFieldDefinition.objects.filter(status="active")
-            .select_related("group")
-            .order_by("group__sort_order", "sort_order")
-        )
-
-    # Build CSV in memory buffer
-    csv_buffer = io.StringIO()
-    writer = csv.writer(csv_buffer)
-    export_date = timezone.now().strftime("%Y-%m-%d")
-    filename = f"client_data_export_{export_date}.csv"
-    if program:
-        safe_name = sanitise_filename(program.name.replace(" ", "_"))
-        filename = f"client_data_export_{safe_name}_{export_date}.csv"
-
-    # Summary header rows
-    writer.writerow(sanitise_csv_row([f"# Client Data Export"]))
-    writer.writerow(sanitise_csv_row([f"# Export Date: {export_date}"]))
-    writer.writerow(sanitise_csv_row([f"# Total Clients: {len(clients)}"]))
-    if program:
-        writer.writerow(sanitise_csv_row([f"# Program Filter: {program.name}"]))
-    if status_filter:
-        writer.writerow(sanitise_csv_row([f"# Status Filter: {status_filter}"]))
-    writer.writerow([])
-
-    # Build column headers
-    headers = [
-        "Record ID",
-        "First Name",
-        "Middle Name",
-        "Last Name",
-        "Birth Date",
-        "Status",
-        "Status Reason",
-        "Created",
-        "Last Updated",
-    ]
-
-    if include_consent:
-        headers.extend([
-            "Consent Given",
-            "Consent Type",
-            "Retention Expires",
-            "Erasure Requested",
-        ])
-
-    if include_enrolments:
-        headers.append("Program Enrolments")
-
-    if include_custom_fields:
-        for field in custom_fields:
-            headers.append(f"{field.group.title}: {field.name}")
-
-    writer.writerow(sanitise_csv_row(headers))
-
-    # Preload custom field values and enrolments for efficiency
-    client_ids = [c.pk for c in clients]
-
-    custom_values_by_client = {}
-    if include_custom_fields:
-        all_values = ClientDetailValue.objects.filter(
-            client_file_id__in=client_ids
-        ).select_related("field_def")
-        for cv in all_values:
-            if cv.client_file_id not in custom_values_by_client:
-                custom_values_by_client[cv.client_file_id] = {}
-            custom_values_by_client[cv.client_file_id][cv.field_def_id] = cv.get_value()
-
-    enrolments_by_client = {}
-    if include_enrolments:
-        all_enrolments = ClientProgramEnrolment.objects.filter(
-            client_file_id__in=client_ids
-        ).select_related("program")
-        for enrol in all_enrolments:
-            if enrol.client_file_id not in enrolments_by_client:
-                enrolments_by_client[enrol.client_file_id] = []
-            status_label = "Active" if enrol.status == "enrolled" else "Unenrolled"
-            enrolments_by_client[enrol.client_file_id].append(
-                f"{enrol.program.name} ({status_label})"
-            )
-
-    # Write data rows — sanitise all values to prevent CSV injection
-    for client in clients:
-        row = [
-            client.record_id,
-            client.first_name,
-            client.middle_name or "",
-            client.last_name,
-            client.birth_date or "",
-            client.status,
-            client.status_reason or "",
-            client.created_at.strftime("%Y-%m-%d %H:%M") if client.created_at else "",
-            client.updated_at.strftime("%Y-%m-%d %H:%M") if client.updated_at else "",
-        ]
-
-        if include_consent:
-            row.extend([
-                client.consent_given_at.strftime("%Y-%m-%d %H:%M") if client.consent_given_at else "",
-                client.consent_type or "",
-                str(client.retention_expires) if client.retention_expires else "",
-                "Yes" if client.erasure_requested else "No",
-            ])
-
-        if include_enrolments:
-            enrolment_list = enrolments_by_client.get(client.pk, [])
-            row.append("; ".join(enrolment_list))
-
-        if include_custom_fields:
-            client_values = custom_values_by_client.get(client.pk, {})
-            for field in custom_fields:
-                row.append(client_values.get(field.pk, ""))
-
-        writer.writerow(sanitise_csv_row(row))
-
-    # Save to file and create secure download link
-    recipient = form.get_recipient_display()
-    link = _save_export_and_create_link(
-        request=request,
-        content=csv_buffer.getvalue(),
-        filename=filename,
-        export_type="client_data",
-        client_count=len(clients),
-        includes_notes=False,
-        recipient=recipient,
-        filters_dict={
-            "program_filter": program.name if program else None,
-            "status_filter": status_filter or None,
-            "include_custom_fields": include_custom_fields,
-            "include_enrolments": include_enrolments,
-            "include_consent": include_consent,
-        },
-        contains_pii=True,
-    )
-
-    # Audit log with recipient tracking
-    AuditLog.objects.using("audit").create(
-        event_timestamp=timezone.now(),
-        user_id=request.user.pk,
-        user_display=request.user.display_name,
-        action="export",
-        resource_type="client_data",
-        ip_address=_get_client_ip(request),
-        is_demo_context=getattr(request.user, "is_demo", False),
-        metadata={
-            "total_clients": len(clients),
-            "program_filter": program.name if program else None,
-            "status_filter": status_filter or None,
-            "include_custom_fields": include_custom_fields,
-            "include_enrolments": include_enrolments,
-            "include_consent": include_consent,
-            "recipient": recipient,
-            "secure_link_id": str(link.id),
-        },
-    )
-
-    download_url = request.build_absolute_uri(
-        reverse("reports:download_export", args=[link.id])
-    )
-    return render(request, "reports/export_link_created.html", {
-        "link": link,
-        "download_url": download_url,
-    })
 
 
 # ─── Secure link views ──────────────────────────────────────────────
@@ -1163,12 +938,12 @@ def download_export(request, link_id):
     Serve an export file if the secure link is still valid.
 
     The export creator can download their own link. Admins can download
-    any link (for oversight and client_data_export which only admin creates).
+    any link (for oversight).
     Every download is logged with who actually downloaded the file.
 
     Defense-in-depth: exports containing PII (individual client data) require
-    admin access at download time, even if the creator originally had permission.
-    This guards against role changes between creation and download.
+    admin or PM access at download time, even if the creator originally had
+    permission. This guards against role changes between creation and download.
     """
     link = get_object_or_404(SecureExportLink, id=link_id)
 
@@ -1178,16 +953,17 @@ def download_export(request, link_id):
         return HttpResponseForbidden("You do not have permission to download this export.")
 
     # Defense-in-depth: re-validate PII access at download time.
-    # Only admins may download exports containing individual client data.
-    # This catches: (1) legacy links created before this fix, (2) role
-    # demotions between export creation and download.
-    if link.contains_pii and not request.user.is_admin:
+    # Only admins and PMs may download exports containing individual client
+    # data. This catches: (1) legacy links, (2) role demotions between
+    # export creation and download.
+    if link.contains_pii and not can_download_pii_export(request.user):
         logger.warning(
-            "Blocked non-admin download of PII export link=%s user=%s",
+            "Blocked non-PM/non-admin download of PII export link=%s user=%s",
             link.id, request.user.pk,
         )
         return HttpResponseForbidden(
-            "This export contains individual client data. Only administrators can download it."
+            "This export contains individual client data. "
+            "Only program managers and administrators can download it."
         )
 
     # Check link validity (revoked / expired)

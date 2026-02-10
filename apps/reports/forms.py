@@ -1,10 +1,9 @@
-"""Forms for the reports app — metric export filtering, CMT reports, and client data export."""
+"""Forms for the reports app — metric export filtering, funder reports, and individual client export."""
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from apps.programs.models import Program
 from apps.plans.models import MetricDefinition
-from apps.clients.models import ClientFile
 from .demographics import get_demographic_field_choices
 from .utils import get_fiscal_year_choices, get_fiscal_year_range, get_current_fiscal_year
 
@@ -32,14 +31,6 @@ CLINICAL_RECIPIENT_CHOICES = [
     ("other", _("Other")),
 ]
 
-ADMIN_RECIPIENT_CHOICES = [
-    ("", _("— Select recipient —")),
-    ("self", _("Keeping for my records")),
-    ("migration", _("Data migration")),
-    ("audit", _("Audit or compliance review")),
-    ("other", _("Other")),
-]
-
 
 class ExportRecipientMixin:
     """
@@ -53,6 +44,7 @@ class ExportRecipientMixin:
     """
 
     recipient_choices = AGGREGATE_RECIPIENT_CHOICES  # default; override per form
+    recipient_placeholder = _("e.g., Community Foundation, Jane Smith")  # default; override per form
 
     def add_recipient_fields(self):
         """Add recipient fields to the form. Call in __init__ after super()."""
@@ -68,7 +60,7 @@ class ExportRecipientMixin:
             max_length=200,
             label=_("Recipient details"),
             help_text=_("Name of recipient or organisation."),
-            widget=forms.TextInput(attrs={"placeholder": _("e.g., United Way, Jane Smith")}),
+            widget=forms.TextInput(attrs={"placeholder": self.recipient_placeholder}),
         )
 
     def get_recipient_display(self):
@@ -83,8 +75,6 @@ class ExportRecipientMixin:
             "board": "Board",
             "client": "Client access request (PIPEDA)",
             "supervisor": "Supervisor",
-            "migration": "Data migration",
-            "audit": "Audit/compliance",
         }
         base = labels.get(recipient, recipient.title() if recipient else "Not specified")
         if recipient == "self":
@@ -202,11 +192,11 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         return cleaned
 
 
-class CMTExportForm(ExportRecipientMixin, forms.Form):
+class FunderReportForm(ExportRecipientMixin, forms.Form):
     """
-    Form for United Way CMT (Community Monitoring Tool) export.
+    Form for funder report export.
 
-    This form is simpler than the full metric export form, as CMT reports
+    This form is simpler than the full metric export form, as funder reports
     have a fixed structure. Users select a program and fiscal year,
     and the report is generated with all applicable data.
     """
@@ -246,7 +236,7 @@ class CMTExportForm(ExportRecipientMixin, forms.Form):
             from .utils import get_manageable_programs
             self.fields["program"].queryset = get_manageable_programs(user)
         # Build fiscal year choices dynamically
-        # For CMT, we require a fiscal year selection (no custom date range)
+        # Funder reports require a fiscal year selection (no custom date range)
         self.fields["fiscal_year"].choices = get_fiscal_year_choices()
         # Default to current fiscal year
         self.fields["fiscal_year"].initial = str(get_current_fiscal_year())
@@ -274,66 +264,6 @@ class CMTExportForm(ExportRecipientMixin, forms.Form):
         return cleaned
 
 
-class ClientDataExportForm(ExportRecipientMixin, forms.Form):
-    """
-    Form for exporting all client data as CSV.
-
-    This export is designed for data portability and migration, allowing
-    agencies to extract all their client data in a standard format.
-    Admin-only. Never for funders.
-    """
-
-    recipient_choices = ADMIN_RECIPIENT_CHOICES
-
-    STATUS_CHOICES = [
-        ("", _("— All statuses —")),
-        ("active", _("Active only")),
-        ("inactive", _("Inactive only")),
-        ("discharged", _("Discharged only")),
-    ]
-
-    program = forms.ModelChoiceField(
-        queryset=Program.objects.filter(status="active"),
-        required=False,
-        label=_("Program"),
-        empty_label=_("— All programs —"),
-        help_text=_("Leave blank to export participants from all programs."),
-    )
-
-    status = forms.ChoiceField(
-        choices=STATUS_CHOICES,
-        required=False,
-        label=_("Participant status"),
-        help_text=_("Filter by participant status, or export all."),
-    )
-
-    include_custom_fields = forms.BooleanField(
-        required=False,
-        initial=True,
-        label=_("Include custom fields"),
-        help_text=_("Add custom field values as additional columns."),
-    )
-
-    include_enrolments = forms.BooleanField(
-        required=False,
-        initial=True,
-        label=_("Include program enrolments"),
-        help_text=_("Add program enrolment history as additional columns."),
-    )
-
-    include_consent = forms.BooleanField(
-        required=False,
-        initial=True,
-        label=_("Include consent information"),
-        help_text=_("Add consent and data retention fields."),
-    )
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Add recipient tracking fields for audit purposes
-        self.add_recipient_fields()
-
-
 class IndividualClientExportForm(ExportRecipientMixin, forms.Form):
     """
     Form for exporting an individual client's complete data (PIPEDA compliance).
@@ -345,6 +275,7 @@ class IndividualClientExportForm(ExportRecipientMixin, forms.Form):
     """
 
     recipient_choices = CLINICAL_RECIPIENT_CHOICES
+    recipient_placeholder = _("e.g., Jane Smith, Clinical Supervisor")
 
     FORMAT_CHOICES = [
         ("pdf", _("PDF (printable report)")),

@@ -177,9 +177,9 @@ class SecureExportLinkModelTest(TestCase):
 
     def test_str_representation(self):
         """__str__ should include export type and status."""
-        link = _create_link(self.admin, self.export_dir, export_type="cmt")
+        link = _create_link(self.admin, self.export_dir, export_type="funder_report")
         result = str(link)
-        self.assertIn("cmt", result)
+        self.assertIn("funder_report", result)
         self.assertIn("Active", result)
 
 
@@ -1071,7 +1071,7 @@ class ElevatedExportEmailTest(TestCase):
             export_type="client_data",
             client_count=200,
             includes_notes=False,
-            recipient="Funder: United Way",
+            recipient="Funder: Community Foundation",
         )
 
         # Should have sent one email

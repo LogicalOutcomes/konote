@@ -1,4 +1,4 @@
-"""Program Outcome Report Template (CMT format) export functionality.
+"""Funder report export functionality.
 
 Generates standardised program reports with common nonprofit reporting fields:
 - Organisation and program information
@@ -9,8 +9,8 @@ Generates standardised program reports with common nonprofit reporting fields:
 
 IMPORTANT: This is a draft template. Organisations should verify this format
 matches their specific reporting requirements before submission. Different
-recipients (United Way chapters, government agencies, foundations) may require
-different formats, fields, or calculations.
+funders, government agencies, and foundations may require different formats,
+fields, or calculations.
 
 Canadian spelling conventions used throughout (organisation, colour).
 """
@@ -30,8 +30,8 @@ from .demographics import get_age_range, group_clients_by_age
 from .utils import get_fiscal_year_range
 
 
-# CMT age group buckets (United Way standard categories)
-CMT_AGE_GROUPS = [
+# Default age group buckets (common nonprofit reporting categories)
+DEFAULT_AGE_GROUPS = [
     (0, 12, "Child (0-12)"),
     (13, 17, "Youth (13-17)"),
     (18, 24, "Young Adult (18-24)"),
@@ -40,19 +40,18 @@ CMT_AGE_GROUPS = [
 ]
 
 
-def get_cmt_age_group(birth_date: date | str | None, as_of_date: date | None = None) -> str:
+def get_age_group_label(birth_date: date | str | None, as_of_date: date | None = None) -> str:
     """
-    Calculate CMT-specific age group from a birth date.
+    Calculate age group label from a birth date.
 
-    Uses United Way's standard age categories which differ from our internal
-    age ranges.
+    Uses common nonprofit age categories for funder reporting.
 
     Args:
         birth_date: Date of birth (as date object or string YYYY-MM-DD).
         as_of_date: Calculate age as of this date (default: today).
 
     Returns:
-        CMT age group string (e.g., "Youth (13-17)") or "Unknown" if birth_date is missing.
+        Age group string (e.g., "Youth (13-17)") or "Unknown" if birth_date is missing.
     """
     if not birth_date:
         return "Unknown"
@@ -73,31 +72,31 @@ def get_cmt_age_group(birth_date: date | str | None, as_of_date: date | None = N
     if (as_of_date.month, as_of_date.day) < (birth_date.month, birth_date.day):
         age -= 1
 
-    # Find matching CMT age group
-    for min_age, max_age, label in CMT_AGE_GROUPS:
+    # Find matching age group
+    for min_age, max_age, label in DEFAULT_AGE_GROUPS:
         if min_age <= age <= max_age:
             return label
 
     return "Unknown"
 
 
-def group_clients_by_cmt_age(
+def group_clients_by_age_buckets(
     client_ids: list[int],
     as_of_date: date | None = None,
 ) -> dict[str, int]:
     """
-    Group client IDs by CMT age categories and return counts.
+    Group client IDs by age categories and return counts.
 
     Args:
         client_ids: List of client IDs to group.
         as_of_date: Calculate ages as of this date (default: today).
 
     Returns:
-        Dict mapping CMT age group labels to counts.
+        Dict mapping age group labels to counts.
         Example: {"Child (0-12)": 5, "Youth (13-17)": 12, ...}
     """
-    # Initialize with all CMT age groups
-    counts = {label: 0 for _, _, label in CMT_AGE_GROUPS}
+    # Initialize with all age groups
+    counts = {label: 0 for _, _, label in DEFAULT_AGE_GROUPS}
     counts["Unknown"] = 0
 
     if not client_ids:
@@ -107,7 +106,7 @@ def group_clients_by_cmt_age(
     clients = ClientFile.objects.filter(pk__in=client_ids)
 
     for client in clients:
-        age_group = get_cmt_age_group(client.birth_date, as_of_date)
+        age_group = get_age_group_label(client.birth_date, as_of_date)
         counts[age_group] = counts.get(age_group, 0) + 1
 
     return counts
@@ -142,7 +141,7 @@ def get_new_clients_count(
 
 def format_fiscal_year_label(start_year: int) -> str:
     """
-    Format a fiscal year label for CMT reporting.
+    Format a fiscal year label for reporting.
 
     Args:
         start_year: The starting year of the fiscal year (e.g., 2025).
@@ -171,7 +170,7 @@ def format_number(value: int | float | None) -> str:
     return f"{value:,}"
 
 
-def generate_cmt_data(
+def generate_funder_report_data(
     program,
     date_from: date,
     date_to: date,
@@ -179,9 +178,9 @@ def generate_cmt_data(
     user=None,
 ) -> dict[str, Any]:
     """
-    Build the complete CMT data structure for a program.
+    Build the complete funder report data structure for a program.
 
-    This function aggregates all the data needed for a United Way CMT report:
+    Aggregates all the data needed for a program outcome report:
     - Organisation and program information
     - Service statistics
     - Demographic breakdowns
@@ -197,7 +196,7 @@ def generate_cmt_data(
               matching the user's demo status will be included.
 
     Returns:
-        Dict with CMT report data structure ready for rendering.
+        Dict with report data structure ready for rendering.
     """
     # Determine fiscal year label if not provided
     if not fiscal_year_label:
@@ -264,8 +263,8 @@ def generate_cmt_data(
         ).values_list("client_file_id", flat=True).distinct()
     )
 
-    # Age demographics using CMT categories
-    age_demographics = group_clients_by_cmt_age(active_client_ids, date_to)
+    # Age demographics
+    age_demographics = group_clients_by_age_buckets(active_client_ids, date_to)
 
     # Get achievement summary for all metrics with data
     achievement_summary = get_achievement_summary(
@@ -325,9 +324,9 @@ def generate_cmt_data(
     }
 
 
-def generate_cmt_csv_rows(cmt_data: dict[str, Any]) -> list[list[str]]:
+def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[str]]:
     """
-    Generate CSV rows for CMT export.
+    Generate CSV rows for funder report export.
 
     The CSV format follows a structured layout with header sections and data:
     - Organisation and program info
@@ -337,7 +336,7 @@ def generate_cmt_csv_rows(cmt_data: dict[str, Any]) -> list[list[str]]:
     - Outcome indicators
 
     Args:
-        cmt_data: Dict returned by generate_cmt_data().
+        report_data: Dict returned by generate_funder_report_data().
 
     Returns:
         List of rows, where each row is a list of cell values.
@@ -347,30 +346,30 @@ def generate_cmt_csv_rows(cmt_data: dict[str, Any]) -> list[list[str]]:
     # Header section
     rows.append(["PROGRAM OUTCOME REPORT TEMPLATE"])
     rows.append(["DRAFT — Verify this format matches reporting requirements before submission"])
-    rows.append([f"Generated: {cmt_data['generated_at'].strftime('%Y-%m-%d %H:%M')}"])
+    rows.append([f"Generated: {report_data['generated_at'].strftime('%Y-%m-%d %H:%M')}"])
     rows.append([])
 
     # Organisation information
     rows.append(["ORGANISATION INFORMATION"])
-    rows.append(["Organisation Name", cmt_data["organisation_name"]])
-    rows.append(["Program/Service Name", cmt_data["program_name"]])
-    if cmt_data["program_description"]:
-        rows.append(["Program Description", cmt_data["program_description"]])
-    rows.append(["Reporting Period", cmt_data["reporting_period"]])
+    rows.append(["Organisation Name", report_data["organisation_name"]])
+    rows.append(["Program/Service Name", report_data["program_name"]])
+    if report_data["program_description"]:
+        rows.append(["Program Description", report_data["program_description"]])
+    rows.append(["Reporting Period", report_data["reporting_period"]])
     rows.append([])
 
     # Service statistics
     rows.append(["SERVICE STATISTICS"])
-    rows.append(["Total Individuals Served", format_number(cmt_data["total_individuals_served"])])
-    rows.append(["New Clients This Period", format_number(cmt_data["new_clients_this_period"])])
-    rows.append(["Total Service Contacts", format_number(cmt_data["total_contacts"])])
+    rows.append(["Total Individuals Served", format_number(report_data["total_individuals_served"])])
+    rows.append(["New Clients This Period", format_number(report_data["new_clients_this_period"])])
+    rows.append(["Total Service Contacts", format_number(report_data["total_contacts"])])
     rows.append([])
 
     # Age demographics
     rows.append(["AGE DEMOGRAPHICS"])
     rows.append(["Age Group", "Count", "Percentage"])
-    total_demo = cmt_data["age_demographics_total"]
-    for age_group, count in cmt_data["age_demographics"].items():
+    total_demo = report_data["age_demographics_total"]
+    for age_group, count in report_data["age_demographics"].items():
         if total_demo > 0:
             pct = f"{(count / total_demo * 100):.1f}%"
         else:
@@ -382,9 +381,9 @@ def generate_cmt_csv_rows(cmt_data: dict[str, Any]) -> list[list[str]]:
     # Outcome indicators
     rows.append(["OUTCOME INDICATORS"])
 
-    if cmt_data["primary_outcome"]:
+    if report_data["primary_outcome"]:
         rows.append(["PRIMARY OUTCOME"])
-        po = cmt_data["primary_outcome"]
+        po = report_data["primary_outcome"]
         rows.append(["Indicator Name", po["name"]])
         rows.append(["Target Value", format_number(po["target_value"])])
         rows.append(["Clients Measured", format_number(po["clients_measured"])])
@@ -392,10 +391,10 @@ def generate_cmt_csv_rows(cmt_data: dict[str, Any]) -> list[list[str]]:
         rows.append(["Achievement Rate", f"{po['achievement_rate']}%"])
         rows.append([])
 
-    if cmt_data["secondary_outcomes"]:
+    if report_data["secondary_outcomes"]:
         rows.append(["SECONDARY OUTCOMES"])
         rows.append(["Indicator Name", "Target", "Measured", "Achieved", "Rate"])
-        for so in cmt_data["secondary_outcomes"]:
+        for so in report_data["secondary_outcomes"]:
             rows.append([
                 so["name"],
                 format_number(so["target_value"]),
@@ -405,12 +404,12 @@ def generate_cmt_csv_rows(cmt_data: dict[str, Any]) -> list[list[str]]:
             ])
         rows.append([])
 
-    if not cmt_data["primary_outcome"] and not cmt_data["secondary_outcomes"]:
+    if not report_data["primary_outcome"] and not report_data["secondary_outcomes"]:
         rows.append(["No outcome indicators with targets defined for this program."])
         rows.append([])
 
     # Overall summary
-    summary = cmt_data["achievement_summary"]
+    summary = report_data["achievement_summary"]
     if summary["total_clients"] > 0:
         rows.append(["OVERALL SUMMARY"])
         rows.append(["Total Clients with Outcome Data", format_number(summary["total_clients"])])

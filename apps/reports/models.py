@@ -25,7 +25,7 @@ class SecureExportLink(models.Model):
     EXPORT_TYPE_CHOICES = [
         ("client_data", _("Participant Data")),
         ("metrics", _("Metric Report")),
-        ("cmt", _("CMT Report")),
+        ("funder_report", _("Funder Report")),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

@@ -5,6 +5,7 @@
 - [ ] Decide product name — "KoNote" vs "KoNote2". See `tasks/naming-versioning.md` (NAME1)
 - [ ] Update konote-website git remote URL — repo renamed but local remote still points to old name (NAME2)
 - [ ] Approve Agency Permissions Interview questionnaire — must be finalised before first agency deployment. See `tasks/agency-permissions-interview.md` (ONBOARD-APPROVE)
+- [ ] Decide who runs the export command — KoNote team only, or self-hosted agencies too? Shapes the entire SEC3 design. See `tasks/agency-data-offboarding.md` (SEC3-Q1)
 
 ## Active Work
 
@@ -116,6 +117,7 @@
 
 ### Privacy & Security
 
+- [ ] Agency data offboarding command — CLI-only secure export for agency departures and PIPEDA requests. See `tasks/agency-data-offboarding.md` (SEC3)
 - [ ] First-run setup wizard — guided initial configuration (SETUP1)
 - [ ] TOTP multi-factor authentication — see `tasks/mfa-implementation.md` (SEC2)
 - [ ] Encrypted search optimisation for 2000+ client lists (PERF1)
