@@ -1271,68 +1271,68 @@ class MetricExportFormGroupByTests(TestCase):
 # =============================================================================
 
 
-class CMTAgeGroupTests(TestCase):
-    """Tests for CMT-specific age group calculations."""
+class AgeGroupBucketTests(TestCase):
+    """Tests for funder report age group calculations."""
 
-    def test_cmt_age_group_child(self):
+    def test_age_group_child(self):
         """Birth date resulting in age 8 should return 'Child (0-12)'."""
-        from apps.reports.cmt_export import get_cmt_age_group
+        from apps.reports.funder_report import get_age_group_label
         as_of = date(2025, 6, 15)
         birth_date = date(2017, 1, 1)  # Age 8
-        result = get_cmt_age_group(birth_date, as_of)
+        result = get_age_group_label(birth_date, as_of)
         self.assertEqual(result, "Child (0-12)")
 
-    def test_cmt_age_group_youth(self):
+    def test_age_group_youth(self):
         """Birth date resulting in age 15 should return 'Youth (13-17)'."""
-        from apps.reports.cmt_export import get_cmt_age_group
+        from apps.reports.funder_report import get_age_group_label
         as_of = date(2025, 6, 15)
         birth_date = date(2010, 1, 1)  # Age 15
-        result = get_cmt_age_group(birth_date, as_of)
+        result = get_age_group_label(birth_date, as_of)
         self.assertEqual(result, "Youth (13-17)")
 
-    def test_cmt_age_group_young_adult(self):
+    def test_age_group_young_adult(self):
         """Birth date resulting in age 22 should return 'Young Adult (18-24)'."""
-        from apps.reports.cmt_export import get_cmt_age_group
+        from apps.reports.funder_report import get_age_group_label
         as_of = date(2025, 6, 15)
         birth_date = date(2003, 1, 1)  # Age 22
-        result = get_cmt_age_group(birth_date, as_of)
+        result = get_age_group_label(birth_date, as_of)
         self.assertEqual(result, "Young Adult (18-24)")
 
-    def test_cmt_age_group_adult(self):
+    def test_age_group_adult(self):
         """Birth date resulting in age 40 should return 'Adult (25-64)'."""
-        from apps.reports.cmt_export import get_cmt_age_group
+        from apps.reports.funder_report import get_age_group_label
         as_of = date(2025, 6, 15)
         birth_date = date(1985, 1, 1)  # Age 40
-        result = get_cmt_age_group(birth_date, as_of)
+        result = get_age_group_label(birth_date, as_of)
         self.assertEqual(result, "Adult (25-64)")
 
-    def test_cmt_age_group_senior(self):
+    def test_age_group_senior(self):
         """Birth date resulting in age 70 should return 'Senior (65+)'."""
-        from apps.reports.cmt_export import get_cmt_age_group
+        from apps.reports.funder_report import get_age_group_label
         as_of = date(2025, 6, 15)
         birth_date = date(1955, 1, 1)  # Age 70
-        result = get_cmt_age_group(birth_date, as_of)
+        result = get_age_group_label(birth_date, as_of)
         self.assertEqual(result, "Senior (65+)")
 
-    def test_cmt_age_group_unknown_for_none(self):
+    def test_age_group_unknown_for_none(self):
         """None birth date should return 'Unknown'."""
-        from apps.reports.cmt_export import get_cmt_age_group
-        result = get_cmt_age_group(None)
+        from apps.reports.funder_report import get_age_group_label
+        result = get_age_group_label(None)
         self.assertEqual(result, "Unknown")
 
-    def test_cmt_age_group_boundary_12_to_13(self):
+    def test_age_group_boundary_12_to_13(self):
         """Person turning 13 today should be in 'Youth (13-17)'."""
-        from apps.reports.cmt_export import get_cmt_age_group
+        from apps.reports.funder_report import get_age_group_label
         as_of = date(2025, 6, 15)
         birth_date = date(2012, 6, 15)  # Exactly 13 today
-        result = get_cmt_age_group(birth_date, as_of)
+        result = get_age_group_label(birth_date, as_of)
         self.assertEqual(result, "Youth (13-17)")
 
-    def test_cmt_age_group_string_date(self):
+    def test_age_group_string_date(self):
         """String date format should be handled correctly."""
-        from apps.reports.cmt_export import get_cmt_age_group
+        from apps.reports.funder_report import get_age_group_label
         as_of = date(2025, 6, 15)
-        result = get_cmt_age_group("1990-01-15", as_of)  # Age 35
+        result = get_age_group_label("1990-01-15", as_of)  # Age 35
         self.assertEqual(result, "Adult (25-64)")
 
 
@@ -1341,19 +1341,19 @@ class FormatFiscalYearLabelTests(TestCase):
 
     def test_format_fiscal_year_label_2025(self):
         """FY 2025 should format as 'FY 2025-26'."""
-        from apps.reports.cmt_export import format_fiscal_year_label
+        from apps.reports.funder_report import format_fiscal_year_label
         result = format_fiscal_year_label(2025)
         self.assertEqual(result, "FY 2025-26")
 
     def test_format_fiscal_year_label_2023(self):
         """FY 2023 should format as 'FY 2023-24'."""
-        from apps.reports.cmt_export import format_fiscal_year_label
+        from apps.reports.funder_report import format_fiscal_year_label
         result = format_fiscal_year_label(2023)
         self.assertEqual(result, "FY 2023-24")
 
     def test_format_fiscal_year_label_century_boundary(self):
         """FY 2099 should format as 'FY 2099-00'."""
-        from apps.reports.cmt_export import format_fiscal_year_label
+        from apps.reports.funder_report import format_fiscal_year_label
         result = format_fiscal_year_label(2099)
         self.assertEqual(result, "FY 2099-00")
 
@@ -1363,43 +1363,43 @@ class FormatNumberTests(TestCase):
 
     def test_format_number_integer(self):
         """Integer should format with thousand separators."""
-        from apps.reports.cmt_export import format_number
+        from apps.reports.funder_report import format_number
         self.assertEqual(format_number(1234), "1,234")
         self.assertEqual(format_number(1234567), "1,234,567")
         self.assertEqual(format_number(0), "0")
 
     def test_format_number_float(self):
         """Float should format with one decimal place."""
-        from apps.reports.cmt_export import format_number
+        from apps.reports.funder_report import format_number
         self.assertEqual(format_number(1234.5), "1,234.5")
         self.assertEqual(format_number(1234.56), "1,234.6")  # Rounds
 
     def test_format_number_none(self):
         """None should return 'N/A'."""
-        from apps.reports.cmt_export import format_number
+        from apps.reports.funder_report import format_number
         self.assertEqual(format_number(None), "N/A")
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
-class CMTExportFormTests(TestCase):
-    """Tests for the CMTExportForm class."""
+class FunderReportFormTests(TestCase):
+    """Tests for the FunderReportForm class."""
 
     def setUp(self):
         enc_module._fernet = None
         self.program = Program.objects.create(name="Test Program", status="active")
 
     def test_form_has_required_fields(self):
-        """CMT form should have program, fiscal_year, and format fields."""
-        from apps.reports.forms import CMTExportForm
-        form = CMTExportForm()
+        """Funder report form should have program, fiscal_year, and format fields."""
+        from apps.reports.forms import FunderReportForm
+        form = FunderReportForm()
         self.assertIn("program", form.fields)
         self.assertIn("fiscal_year", form.fields)
         self.assertIn("format", form.fields)
 
     def test_form_fiscal_year_is_required(self):
-        """CMT form should require fiscal year (unlike regular export form)."""
-        from apps.reports.forms import CMTExportForm
-        form = CMTExportForm(data={
+        """Funder report form should require fiscal year (unlike regular export form)."""
+        from apps.reports.forms import FunderReportForm
+        form = FunderReportForm(data={
             "program": self.program.pk,
             "format": "csv",
         })
@@ -1407,9 +1407,9 @@ class CMTExportFormTests(TestCase):
         self.assertIn("fiscal_year", form.errors)
 
     def test_form_valid_with_all_fields(self):
-        """CMT form should be valid with program and fiscal year."""
-        from apps.reports.forms import CMTExportForm
-        form = CMTExportForm(data={
+        """Funder report form should be valid with program and fiscal year."""
+        from apps.reports.forms import FunderReportForm
+        form = FunderReportForm(data={
             "program": self.program.pk,
             "fiscal_year": "2025",
             "format": "csv",
@@ -1418,9 +1418,9 @@ class CMTExportFormTests(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
 
     def test_form_populates_date_range_from_fiscal_year(self):
-        """CMT form should populate date_from and date_to from fiscal year."""
-        from apps.reports.forms import CMTExportForm
-        form = CMTExportForm(data={
+        """Funder report form should populate date_from and date_to from fiscal year."""
+        from apps.reports.forms import FunderReportForm
+        form = FunderReportForm(data={
             "program": self.program.pk,
             "fiscal_year": "2025",
             "format": "csv",
@@ -1431,9 +1431,9 @@ class CMTExportFormTests(TestCase):
         self.assertEqual(form.cleaned_data["date_to"], date(2026, 3, 31))
 
     def test_form_generates_fiscal_year_label(self):
-        """CMT form should generate fiscal year label."""
-        from apps.reports.forms import CMTExportForm
-        form = CMTExportForm(data={
+        """Funder report form should generate fiscal year label."""
+        from apps.reports.forms import FunderReportForm
+        form = FunderReportForm(data={
             "program": self.program.pk,
             "fiscal_year": "2025",
             "format": "csv",
@@ -1444,14 +1444,14 @@ class CMTExportFormTests(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
-class GenerateCMTDataTests(TestCase):
-    """Tests for the generate_cmt_data function."""
+class GenerateFunderReportDataTests(TestCase):
+    """Tests for the generate_funder_report_data function."""
 
     def setUp(self):
         enc_module._fernet = None
         self.program = Program.objects.create(
             name="Test Program",
-            description="A test program for CMT export",
+            description="A test program for Funder report",
             status="active",
         )
         self.metric = MetricDefinition.objects.create(
@@ -1468,37 +1468,37 @@ class GenerateCMTDataTests(TestCase):
 
     def test_empty_program_returns_zeros(self):
         """Program with no data should return zero counts."""
-        from apps.reports.cmt_export import generate_cmt_data
-        cmt_data = generate_cmt_data(
+        from apps.reports.funder_report import generate_funder_report_data
+        report_data = generate_funder_report_data(
             self.program,
             date_from=date(2025, 4, 1),
             date_to=date(2026, 3, 31),
             fiscal_year_label="FY 2025-26",
         )
 
-        self.assertEqual(cmt_data["total_individuals_served"], 0)
-        self.assertEqual(cmt_data["new_clients_this_period"], 0)
-        self.assertEqual(cmt_data["total_contacts"], 0)
-        self.assertEqual(cmt_data["program_name"], "Test Program")
-        self.assertEqual(cmt_data["reporting_period"], "FY 2025-26")
+        self.assertEqual(report_data["total_individuals_served"], 0)
+        self.assertEqual(report_data["new_clients_this_period"], 0)
+        self.assertEqual(report_data["total_contacts"], 0)
+        self.assertEqual(report_data["program_name"], "Test Program")
+        self.assertEqual(report_data["reporting_period"], "FY 2025-26")
 
-    def test_cmt_data_includes_all_age_groups(self):
-        """CMT data should include all standard age groups."""
-        from apps.reports.cmt_export import generate_cmt_data, CMT_AGE_GROUPS
-        cmt_data = generate_cmt_data(
+    def test_report_data_includes_all_age_groups(self):
+        """Funder report data should include all standard age groups."""
+        from apps.reports.funder_report import generate_funder_report_data, DEFAULT_AGE_GROUPS
+        report_data = generate_funder_report_data(
             self.program,
             date_from=date(2025, 4, 1),
             date_to=date(2026, 3, 31),
         )
 
-        # Should have all CMT age groups (plus Unknown)
-        expected_groups = [label for _, _, label in CMT_AGE_GROUPS] + ["Unknown"]
+        # Should have all default age groups (plus Unknown)
+        expected_groups = [label for _, _, label in DEFAULT_AGE_GROUPS] + ["Unknown"]
         for group in expected_groups:
-            self.assertIn(group, cmt_data["age_demographics"])
+            self.assertIn(group, report_data["age_demographics"])
 
-    def test_cmt_data_counts_clients_with_activity(self):
-        """CMT should count clients who have notes in the period."""
-        from apps.reports.cmt_export import generate_cmt_data
+    def test_report_data_counts_clients_with_activity(self):
+        """Funder report should count clients who have notes in the period."""
+        from apps.reports.funder_report import generate_funder_report_data
 
         # Create a client with a note in the period
         client = ClientFile.objects.create()
@@ -1521,28 +1521,28 @@ class GenerateCMTDataTests(TestCase):
             created_at=timezone.make_aware(datetime(2025, 6, 15, 10, 0)),
         )
 
-        cmt_data = generate_cmt_data(
+        report_data = generate_funder_report_data(
             self.program,
             date_from=date(2025, 4, 1),
             date_to=date(2026, 3, 31),
         )
 
-        self.assertEqual(cmt_data["total_individuals_served"], 1)
-        self.assertEqual(cmt_data["total_contacts"], 1)
+        self.assertEqual(report_data["total_individuals_served"], 1)
+        self.assertEqual(report_data["total_contacts"], 1)
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
-class GenerateCMTCSVRowsTests(TestCase):
-    """Tests for the generate_cmt_csv_rows function."""
+class GenerateFunderReportCSVRowsTests(TestCase):
+    """Tests for the generate_funder_report_csv_rows function."""
 
     def setUp(self):
         enc_module._fernet = None
 
     def test_csv_rows_include_header_sections(self):
-        """CSV output should include standard CMT sections."""
-        from apps.reports.cmt_export import generate_cmt_csv_rows
+        """CSV output should include standard funder report sections."""
+        from apps.reports.funder_report import generate_funder_report_csv_rows
 
-        cmt_data = {
+        report_data = {
             "generated_at": timezone.now(),
             "organisation_name": "Test Org",
             "program_name": "Test Program",
@@ -1575,7 +1575,7 @@ class GenerateCMTCSVRowsTests(TestCase):
             },
         }
 
-        rows = generate_cmt_csv_rows(cmt_data)
+        rows = generate_funder_report_csv_rows(report_data)
 
         # Flatten rows to a single string for easier searching
         flat_text = " ".join(" ".join(str(cell) for cell in row) for row in rows)
@@ -1591,8 +1591,8 @@ class GenerateCMTCSVRowsTests(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
-class CMTExportViewTests(TestCase):
-    """Tests for the CMT export view."""
+class FunderReportViewTests(TestCase):
+    """Tests for the Funder report view."""
 
     databases = ["default", "audit"]
 
@@ -1607,40 +1607,40 @@ class CMTExportViewTests(TestCase):
         )
         self.program = Program.objects.create(name="Test Program", status="active")
 
-    def test_admin_can_access_cmt_export_form(self):
-        """Admin users should be able to access the CMT export form."""
+    def test_admin_can_access_funder_report_form(self):
+        """Admin users should be able to access the Funder report form."""
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/reports/cmt-export/")
+        resp = self.client.get("/reports/funder-report/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Program Outcome Report Template")
 
-    def test_nonadmin_cannot_access_cmt_export(self):
-        """Non-admin users should not be able to access CMT export."""
+    def test_nonadmin_cannot_access_funder_report(self):
+        """Non-admin users should not be able to access Funder report."""
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.get("/reports/cmt-export/")
+        resp = self.client.get("/reports/funder-report/")
         self.assertEqual(resp.status_code, 403)
 
-    def test_cmt_export_form_displays_program_dropdown(self):
-        """CMT export form should display program dropdown."""
+    def test_funder_report_form_displays_program_dropdown(self):
+        """Funder report form should display program dropdown."""
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/reports/cmt-export/")
+        resp = self.client.get("/reports/funder-report/")
         self.assertContains(resp, "Program")
         self.assertContains(resp, "Test Program")
 
-    def test_cmt_export_form_displays_fiscal_year_dropdown(self):
-        """CMT export form should display fiscal year dropdown."""
+    def test_funder_report_form_displays_fiscal_year_dropdown(self):
+        """Funder report form should display fiscal year dropdown."""
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/reports/cmt-export/")
+        resp = self.client.get("/reports/funder-report/")
         self.assertContains(resp, "Fiscal Year")
 
     def _get_download_content(self, download_resp):
         """Read content from a FileResponse (streaming)."""
         return b"".join(download_resp.streaming_content).decode("utf-8")
 
-    def test_cmt_export_csv_download(self):
-        """CMT export should create a secure link, and following it returns CSV."""
+    def test_funder_report_csv_download(self):
+        """Funder report should create a secure link, and following it returns CSV."""
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.post("/reports/cmt-export/", {
+        resp = self.client.post("/reports/funder-report/", {
             "program": self.program.pk,
             "fiscal_year": "2025",
             "format": "csv",
@@ -1650,13 +1650,13 @@ class CMTExportViewTests(TestCase):
         link = SecureExportLink.objects.latest("created_at")
         download_resp = self.client.get(f"/reports/download/{link.id}/")
         self.assertIn("attachment", download_resp["Content-Disposition"])
-        self.assertIn("CMT_Report", download_resp["Content-Disposition"])
+        self.assertIn("Funder_Report", download_resp["Content-Disposition"])
         self.assertIn("FY_2025-26", download_resp["Content-Disposition"])
 
-    def test_cmt_export_csv_content(self):
-        """CMT CSV export should contain expected sections via secure link."""
+    def test_funder_report_csv_content(self):
+        """Funder report CSV export should contain expected sections via secure link."""
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.post("/reports/cmt-export/", {
+        resp = self.client.post("/reports/funder-report/", {
             "program": self.program.pk,
             "fiscal_year": "2025",
             "format": "csv",
@@ -1671,155 +1671,6 @@ class CMTExportViewTests(TestCase):
         self.assertIn("SERVICE STATISTICS", content)
         self.assertIn("AGE DEMOGRAPHICS", content)
 
-
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
-class ClientDataExportViewTests(TestCase):
-    """Tests for the client data export view."""
-
-    databases = {"default", "audit"}
-
-    def setUp(self):
-        # Set up encryption key
-        enc_module.FIELD_ENCRYPTION_KEY = TEST_KEY
-        enc_module._fernet = Fernet(TEST_KEY)
-
-        # Create admin user
-        self.admin_user = User.objects.create_user(
-            username="admin",
-            email="admin@example.com",
-            password="testpass123",
-            is_admin=True,
-        )
-
-        # Create non-admin user
-        self.regular_user = User.objects.create_user(
-            username="regular",
-            email="regular@example.com",
-            password="testpass123",
-            is_admin=False,
-        )
-
-        # Create a program
-        self.program = Program.objects.create(
-            name="Test Program",
-            status="active",
-        )
-
-        # Create a client
-        self.client_file = ClientFile.objects.create(
-            record_id="TEST-001",
-            status="active",
-        )
-        self.client_file.first_name = "Jane"
-        self.client_file.last_name = "Doe"
-        self.client_file.birth_date = "1990-01-15"
-        self.client_file.save()
-
-        # Enrol client in program
-        ClientProgramEnrolment.objects.create(
-            client_file=self.client_file,
-            program=self.program,
-            status="enrolled",
-        )
-
-    def test_admin_can_access_client_data_export(self):
-        """Admin users should be able to access the client data export form."""
-        self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/reports/client-data-export/")
-        self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Client Data Export")
-
-    def test_nonadmin_cannot_access_client_data_export(self):
-        """Non-admin users should be denied access."""
-        self.client.login(username="regular", password="testpass123")
-        resp = self.client.get("/reports/client-data-export/")
-        self.assertEqual(resp.status_code, 403)
-
-    def _get_download_content(self, download_resp):
-        """Read content from a FileResponse (streaming)."""
-        return b"".join(download_resp.streaming_content).decode("utf-8")
-
-    def test_client_data_export_csv_download(self):
-        """Client data export should create a secure link that returns a CSV file."""
-        self.client.login(username="admin", password="testpass123")
-        resp = self.client.post("/reports/client-data-export/", {
-            "include_custom_fields": True,
-            "include_enrolments": True,
-            "include_consent": True,
-            "recipient": "self",
-        })
-        self.assertEqual(resp.status_code, 200)
-        link = SecureExportLink.objects.latest("created_at")
-        download_resp = self.client.get(f"/reports/download/{link.id}/")
-        self.assertIn("attachment", download_resp["Content-Disposition"])
-        self.assertIn("client_data_export", download_resp["Content-Disposition"])
-
-    def test_client_data_export_csv_contains_client_data(self):
-        """CSV export via secure link should contain the client's data."""
-        self.client.login(username="admin", password="testpass123")
-        resp = self.client.post("/reports/client-data-export/", {
-            "include_custom_fields": True,
-            "include_enrolments": True,
-            "include_consent": True,
-            "recipient": "self",
-        })
-        self.assertEqual(resp.status_code, 200)
-        link = SecureExportLink.objects.latest("created_at")
-        download_resp = self.client.get(f"/reports/download/{link.id}/")
-        content = self._get_download_content(download_resp)
-        self.assertIn("TEST-001", content)
-        self.assertIn("Jane", content)
-        self.assertIn("Doe", content)
-        self.assertIn("Test Program", content)
-
-    def test_client_data_export_with_program_filter(self):
-        """Export can be filtered by program."""
-        self.client.login(username="admin", password="testpass123")
-        resp = self.client.post("/reports/client-data-export/", {
-            "program": self.program.pk,
-            "include_custom_fields": True,
-            "include_enrolments": True,
-            "include_consent": True,
-            "recipient": "self",
-        })
-        self.assertEqual(resp.status_code, 200)
-        link = SecureExportLink.objects.latest("created_at")
-        download_resp = self.client.get(f"/reports/download/{link.id}/")
-        content = self._get_download_content(download_resp)
-        self.assertIn("TEST-001", content)
-        self.assertIn(f"Program Filter: {self.program.name}", content)
-
-    def test_client_data_export_with_status_filter(self):
-        """Export can be filtered by client status."""
-        self.client.login(username="admin", password="testpass123")
-        resp = self.client.post("/reports/client-data-export/", {
-            "status": "active",
-            "include_custom_fields": True,
-            "include_enrolments": True,
-            "include_consent": True,
-            "recipient": "self",
-        })
-        self.assertEqual(resp.status_code, 200)
-        link = SecureExportLink.objects.latest("created_at")
-        download_resp = self.client.get(f"/reports/download/{link.id}/")
-        content = self._get_download_content(download_resp)
-        self.assertIn("TEST-001", content)
-        self.assertIn("Status Filter: active", content)
-
-    def test_client_data_export_no_clients_shows_message(self):
-        """Export with no matching clients should show a message."""
-        # Delete all clients
-        ClientFile.objects.all().delete()
-
-        self.client.login(username="admin", password="testpass123")
-        resp = self.client.post("/reports/client-data-export/", {
-            "include_custom_fields": True,
-            "include_enrolments": True,
-            "include_consent": True,
-            "recipient": "self",
-        })
-        self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "No data found")
 
 
 # =============================================================================
@@ -1918,82 +1769,6 @@ class DemoRealExportSeparationTests(TestCase):
     def _get_download_content(self, download_resp):
         """Read content from a FileResponse (streaming)."""
         return b"".join(download_resp.streaming_content).decode("utf-8")
-
-    def test_demo_admin_cannot_export_real_clients_in_client_data_export(self):
-        """
-        CRITICAL: Demo admin must NOT see real client data in client data export.
-
-        This is the primary security test for EXP0a.
-        """
-        self.client.login(username="demo_admin", password="testpass123")
-        resp = self.client.post("/reports/client-data-export/", {
-            "include_custom_fields": True,
-            "include_enrolments": True,
-            "include_consent": True,
-            "recipient": "self",
-        })
-        self.assertEqual(resp.status_code, 200)
-        link = SecureExportLink.objects.latest("created_at")
-        download_resp = self.client.get(f"/reports/download/{link.id}/")
-
-        content = self._get_download_content(download_resp)
-
-        # Demo admin should see demo client
-        self.assertIn("DEMO-001", content)
-        self.assertIn("Demo", content)
-
-        # Demo admin must NOT see real client
-        self.assertNotIn("REAL-001", content)
-        self.assertNotIn("Real", content)
-
-    def test_real_admin_cannot_export_demo_clients_in_client_data_export(self):
-        """
-        Real admin must NOT see demo client data in client data export.
-        """
-        self.client.login(username="real_admin", password="testpass123")
-        resp = self.client.post("/reports/client-data-export/", {
-            "include_custom_fields": True,
-            "include_enrolments": True,
-            "include_consent": True,
-            "recipient": "self",
-        })
-        self.assertEqual(resp.status_code, 200)
-        link = SecureExportLink.objects.latest("created_at")
-        download_resp = self.client.get(f"/reports/download/{link.id}/")
-
-        content = self._get_download_content(download_resp)
-
-        # Real admin should see real client
-        self.assertIn("REAL-001", content)
-        self.assertIn("Real", content)
-
-        # Real admin must NOT see demo client
-        self.assertNotIn("DEMO-001", content)
-        self.assertNotIn("Demo", content)
-
-    def test_demo_admin_export_only_shows_demo_clients_with_program_filter(self):
-        """
-        Demo admin filtering by program should still only see demo clients.
-        """
-        self.client.login(username="demo_admin", password="testpass123")
-        resp = self.client.post("/reports/client-data-export/", {
-            "program": self.program.pk,
-            "include_custom_fields": True,
-            "include_enrolments": True,
-            "include_consent": True,
-            "recipient": "self",
-        })
-        self.assertEqual(resp.status_code, 200)
-        link = SecureExportLink.objects.latest("created_at")
-        download_resp = self.client.get(f"/reports/download/{link.id}/")
-
-        content = self._get_download_content(download_resp)
-
-        # Should see demo client (enrolled in program)
-        self.assertIn("DEMO-001", content)
-
-        # Must NOT see real client (even though also enrolled in program)
-        self.assertNotIn("REAL-001", content)
 
     def test_real_admin_metric_export_only_shows_real_clients(self):
         """
@@ -2119,12 +1894,12 @@ class DemoRealExportSeparationTests(TestCase):
         # Demo admin must NOT see real client's record ID
         self.assertNotIn("REAL-001", content)
 
-    def test_demo_admin_cmt_export_only_shows_demo_clients(self):
+    def test_demo_admin_funder_report_only_shows_demo_clients(self):
         """
-        Demo admin CMT export should only count demo client data (EXP0c).
+        Demo admin Funder report should only count demo client data (EXP0c).
         """
         self.client.login(username="demo_admin", password="testpass123")
-        resp = self.client.post("/reports/cmt-export/", {
+        resp = self.client.post("/reports/funder-report/", {
             "program": self.program.pk,
             "fiscal_year": "2025",
             "format": "csv",
@@ -2134,7 +1909,7 @@ class DemoRealExportSeparationTests(TestCase):
         link = SecureExportLink.objects.latest("created_at")
         download_resp = self.client.get(f"/reports/download/{link.id}/")
 
-        # The CMT export counts individuals served - should only count demo clients
+        # The Funder report counts individuals served - should only count demo clients
         content = self._get_download_content(download_resp)
 
         # We have 1 demo client enrolled, so max individuals served should be 1 or 0
@@ -2142,12 +1917,12 @@ class DemoRealExportSeparationTests(TestCase):
         # The key is that it shouldn't be 2 (which would mean real client is included)
         self.assertIn("Test Program", content)
 
-    def test_real_admin_cmt_export_only_shows_real_clients(self):
+    def test_real_admin_funder_report_only_shows_real_clients(self):
         """
-        Real admin CMT export should only count real client data (EXP0c).
+        Real admin Funder report should only count real client data (EXP0c).
         """
         self.client.login(username="real_admin", password="testpass123")
-        resp = self.client.post("/reports/cmt-export/", {
+        resp = self.client.post("/reports/funder-report/", {
             "program": self.program.pk,
             "fiscal_year": "2025",
             "format": "csv",
@@ -2172,8 +1947,7 @@ class ExportWarningDialogTests(TestCase):
     Tests for Phase 2 export warning dialogs (EXP2e-g).
 
     Covers:
-    - Recipient field is required on all three export forms
-    - Client count preview on client data export GET page
+    - Recipient field is required on export forms
     - PII warning text displayed on export pages
     """
 
@@ -2270,12 +2044,12 @@ class ExportWarningDialogTests(TestCase):
         self.assertTrue(SecureExportLink.objects.exists())
 
     # -----------------------------------------------------------------
-    # Recipient Required — CMT Export (/reports/cmt-export/)
+    # Recipient Required — Funder Report (/reports/funder-report/)
     # -----------------------------------------------------------------
 
-    def test_cmt_export_post_without_recipient_is_invalid(self):
-        """POST to /reports/cmt-export/ without recipient should fail validation."""
-        resp = self.client.post("/reports/cmt-export/", {
+    def test_funder_report_post_without_recipient_is_invalid(self):
+        """POST to /reports/funder-report/ without recipient should fail validation."""
+        resp = self.client.post("/reports/funder-report/", {
             "program": self.program.pk,
             "fiscal_year": "2025",
             "format": "csv",
@@ -2284,9 +2058,9 @@ class ExportWarningDialogTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertIn("recipient", resp.context["form"].errors)
 
-    def test_cmt_export_post_with_recipient_proceeds(self):
-        """POST to /reports/cmt-export/ with recipient should create a secure export link."""
-        resp = self.client.post("/reports/cmt-export/", {
+    def test_funder_report_post_with_recipient_proceeds(self):
+        """POST to /reports/funder-report/ with recipient should create a secure export link."""
+        resp = self.client.post("/reports/funder-report/", {
             "program": self.program.pk,
             "fiscal_year": "2025",
             "format": "csv",
@@ -2294,55 +2068,6 @@ class ExportWarningDialogTests(TestCase):
         })
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(SecureExportLink.objects.exists())
-
-    # -----------------------------------------------------------------
-    # Recipient Required — Client Data Export (/reports/client-data-export/)
-    # -----------------------------------------------------------------
-
-    def test_client_data_export_post_without_recipient_is_invalid(self):
-        """POST to /reports/client-data-export/ without recipient should fail validation."""
-        resp = self.client.post("/reports/client-data-export/", {
-            "include_custom_fields": True,
-            "include_enrolments": True,
-            "include_consent": True,
-            # No recipient field
-        })
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn("recipient", resp.context["form"].errors)
-
-    def test_client_data_export_post_with_recipient_proceeds(self):
-        """POST to /reports/client-data-export/ with recipient should create a secure export link."""
-        resp = self.client.post("/reports/client-data-export/", {
-            "include_custom_fields": True,
-            "include_enrolments": True,
-            "include_consent": True,
-            "recipient": "colleague",
-        })
-        self.assertEqual(resp.status_code, 200)
-        self.assertTrue(SecureExportLink.objects.exists())
-
-    # -----------------------------------------------------------------
-    # Client Count Preview
-    # -----------------------------------------------------------------
-
-    def test_client_data_export_get_shows_client_count(self):
-        """GET to /reports/client-data-export/ should show the accessible client count."""
-        resp = self.client.get("/reports/client-data-export/")
-        self.assertEqual(resp.status_code, 200)
-        # Check context variable is present
-        self.assertIn("total_client_count", resp.context)
-        self.assertGreaterEqual(resp.context["total_client_count"], 1)
-        # Check the count is displayed in the template
-        self.assertContains(resp, "client record")
-
-    def test_client_data_export_get_preserves_count_on_validation_failure(self):
-        """POST with invalid data should still show the client count."""
-        resp = self.client.post("/reports/client-data-export/", {
-            # Missing recipient — form will be invalid
-        })
-        self.assertEqual(resp.status_code, 200)
-        self.assertIn("total_client_count", resp.context)
-        self.assertGreaterEqual(resp.context["total_client_count"], 1)
 
     # -----------------------------------------------------------------
     # PII Warnings Display
@@ -2354,15 +2079,9 @@ class ExportWarningDialogTests(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "personal information")
 
-    def test_client_data_export_get_shows_pii_warning(self):
-        """GET to /reports/client-data-export/ should display a personal information warning."""
-        resp = self.client.get("/reports/client-data-export/")
-        self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "personal information")
-
-    def test_cmt_export_get_shows_draft_template_notice(self):
-        """GET to /reports/cmt-export/ should display a Draft Template notice."""
-        resp = self.client.get("/reports/cmt-export/")
+    def test_funder_report_get_shows_draft_template_notice(self):
+        """GET to /reports/funder-report/ should display a Draft Template notice."""
+        resp = self.client.get("/reports/funder-report/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Draft Template")
 

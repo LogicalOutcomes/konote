@@ -146,7 +146,7 @@ Pre-built plan templates speed up client onboarding:
 **Problem:** Funder export provides flat CSV with: Record ID, Metric, Value, Date, Author. No aggregation, no demographic breakdowns, no outcome achievement rates.
 
 **Who's affected:**
-- Organizations reporting to United Way (requires demographic splits)
+- Organizations reporting to funders (requires demographic splits)
 - Government-funded programs (MCSS, MCCSS) with complex reporting templates
 - Programs tracking outcomes across multiple fiscal years
 
@@ -155,7 +155,7 @@ Pre-built plan templates speed up client onboarding:
 **Recommendation:** Add report builder with:
 - Aggregation (count, average, min, max)
 - Grouping (by program, by demographic)
-- Pre-built funder templates (United Way CMT, MCSS)
+- Pre-built funder templates (Community Foundation, MCSS)
 
 ---
 
@@ -326,7 +326,7 @@ Following a multi-expert panel review (Nonprofit Technology Consultant, Product 
    - Demographic grouping (age, gender, geography)
    - Outcome achievement rate calculations
 5. Pre-built report templates:
-   - United Way CMT format
+   - Community Foundation funder report format
    - Generic demographic breakdown
    - Quarterly outcome summary
 6. Date range filtering by fiscal year

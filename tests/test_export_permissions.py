@@ -1,13 +1,14 @@
 """Tests for Phase 3.5 Export Permission Alignment (PERM1-10).
 
 Verifies that export access follows the role model:
-- Admin: system config + any export (individual data) + manage/revoke links
-- Program Manager: aggregate-only exports scoped to their programs + download own
+- Admin: system config + aggregate exports + manage/revoke links + download oversight
+- Program Manager: individual data exports (with elevated friction) scoped to programs
 - Executive: aggregate-only exports scoped to their programs
-- Staff/Front Desk: no export access
+- Staff/Front Desk: no export access (but staff can generate per-client PDFs)
 
-Only admins can access individual client data in report exports.
-All other roles receive aggregate summaries only (PHIPA safeguard).
+Only program managers can access individual client data in report exports
+(with friction: elevated delay + admin notification). Admins without PM
+roles, executives, and all other roles receive aggregate summaries only.
 """
 import os
 import shutil
@@ -23,7 +24,7 @@ from datetime import timedelta
 from apps.auth_app.models import User
 from apps.programs.models import Program, UserProgramRole
 from apps.reports.models import SecureExportLink
-from apps.reports.utils import can_create_export, get_manageable_programs, is_aggregate_only_user
+from apps.reports.utils import can_create_export, can_download_pii_export, get_manageable_programs, is_aggregate_only_user
 import konote.encryption as enc_module
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -105,14 +106,11 @@ class CanCreateExportHelperTest(TestCase):
 
     # ── Admin ────────────────────────────────────────────────────
 
-    def test_admin_can_create_client_data_export(self):
-        self.assertTrue(can_create_export(self.admin, "client_data"))
-
     def test_admin_can_create_metrics_export(self):
         self.assertTrue(can_create_export(self.admin, "metrics"))
 
-    def test_admin_can_create_cmt_export(self):
-        self.assertTrue(can_create_export(self.admin, "cmt"))
+    def test_admin_can_create_funder_report(self):
+        self.assertTrue(can_create_export(self.admin, "funder_report"))
 
     def test_admin_can_export_any_program(self):
         self.assertTrue(can_create_export(self.admin, "metrics", program=self.program_a))
@@ -120,14 +118,11 @@ class CanCreateExportHelperTest(TestCase):
 
     # ── Program Manager ──────────────────────────────────────────
 
-    def test_pm_cannot_create_client_data_export(self):
-        self.assertFalse(can_create_export(self.pm_user, "client_data"))
-
     def test_pm_can_create_metrics_export(self):
         self.assertTrue(can_create_export(self.pm_user, "metrics"))
 
-    def test_pm_can_create_cmt_export(self):
-        self.assertTrue(can_create_export(self.pm_user, "cmt"))
+    def test_pm_can_create_funder_report(self):
+        self.assertTrue(can_create_export(self.pm_user, "funder_report"))
 
     def test_pm_can_export_own_program(self):
         self.assertTrue(can_create_export(self.pm_user, "metrics", program=self.program_a))
@@ -138,20 +133,16 @@ class CanCreateExportHelperTest(TestCase):
     # ── Staff ────────────────────────────────────────────────────
 
     def test_staff_cannot_create_any_export(self):
-        self.assertFalse(can_create_export(self.staff_user, "client_data"))
         self.assertFalse(can_create_export(self.staff_user, "metrics"))
-        self.assertFalse(can_create_export(self.staff_user, "cmt"))
+        self.assertFalse(can_create_export(self.staff_user, "funder_report"))
 
     # ── Executive ────────────────────────────────────────────────
-
-    def test_executive_cannot_create_client_data_export(self):
-        self.assertFalse(can_create_export(self.exec_user, "client_data"))
 
     def test_executive_can_create_metrics_export(self):
         self.assertTrue(can_create_export(self.exec_user, "metrics"))
 
-    def test_executive_can_create_cmt_export(self):
-        self.assertTrue(can_create_export(self.exec_user, "cmt"))
+    def test_executive_can_create_funder_report(self):
+        self.assertTrue(can_create_export(self.exec_user, "funder_report"))
 
     def test_executive_can_export_own_program(self):
         self.assertTrue(can_create_export(self.exec_user, "metrics", program=self.program_a))
@@ -269,13 +260,13 @@ class MetricsExportPermissionTest(TestCase):
 
 
 # ═════════════════════════════════════════════════════════════════════
-# 4. CMT export view permission tests
+# 4. Funder report view permission tests
 # ═════════════════════════════════════════════════════════════════════
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
-class CMTExportPermissionTest(TestCase):
-    """Test cmt_export_form view permissions for different roles."""
+class FunderReportPermissionTest(TestCase):
+    """Test funder_report_form view permissions for different roles."""
 
     def setUp(self):
         enc_module._fernet = None
@@ -306,66 +297,29 @@ class CMTExportPermissionTest(TestCase):
             user=self.exec_user, program=self.program_a, role="executive"
         )
 
-    def test_admin_can_access_cmt_export(self):
+    def test_admin_can_access_funder_report(self):
         self.http_client.login(username="admin", password="testpass123")
-        resp = self.http_client.get("/reports/cmt-export/")
+        resp = self.http_client.get("/reports/funder-report/")
         self.assertEqual(resp.status_code, 200)
 
-    def test_pm_can_access_cmt_export(self):
+    def test_pm_can_access_funder_report(self):
         self.http_client.login(username="pm", password="testpass123")
-        resp = self.http_client.get("/reports/cmt-export/")
+        resp = self.http_client.get("/reports/funder-report/")
         self.assertEqual(resp.status_code, 200)
 
-    def test_staff_gets_403_on_cmt_export(self):
+    def test_staff_gets_403_on_funder_report(self):
         self.http_client.login(username="staff", password="testpass123")
-        resp = self.http_client.get("/reports/cmt-export/")
+        resp = self.http_client.get("/reports/funder-report/")
         self.assertEqual(resp.status_code, 403)
 
-    def test_executive_can_access_cmt_export(self):
+    def test_executive_can_access_funder_report(self):
         self.http_client.login(username="exec", password="testpass123")
-        resp = self.http_client.get("/reports/cmt-export/")
+        resp = self.http_client.get("/reports/funder-report/")
         self.assertEqual(resp.status_code, 200)
 
 
 # ═════════════════════════════════════════════════════════════════════
-# 5. Client data export stays admin-only
-# ═════════════════════════════════════════════════════════════════════
-
-
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
-class ClientDataExportPermissionTest(TestCase):
-    """Verify client_data_export remains admin-only (PERM3)."""
-
-    def setUp(self):
-        enc_module._fernet = None
-        self.http_client = Client()
-
-        self.admin = User.objects.create_user(
-            username="admin", password="testpass123", is_admin=True, display_name="Admin"
-        )
-        self.pm_user = User.objects.create_user(
-            username="pm", password="testpass123", is_admin=False, display_name="PM"
-        )
-
-        self.program_a = Program.objects.create(name="Program A")
-        UserProgramRole.objects.create(
-            user=self.pm_user, program=self.program_a, role="program_manager"
-        )
-
-    def test_admin_can_access_client_data_export(self):
-        self.http_client.login(username="admin", password="testpass123")
-        resp = self.http_client.get("/reports/client-data-export/")
-        self.assertEqual(resp.status_code, 200)
-
-    def test_pm_gets_403_on_client_data_export(self):
-        """Program managers should NOT have access to the full PII dump."""
-        self.http_client.login(username="pm", password="testpass123")
-        resp = self.http_client.get("/reports/client-data-export/")
-        self.assertEqual(resp.status_code, 403)
-
-
-# ═════════════════════════════════════════════════════════════════════
-# 6. Download permission tests (PERM4)
+# 5. Download permission tests (PERM4)
 # ═════════════════════════════════════════════════════════════════════
 
 
@@ -441,11 +395,26 @@ class DownloadExportPermissionTest(TestCase):
         self.assertEqual(resp.status_code, 403)
 
     @override_settings()
-    def test_pm_cannot_download_pii_export(self):
-        """PM cannot download export containing PII, even if they created it (defense-in-depth)."""
+    def test_pm_can_download_own_pii_export(self):
+        """PM CAN download PII exports they created (PM is the data steward role)."""
         settings.SECURE_EXPORT_DIR = self.export_dir
         link = _create_link(self.pm_user, self.export_dir, contains_pii=True)
         self.http_client.login(username="pm", password="testpass123")
+        resp = self.http_client.get(f"/reports/download/{link.id}/")
+        self.assertEqual(resp.status_code, 200)
+
+    @override_settings()
+    def test_executive_cannot_download_pii_export(self):
+        """Executive cannot download PII exports (no PM role)."""
+        exec_user = User.objects.create_user(
+            username="exec_dl", password="testpass123", is_admin=False, display_name="Exec"
+        )
+        UserProgramRole.objects.create(
+            user=exec_user, program=self.program_a, role="executive"
+        )
+        settings.SECURE_EXPORT_DIR = self.export_dir
+        link = _create_link(exec_user, self.export_dir, contains_pii=True)
+        self.http_client.login(username="exec_dl", password="testpass123")
         resp = self.http_client.get(f"/reports/download/{link.id}/")
         self.assertEqual(resp.status_code, 403)
 
@@ -615,19 +584,42 @@ class IsAggregateOnlyUserTest(TestCase):
             user=self.dual_user, program=self.program_b, role="program_manager"
         )
 
-    def test_admin_is_not_aggregate_only(self):
-        self.assertFalse(is_aggregate_only_user(self.admin))
+    def test_admin_without_pm_role_is_aggregate_only(self):
+        """Admin (system config role) gets aggregate data only."""
+        self.assertTrue(is_aggregate_only_user(self.admin))
 
     def test_executive_is_aggregate_only(self):
         self.assertTrue(is_aggregate_only_user(self.exec_user))
 
-    def test_pm_is_aggregate_only(self):
-        """PMs get aggregate-only exports — individual data is admin-only."""
-        self.assertTrue(is_aggregate_only_user(self.pm_user))
+    def test_pm_is_not_aggregate_only(self):
+        """PMs get individual data in exports (with elevated friction)."""
+        self.assertFalse(is_aggregate_only_user(self.pm_user))
 
-    def test_dual_role_user_is_aggregate_only(self):
-        """Non-admin users always get aggregate data, regardless of roles."""
-        self.assertTrue(is_aggregate_only_user(self.dual_user))
+    def test_dual_role_user_with_pm_is_not_aggregate_only(self):
+        """User with PM role in any program gets individual data."""
+        self.assertFalse(is_aggregate_only_user(self.dual_user))
+
+    def test_admin_with_pm_role_is_not_aggregate_only(self):
+        """Admin who also has PM role gets individual data via the PM role."""
+        admin_pm = User.objects.create_user(
+            username="admin_pm", password="testpass123", is_admin=True, display_name="AdminPM"
+        )
+        UserProgramRole.objects.create(
+            user=admin_pm, program=self.program_a, role="program_manager"
+        )
+        self.assertFalse(is_aggregate_only_user(admin_pm))
+
+    def test_can_download_pii_admin(self):
+        """Admin can download PII exports for oversight."""
+        self.assertTrue(can_download_pii_export(self.admin))
+
+    def test_can_download_pii_pm(self):
+        """PM can download PII exports they create."""
+        self.assertTrue(can_download_pii_export(self.pm_user))
+
+    def test_cannot_download_pii_executive(self):
+        """Executive cannot download PII exports."""
+        self.assertFalse(can_download_pii_export(self.exec_user))
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -779,11 +771,24 @@ class ExecutiveAggregateExportTest(TestCase):
             content = f.read()
         self.assertIn("Aggregate Summary", content)
 
-    # ── Admin: individual data ───────────────────────────────────
+    # ── Admin: aggregate only (system config role) ──────────────
 
-    def test_admin_still_gets_individual_data(self):
-        """Admin export must still contain individual client data (regression test)."""
+    def test_admin_gets_aggregate_only(self):
+        """Admin (no PM role) gets aggregate data only — system config role, not data access."""
         resp = self._submit_export("admin")
+        self.assertEqual(resp.status_code, 200)
+        link = SecureExportLink.objects.order_by("-created_at").first()
+        with open(link.file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        self.assertNotIn("Client Record ID", content)
+        self.assertIn("Aggregate Summary", content)
+        self.assertFalse(link.contains_pii)
+
+    # ── PM: individual data (with friction) ───────────────────
+
+    def test_pm_gets_individual_data(self):
+        """PM export contains individual client data (with elevated friction)."""
+        resp = self._submit_export("pm")
         self.assertEqual(resp.status_code, 200)
         link = SecureExportLink.objects.order_by("-created_at").first()
         with open(link.file_path, "r", encoding="utf-8") as f:
@@ -791,19 +796,7 @@ class ExecutiveAggregateExportTest(TestCase):
         self.assertIn("Client Record ID", content)
         self.assertIn(self.client_file.record_id, content)
         self.assertTrue(link.contains_pii)
-
-    def test_pm_gets_aggregate_only(self):
-        """PM export must contain aggregate data only — no client record IDs or author names."""
-        resp = self._submit_export("pm")
-        self.assertEqual(resp.status_code, 200)
-        link = SecureExportLink.objects.order_by("-created_at").first()
-        with open(link.file_path, "r", encoding="utf-8") as f:
-            content = f.read()
-        self.assertNotIn("Client Record ID", content)
-        self.assertNotIn(self.client_file.record_id, content)
-        self.assertNotIn("PM User", content)
-        self.assertIn("Aggregate Summary", content)
-        self.assertFalse(link.contains_pii)
+        self.assertTrue(link.is_elevated)
 
     # ── Form template context ────────────────────────────────────
 
@@ -814,19 +807,20 @@ class ExecutiveAggregateExportTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(resp.context.get("is_aggregate_only"))
 
-    def test_admin_form_does_not_show_aggregate_banner(self):
-        """GET as admin should NOT set is_aggregate_only."""
+    def test_admin_form_shows_aggregate_banner(self):
+        """GET as admin (no PM role) should set is_aggregate_only."""
         self.http_client.login(username="admin", password="testpass123")
         resp = self.http_client.get("/reports/export/")
         self.assertEqual(resp.status_code, 200)
-        self.assertFalse(resp.context.get("is_aggregate_only"))
+        self.assertTrue(resp.context.get("is_aggregate_only"))
 
-    def test_pm_form_shows_aggregate_banner(self):
-        """GET as PM should set is_aggregate_only (PMs see aggregate data only)."""
+    def test_pm_form_does_not_show_aggregate_banner(self):
+        """GET as PM should NOT set is_aggregate_only — PM gets individual data."""
         self.http_client.login(username="pm", password="testpass123")
         resp = self.http_client.get("/reports/export/")
         self.assertEqual(resp.status_code, 200)
-        self.assertTrue(resp.context.get("is_aggregate_only"))
+        self.assertFalse(resp.context.get("is_aggregate_only"))
+        self.assertTrue(resp.context.get("is_pm_export"))
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -838,10 +832,9 @@ class ExecutiveAggregateExportTest(TestCase):
 class IndividualClientExportPermissionTest(TestCase):
     """Verify individual client export is restricted by report.data_extract permission.
 
-    Previously this endpoint only checked @minimum_role("staff"), allowing any
-    Direct Service Worker to export complete client data (names, notes, plans,
-    metrics). The fix uses @requires_permission("report.data_extract") which is
-    DENY for all roles — only admins can access it.
+    Uses @requires_permission("report.data_extract") which is ALLOW for
+    program_manager and DENY for all other roles. PMs handle PIPEDA
+    data portability requests for clients in their programs.
     """
 
     def setUp(self):
@@ -910,11 +903,11 @@ class IndividualClientExportPermissionTest(TestCase):
         resp = self.http_client.get(self._export_url())
         self.assertEqual(resp.status_code, 403)
 
-    def test_pm_gets_403_on_individual_client_export(self):
-        """Program managers cannot export individual client data (Phase 3: request-only)."""
+    def test_pm_can_access_individual_client_export(self):
+        """Program managers can export individual client data (PIPEDA data portability)."""
         self.http_client.login(username="pm", password="testpass123")
         resp = self.http_client.get(self._export_url())
-        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(resp.status_code, 200)
 
     def test_executive_redirected_from_individual_client_export(self):
         """Executives are redirected away from client URLs by ProgramAccessMiddleware."""
@@ -937,11 +930,11 @@ class IndividualClientExportPermissionTest(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ClientProgressPdfPermissionTest(TestCase):
-    """Verify client_progress_pdf is restricted to admin only.
+    """Verify client_progress_pdf uses metric.view_individual permission.
 
-    This endpoint generates a downloadable PDF with full client PII
-    (name, DOB, record ID, notes, metrics, author names). Since
-    downloadable exports are high-risk, only admins can access it.
+    Staff (SCOPED) and PM (ALLOW) can generate PDFs for clients in their
+    programs. Executive (DENY) and receptionist (DENY) cannot. Admin-only
+    users without program roles are blocked by _get_client_or_403().
     """
 
     def setUp(self):
@@ -989,23 +982,25 @@ class ClientProgressPdfPermissionTest(TestCase):
     def _pdf_url(self):
         return f"/reports/client/{self.client_file.pk}/pdf/"
 
-    def test_pm_cannot_download_client_pdf(self):
-        """PM must NOT be able to download client progress PDF (contains full PII)."""
+    def test_pm_can_download_client_pdf(self):
+        """PM CAN download client progress PDF (metric.view_individual=ALLOW)."""
         self.http_client.login(username="pm", password="testpass123")
         resp = self.http_client.get(self._pdf_url())
-        self.assertEqual(resp.status_code, 403)
+        # 200 if WeasyPrint available, 503 if missing (Windows)
+        self.assertIn(resp.status_code, [200, 503])
 
-    def test_staff_cannot_download_client_pdf(self):
-        """Staff must NOT be able to download client progress PDF."""
+    def test_staff_can_download_client_pdf(self):
+        """Staff CAN download client progress PDF (metric.view_individual=SCOPED)."""
         self.http_client.login(username="staff", password="testpass123")
         resp = self.http_client.get(self._pdf_url())
-        self.assertEqual(resp.status_code, 403)
+        # 200 if WeasyPrint available, 503 if missing (Windows)
+        self.assertIn(resp.status_code, [200, 503])
 
     def test_executive_cannot_download_client_pdf(self):
         """Executive must NOT be able to download client progress PDF."""
         self.http_client.login(username="exec", password="testpass123")
         resp = self.http_client.get(self._pdf_url())
-        # Either 403 (admin_required) or 302 (ProgramAccessMiddleware redirect)
+        # Either 403 (requires_permission) or 302 (ProgramAccessMiddleware redirect)
         self.assertIn(resp.status_code, [302, 403])
 
 

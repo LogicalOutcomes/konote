@@ -9,7 +9,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
-from apps.auth_app.decorators import admin_required, minimum_role
+from apps.auth_app.decorators import admin_required, minimum_role, requires_permission
 from apps.clients.models import ClientDetailValue, ClientProgramEnrolment
 from apps.events.models import Event
 from apps.notes.models import MetricValue, ProgressNote
@@ -39,14 +39,14 @@ def _pdf_unavailable_response(request):
 
 
 @login_required
-@admin_required
+@requires_permission("metric.view_individual")
 def client_progress_pdf(request, client_id):
     """Generate a PDF progress report for an individual client.
 
-    Restricted to admin only — this is a downloadable file containing full
-    client PII (name, DOB, record ID, notes, metrics, author names).
-    Downloadable exports are high-risk because files leave the system.
-    Staff view individual client data through in-app views with RBAC instead.
+    Available to staff (scoped to their programs) and program managers.
+    Uses the same permission as client_analysis — if you can see the
+    charts in-app, you can generate a PDF of them. Admin-only users
+    (no program roles) are blocked by _get_client_or_403().
     """
     if not is_pdf_available():
         return _pdf_unavailable_response(request)
@@ -232,13 +232,13 @@ def generate_outcome_report_pdf(
     return render_pdf("reports/pdf_funder_report.html", context, filename)
 
 
-def generate_cmt_pdf(request, cmt_data):
+def generate_funder_report_pdf(request, report_data):
     """
-    Generate a PDF for United Way CMT (Community Monitoring Tool) report.
+    Generate a PDF for funder report (aggregate program outcome report).
 
     Args:
         request: The HTTP request.
-        cmt_data: Dict returned by generate_cmt_data() containing all CMT report data.
+        report_data: Dict returned by generate_funder_report_data().
 
     Returns:
         HttpResponse with PDF attachment.
@@ -247,23 +247,23 @@ def generate_cmt_pdf(request, cmt_data):
         return _pdf_unavailable_response(request)
 
     context = {
-        "cmt_data": cmt_data,
+        "report_data": report_data,
         "generated_by": request.user.display_name,
     }
 
-    safe_name = sanitise_filename(cmt_data["program_name"].replace(" ", "_"))
-    fy_label = sanitise_filename(cmt_data["reporting_period"].replace(" ", "_"))
-    filename = f"CMT_Report_{safe_name}_{fy_label}.pdf"
+    safe_name = sanitise_filename(report_data["program_name"].replace(" ", "_"))
+    fy_label = sanitise_filename(report_data["reporting_period"].replace(" ", "_"))
+    filename = f"Funder_Report_{safe_name}_{fy_label}.pdf"
 
-    audit_pdf_export(request, "export", "cmt_report_pdf", {
-        "program": cmt_data["program_name"],
-        "organisation": cmt_data["organisation_name"],
-        "reporting_period": cmt_data["reporting_period"],
-        "total_individuals_served": cmt_data["total_individuals_served"],
+    audit_pdf_export(request, "export", "funder_report_pdf", {
+        "program": report_data["program_name"],
+        "organisation": report_data["organisation_name"],
+        "reporting_period": report_data["reporting_period"],
+        "total_individuals_served": report_data["total_individuals_served"],
         "format": "pdf",
     })
 
-    return render_pdf("reports/pdf_cmt_report.html", context, filename)
+    return render_pdf("reports/pdf_funder_outcome_report.html", context, filename)
 
 
 def _collect_client_data(client, include_plans, include_notes, include_metrics, include_events, include_custom_fields, user_program_ids=None):
@@ -472,12 +472,14 @@ def _generate_client_csv(client, data):
 
 
 @login_required
-@admin_required
+@requires_permission("report.data_extract")
 def client_export(request, client_id):
     """Export all data for an individual client (PIPEDA data portability).
 
-    Restricted to admin only — report.data_extract is DENY for all roles
-    in the permissions matrix. Matches client_data_export access level.
+    Available to program managers (ALLOW in matrix). PMs handle data
+    portability requests for clients in their programs. Staff and
+    executives are blocked (DENY). Admin-only users without program
+    roles are blocked by _get_client_or_403().
     """
     client = _get_client_or_403(request, client_id)
     if client is None:

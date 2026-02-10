@@ -4,7 +4,7 @@ How export download links are created, used, and cleaned up in KoNote2.
 
 ## Overview
 
-When a user exports data (metric reports, CMT reports, or client data), the system does **not** stream the file directly to their browser. Instead, it:
+When a user exports data (metric reports, funder reports, or client data), the system does **not** stream the file directly to their browser. Instead, it:
 
 1. Saves the file to a secure temporary folder on the server
 2. Creates a database record (a `SecureExportLink`) with a unique ID
@@ -47,7 +47,7 @@ export form    --->   SECURE_EXPORT_DIR  --->  created in DB   --->  download pa
 | Export Type | URL | Who Can Use It |
 |---|---|---|
 | Metric Report | `/reports/export/` | Admins (any program) or Program Managers (their programs) |
-| CMT Report | `/reports/cmt-export/` | Admins (any program) or Program Managers (their programs) |
+| Funder Report | `/reports/funder-report/` | Admins (any program) or Program Managers (their programs) |
 | Client Data | `/reports/client-data-export/` | Admins only |
 
 **What happens behind the scenes:**
@@ -198,7 +198,7 @@ Every step of the lifecycle is logged in the audit database:
 
 | Event | Audit Action | Resource Type | What's Recorded |
 |---|---|---|---|
-| Export created | `export` | `metric_report`, `cmt_report`, or `client_data` | Who, what program, filters used, client count, recipient, link ID |
+| Export created | `export` | `metric_report`, `funder_report`, or `client_data` | Who, what program, filters used, client count, recipient, link ID |
 | File downloaded | `export` | `export_download` | Who downloaded, link ID, original creator, export type, client count |
 | Link revoked | `update` | `export_link_revoked` | Who revoked, link ID, original creator, export type, client count |
 

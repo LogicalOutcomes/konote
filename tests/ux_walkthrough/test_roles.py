@@ -350,7 +350,7 @@ class ManagerWalkthroughTest(UxWalkthroughBase):
 
         # Export forms
         self.visit(role, "Metrics export form", "/reports/export/")
-        self.visit(role, "CMT export form", "/reports/cmt-export/")
+        self.visit(role, "Funder report form", "/reports/funder-report/")
 
         # Events
         self.visit(role, "Events tab", f"/events/client/{cid}/")
@@ -453,7 +453,6 @@ class AdminWalkthroughTest(UxWalkthroughBase):
         self.visit(role, "Note templates", "/admin/settings/note-templates/")
 
         # Reports
-        self.visit(role, "Client data export form", "/reports/client-data-export/")
         self.visit(role, "Export links management", "/reports/export-links/")
 
         # Diagnose

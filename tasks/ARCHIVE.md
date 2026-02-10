@@ -174,11 +174,11 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 - [x] Create export runbook — 2026-02-05 (DOC-EXP2)
 - [x] Fix `{% trans %}` with HTML in `pdf_unavailable.html` — 2026-02-05 (I18N-EXP2)
 - [x] Wrap `ExportRecipientMixin` strings in `gettext_lazy()` — 2026-02-05 (I18N-EXP3)
-- [x] Extract `<strong>` from `{% blocktrans %}` in export/CMT templates — 2026-02-05 (I18N-EXP4)
+- [x] Extract `<strong>` from `{% blocktrans %}` in export/funder report templates — 2026-02-05 (I18N-EXP4)
 
 ### Secure Export Foundation (all complete)
 
-- [x] Fix demo/real separation in client_data_export, metric, CMT views — 2026-02-05 (EXP0a-d)
+- [x] Fix demo/real separation in client_data_export, metric, funder report views — 2026-02-05 (EXP0a-d)
 - [x] Add recipient field + audit logging to all export views — 2026-02-05 (EXP2a-d)
 - [x] Add warning dialogs — client count, PII warnings, required recipient — 2026-02-05 (EXP2e-g)
 - [x] Add tests, fix i18n in export templates, verify WCAG contrast, aria-hidden on emojis — 2026-02-05 (TEST-EXP1, I18N-EXP1, A11Y-EXP1-2)

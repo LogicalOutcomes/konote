@@ -34,7 +34,7 @@ But the export views bypass all of this with a simple `is_admin` check.
 
 ### Files that check `is_admin` for exports:
 - `apps/reports/views.py` — `export_form()` line ~174
-- `apps/reports/views.py` — `cmt_export_form()` line ~524
+- `apps/reports/views.py` — `funder_report_form()` line ~524
 - `apps/reports/views.py` — `client_data_export()` line ~542
 - `apps/reports/views.py` — `download_export()` line ~775
 - `apps/reports/views.py` — `manage_export_links()` line ~836
@@ -78,9 +78,9 @@ else:
     )
 ```
 
-### PERM2: Allow program managers to create CMT exports
+### PERM2: Allow program managers to create funder report exports
 
-**File:** `apps/reports/views.py` — `cmt_export_form()`
+**File:** `apps/reports/views.py` — `funder_report_form()`
 
 Same pattern as PERM1 — check for program_manager role, scope program dropdown.
 
@@ -137,7 +137,7 @@ def can_create_export(user, export_type, program=None):
         return user.is_admin
     if user.is_admin:
         return True
-    if export_type in ("metrics", "cmt"):
+    if export_type in ("metrics", "funder_report"):
         if program:
             return UserProgramRole.objects.filter(
                 user=user, role="program_manager", program=program

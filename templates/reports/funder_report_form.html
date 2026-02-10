@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Program Outcome Report Template" %} — {{ site.product_name|default:"KoNote2" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Program Outcome Report Template" %}</h1>
+    <p>{% trans "Generate a standardised program outcome report with service statistics, demographics, and outcomes." %}</p>
+</hgroup>
+
+<article class="pico-background-yellow-50" aria-label="{% trans 'Draft Template Notice' %}" role="alert" style="border-left: 4px solid var(--pico-color-yellow-500); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong><span aria-hidden="true">⚠️</span> {% trans "Draft Template — Customise for Your Needs" %}</strong>
+    <p style="margin-bottom: 0;">
+        {% blocktrans %}
+        This is a generic program outcome report template. Before submitting externally, verify it matches
+        the recipient's specific reporting requirements. Different funders, government agencies, and
+        foundations may require different formats, fields, or calculations.
+        {% endblocktrans %}
+    </p>
+</article>
+
+<article aria-label="{% trans 'Data Contents' %}" style="margin-bottom: 1.5rem;">
+    <strong><span aria-hidden="true">📊</span> {% trans "Aggregate Data Export" %}</strong>
+    <p style="margin-bottom: 0;">
+        {% blocktrans with strong_open="<strong>" strong_close="</strong>" %}This report contains {{ strong_open }}aggregate statistics only{{ strong_close }} — counts and percentages grouped by category, including {{ strong_open }}total individuals served{{ strong_close }}. It does {{ strong_open }}not{{ strong_close }} include individual client names, birth dates, or other personally identifiable information (PII).{% endblocktrans %}
+    </p>
+</article>
+
+<article aria-label="{% trans 'About Program Outcome Reports' %}">
+    <h2>{% trans "What's included in this report?" %}</h2>
+    <ul>
+        <li>{% trans "Organisation and program information" %}</li>
+        <li>{% trans "Service statistics (total individuals served, new clients, total contacts)" %}</li>
+        <li>{% trans "Age demographics using common nonprofit categories" %}</li>
+        <li>{% trans "Outcome achievement rates for all metrics with defined targets" %}</li>
+    </ul>
+</article>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <article class="pico-background-red-100" aria-label="{% trans 'Form errors' %}" role="alert">
+        {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+    </article>
+    {% endif %}
+
+    {# Program dropdown #}
+    <label for="{{ form.program.id_for_label }}">
+        {{ form.program.label }}
+        {{ form.program }}
+    </label>
+    {% if form.program.errors %}
+    <small class="error" role="alert">{{ form.program.errors.0 }}</small>
+    {% endif %}
+
+    {# Fiscal year selection #}
+    <label for="{{ form.fiscal_year.id_for_label }}">
+        {{ form.fiscal_year.label }}
+        {{ form.fiscal_year }}
+        {% if form.fiscal_year.help_text %}
+        <small>{{ form.fiscal_year.help_text }}</small>
+        {% endif %}
+        {% if form.fiscal_year.errors %}
+        <small class="error" role="alert">{{ form.fiscal_year.errors.0 }}</small>
+        {% endif %}
+    </label>
+
+    {# Export format #}
+    <fieldset>
+        <legend>{{ form.format.label }}</legend>
+        {% for radio in form.format %}
+        <label>
+            {{ radio.tag }}
+            {{ radio.choice_label }}
+        </label>
+        {% endfor %}
+    </fieldset>
+
+    {# Recipient tracking for audit purposes #}
+    <fieldset>
+        <legend>{% trans "Export Recipient" %}</legend>
+        <p class="helper-text" style="margin-bottom: 1rem; color: var(--pico-muted-color);">
+            {% trans "For audit purposes, please indicate who will receive this exported data." %}
+        </p>
+        <label for="{{ form.recipient.id_for_label }}">
+            {{ form.recipient.label }}
+            {{ form.recipient }}
+            {% if form.recipient.help_text %}
+            <small>{{ form.recipient.help_text }}</small>
+            {% endif %}
+            {% if form.recipient.errors %}
+            <small class="error" role="alert">{{ form.recipient.errors.0 }}</small>
+            {% endif %}
+        </label>
+        <label for="{{ form.recipient_detail.id_for_label }}" id="recipient-detail-wrapper">
+            {{ form.recipient_detail.label }}
+            {{ form.recipient_detail }}
+            {% if form.recipient_detail.help_text %}
+            <small>{{ form.recipient_detail.help_text }}</small>
+            {% endif %}
+            {% if form.recipient_detail.errors %}
+            <small class="error" role="alert">{{ form.recipient_detail.errors.0 }}</small>
+            {% endif %}
+        </label>
+    </fieldset>
+
+    <button type="submit">{% trans "Generate Outcome Report" %}</button>
+</form>
+
+<details>
+    <summary>{% trans "About This Report Template" %}</summary>
+    <p>
+        {% blocktrans %}
+        This is a draft program outcome report template based on common Canadian
+        nonprofit reporting requirements. It includes service statistics, demographics,
+        and outcome achievement rates.
+        {% endblocktrans %}
+    </p>
+    <p>
+        {% blocktrans with strong_open="<strong>" strong_close="</strong>" %}{{ strong_open }}Important:{{ strong_close }} External recipients may require different formats, additional fields, or specific calculations. Always verify this template matches the actual reporting requirements before submission. You may need to adjust or supplement this data.{% endblocktrans %}
+    </p>
+    <h3>{% trans "Default Age Categories" %}</h3>
+    <p>{% trans "This template uses these common age groupings (adjust if your reporting requirements differ):" %}</p>
+    <ul>
+        <li>{% trans "Child (0-12)" %}</li>
+        <li>{% trans "Youth (13-17)" %}</li>
+        <li>{% trans "Young Adult (18-24)" %}</li>
+        <li>{% trans "Adult (25-64)" %}</li>
+        <li>{% trans "Senior (65+)" %}</li>
+    </ul>
+    <h3>{% trans "Data Sources" %}</h3>
+    <ul>
+        <li>{% trans "Organisation name: From your Instance Settings" %}</li>
+        <li>{% trans "Service statistics: Based on progress notes recorded in the period" %}</li>
+        <li>{% trans "Demographics: Calculated from client birth dates" %}</li>
+        <li>{% trans "Outcomes: Based on metric targets defined in your outcome metrics" %}</li>
+    </ul>
+</details>
+{% endblock %}

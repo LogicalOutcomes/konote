@@ -477,30 +477,20 @@ class ReportsFrenchTest(FrenchJourneyBaseTest):
     """Export forms show French labels."""
 
     def test_export_form_in_french(self):
-        """Funder report export form renders in French."""
+        """Metric export form renders in French."""
         self._login_admin_fr()
         resp = self.http.get("/reports/export/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Exportation du rapport pour les bailleurs de fonds")
+        self.assertContains(resp, "Rapport sur les r\u00e9sultats du programme")
         self.assertContains(resp, "G\u00e9n\u00e9rer le rapport")  # "Generate Report"
 
-    def test_cmt_export_form_in_french(self):
-        """CMT funder report form renders in French."""
+    def test_funder_report_form_in_french(self):
+        """Funder report form renders in French."""
         self._login_admin_fr()
-        resp = self.http.get("/reports/cmt-export/")
+        resp = self.http.get("/reports/funder-report/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Mod\u00e8le de rapport pour les bailleurs de fonds")
-        self.assertContains(resp, "G\u00e9n\u00e9rer le rapport pour les bailleurs de fonds")
-
-    def test_client_data_export_in_french(self):
-        """Client data export form renders in French."""
-        self._login_admin_fr()
-        resp = self.http.get("/reports/client-data-export/")
-        self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Exportation des donn\u00e9es participants")
-        # Fieldset legend and submit button are translated
-        self.assertContains(resp, "Inclure dans l'exportation")  # "Include in export" fieldset
-        self.assertContains(resp, "Exporter les donn\u00e9es du client")  # Submit button
+        self.assertContains(resp, "Mod\u00e8le de rapport sur les r\u00e9sultats du programme")
+        self.assertContains(resp, "G\u00e9n\u00e9rer le rapport des r\u00e9sultats")
 
     def test_analysis_tab_in_french(self):
         """Client analysis tab shows French labels."""

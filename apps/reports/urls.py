@@ -11,8 +11,7 @@ urlpatterns = [
     path("client/<int:client_id>/insights/", insights_views.client_insights_partial, name="client_insights"),
     # Exports
     path("export/", views.export_form, name="export_form"),
-    path("cmt-export/", views.cmt_export_form, name="cmt_export"),
-    path("client-data-export/", views.client_data_export, name="client_data_export"),
+    path("funder-report/", views.funder_report_form, name="funder_report"),
     path("client/<int:client_id>/analysis/", views.client_analysis, name="client_analysis"),
     path("client/<int:client_id>/pdf/", pdf_views.client_progress_pdf, name="client_progress_pdf"),
     path("client/<int:client_id>/export/", pdf_views.client_export, name="client_export"),
