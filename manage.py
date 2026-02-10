@@ -17,7 +17,7 @@ def get_default_settings():
     6. Local development (default)
 
     To force development settings when DATABASE_URL is set locally,
-    set KoNote2_LOCAL_DEV=1.
+    set KONOTE_LOCAL_DEV=1.
     """
     # If explicitly set, respect that
     if "DJANGO_SETTINGS_MODULE" in os.environ:
@@ -37,7 +37,7 @@ def get_default_settings():
 
     # Auto-detect any production deployment (has DATABASE_URL but not local dev)
     # This catches Docker, Kubernetes, or any other platform
-    if os.environ.get("DATABASE_URL") and not os.environ.get("KoNote2_LOCAL_DEV"):
+    if os.environ.get("DATABASE_URL") and not os.environ.get("KONOTE_LOCAL_DEV"):
         return "konote.settings.production"
 
     # Default to development for local work
