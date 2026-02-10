@@ -201,13 +201,10 @@ class PortalIDORTests(TestCase):
     # My Words (reflections)
     # ------------------------------------------------------------------
 
-    def test_idor_my_words_only_own(self):
-        """My Words page should only show Participant A's reflections."""
+    def test_my_words_removed(self):
+        """My Words page has been removed — URL should 404."""
         response = self.client.get("/my/my-words/")
-        self.assertEqual(response.status_code, 200)
-
-        content = response.content.decode()
-        self.assertNotIn("Bob", content)
+        self.assertEqual(response.status_code, 404)
 
     # ------------------------------------------------------------------
     # Correction requests

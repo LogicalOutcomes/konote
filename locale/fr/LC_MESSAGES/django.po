@@ -8904,3 +8904,773 @@ msgid ""
 "be applied before the download link becomes active. Administrators will be "
 "notified by email."
 msgstr ""
+
+msgid "French version. Leave blank to use the English text."
+msgstr ""
+
+msgid "Portal Footer Text (English)"
+msgstr ""
+
+msgid "Portal Footer Text (French)"
+msgstr ""
+
+msgid ""
+"See what participants see when they check their goals and progress (if this "
+"is enabled)"
+msgstr ""
+
+msgid "211 Ontario:"
+msgstr "211 Ontario :"
+
+msgid "24 hours a day, 7 days a week"
+msgstr "24 heures sur 24, 7 jours sur 7"
+
+msgid "6-digit code"
+msgstr ""
+
+msgid "A private space to write your thoughts."
+msgstr "Un espace privé pour écrire vos réflexions."
+
+msgid "About:"
+msgstr "À propos de :"
+
+msgid "Always log out when you're done."
+msgstr "Déconnectez-vous toujours lorsque vous avez terminé."
+
+msgid "Are you still here?"
+msgstr "Êtes-vous toujours là ?"
+
+msgid "Back to Home"
+msgstr "Retour à l'accueil"
+
+msgid "Back to My Goals"
+msgstr "Retour à mes objectifs"
+
+msgid "Back to My Journal"
+msgstr "Retour à mon journal"
+
+msgid "Back to sign in"
+msgstr "Retour à la connexion"
+
+msgid "Before You Start Writing"
+msgstr ""
+
+msgid "Before you begin"
+msgstr ""
+
+msgid "Before you start writing"
+msgstr ""
+
+msgid "By creating an account, you agree that:"
+msgstr ""
+
+msgid "Call"
+msgstr "Appelez"
+
+msgid "Can't scan the code? Enter this key instead"
+msgstr ""
+
+msgid "Celebrate what you've achieved."
+msgstr "Célébrez vos accomplissements."
+
+msgid "Celebrate your milestones"
+msgstr ""
+
+msgid "Change Password"
+msgstr ""
+
+msgid "Change Your Password"
+msgstr ""
+
+msgid "Change my password"
+msgstr "Changer mon mot de passe"
+
+msgid "Chart showing your progress over time"
+msgstr ""
+
+msgid "Check your email and then use the code to set a new password."
+msgstr ""
+
+msgid ""
+"Check your email for a message with your code. It may take a minute to "
+"arrive."
+msgstr ""
+
+msgid "Choose a new password. Use at least 8 characters."
+msgstr ""
+
+msgid ""
+"Choose a strong password. Use at least 8 characters with a mix of letters "
+"and numbers."
+msgstr ""
+
+msgid "Choose your preferred language."
+msgstr "Choisissez votre langue préférée."
+
+msgid "Clear your browser history"
+msgstr "Effacer votre historique de navigation"
+
+msgid "Community and social services information"
+msgstr "Information sur les services communautaires et sociaux"
+
+msgid "Completed:"
+msgstr ""
+
+msgid "Create my account"
+msgstr ""
+
+msgid "Crisis resources"
+msgstr ""
+
+msgid "Current progress:"
+msgstr ""
+
+msgid ""
+"Describe what you think is wrong and what it should say. There's no wrong "
+"way to write this."
+msgstr ""
+
+msgid "Dismiss this notice"
+msgstr ""
+
+msgid "Display name"
+msgstr ""
+
+msgid "Don't save your password in the browser if others use the same device."
+msgstr ""
+"N'enregistrez pas votre mot de passe dans le navigateur si d'autres "
+"utilisent le même appareil."
+
+msgid "Emergency:"
+msgstr "Urgence :"
+
+msgid ""
+"Enter the 4-digit code your worker gave you in person. This helps confirm "
+"your identity."
+msgstr ""
+
+msgid "Enter the 6-digit code from your authenticator app"
+msgstr "Entrez le code à 6 chiffres de votre application d'authentification"
+
+msgid "Enter the code from your email and choose a new password."
+msgstr ""
+
+msgid "Enter the password you use now."
+msgstr ""
+
+msgid ""
+"Enter your email address and we'll send you a code to reset your password."
+msgstr ""
+
+msgid "Everything here is about you and your journey."
+msgstr ""
+
+msgid "For example: I want to talk about my housing situation..."
+msgstr ""
+
+msgid "For example: My goal says X but I think it should say Y..."
+msgstr ""
+
+msgid "For young people"
+msgstr "Pour les jeunes"
+
+msgid "Forgot your password?"
+msgstr "Mot de passe oublié ?"
+
+msgid "Go to Settings, then Safari, then 'Clear History and Website Data'"
+msgstr ""
+
+msgid "Go to sign in"
+msgstr ""
+
+msgid ""
+"Here are some tips to help you use this site safely, especially if you share"
+" a device with someone else."
+msgstr ""
+"Voici quelques conseils pour utiliser ce site en toute sécurité, surtout si "
+"vous partagez un appareil."
+
+msgid ""
+"Here are the things you've shared in your own words during your sessions."
+msgstr ""
+
+msgid "Hi,"
+msgstr "Bonjour,"
+
+msgid "How I'm Doing"
+msgstr ""
+
+msgid "How to clear your history"
+msgstr "Comment effacer votre historique"
+
+msgid "How to open private browsing"
+msgstr "Comment ouvrir la navigation privée"
+
+msgid "I have my code"
+msgstr ""
+
+msgid "I understand — let's get started"
+msgstr ""
+
+msgid "I understand — next"
+msgstr ""
+
+msgid "I understand, let me write"
+msgstr ""
+
+msgid "I'd like to submit a request now"
+msgstr ""
+
+msgid "I'm still here"
+msgstr "Je suis toujours là"
+
+msgid "If we found your account, you'll receive a code at your email address."
+msgstr ""
+
+msgid "If you already created your account, you can sign in below."
+msgstr ""
+
+msgid ""
+"If you didn't use private browsing, you can delete your history afterwards."
+msgstr ""
+"Si vous n'avez pas utilisé la navigation privée, vous pouvez effacer votre "
+"historique après."
+
+msgid ""
+"If you ever have questions about what's in your file, just ask your worker."
+msgstr ""
+
+msgid "If you need help right now"
+msgstr "Si vous avez besoin d'aide maintenant"
+
+msgid ""
+"If you no longer want to use this portal, talk to your worker. They can "
+"remove your account for you."
+msgstr ""
+"Si vous ne souhaitez plus utiliser ce portail, parlez-en à votre "
+"intervenant(e). Il ou elle peut supprimer votre compte."
+
+msgid ""
+"If you share something that suggests someone may be in danger, your worker "
+"may need to act on that."
+msgstr ""
+
+msgid ""
+"If you share something that suggests you or someone else might be in danger,"
+" your worker may need to act on that."
+msgstr ""
+
+msgid "If you think this is a mistake, please talk to your worker."
+msgstr ""
+
+msgid "In my own words"
+msgstr ""
+
+msgid ""
+"In some situations — like a court order — the agency could be required to "
+"share records, and these notes could be included. This doesn't happen often,"
+" but we want you to know before you start writing."
+msgstr ""
+
+msgid "Internal team discussions"
+msgstr ""
+
+msgid "Invite Status"
+msgstr ""
+
+msgid "Keep your account secure by using a strong password."
+msgstr "Protégez votre compte en utilisant un mot de passe fort."
+
+msgid "Kids Help Phone:"
+msgstr "Jeunesse, J'écoute :"
+
+msgid "Language"
+msgstr "Langue"
+
+msgid "Language preference"
+msgstr "Préférence de langue"
+
+msgid "Leave quickly"
+msgstr "Quitter rapidement"
+
+msgid "Leave this page quickly"
+msgstr "Quitter cette page rapidement"
+
+msgid "Link to a goal (optional)"
+msgstr ""
+
+msgid "Log out"
+msgstr "Déconnexion"
+
+msgid "Main navigation"
+msgstr "Navigation principale"
+
+msgid "Maybe later"
+msgstr ""
+
+msgid "Message My Worker"
+msgstr "Écrire à mon intervenant(e)"
+
+msgid "Messages to your worker"
+msgstr ""
+
+msgid "My Account"
+msgstr "Mon compte"
+
+msgid "My Goals"
+msgstr "Mes objectifs"
+
+msgid "My Journal"
+msgstr "Mon journal"
+
+msgid "My Progress"
+msgstr "Ma progression"
+
+msgid "My progress"
+msgstr ""
+
+msgid "New Journal Entry"
+msgstr ""
+
+msgid ""
+"No goals have been added yet. Your worker will add goals as you work on them"
+" together."
+msgstr ""
+
+msgid "No goals in this area yet."
+msgstr ""
+
+msgid ""
+"No milestones yet — but you're on your way! Milestones will show up here as "
+"you reach your goals."
+msgstr ""
+
+msgid ""
+"No progress data to show yet. As you work with your worker, your progress "
+"will appear here."
+msgstr ""
+
+msgid ""
+"Nothing here yet. When you share your thoughts during sessions, they'll "
+"appear here so you can look back on them."
+msgstr ""
+
+msgid "One important thing:"
+msgstr ""
+
+msgid "Only you can see this."
+msgstr ""
+
+msgid "Only you can see this. It's your private space to write."
+msgstr ""
+
+msgid ""
+"Open your authenticator app (like Google Authenticator or Microsoft "
+"Authenticator) and scan this code:"
+msgstr ""
+
+msgid "Open your authenticator app and enter the code shown."
+msgstr ""
+"Ouvrez votre application d'authentification et entrez le code affiché."
+
+msgid ""
+"Open your authenticator app and enter the code shown. The code changes every"
+" 30 seconds."
+msgstr ""
+
+msgid "Other people's information"
+msgstr ""
+
+msgid "Press Ctrl + H, then click 'Clear browsing data'"
+msgstr ""
+
+msgid "Press Ctrl + Shift + Delete"
+msgstr ""
+
+msgid ""
+"Press Ctrl + Shift + N (or tap the three dots at the top right, then 'New "
+"incognito window')"
+msgstr ""
+
+msgid ""
+"Press Ctrl + Shift + N (or tap the three dots, then 'New InPrivate window')"
+msgstr ""
+
+msgid ""
+"Press Ctrl + Shift + P (or tap the three lines, then 'New Private Window')"
+msgstr ""
+
+msgid ""
+"Private browsing (also called incognito mode) stops the browser from saving "
+"your history."
+msgstr ""
+"La navigation privée (aussi appelée mode incognito) empêche le navigateur "
+"d'enregistrer votre historique."
+
+msgid "Progress chart"
+msgstr ""
+
+msgid "QR code for authenticator app"
+msgstr ""
+
+msgid "QR code to scan with your authenticator app"
+msgstr ""
+
+msgid "Read what you've said in your own words"
+msgstr ""
+
+msgid "Remove my account"
+msgstr "Supprimer mon compte"
+
+msgid "Removing your account won't affect your services."
+msgstr "La suppression de votre compte n'affectera pas vos services."
+
+msgid "Reset Password"
+msgstr ""
+
+msgid "Reset Your Password"
+msgstr ""
+
+msgid "Save language"
+msgstr "Enregistrer la langue"
+
+msgid "Saved! Your worker will see this before your next session."
+msgstr ""
+
+msgid "See how far you've come."
+msgstr "Voyez le chemin parcouru."
+
+msgid "See the goals you're working on"
+msgstr ""
+
+msgid "See the goals you're working on."
+msgstr "Consultez les objectifs sur lesquels vous travaillez."
+
+msgid "See what's new"
+msgstr ""
+
+msgid "Send a message for your worker to read."
+msgstr "Envoyez un message à votre intervenant(e)."
+
+msgid "Send me a code"
+msgstr ""
+
+msgid "Send message"
+msgstr ""
+
+msgid "Set New Password"
+msgstr ""
+
+msgid "Set Up Two-Step Verification"
+msgstr ""
+
+msgid "Set a New Password"
+msgstr ""
+
+msgid "Set my new password"
+msgstr ""
+
+msgid "Set up two-step verification"
+msgstr "Configurer la vérification en deux étapes"
+
+msgid "Setup progress"
+msgstr ""
+
+msgid "Sign in as Jordan"
+msgstr "Se connecter en tant que Jordan"
+
+msgid "Sign in instantly as a demo participant"
+msgstr ""
+"Connectez-vous instantanément en tant que participant(e) de démonstration"
+
+msgid "Sign in to see your goals and progress."
+msgstr "Connectez-vous pour voir vos objectifs et votre progression."
+
+msgid "Something Doesn't Look Right"
+msgstr ""
+
+msgid "Something doesn't look right?"
+msgstr ""
+
+msgid "Staff notes about your sessions"
+msgstr ""
+
+msgid "Staying Safe Online"
+msgstr "Sécurité en ligne"
+
+msgid "Staying safe online"
+msgstr "Sécurité en ligne"
+
+msgid "Step 1: Scan this code"
+msgstr ""
+
+msgid "Step 2: Enter the code"
+msgstr ""
+
+msgid "Submit request"
+msgstr ""
+
+msgid "Talk Suicide Canada:"
+msgstr "Parlons suicide Canada :"
+
+msgid "Tap the tabs button at the bottom right, then tap 'Private'"
+msgstr ""
+
+msgid ""
+"Tell us what doesn't look right. Your worker will review this and follow up "
+"with you."
+msgstr ""
+
+msgid "That's okay — we want to make sure your information is correct."
+msgstr ""
+
+msgid "The code changes every 30 seconds."
+msgstr ""
+
+msgid "The email address you used when you created your account."
+msgstr ""
+
+msgid "The email address your worker set up for you."
+msgstr "L'adresse courriel que votre intervenant(e) a configurée pour vous."
+
+msgid "These are the areas you're working on with your worker."
+msgstr ""
+
+msgid "These are the goals you've reached. Every one of them matters."
+msgstr ""
+
+msgid "These charts show your progress over time."
+msgstr ""
+
+msgid "These notes are just for you. Your worker won't see them."
+msgstr ""
+
+msgid ""
+"This adds an extra layer of security to your account. You will need a free "
+"authenticator app on your phone."
+msgstr ""
+
+msgid "This invite has expired. Please ask your worker for a new one."
+msgstr ""
+
+msgid "This invite is no longer active."
+msgstr ""
+
+msgid ""
+"This is the name you'll see on screen. It can be your first name, a "
+"nickname, or anything you like."
+msgstr ""
+
+msgid "This is to keep everyone safe."
+msgstr ""
+
+msgid "This is your personal space. Here you can:"
+msgstr ""
+
+msgid "This portal lets you see your goals and track your progress."
+msgstr ""
+
+msgid "This space is here to help you, not to add pressure."
+msgstr ""
+
+msgid "Tips for using this site safely on shared devices."
+msgstr ""
+"Conseils pour utiliser ce site en toute sécurité sur des appareils partagés."
+
+msgid "To keep things simple and safe, some things are not shown here:"
+msgstr ""
+
+msgid "Track your progress over time"
+msgstr ""
+
+msgid "Two-step verification"
+msgstr "Vérification en deux étapes"
+
+msgid ""
+"Two-step verification is not set up yet. It adds extra security to your "
+"account."
+msgstr ""
+"La vérification en deux étapes n'est pas encore configurée. Elle ajoute une "
+"sécurité supplémentaire."
+
+msgid ""
+"Two-step verification is turned on. You use an authenticator app to sign in."
+msgstr ""
+"La vérification en deux étapes est activée. Vous utilisez une application "
+"d'authentification pour vous connecter."
+
+msgid "Type this key into your authenticator app:"
+msgstr ""
+
+msgid "Type your new password again to make sure it's right."
+msgstr ""
+
+msgid "Type your password again to make sure it's right."
+msgstr ""
+
+msgid ""
+"Use a strong password to keep your account safe. Choose at least 8 "
+"characters with a mix of letters and numbers."
+msgstr ""
+
+msgid "Use private browsing"
+msgstr "Utiliser la navigation privée"
+
+msgid ""
+"Use the 'Leave quickly' button at the top of the page if you need to close "
+"the site fast."
+msgstr ""
+
+msgid "Using shared devices"
+msgstr "Utilisation d'appareils partagés"
+
+msgid "Verify"
+msgstr "Vérifier"
+
+msgid "Verify Your Identity"
+msgstr ""
+
+msgid "Verify and finish setup"
+msgstr ""
+
+msgid "We sent a code to your email. Enter it below."
+msgstr ""
+
+msgid "What I Want to Talk About Next Time"
+msgstr ""
+
+msgid "What I said about this goal"
+msgstr ""
+
+msgid "What I've Been Saying"
+msgstr ""
+
+msgid "What would you like to change or correct?"
+msgstr ""
+
+msgid "What would you like to do?"
+msgstr "Que souhaitez-vous faire ?"
+
+msgid "What you see"
+msgstr ""
+
+msgid "What you won't see"
+msgstr ""
+
+msgid "What you'll see here"
+msgstr ""
+
+msgid ""
+"When you close a private window, the browser won't remember what you looked "
+"at."
+msgstr ""
+
+msgid "Who sees what"
+msgstr ""
+
+msgid "Who sees what you write"
+msgstr ""
+
+msgid ""
+"Would you like to talk about this with your worker at your next session?"
+msgstr ""
+
+msgid ""
+"Write down anything you want to bring up at your next session. Your worker "
+"will be able to see this."
+msgstr ""
+
+msgid "Write something new"
+msgstr ""
+
+msgid "Write whatever is on your mind. Your worker will read this."
+msgstr ""
+
+msgid "Write whatever you want — this is just for you."
+msgstr ""
+
+msgid "Write your message here..."
+msgstr ""
+
+msgid "Yes, I'll bring it up next time"
+msgstr ""
+
+msgid "You already have a portal account."
+msgstr ""
+
+msgid "You can ask your worker to remove your account."
+msgstr ""
+
+msgid "You can come back and change this anytime before your next session."
+msgstr ""
+
+msgid "You can sign in using the link below."
+msgstr ""
+
+msgid "You can stop using this anytime — it won't affect your services."
+msgstr ""
+
+msgid ""
+"You can stop using this portal at any time. It won't affect your services."
+msgstr ""
+
+msgid "You choose what to write and when."
+msgstr ""
+
+msgid "You did it!"
+msgstr ""
+
+msgid ""
+"You haven't done anything for a while. For your safety, we'll log you out "
+"soon."
+msgstr ""
+
+msgid "You'll use this email to sign in."
+msgstr ""
+
+msgid "You're in control"
+msgstr ""
+
+msgid ""
+"You've been invited to join the portal. Fill out the form below to get "
+"started."
+msgstr ""
+
+msgid ""
+"Your authenticator app will show a 6-digit code. Enter it here to finish "
+"setup."
+msgstr ""
+
+msgid "Your journal"
+msgstr ""
+
+msgid "Your journal entries are private — only you can see them."
+msgstr ""
+
+msgid ""
+"Your journal is empty. Whenever you feel like writing something down, this "
+"is the place."
+msgstr ""
+
+msgid ""
+"Your message has been sent. Your worker will see it next time they check."
+msgstr ""
+
+msgid "Your password has been changed."
+msgstr ""
+
+msgid "Your request has been submitted. Your worker will follow up with you."
+msgstr ""
+
+msgid "Your worker and other staff cannot read your journal."
+msgstr ""
+
+msgid "Your worker can see messages you send them."
+msgstr ""
+
+msgid "Your worker will see these next time they check."
+msgstr ""
+
+msgid ""
+"Your worker will see this next time they check. This is not for emergencies."
+msgstr ""

@@ -1,5 +1,67 @@
 /* Portal-specific styles — layered on top of Pico CSS */
 
+/* ---- Skip navigation (accessibility — WCAG 2.4.1) ---- */
+/* Duplicated from main.css because portal uses a separate base template */
+.visually-hidden-focusable {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+.visually-hidden-focusable:focus {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: auto;
+    height: auto;
+    padding: 0.75rem 1.5rem;
+    margin: 0;
+    overflow: visible;
+    clip: auto;
+    clip-path: none;
+    white-space: normal;
+    background: #0d7377;
+    color: #fff;
+    z-index: 10001;
+    font-size: 1rem;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 0 0 4px 0;
+}
+
+/* ---- Language toggle bar ---- */
+.portal-lang-nav {
+    background: #f5f5f5;
+    padding: 0.25rem 0;
+    text-align: right;
+}
+.portal-lang-nav .container {
+    display: flex;
+    justify-content: flex-end;
+}
+.portal-lang-nav .lang-link {
+    background: none;
+    border: 2px solid #0d7377;
+    color: #0d7377;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    min-height: 36px;
+}
+.portal-lang-nav .lang-link:hover,
+.portal-lang-nav .lang-link:focus {
+    background: #0d7377;
+    color: #fff;
+}
+
 /* Quick-exit button — always visible, high contrast */
 #quick-exit {
     position: fixed;
@@ -137,6 +199,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+/* Portal footer contact block */
+.portal-footer-contact {
+    font-size: 0.95rem;
+    color: var(--pico-muted-color, #666);
+    margin-top: 0.5rem;
+    white-space: pre-line;
 }
 
 /* Correction request soft step */
