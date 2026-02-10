@@ -9316,11 +9316,11 @@ msgstr ""
 "apparaîtront ici à mesure que vous atteindrez vos objectifs."
 
 msgid ""
-"No progress data to show yet. As you work with your worker, your progress "
-"will appear here."
+"No progress data to show yet. As you work with your %(worker_term)s, your "
+"progress will appear here."
 msgstr ""
 "Aucune donnée de progression à afficher pour le moment. Au fur et à mesure "
-"de votre travail avec votre intervenant(e), votre progression apparaîtra "
+"de votre travail avec votre %(worker_term)s, votre progression apparaîtra "
 "ici."
 
 msgid ""
@@ -9536,6 +9536,13 @@ msgstr "Ce sont les objectifs que vous avez atteints. Chacun d’eux compte."
 
 msgid "These charts show your progress over time."
 msgstr "Ces graphiques montrent votre progression au fil du temps."
+
+msgid ""
+"These charts show how your scores have changed over time for each of your "
+"goals."
+msgstr ""
+"Ces graphiques montrent l'évolution de vos scores au fil du temps pour "
+"chacun de vos objectifs."
 
 msgid "These notes are just for you. Your worker won't see them."
 msgstr ""

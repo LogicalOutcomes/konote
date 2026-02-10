@@ -166,12 +166,14 @@ class BrowserTestBase(StaticLiveServerTestCase):
         )
         from apps.programs.models import Program, UserProgramRole
 
-        # Programs
+        # Programs (BUG-9/BUG-11: include name_fr so French personas see French names)
         self.program_a = Program.objects.create(
-            name="Housing Support", colour_hex="#10B981"
+            name="Housing Support", name_fr="Soutien au logement",
+            colour_hex="#10B981",
         )
         self.program_b = Program.objects.create(
-            name="Youth Services", colour_hex="#3B82F6"
+            name="Youth Services", name_fr="Services jeunesse",
+            colour_hex="#3B82F6",
         )
 
         # Users

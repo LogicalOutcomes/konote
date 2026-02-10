@@ -103,6 +103,23 @@ class ClientViewsTest(TestCase):
         session = self.client.session
         self.assertIn(cf.pk, session.get("recent_clients", []))
 
+    def test_create_client_redirect_staff_user(self):
+        """BUG-7 reproduction: staff user creating a participant should redirect to profile, not 404."""
+        self.client.login(username="staff", password="testpass123")
+        resp = self.client.post("/clients/create/", {
+            "first_name": "Staff",
+            "last_name": "Created",
+            "preferred_name": "",
+            "middle_name": "",
+            "birth_date": "",
+            "record_id": "R-STAFF",
+            "status": "active",
+            "programs": [self.prog_a.pk],
+        }, follow=True)
+        self.assertEqual(resp.status_code, 200, f"Expected 200 but got {resp.status_code}")
+        self.assertContains(resp, "Staff")
+        self.assertContains(resp, "Created")
+
     def test_create_client_with_preferred_name(self):
         """Preferred name is saved and used as display_name."""
         self.client.login(username="admin", password="testpass123")

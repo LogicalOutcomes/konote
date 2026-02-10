@@ -190,6 +190,37 @@ def pending_erasures(request):
     return {"pending_erasure_count": count if count > 0 else None}
 
 
+def portal_context(request):
+    """Inject participant and portal_page for portal templates.
+
+    Provides:
+    - participant: the authenticated ParticipantUser (or None)
+    - portal_page: which nav item to highlight (e.g. 'dashboard', 'goals')
+
+    This ensures the portal navigation renders on every portal page
+    without each view needing to pass participant explicitly.
+    """
+    participant = getattr(request, "participant_user", None)
+    if not participant:
+        return {}
+
+    # Auto-detect which nav item to highlight from the URL name
+    page = ""
+    match = getattr(request, "resolver_match", None)
+    if match:
+        url_name = match.url_name or ""
+        if url_name == "dashboard":
+            page = "dashboard"
+        elif url_name in ("goals", "goal_detail"):
+            page = "goals"
+        elif url_name in ("progress", "milestones"):
+            page = "progress"
+        elif url_name == "settings":
+            page = "settings"
+
+    return {"participant": participant, "portal_page": page}
+
+
 def active_program_context(request):
     """Inject active program context for the program switcher (CONF9).
 

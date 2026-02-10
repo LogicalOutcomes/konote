@@ -249,6 +249,14 @@
     margin-top: 0.25rem;
 }
 
+/* Goal name — which goal this metric is tracking */
+.portal-metric-goal {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--pico-primary, #0d7377);
+    margin-bottom: 0.25rem;
+}
+
 /* Metric description — plain-language explanation for participants */
 .portal-metric-description {
     font-size: 0.95rem;

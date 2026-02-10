@@ -899,14 +899,20 @@ def progress_view(request):
                 "min_value": mv.metric_def.min_value,
                 "max_value": mv.metric_def.max_value,
                 "description": mv.metric_def.portal_description or "",
+                "goal_names": set(),
             }
         note_date = mv.progress_note_target.progress_note.created_at.strftime("%Y-%m-%d")
         metrics_data[metric_name]["labels"].append(note_date)
         metrics_data[metric_name]["values"].append(mv.value)
+        # Track which goals this metric is associated with
+        target = mv.progress_note_target.plan_target
+        if target and target.name:
+            metrics_data[metric_name]["goal_names"].add(target.name)
 
     # Convert to list format expected by the template JS
+    # (sets are not JSON-serialisable, so convert to sorted list)
     chart_data = [
-        {"metric_name": name, **data}
+        {"metric_name": name, **{k: sorted(v) if isinstance(v, set) else v for k, v in data.items()}}
         for name, data in metrics_data.items()
     ]
 

@@ -142,6 +142,7 @@ class ScenarioRunner(BrowserTestBase):
             staff_fr = User.objects.create_user(
                 username="staff_fr", password=TEST_PASSWORD,
                 display_name="Jean-Luc Bergeron",
+                preferred_language="fr",
             )
             UserProgramRole.objects.create(
                 user=staff_fr, program=self.program_a, role="staff",
