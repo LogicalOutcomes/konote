@@ -5,7 +5,7 @@
 
 {% block content %}
 <h1>{% trans "How I'm Doing" %}</h1>
-<p>{% trans "These charts show your progress over time." %}</p>
+<p>{% trans "These charts show how your scores have changed over time for each of your goals." %}</p>
 
 {% if has_data %}
 <div id="portal-charts" class="portal-charts">
@@ -41,6 +41,14 @@
         heading.id = 'chart-heading-' + index;
         heading.textContent = chartInfo.metric_name || ('Chart ' + (index + 1));
         section.appendChild(heading);
+
+        // Show which goal(s) this metric is tracking
+        if (chartInfo.goal_names && chartInfo.goal_names.length) {
+            var goalText = document.createElement('p');
+            goalText.className = 'portal-metric-goal';
+            goalText.textContent = '{% trans "Goal" %}: ' + chartInfo.goal_names.join(', ');
+            section.appendChild(goalText);
+        }
 
         // Show plain-language description if available
         if (chartInfo.description) {
