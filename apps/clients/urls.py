@@ -6,6 +6,8 @@ from django.shortcuts import render
 from django.urls import path
 from django.utils import timezone
 
+from apps.portal.staff_views import create_staff_portal_note
+
 from . import erasure_views, views
 
 
@@ -125,4 +127,6 @@ urlpatterns = [
     path("admin/fields/<int:field_id>/edit/", views.custom_field_def_edit, name="custom_field_def_edit"),
     # Erasure request (ERASE4)
     path("<int:client_id>/erase/", erasure_views.erasure_request_create, name="client_erasure_request"),
+    # Portal staff note
+    path("<int:client_id>/portal-note/", create_staff_portal_note, name="create_staff_portal_note"),
 ]

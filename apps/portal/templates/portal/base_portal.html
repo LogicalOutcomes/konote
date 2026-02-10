@@ -34,14 +34,16 @@
 <body>
     <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
 
-    <!-- Quick-exit button — fixed position, always visible -->
+    <!-- Quick-exit button — fixed position, visible when enabled (default: on) -->
     {% block quick_exit %}
+    {% if features.portal_quick_exit is not False %}
     <button id="quick-exit"
             onclick="quickExit()"
             aria-label="{% trans 'Leave this page quickly' %}"
             class="quick-exit-btn">
         {% trans "Leave quickly" %}
     </button>
+    {% endif %}
     {% endblock %}
 
     <!-- Language toggle nav -->

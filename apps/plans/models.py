@@ -30,6 +30,13 @@ class MetricDefinition(models.Model):
     min_value = models.FloatField(null=True, blank=True, help_text="Minimum valid value.")
     max_value = models.FloatField(null=True, blank=True, help_text="Maximum valid value.")
     unit = models.CharField(max_length=50, default="", blank=True, help_text="e.g., 'score', 'days', '%'")
+    portal_description = models.TextField(
+        blank=True, default="",
+        help_text=_(
+            "Plain-language explanation shown to participants in the portal. "
+            "Describe what the metric measures and what the numbers mean."
+        ),
+    )
     portal_visibility = models.CharField(
         max_length=20, default="no",
         choices=[

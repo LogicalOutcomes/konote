@@ -7,7 +7,7 @@
 {% block content %}
 {# Warm greeting #}
 <header class="portal-dashboard-header">
-    <h1>{% trans "Hi," %} {{ participant|portal_display_name }}!</h1>
+    <h1>{% trans "Hi," %} {{ participant.display_name }}!</h1>
 
     {% if highlight_message %}
     <p class="portal-highlight">{{ highlight_message }}</p>
@@ -19,12 +19,26 @@
 {% include "portal/_new_since_banner.html" %}
 {% endif %}
 
+{# Staff notes — encouragement and updates from worker #}
+{% if staff_notes %}
+<section aria-labelledby="staff-notes-heading" class="portal-staff-notes">
+    <h2 id="staff-notes-heading">{% blocktrans with worker_term=term.worker %}Notes from your {{ worker_term }}{% endblocktrans %}</h2>
+    {% for note in staff_notes %}
+    <article class="portal-staff-note">
+        <p>{{ note.content }}</p>
+        <time datetime="{{ note.created_at|date:'Y-m-d' }}">{{ note.created_at|portal_date }}</time>
+    </article>
+    {% endfor %}
+</section>
+{% endif %}
+
 {# Main navigation cards #}
 <section aria-label="{% trans 'What would you like to do?' %}">
     <div class="portal-nav-cards">
 
         <a href="{% url 'portal:goals' %}" class="portal-card">
             <article>
+                <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
                 <h2>{% trans "My Goals" %}</h2>
                 <p>{% trans "See the goals you're working on." %}</p>
             </article>
@@ -32,6 +46,7 @@
 
         <a href="{% url 'portal:progress' %}" class="portal-card">
             <article>
+                <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                 <h2>{% trans "My Progress" %}</h2>
                 <p>{% trans "See how far you've come." %}</p>
             </article>
@@ -39,6 +54,7 @@
 
         <a href="{% url 'portal:milestones' %}" class="portal-card">
             <article>
+                <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                 <h2>{% trans "Milestones" %}</h2>
                 <p>{% trans "Celebrate what you've achieved." %}</p>
             </article>
@@ -47,6 +63,7 @@
         {% if features.portal_journal %}
         <a href="{% url 'portal:journal' %}" class="portal-card">
             <article>
+                <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
                 <h2>{% trans "My Journal" %}</h2>
                 <p>{% trans "A private space to write your thoughts." %}</p>
             </article>
@@ -56,8 +73,9 @@
         {% if features.portal_messaging %}
         <a href="{% url 'portal:message_to_worker' %}" class="portal-card">
             <article>
-                <h2>{% trans "Message My Worker" %}</h2>
-                <p>{% trans "Send a message for your worker to read." %}</p>
+                <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <h2>{% blocktrans with worker_term=term.worker %}Message My {{ worker_term }}{% endblocktrans %}</h2>
+                <p>{% blocktrans with worker_term=term.worker %}Send a message for your {{ worker_term }} to read.{% endblocktrans %}</p>
             </article>
         </a>
         {% endif %}

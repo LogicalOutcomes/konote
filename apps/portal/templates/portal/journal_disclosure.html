@@ -9,7 +9,7 @@
         <h1>{% trans "Before you start writing" %}</h1>
     </header>
 
-    <p>{% trans "These notes are just for you. Your worker won't see them." %}</p>
+    <p>{% blocktrans with worker_term=term.worker %}These notes are just for you. Your {{ worker_term }} won't see them.{% endblocktrans %}</p>
 
     <p>{% trans "In some situations — like a court order — the agency could be required to share records, and these notes could be included. This doesn't happen often, but we want you to know before you start writing." %}</p>
 

@@ -9813,3 +9813,45 @@ msgid ""
 msgstr ""
 "Votre intervenant(e) verra ceci la prochaine fois qu’il ou elle vérifiera. "
 "Ceci n’est pas pour les urgences."
+
+msgid "If someone might check your browsing history,"
+msgstr ""
+
+msgid "Note cannot be empty."
+msgstr ""
+
+msgid "Note for participant"
+msgstr ""
+
+msgid "Portal Note"
+msgstr ""
+
+msgid "Read"
+msgstr ""
+
+msgid "Recent portal notes"
+msgstr ""
+
+msgid "Save note"
+msgstr ""
+
+msgid "This note will appear on the participant's portal dashboard."
+msgstr ""
+
+msgid "Write a portal note"
+msgstr ""
+
+msgid "Write an encouraging note or update..."
+msgstr ""
+
+msgid "Your recent messages"
+msgstr ""
+
+msgid "staff portal note"
+msgstr ""
+
+msgid "staff portal notes"
+msgstr ""
+
+msgid "visit our safety page first"
+msgstr ""

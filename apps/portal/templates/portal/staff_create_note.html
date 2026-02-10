@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Portal Note" %} — {{ client_file }}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Write a portal note" %}</h1>
+<p>{% trans "This note will appear on the participant's portal dashboard." %}</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label for="id_content">{{ form.content.label }}</label>
+    {{ form.content }}
+    {% if form.content.errors %}
+    <p role="alert" class="error">{{ form.content.errors.0 }}</p>
+    {% endif %}
+
+    <div class="button-group">
+        <button type="submit">{% trans "Save note" %}</button>
+        <a href="{% url 'client_detail' pk=client_file.pk %}" class="secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+
+{% if recent_notes %}
+<hr>
+<h2>{% trans "Recent portal notes" %}</h2>
+{% for note in recent_notes %}
+<article>
+    <p>{{ note.content }}</p>
+    <small>{{ note.created_at|date:"N j, Y" }}{% if note.from_user %} &mdash; {{ note.from_user.get_full_name|default:note.from_user.username }}{% endif %}</small>
+</article>
+{% endfor %}
+{% endif %}
+{% endblock %}

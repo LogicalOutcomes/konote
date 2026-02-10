@@ -578,6 +578,8 @@ def dashboard(request):
     Includes a 'new since last visit' count.
     """
     from apps.notes.models import ProgressNote
+    from apps.plans.models import PlanTarget
+    from apps.portal.models import StaffPortalNote
 
     participant = request.participant_user
     client_file = _get_client_file(request)
@@ -590,19 +592,37 @@ def dashboard(request):
         .first()
     )
 
-    # Count of new items since last login
-    new_since_last_visit = 0
+    # Count and detail of new items since last login
+    new_count = 0
+    new_details = {}
     if participant.last_login:
-        new_since_last_visit = ProgressNote.objects.filter(
+        notes_count = ProgressNote.objects.filter(
             client_file=client_file,
             status="default",
             created_at__gt=participant.last_login,
         ).count()
+        goals_count = PlanTarget.objects.filter(
+            client_file=client_file,
+            status="default",
+            updated_at__gt=participant.last_login,
+        ).count()
+        new_count = notes_count + goals_count
+        new_details = {
+            "notes_count": notes_count,
+            "goals_count": goals_count,
+        }
+
+    # Staff notes for this participant (most recent, active only)
+    staff_notes = StaffPortalNote.objects.filter(
+        client_file=client_file, is_active=True,
+    )[:5]
 
     return render(request, "portal/dashboard.html", {
         "participant": participant,
         "latest_note_date": latest_note,
-        "new_since_last_visit": new_since_last_visit,
+        "new_count": new_count,
+        "new_details": new_details,
+        "staff_notes": staff_notes,
     })
 
 
@@ -748,20 +768,20 @@ def goals_list(request):
         .order_by("sort_order")
     )
 
-    # Build a list of sections with only active targets
-    sections_with_targets = []
+    # Build a list of sections with only active targets.
+    # Attach filtered targets directly to each section object so
+    # the template can access section.id, section.name, section.targets.
+    filtered_sections = []
     for section in sections:
         active_targets = [
             t for t in section.targets.all() if t.status == "default"
         ]
         if active_targets:
-            sections_with_targets.append({
-                "section": section,
-                "targets": active_targets,
-            })
+            section.active_targets = active_targets
+            filtered_sections.append(section)
 
     return render(request, "portal/goals.html", {
-        "sections_with_targets": sections_with_targets,
+        "sections": filtered_sections,
     })
 
 
@@ -824,12 +844,13 @@ def goal_detail(request, target_id):
                 "unit": metric_def.unit or "",
                 "min_value": metric_def.min_value,
                 "max_value": metric_def.max_value,
+                "description": metric_def.portal_description or "",
             }
 
     return render(request, "portal/goal_detail.html", {
         "target": target,
         "progress_entries": progress_entries,
-        "chart_data_json": json.dumps(chart_data),
+        "chart_data": chart_data,
     })
 
 
@@ -877,13 +898,20 @@ def progress_view(request):
                 "unit": mv.metric_def.unit or "",
                 "min_value": mv.metric_def.min_value,
                 "max_value": mv.metric_def.max_value,
+                "description": mv.metric_def.portal_description or "",
             }
         note_date = mv.progress_note_target.progress_note.created_at.strftime("%Y-%m-%d")
         metrics_data[metric_name]["labels"].append(note_date)
         metrics_data[metric_name]["values"].append(mv.value)
 
+    # Convert to list format expected by the template JS
+    chart_data = [
+        {"metric_name": name, **data}
+        for name, data in metrics_data.items()
+    ]
+
     return render(request, "portal/progress.html", {
-        "metrics_data_json": json.dumps(metrics_data),
+        "chart_data": chart_data,
         "has_data": bool(metrics_data),
     })
 
@@ -989,11 +1017,27 @@ def correction_request_create(request):
 
         form = CorrectionRequestForm(request.POST)
         if form.is_valid():
+            # IDOR protection: verify the referenced object belongs to
+            # this participant's client_file before creating a correction.
+            object_id = form.cleaned_data["object_id"]
+            data_type = form.cleaned_data["data_type"]
+
+            if data_type == "goal":
+                from apps.plans.models import PlanTarget
+                if not PlanTarget.objects.filter(pk=object_id, client_file=client_file).exists():
+                    raise Http404
+            elif data_type == "metric":
+                from apps.plans.models import PlanTargetMetric
+                if not PlanTargetMetric.objects.filter(
+                    pk=object_id, plan_target__client_file=client_file
+                ).exists():
+                    raise Http404
+
             correction = CorrectionRequest(
                 participant_user=participant,
                 client_file=client_file,
-                data_type=form.cleaned_data["data_type"],
-                object_id=form.cleaned_data["object_id"],
+                data_type=data_type,
+                object_id=object_id,
                 status="pending",
             )
             correction.description = form.cleaned_data["description"]
@@ -1139,9 +1183,20 @@ def message_create(request):
     else:
         form = MessageForm()
 
+    # Recent sent messages for this participant
+    recent_messages = (
+        ParticipantMessage.objects.filter(
+            participant_user=participant,
+            client_file=client_file,
+            message_type="general",
+        )
+        .order_by("-created_at")[:10]
+    )
+
     return render(request, "portal/message_to_worker.html", {
         "form": form,
         "success": success,
+        "recent_messages": recent_messages,
     })
 
 

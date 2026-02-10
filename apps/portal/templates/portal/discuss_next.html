@@ -5,10 +5,10 @@
 
 {% block content %}
 <h1>{% trans "What I Want to Talk About Next Time" %}</h1>
-<p>{% trans "Write down anything you want to bring up at your next session. Your worker will be able to see this." %}</p>
+<p>{% blocktrans with worker_term=term.worker %}Write down anything you want to bring up at your next session. Your {{ worker_term }} will be able to see this.{% endblocktrans %}</p>
 
 {% if success %}
-<p role="status" class="portal-alert portal-alert-success">{% trans "Saved! Your worker will see this before your next session." %}</p>
+<p role="status" class="portal-alert portal-alert-success">{% blocktrans with worker_term=term.worker %}Saved! Your {{ worker_term }} will see this before your next session.{% endblocktrans %}</p>
 {% endif %}
 
 <form method="post" action="{% url 'portal:discuss_next' %}">

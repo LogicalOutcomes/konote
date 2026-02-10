@@ -42,13 +42,15 @@ class PortalAuthTests(TestCase):
         self.client_file.last_name = "Participant"
         self.client_file.save()
 
-        # Create a participant user
+        # Create a participant user (MFA exempt for login tests)
         self.participant = ParticipantUser.objects.create_participant(
             email="test@example.com",
             client_file=self.client_file,
             display_name="Test Participant",
             password="TestPass123!",
         )
+        self.participant.mfa_method = "exempt"
+        self.participant.save()
 
         # Enable the portal feature toggle
         FeatureToggle.objects.get_or_create(
@@ -74,8 +76,14 @@ class PortalAuthTests(TestCase):
         self.assertIn(response.status_code, [302, 303])
         self.assertIn("/my/", response.url)
 
-        # Session should contain the portal participant ID
-        self.assertIn("_portal_participant_id", self.client.session)
+        # Follow the redirect manually so the test client picks up
+        # the new session cookie (login calls session.cycle_key)
+        response = self.client.get(response.url)
+        self.assertEqual(response.status_code, 200)
+
+        # Verify the participant is actually logged in by confirming
+        # the dashboard rendered (only visible to authenticated users)
+        self.assertContains(response, "Hi,")
 
     def test_login_wrong_password(self):
         """Wrong password should not log in and should increment failed_login_count."""
@@ -140,7 +148,8 @@ class PortalAuthTests(TestCase):
         session["_portal_participant_id"] = str(self.participant.id)
         session.save()
 
-        response = self.client.get("/my/logout/")
+        # Logout requires POST (enforced by @require_POST)
+        response = self.client.post("/my/logout/")
 
         # Should redirect to login
         self.assertIn(response.status_code, [302, 303])

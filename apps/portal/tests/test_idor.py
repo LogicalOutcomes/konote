@@ -143,6 +143,10 @@ class PortalIDORTests(TestCase):
             defaults={"is_enabled": True},
         )
 
+        # Mark journal disclosure as shown (required to access /my/journal/)
+        self.participant_a.journal_disclosure_shown = True
+        self.participant_a.save()
+
         # Log in as Participant A for all tests
         self._login_as_participant(self.participant_a)
 

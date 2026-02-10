@@ -7,6 +7,13 @@
 {% block quick_exit %}{% endblock %}
 
 {% block content %}
+<div class="portal-safety-notice" role="note">
+    <p>
+        {% trans "If someone might check your browsing history," %}
+        <a href="{% url 'portal:safety_help' %}">{% trans "visit our safety page first" %}</a>.
+    </p>
+</div>
+
 <article class="portal-login-card">
     <header>
         <h1>{% trans "Sign In" %}</h1>
@@ -43,7 +50,7 @@
         <input type="email" id="email" name="email" required autofocus
                autocomplete="email"
                aria-describedby="email-help">
-        <small id="email-help">{% trans "The email address your worker set up for you." %}</small>
+        <small id="email-help">{% blocktrans with worker_term=term.worker %}The email address your {{ worker_term }} set up for you.{% endblocktrans %}</small>
 
         <label for="password">{% trans "Password" %}</label>
         <input type="password" id="password" name="password" required

@@ -49,6 +49,7 @@
     {% if chart_data %}
     <section aria-labelledby="chart-heading">
         <h2 id="chart-heading">{% trans "Progress chart" %}</h2>
+        <div id="chart-descriptions"></div>
         <div class="portal-chart-container">
             <canvas id="goal-chart"
                     aria-label="{% trans 'Chart showing your progress over time' %}"
@@ -92,6 +93,18 @@
 <script>
 (function() {
     var rawData = JSON.parse(document.getElementById('chart-data').textContent);
+
+    // Show metric description if available (rawData is a dict keyed by metric name)
+    var descContainer = document.getElementById('chart-descriptions');
+    for (var metricName in rawData) {
+        if (rawData[metricName].description) {
+            var p = document.createElement('p');
+            p.className = 'portal-metric-description';
+            p.textContent = rawData[metricName].description;
+            descContainer.appendChild(p);
+        }
+    }
+
     var ctx = document.getElementById('goal-chart').getContext('2d');
     new Chart(ctx, {
         type: 'line',

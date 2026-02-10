@@ -8,16 +8,40 @@
      class="portal-new-banner"
      role="status"
      aria-live="polite">
-    <p>
-        {% blocktrans count counter=new_count %}
-        You have <strong>{{ counter }}</strong> new update since your last visit.
-        {% plural %}
-        You have <strong>{{ counter }}</strong> new updates since your last visit.
-        {% endblocktrans %}
-    </p>
+    <div>
+        <p>
+            {% blocktrans count counter=new_count %}
+            You have <strong>{{ counter }}</strong> new update since your last visit.
+            {% plural %}
+            You have <strong>{{ counter }}</strong> new updates since your last visit.
+            {% endblocktrans %}
+        </p>
+        {% if new_details %}
+        <ul class="portal-new-detail">
+            {% if new_details.notes_count %}
+            <li>
+                {% blocktrans count counter=new_details.notes_count %}
+                {{ counter }} new progress note
+                {% plural %}
+                {{ counter }} new progress notes
+                {% endblocktrans %}
+            </li>
+            {% endif %}
+            {% if new_details.goals_count %}
+            <li>
+                {% blocktrans count counter=new_details.goals_count %}
+                {{ counter }} goal updated
+                {% plural %}
+                {{ counter }} goals updated
+                {% endblocktrans %}
+            </li>
+            {% endif %}
+        </ul>
+        {% endif %}
+    </div>
 
     <div class="portal-new-banner-actions">
-        <a href="{% url 'portal:my_words' %}">{% trans "See what's new" %}</a>
+        <a href="{% url 'portal:goals' %}">{% trans "See what's new" %}</a>
 
         <button type="button"
                 class="portal-banner-dismiss"
