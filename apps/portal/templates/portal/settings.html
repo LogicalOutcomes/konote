@@ -6,33 +6,6 @@
 {% block content %}
 <h1>{% trans "Settings" %}</h1>
 
-{# Language preference #}
-<section aria-labelledby="lang-heading">
-    <h2 id="lang-heading">{% trans "Language" %}</h2>
-    <p>{% trans "Choose your preferred language." %}</p>
-
-    <form method="post" action="{% url 'switch_language' %}">
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ request.path }}">
-        <fieldset>
-            <legend class="visually-hidden">{% trans "Language preference" %}</legend>
-            <label>
-                <input type="radio" name="language" value="en"
-                       {% if LANGUAGE_CODE == 'en' %}checked{% endif %}>
-                English
-            </label>
-            <label>
-                <input type="radio" name="language" value="fr"
-                       {% if LANGUAGE_CODE == 'fr' %}checked{% endif %}>
-                Fran&ccedil;ais
-            </label>
-        </fieldset>
-        <button type="submit">{% trans "Save language" %}</button>
-    </form>
-</section>
-
-<hr>
-
 {# Password #}
 <section aria-labelledby="password-heading">
     <h2 id="password-heading">{% trans "Password" %}</h2>
