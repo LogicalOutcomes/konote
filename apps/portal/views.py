@@ -1032,6 +1032,12 @@ def correction_request_create(request):
                     pk=object_id, plan_target__client_file=client_file
                 ).exists():
                     raise Http404
+            elif data_type == "reflection":
+                from apps.notes.models import ProgressNote
+                if not ProgressNote.objects.filter(pk=object_id, client_file=client_file).exists():
+                    raise Http404
+            else:
+                raise Http404
 
             correction = CorrectionRequest(
                 participant_user=participant,
