@@ -128,6 +128,40 @@ class LanguageSwitchingFrenchTest(FrenchJourneyBaseTest):
         # Nav items in French
         self.assertContains(resp, "D\u00e9connexion")  # "Sign Out"
 
+    def test_language_persists_dashboard_to_create_form(self):
+        """BUG-9 regression: French stays active navigating dashboard → create form.
+
+        Reproduces the exact QA scenario (SCN-040 steps 1-2):
+        1. View dashboard in French
+        2. Navigate to create form — should still be French
+        """
+        self._login_admin_fr()
+        # Step 1: Dashboard in French
+        resp = self.http.get("/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'lang="fr"')
+        # Step 2: Create form stays French
+        resp = self.http.get("/clients/create/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'lang="fr"')
+        self.assertContains(resp, "Pr\u00e9nom")  # "First Name" in French
+        self.assertNotIn(">First Name<", resp.content.decode())
+
+    def test_language_persists_with_user_preferred_language(self):
+        """BUG-9: Language persists via user.preferred_language, not just cookie.
+
+        When preferred_language='fr' is saved on the user profile, all pages
+        should render in French regardless of cookie state.
+        """
+        self.admin.preferred_language = "fr"
+        self.admin.save(update_fields=["preferred_language"])
+        self.http.login(username="admin", password="pass")
+        # Do NOT set cookie — rely on preferred_language alone
+        resp = self.http.get("/clients/create/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'lang="fr"')
+        self.assertContains(resp, "Pr\u00e9nom")  # French label
+
 
 # ─────────────────────────────────────────────────────────────────────────
 # 2. Navigation in French
@@ -304,12 +338,46 @@ class ClientDetailFrenchTest(FrenchJourneyBaseTest):
         self.assertContains(resp, "Annuler")  # "Cancel"
 
     def test_client_create_form_in_french(self):
-        """Client creation form is in French."""
+        """BUG-9 regression: client creation form renders fully in French.
+
+        Checks every visible label, heading, button, and helper text
+        on the create form to ensure nothing appears in English.
+        """
         self._login_admin_fr()
         resp = self.http.get("/clients/create/")
         self.assertEqual(resp.status_code, 200)
+        # HTML lang attribute
+        self.assertContains(resp, 'lang="fr"')
+        # Heading (blocktrans with term.client)
+        self.assertContains(resp, "Nouveau/Nouvelle")  # "New (m/f)"
+        # Form labels
         self.assertContains(resp, "Pr\u00e9nom")  # "First Name"
         self.assertContains(resp, "Nom de famille")  # "Last Name"
+        self.assertContains(resp, "Nom pr\u00e9f\u00e9r\u00e9")  # "Preferred Name"
+        self.assertContains(resp, "Deuxi\u00e8me pr\u00e9nom")  # "Middle Name"
+        self.assertContains(resp, "Num\u00e9ro de t\u00e9l\u00e9phone")  # "Phone Number"
+        self.assertContains(resp, "Date de naissance")  # "Date of Birth"
+        self.assertContains(resp, "ID du dossier")  # "Record ID"
+        self.assertContains(resp, "Statut")  # "Status"
+        # Helper text
+        self.assertContains(resp, "pr\u00e9f\u00e9rez-vous")  # placeholder hint
+        self.assertContains(resp, "identique au pr\u00e9nom")  # "same as first name"
+        # Status dropdown options (model choices)
+        self.assertContains(resp, "Actif")  # "Active"
+        # Button
+        self.assertContains(resp, "Cr\u00e9er")  # "Create ..."
+        self.assertContains(resp, "Annuler")  # "Cancel"
+        # Program fieldset legend (terminology system)
+        self.assertContains(resp, "Programmes")  # from term.program_plural
+        # Ensure key English form strings do NOT appear
+        content = resp.content.decode()
+        self.assertNotIn(">First Name<", content)
+        self.assertNotIn(">Last Name<", content)
+        self.assertNotIn(">Preferred Name<", content)
+        self.assertNotIn(">Middle Name<", content)
+        self.assertNotIn(">Phone Number<", content)
+        self.assertNotIn(">Date of Birth<", content)
+        self.assertNotIn(">Record ID<", content)
 
 
 # ─────────────────────────────────────────────────────────────────────────

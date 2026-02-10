@@ -11,11 +11,9 @@
 
 ### QA Round 3 — Regressions
 
-- [ ] Fix BUG-7 again — 404 after create participant still occurs (QA-W21)
-- [ ] Fix BUG-9 again — French create form reverts to English (QA-W22)
+- [ ] Fix BUG-7 / IMPROVE-5 — QA false positive: app code is fixed (unit tests pass for admin + staff), but QA runner navigates to literal `{client_id}` instead of resolved ID (TEST-5). Fix the QA test runner to resolve URL variables from previous steps (QA-W21, QA-W25)
 - [ ] Fix BUG-8 again — "Safety concern noted" still in English on French dashboard (QA-W23)
 - [ ] Fix BUG-11 again — "Housing Support" still English on French pages, `name_fr` may not be populated (QA-W24)
-- [ ] Fix IMPROVE-5 — no confirmation message after creating a participant (QA-W25)
 - [ ] Verify BUG-13 — accent search needs manual test both ways (QA-W26)
 - [ ] Verify BLOCKER-1 + BLOCKER-2 — skip link and post-login focus need keyboard/JAWS testing (QA-W27)
 - [ ] Fix BUG-3 — audit log filter dropdown still truncated (QA-W28)
@@ -135,6 +133,7 @@
 
 ## Recently Done
 
+- [x] Fix BUG-9 regression — French create form: added name_fr to QA programs, set preferred_language on French user, comprehensive form test — 2026-02-10 (QA-W22)
 - [x] Decide product name — "KoNote" (not "KoNote2"). Renamed across all tasks/, qa/, CLAUDE.md, TODO.md — 2026-02-10 (NAME1)
 - [x] Rename "programme" → "program" across 102 files + migration + .po cleanup — 2026-02-09 (SPELL1, RENAME-AGG1, DOC-AGG1, PERM-FU3)
 - [x] Fix Progress Trend chart — apostrophe in JS string caused SyntaxError, used `escapejs` — 2026-02-09 (BUG-CHART1)
