@@ -67,7 +67,7 @@ KoNote2 needs a PostgreSQL database for client and note data.
      - Storage: **32 GB** (minimum)
      - Click **Save**
    - **Authentication method**: `PostgreSQL authentication only`
-   - **Admin username**: `KoNote2admin`
+   - **Admin username**: `konoteadmin`
    - **Password**: Create a strong password and **save it somewhere safe**
 4. Click **Next: Networking**
 5. Under **Firewall rules**:
@@ -88,7 +88,7 @@ KoNote2 uses a separate database for audit logs (security best practice).
 1. Once your database server is created, go to it in the portal
 2. In the left menu, click **Databases**
 3. Click **+ Add**
-4. Name: `KoNote2_audit`
+4. Name: `konote_audit`
 5. Click **Save**
 
 Also create the main application database:
@@ -140,8 +140,8 @@ KoNote2 needs configuration values to connect to the database and encrypt data.
 
 | Name | Value |
 |------|-------|
-| `DATABASE_URL` | `postgres://KoNote2admin:YOUR_PASSWORD@KoNote2-db.postgres.database.azure.com:5432/KoNote2?sslmode=require` |
-| `AUDIT_DATABASE_URL` | `postgres://KoNote2admin:YOUR_PASSWORD@KoNote2-db.postgres.database.azure.com:5432/KoNote2_audit?sslmode=require` |
+| `DATABASE_URL` | `postgres://konoteadmin:YOUR_PASSWORD@konote-db.postgres.database.azure.com:5432/konote?sslmode=require` |
+| `AUDIT_DATABASE_URL` | `postgres://konoteadmin:YOUR_PASSWORD@konote-db.postgres.database.azure.com:5432/konote_audit?sslmode=require` |
 | `SECRET_KEY` | Generate a new one: 50+ random characters |
 | `FIELD_ENCRYPTION_KEY` | Your existing encryption key (CRITICAL: use the same one!) |
 | `ALLOWED_HOSTS` | `KoNote2-app.azurewebsites.net` |

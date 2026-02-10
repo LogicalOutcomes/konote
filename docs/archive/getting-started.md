@@ -628,7 +628,7 @@ The test suite creates temporary test data (users, programs, clients) that is au
 
 ## Troubleshooting
 
-### KoNote2.E001: FIELD_ENCRYPTION_KEY not configured
+### KoNote.E001: FIELD_ENCRYPTION_KEY not configured
 
 **Cause:** Your `.env` file is missing or has an empty `FIELD_ENCRYPTION_KEY`.
 
@@ -643,7 +643,7 @@ The test suite creates temporary test data (users, programs, clients) that is au
    ```
    (Use your actual generated key, not this example!)
 
-### KoNote2.E001: FIELD_ENCRYPTION_KEY is invalid
+### KoNote.E001: FIELD_ENCRYPTION_KEY is invalid
 
 **Cause:** The key in your `.env` file is not a valid Fernet key (wrong format or length).
 
