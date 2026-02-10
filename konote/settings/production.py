@@ -70,6 +70,30 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "True").lower() != "false"
 CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "True").lower() != "false"
 
+# CSRF_TRUSTED_ORIGINS — required by Django 4.0+ for HTTPS POST requests.
+# Django verifies the Origin header against this list. Without it, form
+# submissions (login, logout, etc.) fail with 403 "CSRF verification failed".
+# Mirrors the ALLOWED_HOSTS auto-detection above.
+_trusted_origins = []
+_explicit = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
+if _explicit:
+    _trusted_origins.extend([o.strip() for o in _explicit.split(",") if o.strip()])
+
+if os.environ.get("RAILWAY_ENVIRONMENT"):
+    _trusted_origins.append("https://*.railway.app")
+    _trusted_origins.append("https://*.up.railway.app")
+
+if os.environ.get("WEBSITE_SITE_NAME"):
+    site_name = os.environ.get("WEBSITE_SITE_NAME")
+    _trusted_origins.append(f"https://{site_name}.azurewebsites.net")
+
+if os.environ.get("ELESTIO_VM_NAME"):
+    elestio_domain = os.environ.get("ELESTIO_DOMAIN", "")
+    if elestio_domain:
+        _trusted_origins.append(f"https://{elestio_domain}")
+
+CSRF_TRUSTED_ORIGINS = list(dict.fromkeys(_trusted_origins))
+
 # CSP — production overrides
 # ─────────────────────────────────────────────────────────────────────
 # Report URI: set CSP_REPORT_URI_ENDPOINT in your environment to receive
