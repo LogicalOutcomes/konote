@@ -27,6 +27,7 @@
             <label for="custom_{{ item.field_def.pk }}">
                 {{ item.field_def.name }}
                 {% if item.is_editable and item.field_def.is_required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+                {% if not item.is_editable %}<small class="secondary">({% trans "view only" %})</small>{% endif %}
                 {% if item.field_def.is_sensitive %}<small class="secondary">({% trans "encrypted" %})</small>{% endif %}
             </label>
             {% if item.is_editable %}
@@ -89,12 +90,12 @@
                            {% if item.field_def.is_required %}required aria-required="true"{% endif %}>
                 {% endif %}
             {% else %}
-                {# Read-only field: show as disabled input for visual consistency #}
+                {# View-only field: show as disabled input for visual consistency #}
                 <input type="text"
-                       id="custom_{{ item.field_def.pk }}_readonly"
+                       id="custom_{{ item.field_def.pk }}"
                        value="{{ item.value|default:'—' }}"
                        disabled
-                       aria-label="{{ item.field_def.name }} ({% trans 'read-only' %})">
+                       aria-label="{{ item.field_def.name }} ({% trans 'view only' %})">
             {% endif %}
         </div>
         {% endfor %}

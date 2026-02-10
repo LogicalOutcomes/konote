@@ -1,10 +1,13 @@
 """Tests for Phase 3.5 Export Permission Alignment (PERM1-10).
 
 Verifies that export access follows the role model:
-- Admin: system config + any export + manage/revoke links
-- Program Manager: metrics/CMT exports scoped to their programs + download own
+- Admin: system config + any export (individual data) + manage/revoke links
+- Program Manager: aggregate-only exports scoped to their programs + download own
 - Executive: aggregate-only exports scoped to their programs
 - Staff/Front Desk: no export access
+
+Only admins can access individual client data in report exports.
+All other roles receive aggregate summaries only (PHIPA safeguard).
 """
 import os
 import shutil
@@ -50,6 +53,7 @@ def _create_link(user, export_dir, **overrides):
         export_type=export_type,
         client_count=client_count,
         includes_notes=overrides.pop("includes_notes", False),
+        contains_pii=overrides.pop("contains_pii", False),
         recipient=recipient,
         filename=filename,
         file_path=file_path,
@@ -401,10 +405,10 @@ class DownloadExportPermissionTest(TestCase):
         shutil.rmtree(self.export_dir, ignore_errors=True)
 
     @override_settings()
-    def test_creator_can_download_own_export(self):
-        """A PM who created an export should be able to download it."""
+    def test_creator_can_download_own_aggregate_export(self):
+        """A PM who created an aggregate export should be able to download it."""
         settings.SECURE_EXPORT_DIR = self.export_dir
-        link = _create_link(self.pm_user, self.export_dir)
+        link = _create_link(self.pm_user, self.export_dir, contains_pii=False)
         self.http_client.login(username="pm", password="testpass123")
         resp = self.http_client.get(f"/reports/download/{link.id}/")
         self.assertEqual(resp.status_code, 200)
@@ -413,7 +417,7 @@ class DownloadExportPermissionTest(TestCase):
     def test_admin_can_download_any_export(self):
         """Admin should be able to download any export, even ones they didn't create."""
         settings.SECURE_EXPORT_DIR = self.export_dir
-        link = _create_link(self.pm_user, self.export_dir)
+        link = _create_link(self.pm_user, self.export_dir, contains_pii=False)
         self.http_client.login(username="admin", password="testpass123")
         resp = self.http_client.get(f"/reports/download/{link.id}/")
         self.assertEqual(resp.status_code, 200)
@@ -422,7 +426,7 @@ class DownloadExportPermissionTest(TestCase):
     def test_other_pm_cannot_download_someone_elses_export(self):
         """A PM should NOT be able to download another PM's export."""
         settings.SECURE_EXPORT_DIR = self.export_dir
-        link = _create_link(self.pm_user, self.export_dir)
+        link = _create_link(self.pm_user, self.export_dir, contains_pii=False)
         self.http_client.login(username="pm2", password="testpass123")
         resp = self.http_client.get(f"/reports/download/{link.id}/")
         self.assertEqual(resp.status_code, 403)
@@ -431,10 +435,37 @@ class DownloadExportPermissionTest(TestCase):
     def test_staff_cannot_download_export(self):
         """Staff users should not be able to download any export."""
         settings.SECURE_EXPORT_DIR = self.export_dir
-        link = _create_link(self.admin, self.export_dir)
+        link = _create_link(self.admin, self.export_dir, contains_pii=False)
         self.http_client.login(username="staff", password="testpass123")
         resp = self.http_client.get(f"/reports/download/{link.id}/")
         self.assertEqual(resp.status_code, 403)
+
+    @override_settings()
+    def test_pm_cannot_download_pii_export(self):
+        """PM cannot download export containing PII, even if they created it (defense-in-depth)."""
+        settings.SECURE_EXPORT_DIR = self.export_dir
+        link = _create_link(self.pm_user, self.export_dir, contains_pii=True)
+        self.http_client.login(username="pm", password="testpass123")
+        resp = self.http_client.get(f"/reports/download/{link.id}/")
+        self.assertEqual(resp.status_code, 403)
+
+    @override_settings()
+    def test_admin_can_download_pii_export(self):
+        """Admin can still download PII-containing exports."""
+        settings.SECURE_EXPORT_DIR = self.export_dir
+        link = _create_link(self.pm_user, self.export_dir, contains_pii=True)
+        self.http_client.login(username="admin", password="testpass123")
+        resp = self.http_client.get(f"/reports/download/{link.id}/")
+        self.assertEqual(resp.status_code, 200)
+
+    @override_settings()
+    def test_pm_can_download_aggregate_export(self):
+        """PM can still download their own aggregate (non-PII) exports."""
+        settings.SECURE_EXPORT_DIR = self.export_dir
+        link = _create_link(self.pm_user, self.export_dir, contains_pii=False)
+        self.http_client.login(username="pm", password="testpass123")
+        resp = self.http_client.get(f"/reports/download/{link.id}/")
+        self.assertEqual(resp.status_code, 200)
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -590,12 +621,13 @@ class IsAggregateOnlyUserTest(TestCase):
     def test_executive_is_aggregate_only(self):
         self.assertTrue(is_aggregate_only_user(self.exec_user))
 
-    def test_pm_is_not_aggregate_only(self):
-        self.assertFalse(is_aggregate_only_user(self.pm_user))
+    def test_pm_is_aggregate_only(self):
+        """PMs get aggregate-only exports — individual data is admin-only."""
+        self.assertTrue(is_aggregate_only_user(self.pm_user))
 
-    def test_dual_role_user_is_not_aggregate_only(self):
-        """User with both executive and PM roles gets individual data (PM wins)."""
-        self.assertFalse(is_aggregate_only_user(self.dual_user))
+    def test_dual_role_user_is_aggregate_only(self):
+        """Non-admin users always get aggregate data, regardless of roles."""
+        self.assertTrue(is_aggregate_only_user(self.dual_user))
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -758,16 +790,20 @@ class ExecutiveAggregateExportTest(TestCase):
             content = f.read()
         self.assertIn("Client Record ID", content)
         self.assertIn(self.client_file.record_id, content)
+        self.assertTrue(link.contains_pii)
 
-    def test_pm_still_gets_individual_data(self):
-        """PM export must still contain individual client data (regression test)."""
+    def test_pm_gets_aggregate_only(self):
+        """PM export must contain aggregate data only — no client record IDs or author names."""
         resp = self._submit_export("pm")
         self.assertEqual(resp.status_code, 200)
         link = SecureExportLink.objects.order_by("-created_at").first()
         with open(link.file_path, "r", encoding="utf-8") as f:
             content = f.read()
-        self.assertIn("Client Record ID", content)
-        self.assertIn(self.client_file.record_id, content)
+        self.assertNotIn("Client Record ID", content)
+        self.assertNotIn(self.client_file.record_id, content)
+        self.assertNotIn("PM User", content)
+        self.assertIn("Aggregate Summary", content)
+        self.assertFalse(link.contains_pii)
 
     # ── Form template context ────────────────────────────────────
 
@@ -785,12 +821,12 @@ class ExecutiveAggregateExportTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertFalse(resp.context.get("is_aggregate_only"))
 
-    def test_pm_form_does_not_show_aggregate_banner(self):
-        """GET as PM should NOT set is_aggregate_only."""
+    def test_pm_form_shows_aggregate_banner(self):
+        """GET as PM should set is_aggregate_only (PMs see aggregate data only)."""
         self.http_client.login(username="pm", password="testpass123")
         resp = self.http_client.get("/reports/export/")
         self.assertEqual(resp.status_code, 200)
-        self.assertFalse(resp.context.get("is_aggregate_only"))
+        self.assertTrue(resp.context.get("is_aggregate_only"))
 
 
 # ═════════════════════════════════════════════════════════════════════
@@ -891,4 +927,155 @@ class IndividualClientExportPermissionTest(TestCase):
         """Receptionists cannot export individual client data."""
         self.http_client.login(username="frontdesk", password="testpass123")
         resp = self.http_client.get(self._export_url())
+        self.assertEqual(resp.status_code, 403)
+
+
+# ═════════════════════════════════════════════════════════════════════
+# 12. client_progress_pdf — admin-only (downloadable PII export)
+# ═════════════════════════════════════════════════════════════════════
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ClientProgressPdfPermissionTest(TestCase):
+    """Verify client_progress_pdf is restricted to admin only.
+
+    This endpoint generates a downloadable PDF with full client PII
+    (name, DOB, record ID, notes, metrics, author names). Since
+    downloadable exports are high-risk, only admins can access it.
+    """
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http_client = Client()
+
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+
+        self.admin = User.objects.create_user(
+            username="admin", password="testpass123", is_admin=True, display_name="Admin"
+        )
+        self.pm_user = User.objects.create_user(
+            username="pm", password="testpass123", is_admin=False, display_name="PM"
+        )
+        self.staff_user = User.objects.create_user(
+            username="staff", password="testpass123", is_admin=False, display_name="Staff"
+        )
+        self.exec_user = User.objects.create_user(
+            username="exec", password="testpass123", is_admin=False, display_name="Exec"
+        )
+
+        self.program_a = Program.objects.create(name="Program A")
+
+        UserProgramRole.objects.create(
+            user=self.admin, program=self.program_a, role="program_manager"
+        )
+        UserProgramRole.objects.create(
+            user=self.pm_user, program=self.program_a, role="program_manager"
+        )
+        UserProgramRole.objects.create(
+            user=self.staff_user, program=self.program_a, role="staff"
+        )
+        UserProgramRole.objects.create(
+            user=self.exec_user, program=self.program_a, role="executive"
+        )
+
+        self.client_file = ClientFile.objects.create()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program_a
+        )
+
+    def _pdf_url(self):
+        return f"/reports/client/{self.client_file.pk}/pdf/"
+
+    def test_pm_cannot_download_client_pdf(self):
+        """PM must NOT be able to download client progress PDF (contains full PII)."""
+        self.http_client.login(username="pm", password="testpass123")
+        resp = self.http_client.get(self._pdf_url())
+        self.assertEqual(resp.status_code, 403)
+
+    def test_staff_cannot_download_client_pdf(self):
+        """Staff must NOT be able to download client progress PDF."""
+        self.http_client.login(username="staff", password="testpass123")
+        resp = self.http_client.get(self._pdf_url())
+        self.assertEqual(resp.status_code, 403)
+
+    def test_executive_cannot_download_client_pdf(self):
+        """Executive must NOT be able to download client progress PDF."""
+        self.http_client.login(username="exec", password="testpass123")
+        resp = self.http_client.get(self._pdf_url())
+        # Either 403 (admin_required) or 302 (ProgramAccessMiddleware redirect)
+        self.assertIn(resp.status_code, [302, 403])
+
+
+# ═════════════════════════════════════════════════════════════════════
+# 13. client_analysis — requires metric.view_individual permission
+# ═════════════════════════════════════════════════════════════════════
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ClientAnalysisPermissionTest(TestCase):
+    """Verify client_analysis enforces metric.view_individual permission.
+
+    Executives have metric.view_individual=DENY and must not access
+    individual client metric charts.
+    """
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http_client = Client()
+
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+
+        self.pm_user = User.objects.create_user(
+            username="pm", password="testpass123", is_admin=False, display_name="PM"
+        )
+        self.staff_user = User.objects.create_user(
+            username="staff", password="testpass123", is_admin=False, display_name="Staff"
+        )
+        self.exec_user = User.objects.create_user(
+            username="exec", password="testpass123", is_admin=False, display_name="Exec"
+        )
+        self.receptionist = User.objects.create_user(
+            username="frontdesk", password="testpass123", is_admin=False, display_name="FD"
+        )
+
+        self.program_a = Program.objects.create(name="Program A")
+
+        UserProgramRole.objects.create(
+            user=self.pm_user, program=self.program_a, role="program_manager"
+        )
+        UserProgramRole.objects.create(
+            user=self.staff_user, program=self.program_a, role="staff"
+        )
+        UserProgramRole.objects.create(
+            user=self.exec_user, program=self.program_a, role="executive"
+        )
+        UserProgramRole.objects.create(
+            user=self.receptionist, program=self.program_a, role="receptionist"
+        )
+
+        self.client_file = ClientFile.objects.create()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program_a
+        )
+
+    def _analysis_url(self):
+        return f"/reports/client/{self.client_file.pk}/analysis/"
+
+    def test_executive_cannot_view_client_analysis(self):
+        """Executive must NOT see individual client metrics (metric.view_individual=DENY)."""
+        self.http_client.login(username="exec", password="testpass123")
+        resp = self.http_client.get(self._analysis_url())
+        # Either 403 (requires_permission) or 302 (ProgramAccessMiddleware)
+        self.assertIn(resp.status_code, [302, 403])
+
+    def test_receptionist_cannot_view_client_analysis(self):
+        """Receptionist must NOT see individual client metrics (metric.view_individual=DENY)."""
+        self.http_client.login(username="frontdesk", password="testpass123")
+        resp = self.http_client.get(self._analysis_url())
         self.assertEqual(resp.status_code, 403)

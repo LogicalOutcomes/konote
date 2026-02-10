@@ -190,7 +190,8 @@ PERMISSIONS = {
         "metric.view_individual": ALLOW,  # Phase 3: GATED
         "metric.view_aggregate": ALLOW,
 
-        "report.program_report": ALLOW,  # Primary use case. Enforced by can_create_export()
+        "report.program_report": ALLOW,  # Aggregate only — is_aggregate_only_user() enforces.
+                                        # Enforced by can_create_export()
         "report.data_extract": DENY,  # Phase 3: request-only (requires admin approval)
 
         "event.view": ALLOW,  # Phase 3: GATED. Enforced by @requires_permission

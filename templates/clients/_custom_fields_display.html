@@ -21,9 +21,10 @@
     <h3 id="group-{{ group.group.pk }}">{{ group.group.title }}</h3>
     <dl class="info-grid-compact">
         {% for item in group.fields %}
-        <div class="info-field">
+        <div class="info-field{% if not item.is_editable %} view-only{% endif %}">
             <dt>
                 {{ item.field_def.name }}
+                {% if not item.is_editable %}<small class="secondary">({% trans "view only" %})</small>{% endif %}
                 {% if item.field_def.is_sensitive %}<small class="secondary">({% trans "encrypted" %})</small>{% endif %}
             </dt>
             <dd>{{ item.value }}</dd>

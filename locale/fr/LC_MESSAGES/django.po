@@ -7230,12 +7230,12 @@ msgstr ""
 "onglets :"
 
 msgid ""
-"You are an administrator without %(program)s assignments. To see data, ask"
-" another admin to assign you a %(program)s role."
+"You are an administrator without %(program)s assignments. To see data, ask "
+"another admin to assign you a %(program)s role."
 msgstr ""
-"Vous êtes un administrateur sans affectation à un %(program)s. Pour voir "
-"les données, demandez à un autre administrateur de vous attribuer un rôle "
-"dans un %(program)s."
+"Vous êtes un administrateur sans affectation à un %(program)s. Pour voir les"
+" données, demandez à un autre administrateur de vous attribuer un rôle dans "
+"un %(program)s."
 
 msgid "You can only see %(clients)s in %(progs)s you're assigned to"
 msgstr ""
@@ -8871,3 +8871,15 @@ msgstr "— Tous les programmes —"
 
 msgid "— Select a program —"
 msgstr "— Sélectionner un programme —"
+
+msgid "Enter the 4-digit code your worker gave you."
+msgstr ""
+
+msgid "Invalid code. %(remaining)d attempts remaining."
+msgstr ""
+
+msgid "The verification code is incorrect. Please check with your worker."
+msgstr ""
+
+msgid "view only"
+msgstr "lecture seule"

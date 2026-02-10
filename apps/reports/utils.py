@@ -6,18 +6,18 @@ from typing import List, Tuple
 def is_aggregate_only_user(user):
     """Check if this user should only receive aggregate (non-individual) export data.
 
-    Executives can see aggregate metrics but not individual client data.
-    If a user has BOTH executive and another role (e.g., program_manager),
-    they get the higher-access role's output (individual data).
+    Only admins can access individual client data in report exports.
+    All other roles (program_manager, executive) receive aggregate
+    summaries only — no record IDs, no author names, no per-client rows.
+
+    This is a PHIPA/privacy safeguard: report downloads are high-risk
+    because files leave the system. Individual data access for clinical
+    purposes is handled separately by per-client views with RBAC.
 
     Returns:
         True if user should only see aggregate data in exports.
     """
-    from apps.programs.models import UserProgramRole
-
-    if user.is_admin:
-        return False
-    return UserProgramRole.is_executive_only(user)
+    return not user.is_admin
 
 
 def can_create_export(user, export_type, program=None):
