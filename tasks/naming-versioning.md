@@ -50,7 +50,7 @@ Use **SemVer** (`MAJOR.MINOR.PATCH`), starting fresh at 1.0.0:
 These references to "KoNote2" will need updating:
 
 - UI strings and page titles
-- Environment variables (e.g. `KoNote2_MODE`)
+- Environment variables (e.g. `KONOTE_MODE`)
 - README and documentation
 - Website and marketing materials
 

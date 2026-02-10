@@ -209,7 +209,7 @@ POSTGRES_DB=KoNote2
 
 AUDIT_POSTGRES_USER=audit_writer
 AUDIT_POSTGRES_PASSWORD=AnotherPassword456    # <-- Replace this too!
-AUDIT_POSTGRES_DB=KoNote2_audit
+AUDIT_POSTGRES_DB=konote_audit
 ```
 
 > **Tip:** Use different passwords for each database. A password manager can generate secure random passwords for you.
@@ -398,9 +398,9 @@ CREATE USER KoNote2 WITH PASSWORD 'MySecurePassword123';
 GRANT ALL PRIVILEGES ON DATABASE KoNote2 TO KoNote2;
 
 # Create audit database and user (replace AnotherPassword456 with your own password)
-CREATE DATABASE KoNote2_audit;
+CREATE DATABASE konote_audit;
 CREATE USER audit_writer WITH PASSWORD 'AnotherPassword456';
-GRANT ALL PRIVILEGES ON DATABASE KoNote2_audit TO audit_writer;
+GRANT ALL PRIVILEGES ON DATABASE konote_audit TO audit_writer;
 
 # Exit psql
 \q
@@ -412,7 +412,7 @@ GRANT ALL PRIVILEGES ON DATABASE KoNote2_audit TO audit_writer;
 1. Open pgAdmin and connect to your local server
 2. Right-click "Databases" → Create → Database
 3. Name: `KoNote2`, Owner: `postgres`
-4. Repeat for `KoNote2_audit`
+4. Repeat for `konote_audit`
 5. Create users under Login/Group Roles with appropriate passwords
 
 ### Step 7: Create Environment File
@@ -436,7 +436,7 @@ FIELD_ENCRYPTION_KEY=REPLACE_THIS_run_command_in_step_9
 
 # Database connections (use passwords from Step 6)
 DATABASE_URL=postgresql://KoNote2:MySecurePassword123@localhost:5432/KoNote2
-AUDIT_DATABASE_URL=postgresql://audit_writer:AnotherPassword456@localhost:5432/KoNote2_audit
+AUDIT_DATABASE_URL=postgresql://audit_writer:AnotherPassword456@localhost:5432/konote_audit
 
 # Authentication mode
 AUTH_MODE=local

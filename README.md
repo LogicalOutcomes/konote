@@ -217,11 +217,11 @@ Then open http://localhost:8000 in your browser.
    SECRET_KEY=paste-your-generated-key-here
    FIELD_ENCRYPTION_KEY=paste-your-generated-key-here
    DATABASE_URL=postgresql://KoNote2:password@localhost:5432/KoNote2
-   AUDIT_DATABASE_URL=postgresql://audit_writer:password@localhost:5432/KoNote2_audit
+   AUDIT_DATABASE_URL=postgresql://audit_writer:password@localhost:5432/konote_audit
    AUTH_MODE=local
    ```
 
-   > **Getting `KoNote2.E001` error?** Your encryption key is missing or invalid.
+   > **Getting `KoNote.E001` error?** Your encryption key is missing or invalid.
    > See [Deploying KoNote2](docs/deploying-KoNote2.md#troubleshooting) for help.
 
 6. **Run migrations**

@@ -460,13 +460,13 @@ Store it separately from database backups:
 docker compose exec db pg_dump -U KoNote2 KoNote2 > backup_main_$(date +%Y-%m-%d).sql
 
 # Audit database
-docker compose exec audit_db pg_dump -U audit_writer KoNote2_audit > backup_audit_$(date +%Y-%m-%d).sql
+docker compose exec audit_db pg_dump -U audit_writer konote_audit > backup_audit_$(date +%Y-%m-%d).sql
 ```
 
 **Plain PostgreSQL:**
 ```bash
 pg_dump -h hostname -U KoNote2 -d KoNote2 > backup_main_$(date +%Y-%m-%d).sql
-pg_dump -h hostname -U audit_writer -d KoNote2_audit > backup_audit_$(date +%Y-%m-%d).sql
+pg_dump -h hostname -U audit_writer -d konote_audit > backup_audit_$(date +%Y-%m-%d).sql
 ```
 
 ### Automated Backups
@@ -488,7 +488,7 @@ Set-Location $KoNote2Dir
 docker compose exec -T db pg_dump -U KoNote2 KoNote2 | Out-File -FilePath "$BackupDir\backup_main_$Date.sql" -Encoding utf8
 
 # Audit database
-docker compose exec -T audit_db pg_dump -U audit_writer KoNote2_audit | Out-File -FilePath "$BackupDir\backup_audit_$Date.sql" -Encoding utf8
+docker compose exec -T audit_db pg_dump -U audit_writer konote_audit | Out-File -FilePath "$BackupDir\backup_audit_$Date.sql" -Encoding utf8
 
 # Clean up backups older than 30 days
 Get-ChildItem -Path $BackupDir -Filter "backup_*.sql" | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-30) } | Remove-Item -Force
@@ -508,7 +508,7 @@ DATE=$(date +%Y-%m-%d_%H-%M-%S)
 mkdir -p "$BACKUP_DIR"
 
 docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T db pg_dump -U KoNote2 KoNote2 > "$BACKUP_DIR/backup_main_$DATE.sql"
-docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T audit_db pg_dump -U audit_writer KoNote2_audit > "$BACKUP_DIR/backup_audit_$DATE.sql"
+docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T audit_db pg_dump -U audit_writer konote_audit > "$BACKUP_DIR/backup_audit_$DATE.sql"
 
 # Clean up old backups
 find "$BACKUP_DIR" -name "backup_*.sql" -mtime +30 -delete
@@ -537,7 +537,7 @@ docker compose up -d
 
 # Wait 10 seconds, then restore
 docker compose exec -T db psql -U KoNote2 KoNote2 < backup_main_2026-02-03.sql
-docker compose exec -T audit_db psql -U audit_writer KoNote2_audit < backup_audit_2026-02-03.sql
+docker compose exec -T audit_db psql -U audit_writer konote_audit < backup_audit_2026-02-03.sql
 ```
 
 ### Backup Retention Policy
@@ -575,11 +575,11 @@ python manage.py check --deploy
 
 | ID | Severity | What It Checks |
 |----|----------|----------------|
-| `KoNote2.E001` | Error | Encryption key exists and valid |
-| `KoNote2.E002` | Error | Security middleware loaded |
-| `KoNote2.W001` | Warning | DEBUG=True in production |
-| `KoNote2.W002` | Warning | Session cookies not secure |
-| `KoNote2.W003` | Warning | CSRF cookies not secure |
+| `KoNote.E001` | Error | Encryption key exists and valid |
+| `KoNote.E002` | Error | Security middleware loaded |
+| `KoNote.W001` | Warning | DEBUG=True in production |
+| `KoNote.W002` | Warning | Session cookies not secure |
+| `KoNote.W003` | Warning | CSRF cookies not secure |
 
 Errors prevent server start. Warnings indicate security gaps.
 

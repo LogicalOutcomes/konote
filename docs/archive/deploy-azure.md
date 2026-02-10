@@ -50,7 +50,7 @@ Replace `KoNote2-prod` with your preferred resource group name. Replace `canadac
 
 KoNote2 Web needs two separate PostgreSQL databases:
 1. **KoNote2** — main application database (stores clients, outcomes, notes, etc.)
-2. **KoNote2_audit** — read-only audit log database (for security and compliance)
+2. **konote_audit** — read-only audit log database (for security and compliance)
 
 ### Why two databases?
 
@@ -103,7 +103,7 @@ Replace `<YOUR_STRONG_PASSWORD>` and `<YOUR_STRONG_AUDIT_PASSWORD>` with strong 
 
 ### Create the Databases Within Each Server
 
-Once each PostgreSQL server is created, you need to create the actual databases (`KoNote2` and `KoNote2_audit`).
+Once each PostgreSQL server is created, you need to create the actual databases (`KoNote2` and `konote_audit`).
 
 #### Option A: Using Azure Portal
 
@@ -113,7 +113,7 @@ Once each PostgreSQL server is created, you need to create the actual databases 
 4. **Database name:** `KoNote2`
 5. Click "Save".
 6. Repeat for the audit server (`KoNote2-audit-db`):
-   - Database name: `KoNote2_audit`
+   - Database name: `konote_audit`
 
 #### Option B: Using Azure CLI
 
@@ -126,7 +126,7 @@ az postgres flexible-server db create \
 az postgres flexible-server db create \
   --resource-group KoNote2-prod \
   --server-name KoNote2-audit-db \
-  --database-name KoNote2_audit
+  --database-name konote_audit
 ```
 
 ### Configure Firewall Rules (Allow Container App to Connect)
@@ -312,7 +312,7 @@ Before setting environment variables, collect these values:
 | `SECRET_KEY` | (generated in Step 4a) | Your secure location |
 | `FIELD_ENCRYPTION_KEY` | (generated in Step 4a) | Your secure location |
 | `DATABASE_URL` | `postgresql://KoNote2:<PASSWORD>@<SERVER_NAME>.postgres.database.azure.com:5432/KoNote2` | From Step 2 (main DB) |
-| `AUDIT_DATABASE_URL` | `postgresql://audit_writer:<AUDIT_PASSWORD>@<SERVER_NAME_AUDIT>.postgres.database.azure.com:5432/KoNote2_audit` | From Step 2 (audit DB) |
+| `AUDIT_DATABASE_URL` | `postgresql://audit_writer:<AUDIT_PASSWORD>@<SERVER_NAME_AUDIT>.postgres.database.azure.com:5432/konote_audit` | From Step 2 (audit DB) |
 | `DJANGO_SETTINGS_MODULE` | `konote.settings.production` | Fixed |
 | `AUTH_MODE` | `azure` (for Azure AD) or `local` | Your choice |
 | `AZURE_CLIENT_ID` | (if using Azure AD) | Step 8 |
@@ -354,7 +354,7 @@ az containerapp update \
   --set-env-vars \
     DJANGO_SETTINGS_MODULE=konote.settings.production \
     DATABASE_URL="postgresql://KoNote2:PASSWORD@KoNote2-db-xyz123.postgres.database.azure.com:5432/KoNote2" \
-    AUDIT_DATABASE_URL="postgresql://audit_writer:AUDIT_PASSWORD@KoNote2-audit-db-xyz123.postgres.database.azure.com:5432/KoNote2_audit" \
+    AUDIT_DATABASE_URL="postgresql://audit_writer:AUDIT_PASSWORD@KoNote2-audit-db-xyz123.postgres.database.azure.com:5432/konote_audit" \
     AUTH_MODE=local \
     ALLOWED_HOSTS="your-domain.com,www.your-domain.com"
 ```

@@ -5,7 +5,7 @@
 KoNote2 Web stores data in **two PostgreSQL databases**:
 
 1. **Main database** (`KoNote2`) — application data including users, clients, programs, plans, notes, and settings
-2. **Audit database** (`KoNote2_audit`) — append-only log of every data change (required for compliance)
+2. **Audit database** (`konote_audit`) — append-only log of every data change (required for compliance)
 
 Additionally, client information (names, emails, birth dates) is encrypted using the **FIELD_ENCRYPTION_KEY**. If you lose this key, encrypted data cannot be recovered.
 
@@ -70,7 +70,7 @@ This creates a file like `backup_main_2026-02-02.sql` in your current directory.
 #### Back Up the Audit Database
 
 ```bash
-docker compose exec audit_db pg_dump -U audit_writer KoNote2_audit > backup_audit_$(date +\%Y-\%m-\%d).sql
+docker compose exec audit_db pg_dump -U audit_writer konote_audit > backup_audit_$(date +\%Y-\%m-\%d).sql
 ```
 
 This creates `backup_audit_2026-02-02.sql`.
@@ -155,7 +155,7 @@ Replace:
 #### Back Up the Audit Database
 
 ```bash
-pg_dump -h hostname_or_ip -U audit_writer -d KoNote2_audit > backup_audit_$(date +%Y-%m-%d).sql
+pg_dump -h hostname_or_ip -U audit_writer -d konote_audit > backup_audit_$(date +%Y-%m-%d).sql
 ```
 
 ---
@@ -234,7 +234,7 @@ The `-T` flag disables pseudo-terminal allocation (required for piped input).
 #### Step 5: Restore the Audit Database
 
 ```bash
-docker compose exec -T audit_db psql -U audit_writer KoNote2_audit < backup_audit_2026-02-02.sql
+docker compose exec -T audit_db psql -U audit_writer konote_audit < backup_audit_2026-02-02.sql
 ```
 
 #### Step 6: Verify the Restore
@@ -263,13 +263,13 @@ If you're migrating to a new server:
 psql -U postgres
 
 CREATE DATABASE KoNote2;
-CREATE DATABASE KoNote2_audit;
+CREATE DATABASE konote_audit;
 
 CREATE USER KoNote2 WITH PASSWORD 'your-password';
 CREATE USER audit_writer WITH PASSWORD 'your-password';
 
 GRANT ALL PRIVILEGES ON DATABASE KoNote2 TO KoNote2;
-GRANT ALL PRIVILEGES ON DATABASE KoNote2_audit TO audit_writer;
+GRANT ALL PRIVILEGES ON DATABASE konote_audit TO audit_writer;
 
 \q
 ```
@@ -283,7 +283,7 @@ psql -U KoNote2 -d KoNote2 < backup_main_2026-02-02.sql
 #### Step 3: Restore the Audit Database
 
 ```bash
-psql -U audit_writer -d KoNote2_audit < backup_audit_2026-02-02.sql
+psql -U audit_writer -d konote_audit < backup_audit_2026-02-02.sql
 ```
 
 #### Step 4: Verify
@@ -348,7 +348,7 @@ try {
 
     # Audit database backup
     $AuditBackup = "$BackupDir\backup_audit_$Date.sql"
-    docker compose exec -T audit_db pg_dump -U audit_writer KoNote2_audit | Out-File -FilePath $AuditBackup -Encoding utf8
+    docker compose exec -T audit_db pg_dump -U audit_writer konote_audit | Out-File -FilePath $AuditBackup -Encoding utf8
     Add-Content -Path $LogFile -Value "Audit database backed up: $AuditBackup"
 
     # Verify backups have content (more than 1 KB)
@@ -442,7 +442,7 @@ if [ $? -ne 0 ]; then
 fi
 
 # Audit database backup
-docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T audit_db pg_dump -U audit_writer KoNote2_audit > "$BACKUP_DIR/backup_audit_$DATE.sql"
+docker compose -f /path/to/KoNote2-web/docker-compose.yml exec -T audit_db pg_dump -U audit_writer konote_audit > "$BACKUP_DIR/backup_audit_$DATE.sql"
 
 if [ $? -ne 0 ]; then
     echo "ERROR: Audit database backup failed" >> "$LOG_FILE"
@@ -776,7 +776,7 @@ services:
   audit_db_test:
     image: postgres:16-alpine
     environment:
-      - POSTGRES_DB=KoNote2_audit_test
+      - POSTGRES_DB=konote_audit_test
       - POSTGRES_USER=audit_writer
       - POSTGRES_PASSWORD=audit_pass
     ports:
@@ -793,7 +793,7 @@ docker compose -f docker-compose.test.yml up -d
 
 ```bash
 docker compose -f docker-compose.test.yml exec -T db_test psql -U KoNote2 KoNote2_test < backup_main_2026-02-02.sql
-docker compose -f docker-compose.test.yml exec -T audit_db_test psql -U audit_writer KoNote2_audit_test < backup_audit_2026-02-02.sql
+docker compose -f docker-compose.test.yml exec -T audit_db_test psql -U audit_writer konote_audit_test < backup_audit_2026-02-02.sql
 ```
 
 5. Verify the data:
@@ -847,7 +847,7 @@ Verify the database name:
 docker compose exec db psql -U KoNote2 -l
 ```
 
-This lists all databases. Look for `KoNote2` and `KoNote2_audit`.
+This lists all databases. Look for `KoNote2` and `konote_audit`.
 
 ### Restore Takes a Long Time
 

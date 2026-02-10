@@ -336,7 +336,7 @@ POSTGRES_DB=KoNote2
 
 AUDIT_POSTGRES_USER=audit_writer
 AUDIT_POSTGRES_PASSWORD=AnotherPassword456
-AUDIT_POSTGRES_DB=KoNote2_audit
+AUDIT_POSTGRES_DB=konote_audit
 ```
 
 ### Step 4: Start the Containers
@@ -435,7 +435,7 @@ In your Railway project, click **Variables** on your app service and add:
 Optional variables (auto-detected, only set if needed):
 - `ALLOWED_HOSTS` — Auto-includes `.railway.app` domains
 - `AUTH_MODE` — Defaults to `local`, set to `azure` for SSO
-- `KoNote2_MODE` — Set to `production` for strict security checks (blocks startup if SECRET_KEY or encryption key are missing)
+- `KONOTE_MODE` — Set to `production` for strict security checks (blocks startup if SECRET_KEY or encryption key are missing)
 
 ### Step 4: Redeploy
 
@@ -560,7 +560,7 @@ az postgres flexible-server db create \
 az postgres flexible-server db create \
   --resource-group KoNote2-prod \
   --server-name KoNote2-audit-db \
-  --database-name KoNote2_audit
+  --database-name konote_audit
 ```
 
 ### Step 3: Create Container Registry
@@ -605,7 +605,7 @@ In Azure Portal, go to your Container App → Containers → Environment variabl
 | `SECRET_KEY` | Your generated key |
 | `FIELD_ENCRYPTION_KEY` | Your generated key |
 | `DATABASE_URL` | `postgresql://KoNote2:PASSWORD@KoNote2-db.postgres.database.azure.com:5432/KoNote2` |
-| `AUDIT_DATABASE_URL` | `postgresql://audit_writer:PASSWORD@KoNote2-audit-db.postgres.database.azure.com:5432/KoNote2_audit` |
+| `AUDIT_DATABASE_URL` | `postgresql://audit_writer:PASSWORD@KoNote2-audit-db.postgres.database.azure.com:5432/konote_audit` |
 
 Optional (auto-detected):
 - `ALLOWED_HOSTS` — Auto-includes `.azurewebsites.net` domains; add custom domains if needed
@@ -671,7 +671,7 @@ Add these in the Elestio dashboard:
 | `SECRET_KEY` | Your generated key |
 | `FIELD_ENCRYPTION_KEY` | Your generated key |
 | `DATABASE_URL` | `postgresql://KoNote2:KoNote2@db:5432/KoNote2` |
-| `AUDIT_DATABASE_URL` | `postgresql://audit_writer:audit_pass@audit_db:5432/KoNote2_audit` |
+| `AUDIT_DATABASE_URL` | `postgresql://audit_writer:audit_pass@audit_db:5432/konote_audit` |
 
 Optional (auto-detected):
 - `ALLOWED_HOSTS` — Auto-includes `.elest.io` domains; add custom domains if needed

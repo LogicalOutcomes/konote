@@ -88,7 +88,7 @@ Environment variables are how you pass secrets and settings to the application w
 | `SECRET_KEY` | Django's secret key (from step 1 Prerequisites) | `django-insecure-...` |
 | `FIELD_ENCRYPTION_KEY` | Key for encrypting client PII (from Prerequisites) | `gAAAAABl...` |
 | `DATABASE_URL` | Connection string for the main app database | `postgresql://KoNote2:KoNote2@db:5432/KoNote2` |
-| `AUDIT_DATABASE_URL` | Connection string for the audit database | `postgresql://audit_writer:audit_pass@audit_db:5432/KoNote2_audit` |
+| `AUDIT_DATABASE_URL` | Connection string for the audit database | `postgresql://audit_writer:audit_pass@audit_db:5432/konote_audit` |
 | `DJANGO_SETTINGS_MODULE` | Tells Django to use production settings | `konote.settings.production` |
 | `ALLOWED_HOSTS` | Domain names the app will accept requests for (comma-separated) | `KoNote2.myorganisation.ca` |
 | `AUTH_MODE` | Authentication method: `azure` or `local` | `local` |
@@ -110,7 +110,7 @@ If you're using Azure AD for single sign-on, also add:
 
 KoNote2 Web uses **two separate PostgreSQL databases**:
 - **Main database** (`KoNote2`): stores clients, outcomes, notes, and all business data
-- **Audit database** (`KoNote2_audit`): stores an immutable record of all changes for compliance and legal protection
+- **Audit database** (`konote_audit`): stores an immutable record of all changes for compliance and legal protection
 
 **Option A: Use Managed PostgreSQL on Elest.io (Recommended)**
 
@@ -124,7 +124,7 @@ KoNote2 Web uses **two separate PostgreSQL databases**:
      - Password: generate a secure password
    - Second instance:
      - Name: `audit_db` (or `KoNote2-audit-db`)
-     - Database: `KoNote2_audit`
+     - Database: `konote_audit`
      - User: `audit_writer`
      - Password: generate a different secure password
 
@@ -287,7 +287,7 @@ PostgreSQL has a backup tool. To back up your databases regularly:
 pg_dump -h <DATABASE_HOST> -U KoNote2 -d KoNote2 > backup-main-$(date +%Y%m%d).sql
 
 # Backup the audit database
-pg_dump -h <AUDIT_DATABASE_HOST> -U audit_writer -d KoNote2_audit > backup-audit-$(date +%Y%m%d).sql
+pg_dump -h <AUDIT_DATABASE_HOST> -U audit_writer -d konote_audit > backup-audit-$(date +%Y%m%d).sql
 ```
 
 Replace `<DATABASE_HOST>` and `<AUDIT_DATABASE_HOST>` with the hostnames from your environment variables (they'll look like `db-123.postgres.elestio.cloud`).

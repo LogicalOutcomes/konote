@@ -20,7 +20,7 @@
 
 ## 1. README.md Enhancements
 
-The current README has a Quick Start section, but it's missing critical details that cause the `KoNote2.E001` error and other setup failures.
+The current README has a Quick Start section, but it's missing critical details that cause the `KoNote.E001` error and other setup failures.
 
 ### Current Gap
 ```
@@ -58,7 +58,7 @@ This tells you *what* to set but not *how* to generate the values.
 
 2. **Add troubleshooting callout:**
    ```markdown
-   > ⚠️ **Getting `KoNote2.E001` error?** Your encryption key is missing or invalid.
+   > ⚠️ **Getting `KoNote.E001` error?** Your encryption key is missing or invalid.
    > See [Getting Started Guide](docs/getting-started.md#environment-configuration) for detailed setup.
    ```
 
@@ -118,8 +118,8 @@ This guide walks you through setting up KoNote2 for local development on Windows
 |----------|---------|-----------------|
 | `SECRET_KEY` | Django session security | `python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"` |
 | `FIELD_ENCRYPTION_KEY` | Encrypts client PII (names, emails, DOB) | `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"` |
-| `DATABASE_URL` | Main database connection | `postgresql://username:password@localhost:5432/KoNote2` |
-| `AUDIT_DATABASE_URL` | Audit log database connection | `postgresql://username:password@localhost:5433/KoNote2_audit` |
+| `DATABASE_URL` | Main database connection | `postgresql://username:password@localhost:5432/konote` |
+| `AUDIT_DATABASE_URL` | Audit log database connection | `postgresql://username:password@localhost:5432/konote_audit` |
 
 ### Optional Variables
 
@@ -149,16 +149,16 @@ This guide walks you through setting up KoNote2 for local development on Windows
 ```bash
 python manage.py check
 ```
-All checks should pass. If you see `KoNote2.E001`, your encryption key is missing.
+All checks should pass. If you see `KoNote.E001`, your encryption key is missing.
 
 ## Troubleshooting
 
-### KoNote2.E001: FIELD_ENCRYPTION_KEY not configured
+### KoNote.E001: FIELD_ENCRYPTION_KEY not configured
 **Cause:** Your `.env` file is missing or has an empty `FIELD_ENCRYPTION_KEY`.
 **Fix:** Generate a key and add it to `.env`:
 [command]
 
-### KoNote2.E002: Security middleware missing
+### KoNote.E002: Security middleware missing
 **Cause:** Custom middleware not in settings.
 **Fix:** This shouldn't happen with default settings. Check `konote/settings/development.py`.
 
@@ -216,12 +216,12 @@ python manage.py security_audit --verbose  # Detailed output
 
 | ID | Severity | Meaning | How to Fix |
 |----|----------|---------|------------|
-| `KoNote2.E001` | Error | Encryption key missing or invalid | Generate and add `FIELD_ENCRYPTION_KEY` to `.env` |
-| `KoNote2.E002` | Error | Security middleware not loaded | Check `MIDDLEWARE` in settings |
-| `KoNote2.W001` | Warning | DEBUG=True (deploy only) | Set `DEBUG=False` in production |
-| `KoNote2.W002` | Warning | Cookies not secure (deploy only) | Set `SESSION_COOKIE_SECURE=True` |
-| `KoNote2.W003` | Warning | CSRF cookie not secure | Set `CSRF_COOKIE_SECURE=True` |
-| `KoNote2.W004` | Warning | Argon2 not primary hasher | Add Argon2 to `PASSWORD_HASHERS` |
+| `KoNote.E001` | Error | Encryption key missing or invalid | Generate and add `FIELD_ENCRYPTION_KEY` to `.env` |
+| `KoNote.E002` | Error | Security middleware not loaded | Check `MIDDLEWARE` in settings |
+| `KoNote.W001` | Warning | DEBUG=True (deploy only) | Set `DEBUG=False` in production |
+| `KoNote.W002` | Warning | Cookies not secure (deploy only) | Set `SESSION_COOKIE_SECURE=True` |
+| `KoNote.W003` | Warning | CSRF cookie not secure | Set `CSRF_COOKIE_SECURE=True` |
+| `KoNote.W004` | Warning | Argon2 not primary hasher | Add Argon2 to `PASSWORD_HASHERS` |
 
 ### Example: Passing Check
 ```
@@ -233,7 +233,7 @@ System check identified no issues (0 silenced).
 SystemCheckError: System check identified some issues:
 
 ERRORS:
-?: (KoNote2.E001) FIELD_ENCRYPTION_KEY is not configured.
+?: (KoNote.E001) FIELD_ENCRYPTION_KEY is not configured.
     HINT: Set FIELD_ENCRYPTION_KEY environment variable to a valid Fernet key.
 ```
 
@@ -278,7 +278,7 @@ Every significant action in KoNote2 is logged to a separate audit database.
 #### Through the Database
 ```sql
 -- Connect to audit database
-psql -d KoNote2_audit
+psql -d konote_audit
 
 -- Recent audit entries
 SELECT timestamp, user_email, action, details

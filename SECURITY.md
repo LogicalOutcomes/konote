@@ -56,7 +56,7 @@ All personally identifiable information (PII) is encrypted at rest using **Ferne
 
 KoNote2 automatically runs security checks every time the application starts. This protects every deployment — Azure, Railway, Docker on a local network — without requiring the deployer to remember to run commands.
 
-### KoNote2_MODE Environment Variable
+### KONOTE_MODE Environment Variable
 
 | Mode | Behaviour |
 |------|-----------|
@@ -74,14 +74,14 @@ KoNote2 automatically runs security checks every time the application starts. Th
 
 ### Demo Mode
 
-For evaluation or testing, set `KoNote2_MODE=demo`:
+For evaluation or testing, set `KONOTE_MODE=demo`:
 
 ```bash
 # Docker Compose (easiest)
 docker-compose -f docker-compose.demo.yml up
 
 # Or set the environment variable
-KoNote2_MODE=demo docker-compose up
+KONOTE_MODE=demo docker-compose up
 ```
 
 Demo mode shows a clear warning banner:
@@ -95,7 +95,7 @@ Demo mode shows a clear warning banner:
     - DEBUG=True (should be False in production)
 
   DO NOT use this instance for real client data.
-  Set KoNote2_MODE=production when ready for production use.
+  Set KONOTE_MODE=production when ready for production use.
 =======================================================
 ```
 
@@ -112,7 +112,7 @@ Production mode (the default) blocks startup if critical checks fail:
     - Using insecure default SECRET_KEY
 
   Fix these issues before starting KoNote2 in production.
-  For evaluation/demo, set KoNote2_MODE=demo
+  For evaluation/demo, set KONOTE_MODE=demo
 =======================================================
 ```
 
@@ -163,10 +163,10 @@ python manage.py check --deploy
 ```
 
 **Check IDs:**
-- `KoNote2.E001` — FIELD_ENCRYPTION_KEY not configured (Error)
-- `KoNote2.E002` — Security middleware missing (Error)
-- `KoNote2.W001` — DEBUG=True (Warning, deploy only)
-- `KoNote2.W002` — SESSION_COOKIE_SECURE=False (Warning, deploy only)
+- `KoNote.E001` — FIELD_ENCRYPTION_KEY not configured (Error)
+- `KoNote.E002` — Security middleware missing (Error)
+- `KoNote.W001` — DEBUG=True (Warning, deploy only)
+- `KoNote.W002` — SESSION_COOKIE_SECURE=False (Warning, deploy only)
 
 ### 3. Document URL Test (Utility)
 
