@@ -201,7 +201,7 @@ The JPS manifest has been rewritten to use Docker containers:
 1. **Alpine-based Dockerfile created** — `Dockerfile.alpine` packages Python 3.12 + Django on Alpine Linux
 2. **GitHub Actions workflow created** — `.github/workflows/docker-fullhost.yml` builds and pushes to ghcr.io
 3. **JPS manifest updated** to use:
-   - `nodeType: docker` with `docker.image: ghcr.io/gilliankerr/konote-redux:fullhost-latest`
+   - `nodeType: docker` with `docker.image: ghcr.io/gilliankerr/konote:fullhost-latest`
    - `postgres:15-alpine` instead of native PostgreSQL
 4. **PowerShell deployment script created** — `deploy-fullhost.ps1` for API-based deployment
 
@@ -233,7 +233,7 @@ The following files have been created/updated:
 - Login works, all pages load (Home, Clients, Programs, Admin)
 
 **Bugs found and fixed:**
-1. **Wrong repo name** — Manifest/script referenced `KoNote-Redux` (doesn't exist), fixed to `KoNote-Redux`
+1. **Wrong repo name** — Manifest/script referenced `KoNote2-Redux` (doesn't exist), fixed to `KoNote`
 2. **ALLOWED_HOSTS missing 127.0.0.1** — FullHost health checks use `127.0.0.1:8000`, causing 400 errors. Fixed by adding `127.0.0.1,localhost` to ALLOWED_HOSTS
 3. **Admin user creation crashes** — `User.objects.filter(email=...)` fails because email is encrypted. Fixed to use `filter(is_superuser=True)` and `create_superuser(username='admin', ...)`
 4. **Startup wait too short** — 30 seconds wasn't enough for migrations + seed. Increased to 60 seconds

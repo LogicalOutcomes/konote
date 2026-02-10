@@ -74,7 +74,7 @@ $nodesJson = @"
         "flexibleCloudlets": 8,
         "displayName": "KoNote App",
         "docker": {
-            "image": "ghcr.io/gilliankerr/konote-redux:fullhost-latest"
+            "image": "ghcr.io/gilliankerr/konote:fullhost-latest"
         },
         "env": {
             "JELASTIC_ENVIRONMENT": "true",

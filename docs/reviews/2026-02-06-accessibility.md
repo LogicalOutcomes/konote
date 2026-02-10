@@ -139,6 +139,6 @@ autofocus — it requires logical focus order, which this satisfies.
 
 - **Framework:** `tasks/code-review-framework.md` Prompt C (Accessibility)
 - **Tool:** Jules (jules.google) — Gemini-powered code review agent
-- **Repo:** github.com/gilliankerr/KoNote-Redux (public, main branch)
+- **Repo:** github.com/gilliankerr/KoNote (public, main branch)
 - **Previous reviews:** Security (2026-02-06), Privacy (2026-02-06)
 - **Next scheduled:** Before each release or after template/CSS changes
