@@ -5,7 +5,7 @@
     <small>{% blocktrans with program=term.program|default:"program" %}You are an administrator without {{ program }} assignments. To see data, ask another admin to assign you a {{ program }} role.{% endblocktrans %}</small>
 </p>
 {% endif %}
-{% if user.is_admin %}
+{% if not is_admin_only and not is_receptionist_only and not is_executive_only %}
 <div role="group" style="margin-bottom: 1rem;">
     <a href="{% url 'reports:client_progress_pdf' client_id=client.pk %}" role="button" class="outline">{% trans "Export as PDF" %}</a>
 </div>

@@ -190,9 +190,10 @@ PERMISSIONS = {
         "metric.view_individual": ALLOW,  # Phase 3: GATED
         "metric.view_aggregate": ALLOW,
 
-        "report.program_report": ALLOW,  # Aggregate only — is_aggregate_only_user() enforces.
-                                        # Enforced by can_create_export()
-        "report.data_extract": DENY,  # Phase 3: request-only (requires admin approval)
+        "report.program_report": ALLOW,  # Individual with friction (elevated delay + admin
+                                        # notification). Enforced by is_aggregate_only_user()
+                                        # + _save_export_and_create_link()
+        "report.data_extract": ALLOW,  # PM handles PIPEDA data portability requests
 
         "event.view": ALLOW,  # Phase 3: GATED. Enforced by @requires_permission
         "event.create": DENY,
