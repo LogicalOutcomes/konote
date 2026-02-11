@@ -115,3 +115,39 @@ class AlertCancelForm(forms.Form):
         label=_("Cancellation Reason"),
         required=True,
     )
+
+
+class AlertRecommendCancelForm(forms.Form):
+    """Form for staff to recommend cancellation of an alert."""
+
+    assessment = forms.CharField(
+        widget=forms.Textarea(attrs={
+            "rows": 4,
+            "placeholder": _("Explain why this alert should be cancelled..."),
+        }),
+        label=_("Assessment"),
+        required=True,
+    )
+
+
+class AlertReviewRecommendationForm(forms.Form):
+    """Form for PM to approve or reject a cancellation recommendation."""
+
+    action = forms.ChoiceField(
+        choices=[("approve", _("Approve")), ("reject", _("Reject"))],
+        widget=forms.HiddenInput(),
+    )
+    review_note = forms.CharField(
+        widget=forms.Textarea(attrs={
+            "rows": 3,
+            "placeholder": _("Optional note (required for rejections)..."),
+        }),
+        label=_("Review Note"),
+        required=False,
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        if cleaned_data.get("action") == "reject" and not cleaned_data.get("review_note", "").strip():
+            self.add_error("review_note", _("A note is required when rejecting a recommendation."))
+        return cleaned_data

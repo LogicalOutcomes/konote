@@ -9880,3 +9880,130 @@ msgstr "Modifier le numéro de téléphone de ce participant."
 #, python-format
 msgid "Edit Contact — %(first)s %(last)s"
 msgstr "Modifier les coordonnées — %(first)s %(last)s"
+
+msgid "A cancellation recommendation is already pending for this alert."
+msgstr ""
+"Une recommandation d'annulation est deja en attente pour cette alerte."
+
+msgid "A note is required when rejecting a recommendation."
+msgstr "Une note est requise pour rejeter une recommandation."
+
+msgid "Alert:"
+msgstr "Alerte :"
+
+msgid "Approve — Cancel Alert"
+msgstr "Approuver — Annuler l'alerte"
+
+msgid ""
+"Approving will permanently cancel the alert. A note is required when "
+"rejecting."
+msgstr ""
+"L'approbation annulera definitivement l'alerte. Une note est requise pour le"
+" rejet."
+
+msgid "Assessment"
+msgstr "Évaluation"
+
+msgid "Assessment:"
+msgstr "Évaluation :"
+
+msgid "Assessment: %(text)s"
+msgstr "Évaluation : %(text)s"
+
+msgid "Cancellation recommendation rejected"
+msgstr "Recommandation d'annulation rejetee"
+
+msgid "Cancellation recommendation submitted for review."
+msgstr "Recommandation d'annulation soumise pour examen."
+
+msgid "Cancellation recommended"
+msgstr "Annulation recommandee"
+
+msgid "Cancelled on recommendation by %(name)s."
+msgstr "Annulee sur recommandation de %(name)s."
+
+msgid "Explain why this alert should be cancelled..."
+msgstr "Expliquez pourquoi cette alerte devrait etre annulee..."
+
+msgid "No pending recommendations."
+msgstr "Aucune recommandation en attente."
+
+msgid "Optional note (required for rejections)..."
+msgstr "Note facultative (requise pour les rejets)..."
+
+msgid "PM note when approving or rejecting."
+msgstr "Note du gestionnaire lors de l'approbation ou du rejet."
+
+msgid "PM note: %(text)s"
+msgstr "Note du gestionnaire : %(text)s"
+
+msgid "Pending Alert Recommendations"
+msgstr "Recommandations d'alertes en attente"
+
+msgid "Recommend Alert Cancellation"
+msgstr "Recommander l'annulation de l'alerte"
+
+msgid "Recommend Cancellation"
+msgstr "Recommander l'annulation"
+
+msgid "Recommendation approved. Alert cancelled."
+msgstr "Recommandation approuvee. Alerte annulee."
+
+msgid "Recommendation rejected. Alert remains active."
+msgstr "Recommandation rejetee. L'alerte demeure active."
+
+msgid "Recommended by"
+msgstr "Recommandee par"
+
+msgid "Review Cancellation Recommendation"
+msgstr "Examiner la recommandation d'annulation"
+
+msgid "Review Note"
+msgstr "Note d'examen"
+
+msgid "Review Recommendation"
+msgstr "Examiner la recommandation"
+
+msgid "Review staff recommendations to cancel safety alerts."
+msgstr ""
+"Examiner les recommandations du personnel pour annuler les alertes de "
+"securite."
+
+msgid "Reviews"
+msgstr "Examens"
+
+msgid "Staff Assessment"
+msgstr "Évaluation du personnel"
+
+msgid "Staff assessment of why this alert should be cancelled."
+msgstr ""
+"Évaluation du personnel expliquant pourquoi cette alerte devrait etre "
+"annulee."
+
+msgid "Submit Recommendation"
+msgstr "Soumettre la recommandation"
+
+msgid "This recommendation has already been reviewed."
+msgstr "Cette recommandation a deja ete examinee."
+
+msgid ""
+"Your recommendation will be reviewed by a program manager before the alert "
+"is cancelled."
+msgstr ""
+"Votre recommandation sera examinee par un gestionnaire de programme avant "
+"l'annulation de l'alerte."
+
+msgid "alert details"
+msgstr "details de l'alerte"
+
+msgid "alert to recommend cancelling"
+msgstr "alerte a recommander pour annulation"
+
+msgid "awaiting PM review"
+msgstr "en attente d'examen par le gestionnaire"
+
+msgid "cancellation recommendation"
+msgstr "recommandation d'annulation"
+
+msgid "staff assessment"
+msgstr "evaluation du personnel"

@@ -11,7 +11,7 @@ from django.utils.translation import gettext as _
 
 from django.template.exceptions import TemplateDoesNotExist
 
-from apps.auth_app.decorators import minimum_role
+from apps.auth_app.decorators import requires_permission_global
 from apps.events.models import Alert
 from apps.programs.models import UserProgramRole
 
@@ -80,7 +80,7 @@ def _get_visible_requests(user, status_filter=None):
 # --- Request creation (PM+ only) ---
 
 @login_required
-@minimum_role("program_manager")
+@requires_permission_global("erasure.manage")
 def erasure_request_create(request, client_id):
     """Create an erasure request for a client."""
     base_qs = get_client_queryset(request.user)
@@ -247,7 +247,7 @@ def erasure_request_detail(request, pk):
 # --- Approve (PM+ or admin fallback) ---
 
 @login_required
-@minimum_role("program_manager")
+@requires_permission_global("erasure.manage")
 def erasure_approve(request, pk):
     """Record approval for a program within an erasure request."""
     if request.method != "POST":
@@ -309,7 +309,7 @@ def erasure_approve(request, pk):
 # --- Reject (PM+) ---
 
 @login_required
-@minimum_role("program_manager")
+@requires_permission_global("erasure.manage")
 def erasure_reject(request, pk):
     """Reject an erasure request. One rejection = whole request rejected."""
     if request.method != "POST":
@@ -366,7 +366,7 @@ def erasure_reject(request, pk):
 # --- Cancel (requester or PM) ---
 
 @login_required
-@minimum_role("program_manager")
+@requires_permission_global("erasure.manage")
 def erasure_cancel(request, pk):
     """Cancel a pending erasure request."""
     if request.method != "POST":
@@ -419,7 +419,7 @@ def erasure_history(request):
 # --- PDF receipt ---
 
 @login_required
-@minimum_role("program_manager")
+@requires_permission_global("erasure.manage")
 def erasure_receipt_pdf(request, pk):
     """Generate a one-time PDF receipt of the erasure request.
 

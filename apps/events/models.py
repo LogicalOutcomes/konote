@@ -83,3 +83,62 @@ class Alert(models.Model):
         if preview:
             return f"Alert - {date_str}: {preview}"
         return f"Alert - {date_str}"
+
+
+class AlertCancellationRecommendation(models.Model):
+    """Staff recommendation to cancel an alert, requiring PM review.
+
+    DV safety: two-person rule. Staff cannot unilaterally cancel safety alerts.
+    Staff submits an assessment; PM reviews and approves (cancels alert) or
+    rejects (adds note, alert stays active). Staff can re-recommend after
+    rejection.
+    """
+
+    STATUS_CHOICES = [
+        ("pending", _("Pending Review")),
+        ("approved", _("Approved")),
+        ("rejected", _("Rejected")),
+    ]
+
+    alert = models.ForeignKey(
+        Alert,
+        on_delete=models.CASCADE,
+        related_name="cancellation_recommendations",
+    )
+    recommended_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="alert_cancel_recommendations",
+    )
+    assessment = models.TextField(
+        help_text=_("Staff assessment of why this alert should be cancelled."),
+    )
+    status = models.CharField(
+        max_length=20,
+        default="pending",
+        choices=STATUS_CHOICES,
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="alert_cancel_reviews",
+    )
+    review_note = models.TextField(
+        default="",
+        blank=True,
+        help_text=_("PM note when approving or rejecting."),
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        app_label = "events"
+        db_table = "alert_cancellation_recommendations"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Cancel recommendation for Alert #{self.alert_id} ({self.status})"

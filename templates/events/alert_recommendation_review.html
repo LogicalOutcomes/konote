@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Review Recommendation" %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Review Cancellation Recommendation" %}</h1>
+    <p>{% blocktrans with first=client.display_name last=client.last_name %}For {{ first }} {{ last }}{% endblocktrans %}</p>
+</hgroup>
+
+<article aria-label="{% trans 'alert details' %}" style="border-left: 4px solid #F59E0B;">
+    <header><strong>{% trans "Alert" %}</strong> — {{ alert.created_at|date:"Y-m-d" }}
+        {% if alert.author %}<small class="secondary">{% trans "by" %} {{ alert.author.display_name|default:alert.author }}</small>{% endif %}
+    </header>
+    <p>{{ alert.content }}</p>
+</article>
+
+<article aria-label="{% trans 'staff assessment' %}">
+    <header><strong>{% trans "Staff Assessment" %}</strong></header>
+    <p>{{ recommendation.assessment }}</p>
+    <small class="secondary">
+        {% trans "Recommended by" %} {{ recommendation.recommended_by.display_name|default:recommendation.recommended_by }}
+        — {{ recommendation.created_at|date:"Y-m-d" }}
+    </small>
+</article>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label for="{{ form.review_note.id_for_label }}">
+        {{ form.review_note.label }}
+    </label>
+    {{ form.review_note }}
+    {% if form.review_note.errors %}
+    <small class="badge badge-danger">{{ form.review_note.errors.0 }}</small>
+    {% endif %}
+
+    <div role="group">
+        <button type="submit" name="action" value="approve" class="contrast"
+                onclick="this.form.querySelector('[name=action]').value='approve';">{% trans "Approve — Cancel Alert" %}</button>
+        <button type="submit" name="action" value="reject" class="outline"
+                onclick="this.form.querySelector('[name=action]').value='reject';">{% trans "Reject" %}</button>
+    </div>
+    {{ form.action }}
+    <small class="secondary">{% trans "Approving will permanently cancel the alert. A note is required when rejecting." %}</small>
+</form>
+{% endblock %}

@@ -88,6 +88,10 @@
             {% if features.groups and can_see_groups %}
             <li><a href="/groups/"{% if nav_active == "groups" %} class="nav-active"{% endif %}>{{ term.group_plural|default:"Groups" }}</a></li>
             {% endif %}
+            {% has_permission "alert.review_cancel_recommendation" as can_review_recommendations %}
+            {% if can_review_recommendations %}
+            <li><a href="{% url 'events:alert_recommendation_queue' %}"{% if nav_active == "recommendations" %} class="nav-active"{% endif %}>{% trans "Reviews" %}{% if pending_recommendation_count %} <span class="badge badge-warning">{{ pending_recommendation_count }}</span>{% endif %}</a></li>
+            {% endif %}
             {% if user.is_admin %}
             <li>
                 <details class="dropdown" role="list">

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Recommend Cancellation" %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Recommend Alert Cancellation" %}</h1>
+    <p>{% blocktrans with first=client.display_name last=client.last_name %}For {{ first }} {{ last }}{% endblocktrans %}</p>
+</hgroup>
+
+<article aria-label="{% trans 'alert to recommend cancelling' %}" style="border-left: 4px solid #F59E0B;">
+    <p>{{ alert.content }}</p>
+    <small>{% trans "Created" %} {{ alert.created_at|date:"Y-m-d" }}
+        {% if alert.author %} {% trans "by" %} {{ alert.author.display_name|default:alert.author }}{% endif %}
+    </small>
+</article>
+
+<p class="secondary">
+    {% trans "Your recommendation will be reviewed by a program manager before the alert is cancelled." %}
+</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">
+        {{ field.label }}
+        {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+    </label>
+    {{ field }}
+    {% if field.errors %}
+    <small class="badge badge-danger">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% endfor %}
+
+    <div role="group">
+        <button type="submit">{% trans "Submit Recommendation" %}</button>
+        <a href="{% url 'events:event_list' client_id=client.pk %}" role="button" class="outline">{% trans "Go Back" %}</a>
+    </div>
+</form>
+{% endblock %}

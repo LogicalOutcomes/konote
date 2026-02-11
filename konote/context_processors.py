@@ -11,7 +11,9 @@ def nav_active(request):
     path = request.path
 
     # Order matters — more specific prefixes first
-    if path.startswith("/reports/insights/"):
+    if path.startswith("/events/alerts/recommendations"):
+        section = "recommendations"
+    elif path.startswith("/reports/insights/"):
         section = "insights"
     elif path.startswith("/reports/"):
         section = "reports"
@@ -209,6 +211,37 @@ def pending_erasures(request):
             )
         cache.set(cache_key, count, 60)  # 1 min cache
     return {"pending_erasure_count": count if count > 0 else None}
+
+
+def pending_recommendations(request):
+    """Inject pending alert cancellation recommendation count for PM nav badge.
+
+    Only calculated for program managers to avoid unnecessary queries.
+    """
+    if not hasattr(request, "user") or not request.user.is_authenticated:
+        return {}
+
+    from apps.programs.models import UserProgramRole
+
+    pm_program_ids = list(
+        UserProgramRole.objects.filter(
+            user=request.user, role="program_manager", status="active",
+        ).values_list("program_id", flat=True)
+    )
+
+    if not pm_program_ids:
+        return {}
+
+    cache_key = f"pending_recommendation_count_{request.user.pk}"
+    count = cache.get(cache_key)
+    if count is None:
+        from apps.events.models import AlertCancellationRecommendation
+        count = AlertCancellationRecommendation.objects.filter(
+            status="pending",
+            alert__author_program_id__in=pm_program_ids,
+        ).count()
+        cache.set(cache_key, count, 60)  # 1 min cache
+    return {"pending_recommendation_count": count if count > 0 else None}
 
 
 def portal_context(request):
