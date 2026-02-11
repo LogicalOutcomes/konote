@@ -131,6 +131,7 @@
     {% endif %}
     {% else %}
 
+    {% has_permission "group.view_detail" as can_view_group_detail %}
     {% if groups %}
     <figure>
     <table role="grid" aria-label="{% trans 'Groups in this program' %}">
@@ -138,7 +139,6 @@
             <tr>
                 <th scope="col">{% trans "Name" %}</th>
                 <th scope="col">{% trans "Members" %}</th>
-                {% has_permission "group.view_detail" as can_view_group_detail %}
                 {% if can_view_group_detail %}<th scope="col">{% trans "Actions" %}</th>{% endif %}
             </tr>
         </thead>
