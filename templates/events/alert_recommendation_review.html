@@ -4,6 +4,7 @@
 {% block title %}{% trans "Review Recommendation" %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
 
 {% block content %}
+{% include "_breadcrumbs.html" %}
 <hgroup>
     <h1>{% trans "Review Cancellation Recommendation" %}</h1>
     <p>{% blocktrans with first=client.display_name last=client.last_name %}For {{ first }} {{ last }}{% endblocktrans %}</p>

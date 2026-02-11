@@ -297,7 +297,7 @@ def client_edit(request, client_id):
 
 
 @login_required
-@requires_permission("client.edit_contact")
+@requires_permission("client.edit_contact", _get_program_from_client)
 def client_contact_edit(request, client_id):
     """Edit client phone number only — narrow scope for front desk.
 

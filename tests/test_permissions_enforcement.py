@@ -112,7 +112,7 @@ PERMISSION_URL_MAP = {
     # Admin keys — enforced by @admin_required, not permission matrix
     "user.manage": {"url": "/admin/users/", "admin_only": True},
     "settings.manage": {"url": "/admin/settings/", "admin_only": True},
-    "program.manage": {"url": "/programs/", "admin_only": True},
+    "program.manage": {"url": "/programs/create/", "admin_only": True},
     "audit.view": {"url": "/admin/audit/", "admin_only": True},
 }
 

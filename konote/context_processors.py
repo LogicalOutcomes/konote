@@ -214,22 +214,27 @@ def pending_erasures(request):
 
 
 def pending_recommendations(request):
-    """Inject pending alert cancellation recommendation count for PM nav badge.
+    """Inject pending alert cancellation recommendation count for nav badge.
 
-    Only calculated for program managers to avoid unnecessary queries.
+    Matrix-driven: finds programs where the user's role grants
+    alert.review_cancel_recommendation, so changes to the permissions
+    matrix take effect automatically.
     """
     if not hasattr(request, "user") or not request.user.is_authenticated:
         return {}
 
+    from apps.auth_app.permissions import DENY, can_access
     from apps.programs.models import UserProgramRole
 
-    pm_program_ids = list(
-        UserProgramRole.objects.filter(
-            user=request.user, role="program_manager", status="active",
-        ).values_list("program_id", flat=True)
-    )
+    reviewer_program_ids = [
+        role_obj.program_id
+        for role_obj in UserProgramRole.objects.filter(
+            user=request.user, status="active",
+        )
+        if can_access(role_obj.role, "alert.review_cancel_recommendation") != DENY
+    ]
 
-    if not pm_program_ids:
+    if not reviewer_program_ids:
         return {}
 
     cache_key = f"pending_recommendation_count_{request.user.pk}"
@@ -238,7 +243,7 @@ def pending_recommendations(request):
         from apps.events.models import AlertCancellationRecommendation
         count = AlertCancellationRecommendation.objects.filter(
             status="pending",
-            alert__author_program_id__in=pm_program_ids,
+            alert__author_program_id__in=reviewer_program_ids,
         ).count()
         cache.set(cache_key, count, 60)  # 1 min cache
     return {"pending_recommendation_count": count if count > 0 else None}

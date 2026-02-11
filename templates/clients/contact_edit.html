@@ -15,8 +15,8 @@
 
     <div>
         <label for="id_phone">{% trans "Phone Number" %}</label>
-        <input type="tel" name="phone" id="id_phone" value="{{ form.phone.value|default:'' }}" placeholder="(613) 555-1234" autofocus>
-        {% if form.phone.errors %}<small class="badge badge-danger">{{ form.phone.errors.0 }}</small>{% endif %}
+        {{ form.phone }}
+        {% if form.phone.errors %}<small class="badge badge-danger" id="phone-errors" role="alert">{{ form.phone.errors.0 }}</small>{% endif %}
     </div>
 
     <div role="group">

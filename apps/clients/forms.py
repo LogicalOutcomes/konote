@@ -46,7 +46,12 @@ class ClientContactForm(forms.Form):
     phone = forms.CharField(
         max_length=20, required=False,
         label=_("Phone Number"),
-        widget=forms.TextInput(attrs={"type": "tel", "placeholder": _("(613) 555-1234")}),
+        widget=forms.TextInput(attrs={
+            "type": "tel",
+            "placeholder": _("(613) 555-1234"),
+            "autofocus": True,
+            "aria-describedby": "phone-errors",
+        }),
     )
 
     def clean_phone(self):

@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -313,22 +314,29 @@ def alert_recommend_cancel(request, alert_id):
 @requires_permission_global("alert.review_cancel_recommendation")
 def alert_recommendation_queue(request):
     """PM queue: pending alert cancellation recommendations across their programs."""
-    user_program_ids = set(
-        UserProgramRole.objects.filter(
-            user=request.user, role="program_manager", status="active",
-        ).values_list("program_id", flat=True)
-    )
+    from apps.auth_app.permissions import DENY, can_access
+
+    # Matrix-driven: find programs where the user's role grants review permission,
+    # so changes to the matrix take effect automatically.
+    reviewer_program_ids = set()
+    for role_obj in UserProgramRole.objects.filter(user=request.user, status="active"):
+        if can_access(role_obj.role, "alert.review_cancel_recommendation") != DENY:
+            reviewer_program_ids.add(role_obj.program_id)
 
     pending = AlertCancellationRecommendation.objects.filter(
         status="pending",
-        alert__author_program_id__in=user_program_ids,
+        alert__author_program_id__in=reviewer_program_ids,
     ).select_related(
         "alert", "alert__client_file", "alert__author_program", "recommended_by",
     ).order_by("-created_at")
 
+    breadcrumbs = [
+        {"url": "", "label": _("Reviews")},
+    ]
     return render(request, "events/alert_recommendation_queue.html", {
         "pending_recommendations": pending,
         "nav_active": "recommendations",
+        "breadcrumbs": breadcrumbs,
     })
 
 
@@ -412,9 +420,14 @@ def alert_recommendation_review(request, recommendation_id):
     else:
         form = AlertReviewRecommendationForm()
 
+    breadcrumbs = [
+        {"url": reverse("events:alert_recommendation_queue"), "label": _("Reviews")},
+        {"url": "", "label": _("Review Recommendation")},
+    ]
     return render(request, "events/alert_recommendation_review.html", {
         "form": form,
         "recommendation": recommendation,
         "alert": alert,
         "client": client,
+        "breadcrumbs": breadcrumbs,
     })

@@ -132,6 +132,8 @@
     {% else %}
 
     {% has_permission "group.view_detail" as can_view_group_detail %}
+    {% has_permission "group.log_session" as can_log_session %}
+    {% has_permission "group.create" as can_create_group %}
     {% if groups %}
     <figure>
     <table role="grid" aria-label="{% trans 'Groups in this program' %}">
@@ -149,7 +151,9 @@
                 <td data-label="{% trans 'Members' %}">{{ group.member_count }}</td>
                 {% if can_view_group_detail %}
                 <td data-label="{% trans 'Actions' %}">
+                    {% if can_log_session %}
                     <a href="{% url 'groups:session_log' group_id=group.pk %}" role="button" class="outline small">{% trans "Log Session" %}</a>
+                    {% endif %}
                 </td>
                 {% endif %}
             </tr>
@@ -161,7 +165,7 @@
     <p><em>{% trans "No groups created yet." %}</em></p>
     {% endif %}
 
-    {% if can_view_group_detail %}
+    {% if can_create_group %}
     <a href="{% url 'groups:group_create' %}" role="button" class="outline">{% trans "Create Group" %}</a>
     {% endif %}
     {% endif %}
