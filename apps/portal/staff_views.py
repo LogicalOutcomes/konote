@@ -7,36 +7,11 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 
-from apps.auth_app.constants import ROLE_RANK
 from apps.auth_app.decorators import requires_permission
-from apps.clients.models import ClientFile, ClientProgramEnrolment
+from apps.clients.models import ClientFile
+from apps.programs.access import get_program_from_client as _get_program_from_client
 from apps.portal.forms import StaffPortalNoteForm
 from apps.portal.models import StaffPortalNote
-
-
-def _get_program_from_client(request, client_id, **kwargs):
-    """Find the shared program where user has the highest role for a client."""
-    from apps.programs.models import UserProgramRole, Program
-    client = get_object_or_404(ClientFile, pk=client_id)
-    user_roles = UserProgramRole.objects.filter(
-        user=request.user, status="active"
-    ).values_list("program_id", "role")
-    client_program_ids = set(
-        ClientProgramEnrolment.objects.filter(
-            client_file=client, status="enrolled"
-        ).values_list("program_id", flat=True)
-    )
-    best_program_id = None
-    best_rank = -1
-    for program_id, role in user_roles:
-        if program_id in client_program_ids:
-            rank = ROLE_RANK.get(role, 0)
-            if rank > best_rank:
-                best_rank = rank
-                best_program_id = program_id
-    if best_program_id is None:
-        raise ValueError(f"User has no shared program with client {client_id}")
-    return Program.objects.get(pk=best_program_id)
 
 
 @login_required

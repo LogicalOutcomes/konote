@@ -7,12 +7,12 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.auth_app.constants import ROLE_RANK
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.access import (
     build_program_display_context,
     get_author_program,
     get_client_or_403,
+    get_program_from_client,
     get_user_program_ids,
 )
 from apps.auth_app.decorators import admin_required, requires_permission, requires_permission_global
@@ -28,43 +28,17 @@ _get_author_program = get_author_program
 
 
 # ---------------------------------------------------------------------------
-# Helper functions for program_role_required decorator
+# Helper functions for @requires_permission decorator
 # ---------------------------------------------------------------------------
 
-
-def _get_program_from_client(request, client_id, **kwargs):
-    """Find the shared program where user has the highest role."""
-    client = get_object_or_404(ClientFile, pk=client_id)
-
-    user_roles = UserProgramRole.objects.filter(
-        user=request.user, status="active"
-    ).values_list("program_id", "role")
-
-    client_program_ids = set(
-        ClientProgramEnrolment.objects.filter(
-            client_file=client, status="enrolled"
-        ).values_list("program_id", flat=True)
-    )
-
-    best_program_id = None
-    best_rank = -1
-    for program_id, role in user_roles:
-        if program_id in client_program_ids:
-            rank = ROLE_RANK.get(role, 0)
-            if rank > best_rank:
-                best_rank = rank
-                best_program_id = program_id
-
-    if best_program_id is None:
-        raise ValueError(f"User has no shared program with client {client_id}")
-
-    return Program.objects.get(pk=best_program_id)
+# Alias for local use
+_get_program_from_client = get_program_from_client
 
 
 def _get_program_from_alert(request, alert_id, **kwargs):
     """Extract program via alert → client."""
     alert = get_object_or_404(Alert, pk=alert_id)
-    return _get_program_from_client(request, alert.client_file_id)
+    return get_program_from_client(request, alert.client_file_id)
 
 
 def _get_program_from_recommendation(request, recommendation_id, **kwargs):

@@ -37,12 +37,9 @@
     {% endif %}
 
     <div role="group">
-        <button type="submit" name="action" value="approve" class="contrast"
-                onclick="this.form.querySelector('[name=action]').value='approve';">{% trans "Approve — Cancel Alert" %}</button>
-        <button type="submit" name="action" value="reject" class="outline"
-                onclick="this.form.querySelector('[name=action]').value='reject';">{% trans "Reject" %}</button>
+        <button type="submit" name="action" value="approve" class="contrast">{% trans "Approve — Cancel Alert" %}</button>
+        <button type="submit" name="action" value="reject" class="outline">{% trans "Reject" %}</button>
     </div>
-    {{ form.action }}
     <small class="secondary">{% trans "Approving will permanently cancel the alert. A note is required when rejecting." %}</small>
 </form>
 {% endblock %}
