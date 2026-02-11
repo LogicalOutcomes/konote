@@ -39,9 +39,9 @@ _All tasks complete — section can be removed on next cleanup._
 - [x] Update middleware — replace `is_executive_only()` redirect with matrix check (WIRE-3B)
 - [x] Add Django system check — warn on hardcoded decorators, validate permission keys (WIRE-3C)
 
-**Wave 4 — Template migration (2 parallel streams)**
-- [ ] Update base.html nav — replace role checks with `{% has_permission %}` (WIRE-4A)
-- [ ] Update ~10 other templates — same pattern (WIRE-4B)
+**Wave 4 — Template migration (2 parallel streams)** ✅
+- [x] Update base.html nav — replace role checks with `{% has_permission %}` (WIRE-4A)
+- [x] Update ~10 other templates — same pattern (WIRE-4B)
 
 **Wave 5 — Feature work (2 parallel streams)**
 - [ ] Build alert recommend-cancellation workflow — unblocks alert.cancel → DENY (WIRE-5A)
@@ -124,6 +124,7 @@ _All tasks complete — section can be removed on next cleanup._
 
 ## Recently Done
 
+- [x] Complete Wave 4 template migration — 7 templates now use `{% has_permission %}` instead of boolean role flags — 2026-02-10 (WIRE-4A, WIRE-4B)
 - [x] Fix TEST-5 — QA runner now resolves `{client_id}` etc. from previous step URLs instead of navigating to literal placeholders — 2026-02-10 (QA-W21, QA-W25)
 - [x] Close BUG-8 — "Safety concern noted" is user-entered alert content (test data), not a translatable UI string. Not a bug. — 2026-02-10 (QA-W23)
 - [x] Fix BLOCKER-1 + verify BLOCKER-2 — skip link added to base.html for all pages; post-login focus confirmed working in app.js — 2026-02-10 (QA-W27)
@@ -133,5 +134,4 @@ _All tasks complete — section can be removed on next cleanup._
 - [x] Fix BUG-13 — accent-insensitive search using NFKD normalization ("Benoit" finds "Benoît") — 2026-02-10 (QA-W26)
 - [x] Fix BUG-3 — audit log filter dropdown CSS min-width increased from 0 to 12rem — 2026-02-10 (QA-W28)
 - [x] Fix IMPROVE-1 — Instance Settings and Demo Accounts cards now show status text — 2026-02-10 (QA-W29)
-- [x] Update konote-website git remote URL — repo renamed to konote-website — 2026-02-10 (NAME2)
 _Older completed tasks: [tasks/ARCHIVE.md](tasks/ARCHIVE.md). Reference: [tasks/whats-been-built.md](tasks/whats-been-built.md). Recurring chores: [tasks/recurring-tasks.md](tasks/recurring-tasks.md)._

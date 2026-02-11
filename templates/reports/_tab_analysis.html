@@ -1,11 +1,13 @@
 {% load i18n %}
+{% load permissions_tags %}
 <!-- Partial: Analysis tab content -->
-{% if is_admin_only %}
+{% has_permission "metric.view_individual" as can_view_metrics %}
+{% if user.is_admin and not can_view_metrics %}
 <p class="notice" role="status">
     <small>{% blocktrans with program=term.program|default:"program" %}You are an administrator without {{ program }} assignments. To see data, ask another admin to assign you a {{ program }} role.{% endblocktrans %}</small>
 </p>
 {% endif %}
-{% if not is_admin_only and not is_receptionist_only and not is_executive_only %}
+{% if can_view_metrics %}
 <div role="group" style="margin-bottom: 1rem;">
     <a href="{% url 'reports:client_progress_pdf' client_id=client.pk %}" role="button" class="outline">{% trans "Export as PDF" %}</a>
 </div>

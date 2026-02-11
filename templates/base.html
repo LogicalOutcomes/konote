@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load static %}
+{% load permissions_tags %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE }}">
 <head>
@@ -65,22 +66,26 @@
             </li>
         </ul>
         <ul id="nav-menu">
-            {% if not is_admin_only and not is_executive_only %}
+            {% has_permission "client.view_name" as can_see_clients %}
+            {% has_permission "metric.view_aggregate" as can_see_insights %}
+            {% has_permission "report.program_report" as can_see_reports %}
+            {% has_permission "group.view_roster" as can_see_groups %}
+            {% if can_see_clients %}
             <li><a href="/"{% if nav_active == "clients" %} class="nav-active"{% endif %}>{{ term.client_plural|default:"Participants" }}</a></li>
             {% endif %}
-            {% if is_executive_only %}
+            {% if has_program_roles and not can_see_clients %}
             <li><a href="{% url 'clients:executive_dashboard' %}"{% if nav_active == "executive" %} class="nav-active"{% endif %}>{% trans "Dashboard" %}</a></li>
             {% endif %}
             {% if features.programs %}
             <li><a href="/programs/"{% if nav_active == "programs" %} class="nav-active"{% endif %}>{{ term.program_plural|default:"Programs" }}</a></li>
             {% endif %}
-            {% if has_program_roles and not is_receptionist_only %}
+            {% if can_see_insights %}
             <li><a href="/reports/insights/"{% if nav_active == "insights" %} class="nav-active"{% endif %}>{% trans "Insights" %}</a></li>
             {% endif %}
-            {% if has_export_access %}
+            {% if can_see_reports or user.is_admin %}
             <li><a href="/reports/export/"{% if nav_active == "reports" %} class="nav-active"{% endif %}>{% trans "Reports" %}</a></li>
             {% endif %}
-            {% if features.groups and not is_executive_only and not is_receptionist_only and not is_admin_only %}
+            {% if features.groups and can_see_groups %}
             <li><a href="/groups/"{% if nav_active == "groups" %} class="nav-active"{% endif %}>{{ term.group_plural|default:"Groups" }}</a></li>
             {% endif %}
             {% if user.is_admin %}

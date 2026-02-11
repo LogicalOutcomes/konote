@@ -6,6 +6,10 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ## Completed 2026-02-10
 
+### Moved from Recently Done (2026-02-10 permissions wiring)
+
+- [x] Update konote-website git remote URL — repo renamed to konote-website — 2026-02-10 (NAME2)
+
 ### Moved from Recently Done (2026-02-10 QA regression cleanup)
 
 - [x] Fix BUG-9 regression — French create form: added name_fr to QA programs, set preferred_language on French user, comprehensive form test — 2026-02-10 (QA-W22)
