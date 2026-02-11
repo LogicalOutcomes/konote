@@ -1,6 +1,8 @@
 {% load i18n %}
+{% load permissions_tags %}
 <!-- Partial: Events tab content -->
-{% if is_admin_only %}
+{% has_permission "event.view" as can_view_events %}
+{% if user.is_admin and not can_view_events %}
 <p class="notice" role="status">
     <small>{% blocktrans with program=term.program|default:"program" %}You are an administrator without {{ program }} assignments. To see data, ask another admin to assign you a {{ program }} role.{% endblocktrans %}</small>
 </p>
@@ -11,6 +13,8 @@
 </div>
 
 <!-- Active alerts -->
+{% has_permission "alert.cancel" as can_cancel_alert %}
+{% has_permission "alert.recommend_cancel" as can_recommend_cancel %}
 {% for alert in alerts %}
 {% if alert.status == "default" %}
 <article class="alert-card" aria-label="{% trans 'alert' %}">
@@ -19,8 +23,26 @@
         {% if show_program_ui and alert.author_program %}<span class="badge" style="background-color: {{ alert.author_program.colour_hex }}; color: #fff;">{{ alert.author_program.translated_name }}</span>{% endif %}
     </header>
     <p>{{ alert.content }}</p>
+    {% for rec in alert.cancellation_recommendations.all %}
+        {% if rec.status == "pending" %}
+        <p class="notice" role="status">
+            <small>{% trans "Cancellation recommended" %} {{ rec.created_at|date:"Y-m-d" }}
+            {% if rec.recommended_by %} {% trans "by" %} {{ rec.recommended_by.display_name|default:rec.recommended_by }}{% endif %}
+            — {% trans "awaiting PM review" %}</small>
+        </p>
+        {% elif rec.status == "rejected" %}
+        <p class="notice" role="status">
+            <small>{% trans "Cancellation recommendation rejected" %} {{ rec.reviewed_at|date:"Y-m-d" }}
+            {% if rec.review_note %} — {{ rec.review_note }}{% endif %}</small>
+        </p>
+        {% endif %}
+    {% endfor %}
     <footer>
-        <a href="{% url 'events:alert_cancel' alert_id=alert.pk %}">{% trans "Cancel Alert" %}</a>
+        {% if can_cancel_alert %}
+            <a href="{% url 'events:alert_cancel' alert_id=alert.pk %}">{% trans "Cancel Alert" %}</a>
+        {% elif can_recommend_cancel %}
+            <a href="{% url 'events:alert_recommend_cancel' alert_id=alert.pk %}">{% trans "Recommend Cancellation" %}</a>
+        {% endif %}
     </footer>
 </article>
 {% elif alert.status == "cancelled" %}

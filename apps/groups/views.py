@@ -17,7 +17,7 @@ from apps.reports.csv_utils import sanitise_csv_row, sanitise_filename
 
 from django.urls import reverse
 
-from apps.auth_app.decorators import minimum_role, program_role_required, requires_permission
+from apps.auth_app.decorators import requires_permission, requires_permission_global
 from apps.clients.models import ClientFile
 from apps.clients.views import _get_user_program_ids, get_client_queryset
 from apps.programs.models import UserProgramRole
@@ -86,7 +86,7 @@ def _get_user_role_for_group(request, group):
 # ---------------------------------------------------------------------------
 
 @login_required
-@minimum_role("staff")
+@requires_permission_global("group.view_roster")
 def group_list(request):
     """List active groups the user has program access to."""
     user_program_ids = _get_user_program_ids(request.user)
@@ -106,7 +106,7 @@ def group_list(request):
 # ---------------------------------------------------------------------------
 
 @login_required
-@program_role_required("staff", _get_program_from_group)
+@requires_permission("group.view_detail", _get_program_from_group)
 def group_detail(request, group_id):
     """Detail view: roster, recent sessions, and project extras."""
     group = get_object_or_404(Group, pk=group_id)
@@ -158,7 +158,7 @@ def group_detail(request, group_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@minimum_role("staff")
+@requires_permission_global("group.create")
 def group_create(request):
     """Create a new group."""
     user_program_ids = _get_user_program_ids(request.user)
@@ -181,7 +181,7 @@ def group_create(request):
 # ---------------------------------------------------------------------------
 
 @login_required
-@program_role_required("staff", _get_program_from_group)
+@requires_permission("group.edit", _get_program_from_group)
 def group_edit(request, group_id):
     """Edit an existing group."""
     group = get_object_or_404(Group, pk=group_id)
@@ -208,7 +208,7 @@ def group_edit(request, group_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@program_role_required("staff", _get_program_from_group)
+@requires_permission("group.log_session", _get_program_from_group)
 def session_log(request, group_id):
     """Log a group session with attendance and optional highlights.
 
@@ -367,7 +367,7 @@ def membership_remove(request, membership_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@program_role_required("staff", _get_program_from_group)
+@requires_permission("group.manage_content", _get_program_from_group)
 def milestone_create(request, group_id):
     """Create a milestone for a project-type group."""
     group = get_object_or_404(Group, pk=group_id, group_type="project")
@@ -395,7 +395,7 @@ def milestone_create(request, group_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@program_role_required("staff", _get_program_from_group_or_related)
+@requires_permission("group.manage_content", _get_program_from_group_or_related)
 def milestone_edit(request, milestone_id):
     """Edit an existing project milestone."""
     milestone = get_object_or_404(ProjectMilestone, pk=milestone_id)
@@ -423,7 +423,7 @@ def milestone_edit(request, milestone_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@program_role_required("staff", _get_program_from_group)
+@requires_permission("group.manage_content", _get_program_from_group)
 def outcome_create(request, group_id):
     """Record an outcome for a project-type group."""
     group = get_object_or_404(Group, pk=group_id, group_type="project")
@@ -457,7 +457,7 @@ def outcome_create(request, group_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@program_role_required("staff", _get_program_from_group)
+@requires_permission("group.view_report", _get_program_from_group)
 def attendance_report(request, group_id):
     """Attendance report: member x session matrix with CSV export.
 

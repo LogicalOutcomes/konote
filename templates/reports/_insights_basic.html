@@ -1,4 +1,6 @@
 {% load i18n %}
+{% load permissions_tags %}
+{% has_permission "note.view" as can_view_notes %}
 {# Layer 1 insights partial — loaded via HTMX or included directly #}
 
 <section class="insights-results" aria-label="{% trans 'Outcome Insights' %}">
@@ -150,7 +152,7 @@
     </cite>
 </blockquote>
 {% endfor %}
-{% elif not is_executive_only and structured.participant_count >= min_participants %}
+{% elif can_view_notes and structured.participant_count >= min_participants %}
 <p class="muted">{% trans "No suggestion text long enough to display. Short suggestions (under 5 words) are counted above but not shown." %}</p>
 {% endif %}
 {% endif %}
@@ -170,7 +172,7 @@
     </cite>
 </blockquote>
 {% endfor %}
-{% elif is_executive_only %}
+{% elif not can_view_notes %}
 <p class="insights-privacy-note">
     {% trans "Individual quotes are not shown in the executive view to protect participant confidentiality. Trends and aggregate data are shown above." %}
     {% if ai_enabled %}

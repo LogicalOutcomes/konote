@@ -79,6 +79,19 @@ def get_author_program(user, client):
     return None
 
 
+def get_program_from_client(request, client_id, **kwargs):
+    """Find the shared program where user has the highest role for a client.
+
+    For use as a get_program_fn with @requires_permission decorator.
+    Raises ValueError if no shared program (decorator converts to 403).
+    """
+    client = get_object_or_404(ClientFile, pk=client_id)
+    program = get_author_program(request.user, client)
+    if program is None:
+        raise ValueError(f"User has no shared program with client {client_id}")
+    return program
+
+
 def get_client_or_403(request, client_id):
     """Return client if user has access via program roles, otherwise None.
 

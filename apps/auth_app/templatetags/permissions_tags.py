@@ -32,18 +32,26 @@ def has_permission(context, permission_key):
     if user is None or not user.is_authenticated:
         return False
 
-    from apps.programs.models import UserProgramRole
+    # Cache the user's highest role on the request to avoid repeated DB
+    # queries when multiple {% has_permission %} calls appear in one template
+    highest_role = getattr(request, "_perm_tag_highest_role", None)
+    if highest_role is None:
+        from apps.programs.models import UserProgramRole
 
-    roles = set(
-        UserProgramRole.objects.filter(
-            user=user, status="active",
-        ).values_list("role", flat=True)
-    )
+        roles = set(
+            UserProgramRole.objects.filter(
+                user=user, status="active",
+            ).values_list("role", flat=True)
+        )
 
-    if not roles:
+        if not roles:
+            request._perm_tag_highest_role = ""
+            return False
+
+        highest_role = max(roles, key=lambda r: ROLE_RANK.get(r, 0))
+        request._perm_tag_highest_role = highest_role
+    elif highest_role == "":
         return False
 
-    # Use the highest role (most permissive) for UI visibility
-    highest_role = max(roles, key=lambda r: ROLE_RANK.get(r, 0))
     level = can_access(highest_role, permission_key)
     return level != DENY

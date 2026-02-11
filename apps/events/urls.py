@@ -14,4 +14,8 @@ urlpatterns = [
     # Alerts
     path("client/<int:client_id>/alerts/create/", views.alert_create, name="alert_create"),
     path("alerts/<int:alert_id>/cancel/", views.alert_cancel, name="alert_cancel"),
+    # Alert cancellation recommendation workflow (two-person safety rule)
+    path("alerts/<int:alert_id>/recommend-cancel/", views.alert_recommend_cancel, name="alert_recommend_cancel"),
+    path("alerts/recommendations/", views.alert_recommendation_queue, name="alert_recommendation_queue"),
+    path("alerts/recommendations/<int:recommendation_id>/review/", views.alert_recommendation_review, name="alert_recommendation_review"),
 ]

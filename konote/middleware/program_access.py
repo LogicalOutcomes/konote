@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 
 from apps.auth_app.constants import ROLE_RANK
+from apps.auth_app.permissions import DENY, can_access
 
 
 # URL patterns that require program-level access checks
@@ -91,10 +92,13 @@ class ProgramAccessMiddleware:
                 if not any(path.startswith(p) for p in self.SELECTION_EXEMPT_PREFIXES):
                     return redirect("programs:select_program")
 
-        # Executive role: redirect to dashboard instead of client pages
-        # Executives can see aggregate data only, not individual client records
+        # Redirect users whose role has no individual client-data permissions
+        # to the executive dashboard. Reads from the permissions matrix so
+        # changes there take effect automatically (e.g. granting an executive
+        # client.view_name: ALLOW would stop the redirect).
         from apps.programs.models import UserProgramRole
-        if UserProgramRole.is_executive_only(request.user):
+
+        if self._all_client_permissions_denied(request.user):
             for pattern, _ in CLIENT_URL_PATTERNS:
                 if pattern.match(path):
                     return redirect("clients:executive_dashboard")
@@ -164,6 +168,44 @@ class ProgramAccessMiddleware:
 
         return self.get_response(request)
 
+
+    # Permission keys that represent individual client-scoped data access.
+    # If ALL of these are DENY for a user's highest role, that user cannot
+    # see individual client data and should be redirected to the exec dashboard.
+    _CLIENT_SCOPED_KEYS = (
+        "client.view_name", "client.view_contact", "client.view_safety",
+        "client.view_clinical", "client.edit", "client.create",
+        "note.view", "note.create", "note.edit",
+        "plan.view", "plan.edit",
+        "event.view", "event.create",
+        "alert.view", "alert.create",
+        "group.view_roster", "group.view_detail", "group.manage_members",
+        "consent.view", "consent.manage",
+        "intake.view", "intake.edit",
+    )
+
+    def _all_client_permissions_denied(self, user):
+        """Check if the user's highest role has DENY for all client-scoped resources.
+
+        Returns True only for users with program roles where every individual
+        client-data permission is DENY (e.g. executive-only users by default).
+        Users with no program roles return False (handled by admin-only check).
+        """
+        from apps.programs.models import UserProgramRole
+
+        roles = set(
+            UserProgramRole.objects.filter(
+                user=user, status="active",
+            ).values_list("role", flat=True)
+        )
+        if not roles:
+            return False
+
+        highest_role = max(roles, key=lambda r: ROLE_RANK.get(r, 0))
+        return all(
+            can_access(highest_role, key) == DENY
+            for key in self._CLIENT_SCOPED_KEYS
+        )
 
     def _user_can_access_client(self, user, client_id):
         """Check if user shares at least one program with the client."""

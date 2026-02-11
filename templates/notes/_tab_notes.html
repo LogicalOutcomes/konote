@@ -1,6 +1,8 @@
 {% load i18n %}
+{% load permissions_tags %}
 <!-- Partial: Notes tab content -->
-{% if is_admin_only %}
+{% has_permission "note.view" as can_view_notes %}
+{% if user.is_admin and not can_view_notes %}
 <p class="notice" role="status">
     <small>{% blocktrans with program=term.program|default:"program" %}You are an administrator without {{ program }} assignments. To see data, ask another admin to assign you a {{ program }} role.{% endblocktrans %}</small>
 </p>

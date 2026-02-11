@@ -1,11 +1,13 @@
 {% load i18n %}
+{% load permissions_tags %}
 <!-- Partial: Info tab content -->
 <div class="action-bar">
     {% if not is_receptionist and not client.is_anonymised %}
     <a href="{% url 'clients:client_edit' client_id=client.pk %}" role="button" class="outline">{% trans "Edit" %}</a>
     {% endif %}
     <a href="{% url 'clients:client_list' %}" class="back-link">&larr; {% trans "Back to List" %}</a>
-    {% if not client.is_anonymised and not is_receptionist and not is_executive_only and not is_admin_only %}
+    {% has_permission "metric.view_individual" as can_view_metrics %}
+    {% if not client.is_anonymised and not is_receptionist and can_view_metrics %}
     <a href="{% url 'reports:client_progress_pdf' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Export PDF" %}</a>
     {% endif %}
     {% if not client.is_anonymised and user_role == "program_manager" %}

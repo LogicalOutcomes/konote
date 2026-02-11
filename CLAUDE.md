@@ -12,6 +12,7 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 - **Auth**: Azure AD SSO (primary) or local with Argon2
 - **Encryption**: Fernet (AES) for PII fields
 - **Deployment**: Docker Compose → Azure / Elest.io / Railway
+- **Railway CLI**: `C:\Tools\railway.exe` (v4.29.0) — linked to project "KoNote", production environment
 
 **No React, no Vue, no webpack, no npm.** Keep it simple.
 

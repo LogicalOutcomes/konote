@@ -9,11 +9,11 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from apps.auth_app.decorators import admin_required, minimum_role, requires_permission
+from apps.auth_app.decorators import admin_required, requires_permission
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 
-from .forms import ClientFileForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm
+from .forms import ClientContactForm, ClientFileForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm
 from .helpers import get_client_tab_counts, get_document_folder_url
 from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldGroup
 from .validators import (
@@ -43,6 +43,7 @@ def get_client_queryset(user):
 from apps.programs.access import (
     get_user_program_ids as _get_user_program_ids,
     get_accessible_programs as _get_accessible_programs,
+    get_program_from_client as _get_program_from_client,
 )
 
 
@@ -225,7 +226,7 @@ def client_create(request):
 
 
 @login_required
-@minimum_role("staff")
+@requires_permission("client.edit", _get_program_from_client)
 def client_edit(request, client_id):
     # Security: Only fetch clients matching user's demo status
     base_queryset = get_client_queryset(request.user)
@@ -293,6 +294,38 @@ def client_edit(request, client_id):
         {"url": "", "label": "Edit"},
     ]
     return render(request, "clients/form.html", {"form": form, "editing": True, "client": client, "breadcrumbs": breadcrumbs})
+
+
+@login_required
+@requires_permission("client.edit_contact", _get_program_from_client)
+def client_contact_edit(request, client_id):
+    """Edit client phone number only — narrow scope for front desk.
+
+    Receptionists can update phone (client.edit_contact: ALLOW).
+    Does NOT include address or emergency contact (DV safety implications).
+    Replace with PER_FIELD form in Phase 2.
+    """
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+    if request.method == "POST":
+        form = ClientContactForm(request.POST)
+        if form.is_valid():
+            client.phone = form.cleaned_data["phone"]
+            client.save()
+            messages.success(request, _("Contact information updated."))
+            return redirect("clients:client_detail", client_id=client.pk)
+    else:
+        form = ClientContactForm(initial={"phone": client.phone})
+    breadcrumbs = [
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
+        {"url": "", "label": _("Edit Contact")},
+    ]
+    return render(request, "clients/contact_edit.html", {
+        "form": form,
+        "client": client,
+        "breadcrumbs": breadcrumbs,
+    })
 
 
 @login_required

@@ -21,16 +21,15 @@ logger = logging.getLogger(__name__)
 from django.db.models import Q
 
 from apps.auth_app.decorators import program_role_required, requires_permission
-from apps.clients.models import ClientFile, ClientProgramEnrolment
+from apps.clients.models import ClientFile
 from apps.plans.models import PlanTarget, PlanTargetMetric
 from apps.programs.access import (
     build_program_display_context,
     get_author_program,
     get_client_or_403,
+    get_program_from_client,
     get_user_program_ids,
 )
-from apps.programs.models import UserProgramRole
-
 from .forms import FullNoteForm, MetricValueForm, NoteCancelForm, QuickNoteForm, TargetNoteForm
 from .models import MetricValue, ProgressNote, ProgressNoteTarget, ProgressNoteTemplate
 
@@ -38,6 +37,7 @@ from .models import MetricValue, ProgressNote, ProgressNoteTarget, ProgressNoteT
 # Use shared access helpers from apps.programs.access
 _get_client_or_403 = get_client_or_403
 _get_author_program = get_author_program
+_get_program_from_client = get_program_from_client
 
 
 def _portal_access_reminder(request, client):
@@ -56,54 +56,6 @@ def _portal_access_reminder(request, client):
             client.pk,
             exc_info=True,
         )
-
-
-# ---------------------------------------------------------------------------
-# Helper functions for program_role_required decorator
-# ---------------------------------------------------------------------------
-
-
-def _get_program_from_client(request, client_id, **kwargs):
-    """Extract program from client_id in URL kwargs.
-
-    A client can be enrolled in multiple programs. We return the shared
-    program where the user has the highest role, so the most permissive
-    valid access is used. If no shared program exists, raises ValueError
-    which the decorator converts to a 403.
-
-    Note: admin status does NOT bypass program role requirements (PERM-S2).
-    Admins need program roles to access client data, just like everyone else.
-    """
-    from apps.auth_app.constants import ROLE_RANK
-    from apps.programs.models import Program
-
-    client = get_object_or_404(ClientFile, pk=client_id)
-
-    # Get user's active program roles (program_id, role)
-    user_roles = UserProgramRole.objects.filter(
-        user=request.user, status="active"
-    ).values_list("program_id", "role")
-
-    client_program_ids = set(
-        ClientProgramEnrolment.objects.filter(
-            client_file=client, status="enrolled"
-        ).values_list("program_id", flat=True)
-    )
-
-    # Find shared programs and pick the one where user has highest role
-    best_program_id = None
-    best_rank = -1
-    for program_id, role in user_roles:
-        if program_id in client_program_ids:
-            rank = ROLE_RANK.get(role, 0)
-            if rank > best_rank:
-                best_rank = rank
-                best_program_id = program_id
-
-    if best_program_id is None:
-        raise ValueError(f"User has no shared program with client {client_id}")
-
-    return Program.objects.get(pk=best_program_id)
 
 
 def _get_program_from_note(request, note_id, **kwargs):

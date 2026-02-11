@@ -11,7 +11,9 @@ def nav_active(request):
     path = request.path
 
     # Order matters — more specific prefixes first
-    if path.startswith("/reports/insights/"):
+    if path.startswith("/events/alerts/recommendations"):
+        section = "recommendations"
+    elif path.startswith("/reports/insights/"):
         section = "insights"
     elif path.startswith("/reports/"):
         section = "reports"
@@ -86,10 +88,20 @@ def user_roles(request):
     - is_admin_only: admin with no program roles (cannot see client data)
     - is_executive_only: executive role with no other roles (dashboard only)
     - is_receptionist_only: all program roles are receptionist (no group/clinical access)
+    - user_permissions: dict of permission keys (dots → underscores) to resolved levels
+      e.g. user_permissions.note_view, user_permissions.client_edit
     """
     if not hasattr(request, "user") or not request.user.is_authenticated:
-        return {"has_program_roles": False, "is_admin_only": False, "is_executive_only": False, "is_receptionist_only": False}
+        return {
+            "has_program_roles": False,
+            "is_admin_only": False,
+            "is_executive_only": False,
+            "is_receptionist_only": False,
+            "user_permissions": {},
+        }
 
+    from apps.auth_app.constants import ROLE_RANK
+    from apps.auth_app.permissions import DENY, PERMISSIONS
     from apps.programs.models import UserProgramRole
 
     roles = set(
@@ -107,12 +119,23 @@ def user_roles(request):
     # Receptionist-only: user has program roles but all of them are receptionist
     is_receptionist_only = has_roles and roles == {"receptionist"}
 
+    # Build user_permissions dict using the user's highest role.
+    # Keys use underscores so templates can access e.g. user_permissions.note_view
+    user_permissions = {}
+    if has_roles:
+        highest_role = max(roles, key=lambda r: ROLE_RANK.get(r, 0))
+        role_perms = PERMISSIONS.get(highest_role, {})
+        for perm_key, level in role_perms.items():
+            template_key = perm_key.replace(".", "_")
+            user_permissions[template_key] = level != DENY
+
     return {
         "has_program_roles": has_roles,
         "is_admin_only": request.user.is_admin and not has_roles,
         "is_executive_only": UserProgramRole.is_executive_only(request.user, roles=roles),
         "is_receptionist_only": is_receptionist_only,
         "has_export_access": has_export_access,
+        "user_permissions": user_permissions,
     }
 
 
@@ -188,6 +211,42 @@ def pending_erasures(request):
             )
         cache.set(cache_key, count, 60)  # 1 min cache
     return {"pending_erasure_count": count if count > 0 else None}
+
+
+def pending_recommendations(request):
+    """Inject pending alert cancellation recommendation count for nav badge.
+
+    Matrix-driven: finds programs where the user's role grants
+    alert.review_cancel_recommendation, so changes to the permissions
+    matrix take effect automatically.
+    """
+    if not hasattr(request, "user") or not request.user.is_authenticated:
+        return {}
+
+    from apps.auth_app.permissions import DENY, can_access
+    from apps.programs.models import UserProgramRole
+
+    reviewer_program_ids = [
+        role_obj.program_id
+        for role_obj in UserProgramRole.objects.filter(
+            user=request.user, status="active",
+        )
+        if can_access(role_obj.role, "alert.review_cancel_recommendation") != DENY
+    ]
+
+    if not reviewer_program_ids:
+        return {}
+
+    cache_key = f"pending_recommendation_count_{request.user.pk}"
+    count = cache.get(cache_key)
+    if count is None:
+        from apps.events.models import AlertCancellationRecommendation
+        count = AlertCancellationRecommendation.objects.filter(
+            status="pending",
+            alert__author_program_id__in=reviewer_program_ids,
+        ).count()
+        cache.set(cache_key, count, 60)  # 1 min cache
+    return {"pending_recommendation_count": count if count > 0 else None}
 
 
 def portal_context(request):

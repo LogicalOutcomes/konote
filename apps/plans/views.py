@@ -13,15 +13,15 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
-from apps.auth_app.constants import ROLE_RANK
 from apps.auth_app.decorators import admin_required, program_role_required, requires_permission
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.access import (
     build_program_display_context,
     get_client_or_403,
+    get_program_from_client,
     get_user_program_ids,
 )
-from apps.programs.models import Program, UserProgramRole
+from apps.programs.models import UserProgramRole
 
 from .forms import (
     MetricAssignmentForm,
@@ -45,38 +45,7 @@ from .models import (
 # Permission helpers
 # ---------------------------------------------------------------------------
 
-
-def _get_program_from_client(request, client_id, **kwargs):
-    """Find the shared program where user has the highest role.
-
-    Used by program_role_required decorator. Picks the most permissive
-    valid program so the user isn't arbitrarily denied.
-    """
-    client = get_object_or_404(ClientFile, pk=client_id)
-
-    user_roles = UserProgramRole.objects.filter(
-        user=request.user, status="active"
-    ).values_list("program_id", "role")
-
-    client_program_ids = set(
-        ClientProgramEnrolment.objects.filter(
-            client_file=client, status="enrolled"
-        ).values_list("program_id", flat=True)
-    )
-
-    best_program_id = None
-    best_rank = -1
-    for program_id, role in user_roles:
-        if program_id in client_program_ids:
-            rank = ROLE_RANK.get(role, 0)
-            if rank > best_rank:
-                best_rank = rank
-                best_program_id = program_id
-
-    if best_program_id is None:
-        raise ValueError(f"User has no shared program with client {client_id}")
-
-    return Program.objects.get(pk=best_program_id)
+_get_program_from_client = get_program_from_client
 
 
 def _get_program_from_section(request, section_id, **kwargs):

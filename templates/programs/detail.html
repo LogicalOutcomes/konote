@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load permissions_tags %}
 
 {% block title %}{{ program.translated_name }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
@@ -69,7 +70,8 @@
     <div role="group">
         <a href="{% url 'reports:program_insights' %}?program={{ program.pk }}&time_period=6m"
            role="button" class="outline">{% trans "View Program Results" %} &rarr;</a>
-        {% if has_export_access %}
+        {% has_permission "report.program_report" as can_see_reports %}
+        {% if can_see_reports or user.is_admin %}
         <a href="{% url 'reports:export_form' %}"
            role="button" class="outline secondary">{% trans "Export Program Data" %} &rarr;</a>
         {% endif %}
@@ -129,6 +131,9 @@
     {% endif %}
     {% else %}
 
+    {% has_permission "group.view_detail" as can_view_group_detail %}
+    {% has_permission "group.log_session" as can_log_session %}
+    {% has_permission "group.create" as can_create_group %}
     {% if groups %}
     <figure>
     <table role="grid" aria-label="{% trans 'Groups in this program' %}">
@@ -136,17 +141,19 @@
             <tr>
                 <th scope="col">{% trans "Name" %}</th>
                 <th scope="col">{% trans "Members" %}</th>
-                {% if not is_executive_only %}<th scope="col">{% trans "Actions" %}</th>{% endif %}
+                {% if can_view_group_detail %}<th scope="col">{% trans "Actions" %}</th>{% endif %}
             </tr>
         </thead>
         <tbody>
             {% for group in groups %}
             <tr>
-                <td>{% if is_executive_only %}{{ group.name }}{% else %}<a href="{% url 'groups:group_detail' group_id=group.pk %}">{{ group.name }}</a>{% endif %}</td>
+                <td>{% if not can_view_group_detail %}{{ group.name }}{% else %}<a href="{% url 'groups:group_detail' group_id=group.pk %}">{{ group.name }}</a>{% endif %}</td>
                 <td data-label="{% trans 'Members' %}">{{ group.member_count }}</td>
-                {% if not is_executive_only %}
+                {% if can_view_group_detail %}
                 <td data-label="{% trans 'Actions' %}">
+                    {% if can_log_session %}
                     <a href="{% url 'groups:session_log' group_id=group.pk %}" role="button" class="outline small">{% trans "Log Session" %}</a>
+                    {% endif %}
                 </td>
                 {% endif %}
             </tr>
@@ -158,7 +165,7 @@
     <p><em>{% trans "No groups created yet." %}</em></p>
     {% endif %}
 
-    {% if not is_executive_only %}
+    {% if can_create_group %}
     <a href="{% url 'groups:group_create' %}" role="button" class="outline">{% trans "Create Group" %}</a>
     {% endif %}
     {% endif %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Pending Alert Recommendations" %}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+<hgroup>
+    <h1>{% trans "Pending Alert Recommendations" %}</h1>
+    <p>{% trans "Review staff recommendations to cancel safety alerts." %}</p>
+</hgroup>
+
+{% if pending_recommendations %}
+{% for rec in pending_recommendations %}
+<article aria-label="{% trans 'cancellation recommendation' %}">
+    <header>
+        <strong>{% trans "Alert" %}</strong> — {{ rec.alert.created_at|date:"Y-m-d" }}
+        {% if rec.alert.author_program %}
+            <span class="badge" style="background-color: {{ rec.alert.author_program.colour_hex }}; color: #fff;">{{ rec.alert.author_program.translated_name }}</span>
+        {% endif %}
+    </header>
+    <p><strong>{% trans "Alert:" %}</strong> {{ rec.alert.content|truncatechars:200 }}</p>
+    <p><strong>{% trans "Assessment:" %}</strong> {{ rec.assessment|truncatechars:200 }}</p>
+    <footer>
+        <small class="secondary">
+            {% trans "Recommended by" %} {{ rec.recommended_by.display_name|default:rec.recommended_by }}
+            — {{ rec.created_at|date:"Y-m-d" }}
+            {% if rec.alert.client_file %}
+                — {{ rec.alert.client_file.display_name }} {{ rec.alert.client_file.last_name }}
+            {% endif %}
+        </small>
+        <a href="{% url 'events:alert_recommendation_review' recommendation_id=rec.pk %}" role="button" class="outline" style="margin-left: auto;">{% trans "Review" %}</a>
+    </footer>
+</article>
+{% endfor %}
+{% else %}
+<div class="empty-state">
+    <p>{% trans "No pending recommendations." %}</p>
+</div>
+{% endif %}
+{% endblock %}

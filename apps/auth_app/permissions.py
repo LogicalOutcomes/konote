@@ -46,6 +46,9 @@ PERMISSIONS = {
         "group.log_session": DENY,
         "group.edit": DENY,
         "group.manage_members": DENY,
+        "group.create": DENY,
+        "group.manage_content": DENY,
+        "group.view_report": DENY,
 
         "note.view": DENY,  # Enforced by @requires_permission
         "note.create": DENY,  # Confirmed correct: receptionists don't write clinical notes
@@ -66,6 +69,8 @@ PERMISSIONS = {
         "alert.view": DENY,
         "alert.create": DENY,
         "alert.cancel": DENY,
+        "alert.recommend_cancel": DENY,  # Receptionists have no alert access
+        "alert.review_cancel_recommendation": DENY,
 
         "custom_field.view": PER_FIELD,  # Uses field.front_desk_access setting
         "custom_field.edit": PER_FIELD,
@@ -80,6 +85,7 @@ PERMISSIONS = {
         "note.delete": DENY,   # Notes are clinical records — cancel, don't delete
         "client.delete": DENY,  # Handled by admin erasure workflow
         "plan.delete": DENY,   # Plans should be archived, not deleted
+        "erasure.manage": DENY,  # PM-only via erasure workflow
 
         # System administration (admin-only via @admin_required — separate system)
         "user.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
@@ -111,6 +117,9 @@ PERMISSIONS = {
         "group.manage_members": SCOPED,  # Facilitators manage own group rosters.
                                          # All changes must create audit entry (PHIPA — group type reveals diagnosis).
                                          # Enforced by @requires_permission
+        "group.create": SCOPED,  # Staff can create groups in their program. Enforced by @requires_permission
+        "group.manage_content": SCOPED,  # Milestones + outcomes for project groups. Enforced by @requires_permission
+        "group.view_report": SCOPED,  # Attendance reports for groups in their program. Enforced by @requires_permission
 
         "note.view": SCOPED,  # Enforced by @requires_permission. Migrate from @program_role_required
         "note.create": SCOPED,  # Enforced by @requires_permission
@@ -132,9 +141,10 @@ PERMISSIONS = {
         "alert.create": SCOPED,
         "alert.cancel": DENY,  # Two-person safety rule. Staff posts "recommend cancellation"
                                 # with assessment; PM reviews and cancels.
-                                # See alert recommendation workflow (Wave 5).
-                                # Enforcement deferred to Wave 5 — needs recommend-cancellation
-                                # workflow first, or staff will stop creating alerts.
+                                # See alert recommendation workflow.
+        "alert.recommend_cancel": SCOPED,  # Staff proposes cancellation; PM approves (two-person rule).
+                                           # Enforced by @requires_permission
+        "alert.review_cancel_recommendation": DENY,  # Only PMs review recommendations
 
         "custom_field.view": SCOPED,
         "custom_field.edit": SCOPED,
@@ -149,6 +159,7 @@ PERMISSIONS = {
         "note.delete": DENY,   # Notes are clinical records — cancel, don't delete
         "client.delete": DENY,  # Handled by admin erasure workflow
         "plan.delete": DENY,   # Plans should be archived, not deleted
+        "erasure.manage": DENY,  # PM-only via erasure workflow
 
         # System administration (admin-only via @admin_required — separate system)
         "user.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
@@ -179,6 +190,9 @@ PERMISSIONS = {
         "group.log_session": DENY,
         "group.edit": ALLOW,  # Can configure groups
         "group.manage_members": ALLOW,  # Can add/remove members. Enforced by @requires_permission
+        "group.create": ALLOW,  # Managers configure program groups. Enforced by @requires_permission
+        "group.manage_content": ALLOW,  # Managers oversee project milestones/outcomes. Enforced by @requires_permission
+        "group.view_report": ALLOW,  # Attendance reports. Enforced by @requires_permission
 
         "note.view": ALLOW,  # Phase 3: GATED with documented reason. Enforced by @requires_permission
         "note.create": DENY,  # Confirmed correct (expert review): managers don't write clinical notes
@@ -203,6 +217,9 @@ PERMISSIONS = {
                                 # case files. No barriers to creating safety alerts.
                                 # Enforced by @requires_permission
         "alert.cancel": ALLOW,  # Can cancel any alert in their program
+        "alert.recommend_cancel": DENY,  # PMs cancel directly, they don't need to recommend
+        "alert.review_cancel_recommendation": ALLOW,  # PMs review staff recommendations.
+                                                       # Enforced by @requires_permission
 
         "custom_field.view": ALLOW,  # Phase 3: GATED
         "custom_field.edit": DENY,
@@ -219,6 +236,8 @@ PERMISSIONS = {
         "note.delete": DENY,   # Notes are clinical records — cancel, don't delete
         "client.delete": DENY,  # Handled by admin erasure workflow
         "plan.delete": DENY,   # Plans should be archived, not deleted
+        "erasure.manage": SCOPED,  # PMs manage erasure requests for their own programs.
+                                   # Enforced by @requires_permission_global + internal scoping
 
         # System administration — SCOPED for program managers (own program only)
         "user.manage": SCOPED,  # Own program team. CANNOT elevate roles
@@ -249,6 +268,9 @@ PERMISSIONS = {
         "group.log_session": DENY,
         "group.edit": DENY,
         "group.manage_members": DENY,
+        "group.create": DENY,
+        "group.manage_content": DENY,
+        "group.view_report": DENY,
 
         "note.view": DENY,  # Enforced by @requires_permission
         "note.create": DENY,
@@ -269,6 +291,8 @@ PERMISSIONS = {
         "alert.view": DENY,
         "alert.create": DENY,
         "alert.cancel": DENY,
+        "alert.recommend_cancel": DENY,
+        "alert.review_cancel_recommendation": DENY,
 
         "custom_field.view": DENY,
         "custom_field.edit": DENY,
@@ -283,6 +307,7 @@ PERMISSIONS = {
         "note.delete": DENY,   # Notes are clinical records — cancel, don't delete
         "client.delete": DENY,  # Handled by admin erasure workflow
         "plan.delete": DENY,   # Plans should be archived, not deleted
+        "erasure.manage": DENY,
 
         # System administration — DENY by default for executives.
         # Override to ALLOW for agencies where executive is operational ED (not board member).
@@ -381,6 +406,9 @@ def permission_to_plain_english(perm_key, perm_level):
         "group.log_session": "Record group session attendance and notes",
         "group.edit": "Edit group configuration",
         "group.manage_members": "Add or remove group members",
+        "group.create": "Create new groups",
+        "group.manage_content": "Manage project milestones and outcomes",
+        "group.view_report": "View group attendance reports",
 
         "note.view": "Read progress notes",
         "note.create": "Write new progress notes",
@@ -401,6 +429,8 @@ def permission_to_plain_english(perm_key, perm_level):
         "alert.view": "View client safety alerts",
         "alert.create": "Create client safety alerts",
         "alert.cancel": "Cancel safety alerts",
+        "alert.recommend_cancel": "Recommend cancellation of a safety alert (for PM review)",
+        "alert.review_cancel_recommendation": "Approve or reject alert cancellation recommendations",
 
         "custom_field.view": "View custom fields",
         "custom_field.edit": "Edit custom fields",
@@ -414,6 +444,7 @@ def permission_to_plain_english(perm_key, perm_level):
         # Delete permissions
         "note.delete": "Delete progress notes (notes should be cancelled, not deleted)",
         "client.delete": "Delete/erase client records (admin-only via erasure workflow)",
+        "erasure.manage": "Request, approve, reject, or cancel client data erasure",
         "plan.delete": "Delete treatment plans (plans should be archived, not deleted)",
 
         # System administration
