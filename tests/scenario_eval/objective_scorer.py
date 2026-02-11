@@ -8,6 +8,52 @@ Replaces subjective LLM scoring with measurable metrics for:
 from .score_models import DimensionScore
 
 
+def normalise_language_to_code(lang_description):
+    """Convert a descriptive language string to an ISO 639-1 code.
+
+    Examples:
+        "English"                                      -> "en"
+        "French (primary), reads English"              -> "fr"
+        "English and Somali"                           -> "en"
+        "English and French (bilingual, prefers ...)"  -> "en"
+        "fr"                                           -> "fr"
+        "en-CA"                                        -> "en-ca"
+    """
+    text = lang_description.lower().strip()
+    # Already an ISO code (2-3 chars, optionally with region)
+    if len(text) <= 6 and (len(text) <= 3 or "-" in text):
+        return text
+    # "French (primary)" at the start means French is the main language
+    if text.startswith("french"):
+        return "fr"
+    # Everything else defaults to English
+    return "en"
+
+
+def get_persona_language(persona_data):
+    """Extract the expected language code from persona data.
+
+    Checks persona.test_user.language first (ISO code like 'fr'),
+    then normalises the descriptive persona.language field
+    (e.g. "French (primary), reads English" -> 'fr').
+
+    Returns:
+        Language code string, e.g. 'en', 'fr'.
+    """
+    if not persona_data:
+        return "en"
+    # Prefer test_user.language — already an ISO code when present
+    test_user = persona_data.get("test_user", {})
+    iso_lang = test_user.get("language", "")
+    if iso_lang:
+        return iso_lang.lower().strip()
+    # Fall back to the descriptive language field and normalise it
+    lang = persona_data.get("language", "").strip()
+    if not lang:
+        return "en"
+    return normalise_language_to_code(lang)
+
+
 # Impact weights for axe-core violations
 _AXE_IMPACT_WEIGHTS = {
     "critical": 3,

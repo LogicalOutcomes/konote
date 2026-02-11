@@ -7,6 +7,8 @@ from unittest import TestCase
 from .objective_scorer import (
     compute_objective_scores,
     count_user_actions,
+    get_persona_language,
+    normalise_language_to_code,
     score_accessibility,
     score_efficiency,
     score_language,
@@ -236,6 +238,71 @@ class TestComputeObjectiveScores(TestCase):
         self.assertIn("accessibility", scores)
         self.assertIn("efficiency", scores)
         self.assertNotIn("language", scores)
+
+
+class TestNormaliseLanguageToCode(TestCase):
+    """Test the persona language normalisation (fixes language scorer bug)."""
+
+    def test_english_descriptive(self):
+        self.assertEqual(normalise_language_to_code("English"), "en")
+
+    def test_french_primary(self):
+        self.assertEqual(
+            normalise_language_to_code("French (primary), reads English"), "fr",
+        )
+
+    def test_french_functional(self):
+        self.assertEqual(
+            normalise_language_to_code(
+                "French (primary), English (functional but prefers French interface)"
+            ),
+            "fr",
+        )
+
+    def test_english_and_somali(self):
+        self.assertEqual(
+            normalise_language_to_code("English and Somali"), "en",
+        )
+
+    def test_english_bilingual(self):
+        self.assertEqual(
+            normalise_language_to_code(
+                "English and French (bilingual, prefers English interface)"
+            ),
+            "en",
+        )
+
+    def test_iso_code_passthrough(self):
+        self.assertEqual(normalise_language_to_code("fr"), "fr")
+        self.assertEqual(normalise_language_to_code("en"), "en")
+        self.assertEqual(normalise_language_to_code("en-CA"), "en-ca")
+
+    def test_english_some_romanian(self):
+        self.assertEqual(
+            normalise_language_to_code("English (some Romanian)"), "en",
+        )
+
+
+class TestGetPersonaLanguage(TestCase):
+    """Test the persona language extraction with ISO normalisation."""
+
+    def test_prefers_test_user_iso_code(self):
+        persona = {
+            "language": "French (primary), reads English",
+            "test_user": {"language": "fr"},
+        }
+        self.assertEqual(get_persona_language(persona), "fr")
+
+    def test_falls_back_to_descriptive(self):
+        persona = {
+            "language": "English",
+            "test_user": {"username": "staff"},
+        }
+        self.assertEqual(get_persona_language(persona), "en")
+
+    def test_empty_persona(self):
+        self.assertEqual(get_persona_language(None), "en")
+        self.assertEqual(get_persona_language({}), "en")
 
 
 class TestStepEvaluationObjectiveOverride(TestCase):

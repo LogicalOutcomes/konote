@@ -51,26 +51,9 @@ def _get_moment_action(moment):
 
 
 def _get_persona_language(persona_data):
-    """Extract the expected language code from persona data.
-
-    Checks persona.language, persona.test_user.language, and falls back
-    to 'en' if not specified.
-
-    Returns:
-        Language code string, e.g. 'en', 'fr', 'en-CA', 'fr-CA'.
-    """
-    if not persona_data:
-        return "en"
-    # Direct language field
-    lang = persona_data.get("language", "")
-    if lang:
-        return lang
-    # From test_user config
-    test_user = persona_data.get("test_user", {})
-    lang = test_user.get("language", "")
-    if lang:
-        return lang
-    return "en"
+    """Delegate to objective_scorer.get_persona_language."""
+    from .objective_scorer import get_persona_language
+    return get_persona_language(persona_data)
 
 
 def _get_persona_username(persona_data):
