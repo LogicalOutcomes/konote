@@ -203,6 +203,22 @@ class ScenarioRunner(BrowserTestBase):
                 role="program_manager",
             )
 
+        # PM2-FR: Sophie Tremblay (French-speaking program manager)
+        if not User.objects.filter(username="manager_fr").exists():
+            manager_fr = User.objects.create_user(
+                username="manager_fr", password=TEST_PASSWORD,
+                display_name="Sophie Tremblay",
+                preferred_language="fr",
+            )
+            UserProgramRole.objects.create(
+                user=manager_fr, program=self.program_a,
+                role="program_manager",
+            )
+            UserProgramRole.objects.create(
+                user=manager_fr, program=self.program_b,
+                role="program_manager",
+            )
+
         # E2: Kwame Asante (second admin)
         if not User.objects.filter(username="admin2").exists():
             admin2 = User.objects.create_user(
