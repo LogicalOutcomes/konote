@@ -6,6 +6,10 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ## Completed 2026-02-10
 
+### Moved from Recently Done (2026-02-11 cleanup)
+
+- [x] Fix IMPROVE-1 — Instance Settings and Demo Accounts cards now show status text — 2026-02-10 (QA-W29)
+
 ### Moved from Recently Done (2026-02-10 permissions wiring)
 
 - [x] Update konote-website git remote URL — repo renamed to konote-website — 2026-02-10 (NAME2)

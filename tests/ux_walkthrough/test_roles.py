@@ -52,8 +52,8 @@ class ReceptionistWalkthroughTest(UxWalkthroughBase):
         # 7. Consent display (HTMX)
         self.visit_htmx(role, "Consent display", f"/clients/{cid}/consent/display/")
 
-        # 8. BLOCKED: create client
-        self.visit_forbidden(role, "Create client (403)", "/clients/create/")
+        # 8. Create client form (receptionist CAN create — client.create: ALLOW)
+        self.visit(role, "Create client form", "/clients/create/")
 
         # 9. BLOCKED: notes
         self.visit_forbidden(role, "Notes list (403)", f"/notes/client/{cid}/")
@@ -277,73 +277,53 @@ class ManagerWalkthroughTest(UxWalkthroughBase):
         role = "Program Manager"
         cid = self.client_a.pk
 
-        # Core pages (same as staff)
+        # Core pages
         self.visit(role, "Home page", "/")
         self.visit(role, "Client list", "/clients/")
         self.visit(role, "Client detail", f"/clients/{cid}/")
+
+        # Notes — manager can VIEW but NOT create (note.create: DENY)
         self.visit(role, "Notes timeline", f"/notes/client/{cid}/")
-        self.visit(role, "Quick note form", f"/notes/client/{cid}/quick/")
-        self.visit(role, "Full note form", f"/notes/client/{cid}/new/")
+        self.visit_forbidden(
+            role, "Quick note form (403)", f"/notes/client/{cid}/quick/"
+        )
+        self.visit_forbidden(
+            role, "Full note form (403)", f"/notes/client/{cid}/new/"
+        )
 
-        # Plan view — manager should see edit buttons
+        # Plan view — manager can VIEW but NOT edit (plan.edit: DENY)
         self.visit(
             role,
-            "Plan view (editable)",
+            "Plan view (read-only)",
             f"/plans/client/{cid}/",
-            role_should_see=["Add Section"],
+            role_should_not_see=["Add Section"],
         )
 
-        # Section create form (GET)
-        self.visit(role, "Section create form", f"/plans/client/{cid}/sections/create/")
-
-        # Submit section create
-        self.visit_and_follow(
-            role,
-            "Section create submit",
+        # BLOCKED: plan editing (plan.edit: DENY)
+        self.visit_forbidden(
+            role, "Section create form (403)",
             f"/plans/client/{cid}/sections/create/",
-            data={
-                "name": "New Section from Walkthrough",
-                "program": self.program_a.pk,
-                "sort_order": 2,
-            },
-            expected_redirect=f"/plans/client/{cid}/",
         )
-
-        # Target create form
-        self.visit(
-            role,
-            "Target create form",
+        self.visit_forbidden(
+            role, "Target create form (403)",
             f"/plans/sections/{self.plan_section.pk}/targets/create/",
         )
 
-        # Submit target create
-        self.visit_and_follow(
-            role,
-            "Target create submit",
-            f"/plans/sections/{self.plan_section.pk}/targets/create/",
-            data={
-                "name": "New Target from Walkthrough",
-                "description": "Test target",
-            },
-            expected_redirect=f"/plans/client/{cid}/",
+        # Plan HTMX partials — edit operations blocked, view allowed
+        self.visit_forbidden(
+            role, "Target metrics (403)",
+            f"/plans/targets/{self.plan_target.pk}/metrics/",
+        )
+        self.visit_forbidden(
+            role, "Section status (403)",
+            f"/plans/sections/{self.plan_section.pk}/status/",
+        )
+        self.visit_forbidden(
+            role, "Target status (403)",
+            f"/plans/targets/{self.plan_target.pk}/status/",
         )
 
-        # Target metrics (HTMX)
-        self.visit_htmx(
-            role, "Target metrics", f"/plans/targets/{self.plan_target.pk}/metrics/"
-        )
-
-        # Section status (HTMX)
-        self.visit_htmx(
-            role, "Section status", f"/plans/sections/{self.plan_section.pk}/status/"
-        )
-
-        # Target status (HTMX)
-        self.visit_htmx(
-            role, "Target status", f"/plans/targets/{self.plan_target.pk}/status/"
-        )
-
-        # Target history (HTMX)
+        # Target history uses plan.view (ALLOW for PM)
         self.visit_htmx(
             role, "Target history", f"/plans/targets/{self.plan_target.pk}/history/"
         )
@@ -352,9 +332,11 @@ class ManagerWalkthroughTest(UxWalkthroughBase):
         self.visit(role, "Metrics export form", "/reports/export/")
         self.visit(role, "Funder report form", "/reports/funder-report/")
 
-        # Events
+        # Events — can VIEW but NOT create (event.create: DENY)
         self.visit(role, "Events tab", f"/events/client/{cid}/")
-        self.visit(role, "Event create form", f"/events/client/{cid}/create/")
+        self.visit_forbidden(
+            role, "Event create form (403)", f"/events/client/{cid}/create/"
+        )
 
         # Client analysis
         self.visit(role, "Client analysis", f"/reports/client/{cid}/analysis/")

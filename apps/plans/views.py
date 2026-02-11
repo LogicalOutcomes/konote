@@ -63,20 +63,27 @@ def _get_program_from_target(request, target_id, **kwargs):
 def _can_edit_plan(user, client_file):
     """Return True if the user may modify this client's plan.
 
-    Program managers can edit plan structure (sections, targets, metrics).
-    Staff and front desk cannot edit plans.
+    Uses the permissions matrix (plan.edit) — only roles with ALLOW or SCOPED
+    for plan.edit can edit. Currently staff has SCOPED, PM has DENY.
 
     Note: admin status does NOT bypass program role checks (PERM-S2).
-    Admins need a program manager role to edit plans.
     """
-    enrolled_program_ids = ClientProgramEnrolment.objects.filter(
-        client_file=client_file, status="enrolled"
-    ).values_list("program_id", flat=True)
+    from apps.auth_app.permissions import DENY, can_access
+
+    enrolled_program_ids = set(
+        ClientProgramEnrolment.objects.filter(
+            client_file=client_file, status="enrolled"
+        ).values_list("program_id", flat=True)
+    )
     return UserProgramRole.objects.filter(
         user=user,
         program_id__in=enrolled_program_ids,
-        role="program_manager",
         status="active",
+    ).exclude(
+        role__in=[
+            r for r in ["receptionist", "staff", "program_manager", "executive"]
+            if can_access(r, "plan.edit") == DENY
+        ]
     ).exists()
 
 

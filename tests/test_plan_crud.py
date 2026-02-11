@@ -71,10 +71,15 @@ class PlanCRUDBaseTest(TestCase):
 
 
 class SectionCreateTest(PlanCRUDBaseTest):
-    """Test creating plan sections with RBAC checks."""
+    """Test creating plan sections with RBAC checks.
 
-    def test_manager_can_create_section(self):
-        self.http.login(username="manager", password="pass")
+    Per the permissions matrix: staff has plan.edit: SCOPED (can create sections),
+    program_manager has plan.edit: DENY (cannot create sections).
+    """
+
+    def test_counsellor_can_create_section(self):
+        """Staff has plan.edit: SCOPED per permissions matrix — can create sections."""
+        self.http.login(username="counsellor", password="pass")
         url = reverse("plans:section_create", args=[self.client_file.pk])
         resp = self.http.post(url, {
             "name": "Employment Goals",
@@ -84,8 +89,9 @@ class SectionCreateTest(PlanCRUDBaseTest):
         self.assertIn(resp.status_code, [200, 302])
         self.assertTrue(PlanSection.objects.filter(name="Employment Goals").exists())
 
-    def test_counsellor_cannot_create_section(self):
-        self.http.login(username="counsellor", password="pass")
+    def test_manager_cannot_create_section(self):
+        """Program manager has plan.edit: DENY per permissions matrix."""
+        self.http.login(username="manager", password="pass")
         url = reverse("plans:section_create", args=[self.client_file.pk])
         resp = self.http.post(url, {
             "name": "Should Not Work",
@@ -112,7 +118,11 @@ class SectionCreateTest(PlanCRUDBaseTest):
 
 
 class SectionEditTest(PlanCRUDBaseTest):
-    """Test editing plan sections."""
+    """Test editing plan sections.
+
+    Per the permissions matrix: staff has plan.edit: SCOPED (can edit sections),
+    program_manager has plan.edit: DENY (cannot edit sections).
+    """
 
     def setUp(self):
         super().setUp()
@@ -121,8 +131,9 @@ class SectionEditTest(PlanCRUDBaseTest):
             program=self.program, sort_order=0,
         )
 
-    def test_manager_can_edit_section(self):
-        self.http.login(username="manager", password="pass")
+    def test_counsellor_can_edit_section(self):
+        """Staff has plan.edit: SCOPED per permissions matrix — can edit sections."""
+        self.http.login(username="counsellor", password="pass")
         url = reverse("plans:section_edit", args=[self.section.pk])
         resp = self.http.post(url, {
             "name": "Updated Section",
@@ -132,8 +143,9 @@ class SectionEditTest(PlanCRUDBaseTest):
         self.section.refresh_from_db()
         self.assertEqual(self.section.name, "Updated Section")
 
-    def test_counsellor_cannot_edit_section(self):
-        self.http.login(username="counsellor", password="pass")
+    def test_manager_cannot_edit_section(self):
+        """Program manager has plan.edit: DENY per permissions matrix."""
+        self.http.login(username="manager", password="pass")
         url = reverse("plans:section_edit", args=[self.section.pk])
         resp = self.http.post(url, {
             "name": "Hacked Section",
@@ -145,7 +157,11 @@ class SectionEditTest(PlanCRUDBaseTest):
 
 
 class SectionStatusTest(PlanCRUDBaseTest):
-    """Test changing section status."""
+    """Test changing section status.
+
+    Per the permissions matrix: staff has plan.edit: SCOPED (can change status),
+    program_manager has plan.edit: DENY (cannot change status).
+    """
 
     def setUp(self):
         super().setUp()
@@ -154,8 +170,9 @@ class SectionStatusTest(PlanCRUDBaseTest):
             program=self.program,
         )
 
-    def test_manager_can_change_section_status(self):
-        self.http.login(username="manager", password="pass")
+    def test_counsellor_can_change_section_status(self):
+        """Staff has plan.edit: SCOPED per permissions matrix — can change section status."""
+        self.http.login(username="counsellor", password="pass")
         url = reverse("plans:section_status", args=[self.section.pk])
         resp = self.http.post(url, {
             "status": "completed",
@@ -165,8 +182,9 @@ class SectionStatusTest(PlanCRUDBaseTest):
         self.section.refresh_from_db()
         self.assertEqual(self.section.status, "completed")
 
-    def test_counsellor_cannot_change_section_status(self):
-        self.http.login(username="counsellor", password="pass")
+    def test_manager_cannot_change_section_status(self):
+        """Program manager has plan.edit: DENY per permissions matrix."""
+        self.http.login(username="manager", password="pass")
         url = reverse("plans:section_status", args=[self.section.pk])
         resp = self.http.post(url, {
             "status": "deactivated",
@@ -178,7 +196,11 @@ class SectionStatusTest(PlanCRUDBaseTest):
 
 
 class TargetCreateTest(PlanCRUDBaseTest):
-    """Test creating plan targets."""
+    """Test creating plan targets.
+
+    Per the permissions matrix: staff has plan.edit: SCOPED (can create targets),
+    program_manager has plan.edit: DENY (cannot create targets).
+    """
     databases = ("default", "audit")
 
     def setUp(self):
@@ -187,8 +209,9 @@ class TargetCreateTest(PlanCRUDBaseTest):
             client_file=self.client_file, name="Section", program=self.program,
         )
 
-    def test_manager_can_create_target(self):
-        self.http.login(username="manager", password="pass")
+    def test_counsellor_can_create_target(self):
+        """Staff has plan.edit: SCOPED per permissions matrix — can create targets."""
+        self.http.login(username="counsellor", password="pass")
         url = reverse("plans:target_create", args=[self.section.pk])
         resp = self.http.post(url, {
             "name": "Find stable housing",
@@ -205,8 +228,9 @@ class TargetCreateTest(PlanCRUDBaseTest):
             PlanTargetRevision.objects.filter(plan_target=target).count(), 1
         )
 
-    def test_counsellor_cannot_create_target(self):
-        self.http.login(username="counsellor", password="pass")
+    def test_manager_cannot_create_target(self):
+        """Program manager has plan.edit: DENY per permissions matrix."""
+        self.http.login(username="manager", password="pass")
         url = reverse("plans:target_create", args=[self.section.pk])
         resp = self.http.post(url, {
             "name": "Should fail",
@@ -217,7 +241,11 @@ class TargetCreateTest(PlanCRUDBaseTest):
 
 
 class TargetEditTest(PlanCRUDBaseTest):
-    """Test editing targets and revision creation."""
+    """Test editing targets and revision creation.
+
+    Per the permissions matrix: staff has plan.edit: SCOPED (can edit targets),
+    program_manager has plan.edit: DENY (cannot edit targets).
+    """
 
     def setUp(self):
         super().setUp()
@@ -230,7 +258,8 @@ class TargetEditTest(PlanCRUDBaseTest):
         )
 
     def test_edit_creates_revision_with_old_values(self):
-        self.http.login(username="manager", password="pass")
+        """Staff has plan.edit: SCOPED — editing a target creates a revision with old values."""
+        self.http.login(username="counsellor", password="pass")
         url = reverse("plans:target_edit", args=[self.target.pk])
         resp = self.http.post(url, {
             "name": "Updated Target",
@@ -246,8 +275,9 @@ class TargetEditTest(PlanCRUDBaseTest):
         self.target.refresh_from_db()
         self.assertEqual(self.target.name, "Updated Target")
 
-    def test_counsellor_cannot_edit_target(self):
-        self.http.login(username="counsellor", password="pass")
+    def test_manager_cannot_edit_target(self):
+        """Program manager has plan.edit: DENY per permissions matrix."""
+        self.http.login(username="manager", password="pass")
         url = reverse("plans:target_edit", args=[self.target.pk])
         resp = self.http.post(url, {
             "name": "Hacked",
@@ -258,6 +288,7 @@ class TargetEditTest(PlanCRUDBaseTest):
         self.assertEqual(self.target.name, "Original Target")
 
     def test_other_program_manager_cannot_edit_target(self):
+        """Manager of a different program also has plan.edit: DENY."""
         self.http.login(username="other_mgr", password="pass")
         url = reverse("plans:target_edit", args=[self.target.pk])
         resp = self.http.post(url, {
@@ -268,7 +299,11 @@ class TargetEditTest(PlanCRUDBaseTest):
 
 
 class TargetStatusTest(PlanCRUDBaseTest):
-    """Test changing target status."""
+    """Test changing target status.
+
+    Per the permissions matrix: staff has plan.edit: SCOPED (can change status),
+    program_manager has plan.edit: DENY (cannot change status).
+    """
 
     def setUp(self):
         super().setUp()
@@ -280,8 +315,9 @@ class TargetStatusTest(PlanCRUDBaseTest):
             name="Target", description="",
         )
 
-    def test_manager_can_change_target_status(self):
-        self.http.login(username="manager", password="pass")
+    def test_counsellor_can_change_target_status(self):
+        """Staff has plan.edit: SCOPED per permissions matrix — can change target status."""
+        self.http.login(username="counsellor", password="pass")
         url = reverse("plans:target_status", args=[self.target.pk])
         resp = self.http.post(url, {
             "status": "completed",
@@ -295,8 +331,9 @@ class TargetStatusTest(PlanCRUDBaseTest):
             PlanTargetRevision.objects.filter(plan_target=self.target).exists()
         )
 
-    def test_counsellor_cannot_change_target_status(self):
-        self.http.login(username="counsellor", password="pass")
+    def test_manager_cannot_change_target_status(self):
+        """Program manager has plan.edit: DENY per permissions matrix."""
+        self.http.login(username="manager", password="pass")
         url = reverse("plans:target_status", args=[self.target.pk])
         resp = self.http.post(url, {
             "status": "deactivated",
@@ -308,7 +345,11 @@ class TargetStatusTest(PlanCRUDBaseTest):
 
 
 class MetricAssignmentTest(PlanCRUDBaseTest):
-    """Test assigning metrics to a target."""
+    """Test assigning metrics to a target.
+
+    Per the permissions matrix: staff has plan.edit: SCOPED (can assign metrics),
+    program_manager has plan.edit: DENY (cannot assign metrics).
+    """
 
     def setUp(self):
         super().setUp()
@@ -328,8 +369,9 @@ class MetricAssignmentTest(PlanCRUDBaseTest):
             min_value=0, max_value=10, unit="score",
         )
 
-    def test_manager_can_assign_metrics(self):
-        self.http.login(username="manager", password="pass")
+    def test_counsellor_can_assign_metrics(self):
+        """Staff has plan.edit: SCOPED per permissions matrix — can assign metrics."""
+        self.http.login(username="counsellor", password="pass")
         url = reverse("plans:target_metrics", args=[self.target.pk])
         resp = self.http.post(url, {
             "metrics": [self.metric_a.pk, self.metric_b.pk],
@@ -337,8 +379,9 @@ class MetricAssignmentTest(PlanCRUDBaseTest):
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(PlanTargetMetric.objects.filter(plan_target=self.target).count(), 2)
 
-    def test_counsellor_cannot_assign_metrics(self):
-        self.http.login(username="counsellor", password="pass")
+    def test_manager_cannot_assign_metrics(self):
+        """Program manager has plan.edit: DENY per permissions matrix."""
+        self.http.login(username="manager", password="pass")
         url = reverse("plans:target_metrics", args=[self.target.pk])
         resp = self.http.post(url, {
             "metrics": [self.metric_a.pk],
@@ -347,8 +390,9 @@ class MetricAssignmentTest(PlanCRUDBaseTest):
         self.assertEqual(PlanTargetMetric.objects.count(), 0)
 
     def test_reassigning_metrics_replaces_old_ones(self):
+        """Staff can reassign metrics — old assignments are replaced."""
         PlanTargetMetric.objects.create(plan_target=self.target, metric_def=self.metric_a)
-        self.http.login(username="manager", password="pass")
+        self.http.login(username="counsellor", password="pass")
         url = reverse("plans:target_metrics", args=[self.target.pk])
         resp = self.http.post(url, {
             "metrics": [self.metric_b.pk],
