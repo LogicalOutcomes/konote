@@ -7,10 +7,6 @@
 
 ## Active Work
 
-### QA Round 3 — Regressions
-
-_All tasks complete — section can be removed on next cleanup._
-
 ### Pre-Launch Checklist
 
 - [ ] Complete Agency Permissions Interview — signed Configuration Summary required before each new agency deployment (ONBOARD-GATE)
@@ -43,14 +39,14 @@ _All tasks complete — section can be removed on next cleanup._
 - [x] Update base.html nav — replace role checks with `{% has_permission %}` (WIRE-4A)
 - [x] Update ~10 other templates — same pattern (WIRE-4B)
 
-**Wave 5 — Feature work (2 parallel streams)**
-- [ ] Build alert recommend-cancellation workflow — unblocks alert.cancel → DENY (WIRE-5A)
-- [ ] Migrate remaining ~35 views — systematic decorator swap (WIRE-5B)
+**Wave 5 — Feature work (2 parallel streams)** ✅
+- [x] Build alert recommend-cancellation workflow — unblocks alert.cancel → DENY (WIRE-5A)
+- [x] Migrate remaining ~35 views — systematic decorator swap (WIRE-5B)
 
-**Wave 6 — Verification + QA (3 parallel streams)**
-- [ ] Parametrized permission enforcement test (WIRE-6A)
-- [ ] Update QA personas to match permissions.py (WIRE-6B)
-- [ ] Rewrite affected QA scenarios (WIRE-6C)
+**Wave 6 — Verification + QA (3 parallel streams)** ✅
+- [x] Parametrized permission enforcement test (WIRE-6A)
+- [x] Update QA personas to match permissions.py (WIRE-6B)
+- [x] Rewrite affected QA scenarios (WIRE-6C)
 
 ### Permissions Follow-up
 
@@ -124,6 +120,8 @@ _All tasks complete — section can be removed on next cleanup._
 
 ## Recently Done
 
+- [x] Complete Wave 6 verification + QA — parametrized enforcement test (48 keys x 4 roles), 6 missing keys added to all 12 QA personas, 2 new scenarios (SCN-075 alert workflow, SCN-076 group management) — 2026-02-10 (WIRE-6A, WIRE-6B, WIRE-6C)
+- [x] Complete Wave 5 — alert recommend-cancel workflow + remaining view migrations — 2026-02-10 (WIRE-5A, WIRE-5B)
 - [x] Complete Wave 4 template migration — 7 templates now use `{% has_permission %}` instead of boolean role flags — 2026-02-10 (WIRE-4A, WIRE-4B)
 - [x] Fix TEST-5 — QA runner now resolves `{client_id}` etc. from previous step URLs instead of navigating to literal placeholders — 2026-02-10 (QA-W21, QA-W25)
 - [x] Close BUG-8 — "Safety concern noted" is user-entered alert content (test data), not a translatable UI string. Not a bug. — 2026-02-10 (QA-W23)
