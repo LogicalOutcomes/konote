@@ -67,6 +67,7 @@ class RoleHierarchyTest(TestCase):
     def test_receptionist_can_access_client(self):
         request = self.factory.get(f"/clients/{self.client.pk}/")
         request.user = self.receptionist
+        request.session = {}
         response = self.middleware(request)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(request.user_program_role, "receptionist")
@@ -74,6 +75,7 @@ class RoleHierarchyTest(TestCase):
     def test_counsellor_gets_staff_role(self):
         request = self.factory.get(f"/clients/{self.client.pk}/")
         request.user = self.counsellor
+        request.session = {}
         response = self.middleware(request)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(request.user_program_role, "staff")
@@ -81,6 +83,7 @@ class RoleHierarchyTest(TestCase):
     def test_manager_gets_program_manager_role(self):
         request = self.factory.get(f"/clients/{self.client.pk}/")
         request.user = self.manager
+        request.session = {}
         response = self.middleware(request)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(request.user_program_role, "program_manager")

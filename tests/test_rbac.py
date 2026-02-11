@@ -107,12 +107,14 @@ class ClientAccessTest(TestCase):
     def test_staff_with_matching_program_can_access_client(self):
         request = self.factory.get(f"/clients/{self.client.pk}/")
         request.user = self.staff_a
+        request.session = {}
         response = self.middleware(request)
         self.assertEqual(response.status_code, 200)
 
     def test_staff_without_matching_program_blocked(self):
         request = self.factory.get(f"/clients/{self.client.pk}/")
         request.user = self.staff_b
+        request.session = {}
         response = self.middleware(request)
         self.assertEqual(response.status_code, 403)
 
@@ -120,6 +122,7 @@ class ClientAccessTest(TestCase):
         """Admins without program roles cannot access client data."""
         request = self.factory.get(f"/clients/{self.client.pk}/")
         request.user = self.admin_user
+        request.session = {}
         response = self.middleware(request)
         self.assertEqual(response.status_code, 403)
 
@@ -130,6 +133,7 @@ class ClientAccessTest(TestCase):
         )
         request = self.factory.get(f"/clients/{self.client.pk}/")
         request.user = self.admin_user
+        request.session = {}
         response = self.middleware(request)
         self.assertEqual(response.status_code, 200)
 
@@ -300,19 +304,11 @@ class ReceptionistFieldAccessTest(TestCase):
         cdv = ClientDetailValue.objects.get(client_file=self.client_file, field_def=self.notes_field)
         self.assertEqual(cdv.value, "Sensitive info here")
 
-    def test_receptionist_cannot_create_client(self):
-        """Front desk staff should get 403 when trying to create a client."""
+    def test_receptionist_can_create_client(self):
+        """Receptionist has client.create: ALLOW per permissions matrix — front desk does intake."""
         self.client.force_login(self.receptionist)
         response = self.client.get("/clients/create/")
-        self.assertEqual(response.status_code, 403)
-
-        # Also test POST
-        response = self.client.post("/clients/create/", {
-            "first_name": "New",
-            "last_name": "Client",
-            "status": "active",
-        })
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 200)
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
@@ -401,7 +397,11 @@ class ReceptionistNotesAccessTest(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ReceptionistPlansAccessTest(TestCase):
-    """Front desk staff should be blocked from editing plans (only program managers can edit)."""
+    """Plan access tests: staff has plan.edit: SCOPED, all other roles have plan.edit: DENY.
+
+    Receptionist also has plan.view: DENY, so cannot even view plans.
+    Program manager has plan.view: ALLOW but plan.edit: DENY.
+    """
 
     def setUp(self):
         enc_module._fernet = None
@@ -433,33 +433,32 @@ class ReceptionistPlansAccessTest(TestCase):
     def tearDown(self):
         enc_module._fernet = None
 
-    def test_receptionist_can_view_plan(self):
-        """Front desk staff can view the plan tab (read-only)."""
+    def test_receptionist_blocked_from_plan_view(self):
+        """Receptionist has plan.view: DENY per permissions matrix — cannot view plans."""
         self.client.force_login(self.receptionist)
         response = self.client.get(f"/plans/client/{self.client_file.pk}/")
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 403)
 
     def test_receptionist_blocked_from_section_create(self):
-        """Front desk staff cannot create plan sections."""
+        """Receptionist has plan.edit: DENY per permissions matrix."""
         self.client.force_login(self.receptionist)
         response = self.client.get(f"/plans/client/{self.client_file.pk}/sections/create/")
         self.assertEqual(response.status_code, 403)
 
-    def test_staff_blocked_from_section_create(self):
-        """Staff cannot create plan sections (only program managers can)."""
+    def test_staff_can_create_section(self):
+        """Staff has plan.edit: SCOPED per permissions matrix — can create sections."""
         self.client.force_login(self.staff_user)
-        response = self.client.get(f"/plans/client/{self.client_file.pk}/sections/create/")
-        self.assertEqual(response.status_code, 403)
-
-    def test_manager_can_create_section(self):
-        """Program managers can create plan sections."""
-        self.client.force_login(self.manager)
         response = self.client.get(f"/plans/client/{self.client_file.pk}/sections/create/")
         self.assertEqual(response.status_code, 200)
 
+    def test_manager_blocked_from_section_create(self):
+        """Program manager has plan.edit: DENY per permissions matrix — cannot create sections."""
+        self.client.force_login(self.manager)
+        response = self.client.get(f"/plans/client/{self.client_file.pk}/sections/create/")
+        self.assertEqual(response.status_code, 403)
+
     def test_receptionist_blocked_from_target_create(self):
-        """Front desk staff cannot create plan targets."""
-        # First create a section as manager
+        """Receptionist has plan.edit: DENY per permissions matrix — cannot create targets."""
         from apps.plans.models import PlanSection
         section = PlanSection.objects.create(
             client_file=self.client_file,

@@ -13,40 +13,16 @@
 - [ ] Verify email is configured — needed for exports, erasure alerts, password resets (OPS3)
 - [ ] Test backup restore from a real database dump (OPS4)
 
+### Do Occasionally
+
+- [ ] Run UX walkthrough — `pytest tests/ux_walkthrough/ -v`, review report at `tasks/ux-review-latest.md` (UX-WALK1)
+- [ ] French translation review — have a French speaker spot-check AI translations, especially new strings. Run `python manage.py check_translations` to see coverage stats (I18N-REV1)
+- [ ] Redeploy to Railway — push to `main`, Railway auto-deploys. See `docs/deploy-railway.md` (OPS-RAIL1)
+- [ ] Redeploy to FullHost — push to `main`, then trigger redeploy via API or dashboard. See `docs/deploy-fullhost.md` (OPS-FH1)
+- [ ] Code review round — open Claude Code in VS Code, say "review the codebase for code quality, security, and consistency issues" — see `tasks/code-review-process.md` (REV1)
+- [ ] **Full QA Suite** — Run after major releases or UI changes. Creates 4 reports. **Step 1:** `/run-scenario-server` here (captures scenario screenshots). **Step 2:** Switch to qa-scenarios, run `/run-scenarios` (evaluates scenarios, creates satisfaction report + improvement tickets). **Step 3:** Back here, run `/capture-page-states` (captures page screenshots). **Step 4:** Switch to qa-scenarios, run `/run-page-audit` (evaluates pages, creates page audit report + tickets). **Step 5 (optional):** Back here, run `/process-qa-report` (expert panel + action plan). All reports saved to `qa-scenarios/reports/` with date stamps. (QA-FULL1)
+
 ## Coming Up
-
-### Permissions Enforcement Wiring — See `tasks/permissions-enforcement-wiring.md`
-
-**Wave 1 — Foundation (3 parallel streams)** ✅
-- [x] Update permissions.py — add `client.create`, `client.edit_contact`, change 5 values (WIRE-1A)
-- [x] Create `@requires_permission` decorator in decorators.py (WIRE-1B)
-- [x] Create `{% has_permission %}` template tag (WIRE-1C)
-
-**Wave 2 — Wire affected views (6 parallel streams)** ✅
-- [x] Wire client views — client_create, contact edit (WIRE-2A)
-- [x] Wire group views — manage_members + HTMX audit trail (WIRE-2B)
-- [x] Wire alert/event views — alert.create (WIRE-2C)
-- [x] Wire consent views — consent.manage + immutability enforcement (WIRE-2D)
-- [x] Wire executive-facing views — notes, plans, reports (WIRE-2E)
-- [x] Add PM no-elevation constraint — user.manage: SCOPED (WIRE-2F)
-
-**Wave 3 — UI layer (3 parallel streams)** ✅
-- [x] Update context processor — expose `user_permissions` dict (WIRE-3A)
-- [x] Update middleware — replace `is_executive_only()` redirect with matrix check (WIRE-3B)
-- [x] Add Django system check — warn on hardcoded decorators, validate permission keys (WIRE-3C)
-
-**Wave 4 — Template migration (2 parallel streams)** ✅
-- [x] Update base.html nav — replace role checks with `{% has_permission %}` (WIRE-4A)
-- [x] Update ~10 other templates — same pattern (WIRE-4B)
-
-**Wave 5 — Feature work (2 parallel streams)** ✅
-- [x] Build alert recommend-cancellation workflow — unblocks alert.cancel → DENY (WIRE-5A)
-- [x] Migrate remaining ~35 views — systematic decorator swap (WIRE-5B)
-
-**Wave 6 — Verification + QA (3 parallel streams)** ✅
-- [x] Parametrized permission enforcement test (WIRE-6A)
-- [x] Update QA personas to match permissions.py (WIRE-6B)
-- [x] Rewrite affected QA scenarios (WIRE-6C)
 
 ### Agency Onboarding — See `tasks/agency-permissions-interview.md`
 
@@ -116,10 +92,8 @@
 
 ## Recently Done
 
+- [x] Permissions enforcement wiring complete (Waves 1–6) — decorator, template tag, all views migrated, parametrized test, QA personas updated — 2026-02-10 (WIRE-1A through WIRE-6C)
 - [x] Extract `_get_program_from_client` to access.py — removed duplicates from notes + plans views — 2026-02-10 (PERM-FU5)
-- [x] Complete Wave 6 verification + QA — parametrized enforcement test (48 keys x 4 roles), 6 missing keys added to all 12 QA personas, 2 new scenarios (SCN-075 alert workflow, SCN-076 group management) — 2026-02-10 (WIRE-6A, WIRE-6B, WIRE-6C)
-- [x] Complete Wave 5 — alert recommend-cancel workflow + remaining view migrations — 2026-02-10 (WIRE-5A, WIRE-5B)
-- [x] Complete Wave 4 template migration — 7 templates now use `{% has_permission %}` instead of boolean role flags — 2026-02-10 (WIRE-4A, WIRE-4B)
 - [x] Fix TEST-5 — QA runner now resolves `{client_id}` etc. from previous step URLs instead of navigating to literal placeholders — 2026-02-10 (QA-W21, QA-W25)
 - [x] Close BUG-8 — "Safety concern noted" is user-entered alert content (test data), not a translatable UI string. Not a bug. — 2026-02-10 (QA-W23)
 - [x] Fix BLOCKER-1 + verify BLOCKER-2 — skip link added to base.html for all pages; post-login focus confirmed working in app.js — 2026-02-10 (QA-W27)
@@ -128,5 +102,4 @@
 - [x] Fix BUG-11 — program `name_fr` field + `translated_name` property, seed data with French names, 33 templates updated — 2026-02-10 (QA-W24)
 - [x] Fix BUG-13 — accent-insensitive search using NFKD normalization ("Benoit" finds "Benoît") — 2026-02-10 (QA-W26)
 - [x] Fix BUG-3 — audit log filter dropdown CSS min-width increased from 0 to 12rem — 2026-02-10 (QA-W28)
-- [x] Fix IMPROVE-1 — Instance Settings and Demo Accounts cards now show status text — 2026-02-10 (QA-W29)
 _Older completed tasks: [tasks/ARCHIVE.md](tasks/ARCHIVE.md). Reference: [tasks/whats-been-built.md](tasks/whats-been-built.md). Recurring chores: [tasks/recurring-tasks.md](tasks/recurring-tasks.md)._

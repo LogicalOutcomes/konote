@@ -200,16 +200,16 @@ class CrossProgramIsolationScenario(UxScenarioBase):
 class MorningIntakeScenario(UxScenarioBase):
     """Scenario: New client Maria Santos arrives for intake.
 
-    Act 1: Dana searches — client not found, Dana can't create
-    Act 2: Casey creates client file and documents the intake
-    Act 3: Morgan reviews and sets up the plan
+    Act 1: Dana (Front Desk) searches, not found — Dana creates the file
+    Act 2: Casey (Staff) documents the intake with a progress note
+    Act 3: Morgan (Manager) reviews the client and plan (read-only)
     """
 
     SCENARIO = "Morning Intake Flow"
 
     def test_morning_intake(self):
         # =============================================================
-        # Act 1: Dana (Front Desk) — searches for the new client
+        # Act 1: Dana (Front Desk) — searches and creates the client
         # =============================================================
         self.login_as("frontdesk", forbidden_content=CASEY_FORBIDDEN)
         role = "Front Desk"
@@ -224,29 +224,22 @@ class MorningIntakeScenario(UxScenarioBase):
             "/clients/search/?q=Maria", resp.status_code, [],
         )
 
-        # Dana can't create clients — she tells Casey
-        resp = self.visit_forbidden(
-            role, "Can't create client (403)", "/clients/create/",
+        # Dana opens the create form (client.create: ALLOW for receptionist)
+        resp = self.visit(
+            role, "Create client form", "/clients/create/",
         )
         self.record_scenario(
-            self.SCENARIO, role, "Dana blocked from creating client",
+            self.SCENARIO, role, "Dana opens create form",
             "/clients/create/", resp.status_code, [],
         )
 
         # =============================================================
-        # Act 2: Casey (Staff) — creates client and documents intake
+        # Act 2: Casey (Staff) — documents the intake
         # =============================================================
         self.login_as("staff", forbidden_content=CASEY_FORBIDDEN)
         role = "Direct Service"
 
-        # Casey views the create form
-        resp = self.visit(role, "Client create form", "/clients/create/")
-        self.record_scenario(
-            self.SCENARIO, role, "Open create form",
-            "/clients/create/", resp.status_code, [],
-        )
-
-        # Casey creates Maria's file
+        # Casey creates Maria's file (staff also has client.create)
         new_client = self.quick_create_client(
             "Maria", "Santos", self.program_a,
         )
@@ -290,7 +283,7 @@ class MorningIntakeScenario(UxScenarioBase):
         )
 
         # =============================================================
-        # Act 3: Morgan (Manager) — reviews and sets up the plan
+        # Act 3: Morgan (Manager) — reviews (read-only)
         # =============================================================
         self.login_as("manager", forbidden_content=CASEY_FORBIDDEN)
         role = "Program Manager"
@@ -304,27 +297,21 @@ class MorningIntakeScenario(UxScenarioBase):
             f"/clients/{cid}/", resp.status_code, [],
         )
 
-        # Morgan views the plan page — empty for new client
+        # Morgan views the plan page (read-only — plan.edit: DENY)
         resp = self.visit(
             role, "Plan view (empty for new client)",
             f"/plans/client/{cid}/",
-            role_should_see=["Add Section"],
+            role_should_not_see=["Add Section"],
         )
         self.record_scenario(
             self.SCENARIO, role, "View empty plan",
             f"/plans/client/{cid}/", resp.status_code, [],
         )
 
-        # Morgan creates a plan section
-        resp = self.visit_and_follow(
-            role, "Create plan section",
+        # Morgan can't create plan sections (plan.edit: DENY)
+        resp = self.visit_forbidden(
+            role, "Create plan section (403)",
             f"/plans/client/{cid}/sections/create/",
-            data={
-                "name": "Housing Stability Goals",
-                "program": self.program_a.pk,
-                "sort_order": 1,
-            },
-            expected_redirect=f"/plans/client/{cid}/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create plan section",
