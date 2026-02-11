@@ -48,10 +48,6 @@
 - [x] Update QA personas to match permissions.py (WIRE-6B)
 - [x] Rewrite affected QA scenarios (WIRE-6C)
 
-### Permissions Follow-up
-
-- [ ] Extract `_get_program_from_client` to access.py — duplicated in 3 views (PERM-FU5)
-
 ### Agency Onboarding — See `tasks/agency-permissions-interview.md`
 
 - [ ] Split interview into two sessions — Session A (60 min) and Session B (45 min) (ONBOARD1)
@@ -120,6 +116,7 @@
 
 ## Recently Done
 
+- [x] Extract `_get_program_from_client` to access.py — removed duplicates from notes + plans views — 2026-02-10 (PERM-FU5)
 - [x] Complete Wave 6 verification + QA — parametrized enforcement test (48 keys x 4 roles), 6 missing keys added to all 12 QA personas, 2 new scenarios (SCN-075 alert workflow, SCN-076 group management) — 2026-02-10 (WIRE-6A, WIRE-6B, WIRE-6C)
 - [x] Complete Wave 5 — alert recommend-cancel workflow + remaining view migrations — 2026-02-10 (WIRE-5A, WIRE-5B)
 - [x] Complete Wave 4 template migration — 7 templates now use `{% has_permission %}` instead of boolean role flags — 2026-02-10 (WIRE-4A, WIRE-4B)
