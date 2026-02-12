@@ -1,46 +1,108 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Export Link Created" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% trans "Your Report Is Ready" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% trans "Export Link Created" %}</h1>
-    <p>{% trans "Your secure download link is ready." %}</p>
+    <h1>{% trans "Your Report Is Ready" %}</h1>
+    {% if program_name %}
+    <p>{{ program_name }} — {{ link.get_export_type_display }}</p>
+    {% endif %}
 </hgroup>
 
-{# Success confirmation #}
-<article aria-label="{% trans 'Success' %}" style="border-left: 4px solid var(--pico-color-green-500); padding: 1rem; margin-bottom: 1.5rem;">
-    <strong><span aria-hidden="true">&#x2705;</span> {% trans "Export created successfully" %}</strong>
+{% if link.is_elevated and not link.is_available %}
+{# ── Elevated export: delay still active ── #}
+<article aria-label="{% trans 'Download pending' %}" style="border-left: 4px solid var(--pico-color-yellow-500); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong><span aria-hidden="true">&#x23F3;</span> {% trans "Download available shortly" %}</strong>
+    <p>
+        {% blocktrans with time=link.available_at|date:"H:i" strong_open="<strong>" strong_close="</strong>" %}Because this export contains sensitive data, there is a short security delay. Your download will be available at {{ strong_open }}{{ time }}{{ strong_close }}.{% endblocktrans %}
+    </p>
     <p style="margin-bottom: 0;">
-        {% blocktrans with expires=link.expires_at strong_open="<strong>" strong_close="</strong>" %}The download link below is active and will expire on {{ strong_open }}{{ expires }}{{ strong_close }}.{% endblocktrans %}
+        {% trans "You can bookmark this page and return, or wait a few minutes and click the button below." %}
     </p>
 </article>
 
-{% if link.is_elevated %}
-{# Elevated export delay warning #}
-<article aria-label="{% trans 'Elevated export notice' %}" style="border-left: 4px solid var(--pico-color-yellow-500); padding: 1rem; margin-bottom: 1.5rem;">
-    <strong><span aria-hidden="true">&#x23F3;</span> {% trans "Elevated Export — Delay Applied" %}</strong>
-    <p>
-        {% blocktrans with time=link.available_at|date:"H:i" strong_open="<strong>" strong_close="</strong>" %}This export contains a large number of clients or clinical notes. For security, the download link will not become active until {{ strong_open }}{{ time }}{{ strong_close }}. Administrators have been notified.{% endblocktrans %}
-    </p>
+<a href="{{ download_path }}" role="button" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; padding: 0.75rem 2rem;">
+    <span aria-hidden="true">&#x2B07;</span> {% trans "Download" %}
+</a>
+
+{% else %}
+{# ── Normal export: ready for immediate download ── #}
+<article aria-label="{% trans 'Success' %}" style="border-left: 4px solid var(--pico-color-green-500); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong><span aria-hidden="true">&#x2705;</span> {% trans "Report generated successfully" %}</strong>
     <p style="margin-bottom: 0;">
-        {% trans "You can share the link now — the recipient will be able to download after the delay period." %}
+        {% if is_pdf %}
+        {% trans "Your PDF report is ready to download." %}
+        {% else %}
+        {% trans "Your CSV file is ready to download. You can open it in Excel or Google Sheets." %}
+        {% endif %}
     </p>
 </article>
+
+{# Primary action: big download button #}
+<a href="{{ download_path }}" role="button" id="download-btn" style="display: inline-flex; align-items: center; gap: 0.5rem; font-size: 1.1rem; padding: 0.75rem 2rem; margin-bottom: 0.5rem;">
+    {% if is_pdf %}
+    <span aria-hidden="true">&#x1F4C4;</span> {% trans "Download PDF Report" %}
+    {% else %}
+    <span aria-hidden="true">&#x1F4CA;</span> {% trans "Download CSV File" %}
+    {% endif %}
+</a>
+<p style="color: var(--pico-muted-color); font-size: 0.9rem; margin-bottom: 1.5rem;">
+    {% trans "Your file will appear in your browser's Downloads folder." %}
+</p>
 {% endif %}
 
-{# Export details #}
-<article aria-label="{% trans 'Export details' %}" style="margin-bottom: 1.5rem;">
-    <strong><span aria-hidden="true">&#x1F4CB;</span> {% trans "Export Details" %}</strong>
-    <table role="grid">
+{# Expiry notice — small, not alarming #}
+<p style="color: var(--pico-muted-color); font-size: 0.9rem; margin-bottom: 2rem;">
+    {% blocktrans with expires=link.expires_at|date:"M j, H:i" %}This download link expires {{ expires }}. You can return to this page and download again until then.{% endblocktrans %}
+</p>
+
+{# Secondary action: share link (collapsed by default) #}
+<details style="margin-bottom: 1.5rem;">
+    <summary style="cursor: pointer;">
+        <span aria-hidden="true">&#x1F517;</span> {% trans "Need to share this report with a colleague?" %}
+    </summary>
+    <div style="margin-top: 1rem;">
+        <p>{% trans "Copy this link to share the download with someone else in your organisation. All downloads are logged for audit purposes." %}</p>
+        <div class="grid" style="align-items: center;">
+            <input
+                type="text"
+                id="export-link"
+                value="{{ download_url }}"
+                readonly
+                aria-label="{% trans 'Shareable download URL' %}"
+                style="font-family: monospace; font-size: 0.85rem;"
+            >
+            <button
+                type="button"
+                id="copy-link-btn"
+                onclick="copyExportLink()"
+                style="max-width: 10rem;"
+                class="secondary"
+            >
+                <span aria-hidden="true">&#x1F4CB;</span> {% trans "Copy Link" %}
+            </button>
+        </div>
+        <small id="copy-feedback" aria-live="polite" style="display: none; color: var(--pico-color-green-500);">
+            {% trans "Link copied to clipboard." %}
+        </small>
+    </div>
+</details>
+
+{# Export details (collapsed — only for people who want specifics) #}
+<details style="margin-bottom: 1.5rem;">
+    <summary style="cursor: pointer; color: var(--pico-muted-color);">
+        <span aria-hidden="true">&#x1F4CB;</span> {% trans "Export details" %}
+    </summary>
+    <table role="grid" style="margin-top: 1rem;">
         <tbody>
             <tr>
                 <th scope="row">{% trans "Export type" %}</th>
                 <td>{{ link.get_export_type_display }}</td>
             </tr>
             <tr>
-                <th scope="row">{% trans "Client count" %}</th>
+                <th scope="row">{% trans "Participants" %}</th>
                 <td>{{ link.client_count }}</td>
             </tr>
             <tr>
@@ -48,52 +110,15 @@
                 <td>{{ link.recipient }}</td>
             </tr>
             <tr>
-                <th scope="row">{% trans "Expires" %}</th>
-                <td>{{ link.expires_at }}</td>
+                <th scope="row">{% trans "File" %}</th>
+                <td>{{ link.filename }}</td>
             </tr>
         </tbody>
     </table>
-</article>
+</details>
 
-{# Secure download link with copy button #}
-<article aria-label="{% trans 'Download link' %}" style="margin-bottom: 1.5rem;">
-    <strong><span aria-hidden="true">&#x1F517;</span> {% trans "Secure Download Link" %}</strong>
-    <p>
-        {% trans "Copy this link and share it with the intended recipient." %}
-    </p>
-    <div class="grid" style="align-items: center;">
-        <input
-            type="text"
-            id="export-link"
-            value="{{ download_url }}"
-            readonly
-            aria-label="{% trans 'Secure download URL' %}"
-            style="font-family: monospace; font-size: 0.9rem;"
-        >
-        <button
-            type="button"
-            id="copy-link-btn"
-            onclick="copyExportLink()"
-            style="max-width: 10rem;"
-        >
-            <span aria-hidden="true">&#x1F4CB;</span> {% trans "Copy Link" %}
-        </button>
-    </div>
-    <small id="copy-feedback" aria-live="polite" style="display: none; color: var(--pico-color-green-500);">
-        {% trans "Link copied to clipboard." %}
-    </small>
-</article>
-
-{# Audit notice #}
-<article aria-label="{% trans 'Audit notice' %}" style="border-left: 4px solid var(--pico-color-yellow-500); padding: 1rem; margin-bottom: 1.5rem;">
-    <strong><span aria-hidden="true">&#x1F6C8;</span> {% trans "Sharing Notice" %}</strong>
-    <p style="margin-bottom: 0;">
-        {% blocktrans with strong_open="<strong>" strong_close="</strong>" %}This link can be shared with others in your organisation. All downloads are {{ strong_open }}logged for audit purposes{{ strong_close }}, including the time of access and the identity of the person downloading. Handle the exported data according to your organisation's data protection policies.{% endblocktrans %}
-    </p>
-</article>
-
-<a href="{% url 'reports:export_form' %}" role="button" class="secondary">
-    <span aria-hidden="true">&larr;</span> {% trans "Back to Reports" %}
+<a href="{% url 'reports:export_form' %}" role="button" class="secondary outline" style="margin-top: 1rem;">
+    <span aria-hidden="true">&larr;</span> {% trans "Generate Another Report" %}
 </a>
 
 <script>

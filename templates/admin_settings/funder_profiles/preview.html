@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Preview Funder Profile" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Preview Funder Profile" %}</h1>
+    <p>{% trans "Review the parsed profile before saving." %}</p>
+</hgroup>
+
+{% if warnings %}
+<article class="pico-background-yellow-50" aria-label="{% trans 'Warnings' %}" style="border-left: 4px solid var(--pico-color-yellow-500); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong>{% trans "Warnings" %}</strong>
+    <ul style="margin-bottom: 0;">
+        {% for warning in warnings %}
+        <li>{{ warning }}</li>
+        {% endfor %}
+    </ul>
+</article>
+{% endif %}
+
+<article>
+    <header><strong>{{ parsed.name }}</strong></header>
+    {% if parsed.description %}
+    <p>{{ parsed.description }}</p>
+    {% endif %}
+
+    <h3>{% trans "Breakdowns" %} ({{ parsed.breakdowns|length }})</h3>
+
+    {% for bd in parsed.breakdowns %}
+    <article style="margin-left: 1rem;">
+        <header>
+            <strong>{{ bd.label }}</strong>
+            <small class="secondary"> — {{ bd.source_type }}{% if bd.source_field_name %}: {{ bd.source_field_name }}{% endif %}</small>
+        </header>
+
+        {% if bd.bins %}
+        <p><strong>{% trans "Age bins:" %}</strong></p>
+        <ul>
+            {% for bin in bd.bins %}
+            <li>{{ bin.label }}: {{ bin.min }}–{{ bin.max }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if bd.merge_map %}
+        <p><strong>{% trans "Category merging:" %}</strong></p>
+        <ul>
+            {% for target, sources in bd.merge_map.items %}
+            <li><strong>{{ target }}</strong> ← {{ sources|join:", " }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if bd.keep_all %}
+        <p><small>{% trans "Keeping all categories (unmatched values retained as-is)" %}</small></p>
+        {% endif %}
+    </article>
+    {% endfor %}
+</article>
+
+<h3>{% trans "Assign to Programs" %}</h3>
+<form method="post" action="{% url 'admin_settings:funder_profile_confirm' %}">
+    {% csrf_token %}
+    <input type="hidden" name="csv_content" value="{{ csv_content }}">
+
+    <fieldset>
+        <legend>{% trans "Programs" %}</legend>
+        <p><small>{% trans "Select which programs should use this funder profile. You can change this later." %}</small></p>
+        {% for program in programs %}
+        <label>
+            <input type="checkbox" name="programs" value="{{ program.pk }}">
+            {{ program.name }}
+        </label>
+        {% endfor %}
+    </fieldset>
+
+    <div style="margin-top: 1rem;">
+        <button type="submit">{% trans "Save Profile" %}</button>
+        <a href="{% url 'admin_settings:funder_profile_upload' %}" role="button" class="outline secondary">{% trans "Back" %}</a>
+    </div>
+</form>
+
+<p><a href="{% url 'admin_settings:funder_profile_list' %}">{% trans "← Back to Profiles" %}</a></p>
+{% endblock %}

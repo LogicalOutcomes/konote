@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Funder Demographic Profiles" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Funder Demographic Profiles" %}</h1>
+    <p>{% trans "Manage demographic breakdown configurations for different funders." %}</p>
+</hgroup>
+
+<div style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; align-items: center;">
+    <a href="{% url 'admin_settings:funder_profile_upload' %}" role="button">{% trans "Upload New Profile" %}</a>
+    <a href="{% url 'admin_settings:funder_profile_sample_csv' %}" role="button" class="outline secondary">{% trans "Download Sample CSV" %}</a>
+</div>
+
+{% if profiles %}
+<div class="overflow-auto">
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Profile Name" %}</th>
+                <th>{% trans "Breakdowns" %}</th>
+                <th>{% trans "Programs" %}</th>
+                <th>{% trans "Created" %}</th>
+                <th>{% trans "Actions" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for profile in profiles %}
+            <tr>
+                <td>
+                    <a href="{% url 'admin_settings:funder_profile_detail' profile.pk %}">
+                        <strong>{{ profile.name }}</strong>
+                    </a>
+                    {% if profile.description %}
+                    <br><small class="secondary">{{ profile.description|truncatewords:12 }}</small>
+                    {% endif %}
+                </td>
+                <td>{{ profile.breakdowns.count }}</td>
+                <td>{{ profile.programs.count }}</td>
+                <td>
+                    <small>{{ profile.created_at|date:"Y-m-d" }}</small>
+                    {% if profile.created_by %}
+                    <br><small class="secondary">{{ profile.created_by.display_name }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'admin_settings:funder_profile_detail' profile.pk %}" class="secondary">{% trans "View" %}</a>
+                    &nbsp;|&nbsp;
+                    <a href="{% url 'admin_settings:funder_profile_edit_programs' profile.pk %}" class="secondary">{% trans "Programs" %}</a>
+                    &nbsp;|&nbsp;
+                    <a href="{% url 'admin_settings:funder_profile_delete' profile.pk %}" class="secondary" style="color: var(--pico-color-red-500);">{% trans "Delete" %}</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<article>
+    <p>{% trans "No funder profiles configured yet. Upload a CSV to create your first profile." %}</p>
+    <p><small>{% trans "Tip: Use a Claude session to analyse your funder's reporting requirements and generate the CSV automatically." %}</small></p>
+</article>
+{% endif %}
+
+<details style="margin-top: 2rem;">
+    <summary>{% trans "About Funder Profiles" %}</summary>
+    <p>{% blocktrans %}Funder profiles define how demographic data is broken down in reports. Different funders may define "youth" or "senior" differently, or require specific custom field groupings.{% endblocktrans %}</p>
+    <p>{% blocktrans %}To create a profile: use a Claude session to analyse the funder's reporting requirements, generate a CSV, then upload it here. Assign programs to the profile so that report forms will offer it as an option.{% endblocktrans %}</p>
+</details>
+
+<p><a href="{% url 'admin_settings:dashboard' %}">{% trans "← Back to Settings" %}</a></p>
+{% endblock %}

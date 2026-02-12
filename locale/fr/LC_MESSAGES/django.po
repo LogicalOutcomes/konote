@@ -6062,6 +6062,72 @@ msgstr "Votre inscription a été reçue."
 msgid "Your secure download link is ready."
 msgstr "Votre lien de téléchargement sécurisé est prêt."
 
+msgid "Your Report Is Ready"
+msgstr "Votre rapport est prêt"
+
+msgid "Download available shortly"
+msgstr "Téléchargement disponible sous peu"
+
+msgid "You can bookmark this page and return, or wait a few minutes and click the button below."
+msgstr "Vous pouvez ajouter cette page à vos favoris et revenir, ou attendre quelques minutes et cliquer sur le bouton ci-dessous."
+
+msgid "Try Download"
+msgstr "Essayer le téléchargement"
+
+msgid "Report generated successfully"
+msgstr "Rapport généré avec succès"
+
+msgid "Your PDF report is ready to download."
+msgstr "Votre rapport PDF est prêt à télécharger."
+
+msgid "Your CSV file is ready to download. You can open it in Excel or Google Sheets."
+msgstr "Votre fichier CSV est prêt à télécharger. Vous pouvez l'ouvrir dans Excel ou Google Sheets."
+
+msgid "Download PDF Report"
+msgstr "Télécharger le rapport PDF"
+
+msgid "Download CSV File"
+msgstr "Télécharger le fichier CSV"
+
+msgid "Download"
+msgstr "Télécharger"
+
+msgid "Your file will appear in your browser's Downloads folder."
+msgstr "Votre fichier apparaîtra dans le dossier Téléchargements de votre navigateur."
+
+msgid "Need to share this report with a colleague?"
+msgstr "Besoin de partager ce rapport avec un collègue ?"
+
+msgid "Copy this link to share the download with someone else in your organisation. All downloads are logged for audit purposes."
+msgstr "Copiez ce lien pour partager le téléchargement avec quelqu'un d'autre dans votre organisation. Tous les téléchargements sont consignés à des fins de vérification."
+
+msgid "Shareable download URL"
+msgstr "URL de téléchargement partageable"
+
+msgid "Export details"
+msgstr "Détails de l'exportation"
+
+msgid "Generate Another Report"
+msgstr "Générer un autre rapport"
+
+#, python-format
+msgid ""
+"Because this export contains sensitive data, there is a short security "
+"delay. Your download will be available at %(strong_open)s%(time)s"
+"%(strong_close)s."
+msgstr ""
+"Comme cette exportation contient des données sensibles, un court délai de "
+"sécurité est appliqué. Votre téléchargement sera disponible à "
+"%(strong_open)s%(time)s%(strong_close)s."
+
+#, python-format
+msgid ""
+"This download link expires %(expires)s. You can return to this page and "
+"download again until then."
+msgstr ""
+"Ce lien de téléchargement expire le %(expires)s. Vous pouvez revenir sur "
+"cette page et télécharger à nouveau d'ici là."
+
 msgid "[ANONYMISED]"
 msgstr "[ANONYMISÉ]"
 

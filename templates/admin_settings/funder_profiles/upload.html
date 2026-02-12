@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Upload Funder Profile" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Upload Funder Profile" %}</h1>
+    <p>{% trans "Upload a CSV defining a funder's demographic breakdown categories." %}</p>
+</hgroup>
+
+<article aria-label="{% trans 'Instructions' %}" style="margin-bottom: 1.5rem;">
+    <strong><span aria-hidden="true">💡</span> {% trans "How to create a profile CSV" %}</strong>
+    <p style="margin-bottom: 0;">
+        {% blocktrans %}Use a Claude session to analyse your funder's reporting requirements document. Claude can generate a correctly formatted CSV for you. You can also <a href="#sample">download a sample CSV</a> to see the format.{% endblocktrans %}
+    </p>
+</article>
+
+{% if errors %}
+<article class="pico-background-red-100" aria-label="{% trans 'Errors' %}" role="alert" style="border-left: 4px solid var(--pico-color-red-500); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong>{% trans "CSV Parsing Errors" %}</strong>
+    <ul style="margin-bottom: 0;">
+        {% for error in errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+</article>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <fieldset>
+        <legend>{% trans "Upload CSV File" %}</legend>
+        <label for="csv_file">
+            {% trans "CSV file" %}
+            <input type="file" id="csv_file" name="csv_file" accept=".csv,text/csv">
+            <small>{% trans "Select a CSV file from your computer." %}</small>
+        </label>
+    </fieldset>
+
+    <details>
+        <summary>{% trans "Or paste CSV text directly" %}</summary>
+        <label for="csv_text">
+            {% trans "CSV content" %}
+            <textarea id="csv_text" name="csv_text" rows="12" placeholder="{% trans 'Paste CSV content here...' %}"></textarea>
+            <small>{% trans "Paste the full CSV content if you don't have a file." %}</small>
+        </label>
+    </details>
+
+    <div style="margin-top: 1rem;">
+        <button type="submit">{% trans "Parse & Preview" %}</button>
+        <a href="{% url 'admin_settings:funder_profile_list' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+
+<p id="sample" style="margin-top: 1rem;">
+    <a href="{% url 'admin_settings:funder_profile_sample_csv' %}">{% trans "Download sample CSV" %}</a>
+</p>
+
+<p><a href="{% url 'admin_settings:funder_profile_list' %}">{% trans "← Back to Profiles" %}</a></p>
+{% endblock %}

@@ -1,4 +1,4 @@
-"""Models for the reports app — secure export link tracking."""
+"""Models for the reports app — secure export link tracking and funder profiles."""
 import os
 import uuid
 from datetime import timedelta
@@ -7,6 +7,125 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+
+
+# ---------------------------------------------------------------------------
+# Funder Profile — demographic breakdown configuration uploaded as CSV
+# ---------------------------------------------------------------------------
+
+class FunderProfile(models.Model):
+    """
+    A funder's reporting requirements for demographic breakdowns.
+
+    Admins create profiles by uploading a CSV (typically generated with
+    Claude's help from a funder's reporting template). Each profile
+    defines one or more demographic breakdowns with custom age bins
+    and/or category merges.
+
+    Executives and PMs select a profile at export time (read-only) to
+    produce reports matching that funder's required categorisations.
+    """
+
+    name = models.CharField(
+        max_length=255,
+        help_text=_("Funder name, e.g., 'United Way Greater Toronto'."),
+    )
+    description = models.TextField(
+        blank=True,
+        help_text=_("Description of the reporting requirements, e.g., 'Annual Community Impact Report'."),
+    )
+    programs = models.ManyToManyField(
+        "programs.Program",
+        blank=True,
+        related_name="funder_profiles",
+        help_text=_("Programs that report to this funder."),
+    )
+    source_csv = models.TextField(
+        blank=True,
+        help_text=_("Original uploaded CSV content, preserved for re-export and audit."),
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="created_funder_profiles",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+        db_table = "funder_profiles"
+
+    def __str__(self):
+        return self.name
+
+
+class DemographicBreakdown(models.Model):
+    """
+    One demographic dimension within a funder profile.
+
+    Each breakdown defines how to slice client data for a single
+    demographic dimension (e.g., age groups, employment status).
+
+    For age breakdowns, bins_json defines custom age ranges.
+    For custom field breakdowns, merge_categories_json optionally
+    maps the field's original options into funder-required categories.
+    """
+
+    SOURCE_TYPE_CHOICES = [
+        ("age", _("Age (from date of birth)")),
+        ("custom_field", _("Custom intake field")),
+    ]
+
+    funder_profile = models.ForeignKey(
+        FunderProfile,
+        on_delete=models.CASCADE,
+        related_name="breakdowns",
+    )
+    label = models.CharField(
+        max_length=100,
+        help_text=_("Display label, e.g., 'Age Group' or 'Employment Status'."),
+    )
+    source_type = models.CharField(
+        max_length=20,
+        choices=SOURCE_TYPE_CHOICES,
+    )
+    custom_field = models.ForeignKey(
+        "clients.CustomFieldDefinition",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        help_text=_("The intake field to group by (only for custom_field source type)."),
+    )
+    bins_json = models.JSONField(
+        default=list,
+        blank=True,
+        help_text=_(
+            'For age breakdowns: list of {"min": int, "max": int, "label": str}. '
+            'E.g., [{"min": 0, "max": 14, "label": "Child (0-14)"}]'
+        ),
+    )
+    merge_categories_json = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=_(
+            "For custom field breakdowns: map target labels to lists of source labels. "
+            'E.g., {"Employed": ["Employed full-time", "Employed part-time"]}'
+        ),
+    )
+    keep_all_categories = models.BooleanField(
+        default=False,
+        help_text=_("Use the field's original categories without merging."),
+    )
+    sort_order = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order"]
+        db_table = "demographic_breakdowns"
+
+    def __str__(self):
+        return f"{self.funder_profile.name} — {self.label}"
 
 
 class SecureExportLink(models.Model):
