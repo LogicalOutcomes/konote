@@ -112,6 +112,7 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 
 ### Infrastructure
 
+- [ ] Local PostgreSQL for tests — `security_audit` and `pytest` need a running PostgreSQL. Document setup or add SQLite fallback for static-only checks (DEV-PG1)
 - [ ] Deferred execution for Tier 3 erasure — 24-hour delay, see `tasks/erasure-hardening.md` (ERASE-H8)
 - [ ] Deployment workflow enhancements — see `docs/plans/2026-02-05-deployment-workflow-design.md` (DEPLOY1)
 

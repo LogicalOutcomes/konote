@@ -176,6 +176,10 @@ def check_dead_permission_keys(app_configs, **kwargs):
         "note.delete",              # Admin-only destructive action
         "client.delete",            # Admin erasure workflow
         "plan.delete",              # Admin-only destructive action
+        "alert.view",               # Middleware _CLIENT_SCOPED_KEYS + client detail page (implicit)
+        "consent.view",             # Middleware _CLIENT_SCOPED_KEYS (field-level display)
+        "intake.view",              # Middleware _CLIENT_SCOPED_KEYS (no standalone decorator yet)
+        "intake.edit",              # Middleware _CLIENT_SCOPED_KEYS (no standalone decorator yet)
     }
 
     unreferenced = ALL_PERMISSION_KEYS - used_keys - admin_keys - alternative_enforcement_keys
