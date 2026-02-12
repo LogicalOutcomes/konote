@@ -457,13 +457,19 @@ class ScenarioRunner(BrowserTestBase):
             "Accept-Language": accept_lang,
         }
 
+        # TEST-4: Store kwargs so switch_user can reuse them
+        self._scenario_context_kwargs = context_kwargs
+
         # Always close existing context and create a fresh one
         self.page.close()
         self._context.close()
         self._context = self._browser.new_context(**context_kwargs)
         self.page = self._context.new_page()
 
-        # QA-W2: Capture browser console output for diagnostics
+        self._attach_console_listeners()
+
+    def _attach_console_listeners(self):
+        """QA-W2: Capture browser console output for diagnostics."""
         self._console_messages = []
 
         def _on_console(msg):
@@ -476,6 +482,22 @@ class ScenarioRunner(BrowserTestBase):
 
         self.page.on("console", _on_console)
         self.page.on("pageerror", _on_page_error)
+
+    def switch_user(self, username):
+        """Override to preserve locale/Accept-Language from scenario setup.
+
+        TEST-4: The base switch_user creates a bare context, losing locale
+        and console listeners. This version reuses the context kwargs from
+        _setup_context_for_scenario so language headers persist across
+        user switches in multi-actor scenarios.
+        """
+        self.page.close()
+        self._context.close()
+        kwargs = getattr(self, "_scenario_context_kwargs", {})
+        self._context = self._browser.new_context(**kwargs)
+        self.page = self._context.new_page()
+        self._attach_console_listeners()
+        self.login_via_browser(username)
 
     # ------------------------------------------------------------------
     # QA-ISO1: Auto-login from persona data
@@ -632,17 +654,32 @@ class ScenarioRunner(BrowserTestBase):
         if not has_main_content:
             return (False, "Dashboard main content area is empty or missing")
 
-        # 5. Verify at least one client is accessible (navigate to client list)
-        self.page.goto(self.live_url("/clients/"))
-        self._wait_for_idle()
-        has_clients = self.page.evaluate("""() => {
-            const rows = document.querySelectorAll(
-                'table tbody tr, .client-card, [data-client-id]'
-            );
-            return rows.length > 0;
-        }""")
-        if not has_clients:
-            return (False, "No clients visible in client list")
+        # 5. Verify data is accessible (client list or executive dashboard)
+        persona_role = (persona_data.get("test_user", {}).get("role", "")
+                        or persona_data.get("role", "")).lower()
+        if persona_role == "executive":
+            # Executives see aggregate stats, not individual client rows
+            self.page.goto(self.live_url("/clients/executive/"))
+            self._wait_for_idle()
+            has_data = self.page.evaluate("""() => {
+                const cards = document.querySelectorAll(
+                    '.stat-card, .program-card, .stats-grid'
+                );
+                return cards.length > 0;
+            }""")
+            if not has_data:
+                return (False, "Executive dashboard has no stat cards")
+        else:
+            self.page.goto(self.live_url("/clients/"))
+            self._wait_for_idle()
+            has_data = self.page.evaluate("""() => {
+                const rows = document.querySelectorAll(
+                    'table tbody tr, .client-card, [data-client-id]'
+                );
+                return rows.length > 0;
+            }""")
+            if not has_data:
+                return (False, "No clients visible in client list")
 
         # Navigate back to dashboard so scenario steps start from expected state
         self.page.goto(self.live_url("/"))

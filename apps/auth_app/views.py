@@ -333,21 +333,50 @@ def demo_login(request, role):
 def demo_portal_login(request):
     """Quick-login as the demo participant. Only available when DEMO_MODE is enabled."""
     if not settings.DEMO_MODE:
+        from django.http import Http404
         raise Http404
 
+    from apps.admin_settings.models import FeatureToggle
     from apps.clients.models import ClientFile
     from apps.portal.models import ParticipantUser
 
+    # Check that the portal feature toggle is enabled — without this,
+    # the redirect to /my/ would just 404 with no explanation.
+    flags = FeatureToggle.get_all_flags()
+    if not flags.get("participant_portal"):
+        logger.warning("demo_portal_login: participant_portal feature toggle is disabled")
+        return render(request, "auth/login.html", {
+            "error": "The Participant Portal feature is not enabled. "
+                     "An admin can enable it under Settings → Features.",
+            "auth_mode": settings.AUTH_MODE,
+            "demo_mode": settings.DEMO_MODE,
+            "has_language_cookie": bool(request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)),
+        })
+
     demo_client = ClientFile.objects.filter(record_id="DEMO-001").first()
     if not demo_client:
-        raise Http404
+        logger.warning("demo_portal_login: DEMO-001 client not found — seed may not have run")
+        return render(request, "auth/login.html", {
+            "error": "Demo participant data is missing (DEMO-001 not found). "
+                     "Try redeploying to re-run the seed command.",
+            "auth_mode": settings.AUTH_MODE,
+            "demo_mode": settings.DEMO_MODE,
+            "has_language_cookie": bool(request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)),
+        })
 
     try:
         participant = ParticipantUser.objects.get(
             client_file=demo_client, is_active=True
         )
     except ParticipantUser.DoesNotExist:
-        raise Http404
+        logger.warning("demo_portal_login: no active ParticipantUser for DEMO-001")
+        return render(request, "auth/login.html", {
+            "error": "Demo portal account not found. "
+                     "Try redeploying to re-run the seed command.",
+            "auth_mode": settings.AUTH_MODE,
+            "demo_mode": settings.DEMO_MODE,
+            "has_language_cookie": bool(request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME)),
+        })
 
     # Set portal session (same pattern as portal_login view)
     participant.last_login = timezone.now()

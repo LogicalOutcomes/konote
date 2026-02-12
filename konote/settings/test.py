@@ -12,6 +12,7 @@ from .base import *  # noqa: F401, F403
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 SESSION_COOKIE_SECURE = False
+LANGUAGE_COOKIE_SECURE = False  # BUG-9: allow language cookie on HTTP test servers
 
 DATABASES = {
     "default": {

@@ -92,14 +92,14 @@
 
 ## Recently Done
 
+- [x] Fix CAL-001 preflight — executive persona now checks `/clients/executive/` with `.stat-card` selector — 2026-02-11 (SMOKE-1)
+- [x] Bulk-add persona field to 15 scenario YAMLs in qa-scenarios — 2026-02-11 (SMOKE-2)
+- [x] Fix BUG-9 — skip .mo validation when user has saved language preference; add LANGUAGE_COOKIE_SECURE=False to test settings — 2026-02-11 (SMOKE-3)
+- [x] Fix BUG-7 — wrap client + enrollment creation in transaction.atomic() — 2026-02-11 (SMOKE-4)
+- [x] Fix TEST-2 — CAL-005 now submits Insights filter form before checking data table — 2026-02-11 (SMOKE-5)
+- [x] Fix TEST-4 — switch_user preserves locale/Accept-Language headers + console listeners for multi-persona scenarios — 2026-02-11 (SMOKE-6)
 - [x] Permissions enforcement wiring complete (Waves 1–6) — decorator, template tag, all views migrated, parametrized test, QA personas updated — 2026-02-10 (WIRE-1A through WIRE-6C)
-- [x] Extract `_get_program_from_client` to access.py — removed duplicates from notes + plans views — 2026-02-10 (PERM-FU5)
 - [x] Fix TEST-5 — QA runner now resolves `{client_id}` etc. from previous step URLs instead of navigating to literal placeholders — 2026-02-10 (QA-W21, QA-W25)
-- [x] Close BUG-8 — "Safety concern noted" is user-entered alert content (test data), not a translatable UI string. Not a bug. — 2026-02-10 (QA-W23)
-- [x] Fix BLOCKER-1 + verify BLOCKER-2 — skip link added to base.html for all pages; post-login focus confirmed working in app.js — 2026-02-10 (QA-W27)
-- [x] Translate strings + fix aggregate export test — 14 portal strings translated, test record_id fix, .mo compiled — 2026-02-10 (I18N-AGG1)
-- [x] Verify aggregate export tests — 9/9 pass: executive CSV has no record IDs, no author names, aggregate headers only — 2026-02-10 (TEST-AGG1)
 - [x] Fix BUG-11 — program `name_fr` field + `translated_name` property, seed data with French names, 33 templates updated — 2026-02-10 (QA-W24)
 - [x] Fix BUG-13 — accent-insensitive search using NFKD normalization ("Benoit" finds "Benoît") — 2026-02-10 (QA-W26)
-- [x] Fix BUG-3 — audit log filter dropdown CSS min-width increased from 0 to 12rem — 2026-02-10 (QA-W28)
 _Older completed tasks: [tasks/ARCHIVE.md](tasks/ARCHIVE.md). Reference: [tasks/whats-been-built.md](tasks/whats-been-built.md). Recurring chores: [tasks/recurring-tasks.md](tasks/recurring-tasks.md)._

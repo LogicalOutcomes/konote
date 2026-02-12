@@ -26,39 +26,48 @@ class SafeLocaleMiddleware(LocaleMiddleware):
         This middleware runs after AuthenticationMiddleware so request.user
         is available. Authenticated users always get their profile language,
         preventing language bleed on shared browsers.
+
+        BUG-9: When a user has a saved preferred_language, skip the .mo
+        validation check. The user's explicit preference is authoritative
+        and must not be overridden by a gettext probe that can fail under
+        threading or catalog-loading timing issues.
         """
         try:
             # Let Django's LocaleMiddleware set language from cookie/header
             super().process_request(request)
 
             # BUG-4: Override with user's saved preference if authenticated
+            user_has_preference = False
             if hasattr(request, "user") and request.user.is_authenticated:
                 pref = getattr(request.user, "preferred_language", "")
                 if pref:
                     translation.activate(pref)
                     request.LANGUAGE_CODE = pref
+                    user_has_preference = True
             # Portal participant language preference
             elif hasattr(request, "participant_user") and request.participant_user:
                 pref = getattr(request.participant_user, "preferred_language", "")
                 if pref:
                     translation.activate(pref)
                     request.LANGUAGE_CODE = pref
+                    user_has_preference = True
 
-            # Test that translations actually work by calling gettext
-            # This catches corrupted .mo files that load but fail on use
-            current_lang = translation.get_language()
-            if current_lang and current_lang.startswith("fr"):
-                # Try a project-specific translation to verify our .mo file works.
-                # We use a KoNote-only string (not a Django built-in) so this
-                # fails if our .mo catalog is missing, even if Django's is loaded.
-                test_str = translation.gettext("Program Outcome Report")
-                if test_str == "Program Outcome Report":
-                    # Our project .mo file didn't load — French string was not translated
-                    logger.warning(
-                        "French .mo catalog may be missing: project string not translated."
-                    )
-                    translation.activate("en")
-                    request.LANGUAGE_CODE = "en"
+            # BUG-9: Only validate .mo file when language came from cookie/header
+            # (anonymous users or users without a saved preference). When the
+            # user has an explicit preference, trust it — if translations are
+            # missing, the page will show untranslated strings but the lang
+            # attribute will correctly reflect the user's choice.
+            if not user_has_preference:
+                current_lang = translation.get_language()
+                if current_lang and current_lang.startswith("fr"):
+                    test_str = translation.gettext("Program Outcome Report")
+                    if test_str == "Program Outcome Report":
+                        logger.warning(
+                            "French .mo catalog may be missing: "
+                            "project string not translated."
+                        )
+                        translation.activate("en")
+                        request.LANGUAGE_CODE = "en"
 
         except Exception as e:
             # Log the error and fall back to English

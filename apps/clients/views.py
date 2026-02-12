@@ -4,6 +4,7 @@ import unicodedata
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -190,24 +191,28 @@ def client_create(request):
     if request.method == "POST":
         form = ClientFileForm(request.POST, available_programs=available_programs)
         if form.is_valid():
-            client = ClientFile()
-            client.first_name = form.cleaned_data["first_name"]
-            client.last_name = form.cleaned_data["last_name"]
-            client.preferred_name = form.cleaned_data["preferred_name"] or ""
-            client.middle_name = form.cleaned_data["middle_name"] or ""
-            client.birth_date = form.cleaned_data["birth_date"]
-            client.phone = form.cleaned_data.get("phone", "")
-            client.record_id = form.cleaned_data["record_id"]
-            client.status = form.cleaned_data["status"]
-            # Set is_demo based on the creating user's status
-            # Security: is_demo is immutable after creation
-            client.is_demo = request.user.is_demo
-            client.save()
-            # Enrol in selected programs
-            for program in form.cleaned_data["programs"]:
-                ClientProgramEnrolment.objects.create(
-                    client_file=client, program=program, status="enrolled",
-                )
+            # BUG-7: Wrap in transaction so client + enrollments commit
+            # atomically. Prevents a half-created client if enrollment
+            # creation fails, and ensures the redirect sees all data.
+            with transaction.atomic():
+                client = ClientFile()
+                client.first_name = form.cleaned_data["first_name"]
+                client.last_name = form.cleaned_data["last_name"]
+                client.preferred_name = form.cleaned_data["preferred_name"] or ""
+                client.middle_name = form.cleaned_data["middle_name"] or ""
+                client.birth_date = form.cleaned_data["birth_date"]
+                client.phone = form.cleaned_data.get("phone", "")
+                client.record_id = form.cleaned_data["record_id"]
+                client.status = form.cleaned_data["status"]
+                # Set is_demo based on the creating user's status
+                # Security: is_demo is immutable after creation
+                client.is_demo = request.user.is_demo
+                client.save()
+                # Enrol in selected programs
+                for program in form.cleaned_data["programs"]:
+                    ClientProgramEnrolment.objects.create(
+                        client_file=client, program=program, status="enrolled",
+                    )
             # Allow immediate access on redirect — the RBAC middleware may
             # not yet see the new enrollment depending on connection timing.
             request.session["_just_created_client_id"] = client.pk

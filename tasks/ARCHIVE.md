@@ -6,6 +6,15 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ## Completed 2026-02-10
 
+### Moved from Recently Done (2026-02-11 smoke test fixes)
+
+- [x] Extract `_get_program_from_client` to access.py — removed duplicates from notes + plans views — 2026-02-10 (PERM-FU5)
+- [x] Close BUG-8 — "Safety concern noted" is user-entered alert content (test data), not a translatable UI string. Not a bug. — 2026-02-10 (QA-W23)
+- [x] Fix BLOCKER-1 + verify BLOCKER-2 — skip link added to base.html for all pages; post-login focus confirmed working in app.js — 2026-02-10 (QA-W27)
+- [x] Translate strings + fix aggregate export test — 14 portal strings translated, test record_id fix, .mo compiled — 2026-02-10 (I18N-AGG1)
+- [x] Verify aggregate export tests — 9/9 pass: executive CSV has no record IDs, no author names, aggregate headers only — 2026-02-10 (TEST-AGG1)
+- [x] Fix BUG-3 — audit log filter dropdown CSS min-width increased from 0 to 12rem — 2026-02-10 (QA-W28)
+
 ### Moved from Recently Done (2026-02-11 cleanup)
 
 - [x] Fix IMPROVE-1 — Instance Settings and Demo Accounts cards now show status text — 2026-02-10 (QA-W29)
