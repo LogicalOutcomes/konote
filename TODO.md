@@ -20,7 +20,32 @@
 - [ ] Redeploy to Railway — push to `main`, Railway auto-deploys. See `docs/deploy-railway.md` (OPS-RAIL1)
 - [ ] Redeploy to FullHost — push to `main`, then trigger redeploy via API or dashboard. See `docs/deploy-fullhost.md` (OPS-FH1)
 - [ ] Code review round — open Claude Code in VS Code, say "review the codebase for code quality, security, and consistency issues" — see `tasks/code-review-process.md` (REV1)
-- [ ] **Full QA Suite** — Run after major releases or UI changes. Creates 4 reports. **Step 1:** `/run-scenario-server` here (captures scenario screenshots). **Step 2:** Switch to qa-scenarios, run `/run-scenarios` (evaluates scenarios, creates satisfaction report + improvement tickets). **Step 3:** Back here, run `/capture-page-states` (captures page screenshots). **Step 4:** Switch to qa-scenarios, run `/run-page-audit` (evaluates pages, creates page audit report + tickets). **Step 5 (optional):** Back here, run `/process-qa-report` (expert panel + action plan). All reports saved to `qa-scenarios/reports/` with date stamps. (QA-FULL1)
+- [ ] **Full QA Suite** — Run after major releases or UI changes. See below for commands. (QA-FULL1)
+
+### Full QA Suite Commands
+
+> **Using Kilo Code instead of Claude Code?** The `/slash-commands` are Claude Code conventions (`.claude/commands/`). Kilo Code doesn't read those files. See the **Kilo Code alternatives** below.
+
+> **⚠️ Long-running commands:** Steps 1 and 3 run Playwright browser tests (101+ tests, ~2–5 minutes). When you run `execute_command`, the terminal will report "Command is still running" — this is normal. **Wait for the terminal update with the final output. Do NOT run echo/polling commands to check status.** The test results will appear automatically when the command finishes.
+
+| Step | Repo | Claude Code | Kilo Code Alternative |
+|------|------|------------|-----------------------|
+| 1. Capture scenario screenshots | konote-app | `/run-scenario-server` | Run in PowerShell (takes ~2–5 min, wait for completion): `$env:SCENARIO_HOLDOUT_DIR = "C:\Users\gilli\OneDrive\Documents\GitHub\konote-qa-scenarios"; pytest tests/scenario_eval/ -v --no-llm` |
+| 2. Evaluate scenarios | qa-scenarios | `/run-scenarios` | Tell Kilo: "Read `.claude/commands/run-scenarios.md` and follow those instructions" |
+| 3. Capture page screenshots | konote-app | `/capture-page-states` | Tell Kilo: "Read `.claude/commands/capture-page-states.md` and follow those instructions" |
+| 4. Evaluate pages | qa-scenarios | `/run-page-audit` | Tell Kilo: "Read `.claude/commands/run-page-audit.md` and follow those instructions" |
+| 5. Process findings | konote-app | `/process-qa-report` | Tell Kilo: "Read `.claude/commands/process-qa-report.md` and follow those instructions" |
+
+Subset runs (PowerShell, in this repo):
+```powershell
+$env:SCENARIO_HOLDOUT_DIR = "C:\Users\gilli\OneDrive\Documents\GitHub\konote-qa-scenarios"
+# Calibration only
+pytest tests/scenario_eval/ -v --no-llm -k "calibration"
+# Smoke test (6 scenarios)
+pytest tests/scenario_eval/ -v --no-llm -k "smoke"
+# Single scenario
+pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
+```
 
 ## Coming Up
 

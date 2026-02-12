@@ -25,6 +25,11 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 - Audit logs go to separate database: `AuditLog.objects.using("audit")`
 - Canadian spelling: colour, centre, behaviour, organisation, **program** (never "programme" in English — "programme" is British/French only). French translations correctly use "programme".
 
+## Terminal Command Rules
+
+- **Long-running commands** (pytest with Playwright, Django server, migrations): these can take 1–5 minutes. If the terminal reports "Command is still running", **wait for the final output**. Do NOT run `echo`, `type`, or other polling commands to check status — this causes an infinite loop. The terminal will return output automatically when the command finishes.
+- **PowerShell is the default shell** on this project. Use `$env:VAR = "value"` to set environment variables, not `set VAR=value` (that's CMD syntax).
+
 ## Development Rules (from expert review)
 
 These rules apply to **every phase**. Do not skip them.

@@ -208,19 +208,31 @@ class ScenarioRunner(BrowserTestBase):
                 role="program_manager",
             )
 
-        # E2: Kwame Asante (second admin)
-        if not User.objects.filter(username="admin2").exists():
-            admin2 = User.objects.create_user(
-                username="admin2", password=TEST_PASSWORD,
+        # E2: Kwame Asante (second executive)
+        if not User.objects.filter(username="executive2").exists():
+            executive2 = User.objects.create_user(
+                username="executive2", password=TEST_PASSWORD,
                 display_name="Kwame Asante",
             )
-            admin2.is_admin = True
-            admin2.save()
+            executive2.is_admin = True
+            executive2.save()
             UserProgramRole.objects.create(
-                user=admin2, program=self.program_a, role="executive",
+                user=executive2, program=self.program_a, role="executive",
             )
             UserProgramRole.objects.create(
-                user=admin2, program=self.program_b, role="executive",
+                user=executive2, program=self.program_b, role="executive",
+            )
+
+        # R2-FR: Amélie Tremblay (French-speaking receptionist)
+        if not User.objects.filter(username="frontdesk_fr").exists():
+            frontdesk_fr = User.objects.create_user(
+                username="frontdesk_fr", password=TEST_PASSWORD,
+                display_name="Amélie Tremblay",
+                preferred_language="fr",
+            )
+            UserProgramRole.objects.create(
+                user=frontdesk_fr, program=self.program_a,
+                role="receptionist",
             )
 
         # Extra clients needed by specific scenarios
