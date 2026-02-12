@@ -282,14 +282,10 @@ class ManagerWalkthroughTest(UxWalkthroughBase):
         self.visit(role, "Client list", "/clients/")
         self.visit(role, "Client detail", f"/clients/{cid}/")
 
-        # Notes — manager can VIEW but NOT create (note.create: DENY)
+        # Notes — manager can view AND create (note.create: SCOPED)
         self.visit(role, "Notes timeline", f"/notes/client/{cid}/")
-        self.visit_forbidden(
-            role, "Quick note form (403)", f"/notes/client/{cid}/quick/"
-        )
-        self.visit_forbidden(
-            role, "Full note form (403)", f"/notes/client/{cid}/new/"
-        )
+        self.visit(role, "Quick note form", f"/notes/client/{cid}/quick/")
+        self.visit(role, "Full note form", f"/notes/client/{cid}/new/")
 
         # Plan view — manager can VIEW but NOT edit (plan.edit: DENY)
         self.visit(

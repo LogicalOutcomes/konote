@@ -195,8 +195,8 @@ PERMISSIONS = {
         "group.view_report": ALLOW,  # Attendance reports. Enforced by @requires_permission
 
         "note.view": ALLOW,  # Phase 3: GATED with documented reason. Enforced by @requires_permission
-        "note.create": DENY,  # Confirmed correct (expert review): managers don't write clinical notes
-        "note.edit": DENY,  # Confirmed correct (expert review): managers don't edit clinical notes
+        "note.create": SCOPED,  # Lead workers / team leads carry caseloads and write notes
+        "note.edit": SCOPED,  # Own notes only. Enforced by @requires_permission
 
         "plan.view": ALLOW,  # Phase 3: GATED. Enforced by @requires_permission
         "plan.edit": DENY,

@@ -124,16 +124,21 @@ class TestPageCapture(BrowserTestBase):
             )
 
         # PM1: Morgan Tremblay (program manager, cross-program)
-        if not User.objects.filter(username="program_mgr").exists():
-            u = User.objects.create_user(
-                username="program_mgr", password=TEST_PASSWORD,
+        # Base class creates "manager" with program_a; add program_b for cross-program scenarios.
+        mgr = User.objects.filter(username="manager").first()
+        if mgr is None:
+            mgr = User.objects.create_user(
+                username="manager", password=TEST_PASSWORD,
                 display_name="Morgan Tremblay",
             )
             UserProgramRole.objects.create(
-                user=u, program=self.program_a, role="program_manager",
+                user=mgr, program=self.program_a, role="program_manager",
             )
+        if not UserProgramRole.objects.filter(
+            user=mgr, program=self.program_b,
+        ).exists():
             UserProgramRole.objects.create(
-                user=u, program=self.program_b, role="program_manager",
+                user=mgr, program=self.program_b, role="program_manager",
             )
 
         # E2: Kwame Asante (second executive/admin)

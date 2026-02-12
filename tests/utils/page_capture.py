@@ -40,7 +40,7 @@ PERSONA_MAP = {
     "DS4": "staff_voice",
     "E1": "executive",
     "E2": "admin2",
-    "PM1": "program_mgr",
+    "PM1": "manager",
     "admin": "admin",
 }
 

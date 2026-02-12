@@ -172,17 +172,23 @@ class ScenarioRunner(BrowserTestBase):
             )
 
         # PM1: Morgan Tremblay (program manager, cross-program)
-        if not User.objects.filter(username="program_mgr").exists():
-            program_mgr = User.objects.create_user(
-                username="program_mgr", password=TEST_PASSWORD,
+        # Base class already creates "manager" with program_a access.
+        # Ensure cross-program role in program_b exists for SCN-042/SCN-070.
+        manager_user = User.objects.filter(username="manager").first()
+        if manager_user is None:
+            manager_user = User.objects.create_user(
+                username="manager", password=TEST_PASSWORD,
                 display_name="Morgan Tremblay",
             )
             UserProgramRole.objects.create(
-                user=program_mgr, program=self.program_a,
+                user=manager_user, program=self.program_a,
                 role="program_manager",
             )
+        if not UserProgramRole.objects.filter(
+            user=manager_user, program=self.program_b,
+        ).exists():
             UserProgramRole.objects.create(
-                user=program_mgr, program=self.program_b,
+                user=manager_user, program=self.program_b,
                 role="program_manager",
             )
 
