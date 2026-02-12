@@ -18,6 +18,7 @@ Run a specific scenario:
 import os
 
 import pytest
+import yaml
 
 # Skip everything if Playwright is not installed
 pw = pytest.importorskip("playwright.sync_api", reason="Playwright required")
@@ -453,6 +454,81 @@ class TestAccessibilityMicro(ScenarioRunner):
     def test_aria_live_fatigue(self):
         """SCN-062: ARIA Live Fatigue — too many announcements overwhelm user."""
         self._run_a11y("SCN-062")
+
+
+@pytest.mark.scenario_eval
+@pytest.mark.browser
+class TestSmokeTest(ScenarioRunner):
+    """Smoke test subset — minimal 6 scenarios for quick health checks.
+
+    Loads scenarios from tasks/smoke-test-subset.yaml and runs each one.
+    This is the entry point for the QA repo's smoke test evaluation.
+    """
+
+    def _get_smoke_scenario_ids(self):
+        """Load smoke test scenario IDs from smoke-test-subset.yaml."""
+        holdout = os.environ.get("SCENARIO_HOLDOUT_DIR", "")
+        if not holdout or not os.path.isdir(holdout):
+            self.skipTest("SCENARIO_HOLDOUT_DIR not set")
+
+        smoke_subset_path = os.path.join(holdout, "tasks", "smoke-test-subset.yaml")
+        if not os.path.exists(smoke_subset_path):
+            self.skipTest(f"Smoke test subset not found: {smoke_subset_path}")
+
+        with open(smoke_subset_path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+
+        scenarios = data.get("smoke_test_scenarios", [])
+        return [s["id"] for s in scenarios if "id" in s]
+
+    def _run_smoke_scenario(self, scenario_id):
+        """Common logic for running a smoke test scenario."""
+        holdout = os.environ.get("SCENARIO_HOLDOUT_DIR", "")
+        if not holdout or not os.path.isdir(holdout):
+            self.skipTest("SCENARIO_HOLDOUT_DIR not set")
+
+        scenarios = discover_scenarios(holdout, ids=[scenario_id])
+        scn = [s for _, s in scenarios if s["id"] == scenario_id]
+        if not scn:
+            self.skipTest(f"{scenario_id} not found in holdout dir")
+
+        scenario = scn[0]
+        self.personas = load_personas()
+        self.use_llm = not _should_skip_llm()
+
+        screenshot_dir = os.path.join(holdout, "reports", "screenshots")
+
+        # Seed bulk clients for executive scenarios
+        if scenario_id in ["CAL-001", "SCN-030"]:
+            self._seed_bulk_clients(150)
+
+        result = self.run_scenario(scenario, screenshot_dir=screenshot_dir)
+        get_all_results().append(result)
+        return result
+
+    def test_smoke_cal_001_executive_dashboard(self):
+        """CAL-001: Executive dashboard — smoke test for E1 persona."""
+        self._run_smoke_scenario("CAL-001")
+
+    def test_smoke_scn_010_morning_intake(self):
+        """SCN-010: Morning intake — smoke test for R1 persona."""
+        self._run_smoke_scenario("SCN-010")
+
+    def test_smoke_scn_015_catchup_friday(self):
+        """SCN-015: Catchup Friday — smoke test for DS1 persona."""
+        self._run_smoke_scenario("SCN-015")
+
+    def test_smoke_scn_040_bilingual_intake(self):
+        """SCN-040: Bilingual intake — smoke test for DS2 persona."""
+        self._run_smoke_scenario("SCN-040")
+
+    def test_smoke_scn_051_login_focus(self):
+        """SCN-051: Login focus — smoke test for DS3 persona."""
+        self._run_smoke_scenario("SCN-051")
+
+    def test_smoke_scn_035_funder_reporting(self):
+        """SCN-035: Funder reporting — smoke test for PM1 persona."""
+        self._run_smoke_scenario("SCN-035")
 
 
 def _compute_icc(scores_matrix):
