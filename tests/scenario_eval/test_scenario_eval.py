@@ -274,6 +274,10 @@ class TestDailyScenarios(ScenarioRunner):
         """SCN-025: Quick Client Lookup — Omar looks up a client quickly."""
         self._run_daily("SCN-025")
 
+    def test_french_intake(self):
+        """SCN-026: French Intake — R2-FR receptionist intakes a French-speaking client."""
+        self._run_daily("SCN-026")
+
 
 @pytest.mark.scenario_eval
 @pytest.mark.browser
@@ -309,6 +313,14 @@ class TestPeriodicScenarios(ScenarioRunner):
         """SCN-035: Funder Reporting — program manager generates reports."""
         self._run_periodic("SCN-035")
 
+    def test_pm_program_config(self):
+        """SCN-036: PM Program Config — program manager configures program settings."""
+        self._run_periodic("SCN-036")
+
+    def test_pm_staff_management(self):
+        """SCN-037: PM Staff Management — program manager manages staff."""
+        self._run_periodic("SCN-037")
+
 
 @pytest.mark.scenario_eval
 @pytest.mark.browser
@@ -342,6 +354,14 @@ class TestCrossRoleScenarios(ScenarioRunner):
     def test_multi_program_client(self):
         """SCN-042: Multi-Program Client — cross-program enrolment and views."""
         self._run_cross_role("SCN-042")
+
+    def test_alert_recommendation_workflow(self):
+        """SCN-075: Alert Recommendation — staff recommends, PM reviews alert cancellation."""
+        self._run_cross_role("SCN-075")
+
+    def test_group_management_permissions(self):
+        """SCN-076: Group Management Permissions — role-based group access."""
+        self._run_cross_role("SCN-076")
 
 
 @pytest.mark.scenario_eval
@@ -454,6 +474,18 @@ class TestAccessibilityMicro(ScenarioRunner):
     def test_aria_live_fatigue(self):
         """SCN-062: ARIA Live Fatigue — too many announcements overwhelm user."""
         self._run_a11y("SCN-062")
+
+    def test_alt_text_images(self):
+        """SCN-063: Alt Text for Images — meaningful alt text on all images."""
+        self._run_a11y("SCN-063")
+
+    def test_page_titles(self):
+        """SCN-064: Page Titles — unique, descriptive page titles."""
+        self._run_a11y("SCN-064")
+
+    def test_focus_not_obscured(self):
+        """SCN-065: Focus Not Obscured — focused element visible, not hidden by sticky elements."""
+        self._run_a11y("SCN-065")
 
 
 @pytest.mark.scenario_eval
