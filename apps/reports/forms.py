@@ -5,6 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.programs.models import Program
 from apps.plans.models import MetricDefinition
 from .demographics import get_demographic_field_choices
+from .models import FunderProfile
 from .utils import get_fiscal_year_choices, get_fiscal_year_range, get_current_fiscal_year
 
 
@@ -123,8 +124,20 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
     # Demographic grouping (optional)
     group_by = forms.ChoiceField(
         required=False,
-        label=_("Group by demographic"),
-        help_text=_("Optionally break down results by age range or a custom field."),
+        label=_("Legacy single-field grouping"),
+        help_text=_("Ignored when a funder profile is selected above."),
+    )
+
+    # Funder profile — selects demographic breakdown configuration
+    funder_profile = forms.ModelChoiceField(
+        queryset=FunderProfile.objects.none(),
+        required=False,
+        empty_label=_("No funder profile"),
+        label=_("Funder demographic profile"),
+        help_text=_(
+            "Select a funder profile to use their specific demographic categories. "
+            "Leave blank to use the legacy single-field grouping above."
+        ),
     )
 
     def __init__(self, *args, **kwargs):
@@ -139,6 +152,15 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         self.fields["fiscal_year"].choices = fy_choices
         # Build demographic grouping choices dynamically
         self.fields["group_by"].choices = get_demographic_field_choices()
+        # Scope funder profiles to programs the user can access
+        if user:
+            from .utils import get_manageable_programs
+            accessible_programs = get_manageable_programs(user)
+            self.fields["funder_profile"].queryset = (
+                FunderProfile.objects.filter(
+                    programs__in=accessible_programs
+                ).distinct().order_by("name")
+            )
         # Add recipient tracking fields for audit purposes
         self.add_recipient_fields()
 
@@ -228,6 +250,18 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
         label=_("Export format"),
     )
 
+    # Funder profile — selects demographic breakdown configuration
+    funder_profile = forms.ModelChoiceField(
+        queryset=FunderProfile.objects.none(),
+        required=False,
+        empty_label=_("Default age categories"),
+        label=_("Funder demographic profile"),
+        help_text=_(
+            "Select a funder profile to use their specific demographic categories. "
+            "Leave blank for the default Canadian nonprofit age groupings."
+        ),
+    )
+
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
@@ -240,6 +274,15 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
         self.fields["fiscal_year"].choices = get_fiscal_year_choices()
         # Default to current fiscal year
         self.fields["fiscal_year"].initial = str(get_current_fiscal_year())
+        # Scope funder profiles to programs the user can access
+        if user:
+            from .utils import get_manageable_programs
+            accessible_programs = get_manageable_programs(user)
+            self.fields["funder_profile"].queryset = (
+                FunderProfile.objects.filter(
+                    programs__in=accessible_programs
+                ).distinct().order_by("name")
+            )
         # Add recipient tracking fields for audit purposes
         self.add_recipient_fields()
 

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Edit Programs" %} — {{ profile.name }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% blocktrans with name=profile.name %}Edit Programs — {{ name }}{% endblocktrans %}</h1>
+    <p>{% trans "Select which programs use this funder's demographic breakdowns." %}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    <fieldset>
+        <legend>{% trans "Programs" %}</legend>
+        <p><small>{% trans "Only active programs are shown. The selected profile will appear as an option in the export form for these programs." %}</small></p>
+
+        {% for program in programs %}
+        <label>
+            <input type="checkbox" name="programs" value="{{ program.pk }}"
+                {% if program.pk in linked_ids %}checked{% endif %}>
+            {{ program.name }}
+        </label>
+        {% empty %}
+        <p>{% trans "No active programs found." %}</p>
+        {% endfor %}
+    </fieldset>
+
+    <div style="margin-top: 1rem;">
+        <button type="submit">{% trans "Save" %}</button>
+        <a href="{% url 'admin_settings:funder_profile_detail' profile.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

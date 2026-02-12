@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ profile.name }} — {% trans "Funder Profile" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{{ profile.name }}</h1>
+    <p>{% if profile.description %}{{ profile.description }}{% else %}{% trans "Funder demographic profile" %}{% endif %}</p>
+</hgroup>
+
+<div class="grid" style="margin-bottom: 1.5rem;">
+    <article>
+        <header>{% trans "Details" %}</header>
+        <dl>
+            <dt>{% trans "Created" %}</dt>
+            <dd>{{ profile.created_at|date:"Y-m-d H:i" }}{% if profile.created_by %} {% trans "by" %} {{ profile.created_by.display_name }}{% endif %}</dd>
+            <dt>{% trans "Breakdowns" %}</dt>
+            <dd>{{ profile.breakdowns.count }}</dd>
+            <dt>{% trans "Linked Programs" %}</dt>
+            <dd>
+                {% if profile.programs.all %}
+                    {% for p in profile.programs.all %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                {% else %}
+                    <em>{% trans "No programs linked" %}</em>
+                {% endif %}
+            </dd>
+        </dl>
+    </article>
+</div>
+
+<h2>{% trans "Demographic Breakdowns" %}</h2>
+
+{% for bd in profile.breakdowns.all %}
+<article>
+    <header>
+        <strong>{{ bd.label }}</strong>
+        <small class="secondary"> —
+            {% if bd.source_type == "age" %}
+                {% trans "Age-based" %}
+            {% elif bd.source_type == "custom_field" %}
+                {% trans "Custom field" %}{% if bd.custom_field %}: {{ bd.custom_field.name }}{% endif %}
+            {% endif %}
+        </small>
+    </header>
+
+    {% if bd.bins_json %}
+    <p><strong>{% trans "Age Bins" %}</strong></p>
+    <table>
+        <thead>
+            <tr><th>{% trans "Label" %}</th><th>{% trans "Min Age" %}</th><th>{% trans "Max Age" %}</th></tr>
+        </thead>
+        <tbody>
+            {% for bin in bd.bins_json %}
+            <tr><td>{{ bin.label }}</td><td>{{ bin.min }}</td><td>{{ bin.max }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if bd.merge_categories_json %}
+    <p><strong>{% trans "Category Merging" %}</strong></p>
+    <table>
+        <thead>
+            <tr><th>{% trans "Report As" %}</th><th>{% trans "Includes" %}</th></tr>
+        </thead>
+        <tbody>
+            {% for target, sources in bd.merge_categories_json.items %}
+            <tr><td><strong>{{ target }}</strong></td><td>{{ sources|join:", " }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if bd.keep_all_categories %}
+    <p><small>{% trans "Unmatched categories will be kept as-is (not merged into 'Other')." %}</small></p>
+    {% endif %}
+</article>
+{% empty %}
+<p>{% trans "No breakdowns defined." %}</p>
+{% endfor %}
+
+<div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a href="{% url 'admin_settings:funder_profile_edit_programs' profile.pk %}" role="button" class="outline">{% trans "Edit Programs" %}</a>
+    <a href="{% url 'admin_settings:funder_profile_download_csv' profile.pk %}" role="button" class="outline secondary">{% trans "Download CSV" %}</a>
+    <a href="{% url 'admin_settings:funder_profile_delete' profile.pk %}" role="button" class="outline" style="--pico-color: var(--pico-color-red-500); --pico-border-color: var(--pico-color-red-500);">{% trans "Delete Profile" %}</a>
+</div>
+
+<p style="margin-top: 1.5rem;"><a href="{% url 'admin_settings:funder_profile_list' %}">{% trans "← Back to Profiles" %}</a></p>
+{% endblock %}

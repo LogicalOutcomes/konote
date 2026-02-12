@@ -35,6 +35,10 @@ def dashboard(request):
     # IMPROVE-1b: Demo Accounts summary
     demo_users = User.objects.filter(is_demo=True, is_active=True).count()
 
+    # Funder profiles count
+    from apps.reports.models import FunderProfile
+    funder_profile_count = FunderProfile.objects.count()
+
     return render(request, "admin_settings/dashboard.html", {
         "enabled_features": enabled_features,
         "total_features": total_features,
@@ -43,6 +47,7 @@ def dashboard(request):
         "note_template_count": note_template_count,
         "instance_settings_count": instance_settings_count,
         "demo_users": demo_users,
+        "funder_profile_count": funder_profile_count,
     })
 
 

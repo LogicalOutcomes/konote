@@ -28,11 +28,14 @@ from apps.programs.models import UserProgramRole
 from .achievements import get_achievement_summary, format_achievement_summary
 from .funder_report import generate_funder_report_data, generate_funder_report_csv_rows
 from .csv_utils import sanitise_csv_row, sanitise_filename
-from .demographics import aggregate_by_demographic, get_age_range, parse_grouping_choice
+from .demographics import (
+    aggregate_by_demographic, get_age_range, group_clients_by_age,
+    group_clients_by_custom_field, parse_grouping_choice,
+)
+from .models import DemographicBreakdown, FunderProfile, SecureExportLink
 from .suppression import suppress_small_cell
 from .forms import FunderReportForm, MetricExportForm
-from .models import SecureExportLink
-from .aggregations import aggregate_metrics
+from .aggregations import aggregate_metrics, _stats_from_list
 from .utils import (
     can_create_export,
     can_download_pii_export,
@@ -335,9 +338,16 @@ def export_form(request):
     date_to = form.cleaned_data["date_to"]
     group_by_value = form.cleaned_data.get("group_by", "")
     include_achievement = form.cleaned_data.get("include_achievement_rate", False)
+    funder_profile = form.cleaned_data.get("funder_profile")
 
-    # Parse the grouping choice
+    # Parse the grouping choice (legacy single-field mode)
     grouping_type, grouping_field = parse_grouping_choice(group_by_value)
+
+    # If a funder profile is selected, it overrides the legacy group_by
+    # (the form already tells users the legacy field is ignored).
+    if funder_profile:
+        grouping_type = "none"
+        grouping_field = None
 
     # Find clients matching user's demo status enrolled in the selected program
     # Security: Demo users can only export demo clients; real users only real clients
@@ -476,6 +486,95 @@ def export_form(request):
                         "max": stats.get("max", "N/A"),
                     })
 
+        # ── Funder profile multi-breakdown (overrides legacy group_by) ──
+        funder_breakdown_sections = []
+        if funder_profile:
+            breakdowns = DemographicBreakdown.objects.filter(
+                funder_profile=funder_profile,
+            ).select_related("custom_field").order_by("sort_order")
+
+            for bd in breakdowns:
+                section_rows = []
+                for mv_metric_def in selected_metrics:
+                    metric_specific_mvs = metric_values.filter(metric_def=mv_metric_def)
+                    if not metric_specific_mvs.exists():
+                        continue
+
+                    if bd.source_type == "age":
+                        custom_bins = bd.bins_json or None
+                        demo_agg = aggregate_by_demographic(
+                            metric_specific_mvs, "age_range", None, date_to,
+                        )
+                        # Re-aggregate with custom bins if provided
+                        if custom_bins:
+                            all_ids = set()
+                            client_mv_map = defaultdict(list)
+                            for mv in metric_specific_mvs:
+                                cid = mv.progress_note_target.progress_note.client_file_id
+                                all_ids.add(cid)
+                                client_mv_map[cid].append(mv)
+                            client_groups = group_clients_by_age(
+                                list(all_ids), date_to, custom_bins=custom_bins,
+                            )
+                            demo_agg = {}
+                            for gl, cids in client_groups.items():
+                                gvals = []
+                                for cid in cids:
+                                    gvals.extend(client_mv_map.get(cid, []))
+                                if gvals:
+                                    s = _stats_from_list(gvals)
+                                else:
+                                    s = {"count": 0, "valid_count": 0, "avg": None, "min": None, "max": None, "sum": None}
+                                s["client_ids"] = set(cids)
+                                demo_agg[gl] = s
+                    elif bd.source_type == "custom_field" and bd.custom_field:
+                        demo_agg = aggregate_by_demographic(
+                            metric_specific_mvs, "custom_field", bd.custom_field, date_to,
+                        )
+                        # Apply merge categories if provided
+                        if bd.merge_categories_json:
+                            all_ids = set()
+                            client_mv_map = defaultdict(list)
+                            for mv in metric_specific_mvs:
+                                cid = mv.progress_note_target.progress_note.client_file_id
+                                all_ids.add(cid)
+                                client_mv_map[cid].append(mv)
+                            client_groups = group_clients_by_custom_field(
+                                list(all_ids), bd.custom_field,
+                                merge_categories=bd.merge_categories_json,
+                            )
+                            demo_agg = {}
+                            for gl, cids in client_groups.items():
+                                gvals = []
+                                for cid in cids:
+                                    gvals.extend(client_mv_map.get(cid, []))
+                                if gvals:
+                                    s = _stats_from_list(gvals)
+                                else:
+                                    s = {"count": 0, "valid_count": 0, "avg": None, "min": None, "max": None, "sum": None}
+                                s["client_ids"] = set(cids)
+                                demo_agg[gl] = s
+                    else:
+                        continue
+
+                    for group_label, stats in demo_agg.items():
+                        client_count = len(stats.get("client_ids", set()))
+                        avg_val = round(stats["avg"], 1) if stats.get("avg") is not None else "N/A"
+                        section_rows.append({
+                            "demographic_group": group_label,
+                            "metric_name": mv_metric_def.name,
+                            "clients_measured": suppress_small_cell(client_count, program),
+                            "avg": avg_val,
+                            "min": stats.get("min", "N/A"),
+                            "max": stats.get("max", "N/A"),
+                        })
+
+                if section_rows:
+                    funder_breakdown_sections.append({
+                        "label": bd.label,
+                        "rows": section_rows,
+                    })
+
         total_clients_display = suppress_small_cell(len(unique_clients), program)
 
         if export_format == "pdf":
@@ -544,6 +643,24 @@ def export_form(request):
                         demo_row["min"],
                         demo_row["max"],
                     ]))
+
+            # Funder profile multi-breakdown sections
+            if funder_breakdown_sections:
+                for section in funder_breakdown_sections:
+                    writer.writerow([])
+                    writer.writerow(sanitise_csv_row([f"# ===== {section['label'].upper()} ====="]))
+                    writer.writerow(sanitise_csv_row([
+                        section["label"], "Metric Name", "Participants Measured", "Average", "Min", "Max",
+                    ]))
+                    for demo_row in section["rows"]:
+                        writer.writerow(sanitise_csv_row([
+                            demo_row["demographic_group"],
+                            demo_row["metric_name"],
+                            demo_row["clients_measured"],
+                            demo_row["avg"],
+                            demo_row["min"],
+                            demo_row["max"],
+                        ]))
 
             safe_prog = sanitise_filename(program.name.replace(" ", "_"))
             filename = f"metric_export_{safe_prog}_{date_from}_{date_to}.csv"
@@ -692,9 +809,13 @@ def export_form(request):
     download_url = request.build_absolute_uri(
         reverse("reports:download_export", args=[link.id])
     )
+    download_path = reverse("reports:download_export", args=[link.id])
     return render(request, "reports/export_link_created.html", {
         "link": link,
         "download_url": download_url,
+        "download_path": download_path,
+        "program_name": program.name,
+        "is_pdf": export_format == "pdf",
     })
 
 
@@ -832,6 +953,7 @@ def funder_report_form(request):
     date_to = form.cleaned_data["date_to"]
     fiscal_year_label = form.cleaned_data["fiscal_year_label"]
     export_format = form.cleaned_data["format"]
+    funder_profile = form.cleaned_data.get("funder_profile")
 
     # Generate report data
     # Security: Pass user for demo/real filtering
@@ -841,6 +963,7 @@ def funder_report_form(request):
         date_to=date_to,
         fiscal_year_label=fiscal_year_label,
         user=request.user,
+        funder_profile=funder_profile,
     )
 
     # Capture raw integer count before suppression — needed for
@@ -916,15 +1039,20 @@ def funder_report_form(request):
             "total_individuals_served": report_data["total_individuals_served"],
             "recipient": recipient,
             "secure_link_id": str(link.id),
+            "funder_profile": funder_profile.name if funder_profile else None,
         },
     )
 
     download_url = request.build_absolute_uri(
         reverse("reports:download_export", args=[link.id])
     )
+    download_path = reverse("reports:download_export", args=[link.id])
     return render(request, "reports/export_link_created.html", {
         "link": link,
         "download_url": download_url,
+        "download_path": download_path,
+        "program_name": program.name,
+        "is_pdf": export_format == "pdf",
     })
 
 

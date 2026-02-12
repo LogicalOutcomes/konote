@@ -26,7 +26,7 @@ from apps.notes.models import MetricValue, ProgressNote
 
 from .achievements import get_achievement_summary
 from .aggregations import count_clients_by_program, count_notes_by_program
-from .demographics import get_age_range, group_clients_by_age
+from .demographics import get_age_range, group_clients_by_age, group_clients_by_custom_field
 from .utils import get_fiscal_year_range
 
 
@@ -176,6 +176,7 @@ def generate_funder_report_data(
     date_to: date,
     fiscal_year_label: str | None = None,
     user=None,
+    funder_profile=None,
 ) -> dict[str, Any]:
     """
     Build the complete funder report data structure for a program.
@@ -183,7 +184,7 @@ def generate_funder_report_data(
     Aggregates all the data needed for a program outcome report:
     - Organisation and program information
     - Service statistics
-    - Demographic breakdowns
+    - Demographic breakdowns (from funder profile or defaults)
     - Outcome achievement rates
 
     Args:
@@ -194,6 +195,8 @@ def generate_funder_report_data(
                           will be calculated from date_from.
         user: Optional user for demo/real filtering. If provided, only clients
               matching the user's demo status will be included.
+        funder_profile: Optional FunderProfile instance providing custom
+                       demographic breakdown definitions.
 
     Returns:
         Dict with report data structure ready for rendering.
@@ -266,6 +269,45 @@ def generate_funder_report_data(
     # Age demographics
     age_demographics = group_clients_by_age_buckets(active_client_ids, date_to)
 
+    # If a funder profile is provided, use its breakdowns instead of defaults
+    custom_demographic_sections = []
+    if funder_profile:
+        from .models import DemographicBreakdown
+        breakdowns = DemographicBreakdown.objects.filter(
+            funder_profile=funder_profile,
+        ).select_related("custom_field").order_by("sort_order")
+
+        for bd in breakdowns:
+            if bd.source_type == "age":
+                # Override default age demographics with funder-specific bins
+                custom_bins = bd.bins_json or None
+                if custom_bins:
+                    age_groups = group_clients_by_age(
+                        active_client_ids, date_to, custom_bins=custom_bins,
+                    )
+                    # Convert from {label: [ids]} to {label: count}
+                    age_demographics = {
+                        label: len(ids) for label, ids in age_groups.items()
+                    }
+                    # Ensure all bin labels present even if count is 0
+                    for b in custom_bins:
+                        if b["label"] not in age_demographics:
+                            age_demographics[b["label"]] = 0
+            elif bd.source_type == "custom_field" and bd.custom_field:
+                # Additional demographic breakdown by custom field
+                cf_groups = group_clients_by_custom_field(
+                    active_client_ids, bd.custom_field,
+                    merge_categories=bd.merge_categories_json or None,
+                )
+                cf_counts = {
+                    label: len(ids) for label, ids in cf_groups.items()
+                }
+                custom_demographic_sections.append({
+                    "label": bd.label,
+                    "data": cf_counts,
+                    "total": sum(cf_counts.values()),
+                })
+
     # Get achievement summary for all metrics with data
     achievement_summary = get_achievement_summary(
         program,
@@ -312,6 +354,8 @@ def generate_funder_report_data(
         # Demographics
         "age_demographics": age_demographics,
         "age_demographics_total": sum(age_demographics.values()),
+        "custom_demographic_sections": custom_demographic_sections,
+        "funder_profile_name": funder_profile.name if funder_profile else None,
 
         # Outcomes
         "primary_outcome": primary_outcome,
@@ -377,6 +421,25 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
         rows.append([age_group, format_number(count), pct])
     rows.append(["Total", format_number(total_demo), "100%"])
     rows.append([])
+
+    # Custom demographic sections from funder profile
+    for section in report_data.get("custom_demographic_sections", []):
+        rows.append([section["label"].upper()])
+        rows.append(["Category", "Count", "Percentage"])
+        section_total = section["total"]
+        for cat_label, cat_count in section["data"].items():
+            if section_total > 0:
+                pct = f"{(cat_count / section_total * 100):.1f}%"
+            else:
+                pct = "N/A"
+            rows.append([cat_label, format_number(cat_count), pct])
+        rows.append(["Total", format_number(section_total), "100%"])
+        rows.append([])
+
+    # Funder profile note
+    if report_data.get("funder_profile_name"):
+        rows.append([f"Demographic Profile: {report_data['funder_profile_name']}"])
+        rows.append([])
 
     # Outcome indicators
     rows.append(["OUTCOME INDICATORS"])

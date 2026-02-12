@@ -8,3 +8,4 @@
 2026-02-09 13:46 — Step 1: 117 screenshots captured (37/37 scenarios, 0 skipped)
 2026-02-09 14:30 — Step 2: Evaluation complete (Round 3, report 2026-02-09a). Gap: 1.4 (↑0.1 from Round 2c), Coverage: 24/32 (75%), Blockers: 0, New tickets: 0, Fixed: 3 (BUG-6, BUG-10, BUG-12). Handoff written to .qa-handoff.json.
 2026-02-09 15:00 — Step 3: No new tickets, skipped expert panel
+2026-02-12 15:30  Step 2: Evaluation complete (Round 4, report 2026-02-12a). Gap: 1.3 (0.1 from Round 3), Coverage: 25/40 (63%), Blockers: 0, Permission violations: 0. New tickets: 6 (BUG-14, TEST-59), Fixed: 4 (BUG-7, BUG-10, BUG-12, BUG-6). Improvements: CAL-004 +1.2 (BUG-10 fix), SCN-040 +0.6 (BUG-9 fix). DS3 avg: 2.9 (0.2). 13 duplicate steps across 6 scenarios. Permissions hash mismatch caveat. Handoff written to .qa-handoff.json.

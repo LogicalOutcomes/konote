@@ -70,6 +70,7 @@ def get_age_range(birth_date: date | str | None, as_of_date: date | None = None)
 def group_clients_by_age(
     client_ids: list[int] | QuerySet,
     as_of_date: date | None = None,
+    custom_bins: list[dict] | None = None,
 ) -> dict[str, list[int]]:
     """
     Group client IDs by their age range.
@@ -77,6 +78,8 @@ def group_clients_by_age(
     Args:
         client_ids: List or queryset of client IDs to group.
         as_of_date: Calculate ages as of this date (default: today).
+        custom_bins: Optional list of {"min": int, "max": int, "label": str}
+                     dicts defining funder-specific age buckets.
 
     Returns:
         Dict mapping age range labels to lists of client IDs.
@@ -88,19 +91,55 @@ def group_clients_by_age(
     if hasattr(client_ids, "values_list"):
         client_ids = list(client_ids)
 
+    # Use custom bins if provided, otherwise default
+    if custom_bins:
+        bins = [(b["min"], b["max"], b["label"]) for b in custom_bins]
+    else:
+        bins = AGE_RANGES
+
     # Load clients — encrypted birth_date requires Python access
     clients = ClientFile.objects.filter(pk__in=client_ids)
 
     for client in clients:
-        age_range = get_age_range(client.birth_date, as_of_date)
+        age_range = _find_age_bin(client.birth_date, as_of_date, bins)
         groups[age_range].append(client.pk)
 
     return dict(groups)
 
 
+def _find_age_bin(
+    birth_date: date | str | None,
+    as_of_date: date | None,
+    bins: list[tuple[int, int, str]],
+) -> str:
+    """Find the matching age bin label for a birth date."""
+    if not birth_date:
+        return "Unknown"
+
+    if isinstance(birth_date, str):
+        try:
+            birth_date = date.fromisoformat(birth_date)
+        except (ValueError, TypeError):
+            return "Unknown"
+
+    if as_of_date is None:
+        as_of_date = date.today()
+
+    age = as_of_date.year - birth_date.year
+    if (as_of_date.month, as_of_date.day) < (birth_date.month, birth_date.day):
+        age -= 1
+
+    for min_age, max_age, label in bins:
+        if min_age <= age <= max_age:
+            return label
+
+    return "Unknown"
+
+
 def group_clients_by_custom_field(
     client_ids: list[int] | QuerySet,
     field_definition: CustomFieldDefinition,
+    merge_categories: dict[str, list[str]] | None = None,
 ) -> dict[str, list[int]]:
     """
     Group client IDs by values of a custom field.
@@ -108,6 +147,9 @@ def group_clients_by_custom_field(
     Args:
         client_ids: List or queryset of client IDs to group.
         field_definition: The CustomFieldDefinition to group by.
+        merge_categories: Optional dict mapping target labels to lists of
+                          source labels. E.g., {"Employed": ["Full-time", "Part-time"]}.
+                          Values not in any merge group go to "Other".
 
     Returns:
         Dict mapping field values to lists of client IDs.
@@ -157,7 +199,53 @@ def group_clients_by_custom_field(
         if client_id not in clients_with_values:
             groups["Unknown"].append(client_id)
 
-    return dict(groups)
+    raw_groups = dict(groups)
+
+    # Apply category merging if provided
+    if merge_categories:
+        return _apply_category_merge(raw_groups, merge_categories)
+
+    return raw_groups
+
+
+def _apply_category_merge(
+    raw_groups: dict[str, list[int]],
+    merge_map: dict[str, list[str]],
+) -> dict[str, list[int]]:
+    """
+    Merge raw grouping results into funder-defined categories.
+
+    Args:
+        raw_groups: Dict mapping raw labels to client ID lists.
+        merge_map: Dict mapping target labels to lists of source labels.
+
+    Returns:
+        Dict with merged categories. Source labels consumed by the map
+        are removed; unmatched labels go to "Other" unless "Unknown".
+    """
+    merged: dict[str, list[int]] = defaultdict(list)
+
+    # Build reverse map: source_label -> target_label
+    reverse_map: dict[str, str] = {}
+    for target_label, source_labels in merge_map.items():
+        for source in source_labels:
+            reverse_map[source] = target_label
+
+    for raw_label, ids in raw_groups.items():
+        if raw_label == "Unknown":
+            merged["Unknown"].extend(ids)
+        elif raw_label in reverse_map:
+            merged[reverse_map[raw_label]].extend(ids)
+        else:
+            merged["Other"].extend(ids)
+
+    # Remove empty "Other" and "Unknown" groups
+    result = {}
+    for label, ids in merged.items():
+        if ids:
+            result[label] = ids
+
+    return result
 
 
 def aggregate_by_demographic(
@@ -240,33 +328,78 @@ def aggregate_by_demographic(
     return results
 
 
-def get_demographic_field_choices() -> list[tuple[str, str]]:
+def get_demographic_field_choices(program=None) -> list[tuple[str, str]]:
     """
     Get choices for the demographic grouping dropdown.
 
+    Returns a curated list of fields safe for reporting — blocking PII,
+    operational fields, and text fields that produce unique groups.
+
+    If a program is confidential or has fewer than 50 enrolled clients,
+    only "No grouping" is returned.
+
+    Args:
+        program: Optional Program instance to check confidentiality
+                 and enrolment count.
+
     Returns:
         List of (value, label) tuples for form choices.
-        Includes "Age Range" and all active custom fields suitable for grouping.
     """
-    from apps.clients.models import CustomFieldDefinition, CustomFieldGroup
+    from apps.clients.models import ClientProgramEnrolment, CustomFieldDefinition
 
     choices = [
         ("", "No grouping"),
-        ("age_range", "Age Range"),
     ]
 
-    # Add custom fields that are suitable for grouping (dropdown and text)
-    # Exclude sensitive fields, date fields, and number fields
-    suitable_types = ("select", "text")
+    # Confidential programs: no demographic grouping at all
+    if program and getattr(program, "is_confidential", False):
+        return choices
 
+    # Small programs: grouping is unsafe (k-anonymity)
+    if program:
+        enrolled_count = ClientProgramEnrolment.objects.filter(
+            program=program, status="enrolled",
+        ).count()
+        if enrolled_count < 50:
+            return choices
+
+    choices.append(("age_range", "Age Range"))
+
+    # Groups whose fields should NEVER appear in reports
+    BLOCKED_GROUPS = {
+        "Contact Information",
+        "Emergency Contact",
+        "Accessibility & Accommodation",
+        "Consent & Permissions",
+        "Parent/Guardian Information",
+        "Health & Safety",
+        "Program Consents",
+    }
+
+    # Specific field names blocked regardless of group
+    BLOCKED_FIELDS = {
+        "Preferred Name",
+        "Postal Code",
+        "Referring Agency Name",
+        "Primary Language Spoken at Home",
+        "Goals or Desired Outcomes",
+        "Primary Reason for Seeking Services",
+        "Accommodation Needs",
+        "Immigration/Citizenship Status",
+    }
+
+    # Only dropdown fields — text fields produce unique groups
     fields = CustomFieldDefinition.objects.filter(
         status="active",
-        input_type__in=suitable_types,
-        is_sensitive=False,  # Don't expose sensitive data in reports
+        input_type="select",
+        is_sensitive=False,
+    ).exclude(
+        group__title__in=BLOCKED_GROUPS,
+    ).exclude(
+        name__in=BLOCKED_FIELDS,
     ).select_related("group").order_by("group__sort_order", "sort_order")
 
     for field in fields:
-        # Use field ID as value, prefixed to distinguish from built-in options
         value = f"custom_{field.pk}"
         label = f"{field.group.title}: {field.name}"
         choices.append((value, label))

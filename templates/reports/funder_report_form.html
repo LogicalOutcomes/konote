@@ -69,6 +69,20 @@
         {% endif %}
     </label>
 
+    {# Funder demographic profile #}
+    {% if form.funder_profile %}
+    <label for="{{ form.funder_profile.id_for_label }}">
+        {{ form.funder_profile.label }}
+        {{ form.funder_profile }}
+        {% if form.funder_profile.help_text %}
+        <small>{{ form.funder_profile.help_text }}</small>
+        {% endif %}
+        {% if form.funder_profile.errors %}
+        <small class="error" role="alert">{{ form.funder_profile.errors.0 }}</small>
+        {% endif %}
+    </label>
+    {% endif %}
+
     {# Export format #}
     <fieldset>
         <legend>{{ form.format.label }}</legend>
@@ -123,8 +137,8 @@
     <p>
         {% blocktrans with strong_open="<strong>" strong_close="</strong>" %}{{ strong_open }}Important:{{ strong_close }} External recipients may require different formats, additional fields, or specific calculations. Always verify this template matches the actual reporting requirements before submission. You may need to adjust or supplement this data.{% endblocktrans %}
     </p>
-    <h3>{% trans "Default Age Categories" %}</h3>
-    <p>{% trans "This template uses these common age groupings (adjust if your reporting requirements differ):" %}</p>
+    <h3>{% trans "Demographic Categories" %}</h3>
+    <p>{% trans "By default, this template uses standard Canadian nonprofit age groupings:" %}</p>
     <ul>
         <li>{% trans "Child (0-12)" %}</li>
         <li>{% trans "Youth (13-17)" %}</li>
@@ -132,6 +146,7 @@
         <li>{% trans "Adult (25-64)" %}</li>
         <li>{% trans "Senior (65+)" %}</li>
     </ul>
+    <p>{% blocktrans %}If your funder uses different age categories or requires additional demographic breakdowns, select a funder profile above. Profiles are configured by administrators under Settings → Funder Profiles.{% endblocktrans %}</p>
     <h3>{% trans "Data Sources" %}</h3>
     <ul>
         <li>{% trans "Organisation name: From your Instance Settings" %}</li>

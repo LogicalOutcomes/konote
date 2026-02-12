@@ -69,6 +69,19 @@
         </p>
         <footer><a href="{% url 'admin_settings:demo_directory' %}" role="button" class="outline">{% trans "Demo Directory" %}</a></footer>
     </article>
+
+    <article>
+        <header>{% trans "Funder Profiles" %}</header>
+        <p>{% trans "Define funder-specific demographic breakdowns for reports (age bins, category merging)." %}</p>
+        <p class="settings-indicator">
+            {% if funder_profile_count %}
+                {% blocktrans count count=funder_profile_count %}{{ count }} profile{% plural %}{{ count }} profiles{% endblocktrans %}
+            {% else %}
+                {% trans "No profiles configured" %}
+            {% endif %}
+        </p>
+        <footer><a href="{% url 'admin_settings:funder_profile_list' %}" role="button" class="outline">{% trans "Manage Profiles" %}</a></footer>
+    </article>
 </div>
 {% endblock %}
 
