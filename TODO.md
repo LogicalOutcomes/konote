@@ -100,7 +100,7 @@ All docs lagged behind recent feature work (messaging, calendar, meetings, conse
 - [ ] Write SCN-084 — consent/messaging interaction with consent blocks (QA-SCN6)
 - [ ] Write SCN-086 — funder report with small-cell suppression (QA-SCN7)
 - [ ] Add test methods for SCN-080–086 in tests/scenario_eval/test_scenario_eval.py (QA-SCN8)
-- [ ] Verify seed_demo_data has prerequisite data for new scenarios (QA-SCN10)
+- [x] Verify seed_demo_data has prerequisite data for new scenarios — 2026-02-13 (QA-SCN10)
 
 ### Messaging, Meetings & Calendar
 

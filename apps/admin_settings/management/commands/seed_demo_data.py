@@ -1106,6 +1106,9 @@ class Command(BaseCommand):
         # --- Create demo communication logs ---
         self._create_demo_communications(workers, programs_by_name, now)
 
+        # --- Set contact info and messaging consent ---
+        self._set_client_contact_and_consent(now)
+
         # --- Create calendar feed tokens for demo workers ---
         self._create_demo_calendar_feeds(workers)
 
@@ -2154,6 +2157,77 @@ class Command(BaseCommand):
                 created += 1
 
         self.stdout.write(f"  Demo communications: {created} logged.")
+
+    # ------------------------------------------------------------------
+    # Contact info and messaging consent on ClientFile model fields
+    # ------------------------------------------------------------------
+
+    def _set_client_contact_and_consent(self, now):
+        """Set phone, email, and CASL consent on demo clients.
+
+        Most clients get phone + SMS consent so messaging scenarios work.
+        Two clients are deliberately different for SCN-084 (consent guardrails):
+        - DEMO-006 (Jesse Morales): no phone, no email — tests "can't message"
+        - DEMO-005 (Kai Dubois): has phone but SMS consent withdrawn
+        """
+        from datetime import date
+
+        consent_date = date(2025, 9, 15)  # Realistic past date
+
+        # Map record_id → (phone, email, sms_consent, email_consent, preferred_contact)
+        # Values mirror demo_client_fields.py custom field data
+        client_contacts = {
+            "DEMO-001": ("4165550123", "jordan.rivera@example.com", True, True, "both"),
+            "DEMO-002": ("6475550234", "", True, False, "sms"),
+            "DEMO-003": ("9055550345", "avery.osei@example.com", False, True, "email"),
+            "DEMO-004": ("4165550456", "", True, False, "sms"),
+            "DEMO-005": ("6475550567", "", False, False, "none"),  # consent withdrawn below
+            "DEMO-006": ("", "", False, False, "none"),  # no contact info at all
+            "DEMO-007": ("9055550789", "", True, False, "sms"),
+            "DEMO-008": ("6475550890", "", True, False, "sms"),
+            "DEMO-009": ("4165550901", "zara.a@example.com", False, True, "email"),
+            "DEMO-010": ("9055551012", "", True, False, "sms"),
+            "DEMO-011": ("4165551123", "", True, False, "sms"),
+            "DEMO-012": ("6475551234", "carlos.reyes@example.com", True, True, "both"),
+            "DEMO-013": ("9055551345", "", True, False, "sms"),
+            "DEMO-014": ("4165551456", "liam.oconnor@example.com", False, True, "email"),
+            "DEMO-015": ("6475551567", "", True, False, "sms"),
+        }
+
+        updated = 0
+        for record_id, (phone, email, sms, email_c, pref) in client_contacts.items():
+            client = ClientFile.objects.filter(record_id=record_id).first()
+            if not client:
+                continue
+
+            client.phone = phone  # empty string clears encrypted field
+            client.email = email
+
+            client.sms_consent = sms
+            client.email_consent = email_c
+            client.preferred_contact_method = pref
+
+            if sms or email_c:
+                client.sms_consent_date = consent_date if sms else None
+                client.email_consent_date = consent_date if email_c else None
+                client.consent_messaging_type = "express"
+
+            client.save()
+            updated += 1
+
+        # DEMO-005: explicitly mark SMS consent as withdrawn (SCN-084 step 2)
+        kai = ClientFile.objects.filter(record_id="DEMO-005").first()
+        if kai:
+            kai.sms_consent = False
+            kai.sms_consent_date = consent_date  # originally consented
+            kai.sms_consent_withdrawn_date = date(2026, 1, 10)  # withdrew later
+            kai.consent_notes = "Client requested to stop receiving text messages."
+            kai.save()
+
+        self.stdout.write(
+            f"  Client contact & consent: {updated} clients updated. "
+            f"DEMO-006=no contact, DEMO-005=SMS withdrawn."
+        )
 
     # ------------------------------------------------------------------
     # Calendar feed tokens for demo workers
