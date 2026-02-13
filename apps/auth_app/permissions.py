@@ -61,7 +61,10 @@ PERMISSIONS = {
         "metric.view_aggregate": DENY,
 
         "report.program_report": DENY,  # Managers generate, not front desk
+        "report.funder_report": DENY,  # Managers/executives generate funder reports
         "report.data_extract": DENY,
+
+        "insights.view": DENY,  # Outcome insights — staff+ only
 
         "event.view": DENY,
         "event.create": DENY,
@@ -132,7 +135,10 @@ PERMISSIONS = {
         "metric.view_aggregate": SCOPED,
 
         "report.program_report": DENY,
+        "report.funder_report": DENY,  # Managers/executives generate funder reports
         "report.data_extract": DENY,
+
+        "insights.view": SCOPED,  # Program-level outcome insights. Enforced by @requires_permission
 
         "event.view": SCOPED,  # Enforced by @requires_permission
         "event.create": SCOPED,
@@ -207,7 +213,11 @@ PERMISSIONS = {
         "report.program_report": ALLOW,  # Individual with friction (elevated delay + admin
                                         # notification). Enforced by is_aggregate_only_user()
                                         # + _save_export_and_create_link()
+        "report.funder_report": ALLOW,  # Managers generate funder reports for their programs.
+                                        # Enforced by @requires_permission
         "report.data_extract": ALLOW,  # PM handles PIPEDA data portability requests
+
+        "insights.view": ALLOW,  # Program-level outcome insights. Enforced by @requires_permission
 
         "event.view": ALLOW,  # Phase 3: GATED. Enforced by @requires_permission
         "event.create": DENY,
@@ -282,8 +292,13 @@ PERMISSIONS = {
         "metric.view_individual": DENY,
         "metric.view_aggregate": ALLOW,  # Org-wide
 
-        "report.program_report": ALLOW,  # View only (managers generate). Enforced by can_create_export()
+        "report.program_report": ALLOW,  # View only (managers generate). Enforced by @requires_permission
+        "report.funder_report": ALLOW,  # Executives can generate aggregate funder reports.
+                                        # Enforced by @requires_permission
         "report.data_extract": DENY,
+
+        "insights.view": ALLOW,  # Aggregate outcome insights only (quotes suppressed).
+                                 # Enforced by @requires_permission
 
         "event.view": DENY,
         "event.create": DENY,
@@ -421,6 +436,7 @@ def permission_to_plain_english(perm_key, perm_level):
         "metric.view_aggregate": "See aggregate metrics and reports",
 
         "report.program_report": "Generate program outcome reports",
+        "report.funder_report": "Generate funder demographic reports",
         "report.data_extract": "Export client data extracts",
 
         "event.view": "View client events and timeline",
@@ -434,6 +450,8 @@ def permission_to_plain_english(perm_key, perm_level):
 
         "custom_field.view": "View custom fields",
         "custom_field.edit": "Edit custom fields",
+
+        "insights.view": "View program outcome insights",
 
         # Clinical records
         "consent.view": "View client consent records",

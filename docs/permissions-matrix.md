@@ -1,7 +1,7 @@
 # KoNote Permissions Matrix
 
 > **Source of truth:** [permissions.py](../apps/auth_app/permissions.py)
-> **Last updated:** 2026-02-09
+> **Last updated:** 2026-02-12
 
 ---
 
@@ -41,7 +41,8 @@
 | View individual metrics | — | Scoped | Yes | — | — |
 | View aggregate metrics | — | Scoped | Yes | Yes | — |
 | Generate program reports | — | — | Yes | Yes (view) | — |
-| Export data extracts | — | — | — | — | — |
+| Generate funder reports | — | — | Yes | Yes | — |
+| Export data extracts | — | — | Yes | — | — |
 | View events | — | Scoped | Yes | — | — |
 | Create events | — | Scoped | — | — | — |
 | View alerts | — | Scoped | Yes | — | — |
@@ -53,6 +54,7 @@
 | Manage consent | — | Scoped | Yes | — | — |
 | View intake forms | — | Scoped | Yes | — | — |
 | Edit intake forms | — | Scoped | — | — | — |
+| View outcome insights | — | Scoped | Yes | Yes (aggregate) | — |
 | View attendance reports | — | Scoped | Yes | Yes | — |
 | Delete notes | — | — | — | — | — |
 | Delete clients | — | — | — | — | — |
@@ -62,6 +64,7 @@
 | **Manage programs** | — | — | — | — | Yes |
 | **View audit log** | — | — | — | Yes | Yes |
 | **Create/edit custom field definitions** | — | — | — | — | Yes |
+| **Manage funder profiles** | — | — | — | — | Yes |
 | **Manage note templates** | — | — | — | — | Yes |
 | **Manage plan templates** | — | — | — | — | Yes |
 | **Manage event types** | — | — | — | — | Yes |
@@ -70,6 +73,7 @@
 | **Send invitations** | — | — | — | — | Yes |
 | **Configure terminology** | — | — | — | — | Yes |
 | **Toggle features** | — | — | — | — | Yes |
+| **Manage secure export links** | — | — | — | — | Yes |
 
 **Legend:**
 - **Yes** = Always allowed (within their program scope)

@@ -136,6 +136,8 @@ class ScenarioRunner(BrowserTestBase):
             staff_a11y = User.objects.create_user(
                 username="staff_a11y", password=TEST_PASSWORD,
                 display_name="Amara Osei",
+                preferred_language="en",  # BUG-14: explicit preference prevents
+                                          # stale cookie from setting lang="fr"
             )
             UserProgramRole.objects.create(
                 user=staff_a11y, program=self.program_a, role="staff",
@@ -1364,7 +1366,55 @@ class ScenarioRunner(BrowserTestBase):
                 try:
                     self.page.click(selector, timeout=5000)
                 except Exception:
-                    pass  # Click failed — the LLM evaluator will note the issue
+                    # TEST-6/7/8/9: Fallback for a[href*='name'] selectors.
+                    # Client list links use numeric IDs, not names.  When the
+                    # CSS selector fails, try a text-based click using the name
+                    # extracted from the selector pattern.
+                    fallback_clicked = False
+                    match = re.match(
+                        r"a\[href\*=['\"]([^'\"]+)['\"]\]", selector,
+                    )
+                    if match:
+                        name_fragment = match.group(1)
+                        try:
+                            # Find a link whose visible text contains the name
+                            # (case-insensitive partial match).
+                            loc = self.page.get_by_role(
+                                "link", name=re.compile(name_fragment, re.I),
+                            ).first
+                            loc.click(timeout=5000)
+                            fallback_clicked = True
+                            logger.info(
+                                "Click fallback: a[href*='%s'] → text match",
+                                name_fragment,
+                            )
+                        except Exception:
+                            pass
+                    if not fallback_clicked:
+                        # TEST-8: At narrow viewports the nav links are behind
+                        # a hamburger menu (#nav-toggle).  If the click target
+                        # might be a nav element, open the menu and retry.
+                        try:
+                            toggle = self.page.locator("#nav-toggle")
+                            if toggle.is_visible(timeout=500):
+                                expanded = toggle.get_attribute(
+                                    "aria-expanded"
+                                )
+                                if expanded != "true":
+                                    toggle.click(timeout=2000)
+                                    self.page.wait_for_timeout(300)
+                                # Retry the original selector
+                                self.page.click(selector, timeout=5000)
+                                fallback_clicked = True
+                                logger.info(
+                                    "Click fallback: opened hamburger menu "
+                                    "for selector=%s",
+                                    selector,
+                                )
+                        except Exception:
+                            pass
+                    if not fallback_clicked:
+                        pass  # Click failed — the LLM evaluator will note it
 
                 # TEST-5: extract IDs from URL after click-navigation
                 try:
@@ -1374,13 +1424,18 @@ class ScenarioRunner(BrowserTestBase):
 
                 # QA-W4: Verify click — URL changed OR page content changed
                 try:
-                    # Brief wait for navigation/DOM update after click
-                    self.page.wait_for_timeout(300)
+                    # TEST-6/7: Wait for navigation to complete after click.
+                    # Brief timeout first, then check if URL changed; if so,
+                    # wait for networkidle so the new page fully renders before
+                    # the screenshot is taken.
+                    self.page.wait_for_timeout(500)
                     post_click_url = self.page.url
+                    url_changed = post_click_url != pre_click_url
+                    if url_changed:
+                        self._wait_for_idle()
                     post_click_text = self.page.evaluate(
                         "() => (document.body.innerText || '').substring(0, 500)"
                     )
-                    url_changed = post_click_url != pre_click_url
                     dom_changed = post_click_text != pre_click_text
                     if not url_changed and not dom_changed:
                         # Retry once

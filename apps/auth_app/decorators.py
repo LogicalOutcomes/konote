@@ -132,7 +132,7 @@ def _check_client_access_block(request, get_client_fn, args, kwargs):
     return None
 
 
-def requires_permission(permission_key, get_program_fn=None, get_client_fn=None):
+def requires_permission(permission_key, get_program_fn=None, get_client_fn=None, allow_admin=False):
     """Decorator: check permission matrix for the user's role in the relevant program.
 
     Replaces @minimum_role and @program_role_required. Reads from
@@ -144,6 +144,9 @@ def requires_permission(permission_key, get_program_fn=None, get_client_fn=None)
         get_program_fn: function(request, *args, **kwargs) -> Program.
                         If None, uses user's highest role across all programs.
         get_client_fn: optional function for ClientAccessBlock check.
+        allow_admin: if True, admin users (is_admin=True) bypass the matrix
+                     check entirely. Use for report/export views where admins
+                     need access even without a program role.
 
     Usage:
         @requires_permission("note.create", _get_program_from_client)
@@ -153,6 +156,10 @@ def requires_permission(permission_key, get_program_fn=None, get_client_fn=None)
         @requires_permission("client.create")  # no program — uses highest role
         def client_create(request):
             ...
+
+        @requires_permission("report.funder_report", allow_admin=True)
+        def funder_report_form(request):
+            ...
     """
     # Validate at import time that the key exists in the matrix
     if permission_key not in ALL_PERMISSION_KEYS:
@@ -161,9 +168,27 @@ def requires_permission(permission_key, get_program_fn=None, get_client_fn=None)
             f"Valid keys: {sorted(ALL_PERMISSION_KEYS)}"
         )
 
+    # Safety: allow_admin must not be combined with client-scoped views,
+    # because the bypass skips ClientAccessBlock (DV safety).  Catch misuse
+    # at import time rather than in production.
+    if allow_admin and get_client_fn is not None:
+        raise ValueError(
+            f"allow_admin=True cannot be used with get_client_fn (permission "
+            f"'{permission_key}'). The admin bypass skips ClientAccessBlock "
+            f"checks, which is unsafe for client-scoped views."
+        )
+
     def decorator(view_func):
         @wraps(view_func)
         def wrapper(request, *args, **kwargs):
+            # Admin bypass — admin is NOT a program role, so the matrix
+            # has no entry for them. Views that should be accessible to
+            # admins (e.g. report generation) opt in with allow_admin=True.
+            # SAFETY: This skips ClientAccessBlock, so allow_admin must
+            # never be used on client-scoped views (enforced above).
+            if allow_admin and getattr(request.user, "is_admin", False):
+                return view_func(request, *args, **kwargs)
+
             # --- Determine the user's role ---
             user_role = None
 

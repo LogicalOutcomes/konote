@@ -4,11 +4,9 @@ import logging
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import render
-from django.template.response import TemplateResponse
-from django.urls import reverse
 from django.utils.translation import gettext as _
 
-from apps.auth_app.decorators import minimum_role, requires_permission
+from apps.auth_app.decorators import requires_permission
 from apps.programs.access import get_accessible_programs, get_client_or_403
 from apps.programs.models import UserProgramRole
 from apps.notes.models import ProgressNote
@@ -19,9 +17,6 @@ from .insights_forms import InsightsFilterForm
 _PRIORITY_LABELS = dict(ProgressNote.SUGGESTION_PRIORITY_CHOICES)
 
 logger = logging.getLogger(__name__)
-
-# Roles that can view program-level aggregate insights
-_INSIGHTS_ROLES = {"staff", "program_manager", "executive"}
 
 
 def _get_data_tier(note_count, month_count):
@@ -40,6 +35,7 @@ def _get_data_tier(note_count, month_count):
 
 
 @login_required
+@requires_permission("insights.view")
 def program_insights(request):
     """Program-level Outcome Insights page.
 
@@ -47,21 +43,13 @@ def program_insights(request):
 
     Access: staff, program_manager, and executive roles. Executives see
     aggregate data only (quotes suppressed because note.view is DENY).
+    Enforced by @requires_permission("insights.view").
     """
-    # Check role access — allow staff, PM, and executive (not receptionist)
+    # Executive-only users see aggregates but not individual note quotes
     user_roles = set(
         UserProgramRole.objects.filter(user=request.user, status="active")
         .values_list("role", flat=True)
     )
-    if not (request.user.is_admin or user_roles & _INSIGHTS_ROLES):
-        message = _("Access denied. You do not have the required role for this action.")
-        response = TemplateResponse(
-            request, "403.html", {"exception": message}, status=403,
-        )
-        response.render()
-        return response
-
-    # Executive-only users see aggregates but not individual note quotes
     is_executive_only = user_roles and user_roles <= {"executive"}
 
     form = InsightsFilterForm(request.GET or None, user=request.user)

@@ -7,11 +7,21 @@
 
 ## Active Work
 
+### QA Round 4 Fixes
+
+- [x] Fix BUG-14 — `lang="fr"` on `/reports/insights/` page — root cause: `staff_a11y` user created without `preferred_language`, stale `django_language=fr` cookie carried through. Fixed by setting `preferred_language="en"` on user creation in scenario runner — 2026-02-13 (BUG-14 → QA-W27)
+- [ ] Fix BUG-8 — French translation gaps, untranslated system strings in French UI (BUG-8 → QA-W28)
+- [ ] Verify BUG-11 — confirm program `name_fr` translations fully populated for PM2-FR scenarios (BUG-11 → QA-W29)
+
 ### Pre-Launch Checklist
 
 - [ ] Complete Agency Permissions Interview — signed Configuration Summary required before each new agency deployment (ONBOARD-GATE)
 - [ ] Verify email is configured — needed for exports, erasure alerts, password resets (OPS3)
 - [ ] Test backup restore from a real database dump (OPS4)
+
+### UX Walkthrough
+
+- [ ] Re-run full UX walkthrough — previous report was overwritten by a 13-page partial run. Root cause: `python_classes = *Test` in pytest.ini silently skipped 20/26 test classes (all `*Scenario` and `*Workflow` classes). Fixed in pytest.ini + overwrite protection added to conftest.py. Run `pytest tests/ux_walkthrough/ -v` to restore full coverage data (UX-RESTORE1)
 
 ### Do Occasionally
 
@@ -84,6 +94,12 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 - [ ] Create weekly export summary email command (EXP2u)
 - [ ] Document cron/scheduled task setup in runbook (EXP2w)
 
+### QA Test Infrastructure (konote-qa-scenarios repo)
+
+- [x] Fix TEST-5 — SCN-035 funder reporting: added `goto: /reports/funder-report/` and proper form selectors — 2026-02-13 (TEST-5 → QA-W30)
+- [x] Fix TEST-8 — SCN-047 mobile viewport: fixed login field IDs, client click selector, added hamburger menu toggle + runner hamburger fallback — 2026-02-13 (TEST-8 → QA-W31)
+- [x] Fix TEST-6/TEST-7 — SCN-020/SCN-025: added `a[href*='name']` → text-based click fallback in scenario runner + post-click navigation wait — 2026-02-13 (TEST-6/7 → QA-W32)
+
 ## Parking Lot
 
 ### Repository Housekeeping
@@ -97,6 +113,7 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 - [ ] Data migration scenario — legacy system import (QA-T16)
 - [ ] Add onboarding guidance for new users — help link or first-run banner (QA-W19)
 - [ ] Reduce form tab stops — tabindex audit (QA-W20)
+- [x] Fix TEST-9 — SCN-048 offline: added Notes tab click before quick-note link, `a[href*='james']` handled by runner fallback — 2026-02-13 (TEST-9 → QA-W33)
 
 ### Safety & Reporting
 
@@ -118,9 +135,12 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 
 ## Recently Done
 
+- [x] Fix BUG-14 — `staff_a11y` preferred_language="en" in scenario runner — 2026-02-13 (QA-W27)
+- [x] Fix TEST-5/6/7/8/9 — scenario runner click fallback, mobile hamburger helper, YAML fixes for SCN-035, SCN-047, SCN-048 — 2026-02-13 (QA-W30–W33)
+- [x] Re-sync permissions hash — `note.create`/`note.edit` DENY→SCOPED for PM already in persona files, updated hash in `permissions-sync.yaml` — 2026-02-13
 - [x] Fix CAL-001 preflight — executive persona now checks `/clients/executive/` with `.stat-card` selector — 2026-02-11 (SMOKE-1)
 - [x] Bulk-add persona field to 15 scenario YAMLs in qa-scenarios — 2026-02-11 (SMOKE-2)
-- [x] Fix BUG-9 — skip .mo validation when user has saved language preference; add LANGUAGE_COOKIE_SECURE=False to test settings — 2026-02-11 (SMOKE-3)
+- [x] Fix BUG-9 — skip .mo validation when user has saved language preference; add LANGUAGE_COOKIE_SECURE=False to test settings — 2026-02-11 (SMOKE-3) (partially fixed — `/reports/insights/` still shows `lang="fr"`, see BUG-14)
 - [x] Fix BUG-7 — wrap client + enrollment creation in transaction.atomic() — 2026-02-11 (SMOKE-4)
 - [x] Fix TEST-2 — CAL-005 now submits Insights filter form before checking data table — 2026-02-11 (SMOKE-5)
 - [x] Fix TEST-4 — switch_user preserves locale/Accept-Language headers + console listeners for multi-persona scenarios — 2026-02-11 (SMOKE-6)

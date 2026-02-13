@@ -37,7 +37,6 @@ from .suppression import suppress_small_cell
 from .forms import FunderReportForm, MetricExportForm
 from .aggregations import aggregate_metrics, _stats_from_list
 from .utils import (
-    can_create_export,
     can_download_pii_export,
     get_manageable_programs,
     is_aggregate_only_user,
@@ -303,16 +302,15 @@ def _write_achievement_csv(writer, achievement_summary, program):
 
 
 @login_required
+@requires_permission("report.program_report", allow_admin=True)
 def export_form(request):
     """
     GET  — display the export filter form.
     POST — validate, query metric values, and return a CSV download.
 
-    Access: admin (any program) or program_manager (their programs only).
+    Access: admin (any program), program_manager or executive (their programs).
+    Enforced by @requires_permission("report.program_report").
     """
-    if not can_create_export(request.user, "metrics"):
-        return HttpResponseForbidden("You do not have permission to access this page.")
-
     is_aggregate = is_aggregate_only_user(request.user)
     is_pm_export = not is_aggregate and not request.user.is_admin
 
@@ -922,6 +920,7 @@ def client_analysis(request, client_id):
 
 
 @login_required
+@requires_permission("report.funder_report", allow_admin=True)
 def funder_report_form(request):
     """
     Funder report export — aggregate program outcome report.
@@ -929,7 +928,8 @@ def funder_report_form(request):
     GET  — display the funder report form.
     POST — generate and return the formatted report.
 
-    Access: admin (any program) or program_manager (their programs only).
+    Access: admin (any program), program_manager or executive (their programs).
+    Enforced by @requires_permission("report.funder_report").
 
     Reports include:
     - Organisation and program information
@@ -937,9 +937,6 @@ def funder_report_form(request):
     - Age demographics
     - Outcome achievement rates
     """
-    if not can_create_export(request.user, "funder_report"):
-        return HttpResponseForbidden("You do not have permission to access this page.")
-
     if request.method != "POST":
         form = FunderReportForm(user=request.user)
         return render(request, "reports/funder_report_form.html", {"form": form})
