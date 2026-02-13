@@ -1,6 +1,7 @@
 """Communication log for tracking all client interactions."""
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from konote.encryption import decrypt_field, encrypt_field
@@ -118,3 +119,49 @@ class Communication(models.Model):
     @content.setter
     def content(self, value):
         self._content_encrypted = encrypt_field(value)
+
+
+class SystemHealthCheck(models.Model):
+    """Tracks messaging channel health for staff-visible banners and alert emails.
+
+    One row per channel (sms, email). Updated on every send attempt.
+    Staff see yellow/red banners on the meeting dashboard when something is wrong.
+    Admin gets an alert email after 24h of sustained failures.
+    """
+
+    CHANNEL_CHOICES = [
+        ("sms", _("SMS")),
+        ("email", _("Email")),
+    ]
+
+    channel = models.CharField(max_length=10, choices=CHANNEL_CHOICES, unique=True)
+    last_success_at = models.DateTimeField(null=True, blank=True)
+    last_failure_at = models.DateTimeField(null=True, blank=True)
+    consecutive_failures = models.PositiveIntegerField(default=0)
+    last_failure_reason = models.CharField(max_length=255, blank=True, default="")
+    alert_email_sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        app_label = "communications"
+        db_table = "system_health_checks"
+
+    def __str__(self):
+        state = "healthy" if self.consecutive_failures == 0 else f"{self.consecutive_failures} failures"
+        return f"Health: {self.get_channel_display()} — {state}"
+
+    @classmethod
+    def record_success(cls, channel):
+        """Record a successful send — resets the failure counter."""
+        obj, _ = cls.objects.get_or_create(channel=channel)
+        obj.last_success_at = timezone.now()
+        obj.consecutive_failures = 0
+        obj.save(update_fields=["last_success_at", "consecutive_failures"])
+
+    @classmethod
+    def record_failure(cls, channel, reason=""):
+        """Record a failed send — increments the failure counter."""
+        obj, _ = cls.objects.get_or_create(channel=channel)
+        obj.last_failure_at = timezone.now()
+        obj.consecutive_failures += 1
+        obj.last_failure_reason = reason[:255]
+        obj.save(update_fields=["last_failure_at", "consecutive_failures", "last_failure_reason"])

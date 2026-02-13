@@ -10,6 +10,7 @@ urlpatterns = [
     path("terminology/reset/<str:term_key>/", views.terminology_reset, name="terminology_reset"),
     path("features/", views.features, name="features"),
     path("instance/", views.instance_settings, name="instance_settings"),
+    path("messaging/", views.messaging_settings, name="messaging_settings"),
     path("diagnose-charts/", views.diagnose_charts, name="diagnose_charts"),
     path("demo-directory/", views.demo_directory, name="demo_directory"),
     # Funder profile management

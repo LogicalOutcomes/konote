@@ -579,12 +579,45 @@ def meeting_list(request):
         .order_by("-event__start_timestamp")
     )
 
+    # System health warnings — show banners when messaging channels are failing
+    health_warnings = []
+    from apps.admin_settings.models import FeatureToggle
+    from apps.communications.models import SystemHealthCheck
+
+    flags = FeatureToggle.get_all_flags()
+    if flags.get("messaging_sms") or flags.get("messaging_email"):
+        now_time = timezone.now()
+        for health in SystemHealthCheck.objects.filter(consecutive_failures__gt=0):
+            if not health.last_failure_at:
+                continue
+            hours_since = (now_time - health.last_failure_at).total_seconds() / 3600
+            channel_name = health.get_channel_display()
+            if hours_since <= 24 and health.consecutive_failures < 3:
+                health_warnings.append({
+                    "level": "warning",
+                    "message": _(
+                        "%(count)s %(channel)s reminder(s) could not be sent recently."
+                    ) % {"count": health.consecutive_failures, "channel": channel_name},
+                })
+            elif health.consecutive_failures >= 3:
+                health_warnings.append({
+                    "level": "danger",
+                    "message": _(
+                        "%(channel)s reminders have not been working since %(date)s. "
+                        "Please contact your support person."
+                    ) % {
+                        "channel": channel_name,
+                        "date": health.last_failure_at.strftime("%B %d"),
+                    },
+                })
+
     breadcrumbs = [
         {"url": "", "label": _("My Meetings")},
     ]
     return render(request, "events/meeting_list.html", {
         "upcoming_meetings": upcoming_meetings,
         "past_meetings": past_meetings,
+        "health_warnings": health_warnings,
         "breadcrumbs": breadcrumbs,
         "nav_active": "meetings",
     })

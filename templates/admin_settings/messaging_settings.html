@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Messaging Settings" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+<hgroup>
+    <h1>{% trans "Messaging Settings" %}</h1>
+    <p>{% trans "Configure how your organisation communicates with clients through KoNote." %}</p>
+</hgroup>
+
+<form method="post">
+{% csrf_token %}
+
+{# ---- Section 1: Safety-First Mode ---- #}
+<article {% if safety_first %}class="safety-first-active"{% endif %}>
+    <header>
+        <strong>{% trans "Safety-First Mode" %}</strong>
+    </header>
+    <div class="grid">
+        <div>
+            <p>{{ form.safety_first_mode.help_text }}</p>
+        </div>
+        <div style="text-align: right;">
+            <label>
+                {{ form.safety_first_mode }}
+                {% trans "Enabled" %}
+            </label>
+        </div>
+    </div>
+    {% if safety_first %}
+    <p role="alert" style="color: var(--pico-del-color); font-weight: 600;">
+        {% trans "All outbound messaging is currently disabled." %}
+    </p>
+    {% endif %}
+</article>
+
+{# ---- Section 2: Messaging Profile ---- #}
+<h2>{% trans "Messaging Profile" %}</h2>
+<div class="grid">
+    {% for radio in form.messaging_profile %}
+    <article style="{% if radio.data.value == current_profile %}border-color: var(--kn-primary, #3b82f6); border-width: 2px;{% endif %}">
+        <label style="cursor: pointer;">
+            {{ radio.tag }}
+            <strong>{{ radio.choice_label }}</strong>
+        </label>
+        {% if radio.data.value == "record_keeping" %}
+        <p class="secondary" style="font-size: 0.875rem;">
+            {% trans "Staff can schedule meetings and log communications. Nothing is sent from KoNote." %}
+        </p>
+        {% elif radio.data.value == "staff_sent" %}
+        <p class="secondary" style="font-size: 0.875rem;">
+            {% trans "Staff can send appointment reminders and messages directly from KoNote. Every message requires a person to click send." %}
+        </p>
+        {% if not email_configured and not sms_configured %}
+        <p style="font-size: 0.8125rem; color: var(--pico-del-color);">
+            {% trans "Requires email or SMS to be set up first." %}
+        </p>
+        {% endif %}
+        {% elif radio.data.value == "full_automation" %}
+        <p class="secondary" style="font-size: 0.875rem;">
+            {% trans "KoNote automatically sends reminders before meetings. Requires email or SMS setup." %}
+        </p>
+        {% if not email_configured and not sms_configured %}
+        <p style="font-size: 0.8125rem; color: var(--pico-del-color);">
+            {% trans "Requires email or SMS to be set up first." %}
+        </p>
+        {% endif %}
+        {% endif %}
+    </article>
+    {% endfor %}
+</div>
+
+{# ---- Section 3: Channel Status ---- #}
+<h2>{% trans "Channels" %}</h2>
+<article>
+    <div class="grid">
+        <div>
+            <strong>{% trans "Email" %}</strong>
+            {% if email_configured %}
+            <p><small class="badge badge-success">{% trans "Connected" %}</small></p>
+            {% else %}
+            <p><small class="badge badge-neutral">{% trans "Not set up" %}</small>
+            <span class="secondary" style="font-size: 0.8125rem;"> — {% trans "Enable in Features, then configure SMTP credentials." %}</span></p>
+            {% endif %}
+            {% if health_checks.email %}
+            {% with h=health_checks.email %}
+            {% if h.consecutive_failures > 0 %}
+            <p style="font-size: 0.8125rem; color: var(--pico-del-color);">
+                {% blocktrans with count=h.consecutive_failures %}{{ count }} recent failure(s){% endblocktrans %}
+                — {{ h.last_failure_reason }}
+            </p>
+            {% endif %}
+            {% endwith %}
+            {% endif %}
+        </div>
+        <div>
+            <strong>{% trans "Text Messages (SMS)" %}</strong>
+            {% if sms_configured %}
+            <p><small class="badge badge-success">{% trans "Connected" %}</small></p>
+            {% else %}
+            <p><small class="badge badge-neutral">{% trans "Not set up" %}</small>
+            <span class="secondary" style="font-size: 0.8125rem;"> — {% trans "Enable in Features, then configure Twilio credentials." %}</span></p>
+            {% endif %}
+            {% if health_checks.sms %}
+            {% with h=health_checks.sms %}
+            {% if h.consecutive_failures > 0 %}
+            <p style="font-size: 0.8125rem; color: var(--pico-del-color);">
+                {% blocktrans with count=h.consecutive_failures %}{{ count }} recent failure(s){% endblocktrans %}
+                — {{ h.last_failure_reason }}
+            </p>
+            {% endif %}
+            {% endwith %}
+            {% endif %}
+        </div>
+    </div>
+</article>
+
+{# ---- Section 4: Sender & Support ---- #}
+<h2>{% trans "Sender & Support" %}</h2>
+<div class="grid">
+    <div>
+        <label for="{{ form.sender_display_name.id_for_label }}">{{ form.sender_display_name.label }}</label>
+        {{ form.sender_display_name }}
+        <small class="secondary">{{ form.sender_display_name.help_text }}</small>
+    </div>
+    <div>
+        <label for="{{ form.reminder_window_hours.id_for_label }}">{{ form.reminder_window_hours.label }}</label>
+        {{ form.reminder_window_hours }}
+        <small class="secondary">{{ form.reminder_window_hours.help_text }}</small>
+    </div>
+</div>
+<div class="grid">
+    <div>
+        <label for="{{ form.support_contact_name.id_for_label }}">{{ form.support_contact_name.label }}</label>
+        {{ form.support_contact_name }}
+        <small class="secondary">{{ form.support_contact_name.help_text }}</small>
+    </div>
+    <div>
+        <label for="{{ form.support_contact_phone.id_for_label }}">{{ form.support_contact_phone.label }}</label>
+        {{ form.support_contact_phone }}
+    </div>
+</div>
+
+{# ---- Section 5: Message Templates ---- #}
+<details>
+    <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Message Templates" %}</h2></summary>
+
+    <h3 style="font-size: 0.9375rem; margin-top: 1rem;">{% trans "SMS Templates" %}</h3>
+    <div class="grid">
+        <div>
+            <label for="{{ form.reminder_sms_en.id_for_label }}">{{ form.reminder_sms_en.label }}</label>
+            {{ form.reminder_sms_en }}
+            <small class="secondary">{{ form.reminder_sms_en.help_text }}</small>
+        </div>
+        <div>
+            <label for="{{ form.reminder_sms_fr.id_for_label }}">{{ form.reminder_sms_fr.label }}</label>
+            {{ form.reminder_sms_fr }}
+        </div>
+    </div>
+
+    <h3 style="font-size: 0.9375rem;">{% trans "Email Templates" %}</h3>
+    <div class="grid">
+        <div>
+            <label for="{{ form.reminder_email_body_en.id_for_label }}">{{ form.reminder_email_body_en.label }}</label>
+            {{ form.reminder_email_body_en }}
+            <small class="secondary">{{ form.reminder_email_body_en.help_text }}</small>
+        </div>
+        <div>
+            <label for="{{ form.reminder_email_body_fr.id_for_label }}">{{ form.reminder_email_body_fr.label }}</label>
+            {{ form.reminder_email_body_fr }}
+        </div>
+    </div>
+</details>
+
+<button type="submit" style="margin-top: 1rem;">{% trans "Save Settings" %}</button>
+</form>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .safety-first-active {
+        border-color: var(--pico-del-color);
+        border-width: 2px;
+    }
+</style>
+{% endblock %}

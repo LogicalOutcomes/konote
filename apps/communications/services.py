@@ -8,11 +8,13 @@ import logging
 from datetime import date, timedelta
 
 from django.conf import settings
+from django.core import signing
 from django.core.mail import send_mail
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.communications.models import Communication
+from apps.communications.models import Communication, SystemHealthCheck
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +31,33 @@ PLAIN_LANGUAGE_ERRORS = {
     "30006": "Phone number can't be reached — it may no longer be in service",
 }
 
+# Default message templates — used when admin hasn't configured custom templates.
+# Placeholders: {date}, {time}, {org_phone}
+DEFAULT_TEMPLATES = {
+    "reminder_sms_en": (
+        "Reminder: You have an appointment on {date} at {time}. "
+        "Reply STOP to opt out."
+    ),
+    "reminder_sms_fr": (
+        "Rappel : Vous avez un rendez-vous le {date} \u00e0 {time}. "
+        "R\u00e9pondez STOP pour vous d\u00e9sinscrire."
+    ),
+    "reminder_email_subject_en": "Appointment Reminder",
+    "reminder_email_subject_fr": "Rappel de rendez-vous",
+    "reminder_email_body_en": (
+        "Reminder: You have an appointment on {date} at {time}.\n\n"
+        "If you need to reschedule, please contact us."
+    ),
+    "reminder_email_body_fr": (
+        "Rappel : Vous avez un rendez-vous le {date} \u00e0 {time}.\n\n"
+        "Si vous devez reporter, veuillez nous contacter."
+    ),
+}
+
+
+# ---------------------------------------------------------------------------
+# Pre-send checks
+# ---------------------------------------------------------------------------
 
 def check_consent(client_file, channel):
     """Check consent including implied consent 2-year expiry.
@@ -63,6 +92,117 @@ def check_consent(client_file, channel):
     return True, "OK"
 
 
+def can_send(client_file, channel):
+    """Check all prerequisites before sending a message.
+
+    Returns (allowed: bool, reason: str).
+    Checks are ordered from broadest restriction to narrowest:
+    1. Safety-First mode — blocks everything
+    2. Messaging profile — record_keeping blocks all outbound
+    3. Channel capability — FeatureToggle must be enabled
+    4. Client consent — CASL compliance
+    5. Consent expiry — implied consent 2-year rule
+    6. Contact info exists
+    """
+    from apps.admin_settings.models import FeatureToggle, InstanceSetting
+
+    # 1. Safety-First mode
+    if InstanceSetting.get("safety_first_mode", "false") == "true":
+        return False, _("Safety-First mode is enabled — no outbound messages")
+
+    # 2. Messaging profile
+    profile = InstanceSetting.get("messaging_profile", "record_keeping")
+    if profile == "record_keeping":
+        return False, _("Messaging is set to record-keeping only")
+
+    # 3. Channel capability
+    flags = FeatureToggle.get_all_flags()
+    if channel == "sms" and not flags.get("messaging_sms", False):
+        return False, _("Text messaging is not set up")
+    if channel == "email" and not flags.get("messaging_email", False):
+        return False, _("Email is not set up")
+
+    # 4 & 5. Consent + expiry (reuse existing check_consent)
+    ok, reason = check_consent(client_file, channel)
+    if not ok:
+        return False, reason
+
+    # 6. Contact info (double-check — check_consent checks has_phone/has_email
+    # but only when consent is True, so this catches edge cases)
+    if channel == "sms" and not client_file.has_phone:
+        return False, _("No phone number on file")
+    if channel == "email" and not client_file.has_email:
+        return False, _("No email address on file")
+
+    return True, "OK"
+
+
+# ---------------------------------------------------------------------------
+# Message template rendering
+# ---------------------------------------------------------------------------
+
+def render_message_template(template_key, client_file, meeting, personal_note=""):
+    """Render a message template with meeting/client context.
+
+    Uses admin-configured template from InstanceSetting, falling back
+    to DEFAULT_TEMPLATES. Selects language based on client preference.
+    Substitutes {date}, {time}, {org_phone} placeholders.
+
+    Args:
+        template_key: Base key like "reminder_sms" or "reminder_email_body"
+        client_file: The client receiving the message
+        meeting: The meeting being reminded about
+        personal_note: Optional staff note appended to the message
+    """
+    from apps.admin_settings.models import InstanceSetting
+
+    lang = getattr(client_file, "preferred_language", "en")
+    key = f"{template_key}_{lang}"
+    fallback_key = f"{template_key}_en"
+
+    # Try admin-configured template, then default
+    template_text = (
+        InstanceSetting.get(key, "")
+        or InstanceSetting.get(fallback_key, "")
+        or DEFAULT_TEMPLATES.get(key, DEFAULT_TEMPLATES.get(fallback_key, ""))
+    )
+
+    time_str = meeting.event.start_timestamp.strftime("%I:%M %p").lstrip("0")
+    date_str = meeting.event.start_timestamp.strftime("%B %d, %Y")
+
+    rendered = template_text.format(
+        date=date_str,
+        time=time_str,
+        org_phone=InstanceSetting.get("support_contact_phone", ""),
+    )
+
+    if personal_note:
+        rendered += f"\n\n\u2014 {personal_note}"
+
+    return rendered
+
+
+# ---------------------------------------------------------------------------
+# Unsubscribe URL generation
+# ---------------------------------------------------------------------------
+
+def generate_unsubscribe_url(client_file, channel="email"):
+    """Generate a signed unsubscribe URL for email footers.
+
+    Token expires after 60 days. Uses django.core.signing for
+    tamper-proof, expiring tokens without a database lookup.
+    """
+    token = signing.dumps(
+        {"client_id": client_file.pk, "channel": channel},
+        salt="unsubscribe",
+    )
+    return reverse("communications:email_unsubscribe", kwargs={"token": token})
+
+
+# ---------------------------------------------------------------------------
+# Sending functions
+# ---------------------------------------------------------------------------
+
 def send_sms(phone_number, message_body):
     """Send an SMS via Twilio. Returns (success, sid_or_error).
 
@@ -86,13 +226,15 @@ def send_sms(phone_number, message_body):
             from_=settings.TWILIO_FROM_NUMBER,
             to=phone_number,
         )
+        SystemHealthCheck.record_success("sms")
         return True, message.sid
     except ImportError:
         logger.error("twilio package not installed")
         return False, _("SMS service not available — twilio package not installed")
     except Exception as e:
         plain_error = translate_error(e)
-        logger.warning("SMS send failed to %s: %s", phone_number[-4:], str(e))
+        logger.warning("SMS send failed: %s", str(e))
+        SystemHealthCheck.record_failure("sms", plain_error)
         return False, plain_error
 
 
@@ -110,13 +252,16 @@ def send_email_message(to_email, subject, body_text, body_html=None):
             html_message=body_html,
             fail_silently=False,
         )
+        SystemHealthCheck.record_success("email")
         return True, None
     except Exception as e:
         logger.warning("Email send failed to %s: %s", to_email, str(e))
-        return False, _("Email could not be delivered — check the email address with the client")
+        error_msg = _("Email could not be delivered — check the email address with the client")
+        SystemHealthCheck.record_failure("email", str(e)[:255])
+        return False, error_msg
 
 
-def send_reminder(meeting, logged_by=None):
+def send_reminder(meeting, logged_by=None, personal_note=""):
     """Send an appointment reminder for a meeting.
 
     Checks consent, selects channel based on client preference,
@@ -141,16 +286,32 @@ def send_reminder(meeting, logged_by=None):
         _record_reminder_status(meeting, "no_consent", _("Client has not consented to reminders"))
         return False, "No consent"
 
+    # Pre-check with can_send() — checks safety mode, profile, toggles, consent
+    send_channel = "sms" if channel in ("sms", "both") else "email"
+    allowed, block_reason = can_send(client_file, send_channel)
+    if not allowed:
+        # Try the other channel if "both"
+        if channel == "both":
+            alt_channel = "email" if send_channel == "sms" else "sms"
+            allowed, block_reason = can_send(client_file, alt_channel)
+            if allowed:
+                send_channel = alt_channel
+
+        if not allowed:
+            status = "blocked" if "set up" in block_reason.lower() or "record-keeping" in block_reason.lower() else "no_consent"
+            _record_reminder_status(meeting, status, block_reason)
+            return False, block_reason
+
     reason = ""
 
-    if channel in ("sms", "both"):
-        ok, msg = _send_sms_reminder(meeting, client_file, logged_by)
+    if send_channel == "sms" or (channel == "both" and send_channel != "email"):
+        ok, msg = _send_sms_reminder(meeting, client_file, logged_by, personal_note)
         if ok:
             return True, "Sent"
         reason = msg
 
-    if channel in ("email", "both"):
-        ok, msg = _send_email_reminder(meeting, client_file, logged_by)
+    if send_channel == "email" or (channel == "both" and not reason):
+        ok, msg = _send_email_reminder(meeting, client_file, logged_by, personal_note)
         if ok:
             return True, "Sent"
         reason = msg
@@ -161,7 +322,7 @@ def send_reminder(meeting, logged_by=None):
     return False, reason
 
 
-def _send_sms_reminder(meeting, client_file, logged_by=None):
+def _send_sms_reminder(meeting, client_file, logged_by=None, personal_note=""):
     """Send SMS reminder for a meeting. Internal helper.
 
     Returns (success, reason).
@@ -178,21 +339,8 @@ def _send_sms_reminder(meeting, client_file, logged_by=None):
         _record_reminder_status(meeting, "no_phone", _("No phone number on file"))
         return False, _("No phone number on file")
 
-    # Build message in client's preferred language
-    lang = getattr(client_file, "preferred_language", "en")
-    time_str = meeting.event.start_timestamp.strftime("%I:%M %p").lstrip("0")
-    date_str = meeting.event.start_timestamp.strftime("%B %d")
-
-    if lang == "fr":
-        body = (
-            f"Rappel : Vous avez un rendez-vous le {date_str} \u00e0 {time_str}. "
-            f"R\u00e9pondez STOP pour vous d\u00e9sinscrire."
-        )
-    else:
-        body = (
-            f"Reminder: You have an appointment on {date_str} at {time_str}. "
-            f"Reply STOP to opt out."
-        )
+    # Build message from configurable template
+    body = render_message_template("reminder_sms", client_file, meeting, personal_note)
 
     success, sid_or_error = send_sms(phone, body)
 
@@ -221,7 +369,7 @@ def _send_sms_reminder(meeting, client_file, logged_by=None):
     return success, sid_or_error if not success else "Sent"
 
 
-def _send_email_reminder(meeting, client_file, logged_by=None):
+def _send_email_reminder(meeting, client_file, logged_by=None, personal_note=""):
     """Send email reminder for a meeting. Internal helper.
 
     Returns (success, reason).
@@ -236,23 +384,20 @@ def _send_email_reminder(meeting, client_file, logged_by=None):
         _record_reminder_status(meeting, "blocked", _("No email address on file"))
         return False, _("No email address on file")
 
-    # Build message in client's preferred language
+    # Build message from configurable template
     lang = getattr(client_file, "preferred_language", "en")
-    time_str = meeting.event.start_timestamp.strftime("%I:%M %p").lstrip("0")
-    date_str = meeting.event.start_timestamp.strftime("%B %d, %Y")
+    subject_key = f"reminder_email_subject_{lang}"
+    subject = DEFAULT_TEMPLATES.get(subject_key, DEFAULT_TEMPLATES["reminder_email_subject_en"])
 
-    if lang == "fr":
-        subject = "Rappel de rendez-vous"
-        body = (
-            f"Rappel : Vous avez un rendez-vous le {date_str} \u00e0 {time_str}.\n\n"
-            f"Si vous devez reporter, veuillez nous contacter."
-        )
-    else:
-        subject = "Appointment Reminder"
-        body = (
-            f"Reminder: You have an appointment on {date_str} at {time_str}.\n\n"
-            f"If you need to reschedule, please contact us."
-        )
+    # Check for admin-configured subject
+    from apps.admin_settings.models import InstanceSetting
+    subject = InstanceSetting.get(subject_key, "") or subject
+
+    body = render_message_template("reminder_email_body", client_file, meeting, personal_note)
+
+    # Append unsubscribe link for CASL compliance
+    unsubscribe_url = generate_unsubscribe_url(client_file, "email")
+    body += f"\n\n---\n{_('To stop receiving these messages')}: {unsubscribe_url}"
 
     success, error = send_email_message(email, subject, body)
 
@@ -299,6 +444,62 @@ def translate_error(error):
             return message
     return _("Text could not be delivered — try confirming the phone number with the client")
 
+
+# ---------------------------------------------------------------------------
+# System health alerts
+# ---------------------------------------------------------------------------
+
+def check_and_send_health_alert():
+    """Send alert email to admin if a messaging channel has been failing 24+ hours.
+
+    Called by the send_reminders management command after each batch.
+    Only sends one alert per channel per 24h to avoid spamming.
+    """
+    from apps.admin_settings.models import InstanceSetting
+
+    admin_email = InstanceSetting.get("support_email", "")
+    if not admin_email:
+        return
+
+    now = timezone.now()
+
+    for health in SystemHealthCheck.objects.filter(consecutive_failures__gte=3):
+        if not health.last_failure_at:
+            continue
+
+        hours_since_failure = (now - health.last_failure_at).total_seconds() / 3600
+
+        # Only alert for recent failures (within last 48h)
+        if hours_since_failure > 48:
+            continue
+
+        # Check if we already sent an alert in the last 24h
+        if health.alert_email_sent_at:
+            hours_since_alert = (now - health.alert_email_sent_at).total_seconds() / 3600
+            if hours_since_alert < 24:
+                continue
+
+        # Send alert
+        product_name = InstanceSetting.get("product_name", "KoNote")
+        channel_name = health.get_channel_display()
+        send_email_message(
+            to_email=admin_email,
+            subject=f"{product_name} — {channel_name} reminders not working",
+            body_text=(
+                f"{channel_name} reminders have not been working since "
+                f"{health.last_failure_at.strftime('%B %d at %I:%M %p')}. "
+                f"{health.consecutive_failures} reminders could not be sent.\n\n"
+                f"Last error: {health.last_failure_reason}\n\n"
+                f"Please check the messaging configuration or contact your technical support person."
+            ),
+        )
+        health.alert_email_sent_at = now
+        health.save(update_fields=["alert_email_sent_at"])
+
+
+# ---------------------------------------------------------------------------
+# Manual communication logging
+# ---------------------------------------------------------------------------
 
 def log_communication(client_file, direction, channel, logged_by, content="", subject="", author_program=None):
     """Record a manual communication log entry.

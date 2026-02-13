@@ -9,6 +9,14 @@
     <h1>{% trans "My Meetings" %}</h1>
 </hgroup>
 
+{% if health_warnings %}
+{% for warning in health_warnings %}
+<div class="health-banner health-banner-{{ warning.level }}" role="alert" aria-live="polite">
+    {{ warning.message }}
+</div>
+{% endfor %}
+{% endif %}
+
 {% if upcoming_meetings %}
 <h2>{% trans "Upcoming" %}</h2>
 {% for meeting in upcoming_meetings %}

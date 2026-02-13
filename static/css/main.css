@@ -94,6 +94,36 @@
     }
 }
 
+/* ---- Health banners (messaging channel status) ---- */
+.health-banner {
+    padding: 0.5rem 1rem;
+    margin-bottom: 1rem;
+    border-radius: var(--pico-border-radius, 0.25rem);
+    font-size: 0.875rem;
+}
+.health-banner-warning {
+    background-color: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    color: #92400e;
+}
+.health-banner-danger {
+    background-color: #fee2e2;
+    border-left: 4px solid #ef4444;
+    color: #991b1b;
+}
+@media (prefers-color-scheme: dark) {
+    .health-banner-warning {
+        background-color: #3d2e0a;
+        border-left-color: #d69e2e;
+        color: #f6e05e;
+    }
+    .health-banner-danger {
+        background-color: #3b1010;
+        border-left-color: #f87171;
+        color: #fecaca;
+    }
+}
+
 /* ---- Branded focus style ---- */
 :focus-visible {
     outline: 2px solid var(--kn-primary);

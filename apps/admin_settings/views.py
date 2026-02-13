@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _, gettext_lazy as _lazy
 
 from apps.auth_app.decorators import admin_required
 
-from .forms import FeatureToggleForm, InstanceSettingsForm, TerminologyForm
+from .forms import FeatureToggleForm, InstanceSettingsForm, MessagingSettingsForm, TerminologyForm
 from .models import DEFAULT_TERMS, FeatureToggle, InstanceSetting, TerminologyOverride
 
 
@@ -39,6 +39,10 @@ def dashboard(request):
     from apps.reports.models import FunderProfile
     funder_profile_count = FunderProfile.objects.count()
 
+    # Messaging profile for dashboard card
+    current_settings = InstanceSetting.get_all()
+    messaging_profile = current_settings.get("messaging_profile", "record_keeping")
+
     return render(request, "admin_settings/dashboard.html", {
         "enabled_features": enabled_features,
         "total_features": total_features,
@@ -48,6 +52,7 @@ def dashboard(request):
         "instance_settings_count": instance_settings_count,
         "demo_users": demo_users,
         "funder_profile_count": funder_profile_count,
+        "messaging_profile": messaging_profile,
     })
 
 
@@ -122,6 +127,8 @@ DEFAULT_FEATURES = {
     "events": _lazy("Event tracking"),
     "program_reports": _lazy("Program outcome report exports"),
     "require_client_consent": _lazy("Require participant consent before notes (PIPEDA/PHIPA)"),
+    "messaging_email": _lazy("Send email reminders and messages to clients"),
+    "messaging_sms": _lazy("Send text message reminders to clients"),
 }
 
 # Features that default to enabled (most default to disabled)
@@ -178,6 +185,46 @@ def instance_settings(request):
     else:
         form = InstanceSettingsForm(current_settings=current_settings)
     return render(request, "admin_settings/instance_settings.html", {"form": form})
+
+
+# --- Messaging Settings ---
+
+@login_required
+@admin_required
+def messaging_settings(request):
+    """Messaging configuration: profile cards, Safety-First, templates, channel status."""
+    from apps.communications.models import SystemHealthCheck
+
+    current_settings = InstanceSetting.get_all()
+    current_flags = FeatureToggle.get_all_flags()
+
+    if request.method == "POST":
+        form = MessagingSettingsForm(request.POST, current_settings=current_settings)
+        if form.is_valid():
+            form.save()
+            messages.success(request, _("Messaging settings updated."))
+            return redirect("admin_settings:messaging_settings")
+    else:
+        form = MessagingSettingsForm(current_settings=current_settings)
+
+    # Channel status for display
+    email_configured = current_flags.get("messaging_email", False)
+    sms_configured = current_flags.get("messaging_sms", False)
+
+    # Health status
+    health_checks = {h.channel: h for h in SystemHealthCheck.objects.all()}
+
+    current_profile = current_settings.get("messaging_profile", "record_keeping")
+    safety_first = current_settings.get("safety_first_mode", "false") == "true"
+
+    return render(request, "admin_settings/messaging_settings.html", {
+        "form": form,
+        "email_configured": email_configured,
+        "sms_configured": sms_configured,
+        "health_checks": health_checks,
+        "current_profile": current_profile,
+        "safety_first": safety_first,
+    })
 
 
 # --- Chart Diagnostics ---

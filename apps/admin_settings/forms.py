@@ -168,3 +168,107 @@ class InstanceSettingsForm(forms.Form):
                 )
             else:
                 InstanceSetting.objects.filter(setting_key=key).delete()
+
+
+class MessagingSettingsForm(forms.Form):
+    """Form for the messaging settings page — profile selection, Safety-First, templates."""
+
+    messaging_profile = forms.ChoiceField(
+        choices=[
+            ("record_keeping", _("Record-Keeping Only")),
+            ("staff_sent", _("Staff-Sent Messages")),
+            ("full_automation", _("Full Automation")),
+        ],
+        label=_("Messaging Profile"),
+        widget=forms.RadioSelect,
+    )
+    safety_first_mode = forms.BooleanField(
+        required=False,
+        label=_("Safety-First Mode"),
+        help_text=_(
+            "Disables all outbound messaging and calendar feeds. "
+            "For programs where contacting clients could create safety risks."
+        ),
+    )
+    reminder_window_hours = forms.IntegerField(
+        min_value=1, max_value=72, initial=24,
+        label=_("Reminder Window (hours)"),
+        help_text=_("How many hours before a meeting to send the reminder."),
+    )
+    sender_display_name = forms.CharField(
+        max_length=100, required=False,
+        label=_("Sender Display Name"),
+        help_text=_(
+            "Shown as the sender name on messages. "
+            "Use a neutral name for sensitive services (e.g. 'Appt Reminder' instead of the org name)."
+        ),
+    )
+    support_contact_name = forms.CharField(
+        max_length=255, required=False,
+        label=_("Support Contact Name"),
+        help_text=_("Shown in error messages when messaging fails."),
+    )
+    support_contact_phone = forms.CharField(
+        max_length=50, required=False,
+        label=_("Support Contact Phone"),
+    )
+
+    # Message templates
+    reminder_sms_en = forms.CharField(
+        required=False,
+        label=_("SMS Reminder Template (English)"),
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text=_("Use {date}, {time}, {org_phone} as placeholders. Keep under 160 characters per segment."),
+    )
+    reminder_sms_fr = forms.CharField(
+        required=False,
+        label=_("SMS Reminder Template (French)"),
+        widget=forms.Textarea(attrs={"rows": 3}),
+    )
+    reminder_email_body_en = forms.CharField(
+        required=False,
+        label=_("Email Reminder Template (English)"),
+        widget=forms.Textarea(attrs={"rows": 5}),
+        help_text=_("Use {date}, {time}, {org_phone} as placeholders."),
+    )
+    reminder_email_body_fr = forms.CharField(
+        required=False,
+        label=_("Email Reminder Template (French)"),
+        widget=forms.Textarea(attrs={"rows": 5}),
+    )
+
+    SETTING_KEYS = [
+        "messaging_profile", "safety_first_mode", "reminder_window_hours",
+        "sender_display_name", "support_contact_name", "support_contact_phone",
+        "reminder_sms_en", "reminder_sms_fr",
+        "reminder_email_body_en", "reminder_email_body_fr",
+    ]
+
+    def __init__(self, *args, **kwargs):
+        current_settings = kwargs.pop("current_settings", {})
+        super().__init__(*args, **kwargs)
+        for key in self.SETTING_KEYS:
+            if key in current_settings:
+                if key == "safety_first_mode":
+                    self.fields[key].initial = current_settings[key] == "true"
+                else:
+                    self.fields[key].initial = current_settings[key]
+
+    def save(self):
+        from .models import InstanceSetting
+        for key in self.SETTING_KEYS:
+            value = self.cleaned_data.get(key, "")
+            if key == "safety_first_mode":
+                value = "true" if value else "false"
+            value = str(value).strip()
+            if value and value != "false":
+                InstanceSetting.objects.update_or_create(
+                    setting_key=key, defaults={"setting_value": value}
+                )
+            elif key == "safety_first_mode":
+                # Always store safety_first_mode so it's explicit
+                InstanceSetting.objects.update_or_create(
+                    setting_key=key, defaults={"setting_value": "false"}
+                )
+            else:
+                InstanceSetting.objects.filter(setting_key=key).delete()
