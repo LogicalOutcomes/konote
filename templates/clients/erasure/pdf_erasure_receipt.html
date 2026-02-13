@@ -1,7 +1,7 @@
 {% extends "reports/pdf_base.html" %}
 {% load i18n %}
 
-{% block title %}Erasure Receipt — {{ er.erasure_code }}{% endblock %}
+{% block title %}{% trans "Erasure Receipt" %} — {{ er.erasure_code }}{% endblock %}
 
 {% block styles %}
 {{ block.super }}

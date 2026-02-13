@@ -28,9 +28,12 @@ MIN_LENGTH = 3
 ALLOWLIST = {
     # Brand / product names
     "KoNote", "Microsoft", "Azure", "GitHub", "Google",
-    "Pico", "Chart.js", "HTMX", "Django",
+    "Pico", "Chart.js", "HTMX", "Django", "MSYS2",
     # Language names (always shown in their own language)
     "English", "Français",
+    # Bilingual hero text (shown before language is chosen on login page)
+    "Participant Outcome Management",
+    "Gestion des résultats des participants",
     # Technical / form tokens
     "csrf_token", "POST", "GET", "HTML", "CSS", "PDF", "CSV",
     "AM", "PM",
@@ -59,6 +62,9 @@ SKIP_PATTERNS = [
     r'^(Ctrl|Alt|Shift|Cmd)\s*[\+\s]', # Keyboard shortcuts
     r'^python\s+manage\.py',           # Django management commands
     r'^hx-',                          # HTMX attribute names
+    r'^\u2014\s*\w+$',                   # Em-dash attributions (— Dana)
+    r'^\d*,',                           # CSV data rows
+    r'^(apt|brew|pip)\s+install\b',      # Package-manager commands
 ]
 
 
@@ -126,15 +132,19 @@ def is_inside_comment_block(lines, line_idx):
 
 def is_inside_non_text_block(lines, line_idx):
     """
-    Check if line is inside a <style>, <script>, or <!-- --> block.
-    These contain CSS/JS/comments, not translatable text.
+    Check if line is inside a <style>, <script>, <pre>, <!-- -->, or
+    {% block styles %} block.  These contain CSS/JS/code/comments,
+    not translatable text.
     """
     in_style = False
     in_script = False
     in_html_comment = False
+    in_pre = False
+    in_block_styles = False
 
     for i in range(0, line_idx + 1):
-        line = lines[i].lower()
+        line = lines[i]
+        line_lower = line.lower()
 
         # Track HTML comments (multi-line)
         if '<!--' in line and '-->' not in line:
@@ -143,18 +153,31 @@ def is_inside_non_text_block(lines, line_idx):
             in_html_comment = False
 
         # Track <style> blocks
-        if '<style' in line:
+        if '<style' in line_lower:
             in_style = True
-        if '</style>' in line:
+        if '</style>' in line_lower:
             in_style = False
 
         # Track <script> blocks
-        if '<script' in line:
+        if '<script' in line_lower:
             in_script = True
-        if '</script>' in line:
+        if '</script>' in line_lower:
             in_script = False
 
-    return in_style or in_script or in_html_comment
+        # Track <pre> blocks (code examples, not translatable)
+        if '<pre' in line_lower:
+            in_pre = True
+        if '</pre>' in line_lower:
+            in_pre = False
+
+        # Track {% block styles %} ... {% endblock %} (CSS injected
+        # into a parent <style> tag via template inheritance)
+        if re.search(r'\{%\s*block\s+styles\b', line):
+            in_block_styles = True
+        if in_block_styles and re.search(r'\{%\s*endblock\b', line):
+            in_block_styles = False
+
+    return in_style or in_script or in_html_comment or in_pre or in_block_styles
 
 
 def should_skip(text):

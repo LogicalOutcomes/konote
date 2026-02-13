@@ -6104,9 +6104,6 @@ msgstr "Copiez ce lien pour partager le téléchargement avec quelqu'un d'autre 
 msgid "Shareable download URL"
 msgstr "URL de téléchargement partageable"
 
-msgid "Export details"
-msgstr "Détails de l'exportation"
-
 msgid "Generate Another Report"
 msgstr "Générer un autre rapport"
 
@@ -10073,3 +10070,18 @@ msgstr "recommandation d'annulation"
 
 msgid "staff assessment"
 msgstr "évaluation du personnel"
+
+msgid "Report"
+msgstr "Rapport"
+
+msgid "Erasure Receipt"
+msgstr "Reçu d'effacement"
+
+msgid "Linux (Ubuntu/Debian):"
+msgstr "Linux (Ubuntu/Debian) :"
+
+msgid "macOS:"
+msgstr "macOS :"
+
+msgid "Windows:"
+msgstr "Windows :"

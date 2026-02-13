@@ -9,8 +9,8 @@
 
 ### QA Round 4 Remaining
 
-- [ ] Fix BUG-8 — French translation gaps, untranslated system strings in French UI (BUG-8 → QA-W28)
-- [ ] Verify BUG-11 — confirm program `name_fr` translations fully populated for PM2-FR scenarios (BUG-11 → QA-W29)
+- [x] Fix BUG-8 — French translation gaps: removed duplicate 'Export details' in .po, wrapped untranslated strings in pdf_base/pdf_erasure_receipt/pdf_unavailable with {% trans %}, added 5 new .po entries, fixed scanner false positives (CSS in {% block styles %}, <pre> blocks, bilingual hero, names), compiled .mo — 2026-02-12 (QA-W28)
+- [x] Verify BUG-11 — confirmed: all seed programs have name_fr populated, backfill block exists in seed.py, UX walkthrough test fixtures include name_fr, translated_name property falls back correctly — 2026-02-12 (QA-W29)
 
 ### Pre-Launch Checklist
 
