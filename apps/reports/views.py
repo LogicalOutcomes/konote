@@ -980,6 +980,23 @@ def funder_report_form(request):
             if isinstance(count, int):
                 report_data["age_demographics"][age_group] = suppress_small_cell(count, program)
 
+    # Suppress custom demographic section counts for confidential programs.
+    # Without this, funder profile breakdowns (e.g. Gender Identity) could
+    # leak small-cell counts that enable re-identification — a PIPEDA issue.
+    if program.is_confidential and "custom_demographic_sections" in report_data:
+        for section in report_data["custom_demographic_sections"]:
+            any_suppressed = False
+            for cat_label, count in section["data"].items():
+                if isinstance(count, int):
+                    suppressed = suppress_small_cell(count, program)
+                    if suppressed != count:
+                        any_suppressed = True
+                    section["data"][cat_label] = suppressed
+            # If any cell was suppressed, suppress the total too —
+            # otherwise total minus visible sum reveals the suppressed aggregate.
+            if any_suppressed:
+                section["total"] = "suppressed"
+
     recipient = form.get_recipient_display()
     safe_name = sanitise_filename(program.name.replace(" ", "_"))
     safe_fy = sanitise_filename(fiscal_year_label.replace(" ", "_"))

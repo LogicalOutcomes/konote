@@ -304,6 +304,21 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
         else:
             raise forms.ValidationError(_("Please select a fiscal year."))
 
+        # Validate that the selected funder profile is linked to the
+        # selected program.  Without this check an executive could pick
+        # a profile intended for a different program, producing a report
+        # with empty or misleading breakdown sections.
+        funder_profile = cleaned.get("funder_profile")
+        program = cleaned.get("program")
+        if funder_profile and program:
+            if not funder_profile.programs.filter(pk=program.pk).exists():
+                self.add_error(
+                    "funder_profile",
+                    _("This funder profile is not linked to the selected program. "
+                      "Choose a different profile or ask an administrator to "
+                      "assign this profile to the program."),
+                )
+
         return cleaned
 
 
