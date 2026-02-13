@@ -24,7 +24,8 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from apps.clients.models import ClientDetailValue, ClientFile, CustomFieldDefinition
-from apps.events.models import Alert, Event, EventType
+from apps.communications.models import Communication
+from apps.events.models import Alert, CalendarFeedToken, Event, EventType, Meeting
 from apps.groups.models import (
     Group,
     GroupMembership,
@@ -1015,6 +1016,10 @@ class Command(BaseCommand):
             return
 
         if demo_notes_exist and force:
+            # Delete demo communications
+            comm_count = Communication.objects.filter(
+                client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
             # Delete demo notes (cascades to ProgressNoteTarget, MetricValue)
             note_count = ProgressNote.objects.filter(
                 client_file__record_id__startswith="DEMO-"
@@ -1023,16 +1028,19 @@ class Command(BaseCommand):
             plan_count = PlanSection.objects.filter(
                 client_file__record_id__startswith="DEMO-"
             ).delete()[0]
-            # Delete demo events and alerts
+            # Delete demo events and alerts (Meeting cascades from Event)
             event_count = Event.objects.filter(
                 client_file__record_id__startswith="DEMO-"
             ).delete()[0]
             alert_count = Alert.objects.filter(
                 client_file__record_id__startswith="DEMO-"
             ).delete()[0]
+            # Delete calendar feed tokens for demo workers
+            demo_users = User.objects.filter(is_demo=True)
+            CalendarFeedToken.objects.filter(user__in=demo_users).delete()
             self.stdout.write(
-                f"  --force: Deleted {note_count} notes, {plan_count} plans, "
-                f"{event_count} events, {alert_count} alerts for demo clients."
+                f"  --force: Deleted {comm_count} communications, {note_count} notes, "
+                f"{plan_count} plans, {event_count} events, {alert_count} alerts."
             )
 
         # Fetch workers
@@ -1091,6 +1099,15 @@ class Command(BaseCommand):
 
         # --- Create demo groups ---
         self._create_demo_groups(workers, programs_by_name, now)
+
+        # --- Create demo meetings ---
+        self._create_demo_meetings(workers, programs_by_name, now)
+
+        # --- Create demo communication logs ---
+        self._create_demo_communications(workers, programs_by_name, now)
+
+        # --- Create calendar feed tokens for demo workers ---
+        self._create_demo_calendar_feeds(workers)
 
         self.stdout.write(self.style.SUCCESS(
             "  Demo rich data seeded successfully (15 clients across 5 programs)."
@@ -1798,3 +1815,365 @@ class Command(BaseCommand):
             )
 
         self.stdout.write("  Demo groups seeded.")
+
+    # ------------------------------------------------------------------
+    # Demo meetings: scheduled, completed, no-show across programs
+    # ------------------------------------------------------------------
+
+    def _create_demo_meetings(self, workers, programs_by_name, now):
+        """Create demo meetings to populate the meeting list and calendar feed."""
+        worker1 = workers["demo-worker-1"]
+        worker2 = workers["demo-worker-2"]
+
+        meeting_data = [
+            # (record_id, worker, program, title, days_offset, location, status, duration, reminder_status)
+            # days_offset: positive = future, negative = past
+            {
+                "record_id": "DEMO-001",
+                "worker": worker1,
+                "program": "Supported Employment",
+                "days_offset": 3,
+                "location": "Office A — 2nd floor",
+                "status": "scheduled",
+                "duration": 45,
+                "reminder_status": "sent",
+            },
+            {
+                "record_id": "DEMO-002",
+                "worker": worker1,
+                "program": "Supported Employment",
+                "days_offset": -5,
+                "location": "Community Room",
+                "status": "completed",
+                "duration": 60,
+                "reminder_status": "sent",
+            },
+            {
+                "record_id": "DEMO-002",
+                "worker": worker1,
+                "program": "Supported Employment",
+                "days_offset": 7,
+                "location": "Office A — 2nd floor",
+                "status": "scheduled",
+                "duration": 45,
+                "reminder_status": "not_sent",
+            },
+            {
+                "record_id": "DEMO-004",
+                "worker": worker1,
+                "program": "Housing Stability",
+                "days_offset": 5,
+                "location": "Housing Support Office",
+                "status": "scheduled",
+                "duration": 60,
+                "reminder_status": "not_sent",
+            },
+            {
+                "record_id": "DEMO-005",
+                "worker": worker1,
+                "program": "Housing Stability",
+                "days_offset": -2,
+                "location": "Housing Support Office",
+                "status": "no_show",
+                "duration": 45,
+                "reminder_status": "sent",
+            },
+            {
+                "record_id": "DEMO-006",
+                "worker": worker1,
+                "program": "Housing Stability",
+                "days_offset": -10,
+                "location": "Coffee shop — Bloor & Spadina",
+                "status": "completed",
+                "duration": 30,
+                "reminder_status": "sent",
+            },
+            {
+                "record_id": "DEMO-007",
+                "worker": worker2,
+                "program": "Youth Drop-In",
+                "days_offset": 4,
+                "location": "Youth Room",
+                "status": "scheduled",
+                "duration": 30,
+                "reminder_status": "not_sent",
+            },
+            {
+                "record_id": "DEMO-010",
+                "worker": worker2,
+                "program": "Newcomer Connections",
+                "days_offset": 6,
+                "location": "Settlement Office",
+                "status": "scheduled",
+                "duration": 60,
+                "reminder_status": "not_sent",
+            },
+            {
+                "record_id": "DEMO-011",
+                "worker": worker2,
+                "program": "Newcomer Connections",
+                "days_offset": -4,
+                "location": "Community Centre — Room 3",
+                "status": "completed",
+                "duration": 45,
+                "reminder_status": "sent",
+            },
+            {
+                "record_id": "DEMO-013",
+                "worker": worker2,
+                "program": "Community Kitchen",
+                "days_offset": 10,
+                "location": "Kitchen",
+                "status": "scheduled",
+                "duration": 30,
+                "reminder_status": "not_sent",
+            },
+        ]
+
+        created = 0
+        for md in meeting_data:
+            client = ClientFile.objects.filter(record_id=md["record_id"]).first()
+            if not client:
+                continue
+            program = programs_by_name.get(md["program"])
+            if not program:
+                continue
+
+            timestamp = now + timedelta(
+                days=md["days_offset"],
+                hours=random.choice([9, 10, 11, 13, 14, 15]),
+            )
+
+            # Create the underlying Event
+            event = Event.objects.create(
+                client_file=client,
+                title="Meeting",
+                start_timestamp=timestamp,
+                author_program=program,
+            )
+            # Backdate created_at for past meetings
+            if md["days_offset"] < 0:
+                Event.objects.filter(pk=event.pk).update(
+                    created_at=timestamp - timedelta(days=2)
+                )
+
+            # Create the Meeting
+            meeting = Meeting.objects.create(
+                event=event,
+                location=md["location"],
+                duration_minutes=md["duration"],
+                status=md["status"],
+                reminder_sent=md["reminder_status"] == "sent",
+                reminder_status=md["reminder_status"],
+            )
+            meeting.attendees.add(md["worker"])
+            created += 1
+
+        self.stdout.write(f"  Demo meetings: {created} created.")
+
+    # ------------------------------------------------------------------
+    # Demo communications: phone calls, texts, in-person across programs
+    # ------------------------------------------------------------------
+
+    def _create_demo_communications(self, workers, programs_by_name, now):
+        """Create demo communication logs for the client timeline."""
+        worker1 = workers["demo-worker-1"]
+        worker2 = workers["demo-worker-2"]
+
+        comm_data = [
+            # Supported Employment — Casey
+            {
+                "record_id": "DEMO-001",
+                "worker": worker1,
+                "program": "Supported Employment",
+                "comms": [
+                    {"channel": "phone", "direction": "outbound", "days_ago": 25,
+                     "subject": "Interview prep follow-up",
+                     "content": "Called to confirm mock interview time. Jordan feeling nervous but excited."},
+                    {"channel": "sms", "direction": "outbound", "days_ago": 18,
+                     "subject": "", "content": "Reminder: bring your updated resume to Thursday's session."},
+                    {"channel": "sms", "direction": "inbound", "days_ago": 17,
+                     "subject": "", "content": "Thanks! Will do."},
+                    {"channel": "phone", "direction": "inbound", "days_ago": 8,
+                     "subject": "Interview callback",
+                     "content": "Jordan called — got a callback for the retail position. Very excited."},
+                ],
+            },
+            {
+                "record_id": "DEMO-002",
+                "worker": worker1,
+                "program": "Supported Employment",
+                "comms": [
+                    {"channel": "phone", "direction": "outbound", "days_ago": 20,
+                     "subject": "Check-in after missed session",
+                     "content": "Left voicemail — Taylor missed Tuesday's session. Confirmed reschedule for Friday."},
+                    {"channel": "phone", "direction": "outbound", "days_ago": 6,
+                     "subject": "Pre-interview encouragement",
+                     "content": "Called to go over interview tips. Taylor still anxious but knows the material well."},
+                ],
+            },
+            # Housing Stability — Casey
+            {
+                "record_id": "DEMO-004",
+                "worker": worker1,
+                "program": "Housing Stability",
+                "comms": [
+                    {"channel": "phone", "direction": "outbound", "days_ago": 30,
+                     "subject": "Housing application status",
+                     "content": "Called to check on subsidised housing application. Still on wait list — 4-6 months."},
+                    {"channel": "sms", "direction": "outbound", "days_ago": 15,
+                     "subject": "", "content": "Hi Sam — just checking in. How's the new place going?"},
+                    {"channel": "sms", "direction": "inbound", "days_ago": 14,
+                     "subject": "", "content": "Good thanks! Neighbours are nice. Still getting settled."},
+                    {"channel": "in_person", "direction": "outbound", "days_ago": 5,
+                     "subject": "Drop-in check-in",
+                     "content": "Sam dropped by the office. Settling in well. Discussed budgeting for groceries."},
+                ],
+            },
+            {
+                "record_id": "DEMO-005",
+                "worker": worker1,
+                "program": "Housing Stability",
+                "comms": [
+                    {"channel": "phone", "direction": "outbound", "days_ago": 22,
+                     "subject": "Legal aid referral follow-up",
+                     "content": "Called to check if Kai connected with legal aid. Still waiting for callback."},
+                    {"channel": "phone", "direction": "outbound", "days_ago": 3,
+                     "subject": "Missed meeting follow-up",
+                     "content": "Called after no-show. Kai apologised — had a family emergency. Rescheduled."},
+                ],
+            },
+            # Youth Drop-In — Noor
+            {
+                "record_id": "DEMO-007",
+                "worker": worker2,
+                "program": "Youth Drop-In",
+                "comms": [
+                    {"channel": "phone", "direction": "outbound", "days_ago": 28,
+                     "subject": "Parent contact — field trip",
+                     "content": "Called Elena (parent) about upcoming field trip. Permission form signed."},
+                    {"channel": "in_person", "direction": "outbound", "days_ago": 10,
+                     "subject": "Quick check-in",
+                     "content": "Jayden pulled me aside after group. Wants to help facilitate next week's activity."},
+                ],
+            },
+            {
+                "record_id": "DEMO-008",
+                "worker": worker2,
+                "program": "Youth Drop-In",
+                "comms": [
+                    {"channel": "phone", "direction": "outbound", "days_ago": 35,
+                     "subject": "Outreach — missed 3 weeks",
+                     "content": "Called Maya's dad. Maya has been anxious about group. Encouraged gentle return."},
+                    {"channel": "in_person", "direction": "outbound", "days_ago": 12,
+                     "subject": "Welcome back check-in",
+                     "content": "Maya came back today. Quiet but stayed the whole session. Small step forward."},
+                ],
+            },
+            # Newcomer Connections — Noor
+            {
+                "record_id": "DEMO-010",
+                "worker": worker2,
+                "program": "Newcomer Connections",
+                "comms": [
+                    {"channel": "phone", "direction": "outbound", "days_ago": 40,
+                     "subject": "Doctor appointment support",
+                     "content": "Called to offer to accompany Amara to walk-in clinic. She said she'll try on her own first."},
+                    {"channel": "phone", "direction": "inbound", "days_ago": 32,
+                     "subject": "Doctor visit success",
+                     "content": "Amara called — went to the clinic by herself! Was nervous but managed it. Big milestone."},
+                    {"channel": "sms", "direction": "outbound", "days_ago": 8,
+                     "subject": "", "content": "Community event at the library this Saturday 2pm. Would you like to come?"},
+                    {"channel": "sms", "direction": "inbound", "days_ago": 7,
+                     "subject": "", "content": "Yes I will come! Can I bring my husband?"},
+                ],
+            },
+            {
+                "record_id": "DEMO-011",
+                "worker": worker2,
+                "program": "Newcomer Connections",
+                "comms": [
+                    {"channel": "phone", "direction": "outbound", "days_ago": 20,
+                     "subject": "Check-in after referral",
+                     "content": "Called to follow up on women's support group referral. Fatima attended once — found it helpful."},
+                ],
+            },
+            # Community Kitchen — Noor
+            {
+                "record_id": "DEMO-013",
+                "worker": worker2,
+                "program": "Community Kitchen",
+                "comms": [
+                    {"channel": "phone", "direction": "inbound", "days_ago": 15,
+                     "subject": "Recipe feedback",
+                     "content": "Priya called to say her kids loved the lentil soup recipe. Asked for the banana bread one too."},
+                    {"channel": "in_person", "direction": "outbound", "days_ago": 4,
+                     "subject": "Session feedback",
+                     "content": "Quick chat after kitchen session. Priya feeling more confident with meal planning."},
+                ],
+            },
+            {
+                "record_id": "DEMO-014",
+                "worker": worker2,
+                "program": "Community Kitchen",
+                "comms": [
+                    {"channel": "in_person", "direction": "outbound", "days_ago": 9,
+                     "subject": "Volunteer role discussion",
+                     "content": "Liam asked about becoming a regular volunteer helper. Discussed responsibilities."},
+                ],
+            },
+        ]
+
+        created = 0
+        for group in comm_data:
+            client = ClientFile.objects.filter(record_id=group["record_id"]).first()
+            if not client:
+                continue
+            program = programs_by_name.get(group["program"])
+            if not program:
+                continue
+
+            for c in group["comms"]:
+                comm = Communication(
+                    client_file=client,
+                    direction=c["direction"],
+                    channel=c["channel"],
+                    method="manual_log",
+                    subject=c.get("subject", ""),
+                    logged_by=group["worker"],
+                    author_program=program,
+                    delivery_status="delivered",
+                )
+                comm.content = c.get("content", "")
+                comm.save()
+                # Backdate created_at
+                backdate = now - timedelta(
+                    days=c["days_ago"], hours=random.randint(8, 17)
+                )
+                Communication.objects.filter(pk=comm.pk).update(created_at=backdate)
+                created += 1
+
+        self.stdout.write(f"  Demo communications: {created} logged.")
+
+    # ------------------------------------------------------------------
+    # Calendar feed tokens for demo workers
+    # ------------------------------------------------------------------
+
+    def _create_demo_calendar_feeds(self, workers):
+        """Create calendar feed tokens so demo workers can see their iCal feeds."""
+        import secrets
+
+        created = 0
+        for username, user in workers.items():
+            _, was_created = CalendarFeedToken.objects.get_or_create(
+                user=user,
+                defaults={
+                    "token": secrets.token_urlsafe(48),
+                    "is_active": True,
+                },
+            )
+            if was_created:
+                created += 1
+
+        if created:
+            self.stdout.write(f"  Calendar feed tokens: {created} created for demo workers.")

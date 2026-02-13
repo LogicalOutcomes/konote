@@ -6,6 +6,13 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ## Completed 2026-02-11 to 2026-02-13
 
+### Moved from Recently Done (2026-02-13 session review)
+
+- [x] Add screenshot self-validation — 2026-02-13 (QA-W35)
+- [x] All critical/warning UX walkthrough issues fixed — 2026-02-13 (UX-RESTORE2)
+- [x] Fix TEST-5/6/7/8/9 — scenario runner click fallback, YAML fixes — 2026-02-13 (QA-W30–W33)
+- [x] Full UX walkthrough restored — 57/57 tests passing, 321 pages — PR #64 (UX-RESTORE1)
+
 ### Moved from Recently Done (2026-02-13 cleanup)
 
 - [x] Fix CAL-001 preflight — executive persona now checks `/clients/executive/` with `.stat-card` selector — 2026-02-11 (SMOKE-1)

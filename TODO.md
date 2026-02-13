@@ -14,12 +14,13 @@ All UXP tasks complete — committed as `21bb390`.
 ### Pre-Launch Checklist
 
 - [ ] Complete Agency Permissions Interview — signed Configuration Summary required before each new agency deployment (ONBOARD-GATE)
-- [ ] Verify email is configured — needed for exports, erasure alerts, password resets (OPS3)
+- [ ] Verify email is configured — needed for exports, erasure alerts, password resets. See `.env.example` for Resend.com (recommended) and M365 setup. Set `DEMO_EMAIL_BASE` to test with demo users (OPS3)
 - [ ] Test backup restore from a real database dump (OPS4)
 
 ### UX Walkthrough
 
 - [x] Re-run full UX walkthrough — 57/57 tests passing, 321 pages audited. Report at `tasks/ux-review-latest.md` (UX-RESTORE1) ✓
+- [x] Fix heading level skip (h1→h3) on Events tab — changed `<h3>` to `<h2>` in quick-log templates (UX-HEAD1) ✓
 
 ### Do Occasionally
 
@@ -60,6 +61,32 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 All Tier 1 and Tier 2 tickets complete. Tier 3 deferred (TEST-19 multi-session, IMPROVE-12 research).
 
 ## Coming Up
+
+### Documentation Catch-Up — New Features
+
+All docs lagged behind recent feature work (messaging, calendar, meetings, consent, alert safety workflow, funder profiles, export hardening). Each task below is independent — can be done in any order.
+
+#### Permissions & RBAC
+
+- [ ] Update permissions matrix doc — add 12 missing rows (messaging, calendar, client create, edit contact, group create/content/reports, alert recommend/review, erasure) and fix 3 expert-panel changes (staff alert.cancel→DENY, staff group.manage_members→SCOPED, PM alert.create→ALLOW). Add key rules for two-person safety rule, consent immutability. Source of truth: `apps/auth_app/permissions.py` (DOC-PERM1)
+
+#### KoNote Website (konote-website repo)
+
+- [ ] Update features.html — remove "Appointment Scheduling" from "What KoNote Does NOT Do" (now has meetings/calendar). Add feature cards for Messaging & Communication Logging, Meetings & Calendar (iCal feed), and Consent Management. Update Events & Alerts card to mention two-person safety rule (DOC-WEB1)
+- [ ] Fix website footer — change `KoNote-Redux` repo link to current `KoNote` repo URL across all pages (DOC-WEB2)
+- [ ] Update website README — fix old repo reference, add `evidence.html` and `demo.html` to structure section (DOC-WEB3)
+
+#### App Documentation (docs/ folder)
+
+- [ ] Update docs/index.md "What's New" — add messaging/communications, meetings/calendar with iCal feed, consent management with withdrawal tracking, alert safety workflow (two-person rule), funder profiles with small-cell suppression (DOC-INDEX1)
+- [ ] Update using-KoNote.md — add staff guide sections for: logging communications (quick-log + full form), scheduling meetings, using calendar feed (iCal), recommending alert cancellation, viewing communication history on timeline (DOC-USER1)
+- [ ] Update administering-KoNote.md — add admin sections for: messaging settings and feature toggles (SMS, email), calendar feed token management, communication channel configuration, funder profile setup (DOC-ADMIN1)
+- [ ] Update technical-documentation.md — add Communication and Meeting models, consent fields on ClientFile, new permission keys (meeting.*, communication.*, alert.recommend_cancel, alert.review_cancel_recommendation), messaging services layer (DOC-TECH1)
+- [ ] Update deploying-KoNote.md — add Twilio account setup for SMS, SMTP configuration for email (Google Workspace / M365), env vars for messaging features. Fix case mismatch: docs/index.md references `deploying-KoNote.md` — verify filename consistency (DOC-DEPLOY1)
+
+#### Cross-Cutting
+
+- [ ] Create CHANGELOG.md — user-facing release notes summarising what's changed, grouped by feature area. Agencies need this to know what's new between updates (DOC-CHANGE1)
 
 ### Messaging, Meetings & Calendar
 
@@ -161,6 +188,8 @@ See `tasks/messaging-calendar-plan.md` (phase-by-phase build) and `tasks/messagi
 
 ## Recently Done
 
+- [x] **Session review fixes** — DRY email logic in seed.py, heading accessibility fix (h3→h2), simplified save(), test RBAC corrections — 2026-02-13 (REV-FIX1)
+- [x] **Demo email support** — `DEMO_EMAIL_BASE` env var for tagged demo emails, Resend.com docs in .env.example — 2026-02-13 (EMAIL1)
 - [x] **UXP1-6 — Messaging/calendar UX polish** — nav link, success toast, date formats, button split, timeline filtering, direction toggle, consent indicator, translations — 2026-02-13 (UXP1-6)
 - [x] **QA Round 5 — all Tier 1 + Tier 2 tickets** (25 tickets) — 2026-02-13 (QA-W36–W54)
   - BUG-16+18: Search before filters on /clients/ (QA-W36)
@@ -187,8 +216,4 @@ See `tasks/messaging-calendar-plan.md` (phase-by-phase build) and `tasks/messagi
 - [x] Remove duplicate user management URLs — 2026-02-13 (URL-DEDUP1)
 - [x] Replace hardcoded path in `preflight.py` — 2026-02-13 (DEV-PREFLIGHT1)
 - [x] Auto-generate `.run-manifest.json` in `pytest_sessionfinish` — 2026-02-13 (QA-W34)
-- [x] Add screenshot self-validation — 2026-02-13 (QA-W35)
-- [x] All critical/warning UX walkthrough issues fixed — 2026-02-13 (UX-RESTORE2)
-- [x] Fix TEST-5/6/7/8/9 — scenario runner click fallback, YAML fixes — 2026-02-13 (QA-W30–W33)
-- [x] Full UX walkthrough restored — 57/57 tests passing, 321 pages — PR #64 (UX-RESTORE1)
 _Older completed tasks: [tasks/ARCHIVE.md](tasks/ARCHIVE.md). Reference: [tasks/whats-been-built.md](tasks/whats-been-built.md). Recurring chores: [tasks/recurring-tasks.md](tasks/recurring-tasks.md)._

@@ -570,5 +570,6 @@ class UxScenarioBase(UxWalkthroughBase):
             "record_id": "",
             "status": "active",
             "programs": [program.pk],
+            "preferred_language": "en",
         })
         return ClientFile.objects.order_by("-pk").first()

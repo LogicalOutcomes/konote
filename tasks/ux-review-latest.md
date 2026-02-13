@@ -1,6 +1,6 @@
 # KoNote UX Walkthrough Report
 
-**Generated:** 2026-02-13 13:01:05  
+**Generated:** 2026-02-13 17:32:44  
 **Command:** `pytest tests/ux_walkthrough/ -v`
 
 ## Summary
@@ -8,9 +8,9 @@
 | Metric | This Run | Previous |
 |--------|----------|----------|
 | Pages visited | 321 | 321 (same) |
-| Critical issues | 0 | 1 (down 1) |
-| Warnings | 0 | 1 (down 1) |
-| Info items | 31 | 31 (same) |
+| Critical issues | 0 |
+| Warnings | 2 | 2 (same) |
+| Info items | 28 | 28 (same) |
 
 ## Critical Issues
 
@@ -18,7 +18,11 @@ _No critical issues found._
 
 ## Warning Issues
 
-_No warning issues found._
+- **[Direct Service] Events tab** `/events/client/1/`
+  Heading level skipped: <h1> followed by <h3>
+
+- **[Program Manager] Events tab** `/events/client/1/`
+  Heading level skipped: <h1> followed by <h3>
 
 ## Info Issues
 
@@ -102,15 +106,6 @@ _No warning issues found._
 
 - **[Browser] Responsive Layout** `/clients/`
   [mobile] Client list: Touch target too small — <button> "" is 39x13px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/`
-  [mobile] Client list: Touch target too small — <select> "All statuses" is 309x41px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/`
-  [mobile] Client list: Touch target too small — <select> "All Programs" is 309x41px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/`
-  [mobile] Client list: Touch target too small — <a> "Clear filters" is 94x36px (min 44x44)
 
 - **[Browser] Responsive Layout** `/clients/`
   [mobile] Client list: Touch target too small — <a> "Jane Doe" is 62x20px (min 44x44)
@@ -250,7 +245,7 @@ _No warning issues found._
 | Note detail | `/notes/1/` | 200 | None |
 | Plan view | `/plans/client/1/` | 200 | None |
 | Section create form | `/plans/client/1/sections/create/` | 200 | None |
-| Events tab | `/events/client/1/` | 200 | None |
+| Events tab | `/events/client/1/` | 200 | 1 issue(s) |
 | Event create form | `/events/client/1/create/` | 200 | None |
 | Alert create form | `/events/client/1/alerts/create/` | 200 | None |
 | Client analysis | `/reports/client/1/analysis/` | 200 | None |
@@ -338,7 +333,7 @@ _No warning issues found._
 | Target history | `/plans/targets/1/history/` | 200 | None |
 | Metrics export form | `/reports/export/` | 200 | None |
 | Funder report form | `/reports/funder-report/` | 200 | None |
-| Events tab | `/events/client/1/` | 200 | None |
+| Events tab | `/events/client/1/` | 200 | 1 issue(s) |
 | Event create form (403) | `/events/client/1/create/` | 403 | None |
 | Client analysis | `/reports/client/1/analysis/` | 200 | None |
 | Review new client | `/clients/3/` | 200 | None |
@@ -639,15 +634,13 @@ _Tested with Playwright (headless Chromium) + axe-core._
 
 - **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <button> "" is 39x13px (min 44x44)
 
-- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <select> "All statuses" is 309x41px (min 44x44)
-
-- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <select> "All Programs" is 309x41px (min 44x44)
-
-- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "Clear filters" is 94x36px (min 44x44)
-
 - **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "Jane Doe" is 62x20px (min 44x44)
 
 ## Recommendations
+
+### Short-term (Warnings)
+
+- **Heading structure:** 2 pages with heading issues.
 
 ---
 

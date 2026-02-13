@@ -4,6 +4,7 @@ Django management command to seed the database with default data.
 Run with: python manage.py seed
 """
 import json
+import os
 from pathlib import Path
 
 from django.conf import settings
@@ -83,6 +84,8 @@ class Command(BaseCommand):
             ("ai_assist", False),
             ("groups", True),
             ("participant_portal", False),
+            ("messaging_sms", False),
+            ("messaging_email", False),
         ]
         created = 0
         for key, enabled in defaults:
@@ -93,12 +96,15 @@ class Command(BaseCommand):
                 created += 1
         self.stdout.write(f"  Feature toggles: {created} created.")
 
-        # In demo mode, enable the participant portal so the demo button works
+        # In demo mode, enable features so all workflows are demonstrable
         if settings.DEMO_MODE:
             FeatureToggle.objects.filter(feature_key="participant_portal").update(
                 is_enabled=True
             )
-            self.stdout.write("  → participant_portal enabled for demo mode.")
+            FeatureToggle.objects.filter(
+                feature_key__in=["messaging_sms", "messaging_email"]
+            ).update(is_enabled=True)
+            self.stdout.write("  Demo mode: participant_portal, messaging_sms, messaging_email enabled.")
 
     def _seed_instance_settings(self):
         from apps.admin_settings.models import InstanceSetting
@@ -130,7 +136,8 @@ class Command(BaseCommand):
         """
         from apps.auth_app.models import User
         from apps.clients.models import ClientDetailValue, ClientFile, ClientProgramEnrolment
-        from apps.events.models import Alert, Event
+        from apps.communications.models import Communication
+        from apps.events.models import Alert, CalendarFeedToken, Event
         from apps.notes.models import ProgressNote
         from apps.plans.models import PlanSection, PlanTarget
         from apps.programs.models import Program, UserProgramRole
@@ -145,6 +152,7 @@ class Command(BaseCommand):
         count = demo_clients.count()
 
         # Delete rich data (cascades handle MetricValue, ProgressNoteTarget, etc.)
+        Communication.objects.filter(client_file__in=demo_clients).delete()
         ProgressNote.objects.filter(client_file__in=demo_clients).delete()
         PlanTarget.objects.filter(client_file__in=demo_clients).delete()
         PlanSection.objects.filter(client_file__in=demo_clients).delete()
@@ -154,8 +162,9 @@ class Command(BaseCommand):
         ClientProgramEnrolment.objects.filter(client_file__in=demo_clients).delete()
         demo_clients.delete()
 
-        # Remove old demo user roles and the old single-worker user
+        # Remove calendar feed tokens and roles for demo users
         demo_users = User.objects.filter(is_demo=True)
+        CalendarFeedToken.objects.filter(user__in=demo_users).delete()
         UserProgramRole.objects.filter(user__in=demo_users).delete()
         # Remove old demo-worker (replaced by demo-worker-1 and demo-worker-2)
         User.objects.filter(username="demo-worker", is_demo=True).delete()
@@ -263,16 +272,22 @@ class Command(BaseCommand):
             ("demo-admin", "Alex Admin", True),
         ]
         for username, display_name, is_admin in demo_users:
+            demo_email = self._demo_email(username)
             user, created = User.objects.get_or_create(
                 username=username,
                 defaults={
                     "display_name": display_name,
                     "is_admin": is_admin,
                     "is_demo": True,
+                    "email": demo_email,
                 },
             )
             if created:
                 user.set_password("demo1234")
+                user.save()
+            # Backfill email on existing demo users
+            elif not user.email and demo_email:
+                user.email = demo_email
                 user.save()
 
         front_desk = User.objects.get(username="demo-frontdesk")
@@ -384,6 +399,14 @@ class Command(BaseCommand):
         # Create a demo participant portal account for Jordan Rivera (DEMO-001)
         self._seed_demo_portal_participant()
 
+    def _demo_email(self, username):
+        """Build a demo email from DEMO_EMAIL_BASE env var, or fall back to example.com."""
+        email_base = os.environ.get("DEMO_EMAIL_BASE", "")
+        if email_base and "@" in email_base:
+            local, domain = email_base.split("@", 1)
+            return f"{local}+{username}@{domain}"
+        return f"{username}@example.com"
+
     def _seed_demo_portal_participant(self):
         """Create a demo ParticipantUser so the portal can be tested."""
         from apps.clients.models import ClientFile
@@ -397,7 +420,7 @@ class Command(BaseCommand):
 
         if not ParticipantUser.objects.filter(client_file=demo_client).exists():
             participant = ParticipantUser.objects.create_participant(
-                email="jordan.demo@example.com",
+                email=self._demo_email("demo-portal"),
                 client_file=demo_client,
                 display_name="Jordan",
                 password="demo1234",

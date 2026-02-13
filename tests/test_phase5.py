@@ -213,10 +213,14 @@ class AlertCRUDTest(TestCase):
         self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
         self.admin = User.objects.create_user(username="admin", password="pass", is_admin=True)
         self.other_staff = User.objects.create_user(username="other", password="pass", is_admin=False)
+        self.pm = User.objects.create_user(username="pm", password="pass", is_admin=False)
 
         self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
         UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
         UserProgramRole.objects.create(user=self.other_staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.pm, program=self.prog, role="program_manager")
+        # Admin needs a PM role to cancel alerts (admin alone is not a program role)
+        UserProgramRole.objects.create(user=self.admin, program=self.prog, role="program_manager")
 
         self.client_file = ClientFile()
         self.client_file.first_name = "Jane"
@@ -238,13 +242,14 @@ class AlertCRUDTest(TestCase):
         self.assertEqual(Alert.objects.count(), 1)
         self.assertEqual(Alert.objects.first().content, "Safety concern noted")
 
-    def test_alert_cancel_by_author(self):
+    def test_pm_can_cancel_alert(self):
+        """Program managers can cancel alerts directly (two-person rule: staff recommend, PM cancels)."""
         alert = Alert.objects.create(
             client_file=self.client_file,
             content="Test alert",
             author=self.staff,
         )
-        self.http.login(username="staff", password="pass")
+        self.http.login(username="pm", password="pass")
         resp = self.http.post(
             f"/events/alerts/{alert.pk}/cancel/",
             {"status_reason": "No longer relevant"},
@@ -253,7 +258,8 @@ class AlertCRUDTest(TestCase):
         alert.refresh_from_db()
         self.assertEqual(alert.status, "cancelled")
 
-    def test_staff_cannot_cancel_others_alert(self):
+    def test_staff_cannot_cancel_alert(self):
+        """Staff cannot cancel alerts directly — must use recommend_cancel (two-person safety rule)."""
         alert = Alert.objects.create(
             client_file=self.client_file,
             content="Not yours",
@@ -268,7 +274,8 @@ class AlertCRUDTest(TestCase):
         alert.refresh_from_db()
         self.assertEqual(alert.status, "default")
 
-    def test_admin_can_cancel_any_alert(self):
+    def test_admin_with_pm_role_can_cancel_any_alert(self):
+        """Admin with PM role can cancel any alert in their program."""
         alert = Alert.objects.create(
             client_file=self.client_file,
             content="Admin cancel",

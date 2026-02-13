@@ -86,3 +86,49 @@ class Command(BaseCommand):
             consent_updated += 1
         if consent_updated:
             self.stdout.write(f"  Set consent for {consent_updated} demo client(s).")
+
+        # 4. Populate core phone/email fields and messaging consent (CASL)
+        # The custom fields store "Primary Phone" and "Email" as EAV values,
+        # but the ClientFile model has its own encrypted phone/email fields
+        # that the messaging system uses. Set those + CASL consent flags.
+        messaging_updated = 0
+        today = timezone.now().date()
+        for record_id, field_values in CLIENT_CUSTOM_FIELDS.items():
+            client = ClientFile.objects.filter(record_id=record_id).first()
+            if not client:
+                continue
+
+            changed = False
+            phone = field_values.get("Primary Phone")
+            email = field_values.get("Email")
+
+            if phone and not client.phone:
+                client.phone = phone
+                client.sms_consent = True
+                client.sms_consent_date = today
+                client.consent_messaging_type = "express"
+                client.preferred_contact_method = "sms"
+                changed = True
+
+            if email and not client.email:
+                client.email = email
+                client.email_consent = True
+                client.email_consent_date = today
+                changed = True
+                # If both phone and email, prefer "both"
+                if client.sms_consent:
+                    client.preferred_contact_method = "both"
+                else:
+                    client.preferred_contact_method = "email"
+
+            # Clients without email but with phone — set sms preference
+            if phone and not email and not client.preferred_contact_method:
+                client.preferred_contact_method = "sms"
+                changed = True
+
+            if changed:
+                client.save()
+                messaging_updated += 1
+
+        if messaging_updated:
+            self.stdout.write(f"  Messaging: set phone/email and consent for {messaging_updated} demo client(s).")

@@ -1,14 +1,14 @@
 {% load i18n %}
 {# HTMX inline form for quick-logging a communication #}
 <div id="quick-log-container" class="quick-log-section">
-    <h3>
+    <h2>
         {% if channel == "phone" %}{% trans "Log a Call" %}
         {% elif channel == "sms" %}{% trans "Log a Text" %}
         {% elif channel == "email" %}{% trans "Log an Email" %}
         {% elif channel == "in_person" %}{% trans "Log a Visit" %}
         {% else %}{% trans "Log Communication" %}
         {% endif %}
-    </h3>
+    </h2>
 
     <form hx-post="{% url 'communications:quick_log' client_id=client.pk %}"
           hx-target="#quick-log-container"
