@@ -68,8 +68,8 @@
 - Calendar feed tokens for demo workers
 
 ### Needed (verify or add to seed_demo_data)
-- Client with no phone number and no email (for SCN-084 step 1)
-- Client with SMS consent explicitly withdrawn (`sms_consent=False`, `sms_consent_withdrawn_date` set) for SCN-084 step 2
+- ~~Client with no phone number and no email (for SCN-084 step 1)~~ — Done: DEMO-006 (Jesse Morales)
+- ~~Client with SMS consent explicitly withdrawn for SCN-084 step 2~~ — Done: DEMO-005 (Kai Dubois, `sms_consent_withdrawn_date=2026-01-10`)
 - A confidential programme (`is_confidential=True`) with <5 clients for SCN-086 step 3
 - At least one uploaded funder profile with custom age bins for SCN-086
 
