@@ -16,7 +16,8 @@
       action="{% url 'clients:client_consent_save' client_id=client.pk %}"
       hx-post="{% url 'clients:client_consent_save' client_id=client.pk %}"
       hx-target="#consent-section"
-      hx-swap="innerHTML">
+      hx-swap="innerHTML"
+      hx-on::after-settle="this.querySelector('select, input, textarea')?.focus()">
     {% csrf_token %}
 
     <p class="help-text">

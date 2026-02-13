@@ -47,7 +47,7 @@
         <header>{% trans "Users" %}</header>
         <p>{% trans "Create, edit, and deactivate user accounts." %}</p>
         <p class="settings-indicator">{% blocktrans count count=active_users %}{{ count }} active user{% plural %}{{ count }} active users{% endblocktrans %}</p>
-        <footer><a href="{% url 'auth_app:user_list' %}" role="button" class="outline">{% trans "Manage Users" %}</a></footer>
+        <footer><a href="{% url 'admin_users:user_list' %}" role="button" class="outline">{% trans "Manage Users" %}</a></footer>
     </article>
 
     <article>

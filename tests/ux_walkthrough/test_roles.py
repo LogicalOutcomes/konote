@@ -206,17 +206,17 @@ class StaffWalkthroughTest(UxWalkthroughBase):
         # 15. Note detail (HTMX)
         self.visit_htmx(role, "Note detail", f"/notes/{self.note.pk}/")
 
-        # 16. Plan view (read-only)
+        # 16. Plan view — staff CAN edit (plan.edit: SCOPED)
         self.visit(
             role,
-            "Plan view (read-only)",
+            "Plan view",
             f"/plans/client/{cid}/",
-            role_should_not_see=["Add Section", "Add Target"],
+            role_should_see=["Add Section"],
         )
 
-        # 17. BLOCKED: plan editing
-        self.visit_forbidden(
-            role, "Section create (403)", f"/plans/client/{cid}/sections/create/"
+        # 17. Section create — staff CAN create (plan.edit: SCOPED)
+        self.visit(
+            role, "Section create form", f"/plans/client/{cid}/sections/create/"
         )
 
         # 18. Events tab

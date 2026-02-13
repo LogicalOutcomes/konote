@@ -120,13 +120,19 @@ DATABASES = {
     "default": dj_database_url.config(
         default=require_env("DATABASE_URL"),
         conn_max_age=600,
-    ) | {"OPTIONS": {"connect_timeout": 10}},
+    ),
     "audit": dj_database_url.config(
         env="AUDIT_DATABASE_URL",
         default=require_env("AUDIT_DATABASE_URL"),
         conn_max_age=600,
-    ) | {"OPTIONS": {"connect_timeout": 10}},
+    ),
 }
+
+# Add connect_timeout for PostgreSQL backends only (SQLite doesn't support it)
+for _alias, _conf in DATABASES.items():
+    if "postgresql" in _conf.get("ENGINE", ""):
+        _conf.setdefault("OPTIONS", {})["connect_timeout"] = 10
+del _alias, _conf
 
 DATABASE_ROUTERS = ["konote.db_router.AuditRouter"]
 

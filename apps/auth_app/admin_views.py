@@ -48,7 +48,7 @@ def user_create(request):
         if form.is_valid():
             form.save()
             messages.success(request, _("User created."))
-            return redirect("auth_app:user_list")
+            return redirect("admin_users:user_list")
     else:
         form = UserCreateForm()
     return render(request, "auth_app/user_form.html", {"form": form, "editing": False})
@@ -63,7 +63,7 @@ def user_edit(request, user_id):
         if form.is_valid():
             form.save()
             messages.success(request, _("User updated."))
-            return redirect("auth_app:user_list")
+            return redirect("admin_users:user_list")
     else:
         form = UserEditForm(instance=user)
     return render(request, "auth_app/user_form.html", {
@@ -82,7 +82,7 @@ def user_deactivate(request, user_id):
             user.is_active = False
             user.save()
             messages.success(request, _("User '%(name)s' deactivated.") % {"name": user.display_name})
-    return redirect("auth_app:user_list")
+    return redirect("admin_users:user_list")
 
 
 @login_required
@@ -102,12 +102,12 @@ def impersonate_user(request, user_id):
             request,
             _("Cannot impersonate real users. Only demo accounts can be impersonated.")
         )
-        return redirect("auth_app:user_list")
+        return redirect("admin_users:user_list")
 
     # Additional check: target must be active
     if not target_user.is_active:
         messages.error(request, _("Cannot impersonate inactive users."))
-        return redirect("auth_app:user_list")
+        return redirect("admin_users:user_list")
 
     # Log the impersonation for audit trail
     _audit_impersonation(request, target_user)

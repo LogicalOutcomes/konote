@@ -68,7 +68,7 @@
 {% endif %}
 
 <div role="group">
-    <a href="{% url 'auth_app:user_list' %}" role="button" class="outline">{% trans "Back to Users" %}</a>
-    <a href="{% url 'auth_app:user_edit' user_id=edit_user.pk %}" role="button" class="outline">{% trans "Edit User" %}</a>
+    <a href="{% url 'admin_users:user_list' %}" role="button" class="outline">{% trans "Back to Users" %}</a>
+    <a href="{% url 'admin_users:user_edit' user_id=edit_user.pk %}" role="button" class="outline">{% trans "Edit User" %}</a>
 </div>
 {% endblock %}

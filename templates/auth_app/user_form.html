@@ -25,7 +25,7 @@
 
     <div role="group">
         <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% trans "Create User" %}{% endif %}</button>
-        <a href="{% url 'auth_app:user_list' %}" role="button" class="outline">{% trans "Cancel" %}</a>
+        <a href="{% url 'admin_users:user_list' %}" role="button" class="outline">{% trans "Cancel" %}</a>
     </div>
 </form>
 {% endblock %}

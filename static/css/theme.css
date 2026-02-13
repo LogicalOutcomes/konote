@@ -69,6 +69,9 @@
     /* --- Transitions --- */
     --kn-transition: 150ms ease;
 
+    /* Active-state accent (overridden in dark mode for contrast) */
+    --kn-primary-active: var(--kn-primary);
+
     /* --- Override Pico defaults --- */
     --pico-primary: var(--kn-primary);
     --pico-primary-hover: var(--kn-primary-hover);
@@ -111,6 +114,7 @@
         --kn-text-secondary: #cbd5e0;
         --kn-text-muted: #b8c5d4;   /* Brightened for WCAG AA (5.2:1 on #1e2533) */
         --kn-text-faint: #8e9bb0;   /* Brightened for WCAG AA (4.6:1 on #1e2533) */
+        --kn-primary-active: #3ec0c4;  /* Lighter teal for dark-mode active states (6.4:1 on #1e2533, 7.4:1 on #13171f) */
 
         --kn-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 0 0.5px rgba(255, 255, 255, 0.05);
         --kn-shadow-card-hover: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 0.5px rgba(255, 255, 255, 0.08);
