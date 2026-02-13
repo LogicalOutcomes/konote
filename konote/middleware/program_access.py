@@ -23,9 +23,15 @@ NOTE_URL_PATTERNS = [
     re.compile(r"^/notes/(?P<note_id>\d+)"),
 ]
 
-# URLs that only admins can access
+# URLs that only admins can access (view decorators handle their own checks)
 ADMIN_ONLY_PATTERNS = [
     re.compile(r"^/admin/"),
+]
+
+# Exceptions: URLs under /admin/ that have their own permission checks
+# and should NOT be blanket-blocked by the middleware.
+ADMIN_EXEMPT_PATTERNS = [
+    re.compile(r"^/admin/audit/"),  # audit.view: SCOPED for program_manager
 ]
 
 
@@ -72,9 +78,14 @@ class ProgramAccessMiddleware:
             request.active_program_ids = None
 
         # Admin-only routes (checked BEFORE program selection — admin routes
-        # have their own access control and don't need program context)
+        # have their own access control and don't need program context).
+        # Some /admin/ sub-paths are exempt because they have their own
+        # @requires_permission decorator (e.g. /admin/audit/ checks audit.view).
         for pattern in ADMIN_ONLY_PATTERNS:
             if pattern.match(path):
+                # Check exemptions first — these views enforce their own perms
+                if any(ep.match(path) for ep in ADMIN_EXEMPT_PATTERNS):
+                    break  # fall through to normal request handling
                 if not request.user.is_admin:
                     return self._forbidden_response(
                         request,
