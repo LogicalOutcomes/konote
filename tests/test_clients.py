@@ -628,7 +628,7 @@ class ConsentRecordingTest(TestCase):
         self.client.login(username="staff", password="testpass123")
         resp = self.client.get(f"/clients/{self.cf.pk}/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Consent recorded")
+        self.assertContains(resp, "Consent on file")
         self.assertContains(resp, "verbal")
 
     def test_receptionist_cannot_record_consent(self):

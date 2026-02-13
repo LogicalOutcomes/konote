@@ -11048,3 +11048,33 @@ msgstr "Communications"
 
 msgid "Filter timeline"
 msgstr "Filtrer le fil chronologique"
+
+msgid "Add Note"
+msgstr "Ajouter une note"
+
+msgid "Add progress note for"
+msgstr "Ajouter une note de suivi pour"
+
+msgid "Consent on file"
+msgstr "Consentement au dossier"
+
+msgid "Edit participant record for"
+msgstr "Modifier le dossier du participant pour"
+
+msgid "Export PDF for"
+msgstr "Exporter le PDF pour"
+
+msgid "Export all data for"
+msgstr "Exporter toutes les donn\u00e9es pour"
+
+msgid "More actions"
+msgstr "Plus d\u2019actions"
+
+msgid "This file will contain personal information."
+msgstr "Ce fichier contiendra des renseignements personnels."
+
+msgid "This participant's data is scheduled for irreversible deletion."
+msgstr "Les donn\u00e9es de ce participant sont programm\u00e9es pour une suppression irr\u00e9versible."
+
+msgid "You don't have the required permissions for this page."
+msgstr "Vous n'avez pas les permissions requises pour cette page."

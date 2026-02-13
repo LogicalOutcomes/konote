@@ -1035,3 +1035,69 @@ document.addEventListener("click", function (event) {
         setupOfflineDetection();
     }
 })();
+
+// --- Actions dropdown toggle ---
+// Opens/closes the ▾ Actions menu on the participant detail page
+(function () {
+    function setupActionsDropdown() {
+        document.addEventListener("click", function (e) {
+            var toggle = e.target.closest(".actions-dropdown-toggle");
+            if (toggle) {
+                e.stopPropagation();
+                var menu = toggle.nextElementSibling;
+                if (!menu) return;
+                var isOpen = !menu.hidden;
+                // Close all other dropdowns first
+                document.querySelectorAll(".actions-dropdown-menu").forEach(function (m) {
+                    m.hidden = true;
+                    var btn = m.previousElementSibling;
+                    if (btn) btn.setAttribute("aria-expanded", "false");
+                });
+                if (!isOpen) {
+                    menu.hidden = false;
+                    toggle.setAttribute("aria-expanded", "true");
+                }
+                return;
+            }
+            // Click outside closes all dropdowns
+            document.querySelectorAll(".actions-dropdown-menu").forEach(function (m) {
+                m.hidden = true;
+                var btn = m.previousElementSibling;
+                if (btn) btn.setAttribute("aria-expanded", "false");
+            });
+        });
+
+        // Escape closes dropdowns
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") {
+                document.querySelectorAll(".actions-dropdown-menu:not([hidden])").forEach(function (m) {
+                    m.hidden = true;
+                    var btn = m.previousElementSibling;
+                    if (btn) {
+                        btn.setAttribute("aria-expanded", "false");
+                        btn.focus();
+                    }
+                });
+            }
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", setupActionsDropdown);
+    } else {
+        setupActionsDropdown();
+    }
+})();
+
+// --- Confirmation dialog for PII exports ---
+// Links with class "actions-confirm" show a confirm dialog before navigating
+(function () {
+    document.addEventListener("click", function (e) {
+        var link = e.target.closest(".actions-confirm");
+        if (!link) return;
+        var message = link.getAttribute("data-confirm-message") || t("confirmExport", "This will export personal information. Continue?");
+        if (!confirm(message)) {
+            e.preventDefault();
+        }
+    });
+})();

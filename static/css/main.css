@@ -144,6 +144,42 @@ body > nav a.nav-active {
     padding-bottom: 2px;
 }
 
+/* ---- Breadcrumb (enhanced visibility) ---- */
+nav.breadcrumb {
+    margin-bottom: var(--kn-space-base);
+}
+nav.breadcrumb ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    padding: 0;
+    margin: 0;
+    font-size: 0.875rem;
+}
+nav.breadcrumb li {
+    display: flex;
+    align-items: center;
+}
+nav.breadcrumb li + li::before {
+    content: "›";
+    padding: 0 var(--kn-space-sm);
+    color: var(--kn-text-muted);
+}
+nav.breadcrumb a {
+    color: var(--kn-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+nav.breadcrumb a:hover {
+    color: var(--kn-primary-active, var(--kn-primary));
+    text-decoration-thickness: 2px;
+}
+nav.breadcrumb [aria-current="page"] {
+    color: var(--kn-text-muted);
+    font-weight: 500;
+}
+
 /* ---- Page header ---- */
 .page-header {
     margin-bottom: var(--kn-space-lg);
@@ -160,10 +196,15 @@ body > nav a.nav-active {
 /* ---- Client detail header ---- */
 .client-header {
     display: flex;
-    align-items: baseline;
+    align-items: flex-start;
+    justify-content: space-between;
     flex-wrap: wrap;
     gap: var(--kn-space-sm) var(--kn-space-base);
     margin-bottom: var(--kn-space-base);
+}
+.client-header-left {
+    flex: 1;
+    min-width: 0;
 }
 .client-header h1 {
     margin-bottom: 0;
@@ -171,18 +212,61 @@ body > nav a.nav-active {
     font-weight: 600;
     letter-spacing: -0.01em;
 }
-.client-header .client-meta {
-    color: var(--kn-text-muted);
+.client-subtitle {
+    margin: var(--kn-space-xs) 0 0 0;
     font-size: 0.875rem;
+    color: var(--kn-text-muted);
+    line-height: 1.5;
+}
+.client-subtitle .badge {
+    vertical-align: baseline;
 }
 .client-actions {
     display: flex;
     gap: var(--kn-space-sm);
-    margin-left: auto;
+    align-items: center;
+    flex-shrink: 0;
 }
-.client-actions a[role="button"] {
+.client-actions a[role="button"],
+.client-actions button {
     font-size: 0.8125rem;
     padding: var(--kn-space-xs) var(--kn-space-md);
+}
+
+/* ---- Actions dropdown ---- */
+.actions-dropdown {
+    position: relative;
+}
+.actions-dropdown-toggle {
+    cursor: pointer;
+}
+.actions-dropdown-menu {
+    position: absolute;
+    right: 0;
+    top: 100%;
+    z-index: 10;
+    min-width: 12rem;
+    margin: var(--kn-space-xs) 0 0 0;
+    padding: var(--kn-space-xs) 0;
+    list-style: none;
+    background: var(--pico-card-background-color, #fff);
+    border: 1px solid var(--kn-border-light);
+    border-radius: var(--kn-radius-card);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+.actions-dropdown-menu[hidden] {
+    display: none;
+}
+.actions-dropdown-menu li a {
+    display: block;
+    padding: var(--kn-space-sm) var(--kn-space-base);
+    font-size: 0.8125rem;
+    color: var(--kn-text);
+    text-decoration: none;
+    white-space: nowrap;
+}
+.actions-dropdown-menu li a:hover {
+    background: var(--kn-surface-hover, rgba(0, 0, 0, 0.04));
 }
 
 /* ---- Tab bar ---- */
@@ -291,6 +375,11 @@ body > nav a.nav-active {
     .program-dot {
         box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.2);
     }
+}
+
+/* Programme indicator (dot + name as accessible unit) */
+.program-indicator {
+    white-space: nowrap;
 }
 
 /* ---- Program group headers (multi-program view) ---- */
