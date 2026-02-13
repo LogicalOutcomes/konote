@@ -988,35 +988,35 @@ class AdminInviteWorkflow(UxScenarioBase):
         role = "Admin"
 
         # View invite list
-        resp = self.visit(role, "Invite list", "/auth/invites/")
+        resp = self.visit(role, "Invite list", "/admin/users/invites/")
         self.record_scenario(
             self.SCENARIO, role, "View invite list",
-            "/auth/invites/", resp.status_code, [],
+            "/admin/users/invites/", resp.status_code, [],
         )
 
         # Create invite form
         resp = self.visit(
-            role, "Create invite form", "/auth/invites/new/",
+            role, "Create invite form", "/admin/users/invites/new/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open create invite form",
-            "/auth/invites/new/", resp.status_code, [],
+            "/admin/users/invites/new/", resp.status_code, [],
         )
 
         # Submit create invite
         resp = self.visit_and_follow(
             role, "Submit new invite",
-            "/auth/invites/new/",
+            "/admin/users/invites/new/",
             data={
                 "role": "staff",
                 "programs": [self.program_a.pk],
                 "expires_days": "7",
             },
-            expected_redirect="/auth/invites/",
+            expected_redirect="/admin/users/invites/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create invite link",
-            "/auth/invites/new/", resp.status_code, [],
+            "/admin/users/invites/new/", resp.status_code, [],
         )
 
 

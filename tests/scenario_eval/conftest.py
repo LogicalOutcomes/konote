@@ -1,7 +1,8 @@
 """Pytest configuration for scenario evaluation tests."""
 import glob
+import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 import pytest
 
@@ -94,8 +95,50 @@ def _get_next_sequence(report_dir, date_str):
         return chr(ord(max_letter) + 1)
 
 
+def _build_run_manifest(holdout, results):
+    """Build a .run-manifest.json summarising the scenario run.
+
+    Includes per-scenario metadata, screenshot validation results,
+    and aggregate statistics for downstream tools (qa_gate.py, etc.).
+    """
+    from .state_capture import validate_screenshot_dir
+
+    screenshot_dir = os.path.join(holdout, "reports", "screenshots")
+    validation = validate_screenshot_dir(screenshot_dir)
+
+    scenarios = []
+    all_personas = set()
+    for result in results:
+        persona_ids = list(result.per_persona_scores().keys())
+        all_personas.update(persona_ids)
+        scenarios.append({
+            "scenario_id": result.scenario_id,
+            "title": result.title,
+            "steps": len(result.step_evaluations),
+            "personas": persona_ids,
+            "avg_score": round(result.avg_score, 2),
+            "band": result.band,
+        })
+
+    return {
+        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "version": 1,
+        "scenarios_run": len(results),
+        "personas_tested": sorted(all_personas),
+        "total_steps": sum(s["steps"] for s in scenarios),
+        "screenshots": {
+            "total": validation["total"],
+            "valid": validation["valid"],
+            "blank": validation["blank"],
+            "duplicates": validation["duplicates"],
+            "issues": validation["issues"],
+        },
+        "scenarios": scenarios,
+    }
+
+
 def pytest_sessionfinish(session, exitstatus):
-    """Generate a satisfaction report after all tests complete."""
+    """Generate a satisfaction report and run manifest after all tests complete."""
     if not _all_results:
         return
 
@@ -127,6 +170,32 @@ def pytest_sessionfinish(session, exitstatus):
             print(f"JSON results written to: {json_path}")
         except Exception as exc:
             print(f"WARNING: Could not write JSON results: {exc}")
+
+        # Write .run-manifest.json with screenshot validation (QA-W6)
+        try:
+            screenshot_dir = os.path.join(holdout, "reports", "screenshots")
+            manifest = _build_run_manifest(holdout, _all_results)
+            manifest_path = os.path.join(screenshot_dir, ".run-manifest.json")
+            os.makedirs(screenshot_dir, exist_ok=True)
+            with open(manifest_path, "w", encoding="utf-8") as f:
+                json.dump(manifest, f, indent=2, default=str)
+            print(f"Run manifest written to: {manifest_path}")
+
+            # Print screenshot validation summary
+            ss = manifest["screenshots"]
+            if ss["blank"] or ss["duplicates"]:
+                print(
+                    f"  Screenshot issues: {ss['blank']} blank, "
+                    f"{ss['duplicates']} duplicates "
+                    f"(out of {ss['total']} total)"
+                )
+            else:
+                print(
+                    f"  All {ss['total']} screenshots valid "
+                    f"(no blanks or duplicates)"
+                )
+        except Exception as exc:
+            print(f"WARNING: Could not write run manifest: {exc}")
     else:
         report_text = generate_report(_all_results)
         print("\n\n" + report_text)

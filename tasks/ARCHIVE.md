@@ -4,6 +4,15 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Completed 2026-02-11 to 2026-02-13
+
+### Moved from Recently Done (2026-02-13 cleanup)
+
+- [x] Fix CAL-001 preflight — executive persona now checks `/clients/executive/` with `.stat-card` selector — 2026-02-11 (SMOKE-1)
+- [x] Fix BUG-9 — skip .mo validation when user has saved language preference; add LANGUAGE_COOKIE_SECURE=False to test settings — 2026-02-11 (SMOKE-3)
+
+---
+
 ## Completed 2026-02-10
 
 ### Moved from Recently Done (2026-02-11 smoke test fixes)

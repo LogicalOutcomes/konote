@@ -105,7 +105,7 @@
                         <li><a href="/admin/submissions/">{% trans "Pending Submissions" %}{% if pending_submissions_count %} <span class="badge badge-warning">{{ pending_submissions_count }}</span>{% endif %}</a></li>
                         <li><a href="/admin/settings/">{% trans "Settings" %}</a></li>
                         <li><a href="/admin/settings/funder-profiles/">{% trans "Funder Profiles" %}</a></li>
-                        <li><a href="/auth/invites/">{% trans "New Users" %}</a></li>
+                        <li><a href="/admin/users/invites/">{% trans "New Users" %}</a></li>
                         <li><a href="/admin/audit/">{% trans "Audit Log" %}</a></li>
                         <li><a href="/merge/">{% trans "Merge Duplicates" %}</a></li>
                         <li><a href="/erasure/">{% blocktrans with term=term.client|default:"Participant" %}Erase {{ term }} Data{% endblocktrans %}{% if pending_erasure_count %} <span class="badge badge-warning">{{ pending_erasure_count }}</span>{% endif %}</a></li>

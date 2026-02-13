@@ -193,7 +193,7 @@ def user_role_add(request, user_id):
                           "Only administrators can assign manager or executive roles.")
                         % {"role": role},
                     )
-                    return redirect("auth_app:user_roles", user_id=edit_user.pk)
+                    return redirect("admin_users:user_roles", user_id=edit_user.pk)
 
                 # PMs cannot change receptionist to staff (grants clinical access)
                 existing_role = UserProgramRole.objects.filter(
@@ -205,7 +205,7 @@ def user_role_add(request, user_id):
                         _("Elevating receptionist to staff grants clinical data access. "
                           "Only administrators can make this change."),
                     )
-                    return redirect("auth_app:user_roles", user_id=edit_user.pk)
+                    return redirect("admin_users:user_roles", user_id=edit_user.pk)
 
             obj, created = UserProgramRole.objects.get_or_create(
                 user=edit_user,
@@ -227,7 +227,7 @@ def user_role_add(request, user_id):
                 },
             )
             _audit_role_change(request, edit_user, program, role, "add")
-    return redirect("auth_app:user_roles", user_id=edit_user.pk)
+    return redirect("admin_users:user_roles", user_id=edit_user.pk)
 
 
 @login_required
@@ -247,7 +247,7 @@ def user_role_remove(request, user_id, role_id):
         _audit_role_change(
             request, edit_user, role_obj.program, role_obj.role, "remove",
         )
-    return redirect("auth_app:user_roles", user_id=edit_user.pk)
+    return redirect("admin_users:user_roles", user_id=edit_user.pk)
 
 
 def _audit_role_change(request, target_user, program, role, action_type):

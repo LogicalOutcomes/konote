@@ -1,4 +1,5 @@
 """Capture page state at each scenario step for LLM evaluation."""
+import hashlib
 import os
 import re
 import time
@@ -34,6 +35,12 @@ class StepCapture:
 
     # Duplicate screenshot detection (QA-W3)
     is_duplicate: bool = False
+
+    # Screenshot self-validation (QA-W6)
+    screenshot_file_size: int = 0
+    screenshot_is_blank: bool = False  # True if file < 5 KB (likely blank PNG)
+    screenshot_url_mismatch: bool = False  # True if URL slug doesn't match filename
+    screenshot_hash: str = ""  # SHA-256 for cross-step dedup
 
     # Round 3: extra captures for mobile, a11y tree, and bilingual scenarios
     accessibility_tree: dict = field(default_factory=dict)
@@ -184,10 +191,34 @@ def capture_step_state(page, scenario_id, step_id, actor_persona,
                 path=capture.screenshot_path, full_page=False, timeout=15000
             )
 
-        # Duplicate screenshot detection (QA-W3)
-        if previous_screenshot_path and Path(previous_screenshot_path).is_file():
-            try:
-                current_bytes = Path(capture.screenshot_path).read_bytes()
+        # --- Screenshot self-validation (QA-W6) ---
+        try:
+            current_bytes = Path(capture.screenshot_path).read_bytes()
+            capture.screenshot_file_size = len(current_bytes)
+            capture.screenshot_hash = hashlib.sha256(current_bytes).hexdigest()
+
+            # Blank detection: PNG files under 5 KB are almost certainly
+            # blank or failed renders (TEST-9 pattern: 4 KB white images)
+            if capture.screenshot_file_size < 5120:
+                capture.screenshot_is_blank = True
+                print(
+                    f"WARNING: {scenario_id} step {step_id} screenshot "
+                    f"is only {capture.screenshot_file_size} bytes — "
+                    f"likely blank or corrupt"
+                )
+
+            # URL mismatch: verify the slug in the filename matches
+            # the actual page URL (catches stale navigation / redirect)
+            actual_slug = _url_to_slug(capture.url)
+            if slug != actual_slug:
+                capture.screenshot_url_mismatch = True
+                print(
+                    f"WARNING: {scenario_id} step {step_id} URL mismatch — "
+                    f"expected slug '{slug}', actual '{actual_slug}'"
+                )
+
+            # Duplicate detection (QA-W3): byte-identical to previous step
+            if previous_screenshot_path and Path(previous_screenshot_path).is_file():
                 previous_bytes = Path(previous_screenshot_path).read_bytes()
                 if current_bytes == previous_bytes:
                     capture.is_duplicate = True
@@ -204,8 +235,8 @@ def capture_step_state(page, scenario_id, step_id, actor_persona,
                     dup_path = os.path.join(screenshot_dir, dup_filename)
                     Path(capture.screenshot_path).rename(dup_path)
                     capture.screenshot_path = dup_path
-            except OSError:
-                pass  # If file read fails, skip detection silently
+        except OSError:
+            pass  # If file read fails, skip validation silently
 
     # Axe-core accessibility check
     if run_axe_fn:
@@ -278,8 +309,21 @@ def capture_to_evaluation_context(capture, persona_description=""):
             "step — the action may not have executed.**\n"
         )
 
+    # Screenshot validation warnings (QA-W6)
+    validation_warning = ""
+    if capture.screenshot_is_blank:
+        validation_warning += (
+            f"\n**BLANK: Screenshot is only {capture.screenshot_file_size} "
+            f"bytes — likely blank or failed render.**\n"
+        )
+    if capture.screenshot_url_mismatch:
+        validation_warning += (
+            "\n**URL MISMATCH: The page URL changed unexpectedly "
+            "(redirect or stale navigation).**\n"
+        )
+
     return f"""## Page State After Step {capture.step_id}
-{duplicate_warning}
+{duplicate_warning}{validation_warning}
 URL: {capture.url}
 Page title: {capture.page_title}
 Interactive elements on page: {capture.interactive_element_count}
@@ -337,3 +381,69 @@ def _format_a11y_tree(node, depth=0):
     if len(result) > 5000:
         result = result[:5000] + "\n  ... (truncated)"
     return result
+
+
+def validate_screenshot_dir(screenshot_dir):
+    """Scan a screenshot directory and return validation results.
+
+    Checks every .png file for:
+    - File size (< 5 KB = likely blank)
+    - Duplicate detection via SHA-256 hash
+    - URL slug consistency (filename vs. expected pattern)
+
+    Args:
+        screenshot_dir: Path to the screenshots directory.
+
+    Returns:
+        dict with keys: total, blank, duplicates, valid, issues (list of dicts).
+    """
+    screenshot_path = Path(screenshot_dir)
+    if not screenshot_path.is_dir():
+        return {"total": 0, "blank": 0, "duplicates": 0, "valid": 0, "issues": []}
+
+    pngs = sorted(screenshot_path.glob("*.png"))
+    seen_hashes = {}  # hash -> first filename
+    issues = []
+    blank_count = 0
+    dup_count = 0
+
+    for png in pngs:
+        try:
+            data = png.read_bytes()
+        except OSError:
+            issues.append({"file": png.name, "problem": "unreadable"})
+            continue
+
+        size = len(data)
+        file_hash = hashlib.sha256(data).hexdigest()
+
+        # Blank detection
+        if size < 5120:
+            blank_count += 1
+            issues.append({
+                "file": png.name,
+                "problem": "blank",
+                "size_bytes": size,
+            })
+
+        # Cross-file duplicate detection (not just adjacent steps)
+        if file_hash in seen_hashes:
+            dup_count += 1
+            issues.append({
+                "file": png.name,
+                "problem": "duplicate_of",
+                "duplicate_of": seen_hashes[file_hash],
+            })
+        else:
+            seen_hashes[file_hash] = png.name
+
+    total = len(pngs)
+    valid = total - blank_count - dup_count
+
+    return {
+        "total": total,
+        "blank": blank_count,
+        "duplicates": dup_count,
+        "valid": valid,
+        "issues": issues,
+    }

@@ -1,10 +1,13 @@
-"""Tests for state_capture module — screenshot naming (QA-T20).
+"""Tests for state_capture module — screenshot naming (QA-T20) and validation (QA-W6).
 
 Fast unit tests — no browser needed.
 """
+import os
+import tempfile
+from pathlib import Path
 from unittest import TestCase
 
-from .state_capture import _url_to_slug
+from .state_capture import _url_to_slug, validate_screenshot_dir
 
 
 class TestUrlToSlug(TestCase):
@@ -85,3 +88,55 @@ class TestUrlToSlug(TestCase):
         slug = _url_to_slug(normal_url)
         self.assertEqual(slug, "clients-executive")
         self.assertLessEqual(len(slug), 60)
+
+
+class TestValidateScreenshotDir(TestCase):
+    """Test screenshot directory validation (QA-W6)."""
+
+    def test_empty_dir(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            result = validate_screenshot_dir(tmpdir)
+            self.assertEqual(result["total"], 0)
+            self.assertEqual(result["valid"], 0)
+            self.assertEqual(result["issues"], [])
+
+    def test_nonexistent_dir(self):
+        result = validate_screenshot_dir("/nonexistent/path")
+        self.assertEqual(result["total"], 0)
+
+    def test_valid_screenshots(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create two distinct PNG files (> 5 KB each)
+            for name in ["shot1.png", "shot2.png"]:
+                path = Path(tmpdir) / name
+                path.write_bytes(b"\x89PNG" + os.urandom(6000))
+
+            result = validate_screenshot_dir(tmpdir)
+            self.assertEqual(result["total"], 2)
+            self.assertEqual(result["valid"], 2)
+            self.assertEqual(result["blank"], 0)
+            self.assertEqual(result["duplicates"], 0)
+
+    def test_blank_detection(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            # Create a tiny PNG (< 5 KB — likely blank)
+            path = Path(tmpdir) / "blank.png"
+            path.write_bytes(b"\x89PNG" + b"\x00" * 100)
+
+            result = validate_screenshot_dir(tmpdir)
+            self.assertEqual(result["blank"], 1)
+            self.assertEqual(result["issues"][0]["problem"], "blank")
+
+    def test_duplicate_detection(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            content = b"\x89PNG" + os.urandom(6000)
+            # Write identical content to two files (sorted: a_first, b_second)
+            (Path(tmpdir) / "a_first.png").write_bytes(content)
+            (Path(tmpdir) / "b_second.png").write_bytes(content)
+
+            result = validate_screenshot_dir(tmpdir)
+            self.assertEqual(result["duplicates"], 1)
+            dup_issues = [i for i in result["issues"] if i["problem"] == "duplicate_of"]
+            self.assertEqual(len(dup_issues), 1)
+            self.assertEqual(dup_issues[0]["file"], "b_second.png")
+            self.assertEqual(dup_issues[0]["duplicate_of"], "a_first.png")

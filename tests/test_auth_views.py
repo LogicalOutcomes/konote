@@ -251,22 +251,22 @@ class AdminRoutePermissionTest(TestCase):
 
     def test_admin_can_access_user_list(self):
         self.http.login(username="admin", password="pass")
-        resp = self.http.get("/auth/users/")
+        resp = self.http.get("/admin/users/")
         self.assertEqual(resp.status_code, 200)
 
     def test_staff_cannot_access_user_list(self):
         self.http.login(username="staff", password="pass")
-        resp = self.http.get("/auth/users/")
+        resp = self.http.get("/admin/users/")
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_can_access_invite_list(self):
         self.http.login(username="admin", password="pass")
-        resp = self.http.get("/auth/invites/")
+        resp = self.http.get("/admin/users/invites/")
         self.assertEqual(resp.status_code, 200)
 
     def test_staff_cannot_access_invite_list(self):
         self.http.login(username="staff", password="pass")
-        resp = self.http.get("/auth/invites/")
+        resp = self.http.get("/admin/users/invites/")
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_can_access_settings(self):
@@ -280,7 +280,7 @@ class AdminRoutePermissionTest(TestCase):
         self.assertEqual(resp.status_code, 403)
 
     def test_unauthenticated_redirected_from_admin_routes(self):
-        resp = self.http.get("/auth/users/")
+        resp = self.http.get("/admin/users/")
         self.assertEqual(resp.status_code, 302)
         self.assertIn("/auth/login", resp.url)
 
@@ -325,7 +325,7 @@ class ImpersonationGuardTest(TestCase):
     def test_admin_can_impersonate_demo_user(self):
         """Admin should successfully impersonate a demo user."""
         self.http.login(username="admin", password="adminpass")
-        resp = self.http.get(f"/auth/users/{self.demo_user.pk}/impersonate/")
+        resp = self.http.get(f"/admin/users/{self.demo_user.pk}/impersonate/")
 
         # Should redirect to home page after successful impersonation
         self.assertEqual(resp.status_code, 302)
@@ -340,11 +340,11 @@ class ImpersonationGuardTest(TestCase):
     def test_admin_cannot_impersonate_real_user(self):
         """CRITICAL: Admin must NOT be able to impersonate real users."""
         self.http.login(username="admin", password="adminpass")
-        resp = self.http.get(f"/auth/users/{self.real_user.pk}/impersonate/")
+        resp = self.http.get(f"/admin/users/{self.real_user.pk}/impersonate/")
 
         # Should redirect back to user list (not home)
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp.url, "/auth/users/")
+        self.assertEqual(resp.url, "/admin/users/")
 
         # Verify the admin is still logged in as themselves
         self.assertEqual(int(self.http.session["_auth_user_id"]), self.admin.pk)
@@ -352,11 +352,11 @@ class ImpersonationGuardTest(TestCase):
     def test_admin_cannot_impersonate_inactive_demo_user(self):
         """Admin cannot impersonate inactive users even if they are demo users."""
         self.http.login(username="admin", password="adminpass")
-        resp = self.http.get(f"/auth/users/{self.inactive_demo.pk}/impersonate/")
+        resp = self.http.get(f"/admin/users/{self.inactive_demo.pk}/impersonate/")
 
         # Should redirect back to user list
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp.url, "/auth/users/")
+        self.assertEqual(resp.url, "/admin/users/")
 
         # Admin still logged in as themselves
         self.assertEqual(int(self.http.session["_auth_user_id"]), self.admin.pk)
@@ -370,14 +370,14 @@ class ImpersonationGuardTest(TestCase):
         self.http.login(username="regular", password="regularpass")
 
         # Try to impersonate demo user
-        resp = self.http.get(f"/auth/users/{self.demo_user.pk}/impersonate/")
+        resp = self.http.get(f"/admin/users/{self.demo_user.pk}/impersonate/")
 
         # Should get 403 Forbidden
         self.assertEqual(resp.status_code, 403)
 
     def test_unauthenticated_cannot_impersonate(self):
         """Unauthenticated users are redirected to login."""
-        resp = self.http.get(f"/auth/users/{self.demo_user.pk}/impersonate/")
+        resp = self.http.get(f"/admin/users/{self.demo_user.pk}/impersonate/")
 
         # Should redirect to login
         self.assertEqual(resp.status_code, 302)
@@ -388,7 +388,7 @@ class ImpersonationGuardTest(TestCase):
         from apps.audit.models import AuditLog
 
         self.http.login(username="admin", password="adminpass")
-        self.http.get(f"/auth/users/{self.demo_user.pk}/impersonate/")
+        self.http.get(f"/admin/users/{self.demo_user.pk}/impersonate/")
 
         # Check audit log was created
         log = AuditLog.objects.using("audit").filter(
@@ -410,7 +410,7 @@ class ImpersonationGuardTest(TestCase):
         AuditLog.objects.using("audit").all().delete()
 
         self.http.login(username="admin", password="adminpass")
-        self.http.get(f"/auth/users/{self.real_user.pk}/impersonate/")
+        self.http.get(f"/admin/users/{self.real_user.pk}/impersonate/")
 
         # No audit log should be created for failed impersonation
         log = AuditLog.objects.using("audit").filter(
@@ -425,7 +425,7 @@ class ImpersonationGuardTest(TestCase):
         self.demo_user.save()
 
         self.http.login(username="admin", password="adminpass")
-        self.http.get(f"/auth/users/{self.demo_user.pk}/impersonate/")
+        self.http.get(f"/admin/users/{self.demo_user.pk}/impersonate/")
 
         self.demo_user.refresh_from_db()
         self.assertIsNotNone(self.demo_user.last_login_at)
