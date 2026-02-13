@@ -12,7 +12,7 @@
 {% if health_warnings %}
 {% for warning in health_warnings %}
 <div class="health-banner health-banner-{{ warning.level }}" role="alert" aria-live="polite">
-    {{ warning.message }}
+    {{ warning.message|escape }}
 </div>
 {% endfor %}
 {% endif %}

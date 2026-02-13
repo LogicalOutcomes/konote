@@ -31,6 +31,10 @@ PLAIN_LANGUAGE_ERRORS = {
     "30006": "Phone number can't be reached — it may no longer be in service",
 }
 
+# Unsubscribe token lifetime — 60 days in seconds.
+# Used by both generate_unsubscribe_url (signing) and email_unsubscribe (validation).
+UNSUBSCRIBE_TOKEN_MAX_AGE = 60 * 60 * 24 * 60
+
 # Default message templates — used when admin hasn't configured custom templates.
 # Placeholders: {date}, {time}, {org_phone}
 DEFAULT_TEMPLATES = {
@@ -255,7 +259,8 @@ def send_email_message(to_email, subject, body_text, body_html=None):
         SystemHealthCheck.record_success("email")
         return True, None
     except Exception as e:
-        logger.warning("Email send failed to %s: %s", to_email, str(e))
+        masked = to_email.split("@")[0][:2] + "***@" + to_email.split("@")[1] if "@" in to_email else "***"
+        logger.warning("Email send failed to %s: %s", masked, str(e))
         error_msg = _("Email could not be delivered — check the email address with the client")
         SystemHealthCheck.record_failure("email", str(e)[:255])
         return False, error_msg

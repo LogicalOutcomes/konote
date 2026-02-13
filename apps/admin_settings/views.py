@@ -202,6 +202,19 @@ def messaging_settings(request):
         form = MessagingSettingsForm(request.POST, current_settings=current_settings)
         if form.is_valid():
             form.save()
+
+            from apps.audit.models import AuditLog
+            from django.utils import timezone as tz
+            AuditLog.objects.using("audit").create(
+                event_timestamp=tz.now(),
+                user_id=request.user.pk,
+                user_display=getattr(request.user, "display_name", str(request.user)),
+                action="update",
+                resource_type="messaging_settings",
+                resource_id=0,
+                metadata={"changed_fields": list(form.changed_data)},
+            )
+
             messages.success(request, _("Messaging settings updated."))
             return redirect("admin_settings:messaging_settings")
     else:

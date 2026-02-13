@@ -15,7 +15,7 @@ from apps.programs.access import get_author_program, get_client_or_403, get_prog
 
 from apps.auth_app.decorators import requires_permission
 
-from .forms import CommunicationLogForm, QuickLogForm
+from .forms import CommunicationLogForm, PersonalNoteForm, QuickLogForm
 from .models import Communication
 
 
@@ -165,7 +165,8 @@ def send_reminder_preview(request, client_id, event_id):
         if not allowed:
             messages.error(request, reason)
         else:
-            personal_note = request.POST.get("personal_note", "").strip()
+            note_form = PersonalNoteForm(request.POST)
+            personal_note = note_form.cleaned_data["personal_note"] if note_form.is_valid() else ""
             success, send_reason = send_reminder(meeting, logged_by=request.user, personal_note=personal_note)
             if success:
                 messages.success(request, _("Reminder sent."))
@@ -220,7 +221,8 @@ def email_unsubscribe(request, token):
     and channel. Expires after 60 days. No login required.
     """
     try:
-        data = signing.loads(token, salt="unsubscribe", max_age=60 * 60 * 24 * 60)
+        from .services import UNSUBSCRIBE_TOKEN_MAX_AGE
+        data = signing.loads(token, salt="unsubscribe", max_age=UNSUBSCRIBE_TOKEN_MAX_AGE)
     except signing.BadSignature:
         return render(request, "communications/unsubscribe.html", {
             "error": _("This unsubscribe link has expired or is invalid. "

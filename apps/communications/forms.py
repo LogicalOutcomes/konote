@@ -34,6 +34,15 @@ class QuickLogForm(forms.Form):
         return direction
 
 
+class PersonalNoteForm(forms.Form):
+    """Validates the personal note field on the send-reminder preview."""
+    personal_note = forms.CharField(
+        required=False,
+        max_length=500,
+        widget=forms.Textarea(attrs={"rows": 2}),
+    )
+
+
 class CommunicationLogForm(forms.Form):
     """Full form for detailed communication logging — all fields available."""
     direction = forms.ChoiceField(
