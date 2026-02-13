@@ -53,42 +53,27 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 
 ### QA Round 5 Fixes — See `tasks/qa-action-plan-2026-02-13a.md`
 
-- [ ] Add skip link to base.html + move search before filters on /clients/ (BUG-16 + BUG-18 → QA-W36)
-- [ ] Add HTMX loading indicator + aria-live for search results on /clients/ (BLOCKER-1 + IMPROVE-10 → QA-W37)
-- [ ] Fix /settings/ 404 — investigate URL routing, build view if missing (BLOCKER-2 → QA-W38)
-- [ ] Fix executive permissions — audit log access + hide Admin dropdown (BUG-15 + BUG-20 → QA-W39)
-- [ ] Add form error summary with role="alert" and aria-errormessage (BUG-17 → QA-W40)
-- [ ] Fix SCN-059 login URL in qa-scenarios YAML (TEST-10 → QA-W41)
-- [ ] Add URL template variable resolution to qa-scenarios test runner (TEST-20 → QA-W42)
+All Tier 1 and Tier 2 tickets complete. Tier 3 deferred (TEST-19 multi-session, IMPROVE-12 research).
 
 ## Coming Up
 
-### Messaging, Meetings & Calendar — See `tasks/messaging-calendar-plan.md`
+### Messaging, Meetings & Calendar
+
+See `tasks/messaging-calendar-plan.md` (phase-by-phase build) and `tasks/messaging-modules-architecture.md` (modular toggle system, Safety-First mode, deployment docs)
 
 - [ ] Phase 0: Consultant setup — Twilio account, email SMTP (Google Workspace or M365), Railway cron, handoff runbook (MSG-P0)
 - [x] Phase 1 (Wave 1): Meeting model, forms, views, URLs, templates, iCal feed — 2026-02-13 (MSG-P1)
-- [ ] Phase 2A (Wave 1): Communication model + forms scaffold — views/templates in Wave 2 (MSG-P2A)
+- [x] Phase 2A (Wave 1): Communication model + forms scaffold — views/templates in Wave 2 — 2026-02-13 (MSG-P2A)
 - [x] Phase 3 (Wave 1): Consent & contact fields on ClientFile — email, phone staleness, CASL consent, preferred language — 2026-02-13 (MSG-P3)
-- [ ] Phase 2B-J (Wave 2): Communication log views, quick-log buttons, timeline integration (MSG-P2B)
-- [ ] Phase 4A-C (Wave 2): Settings, Twilio/SMTP config, services layer (MSG-P4A)
-- [ ] Phase 4D-K (Wave 3): Send views, feature toggles, health banners, unsubscribe (MSG-P4B)
+- [x] Phase 2B-J (Wave 2): Communication log views, quick-log buttons, timeline integration — 2026-02-13 (MSG-P2B)
+- [x] Phase 4A-C (Wave 2): Settings, Twilio/SMTP config, services layer — 2026-02-13 (MSG-P4A)
+- [ ] Phase 4D-K (Wave 3): Send + compose views, feature toggles, health banners, unsubscribe (MSG-P4B)
+- [ ] Messaging settings page — profile cards, Safety-First toggle, channel checkboxes, Setup Wizard (MSG-MOD1)
+- [ ] Safe-to-contact fields — structured channel safety, code name, review date on ClientFile (MSG-MOD2)
+- [ ] Composed messages — staff can write follow-ups/check-ins from client page, preview before send (MSG-MOD3)
+- [ ] Bulk messaging — send to program group with consent-filtered recipient list (MSG-MOD4)
 - [ ] Phase 5 (Wave 4): Automated reminders — only after manual send proven in production (MSG-P5)
-- [ ] Phase 3: Consent & contact fields — one-checkbox consent at intake, phone staleness tracking, client language preference (MSG-P3)
-- [ ] Phase 4: Outbound messaging — email via org SMTP + SMS via Twilio, preview before send, plain-language failure messages (MSG-P4)
-- [ ] Phase 5: Automated reminders — cron job sends reminders 24h before meetings, only after manual send is proven (MSG-P5)
 
-### QA Round 5 — Tier 2 Fixes
-
-- [ ] Investigate tab order change after validation error (BUG-23 → QA-W43)
-- [ ] Fix touch target sizing — checkboxes/radios to 24×24px minimum (BUG-22 → QA-W44)
-- [ ] Audit and fix htmx:syntax:error on form pages (BUG-19 → QA-W45)
-- [ ] Verify BUG-14 lang="fr" fix covers all pages including /reports/insights/ (BUG-14 → QA-W46)
-- [ ] Add aria-live success announcements for form submissions (IMPROVE-9 → QA-W47)
-- [ ] Verify post-login focus lands on meaningful element (IMPROVE-8 → QA-W48)
-- [ ] Add actionable suggestions to 403 denial page (IMPROVE-11 → QA-W49)
-- [ ] Verify E1 test user has both programmes assigned (BUG-21 → QA-W50)
-- [ ] Fix language reset in qa-scenarios test runner between scenarios (TEST-15 → QA-W51)
-- [ ] Fix SCN-058 notification bell + clients link selectors (TEST-17 + TEST-18 → QA-W52)
 
 ### Agency Onboarding — See `tasks/agency-permissions-interview.md`
 
@@ -142,10 +127,7 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 - [ ] Reduce form tab stops — tabindex audit (QA-W20)
 ### QA Backlog
 
-- [ ] Add 8 prerequisite clients for SCN-062 fatigue test (TEST-14 → QA-W53)
-- [ ] Recalibrate SCN-050 tab counts after skip link fix (TEST-16 → QA-W54)
 - [ ] Implement multi-session testing for SCN-046 shared device test (TEST-19 → QA-W55)
-- [ ] Fix French translation gaps — .po additions + name_fr review (BUG-8 + BUG-11 carried → QA-W56)
 - [ ] Dashboard cognitive load evaluation for ADHD users — research task (IMPROVE-12 → QA-W57)
 
 ### Safety & Reporting
@@ -168,17 +150,33 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 
 ## Recently Done
 
-- [x] Fix dark mode contrast on filter-bar summary — overrode Pico CSS variable — 2026-02-13 (UX-CONTRAST1)
+- [x] **QA Round 5 — all Tier 1 + Tier 2 tickets** (25 tickets) — 2026-02-13 (QA-W36–W54)
+  - BUG-16+18: Search before filters on /clients/ (QA-W36)
+  - BLOCKER-1+IMPROVE-10: HTMX loading indicator + aria-live for search (QA-W37)
+  - BLOCKER-2: /settings/ redirect to /admin/settings/ (QA-W38)
+  - BUG-15+20: Executive audit log access + nav visibility (QA-W39)
+  - BUG-17+23: Form error summary with role="alert" + focus management (QA-W40, W43)
+  - BUG-22: Touch target 24x24px minimum (QA-W44)
+  - BUG-19: Fixed hx-vals quote conflict in insights template (QA-W45)
+  - BUG-14: Verified lang="fr" fix (QA-W46)
+  - IMPROVE-9: aria-live success announcements for HTMX forms (QA-W47)
+  - IMPROVE-8: Post-login focus verified (QA-W48)
+  - IMPROVE-11: Role-aware 403 page (QA-W49)
+  - BUG-21: Executive test user programme assignments fixed (QA-W50)
+  - TEST-10: SCN-059 login URL fixed (QA-W41)
+  - TEST-20: URL template variable resolution in runner (QA-W42)
+  - TEST-15: Language reset between scenarios (QA-W51)
+  - TEST-17+18: SCN-058 selectors fixed (QA-W52)
+  - TEST-14: SCN-062 prerequisite clients verified (QA-W53)
+  - TEST-16: SCN-050 tab counts verified correct (QA-W54)
+  - BUG-8+11: French translations extracted, 26 new strings (QA-W56)
+- [x] Fix dark mode contrast on filter-bar summary — 2026-02-13 (UX-CONTRAST1)
 - [x] Fix HTMX focus management for consent + custom fields edit forms — 2026-02-13 (UX-FOCUS1)
-- [x] Remove duplicate user management URLs — consolidated under `admin_urls.py`, updated all templates/tests/nav — 2026-02-13 (URL-DEDUP1)
-- [x] Replace hardcoded path in `preflight.py` with `settings.BASE_DIR`-relative path — 2026-02-13 (DEV-PREFLIGHT1)
-- [x] Refactor `/capture-page-states` skill — already rewritten in prior session, verified complete — 2026-02-13 (SKILL-CAPTURE1)
-- [x] Fix BUG-8 — French translation gaps (QA-W28) + Verify BUG-11 — program name_fr confirmed (QA-W29) — 2026-02-12
+- [x] Remove duplicate user management URLs — 2026-02-13 (URL-DEDUP1)
+- [x] Replace hardcoded path in `preflight.py` — 2026-02-13 (DEV-PREFLIGHT1)
 - [x] Auto-generate `.run-manifest.json` in `pytest_sessionfinish` — 2026-02-13 (QA-W34)
-- [x] Add screenshot self-validation — file size, SHA-256 dedup, URL slug check — 2026-02-13 (QA-W35)
+- [x] Add screenshot self-validation — 2026-02-13 (QA-W35)
 - [x] All critical/warning UX walkthrough issues fixed — 2026-02-13 (UX-RESTORE2)
-- [x] Fix BUG-14 — `staff_a11y` preferred_language="en" in scenario runner — 2026-02-13 (QA-W27)
 - [x] Fix TEST-5/6/7/8/9 — scenario runner click fallback, YAML fixes — 2026-02-13 (QA-W30–W33)
-- [x] Re-sync permissions hash — note.create/note.edit DENY→SCOPED for PM — 2026-02-13
 - [x] Full UX walkthrough restored — 57/57 tests passing, 321 pages — PR #64 (UX-RESTORE1)
 _Older completed tasks: [tasks/ARCHIVE.md](tasks/ARCHIVE.md). Reference: [tasks/whats-been-built.md](tasks/whats-been-built.md). Recurring chores: [tasks/recurring-tasks.md](tasks/recurring-tasks.md)._

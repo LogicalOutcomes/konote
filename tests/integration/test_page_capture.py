@@ -78,6 +78,8 @@ class TestPageCapture(BrowserTestBase):
             u = User.objects.create_user(
                 username="staff_a11y", password=TEST_PASSWORD,
                 display_name="Amara Osei",
+                preferred_language="en",  # BUG-14: explicit preference prevents
+                                          # stale cookie from setting lang="fr"
             )
             UserProgramRole.objects.create(
                 user=u, program=self.program_a, role="staff",

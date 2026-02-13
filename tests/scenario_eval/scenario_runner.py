@@ -486,6 +486,16 @@ class ScenarioRunner(BrowserTestBase):
         self._context = self._browser.new_context(**context_kwargs)
         self.page = self._context.new_page()
 
+        # TEST-15: Set django_language cookie to prevent server-side language
+        # bleed from the previous scenario's thread-local activation
+        django_lang = "fr" if persona_lang.startswith("fr") else "en"
+        self._context.add_cookies([{
+            "name": "django_language",
+            "value": django_lang,
+            "domain": "localhost",
+            "path": "/",
+        }])
+
         self._attach_console_listeners()
 
     def _attach_console_listeners(self):
@@ -831,7 +841,9 @@ class ScenarioRunner(BrowserTestBase):
 
         steps = scenario.get("steps", [])
         context_chain = []  # Accumulate context from previous steps
-        context_vars = {}   # TEST-5: accumulate entity IDs from URLs
+        # TEST-20: Pre-seed context_vars with entity IDs from the test
+        # database so {client_id}, {jane_doe_id}, etc. resolve on first use.
+        context_vars = self._build_initial_context_vars(scenario)
 
         for step in steps:
             step_id = step.get("id", 0)
@@ -1080,6 +1092,8 @@ class ScenarioRunner(BrowserTestBase):
                 result.step_evaluations.append(placeholder)
 
         # QA-W5: Capture screenshots for each key_moment defined in YAML
+        # TEST-20: Pre-seed context_vars for template variable resolution
+        narrative_context_vars = self._build_initial_context_vars(scenario)
         key_moments = scenario.get("key_moments", [])
         for i, moment in enumerate(key_moments):
             moment_url = moment.get("url") or moment.get("page", "")
@@ -1089,6 +1103,11 @@ class ScenarioRunner(BrowserTestBase):
                     scenario["id"], i,
                 )
                 continue
+
+            # TEST-20: Resolve template variables in moment URLs
+            moment_url = self._resolve_url_variables(
+                moment_url, narrative_context_vars,
+            )
 
             # Build a descriptive slug for the screenshot filename
             moment_label = moment.get("label", moment.get("event", ""))
@@ -1222,7 +1241,7 @@ class ScenarioRunner(BrowserTestBase):
         return result
 
     # ------------------------------------------------------------------
-    # URL variable resolution (TEST-5)
+    # URL variable resolution (TEST-5, TEST-20)
     # ------------------------------------------------------------------
 
     # Common URL patterns → variable names.  After any navigation,
@@ -1237,6 +1256,82 @@ class ScenarioRunner(BrowserTestBase):
         (re.compile(r"/events/(\d+)"), "event_id"),
         (re.compile(r"/alerts/(\d+)"), "alert_id"),
     ]
+
+    def _build_initial_context_vars(self, scenario):
+        """Pre-seed context_vars with entity IDs from the test database.
+
+        TEST-20: Scenario YAML files use template variables like
+        {client_id} or {jane_doe_id} in goto URLs.  Previously these
+        were only populated AFTER navigating to a page containing an
+        entity ID, so the first reference would fail.
+
+        This method queries the test database for the first available
+        client, program, and group IDs, plus any named-client IDs
+        referenced in the scenario's prerequisites.
+
+        Returns:
+            Dict mapping variable names to string ID values.
+        """
+        context = {}
+
+        # --- Generic first-entity IDs ---
+        try:
+            from apps.clients.models import ClientFile
+            first_client = ClientFile.objects.order_by("pk").first()
+            if first_client:
+                context["client_id"] = str(first_client.pk)
+        except Exception:
+            pass
+
+        try:
+            from apps.programs.models import Program
+            first_program = Program.objects.order_by("pk").first()
+            if first_program:
+                context["program_id"] = str(first_program.pk)
+        except Exception:
+            pass
+
+        try:
+            from apps.groups.models import Group
+            first_group = Group.objects.order_by("pk").first()
+            if first_group:
+                context["group_id"] = str(first_group.pk)
+        except Exception:
+            pass
+
+        # --- Named-client IDs from prerequisites ---
+        # Scenarios can require specific clients (e.g. "Jane Doe").
+        # Generate slug-based variable names like {jane_doe_id} so
+        # YAML files can reference them in goto URLs.
+        prereqs = scenario.get("prerequisites", {})
+        required_data = prereqs.get("data", [])
+        try:
+            from apps.clients.models import ClientFile
+            all_clients = list(ClientFile.objects.all())
+        except Exception:
+            all_clients = []
+
+        for requirement in required_data:
+            req_type = requirement.get("type", "")
+            req_name = requirement.get("name", "")
+            if req_type == "client" and req_name:
+                # Find the client by full name (encrypted — must check in Python)
+                for c in all_clients:
+                    full_name = f"{c.first_name} {c.last_name}".strip()
+                    if full_name == req_name:
+                        # Build a slug-based variable: "Jane Doe" → "jane_doe_id"
+                        slug = re.sub(r"[^a-z0-9]+", "_", req_name.lower()).strip("_")
+                        context[f"{slug}_id"] = str(c.pk)
+                        # Also set as generic client_id if not already set
+                        if "client_id" not in context:
+                            context["client_id"] = str(c.pk)
+                        break
+
+        logger.debug(
+            "TEST-20: Pre-seeded context_vars for %s: %s",
+            scenario.get("id", "?"), context,
+        )
+        return context
 
     def _extract_url_vars(self, url, context_vars):
         """Extract entity IDs from a URL path into context_vars."""

@@ -194,7 +194,7 @@
         hx-target="#ai-insights-container"
         hx-swap="innerHTML"
         hx-indicator="#loading-bar"
-        hx-vals='{"program_id": "{{ program.pk }}", "date_from": "{{ date_from|date:"Y-m-d" }}", "date_to": "{{ date_to|date:"Y-m-d" }}"}'
+        hx-vals='{"program_id": "{{ program.pk }}", "date_from": "{{ date_from }}", "date_to": "{{ date_to }}"}'
         class="outline"
     >
         {% trans "Draft report summary" %}

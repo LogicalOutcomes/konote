@@ -216,6 +216,10 @@ class BrowserTestBase(StaticLiveServerTestCase):
             user=self.executive_user, program=self.program_a,
             role="executive",
         )
+        UserProgramRole.objects.create(
+            user=self.executive_user, program=self.program_b,
+            role="executive",
+        )
 
         # Clients
         self.client_a = ClientFile.objects.create(is_demo=False)

@@ -6068,8 +6068,12 @@ msgstr "Votre rapport est prêt"
 msgid "Download available shortly"
 msgstr "Téléchargement disponible sous peu"
 
-msgid "You can bookmark this page and return, or wait a few minutes and click the button below."
-msgstr "Vous pouvez ajouter cette page à vos favoris et revenir, ou attendre quelques minutes et cliquer sur le bouton ci-dessous."
+msgid ""
+"You can bookmark this page and return, or wait a few minutes and click the "
+"button below."
+msgstr ""
+"Vous pouvez ajouter cette page à vos favoris et revenir, ou attendre "
+"quelques minutes et cliquer sur le bouton ci-dessous."
 
 msgid "Try Download"
 msgstr "Essayer le téléchargement"
@@ -6080,8 +6084,12 @@ msgstr "Rapport généré avec succès"
 msgid "Your PDF report is ready to download."
 msgstr "Votre rapport PDF est prêt à télécharger."
 
-msgid "Your CSV file is ready to download. You can open it in Excel or Google Sheets."
-msgstr "Votre fichier CSV est prêt à télécharger. Vous pouvez l'ouvrir dans Excel ou Google Sheets."
+msgid ""
+"Your CSV file is ready to download. You can open it in Excel or Google "
+"Sheets."
+msgstr ""
+"Votre fichier CSV est prêt à télécharger. Vous pouvez l'ouvrir dans Excel ou"
+" Google Sheets."
 
 msgid "Download PDF Report"
 msgstr "Télécharger le rapport PDF"
@@ -6093,13 +6101,20 @@ msgid "Download"
 msgstr "Télécharger"
 
 msgid "Your file will appear in your browser's Downloads folder."
-msgstr "Votre fichier apparaîtra dans le dossier Téléchargements de votre navigateur."
+msgstr ""
+"Votre fichier apparaîtra dans le dossier Téléchargements de votre "
+"navigateur."
 
 msgid "Need to share this report with a colleague?"
 msgstr "Besoin de partager ce rapport avec un collègue ?"
 
-msgid "Copy this link to share the download with someone else in your organisation. All downloads are logged for audit purposes."
-msgstr "Copiez ce lien pour partager le téléchargement avec quelqu'un d'autre dans votre organisation. Tous les téléchargements sont consignés à des fins de vérification."
+msgid ""
+"Copy this link to share the download with someone else in your organisation."
+" All downloads are logged for audit purposes."
+msgstr ""
+"Copiez ce lien pour partager le téléchargement avec quelqu'un d'autre dans "
+"votre organisation. Tous les téléchargements sont consignés à des fins de "
+"vérification."
 
 msgid "Shareable download URL"
 msgstr "URL de téléchargement partageable"
@@ -6110,8 +6125,8 @@ msgstr "Générer un autre rapport"
 #, python-format
 msgid ""
 "Because this export contains sensitive data, there is a short security "
-"delay. Your download will be available at %(strong_open)s%(time)s"
-"%(strong_close)s."
+"delay. Your download will be available at "
+"%(strong_open)s%(time)s%(strong_close)s."
 msgstr ""
 "Comme cette exportation contient des données sensibles, un court délai de "
 "sécurité est appliqué. Votre téléchargement sera disponible à "
@@ -10085,3 +10100,638 @@ msgstr "macOS :"
 
 msgid "Windows:"
 msgstr "Windows :"
+
+msgid "About Funder Profiles"
+msgstr ""
+
+msgid "Age (from date of birth)"
+msgstr ""
+
+msgid "Age Bins"
+msgstr ""
+
+msgid "Age bins:"
+msgstr ""
+
+msgid "Age-based"
+msgstr ""
+
+msgid "Blocked"
+msgstr ""
+
+msgid "Bounced"
+msgstr ""
+
+msgid "Breakdowns"
+msgstr ""
+
+msgid ""
+"By default, this template uses standard Canadian nonprofit age groupings:"
+msgstr ""
+
+msgid "CASL compliance: express consent is recorded with today's date."
+msgstr ""
+
+msgid "CSV Parsing Errors"
+msgstr ""
+
+msgid "CSV content"
+msgstr ""
+
+msgid "CSV file"
+msgstr ""
+
+msgid "CSV validation failed. Please correct errors and re-upload."
+msgstr ""
+
+msgid "Calendar Feed"
+msgstr ""
+
+msgid "Calendar Feed Settings"
+msgstr ""
+
+msgid "Calendar feed URL"
+msgstr ""
+
+msgid ""
+"Calendar feed URL regenerated. Update your calendar app with the new URL."
+msgstr ""
+
+msgid "Calendar feed generated."
+msgstr ""
+
+msgid "Category Merging"
+msgstr ""
+
+msgid "Category merging:"
+msgstr ""
+
+msgid "Channel"
+msgstr ""
+
+msgid "Click \\\"Add calendar\\\" then \\\"Subscribe from web\\\""
+msgstr ""
+
+msgid "Click the + next to \\\"Other calendars\\\""
+msgstr ""
+
+msgid "Client consents to email reminders"
+msgstr ""
+
+msgid "Client consents to text message reminders"
+msgstr ""
+
+msgid "Contact & Reminders"
+msgstr ""
+
+msgid "Could not read file. Please upload a UTF-8 CSV file."
+msgstr ""
+
+msgid "Create Meeting"
+msgstr ""
+
+msgid "Custom field"
+msgstr ""
+
+msgid "Custom intake field"
+msgstr ""
+
+msgid "Date & Time"
+msgstr ""
+
+msgid "Default age categories"
+msgstr ""
+
+msgid ""
+"Define funder-specific demographic breakdowns for reports (age bins, "
+"category merging)."
+msgstr ""
+
+msgid "Delete Funder Profile"
+msgstr ""
+
+msgid "Delete Profile"
+msgstr ""
+
+msgid "Delivered"
+msgstr ""
+
+msgid "Demographic Breakdowns"
+msgstr ""
+
+msgid "Demographic Categories"
+msgstr ""
+
+msgid ""
+"Description of the reporting requirements, e.g., 'Annual Community Impact "
+"Report'."
+msgstr ""
+
+msgid "Details of the communication..."
+msgstr ""
+
+msgid "Direction"
+msgstr ""
+
+msgid "Display label, e.g., 'Age Group' or 'Employment Status'."
+msgstr ""
+
+msgid "Download Sample CSV"
+msgstr ""
+
+msgid "Download pending"
+msgstr ""
+
+msgid "Download sample CSV"
+msgstr ""
+
+msgid "Duration (minutes)"
+msgstr ""
+
+msgid "Edit Meeting"
+msgstr ""
+
+msgid "Edit Programs"
+msgstr ""
+
+msgid "Email reminders: No"
+msgstr ""
+
+msgid "Email reminders: Yes"
+msgstr ""
+
+msgid "Express"
+msgstr ""
+
+msgid "External reference (e.g. Twilio SID)"
+msgstr ""
+
+msgid "Failed"
+msgstr ""
+
+msgid "File"
+msgstr ""
+
+msgid "French"
+msgstr ""
+
+msgid "Funder Demographic Profiles"
+msgstr ""
+
+msgid "Funder Profile"
+msgstr ""
+
+msgid "Funder Profiles"
+msgstr ""
+
+msgid "Funder demographic profile"
+msgstr ""
+
+msgid "Funder name, e.g., 'United Way Greater Toronto'."
+msgstr ""
+
+msgid ""
+"Funder profile \"%(name)s\" created with %(count)d demographic breakdown(s)."
+msgstr ""
+
+msgid "Funder profile \"%(name)s\" deleted."
+msgstr ""
+
+msgid "Generate Calendar Feed"
+msgstr ""
+
+msgid "Google Calendar"
+msgstr ""
+
+msgid "How to create a profile CSV"
+msgstr ""
+
+msgid "Ignored when a funder profile is selected above."
+msgstr ""
+
+msgid "Implied"
+msgstr ""
+
+msgid "In Person"
+msgstr ""
+
+msgid "Inbound"
+msgstr ""
+
+msgid "Inbound (They contacted us)"
+msgstr ""
+
+msgid "Includes"
+msgstr ""
+
+msgid "Instructions"
+msgstr ""
+
+msgid "Invalid channel."
+msgstr ""
+
+msgid "Invalid direction."
+msgstr ""
+
+msgid "Keeping all categories (unmatched values retained as-is)"
+msgstr ""
+
+msgid "Label"
+msgstr ""
+
+msgid "Legacy single-field grouping"
+msgstr ""
+
+msgid "Linked Programs"
+msgstr ""
+
+msgid "Location"
+msgstr ""
+
+msgid "Manage Profiles"
+msgstr ""
+
+msgid "Manage demographic breakdown configurations for different funders."
+msgstr ""
+
+msgid "Manual Log"
+msgstr ""
+
+msgid "Mark Phone as Verified"
+msgstr ""
+
+msgid "Max Age"
+msgstr ""
+
+msgid "Meeting"
+msgstr ""
+
+msgid "Meeting created."
+msgstr ""
+
+msgid "Meeting updated."
+msgstr ""
+
+msgid "Min Age"
+msgstr ""
+
+msgid "My Meetings"
+msgstr ""
+
+msgid "New Meeting"
+msgstr ""
+
+msgid "No CSV data found. Please try uploading again."
+msgstr ""
+
+msgid "No Show"
+msgstr ""
+
+msgid "No active programs found."
+msgstr ""
+
+msgid "No breakdowns defined."
+msgstr ""
+
+msgid "No consent for reminders"
+msgstr ""
+
+msgid "No funder profile"
+msgstr ""
+
+msgid ""
+"No funder profiles configured yet. Upload a CSV to create your first "
+"profile."
+msgstr ""
+
+msgid "No phone on file"
+msgstr ""
+
+msgid "No profiles configured"
+msgstr ""
+
+msgid "No programs linked"
+msgstr ""
+
+msgid "No reminder sent"
+msgstr ""
+
+msgid "No source CSV available for this profile."
+msgstr ""
+
+msgid "No upcoming meetings."
+msgstr ""
+
+msgid ""
+"Only active programs are shown. The selected profile will appear as an "
+"option in the export form for these programs."
+msgstr ""
+
+msgid "Open Google Calendar in your browser"
+msgstr ""
+
+msgid "Open Outlook Calendar"
+msgstr ""
+
+msgid "Or paste CSV text directly"
+msgstr ""
+
+msgid "Original uploaded CSV content, preserved for re-export and audit."
+msgstr ""
+
+msgid "Outbound"
+msgstr ""
+
+msgid "Outbound (I contacted them)"
+msgstr ""
+
+msgid "Outlook"
+msgstr ""
+
+msgid "Parse & Preview"
+msgstr ""
+
+msgid "Paste CSV content here..."
+msgstr ""
+
+msgid "Paste the URL above"
+msgstr ""
+
+msgid "Paste the URL above and click \\\"Add calendar\\\""
+msgstr ""
+
+msgid "Paste the full CSV content if you don't have a file."
+msgstr ""
+
+msgid ""
+"Paste this URL into your calendar app's \\\"Subscribe\\\" or \\\"Add "
+"calendar from URL\\\" option."
+msgstr ""
+
+msgid "Phone number marked as verified."
+msgstr ""
+
+msgid "Plain-language description of delivery result for staff display"
+msgstr ""
+
+msgid "Please sign in to access this page."
+msgstr ""
+
+msgid "Please upload a CSV file or paste CSV content."
+msgstr ""
+
+msgid "Portal Message"
+msgstr ""
+
+msgid "Preferred Language"
+msgstr ""
+
+msgid "Preferred Language for Messages"
+msgstr ""
+
+msgid "Preview Funder Profile"
+msgstr ""
+
+msgid "Profile Name"
+msgstr ""
+
+msgid "Program assignments updated."
+msgstr ""
+
+msgid "Programs that report to this funder."
+msgstr ""
+
+msgid "Recent"
+msgstr ""
+
+msgid "Regenerate Feed URL"
+msgstr ""
+
+msgid "Reminder failed"
+msgstr ""
+
+msgid "Reminder sent"
+msgstr ""
+
+msgid "Report As"
+msgstr ""
+
+msgid "Review the parsed profile before saving."
+msgstr ""
+
+msgid "SMS"
+msgstr ""
+
+msgid "Save Profile"
+msgstr ""
+
+msgid "Scheduled"
+msgstr ""
+
+msgid "Select \\\"From URL\\\""
+msgstr ""
+
+msgid "Select a CSV file from your computer."
+msgstr ""
+
+msgid ""
+"Select which programs should use this funder profile. You can change this "
+"later."
+msgstr ""
+
+msgid "Select which programs use this funder's demographic breakdowns."
+msgstr ""
+
+msgid "Send reminder to client"
+msgstr ""
+
+msgid "Sent"
+msgstr ""
+
+msgid "Sign in to your account"
+msgstr ""
+
+msgid "Subject"
+msgstr ""
+
+msgid ""
+"Subscribe to your meetings in Google Calendar, Outlook, or any calendar app."
+msgstr ""
+
+msgid "System Received"
+msgstr ""
+
+msgid "System Sent"
+msgstr ""
+
+msgid "Text Message"
+msgstr ""
+
+msgid "Text reminders: No"
+msgstr ""
+
+msgid "Text reminders: Yes"
+msgstr ""
+
+msgid "The intake field to group by (only for custom_field source type)."
+msgstr ""
+
+msgid ""
+"This area contains individual client data. Your executive role provides "
+"access to aggregate reports and insights."
+msgstr ""
+
+msgid ""
+"This will invalidate your current URL. You'll need to re-add it to your "
+"calendar."
+msgstr ""
+
+msgid ""
+"Tip: Use a Claude session to analyse your funder's reporting requirements "
+"and generate the CSV automatically."
+msgstr ""
+
+msgid "Unmatched categories will be kept as-is (not merged into 'Other')."
+msgstr ""
+
+msgid "Upcoming"
+msgstr ""
+
+msgid "Upload CSV File"
+msgstr ""
+
+msgid "Upload Funder Profile"
+msgstr ""
+
+msgid "Upload New Profile"
+msgstr ""
+
+msgid "Upload a CSV defining a funder's demographic breakdown categories."
+msgstr ""
+
+msgid "Use the field's original categories without merging."
+msgstr ""
+
+msgid "Warning"
+msgstr ""
+
+msgid "Warnings"
+msgstr ""
+
+msgid "WhatsApp"
+msgstr ""
+
+msgid "Yes, Delete Profile"
+msgstr ""
+
+msgid "You don't have a calendar feed yet."
+msgstr ""
+
+msgid "Your calendar feed URL:"
+msgstr ""
+
+msgid ""
+"Your front desk role provides access to check-ins and basic client contact "
+"info."
+msgstr ""
+
+msgid "client@example.com"
+msgstr ""
+
+msgid "confirmed"
+msgstr ""
+
+msgid "e.g. Appointment reminder"
+msgstr ""
+
+msgid "e.g. Confirmed for tomorrow"
+msgstr ""
+
+msgid "e.g. Office, Room 201, Phone call"
+msgstr ""
+
+msgid "← Back to Profiles"
+msgstr ""
+
+msgid "← Back to Settings"
+msgstr ""
+
+msgid "Auto"
+msgstr ""
+
+msgid "Client has not consented to email"
+msgstr ""
+
+msgid "Client has not consented to reminders"
+msgstr ""
+
+msgid "Client has not consented to text reminders"
+msgstr ""
+
+msgid "Communication logged."
+msgstr ""
+
+msgid "Consent expired — please re-confirm with client"
+msgstr ""
+
+msgid "Email could not be delivered — check the email address with the client"
+msgstr ""
+
+msgid "Email delivery failed"
+msgstr ""
+
+msgid "Full communication log form"
+msgstr ""
+
+msgid "Loading…"
+msgstr ""
+
+msgid "Log Communication"
+msgstr ""
+
+msgid "Log a Call"
+msgstr ""
+
+msgid "Log a Text"
+msgstr ""
+
+msgid "Log a Visit"
+msgstr ""
+
+msgid "Log an Email"
+msgstr ""
+
+msgid "No email address on file"
+msgstr ""
+
+msgid "No phone number on file"
+msgstr ""
+
+msgid "Please correct the errors below."
+msgstr ""
+
+msgid "Portal"
+msgstr ""
+
+msgid "Quick log communication"
+msgstr ""
+
+msgid "Reminder sent by email"
+msgstr ""
+
+msgid "Reminder sent by text"
+msgstr ""
+
+msgid "Results loaded."
+msgstr ""
+
+msgid "SMS is not configured"
+msgstr ""
+
+msgid "SMS service not available — twilio package not installed"
+msgstr ""
+
+msgid ""
+"Text could not be delivered — try confirming the phone number with the "
+"client"
+msgstr ""

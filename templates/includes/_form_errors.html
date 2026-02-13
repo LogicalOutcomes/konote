@@ -1,0 +1,24 @@
+{% load i18n %}
+{# Form error summary — WCAG 3.3.1 Level A (Error Identification) #}
+{# Include at the top of any form: {% include "includes/_form_errors.html" %} #}
+{% if form.errors %}
+<div id="form-error-summary" class="form-error-summary" role="alert" aria-labelledby="form-error-heading" tabindex="-1">
+    <h2 id="form-error-heading">
+        {% blocktrans count counter=form.errors|length %}
+        There is {{ counter }} error in this form
+        {% plural %}
+        There are {{ counter }} errors in this form
+        {% endblocktrans %}
+    </h2>
+    <ul>
+        {% for field in form %}
+            {% for error in field.errors %}
+            <li><a href="#{{ field.id_for_label }}">{{ field.label }}: {{ error }}</a></li>
+            {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}

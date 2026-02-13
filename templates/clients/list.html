@@ -13,25 +13,27 @@
 <p><a href="{% url 'clients:client_create' %}" role="button">{% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}</a></p>
 {% endif %}
 
-<!-- Search and filter bar -->
-<details class="filter-bar" open>
-    <summary>{% trans "Filters" %}</summary>
-    <form id="client-filters" role="search">
+<!-- Search — first interactive element after skip link for keyboard users (BUG-18) -->
+<form id="client-filters" role="search">
+    <div class="filter-field filter-field--search">
+        <label for="client-search">{% blocktrans with clients=term.client_plural|default:"Participants" %}Search {{ clients }}{% endblocktrans %}</label>
+        <input type="search"
+               id="client-search"
+               name="q"
+               placeholder="{% trans 'Search by name, ID, or note content...' %}"
+               value="{{ search_query }}"
+               aria-label="{% blocktrans with clients=term.client_plural|default:'participants' %}Search {{ clients }}{% endblocktrans %}"
+               hx-get="{% url 'clients:client_list' %}"
+               hx-trigger="input changed delay:300ms"
+               hx-target="#client-list-container"
+               hx-include="#client-filters"
+               hx-indicator="#loading-bar">
+    </div>
+
+    <!-- Filter controls -->
+    <details class="filter-bar" open>
+        <summary>{% trans "Filters" %}</summary>
         <div class="filter-row">
-            <div class="filter-field filter-field--search">
-                <label for="client-search">{% blocktrans with clients=term.client_plural|default:"Participants" %}Search {{ clients }}{% endblocktrans %}</label>
-                <input type="search"
-                       id="client-search"
-                       name="q"
-                       placeholder="{% trans 'Search by name, ID, or note content...' %}"
-                       value="{{ search_query }}"
-                       aria-label="{% blocktrans with clients=term.client_plural|default:'participants' %}Search {{ clients }}{% endblocktrans %}"
-                       hx-get="{% url 'clients:client_list' %}"
-                       hx-trigger="input changed delay:300ms"
-                       hx-target="#client-list-container"
-                       hx-include="#client-filters"
-                       hx-indicator="#loading-bar">
-            </div>
             <div class="filter-field">
                 <label for="filter-status">{% trans "Status" %}</label>
                 <select id="filter-status"
@@ -68,8 +70,11 @@
                 <a href="{% url 'clients:client_list' %}" class="secondary" role="button">{% trans "Clear filters" %}</a>
             </div>
         </div>
-    </form>
-</details>
+    </details>
+</form>
+
+<!-- Screen reader loading announcement (BLOCKER-1 / WCAG 4.1.3) -->
+<div id="search-status" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
 
 <!-- Client list container (updated via HTMX) -->
 <div id="client-list-container" aria-live="polite">

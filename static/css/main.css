@@ -208,6 +208,37 @@ body > nav a.nav-active {
 .badge-neutral { background: var(--kn-neutral-bg); color: var(--kn-neutral-fg); }
 .badge-primary { background: var(--kn-info-bg);    color: var(--kn-info-fg); }
 
+/* ---- Form error summary (BUG-17 — WCAG 3.3.1 Error Identification) ---- */
+.form-error-summary {
+    background: var(--kn-danger-bg);
+    color: var(--kn-danger-fg);
+    padding: var(--kn-space-base);
+    border-radius: var(--kn-radius-card);
+    border-left: 4px solid var(--kn-danger-fg);
+    margin-bottom: var(--kn-space-lg);
+}
+.form-error-summary h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 var(--kn-space-sm) 0;
+    color: inherit;
+}
+.form-error-summary ul {
+    margin: 0;
+    padding-left: var(--kn-space-lg);
+}
+.form-error-summary li {
+    margin-bottom: var(--kn-space-xs);
+}
+.form-error-summary a {
+    color: inherit;
+    text-decoration: underline;
+}
+.form-error-summary:focus {
+    outline: 2px solid var(--kn-primary);
+    outline-offset: 2px;
+}
+
 /* Badge inside navigation — smaller to fit inline */
 .nav-role-badge {
     font-size: 0.65rem;
@@ -1419,6 +1450,18 @@ p.notice.warning {
     0%   { transform: scaleX(0); transform-origin: left; }
     50%  { transform: scaleX(0.7); transform-origin: left; }
     100% { transform: scaleX(1); transform-origin: left; }
+}
+
+/* ---- Touch target sizing (WCAG 2.5.8 Level AA — minimum 24×24px) ---- */
+input[type="checkbox"],
+input[type="radio"] {
+    min-width: 24px;
+    min-height: 24px;
+}
+.filter-bar select,
+.filter-actions a[role="button"],
+.filter-actions button {
+    min-height: 44px; /* WCAG 2.5.5 target size enhanced */
 }
 
 /* ---- Toast notifications ---- */

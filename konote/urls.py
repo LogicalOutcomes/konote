@@ -4,6 +4,7 @@ import os
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import RedirectView
 from django.views.static import serve
 
 from apps.audit.views import program_audit_log
@@ -32,6 +33,8 @@ urlpatterns = [
     path("groups/", include("apps.groups.urls")),
     path("admin/settings/note-templates/", include("apps.notes.admin_urls")),
     path("admin/settings/", include("apps.admin_settings.urls")),
+    # Redirect /settings/ to /admin/settings/ for convenience
+    path("settings/", RedirectView.as_view(url="/admin/settings/", permanent=False)),
     path("admin/users/", include("apps.auth_app.admin_urls")),
     path("admin/audit/", include("apps.audit.urls")),
     path("audit/program/<int:program_id>/", program_audit_log, name="program_audit_log"),
