@@ -7,9 +7,8 @@
 
 ## Active Work
 
-### QA Round 4 Fixes
+### QA Round 4 Remaining
 
-- [x] Fix BUG-14 — `lang="fr"` on `/reports/insights/` page — root cause: `staff_a11y` user created without `preferred_language`, stale `django_language=fr` cookie carried through. Fixed by setting `preferred_language="en"` on user creation in scenario runner — 2026-02-13 (BUG-14 → QA-W27)
 - [ ] Fix BUG-8 — French translation gaps, untranslated system strings in French UI (BUG-8 → QA-W28)
 - [ ] Verify BUG-11 — confirm program `name_fr` translations fully populated for PM2-FR scenarios (BUG-11 → QA-W29)
 
@@ -94,11 +93,7 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 - [ ] Create weekly export summary email command (EXP2u)
 - [ ] Document cron/scheduled task setup in runbook (EXP2w)
 
-### QA Test Infrastructure (konote-qa-scenarios repo)
 
-- [x] Fix TEST-5 — SCN-035 funder reporting: added `goto: /reports/funder-report/` and proper form selectors — 2026-02-13 (TEST-5 → QA-W30)
-- [x] Fix TEST-8 — SCN-047 mobile viewport: fixed login field IDs, client click selector, added hamburger menu toggle + runner hamburger fallback — 2026-02-13 (TEST-8 → QA-W31)
-- [x] Fix TEST-6/TEST-7 — SCN-020/SCN-025: added `a[href*='name']` → text-based click fallback in scenario runner + post-click navigation wait — 2026-02-13 (TEST-6/7 → QA-W32)
 
 ## Parking Lot
 
@@ -113,8 +108,6 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 - [ ] Data migration scenario — legacy system import (QA-T16)
 - [ ] Add onboarding guidance for new users — help link or first-run banner (QA-W19)
 - [ ] Reduce form tab stops — tabindex audit (QA-W20)
-- [x] Fix TEST-9 — SCN-048 offline: added Notes tab click before quick-note link, `a[href*='james']` handled by runner fallback — 2026-02-13 (TEST-9 → QA-W33)
-
 ### Safety & Reporting
 
 - [ ] Serious Reportable Events — add a predefined list of reportable events relevant to Canadian nonprofits (e.g., critical incidents, use of force, medical emergencies, abuse/neglect disclosures, death, elopement). When flagged on a client event, it would be auditable, trigger notification to manager and executive, and appear in a dedicated report. See `tasks/serious-reportable-events.md` (SRE1)
