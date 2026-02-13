@@ -68,11 +68,11 @@ All docs lagged behind recent feature work (messaging, calendar, meetings, conse
 
 #### Permissions & RBAC
 
-- [ ] Update permissions matrix doc — add 12 missing rows (messaging, calendar, client create, edit contact, group create/content/reports, alert recommend/review, erasure) and fix 3 expert-panel changes (staff alert.cancel→DENY, staff group.manage_members→SCOPED, PM alert.create→ALLOW). Add key rules for two-person safety rule, consent immutability. Source of truth: `apps/auth_app/permissions.py` (DOC-PERM1)
+- [x] Update permissions matrix doc — 13 rows added, 6 fixes, two-person safety + consent immutability rules — 2026-02-13 (DOC-PERM1)
 
 #### KoNote Website (konote-website repo)
 
-- [ ] Update features.html — remove "Appointment Scheduling" from "What KoNote Does NOT Do" (now has meetings/calendar). Add feature cards for Messaging & Communication Logging, Meetings & Calendar (iCal feed), and Consent Management. Update Events & Alerts card to mention two-person safety rule (DOC-WEB1)
+- [x] Update features.html — added messaging, meetings/calendar, consent cards; removed scheduling caveat; two-person safety rule — 2026-02-13 (DOC-WEB1)
 - [ ] Fix website footer — change `KoNote-Redux` repo link to current `KoNote` repo URL across all pages (DOC-WEB2)
 - [ ] Update website README — fix old repo reference, add `evidence.html` and `demo.html` to structure section (DOC-WEB3)
 
