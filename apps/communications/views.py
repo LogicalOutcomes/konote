@@ -2,7 +2,7 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 from django.utils.translation import gettext as _
 
 from apps.clients.models import ClientFile
@@ -40,7 +40,7 @@ def quick_log(request, client_id):
     channel = request.GET.get("channel") or request.POST.get("channel", "")
 
     # Cancel button or no channel specified — return the buttons view
-    if request.method == "GET" and (not channel or request.GET.get("X-Cancel")):
+    if request.method == "GET" and not channel:
         recent = (
             Communication.objects.filter(client_file=client)
             .order_by("-created_at")[:5]

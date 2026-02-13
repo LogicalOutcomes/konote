@@ -141,7 +141,6 @@ def send_reminder(meeting, logged_by=None):
         _record_reminder_status(meeting, "no_consent", _("Client has not consented to reminders"))
         return False, "No consent"
 
-    sent = False
     reason = ""
 
     if channel in ("sms", "both"):
@@ -156,7 +155,7 @@ def send_reminder(meeting, logged_by=None):
             return True, "Sent"
         reason = msg
 
-    if not sent and reason:
+    if reason:
         _record_reminder_status(meeting, "failed", reason)
 
     return False, reason
