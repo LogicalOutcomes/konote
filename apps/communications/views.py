@@ -1,4 +1,5 @@
 """Views for communication logging, send previews, and unsubscribe."""
+import json
 from datetime import date
 
 from django.contrib import messages
@@ -80,7 +81,15 @@ def quick_log(request, client_id):
                 "recent_communications": recent,
             })
     else:
-        form = QuickLogForm(initial={"channel": channel, "direction": "outbound"})
+        # Smart direction defaults based on channel
+        direction_defaults = {
+            "phone": "inbound",
+            "sms": "outbound",
+            "email": "outbound",
+            "in_person": "inbound",
+        }
+        initial_direction = direction_defaults.get(channel, "outbound")
+        form = QuickLogForm(initial={"channel": channel, "direction": initial_direction})
 
     return render(request, "communications/_quick_log_form.html", {
         "form": form,
@@ -162,20 +171,30 @@ def send_reminder_preview(request, client_id, event_id):
             check_channel = alt_channel
 
     if request.method == "POST":
+        send_succeeded = False
         if not allowed:
             messages.error(request, reason)
         else:
             note_form = PersonalNoteForm(request.POST)
-            personal_note = note_form.cleaned_data["personal_note"] if note_form.is_valid() else ""
+            if note_form.is_valid():
+                personal_note = note_form.cleaned_data["personal_note"]
+            else:
+                personal_note = ""
+                messages.warning(request, _("Your personal note was too long and was not included."))
             success, send_reason = send_reminder(meeting, logged_by=request.user, personal_note=personal_note)
             if success:
                 messages.success(request, _("Reminder sent."))
+                send_succeeded = True
             else:
                 messages.error(request, send_reason)
 
         # Return updated meeting status partial
         meeting.refresh_from_db()
-        return render(request, "events/_meeting_status.html", {"meeting": meeting})
+        response = render(request, "events/_meeting_status.html", {"meeting": meeting})
+        # UXP2: trigger success toast so HTMX shows a confirmation (WCAG 4.1.3)
+        if send_succeeded:
+            response["HX-Trigger"] = json.dumps({"showSuccess": str(_("Reminder sent."))})
+        return response
 
     # GET: show preview
     preview_text = ""
@@ -220,8 +239,8 @@ def email_unsubscribe(request, token):
     Token is signed with django.core.signing — contains client_file_id
     and channel. Expires after 60 days. No login required.
     """
+    from .services import UNSUBSCRIBE_TOKEN_MAX_AGE
     try:
-        from .services import UNSUBSCRIBE_TOKEN_MAX_AGE
         data = signing.loads(token, salt="unsubscribe", max_age=UNSUBSCRIBE_TOKEN_MAX_AGE)
     except signing.BadSignature:
         return render(request, "communications/unsubscribe.html", {

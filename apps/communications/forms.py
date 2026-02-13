@@ -47,8 +47,8 @@ class CommunicationLogForm(forms.Form):
     """Full form for detailed communication logging — all fields available."""
     direction = forms.ChoiceField(
         choices=[
-            ("outbound", _("Outbound (I contacted them)")),
-            ("inbound", _("Inbound (They contacted us)")),
+            ("outbound", _("Outgoing (we contacted them)")),
+            ("inbound", _("Incoming (they contacted us)")),
         ],
         label=_("Direction"),
     )

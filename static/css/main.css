@@ -919,6 +919,34 @@ details.search-filters-panel[open] summary {
     margin-bottom: var(--kn-space-xs);
 }
 
+/* ---- Timeline filter bar (UXP5) ---- */
+.filter-bar {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+.filter-btn {
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    background: transparent;
+    color: var(--pico-color);
+    cursor: pointer;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+.filter-btn:hover {
+    border-color: var(--kn-primary, #0d7377);
+    color: var(--kn-primary, #0d7377);
+}
+.filter-btn[aria-pressed="true"],
+.filter-btn.filter-active {
+    background-color: var(--kn-primary, #0d7377);
+    color: #fff;
+    border-color: var(--kn-primary, #0d7377);
+}
+
 /* ---- Alert cards ---- */
 .alert-card {
     border-left: 4px solid #EF4444;
@@ -1517,6 +1545,7 @@ input[type="radio"] {
 .toast-success {
     background: var(--kn-success-bg);
     color: var(--kn-success-fg);
+    border: 1px solid var(--kn-success-fg);
 }
 
 /* ---- Auto-dismiss messages ---- */

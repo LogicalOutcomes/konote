@@ -569,7 +569,9 @@ class PhoneFieldTest(TestCase):
             "first_name": "Test",
             "last_name": "User",
             "status": "active",
+            "preferred_language": "en",
             "phone": "6135551234",
+            "programs": [self.prog.pk],
         })
         form.fields["programs"].queryset = Program.objects.all()
         self.assertTrue(form.is_valid(), form.errors)

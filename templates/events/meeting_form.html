@@ -30,12 +30,24 @@
     {% endif %}
 
     {% if not editing %}
+    {% if features.messaging_sms or features.messaging_email %}
+    {% if can_send_reminders %}
     <fieldset>
         <label for="{{ form.send_reminder.id_for_label }}">
             {{ form.send_reminder }}
             {{ form.send_reminder.label }}
         </label>
     </fieldset>
+    {% else %}
+    <fieldset>
+        <label class="secondary">
+            <input type="checkbox" disabled>
+            {% trans "Send reminder" %}
+            <small>({% trans "Participant has not consented to reminders" %})</small>
+        </label>
+    </fieldset>
+    {% endif %}
+    {% endif %}
     {% endif %}
 
     {% if editing %}

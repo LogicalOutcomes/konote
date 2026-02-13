@@ -16,6 +16,8 @@ TEST_KEY = Fernet.generate_key().decode()
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ClientViewsTest(TestCase):
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.client = Client()
@@ -68,6 +70,7 @@ class ClientViewsTest(TestCase):
             "birth_date": "",
             "record_id": "R001",
             "status": "active",
+            "preferred_language": "en",
             "programs": [self.prog_a.pk],
         })
         self.assertEqual(resp.status_code, 302)
@@ -87,6 +90,7 @@ class ClientViewsTest(TestCase):
             "birth_date": "",
             "record_id": "R002",
             "status": "active",
+            "preferred_language": "en",
             "programs": [self.prog_a.pk],
         }, follow=True)
         # Should redirect to profile page (not 404)
@@ -114,6 +118,7 @@ class ClientViewsTest(TestCase):
             "birth_date": "",
             "record_id": "R-STAFF",
             "status": "active",
+            "preferred_language": "en",
             "programs": [self.prog_a.pk],
         }, follow=True)
         self.assertEqual(resp.status_code, 200, f"Expected 200 but got {resp.status_code}")
@@ -131,6 +136,7 @@ class ClientViewsTest(TestCase):
             "birth_date": "",
             "record_id": "",
             "status": "active",
+            "preferred_language": "en",
             "programs": [self.prog_a.pk],
         })
         self.assertEqual(resp.status_code, 302)
@@ -157,7 +163,8 @@ class ClientViewsTest(TestCase):
 
     def test_edit_client(self):
         cf = self._create_client("Jane", "Doe", [self.prog_a])
-        self.client.login(username="admin", password="testpass123")
+        # Staff role has client.edit permission; program_manager does not
+        self.client.login(username="staff", password="testpass123")
         resp = self.client.post(f"/clients/{cf.pk}/edit/", {
             "first_name": "Janet",
             "last_name": "Doe",
@@ -165,6 +172,7 @@ class ClientViewsTest(TestCase):
             "birth_date": "",
             "record_id": "",
             "status": "active",
+            "preferred_language": "en",
             "programs": [self.prog_a.pk],
         })
         self.assertEqual(resp.status_code, 302)

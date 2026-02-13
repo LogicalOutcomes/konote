@@ -21,10 +21,19 @@
     {% endif %}
 
     <div class="grid">
-        <label>
-            {{ form.direction.label }}
-            {{ form.direction }}
-        </label>
+        <fieldset>
+            <legend>{% trans "Direction" %}</legend>
+            <label>
+                <input type="radio" name="{{ form.direction.html_name }}" value="inbound"
+                       {% if form.direction.value == "inbound" %}checked{% endif %}>
+                {% trans "Incoming (they contacted us)" %}
+            </label>
+            <label>
+                <input type="radio" name="{{ form.direction.html_name }}" value="outbound"
+                       {% if form.direction.value == "outbound" or not form.direction.value %}checked{% endif %}>
+                {% trans "Outgoing (we contacted them)" %}
+            </label>
+        </fieldset>
         <label>
             {{ form.channel.label }}
             {{ form.channel }}

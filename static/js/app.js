@@ -227,6 +227,51 @@ document.body.addEventListener("htmx:sendError", function () {
     showToast(t("errorNetwork", "Could not connect to the server. Check your internet connection."), true);
 });
 
+// --- Success toast for async confirmations (UXP2 / WCAG 4.1.3) ---
+// Triggered by HX-Trigger: {"showSuccess": "message"} from Django views
+document.body.addEventListener("showSuccess", function (e) {
+    var msg = (e.detail && e.detail.value) || e.detail || "";
+    var toast = document.getElementById("htmx-success-toast");
+    if (toast) {
+        var msgEl = document.getElementById("htmx-success-toast-message");
+        if (msgEl) { msgEl.textContent = msg; }
+        toast.hidden = false;
+        // Auto-dismiss after 4 seconds (success messages are confirmatory)
+        setTimeout(function () { toast.hidden = true; }, 4000);
+    }
+    // Announce to screen readers via aria-live region
+    var announcer = document.getElementById("sr-announcer");
+    if (announcer) {
+        announcer.textContent = "";
+        setTimeout(function () { announcer.textContent = msg; }, 100);
+    }
+});
+
+// Close button for success toast
+document.addEventListener("click", function (event) {
+    if (event.target && event.target.id === "htmx-success-toast-close") {
+        var toast = document.getElementById("htmx-success-toast");
+        if (toast) { toast.hidden = true; }
+    }
+});
+
+// --- Filter button aria-pressed toggle (UXP5 / WCAG 4.1.2) ---
+// Updates aria-pressed and visual state when filter buttons are clicked
+document.body.addEventListener("click", function (e) {
+    var btn = e.target.closest("[aria-pressed]");
+    if (btn) {
+        var group = btn.closest("[role='group']");
+        if (group && group.querySelector(".filter-btn")) {
+            group.querySelectorAll("[aria-pressed]").forEach(function (b) {
+                b.setAttribute("aria-pressed", "false");
+                b.classList.remove("filter-active");
+            });
+            btn.setAttribute("aria-pressed", "true");
+            btn.classList.add("filter-active");
+        }
+    }
+});
+
 // Screen reader loading announcement for HTMX search (BLOCKER-1 / WCAG 4.1.3)
 // Announces "Loading..." when search starts and "Results loaded" when done
 (function () {
@@ -758,6 +803,11 @@ document.addEventListener("click", function (event) {
             if (key === "h") {
                 // g h = Go to Home
                 window.location.href = "/";
+                return true;
+            }
+            if (key === "m") {
+                // g m = Go to Meetings
+                window.location.href = "/events/meetings/";
                 return true;
             }
             return false;

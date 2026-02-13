@@ -578,6 +578,20 @@ class MessagingSettingsTests(TestCase):
             "staff_sent",
         )
 
+    def test_post_creates_audit_log(self):
+        self.client.login(username="wave3_admin", password="testpass123")
+        self.client.post("/admin/settings/messaging/", {
+            "messaging_profile": "staff_sent",
+            "reminder_window_hours": "24",
+        })
+        from apps.audit.models import AuditLog
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="messaging_settings",
+            action="update",
+        ).last()
+        self.assertIsNotNone(log)
+        self.assertIn("messaging_profile", log.metadata.get("changed_fields", []))
+
     def test_safety_first_toggle_saves(self):
         self.client.login(username="wave3_admin", password="testpass123")
         self.client.post("/admin/settings/messaging/", {

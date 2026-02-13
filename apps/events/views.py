@@ -163,6 +163,24 @@ def event_list(request, client_id):
     # Sort newest first
     timeline.sort(key=lambda x: x["date"], reverse=True)
 
+    # Timeline filtering (UXP5)
+    filter_type = request.GET.get("filter", "all")
+    if filter_type == "notes":
+        timeline = [e for e in timeline if e["type"] == "note"]
+    elif filter_type == "events":
+        timeline = [e for e in timeline if e["type"] == "event"]
+    elif filter_type == "communications":
+        timeline = [e for e in timeline if e["type"] == "communication"]
+
+    # Pagination — 20 entries per page with "Show more"
+    page_size = 20
+    try:
+        offset = int(request.GET.get("offset", 0))
+    except (ValueError, TypeError):
+        offset = 0
+    has_more = len(timeline) > offset + page_size
+    timeline = timeline[offset:offset + page_size]
+
     # Recent communications for the quick-log section
     recent_communications = communications.order_by("-created_at")[:5]
 
@@ -174,7 +192,14 @@ def event_list(request, client_id):
         "recent_communications": recent_communications,
         "active_tab": "events",
         "show_program_ui": program_ctx["show_program_ui"],
+        "active_filter": filter_type,
+        "has_more": has_more,
+        "next_offset": offset + page_size,
+        "is_append": offset > 0,
     }
+    # HTMX partial response — return just the timeline entries for filter/pagination
+    if request.headers.get("HX-Request") and "filter" in request.GET:
+        return render(request, "events/_timeline_entries.html", context)
     if request.headers.get("HX-Request"):
         return render(request, "events/_tab_events.html", context)
     return render(request, "events/event_list.html", context)
@@ -504,10 +529,14 @@ def meeting_create(request, client_id):
     else:
         form = MeetingQuickCreateForm()
 
+    # Check if this client has consented to reminders
+    can_send_reminders = client.sms_consent or client.email_consent
+
     return render(request, "events/meeting_form.html", {
         "form": form,
         "client": client,
         "editing": False,
+        "can_send_reminders": can_send_reminders,
     })
 
 

@@ -7,6 +7,22 @@
 
 ## Active Work
 
+### Messaging & Calendar UX Polish — See `tasks/messaging-ux-polish.md`
+
+Batch 1 (parallel, no dependencies):
+- [ ] Add "Meetings" link to main nav + `g m` shortcut + fix `aria-current="page"` on all nav links (UXP1)
+- [ ] Add success toast for reminder sends — WCAG 4.1.3 compliance (UXP2)
+- [ ] Standardise date formats — locale-aware, bilingual, `<time>` elements (UXP3)
+
+Batch 2 (after Batch 1):
+- [ ] Split "New Event" into "Schedule Meeting" + "Record Event" + consent indicator (UXP4)
+- [ ] Add timeline filtering — All / Notes / Events / Communications + 20-entry cap + "Show more" (UXP5)
+- [ ] Add direction toggle to full communication log form (UXP6)
+
+After all batches:
+- [ ] Translation pass — extract, translate French, compile (UXP-I18N)
+- [ ] Run tests + QA walkthrough (UXP-QA)
+
 ### Pre-Launch Checklist
 
 - [ ] Complete Agency Permissions Interview — signed Configuration Summary required before each new agency deployment (ONBOARD-GATE)
@@ -128,6 +144,13 @@ See `tasks/messaging-calendar-plan.md` (phase-by-phase build) and `tasks/messagi
 
 - [ ] Implement multi-session testing for SCN-046 shared device test (TEST-19 → QA-W55)
 - [ ] Dashboard cognitive load evaluation for ADHD users — research task (IMPROVE-12 → QA-W57)
+
+### Messaging UX — Deferred
+
+- [ ] Receptionist message-taking — separate route, `communication.take_message` permission, notification to assigned worker. Requires `primary_worker` field on ClientFile. See `tasks/messaging-ux-polish.md` (UXP-RECEP)
+- [ ] Team meeting view for PMs — `?team=true` on meeting list, grouped by staff. Requires `get_accessible_client_ids` utility for DV safety (UXP-TEAM)
+- [ ] Actionable health banners — admin-specific guidance and links on SMS/email health warnings (UXP-HEALTH)
+- [ ] Last-contact date on participant list — sortable column for PM oversight (UXP-CONTACT)
 
 ### Safety & Reporting
 

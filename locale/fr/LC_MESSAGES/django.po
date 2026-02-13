@@ -7370,13 +7370,13 @@ msgstr ""
 
 msgid "%(counter)s Demo User"
 msgid_plural "%(counter)s Demo Users"
-msgstr[0] "%(counter)s utilisateur de démonstration"
-msgstr[1] "%(counter)s utilisateurs de démonstration"
+msgstr[0] "%(counter)s utilisateur démo"
+msgstr[1] "%(counter)s utilisateurs démo"
 
 msgid "%(counter)s Demo Client"
 msgid_plural "%(counter)s Demo Clients"
-msgstr[0] "%(counter)s client de démonstration"
-msgstr[1] "%(counter)s clients de démonstration"
+msgstr[0] "%(counter)s client démo"
+msgstr[1] "%(counter)s clients démo"
 
 msgid "%(counter)s elevated export is pending review"
 msgid_plural "%(counter)s elevated exports are pending review"
@@ -7893,8 +7893,8 @@ msgstr "Suggestions des participants"
 #: templates/reports/_insights_basic.html
 msgid "%(total)s suggestion recorded this period."
 msgid_plural "%(total)s suggestions recorded this period."
-msgstr[0] "%(total)s suggestion enregistrée durant cette période."
-msgstr[1] "%(total)s suggestions enregistrées durant cette période."
+msgstr[0] "%(total)s suggestion enregistrée pour cette période."
+msgstr[1] "%(total)s suggestions enregistrées pour cette période."
 
 #: templates/reports/_insights_basic.html
 msgid ""
@@ -8097,8 +8097,8 @@ msgstr[1] "%(count)s paramètres personnalisés"
 #: templates/admin_settings/dashboard.html
 msgid "%(count)s demo user"
 msgid_plural "%(count)s demo users"
-msgstr[0] "%(count)s utilisateur de démonstration"
-msgstr[1] "%(count)s utilisateurs de démonstration"
+msgstr[0] "%(count)s utilisateur démo"
+msgstr[1] "%(count)s utilisateurs démo"
 
 msgid ""
 "A new participant data erasure request has been submitted and requires your "
@@ -11003,3 +11003,48 @@ msgstr "courriel"
 
 msgid "text messages"
 msgstr "messages texte"
+
+msgid "Go to Meetings"
+msgstr "Aller aux réunions"
+
+msgid "Meetings"
+msgstr "Réunions"
+
+msgid "Your personal note was too long and was not included."
+msgstr "Votre note personnelle était trop longue et n'a pas été incluse."
+
+msgid "Participant has not consented to reminders"
+msgstr "Le participant n'a pas consenti aux rappels"
+
+msgid "Record Event"
+msgstr "Enregistrer un événement"
+
+msgid "Schedule Meeting"
+msgstr "Planifier une rencontre"
+
+msgid "Send reminder"
+msgstr "Envoyer un rappel"
+
+msgid "Incoming (they contacted us)"
+msgstr "Entrant (ils nous ont contactés)"
+
+msgid "No communications logged yet."
+msgstr "Aucune communication enregistrée pour le moment."
+
+msgid "No events recorded yet."
+msgstr "Aucun événement enregistré pour le moment."
+
+msgid "No progress notes recorded yet."
+msgstr "Aucune note de suivi enregistrée pour le moment."
+
+msgid "Outgoing (we contacted them)"
+msgstr "Sortant (nous les avons contactés)"
+
+msgid "Show more"
+msgstr "Afficher plus"
+
+msgid "Communications"
+msgstr "Communications"
+
+msgid "Filter timeline"
+msgstr "Filtrer le fil chronologique"
