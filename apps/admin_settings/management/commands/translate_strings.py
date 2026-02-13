@@ -1,35 +1,21 @@
 """
-Extract translatable strings from templates and Python, auto-translate, compile .mo.
+Extract translatable strings from templates and Python, add to .po, compile .mo.
 
 Replaces the need for gettext/makemessages on Windows. Uses regex extraction
 and polib for .po/.mo handling — pure Python, no system dependencies.
 
-Auto-translates empty strings via any OpenAI-compatible API when configured.
-Uses only the `requests` library (already a project dependency) — no vendor SDK needed.
-
-Configuration (environment variables):
-    TRANSLATE_API_KEY   — API key (required to enable auto-translation)
-    TRANSLATE_API_BASE  — API base URL (default: https://api.openai.com/v1)
-    TRANSLATE_MODEL     — Model name (default: gpt-5)
-
-Translation quality matters — the default is a flagship model because this
-runs infrequently (only when new strings are added). Override TRANSLATE_MODEL
-for a cheaper option if needed.
-
-Works with OpenAI, Open Router, Anthropic, local Ollama, or any
-provider that supports the OpenAI chat completions format.
+Empty translations are filled in by Claude Code (editing the .po file directly),
+not by an external API.
 
 Usage:
-    python manage.py translate_strings                # Extract + translate + compile
-    python manage.py translate_strings --dry-run      # Show what would change
-    python manage.py translate_strings --no-translate  # Extract + compile only
+    python manage.py translate_strings            # Extract + add missing + compile
+    python manage.py translate_strings --dry-run  # Show what would change
 
 Exit codes:
     0 = success
     1 = error (duplicate msgids, file write failure, etc.)
 """
 
-import json
 import os
 import re
 import shutil
@@ -42,33 +28,8 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 
-# ── Translation prompt ──────────────────────────────────────────────────
-
-SYSTEM_PROMPT = """\
-You are a translator for a Canadian nonprofit client management system called KoNote.
-
-Rules:
-- Translate English to Canadian French
-- Use formal "vous" (not "tu")
-- Use Canadian nonprofit terminology (organisme, bénéficiaire, intervenant)
-- Use Canadian French terms: courriel (not e-mail), téléverser (not uploader)
-- Keep UI text concise — space is limited
-- Preserve ALL placeholders exactly: %(name)s, %(count)d, {{ var }}, {record_id}
-- Preserve ALL HTML tags exactly: <strong>, <em>, <a href="...">, etc.
-- Use French typographic conventions: space before colon, semicolon, question/exclamation marks
-- Use « guillemets » for quotation marks
-- Canadian spelling: organisation (not organization)
-
-Return ONLY a JSON object mapping each number to its French translation.
-Example input: {"1": "Sign In", "2": "Password"}
-Example output: {"1": "Connexion", "2": "Mot de passe"}
-"""
-
-BATCH_SIZE = 25  # strings per API call
-
-
 class Command(BaseCommand):
-    help = "Extract translatable strings, auto-translate empty ones, compile .mo."
+    help = "Extract translatable strings, add missing entries to .po, compile .mo."
 
     # Regex for {% trans "string" %} and {% trans 'string' %}
     TEMPLATE_PATTERN = re.compile(
@@ -90,11 +51,6 @@ class Command(BaseCommand):
             help="Show what would change without modifying files.",
         )
         parser.add_argument(
-            "--no-translate",
-            action="store_true",
-            help="Skip auto-translation (extract and compile only).",
-        )
-        parser.add_argument(
             "--lang",
             default="fr",
             help="Target language code (default: fr).",
@@ -102,7 +58,6 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         dry_run = options["dry_run"]
-        skip_translate = options["no_translate"]
         lang = options["lang"]
 
         self.stdout.write("\nKoNote Translation Sync")
@@ -113,7 +68,7 @@ class Command(BaseCommand):
         # ----------------------------------------------------------
         # Phase 1: Extract strings
         # ----------------------------------------------------------
-        self.stdout.write("\n[1/4] Extracting strings...")
+        self.stdout.write("\n[1/3] Extracting strings...")
 
         template_strings, template_file_count, blocktrans_count = (
             self._extract_templates(base_dir)
@@ -143,7 +98,7 @@ class Command(BaseCommand):
         # ----------------------------------------------------------
         # Phase 2: Compare with .po and add missing
         # ----------------------------------------------------------
-        self.stdout.write(f"\n[2/4] Comparing with django.po...")
+        self.stdout.write(f"\n[2/3] Comparing with django.po...")
 
         po_path = self._find_po_file(lang, base_dir)
         if po_path is None:
@@ -237,11 +192,7 @@ class Command(BaseCommand):
                         f"    ... and {len(new_strings) - 20} more"
                     )
             total_empty = len(new_strings) + empty_count
-            if total_empty:
-                self.stdout.write(self.style.WARNING(
-                    f"\n  {total_empty} strings would be auto-translated."
-                ))
-            self._print_summary(0, total_empty, dry_run=True)
+            self._print_summary(total_empty, dry_run=True)
             return
 
         # Add new strings to .po
@@ -255,41 +206,9 @@ class Command(BaseCommand):
             ))
 
         # ----------------------------------------------------------
-        # Phase 3: Auto-translate empty strings
+        # Phase 3: Compile .mo
         # ----------------------------------------------------------
-        # Collect all empty entries (including any we just added)
-        empty_entries = [
-            e for e in po
-            if not e.msgstr and not e.obsolete and e.msgid
-        ]
-
-        if empty_entries and not skip_translate:
-            self.stdout.write(
-                f"\n[3/4] Auto-translating {len(empty_entries)} "
-                f"empty strings..."
-            )
-            translated = self._auto_translate(empty_entries, lang)
-            if translated > 0:
-                self._save_po(po, po_path)
-                self.stdout.write(self.style.SUCCESS(
-                    f"      [OK] Translated {translated} strings"
-                ))
-            # Reload after saving
-            po = polib.pofile(str(po_path))
-        elif empty_entries and skip_translate:
-            self.stdout.write(
-                f"\n[3/4] Skipping translation (--no-translate)"
-            )
-            self.stdout.write(self.style.WARNING(
-                f"      [!!] {len(empty_entries)} strings still untranslated"
-            ))
-        else:
-            self.stdout.write(f"\n[3/4] No empty strings to translate.")
-
-        # ----------------------------------------------------------
-        # Phase 4: Compile .mo
-        # ----------------------------------------------------------
-        self.stdout.write(f"\n[4/4] Compiling django.mo...")
+        self.stdout.write(f"\n[3/3] Compiling django.mo...")
 
         mo_path = po_path.with_suffix(".mo")
         fd, tmp_mo = tempfile.mkstemp(suffix=".mo", dir=str(mo_path.parent))
@@ -316,127 +235,7 @@ class Command(BaseCommand):
             1 for entry in po
             if not entry.msgstr and not entry.obsolete and entry.msgid
         )
-        self._print_summary(0, remaining_empty, dry_run=False)
-
-    # ------------------------------------------------------------------
-    # Auto-translation
-    # ------------------------------------------------------------------
-
-    def _auto_translate(self, empty_entries, lang):
-        """
-        Translate empty entries via OpenAI-compatible chat completions API.
-
-        Uses only the `requests` library — no vendor SDK needed.
-        Works with OpenAI, Open Router, Anthropic, Ollama, etc.
-
-        Returns count of strings translated.
-        """
-        import requests as http_client
-
-        api_key = os.environ.get("TRANSLATE_API_KEY", "")
-        if not api_key:
-            self.stdout.write(self.style.WARNING(
-                "      [!!] TRANSLATE_API_KEY not set — skipping auto-translate.\n"
-                "      Set the env var to enable. Works with any OpenAI-compatible API.\n"
-                "      See: TRANSLATE_API_KEY, TRANSLATE_API_BASE, TRANSLATE_MODEL"
-            ))
-            return 0
-
-        api_base = os.environ.get(
-            "TRANSLATE_API_BASE", "https://api.openai.com/v1"
-        ).rstrip("/")
-        model = os.environ.get("TRANSLATE_MODEL", "gpt-5")
-        url = f"{api_base}/chat/completions"
-
-        self.stdout.write(
-            f"      Using: {model} via {api_base}"
-        )
-
-        total_translated = 0
-
-        for batch_start in range(0, len(empty_entries), BATCH_SIZE):
-            batch = empty_entries[batch_start:batch_start + BATCH_SIZE]
-            batch_num = (batch_start // BATCH_SIZE) + 1
-            total_batches = (
-                (len(empty_entries) + BATCH_SIZE - 1) // BATCH_SIZE
-            )
-
-            self.stdout.write(
-                f"      Batch {batch_num}/{total_batches} "
-                f"({len(batch)} strings)..."
-            )
-
-            # Build numbered dict for the prompt
-            source = {}
-            for i, entry in enumerate(batch, 1):
-                source[str(i)] = entry.msgid
-
-            payload = {
-                "model": model,
-                "max_tokens": 4096,
-                "messages": [
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {
-                        "role": "user",
-                        "content": (
-                            f"Translate these to {lang}. "
-                            f"Return ONLY valid JSON.\n\n"
-                            f"{json.dumps(source, ensure_ascii=False, indent=2)}"
-                        ),
-                    },
-                ],
-            }
-
-            try:
-                resp = http_client.post(
-                    url,
-                    headers={
-                        "Authorization": f"Bearer {api_key}",
-                        "Content-Type": "application/json",
-                    },
-                    json=payload,
-                    timeout=60,
-                )
-                resp.raise_for_status()
-                data = resp.json()
-
-                # Extract text from OpenAI-compatible response
-                text = data["choices"][0]["message"]["content"].strip()
-
-                # Strip markdown code fences if present
-                if text.startswith("```"):
-                    text = re.sub(r"^```\w*\n?", "", text)
-                    text = re.sub(r"\n?```$", "", text)
-                    text = text.strip()
-
-                translations = json.loads(text)
-
-                # Apply translations
-                batch_count = 0
-                for i, entry in enumerate(batch, 1):
-                    key = str(i)
-                    if key in translations and translations[key]:
-                        entry.msgstr = translations[key]
-                        batch_count += 1
-
-                total_translated += batch_count
-
-            except json.JSONDecodeError as e:
-                self.stdout.write(self.style.WARNING(
-                    f"      [!!] Could not parse API response for batch "
-                    f"{batch_num}: {e}"
-                ))
-            except http_client.exceptions.HTTPError as e:
-                self.stdout.write(self.style.WARNING(
-                    f"      [!!] API HTTP error on batch {batch_num}: "
-                    f"{e.response.status_code} {e.response.reason}"
-                ))
-            except Exception as e:
-                self.stdout.write(self.style.WARNING(
-                    f"      [!!] API error on batch {batch_num}: {e}"
-                ))
-
-        return total_translated
+        self._print_summary(remaining_empty, dry_run=False)
 
     # ------------------------------------------------------------------
     # File helpers
@@ -559,7 +358,7 @@ class Command(BaseCommand):
 
         return None
 
-    def _print_summary(self, new_strings_count, empty_count, dry_run=False):
+    def _print_summary(self, empty_count, dry_run=False):
         """Print final summary line."""
         prefix = "(Dry run) " if dry_run else ""
 
@@ -570,7 +369,7 @@ class Command(BaseCommand):
                 f"French translations."
             ))
             self.stdout.write(
-                "  Set TRANSLATE_API_KEY to enable auto-translation."
+                "  Ask Claude Code to translate the empty entries in django.po."
             )
         else:
             self.stdout.write(self.style.SUCCESS(

@@ -10792,200 +10792,214 @@ msgstr ""
 "téléphone avec le client"
 
 msgid "%(count)s %(channel)s reminder(s) could not be sent recently."
-msgstr ""
+msgstr "%(count)s rappel(s) %(channel)s n'ont pas pu être envoyés récemment."
 
 msgid "All outbound messaging is currently disabled."
-msgstr ""
+msgstr "Tous les messages sortants sont actuellement désactivés."
 
 msgid "Cannot send reminder"
-msgstr ""
+msgstr "Impossible d'envoyer le rappel"
 
 msgid "Channels"
-msgstr ""
+msgstr "Canaux"
 
 msgid ""
 "Configure appointment reminders, message templates, and channel settings."
 msgstr ""
+"Configurez les rappels de rendez-vous, les modèles de messages et les "
+"paramètres des canaux."
 
 msgid ""
 "Configure how your organisation communicates with clients through KoNote."
 msgstr ""
+"Configurez la façon dont votre organisme communique avec les bénéficiaires "
+"via KoNote."
 
 msgid "Connected"
-msgstr ""
+msgstr "Connecté"
 
 msgid "Email Reminder Template (English)"
-msgstr ""
+msgstr "Modèle de rappel par courriel (anglais)"
 
 msgid "Email Reminder Template (French)"
-msgstr ""
+msgstr "Modèle de rappel par courriel (français)"
 
 msgid "Email Templates"
-msgstr ""
+msgstr "Modèles de courriel"
 
 msgid "Email is not set up"
-msgstr ""
+msgstr "Le courriel n'est pas configuré"
 
 msgid "Enable in Features, then configure SMTP credentials."
-msgstr ""
+msgstr "Activez dans Fonctionnalités, puis configurez les identifiants SMTP."
 
 msgid "Enable in Features, then configure Twilio credentials."
 msgstr ""
+"Activez dans Fonctionnalités, puis configurez les identifiants Twilio."
 
 msgid "Full Automation"
-msgstr ""
+msgstr "Automatisation complète"
 
 msgid "Full automation enabled"
-msgstr ""
+msgstr "Automatisation complète activée"
 
 msgid "How many hours before a meeting to send the reminder."
-msgstr ""
+msgstr "Nombre d'heures avant une réunion pour envoyer le rappel."
 
 msgid "If you change your mind, please contact the organisation directly."
-msgstr ""
+msgstr "Si vous changez d'avis, veuillez contacter l'organisme directement."
 
 msgid ""
 "KoNote automatically sends reminders before meetings. Requires email or SMS "
 "setup."
 msgstr ""
+"KoNote envoie automatiquement des rappels avant les réunions. Nécessite la "
+"configuration du courriel ou des SMS."
 
 msgid "Message Templates"
-msgstr ""
+msgstr "Modèles de message"
 
 msgid "Messaging"
-msgstr ""
+msgstr "Messagerie"
 
 msgid "Messaging Profile"
-msgstr ""
+msgstr "Profil de messagerie"
 
 msgid "Messaging Settings"
-msgstr ""
+msgstr "Paramètres de messagerie"
 
 msgid "Messaging is set to record-keeping only"
-msgstr ""
+msgstr "La messagerie est configurée pour la tenue de dossiers uniquement"
 
 msgid "Messaging settings updated."
-msgstr ""
+msgstr "Paramètres de messagerie mis à jour."
 
 msgid "Not set up"
-msgstr ""
+msgstr "Non configuré"
 
 msgid "Personal note (optional)"
-msgstr ""
+msgstr "Note personnelle (facultatif)"
 
 msgid "Record-Keeping Only"
-msgstr ""
+msgstr "Tenue de dossiers uniquement"
 
 msgid "Record-keeping only"
-msgstr ""
+msgstr "Tenue de dossiers uniquement"
 
 msgid "Reminder Window (hours)"
-msgstr ""
+msgstr "Fenêtre de rappel (heures)"
 
 msgid "Reminder sent."
-msgstr ""
+msgstr "Rappel envoyé."
 
 msgid "Requires email or SMS to be set up first."
-msgstr ""
+msgstr "Nécessite la configuration préalable du courriel ou des SMS."
 
 msgid "SMS Reminder Template (English)"
-msgstr ""
+msgstr "Modèle de rappel SMS (anglais)"
 
 msgid "SMS Reminder Template (French)"
-msgstr ""
+msgstr "Modèle de rappel SMS (français)"
 
 msgid "SMS Templates"
-msgstr ""
+msgstr "Modèles SMS"
 
 msgid "Safety-First Mode"
-msgstr ""
+msgstr "Mode sécurité prioritaire"
 
 msgid "Safety-First mode is enabled — no outbound messages"
-msgstr ""
+msgstr "Le mode sécurité prioritaire est activé — aucun message sortant"
 
 msgid "Save Settings"
-msgstr ""
+msgstr "Enregistrer les paramètres"
 
 msgid "Send Reminder"
-msgstr ""
+msgstr "Envoyer un rappel"
 
 msgid "Sender & Support"
-msgstr ""
+msgstr "Expéditeur et soutien"
 
 msgid "Sender Display Name"
-msgstr ""
+msgstr "Nom d'affichage de l'expéditeur"
 
 msgid "Shown in error messages when messaging fails."
-msgstr ""
+msgstr "Affiché dans les messages d'erreur lorsque la messagerie échoue."
 
 msgid ""
 "Staff can schedule meetings and log communications. Nothing is sent from "
 "KoNote."
 msgstr ""
+"Le personnel peut planifier des réunions et enregistrer des communications. "
+"Aucun message n'est envoyé depuis KoNote."
 
 msgid ""
 "Staff can send appointment reminders and messages directly from KoNote. "
 "Every message requires a person to click send."
 msgstr ""
+"Le personnel peut envoyer des rappels de rendez-vous et des messages "
+"directement depuis KoNote. Chaque message nécessite qu'une personne clique "
+"sur envoyer."
 
 msgid "Staff-Sent Messages"
-msgstr ""
+msgstr "Messages envoyés par le personnel"
 
 msgid "Staff-sent messages enabled"
-msgstr ""
+msgstr "Messages envoyés par le personnel activés"
 
 msgid "Support Contact Name"
-msgstr ""
+msgstr "Nom du contact de soutien"
 
 msgid "Support Contact Phone"
-msgstr ""
+msgstr "Téléphone du contact de soutien"
 
 msgid "Text Messages (SMS)"
-msgstr ""
+msgstr "Messages texte (SMS)"
 
 msgid "Text messaging is not set up"
-msgstr ""
+msgstr "La messagerie texte n'est pas configurée"
 
 msgid "This unsubscribe link is no longer valid."
-msgstr ""
+msgstr "Ce lien de désabonnement n'est plus valide."
 
 msgid "To stop receiving these messages"
-msgstr ""
+msgstr "Pour cesser de recevoir ces messages"
 
 msgid "Unable to unsubscribe"
-msgstr ""
+msgstr "Impossible de se désabonner"
 
 msgid "Unsubscribe"
-msgstr ""
+msgstr "Se désabonner"
 
 msgid "Unsubscribe from messages"
-msgstr ""
+msgstr "Se désabonner des messages"
 
 msgid "Use {date}, {time}, {org_phone} as placeholders."
-msgstr ""
+msgstr "Utilisez {date}, {time}, {org_phone} comme espaces réservés."
 
 msgid ""
 "Use {date}, {time}, {org_phone} as placeholders. Keep under 160 characters "
 "per segment."
 msgstr ""
+"Utilisez {date}, {time}, {org_phone} comme espaces réservés. Limitez à 160 "
+"caractères par segment."
 
 msgid "Yes, unsubscribe me"
-msgstr ""
+msgstr "Oui, me désabonner"
 
 msgid "You have been unsubscribed"
-msgstr ""
+msgstr "Vous avez été désabonné"
 
 msgid "You will no longer receive email messages from this organisation."
-msgstr ""
+msgstr "Vous ne recevrez plus de courriels de cet organisme."
 
 msgid "You will no longer receive text messages from this organisation."
-msgstr ""
+msgstr "Vous ne recevrez plus de messages texte de cet organisme."
 
 msgid "e.g. Looking forward to seeing you!"
-msgstr ""
+msgstr "p. ex. Au plaisir de vous voir !"
 
 msgid "email"
-msgstr ""
+msgstr "courriel"
 
 msgid "text messages"
-msgstr ""
+msgstr "messages texte"

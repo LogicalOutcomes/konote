@@ -67,8 +67,7 @@ See `tasks/messaging-calendar-plan.md` (phase-by-phase build) and `tasks/messagi
 - [x] Phase 3 (Wave 1): Consent & contact fields on ClientFile — email, phone staleness, CASL consent, preferred language — 2026-02-13 (MSG-P3)
 - [x] Phase 2B-J (Wave 2): Communication log views, quick-log buttons, timeline integration — 2026-02-13 (MSG-P2B)
 - [x] Phase 4A-C (Wave 2): Settings, Twilio/SMTP config, services layer — 2026-02-13 (MSG-P4A)
-- [ ] Phase 4D-K (Wave 3): Send + compose views, feature toggles, health banners, unsubscribe (MSG-P4B)
-- [ ] Messaging settings page — profile cards, Safety-First toggle, channel checkboxes, Setup Wizard (MSG-MOD1)
+- [x] Phase 4D-K (Wave 3): Send preview, feature toggles, health banners, unsubscribe, messaging settings — 2026-02-13 (MSG-P4B)
 - [ ] Safe-to-contact fields — structured channel safety, code name, review date on ClientFile (MSG-MOD2)
 - [ ] Composed messages — staff can write follow-ups/check-ins from client page, preview before send (MSG-MOD3)
 - [ ] Bulk messaging — send to program group with consent-filtered recipient list (MSG-MOD4)
@@ -144,6 +143,7 @@ See `tasks/messaging-calendar-plan.md` (phase-by-phase build) and `tasks/messagi
 
 ### Infrastructure
 
+- [ ] Re-add API-based auto-translation to `translate_strings` — for production use when Claude Code isn't available. Support Anthropic API with `ANTHROPIC_API_KEY` env var (I18N-API1)
 - [ ] Local PostgreSQL for tests — `security_audit` and `pytest` need a running PostgreSQL. Document setup or add SQLite fallback for static-only checks (DEV-PG1)
 - [ ] Deferred execution for Tier 3 erasure — 24-hour delay, see `tasks/erasure-hardening.md` (ERASE-H8)
 - [ ] Deployment workflow enhancements — see `docs/plans/2026-02-05-deployment-workflow-design.md` (DEPLOY1)

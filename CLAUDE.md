@@ -45,24 +45,19 @@ These rules apply to **every phase**. Do not skip them.
 ## Translations
 
 After creating or modifying any template that uses `{% trans %}` or `{% blocktrans %}` tags:
-1. Run `python manage.py translate_strings` — this extracts, auto-translates, and compiles
-2. Commit both `locale/fr/LC_MESSAGES/django.po` and `django.mo`
+1. Run `python manage.py translate_strings` — this extracts new strings and compiles
+2. Fill in any empty French translations in `locale/fr/LC_MESSAGES/django.po` (Claude Code does this directly — no API key needed during development)
+3. Run `python manage.py translate_strings` again to recompile
+4. Commit both `locale/fr/LC_MESSAGES/django.po` and `django.mo`
 
-**For `{% blocktrans %}` blocks** (strings with variables or plurals): `translate_strings` cannot auto-extract these from templates. If you add a new `{% blocktrans %}`, you must add the corresponding msgid to the .po file manually, then run `translate_strings` to auto-translate and compile it.
+**For `{% blocktrans %}` blocks** (strings with variables or plurals): `translate_strings` cannot auto-extract these from templates. If you add a new `{% blocktrans %}`, you must add the corresponding msgid to the .po file manually, then run `translate_strings` to compile it.
 
 **Automated safety nets** (you don't need to remember these — they run automatically):
 - Django system check (W010) warns if template string count exceeds .po entries
 - Pre-commit hook warns if .html files change without .po updates
 - Container startup runs `check_translations` (non-blocking)
 
-Auto-translation uses any OpenAI-compatible API. Set these environment variables:
-- `TRANSLATE_API_KEY` — required to enable (works with OpenAI, Open Router, Anthropic, Ollama)
-- `TRANSLATE_API_BASE` — API base URL (default: `https://api.openai.com/v1`)
-- `TRANSLATE_MODEL` — model name (default: `gpt-5`)
-
-If `TRANSLATE_API_KEY` is not set, translation is skipped — empty strings will then cause `validate_translations.py` to fail (exit code 1).
-
-Use `--no-translate` to skip auto-translation. Use `--dry-run` to preview changes.
+Use `--dry-run` to preview changes.
 
 ## Task File: TODO.md
 
