@@ -53,6 +53,15 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 
 ## Coming Up
 
+### Messaging, Meetings & Calendar — See `tasks/messaging-calendar-plan.md`
+
+- [ ] Phase 0: Consultant setup — Twilio account, email SMTP (Google Workspace or M365), Railway cron, handoff runbook (MSG-P0)
+- [ ] Phase 1: Meetings + iCal feeds — meeting records, staff calendar sync, reminder status on meeting cards (MSG-P1)
+- [ ] Phase 2: Communication log — quick-log buttons for calls/texts/emails staff already make, funder reporting count (MSG-P2)
+- [ ] Phase 3: Consent & contact fields — one-checkbox consent at intake, phone staleness tracking, client language preference (MSG-P3)
+- [ ] Phase 4: Outbound messaging — email via org SMTP + SMS via Twilio, preview before send, plain-language failure messages (MSG-P4)
+- [ ] Phase 5: Automated reminders — cron job sends reminders 24h before meetings, only after manual send is proven (MSG-P5)
+
 ### Agency Onboarding — See `tasks/agency-permissions-interview.md`
 
 - [ ] Split interview into two sessions — Session A (60 min) and Session B (45 min) (ONBOARD1)

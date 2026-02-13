@@ -33,8 +33,40 @@ Add meeting scheduling, communication logging, outbound email/SMS reminders, iCa
 | Account | What to configure | Survival notes |
 |---------|-------------------|----------------|
 | **Twilio** | Create account, buy Canadian phone number, complete A2P 10DLC campaign registration, set up auto-recharge on org credit card, forward account alerts to org's shared inbox (e.g. `info@orgname.ca`) | A2P registration is mandatory for business SMS in Canada. Must be completed at setup — Twilio will suspend sending if deferred. |
-| **Google Workspace SMTP** | Create app password for `reminders@orgname.ca` (or shared mailbox), configure Django SMTP settings | Use the org's existing Google Workspace. No new email provider account needed. |
+| **Email SMTP** | Configure SMTP for the org's existing email provider — see 0A1 below | Use the org's existing Google Workspace or Microsoft 365. No new email provider account needed. |
 | **Railway** | Set up cron job for `send_reminders`, verify it runs | Document how to check cron status |
+
+### 0A1. Email SMTP configuration (Google Workspace or Microsoft 365)
+
+Most small nonprofits use one of these two. Configure whichever the org has:
+
+**Google Workspace:**
+| Setting | Value |
+|---------|-------|
+| `EMAIL_HOST` | `smtp-relay.gmail.com` |
+| `EMAIL_PORT` | `587` |
+| `EMAIL_USE_TLS` | `True` |
+| `EMAIL_HOST_USER` | App password for `reminders@orgname.ca` (or shared mailbox) |
+| `EMAIL_HOST_PASSWORD` | App password (not the user's login password) |
+| Sending limit | 10,000/day on Business Standard |
+| Canadian data residency | Yes (for Canadian tenants with data region set to Canada) |
+
+**Microsoft 365:**
+| Setting | Value |
+|---------|-------|
+| `EMAIL_HOST` | `smtp.office365.com` |
+| `EMAIL_PORT` | `587` |
+| `EMAIL_USE_TLS` | `True` |
+| `EMAIL_HOST_USER` | `reminders@orgname.ca` (shared mailbox or service account) |
+| `EMAIL_HOST_PASSWORD` | App password (requires MFA bypass for SMTP — configure in Azure AD) |
+| Sending limit | 10,000 recipients/day on E3/E5; 30 messages/minute |
+| Canadian data residency | Yes (M365 honours Canadian data residency for Canadian tenants) |
+
+**Notes:**
+- Both providers work with Django's built-in `django.core.mail.backends.smtp.EmailBackend` — no django-anymail needed.
+- Use a shared mailbox or alias (e.g. `reminders@orgname.ca`) so reminders come from the org, not a person.
+- M365 SMTP requires either an app password (if MFA is enabled) or SMTP AUTH to be enabled for the sending account in Exchange admin. The consultant should configure this during setup.
+- If the org later outgrows these limits or needs delivery analytics, upgrade to a dedicated provider (SendGrid, Amazon SES) at that time. The Django SMTP backend swap is a one-line env var change.
 
 ### 0B. App configuration (consultant responsibility)
 
@@ -555,14 +587,14 @@ Show preferred contact method, consent status (simple "Consented to text reminde
 twilio>=9.0
 ```
 
-**No django-anymail.** Use Django's built-in SMTP backend with the org's existing Google Workspace. Configuration:
+**No django-anymail.** Use Django's built-in SMTP backend with the org's existing email provider (Google Workspace or Microsoft 365 — see Phase 0A1 for provider-specific settings).
 
 ```python
 # konote/settings/base.py
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend"
 )
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp-relay.gmail.com")
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "")  # smtp-relay.gmail.com or smtp.office365.com
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
@@ -570,7 +602,7 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "reminders@orgname.ca")
 ```
 
-Google Workspace SMTP supports up to 10,000 messages/day on Business Standard. More than sufficient.
+Both Google Workspace and Microsoft 365 support 10,000+ messages/day — more than sufficient for any small nonprofit.
 
 ### 4B. SMS configuration
 
@@ -933,7 +965,7 @@ Available through Twilio with minimal code changes. The Communication model alre
 | Communications app | `apps/communications/` (new app) | Prevents events/ from becoming a god-app |
 | Communication model | Single model with direction/channel/method | One timeline, one audit trail, extensible |
 | Service layer | `apps/communications/services.py` | Separates business logic from views, docstrings explain rules for AI maintainer |
-| Email backend | Django SMTP with Google Workspace | Org already has it, no new account, Canadian data residency |
+| Email backend | Django SMTP with Google Workspace or Microsoft 365 | Org already has one of these, no new account, both offer Canadian data residency |
 | SMS provider | Twilio | Industry standard, Python SDK, Canadian numbers, WhatsApp upgrade path |
 | Background tasks | Management command first, Django-Q2 later | Simplest approach; clear upgrade path |
 | Calendar integration | iCal feed first, API push later | 80% of value for 10% of complexity |
