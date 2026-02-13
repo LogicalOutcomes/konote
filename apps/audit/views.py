@@ -16,12 +16,36 @@ from apps.reports.csv_utils import sanitise_csv_row
 from .models import AuditLog
 
 
+def _scoped_audit_qs(request):
+    """Return an AuditLog queryset scoped to the user's access level.
+
+    Admins and executives see all entries. Program managers see entries
+    scoped to their programs (audit.view: SCOPED in permissions matrix).
+    """
+    from apps.auth_app.permissions import SCOPED, can_access
+    from apps.programs.models import UserProgramRole
+
+    qs = AuditLog.objects.using("audit").all()
+
+    if not getattr(request.user, "is_admin", False):
+        user_role = getattr(request, "user_program_role", None)
+        if user_role and can_access(user_role, "audit.view") == SCOPED:
+            user_program_ids = list(
+                UserProgramRole.objects.filter(
+                    user=request.user, status="active",
+                ).values_list("program_id", flat=True)
+            )
+            qs = qs.filter(program_id__in=user_program_ids)
+
+    return qs
+
+
 @login_required
 @requires_permission("audit.view", allow_admin=True)
 def audit_log_list(request):
     """Display paginated, filterable audit log."""
 
-    qs = AuditLog.objects.using("audit").all()
+    qs = _scoped_audit_qs(request)
 
     # Collect filter values
     date_from = request.GET.get("date_from", "")
@@ -95,7 +119,7 @@ def audit_log_list(request):
 def audit_log_export(request):
     """Export filtered audit log as CSV."""
 
-    qs = AuditLog.objects.using("audit").all()
+    qs = _scoped_audit_qs(request)
 
     # Apply same filters as list view
     date_from = request.GET.get("date_from", "")
