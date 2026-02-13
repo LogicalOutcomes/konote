@@ -11,7 +11,7 @@
 </hgroup>
 
 <article aria-label="{% trans 'alert details' %}" style="border-left: 4px solid #F59E0B;">
-    <header><strong>{% trans "Alert" %}</strong> — {{ alert.created_at|date:"Y-m-d" }}
+    <header><strong>{% trans "Alert" %}</strong> — <time datetime="{{ alert.created_at|date:'c' }}">{{ alert.created_at|date }}</time>
         {% if alert.author %}<small class="secondary">{% trans "by" %} {{ alert.author.display_name|default:alert.author }}</small>{% endif %}
     </header>
     <p>{{ alert.content }}</p>
@@ -22,7 +22,7 @@
     <p>{{ recommendation.assessment }}</p>
     <small class="secondary">
         {% trans "Recommended by" %} {{ recommendation.recommended_by.display_name|default:recommendation.recommended_by }}
-        — {{ recommendation.created_at|date:"Y-m-d" }}
+        — <time datetime="{{ recommendation.created_at|date:'c' }}">{{ recommendation.created_at|date }}</time>
     </small>
 </article>
 

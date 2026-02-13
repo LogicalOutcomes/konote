@@ -18,7 +18,7 @@
 {% for alert in alerts %}
 {% if alert.status == "default" %}
 <article class="alert-card" aria-label="{% trans 'alert' %}">
-    <header><strong>{% trans "Alert" %}</strong> — {{ alert.created_at|date:"Y-m-d" }}
+    <header><strong>{% trans "Alert" %}</strong> — <time datetime="{{ alert.created_at|date:'c' }}">{{ alert.created_at|date }}</time>
         {% if alert.author %}<small class="secondary">{% trans "by" %} {{ alert.author.display_name|default:alert.author }}</small>{% endif %}
         {% if show_program_ui and alert.author_program %}<span class="badge" style="background-color: {{ alert.author_program.colour_hex }}; color: #fff;">{{ alert.author_program.translated_name }}</span>{% endif %}
     </header>
@@ -26,13 +26,13 @@
     {% for rec in alert.cancellation_recommendations.all %}
         {% if rec.status == "pending" %}
         <p class="notice" role="status">
-            <small>{% trans "Cancellation recommended" %} {{ rec.created_at|date:"Y-m-d" }}
+            <small>{% trans "Cancellation recommended" %} <time datetime="{{ rec.created_at|date:'c' }}">{{ rec.created_at|date }}</time>
             {% if rec.recommended_by %} {% trans "by" %} {{ rec.recommended_by.display_name|default:rec.recommended_by }}{% endif %}
             — {% trans "awaiting PM review" %}</small>
         </p>
         {% elif rec.status == "rejected" %}
         <p class="notice" role="status">
-            <small>{% trans "Cancellation recommendation rejected" %} {{ rec.reviewed_at|date:"Y-m-d" }}
+            <small>{% trans "Cancellation recommendation rejected" %} <time datetime="{{ rec.reviewed_at|date:'c' }}">{{ rec.reviewed_at|date }}</time>
             {% if rec.review_note %} — {{ rec.review_note }}{% endif %}</small>
         </p>
         {% endif %}
@@ -49,7 +49,7 @@
 <article class="alert-card alert-card-cancelled" aria-label="{% trans 'cancelled alert' %}">
     <header>
         <span class="badge badge-danger">{% trans "Cancelled" %}</span>
-        <strong>{% trans "Alert" %}</strong> — {{ alert.created_at|date:"Y-m-d" }}
+        <strong>{% trans "Alert" %}</strong> — <time datetime="{{ alert.created_at|date:'c' }}">{{ alert.created_at|date }}</time>
     </header>
     <p><del>{{ alert.content }}</del></p>
     {% if alert.status_reason %}<p><small class="secondary">{% trans "Reason:" %} {{ alert.status_reason }}</small></p>{% endif %}
@@ -79,11 +79,11 @@
             {% endif %}
             {% if entry.obj.all_day %}
                 <span class="badge badge-info" title="{% trans 'All day event' %}">{% trans "All Day" %}</span>
-                <strong>{{ entry.date|date:"Y-m-d" }}</strong>
-                {% if entry.obj.end_timestamp %} — {{ entry.obj.end_timestamp|date:"Y-m-d" }}{% endif %}
+                <strong><time datetime="{{ entry.date|date:'c' }}">{{ entry.date|date }}</time></strong>
+                {% if entry.obj.end_timestamp %} — <time datetime="{{ entry.obj.end_timestamp|date:'c' }}">{{ entry.obj.end_timestamp|date }}</time>{% endif %}
             {% else %}
-                <strong>{{ entry.date|date:"Y-m-d H:i" }}</strong>
-                {% if entry.obj.end_timestamp %} — {{ entry.obj.end_timestamp|date:"Y-m-d H:i" }}{% endif %}
+                <strong><time datetime="{{ entry.date|date:'c' }}">{{ entry.date|date }}</time></strong>
+                {% if entry.obj.end_timestamp %} — <time datetime="{{ entry.obj.end_timestamp|date:'c' }}">{{ entry.obj.end_timestamp|date }}</time>{% endif %}
             {% endif %}
         </div>
         {% if entry.obj.title %}<p><strong>{{ entry.obj.title }}</strong></p>{% endif %}
@@ -99,7 +99,7 @@
             {% if entry.obj.status == "cancelled" %}
                 <span class="badge badge-danger">{% trans "Cancelled" %}</span>
             {% endif %}
-            <strong>{{ entry.date|date:"Y-m-d" }}</strong>
+            <strong><time datetime="{{ entry.date|date:'c' }}">{{ entry.date|date }}</time></strong>
             — {{ entry.obj.author.display_name|default:entry.obj.author }}
             {% if show_program_ui and entry.obj.author_program %}
                 <span class="badge" style="background-color: {{ entry.obj.author_program.colour_hex }}; color: #fff;">{{ entry.obj.author_program.translated_name }}</span>

@@ -11,7 +11,7 @@
 
 <article aria-label="{% trans 'alert to cancel' %}" style="border-left: 4px solid #EF4444;">
     <p>{{ alert.content }}</p>
-    <small>{% trans "Created" %} {{ alert.created_at|date:"Y-m-d" }}
+    <small>{% trans "Created" %} <time datetime="{{ alert.created_at|date:'c' }}">{{ alert.created_at|date }}</time>
         {% if alert.author %} {% trans "by" %} {{ alert.author.display_name|default:alert.author }}{% endif %}
     </small>
 </article>

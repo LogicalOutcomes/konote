@@ -201,8 +201,12 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# Canadian locale format overrides (I18N5c)
-# Uses ISO 8601 dates (YYYY-MM-DD) and CAD currency formatting
+# Human-readable date/time format defaults (overridden per-locale in konote/formats/)
+DATE_FORMAT = "N j, Y"              # "Feb. 10, 2026"
+DATETIME_FORMAT = "N j, Y, P"       # "Feb. 10, 2026, 2:30 p.m."
+SHORT_DATE_FORMAT = "Y-m-d"         # For machine contexts only
+
+# Canadian locale format overrides
 FORMAT_MODULE_PATH = ["konote.formats"]
 
 # Available languages for the UI

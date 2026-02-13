@@ -1,7 +1,7 @@
 {% load i18n %}
 <article class="meeting-card" id="meeting-{{ meeting.pk }}">
     <header>
-        <strong>{{ meeting.event.start_timestamp|date:"D, M d, Y — g:i A" }}</strong>
+        <strong><time datetime="{{ meeting.event.start_timestamp|date:'c' }}">{{ meeting.event.start_timestamp|date }}</time></strong>
         {% if meeting.location %}<span class="secondary"> — {{ meeting.location }}</span>{% endif %}
     </header>
     <p>

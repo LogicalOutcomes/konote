@@ -24,7 +24,7 @@
             <span class="badge badge-neutral">{% trans "Auto" %}</span>
         {% endif %}
 
-        <strong>{{ comm.created_at|date:"Y-m-d H:i" }}</strong>
+        <strong><time datetime="{{ comm.created_at|date:'c' }}">{{ comm.created_at|date }}</time></strong>
 
         {% if comm.logged_by %}
             — {{ comm.logged_by.display_name|default:comm.logged_by }}
