@@ -136,7 +136,7 @@ See `tasks/messaging-calendar-plan.md` (phase-by-phase build) and `tasks/messagi
 
 ### Nav & Permission Fixes
 
-- [ ] Extract duplicated audit scoping block in `audit_log_list` and `audit_log_export` into a shared helper (NAV-FIX1)
+- [x] Extract duplicated audit scoping block into `_scoped_audit_qs` helper + exempt `/admin/audit/` from admin-only middleware — 2026-02-13 (NAV-FIX1)
 - [ ] Add test: PM only sees audit entries for their own programs (scoped filtering) (NAV-FIX2)
 - [ ] Fix pre-existing `meeting.create` test failure — view uses `@requires_permission("event.create")` but matrix key is `meeting.create` (NAV-FIX3)
 
@@ -208,6 +208,7 @@ See `tasks/messaging-calendar-plan.md` (phase-by-phase build) and `tasks/messagi
 
 ## Recently Done
 
+- [x] **Permissions & audit scoping** — extracted `_scoped_audit_qs` helper, exempted `/admin/audit/` from admin-only middleware, improved 403 page, participant detail redesign, QA scenario coverage — PR #73 merged 2026-02-13 (NAV-FIX1)
 - [x] **Session review fixes** — DRY email logic in seed.py, heading accessibility fix (h3→h2), simplified save(), test RBAC corrections — 2026-02-13 (REV-FIX1)
 - [x] **Demo email support** — `DEMO_EMAIL_BASE` env var for tagged demo emails, Resend.com docs in .env.example — 2026-02-13 (EMAIL1)
 - [x] **UXP1-6 — Messaging/calendar UX polish** — nav link, success toast, date formats, button split, timeline filtering, direction toggle, consent indicator, translations — 2026-02-13 (UXP1-6)
