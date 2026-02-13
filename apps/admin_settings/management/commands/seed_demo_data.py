@@ -2142,7 +2142,7 @@ class Command(BaseCommand):
                     subject=c.get("subject", ""),
                     logged_by=group["worker"],
                     author_program=program,
-                    delivery_status="delivered" if c["direction"] == "outbound" else "sent",
+                    delivery_status="delivered",
                 )
                 comm.content = c.get("content", "")
                 comm.save()

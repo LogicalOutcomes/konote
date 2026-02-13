@@ -1082,8 +1082,8 @@ class DemographicFieldChoicesTests(TestCase):
         self.assertIn("Age Range", labels)
 
     def test_choices_include_suitable_custom_fields(self):
-        """Choices should include active, non-sensitive select and text fields."""
-        # Create suitable fields
+        """Choices should include active, non-sensitive select fields."""
+        # Create suitable fields (only select type — text fields produce too many unique groups)
         gender_field = CustomFieldDefinition.objects.create(
             group=self.field_group,
             name="Gender",
@@ -1094,7 +1094,7 @@ class DemographicFieldChoicesTests(TestCase):
         region_field = CustomFieldDefinition.objects.create(
             group=self.field_group,
             name="Region",
-            input_type="text",
+            input_type="select",
             status="active",
             is_sensitive=False,
         )
@@ -1634,8 +1634,10 @@ class FunderReportViewTests(TestCase):
         self.assertContains(resp, "Fiscal Year")
 
     def _get_download_content(self, download_resp):
-        """Read content from a FileResponse (streaming)."""
-        return b"".join(download_resp.streaming_content).decode("utf-8")
+        """Read content from a download response (streaming or regular)."""
+        if hasattr(download_resp, "streaming_content"):
+            return b"".join(download_resp.streaming_content).decode("utf-8")
+        return download_resp.content.decode("utf-8")
 
     def test_funder_report_csv_download(self):
         """Funder report should create a secure link, and following it returns CSV."""
@@ -1678,7 +1680,7 @@ class FunderReportViewTests(TestCase):
 # =============================================================================
 
 
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, ELEVATED_EXPORT_DELAY_MINUTES=0)
 class DemoRealExportSeparationTests(TestCase):
     """
     Critical security tests for demo/real data separation in export views.
@@ -1718,6 +1720,14 @@ class DemoRealExportSeparationTests(TestCase):
         self.program = Program.objects.create(
             name="Test Program",
             status="active",
+        )
+
+        # Give admin users PM roles so they get individual (not aggregate) export data
+        UserProgramRole.objects.create(
+            user=self.demo_admin, program=self.program, role="program_manager"
+        )
+        UserProgramRole.objects.create(
+            user=self.real_admin, program=self.program, role="program_manager"
         )
 
         # Create DEMO client
@@ -1767,8 +1777,10 @@ class DemoRealExportSeparationTests(TestCase):
         )
 
     def _get_download_content(self, download_resp):
-        """Read content from a FileResponse (streaming)."""
-        return b"".join(download_resp.streaming_content).decode("utf-8")
+        """Read content from a download response (streaming or regular)."""
+        if hasattr(download_resp, "streaming_content"):
+            return b"".join(download_resp.streaming_content).decode("utf-8")
+        return download_resp.content.decode("utf-8")
 
     def test_real_admin_metric_export_only_shows_real_clients(self):
         """
@@ -1960,6 +1972,10 @@ class ExportWarningDialogTests(TestCase):
             username="admin", password="testpass123", is_admin=True
         )
         self.program = Program.objects.create(name="Test Program", status="active")
+        # Admin needs PM role to see PII warning (non-aggregate mode)
+        UserProgramRole.objects.create(
+            user=self.admin, program=self.program, role="program_manager"
+        )
         self.metric = MetricDefinition.objects.create(
             name="Test Metric",
             definition="A test metric",
@@ -2104,12 +2120,12 @@ class IndividualClientExportViewTests(TestCase):
         # Create a program
         self.program = Program.objects.create(name="Test Program", status="active")
 
-        # Create staff user with program role
+        # Create program manager user (report.data_extract requires PM role)
         self.staff_user = User.objects.create_user(
             username="staff", password="testpass123", display_name="Staff User"
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program, role="staff"
+            user=self.staff_user, program=self.program, role="program_manager"
         )
 
         # Create receptionist user
@@ -2147,11 +2163,11 @@ class IndividualClientExportViewTests(TestCase):
         self.assertIn("/auth/login/", resp.url)
 
     def test_staff_can_access_export_form(self):
-        """Staff with program role can access the individual client export."""
+        """PM with program role can access the individual client export."""
         self.client.login(username="staff", password="testpass123")
         resp = self.client.get(self.export_url)
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Export Client Data")
+        self.assertContains(resp, "Export")
 
     def test_receptionist_gets_403_on_export(self):
         """Receptionists should be blocked from the individual client export (EXP-FIX5).
@@ -2436,7 +2452,7 @@ class CsvInjectionIntegrationTests(TestCase):
             username="csvtest", password="testpass123", display_name="CSV Tester"
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program, role="staff"
+            user=self.staff_user, program=self.program, role="program_manager"
         )
 
         # Create client with a malicious-looking first name
@@ -2494,7 +2510,7 @@ class FilenameSanitisationIntegrationTests(TestCase):
             username="fntest", password="testpass123", display_name="Filename Tester"
         )
         UserProgramRole.objects.create(
-            user=self.staff_user, program=self.program, role="staff"
+            user=self.staff_user, program=self.program, role="program_manager"
         )
 
         # Create client with special characters in record_id

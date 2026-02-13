@@ -8,9 +8,16 @@ import konote.encryption as enc_module
 
 
 # Generate distinct keys for old/new rotation scenarios.
-TEST_KEY = Fernet.generate_key().decode()
-OLD_KEY = Fernet.generate_key().decode()
-NEW_KEY = Fernet.generate_key().decode()
+# Keys must not start with '-' to avoid confusing argparse in call_command.
+def _safe_fernet_key():
+    while True:
+        key = Fernet.generate_key().decode()
+        if not key.startswith("-"):
+            return key
+
+TEST_KEY = _safe_fernet_key()
+OLD_KEY = _safe_fernet_key()
+NEW_KEY = _safe_fernet_key()
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=OLD_KEY)
