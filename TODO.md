@@ -16,8 +16,6 @@
 ### UX Walkthrough
 
 - [x] Re-run full UX walkthrough — 57/57 tests passing, 321 pages audited. Report at `tasks/ux-review-latest.md` (UX-RESTORE1) ✓
-- [ ] Re-run UX walkthrough to confirm last contrast fix landed — `.filter-bar > summary` dark mode (UX-CONTRAST1)
-- [ ] Fix focus management for HTMX edit forms — consent + custom fields still flagged after `hx-on::after-settle` fix (UX-FOCUS1)
 
 ### Do Occasionally
 
@@ -125,6 +123,8 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 
 ## Recently Done
 
+- [x] Fix dark mode contrast on filter-bar summary — overrode Pico CSS variable — 2026-02-13 (UX-CONTRAST1)
+- [x] Fix HTMX focus management for consent + custom fields edit forms — 2026-02-13 (UX-FOCUS1)
 - [x] Remove duplicate user management URLs — consolidated under `admin_urls.py`, updated all templates/tests/nav — 2026-02-13 (URL-DEDUP1)
 - [x] Replace hardcoded path in `preflight.py` with `settings.BASE_DIR`-relative path — 2026-02-13 (DEV-PREFLIGHT1)
 - [x] Refactor `/capture-page-states` skill — already rewritten in prior session, verified complete — 2026-02-13 (SKILL-CAPTURE1)

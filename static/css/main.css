@@ -758,6 +758,12 @@ details.search-filters-panel summary {
     cursor: pointer;
     margin-bottom: var(--kn-space-sm);
 }
+@media (prefers-color-scheme: dark) {
+    details.filter-bar,
+    details.search-filters-panel {
+        --pico-accordion-open-summary-color: var(--kn-text);
+    }
+}
 details.search-filters-panel {
     margin-top: var(--kn-space-sm);
 }

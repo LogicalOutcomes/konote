@@ -1,6 +1,6 @@
 # KoNote UX Walkthrough Report
 
-**Generated:** 2026-02-13 08:12:38  
+**Generated:** 2026-02-13 13:01:05  
 **Command:** `pytest tests/ux_walkthrough/ -v`
 
 ## Summary
@@ -8,26 +8,17 @@
 | Metric | This Run | Previous |
 |--------|----------|----------|
 | Pages visited | 321 | 321 (same) |
-| Critical issues | 1 | 8 (down 7) |
-| Warnings | 2 | 17 (down 15) |
-| Info items | 31 | 39 (down 8) |
+| Critical issues | 0 | 1 (down 1) |
+| Warnings | 0 | 1 (down 1) |
+| Info items | 31 | 31 (same) |
 
 ## Critical Issues
 
-- **[Browser] Colour Contrast** `/clients/`
-  [dark] Client list: Contrast violation (serious) on `.filter-bar > summary`
-  _Fix any of the following:
-  Element has insufficient color contrast of 4.2 (foreground color: #7b8495, background color: #12252c, font size: 9.8pt (13.125px), font weight: normal). Expected contrast r_
+_No critical issues found._
 
 ## Warning Issues
 
-- **[Browser] Focus Management** `/clients/1/`
-  Consent: Focus lost after opening consent edit form
-  _Focus on: None_
-
-- **[Browser] Focus Management** `/clients/3/`
-  Custom fields: Focus lost after switching to edit mode
-  _Focus on: None_
+_No warning issues found._
 
 ## Info Issues
 
@@ -191,9 +182,9 @@
 | Submit new user | `/admin/users/new/` | 200 | None |
 | Edit user form | `/admin/users/7/edit/` | 200 | None |
 | Update user | `/admin/users/7/edit/` | 200 | None |
-| Invite list | `/auth/invites/` | 200 | None |
-| Create invite form | `/auth/invites/new/` | 200 | None |
-| Submit new invite | `/auth/invites/new/` | 200 | None |
+| Invite list | `/admin/users/invites/` | 200 | None |
+| Create invite form | `/admin/users/invites/new/` | 200 | None |
+| Submit new invite | `/admin/users/invites/new/` | 200 | None |
 | Registration links list | `/admin/registration/` | 200 | None |
 | Create registration link form | `/admin/registration/create/` | 200 | None |
 | Submit new registration link | `/admin/registration/create/` | 200 | 1 issue(s) |
@@ -221,8 +212,8 @@
 | Program detail | `/programs/1/` | 200 | None |
 | User list | `/admin/users/` | 200 | None |
 | Create user form | `/admin/users/new/` | 200 | None |
-| Invite list | `/auth/invites/` | 200 | None |
-| Create invite form | `/auth/invites/new/` | 200 | None |
+| Invite list | `/admin/users/invites/` | 200 | None |
+| Create invite form | `/admin/users/invites/new/` | 200 | None |
 | Audit log | `/admin/audit/` | 200 | None |
 | Registration links | `/admin/registration/` | 200 | None |
 | Create registration link | `/admin/registration/create/` | 200 | None |
@@ -498,9 +489,9 @@
 
 | Role | Step | URL | Status | Issues |
 |------|------|-----|--------|--------|
-| Admin | View invite list | `/auth/invites/` | 200 | None |
-| Admin | Open create invite form | `/auth/invites/new/` | 200 | None |
-| Admin | Create invite link | `/auth/invites/new/` | 200 | None |
+| Admin | View invite list | `/admin/users/invites/` | 200 | None |
+| Admin | Open create invite form | `/admin/users/invites/new/` | 200 | None |
+| Admin | Create invite link | `/admin/users/invites/new/` | 200 | None |
 
 ### Registration Links
 
@@ -608,19 +599,7 @@
 
 _Tested with Playwright (headless Chromium) + axe-core._
 
-### Colour Contrast
-
-- **[CRITICAL]** `/clients/` — [dark] Client list: Contrast violation (serious) on `.filter-bar > summary`
-  _Fix any of the following:
-  Element has insufficient color contrast of 4.2 (foreground color: #7b8495, background color: #12252c, font size: 9.8pt (13.125px), font weight: normal). Expected contrast r_
-
 ### Focus Management
-
-- **[WARNING]** `/clients/1/` — Consent: Focus lost after opening consent edit form
-  _Focus on: None_
-
-- **[WARNING]** `/clients/3/` — Custom fields: Focus lost after switching to edit mode
-  _Focus on: None_
 
 - **[INFO]** `/plans/client/7/` — Plan section: No edit button found
 
@@ -669,15 +648,6 @@ _Tested with Playwright (headless Chromium) + axe-core._
 - **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "Jane Doe" is 62x20px (min 44x44)
 
 ## Recommendations
-
-### Immediate (Critical)
-
-1. Fix: [dark] Client list: Contrast violation (serious) on `.filter-bar > summary` on `/clients/`
-
-### Short-term (Warnings)
-
-- Consent: Focus lost after opening consent edit form (`/clients/1/`)
-- Custom fields: Focus lost after switching to edit mode (`/clients/3/`)
 
 ---
 
