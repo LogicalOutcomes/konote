@@ -247,13 +247,13 @@ class UserManagementTest(TestCase):
 
     def test_admin_can_list_users(self):
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/auth/users/")
+        resp = self.client.get("/admin/users/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Admin")
 
     def test_admin_can_create_user(self):
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.post("/auth/users/new/", {
+        resp = self.client.post("/admin/users/new/", {
             "username": "newuser",
             "display_name": "New User",
             "password": "securepass1",
@@ -265,7 +265,7 @@ class UserManagementTest(TestCase):
 
     def test_password_mismatch_rejected(self):
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.post("/auth/users/new/", {
+        resp = self.client.post("/admin/users/new/", {
             "username": "newuser",
             "display_name": "New User",
             "password": "securepass1",
@@ -280,7 +280,7 @@ class UserManagementTest(TestCase):
         user = User.objects.create_user(
             username="editme", password="testpass123", display_name="Edit Me",
         )
-        resp = self.client.post(f"/auth/users/{user.pk}/edit/", {
+        resp = self.client.post(f"/admin/users/{user.pk}/edit/", {
             "display_name": "Edited Name",
             "is_admin": False,
             "is_active": True,
@@ -294,14 +294,14 @@ class UserManagementTest(TestCase):
         user = User.objects.create_user(
             username="deactivateme", password="testpass123", display_name="Deactivate Me",
         )
-        resp = self.client.post(f"/auth/users/{user.pk}/deactivate/")
+        resp = self.client.post(f"/admin/users/{user.pk}/deactivate/")
         self.assertEqual(resp.status_code, 302)
         user.refresh_from_db()
         self.assertFalse(user.is_active)
 
     def test_admin_cannot_deactivate_self(self):
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.post(f"/auth/users/{self.admin.pk}/deactivate/")
+        resp = self.client.post(f"/admin/users/{self.admin.pk}/deactivate/")
         self.assertEqual(resp.status_code, 302)
         self.admin.refresh_from_db()
         self.assertTrue(self.admin.is_active)
@@ -311,7 +311,7 @@ class UserManagementTest(TestCase):
             username="staff", password="testpass123", is_admin=False,
         )
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.get("/auth/users/")
+        resp = self.client.get("/admin/users/")
         self.assertEqual(resp.status_code, 403)
 
 

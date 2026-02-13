@@ -51,7 +51,7 @@
             <td>{{ item.user.last_login_at|default:_("Never") }}</td>
             <td>
                 <a href="{% url 'admin_users:user_edit' user_id=item.user.pk %}">{% trans "Edit" %}</a>
-                <a href="{% url 'auth_app:user_roles' user_id=item.user.pk %}">{% trans "Roles" %}</a>
+                <a href="{% url 'admin_users:user_roles' user_id=item.user.pk %}">{% trans "Roles" %}</a>
                 {% if item.user.is_active and item.user != request.user %}
                 <form method="post" action="{% url 'admin_users:user_deactivate' user_id=item.user.pk %}" style="display:inline">
                     {% csrf_token %}

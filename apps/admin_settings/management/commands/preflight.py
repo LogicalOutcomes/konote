@@ -164,9 +164,7 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------
 
     def _check_holdout_repo(self):
-        default_path = (
-            "C:/Users/gilli/OneDrive/Documents/GitHub/konote-qa-scenarios"
-        )
+        default_path = str(settings.BASE_DIR.parent / "konote-qa-scenarios")
         holdout_dir = os.environ.get("SCENARIO_HOLDOUT_DIR", default_path)
 
         if os.path.isdir(holdout_dir):

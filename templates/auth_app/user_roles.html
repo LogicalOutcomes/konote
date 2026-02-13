@@ -26,7 +26,7 @@
             <td><span class="badge badge-info">{{ role.get_role_display }}</span></td>
             <td>
                 <form method="post"
-                      action="{% url 'auth_app:user_role_remove' user_id=edit_user.pk role_id=role.pk %}"
+                      action="{% url 'admin_users:user_role_remove' user_id=edit_user.pk role_id=role.pk %}"
                       style="display:inline">
                     {% csrf_token %}
                     <button type="submit" class="outline secondary"
@@ -49,7 +49,7 @@
 
 {% if has_available_programs %}
 <h2>{% trans "Add Role" %}</h2>
-<form method="post" action="{% url 'auth_app:user_role_add' user_id=edit_user.pk %}">
+<form method="post" action="{% url 'admin_users:user_role_add' user_id=edit_user.pk %}">
     {% csrf_token %}
     <div class="grid">
         <div>

@@ -178,7 +178,7 @@ class NavigationFrenchTest(FrenchJourneyBaseTest):
         # Admin dropdown items
         self.assertContains(resp, "Administration")  # "Admin"
         self.assertContains(resp, "Param\u00e8tres")  # "Settings"
-        self.assertContains(resp, "Invitations")  # "Invites"
+        self.assertContains(resp, "Nouveaux utilisateurs")  # "New Users"
         self.assertContains(resp, "Journal d'audit")  # "Audit Log" — plain apostrophe
         self.assertContains(resp, "Rapports")  # "Reports"
 
@@ -628,7 +628,7 @@ class AdminSettingsFrenchTest(FrenchJourneyBaseTest):
     def test_user_list_in_french(self):
         """User management list page renders in French."""
         self._login_admin_fr()
-        resp = self.http.get("/auth/users/")
+        resp = self.http.get("/admin/users/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "G\u00e9rez les comptes utilisateurs et les r\u00f4les.")
         self.assertContains(resp, "Nouvel utilisateur")  # "New User"
@@ -638,7 +638,7 @@ class AdminSettingsFrenchTest(FrenchJourneyBaseTest):
     def test_invite_list_in_french(self):
         """Invite list page renders in French."""
         self._login_admin_fr()
-        resp = self.http.get("/auth/invites/")
+        resp = self.http.get("/admin/users/invites/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Nouvelle invitation")  # "New Invite"
         self.assertContains(resp, "nouveaux utilisateurs")  # part of description

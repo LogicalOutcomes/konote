@@ -7,11 +7,6 @@
 
 ## Active Work
 
-### QA Round 4 Remaining
-
-- [x] Fix BUG-8 — French translation gaps: removed duplicate 'Export details' in .po, wrapped untranslated strings in pdf_base/pdf_erasure_receipt/pdf_unavailable with {% trans %}, added 5 new .po entries, fixed scanner false positives (CSS in {% block styles %}, <pre> blocks, bilingual hero, names), compiled .mo — 2026-02-12 (QA-W28)
-- [x] Verify BUG-11 — confirmed: all seed programs have name_fr populated, backfill block exists in seed.py, UX walkthrough test fixtures include name_fr, translated_name property falls back correctly — 2026-02-12 (QA-W29)
-
 ### Pre-Launch Checklist
 
 - [ ] Complete Agency Permissions Interview — signed Configuration Summary required before each new agency deployment (ONBOARD-GATE)
@@ -23,12 +18,6 @@
 - [x] Re-run full UX walkthrough — 57/57 tests passing, 321 pages audited. Report at `tasks/ux-review-latest.md` (UX-RESTORE1) ✓
 - [ ] Re-run UX walkthrough to confirm last contrast fix landed — `.filter-bar > summary` dark mode (UX-CONTRAST1)
 - [ ] Fix focus management for HTMX edit forms — consent + custom fields still flagged after `hx-on::after-settle` fix (UX-FOCUS1)
-
-### Code Cleanup
-
-- [ ] Remove duplicate user management URLs from `auth_app/urls.py` — consolidate under `admin_urls.py` only (URL-DEDUP1)
-- [ ] Replace hardcoded path in `preflight.py` with project-relative path (DEV-PREFLIGHT1)
-- [ ] Refactor `/capture-page-states` skill — see `tasks/refactor-capture-page-states.md` (SKILL-CAPTURE1)
 
 ### Do Occasionally
 
@@ -136,24 +125,15 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 
 ## Recently Done
 
-- [x] Fix suppression total leak in funder report — when any demographic cell is suppressed, total now reads "suppressed" instead of recomputing (leaked `total − visible_sum`). PIPEDA compliance — PR #64 (PRIV-SUPP1)
-- [x] Fix browser test: consent form toggle — expand collapsed `<details>` before clicking edit button — PR #64 (UX-BT1)
-- [x] Fix browser test: responsive layout — persist login across viewports, handle anonymous→logged-in context — PR #64 (UX-BT2)
-- [x] Add funder profile cross-validation in FunderReportForm — ensures selected funder profile is linked to selected program — PR #64 (FUNDER-VAL1)
-- [x] Add Funder Profiles link to admin nav dropdown in base.html — PR #64 (NAV-FUNDER1)
-- [x] Full UX walkthrough restored — 57/57 tests passing (17 admin, 10 roles, 20 scenarios, 10 browser), 321 pages, 8 critical / 17 warnings / 39 info — PR #64 (UX-RESTORE1)
-- [x] All critical and warning UX walkthrough issues fixed (contrast, permissions, focus, test false-positives, form errors, redirects) — 2026-02-13 (UX-RESTORE2)
+- [x] Remove duplicate user management URLs — consolidated under `admin_urls.py`, updated all templates/tests/nav — 2026-02-13 (URL-DEDUP1)
+- [x] Replace hardcoded path in `preflight.py` with `settings.BASE_DIR`-relative path — 2026-02-13 (DEV-PREFLIGHT1)
+- [x] Refactor `/capture-page-states` skill — already rewritten in prior session, verified complete — 2026-02-13 (SKILL-CAPTURE1)
+- [x] Fix BUG-8 — French translation gaps (QA-W28) + Verify BUG-11 — program name_fr confirmed (QA-W29) — 2026-02-12
+- [x] Auto-generate `.run-manifest.json` in `pytest_sessionfinish` — 2026-02-13 (QA-W34)
+- [x] Add screenshot self-validation — file size, SHA-256 dedup, URL slug check — 2026-02-13 (QA-W35)
+- [x] All critical/warning UX walkthrough issues fixed — 2026-02-13 (UX-RESTORE2)
 - [x] Fix BUG-14 — `staff_a11y` preferred_language="en" in scenario runner — 2026-02-13 (QA-W27)
-- [x] Fix TEST-5/6/7/8/9 — scenario runner click fallback, mobile hamburger helper, YAML fixes for SCN-035, SCN-047, SCN-048 — 2026-02-13 (QA-W30–W33)
-- [x] Re-sync permissions hash — `note.create`/`note.edit` DENY→SCOPED for PM already in persona files, updated hash in `permissions-sync.yaml` — 2026-02-13
-- [x] Fix CAL-001 preflight — executive persona now checks `/clients/executive/` with `.stat-card` selector — 2026-02-11 (SMOKE-1)
-- [x] Bulk-add persona field to 15 scenario YAMLs in qa-scenarios — 2026-02-11 (SMOKE-2)
-- [x] Fix BUG-9 — skip .mo validation when user has saved language preference; add LANGUAGE_COOKIE_SECURE=False to test settings — 2026-02-11 (SMOKE-3) (partially fixed — `/reports/insights/` still shows `lang="fr"`, see BUG-14)
-- [x] Fix BUG-7 — wrap client + enrollment creation in transaction.atomic() — 2026-02-11 (SMOKE-4)
-- [x] Fix TEST-2 — CAL-005 now submits Insights filter form before checking data table — 2026-02-11 (SMOKE-5)
-- [x] Fix TEST-4 — switch_user preserves locale/Accept-Language headers + console listeners for multi-persona scenarios — 2026-02-11 (SMOKE-6)
-- [x] Permissions enforcement wiring complete (Waves 1–6) — decorator, template tag, all views migrated, parametrized test, QA personas updated — 2026-02-10 (WIRE-1A through WIRE-6C)
-- [x] Fix TEST-5 — QA runner now resolves `{client_id}` etc. from previous step URLs instead of navigating to literal placeholders — 2026-02-10 (QA-W21, QA-W25)
-- [x] Fix BUG-11 — program `name_fr` field + `translated_name` property, seed data with French names, 33 templates updated — 2026-02-10 (QA-W24)
-- [x] Fix BUG-13 — accent-insensitive search using NFKD normalization ("Benoit" finds "Benoît") — 2026-02-10 (QA-W26)
+- [x] Fix TEST-5/6/7/8/9 — scenario runner click fallback, YAML fixes — 2026-02-13 (QA-W30–W33)
+- [x] Re-sync permissions hash — note.create/note.edit DENY→SCOPED for PM — 2026-02-13
+- [x] Full UX walkthrough restored — 57/57 tests passing, 321 pages — PR #64 (UX-RESTORE1)
 _Older completed tasks: [tasks/ARCHIVE.md](tasks/ARCHIVE.md). Reference: [tasks/whats-been-built.md](tasks/whats-been-built.md). Recurring chores: [tasks/recurring-tasks.md](tasks/recurring-tasks.md)._

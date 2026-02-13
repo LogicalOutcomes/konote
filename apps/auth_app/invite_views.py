@@ -40,9 +40,12 @@ def invite_create(request):
             # Add program assignments (M2M requires save first)
             if form.cleaned_data["role"] != "admin":
                 invite.programs.set(form.cleaned_data["programs"])
-            invite_url = request.build_absolute_uri(f"/auth/join/{invite.code}/")
+            from django.urls import reverse
+            invite_url = request.build_absolute_uri(
+                reverse("auth_app:invite_accept", kwargs={"code": invite.code})
+            )
             messages.success(request, _("Invite created. Share this link: %(url)s") % {"url": invite_url})
-            return redirect("auth_app:invite_list")
+            return redirect("admin_users:invite_list")
     else:
         form = InviteCreateForm()
     return render(request, "auth_app/invite_form.html", {"form": form})

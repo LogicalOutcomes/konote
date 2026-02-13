@@ -406,8 +406,8 @@ class AdminWalkthroughTest(UxWalkthroughBase):
         self.visit(role, "Create user form", "/admin/users/new/")
 
         # Invites
-        self.visit(role, "Invite list", "/auth/invites/")
-        self.visit(role, "Create invite form", "/auth/invites/new/")
+        self.visit(role, "Invite list", "/admin/users/invites/")
+        self.visit(role, "Create invite form", "/admin/users/invites/new/")
 
         # Audit
         self.visit(role, "Audit log", "/admin/audit/")

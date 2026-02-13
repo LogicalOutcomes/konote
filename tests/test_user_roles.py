@@ -51,13 +51,13 @@ class UserRoleManagementTest(TestCase):
 
     def test_non_admin_cannot_view_roles_page(self):
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.get(f"/auth/users/{self.target.pk}/roles/")
+        resp = self.client.get(f"/admin/users/{self.target.pk}/roles/")
         self.assertEqual(resp.status_code, 403)
 
     def test_non_admin_cannot_add_role(self):
         self.client.login(username="staff", password="testpass123")
         resp = self.client.post(
-            f"/auth/users/{self.target.pk}/roles/add/",
+            f"/admin/users/{self.target.pk}/roles/add/",
             {"program": self.program_a.pk, "role": "staff"},
         )
         self.assertEqual(resp.status_code, 403)
@@ -68,7 +68,7 @@ class UserRoleManagementTest(TestCase):
         )
         self.client.login(username="staff", password="testpass123")
         resp = self.client.post(
-            f"/auth/users/{self.target.pk}/roles/{role.pk}/remove/",
+            f"/admin/users/{self.target.pk}/roles/{role.pk}/remove/",
         )
         self.assertEqual(resp.status_code, 403)
 
@@ -76,7 +76,7 @@ class UserRoleManagementTest(TestCase):
 
     def test_admin_can_view_roles_page(self):
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get(f"/auth/users/{self.target.pk}/roles/")
+        resp = self.client.get(f"/admin/users/{self.target.pk}/roles/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Target User")
 
@@ -85,7 +85,7 @@ class UserRoleManagementTest(TestCase):
             user=self.target, program=self.program_a, role="staff",
         )
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get(f"/auth/users/{self.target.pk}/roles/")
+        resp = self.client.get(f"/admin/users/{self.target.pk}/roles/")
         self.assertContains(resp, "Youth Outreach")
         self.assertContains(resp, "Direct Service")
 
@@ -94,7 +94,7 @@ class UserRoleManagementTest(TestCase):
     def test_admin_can_add_role(self):
         self.client.login(username="admin", password="testpass123")
         resp = self.client.post(
-            f"/auth/users/{self.target.pk}/roles/add/",
+            f"/admin/users/{self.target.pk}/roles/add/",
             {"program": self.program_a.pk, "role": "staff"},
         )
         self.assertEqual(resp.status_code, 302)
@@ -111,7 +111,7 @@ class UserRoleManagementTest(TestCase):
         )
         self.client.login(username="admin", password="testpass123")
         resp = self.client.post(
-            f"/auth/users/{self.target.pk}/roles/add/",
+            f"/admin/users/{self.target.pk}/roles/add/",
             {"program": self.program_a.pk, "role": "program_manager"},
         )
         self.assertEqual(resp.status_code, 302)
@@ -127,7 +127,7 @@ class UserRoleManagementTest(TestCase):
         )
         self.client.login(username="admin", password="testpass123")
         resp = self.client.post(
-            f"/auth/users/{self.target.pk}/roles/{role.pk}/remove/",
+            f"/admin/users/{self.target.pk}/roles/{role.pk}/remove/",
         )
         self.assertEqual(resp.status_code, 302)
         role.refresh_from_db()
@@ -140,7 +140,7 @@ class UserRoleManagementTest(TestCase):
             user=self.target, program=self.program_a, role="staff",
         )
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get(f"/auth/users/{self.target.pk}/roles/")
+        resp = self.client.get(f"/admin/users/{self.target.pk}/roles/")
         # Program A should not be in the add-role form options
         content = resp.content.decode()
         # program_b should be available, program_a should not
@@ -155,7 +155,7 @@ class UserRoleManagementTest(TestCase):
             user=self.target, program=self.program_a, role="program_manager",
         )
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/auth/users/")
+        resp = self.client.get("/admin/users/")
         self.assertContains(resp, "Program Manager")
         self.assertContains(resp, "Youth Outreach")
         # Should have a "Roles" link
