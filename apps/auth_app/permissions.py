@@ -69,6 +69,13 @@ PERMISSIONS = {
         "event.view": DENY,
         "event.create": DENY,
 
+        "meeting.view": DENY,    # Receptionists don't manage meetings
+        "meeting.create": DENY,
+        "meeting.edit": DENY,
+
+        "communication.view": DENY,  # Receptionists don't see communication logs
+        "communication.log": DENY,
+
         "alert.view": DENY,
         "alert.create": DENY,
         "alert.cancel": DENY,
@@ -142,6 +149,13 @@ PERMISSIONS = {
 
         "event.view": SCOPED,  # Enforced by @requires_permission
         "event.create": SCOPED,
+
+        "meeting.view": SCOPED,    # Staff see their own meetings. Enforced by @requires_permission
+        "meeting.create": SCOPED,  # Staff schedule meetings with clients. Enforced by @requires_permission
+        "meeting.edit": SCOPED,    # Staff edit their own meetings. Enforced by @requires_permission
+
+        "communication.view": SCOPED,  # View logs for clients in their program
+        "communication.log": SCOPED,   # Log calls, texts, emails. Enforced by @requires_permission
 
         "alert.view": SCOPED,
         "alert.create": SCOPED,
@@ -221,6 +235,13 @@ PERMISSIONS = {
 
         "event.view": ALLOW,  # Phase 3: GATED. Enforced by @requires_permission
         "event.create": DENY,
+
+        "meeting.view": ALLOW,    # PMs see team meetings for oversight
+        "meeting.create": SCOPED,  # PMs can schedule in smaller programs
+        "meeting.edit": DENY,     # PMs don't edit individual meetings
+
+        "communication.view": ALLOW,  # PMs view communication logs for oversight + funder stats
+        "communication.log": SCOPED,  # PMs log in smaller programs
 
         "alert.view": ALLOW,
         "alert.create": ALLOW,  # Supervisors should flag safety concerns when reviewing
@@ -302,6 +323,13 @@ PERMISSIONS = {
 
         "event.view": DENY,
         "event.create": DENY,
+
+        "meeting.view": DENY,    # Executives see aggregate data only
+        "meeting.create": DENY,
+        "meeting.edit": DENY,
+
+        "communication.view": DENY,  # Executives see aggregate stats via reports, not individual logs
+        "communication.log": DENY,
 
         "alert.view": DENY,
         "alert.create": DENY,
@@ -441,6 +469,13 @@ def permission_to_plain_english(perm_key, perm_level):
 
         "event.view": "View client events and timeline",
         "event.create": "Record new client events",
+
+        "meeting.view": "View scheduled meetings",
+        "meeting.create": "Schedule new meetings with clients",
+        "meeting.edit": "Edit meeting details (time, location, status)",
+
+        "communication.view": "View communication logs",
+        "communication.log": "Log calls, texts, emails, and visits",
 
         "alert.view": "View client safety alerts",
         "alert.create": "Create client safety alerts",

@@ -1,5 +1,6 @@
 """Client CRUD views."""
 import unicodedata
+from datetime import date
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -8,6 +9,7 @@ from django.db import transaction
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.auth_app.decorators import admin_required, requires_permission
@@ -202,8 +204,22 @@ def client_create(request):
                 client.middle_name = form.cleaned_data["middle_name"] or ""
                 client.birth_date = form.cleaned_data["birth_date"]
                 client.phone = form.cleaned_data.get("phone", "")
+                client.email = form.cleaned_data.get("email", "")
                 client.record_id = form.cleaned_data["record_id"]
                 client.status = form.cleaned_data["status"]
+                client.preferred_language = form.cleaned_data.get("preferred_language", "en")
+                # CASL consent — record date automatically on consent
+                client.sms_consent = form.cleaned_data.get("sms_consent", False)
+                if client.sms_consent:
+                    client.sms_consent_date = date.today()
+                client.email_consent = form.cleaned_data.get("email_consent", False)
+                if client.email_consent:
+                    client.email_consent_date = date.today()
+                # Auto-set preferred_contact_method from consent
+                if client.sms_consent:
+                    client.preferred_contact_method = "sms"
+                elif client.email_consent:
+                    client.preferred_contact_method = "email"
                 # Set is_demo based on the creating user's status
                 # Security: is_demo is immutable after creation
                 client.is_demo = request.user.is_demo
@@ -249,12 +265,51 @@ def client_edit(request, client_id):
             client.middle_name = form.cleaned_data["middle_name"] or ""
             client.birth_date = form.cleaned_data["birth_date"]
             client.phone = form.cleaned_data.get("phone", "")
+            client.email = form.cleaned_data.get("email", "")
             client.record_id = form.cleaned_data["record_id"]
             client.status = form.cleaned_data["status"]
+            client.preferred_language = form.cleaned_data.get("preferred_language", "en")
             client.cross_program_sharing_consent = form.cleaned_data.get(
                 "cross_program_sharing_consent", False
             )
+            # CASL consent — record/clear dates based on checkbox changes
+            consent_changes = []
+            new_sms = form.cleaned_data.get("sms_consent", False)
+            if new_sms and not client.sms_consent:
+                client.sms_consent_date = date.today()
+                consent_changes.append({"field": "sms_consent", "action": "granted"})
+            elif not new_sms and client.sms_consent:
+                client.sms_consent_withdrawn_date = date.today()
+                consent_changes.append({"field": "sms_consent", "action": "withdrawn"})
+            client.sms_consent = new_sms
+            new_email_consent = form.cleaned_data.get("email_consent", False)
+            if new_email_consent and not client.email_consent:
+                client.email_consent_date = date.today()
+                consent_changes.append({"field": "email_consent", "action": "granted"})
+            elif not new_email_consent and client.email_consent:
+                client.email_consent_withdrawn_date = date.today()
+                consent_changes.append({"field": "email_consent", "action": "withdrawn"})
+            client.email_consent = new_email_consent
+            # Auto-set preferred_contact_method from consent
+            if new_sms:
+                client.preferred_contact_method = "sms"
+            elif new_email_consent:
+                client.preferred_contact_method = "email"
             client.save()
+            # Audit log for consent changes (CASL compliance)
+            if consent_changes:
+                from apps.audit.models import AuditLog
+                user = request.user
+                AuditLog.objects.using("audit").create(
+                    event_timestamp=timezone.now(),
+                    user_id=user.pk,
+                    user_display=user.display_name if hasattr(user, "display_name") else str(user),
+                    action="update",
+                    resource_type="clients",
+                    resource_id=client.pk,
+                    is_demo_context=getattr(user, "is_demo", False),
+                    metadata={"consent_changes": consent_changes},
+                )
             # Sync enrolments — only touch programs the user has access to.
             # Confidential program enrolments the user can't see are preserved.
             accessible_program_ids = _get_user_program_ids(request.user)
@@ -284,9 +339,13 @@ def client_edit(request, client_id):
                 "preferred_name": client.preferred_name,
                 "middle_name": client.middle_name,
                 "phone": client.phone,
+                "email": client.email,
                 "birth_date": client.birth_date,
                 "record_id": client.record_id,
                 "status": client.status,
+                "preferred_language": client.preferred_language,
+                "sms_consent": client.sms_consent,
+                "email_consent": client.email_consent,
                 "programs": current_program_ids,
                 "cross_program_sharing_consent": client.cross_program_sharing_consent,
             },
@@ -331,6 +390,42 @@ def client_contact_edit(request, client_id):
         "client": client,
         "breadcrumbs": breadcrumbs,
     })
+
+
+@login_required
+@requires_permission("client.edit_contact", _get_program_from_client)
+def client_confirm_phone(request, client_id):
+    """Mark a client's phone number as verified today.
+
+    Sets phone_last_confirmed to today's date for staleness tracking.
+    Only accessible via POST (form submission from client detail page).
+    """
+    if request.method != "POST":
+        return redirect("clients:client_detail", client_id=client_id)
+
+    from apps.programs.access import get_client_or_403
+    client = get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+    client.phone_last_confirmed = date.today()
+    client.save()
+
+    # Audit log
+    from apps.audit.models import AuditLog
+    user = request.user
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=user.pk,
+        user_display=user.display_name if hasattr(user, "display_name") else str(user),
+        action="update",
+        resource_type="clients",
+        resource_id=client.pk,
+        is_demo_context=getattr(user, "is_demo", False),
+        metadata={"field": "phone_last_confirmed", "value": str(date.today())},
+    )
+
+    messages.success(request, _("Phone number marked as verified."))
+    return redirect("clients:client_detail", client_id=client.pk)
 
 
 @login_required

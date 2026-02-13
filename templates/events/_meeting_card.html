@@ -1,0 +1,17 @@
+{% load i18n %}
+<article class="meeting-card" id="meeting-{{ meeting.pk }}">
+    <header>
+        <strong>{{ meeting.event.start_timestamp|date:"D, M d, Y — g:i A" }}</strong>
+        {% if meeting.location %}<span class="secondary"> — {{ meeting.location }}</span>{% endif %}
+    </header>
+    <p>
+        <a href="{% url 'clients:client_detail' client_id=meeting.event.client_file_id %}">
+            {{ meeting.event.client_file.display_name }} {{ meeting.event.client_file.last_name }}
+        </a>
+        {% if meeting.event.client_file.record_id %}
+        <span class="secondary">({{ meeting.event.client_file.record_id }})</span>
+        {% endif %}
+    </p>
+
+    {% include "events/_meeting_status.html" with meeting=meeting %}
+</article>

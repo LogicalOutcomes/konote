@@ -51,16 +51,44 @@ pytest tests/scenario_eval/ -v --no-llm -k "smoke"
 pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 ```
 
+### QA Round 5 Fixes — See `tasks/qa-action-plan-2026-02-13a.md`
+
+- [ ] Add skip link to base.html + move search before filters on /clients/ (BUG-16 + BUG-18 → QA-W36)
+- [ ] Add HTMX loading indicator + aria-live for search results on /clients/ (BLOCKER-1 + IMPROVE-10 → QA-W37)
+- [ ] Fix /settings/ 404 — investigate URL routing, build view if missing (BLOCKER-2 → QA-W38)
+- [ ] Fix executive permissions — audit log access + hide Admin dropdown (BUG-15 + BUG-20 → QA-W39)
+- [ ] Add form error summary with role="alert" and aria-errormessage (BUG-17 → QA-W40)
+- [ ] Fix SCN-059 login URL in qa-scenarios YAML (TEST-10 → QA-W41)
+- [ ] Add URL template variable resolution to qa-scenarios test runner (TEST-20 → QA-W42)
+
 ## Coming Up
 
 ### Messaging, Meetings & Calendar — See `tasks/messaging-calendar-plan.md`
 
 - [ ] Phase 0: Consultant setup — Twilio account, email SMTP (Google Workspace or M365), Railway cron, handoff runbook (MSG-P0)
-- [ ] Phase 1: Meetings + iCal feeds — meeting records, staff calendar sync, reminder status on meeting cards (MSG-P1)
-- [ ] Phase 2: Communication log — quick-log buttons for calls/texts/emails staff already make, funder reporting count (MSG-P2)
+- [x] Phase 1 (Wave 1): Meeting model, forms, views, URLs, templates, iCal feed — 2026-02-13 (MSG-P1)
+- [ ] Phase 2A (Wave 1): Communication model + forms scaffold — views/templates in Wave 2 (MSG-P2A)
+- [x] Phase 3 (Wave 1): Consent & contact fields on ClientFile — email, phone staleness, CASL consent, preferred language — 2026-02-13 (MSG-P3)
+- [ ] Phase 2B-J (Wave 2): Communication log views, quick-log buttons, timeline integration (MSG-P2B)
+- [ ] Phase 4A-C (Wave 2): Settings, Twilio/SMTP config, services layer (MSG-P4A)
+- [ ] Phase 4D-K (Wave 3): Send views, feature toggles, health banners, unsubscribe (MSG-P4B)
+- [ ] Phase 5 (Wave 4): Automated reminders — only after manual send proven in production (MSG-P5)
 - [ ] Phase 3: Consent & contact fields — one-checkbox consent at intake, phone staleness tracking, client language preference (MSG-P3)
 - [ ] Phase 4: Outbound messaging — email via org SMTP + SMS via Twilio, preview before send, plain-language failure messages (MSG-P4)
 - [ ] Phase 5: Automated reminders — cron job sends reminders 24h before meetings, only after manual send is proven (MSG-P5)
+
+### QA Round 5 — Tier 2 Fixes
+
+- [ ] Investigate tab order change after validation error (BUG-23 → QA-W43)
+- [ ] Fix touch target sizing — checkboxes/radios to 24×24px minimum (BUG-22 → QA-W44)
+- [ ] Audit and fix htmx:syntax:error on form pages (BUG-19 → QA-W45)
+- [ ] Verify BUG-14 lang="fr" fix covers all pages including /reports/insights/ (BUG-14 → QA-W46)
+- [ ] Add aria-live success announcements for form submissions (IMPROVE-9 → QA-W47)
+- [ ] Verify post-login focus lands on meaningful element (IMPROVE-8 → QA-W48)
+- [ ] Add actionable suggestions to 403 denial page (IMPROVE-11 → QA-W49)
+- [ ] Verify E1 test user has both programmes assigned (BUG-21 → QA-W50)
+- [ ] Fix language reset in qa-scenarios test runner between scenarios (TEST-15 → QA-W51)
+- [ ] Fix SCN-058 notification bell + clients link selectors (TEST-17 + TEST-18 → QA-W52)
 
 ### Agency Onboarding — See `tasks/agency-permissions-interview.md`
 
@@ -112,6 +140,14 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 - [ ] Data migration scenario — legacy system import (QA-T16)
 - [ ] Add onboarding guidance for new users — help link or first-run banner (QA-W19)
 - [ ] Reduce form tab stops — tabindex audit (QA-W20)
+### QA Backlog
+
+- [ ] Add 8 prerequisite clients for SCN-062 fatigue test (TEST-14 → QA-W53)
+- [ ] Recalibrate SCN-050 tab counts after skip link fix (TEST-16 → QA-W54)
+- [ ] Implement multi-session testing for SCN-046 shared device test (TEST-19 → QA-W55)
+- [ ] Fix French translation gaps — .po additions + name_fr review (BUG-8 + BUG-11 carried → QA-W56)
+- [ ] Dashboard cognitive load evaluation for ADHD users — research task (IMPROVE-12 → QA-W57)
+
 ### Safety & Reporting
 
 - [ ] Serious Reportable Events — add a predefined list of reportable events relevant to Canadian nonprofits (e.g., critical incidents, use of force, medical emergencies, abuse/neglect disclosures, death, elopement). When flagged on a client event, it would be auditable, trigger notification to manager and executive, and appear in a dedicated report. See `tasks/serious-reportable-events.md` (SRE1)

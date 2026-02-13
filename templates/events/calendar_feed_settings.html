@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Calendar Feed" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+<hgroup>
+    <h1>{% trans "Calendar Feed" %}</h1>
+    <p>{% trans "Subscribe to your meetings in Google Calendar, Outlook, or any calendar app." %}</p>
+</hgroup>
+
+{% if feed_url %}
+<section>
+    <label for="feed-url">{% trans "Your calendar feed URL:" %}</label>
+    <div role="group">
+        <input type="text" id="feed-url" value="{{ feed_url }}" readonly aria-label="{% trans 'Calendar feed URL' %}">
+        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feed-url').value)" class="outline">{% trans "Copy" %}</button>
+    </div>
+    <small class="secondary">{% trans "Paste this URL into your calendar app's \"Subscribe\" or \"Add calendar from URL\" option." %}</small>
+</section>
+
+<details>
+    <summary>{% trans "Instructions" %}</summary>
+    <h3>{% trans "Google Calendar" %}</h3>
+    <ol>
+        <li>{% trans "Open Google Calendar in your browser" %}</li>
+        <li>{% trans "Click the + next to \"Other calendars\"" %}</li>
+        <li>{% trans "Select \"From URL\"" %}</li>
+        <li>{% trans "Paste the URL above and click \"Add calendar\"" %}</li>
+    </ol>
+    <h3>{% trans "Outlook" %}</h3>
+    <ol>
+        <li>{% trans "Open Outlook Calendar" %}</li>
+        <li>{% trans "Click \"Add calendar\" then \"Subscribe from web\"" %}</li>
+        <li>{% trans "Paste the URL above" %}</li>
+    </ol>
+</details>
+
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="regenerate">
+    <button type="submit" class="outline secondary">{% trans "Regenerate Feed URL" %}</button>
+    <small class="secondary">{% trans "This will invalidate your current URL. You'll need to re-add it to your calendar." %}</small>
+</form>
+
+{% else %}
+<p>{% trans "You don't have a calendar feed yet." %}</p>
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="generate">
+    <button type="submit">{% trans "Generate Calendar Feed" %}</button>
+</form>
+{% endif %}
+{% endblock %}

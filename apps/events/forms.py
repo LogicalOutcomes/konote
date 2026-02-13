@@ -151,3 +151,48 @@ class AlertReviewRecommendationForm(forms.Form):
         if cleaned_data.get("action") == "reject" and not cleaned_data.get("review_note", "").strip():
             self.add_error("review_note", _("A note is required when rejecting a recommendation."))
         return cleaned_data
+
+
+class MeetingQuickCreateForm(forms.Form):
+    """Quick-create form — 3 fields, under 60 seconds to fill in."""
+
+    start_timestamp = forms.DateTimeField(
+        label=_("Date & Time"),
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
+    )
+    location = forms.CharField(
+        max_length=255, required=False,
+        label=_("Location"),
+        widget=forms.TextInput(attrs={"placeholder": _("e.g. Office, Room 201, Phone call")}),
+    )
+    send_reminder = forms.BooleanField(
+        required=False, initial=True,
+        label=_("Send reminder to client"),
+    )
+
+
+class MeetingEditForm(forms.Form):
+    """Full edit form for meetings — all fields available."""
+
+    start_timestamp = forms.DateTimeField(
+        label=_("Date & Time"),
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
+    )
+    location = forms.CharField(
+        max_length=255, required=False,
+        label=_("Location"),
+        widget=forms.TextInput(attrs={"placeholder": _("e.g. Office, Room 201, Phone call")}),
+    )
+    duration_minutes = forms.IntegerField(
+        required=False, min_value=5, max_value=480,
+        label=_("Duration (minutes)"),
+    )
+    status = forms.ChoiceField(
+        choices=[
+            ("scheduled", _("Scheduled")),
+            ("completed", _("Completed")),
+            ("cancelled", _("Cancelled")),
+            ("no_show", _("No Show")),
+        ],
+        label=_("Status"),
+    )

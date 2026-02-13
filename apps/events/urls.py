@@ -1,21 +1,44 @@
 from django.urls import path
 
-from . import views
+from .views import (
+    alert_cancel,
+    alert_create,
+    alert_recommend_cancel,
+    alert_recommendation_queue,
+    alert_recommendation_review,
+    calendar_feed_settings,
+    event_create,
+    event_list,
+    event_type_create,
+    event_type_edit,
+    event_type_list,
+    meeting_create,
+    meeting_list,
+    meeting_status_update,
+    meeting_update,
+)
 
 app_name = "events"
 urlpatterns = [
     # Event type admin
-    path("admin/types/", views.event_type_list, name="event_type_list"),
-    path("admin/types/create/", views.event_type_create, name="event_type_create"),
-    path("admin/types/<int:type_id>/edit/", views.event_type_edit, name="event_type_edit"),
+    path("admin/types/", event_type_list, name="event_type_list"),
+    path("admin/types/create/", event_type_create, name="event_type_create"),
+    path("admin/types/<int:type_id>/edit/", event_type_edit, name="event_type_edit"),
     # Client events
-    path("client/<int:client_id>/", views.event_list, name="event_list"),
-    path("client/<int:client_id>/create/", views.event_create, name="event_create"),
+    path("client/<int:client_id>/", event_list, name="event_list"),
+    path("client/<int:client_id>/create/", event_create, name="event_create"),
     # Alerts
-    path("client/<int:client_id>/alerts/create/", views.alert_create, name="alert_create"),
-    path("alerts/<int:alert_id>/cancel/", views.alert_cancel, name="alert_cancel"),
+    path("client/<int:client_id>/alerts/create/", alert_create, name="alert_create"),
+    path("alerts/<int:alert_id>/cancel/", alert_cancel, name="alert_cancel"),
     # Alert cancellation recommendation workflow (two-person safety rule)
-    path("alerts/<int:alert_id>/recommend-cancel/", views.alert_recommend_cancel, name="alert_recommend_cancel"),
-    path("alerts/recommendations/", views.alert_recommendation_queue, name="alert_recommendation_queue"),
-    path("alerts/recommendations/<int:recommendation_id>/review/", views.alert_recommendation_review, name="alert_recommendation_review"),
+    path("alerts/<int:alert_id>/recommend-cancel/", alert_recommend_cancel, name="alert_recommend_cancel"),
+    path("alerts/recommendations/", alert_recommendation_queue, name="alert_recommendation_queue"),
+    path("alerts/recommendations/<int:recommendation_id>/review/", alert_recommendation_review, name="alert_recommendation_review"),
+    # Meetings
+    path("meetings/", meeting_list, name="meeting_list"),
+    path("client/<int:client_id>/meetings/create/", meeting_create, name="meeting_create"),
+    path("client/<int:client_id>/meetings/<int:event_id>/", meeting_update, name="meeting_update"),
+    path("meetings/<int:event_id>/status/", meeting_status_update, name="meeting_status_update"),
+    # Calendar feed
+    path("calendar/settings/", calendar_feed_settings, name="calendar_feed_settings"),
 ]

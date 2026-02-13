@@ -82,6 +82,27 @@ class ClientFileForm(forms.Form):
     record_id = forms.CharField(max_length=100, required=False, label=_("Record ID"))
     status = forms.ChoiceField(choices=ClientFile.STATUS_CHOICES, label=_("Status"))
 
+    # Messaging consent (Phase 3 — one-checkbox workflow at intake)
+    email = forms.CharField(
+        max_length=255, required=False,
+        label=_("Email Address"),
+        widget=forms.EmailInput(attrs={"placeholder": _("client@example.com")}),
+    )
+    preferred_language = forms.ChoiceField(
+        choices=[("en", _("English")), ("fr", _("French"))],
+        initial="en",
+        label=_("Preferred Language for Messages"),
+    )
+    sms_consent = forms.BooleanField(
+        required=False,
+        label=_("Client consents to text message reminders"),
+        help_text=_("CASL compliance: express consent is recorded with today's date."),
+    )
+    email_consent = forms.BooleanField(
+        required=False,
+        label=_("Client consents to email reminders"),
+    )
+
     # Program enrolment checkboxes — populated dynamically
     programs = forms.ModelMultipleChoiceField(
         queryset=Program.objects.none(),

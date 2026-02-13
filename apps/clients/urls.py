@@ -113,6 +113,7 @@ urlpatterns = [
     path("<int:client_id>/", views.client_detail, name="client_detail"),
     path("<int:client_id>/edit/", views.client_edit, name="client_edit"),
     path("<int:client_id>/edit-contact/", views.client_contact_edit, name="client_contact_edit"),
+    path("<int:client_id>/confirm-phone/", views.client_confirm_phone, name="client_confirm_phone"),
     path("<int:client_id>/custom-fields/", views.client_save_custom_fields, name="client_save_custom_fields"),
     path("<int:client_id>/custom-fields/display/", views.client_custom_fields_display, name="client_custom_fields_display"),
     path("<int:client_id>/custom-fields/edit/", views.client_custom_fields_edit, name="client_custom_fields_edit"),

@@ -1,0 +1,22 @@
+{% load i18n %}
+<div class="meeting-status" id="meeting-status-{{ meeting.pk }}">
+    {# Reminder status indicator — the thing staff actually see #}
+    {% if meeting.reminder_status == "sent" %}
+    <small class="badge badge-success">{% trans "Reminder sent" %}{% if meeting.reminder_status_reason %} — {{ meeting.reminder_status_reason }}{% endif %}</small>
+    {% elif meeting.reminder_status == "failed" %}
+    <small class="badge badge-danger">{% trans "Reminder failed" %}{% if meeting.reminder_status_reason %} — {{ meeting.reminder_status_reason }}{% endif %}</small>
+    {% elif meeting.reminder_status == "no_consent" %}
+    <small class="badge badge-warning">{% trans "No consent for reminders" %}</small>
+    {% elif meeting.reminder_status == "no_phone" %}
+    <small class="badge badge-warning">{% trans "No phone on file" %}</small>
+    {% elif meeting.reminder_status == "blocked" %}
+    <small class="badge badge-warning">{{ meeting.reminder_status_reason|default:"Reminder blocked" }}</small>
+    {% else %}
+    <small class="badge badge-neutral">{% trans "No reminder sent" %}</small>
+    {% endif %}
+
+    {# Meeting status — scheduled/completed/cancelled/no-show #}
+    <span class="badge {% if meeting.status == 'scheduled' %}badge-success{% elif meeting.status == 'completed' %}badge-neutral{% elif meeting.status == 'cancelled' %}badge-danger{% else %}badge-warning{% endif %}">
+        {{ meeting.get_status_display }}
+    </span>
+</div>

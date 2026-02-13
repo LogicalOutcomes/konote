@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "apps.registration",
     "apps.groups",
     "apps.portal",
+    "apps.communications",
 ]
 
 MIDDLEWARE = [
