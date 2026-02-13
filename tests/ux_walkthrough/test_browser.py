@@ -165,6 +165,15 @@ class FocusManagementBrowserTest(BrowserTestBase):
         self.page.goto(self.live_url(url))
         self.page.wait_for_load_state("networkidle")
 
+        # The consent section may be inside a collapsed <details> element;
+        # expand it first so the button becomes visible.
+        consent_details = self.page.locator("#consent-section details")
+        if consent_details.count() > 0:
+            summary = consent_details.first.locator("summary")
+            if summary.count() > 0 and summary.first.is_visible():
+                summary.first.click()
+                self.page.wait_for_timeout(300)
+
         consent_btn = self.page.locator(
             "[hx-get*='consent/edit']"
         )
@@ -312,9 +321,9 @@ class ResponsiveLayoutBrowserTest(BrowserTestBase):
             ("manager", f"/plans/client/{pk}/", "Plan view"),
         ]
 
+        current_user = None
         for vp_name, width, height in self.VIEWPORTS:
             self.page.set_viewport_size({"width": width, "height": height})
-            current_user = None
 
             for username, path, label in pages:
                 if username != current_user:
@@ -326,6 +335,15 @@ class ResponsiveLayoutBrowserTest(BrowserTestBase):
                             self.page.set_viewport_size(
                                 {"width": width, "height": height}
                             )
+                    elif current_user is not None:
+                        # Switching from logged-in to anonymous: new context
+                        self.page.close()
+                        self._context.close()
+                        self._context = self._browser.new_context()
+                        self.page = self._context.new_page()
+                        self.page.set_viewport_size(
+                            {"width": width, "height": height}
+                        )
                     current_user = username
 
                 self.page.goto(self.live_url(path))
