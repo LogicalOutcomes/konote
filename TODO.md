@@ -20,7 +20,7 @@
 
 ### UX Walkthrough
 
-- [ ] Re-run full UX walkthrough — previous report was overwritten by a 13-page partial run. Root cause: `python_classes = *Test` in pytest.ini silently skipped 20/26 test classes (all `*Scenario` and `*Workflow` classes). Fixed in pytest.ini + overwrite protection added to conftest.py. Run `pytest tests/ux_walkthrough/ -v` to restore full coverage data (UX-RESTORE1)
+- [x] Re-run full UX walkthrough — 57/57 tests passing, 321 pages audited. Report at `tasks/ux-review-latest.md` (UX-RESTORE1) ✓
 
 ### Do Occasionally
 
@@ -128,6 +128,12 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 
 ## Recently Done
 
+- [x] Fix suppression total leak in funder report — when any demographic cell is suppressed, total now reads "suppressed" instead of recomputing (leaked `total − visible_sum`). PIPEDA compliance — PR #64 (PRIV-SUPP1)
+- [x] Fix browser test: consent form toggle — expand collapsed `<details>` before clicking edit button — PR #64 (UX-BT1)
+- [x] Fix browser test: responsive layout — persist login across viewports, handle anonymous→logged-in context — PR #64 (UX-BT2)
+- [x] Add funder profile cross-validation in FunderReportForm — ensures selected funder profile is linked to selected program — PR #64 (FUNDER-VAL1)
+- [x] Add Funder Profiles link to admin nav dropdown in base.html — PR #64 (NAV-FUNDER1)
+- [x] Full UX walkthrough restored — 57/57 tests passing (17 admin, 10 roles, 20 scenarios, 10 browser), 321 pages, 8 critical / 17 warnings / 39 info — PR #64 (UX-RESTORE1)
 - [x] Fix BUG-14 — `staff_a11y` preferred_language="en" in scenario runner — 2026-02-13 (QA-W27)
 - [x] Fix TEST-5/6/7/8/9 — scenario runner click fallback, mobile hamburger helper, YAML fixes for SCN-035, SCN-047, SCN-048 — 2026-02-13 (QA-W30–W33)
 - [x] Re-sync permissions hash — `note.create`/`note.edit` DENY→SCOPED for PM already in persona files, updated hash in `permissions-sync.yaml` — 2026-02-13
