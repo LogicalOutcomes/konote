@@ -83,6 +83,8 @@ class Command(BaseCommand):
             ("ai_assist", False),
             ("groups", True),
             ("participant_portal", False),
+            ("messaging_sms", False),
+            ("messaging_email", False),
         ]
         created = 0
         for key, enabled in defaults:
@@ -93,12 +95,15 @@ class Command(BaseCommand):
                 created += 1
         self.stdout.write(f"  Feature toggles: {created} created.")
 
-        # In demo mode, enable the participant portal so the demo button works
+        # In demo mode, enable features so all workflows are demonstrable
         if settings.DEMO_MODE:
             FeatureToggle.objects.filter(feature_key="participant_portal").update(
                 is_enabled=True
             )
-            self.stdout.write("  → participant_portal enabled for demo mode.")
+            FeatureToggle.objects.filter(
+                feature_key__in=["messaging_sms", "messaging_email"]
+            ).update(is_enabled=True)
+            self.stdout.write("  Demo mode: participant_portal, messaging_sms, messaging_email enabled.")
 
     def _seed_instance_settings(self):
         from apps.admin_settings.models import InstanceSetting
@@ -130,7 +135,8 @@ class Command(BaseCommand):
         """
         from apps.auth_app.models import User
         from apps.clients.models import ClientDetailValue, ClientFile, ClientProgramEnrolment
-        from apps.events.models import Alert, Event
+        from apps.communications.models import Communication
+        from apps.events.models import Alert, CalendarFeedToken, Event
         from apps.notes.models import ProgressNote
         from apps.plans.models import PlanSection, PlanTarget
         from apps.programs.models import Program, UserProgramRole
@@ -145,6 +151,7 @@ class Command(BaseCommand):
         count = demo_clients.count()
 
         # Delete rich data (cascades handle MetricValue, ProgressNoteTarget, etc.)
+        Communication.objects.filter(client_file__in=demo_clients).delete()
         ProgressNote.objects.filter(client_file__in=demo_clients).delete()
         PlanTarget.objects.filter(client_file__in=demo_clients).delete()
         PlanSection.objects.filter(client_file__in=demo_clients).delete()
@@ -153,6 +160,10 @@ class Command(BaseCommand):
         ClientDetailValue.objects.filter(client_file__in=demo_clients).delete()
         ClientProgramEnrolment.objects.filter(client_file__in=demo_clients).delete()
         demo_clients.delete()
+
+        # Remove calendar feed tokens for demo users
+        demo_users = User.objects.filter(is_demo=True)
+        CalendarFeedToken.objects.filter(user__in=demo_users).delete()
 
         # Remove old demo user roles and the old single-worker user
         demo_users = User.objects.filter(is_demo=True)
