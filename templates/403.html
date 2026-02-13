@@ -13,12 +13,14 @@
         <p class="error-message">
             {% if not user.is_authenticated %}
                 {% trans "Please sign in to access this page." %}
+            {% elif exception %}
+                {{ exception }}
             {% elif is_executive_only %}
                 {% trans "This area contains individual client data. Your executive role provides access to aggregate reports and insights." %}
             {% elif is_receptionist_only %}
                 {% trans "Your front desk role provides access to check-ins and basic client contact info." %}
             {% else %}
-                {% trans "This page is available to staff members and program managers. If you need access, ask your program manager." %}
+                {% trans "You don't have the required permissions for this page." %}
             {% endif %}
         </p>
 
@@ -29,7 +31,9 @@
                 <li><a href="/auth/login/">{% trans "Sign in to your account" %}</a></li>
                 {% else %}
                 <li>{% trans "Check that you're signed in with the correct account" %}</li>
-                <li>{% trans "Ask your program manager if you need access to this page" %}</li>
+                {% if not is_executive_only %}
+                <li>{% trans "Contact your administrator if you believe you should have access" %}</li>
+                {% endif %}
                 {% endif %}
                 <li>{% trans "Return to a page you have access to using the links below" %}</li>
             </ul>

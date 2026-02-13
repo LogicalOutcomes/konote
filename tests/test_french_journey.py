@@ -305,12 +305,12 @@ class ClientDetailFrenchTest(FrenchJourneyBaseTest):
         self.assertContains(resp, "Analyse")  # "Analysis"
 
     def test_client_detail_buttons_in_french(self):
-        """Edit and Back to List buttons are in French."""
+        """Edit and Add Note buttons are in French."""
         self._login_staff_fr()
         resp = self.http.get(f"/clients/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Modifier")  # "Edit"
-        self.assertContains(resp, "Retour \u00e0 la liste")  # "Back to List"
+        self.assertContains(resp, "Ajouter une note")  # "Add Note"
 
     def test_client_detail_consent_in_french(self):
         """Consent display section is in French."""
@@ -320,11 +320,11 @@ class ClientDetailFrenchTest(FrenchJourneyBaseTest):
         self.assertContains(resp, "Consentement")  # Part of privacy consent labels
 
     def test_client_detail_record_id_label_in_french(self):
-        """Client detail shows the Record ID label in French."""
+        """Client detail shows the Record ID in the subtitle."""
         self._login_staff_fr()
         resp = self.http.get(f"/clients/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "ID")  # ID label appears in detail
+        self.assertContains(resp, "REC-2026-001")  # Record ID appears in subtitle
 
     def test_client_edit_form_labels_in_french(self):
         """Client edit form has French labels."""

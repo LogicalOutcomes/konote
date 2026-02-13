@@ -68,11 +68,11 @@ All docs lagged behind recent feature work (messaging, calendar, meetings, conse
 
 #### Permissions & RBAC
 
-- [ ] Update permissions matrix doc — add 12 missing rows (messaging, calendar, client create, edit contact, group create/content/reports, alert recommend/review, erasure) and fix 3 expert-panel changes (staff alert.cancel→DENY, staff group.manage_members→SCOPED, PM alert.create→ALLOW). Add key rules for two-person safety rule, consent immutability. Source of truth: `apps/auth_app/permissions.py` (DOC-PERM1)
+- [x] Update permissions matrix doc — 13 rows added, 6 fixes, two-person safety + consent immutability rules — 2026-02-13 (DOC-PERM1)
 
 #### KoNote Website (konote-website repo)
 
-- [ ] Update features.html — remove "Appointment Scheduling" from "What KoNote Does NOT Do" (now has meetings/calendar). Add feature cards for Messaging & Communication Logging, Meetings & Calendar (iCal feed), and Consent Management. Update Events & Alerts card to mention two-person safety rule (DOC-WEB1)
+- [x] Update features.html — added messaging, meetings/calendar, consent cards; removed scheduling caveat; two-person safety rule — 2026-02-13 (DOC-WEB1)
 - [ ] Fix website footer — change `KoNote-Redux` repo link to current `KoNote` repo URL across all pages (DOC-WEB2)
 - [ ] Update website README — fix old repo reference, add `evidence.html` and `demo.html` to structure section (DOC-WEB3)
 
@@ -87,6 +87,20 @@ All docs lagged behind recent feature work (messaging, calendar, meetings, conse
 #### Cross-Cutting
 
 - [ ] Create CHANGELOG.md — user-facing release notes summarising what's changed, grouped by feature area. Agencies need this to know what's new between updates (DOC-CHANGE1)
+
+### QA Scenario Coverage: New Features — See `tasks/qa-new-feature-scenarios.md`
+
+7 new scenarios (SCN-080 through SCN-086) covering messaging, meetings, calendar, consent guardrails, permission enforcement, and funder reporting. Scenarios go in konote-qa-scenarios repo; test methods go here.
+
+- [ ] Write SCN-085 — front desk denied messaging/meetings (QA-SCN1)
+- [ ] Write SCN-080 — staff logs a phone call via quick-log (QA-SCN2)
+- [ ] Write SCN-083 — staff sets up calendar feed (QA-SCN3)
+- [ ] Write SCN-081 — staff schedules meeting and sends reminder (QA-SCN4)
+- [ ] Write SCN-082 — PM reviews meeting dashboard and updates status (QA-SCN5)
+- [ ] Write SCN-084 — consent/messaging interaction with consent blocks (QA-SCN6)
+- [ ] Write SCN-086 — funder report with small-cell suppression (QA-SCN7)
+- [ ] Add test methods for SCN-080–086 in tests/scenario_eval/test_scenario_eval.py (QA-SCN8)
+- [ ] Verify seed_demo_data has prerequisite data for new scenarios (QA-SCN10)
 
 ### Messaging, Meetings & Calendar
 
@@ -119,6 +133,12 @@ See `tasks/messaging-calendar-plan.md` (phase-by-phase build) and `tasks/messagi
 - [ ] Create visual one-page summary template — quick-reference for agency ED and board (ONBOARD10)
 - [ ] Add version number and date to questionnaire header (ONBOARD11)
 - [ ] Document pre-populate workflow — consultant fills recording tables from prep sheet before meeting (ONBOARD12)
+
+### Nav & Permission Fixes
+
+- [ ] Extract duplicated audit scoping block in `audit_log_list` and `audit_log_export` into a shared helper (NAV-FIX1)
+- [ ] Add test: PM only sees audit entries for their own programs (scoped filtering) (NAV-FIX2)
+- [ ] Fix pre-existing `meeting.create` test failure — view uses `@requires_permission("event.create")` but matrix key is `meeting.create` (NAV-FIX3)
 
 ### Permissions Phase 2
 

@@ -278,6 +278,18 @@ class TestDailyScenarios(ScenarioRunner):
         """SCN-026: French Intake — R2-FR receptionist intakes a French-speaking client."""
         self._run_daily("SCN-026")
 
+    def test_quick_log_phone_call(self):
+        """SCN-080: Quick Log Phone Call — staff logs a phone call via quick-log buttons."""
+        self._run_daily("SCN-080")
+
+    def test_schedule_meeting_reminder(self):
+        """SCN-081: Schedule Meeting + Send Reminder — staff creates meeting and sends text reminder."""
+        self._run_daily("SCN-081")
+
+    def test_calendar_feed_setup(self):
+        """SCN-083: Calendar Feed Setup — staff generates iCal feed URL."""
+        self._run_daily("SCN-083")
+
 
 @pytest.mark.scenario_eval
 @pytest.mark.browser
@@ -321,6 +333,14 @@ class TestPeriodicScenarios(ScenarioRunner):
         """SCN-037: PM Staff Management — program manager manages staff."""
         self._run_periodic("SCN-037")
 
+    def test_meeting_dashboard_review(self):
+        """SCN-082: PM Meeting Dashboard — programme manager reviews meetings and updates status."""
+        self._run_periodic("SCN-082")
+
+    def test_funder_report_suppression(self):
+        """SCN-086: Funder Report Suppression — funder profile with small-cell suppression."""
+        self._run_periodic("SCN-086")
+
 
 @pytest.mark.scenario_eval
 @pytest.mark.browser
@@ -362,6 +382,14 @@ class TestCrossRoleScenarios(ScenarioRunner):
     def test_group_management_permissions(self):
         """SCN-076: Group Management Permissions — role-based group access."""
         self._run_cross_role("SCN-076")
+
+    def test_messaging_consent_blocks(self):
+        """SCN-084: Messaging Consent Blocks — reminders blocked by missing consent, logging still works."""
+        self._run_cross_role("SCN-084")
+
+    def test_front_desk_messaging_denied(self):
+        """SCN-085: Front Desk Denied — permission enforcement on messaging/meeting/calendar pages."""
+        self._run_cross_role("SCN-085")
 
 
 @pytest.mark.scenario_eval

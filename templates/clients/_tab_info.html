@@ -1,22 +1,6 @@
 {% load i18n %}
 {% load permissions_tags %}
 <!-- Partial: Info tab content -->
-<div class="action-bar">
-    {% if not is_receptionist and not client.is_anonymised %}
-    <a href="{% url 'clients:client_edit' client_id=client.pk %}" role="button" class="outline">{% trans "Edit" %}</a>
-    {% endif %}
-    <a href="{% url 'clients:client_list' %}" class="back-link">&larr; {% trans "Back to List" %}</a>
-    {% has_permission "metric.view_individual" as can_view_metrics %}
-    {% if not client.is_anonymised and not is_receptionist and can_view_metrics %}
-    <a href="{% url 'reports:client_progress_pdf' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Export PDF" %}</a>
-    {% endif %}
-    {% if not client.is_anonymised and user_role == "program_manager" %}
-    <a href="{% url 'reports:client_export' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Export All Data" %}</a>
-    {% endif %}
-    {% if pending_erasure %}
-    <span class="badge badge-warning">{% trans "Erasure Pending" %}</span>
-    {% endif %}
-</div>
 
 {# Anonymised record banner #}
 {% if client.is_anonymised %}
@@ -47,7 +31,7 @@
             <dt>{{ term.program_plural|default:"Programs" }}</dt>
             <dd>
                 {% for e in enrolments %}
-                <span class="program-dot" style="background-color: {{ e.program.colour_hex }}" aria-hidden="true"></span>{{ e.program.translated_name }}{% if not forloop.last %}, {% endif %}
+                <span class="program-indicator"><span class="program-dot" style="background-color: {{ e.program.colour_hex }}" aria-hidden="true"></span>{{ e.program.translated_name }}</span>{% if not forloop.last %} · {% endif %}
                 {% endfor %}
             </dd>
         </div>
