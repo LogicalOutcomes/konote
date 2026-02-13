@@ -54,10 +54,10 @@ When an agency customises roles (renaming, adding, adjusting permissions), match
 - demo-worker-1 — Lead Worker (program_manager for Employment, staff for Housing + Kitchen)
 - demo-worker-2 — Direct Service (staff for Youth Drop-In, Newcomer, Kitchen)
 - demo-executive — Executive (dashboard only, all 5 programs)
-- demo-frontdesk — Receptionist (limited intake view, all 5 programs)
+- demo-frontdesk — Front Desk (limited intake view, all 5 programs)
 
 **When admin customises roles:**
-- Renaming a role updates the demo user's display name (e.g., "Front Desk" → "Intake Clerk" makes demo-receptionist display as "Demo Intake Clerk")
+- Renaming a role updates the demo user's display name (e.g., "Front Desk" → "Intake Clerk" makes demo-frontdesk display as "Demo Intake Clerk")
 - Adding a new role prompts: "Create a demo account for this role?"
 - Demo users inherit the same permission configuration as their real counterparts
 

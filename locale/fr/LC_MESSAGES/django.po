@@ -6068,8 +6068,12 @@ msgstr "Votre rapport est prêt"
 msgid "Download available shortly"
 msgstr "Téléchargement disponible sous peu"
 
-msgid "You can bookmark this page and return, or wait a few minutes and click the button below."
-msgstr "Vous pouvez ajouter cette page à vos favoris et revenir, ou attendre quelques minutes et cliquer sur le bouton ci-dessous."
+msgid ""
+"You can bookmark this page and return, or wait a few minutes and click the "
+"button below."
+msgstr ""
+"Vous pouvez ajouter cette page à vos favoris et revenir, ou attendre "
+"quelques minutes et cliquer sur le bouton ci-dessous."
 
 msgid "Try Download"
 msgstr "Essayer le téléchargement"
@@ -6080,8 +6084,12 @@ msgstr "Rapport généré avec succès"
 msgid "Your PDF report is ready to download."
 msgstr "Votre rapport PDF est prêt à télécharger."
 
-msgid "Your CSV file is ready to download. You can open it in Excel or Google Sheets."
-msgstr "Votre fichier CSV est prêt à télécharger. Vous pouvez l'ouvrir dans Excel ou Google Sheets."
+msgid ""
+"Your CSV file is ready to download. You can open it in Excel or Google "
+"Sheets."
+msgstr ""
+"Votre fichier CSV est prêt à télécharger. Vous pouvez l'ouvrir dans Excel ou"
+" Google Sheets."
 
 msgid "Download PDF Report"
 msgstr "Télécharger le rapport PDF"
@@ -6093,13 +6101,20 @@ msgid "Download"
 msgstr "Télécharger"
 
 msgid "Your file will appear in your browser's Downloads folder."
-msgstr "Votre fichier apparaîtra dans le dossier Téléchargements de votre navigateur."
+msgstr ""
+"Votre fichier apparaîtra dans le dossier Téléchargements de votre "
+"navigateur."
 
 msgid "Need to share this report with a colleague?"
 msgstr "Besoin de partager ce rapport avec un collègue ?"
 
-msgid "Copy this link to share the download with someone else in your organisation. All downloads are logged for audit purposes."
-msgstr "Copiez ce lien pour partager le téléchargement avec quelqu'un d'autre dans votre organisation. Tous les téléchargements sont consignés à des fins de vérification."
+msgid ""
+"Copy this link to share the download with someone else in your organisation."
+" All downloads are logged for audit purposes."
+msgstr ""
+"Copiez ce lien pour partager le téléchargement avec quelqu'un d'autre dans "
+"votre organisation. Tous les téléchargements sont consignés à des fins de "
+"vérification."
 
 msgid "Shareable download URL"
 msgstr "URL de téléchargement partageable"
@@ -6110,8 +6125,8 @@ msgstr "Générer un autre rapport"
 #, python-format
 msgid ""
 "Because this export contains sensitive data, there is a short security "
-"delay. Your download will be available at %(strong_open)s%(time)s"
-"%(strong_close)s."
+"delay. Your download will be available at "
+"%(strong_open)s%(time)s%(strong_close)s."
 msgstr ""
 "Comme cette exportation contient des données sensibles, un court délai de "
 "sécurité est appliqué. Votre téléchargement sera disponible à "
@@ -7355,13 +7370,13 @@ msgstr ""
 
 msgid "%(counter)s Demo User"
 msgid_plural "%(counter)s Demo Users"
-msgstr[0] "%(counter)s utilisateur de démonstration"
-msgstr[1] "%(counter)s utilisateurs de démonstration"
+msgstr[0] "%(counter)s utilisateur démo"
+msgstr[1] "%(counter)s utilisateurs démo"
 
 msgid "%(counter)s Demo Client"
 msgid_plural "%(counter)s Demo Clients"
-msgstr[0] "%(counter)s client de démonstration"
-msgstr[1] "%(counter)s clients de démonstration"
+msgstr[0] "%(counter)s client démo"
+msgstr[1] "%(counter)s clients démo"
 
 msgid "%(counter)s elevated export is pending review"
 msgid_plural "%(counter)s elevated exports are pending review"
@@ -7878,8 +7893,8 @@ msgstr "Suggestions des participants"
 #: templates/reports/_insights_basic.html
 msgid "%(total)s suggestion recorded this period."
 msgid_plural "%(total)s suggestions recorded this period."
-msgstr[0] "%(total)s suggestion enregistrée durant cette période."
-msgstr[1] "%(total)s suggestions enregistrées durant cette période."
+msgstr[0] "%(total)s suggestion enregistrée pour cette période."
+msgstr[1] "%(total)s suggestions enregistrées pour cette période."
 
 #: templates/reports/_insights_basic.html
 msgid ""
@@ -8082,8 +8097,8 @@ msgstr[1] "%(count)s paramètres personnalisés"
 #: templates/admin_settings/dashboard.html
 msgid "%(count)s demo user"
 msgid_plural "%(count)s demo users"
-msgstr[0] "%(count)s utilisateur de démonstration"
-msgstr[1] "%(count)s utilisateurs de démonstration"
+msgstr[0] "%(count)s utilisateur démo"
+msgstr[1] "%(count)s utilisateurs démo"
 
 msgid ""
 "A new participant data erasure request has been submitted and requires your "
@@ -10085,3 +10100,951 @@ msgstr "macOS :"
 
 msgid "Windows:"
 msgstr "Windows :"
+
+msgid "About Funder Profiles"
+msgstr "À propos des profils de bailleurs de fonds"
+
+msgid "Age (from date of birth)"
+msgstr "Âge (à partir de la date de naissance)"
+
+msgid "Age Bins"
+msgstr "Tranches d'âge"
+
+msgid "Age bins:"
+msgstr "Tranches d'âge :"
+
+msgid "Age-based"
+msgstr "Basé sur l'âge"
+
+msgid "Blocked"
+msgstr "Bloqué"
+
+msgid "Bounced"
+msgstr "Rebondi"
+
+msgid "Breakdowns"
+msgstr "Ventilations"
+
+msgid ""
+"By default, this template uses standard Canadian nonprofit age groupings:"
+msgstr ""
+"Par défaut, ce modèle utilise les regroupements d'âge standards pour les "
+"organismes à but non lucratif canadiens :"
+
+msgid "CASL compliance: express consent is recorded with today's date."
+msgstr ""
+"Conformité LCAP : le consentement exprès est enregistré avec la date "
+"d'aujourd'hui."
+
+msgid "CSV Parsing Errors"
+msgstr "Erreurs d'analyse du CSV"
+
+msgid "CSV content"
+msgstr "Contenu CSV"
+
+msgid "CSV file"
+msgstr "Fichier CSV"
+
+msgid "CSV validation failed. Please correct errors and re-upload."
+msgstr ""
+"La validation du CSV a échoué. Veuillez corriger les erreurs et "
+"retéléverser."
+
+msgid "Calendar Feed"
+msgstr "Flux de calendrier"
+
+msgid "Calendar Feed Settings"
+msgstr "Paramètres du flux de calendrier"
+
+msgid "Calendar feed URL"
+msgstr "URL du flux de calendrier"
+
+msgid ""
+"Calendar feed URL regenerated. Update your calendar app with the new URL."
+msgstr ""
+"URL du flux de calendrier régénérée. Mettez à jour votre application de "
+"calendrier avec la nouvelle URL."
+
+msgid "Calendar feed generated."
+msgstr "Flux de calendrier généré."
+
+msgid "Category Merging"
+msgstr "Fusion de catégories"
+
+msgid "Category merging:"
+msgstr "Fusion de catégories :"
+
+msgid "Channel"
+msgstr "Canal"
+
+msgid "Click \\\"Add calendar\\\" then \\\"Subscribe from web\\\""
+msgstr ""
+"Cliquez sur « Ajouter un calendrier » puis « S'abonner à partir du Web »"
+
+msgid "Click the + next to \\\"Other calendars\\\""
+msgstr "Cliquez sur le + à côté de « Autres agendas »"
+
+msgid "Client consents to email reminders"
+msgstr "Le client consent aux rappels par courriel"
+
+msgid "Client consents to text message reminders"
+msgstr "Le client consent aux rappels par message texte"
+
+msgid "Contact & Reminders"
+msgstr "Coordonnées et rappels"
+
+msgid "Could not read file. Please upload a UTF-8 CSV file."
+msgstr ""
+"Impossible de lire le fichier. Veuillez téléverser un fichier CSV en UTF-8."
+
+msgid "Create Meeting"
+msgstr "Créer une réunion"
+
+msgid "Custom field"
+msgstr "Champ personnalisé"
+
+msgid "Custom intake field"
+msgstr "Champ d'accueil personnalisé"
+
+msgid "Date & Time"
+msgstr "Date et heure"
+
+msgid "Default age categories"
+msgstr "Catégories d'âge par défaut"
+
+msgid ""
+"Define funder-specific demographic breakdowns for reports (age bins, "
+"category merging)."
+msgstr ""
+"Définir les ventilations démographiques par bailleur de fonds pour les "
+"rapports (tranches d'âge, fusion de catégories)."
+
+msgid "Delete Funder Profile"
+msgstr "Supprimer le profil de bailleur de fonds"
+
+msgid "Delete Profile"
+msgstr "Supprimer le profil"
+
+msgid "Delivered"
+msgstr "Livré"
+
+msgid "Demographic Breakdowns"
+msgstr "Ventilations démographiques"
+
+msgid "Demographic Categories"
+msgstr "Catégories démographiques"
+
+msgid ""
+"Description of the reporting requirements, e.g., 'Annual Community Impact "
+"Report'."
+msgstr ""
+"Description des exigences de rapport, p. ex. « Rapport annuel d'impact "
+"communautaire »."
+
+msgid "Details of the communication..."
+msgstr "Détails de la communication…"
+
+msgid "Direction"
+msgstr "Direction"
+
+msgid "Display label, e.g., 'Age Group' or 'Employment Status'."
+msgstr ""
+"Étiquette d'affichage, p. ex. « Groupe d'âge » ou « Statut d'emploi »."
+
+msgid "Download Sample CSV"
+msgstr "Télécharger un exemple CSV"
+
+msgid "Download pending"
+msgstr "Téléchargement en attente"
+
+msgid "Download sample CSV"
+msgstr "Télécharger un exemple CSV"
+
+msgid "Duration (minutes)"
+msgstr "Durée (minutes)"
+
+msgid "Edit Meeting"
+msgstr "Modifier la réunion"
+
+msgid "Edit Programs"
+msgstr "Modifier les programmes"
+
+msgid "Email reminders: No"
+msgstr "Rappels par courriel : Non"
+
+msgid "Email reminders: Yes"
+msgstr "Rappels par courriel : Oui"
+
+msgid "Express"
+msgstr "Exprès"
+
+msgid "External reference (e.g. Twilio SID)"
+msgstr "Référence externe (p. ex. SID Twilio)"
+
+msgid "Failed"
+msgstr "Échoué"
+
+msgid "File"
+msgstr "Fichier"
+
+msgid "French"
+msgstr "Français"
+
+msgid "Funder Demographic Profiles"
+msgstr "Profils démographiques des bailleurs de fonds"
+
+msgid "Funder Profile"
+msgstr "Profil de bailleur de fonds"
+
+msgid "Funder Profiles"
+msgstr "Profils de bailleurs de fonds"
+
+msgid "Funder demographic profile"
+msgstr "Profil démographique du bailleur de fonds"
+
+msgid "Funder name, e.g., 'United Way Greater Toronto'."
+msgstr "Nom du bailleur de fonds, p. ex. « Centraide du Grand Toronto »."
+
+msgid ""
+"Funder profile \"%(name)s\" created with %(count)d demographic breakdown(s)."
+msgstr ""
+"Profil de bailleur de fonds « %(name)s » créé avec %(count)d ventilation(s) "
+"démographique(s)."
+
+msgid "Funder profile \"%(name)s\" deleted."
+msgstr "Profil de bailleur de fonds « %(name)s » supprimé."
+
+msgid "Generate Calendar Feed"
+msgstr "Générer le flux de calendrier"
+
+msgid "Google Calendar"
+msgstr "Google Agenda"
+
+msgid "How to create a profile CSV"
+msgstr "Comment créer un CSV de profil"
+
+msgid "Ignored when a funder profile is selected above."
+msgstr ""
+"Ignoré lorsqu'un profil de bailleur de fonds est sélectionné ci-dessus."
+
+msgid "Implied"
+msgstr "Implicite"
+
+msgid "In Person"
+msgstr "En personne"
+
+msgid "Inbound"
+msgstr "Entrant"
+
+msgid "Inbound (They contacted us)"
+msgstr "Entrant (ils nous ont contactés)"
+
+msgid "Includes"
+msgstr "Comprend"
+
+msgid "Instructions"
+msgstr "Instructions"
+
+msgid "Invalid channel."
+msgstr "Canal non valide."
+
+msgid "Invalid direction."
+msgstr "Direction non valide."
+
+msgid "Keeping all categories (unmatched values retained as-is)"
+msgstr ""
+"Conserver toutes les catégories (les valeurs non appariées sont conservées "
+"telles quelles)"
+
+msgid "Label"
+msgstr "Étiquette"
+
+msgid "Legacy single-field grouping"
+msgstr "Regroupement par champ unique (ancien)"
+
+msgid "Linked Programs"
+msgstr "Programmes liés"
+
+msgid "Location"
+msgstr "Lieu"
+
+msgid "Manage Profiles"
+msgstr "Gérer les profils"
+
+msgid "Manage demographic breakdown configurations for different funders."
+msgstr ""
+"Gérer les configurations de ventilations démographiques pour différents "
+"bailleurs de fonds."
+
+msgid "Manual Log"
+msgstr "Saisie manuelle"
+
+msgid "Mark Phone as Verified"
+msgstr "Marquer le téléphone comme vérifié"
+
+msgid "Max Age"
+msgstr "Âge max."
+
+msgid "Meeting"
+msgstr "Réunion"
+
+msgid "Meeting created."
+msgstr "Réunion créée."
+
+msgid "Meeting updated."
+msgstr "Réunion mise à jour."
+
+msgid "Min Age"
+msgstr "Âge min."
+
+msgid "My Meetings"
+msgstr "Mes réunions"
+
+msgid "New Meeting"
+msgstr "Nouvelle réunion"
+
+msgid "No CSV data found. Please try uploading again."
+msgstr "Aucune donnée CSV trouvée. Veuillez réessayer le téléversement."
+
+msgid "No Show"
+msgstr "Absence"
+
+msgid "No active programs found."
+msgstr "Aucun programme actif trouvé."
+
+msgid "No breakdowns defined."
+msgstr "Aucune ventilation définie."
+
+msgid "No consent for reminders"
+msgstr "Aucun consentement pour les rappels"
+
+msgid "No funder profile"
+msgstr "Aucun profil de bailleur de fonds"
+
+msgid ""
+"No funder profiles configured yet. Upload a CSV to create your first "
+"profile."
+msgstr ""
+"Aucun profil de bailleur de fonds configuré. Téléversez un CSV pour créer "
+"votre premier profil."
+
+msgid "No phone on file"
+msgstr "Aucun téléphone au dossier"
+
+msgid "No profiles configured"
+msgstr "Aucun profil configuré"
+
+msgid "No programs linked"
+msgstr "Aucun programme lié"
+
+msgid "No reminder sent"
+msgstr "Aucun rappel envoyé"
+
+msgid "No source CSV available for this profile."
+msgstr "Aucun CSV source disponible pour ce profil."
+
+msgid "No upcoming meetings."
+msgstr "Aucune réunion à venir."
+
+msgid ""
+"Only active programs are shown. The selected profile will appear as an "
+"option in the export form for these programs."
+msgstr ""
+"Seuls les programmes actifs sont affichés. Le profil sélectionné apparaîtra "
+"comme option dans le formulaire d'exportation de ces programmes."
+
+msgid "Open Google Calendar in your browser"
+msgstr "Ouvrir Google Agenda dans votre navigateur"
+
+msgid "Open Outlook Calendar"
+msgstr "Ouvrir le calendrier Outlook"
+
+msgid "Or paste CSV text directly"
+msgstr "Ou collez le texte CSV directement"
+
+msgid "Original uploaded CSV content, preserved for re-export and audit."
+msgstr ""
+"Contenu CSV original téléversé, conservé pour réexportation et vérification."
+
+msgid "Outbound"
+msgstr "Sortant"
+
+msgid "Outbound (I contacted them)"
+msgstr "Sortant (je les ai contactés)"
+
+msgid "Outlook"
+msgstr "Outlook"
+
+msgid "Parse & Preview"
+msgstr "Analyser et aperçu"
+
+msgid "Paste CSV content here..."
+msgstr "Collez le contenu CSV ici…"
+
+msgid "Paste the URL above"
+msgstr "Collez l'URL ci-dessus"
+
+msgid "Paste the URL above and click \\\"Add calendar\\\""
+msgstr "Collez l'URL ci-dessus et cliquez sur « Ajouter un calendrier »"
+
+msgid "Paste the full CSV content if you don't have a file."
+msgstr "Collez le contenu CSV complet si vous n'avez pas de fichier."
+
+msgid ""
+"Paste this URL into your calendar app's \\\"Subscribe\\\" or \\\"Add "
+"calendar from URL\\\" option."
+msgstr ""
+"Collez cette URL dans l'option « S'abonner » ou « Ajouter un calendrier à "
+"partir de l'URL » de votre application de calendrier."
+
+msgid "Phone number marked as verified."
+msgstr "Numéro de téléphone marqué comme vérifié."
+
+msgid "Plain-language description of delivery result for staff display"
+msgstr ""
+"Description en langage clair du résultat de livraison pour l'affichage du "
+"personnel"
+
+msgid "Please sign in to access this page."
+msgstr "Veuillez vous connecter pour accéder à cette page."
+
+msgid "Please upload a CSV file or paste CSV content."
+msgstr "Veuillez téléverser un fichier CSV ou coller le contenu CSV."
+
+msgid "Portal Message"
+msgstr "Message du portail"
+
+msgid "Preferred Language"
+msgstr "Langue préférée"
+
+msgid "Preferred Language for Messages"
+msgstr "Langue préférée pour les messages"
+
+msgid "Preview Funder Profile"
+msgstr "Aperçu du profil de bailleur de fonds"
+
+msgid "Profile Name"
+msgstr "Nom du profil"
+
+msgid "Program assignments updated."
+msgstr "Affectations de programme mises à jour."
+
+msgid "Programs that report to this funder."
+msgstr "Programmes qui relèvent de ce bailleur de fonds."
+
+msgid "Recent"
+msgstr "Récent"
+
+msgid "Regenerate Feed URL"
+msgstr "Régénérer l'URL du flux"
+
+msgid "Reminder failed"
+msgstr "Échec du rappel"
+
+msgid "Reminder sent"
+msgstr "Rappel envoyé"
+
+msgid "Report As"
+msgstr "Rapporter comme"
+
+msgid "Review the parsed profile before saving."
+msgstr "Vérifiez le profil analysé avant de l'enregistrer."
+
+msgid "SMS"
+msgstr "SMS"
+
+msgid "Save Profile"
+msgstr "Enregistrer le profil"
+
+msgid "Scheduled"
+msgstr "Planifié"
+
+msgid "Select \\\"From URL\\\""
+msgstr "Sélectionnez « À partir de l'URL »"
+
+msgid "Select a CSV file from your computer."
+msgstr "Sélectionnez un fichier CSV de votre ordinateur."
+
+msgid ""
+"Select which programs should use this funder profile. You can change this "
+"later."
+msgstr ""
+"Sélectionnez les programmes qui doivent utiliser ce profil de bailleur de "
+"fonds. Vous pourrez modifier cela plus tard."
+
+msgid "Select which programs use this funder's demographic breakdowns."
+msgstr ""
+"Sélectionnez les programmes qui utilisent les ventilations démographiques de"
+" ce bailleur de fonds."
+
+msgid "Send reminder to client"
+msgstr "Envoyer un rappel au client"
+
+msgid "Sent"
+msgstr "Envoyé"
+
+msgid "Sign in to your account"
+msgstr "Connectez-vous à votre compte"
+
+msgid "Subject"
+msgstr "Objet"
+
+msgid ""
+"Subscribe to your meetings in Google Calendar, Outlook, or any calendar app."
+msgstr ""
+"Abonnez-vous à vos réunions dans Google Agenda, Outlook ou toute autre "
+"application de calendrier."
+
+msgid "System Received"
+msgstr "Reçu par le système"
+
+msgid "System Sent"
+msgstr "Envoyé par le système"
+
+msgid "Text Message"
+msgstr "Message texte"
+
+msgid "Text reminders: No"
+msgstr "Rappels par message texte : Non"
+
+msgid "Text reminders: Yes"
+msgstr "Rappels par message texte : Oui"
+
+msgid "The intake field to group by (only for custom_field source type)."
+msgstr ""
+"Le champ d'accueil pour le regroupement (uniquement pour le type de source "
+"champ personnalisé)."
+
+msgid ""
+"This area contains individual client data. Your executive role provides "
+"access to aggregate reports and insights."
+msgstr ""
+"Cette zone contient des données individuelles de clients. Votre rôle de "
+"direction vous donne accès aux rapports et analyses agrégés."
+
+msgid ""
+"This will invalidate your current URL. You'll need to re-add it to your "
+"calendar."
+msgstr ""
+"Ceci invalidera votre URL actuelle. Vous devrez la rajouter à votre "
+"calendrier."
+
+msgid ""
+"Tip: Use a Claude session to analyse your funder's reporting requirements "
+"and generate the CSV automatically."
+msgstr ""
+"Conseil : Utilisez une session Claude pour analyser les exigences de rapport"
+" de votre bailleur de fonds et générer le CSV automatiquement."
+
+msgid "Unmatched categories will be kept as-is (not merged into 'Other')."
+msgstr ""
+"Les catégories non appariées seront conservées telles quelles (non "
+"fusionnées dans « Autre »)."
+
+msgid "Upcoming"
+msgstr "À venir"
+
+msgid "Upload CSV File"
+msgstr "Téléverser un fichier CSV"
+
+msgid "Upload Funder Profile"
+msgstr "Téléverser un profil de bailleur de fonds"
+
+msgid "Upload New Profile"
+msgstr "Téléverser un nouveau profil"
+
+msgid "Upload a CSV defining a funder's demographic breakdown categories."
+msgstr ""
+"Téléversez un CSV définissant les catégories de ventilation démographique "
+"d'un bailleur de fonds."
+
+msgid "Use the field's original categories without merging."
+msgstr "Utiliser les catégories d'origine du champ sans fusion."
+
+msgid "Warning"
+msgstr "Avertissement"
+
+msgid "Warnings"
+msgstr "Avertissements"
+
+msgid "WhatsApp"
+msgstr "WhatsApp"
+
+msgid "Yes, Delete Profile"
+msgstr "Oui, supprimer le profil"
+
+msgid "You don't have a calendar feed yet."
+msgstr "Vous n'avez pas encore de flux de calendrier."
+
+msgid "Your calendar feed URL:"
+msgstr "URL de votre flux de calendrier :"
+
+msgid ""
+"Your front desk role provides access to check-ins and basic client contact "
+"info."
+msgstr ""
+"Votre rôle de réception vous donne accès aux inscriptions et aux coordonnées"
+" de base des clients."
+
+msgid "client@example.com"
+msgstr "client@exemple.com"
+
+msgid "confirmed"
+msgstr "confirmé"
+
+msgid "e.g. Appointment reminder"
+msgstr "p. ex. Rappel de rendez-vous"
+
+msgid "e.g. Confirmed for tomorrow"
+msgstr "p. ex. Confirmé pour demain"
+
+msgid "e.g. Office, Room 201, Phone call"
+msgstr "p. ex. Bureau, salle 201, appel téléphonique"
+
+msgid "← Back to Profiles"
+msgstr "← Retour aux profils"
+
+msgid "← Back to Settings"
+msgstr "← Retour aux paramètres"
+
+msgid "Auto"
+msgstr "Auto"
+
+msgid "Client has not consented to email"
+msgstr "Le client n'a pas consenti au courriel"
+
+msgid "Client has not consented to reminders"
+msgstr "Le client n'a pas consenti aux rappels"
+
+msgid "Client has not consented to text reminders"
+msgstr "Le client n'a pas consenti aux rappels par message texte"
+
+msgid "Communication logged."
+msgstr "Communication enregistrée."
+
+msgid "Consent expired — please re-confirm with client"
+msgstr "Consentement expiré — veuillez reconfirmer avec le client"
+
+msgid "Email could not be delivered — check the email address with the client"
+msgstr ""
+"Le courriel n'a pas pu être livré — vérifiez l'adresse courriel avec le "
+"client"
+
+msgid "Email delivery failed"
+msgstr "Échec de livraison du courriel"
+
+msgid "Full communication log form"
+msgstr "Formulaire complet de communication"
+
+msgid "Loading…"
+msgstr "Chargement…"
+
+msgid "Log Communication"
+msgstr "Consigner une communication"
+
+msgid "Log a Call"
+msgstr "Consigner un appel"
+
+msgid "Log a Text"
+msgstr "Consigner un texte"
+
+msgid "Log a Visit"
+msgstr "Consigner une visite"
+
+msgid "Log an Email"
+msgstr "Consigner un courriel"
+
+msgid "No email address on file"
+msgstr "Aucune adresse courriel au dossier"
+
+msgid "No phone number on file"
+msgstr "Aucun numéro de téléphone au dossier"
+
+msgid "Please correct the errors below."
+msgstr "Veuillez corriger les erreurs ci-dessous."
+
+msgid "Portal"
+msgstr "Portail"
+
+msgid "Quick log communication"
+msgstr "Saisie rapide de communication"
+
+msgid "Reminder sent by email"
+msgstr "Rappel envoyé par courriel"
+
+msgid "Reminder sent by text"
+msgstr "Rappel envoyé par message texte"
+
+msgid "Results loaded."
+msgstr "Résultats chargés."
+
+msgid "SMS is not configured"
+msgstr "Le SMS n'est pas configuré"
+
+msgid "SMS service not available — twilio package not installed"
+msgstr "Service SMS non disponible — le paquet twilio n'est pas installé"
+
+msgid ""
+"Text could not be delivered — try confirming the phone number with the "
+"client"
+msgstr ""
+"Le message texte n'a pas pu être livré — essayez de confirmer le numéro de "
+"téléphone avec le client"
+
+msgid "%(count)s %(channel)s reminder(s) could not be sent recently."
+msgstr "%(count)s rappel(s) %(channel)s n'ont pas pu être envoyés récemment."
+
+msgid "All outbound messaging is currently disabled."
+msgstr "Tous les messages sortants sont actuellement désactivés."
+
+msgid "Cannot send reminder"
+msgstr "Impossible d'envoyer le rappel"
+
+msgid "Channels"
+msgstr "Canaux"
+
+msgid ""
+"Configure appointment reminders, message templates, and channel settings."
+msgstr ""
+"Configurez les rappels de rendez-vous, les modèles de messages et les "
+"paramètres des canaux."
+
+msgid ""
+"Configure how your organisation communicates with clients through KoNote."
+msgstr ""
+"Configurez la façon dont votre organisme communique avec les bénéficiaires "
+"via KoNote."
+
+msgid "Connected"
+msgstr "Connecté"
+
+msgid "Email Reminder Template (English)"
+msgstr "Modèle de rappel par courriel (anglais)"
+
+msgid "Email Reminder Template (French)"
+msgstr "Modèle de rappel par courriel (français)"
+
+msgid "Email Templates"
+msgstr "Modèles de courriel"
+
+msgid "Email is not set up"
+msgstr "Le courriel n'est pas configuré"
+
+msgid "Enable in Features, then configure SMTP credentials."
+msgstr "Activez dans Fonctionnalités, puis configurez les identifiants SMTP."
+
+msgid "Enable in Features, then configure Twilio credentials."
+msgstr ""
+"Activez dans Fonctionnalités, puis configurez les identifiants Twilio."
+
+msgid "Full Automation"
+msgstr "Automatisation complète"
+
+msgid "Full automation enabled"
+msgstr "Automatisation complète activée"
+
+msgid "How many hours before a meeting to send the reminder."
+msgstr "Nombre d'heures avant une réunion pour envoyer le rappel."
+
+msgid "If you change your mind, please contact the organisation directly."
+msgstr "Si vous changez d'avis, veuillez contacter l'organisme directement."
+
+msgid ""
+"KoNote automatically sends reminders before meetings. Requires email or SMS "
+"setup."
+msgstr ""
+"KoNote envoie automatiquement des rappels avant les réunions. Nécessite la "
+"configuration du courriel ou des SMS."
+
+msgid "Message Templates"
+msgstr "Modèles de message"
+
+msgid "Messaging"
+msgstr "Messagerie"
+
+msgid "Messaging Profile"
+msgstr "Profil de messagerie"
+
+msgid "Messaging Settings"
+msgstr "Paramètres de messagerie"
+
+msgid "Messaging is set to record-keeping only"
+msgstr "La messagerie est configurée pour la tenue de dossiers uniquement"
+
+msgid "Messaging settings updated."
+msgstr "Paramètres de messagerie mis à jour."
+
+msgid "Not set up"
+msgstr "Non configuré"
+
+msgid "Personal note (optional)"
+msgstr "Note personnelle (facultatif)"
+
+msgid "Record-Keeping Only"
+msgstr "Tenue de dossiers uniquement"
+
+msgid "Record-keeping only"
+msgstr "Tenue de dossiers uniquement"
+
+msgid "Reminder Window (hours)"
+msgstr "Fenêtre de rappel (heures)"
+
+msgid "Reminder sent."
+msgstr "Rappel envoyé."
+
+msgid "Requires email or SMS to be set up first."
+msgstr "Nécessite la configuration préalable du courriel ou des SMS."
+
+msgid "SMS Reminder Template (English)"
+msgstr "Modèle de rappel SMS (anglais)"
+
+msgid "SMS Reminder Template (French)"
+msgstr "Modèle de rappel SMS (français)"
+
+msgid "SMS Templates"
+msgstr "Modèles SMS"
+
+msgid "Safety-First Mode"
+msgstr "Mode sécurité prioritaire"
+
+msgid "Safety-First mode is enabled — no outbound messages"
+msgstr "Le mode sécurité prioritaire est activé — aucun message sortant"
+
+msgid "Save Settings"
+msgstr "Enregistrer les paramètres"
+
+msgid "Send Reminder"
+msgstr "Envoyer un rappel"
+
+msgid "Sender & Support"
+msgstr "Expéditeur et soutien"
+
+msgid "Sender Display Name"
+msgstr "Nom d'affichage de l'expéditeur"
+
+msgid "Shown in error messages when messaging fails."
+msgstr "Affiché dans les messages d'erreur lorsque la messagerie échoue."
+
+msgid ""
+"Staff can schedule meetings and log communications. Nothing is sent from "
+"KoNote."
+msgstr ""
+"Le personnel peut planifier des réunions et enregistrer des communications. "
+"Aucun message n'est envoyé depuis KoNote."
+
+msgid ""
+"Staff can send appointment reminders and messages directly from KoNote. "
+"Every message requires a person to click send."
+msgstr ""
+"Le personnel peut envoyer des rappels de rendez-vous et des messages "
+"directement depuis KoNote. Chaque message nécessite qu'une personne clique "
+"sur envoyer."
+
+msgid "Staff-Sent Messages"
+msgstr "Messages envoyés par le personnel"
+
+msgid "Staff-sent messages enabled"
+msgstr "Messages envoyés par le personnel activés"
+
+msgid "Support Contact Name"
+msgstr "Nom du contact de soutien"
+
+msgid "Support Contact Phone"
+msgstr "Téléphone du contact de soutien"
+
+msgid "Text Messages (SMS)"
+msgstr "Messages texte (SMS)"
+
+msgid "Text messaging is not set up"
+msgstr "La messagerie texte n'est pas configurée"
+
+msgid "This unsubscribe link is no longer valid."
+msgstr "Ce lien de désabonnement n'est plus valide."
+
+msgid "To stop receiving these messages"
+msgstr "Pour cesser de recevoir ces messages"
+
+msgid "Unable to unsubscribe"
+msgstr "Impossible de se désabonner"
+
+msgid "Unsubscribe"
+msgstr "Se désabonner"
+
+msgid "Unsubscribe from messages"
+msgstr "Se désabonner des messages"
+
+msgid "Use {date}, {time}, {org_phone} as placeholders."
+msgstr "Utilisez {date}, {time}, {org_phone} comme espaces réservés."
+
+msgid ""
+"Use {date}, {time}, {org_phone} as placeholders. Keep under 160 characters "
+"per segment."
+msgstr ""
+"Utilisez {date}, {time}, {org_phone} comme espaces réservés. Limitez à 160 "
+"caractères par segment."
+
+msgid "Yes, unsubscribe me"
+msgstr "Oui, me désabonner"
+
+msgid "You have been unsubscribed"
+msgstr "Vous avez été désabonné"
+
+msgid "You will no longer receive email messages from this organisation."
+msgstr "Vous ne recevrez plus de courriels de cet organisme."
+
+msgid "You will no longer receive text messages from this organisation."
+msgstr "Vous ne recevrez plus de messages texte de cet organisme."
+
+msgid "e.g. Looking forward to seeing you!"
+msgstr "p. ex. Au plaisir de vous voir !"
+
+msgid "email"
+msgstr "courriel"
+
+msgid "text messages"
+msgstr "messages texte"
+
+msgid "Go to Meetings"
+msgstr "Aller aux réunions"
+
+msgid "Meetings"
+msgstr "Réunions"
+
+msgid "Your personal note was too long and was not included."
+msgstr "Votre note personnelle était trop longue et n'a pas été incluse."
+
+msgid "Participant has not consented to reminders"
+msgstr "Le participant n'a pas consenti aux rappels"
+
+msgid "Record Event"
+msgstr "Enregistrer un événement"
+
+msgid "Schedule Meeting"
+msgstr "Planifier une rencontre"
+
+msgid "Send reminder"
+msgstr "Envoyer un rappel"
+
+msgid "Incoming (they contacted us)"
+msgstr "Entrant (ils nous ont contactés)"
+
+msgid "No communications logged yet."
+msgstr "Aucune communication enregistrée pour le moment."
+
+msgid "No events recorded yet."
+msgstr "Aucun événement enregistré pour le moment."
+
+msgid "No progress notes recorded yet."
+msgstr "Aucune note de suivi enregistrée pour le moment."
+
+msgid "Outgoing (we contacted them)"
+msgstr "Sortant (nous les avons contactés)"
+
+msgid "Show more"
+msgstr "Afficher plus"
+
+msgid "Communications"
+msgstr "Communications"
+
+msgid "Filter timeline"
+msgstr "Filtrer le fil chronologique"

@@ -1,0 +1,80 @@
+{% load i18n %}
+{% load permissions_tags %}
+{% if timeline %}
+{% if not is_append %}<div class="timeline">{% endif %}
+    {% for entry in timeline %}
+    <div class="timeline-item">
+        {% if entry.type == "event" %}
+        <div>
+            {% if entry.obj.event_type %}
+                <span class="program-dot" style="background-color: {{ entry.obj.event_type.colour_hex }}" aria-hidden="true"></span>
+                <span class="badge" style="background-color: {{ entry.obj.event_type.colour_hex }}; color: #fff;">{{ entry.obj.event_type.name }}</span>
+            {% else %}
+                <span class="badge badge-neutral">{% trans "Event" %}</span>
+            {% endif %}
+            {% if show_program_ui and entry.obj.author_program %}
+                <span class="badge" style="background-color: {{ entry.obj.author_program.colour_hex }}; color: #fff;">{{ entry.obj.author_program.translated_name }}</span>
+            {% endif %}
+            {% if entry.obj.all_day %}
+                <span class="badge badge-info" title="{% trans 'All day event' %}">{% trans "All Day" %}</span>
+                <strong><time datetime="{{ entry.date|date:'c' }}">{{ entry.date|date }}</time></strong>
+                {% if entry.obj.end_timestamp %} — <time datetime="{{ entry.obj.end_timestamp|date:'c' }}">{{ entry.obj.end_timestamp|date }}</time>{% endif %}
+            {% else %}
+                <strong><time datetime="{{ entry.date|date:'c' }}">{{ entry.date|date }}</time></strong>
+                {% if entry.obj.end_timestamp %} — <time datetime="{{ entry.obj.end_timestamp|date:'c' }}">{{ entry.obj.end_timestamp|date }}</time>{% endif %}
+            {% endif %}
+        </div>
+        {% if entry.obj.title %}<p><strong>{{ entry.obj.title }}</strong></p>{% endif %}
+        {% if entry.obj.description %}<p>{{ entry.obj.description|truncatechars:200 }}</p>{% endif %}
+
+        {% elif entry.type == "note" %}
+        <div>
+            {% if entry.obj.note_type == "quick" %}
+                <span class="badge badge-info">{{ term.quick_note|default:"Quick Note" }}</span>
+            {% else %}
+                <span class="badge badge-success">{% trans "Full Note" %}</span>
+            {% endif %}
+            {% if entry.obj.status == "cancelled" %}
+                <span class="badge badge-danger">{% trans "Cancelled" %}</span>
+            {% endif %}
+            <strong><time datetime="{{ entry.date|date:'c' }}">{{ entry.date|date }}</time></strong>
+            — {{ entry.obj.author.display_name|default:entry.obj.author }}
+            {% if show_program_ui and entry.obj.author_program %}
+                <span class="badge" style="background-color: {{ entry.obj.author_program.colour_hex }}; color: #fff;">{{ entry.obj.author_program.translated_name }}</span>
+            {% elif entry.obj.author_program %}
+                <small class="secondary">({{ entry.obj.author_program.translated_name }})</small>
+            {% endif %}
+        </div>
+        {% if entry.obj.status == "cancelled" %}
+            <p><del>{{ entry.obj.notes_text|truncatechars:200 }}</del></p>
+        {% else %}
+            <p>{{ entry.obj.notes_text|truncatechars:200 }}</p>
+        {% endif %}
+
+        {% elif entry.type == "communication" %}
+        {% include "communications/_communication_card.html" with comm=entry.obj %}
+        {% endif %}
+    </div>
+    {% endfor %}
+{% if not is_append %}</div>{% endif %}
+{% if has_more %}
+<button class="outline secondary" style="width: 100%; margin-top: 0.5rem;"
+        hx-get="{% url 'events:event_list' client_id=client.pk %}?filter={{ active_filter|default:'all' }}&offset={{ next_offset }}"
+        hx-target="this"
+        hx-swap="outerHTML">
+    {% trans "Show more" %}
+</button>
+{% endif %}
+{% else %}
+<div class="empty-state">
+    {% if active_filter == "notes" %}
+        <p>{% trans "No progress notes recorded yet." %}</p>
+    {% elif active_filter == "events" %}
+        <p>{% trans "No events recorded yet." %}</p>
+    {% elif active_filter == "communications" %}
+        <p>{% trans "No communications logged yet." %}</p>
+    {% else %}
+        <p>{% trans "No events or notes recorded yet. Add events or progress notes to build a timeline." %}</p>
+    {% endif %}
+</div>
+{% endif %}

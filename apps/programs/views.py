@@ -124,7 +124,7 @@ def program_detail(request, program_id):
     ).values_list("role", flat=True).first()
     is_receptionist = user_program_role == "receptionist"
 
-    # Program health summary for non-receptionists (matches Insights RBAC)
+    # Program health summary for non-front-desk roles (matches Insights RBAC)
     program_summary = None
     has_export_access = False
     if not is_receptionist:

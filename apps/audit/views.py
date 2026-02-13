@@ -1,4 +1,4 @@
-"""Audit log viewer — admin and program manager access."""
+"""Audit log viewer — admin, executive, and program manager access."""
 import csv
 from datetime import datetime
 
@@ -10,14 +10,14 @@ from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.auth_app.decorators import admin_required
+from apps.auth_app.decorators import admin_required, requires_permission
 from apps.reports.csv_utils import sanitise_csv_row
 
 from .models import AuditLog
 
 
 @login_required
-@admin_required
+@requires_permission("audit.view", allow_admin=True)
 def audit_log_list(request):
     """Display paginated, filterable audit log."""
 
@@ -91,7 +91,7 @@ def audit_log_list(request):
 
 
 @login_required
-@admin_required
+@requires_permission("audit.view", allow_admin=True)
 def audit_log_export(request):
     """Export filtered audit log as CSV."""
 

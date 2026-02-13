@@ -306,7 +306,7 @@ def requires_permission_global(permission_key):
 def program_role_required(min_role, get_program_fn, get_client_fn=None):
     """Decorator: check user's role in a SPECIFIC program, not across all programs.
 
-    This fixes the security hole where a user with receptionist in Program A
+    This fixes the security hole where a user with front desk role in Program A
     and staff in Program B could access Program A's clinical data because
     their highest role across all programs is "staff".
 

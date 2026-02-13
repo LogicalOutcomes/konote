@@ -154,6 +154,21 @@ class ClientFile(models.Model):
     def phone(self, value):
         self._phone_encrypted = encrypt_field(value)
 
+    @property
+    def email(self):
+        return decrypt_field(self._email_encrypted)
+
+    @email.setter
+    def email(self, value):
+        self._email_encrypted = encrypt_field(value)
+
+    @property
+    def initials(self):
+        """Return initials for privacy-safe display (e.g. calendar feeds)."""
+        first = self.first_name
+        last = self.last_name
+        return f"{first[0]}{last[0]}" if first and last else "??"
+
     # Cross-program sharing consent (PHIPA compliance)
     # NOTE: This field is captured but NOT YET ENFORCED in views.
     # Phase 2 (PERM-P2) will add enforcement: notes will be filtered by
@@ -167,11 +182,66 @@ class ClientFile(models.Model):
         ),
     )
 
+    # ── Messaging consent & contact fields (Phase 3) ──────────────────
+
+    # Encrypted email (same pattern as phone)
+    _email_encrypted = models.BinaryField(default=b"", blank=True)
+
+    # Quick existence checks without decryption
+    has_email = models.BooleanField(default=False)
+    has_phone = models.BooleanField(default=False)
+
+    # Phone number staleness tracking
+    phone_last_confirmed = models.DateField(null=True, blank=True)
+
+    # Client's preferred language for messages (not UI language)
+    preferred_language = models.CharField(
+        max_length=5,
+        choices=[("en", _("English")), ("fr", _("French"))],
+        default="en",
+    )
+
+    # Contact preferences
+    preferred_contact_method = models.CharField(
+        max_length=10,
+        choices=[
+            ("sms", _("Text Message")),
+            ("email", _("Email")),
+            ("both", _("Both")),
+            ("none", _("None")),
+        ],
+        default="none",
+        blank=True,
+    )
+
+    # CASL consent tracking — full model in DB, simple UI
+    sms_consent = models.BooleanField(default=False)
+    sms_consent_date = models.DateField(null=True, blank=True)
+    email_consent = models.BooleanField(default=False)
+    email_consent_date = models.DateField(null=True, blank=True)
+    consent_messaging_type = models.CharField(
+        max_length=10,
+        choices=[("express", _("Express")), ("implied", _("Implied"))],
+        default="express",
+        blank=True,
+    )
+
+    # Consent withdrawal tracking (CASL requires proof)
+    sms_consent_withdrawn_date = models.DateField(null=True, blank=True)
+    email_consent_withdrawn_date = models.DateField(null=True, blank=True)
+    consent_notes = models.TextField(blank=True, default="")
+
+    def save(self, *args, **kwargs):
+        # Auto-set existence flags for quick checks without decryption
+        self.has_phone = bool(self._phone_encrypted and self._phone_encrypted != b"")
+        self.has_email = bool(self._email_encrypted and self._email_encrypted != b"")
+        super().save(*args, **kwargs)
+
     def get_visible_fields(self, role):
         """Return dict of field visibility for a given role.
 
         Core model fields are categorised as either "safety" (visible to all
-        roles including receptionist) or "clinical" (hidden from receptionist).
+        roles including front desk) or "clinical" (hidden from front desk).
 
         Custom fields (EAV) are NOT covered here — they use the per-field
         front_desk_access setting on CustomFieldDefinition instead.
@@ -181,7 +251,7 @@ class ClientFile(models.Model):
         """
         from apps.auth_app.permissions import can_access, ALLOW, SCOPED, GATED
 
-        # Safety fields — visible to all roles including receptionist.
+        # Safety fields — visible to all roles including front desk.
         # These are needed for check-in, emergency contact, and safety purposes.
         safety_fields = {
             'first_name', 'last_name', 'preferred_name', 'display_name',

@@ -55,6 +55,66 @@
     </dl>
 </section>
 
+{# Contact & Messaging Consent — staff and above #}
+{% if not is_receptionist and not client.is_anonymised %}
+<section>
+    <details open>
+        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Contact & Reminders" %}</h2></summary>
+        <div style="margin-top: var(--kn-space-base);">
+            <dl class="info-grid-compact">
+                {% if client.phone %}
+                <div class="info-field">
+                    <dt>{% trans "Phone" %}</dt>
+                    <dd>
+                        {{ client.phone }}
+                        {% if client.phone_last_confirmed %}
+                            {% now "Y-m-d" as today %}
+                            {# Phone staleness indicator #}
+                            <small class="secondary">({% trans "confirmed" %} {{ client.phone_last_confirmed|date:"M d, Y" }})</small>
+                        {% endif %}
+                    </dd>
+                </div>
+                {% endif %}
+                {% if client.email %}
+                <div class="info-field">
+                    <dt>{% trans "Email" %}</dt>
+                    <dd>{{ client.email }}</dd>
+                </div>
+                {% endif %}
+                <div class="info-field">
+                    <dt>{% trans "Preferred Language" %}</dt>
+                    <dd>{{ client.get_preferred_language_display|default:"English" }}</dd>
+                </div>
+            </dl>
+
+            {# Consent status — simple display #}
+            <div style="margin-top: var(--kn-space-sm);">
+                {% if client.sms_consent %}
+                <span class="badge badge-success">{% trans "Text reminders: Yes" %}</span>
+                {% else %}
+                <span class="badge badge-neutral">{% trans "Text reminders: No" %}</span>
+                {% endif %}
+                {% if client.email_consent %}
+                <span class="badge badge-success">{% trans "Email reminders: Yes" %}</span>
+                {% else %}
+                <span class="badge badge-neutral">{% trans "Email reminders: No" %}</span>
+                {% endif %}
+            </div>
+
+            {# Phone verified button #}
+            {% if client.phone %}
+            <form method="post" action="{% url 'clients:client_confirm_phone' client_id=client.pk %}" style="margin-top: var(--kn-space-sm);">
+                {% csrf_token %}
+                <button type="submit" class="outline secondary" style="padding: var(--kn-space-xs) var(--kn-space-sm); font-size: 0.75rem;">
+                    {% trans "Mark Phone as Verified" %}
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </details>
+</section>
+{% endif %}
+
 {# Additional details - only if client has middle name or custom data #}
 {% if client.middle_name or custom_data %}
 <section>

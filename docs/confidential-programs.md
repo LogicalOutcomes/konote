@@ -199,7 +199,7 @@ Confidential program access uses a **hard boundary** — an architectural wall t
 
 ### Key distinction for privacy assessments
 
-A soft-filter protects against **accidental** access — a receptionist doesn't see counselling clients in their daily list, but the system doesn't claim those clients don't exist. A hard-boundary protects against **intentional** discovery — even a determined administrator using Django admin, search, or reports cannot identify individual confidential clients.
+A soft-filter protects against **accidental** access — a front desk worker doesn't see counselling clients in their daily list, but the system doesn't claim those clients don't exist. A hard-boundary protects against **intentional** discovery — even a determined administrator using Django admin, search, or reports cannot identify individual confidential clients.
 
 When completing a Privacy Impact Assessment, document standard programs as using soft-filter controls and confidential programs as using hard-boundary controls. This distinction matters for regulatory compliance (PHIPA, PIPEDA) because the level of safeguard should match the sensitivity of the data.
 

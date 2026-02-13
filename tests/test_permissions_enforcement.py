@@ -92,11 +92,24 @@ PERMISSION_URL_MAP = {
     "alert.recommend_cancel": {"url": "/events/alerts/{alert_id}/recommend-cancel/"},
     "alert.review_cancel_recommendation": {"url": "/events/alerts/recommendations/"},
 
+    # Meeting keys
+    "meeting.view": {"skip": "implicit_own_meetings"},
+    "meeting.create": {"url": "/events/client/{client_id}/meetings/create/"},
+    "meeting.edit": {"skip": "uses_event_create_decorator"},
+
+    # Communication keys
+    "communication.log": {"url": "/communications/client/{client_id}/quick-log/"},
+    "communication.view": {"skip": "timeline_integration"},
+
     # Metric / report keys
     "metric.view_individual": {"url": "/reports/client/{client_id}/analysis/"},
     "metric.view_aggregate": {"skip": "view_internal"},
     "report.program_report": {"url": "/reports/export/"},
+    "report.funder_report": {"url": "/reports/export/"},
     "report.data_extract": {"url": "/reports/client/{client_id}/export/"},
+
+    # Insights
+    "insights.view": {"url": "/reports/insights/"},
 
     # Attendance keys
     "attendance.check_in": {"skip": "view_level"},

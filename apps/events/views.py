@@ -1,8 +1,11 @@
 """Views for events and alerts — admin event types + client-scoped events/alerts."""
+import secrets
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -16,11 +19,16 @@ from apps.programs.access import (
     get_program_from_client,
     get_user_program_ids,
 )
+from django_ratelimit.decorators import ratelimit
+
 from apps.auth_app.decorators import admin_required, requires_permission, requires_permission_global
 from apps.programs.models import Program, UserProgramRole
 
-from .forms import AlertCancelForm, AlertForm, AlertRecommendCancelForm, AlertReviewRecommendationForm, EventForm, EventTypeForm
-from .models import Alert, AlertCancellationRecommendation, Event, EventType
+from .forms import (
+    AlertCancelForm, AlertForm, AlertRecommendCancelForm, AlertReviewRecommendationForm,
+    EventForm, EventTypeForm, MeetingEditForm, MeetingQuickCreateForm,
+)
+from .models import Alert, AlertCancellationRecommendation, CalendarFeedToken, Event, EventType, Meeting
 
 
 # Use shared access helpers from apps.programs.access
@@ -122,7 +130,16 @@ def event_list(request, client_id):
 
     # Build combined timeline entries
     from apps.notes.models import ProgressNote
+    from apps.communications.models import Communication
+
     notes = ProgressNote.objects.filter(client_file=client).filter(program_q).select_related("author", "author_program")
+
+    # Communications — filter by user's accessible programs (same as events/notes)
+    communications = (
+        Communication.objects.filter(client_file=client)
+        .filter(program_q)
+        .select_related("logged_by", "author_program")
+    )
 
     timeline = []
     for event in events:
@@ -137,17 +154,52 @@ def event_list(request, client_id):
             "date": note.effective_date,
             "obj": note,
         })
+    for comm in communications:
+        timeline.append({
+            "type": "communication",
+            "date": comm.created_at,
+            "obj": comm,
+        })
     # Sort newest first
     timeline.sort(key=lambda x: x["date"], reverse=True)
+
+    # Timeline filtering (UXP5)
+    filter_type = request.GET.get("filter", "all")
+    if filter_type == "notes":
+        timeline = [e for e in timeline if e["type"] == "note"]
+    elif filter_type == "events":
+        timeline = [e for e in timeline if e["type"] == "event"]
+    elif filter_type == "communications":
+        timeline = [e for e in timeline if e["type"] == "communication"]
+
+    # Pagination — 20 entries per page with "Show more"
+    page_size = 20
+    try:
+        offset = int(request.GET.get("offset", 0))
+    except (ValueError, TypeError):
+        offset = 0
+    has_more = len(timeline) > offset + page_size
+    timeline = timeline[offset:offset + page_size]
+
+    # Recent communications for the quick-log section
+    recent_communications = communications.order_by("-created_at")[:5]
 
     context = {
         "client": client,
         "events": events,
         "alerts": alerts,
         "timeline": timeline,
+        "recent_communications": recent_communications,
         "active_tab": "events",
         "show_program_ui": program_ctx["show_program_ui"],
+        "active_filter": filter_type,
+        "has_more": has_more,
+        "next_offset": offset + page_size,
+        "is_append": offset > 0,
     }
+    # HTMX partial response — return just the timeline entries for filter/pagination
+    if request.headers.get("HX-Request") and "filter" in request.GET:
+        return render(request, "events/_timeline_entries.html", context)
     if request.headers.get("HX-Request"):
         return render(request, "events/_tab_events.html", context)
     return render(request, "events/event_list.html", context)
@@ -429,5 +481,315 @@ def alert_recommendation_review(request, recommendation_id):
         "recommendation": recommendation,
         "alert": alert,
         "client": client,
+        "breadcrumbs": breadcrumbs,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Helper functions for meeting views
+# ---------------------------------------------------------------------------
+
+def _get_program_from_meeting(request, event_id, **kwargs):
+    """Extract program via meeting -> event -> client."""
+    event = get_object_or_404(Event, pk=event_id)
+    return get_program_from_client(request, event.client_file_id)
+
+
+# ---------------------------------------------------------------------------
+# Meeting CRUD (client-scoped)
+# ---------------------------------------------------------------------------
+
+@login_required
+@requires_permission("event.create", _get_program_from_client)
+def meeting_create(request, client_id):
+    """Quick-create a meeting for a client (3 fields, under 60 seconds)."""
+    client = _get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+
+    if request.method == "POST":
+        form = MeetingQuickCreateForm(request.POST)
+        if form.is_valid():
+            # Create the underlying Event
+            event = Event.objects.create(
+                client_file=client,
+                title=_("Meeting"),
+                start_timestamp=form.cleaned_data["start_timestamp"],
+                author_program=_get_author_program(request.user, client),
+            )
+            # Create the Meeting linked to it
+            meeting = Meeting.objects.create(
+                event=event,
+                location=form.cleaned_data.get("location", ""),
+            )
+            # Add the requesting user as an attendee
+            meeting.attendees.add(request.user)
+            messages.success(request, _("Meeting created."))
+            return redirect("events:event_list", client_id=client.pk)
+    else:
+        form = MeetingQuickCreateForm()
+
+    # Check if this client has consented to reminders
+    can_send_reminders = client.sms_consent or client.email_consent
+
+    return render(request, "events/meeting_form.html", {
+        "form": form,
+        "client": client,
+        "editing": False,
+        "can_send_reminders": can_send_reminders,
+    })
+
+
+@login_required
+@requires_permission("event.create", _get_program_from_meeting)
+def meeting_update(request, client_id, event_id):
+    """Full edit form for an existing meeting."""
+    client = _get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+
+    event = get_object_or_404(Event, pk=event_id, client_file=client)
+    meeting = get_object_or_404(Meeting, event=event)
+
+    if request.method == "POST":
+        form = MeetingEditForm(request.POST)
+        if form.is_valid():
+            # Update the Event
+            event.start_timestamp = form.cleaned_data["start_timestamp"]
+            event.save()
+            # Update the Meeting
+            meeting.location = form.cleaned_data.get("location", "")
+            meeting.duration_minutes = form.cleaned_data.get("duration_minutes")
+            meeting.status = form.cleaned_data["status"]
+            meeting.save()
+            messages.success(request, _("Meeting updated."))
+            return redirect("events:event_list", client_id=client.pk)
+    else:
+        form = MeetingEditForm(initial={
+            "start_timestamp": event.start_timestamp.strftime("%Y-%m-%dT%H:%M") if event.start_timestamp else "",
+            "location": meeting.location,
+            "duration_minutes": meeting.duration_minutes,
+            "status": meeting.status,
+        })
+
+    return render(request, "events/meeting_form.html", {
+        "form": form,
+        "client": client,
+        "meeting": meeting,
+        "editing": True,
+    })
+
+
+@login_required
+def meeting_list(request):
+    """Staff's upcoming meetings dashboard — shows their own meetings."""
+    now = timezone.now()
+    upcoming_cutoff = now + timedelta(days=30)
+    recent_cutoff = now - timedelta(days=7)
+
+    upcoming_meetings = (
+        Meeting.objects.filter(
+            attendees=request.user,
+            status="scheduled",
+            event__start_timestamp__gte=now,
+            event__start_timestamp__lte=upcoming_cutoff,
+        )
+        .select_related("event", "event__client_file")
+        .order_by("event__start_timestamp")
+    )
+
+    past_meetings = (
+        Meeting.objects.filter(
+            attendees=request.user,
+            event__start_timestamp__gte=recent_cutoff,
+            event__start_timestamp__lt=now,
+        )
+        .select_related("event", "event__client_file")
+        .order_by("-event__start_timestamp")
+    )
+
+    # System health warnings — show banners when messaging channels are failing
+    health_warnings = []
+    from apps.admin_settings.models import FeatureToggle
+    from apps.communications.models import SystemHealthCheck
+
+    flags = FeatureToggle.get_all_flags()
+    if flags.get("messaging_sms") or flags.get("messaging_email"):
+        now_time = timezone.now()
+        for health in SystemHealthCheck.objects.filter(consecutive_failures__gt=0):
+            if not health.last_failure_at:
+                continue
+            hours_since = (now_time - health.last_failure_at).total_seconds() / 3600
+            channel_name = health.get_channel_display()
+            if hours_since <= 24 and health.consecutive_failures < 3:
+                health_warnings.append({
+                    "level": "warning",
+                    "message": _(
+                        "%(count)s %(channel)s reminder(s) could not be sent recently."
+                    ) % {"count": health.consecutive_failures, "channel": channel_name},
+                })
+            elif health.consecutive_failures >= 3:
+                health_warnings.append({
+                    "level": "danger",
+                    "message": _(
+                        "%(channel)s reminders have not been working since %(date)s. "
+                        "Please contact your support person."
+                    ) % {
+                        "channel": channel_name,
+                        "date": health.last_failure_at.strftime("%B %d"),
+                    },
+                })
+
+    breadcrumbs = [
+        {"url": "", "label": _("My Meetings")},
+    ]
+    return render(request, "events/meeting_list.html", {
+        "upcoming_meetings": upcoming_meetings,
+        "past_meetings": past_meetings,
+        "health_warnings": health_warnings,
+        "breadcrumbs": breadcrumbs,
+        "nav_active": "meetings",
+    })
+
+
+@login_required
+@requires_permission("event.create", _get_program_from_meeting)
+def meeting_status_update(request, event_id):
+    """HTMX partial: update meeting status (scheduled/completed/cancelled/no_show)."""
+    if request.method != "POST":
+        return HttpResponseForbidden("POST required.")
+
+    event = get_object_or_404(Event, pk=event_id)
+    meeting = get_object_or_404(Meeting, event=event)
+
+    new_status = request.POST.get("status", "").strip()
+    valid_statuses = ["scheduled", "completed", "cancelled", "no_show"]
+    if new_status not in valid_statuses:
+        return HttpResponse("Invalid status.", status=400)
+
+    meeting.status = new_status
+    meeting.save()
+
+    return render(request, "events/_meeting_status.html", {"meeting": meeting})
+
+
+# ---------------------------------------------------------------------------
+# Calendar Feed (iCal / .ics)
+# ---------------------------------------------------------------------------
+
+@ratelimit(key="user_or_ip", rate="60/h", block=True)
+def calendar_feed(request, token):
+    """Public .ics endpoint — token-based auth, no login required.
+
+    PRIVACY: Only include initials + record_id in summary — NO full names,
+    NO phone numbers. Rate limited to 60 requests/hour.
+    """
+    feed_token = CalendarFeedToken.objects.filter(token=token, is_active=True).select_related("user").first()
+    if not feed_token:
+        from django.http import Http404
+        raise Http404
+
+    # Update last accessed timestamp
+    feed_token.last_accessed_at = timezone.now()
+    feed_token.save(update_fields=["last_accessed_at"])
+
+    # Get the user's scheduled meetings
+    meetings = (
+        Meeting.objects.filter(
+            attendees=feed_token.user,
+            status="scheduled",
+        )
+        .select_related("event", "event__client_file")
+        .order_by("event__start_timestamp")
+    )
+
+    # Build iCal output
+    try:
+        from icalendar import Calendar as ICalCalendar, Event as ICalEvent
+    except ImportError:
+        return HttpResponse(
+            "iCalendar library not installed.", status=503, content_type="text/plain"
+        )
+
+    cal = ICalCalendar()
+    cal.add("prodid", "-//KoNote//Calendar Feed//EN")
+    cal.add("version", "2.0")
+    cal.add("calscale", "GREGORIAN")
+    cal.add("x-wr-calname", "KoNote Meetings")
+
+    for meeting in meetings:
+        ical_event = ICalEvent()
+
+        # PRIVACY: use initials + record_id only — no full names
+        client = meeting.event.client_file
+        initials = ""
+        if hasattr(client, "first_name") and client.first_name:
+            initials += client.first_name[0].upper()
+        if hasattr(client, "last_name") and client.last_name:
+            initials += client.last_name[0].upper()
+        record_id = getattr(client, "record_id", "") or ""
+        summary_parts = ["Meeting"]
+        if initials:
+            summary_parts.append(initials)
+        if record_id:
+            summary_parts.append(f"({record_id})")
+        ical_event.add("summary", " ".join(summary_parts))
+
+        ical_event.add("dtstart", meeting.event.start_timestamp)
+        if meeting.duration_minutes:
+            ical_event.add("dtend", meeting.event.start_timestamp + timedelta(minutes=meeting.duration_minutes))
+        else:
+            # Default to 1 hour if no duration specified
+            ical_event.add("dtend", meeting.event.start_timestamp + timedelta(hours=1))
+
+        if meeting.location:
+            ical_event.add("location", meeting.location)
+
+        ical_event.add("uid", f"meeting-{meeting.pk}@konote")
+        ical_event.add("dtstamp", timezone.now())
+
+        cal.add_component(ical_event)
+
+    response = HttpResponse(cal.to_ical(), content_type="text/calendar")
+    response["Content-Disposition"] = 'attachment; filename="konote-meetings.ics"'
+    return response
+
+
+@login_required
+def calendar_feed_settings(request):
+    """Manage calendar feed token — generate, regenerate, or view feed URL."""
+    feed_token = CalendarFeedToken.objects.filter(user=request.user).first()
+
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+        if action in ("generate", "regenerate"):
+            if feed_token:
+                # Regenerate: update existing token
+                feed_token.token = secrets.token_urlsafe(32)
+                feed_token.is_active = True
+                feed_token.save()
+                messages.success(request, _("Calendar feed URL regenerated. Update your calendar app with the new URL."))
+            else:
+                # Generate: create new token
+                feed_token = CalendarFeedToken.objects.create(
+                    user=request.user,
+                    token=secrets.token_urlsafe(32),
+                )
+                messages.success(request, _("Calendar feed generated."))
+
+    # Build feed URL
+    feed_url = None
+    if feed_token and feed_token.is_active:
+        feed_url = request.build_absolute_uri(
+            reverse("calendar_feed", kwargs={"token": feed_token.token})
+        )
+
+    breadcrumbs = [
+        {"url": reverse("events:meeting_list"), "label": _("My Meetings")},
+        {"url": "", "label": _("Calendar Feed")},
+    ]
+    return render(request, "events/calendar_feed_settings.html", {
+        "feed_url": feed_url,
+        "feed_token": feed_token,
         "breadcrumbs": breadcrumbs,
     })

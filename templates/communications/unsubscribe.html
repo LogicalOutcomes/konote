@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Unsubscribe" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<div style="max-width: 32rem; margin: 2rem auto;">
+
+{% if error %}
+    <article role="alert">
+        <header><strong>{% trans "Unable to unsubscribe" %}</strong></header>
+        <p>{{ error }}</p>
+    </article>
+
+{% elif success %}
+    <article role="status" aria-live="polite">
+        <header><strong>{% trans "You have been unsubscribed" %}</strong></header>
+        <p>
+            {% if channel == "email" %}
+                {% trans "You will no longer receive email messages from this organisation." %}
+            {% else %}
+                {% trans "You will no longer receive text messages from this organisation." %}
+            {% endif %}
+        </p>
+        <p class="secondary">{% trans "If you change your mind, please contact the organisation directly." %}</p>
+    </article>
+
+{% elif confirm %}
+    <article>
+        <header><strong>{% trans "Unsubscribe from messages" %}</strong></header>
+        <p>
+            {% blocktrans with channel=channel_display %}
+                Are you sure you want to stop receiving {{ channel }}?
+            {% endblocktrans %}
+        </p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit">{% trans "Yes, unsubscribe me" %}</button>
+        </form>
+    </article>
+{% endif %}
+
+</div>
+{% endblock %}

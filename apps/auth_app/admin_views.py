@@ -18,7 +18,7 @@ from .models import User
 
 # Roles that PMs are NOT allowed to assign (no-elevation constraint).
 # PMs with user.manage: SCOPED can manage staff in their own program
-# but cannot create PM/executive accounts or elevate receptionist to staff.
+# but cannot create PM/executive accounts or elevate front desk to staff.
 _PM_BLOCKED_ROLE_ASSIGNMENTS = {"program_manager", "executive"}
 
 
@@ -173,7 +173,7 @@ def user_role_add(request, user_id):
 
     No-elevation constraint: non-admin users with user.manage: SCOPED
     (program managers) cannot assign PM or executive roles, and cannot
-    elevate receptionist to staff. This constraint is enforced here even
+    elevate front desk to staff. This constraint is enforced here even
     though PMs currently can't reach this view (@admin_required blocks
     them). When PM access is wired in Wave 5, this guard will be active.
     """
@@ -195,14 +195,14 @@ def user_role_add(request, user_id):
                     )
                     return redirect("admin_users:user_roles", user_id=edit_user.pk)
 
-                # PMs cannot change receptionist to staff (grants clinical access)
+                # PMs cannot change front desk to staff (grants clinical access)
                 existing_role = UserProgramRole.objects.filter(
                     user=edit_user, program=program, status="active",
                 ).values_list("role", flat=True).first()
                 if existing_role == "receptionist" and role == "staff":
                     messages.error(
                         request,
-                        _("Elevating receptionist to staff grants clinical data access. "
+                        _("Elevating front desk to staff grants clinical data access. "
                           "Only administrators can make this change."),
                     )
                     return redirect("admin_users:user_roles", user_id=edit_user.pk)

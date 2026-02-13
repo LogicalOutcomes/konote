@@ -104,7 +104,7 @@ Six demo accounts for testing different permission levels:
 | demo-worker-1 | Casey Worker | Lead Worker | program_manager(Employment), staff(Housing, Kitchen) | Mixed roles — manages one program, regular worker in others |
 | demo-worker-2 | Noor Worker | Direct Service | staff(Youth Drop-In, Newcomer, Kitchen) | Standard front-line worker, restricted to assigned clients |
 | demo-executive | Eva Executive | Executive | All 5 programs | Dashboard and reports only — cannot see individual client details |
-| demo-frontdesk | Dana Front Desk | Receptionist | All 5 programs | Limited client info, intake fields only |
+| demo-frontdesk | Dana Front Desk | Front Desk | All 5 programs | Limited client info, intake fields only |
 
 Log in as different demo users to see how the permission system restricts what each role can see and do.
 

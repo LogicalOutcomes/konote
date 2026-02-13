@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "My Meetings" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+<hgroup>
+    <h1>{% trans "My Meetings" %}</h1>
+</hgroup>
+
+{% if health_warnings %}
+{% for warning in health_warnings %}
+<div class="health-banner health-banner-{{ warning.level }}" role="alert" aria-live="polite">
+    {# explicit escape: defence in depth for DB-sourced content #}
+    {{ warning.message|escape }}
+</div>
+{% endfor %}
+{% endif %}
+
+{% if upcoming_meetings %}
+<h2>{% trans "Upcoming" %}</h2>
+{% for meeting in upcoming_meetings %}
+{% include "events/_meeting_card.html" with meeting=meeting %}
+{% endfor %}
+{% else %}
+<p class="secondary">{% trans "No upcoming meetings." %}</p>
+{% endif %}
+
+{% if past_meetings %}
+<details>
+    <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Recent" %}</h2></summary>
+    {% for meeting in past_meetings %}
+    {% include "events/_meeting_card.html" with meeting=meeting %}
+    {% endfor %}
+</details>
+{% endif %}
+
+<a href="{% url 'events:calendar_feed_settings' %}" class="secondary" style="font-size: 0.875rem;">{% trans "Calendar Feed Settings" %}</a>
+{% endblock %}

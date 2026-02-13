@@ -25,3 +25,9 @@ whitenoise>=6.7
 
 # PDF export
 weasyprint>=62.0
+
+# Calendar feeds (Phase 1 — Meetings + iCal)
+icalendar>=6.0
+
+# SMS via Twilio (Phase 4 — Outbound Messaging)
+twilio>=9.0

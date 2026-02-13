@@ -328,7 +328,8 @@ class ClientDetailFrenchTest(FrenchJourneyBaseTest):
 
     def test_client_edit_form_labels_in_french(self):
         """Client edit form has French labels."""
-        self._login_admin_fr()
+        # Staff role has client.edit permission; program_manager does not
+        self._login_staff_fr()
         resp = self.http.get(f"/clients/{self.client_file.pk}/edit/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Pr\u00e9nom")  # "First Name"
@@ -771,14 +772,14 @@ class DateTimeFormattingFrenchTest(FrenchJourneyBaseTest):
     """Dates render in French locale format."""
 
     def test_date_format_uses_iso_in_french(self):
-        """French locale uses ISO 8601 date format (YYYY-MM-DD)."""
+        """French locale uses human-readable date format (UXP3)."""
         import datetime
         from django.utils import formats
 
         test_date = datetime.date(2026, 3, 15)
         with translation_override("fr"):
             formatted = formats.date_format(test_date, "DATE_FORMAT")
-            self.assertEqual(formatted, "2026-03-15")
+            self.assertEqual(formatted, "15 mars 2026")
 
     def test_french_number_formatting(self):
         """French locale uses comma as decimal separator."""
@@ -817,7 +818,7 @@ class EventsFrenchTest(FrenchJourneyBaseTest):
         self._login_staff_fr()
         resp = self.http.get(f"/events/client/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Nouvel \u00e9v\u00e9nement")  # "New Event"
+        self.assertContains(resp, "Enregistrer un \u00e9v\u00e9nement")  # "Record Event" (UXP4)
 
     def test_event_form_labels_in_french(self):
         """Event creation form shows French labels."""

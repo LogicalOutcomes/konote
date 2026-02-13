@@ -58,7 +58,7 @@ def can_create_export(user, export_type, program=None):
 
     Permission rules:
     - metrics / funder_report: admin (any program), program_manager or executive (their programs)
-    - All other roles (staff, receptionist): no export access
+    - All other roles (staff, front desk): no export access
 
     Args:
         user: The User instance.

@@ -344,7 +344,7 @@ class Command(BaseCommand):
         """RBAC003: All roles are valid values."""
         from apps.programs.models import UserProgramRole
 
-        valid_roles = {"receptionist", "staff", "program_manager"}
+        valid_roles = {"receptionist", "staff", "program_manager", "executive"}
         invalid = UserProgramRole.objects.exclude(role__in=valid_roles)
 
         if invalid.exists():

@@ -14,7 +14,7 @@
 {% for rec in pending_recommendations %}
 <article aria-label="{% trans 'cancellation recommendation' %}">
     <header>
-        <strong>{% trans "Alert" %}</strong> — {{ rec.alert.created_at|date:"Y-m-d" }}
+        <strong>{% trans "Alert" %}</strong> — <time datetime="{{ rec.alert.created_at|date:'c' }}">{{ rec.alert.created_at|date }}</time>
         {% if rec.alert.author_program %}
             <span class="badge" style="background-color: {{ rec.alert.author_program.colour_hex }}; color: #fff;">{{ rec.alert.author_program.translated_name }}</span>
         {% endif %}
@@ -24,7 +24,7 @@
     <footer>
         <small class="secondary">
             {% trans "Recommended by" %} {{ rec.recommended_by.display_name|default:rec.recommended_by }}
-            — {{ rec.created_at|date:"Y-m-d" }}
+            — <time datetime="{{ rec.created_at|date:'c' }}">{{ rec.created_at|date }}</time>
             {% if rec.alert.client_file %}
                 — {{ rec.alert.client_file.display_name }} {{ rec.alert.client_file.last_name }}
             {% endif %}

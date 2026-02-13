@@ -23,6 +23,23 @@ document.body.addEventListener("htmx:configRequest", function (event) {
     }
 });
 
+// --- Auto-focus form error summary on page load (BUG-23 — WCAG 3.3.1) ---
+// When a form has validation errors, move focus to the error summary
+// so keyboard/screen reader users know the form failed
+(function () {
+    function focusErrorSummary() {
+        var summary = document.getElementById("form-error-summary");
+        if (summary) {
+            summary.focus();
+        }
+    }
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", focusErrorSummary);
+    } else {
+        focusErrorSummary();
+    }
+})();
+
 // --- Link form error messages to their inputs (aria-describedby) ---
 // Scans for <small class="error" id="..."> and links the preceding input/select/textarea
 (function () {
@@ -143,6 +160,24 @@ document.body.addEventListener("htmx:configRequest", function (event) {
     });
 })();
 
+// --- Screen reader announcer for HTMX form success (IMPROVE-9) ---
+// When an HTMX POST succeeds, announce "Saved" to screen readers via #sr-announcer
+(function () {
+    var announcer = document.getElementById("sr-announcer");
+    if (!announcer) return;
+
+    document.body.addEventListener("htmx:afterRequest", function (event) {
+        var verb = (event.detail.requestConfig && event.detail.requestConfig.verb) || "";
+        if (verb.toLowerCase() === "post" && event.detail.successful) {
+            announcer.textContent = "";
+            // Small delay so aria-live picks up the change
+            setTimeout(function () {
+                announcer.textContent = t("saved", "Saved");
+            }, 100);
+        }
+    });
+})();
+
 // --- Toast helper ---
 function showToast(message, isError) {
     var toast = document.getElementById("htmx-error-toast");
@@ -191,6 +226,69 @@ document.body.addEventListener("htmx:responseError", function (event) {
 document.body.addEventListener("htmx:sendError", function () {
     showToast(t("errorNetwork", "Could not connect to the server. Check your internet connection."), true);
 });
+
+// --- Success toast for async confirmations (UXP2 / WCAG 4.1.3) ---
+// Triggered by HX-Trigger: {"showSuccess": "message"} from Django views
+document.body.addEventListener("showSuccess", function (e) {
+    var msg = (e.detail && e.detail.value) || e.detail || "";
+    var toast = document.getElementById("htmx-success-toast");
+    if (toast) {
+        var msgEl = document.getElementById("htmx-success-toast-message");
+        if (msgEl) { msgEl.textContent = msg; }
+        toast.hidden = false;
+        // Auto-dismiss after 4 seconds (success messages are confirmatory)
+        setTimeout(function () { toast.hidden = true; }, 4000);
+    }
+    // Announce to screen readers via aria-live region
+    var announcer = document.getElementById("sr-announcer");
+    if (announcer) {
+        announcer.textContent = "";
+        setTimeout(function () { announcer.textContent = msg; }, 100);
+    }
+});
+
+// Close button for success toast
+document.addEventListener("click", function (event) {
+    if (event.target && event.target.id === "htmx-success-toast-close") {
+        var toast = document.getElementById("htmx-success-toast");
+        if (toast) { toast.hidden = true; }
+    }
+});
+
+// --- Filter button aria-pressed toggle (UXP5 / WCAG 4.1.2) ---
+// Updates aria-pressed and visual state when filter buttons are clicked
+document.body.addEventListener("click", function (e) {
+    var btn = e.target.closest("[aria-pressed]");
+    if (btn) {
+        var group = btn.closest("[role='group']");
+        if (group && group.querySelector(".filter-btn")) {
+            group.querySelectorAll("[aria-pressed]").forEach(function (b) {
+                b.setAttribute("aria-pressed", "false");
+                b.classList.remove("filter-active");
+            });
+            btn.setAttribute("aria-pressed", "true");
+            btn.classList.add("filter-active");
+        }
+    }
+});
+
+// Screen reader loading announcement for HTMX search (BLOCKER-1 / WCAG 4.1.3)
+// Announces "Loading..." when search starts and "Results loaded" when done
+(function () {
+    var statusEl = document.getElementById("search-status");
+    if (!statusEl) return;
+
+    document.body.addEventListener("htmx:beforeRequest", function (event) {
+        if (event.detail.target && event.detail.target.id === "client-list-container") {
+            statusEl.textContent = t("loading", "Loading\u2026");
+        }
+    });
+    document.body.addEventListener("htmx:afterSwap", function (event) {
+        if (event.detail.target && event.detail.target.id === "client-list-container") {
+            statusEl.textContent = t("resultsLoaded", "Results loaded.");
+        }
+    });
+})();
 
 // Focus management for note detail expansion (accessibility)
 // When a note card expands via HTMX, move focus to the detail content
@@ -705,6 +803,11 @@ document.addEventListener("click", function (event) {
             if (key === "h") {
                 // g h = Go to Home
                 window.location.href = "/";
+                return true;
+            }
+            if (key === "m") {
+                // g m = Go to Meetings
+                window.location.href = "/events/meetings/";
                 return true;
             }
             return false;

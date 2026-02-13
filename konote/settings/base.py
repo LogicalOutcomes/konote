@@ -3,6 +3,7 @@ Base Django settings for KoNote Web.
 Shared across all environments.
 """
 import os
+import re
 import tempfile
 from pathlib import Path
 
@@ -59,6 +60,7 @@ INSTALLED_APPS = [
     "apps.registration",
     "apps.groups",
     "apps.portal",
+    "apps.communications",
 ]
 
 MIDDLEWARE = [
@@ -199,8 +201,12 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# Canadian locale format overrides (I18N5c)
-# Uses ISO 8601 dates (YYYY-MM-DD) and CAD currency formatting
+# Human-readable date/time format defaults (overridden per-locale in konote/formats/)
+DATE_FORMAT = "N j, Y"              # "Feb. 10, 2026"
+DATETIME_FORMAT = "N j, Y, P"       # "Feb. 10, 2026, 2:30 p.m."
+SHORT_DATE_FORMAT = "Y-m-d"         # For machine contexts only
+
+# Canadian locale format overrides
 FORMAT_MODULE_PATH = ["konote.formats"]
 
 # Available languages for the UI
@@ -276,6 +282,18 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() == "true"
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "KoNote <noreply@konote.app>")
+
+# SMS via Twilio
+TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
+TWILIO_FROM_NUMBER = os.environ.get("TWILIO_FROM_NUMBER", "")
+SMS_ENABLED = bool(TWILIO_ACCOUNT_SID)
+SMS_SENDER_NAME = os.environ.get("SMS_SENDER_NAME", "")  # Alphanumeric sender ID
+
+# Mask sensitive settings from Django error pages
+SENSITIVE_VARIABLES_RE = re.compile(
+    r"TWILIO|SECRET|TOKEN|PASSWORD|KEY", re.IGNORECASE
+)
 
 # Azure AD / Entra ID settings
 AZURE_CLIENT_ID = os.environ.get("AZURE_CLIENT_ID", "")

@@ -71,6 +71,21 @@
     </article>
 
     <article>
+        <header>{% trans "Messaging" %}</header>
+        <p>{% trans "Configure appointment reminders, message templates, and channel settings." %}</p>
+        <p class="settings-indicator">
+            {% if messaging_profile == "record_keeping" %}
+                {% trans "Record-keeping only" %}
+            {% elif messaging_profile == "staff_sent" %}
+                {% trans "Staff-sent messages enabled" %}
+            {% elif messaging_profile == "full_automation" %}
+                {% trans "Full automation enabled" %}
+            {% endif %}
+        </p>
+        <footer><a href="{% url 'admin_settings:messaging_settings' %}" role="button" class="outline">{% trans "Messaging Settings" %}</a></footer>
+    </article>
+
+    <article>
         <header>{% trans "Funder Profiles" %}</header>
         <p>{% trans "Define funder-specific demographic breakdowns for reports (age bins, category merging)." %}</p>
         <p class="settings-indicator">

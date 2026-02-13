@@ -1,0 +1,58 @@
+{% extends "clients/_client_layout.html" %}
+{% load i18n %}
+
+{% block tab_content %}
+<h2>{% trans "Log Communication" %}</h2>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% if form.errors %}
+    <div role="alert" class="error-summary">
+        <p><strong>{% trans "Please correct the errors below." %}</strong></p>
+        <ul>
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <div class="grid">
+        <fieldset>
+            <legend>{% trans "Direction" %}</legend>
+            <label>
+                <input type="radio" name="{{ form.direction.html_name }}" value="inbound"
+                       {% if form.direction.value == "inbound" %}checked{% endif %}>
+                {% trans "Incoming (they contacted us)" %}
+            </label>
+            <label>
+                <input type="radio" name="{{ form.direction.html_name }}" value="outbound"
+                       {% if form.direction.value == "outbound" or not form.direction.value %}checked{% endif %}>
+                {% trans "Outgoing (we contacted them)" %}
+            </label>
+        </fieldset>
+        <label>
+            {{ form.channel.label }}
+            {{ form.channel }}
+        </label>
+    </div>
+
+    <label>
+        {{ form.subject.label }}
+        {{ form.subject }}
+    </label>
+
+    <label>
+        {{ form.content.label }}
+        {{ form.content }}
+    </label>
+
+    <div class="grid">
+        <button type="submit">{% trans "Save" %}</button>
+        <a href="{% url 'events:event_list' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

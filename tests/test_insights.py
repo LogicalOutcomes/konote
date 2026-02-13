@@ -2,6 +2,8 @@
 from datetime import date, timedelta
 from unittest.mock import patch
 
+from cryptography.fernet import Fernet
+
 from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
@@ -20,8 +22,7 @@ from konote.ai import validate_insights_response
 
 User = get_user_model()
 
-# Use the same test encryption key as other tests
-TEST_KEY = "dGVzdGtleWZvcmVuY3J5cHRpb24xMjM0NTY3ODk="
+TEST_KEY = Fernet.generate_key().decode()
 
 
 class ValidateInsightsResponseTest(SimpleTestCase):

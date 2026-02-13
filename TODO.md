@@ -7,6 +7,10 @@
 
 ## Active Work
 
+### Messaging & Calendar UX Polish — See `tasks/messaging-ux-polish.md`
+
+All UXP tasks complete — committed as `21bb390`.
+
 ### Pre-Launch Checklist
 
 - [ ] Complete Agency Permissions Interview — signed Configuration Summary required before each new agency deployment (ONBOARD-GATE)
@@ -51,7 +55,28 @@ pytest tests/scenario_eval/ -v --no-llm -k "smoke"
 pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 ```
 
+### QA Round 5 Fixes — See `tasks/qa-action-plan-2026-02-13a.md`
+
+All Tier 1 and Tier 2 tickets complete. Tier 3 deferred (TEST-19 multi-session, IMPROVE-12 research).
+
 ## Coming Up
+
+### Messaging, Meetings & Calendar
+
+See `tasks/messaging-calendar-plan.md` (phase-by-phase build) and `tasks/messaging-modules-architecture.md` (modular toggle system, Safety-First mode, deployment docs)
+
+- [ ] Phase 0: Consultant setup — Twilio account, email SMTP (Google Workspace or M365), Railway cron, handoff runbook (MSG-P0)
+- [x] Phase 1 (Wave 1): Meeting model, forms, views, URLs, templates, iCal feed — 2026-02-13 (MSG-P1)
+- [x] Phase 2A (Wave 1): Communication model + forms scaffold — views/templates in Wave 2 — 2026-02-13 (MSG-P2A)
+- [x] Phase 3 (Wave 1): Consent & contact fields on ClientFile — email, phone staleness, CASL consent, preferred language — 2026-02-13 (MSG-P3)
+- [x] Phase 2B-J (Wave 2): Communication log views, quick-log buttons, timeline integration — 2026-02-13 (MSG-P2B)
+- [x] Phase 4A-C (Wave 2): Settings, Twilio/SMTP config, services layer — 2026-02-13 (MSG-P4A)
+- [x] Phase 4D-K (Wave 3): Send preview, feature toggles, health banners, unsubscribe, messaging settings — 2026-02-13 (MSG-P4B)
+- [ ] Safe-to-contact fields — structured channel safety, code name, review date on ClientFile (MSG-MOD2)
+- [ ] Composed messages — staff can write follow-ups/check-ins from client page, preview before send (MSG-MOD3)
+- [ ] Bulk messaging — send to program group with consent-filtered recipient list (MSG-MOD4)
+- [ ] Phase 5 (Wave 4): Automated reminders — only after manual send proven in production (MSG-P5)
+
 
 ### Agency Onboarding — See `tasks/agency-permissions-interview.md`
 
@@ -103,6 +128,18 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 - [ ] Data migration scenario — legacy system import (QA-T16)
 - [ ] Add onboarding guidance for new users — help link or first-run banner (QA-W19)
 - [ ] Reduce form tab stops — tabindex audit (QA-W20)
+### QA Backlog
+
+- [ ] Implement multi-session testing for SCN-046 shared device test (TEST-19 → QA-W55)
+- [ ] Dashboard cognitive load evaluation for ADHD users — research task (IMPROVE-12 → QA-W57)
+
+### Messaging UX — Deferred
+
+- [ ] Front desk message-taking — separate route, `communication.take_message` permission, notification to assigned worker. Requires `primary_worker` field on ClientFile. See `tasks/messaging-ux-polish.md` (UXP-RECEP)
+- [ ] Team meeting view for PMs — `?team=true` on meeting list, grouped by staff. Requires `get_accessible_client_ids` utility for DV safety (UXP-TEAM)
+- [ ] Actionable health banners — admin-specific guidance and links on SMS/email health warnings (UXP-HEALTH)
+- [ ] Last-contact date on participant list — sortable column for PM oversight (UXP-CONTACT)
+
 ### Safety & Reporting
 
 - [ ] Serious Reportable Events — add a predefined list of reportable events relevant to Canadian nonprofits (e.g., critical incidents, use of force, medical emergencies, abuse/neglect disclosures, death, elopement). When flagged on a client event, it would be auditable, trigger notification to manager and executive, and appear in a dedicated report. See `tasks/serious-reportable-events.md` (SRE1)
@@ -117,23 +154,41 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 
 ### Infrastructure
 
+- [ ] Re-add API-based auto-translation to `translate_strings` — for production use when Claude Code isn't available. Support Anthropic API with `ANTHROPIC_API_KEY` env var (I18N-API1)
 - [ ] Local PostgreSQL for tests — `security_audit` and `pytest` need a running PostgreSQL. Document setup or add SQLite fallback for static-only checks (DEV-PG1)
 - [ ] Deferred execution for Tier 3 erasure — 24-hour delay, see `tasks/erasure-hardening.md` (ERASE-H8)
 - [ ] Deployment workflow enhancements — see `docs/plans/2026-02-05-deployment-workflow-design.md` (DEPLOY1)
 
 ## Recently Done
 
-- [x] Fix dark mode contrast on filter-bar summary — overrode Pico CSS variable — 2026-02-13 (UX-CONTRAST1)
+- [x] **UXP1-6 — Messaging/calendar UX polish** — nav link, success toast, date formats, button split, timeline filtering, direction toggle, consent indicator, translations — 2026-02-13 (UXP1-6)
+- [x] **QA Round 5 — all Tier 1 + Tier 2 tickets** (25 tickets) — 2026-02-13 (QA-W36–W54)
+  - BUG-16+18: Search before filters on /clients/ (QA-W36)
+  - BLOCKER-1+IMPROVE-10: HTMX loading indicator + aria-live for search (QA-W37)
+  - BLOCKER-2: /settings/ redirect to /admin/settings/ (QA-W38)
+  - BUG-15+20: Executive audit log access + nav visibility (QA-W39)
+  - BUG-17+23: Form error summary with role="alert" + focus management (QA-W40, W43)
+  - BUG-22: Touch target 24x24px minimum (QA-W44)
+  - BUG-19: Fixed hx-vals quote conflict in insights template (QA-W45)
+  - BUG-14: Verified lang="fr" fix (QA-W46)
+  - IMPROVE-9: aria-live success announcements for HTMX forms (QA-W47)
+  - IMPROVE-8: Post-login focus verified (QA-W48)
+  - IMPROVE-11: Role-aware 403 page (QA-W49)
+  - BUG-21: Executive test user programme assignments fixed (QA-W50)
+  - TEST-10: SCN-059 login URL fixed (QA-W41)
+  - TEST-20: URL template variable resolution in runner (QA-W42)
+  - TEST-15: Language reset between scenarios (QA-W51)
+  - TEST-17+18: SCN-058 selectors fixed (QA-W52)
+  - TEST-14: SCN-062 prerequisite clients verified (QA-W53)
+  - TEST-16: SCN-050 tab counts verified correct (QA-W54)
+  - BUG-8+11: French translations extracted, 26 new strings (QA-W56)
+- [x] Fix dark mode contrast on filter-bar summary — 2026-02-13 (UX-CONTRAST1)
 - [x] Fix HTMX focus management for consent + custom fields edit forms — 2026-02-13 (UX-FOCUS1)
-- [x] Remove duplicate user management URLs — consolidated under `admin_urls.py`, updated all templates/tests/nav — 2026-02-13 (URL-DEDUP1)
-- [x] Replace hardcoded path in `preflight.py` with `settings.BASE_DIR`-relative path — 2026-02-13 (DEV-PREFLIGHT1)
-- [x] Refactor `/capture-page-states` skill — already rewritten in prior session, verified complete — 2026-02-13 (SKILL-CAPTURE1)
-- [x] Fix BUG-8 — French translation gaps (QA-W28) + Verify BUG-11 — program name_fr confirmed (QA-W29) — 2026-02-12
+- [x] Remove duplicate user management URLs — 2026-02-13 (URL-DEDUP1)
+- [x] Replace hardcoded path in `preflight.py` — 2026-02-13 (DEV-PREFLIGHT1)
 - [x] Auto-generate `.run-manifest.json` in `pytest_sessionfinish` — 2026-02-13 (QA-W34)
-- [x] Add screenshot self-validation — file size, SHA-256 dedup, URL slug check — 2026-02-13 (QA-W35)
+- [x] Add screenshot self-validation — 2026-02-13 (QA-W35)
 - [x] All critical/warning UX walkthrough issues fixed — 2026-02-13 (UX-RESTORE2)
-- [x] Fix BUG-14 — `staff_a11y` preferred_language="en" in scenario runner — 2026-02-13 (QA-W27)
 - [x] Fix TEST-5/6/7/8/9 — scenario runner click fallback, YAML fixes — 2026-02-13 (QA-W30–W33)
-- [x] Re-sync permissions hash — note.create/note.edit DENY→SCOPED for PM — 2026-02-13
 - [x] Full UX walkthrough restored — 57/57 tests passing, 321 pages — PR #64 (UX-RESTORE1)
 _Older completed tasks: [tasks/ARCHIVE.md](tasks/ARCHIVE.md). Reference: [tasks/whats-been-built.md](tasks/whats-been-built.md). Recurring chores: [tasks/recurring-tasks.md](tasks/recurring-tasks.md)._

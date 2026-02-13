@@ -118,6 +118,11 @@ class UxWalkthroughBase(TestCase):
             role="executive",
         )
         UserProgramRole.objects.create(
+            user=cls.executive_user,
+            program=cls.program_b,
+            role="executive",
+        )
+        UserProgramRole.objects.create(
             user=cls.admin_pm_user,
             program=cls.program_a,
             role="program_manager",

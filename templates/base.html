@@ -71,31 +71,35 @@
             {% has_permission "report.program_report" as can_see_reports %}
             {% has_permission "group.view_roster" as can_see_groups %}
             {% if can_see_clients %}
-            <li><a href="/"{% if nav_active == "clients" %} class="nav-active"{% endif %}>{{ term.client_plural|default:"Participants" }}</a></li>
+            <li><a href="/"{% if nav_active == "clients" %} class="nav-active" aria-current="page"{% endif %}>{{ term.client_plural|default:"Participants" }}</a></li>
+            {% endif %}
+            {% has_permission "meeting.view" as can_see_meetings %}
+            {% if can_see_meetings %}
+            <li><a href="{% url 'events:meeting_list' %}"{% if nav_active == "meetings" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Meetings" %}</a></li>
             {% endif %}
             {% if has_program_roles and not can_see_clients %}
-            <li><a href="{% url 'clients:executive_dashboard' %}"{% if nav_active == "executive" %} class="nav-active"{% endif %}>{% trans "Dashboard" %}</a></li>
+            <li><a href="{% url 'clients:executive_dashboard' %}"{% if nav_active == "executive" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Dashboard" %}</a></li>
             {% endif %}
             {% if features.programs %}
-            <li><a href="/programs/"{% if nav_active == "programs" %} class="nav-active"{% endif %}>{{ term.program_plural|default:"Programs" }}</a></li>
+            <li><a href="/programs/"{% if nav_active == "programs" %} class="nav-active" aria-current="page"{% endif %}>{{ term.program_plural|default:"Programs" }}</a></li>
             {% endif %}
             {% if can_see_insights %}
-            <li><a href="/reports/insights/"{% if nav_active == "insights" %} class="nav-active"{% endif %}>{% trans "Insights" %}</a></li>
+            <li><a href="/reports/insights/"{% if nav_active == "insights" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Insights" %}</a></li>
             {% endif %}
             {% if can_see_reports or user.is_admin %}
-            <li><a href="/reports/export/"{% if nav_active == "reports" %} class="nav-active"{% endif %}>{% trans "Reports" %}</a></li>
+            <li><a href="/reports/export/"{% if nav_active == "reports" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reports" %}</a></li>
             {% endif %}
             {% if features.groups and can_see_groups %}
-            <li><a href="/groups/"{% if nav_active == "groups" %} class="nav-active"{% endif %}>{{ term.group_plural|default:"Groups" }}</a></li>
+            <li><a href="/groups/"{% if nav_active == "groups" %} class="nav-active" aria-current="page"{% endif %}>{{ term.group_plural|default:"Groups" }}</a></li>
             {% endif %}
             {% has_permission "alert.review_cancel_recommendation" as can_review_recommendations %}
             {% if can_review_recommendations %}
-            <li><a href="{% url 'events:alert_recommendation_queue' %}"{% if nav_active == "recommendations" %} class="nav-active"{% endif %}>{% trans "Reviews" %}{% if pending_recommendation_count %} <span class="badge badge-warning">{{ pending_recommendation_count }}</span>{% endif %}</a></li>
+            <li><a href="{% url 'events:alert_recommendation_queue' %}"{% if nav_active == "recommendations" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reviews" %}{% if pending_recommendation_count %} <span class="badge badge-warning">{{ pending_recommendation_count }}</span>{% endif %}</a></li>
             {% endif %}
             {% if user.is_admin %}
             <li>
                 <details class="dropdown" role="list">
-                    <summary aria-haspopup="listbox"{% if nav_active == "admin" %} class="nav-active"{% endif %}>{% trans "Admin" %}</summary>
+                    <summary aria-haspopup="listbox"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Admin" %}</summary>
                     <ul role="listbox">
                         <li><a href="/plans/admin/metrics/">{{ term.metric_plural|default:"Metrics" }}</a></li>
                         <li><a href="/admin/templates/">{% trans "Plan Templates" %}</a></li>
@@ -112,6 +116,11 @@
                     </ul>
                 </details>
             </li>
+            {% else %}
+            {% has_permission "audit.view" as can_see_audit %}
+            {% if can_see_audit %}
+            <li><a href="/admin/audit/"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Audit Log" %}</a></li>
+            {% endif %}
             {% endif %}
             {% include "_program_switcher.html" %}
             <li class="nav-user-dropdown">
@@ -166,10 +175,19 @@
         {% block content %}{% endblock %}
     </main>
 
+    <!-- Screen reader announcer for HTMX form success (IMPROVE-9 / WCAG 4.1.3) -->
+    <div id="sr-announcer" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+
     <!-- HTMX error toast — shown by app.js on network/server errors -->
     <div id="htmx-error-toast" class="toast toast-error" role="alert" hidden>
         <span id="htmx-error-toast-message"></span>
         <button type="button" id="htmx-error-toast-close" aria-label="{% trans 'Dismiss' %}" style="background:none;border:none;cursor:pointer;padding:0 0 0 1rem;font-size:1.2rem;color:inherit;">&times;</button>
+    </div>
+
+    <!-- HTMX success toast — shown by app.js for async confirmations (UXP2 / WCAG 4.1.3) -->
+    <div id="htmx-success-toast" class="toast toast-success" role="status" hidden>
+        <span id="htmx-success-toast-message"></span>
+        <button type="button" id="htmx-success-toast-close" aria-label="{% trans 'Dismiss' %}" style="background:none;border:none;cursor:pointer;padding:0 0 0 1rem;font-size:1.2rem;color:inherit;">&times;</button>
     </div>
 
     <footer class="container site-footer" role="contentinfo">
@@ -218,6 +236,8 @@
             <dd>{% trans "Focus search" %}</dd>
             <dt>g h</dt>
             <dd>{% trans "Go to Home" %}</dd>
+            <dt>g m</dt>
+            <dd>{% trans "Go to Meetings" %}</dd>
             <dt>n</dt>
             <dd>{% blocktrans with client=term.client %}New quick note (on {{ client }} page){% endblocktrans %}</dd>
             <dt>Ctrl+S</dt>
@@ -255,7 +275,9 @@
         draftRestored: "{% trans 'Draft restored' %}",
         saving: "{% trans 'Saving…' %}",
         saved: "{% trans 'Saved' %}",
-        unsavedWarning: "{% trans 'You have unsaved changes. Are you sure you want to leave?' %}"
+        unsavedWarning: "{% trans 'You have unsaved changes. Are you sure you want to leave?' %}",
+        loading: "{% trans 'Loading…' %}",
+        resultsLoaded: "{% trans 'Results loaded.' %}"
     };
     </script>
     <!-- App JS — CSRF handling, error handlers -->

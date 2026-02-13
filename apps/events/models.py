@@ -142,3 +142,72 @@ class AlertCancellationRecommendation(models.Model):
 
     def __str__(self):
         return f"Cancel recommendation for Alert #{self.alert_id} ({self.status})"
+
+
+class Meeting(models.Model):
+    """A scheduled meeting with a client — separate from Event to keep Event clean.
+
+    OneToOneField to Event means every meeting IS an event on the timeline,
+    but nullable meeting-specific fields (location, duration, reminder status)
+    don't pollute the Event model.
+    """
+
+    event = models.OneToOneField(Event, on_delete=models.CASCADE, related_name="meeting")
+    location = models.CharField(max_length=255, blank=True)
+    duration_minutes = models.PositiveIntegerField(null=True, blank=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("scheduled", "Scheduled"),
+            ("completed", "Completed"),
+            ("cancelled", "Cancelled"),
+            ("no_show", "No Show"),
+        ],
+        default="scheduled",
+    )
+    attendees = models.ManyToManyField(
+        settings.AUTH_USER_MODEL, blank=True, related_name="meetings"
+    )
+    reminder_sent = models.BooleanField(default=False)
+    reminder_status = models.CharField(
+        max_length=15,
+        choices=[
+            ("not_sent", "Not Sent"),
+            ("sent", "Sent"),
+            ("failed", "Failed"),
+            ("blocked", "Blocked"),
+            ("no_consent", "No Consent"),
+            ("no_phone", "No Phone"),
+        ],
+        default="not_sent",
+    )
+    reminder_status_reason = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        app_label = "events"
+        db_table = "meetings"
+        ordering = ["-event__start_timestamp"]
+        indexes = [
+            models.Index(fields=["status", "reminder_sent"]),
+        ]
+
+    def __str__(self):
+        date_str = self.event.start_timestamp.strftime("%Y-%m-%d %H:%M") if self.event.start_timestamp else "(no date)"
+        return f"Meeting — {date_str}"
+
+
+class CalendarFeedToken(models.Model):
+    """Token-based auth for iCal calendar feeds. No login required — token IS the auth."""
+
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="calendar_feed_token")
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_accessed_at = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        app_label = "events"
+        db_table = "calendar_feed_tokens"
+
+    def __str__(self):
+        return f"Calendar feed for {self.user}"

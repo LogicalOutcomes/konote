@@ -4,10 +4,13 @@ import os
 from django.conf import settings
 from django.contrib import admin
 from django.urls import include, path
+from django.contrib.auth.decorators import login_required
+from django.views.generic import RedirectView
 from django.views.static import serve
 
 from apps.audit.views import program_audit_log
 from apps.auth_app.views import switch_language
+from apps.events.views import calendar_feed
 from konote.error_views import permission_denied_view
 from konote.page_views import help_view, privacy_view
 
@@ -25,10 +28,14 @@ urlpatterns = [
     path("admin/templates/", include("apps.plans.admin_urls")),
     path("notes/", include("apps.notes.urls")),
     path("events/", include("apps.events.urls")),
+    path("communications/", include("apps.communications.urls")),
+    path("calendar/<str:token>/feed.ics", calendar_feed, name="calendar_feed"),
     path("reports/", include("apps.reports.urls")),
     path("groups/", include("apps.groups.urls")),
     path("admin/settings/note-templates/", include("apps.notes.admin_urls")),
     path("admin/settings/", include("apps.admin_settings.urls")),
+    # Redirect /settings/ to /admin/settings/ for convenience
+    path("settings/", login_required(RedirectView.as_view(url="/admin/settings/", permanent=False))),
     path("admin/users/", include("apps.auth_app.admin_urls")),
     path("admin/audit/", include("apps.audit.urls")),
     path("audit/program/<int:program_id>/", program_audit_log, name="program_audit_log"),

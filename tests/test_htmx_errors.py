@@ -54,15 +54,16 @@ class Error403ResponseTest(TestCase):
 
     def test_403_contains_access_denied_message(self):
         """403 responses should contain friendly access message."""
+        # Receptionist has client.create ALLOW but client.edit DENY
         self.client.force_login(self.receptionist)
-        response = self.client.get("/clients/create/")
+        response = self.client.get(f"/clients/{self.client_file.pk}/edit/")
         self.assertEqual(response.status_code, 403)
         self.assertContains(response, "have access to this page", status_code=403)
 
     def test_403_contains_helpful_instructions(self):
         """403 responses should contain helpful next steps."""
         self.client.force_login(self.receptionist)
-        response = self.client.get("/clients/create/")
+        response = self.client.get(f"/clients/{self.client_file.pk}/edit/")
         self.assertEqual(response.status_code, 403)
         # Should contain suggestions for what user can do
         self.assertContains(response, "What you can do", status_code=403)
@@ -79,7 +80,7 @@ class Error403ResponseTest(TestCase):
         """HTMX requests should still get meaningful error content."""
         self.client.force_login(self.receptionist)
         response = self.client.get(
-            "/clients/create/",
+            f"/clients/{self.client_file.pk}/edit/",
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(response.status_code, 403)
@@ -90,6 +91,7 @@ class Error403ResponseTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class FormValidationErrorTest(TestCase):
     """Form validation errors should be returned with the form re-rendered."""
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None
@@ -131,6 +133,7 @@ class FormValidationErrorTest(TestCase):
             "first_name": "New",
             "last_name": "Client",
             "status": "active",
+            "preferred_language": "en",
             "programs": [self.program.pk],
         })
         # Should redirect to client detail

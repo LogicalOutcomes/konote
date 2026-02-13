@@ -1,0 +1,49 @@
+{% load i18n %}
+<div class="send-reminder-preview" style="margin-top: 0.5rem;">
+{% if not allowed %}
+    <p class="secondary" style="font-size: 0.875rem;">
+        <strong>{% trans "Cannot send reminder" %}:</strong> {{ reason }}
+    </p>
+    <button type="button" class="outline secondary" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"
+            hx-get="{% url 'communications:send_reminder_preview' client_id=client.pk event_id=meeting.event_id %}"
+            hx-target="#send-reminder-{{ meeting.pk }}"
+            hx-swap="innerHTML"
+            onclick="this.parentElement.innerHTML = '';">
+        {% trans "Dismiss" %}
+    </button>
+{% else %}
+    <div style="border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius); padding: 0.75rem; margin-bottom: 0.5rem; font-size: 0.875rem;">
+        <p style="margin-bottom: 0.25rem;">
+            <small class="badge {% if channel == 'sms' %}badge-success{% else %}badge-neutral{% endif %}">
+                {% if channel == "sms" %}{% trans "Text" %}{% else %}{% trans "Email" %}{% endif %}
+            </small>
+            {% if masked_recipient %}
+            <span class="secondary"> {% trans "to" %} {{ masked_recipient }}</span>
+            {% endif %}
+        </p>
+        <p style="white-space: pre-wrap; margin-bottom: 0;">{{ preview_text }}</p>
+    </div>
+
+    <form hx-post="{% url 'communications:send_reminder_preview' client_id=client.pk event_id=meeting.event_id %}"
+          hx-target="#meeting-status-{{ meeting.pk }}"
+          hx-swap="outerHTML">
+        {% csrf_token %}
+        <label for="personal-note-{{ meeting.pk }}" style="font-size: 0.875rem;">
+            {% trans "Personal note (optional)" %}
+        </label>
+        <textarea id="personal-note-{{ meeting.pk }}" name="personal_note"
+                  rows="2" style="font-size: 0.875rem;"
+                  placeholder="{% trans 'e.g. Looking forward to seeing you!' %}"></textarea>
+
+        <div class="grid" style="margin-top: 0.5rem;">
+            <button type="submit" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                {% trans "Send Reminder" %}
+            </button>
+            <button type="button" class="outline secondary" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"
+                    onclick="this.closest('.send-reminder-preview').innerHTML = '';">
+                {% trans "Cancel" %}
+            </button>
+        </div>
+    </form>
+{% endif %}
+</div>

@@ -444,14 +444,14 @@ class DateCurrencyLocaleTest(TestCase):
         self.assertTrue(settings.USE_L10N)
 
     def test_english_date_format(self):
-        """English format module should use ISO 8601 date format."""
+        """English format module should use human-readable date format."""
         from konote.formats.en.formats import DATE_FORMAT
-        self.assertEqual(DATE_FORMAT, "Y-m-d")
+        self.assertEqual(DATE_FORMAT, "N j, Y")
 
     def test_french_date_format(self):
-        """French format module should use ISO 8601 date format."""
+        """French format module should use human-readable date format."""
         from konote.formats.fr.formats import DATE_FORMAT
-        self.assertEqual(DATE_FORMAT, "Y-m-d")
+        self.assertEqual(DATE_FORMAT, "j N Y")
 
     def test_english_number_format(self):
         """English format should use period as decimal separator."""
@@ -465,7 +465,7 @@ class DateCurrencyLocaleTest(TestCase):
         self.assertEqual(DECIMAL_SEPARATOR, ",")
 
     def test_date_format_renders_correctly(self):
-        """Django's date formatting should use our custom format."""
+        """Django's date formatting should use our custom human-readable format."""
         from django.utils import formats, translation
         import datetime
 
@@ -473,8 +473,9 @@ class DateCurrencyLocaleTest(TestCase):
 
         with translation.override("en"):
             formatted = formats.date_format(test_date, "DATE_FORMAT")
-            self.assertEqual(formatted, "2026-02-05")
+            self.assertEqual(formatted, "Feb. 5, 2026")
 
         with translation.override("fr"):
             formatted = formats.date_format(test_date, "DATE_FORMAT")
-            self.assertEqual(formatted, "2026-02-05")
+            self.assertIn("5", formatted)  # Day
+            self.assertIn("2026", formatted)  # Year
