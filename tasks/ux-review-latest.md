@@ -1,6 +1,6 @@
 # KoNote UX Walkthrough Report
 
-**Generated:** 2026-02-12 21:45:11  
+**Generated:** 2026-02-13 08:12:38  
 **Command:** `pytest tests/ux_walkthrough/ -v`
 
 ## Summary
@@ -8,96 +8,18 @@
 | Metric | This Run | Previous |
 |--------|----------|----------|
 | Pages visited | 321 | 321 (same) |
-| Critical issues | 8 | 8 (same) |
-| Warnings | 17 | 17 (same) |
-| Info items | 39 | 39 (same) |
+| Critical issues | 1 | 8 (down 7) |
+| Warnings | 2 | 17 (down 15) |
+| Info items | 31 | 39 (down 8) |
 
 ## Critical Issues
-
-- **[Direct Service] Section create (403)** `/plans/client/1/sections/create/`
-  Expected 403, got 200
-
-- **[Browser] Colour Contrast** `/clients/`
-  [dark] Client list: Contrast violation (serious) on `.nav-active`
-  _Fix any of the following:
-  Element has insufficient color contrast of 2.73 (foreground color: #0d7377, background color: #1e2533, font size: 11.3pt (15px), font weight: normal). Expected contrast rat_
 
 - **[Browser] Colour Contrast** `/clients/`
   [dark] Client list: Contrast violation (serious) on `.filter-bar > summary`
   _Fix any of the following:
   Element has insufficient color contrast of 4.2 (foreground color: #7b8495, background color: #12252c, font size: 9.8pt (13.125px), font weight: normal). Expected contrast r_
 
-- **[Browser] Colour Contrast** `/clients/1/`
-  [dark] Client detail: Contrast violation (serious) on `.nav-active`
-  _Fix any of the following:
-  Element has insufficient color contrast of 2.73 (foreground color: #0d7377, background color: #1e2533, font size: 11.3pt (15px), font weight: normal). Expected contrast rat_
-
-- **[Browser] Colour Contrast** `/clients/1/`
-  [dark] Client detail: Contrast violation (serious) on `.tab-active`
-  _Fix any of the following:
-  Element has insufficient color contrast of 3.19 (foreground color: #0d7377, background color: #13171f, font size: 9.8pt (13.125px), font weight: normal). Expected contrast _
-
-- **[Browser] Colour Contrast** `/notes/client/1/`
-  [dark] Notes timeline: Contrast violation (serious) on `.nav-active`
-  _Fix any of the following:
-  Element has insufficient color contrast of 2.73 (foreground color: #0d7377, background color: #1e2533, font size: 11.3pt (15px), font weight: normal). Expected contrast rat_
-
-- **[Browser] Colour Contrast** `/notes/client/1/`
-  [dark] Notes timeline: Contrast violation (serious) on `.tab-active`
-  _Fix any of the following:
-  Element has insufficient color contrast of 3.19 (foreground color: #0d7377, background color: #13171f, font size: 9.8pt (13.125px), font weight: normal). Expected contrast _
-
-- **[Browser] Colour Contrast** `/clients/3/`
-  [light] Client detail: Contrast violation (serious) on `.quick-info-section > .quick-info > .quick-info-item > dt`
-  _Fix any of the following:
-  Element has insufficient color contrast of 4.26 (foreground color: #64748b, background color: #ecf4f4, font size: 8.4pt (11.25px), font weight: normal). Expected contrast r_
-
 ## Warning Issues
-
-- **[Admin] Form validation — empty program name** `/programs/create/`
-  Expected form errors but none found (no .errorlist elements)
-
-- **[Admin] Assign staff to program** `/programs/3/roles/add/`
-  Page has no <title> or title is empty
-
-- **[Admin] Assign staff to program** `/programs/3/roles/add/`
-  No <main> landmark element found
-
-- **[Admin] Assign staff to program** `/programs/3/roles/add/`
-  No <nav> element found on full page
-
-- **[Admin] Assign staff to program** `/programs/3/roles/add/`
-  No <html> element found
-
-- **[Admin] Form validation — password mismatch** `/admin/users/new/`
-  Expected form errors but none found (no .errorlist elements)
-
-- **[Admin] Submit new user** `/admin/users/new/`
-  Expected redirect to contain '/admin/users/', got '/auth/users/'
-
-- **[Admin] Update user** `/admin/users/7/edit/`
-  Expected redirect to contain '/admin/users/', got '/auth/users/'
-
-- **[Admin] Create first staff user** `/admin/users/new/`
-  Expected redirect to contain '/admin/users/', got '/auth/users/'
-
-- **[Admin] Assign worker to program** `/programs/3/roles/add/`
-  Page has no <title> or title is empty
-
-- **[Admin] Assign worker to program** `/programs/3/roles/add/`
-  No <main> landmark element found
-
-- **[Admin] Assign worker to program** `/programs/3/roles/add/`
-  No <nav> element found on full page
-
-- **[Admin] Assign worker to program** `/programs/3/roles/add/`
-  No <html> element found
-
-- **[Direct Service] Plan view (read-only)** `/plans/client/1/`
-  "Add Section" button/link visible but should be hidden for Direct Service
-
-- **[Direct Service] Plan view (read-only)** `/plans/client/1/`
-  "Add Target" button/link visible but should be hidden for Direct Service
 
 - **[Browser] Focus Management** `/clients/1/`
   Consent: Focus lost after opening consent edit form
@@ -108,18 +30,6 @@
   _Focus on: None_
 
 ## Info Issues
-
-- **[Admin] Assign staff to program** `/programs/3/roles/add/`
-  No headings found on page
-
-- **[Admin] Assign staff to program** `/programs/3/roles/add/`
-  No <meta name="viewport"> tag found
-
-- **[Admin] Assign staff to program** `/programs/3/roles/add/`
-  No skip navigation link found
-
-- **[Admin] Assign staff to program** `/programs/3/roles/add/`
-  No success message found after form submission
 
 - **[Admin] Event types list (multiple)** `/events/admin/types/`
   "Court Hearing" button/link expected but not found for Admin
@@ -135,18 +45,6 @@
 
 - **[Admin] Submit new registration link** `/admin/registration/create/`
   Table missing <caption> or aria-label
-
-- **[Admin] Assign worker to program** `/programs/3/roles/add/`
-  No headings found on page
-
-- **[Admin] Assign worker to program** `/programs/3/roles/add/`
-  No <meta name="viewport"> tag found
-
-- **[Admin] Assign worker to program** `/programs/3/roles/add/`
-  No skip navigation link found
-
-- **[Admin] Assign worker to program** `/programs/3/roles/add/`
-  No success message found after form submission
 
 - **[Admin] Program with staff** `/programs/3/`
   "Amir" button/link expected but not found for Admin
@@ -245,14 +143,14 @@
 | Disable alerts | `/admin/settings/features/` | 200 | None |
 | Instance settings form | `/admin/settings/instance/` | 200 | None |
 | Save instance settings | `/admin/settings/instance/` | 200 | None |
-| Program form validation | `/programs/create/` | 200 | 1 issue(s) |
+| Program form validation | `/programs/create/` | 200 | None |
 | Programs list | `/programs/` | 200 | None |
 | Create program form | `/programs/create/` | 200 | None |
 | Submit new program | `/programs/create/` | 200 | None |
 | Program detail | `/programs/3/` | 200 | None |
 | Edit program form | `/programs/3/edit/` | 200 | None |
 | Update program | `/programs/3/edit/` | 200 | None |
-| Assign staff to program | `/programs/3/roles/add/` | 200 | 8 issue(s) |
+| Assign staff to program | `/programs/3/roles/add/` | 200 | None |
 | Metric library | `/plans/admin/metrics/` | 200 | None |
 | Create metric form | `/plans/admin/metrics/create/` | 200 | None |
 | Submit new metric | `/plans/admin/metrics/create/` | 200 | None |
@@ -287,12 +185,12 @@
 | Submit text field | `/clients/admin/fields/create/` | 200 | None |
 | Custom field admin (populated) | `/clients/admin/fields/` | 200 | 2 issue(s) |
 | Edit field definition form | `/clients/admin/fields/3/edit/` | 200 | None |
-| User form password mismatch | `/admin/users/new/` | 200 | 1 issue(s) |
+| User form password mismatch | `/admin/users/new/` | 200 | None |
 | User list | `/admin/users/` | 200 | None |
 | Create user form | `/admin/users/new/` | 200 | None |
-| Submit new user | `/admin/users/new/` | 200 | 1 issue(s) |
+| Submit new user | `/admin/users/new/` | 200 | None |
 | Edit user form | `/admin/users/7/edit/` | 200 | None |
-| Update user | `/admin/users/7/edit/` | 200 | 1 issue(s) |
+| Update user | `/admin/users/7/edit/` | 200 | None |
 | Invite list | `/auth/invites/` | 200 | None |
 | Create invite form | `/auth/invites/new/` | 200 | None |
 | Submit new invite | `/auth/invites/new/` | 200 | None |
@@ -308,8 +206,8 @@
 | Create first program | `/programs/create/` | 200 | None |
 | Create first metric | `/plans/admin/metrics/create/` | 200 | None |
 | Create first event type | `/events/admin/types/create/` | 200 | None |
-| Create first staff user | `/admin/users/new/` | 200 | 1 issue(s) |
-| Assign worker to program | `/programs/3/roles/add/` | 200 | 8 issue(s) |
+| Create first staff user | `/admin/users/new/` | 200 | None |
+| Assign worker to program | `/programs/3/roles/add/` | 200 | None |
 | Program with staff | `/programs/3/` | 200 | 1 issue(s) |
 | Client detail without program role (403) | `/clients/1/` | 403 | None |
 | Admin settings dashboard | `/admin/settings/` | 200 | None |
@@ -359,8 +257,8 @@
 | Full note form | `/notes/client/1/new/` | 200 | None |
 | Notes timeline | `/notes/client/1/` | 200 | None |
 | Note detail | `/notes/1/` | 200 | None |
-| Plan view (read-only) | `/plans/client/1/` | 200 | 2 issue(s) |
-| Section create (403) | `/plans/client/1/sections/create/` | 200 | 1 issue(s) |
+| Plan view | `/plans/client/1/` | 200 | None |
+| Section create form | `/plans/client/1/sections/create/` | 200 | None |
 | Events tab | `/events/client/1/` | 200 | None |
 | Event create form | `/events/client/1/create/` | 200 | None |
 | Alert create form | `/events/client/1/alerts/create/` | 200 | None |
@@ -712,33 +610,9 @@ _Tested with Playwright (headless Chromium) + axe-core._
 
 ### Colour Contrast
 
-- **[CRITICAL]** `/clients/` — [dark] Client list: Contrast violation (serious) on `.nav-active`
-  _Fix any of the following:
-  Element has insufficient color contrast of 2.73 (foreground color: #0d7377, background color: #1e2533, font size: 11.3pt (15px), font weight: normal). Expected contrast rat_
-
 - **[CRITICAL]** `/clients/` — [dark] Client list: Contrast violation (serious) on `.filter-bar > summary`
   _Fix any of the following:
   Element has insufficient color contrast of 4.2 (foreground color: #7b8495, background color: #12252c, font size: 9.8pt (13.125px), font weight: normal). Expected contrast r_
-
-- **[CRITICAL]** `/clients/1/` — [dark] Client detail: Contrast violation (serious) on `.nav-active`
-  _Fix any of the following:
-  Element has insufficient color contrast of 2.73 (foreground color: #0d7377, background color: #1e2533, font size: 11.3pt (15px), font weight: normal). Expected contrast rat_
-
-- **[CRITICAL]** `/clients/1/` — [dark] Client detail: Contrast violation (serious) on `.tab-active`
-  _Fix any of the following:
-  Element has insufficient color contrast of 3.19 (foreground color: #0d7377, background color: #13171f, font size: 9.8pt (13.125px), font weight: normal). Expected contrast _
-
-- **[CRITICAL]** `/notes/client/1/` — [dark] Notes timeline: Contrast violation (serious) on `.nav-active`
-  _Fix any of the following:
-  Element has insufficient color contrast of 2.73 (foreground color: #0d7377, background color: #1e2533, font size: 11.3pt (15px), font weight: normal). Expected contrast rat_
-
-- **[CRITICAL]** `/notes/client/1/` — [dark] Notes timeline: Contrast violation (serious) on `.tab-active`
-  _Fix any of the following:
-  Element has insufficient color contrast of 3.19 (foreground color: #0d7377, background color: #13171f, font size: 9.8pt (13.125px), font weight: normal). Expected contrast _
-
-- **[CRITICAL]** `/clients/3/` — [light] Client detail: Contrast violation (serious) on `.quick-info-section > .quick-info > .quick-info-item > dt`
-  _Fix any of the following:
-  Element has insufficient color contrast of 4.26 (foreground color: #64748b, background color: #ecf4f4, font size: 8.4pt (11.25px), font weight: normal). Expected contrast r_
 
 ### Focus Management
 
@@ -798,32 +672,10 @@ _Tested with Playwright (headless Chromium) + axe-core._
 
 ### Immediate (Critical)
 
-1. Fix: Expected 403, got 200 on `/plans/client/1/sections/create/`
-1. Fix: [dark] Client list: Contrast violation (serious) on `.nav-active` on `/clients/`
 1. Fix: [dark] Client list: Contrast violation (serious) on `.filter-bar > summary` on `/clients/`
-1. Fix: [dark] Client detail: Contrast violation (serious) on `.nav-active` on `/clients/1/`
-1. Fix: [dark] Client detail: Contrast violation (serious) on `.tab-active` on `/clients/1/`
-1. Fix: [dark] Notes timeline: Contrast violation (serious) on `.nav-active` on `/notes/client/1/`
-1. Fix: [dark] Notes timeline: Contrast violation (serious) on `.tab-active` on `/notes/client/1/`
-1. Fix: [light] Client detail: Contrast violation (serious) on `.quick-info-section > .quick-info > .quick-info-item > dt` on `/clients/3/`
 
 ### Short-term (Warnings)
 
-- Expected form errors but none found (no .errorlist elements) (`/programs/create/`)
-- Page has no <title> or title is empty (`/programs/3/roles/add/`)
-- No <main> landmark element found (`/programs/3/roles/add/`)
-- No <nav> element found on full page (`/programs/3/roles/add/`)
-- No <html> element found (`/programs/3/roles/add/`)
-- Expected form errors but none found (no .errorlist elements) (`/admin/users/new/`)
-- Expected redirect to contain '/admin/users/', got '/auth/users/' (`/admin/users/new/`)
-- Expected redirect to contain '/admin/users/', got '/auth/users/' (`/admin/users/7/edit/`)
-- Expected redirect to contain '/admin/users/', got '/auth/users/' (`/admin/users/new/`)
-- Page has no <title> or title is empty (`/programs/3/roles/add/`)
-- No <main> landmark element found (`/programs/3/roles/add/`)
-- No <nav> element found on full page (`/programs/3/roles/add/`)
-- No <html> element found (`/programs/3/roles/add/`)
-- "Add Section" button/link visible but should be hidden for Direct Service (`/plans/client/1/`)
-- "Add Target" button/link visible but should be hidden for Direct Service (`/plans/client/1/`)
 - Consent: Focus lost after opening consent edit form (`/clients/1/`)
 - Custom fields: Focus lost after switching to edit mode (`/clients/3/`)
 

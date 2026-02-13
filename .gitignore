@@ -9,6 +9,7 @@ build/
 # Django
 staticfiles/
 db.sqlite3
+audit.sqlite3
 
 # .mo files ARE committed — pre-compiled locally, no gettext in Docker.
 # DO NOT add *.mo here. See MEMORY.md "Translation Decision".

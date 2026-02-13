@@ -40,9 +40,9 @@
             </td>
             <td>{{ item.user.last_login_at|date:"Y-m-d H:i"|default_if_none:_("Never") }}</td>
             <td>
-                <a href="{% url 'auth_app:user_edit' user_id=item.user.pk %}">{% trans "Edit" %}</a>
+                <a href="{% url 'admin_users:user_edit' user_id=item.user.pk %}">{% trans "Edit" %}</a>
                 {% if item.user.is_active %}
-                <a href="{% url 'auth_app:impersonate_user' user_id=item.user.pk %}" style="margin-left: 0.5rem;" onclick="return confirm('{% blocktrans with name=item.user.display_name %}You will be logged out and signed in as {{ name }}. Continue?{% endblocktrans %}')">{% trans "Impersonate" %}</a>
+                <a href="{% url 'admin_users:impersonate_user' user_id=item.user.pk %}" style="margin-left: 0.5rem;" onclick="return confirm('{% blocktrans with name=item.user.display_name %}You will be logged out and signed in as {{ name }}. Continue?{% endblocktrans %}')">{% trans "Impersonate" %}</a>
                 {% endif %}
             </td>
         </tr>

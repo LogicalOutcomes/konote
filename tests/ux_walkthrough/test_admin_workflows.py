@@ -258,19 +258,22 @@ class AdminProgramWorkflow(UxScenarioBase):
             f"/programs/{pid}/edit/", resp.status_code, [],
         )
 
-        # Assign a staff member to the program
-        resp = self.visit_and_follow(
-            role, "Assign staff to program",
-            f"/programs/{pid}/roles/add/",
-            data={
-                "user": self.staff_user.pk,
-                "role": "staff",
-            },
-            expected_redirect=f"/programs/{pid}/",
+        # Assign a staff member to the program (HTMX partial response)
+        url = f"/programs/{pid}/roles/add/"
+        resp = self.client.post(
+            url,
+            data={"user": self.staff_user.pk, "role": "staff"},
+            HTTP_HX_REQUEST="true",
         )
+        issues = []
+        if resp.status_code == 200:
+            from .checker import UxChecker
+            checker = UxChecker(resp, url, role, "Assign staff to program", is_partial=True)
+            issues = checker.run_all_checks()
+        self.report.record_step(role, "Assign staff to program", url, resp.status_code, issues)
         self.record_scenario(
             self.SCENARIO, role, "Assign staff to program",
-            f"/programs/{pid}/roles/add/", resp.status_code, [],
+            url, resp.status_code, [],
         )
 
     def test_form_validation(self):
@@ -1242,18 +1245,21 @@ class AdminFullSetupScenario(UxScenarioBase):
         worker = User.objects.filter(username="settlementworker").first()
         self.assertIsNotNone(worker, "User not found")
 
-        resp = self.visit_and_follow(
-            role, "Assign worker to program",
+        resp = self.client.post(
             f"/programs/{program.pk}/roles/add/",
-            data={
-                "user": worker.pk,
-                "role": "staff",
-            },
-            expected_redirect=f"/programs/{program.pk}/",
+            data={"user": worker.pk, "role": "staff"},
+            HTTP_HX_REQUEST="true",
         )
+        url = f"/programs/{program.pk}/roles/add/"
+        issues = []
+        if resp.status_code == 200:
+            from .checker import UxChecker
+            checker = UxChecker(resp, url, role, "Assign worker to program", is_partial=True)
+            issues = checker.run_all_checks()
+        self.report.record_step(role, "Assign worker to program", url, resp.status_code, issues)
         self.record_scenario(
             self.SCENARIO, role, "7. Assign staff to program",
-            f"/programs/{program.pk}/roles/add/", resp.status_code, [],
+            url, resp.status_code, [],
         )
 
         # Step 8: Verify the program detail shows the user

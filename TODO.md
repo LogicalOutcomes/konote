@@ -21,6 +21,14 @@
 ### UX Walkthrough
 
 - [x] Re-run full UX walkthrough — 57/57 tests passing, 321 pages audited. Report at `tasks/ux-review-latest.md` (UX-RESTORE1) ✓
+- [ ] Re-run UX walkthrough to confirm last contrast fix landed — `.filter-bar > summary` dark mode (UX-CONTRAST1)
+- [ ] Fix focus management for HTMX edit forms — consent + custom fields still flagged after `hx-on::after-settle` fix (UX-FOCUS1)
+
+### Code Cleanup
+
+- [ ] Remove duplicate user management URLs from `auth_app/urls.py` — consolidate under `admin_urls.py` only (URL-DEDUP1)
+- [ ] Replace hardcoded path in `preflight.py` with project-relative path (DEV-PREFLIGHT1)
+- [ ] Refactor `/capture-page-states` skill — see `tasks/refactor-capture-page-states.md` (SKILL-CAPTURE1)
 
 ### Do Occasionally
 
@@ -134,6 +142,7 @@ pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
 - [x] Add funder profile cross-validation in FunderReportForm — ensures selected funder profile is linked to selected program — PR #64 (FUNDER-VAL1)
 - [x] Add Funder Profiles link to admin nav dropdown in base.html — PR #64 (NAV-FUNDER1)
 - [x] Full UX walkthrough restored — 57/57 tests passing (17 admin, 10 roles, 20 scenarios, 10 browser), 321 pages, 8 critical / 17 warnings / 39 info — PR #64 (UX-RESTORE1)
+- [x] All critical and warning UX walkthrough issues fixed (contrast, permissions, focus, test false-positives, form errors, redirects) — 2026-02-13 (UX-RESTORE2)
 - [x] Fix BUG-14 — `staff_a11y` preferred_language="en" in scenario runner — 2026-02-13 (QA-W27)
 - [x] Fix TEST-5/6/7/8/9 — scenario runner click fallback, mobile hamburger helper, YAML fixes for SCN-035, SCN-047, SCN-048 — 2026-02-13 (QA-W30–W33)
 - [x] Re-sync permissions hash — `note.create`/`note.edit` DENY→SCOPED for PM already in persona files, updated hash in `permissions-sync.yaml` — 2026-02-13

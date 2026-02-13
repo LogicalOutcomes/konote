@@ -17,7 +17,8 @@
       action="{% url 'clients:client_save_custom_fields' client_id=client.pk %}"
       hx-post="{% url 'clients:client_save_custom_fields' client_id=client.pk %}"
       hx-target="#custom-fields-section"
-      hx-swap="innerHTML">
+      hx-swap="innerHTML"
+      hx-on::after-settle="this.querySelector('select, input:not([type=hidden]), textarea')?.focus()">
     {% csrf_token %}
     {% for group in custom_data %}
     <fieldset aria-labelledby="edit-group-{{ group.group.pk }}">

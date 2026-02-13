@@ -109,8 +109,8 @@ body > nav {
 }
 body > nav a.nav-active {
     font-weight: 600;
-    color: var(--kn-primary);
-    border-bottom: 2px solid var(--kn-primary);
+    color: var(--kn-primary-active, var(--kn-primary));
+    border-bottom: 2px solid var(--kn-primary-active, var(--kn-primary));
     padding-bottom: 2px;
 }
 
@@ -184,9 +184,9 @@ body > nav a.nav-active {
 }
 .tab-bar li a.tab-active,
 .tab-bar li a[aria-current="page"] {
-    color: var(--kn-primary);
+    color: var(--kn-primary-active, var(--kn-primary));
     font-weight: 600;
-    border-bottom-color: var(--kn-primary);
+    border-bottom-color: var(--kn-primary-active, var(--kn-primary));
     cursor: default;
 }
 
@@ -754,6 +754,7 @@ details.filter-bar summary,
 details.search-filters-panel summary {
     font-size: 0.875rem;
     font-weight: 600;
+    color: var(--kn-text-secondary);
     cursor: pointer;
     margin-bottom: var(--kn-space-sm);
 }
@@ -1274,7 +1275,7 @@ label.checkbox-item input[type="checkbox"] {
 .quick-info-item dt {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--kn-text-muted);
+    color: var(--kn-text-secondary);
     font-variant: small-caps;
 }
 .quick-info-item dd {

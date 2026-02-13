@@ -1,7 +1,14 @@
 """Development settings — local use only."""
 import os
 
-# Provide safe dev-only defaults BEFORE importing base settings.
+from dotenv import load_dotenv
+
+# Load .env FIRST so its values take priority over the dev defaults below.
+# (python-dotenv won't overwrite vars already in the environment, so .env
+# values only apply when the shell hasn't already set them.)
+load_dotenv()
+
+# Provide safe dev-only defaults AFTER loading .env.
 # base.py requires these via require_env(); these defaults only apply
 # when the developer hasn't set them in .env or the shell.
 os.environ.setdefault("SECRET_KEY", "insecure-dev-key-do-not-use-in-production")

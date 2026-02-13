@@ -232,13 +232,25 @@ class UxChecker:
         """Check that form error messages are properly associated with fields.
 
         Call this explicitly after submitting an invalid form.
+        Looks for Django's .errorlist, Pico-styled .badge-danger, and
+        custom .error elements.
         """
         error_lists = self.soup.find_all(class_="errorlist")
-        if not error_lists:
+        # Also check for KoNote's custom error patterns
+        badge_errors = self.soup.find_all(class_="badge-danger")
+        custom_errors = self.soup.find_all(
+            lambda tag: tag.name == "small" and "error" in (tag.get("class") or [])
+        )
+        all_errors = error_lists + badge_errors + custom_errors
+        if not all_errors:
             self._add(
                 Severity.WARNING,
-                "Expected form errors but none found (no .errorlist elements)",
+                "Expected form errors but none found (no .errorlist, .badge-danger, or .error elements)",
             )
+            return
+        # If we found errors via non-standard patterns, skip the aria check
+        # (it only applies to .errorlist elements)
+        if not error_lists:
             return
         # Check for aria-describedby association — check the error element
         # itself and its parent wrapper (templates often wrap Django's

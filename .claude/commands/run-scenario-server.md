@@ -1,169 +1,52 @@
 # Run Scenario Server: QA Scenario Evaluation Runner
 
-## Purpose
+Runs the QA scenario test suite against a live dev server using Playwright. Captures screenshots, page structure, and accessibility data for evaluation by the konote-qa-scenarios repo.
 
-This command runs the QA scenario evaluation suite against a live test server using Playwright. It captures screenshots, page structure, and accessibility data at each step for evaluation by the konote-qa-scenarios repo.
-
-**This is TEST INFRASTRUCTURE**, not application code. It runs pytest-based scenario tests that simulate real user journeys.
+**This is TEST INFRASTRUCTURE**, not application code.
 
 ---
 
-## Prerequisites
+## Steps
 
-1. **Test server running:** The Django dev server must be running with test data loaded. Run `python manage.py runserver` before invoking this command.
+### Step 1: Run preflight check
 
-2. **Test data seeded:** All test users (from personas), test clients, and test content must exist. Run `python manage.py seed_demo_data` if not already seeded.
+Run `python manage.py preflight`. If it fails, show the output to the user and STOP. Do not proceed until all critical checks pass.
 
-3. **Browser automation:** Playwright must be installed (`playwright install chromium`).
+If preflight reports missing test data (warning), run `python manage.py seed` then `python manage.py seed_demo_data` before continuing.
 
-4. **Holdout repo:** The `konote-qa-scenarios` repo must be cloned at `../konote-qa-scenarios` or specified via `SCENARIO_HOLDOUT_DIR` environment variable.
+If preflight reports pending migrations (warning), run `python manage.py migrate` before continuing.
 
----
+### Step 2: Start the dev server if not running
 
-## What This Command Does
+Check if `http://127.0.0.1:8000/` responds with HTTP 200.
 
-1. Sets the `SCENARIO_HOLDOUT_DIR` environment variable to point to the qa-scenarios repo
-2. Runs `pytest tests/scenario_eval/ -v --no-llm` to capture screenshots without LLM evaluation
-3. Outputs screenshots to `konote-qa-scenarios/reports/screenshots/`
-4. Outputs satisfaction report to `konote-qa-scenarios/reports/YYYY-MM-DD-satisfaction-report.md`
+If NOT responding:
+1. Start `python manage.py runserver` in the background (use `run_in_background: true`)
+2. Poll `http://127.0.0.1:8000/` every 2 seconds, up to 30 seconds
+3. Verify the response is HTTP 200 (not a 500 error page)
+4. If it doesn't come up, read the server's error output and show it to the user. STOP.
 
----
+### Step 3: Run the scenario tests
 
-## Execution Steps
+Set `SCENARIO_HOLDOUT_DIR` to the path confirmed by preflight, then run:
 
-### Step 1: Verify Environment
-
-Check that the holdout directory exists:
-
-```bash
-# Check if SCENARIO_HOLDOUT_DIR is set, otherwise use default
-if [ -z "$SCENARIO_HOLDOUT_DIR" ]; then
-    export SCENARIO_HOLDOUT_DIR="C:/Users/gilli/OneDrive/Documents/GitHub/konote-qa-scenarios"
-fi
-
-# Verify it exists
-if [ ! -d "$SCENARIO_HOLDOUT_DIR" ]; then
-    echo "ERROR: SCENARIO_HOLDOUT_DIR not found: $SCENARIO_HOLDOUT_DIR"
-    echo "Please clone konote-qa-scenarios repo or set SCENARIO_HOLDOUT_DIR"
-    exit 1
-fi
 ```
-
-### Step 2: Run Scenario Tests
-
-> **⚠️ This is a long-running command (101+ tests, ~2–5 minutes).** When you run it, the terminal will report "Command is still running" — this is normal. **Wait for the terminal to return the final output. Do NOT run echo or polling commands to check status.** The results will appear automatically when pytest finishes.
-
-Run the pytest scenario evaluation suite:
-
-```bash
-# Windows CMD
-set SCENARIO_HOLDOUT_DIR=C:/Users/gilli/OneDrive/Documents/GitHub/konote-qa-scenarios
 pytest tests/scenario_eval/ -v --no-llm
 ```
 
-Or for PowerShell:
+**This takes 2–5 minutes.** Wait for it to finish. Do NOT poll or run other commands while it runs.
 
-```powershell
-$env:SCENARIO_HOLDOUT_DIR = "C:/Users/gilli/OneDrive/Documents/GitHub/konote-qa-scenarios"
-pytest tests/scenario_eval/ -v --no-llm
-```
+### Step 4: Report results
 
-### Step 3: Report Results
-
-After tests complete, report:
-
-- Number of scenarios run
-- Number of screenshots captured
-- Location of satisfaction report
+After tests complete, report to the user:
+- Number of tests run and pass/fail counts
+- Location of screenshots: `konote-qa-scenarios/reports/screenshots/`
+- Location of satisfaction report: `konote-qa-scenarios/reports/YYYY-MM-DD-satisfaction-report.md`
 - Any failures or errors
 
----
+### Next steps
 
-## Running Specific Scenarios
-
-To run only specific scenarios, use pytest's `-k` flag:
-
-```bash
-# Only calibration scenarios
-pytest tests/scenario_eval/ -v --no-llm -k "calibration"
-
-# Only a specific scenario
-pytest tests/scenario_eval/ -v --no-llm -k "SCN_010"
-
-# Only smoke tests
-pytest tests/scenario_eval/ -v --no-llm -k "smoke"
-```
-
----
-
-## Optional: Automated LLM Scoring
-
-If you have an Anthropic API key (separate from Claude subscription), you can run with automated scoring:
-
-```bash
-set ANTHROPIC_API_KEY=sk-ant-...
-set SCENARIO_HOLDOUT_DIR=C:/Users/gilli/OneDrive/Documents/GitHub/konote-qa-scenarios
-pytest tests/scenario_eval/ -v
-```
-
-This calls Claude Haiku for each step (~$0.10 per full run) and generates a scored report automatically.
-
----
-
-## Output Locations
-
-All outputs go to the qa-scenarios repo:
-
-| Output | Location |
-|--------|----------|
-| Screenshots | `konote-qa-scenarios/reports/screenshots/` |
-| Satisfaction Report | `konote-qa-scenarios/reports/YYYY-MM-DD-satisfaction-report.md` |
-| Console Logs | `konote-qa-scenarios/reports/screenshots/*_console.log` |
-
----
-
-## Troubleshooting
-
-### "SCENARIO_HOLDOUT_DIR not set"
-
-Set the environment variable to point to your konote-qa-scenarios repo:
-
-```bash
-set SCENARIO_HOLDOUT_DIR=C:/Users/gilli/OneDrive/Documents/GitHub/konote-qa-scenarios
-```
-
-### "Browser not found"
-
-Install Playwright browsers:
-
-```bash
-playwright install chromium
-```
-
-### "Test data missing"
-
-Seed the demo data:
-
-```bash
-python manage.py seed_demo_data
-```
-
-### "Server not running"
-
-Start the Django dev server in a separate terminal:
-
-```bash
-python manage.py runserver
-```
-
----
-
-## Next Steps
-
-After running this command:
-
+Tell the user:
 1. Switch to the `konote-qa-scenarios` repo
 2. Run `/run-scenarios` to evaluate the captured screenshots
-3. Review the satisfaction report and improvement tickets
-
-See `tasks/recurring-tasks.md` for the full QA workflow.
+3. See `tasks/qa-scenario-reference.md` for advanced options (specific scenarios, LLM scoring)

@@ -9,7 +9,7 @@
     <p>{% trans "Manage user accounts and roles." %}</p>
 </hgroup>
 
-<p><a href="{% url 'auth_app:user_create' %}" role="button">{% trans "New User" %}</a></p>
+<p><a href="{% url 'admin_users:user_create' %}" role="button">{% trans "New User" %}</a></p>
 
 {% if user_data %}
 <figure>
@@ -50,10 +50,10 @@
             </td>
             <td>{{ item.user.last_login_at|default:_("Never") }}</td>
             <td>
-                <a href="{% url 'auth_app:user_edit' user_id=item.user.pk %}">{% trans "Edit" %}</a>
+                <a href="{% url 'admin_users:user_edit' user_id=item.user.pk %}">{% trans "Edit" %}</a>
                 <a href="{% url 'auth_app:user_roles' user_id=item.user.pk %}">{% trans "Roles" %}</a>
                 {% if item.user.is_active and item.user != request.user %}
-                <form method="post" action="{% url 'auth_app:user_deactivate' user_id=item.user.pk %}" style="display:inline">
+                <form method="post" action="{% url 'admin_users:user_deactivate' user_id=item.user.pk %}" style="display:inline">
                     {% csrf_token %}
                     <button type="submit" class="outline secondary"
                             style="padding: 0.25rem 0.5rem; margin: 0;"

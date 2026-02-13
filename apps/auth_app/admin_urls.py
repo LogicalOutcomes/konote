@@ -2,8 +2,8 @@ from django.urls import path
 
 from . import admin_views
 
-# These are included under /admin/settings/users/ in KoNote/urls.py
-# but use auth_app namespace via the main urls.py app_name
+app_name = "admin_users"
+
 urlpatterns = [
     path("", admin_views.user_list, name="user_list"),
     path("new/", admin_views.user_create, name="user_create"),
