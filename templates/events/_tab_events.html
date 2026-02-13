@@ -57,6 +57,9 @@
 {% endif %}
 {% endfor %}
 
+<!-- Quick-log communication buttons -->
+{% include "communications/_quick_log_buttons.html" %}
+
 <!-- Combined Timeline -->
 {% if timeline %}
 <h2>{% trans "Timeline" %}</h2>
@@ -109,6 +112,9 @@
         {% else %}
             <p>{{ entry.obj.notes_text|truncatechars:200 }}</p>
         {% endif %}
+
+        {% elif entry.type == "communication" %}
+        {% include "communications/_communication_card.html" with comm=entry.obj %}
         {% endif %}
     </div>
     {% endfor %}

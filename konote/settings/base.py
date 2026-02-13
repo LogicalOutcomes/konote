@@ -3,6 +3,7 @@ Base Django settings for KoNote Web.
 Shared across all environments.
 """
 import os
+import re
 import tempfile
 from pathlib import Path
 
@@ -277,6 +278,18 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() == "true"
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "KoNote <noreply@konote.app>")
+
+# SMS via Twilio
+TWILIO_ACCOUNT_SID = os.environ.get("TWILIO_ACCOUNT_SID", "")
+TWILIO_AUTH_TOKEN = os.environ.get("TWILIO_AUTH_TOKEN", "")
+TWILIO_FROM_NUMBER = os.environ.get("TWILIO_FROM_NUMBER", "")
+SMS_ENABLED = bool(TWILIO_ACCOUNT_SID)
+SMS_SENDER_NAME = os.environ.get("SMS_SENDER_NAME", "")  # Alphanumeric sender ID
+
+# Mask sensitive settings from Django error pages
+SENSITIVE_VARIABLES_RE = re.compile(
+    r"TWILIO|SECRET|TOKEN|PASSWORD|KEY", re.IGNORECASE
+)
 
 # Azure AD / Entra ID settings
 AZURE_CLIENT_ID = os.environ.get("AZURE_CLIENT_ID", "")

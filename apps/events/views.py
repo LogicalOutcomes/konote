@@ -130,7 +130,16 @@ def event_list(request, client_id):
 
     # Build combined timeline entries
     from apps.notes.models import ProgressNote
+    from apps.communications.models import Communication
+
     notes = ProgressNote.objects.filter(client_file=client).filter(program_q).select_related("author", "author_program")
+
+    # Communications — filter by user's accessible programs (same as events/notes)
+    communications = (
+        Communication.objects.filter(client_file=client)
+        .filter(program_q)
+        .select_related("logged_by", "author_program")
+    )
 
     timeline = []
     for event in events:
@@ -145,14 +154,24 @@ def event_list(request, client_id):
             "date": note.effective_date,
             "obj": note,
         })
+    for comm in communications:
+        timeline.append({
+            "type": "communication",
+            "date": comm.created_at,
+            "obj": comm,
+        })
     # Sort newest first
     timeline.sort(key=lambda x: x["date"], reverse=True)
+
+    # Recent communications for the quick-log section
+    recent_communications = communications.order_by("-created_at")[:5]
 
     context = {
         "client": client,
         "events": events,
         "alerts": alerts,
         "timeline": timeline,
+        "recent_communications": recent_communications,
         "active_tab": "events",
         "show_program_ui": program_ctx["show_program_ui"],
     }

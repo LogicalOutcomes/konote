@@ -1,0 +1,45 @@
+{% load i18n %}
+{% load permissions_tags %}
+{# Quick-action buttons for logging communications — appears on client Events tab #}
+{% has_permission "communication.log" as can_log_comm %}
+{% if can_log_comm %}
+<div id="quick-log-container" class="quick-log-section">
+    <h3>{% trans "Log Communication" %}</h3>
+    <div class="quick-log-buttons" role="group" aria-label="{% trans 'Quick log communication' %}">
+        <button class="outline"
+                hx-get="{% url 'communications:quick_log' client_id=client.pk %}?channel=phone"
+                hx-target="#quick-log-container"
+                hx-swap="innerHTML">
+            {% trans "Log a Call" %}
+        </button>
+        <button class="outline"
+                hx-get="{% url 'communications:quick_log' client_id=client.pk %}?channel=sms"
+                hx-target="#quick-log-container"
+                hx-swap="innerHTML">
+            {% trans "Log a Text" %}
+        </button>
+        <button class="outline"
+                hx-get="{% url 'communications:quick_log' client_id=client.pk %}?channel=email"
+                hx-target="#quick-log-container"
+                hx-swap="innerHTML">
+            {% trans "Log an Email" %}
+        </button>
+        <button class="outline"
+                hx-get="{% url 'communications:quick_log' client_id=client.pk %}?channel=in_person"
+                hx-target="#quick-log-container"
+                hx-swap="innerHTML">
+            {% trans "Log a Visit" %}
+        </button>
+    </div>
+    <p><a href="{% url 'communications:communication_log' client_id=client.pk %}" class="secondary" style="font-size: 0.875rem;">{% trans "Full communication log form" %}</a></p>
+
+    {% if recent_communications %}
+    <details style="margin-top: 0.5rem;">
+        <summary><small class="secondary">{% trans "Recent" %} ({{ recent_communications|length }})</small></summary>
+        {% for comm in recent_communications %}
+        {% include "communications/_communication_card.html" with comm=comm compact=True %}
+        {% endfor %}
+    </details>
+    {% endif %}
+</div>
+{% endif %}

@@ -1,0 +1,44 @@
+{% load i18n %}
+{# Timeline/list display for a single communication entry #}
+<div class="timeline-comm{% if compact %} compact{% endif %}">
+    <div>
+        {% if comm.channel == "phone" %}
+            <span class="badge badge-info">{% trans "Phone Call" %}</span>
+        {% elif comm.channel == "sms" %}
+            <span class="badge badge-info">{% trans "Text" %}</span>
+        {% elif comm.channel == "email" %}
+            <span class="badge badge-info">{% trans "Email" %}</span>
+        {% elif comm.channel == "in_person" %}
+            <span class="badge badge-info">{% trans "In Person" %}</span>
+        {% elif comm.channel == "whatsapp" %}
+            <span class="badge badge-info">{% trans "WhatsApp" %}</span>
+        {% elif comm.channel == "portal" %}
+            <span class="badge badge-info">{% trans "Portal" %}</span>
+        {% endif %}
+
+        {% if comm.direction == "inbound" %}
+            <span class="badge badge-neutral">{% trans "Inbound" %}</span>
+        {% endif %}
+
+        {% if comm.method == "system_sent" %}
+            <span class="badge badge-neutral">{% trans "Auto" %}</span>
+        {% endif %}
+
+        <strong>{{ comm.created_at|date:"Y-m-d H:i" }}</strong>
+
+        {% if comm.logged_by %}
+            — {{ comm.logged_by.display_name|default:comm.logged_by }}
+        {% endif %}
+
+        {% if show_program_ui and comm.author_program %}
+            <span class="badge" style="background-color: {{ comm.author_program.colour_hex }}; color: #fff;">{{ comm.author_program.translated_name }}</span>
+        {% endif %}
+    </div>
+
+    {% if comm.subject %}<p><strong>{{ comm.subject }}</strong></p>{% endif %}
+    {% if comm.content %}<p>{{ comm.content|truncatechars:200 }}</p>{% endif %}
+
+    {% if comm.delivery_status == "failed" and comm.delivery_status_display %}
+    <p><small class="badge badge-danger">{{ comm.delivery_status_display }}</small></p>
+    {% endif %}
+</div>
