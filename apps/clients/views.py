@@ -365,7 +365,7 @@ def client_edit(request, client_id):
 def client_contact_edit(request, client_id):
     """Edit client phone number only — narrow scope for front desk.
 
-    Receptionists can update phone (client.edit_contact: ALLOW).
+    Front desk can update phone (client.edit_contact: ALLOW).
     Does NOT include address or emergency contact (DV safety implications).
     Replace with PER_FIELD form in Phase 2.
     """

@@ -4,7 +4,7 @@ Source: Two expert panel sessions (2026-02-13) assessed UX from each role's pers
 
 ## Summary
 
-Six actionable improvements to messaging/calendar UX, grouped into two parallel batches. One recommendation (receptionist message-taking) deferred to a separate feature.
+Six actionable improvements to messaging/calendar UX, grouped into two parallel batches. One recommendation (front desk message-taking) deferred to a separate feature.
 
 ---
 
@@ -50,7 +50,7 @@ Six actionable improvements to messaging/calendar UX, grouped into two parallel 
 
 5. **Mobile nav** — The `#nav-menu` mobile menu is a flex column with absolute positioning. Adding one item won't break it. No CSS changes needed — verified the menu already scrolls on mobile with `display: flex; flex-direction: column`.
 
-**Test:** Log in as Staff, verify "Meetings" appears in nav between Participants and Programs. Log in as Receptionist/Executive, verify it does NOT appear. Test `g m` shortcut. Test mobile hamburger menu.
+**Test:** Log in as Staff, verify "Meetings" appears in nav between Participants and Programs. Log in as Front Desk/Executive, verify it does NOT appear. Test `g m` shortcut. Test mobile hamburger menu.
 
 ---
 
@@ -417,11 +417,11 @@ Six actionable improvements to messaging/calendar UX, grouped into two parallel 
 
 ## Deferred — Tier 3 (Separate Feature Branch)
 
-### Receptionist Message-Taking
+### Front Desk Message-Taking
 
 **Why deferred:** The first panel underestimated the scope. Three blockers:
 1. No `primary_worker` field on ClientFile — can't route messages to the right person
-2. The existing quick-log form sits inside `_tab_events.html`, which shows the clinical timeline — PIPEDA violation if receptionists see it
+2. The existing quick-log form sits inside `_tab_events.html`, which shows the clinical timeline — PIPEDA violation if front desk see it
 3. Without notification/flagging, logged messages get lost in timelines (digital sticky note)
 
 **When to build:** After `primary_worker` field is added to ClientFile (prerequisite for several other features). Needs its own route, template, permission key, and notification model.

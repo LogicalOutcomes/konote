@@ -241,7 +241,7 @@ class ClientFile(models.Model):
         """Return dict of field visibility for a given role.
 
         Core model fields are categorised as either "safety" (visible to all
-        roles including receptionist) or "clinical" (hidden from receptionist).
+        roles including front desk) or "clinical" (hidden from front desk).
 
         Custom fields (EAV) are NOT covered here — they use the per-field
         front_desk_access setting on CustomFieldDefinition instead.
@@ -251,7 +251,7 @@ class ClientFile(models.Model):
         """
         from apps.auth_app.permissions import can_access, ALLOW, SCOPED, GATED
 
-        # Safety fields — visible to all roles including receptionist.
+        # Safety fields — visible to all roles including front desk.
         # These are needed for check-in, emergency contact, and safety purposes.
         safety_fields = {
             'first_name', 'last_name', 'preferred_name', 'display_name',

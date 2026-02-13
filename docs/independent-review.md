@@ -16,7 +16,7 @@ These are the specific security and privacy claims KoNote makes. Each one is ver
 
 **3. Audit logging** — Every data access, export, and administrative action is logged to a separate audit database. When configured as recommended, these logs are append-only and cannot be modified or deleted through the application, creating a reliable record for compliance reviews.
 
-**4. Role-based access control** — Four roles (receptionist, staff, program manager, admin) control what each person can see and do. These permissions are enforced on the server, not just in the user interface, so they cannot be bypassed by manipulating the browser.
+**4. Role-based access control** — Four roles (front desk, staff, program manager, admin) control what each person can see and do. These permissions are enforced on the server, not just in the user interface, so they cannot be bypassed by manipulating the browser.
 
 **5. Export controls** — Elevated exports (such as bulk data downloads) have built-in time delays and generate audit entries, giving administrators visibility into data movement. Secure download links expire automatically.
 

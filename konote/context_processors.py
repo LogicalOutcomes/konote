@@ -87,7 +87,7 @@ def user_roles(request):
     - has_program_roles: whether the user has any active program assignments
     - is_admin_only: admin with no program roles (cannot see client data)
     - is_executive_only: executive role with no other roles (dashboard only)
-    - is_receptionist_only: all program roles are receptionist (no group/clinical access)
+    - is_receptionist_only: all program roles are front desk (no group/clinical access)
     - user_permissions: dict of permission keys (dots → underscores) to resolved levels
       e.g. user_permissions.note_view, user_permissions.client_edit
     """
@@ -116,7 +116,7 @@ def user_roles(request):
         or "executive" in roles
     )
 
-    # Receptionist-only: user has program roles but all of them are receptionist
+    # Front desk only: user has program roles but all of them are front desk
     is_receptionist_only = has_roles and roles == {"receptionist"}
 
     # Build user_permissions dict using the user's highest role.

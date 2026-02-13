@@ -37,7 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         is_admin = True → system configuration (programs, users, settings) — no client data
         UserProgramRole with role='program_manager' → Program Manager: all data in assigned programs
         UserProgramRole with role='staff' → Direct Service: full client records in assigned programs
-        UserProgramRole with role='receptionist' → Front Desk: limited client info in assigned programs
+        UserProgramRole with role='receptionist' (displayed as "Front Desk"): limited client info in assigned programs
     """
 
     # Identity

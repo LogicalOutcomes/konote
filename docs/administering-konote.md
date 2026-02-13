@@ -358,7 +358,7 @@ Invite links are the easiest way to onboard staff. The new person chooses their 
 1. Click **gear icon** → **User Management**
 2. Click **Invite User**
 3. Choose:
-   - **Role** — receptionist, staff, program manager, executive, or admin
+   - **Role** — front desk, staff, program manager, executive, or admin
    - **Programs** — which programs they'll have access to
    - **Link expiry** — how many days the invite is valid (default: 7)
 4. Click **Create Invite**

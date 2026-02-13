@@ -51,7 +51,7 @@ PERMISSIONS = {
         "group.view_report": DENY,
 
         "note.view": DENY,  # Enforced by @requires_permission
-        "note.create": DENY,  # Confirmed correct: receptionists don't write clinical notes
+        "note.create": DENY,  # Confirmed correct: front desk don't write clinical notes
         "note.edit": DENY,
 
         "plan.view": DENY,  # Enforced by @requires_permission
@@ -69,17 +69,17 @@ PERMISSIONS = {
         "event.view": DENY,
         "event.create": DENY,
 
-        "meeting.view": DENY,    # Receptionists don't manage meetings
+        "meeting.view": DENY,    # Front desk don't manage meetings
         "meeting.create": DENY,
         "meeting.edit": DENY,
 
-        "communication.view": DENY,  # Receptionists don't see communication logs
+        "communication.view": DENY,  # Front desk don't see communication logs
         "communication.log": DENY,
 
         "alert.view": DENY,
         "alert.create": DENY,
         "alert.cancel": DENY,
-        "alert.recommend_cancel": DENY,  # Receptionists have no alert access
+        "alert.recommend_cancel": DENY,  # Front desk have no alert access
         "alert.review_cancel_recommendation": DENY,
 
         "custom_field.view": PER_FIELD,  # Uses field.front_desk_access setting
@@ -272,7 +272,7 @@ PERMISSIONS = {
 
         # System administration — SCOPED for program managers (own program only)
         "user.manage": SCOPED,  # Own program team. CANNOT elevate roles
-                                # (receptionist->staff) or create PM/executive accounts.
+                                # (front desk->staff) or create PM/executive accounts.
                                 # Requires custom enforcement — see no-elevation constraint.
                                 # Enforced by @requires_permission + custom view logic
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)

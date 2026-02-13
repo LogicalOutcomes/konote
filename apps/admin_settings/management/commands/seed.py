@@ -282,7 +282,7 @@ class Command(BaseCommand):
         executive = User.objects.get(username="demo-executive")
 
         # --- Program Roles ---
-        # Front Desk: receptionist on all 5 programs
+        # Front Desk: front desk role on all 5 programs
         for prog in all_programs:
             UserProgramRole.objects.get_or_create(
                 user=front_desk, program=prog,

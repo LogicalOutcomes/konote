@@ -38,7 +38,7 @@ class ConsentRecordForm(forms.Form):
 class ClientContactForm(forms.Form):
     """Narrow form for editing client phone number only.
 
-    Used by receptionists (client.edit_contact: ALLOW) and staff (SCOPED).
+    Used by front desk (client.edit_contact: ALLOW) and staff (SCOPED).
     Does NOT include address or emergency contact — safety implications for DV.
     Replace with PER_FIELD form in Phase 2.
     """
