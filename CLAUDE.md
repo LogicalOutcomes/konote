@@ -25,6 +25,18 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 - Audit logs go to separate database: `AuditLog.objects.using("audit")`
 - Canadian spelling: colour, centre, behaviour, organisation, **program** (never "programme" in English — "programme" is British/French only). French translations correctly use "programme".
 
+## Git Workflow
+
+**Branch before working.** `main` has branch protection — never commit directly to it.
+
+1. **At the start of every task**, check the current branch with `git branch --show-current`
+2. If on `main`, create a feature branch before making any changes: `git checkout -b fix/short-description` or `git checkout -b feat/short-description`
+3. Branch naming: `fix/` for bug fixes, `feat/` for new features, `chore/` for cleanup/config
+4. Commit frequently on the feature branch
+5. When work is done, push and create a PR to merge into `main`
+
+**Never commit to `main` directly.** If you accidentally do, stop and move the commit to a new branch before continuing.
+
 ## Terminal Command Rules
 
 - **Long-running commands** (pytest with Playwright, Django server, migrations): these can take 1–5 minutes. If the terminal reports "Command is still running", **wait for the final output**. Do NOT run `echo`, `type`, or other polling commands to check status — this causes an infinite loop. The terminal will return output automatically when the command finishes.
