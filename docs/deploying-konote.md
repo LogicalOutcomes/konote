@@ -268,6 +268,45 @@ For a complete list of all configuration options (exports, email, demo mode, AI 
 
 Email is needed for export notifications and the erasure approval workflow. Configure SMTP variables in `.env` — see `.env.example` for variable names and defaults. If not configured, exports and erasure still work but admin notifications fail silently.
 
+### Messaging Configuration (Optional)
+
+KoNote can send SMS and email reminders to clients. This is **optional** — the system works fully without it (staff can still log communications manually).
+
+#### SMS (Twilio)
+
+To enable SMS reminders, create a [Twilio](https://www.twilio.com/) account and add these variables:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `TWILIO_ACCOUNT_SID` | Your Twilio account SID | `ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx` |
+| `TWILIO_AUTH_TOKEN` | Your Twilio auth token | (keep secret) |
+| `TWILIO_FROM_NUMBER` | Your Twilio phone number | `+16135551234` |
+
+**Cost:** Twilio charges ~$0.0079 USD per SMS in Canada. For 100 reminders/month, expect ~$1 CAD/month plus the $1.50 USD/month phone number fee.
+
+#### Email (SMTP)
+
+To enable email reminders, configure SMTP. Works with any provider (Google Workspace, Microsoft 365, Resend.com, Amazon SES).
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `EMAIL_HOST` | SMTP server | `smtp.resend.com` |
+| `EMAIL_PORT` | SMTP port | `587` |
+| `EMAIL_HOST_USER` | SMTP username | `resend` |
+| `EMAIL_HOST_PASSWORD` | SMTP password or API key | (keep secret) |
+| `DEFAULT_FROM_EMAIL` | Sender address | `noreply@youragency.ca` |
+
+**Recommended providers for Canadian nonprofits:**
+- **Resend.com** — Simple API, generous free tier (100 emails/day), no domain verification hassle
+- **Google Workspace** — If you already use Gmail (use app-specific password)
+- **Microsoft 365** — If you already use Outlook (use app password or OAuth)
+
+See `.env.example` for the full list of messaging variables and defaults.
+
+#### Demo Email Testing
+
+Set `DEMO_EMAIL_BASE` in your environment to route all demo user emails to tagged addresses (e.g., `DEMO_EMAIL_BASE=you@gmail.com` sends demo emails to `you+demo-admin@gmail.com`). Useful for testing email delivery without real client addresses.
+
 ---
 
 ## Prerequisites
@@ -816,6 +855,13 @@ Complete this checklist before entering any real client information.
 
 - [ ] SMTP settings configured (see `.env.example` for variables)
 - [ ] Test email works: `python manage.py sendtestemail admin@example.com`
+
+### 2.6. Messaging Configured (Optional)
+
+- [ ] If using SMS: Twilio credentials set (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`)
+- [ ] If using email reminders: SMTP configured and tested
+- [ ] Messaging profile set in Admin → Instance Settings (default: "Record keeping" — no messages sent)
+- [ ] Safety-First mode is ON until you've verified messaging works correctly
 
 ### 3. User Accounts Set Up
 

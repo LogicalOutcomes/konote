@@ -701,6 +701,26 @@ MIDDLEWARE = [
 /reports/client/<id>/pdf/       GET         Client progress PDF
 ```
 
+### Communications
+
+```
+/communications/client/<id>/quick-log/                  GET, POST   Quick-log communication
+/communications/client/<id>/log/                        GET, POST   Full communication form
+/communications/client/<id>/meeting/<event_id>/send-reminder/  GET, POST   Send meeting reminder
+/communications/unsubscribe/<token>/                    GET, POST   Unsubscribe (public)
+```
+
+### Meetings & Calendar
+
+```
+/events/meetings/                                       GET         Staff meeting dashboard
+/events/client/<id>/meetings/create/                    GET, POST   Schedule meeting
+/events/client/<id>/meetings/<event_id>/                GET, POST   Edit meeting
+/events/meetings/<event_id>/status/                     POST        Update status (HTMX)
+/events/calendar/settings/                              GET, POST   Calendar feed settings
+/calendar/<token>/feed.ics                              GET         iCal feed (public, token auth)
+```
+
 ### HTMX Endpoints
 
 ```
@@ -1638,22 +1658,22 @@ class InstanceSetting(models.Model):
 
 ### Scheduling & Calendar
 
-**Design Decision:** Out of scope. KoNote is an outcome tracking system, not a scheduling system.
+**Design Decision:** Basic meeting scheduling and iCal calendar feeds are now built in. Complex scheduling features (recurring events, conflicts, timezone handling, external booking) remain out of scope.
 
-**Rationale:**
-- Calendar features (recurring events, conflicts, reminders, timezone handling) represent a separate product category
-- Competitors with calendars (Apricot, ETO, Penelope) have dedicated teams for this feature alone
-- Adding scheduling would dilute focus and increase maintenance burden significantly
+**Built-In Features:**
+- One-off client meeting scheduling (linked to Events via `Meeting` model)
+- Meeting status tracking (scheduled → confirmed → completed / cancelled / no-show)
+- SMS and email meeting reminders (via `communications` app)
+- Personal iCal calendar feed with token-based authentication (`CalendarFeedToken`)
+- Staff meeting dashboard with filtering and HTMX status updates
 
-**Recommended Integrations:**
+**Recommended for Advanced Needs:**
 
 | Need | Recommended Tool | Integration |
 |------|------------------|-------------|
-| Client appointments | Calendly (free tier), Acuity, Microsoft Bookings | Link in notes |
+| Recurring appointments | Calendly (free tier), Acuity, Microsoft Bookings | Link in notes |
 | Group sessions | Google Calendar, Outlook | Link in events |
 | Program scheduling | When2Meet, Doodle | External |
-
-**Documentation:** Create a "Recommended Tools" page listing scheduling options that complement KoNote.
 
 ---
 
@@ -1717,5 +1737,5 @@ When considering a new feature or extension:
 
 ---
 
-**Version 1.3** — KoNote Web Technical Documentation
-Last updated: 2026-02-05
+**Version 1.4** — KoNote Web Technical Documentation
+Last updated: 2026-02-13
