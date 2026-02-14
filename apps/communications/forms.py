@@ -19,6 +19,18 @@ class QuickLogForm(forms.Form):
             "placeholder": _("e.g. Confirmed for tomorrow"),
         }),
     )
+    outcome = forms.ChoiceField(
+        required=False,
+        label=_("Outcome"),
+        choices=[
+            ("", _("\u2014 Select \u2014")),
+            ("reached", _("Reached")),
+            ("voicemail", _("Voicemail")),
+            ("no_answer", _("No Answer")),
+            ("left_message", _("Left Message")),
+            ("wrong_number", _("Wrong Number")),
+        ],
+    )
 
     def clean_channel(self):
         channel = self.cleaned_data["channel"]
@@ -75,4 +87,16 @@ class CommunicationLogForm(forms.Form):
             "rows": 4,
             "placeholder": _("Details of the communication..."),
         }),
+    )
+    outcome = forms.ChoiceField(
+        required=False,
+        label=_("Outcome"),
+        choices=[
+            ("", _("\u2014 Select \u2014")),
+            ("reached", _("Reached")),
+            ("voicemail", _("Voicemail")),
+            ("no_answer", _("No Answer")),
+            ("left_message", _("Left Message")),
+            ("wrong_number", _("Wrong Number")),
+        ],
     )

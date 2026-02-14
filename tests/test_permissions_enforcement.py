@@ -35,7 +35,7 @@ from apps.auth_app.permissions import (
     can_access,
 )
 from apps.clients.models import ClientFile, ClientProgramEnrolment
-from apps.events.models import Alert
+from apps.events.models import Alert, Event, Meeting
 from apps.groups.models import Group
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
@@ -98,7 +98,7 @@ PERMISSION_URL_MAP = {
     # Meeting keys
     "meeting.view": {"skip": "implicit_own_meetings"},
     "meeting.create": {"url": "/events/client/{client_id}/meetings/create/"},
-    "meeting.edit": {"skip": "uses_event_create_decorator"},
+    "meeting.edit": {"url": "/events/client/{client_id}/meetings/{event_id}/"},
 
     # Communication keys
     "communication.log": {"url": "/communications/client/{client_id}/quick-log/"},
@@ -199,6 +199,16 @@ class PermissionEnforcementTest(TestCase):
             notes_text="Test progress note.",
         )
 
+        # Meeting on the client (authored by staff)
+        from django.utils import timezone
+        self.event = Event.objects.create(
+            client_file=self.client_file,
+            title="Test Meeting",
+            start_timestamp=timezone.now(),
+            author_program=self.program,
+        )
+        Meeting.objects.create(event=self.event)
+
     def tearDown(self):
         enc_module._fernet = None
 
@@ -210,6 +220,7 @@ class PermissionEnforcementTest(TestCase):
             .replace("{group_id}", str(self.group.pk))
             .replace("{alert_id}", str(self.alert.pk))
             .replace("{note_id}", str(self.note.pk))
+            .replace("{event_id}", str(self.event.pk))
         )
 
     # ------------------------------------------------------------------

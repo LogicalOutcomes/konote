@@ -2,7 +2,8 @@
 {% load i18n %}
 
 {% block tab_content %}
-<h2>{% trans "Log Communication" %}</h2>
+<h2>{% trans "Record a Contact" %}</h2>
+<p><small class="secondary">{% trans "Had a call, email, text, or visit? Record it here so it's part of the client file. For clinical notes with engagement and goals, use a Progress Note instead." %}</small></p>
 
 <form method="post">
     {% csrf_token %}
@@ -39,6 +40,11 @@
             {{ form.channel }}
         </label>
     </div>
+
+    <label>
+        {{ form.outcome.label }}
+        {{ form.outcome }}
+    </label>
 
     <label>
         {{ form.subject.label }}

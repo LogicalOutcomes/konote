@@ -1037,8 +1037,21 @@ document.addEventListener("click", function (event) {
 })();
 
 // --- Actions dropdown toggle ---
-// Opens/closes the ▾ Actions menu on the participant detail page
+// Opens/closes the ▾ More menu on the participant detail page
+// Supports: click toggle, click-outside-close, Escape, arrow-key navigation
 (function () {
+    function closeAllDropdowns() {
+        document.querySelectorAll(".actions-dropdown-menu").forEach(function (m) {
+            m.hidden = true;
+            var btn = m.previousElementSibling;
+            if (btn) btn.setAttribute("aria-expanded", "false");
+        });
+    }
+
+    function getMenuItems(menu) {
+        return Array.from(menu.querySelectorAll('[role="menuitem"]'));
+    }
+
     function setupActionsDropdown() {
         document.addEventListener("click", function (e) {
             var toggle = e.target.closest(".actions-dropdown-toggle");
@@ -1047,28 +1060,22 @@ document.addEventListener("click", function (event) {
                 var menu = toggle.nextElementSibling;
                 if (!menu) return;
                 var isOpen = !menu.hidden;
-                // Close all other dropdowns first
-                document.querySelectorAll(".actions-dropdown-menu").forEach(function (m) {
-                    m.hidden = true;
-                    var btn = m.previousElementSibling;
-                    if (btn) btn.setAttribute("aria-expanded", "false");
-                });
+                closeAllDropdowns();
                 if (!isOpen) {
                     menu.hidden = false;
                     toggle.setAttribute("aria-expanded", "true");
+                    // Focus first menu item on open
+                    var items = getMenuItems(menu);
+                    if (items.length) items[0].focus();
                 }
                 return;
             }
             // Click outside closes all dropdowns
-            document.querySelectorAll(".actions-dropdown-menu").forEach(function (m) {
-                m.hidden = true;
-                var btn = m.previousElementSibling;
-                if (btn) btn.setAttribute("aria-expanded", "false");
-            });
+            closeAllDropdowns();
         });
 
-        // Escape closes dropdowns
         document.addEventListener("keydown", function (e) {
+            // Escape closes dropdowns and returns focus to trigger
             if (e.key === "Escape") {
                 document.querySelectorAll(".actions-dropdown-menu:not([hidden])").forEach(function (m) {
                     m.hidden = true;
@@ -1078,7 +1085,28 @@ document.addEventListener("click", function (event) {
                         btn.focus();
                     }
                 });
+                return;
             }
+
+            // Arrow-key navigation within open menu
+            var openMenu = document.querySelector(".actions-dropdown-menu:not([hidden])");
+            if (!openMenu) return;
+            if (e.key !== "ArrowDown" && e.key !== "ArrowUp" && e.key !== "Home" && e.key !== "End") return;
+            e.preventDefault();
+            var items = getMenuItems(openMenu);
+            if (!items.length) return;
+            var current = items.indexOf(document.activeElement);
+            var next;
+            if (e.key === "ArrowDown") {
+                next = current < items.length - 1 ? current + 1 : 0;
+            } else if (e.key === "ArrowUp") {
+                next = current > 0 ? current - 1 : items.length - 1;
+            } else if (e.key === "Home") {
+                next = 0;
+            } else if (e.key === "End") {
+                next = items.length - 1;
+            }
+            items[next].focus();
         });
     }
 

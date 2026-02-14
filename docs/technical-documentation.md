@@ -107,6 +107,7 @@ KoNote-web/
 │   ├── plans/                 # PlanSection, PlanTarget, Metrics
 │   ├── notes/                 # ProgressNote, MetricValue
 │   ├── events/                # Event, EventType, Alert
+│   ├── communications/       # Communication logging and messaging
 │   ├── admin_settings/        # Terminology, Features, Settings
 │   ├── audit/                 # AuditLog (separate DB)
 │   └── reports/               # CSV export, charts, PDFs
@@ -267,6 +268,30 @@ GRANT USAGE, SELECT ON SEQUENCE audit_auditlog_id_seq TO konote_audit;
 | `Event` | Discrete occurrence (intake, discharge) |
 | `EventType` | Category with colour coding |
 | `Alert` | Safety/care notes on client file |
+| `AlertCancellationRecommendation` | Two-person safety rule for alert cancellation |
+| `Meeting` | Scheduled client meeting (OneToOne with Event) |
+| `CalendarFeedToken` | Token-based iCal feed authentication |
+
+### communications
+**Purpose:** Client interaction logging and messaging
+
+| Model | Description |
+|-------|-------------|
+| `Communication` | Logged interaction (phone, email, SMS, in-person) with encrypted content |
+| `SystemHealthCheck` | Tracks SMS/email delivery health for staff warnings |
+
+**Key Views:**
+- `quick_log` — Two-click communication logging (channel buttons)
+- `communication_log` — Full form with direction, subject, content
+- `send_reminder_preview` — Preview and send meeting reminder (SMS or email)
+- `email_unsubscribe` — Public token-based consent withdrawal
+
+**Services Layer** (`apps/communications/services.py`):
+- `check_consent(client, channel)` — CASL consent verification
+- `can_send(client, channel)` — Full pre-send check chain (safety mode → profile → toggle → consent → contact info)
+- `send_reminder(meeting, logged_by, personal_note)` — Orchestrates SMS/email delivery
+- `send_sms(phone, body)` — Twilio integration
+- `send_email_message(email, subject, body_text, body_html)` — Django SMTP
 
 ### admin_settings
 **Purpose:** Instance configuration
@@ -337,6 +362,16 @@ class ClientFile(models.Model):
     programs = models.ManyToManyField(Program, through='ClientProgramEnrolment')
     created_by = models.ForeignKey(User, on_delete=models.PROTECT)
 ```
+
+**Consent & Contact Fields (added for messaging):**
+- `phone`, `email` — Encrypted PII (property accessors)
+- `has_phone`, `has_email` — Boolean flags for quick existence checks without decryption
+- `sms_consent`, `email_consent` — CASL consent booleans
+- `sms_consent_date`, `email_consent_date` — When consent was given
+- `consent_messaging_type` — `"express"` or `"implied"` (implied expires after 2 years per CASL)
+- `sms_consent_withdrawn_date`, `email_consent_withdrawn_date` — Proof of withdrawal
+- `preferred_language` — `"en"` or `"fr"` for message templates
+- `preferred_contact_method` — `"sms"`, `"email"`, `"both"`, `"none"`
 
 ### AuditLog Model
 
@@ -421,6 +456,18 @@ class ProgramAccessMiddleware:
 
         return self.get_response(request)
 ```
+
+**New Permission Keys:**
+
+| Key | Receptionist | Staff | PM | Executive | Description |
+|-----|-------------|-------|-----|-----------|-------------|
+| `meeting.view` | DENY | SCOPED | ALLOW | DENY | View meetings |
+| `meeting.create` | DENY | SCOPED | SCOPED | DENY | Schedule meetings |
+| `meeting.edit` | DENY | SCOPED | DENY | DENY | Edit meeting details |
+| `communication.log` | DENY | SCOPED | SCOPED | DENY | Log communications |
+| `communication.view` | DENY | SCOPED | ALLOW | DENY | View communication history |
+| `alert.recommend_cancel` | DENY | SCOPED | SCOPED | DENY | Recommend alert cancellation |
+| `alert.review_cancel_recommendation` | DENY | DENY | SCOPED | DENY | Review cancellation recommendations |
 
 ### Audit Logging
 

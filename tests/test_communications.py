@@ -65,6 +65,22 @@ class QuickLogFormTest(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("channel", form.errors)
 
+    def test_valid_with_outcome(self):
+        form = QuickLogForm(data={
+            "channel": "phone",
+            "direction": "outbound",
+            "outcome": "reached",
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_outcome_optional(self):
+        form = QuickLogForm(data={
+            "channel": "phone",
+            "direction": "outbound",
+            "outcome": "",
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+
 
 class CommunicationLogFormTest(TestCase):
     """Validate CommunicationLogForm field validation."""
@@ -92,6 +108,14 @@ class CommunicationLogFormTest(TestCase):
         })
         self.assertFalse(form.is_valid())
         self.assertIn("direction", form.errors)
+
+    def test_valid_with_outcome(self):
+        form = CommunicationLogForm(data={
+            "direction": "outbound",
+            "channel": "phone",
+            "outcome": "voicemail",
+        })
+        self.assertTrue(form.is_valid(), form.errors)
 
 
 # -----------------------------------------------------------------------
@@ -134,7 +158,7 @@ class QuickLogViewTest(TestCase):
         url = f"/communications/client/{self.client_file.pk}/quick-log/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Log a Call")
+        self.assertContains(response, "Record a Call")
 
     def test_get_with_channel_returns_form(self):
         """GET with ?channel=phone returns the mini form."""
@@ -159,6 +183,20 @@ class QuickLogViewTest(TestCase):
         self.assertEqual(comm.channel, "phone")
         self.assertEqual(comm.direction, "outbound")
         self.assertEqual(comm.logged_by, self.staff)
+
+    def test_post_with_outcome_saves_outcome(self):
+        """POST with outcome saves it on the Communication record."""
+        self.client.login(username="test_staff", password="testpass123")
+        url = f"/communications/client/{self.client_file.pk}/quick-log/"
+        response = self.client.post(url, {
+            "channel": "phone",
+            "direction": "outbound",
+            "notes": "Left voicemail",
+            "outcome": "voicemail",
+        })
+        self.assertEqual(response.status_code, 200)
+        comm = Communication.objects.first()
+        self.assertEqual(comm.outcome, "voicemail")
 
     def test_post_invalid_form_returns_form(self):
         """POST with invalid channel returns the form with errors."""
@@ -208,7 +246,7 @@ class CommunicationLogViewTest(TestCase):
         url = f"/communications/client/{self.client_file.pk}/log/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Log Communication")
+        self.assertContains(response, "Record a Contact")
 
     def test_post_creates_communication_and_redirects(self):
         """POST with valid data creates a Communication and redirects to events."""
@@ -289,6 +327,17 @@ class LogCommunicationServiceTest(TestCase):
         self.assertIsNotNone(audit)
         self.assertEqual(audit.action, "create")
         self.assertEqual(audit.metadata["channel"], "sms")
+
+    def test_outcome_saved(self):
+        from apps.communications.services import log_communication
+        comm = log_communication(
+            client_file=self.client_file,
+            direction="outbound",
+            channel="phone",
+            logged_by=self.staff,
+            outcome="reached",
+        )
+        self.assertEqual(comm.outcome, "reached")
 
     def test_no_content_leaves_encrypted_field_empty(self):
         from apps.communications.services import log_communication

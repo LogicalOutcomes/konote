@@ -506,10 +506,10 @@ def check_and_send_health_alert():
 # Manual communication logging
 # ---------------------------------------------------------------------------
 
-def log_communication(client_file, direction, channel, logged_by, content="", subject="", author_program=None):
-    """Record a manual communication log entry.
+def log_communication(client_file, direction, channel, logged_by, content="", subject="", author_program=None, outcome=""):
+    """Record a manual contact log entry.
 
-    Used by the quick-log buttons and full communication log form.
+    Used by the quick-log buttons and detailed contact form.
     Returns the created Communication object.
     """
     comm = Communication.objects.create(
@@ -521,6 +521,7 @@ def log_communication(client_file, direction, channel, logged_by, content="", su
         delivery_status="sent",
         logged_by=logged_by,
         author_program=author_program,
+        outcome=outcome,
     )
     if content:
         comm.content = content
@@ -540,6 +541,7 @@ def log_communication(client_file, direction, channel, logged_by, content="", su
             "client_file_id": client_file.pk,
             "channel": channel,
             "direction": direction,
+            "outcome": outcome,
         },
     )
 

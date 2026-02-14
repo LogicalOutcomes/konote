@@ -48,6 +48,14 @@ class Communication(models.Model):
         ("blocked", _("Blocked")),
     ]
 
+    OUTCOME_CHOICES = [
+        ("reached", _("Reached")),
+        ("voicemail", _("Voicemail")),
+        ("no_answer", _("No Answer")),
+        ("left_message", _("Left Message")),
+        ("wrong_number", _("Wrong Number")),
+    ]
+
     client_file = models.ForeignKey(
         "clients.ClientFile",
         on_delete=models.CASCADE,
@@ -57,6 +65,13 @@ class Communication(models.Model):
     direction = models.CharField(max_length=10, choices=DIRECTION_CHOICES)
     channel = models.CharField(max_length=15, choices=CHANNEL_CHOICES)
     method = models.CharField(max_length=15, choices=METHOD_CHOICES, default="manual_log")
+    outcome = models.CharField(
+        max_length=20,
+        choices=OUTCOME_CHOICES,
+        blank=True,
+        default="",
+        help_text=_("Contact attempt result — used for funder reporting"),
+    )
 
     subject = models.CharField(max_length=255, blank=True, default="")
 
