@@ -24,7 +24,7 @@ Welcome! Find what you need based on what you're trying to do.
 - **Meetings & calendar** — schedule meetings with clients, track status (completed/cancelled/no-show), and subscribe to an iCal feed in Outlook or Google Calendar
 - **Consent management** — CASL-compliant consent tracking for SMS and email, with withdrawal dates and implied/express consent types
 - **Alert safety workflow** — two-person rule for alert cancellation: staff recommend, program managers approve or reject
-- **Funder profiles** — upload demographic breakdowns as CSV, generate reports with small-cell suppression
+- **Report templates** — upload demographic breakdowns as CSV, generate reports with small-cell suppression
 - **Permissions audit & UX** — 48-key permission matrix enforced across all roles, scoped audit logs for program managers, role-aware 403 page
 - **French language support** — full bilingual interface with 748+ translated strings
 - **Client data erasure** — multi-PM approval workflow for PIPEDA/GDPR compliance

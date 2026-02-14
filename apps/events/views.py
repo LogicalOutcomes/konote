@@ -1,6 +1,7 @@
 """Views for events and alerts — admin event types + client-scoped events/alerts."""
 import secrets
 from datetime import timedelta
+from urllib.parse import urlparse, urlunparse
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -779,10 +780,16 @@ def calendar_feed_settings(request):
 
     # Build feed URL
     feed_url = None
+    outlook_subscribe_url = None
     if feed_token and feed_token.is_active:
         feed_url = request.build_absolute_uri(
             reverse("calendar_feed", kwargs={"token": feed_token.token})
         )
+        parsed = urlparse(feed_url)
+        if parsed.scheme in ("http", "https"):
+            outlook_subscribe_url = urlunparse(parsed._replace(scheme="webcal"))
+        else:
+            outlook_subscribe_url = feed_url
 
     breadcrumbs = [
         {"url": reverse("events:meeting_list"), "label": _("My Meetings")},
@@ -790,6 +797,7 @@ def calendar_feed_settings(request):
     ]
     return render(request, "events/calendar_feed_settings.html", {
         "feed_url": feed_url,
+        "outlook_subscribe_url": outlook_subscribe_url,
         "feed_token": feed_token,
         "breadcrumbs": breadcrumbs,
     })

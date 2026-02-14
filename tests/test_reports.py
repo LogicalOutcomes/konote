@@ -164,6 +164,7 @@ class MetricExportFormTest(TestCase):
             "fiscal_year": "2025",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertTrue(form.is_valid(), form.errors)
         # Dates should be populated from fiscal year
@@ -180,6 +181,7 @@ class MetricExportFormTest(TestCase):
             "date_to": "2025-06-30",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data["date_from"], date(2025, 1, 1))
@@ -207,6 +209,7 @@ class MetricExportFormTest(TestCase):
             "date_to": "2025-06-30",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertTrue(form.is_valid(), form.errors)
         # Dates should come from fiscal year, not manual entry
@@ -223,6 +226,7 @@ class MetricExportFormTest(TestCase):
             "date_to": "2025-01-01",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertFalse(form.is_valid())
         # Check for the error message (HTML entities may encode quotes)
@@ -784,6 +788,7 @@ class AchievementRateFormTest(TestCase):
             "format": "csv",
             "include_achievement_rate": True,
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertTrue(form.is_valid(), form.errors)
         self.assertTrue(form.cleaned_data["include_achievement_rate"])
@@ -797,6 +802,7 @@ class AchievementRateFormTest(TestCase):
             "format": "csv",
             "include_achievement_rate": False,
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertTrue(form.is_valid(), form.errors)
         self.assertFalse(form.cleaned_data["include_achievement_rate"])
@@ -1248,6 +1254,7 @@ class MetricExportFormGroupByTests(TestCase):
             "format": "csv",
             "group_by": "age_range",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data["group_by"], "age_range")
@@ -1261,6 +1268,7 @@ class MetricExportFormGroupByTests(TestCase):
             "format": "csv",
             "group_by": "",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data["group_by"], "")
@@ -1414,6 +1422,7 @@ class FunderReportFormTests(TestCase):
             "fiscal_year": "2025",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertTrue(form.is_valid(), form.errors)
 
@@ -1425,6 +1434,7 @@ class FunderReportFormTests(TestCase):
             "fiscal_year": "2025",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data["date_from"], date(2025, 4, 1))
@@ -1438,6 +1448,7 @@ class FunderReportFormTests(TestCase):
             "fiscal_year": "2025",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertTrue(form.is_valid(), form.errors)
         self.assertEqual(form.cleaned_data["fiscal_year_label"], "FY 2025-26")
@@ -1613,6 +1624,10 @@ class FunderReportViewTests(TestCase):
         resp = self.client.get("/reports/funder-report/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Program Outcome Report Template")
+        self.assertContains(
+            resp,
+            "Client records are counted, but no personal identifiers are included",
+        )
 
     def test_nonadmin_cannot_access_funder_report(self):
         """Non-admin users should not be able to access Funder report."""
@@ -1633,6 +1648,33 @@ class FunderReportViewTests(TestCase):
         resp = self.client.get("/reports/funder-report/")
         self.assertContains(resp, "Fiscal Year")
 
+    def test_funder_report_form_shows_template_preview_details(self):
+        """Authorized users should see read-only reporting template preview details."""
+        from apps.reports.models import DemographicBreakdown, ReportTemplate
+
+        template = ReportTemplate.objects.create(
+            name="Reporting template",
+            description="Sample report template for Canadian Community Fund",
+        )
+        template.programs.add(self.program)
+        DemographicBreakdown.objects.create(
+            report_template=template,
+            label="Age Group",
+            source_type="age",
+            bins_json=[
+                {"min": 0, "max": 12, "label": "Child (0-12)"},
+                {"min": 13, "max": 17, "label": "Youth (13-17)"},
+            ],
+            sort_order=0,
+        )
+
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.get("/reports/funder-report/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Preview available reporting templates")
+        self.assertContains(resp, "Reporting template")
+        self.assertContains(resp, "Child (0-12)")
+
     def _get_download_content(self, download_resp):
         """Read content from a download response (streaming or regular)."""
         if hasattr(download_resp, "streaming_content"):
@@ -1647,12 +1689,13 @@ class FunderReportViewTests(TestCase):
             "fiscal_year": "2025",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertEqual(resp.status_code, 200)
         link = SecureExportLink.objects.latest("created_at")
         download_resp = self.client.get(f"/reports/download/{link.id}/")
         self.assertIn("attachment", download_resp["Content-Disposition"])
-        self.assertIn("Funder_Report", download_resp["Content-Disposition"])
+        self.assertIn("Reporting_Template_Report", download_resp["Content-Disposition"])
         self.assertIn("FY_2025-26", download_resp["Content-Disposition"])
 
     def test_funder_report_csv_content(self):
@@ -1663,6 +1706,7 @@ class FunderReportViewTests(TestCase):
             "fiscal_year": "2025",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertEqual(resp.status_code, 200)
         link = SecureExportLink.objects.latest("created_at")
@@ -1831,6 +1875,7 @@ class DemoRealExportSeparationTests(TestCase):
             "date_to": "2030-12-31",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertEqual(resp.status_code, 200)
         link = SecureExportLink.objects.latest("created_at")
@@ -1893,6 +1938,7 @@ class DemoRealExportSeparationTests(TestCase):
             "date_to": "2030-12-31",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertEqual(resp.status_code, 200)
         link = SecureExportLink.objects.latest("created_at")
@@ -1916,6 +1962,7 @@ class DemoRealExportSeparationTests(TestCase):
             "fiscal_year": "2025",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertEqual(resp.status_code, 200)
         link = SecureExportLink.objects.latest("created_at")
@@ -1939,6 +1986,7 @@ class DemoRealExportSeparationTests(TestCase):
             "fiscal_year": "2025",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertEqual(resp.status_code, 200)
         link = SecureExportLink.objects.latest("created_at")
@@ -2054,6 +2102,7 @@ class ExportWarningDialogTests(TestCase):
             "fiscal_year": "2025",
             "format": "csv",
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         # Should return 200 (secure link page) and create a SecureExportLink
         self.assertEqual(resp.status_code, 200)
@@ -2081,6 +2130,7 @@ class ExportWarningDialogTests(TestCase):
             "fiscal_year": "2025",
             "format": "csv",
             "recipient": "funder",
+            "recipient_reason": "Test export",
         })
         self.assertEqual(resp.status_code, 200)
         self.assertTrue(SecureExportLink.objects.exists())
@@ -2190,6 +2240,7 @@ class IndividualClientExportViewTests(TestCase):
             "include_events": True,
             "include_custom_fields": True,
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertEqual(resp.status_code, 403)
 
@@ -2212,6 +2263,7 @@ class IndividualClientExportViewTests(TestCase):
             "include_events": True,
             "include_custom_fields": True,
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp["Content-Type"], "text/csv")
@@ -2229,6 +2281,7 @@ class IndividualClientExportViewTests(TestCase):
             "include_events": True,
             "include_custom_fields": True,
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         content = resp.content.decode("utf-8")
         self.assertIn("Alice", content)
@@ -2245,6 +2298,7 @@ class IndividualClientExportViewTests(TestCase):
             "include_events": True,
             "include_custom_fields": True,
             "recipient": "self",
+            "recipient_reason": "Test export",
             # include_notes NOT checked
         })
         content = resp.content.decode("utf-8")
@@ -2259,6 +2313,22 @@ class IndividualClientExportViewTests(TestCase):
             "format": "csv",
             "include_plans": True,
             # No recipient
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("recipient", resp.context["form"].errors)
+
+    def test_funder_recipient_rejected_for_participant_identifying_export(self):
+        """Participant-identifying exports should reject funder recipients."""
+        self.client.login(username="staff", password="testpass123")
+        resp = self.client.post(self.export_url, {
+            "format": "csv",
+            "include_plans": True,
+            "include_notes": True,
+            "include_metrics": True,
+            "include_events": True,
+            "include_custom_fields": True,
+            "recipient": "Example Funder",
+            "recipient_reason": "Program reporting",
         })
         self.assertEqual(resp.status_code, 200)
         self.assertIn("recipient", resp.context["form"].errors)
@@ -2278,6 +2348,7 @@ class IndividualClientExportViewTests(TestCase):
             "include_events": True,
             "include_custom_fields": True,
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         log = AuditLog.objects.using("audit").filter(
             resource_type="individual_client_export",
@@ -2483,6 +2554,7 @@ class CsvInjectionIntegrationTests(TestCase):
             "include_events": True,
             "include_custom_fields": True,
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         content = resp.content.decode("utf-8")
         # The malicious first name should be prefixed with a tab character.
@@ -2541,6 +2613,7 @@ class FilenameSanitisationIntegrationTests(TestCase):
             "include_events": True,
             "include_custom_fields": True,
             "recipient": "self",
+            "recipient_reason": "Test export",
         })
         disposition = resp["Content-Disposition"]
         # Should not contain path traversal

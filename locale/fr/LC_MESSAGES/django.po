@@ -7223,18 +7223,19 @@ msgstr ""
 "de protection des données de votre organisation."
 
 msgid ""
-"This report contains %(strong_open)saggregate statistics "
-"only%(strong_close)s — counts and percentages grouped by category, including"
-" %(strong_open)stotal individuals served%(strong_close)s. It does "
-"%(strong_open)snot%(strong_close)s include individual client names, birth "
-"dates, or other personally identifiable information (PII)."
+"This report contains %(strong_open)ssummary counts only%(strong_close)s — "
+"counts and percentages grouped by category, including %(strong_open)stotal "
+"individuals served%(strong_close)s. Client records are counted, but no "
+"personal identifiers are included (for example: names, dates of birth, phone"
+" numbers, email addresses, or street addresses)."
 msgstr ""
-"Ce rapport contient %(strong_open)suniquement des statistiques "
-"agrégées%(strong_close)s — des nombres et pourcentages regroupés par "
+"Ce rapport contient %(strong_open)suniquement des totaux "
+"récapitulatifs%(strong_close)s — des nombres et pourcentages regroupés par "
 "catégorie, y compris le %(strong_open)snombre total de personnes "
-"servies%(strong_close)s. Il %(strong_open)sne contient pas%(strong_close)s "
-"de noms de clients individuels, de dates de naissance ou d’autres "
-"renseignements personnels identifiables (RPI)."
+"servies%(strong_close)s. Les dossiers clients sont comptés, mais aucun "
+"renseignement personnel identifiant n’est inclus (par exemple : noms, dates "
+"de naissance, numéros de téléphone, adresses courriel ou adresses "
+"municipales)."
 
 msgid ""
 "This request has been pending for %(days)s days. PIPEDA requires a response "
@@ -7380,8 +7381,8 @@ msgstr[1] "%(counter)s clients démo"
 
 msgid "%(counter)s elevated export is pending review"
 msgid_plural "%(counter)s elevated exports are pending review"
-msgstr[0] "%(counter)s exportation élevée est en attente de révision"
-msgstr[1] "%(counter)s exportations élevées sont en attente de révision"
+msgstr[0] "%(counter)s exportation élevée est en attente d’examen"
+msgstr[1] "%(counter)s exportations élevées sont en attente d’examen"
 
 msgid "Achieved"
 msgstr "Atteint"
@@ -7893,8 +7894,8 @@ msgstr "Suggestions des participants"
 #: templates/reports/_insights_basic.html
 msgid "%(total)s suggestion recorded this period."
 msgid_plural "%(total)s suggestions recorded this period."
-msgstr[0] "%(total)s suggestion enregistrée pour cette période."
-msgstr[1] "%(total)s suggestions enregistrées pour cette période."
+msgstr[0] "%(total)s suggestion consignée pour cette période."
+msgstr[1] "%(total)s suggestions consignées pour cette période."
 
 #: templates/reports/_insights_basic.html
 msgid ""
@@ -11158,3 +11159,310 @@ msgstr ""
 
 msgid "\\u2014 Select \\u2014"
 msgstr "— Sélectionner —"
+
+msgid "About Report Templates"
+msgstr "À propos des modèles de rapport"
+
+msgid "Create a Meeting"
+msgstr "Créer une rencontre"
+
+msgid "Date and Time"
+msgstr "Date et heure"
+
+msgid ""
+"Define reporting templates for demographic and category breakdowns in "
+"reports."
+msgstr ""
+"Définissez des modèles de rapport pour les ventilations démographiques et "
+"par catégorie dans les rapports."
+
+msgid "Export recipient details"
+msgstr "Détails du destinataire de l’exportation"
+
+msgid "Grouping"
+msgstr "Regroupement"
+
+msgid ""
+"Had a call, email, text, or visit? Record it here so it's part of the client"
+" file. Use Notes for session content, goals, and deeper progress details."
+msgstr ""
+"Vous avez eu un appel, un courriel, un texto ou une visite? Consignez-le ici"
+" pour qu’il fasse partie du dossier client. Utilisez Notes pour le contenu "
+"des séances, les objectifs et des détails de progression plus approfondis."
+
+msgid "Manage reporting templates for demographic and category breakdowns."
+msgstr ""
+"Gérez les modèles de rapport pour les ventilations démographiques et par "
+"catégorie."
+
+msgid ""
+"No report templates configured yet. Upload a CSV to create your first "
+"template."
+msgstr ""
+"Aucun modèle de rapport configuré pour le moment. Téléversez un CSV pour "
+"créer votre premier modèle."
+
+msgid "No reporting template"
+msgstr "Aucun modèle de rapport"
+
+msgid "Please enter the reason for this export."
+msgstr "Veuillez saisir la raison de cette exportation."
+
+msgid "Please enter who will receive this export."
+msgstr "Veuillez indiquer qui recevra cette exportation."
+
+msgid "Report Template"
+msgstr "Modèle de rapport"
+
+msgid "Report Templates"
+msgstr "Modèles de rapport"
+
+msgid "Reporting template"
+msgstr "modèle de rapport"
+
+msgid "Required for audit purposes (name and organisation)."
+msgstr "Obligatoire pour la vérification (nom et organisation)."
+
+msgid "Required. Pick from the calendar or type the date and time."
+msgstr ""
+"Obligatoire. Choisissez dans le calendrier ou tapez la date et l’heure."
+
+msgid "Template Name"
+msgstr "Nom du modèle"
+
+msgid ""
+"Tip: You can type a 4-digit year (for example 1955) and the date will jump "
+"to that year."
+msgstr ""
+"Astuce : vous pouvez saisir une année à 4 chiffres (par exemple 1955) et la "
+"date passera à cette année."
+
+msgid ""
+"Tip: You can use a sample funder requirement to create your first reporting "
+"template."
+msgstr ""
+"Astuce : vous pouvez utiliser un exemple d’exigence d’un bailleur de fonds "
+"pour créer votre premier modèle de rapport."
+
+msgid "Upload New Template"
+msgstr "Téléverser un nouveau modèle"
+
+msgid ""
+"Use an alert for important safety or service information that all staff "
+"should see right away (for example: immediate risk, urgent access needs, or "
+"critical care instructions)."
+msgstr ""
+"Utilisez une alerte pour les renseignements importants de sécurité ou de "
+"service que tout le personnel doit voir immédiatement (par exemple : risque "
+"immédiat, besoins d’accès urgents ou consignes de soins critiques)."
+
+msgid "Used only when no reporting template is selected above."
+msgstr ""
+"Utilisé seulement lorsqu’aucun modèle de rapport n’est sélectionné ci-"
+"dessus."
+
+msgid "Voicemail is not a valid outcome for text messages."
+msgstr ""
+"La messagerie vocale n’est pas un résultat valide pour les messages texte."
+
+msgid "We created this note together (this is recommended)"
+msgstr "Nous avons créé cette note ensemble (c’est recommandé)"
+
+msgid "e.g., Board reporting, case conference, client request"
+msgstr "p. ex., rapport au conseil, conférence de cas, demande du client"
+
+msgid "e.g., Jane Smith, Sunrise Community Services"
+msgstr "p. ex., Jane Smith, Services communautaires Sunrise"
+
+msgid "← Back to Templates"
+msgstr "← Retour aux modèles"
+
+msgid "Choose In person or Phone, or type a custom location."
+msgstr ""
+"Choisissez En personne ou Téléphone, ou saisissez un lieu personnalisé."
+
+msgid "Choose from list or type location"
+msgstr "Choisissez dans la liste ou saisissez un lieu"
+
+msgid "Delete Report Template"
+msgstr "Supprimer le modèle de rapport"
+
+msgid "Delete Template"
+msgstr "Supprimer le modèle"
+
+msgid ""
+"Had a call, email, text, or visit? Record it here so it's part of the client"
+" file. For session progress, goals, and clinical detail, use Notes instead."
+msgstr ""
+"Vous avez eu un appel, un courriel, un texto ou une visite? Consignez-le ici"
+" pour qu’il fasse partie du dossier client. Pour les progrès de séance, les "
+"objectifs et les détails cliniques, utilisez plutôt Notes."
+
+msgid "How to create a template CSV"
+msgstr "Comment créer un CSV de modèle"
+
+msgid "No Response"
+msgstr "Aucune réponse"
+
+msgid "No templates configured"
+msgstr "Aucun modèle configuré"
+
+msgid ""
+"Only active programs are shown. The selected template will appear as an "
+"option in the export form for these programs."
+msgstr ""
+"Seuls les programmes actifs sont affichés. Le modèle sélectionné apparaîtra "
+"comme option dans le formulaire d’exportation pour ces programmes."
+
+msgid "Preview Report Template"
+msgstr "Aperçu du modèle de rapport"
+
+msgid "Record Communication"
+msgstr "Consigner une communication"
+
+msgid ""
+"Report template \"%(name)s\" created with %(count)d demographic "
+"breakdown(s)."
+msgstr ""
+"Le modèle de rapport « %(name)s » a été créé avec %(count)d ventilation(s) "
+"démographique(s)."
+
+msgid "Report template \"%(name)s\" deleted."
+msgstr "Le modèle de rapport « %(name)s » a été supprimé."
+
+msgid ""
+"Select which programs should use this report template. You can change this "
+"later."
+msgstr ""
+"Sélectionnez les programmes qui devraient utiliser ce modèle de rapport. "
+"Vous pourrez modifier cela plus tard."
+
+msgid ""
+"Select which programs use this report template's demographic breakdowns."
+msgstr ""
+"Sélectionnez les programmes qui utilisent les ventilations démographiques de"
+" ce modèle de rapport."
+
+msgid "Upload Report Template"
+msgstr "Téléverser un modèle de rapport"
+
+msgid "Upload a CSV defining reporting demographic breakdown categories."
+msgstr ""
+"Téléversez un CSV définissant les catégories de ventilation démographique "
+"pour les rapports."
+
+msgid ""
+"Use this for call, text, email, or visit logs. Use Notes for session "
+"details, goals, and progress reflections."
+msgstr ""
+"Utilisez ceci pour les journaux d’appels, de textos, de courriels ou de "
+"visites. Utilisez Notes pour les détails de séance, les objectifs et les "
+"réflexions sur les progrès."
+
+msgid ""
+"Use this for contact logs. Use Notes for session progress, goals, and "
+"clinical detail."
+msgstr ""
+"Utilisez ceci pour les journaux de contact. Utilisez Notes pour les progrès "
+"de séance, les objectifs et les détails cliniques."
+
+msgid "Yes, Delete Template"
+msgstr "Oui, supprimer le modèle"
+
+msgid ""
+"For security, funders are not valid recipients for exports that include "
+"participant-identifying data."
+msgstr ""
+"Pour des raisons de sécurité, les bailleurs de fonds ne sont pas des "
+"destinataires valides pour les exportations contenant des données "
+"d'identification des participants."
+
+msgid ""
+"For security, funders are not valid recipients for participant-identifying "
+"exports."
+msgstr ""
+"Pour des raisons de sécurité, les bailleurs de fonds ne sont pas des "
+"destinataires valides pour les exportations contenant des identifiants de "
+"participants."
+
+msgid ""
+"For security, this export includes participant-identifying information and "
+"should only be shared with authorised recipients."
+msgstr ""
+"Pour des raisons de sécurité, cette exportation contient des renseignements "
+"permettant d'identifier un participant et ne doit être partagée qu'avec des "
+"destinataires autorisés."
+
+msgid "Outlook subscribe URL"
+msgstr "URL d'abonnement Outlook"
+
+msgid "Outlook subscribe URL:"
+msgstr "URL d'abonnement Outlook :"
+
+msgid "Paste the Outlook subscribe URL above"
+msgstr "Collez l'URL d'abonnement Outlook ci-dessus"
+
+msgid "Programs linked to this reporting template."
+msgstr "Programmes liés à ce modèle de rapport."
+
+msgid "Template name, e.g., 'United Way Greater Toronto'."
+msgstr "Nom du modèle, p. ex. « United Way Greater Toronto »."
+
+msgid "Use this webcal URL in Outlook if the standard URL shows an error."
+msgstr ""
+"Utilisez cette URL webcal dans Outlook si l'URL standard affiche une erreur."
+
+msgid "* Required field."
+msgstr "* Champ obligatoire."
+
+msgid "Open calendar and time picker"
+msgstr "Ouvrir le sélecteur de date et d’heure"
+
+msgid "Last 7 days"
+msgstr "7 derniers jours"
+
+msgid "Meeting summary"
+msgstr "Résumé des rencontres"
+
+msgid "Recent (7 days)"
+msgstr "Récentes (7 jours)"
+
+msgid "See upcoming meetings and recent activity in one place."
+msgstr ""
+"Consultez les rencontres à venir et l’activité récente au même endroit."
+
+msgid "Upcoming (30 days)"
+msgstr "À venir (30 jours)"
+
+msgid ""
+"The Reviews menu currently contains alert cancellation recommendations only."
+msgstr ""
+"Le menu Révisions contient actuellement uniquement les recommandations "
+"d’annulation d’alerte."
+
+msgid ""
+"The \\\"Reporting template\\\" entry is demo sample data only and is not "
+"required for production use."
+msgstr ""
+"L’entrée \"Reporting template\" est un exemple de données de démonstration "
+"uniquement et n’est pas requise pour une utilisation en production."
+
+msgid "Keeps all source categories"
+msgstr "Conserve toutes les catégories sources"
+
+msgid "No category merges configured"
+msgstr "Aucune fusion de catégories configurée"
+
+msgid "No demographic breakdowns configured."
+msgstr "Aucune ventilation démographique configurée."
+
+msgid "Preview available reporting templates"
+msgstr "Aperçu des modèles de rapport disponibles"
+
+msgid ""
+"Program Managers and Executives can review template breakdowns here. "
+"Template management remains admin-only in Settings."
+msgstr ""
+"Les gestionnaires de programme et les membres de la direction peuvent "
+"consulter ici les ventilations des modèles. La gestion des modèles demeure "
+"réservée aux administrateurs dans Paramètres."

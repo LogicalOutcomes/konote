@@ -472,7 +472,8 @@ In your Railway project, click **Variables** on your app service and add:
 **Password requirements:** When you create your admin account, use at least 10 characters. KoNote enforces this — shorter passwords will be rejected.
 
 Optional variables (auto-detected, only set if needed):
-- `ALLOWED_HOSTS` — Auto-includes `.railway.app` domains
+- `ALLOWED_HOSTS` — Add your custom domain hostnames (Railway domains are auto-included)
+- `CSRF_TRUSTED_ORIGINS` — Add your custom domain HTTPS origins for form submissions
 - `AUTH_MODE` — Defaults to `local`, set to `azure` for SSO
 - `KONOTE_MODE` — Set to `production` for strict security checks (blocks startup if SECRET_KEY or encryption key are missing)
 
@@ -512,7 +513,14 @@ Railway handles HTTPS automatically — no certificate setup needed. Your `.rail
 2. Click **Add Custom Domain**
 3. Enter your domain (e.g., `outcomes.myorg.ca`)
 4. Follow DNS instructions from Railway
-5. Update `ALLOWED_HOSTS` to include your domain
+5. Update both `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`
+
+Example Railway variables for this project:
+
+- `ALLOWED_HOSTS=konote.llewelyn.ca,konote-dev.llewelyn.ca,.railway.app,.up.railway.app`
+- `CSRF_TRUSTED_ORIGINS=https://konote.llewelyn.ca,https://konote-dev.llewelyn.ca,https://*.railway.app,https://*.up.railway.app`
+
+If these are misconfigured, Django can return `400 Bad Request` (`DisallowedHost`) or CSRF `403` on POST forms.
 
 Railway automatically provisions an SSL certificate for custom domains.
 

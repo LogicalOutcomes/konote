@@ -14,9 +14,14 @@
 
     <label for="{{ form.start_timestamp.id_for_label }}">
         {{ form.start_timestamp.label }}
-        <abbr title="{% trans 'required' %}">*</abbr>
     </label>
+    <small id="meeting-start-required">{% trans "* Required field." %}</small>
     {{ form.start_timestamp }}
+    <button type="button" id="open-datetime-picker" class="secondary outline">
+        <span aria-hidden="true">📅</span>
+        {% trans "Open calendar and time picker" %}
+    </button>
+    <small id="meeting-start-help">{% trans "Required. Pick from the calendar or type the date and time." %}</small>
     {% if form.start_timestamp.errors %}
     <small class="badge badge-danger" role="alert">{{ form.start_timestamp.errors.0 }}</small>
     {% endif %}
@@ -25,6 +30,11 @@
         {{ form.location.label }}
     </label>
     {{ form.location }}
+    <datalist id="meeting-location-options">
+        <option value="In person">
+        <option value="Phone">
+    </datalist>
+    <small>{% trans "Choose In person or Phone, or type a custom location." %}</small>
     {% if form.location.errors %}
     <small class="badge badge-danger" role="alert">{{ form.location.errors.0 }}</small>
     {% endif %}
@@ -69,8 +79,29 @@
     {% endif %}
 
     <div role="group">
-        <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% trans "Create Meeting" %}{% endif %}</button>
+        <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% trans "Create a Meeting" %}{% endif %}</button>
         <a href="{% url 'events:event_list' client_id=client.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
     </div>
 </form>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ block.super }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var pickerButton = document.getElementById("open-datetime-picker");
+    var dateTimeInput = document.getElementById("{{ form.start_timestamp.id_for_label }}");
+    if (!pickerButton || !dateTimeInput) {
+        return;
+    }
+    pickerButton.addEventListener("click", function () {
+        if (typeof dateTimeInput.showPicker === "function") {
+            dateTimeInput.showPicker();
+            return;
+        }
+        dateTimeInput.focus();
+        dateTimeInput.click();
+    });
+});
+</script>
 {% endblock %}

@@ -357,7 +357,7 @@ PERMISSIONS = {
         "user.manage": DENY,  # Override to ALLOW if executive is operational ED
         "settings.manage": DENY,  # Override to ALLOW if executive is operational ED
         "program.manage": DENY,  # Override to ALLOW if executive is operational ED
-        "audit.view": ALLOW,   # Board oversight — executives can review audit trail
+        "audit.view": DENY,   # Executive has no audit access
     },
 }
 

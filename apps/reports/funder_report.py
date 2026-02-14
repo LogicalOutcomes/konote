@@ -176,15 +176,15 @@ def generate_funder_report_data(
     date_to: date,
     fiscal_year_label: str | None = None,
     user=None,
-    funder_profile=None,
+    report_template=None,
 ) -> dict[str, Any]:
     """
-    Build the complete funder report data structure for a program.
+    Build the complete report template data structure for a program.
 
     Aggregates all the data needed for a program outcome report:
     - Organisation and program information
     - Service statistics
-    - Demographic breakdowns (from funder profile or defaults)
+    - Demographic breakdowns (from report template or defaults)
     - Outcome achievement rates
 
     Args:
@@ -195,7 +195,7 @@ def generate_funder_report_data(
                           will be calculated from date_from.
         user: Optional user for demo/real filtering. If provided, only clients
               matching the user's demo status will be included.
-        funder_profile: Optional FunderProfile instance providing custom
+        report_template: Optional ReportTemplate instance providing custom
                        demographic breakdown definitions.
 
     Returns:
@@ -269,12 +269,12 @@ def generate_funder_report_data(
     # Age demographics
     age_demographics = group_clients_by_age_buckets(active_client_ids, date_to)
 
-    # If a funder profile is provided, use its breakdowns instead of defaults
+    # If a report template is provided, use its breakdowns instead of defaults
     custom_demographic_sections = []
-    if funder_profile:
+    if report_template:
         from .models import DemographicBreakdown
         breakdowns = DemographicBreakdown.objects.filter(
-            funder_profile=funder_profile,
+            report_template=report_template,
         ).select_related("custom_field").order_by("sort_order")
 
         for bd in breakdowns:
@@ -355,7 +355,7 @@ def generate_funder_report_data(
         "age_demographics": age_demographics,
         "age_demographics_total": sum(age_demographics.values()),
         "custom_demographic_sections": custom_demographic_sections,
-        "funder_profile_name": funder_profile.name if funder_profile else None,
+        "report_template_name": report_template.name if report_template else None,
 
         # Outcomes
         "primary_outcome": primary_outcome,
@@ -422,7 +422,7 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
     rows.append(["Total", format_number(total_demo), "100%"])
     rows.append([])
 
-    # Custom demographic sections from funder profile
+    # Custom demographic sections from report template
     for section in report_data.get("custom_demographic_sections", []):
         rows.append([section["label"].upper()])
         rows.append(["Category", "Count", "Percentage"])
@@ -436,9 +436,9 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
         rows.append(["Total", format_number(section_total), "100%"])
         rows.append([])
 
-    # Funder profile note
-    if report_data.get("funder_profile_name"):
-        rows.append([f"Demographic Profile: {report_data['funder_profile_name']}"])
+    # Report template note
+    if report_data.get("report_template_name"):
+        rows.append([f"Demographic Profile: {report_data['report_template_name']}"])
         rows.append([])
 
     # Outcome indicators

@@ -97,21 +97,21 @@
         </label>
     </div>
 
-    {# Funder demographic profile #}
-    {% if form.funder_profile %}
-    <label for="{{ form.funder_profile.id_for_label }}">
-        {{ form.funder_profile.label }}
-        {{ form.funder_profile }}
-        {% if form.funder_profile.help_text %}
-        <small>{{ form.funder_profile.help_text }}</small>
+    {# Reporting template #}
+    {% if form.report_template %}
+    <label for="{{ form.report_template.id_for_label }}">
+        {{ form.report_template.label }}
+        {{ form.report_template }}
+        {% if form.report_template.help_text %}
+        <small>{{ form.report_template.help_text }}</small>
         {% endif %}
-        {% if form.funder_profile.errors %}
-        <small class="error" role="alert">{{ form.funder_profile.errors.0 }}</small>
+        {% if form.report_template.errors %}
+        <small class="error" role="alert">{{ form.report_template.errors.0 }}</small>
         {% endif %}
     </label>
     {% endif %}
 
-    {# Legacy single-field grouping (ignored when funder profile selected) #}
+    {# Grouping (used when no reporting template is selected) #}
     <label for="{{ form.group_by.id_for_label }}">
         {{ form.group_by.label }}
         {{ form.group_by }}
@@ -167,7 +167,7 @@
 
     {# Recipient tracking for audit purposes #}
     <fieldset>
-        <legend>{% trans "Export Recipient" %}</legend>
+        <legend>{% trans "Export recipient details" %}</legend>
         <p class="helper-text" style="margin-bottom: 1rem; color: var(--pico-muted-color);">
             {% trans "For audit purposes, please indicate who will receive this exported data." %}
         </p>
@@ -181,14 +181,14 @@
             <small class="error" role="alert">{{ form.recipient.errors.0 }}</small>
             {% endif %}
         </label>
-        <label for="{{ form.recipient_detail.id_for_label }}" id="recipient-detail-wrapper">
-            {{ form.recipient_detail.label }}
-            {{ form.recipient_detail }}
-            {% if form.recipient_detail.help_text %}
-            <small>{{ form.recipient_detail.help_text }}</small>
+        <label for="{{ form.recipient_reason.id_for_label }}" id="recipient-detail-wrapper">
+            {{ form.recipient_reason.label }}
+            {{ form.recipient_reason }}
+            {% if form.recipient_reason.help_text %}
+            <small>{{ form.recipient_reason.help_text }}</small>
             {% endif %}
-            {% if form.recipient_detail.errors %}
-            <small class="error" role="alert">{{ form.recipient_detail.errors.0 }}</small>
+            {% if form.recipient_reason.errors %}
+            <small class="error" role="alert">{{ form.recipient_reason.errors.0 }}</small>
             {% endif %}
         </label>
     </fieldset>

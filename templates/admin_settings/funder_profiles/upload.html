@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Upload Funder Profile" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% trans "Upload Report Template" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% trans "Upload Funder Profile" %}</h1>
-    <p>{% trans "Upload a CSV defining a funder's demographic breakdown categories." %}</p>
+    <h1>{% trans "Upload Report Template" %}</h1>
+    <p>{% trans "Upload a CSV defining reporting demographic breakdown categories." %}</p>
 </hgroup>
 
 <article aria-label="{% trans 'Instructions' %}" style="margin-bottom: 1.5rem;">
-    <strong><span aria-hidden="true">💡</span> {% trans "How to create a profile CSV" %}</strong>
+    <strong><span aria-hidden="true">💡</span> {% trans "How to create a template CSV" %}</strong>
     <p style="margin-bottom: 0;">
-        {% blocktrans %}Use a Claude session to analyse your funder's reporting requirements document. Claude can generate a correctly formatted CSV for you. You can also <a href="#sample">download a sample CSV</a> to see the format.{% endblocktrans %}
+        {% blocktrans %}Use a Claude session to analyse a reporting requirements document. Claude can generate a correctly formatted CSV for you. You can also <a href="#sample">download a sample CSV</a> to see the format.{% endblocktrans %}
     </p>
 </article>
 
@@ -50,13 +50,13 @@
 
     <div style="margin-top: 1rem;">
         <button type="submit">{% trans "Parse & Preview" %}</button>
-        <a href="{% url 'admin_settings:funder_profile_list' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+        <a href="{% url 'admin_settings:report_template_list' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
 
 <p id="sample" style="margin-top: 1rem;">
-    <a href="{% url 'admin_settings:funder_profile_sample_csv' %}">{% trans "Download sample CSV" %}</a>
+    <a href="{% url 'admin_settings:report_template_sample_csv' %}">{% trans "Download sample CSV" %}</a>
 </p>
 
-<p><a href="{% url 'admin_settings:funder_profile_list' %}">{% trans "← Back to Profiles" %}</a></p>
+<p><a href="{% url 'admin_settings:report_template_list' %}">{% trans "← Back to Templates" %}</a></p>
 {% endblock %}

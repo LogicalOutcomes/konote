@@ -1,4 +1,4 @@
-"""Audit log viewer — admin, executive, and program manager access."""
+"""Audit log viewer — admin and program manager access."""
 import csv
 from datetime import datetime
 
@@ -203,19 +203,19 @@ def program_audit_log(request, program_id):
     """Program manager view: audit log for their program's clients.
 
     Shows all audit entries where the resource is a client enrolled in
-    this program. Access limited to program_manager or executive role.
+    this program. Access limited to program_manager role.
     """
     from apps.clients.models import ClientProgramEnrolment
     from apps.programs.models import Program, UserProgramRole
 
     program = get_object_or_404(Program, pk=program_id)
 
-    # Check access: user must be program_manager or executive for this program
+    # Check access: user must be program_manager for this program
     role = UserProgramRole.objects.filter(
         user=request.user,
         program=program,
         status="active",
-        role__in=["program_manager", "executive"],
+        role="program_manager",
     ).first()
 
     if not role:

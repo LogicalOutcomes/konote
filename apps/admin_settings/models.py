@@ -23,8 +23,8 @@ DEFAULT_TERMS = {
     "metric": ("Metric", "Indicateur"),
     "metric_plural": ("Metrics", "Indicateurs"),
     # Notes
-    "progress_note": ("Progress Note", "Note de suivi"),
-    "progress_note_plural": ("Progress Notes", "Notes de suivi"),
+    "progress_note": ("Note", "Note de suivi"),
+    "progress_note_plural": ("Notes", "Notes de suivi"),
     "quick_note": ("Quick Note", "Note rapide"),
     "quick_note_plural": ("Quick Notes", "Notes rapides"),
     # Events & alerts

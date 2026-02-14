@@ -9,7 +9,7 @@
     {% if is_admin %}
     <p>{% blocktrans with programs=term.program_plural|default:"programs" %}Manage organisational {{ programs }}.{% endblocktrans %}</p>
     {% else %}
-    <p>{% blocktrans with programs=term.program_plural|default:"programs" %}Your assigned {{ programs }}.{% endblocktrans %}</p>
+    <p>{% blocktrans with programs=term.program_plural|default:"programs" %}All {{ programs }} in this instance.{% endblocktrans %}</p>
     {% endif %}
 </hgroup>
 

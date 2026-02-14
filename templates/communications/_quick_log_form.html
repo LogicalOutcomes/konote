@@ -1,19 +1,14 @@
 {% load i18n %}
 {# HTMX inline form for recording a contact #}
 <div id="quick-log-container" class="quick-log-section">
-    <h2>
-        {% if channel == "phone" %}{% trans "Record a Call" %}
-        {% elif channel == "sms" %}{% trans "Record a Text" %}
-        {% elif channel == "email" %}{% trans "Record an Email" %}
-        {% elif channel == "in_person" %}{% trans "Record a Visit" %}
-        {% else %}{% trans "Record a Contact" %}
-        {% endif %}
-    </h2>
+    <h2>{% trans "Record Communication" %}</h2>
+    <p><small class="secondary">{% trans "Use this for contact logs. Use Notes for session progress, goals, and clinical detail." %}</small></p>
 
     <form hx-post="{% url 'communications:quick_log' client_id=client.pk %}"
           hx-target="#quick-log-container"
           hx-swap="outerHTML">
         {% csrf_token %}
+        <label for="id_channel">{{ form.channel.label }}</label>
         {{ form.channel }}
         {{ form.direction }}
 
@@ -26,7 +21,7 @@
         <div class="grid" style="margin-top: 0.5rem;">
             <button type="submit">{% trans "Save" %}</button>
             <button type="button" class="outline secondary"
-                    hx-get="{% url 'communications:quick_log' client_id=client.pk %}"
+                    hx-get="{% url 'communications:quick_log' client_id=client.pk %}?mode=buttons"
                     hx-target="#quick-log-container"
                     hx-swap="outerHTML">
                 {% trans "Cancel" %}

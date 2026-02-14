@@ -10,6 +10,10 @@
     <p>{% trans "Review staff recommendations to cancel safety alerts." %}</p>
 </hgroup>
 
+<article>
+    <p>{% trans "The Reviews menu currently contains alert cancellation recommendations only." %}</p>
+</article>
+
 {% if pending_recommendations %}
 {% for rec in pending_recommendations %}
 <article aria-label="{% trans 'cancellation recommendation' %}">

@@ -1,21 +1,21 @@
-# Funder Demographic Profiles
+# Report Templates
 
-Funder profiles let you define custom demographic breakdowns for reports. Different funders may define age categories differently (e.g. "youth" as 13–24 vs 15–29) or require additional demographic groupings beyond age.
+Report templates let you define custom demographic breakdowns for reports. Different funders may define age categories differently (e.g. "youth" as 13–24 vs 15–29) or require additional demographic groupings beyond age.
 
 ## How It Works
 
-1. **Analyse funder requirements** — Use a Claude session with your funder's reporting template or guidelines. Ask Claude to generate a funder profile CSV.
-2. **Upload the CSV** — Go to **Settings → Funder Profiles → Upload New Profile**. Upload the CSV file or paste the CSV text directly.
-3. **Preview and confirm** — Review the parsed breakdowns and assign the profile to the relevant programs.
-4. **Use in reports** — When generating a report, select the funder profile from the dropdown. The report will use the funder's specific age bins and category merges.
+1. **Analyse reporting requirements** — Use a Claude session with your reporting template or guidelines. Ask Claude to generate a report template CSV.
+2. **Upload the CSV** — Go to **Settings → Report Templates → Upload New Template**. Upload the CSV file or paste the CSV text directly.
+3. **Preview and confirm** — Review the parsed breakdowns and assign the template to the relevant programs.
+4. **Use in reports** — When generating a report, select the report template from the dropdown. The report will use the selected age bins and category merges.
 
 ## Who Can Do What
 
 | Action | Role |
 |---|---|
-| Create/edit/delete funder profiles | Administrator only |
-| View and select profiles in reports | Executive, Program Manager, Administrator |
-| Generate profile CSVs | Anyone (outside the app, using Claude) |
+| Create/edit/delete report templates | Administrator only |
+| View and select templates in reports | Executive, Program Manager, Administrator |
+| Generate template CSVs | Anyone (outside the app, using Claude) |
 
 ## CSV Format
 
@@ -23,7 +23,7 @@ The CSV uses a simple row-type format. Each row starts with a type keyword:
 
 | Row Type | Columns | Description |
 |---|---|---|
-| `profile_name` | name | The profile's display name |
+| `profile_name` | name | The template's display name |
 | `profile_description` | description | Optional description |
 | `breakdown` | label, source_type, [field_name] | Start a new breakdown section. Source type is `age` or `custom_field` |
 | `bin` | breakdown_label, min_age, max_age, label | An age bin (only for `age` breakdowns) |
@@ -33,8 +33,8 @@ The CSV uses a simple row-type format. Each row starts with a type keyword:
 ### Example CSV
 
 ```csv
-profile_name,Youth Services Funder
-profile_description,Custom age bins for the XYZ Foundation youth grant
+profile_name,Reporting template
+profile_description,Sample report template for Canadian Community Fund quarterly outcomes
 
 breakdown,Age Categories,age
 bin,Age Categories,0,14,Child (0-14)
@@ -63,16 +63,18 @@ KoNote includes a **Standard Canadian Nonprofit** default profile with these age
 
 To create this default, run: `python manage.py seed_default_funder_profile`
 
+In demo mode, the app also seeds a sample template named **Reporting template** with example requirements for **Canadian Community Fund**.
+
 ## Tips
 
 - **Use Claude to generate CSVs** — Provide your funder's reporting template and ask Claude to produce the CSV. This avoids manual formatting errors.
-- **One profile per funder** — Create a separate profile for each funder with distinct reporting requirements.
-- **Assign to programs** — A profile must be linked to at least one program to appear in report forms.
-- **Download and re-upload** — You can download a profile's CSV from the detail page, edit it, and upload as a new profile.
+- **One template per reporting format** — Create separate templates where requirements differ.
+- **Assign to programs** — A template must be linked to at least one program to appear in report forms.
+- **Download and re-upload** — You can download a template's CSV from the detail page, edit it, and upload as a new template.
 
 ## Privacy Safeguards
 
-Funder profiles control how aggregate data is grouped — they do not expose individual client data. The reporting system enforces these safeguards regardless of profile configuration:
+Report templates control how aggregate data is grouped — they do not expose individual client data. The reporting system enforces these safeguards regardless of template configuration:
 
 - **Confidential programs** — No demographic grouping is allowed.
 - **Small programs** — Programs with fewer than 50 enrolled clients cannot use demographic grouping.

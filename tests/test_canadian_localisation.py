@@ -403,14 +403,14 @@ class ProvinceTerritorySeedTest(TestCase):
         self.assertIn("Nunavut", province_options)
         self.assertIn("Yukon", province_options)
 
-    def test_province_field_is_select_type(self):
-        """Province or Territory should be a dropdown (select) field."""
+    def test_province_field_is_select_other_type(self):
+        """Province or Territory should be a dropdown with Other text support."""
         from apps.clients.management.commands.seed_intake_fields import INTAKE_FIELD_GROUPS
 
         for group_title, sort_order, fields in INTAKE_FIELD_GROUPS:
             for field_data in fields:
                 if field_data[0] == "Province or Territory":
-                    self.assertEqual(field_data[1], "select")
+                    self.assertEqual(field_data[1], "select_other")
                     return
         self.fail("Province or Territory field not found")
 

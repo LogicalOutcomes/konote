@@ -86,16 +86,16 @@
     </article>
 
     <article>
-        <header>{% trans "Funder Profiles" %}</header>
-        <p>{% trans "Define funder-specific demographic breakdowns for reports (age bins, category merging)." %}</p>
+        <header>{% trans "Report Templates" %}</header>
+        <p>{% trans "Define reporting templates for demographic and category breakdowns in reports." %}</p>
         <p class="settings-indicator">
-            {% if funder_profile_count %}
-                {% blocktrans count count=funder_profile_count %}{{ count }} profile{% plural %}{{ count }} profiles{% endblocktrans %}
+            {% if report_template_count %}
+                {% blocktrans count count=report_template_count %}{{ count }} template{% plural %}{{ count }} templates{% endblocktrans %}
             {% else %}
-                {% trans "No profiles configured" %}
+                {% trans "No templates configured" %}
             {% endif %}
         </p>
-        <footer><a href="{% url 'admin_settings:funder_profile_list' %}" role="button" class="outline">{% trans "Manage Profiles" %}</a></footer>
+        <footer><a href="{% url 'admin_settings:report_template_list' %}" role="button" class="outline">{% trans "Manage Templates" %}</a></footer>
     </article>
 </div>
 {% endblock %}

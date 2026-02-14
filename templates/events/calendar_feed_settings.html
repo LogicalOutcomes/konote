@@ -18,6 +18,15 @@
         <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feed-url').value)" class="outline">{% trans "Copy" %}</button>
     </div>
     <small class="secondary">{% trans "Paste this URL into your calendar app's \"Subscribe\" or \"Add calendar from URL\" option." %}</small>
+
+    {% if outlook_subscribe_url %}
+    <label for="outlook-url" style="margin-top: 1rem;">{% trans "Outlook subscribe URL:" %}</label>
+    <div role="group">
+        <input type="text" id="outlook-url" value="{{ outlook_subscribe_url }}" readonly aria-label="{% trans 'Outlook subscribe URL' %}">
+        <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('outlook-url').value)" class="outline">{% trans "Copy" %}</button>
+    </div>
+    <small class="secondary">{% trans "Use this webcal URL in Outlook if the standard URL shows an error." %}</small>
+    {% endif %}
 </section>
 
 <details>
@@ -33,7 +42,7 @@
     <ol>
         <li>{% trans "Open Outlook Calendar" %}</li>
         <li>{% trans "Click \"Add calendar\" then \"Subscribe from web\"" %}</li>
-        <li>{% trans "Paste the URL above" %}</li>
+        <li>{% trans "Paste the Outlook subscribe URL above" %}</li>
     </ol>
 </details>
 

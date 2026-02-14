@@ -343,10 +343,10 @@ class ProgramAuditLogTests(TestCase):
         resp = self.client.get(self._url())
         self.assertEqual(resp.status_code, 200)
 
-    def test_executive_can_view(self):
+    def test_executive_gets_403(self):
         self.client.login(username="exec", password="testpass123")
         resp = self.client.get(self._url())
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, 403)
 
     def test_caseworker_gets_403(self):
         """Staff (caseworker) role does not have access to program audit log."""

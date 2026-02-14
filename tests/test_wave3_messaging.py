@@ -539,6 +539,27 @@ class MessagingFeatureToggleTests(TestCase):
         self.assertContains(response, "Send Reminder")
 
 
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MeetingListLayoutTests(TestCase):
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        _create_test_fixtures(self)
+        self.client.login(username="wave3_staff", password="testpass123")
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_meeting_list_includes_calendar_ui_layout_regions(self):
+        _create_meeting(self)
+        response = self.client.get("/events/meetings/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "meetings-summary-bar")
+        self.assertContains(response, "meetings-list")
+        self.assertContains(response, "meetings-feed-link")
+
+
 # -----------------------------------------------------------------------
 # Messaging settings page tests
 # -----------------------------------------------------------------------

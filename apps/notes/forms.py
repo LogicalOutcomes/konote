@@ -38,12 +38,9 @@ class QuickNoteForm(forms.Form):
         help_text=_("(optional — adds to your home page reminders)"),
     )
     consent_confirmed = forms.BooleanField(
-        required=True,
+        required=False,
         label=_("We created this note together"),
         help_text=_("Confirm you reviewed this note with the participant."),
-        error_messages={
-            "required": _("Please confirm you reviewed this note together."),
-        },
     )
 
     def clean_notes_text(self):

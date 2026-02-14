@@ -152,13 +152,14 @@ class QuickLogViewTest(TestCase):
     def tearDown(self):
         enc_module._fernet = None
 
-    def test_get_no_channel_returns_buttons(self):
-        """GET without ?channel returns the quick-log buttons partial."""
+    def test_get_no_channel_returns_unified_form(self):
+        """GET without ?channel returns the unified quick-log form."""
         self.client.login(username="test_staff", password="testpass123")
         url = f"/communications/client/{self.client_file.pk}/quick-log/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Record a Call")
+        self.assertContains(response, "Record Communication")
+        self.assertContains(response, "Channel")
 
     def test_get_with_channel_returns_form(self):
         """GET with ?channel=phone returns the mini form."""

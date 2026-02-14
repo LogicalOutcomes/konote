@@ -73,6 +73,9 @@
             {% if can_see_clients %}
             <li><a href="/"{% if nav_active == "clients" %} class="nav-active" aria-current="page"{% endif %}>{{ term.client_plural|default:"Participants" }}</a></li>
             {% endif %}
+            {% if features.groups and can_see_groups %}
+            <li><a href="/groups/"{% if nav_active == "groups" %} class="nav-active" aria-current="page"{% endif %}>{{ term.group_plural|default:"Groups" }}</a></li>
+            {% endif %}
             {% has_permission "meeting.view" as can_see_meetings %}
             {% if can_see_meetings %}
             <li><a href="{% url 'events:meeting_list' %}"{% if nav_active == "meetings" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Meetings" %}</a></li>
@@ -88,9 +91,6 @@
             {% endif %}
             {% if can_see_reports or user.is_admin %}
             <li><a href="/reports/export/"{% if nav_active == "reports" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reports" %}</a></li>
-            {% endif %}
-            {% if features.groups and can_see_groups %}
-            <li><a href="/groups/"{% if nav_active == "groups" %} class="nav-active" aria-current="page"{% endif %}>{{ term.group_plural|default:"Groups" }}</a></li>
             {% endif %}
             {% has_permission "alert.review_cancel_recommendation" as can_review_recommendations %}
             {% if can_review_recommendations %}
@@ -108,7 +108,7 @@
                         <li><a href="/admin/registration/">{% trans "Registration Links" %}</a></li>
                         <li><a href="/admin/submissions/">{% trans "Pending Submissions" %}{% if pending_submissions_count %} <span class="badge badge-warning">{{ pending_submissions_count }}</span>{% endif %}</a></li>
                         <li><a href="/admin/settings/">{% trans "Settings" %}</a></li>
-                        <li><a href="/admin/settings/funder-profiles/">{% trans "Funder Profiles" %}</a></li>
+                        <li><a href="/admin/settings/report-templates/">{% trans "Report Templates" %}</a></li>
                         <li><a href="/admin/users/invites/">{% trans "New Users" %}</a></li>
                         <li><a href="/admin/audit/">{% trans "Audit Log" %}</a></li>
                         <li><a href="/merge/">{% trans "Merge Duplicates" %}</a></li>

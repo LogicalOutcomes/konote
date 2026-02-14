@@ -133,6 +133,12 @@ class EventCRUDTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Test event")
 
+    def test_event_list_meeting_button_has_visibility_class(self):
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/events/client/{self.client_file.pk}/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "meeting-create-btn")
+
     def test_event_create_all_day(self):
         """All-day events should save with date only (time at midnight)."""
         self.http.login(username="staff", password="pass")
@@ -168,8 +174,8 @@ class EventCRUDTest(TestCase):
         self.assertEqual(resp.status_code, 302)
         event = Event.objects.first()
         self.assertTrue(event.all_day)
-        self.assertEqual(event.start_timestamp.date().isoformat(), "2026-03-15")
-        self.assertEqual(event.end_timestamp.date().isoformat(), "2026-03-17")
+        self.assertEqual(timezone.localtime(event.start_timestamp).date().isoformat(), "2026-03-15")
+        self.assertEqual(timezone.localtime(event.end_timestamp).date().isoformat(), "2026-03-17")
 
     def test_event_list_shows_all_day_badge(self):
         """All-day events should display 'All Day' badge in timeline."""
@@ -201,6 +207,13 @@ class EventCRUDTest(TestCase):
         # Should re-render the form with errors, not redirect
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(Event.objects.count(), 0)
+
+    def test_meeting_create_form_explains_required_and_picker(self):
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/events/client/{self.client_file.pk}/meetings/create/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "* Required field.")
+        self.assertContains(resp, "Open calendar and time picker")
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)

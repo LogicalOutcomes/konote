@@ -10,7 +10,7 @@ This guide covers everything administrators need to configure, maintain, and sec
 | Create user accounts | [User Management](#user-management) |
 | Back up my data | [Backup and Restore](#backup-and-restore) |
 | Configure messaging and reminders | [Messaging Settings](#messaging-settings) |
-| Set up funder reporting profiles | [Funder Profile Setup](#funder-profile-setup) |
+| Set up report templates | [Report Template Setup](#report-template-setup) |
 | Run security checks | [Security Operations](#security-operations) |
 
 ---
@@ -244,6 +244,8 @@ Staff can also select **"Freeform"** for unstructured notes without pre-defined 
 - Include a "Plan progress" section (Plan Targets type) to capture outcome metrics
 - Archive templates instead of deleting them to preserve historical data
 
+**Note consent checkbox:** When staff create or edit a progress note, they see a checkbox labelled "We created this note together (this is recommended)." This checkbox is **optional by default** — staff can save a note without ticking it. The checkbox encourages co-creation with participants but does not block note submission, because a mandatory tick can become a reflexive click that creates a false audit trail. If your agency's internal policy requires documented co-creation confirmation on every note, contact your KoNote administrator to discuss re-enabling this as a required field.
+
 ---
 
 ### Configure Custom Fields
@@ -324,19 +326,19 @@ Staff can subscribe to their KoNote meetings in external calendar apps such as O
 
 ---
 
-### Funder Profile Setup
+### Report Template Setup
 
-Funder profiles let you customise how demographic breakdowns appear in funder reports.
+Report templates let you customise how demographic breakdowns appear in reports.
 
-**To create a funder profile:**
+**To create a report template:**
 
-1. Click **Admin** → **Funder Profiles**
+1. Click **Admin** → **Report Templates**
 2. Click **Upload CSV** — download the sample CSV template first if needed
 3. The CSV defines demographic dimensions: age bins, custom field categories, and merged categories
 4. Preview the profile, then confirm to save
-5. Link programs to the funder profile
+5. Link programs to the report template
 
-When executives export funder reports, they can select a funder profile to use custom demographic breakdowns instead of the defaults.
+When executives export reports, they can select a report template to use custom demographic breakdowns instead of the defaults.
 
 **Small-cell suppression:** If any demographic group has fewer than 5 clients, the count is suppressed (shown as "<5") to prevent identification of individuals. This is standard practice for Canadian funders.
 
