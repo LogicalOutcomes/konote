@@ -85,7 +85,7 @@ class Command(BaseCommand):
             ("groups", True),
             ("participant_portal", False),
             ("messaging_sms", False),
-            ("messaging_email", False),
+            ("messaging_email", True),
         ]
         created = 0
         for key, enabled in defaults:
@@ -119,6 +119,9 @@ class Command(BaseCommand):
             "print_header": "",
             "print_footer": "CONFIDENTIAL",
             "default_client_tab": "notes",
+            "messaging_profile": "staff_sent",
+            "document_storage_provider": "google_drive",
+            "document_storage_url_template": "https://drive.google.com/drive/search?q={record_id}",
         }
         created = 0
         for key, value in defaults.items():
