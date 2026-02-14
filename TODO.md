@@ -92,14 +92,14 @@ All docs lagged behind recent feature work (messaging, calendar, meetings, conse
 
 7 new scenarios (SCN-080 through SCN-086) covering messaging, meetings, calendar, consent guardrails, permission enforcement, and funder reporting. Scenarios go in konote-qa-scenarios repo; test methods go here.
 
-- [ ] Write SCN-085 — front desk denied messaging/meetings (QA-SCN1)
-- [ ] Write SCN-080 — staff logs a phone call via quick-log (QA-SCN2)
-- [ ] Write SCN-083 — staff sets up calendar feed (QA-SCN3)
-- [ ] Write SCN-081 — staff schedules meeting and sends reminder (QA-SCN4)
-- [ ] Write SCN-082 — PM reviews meeting dashboard and updates status (QA-SCN5)
-- [ ] Write SCN-084 — consent/messaging interaction with consent blocks (QA-SCN6)
-- [ ] Write SCN-086 — funder report with small-cell suppression (QA-SCN7)
-- [ ] Add test methods for SCN-080–086 in tests/scenario_eval/test_scenario_eval.py (QA-SCN8)
+- [x] Write SCN-085 — front desk denied messaging/meetings — 2026-02-13 (QA-SCN1)
+- [x] Write SCN-080 — staff logs a phone call via quick-log — 2026-02-13 (QA-SCN2)
+- [x] Write SCN-083 — staff sets up calendar feed — 2026-02-13 (QA-SCN3)
+- [x] Write SCN-081 — staff schedules meeting and sends reminder — 2026-02-13 (QA-SCN4)
+- [x] Write SCN-082 — PM reviews meeting dashboard and updates status — 2026-02-13 (QA-SCN5)
+- [x] Write SCN-084 — consent/messaging interaction with consent blocks — 2026-02-13 (QA-SCN6)
+- [x] Write SCN-086 — funder report with small-cell suppression — 2026-02-13 (QA-SCN7)
+- [x] Add test methods for SCN-080–086 in tests/scenario_eval/test_scenario_eval.py — 2026-02-13 (QA-SCN8)
 - [x] Verify seed_demo_data has prerequisite data for new scenarios — 2026-02-13 (QA-SCN10)
 
 ### Messaging, Meetings & Calendar
