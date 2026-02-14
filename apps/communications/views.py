@@ -68,8 +68,9 @@ def quick_log(request, client_id):
                 logged_by=request.user,
                 content=form.cleaned_data.get("notes", ""),
                 author_program=get_author_program(request.user, client),
+                outcome=form.cleaned_data.get("outcome", ""),
             )
-            messages.success(request, _("Communication logged."))
+            messages.success(request, _("Contact recorded."))
 
             # Return updated buttons (HTMX swaps the whole container)
             recent = (
@@ -105,7 +106,7 @@ def quick_log(request, client_id):
 @login_required
 @requires_permission("communication.log", _get_program_from_client)
 def communication_log(request, client_id):
-    """Full form for detailed communication logging — all fields available."""
+    """Full form for detailed contact logging — all fields available."""
     client = get_client_or_403(request, client_id)
     if client is None:
         return HttpResponseForbidden(_("You do not have access to this client."))
@@ -123,8 +124,9 @@ def communication_log(request, client_id):
                 content=form.cleaned_data.get("content", ""),
                 subject=form.cleaned_data.get("subject", ""),
                 author_program=get_author_program(request.user, client),
+                outcome=form.cleaned_data.get("outcome", ""),
             )
-            messages.success(request, _("Communication logged."))
+            messages.success(request, _("Contact recorded."))
             return redirect("events:event_list", client_id=client.pk)
     else:
         form = CommunicationLogForm()

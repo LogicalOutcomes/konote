@@ -9,6 +9,8 @@ This guide covers everything administrators need to configure, maintain, and sec
 | Set up public registration forms | [Registration Forms](#set-up-registration-forms) |
 | Create user accounts | [User Management](#user-management) |
 | Back up my data | [Backup and Restore](#backup-and-restore) |
+| Configure messaging and reminders | [Messaging Settings](#messaging-settings) |
+| Set up funder reporting profiles | [Funder Profile Setup](#funder-profile-setup) |
 | Run security checks | [Security Operations](#security-operations) |
 
 ---
@@ -97,6 +99,8 @@ Toggle features based on your workflow.
 | **Metric Alerts** | Notify staff when metrics hit thresholds |
 | **Event Tracking** | Record intake, discharge, crisis, etc. |
 | **Funder Report Exports** | Generate formatted reports for funders |
+| **SMS Messaging** | Send text message reminders to clients (requires Twilio) |
+| **Email Messaging** | Send email reminders to clients (requires SMTP) |
 
 3. Click **Save**
 
@@ -259,6 +263,82 @@ Capture agency-specific information not in the standard client form.
    - **Required:** Staff must fill in
    - **Sensitive:** Contains private information
    - **Choices:** (for dropdowns) "Government, Private, Foundation"
+
+---
+
+### Messaging Settings
+
+KoNote can log communications and optionally send SMS or email reminders to clients.
+
+**Two modes:**
+
+| Mode | What it does |
+|------|--------------|
+| **Record-keeping only** (default) | Staff log phone calls, emails, and texts manually. No messages are actually sent. |
+| **Active messaging** | Staff can send SMS and email reminders to clients who have consented. |
+
+**To configure messaging:**
+
+1. Click **gear icon** → **Features**
+2. Enable **SMS Messaging** and/or **Email Messaging**
+3. Click **gear icon** → **Instance Settings** → **Messaging**
+4. Choose a messaging profile: **Record keeping** or **Active**
+
+**Safety-First mode:** If enabled, this blocks ALL outbound messages regardless of other settings. Use this during setup and testing to make sure no real messages go out while you're configuring things.
+
+**SMS setup:** Requires a Twilio account. Add the following to your environment variables:
+
+| Variable | What it is |
+|----------|------------|
+| `TWILIO_ACCOUNT_SID` | Your Twilio account identifier |
+| `TWILIO_AUTH_TOKEN` | Your Twilio authentication token |
+| `TWILIO_FROM_NUMBER` | The phone number messages are sent from |
+
+**Email setup:** Requires SMTP configuration. Add the following to your environment variables:
+
+| Variable | What it is |
+|----------|------------|
+| `EMAIL_HOST` | Your mail server address |
+| `EMAIL_PORT` | Mail server port (typically 587 for TLS) |
+| `EMAIL_HOST_USER` | SMTP username |
+| `EMAIL_HOST_PASSWORD` | SMTP password |
+| `DEFAULT_FROM_EMAIL` | The "from" address on outgoing emails |
+
+See `.env.example` for details and example values.
+
+**Health warnings:** If SMS or email delivery fails repeatedly, staff see a warning banner on the Meetings page. Admins receive an email alert after 3 or more consecutive failures.
+
+---
+
+### Calendar Feed Token Management
+
+Staff can subscribe to their KoNote meetings in external calendar apps such as Outlook, Google Calendar, or Apple Calendar.
+
+**How it works:**
+- Each staff member generates their own feed URL from **Meetings** → **Calendar Feed Settings**
+- Feed tokens are private — each user's feed only shows meetings where they are an attendee
+- **Privacy:** Calendar entries display initials and record ID only (no full names, phone numbers, or email addresses)
+- If a staff member leaves, deactivating their user account also invalidates their calendar feed token
+
+**No admin action is needed for day-to-day management** — staff self-serve. You only need to be aware that deactivating a user also cuts off their calendar feed.
+
+---
+
+### Funder Profile Setup
+
+Funder profiles let you customise how demographic breakdowns appear in funder reports.
+
+**To create a funder profile:**
+
+1. Click **Admin** → **Funder Profiles**
+2. Click **Upload CSV** — download the sample CSV template first if needed
+3. The CSV defines demographic dimensions: age bins, custom field categories, and merged categories
+4. Preview the profile, then confirm to save
+5. Link programs to the funder profile
+
+When executives export funder reports, they can select a funder profile to use custom demographic breakdowns instead of the defaults.
+
+**Small-cell suppression:** If any demographic group has fewer than 5 clients, the count is suppressed (shown as "<5") to prevent identification of individuals. This is standard practice for Canadian funders.
 
 ---
 
@@ -782,5 +862,5 @@ Some privacy regulations require the ability to permanently delete personal data
 
 ---
 
-**Version 2.0** — KoNote
-Last updated: 2026-02-05
+**Version 2.1** — KoNote
+Last updated: 2026-02-13

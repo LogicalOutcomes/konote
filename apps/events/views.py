@@ -500,7 +500,7 @@ def _get_program_from_meeting(request, event_id, **kwargs):
 # ---------------------------------------------------------------------------
 
 @login_required
-@requires_permission("event.create", _get_program_from_client)
+@requires_permission("meeting.create", _get_program_from_client)
 def meeting_create(request, client_id):
     """Quick-create a meeting for a client (3 fields, under 60 seconds)."""
     client = _get_client_or_403(request, client_id)
@@ -541,7 +541,7 @@ def meeting_create(request, client_id):
 
 
 @login_required
-@requires_permission("event.create", _get_program_from_meeting)
+@requires_permission("meeting.edit", _get_program_from_meeting)
 def meeting_update(request, client_id, event_id):
     """Full edit form for an existing meeting."""
     client = _get_client_or_403(request, client_id)
@@ -653,7 +653,7 @@ def meeting_list(request):
 
 
 @login_required
-@requires_permission("event.create", _get_program_from_meeting)
+@requires_permission("meeting.edit", _get_program_from_meeting)
 def meeting_status_update(request, event_id):
     """HTMX partial: update meeting status (scheduled/completed/cancelled/no_show)."""
     if request.method != "POST":

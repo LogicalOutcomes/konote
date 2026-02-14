@@ -107,6 +107,7 @@ KoNote-web/
 │   ├── plans/                 # PlanSection, PlanTarget, Metrics
 │   ├── notes/                 # ProgressNote, MetricValue
 │   ├── events/                # Event, EventType, Alert
+│   ├── communications/       # Communication logging and messaging
 │   ├── admin_settings/        # Terminology, Features, Settings
 │   ├── audit/                 # AuditLog (separate DB)
 │   └── reports/               # CSV export, charts, PDFs
@@ -267,6 +268,30 @@ GRANT USAGE, SELECT ON SEQUENCE audit_auditlog_id_seq TO konote_audit;
 | `Event` | Discrete occurrence (intake, discharge) |
 | `EventType` | Category with colour coding |
 | `Alert` | Safety/care notes on client file |
+| `AlertCancellationRecommendation` | Two-person safety rule for alert cancellation |
+| `Meeting` | Scheduled client meeting (OneToOne with Event) |
+| `CalendarFeedToken` | Token-based iCal feed authentication |
+
+### communications
+**Purpose:** Client interaction logging and messaging
+
+| Model | Description |
+|-------|-------------|
+| `Communication` | Logged interaction (phone, email, SMS, in-person) with encrypted content |
+| `SystemHealthCheck` | Tracks SMS/email delivery health for staff warnings |
+
+**Key Views:**
+- `quick_log` — Two-click communication logging (channel buttons)
+- `communication_log` — Full form with direction, subject, content
+- `send_reminder_preview` — Preview and send meeting reminder (SMS or email)
+- `email_unsubscribe` — Public token-based consent withdrawal
+
+**Services Layer** (`apps/communications/services.py`):
+- `check_consent(client, channel)` — CASL consent verification
+- `can_send(client, channel)` — Full pre-send check chain (safety mode → profile → toggle → consent → contact info)
+- `send_reminder(meeting, logged_by, personal_note)` — Orchestrates SMS/email delivery
+- `send_sms(phone, body)` — Twilio integration
+- `send_email_message(email, subject, body_text, body_html)` — Django SMTP
 
 ### admin_settings
 **Purpose:** Instance configuration
@@ -337,6 +362,16 @@ class ClientFile(models.Model):
     programs = models.ManyToManyField(Program, through='ClientProgramEnrolment')
     created_by = models.ForeignKey(User, on_delete=models.PROTECT)
 ```
+
+**Consent & Contact Fields (added for messaging):**
+- `phone`, `email` — Encrypted PII (property accessors)
+- `has_phone`, `has_email` — Boolean flags for quick existence checks without decryption
+- `sms_consent`, `email_consent` — CASL consent booleans
+- `sms_consent_date`, `email_consent_date` — When consent was given
+- `consent_messaging_type` — `"express"` or `"implied"` (implied expires after 2 years per CASL)
+- `sms_consent_withdrawn_date`, `email_consent_withdrawn_date` — Proof of withdrawal
+- `preferred_language` — `"en"` or `"fr"` for message templates
+- `preferred_contact_method` — `"sms"`, `"email"`, `"both"`, `"none"`
 
 ### AuditLog Model
 
@@ -421,6 +456,18 @@ class ProgramAccessMiddleware:
 
         return self.get_response(request)
 ```
+
+**New Permission Keys:**
+
+| Key | Receptionist | Staff | PM | Executive | Description |
+|-----|-------------|-------|-----|-----------|-------------|
+| `meeting.view` | DENY | SCOPED | ALLOW | DENY | View meetings |
+| `meeting.create` | DENY | SCOPED | SCOPED | DENY | Schedule meetings |
+| `meeting.edit` | DENY | SCOPED | DENY | DENY | Edit meeting details |
+| `communication.log` | DENY | SCOPED | SCOPED | DENY | Log communications |
+| `communication.view` | DENY | SCOPED | ALLOW | DENY | View communication history |
+| `alert.recommend_cancel` | DENY | SCOPED | SCOPED | DENY | Recommend alert cancellation |
+| `alert.review_cancel_recommendation` | DENY | DENY | SCOPED | DENY | Review cancellation recommendations |
 
 ### Audit Logging
 
@@ -652,6 +699,26 @@ MIDDLEWARE = [
 /reports/client-data-export/    GET, POST   Client data CSV export (admin)
 /reports/client/<id>/analysis/  GET         Client analysis charts
 /reports/client/<id>/pdf/       GET         Client progress PDF
+```
+
+### Communications
+
+```
+/communications/client/<id>/quick-log/                  GET, POST   Quick-log communication
+/communications/client/<id>/log/                        GET, POST   Full communication form
+/communications/client/<id>/meeting/<event_id>/send-reminder/  GET, POST   Send meeting reminder
+/communications/unsubscribe/<token>/                    GET, POST   Unsubscribe (public)
+```
+
+### Meetings & Calendar
+
+```
+/events/meetings/                                       GET         Staff meeting dashboard
+/events/client/<id>/meetings/create/                    GET, POST   Schedule meeting
+/events/client/<id>/meetings/<event_id>/                GET, POST   Edit meeting
+/events/meetings/<event_id>/status/                     POST        Update status (HTMX)
+/events/calendar/settings/                              GET, POST   Calendar feed settings
+/calendar/<token>/feed.ics                              GET         iCal feed (public, token auth)
 ```
 
 ### HTMX Endpoints
@@ -1591,22 +1658,22 @@ class InstanceSetting(models.Model):
 
 ### Scheduling & Calendar
 
-**Design Decision:** Out of scope. KoNote is an outcome tracking system, not a scheduling system.
+**Design Decision:** Basic meeting scheduling and iCal calendar feeds are now built in. Complex scheduling features (recurring events, conflicts, timezone handling, external booking) remain out of scope.
 
-**Rationale:**
-- Calendar features (recurring events, conflicts, reminders, timezone handling) represent a separate product category
-- Competitors with calendars (Apricot, ETO, Penelope) have dedicated teams for this feature alone
-- Adding scheduling would dilute focus and increase maintenance burden significantly
+**Built-In Features:**
+- One-off client meeting scheduling (linked to Events via `Meeting` model)
+- Meeting status tracking (scheduled → confirmed → completed / cancelled / no-show)
+- SMS and email meeting reminders (via `communications` app)
+- Personal iCal calendar feed with token-based authentication (`CalendarFeedToken`)
+- Staff meeting dashboard with filtering and HTMX status updates
 
-**Recommended Integrations:**
+**Recommended for Advanced Needs:**
 
 | Need | Recommended Tool | Integration |
 |------|------------------|-------------|
-| Client appointments | Calendly (free tier), Acuity, Microsoft Bookings | Link in notes |
+| Recurring appointments | Calendly (free tier), Acuity, Microsoft Bookings | Link in notes |
 | Group sessions | Google Calendar, Outlook | Link in events |
 | Program scheduling | When2Meet, Doodle | External |
-
-**Documentation:** Create a "Recommended Tools" page listing scheduling options that complement KoNote.
 
 ---
 
@@ -1670,5 +1737,5 @@ When considering a new feature or extension:
 
 ---
 
-**Version 1.3** — KoNote Web Technical Documentation
-Last updated: 2026-02-05
+**Version 1.4** — KoNote Web Technical Documentation
+Last updated: 2026-02-13

@@ -1,12 +1,12 @@
 {% load i18n %}
-{# HTMX inline form for quick-logging a communication #}
+{# HTMX inline form for recording a contact #}
 <div id="quick-log-container" class="quick-log-section">
     <h2>
-        {% if channel == "phone" %}{% trans "Log a Call" %}
-        {% elif channel == "sms" %}{% trans "Log a Text" %}
-        {% elif channel == "email" %}{% trans "Log an Email" %}
-        {% elif channel == "in_person" %}{% trans "Log a Visit" %}
-        {% else %}{% trans "Log Communication" %}
+        {% if channel == "phone" %}{% trans "Record a Call" %}
+        {% elif channel == "sms" %}{% trans "Record a Text" %}
+        {% elif channel == "email" %}{% trans "Record an Email" %}
+        {% elif channel == "in_person" %}{% trans "Record a Visit" %}
+        {% else %}{% trans "Record a Contact" %}
         {% endif %}
     </h2>
 
@@ -16,6 +16,9 @@
         {% csrf_token %}
         {{ form.channel }}
         {{ form.direction }}
+
+        <label for="id_outcome">{% trans "Outcome" %}</label>
+        {{ form.outcome }}
 
         <label for="id_notes">{% trans "Notes (optional)" %}</label>
         {{ form.notes }}

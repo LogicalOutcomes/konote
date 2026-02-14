@@ -181,8 +181,6 @@ def check_dead_permission_keys(app_configs, **kwargs):
         "intake.view",              # Middleware _CLIENT_SCOPED_KEYS (no standalone decorator yet)
         "intake.edit",              # Middleware _CLIENT_SCOPED_KEYS (no standalone decorator yet)
         "meeting.view",             # meeting_list shows user's own meetings (implicit)
-        "meeting.create",           # Uses event.create decorator (meeting is a subtype of event)
-        "meeting.edit",             # Uses event.create decorator (meeting is a subtype of event)
         "communication.view",       # Timeline integration — guarded by event.view on the events tab
     }
 

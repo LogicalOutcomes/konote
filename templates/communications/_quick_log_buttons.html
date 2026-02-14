@@ -1,37 +1,38 @@
 {% load i18n %}
 {% load permissions_tags %}
-{# Quick-action buttons for logging communications — appears on client Events tab #}
+{# Quick-action buttons for recording contacts — appears on client Timeline tab #}
 {% has_permission "communication.log" as can_log_comm %}
 {% if can_log_comm %}
 <div id="quick-log-container" class="quick-log-section">
-    <h2>{% trans "Log Communication" %}</h2>
-    <div class="quick-log-buttons" role="group" aria-label="{% trans 'Quick log communication' %}">
+    <h2>{% trans "Record a Contact" %}</h2>
+    <p><small class="secondary">{% trans "Had a call, email, text, or visit? Record it here so it's part of the client file. For clinical notes with engagement and goals, use a Progress Note instead." %}</small></p>
+    <div class="quick-log-buttons" role="group" aria-label="{% trans 'Record a contact' %}">
         <button class="outline"
                 hx-get="{% url 'communications:quick_log' client_id=client.pk %}?channel=phone"
                 hx-target="#quick-log-container"
                 hx-swap="innerHTML">
-            {% trans "Log a Call" %}
+            {% trans "Record a Call" %}
         </button>
         <button class="outline"
                 hx-get="{% url 'communications:quick_log' client_id=client.pk %}?channel=sms"
                 hx-target="#quick-log-container"
                 hx-swap="innerHTML">
-            {% trans "Log a Text" %}
+            {% trans "Record a Text" %}
         </button>
         <button class="outline"
                 hx-get="{% url 'communications:quick_log' client_id=client.pk %}?channel=email"
                 hx-target="#quick-log-container"
                 hx-swap="innerHTML">
-            {% trans "Log an Email" %}
+            {% trans "Record an Email" %}
         </button>
         <button class="outline"
                 hx-get="{% url 'communications:quick_log' client_id=client.pk %}?channel=in_person"
                 hx-target="#quick-log-container"
                 hx-swap="innerHTML">
-            {% trans "Log a Visit" %}
+            {% trans "Record a Visit" %}
         </button>
     </div>
-    <p><a href="{% url 'communications:communication_log' client_id=client.pk %}" class="secondary" style="font-size: 0.875rem;">{% trans "Full communication log form" %}</a></p>
+    <p><a href="{% url 'communications:communication_log' client_id=client.pk %}" class="secondary" style="font-size: 0.875rem;">{% trans "Detailed contact form" %}</a></p>
 
     {% if recent_communications %}
     <details style="margin-top: 0.5rem;">

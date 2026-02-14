@@ -424,6 +424,59 @@ class ProgramAuditLogTests(TestCase):
         self.assertIn("ClientEntry", displays)
         self.assertNotIn("UnrelatedClient", displays)
 
+    # ── Cross-program scoping (PM sees only own programs) ───────
+
+    def test_pm_only_sees_entries_for_own_programs_on_admin_audit(self):
+        """PM viewing /admin/audit/ should only see entries scoped to their programs."""
+        # Create a second program the manager is NOT assigned to
+        other_program = Program.objects.create(name="Other Program", status="active")
+
+        _create_audit_entry(
+            program_id=self.program.pk,
+            user_display="OwnProgramEntry",
+        )
+        _create_audit_entry(
+            program_id=other_program.pk,
+            user_display="OtherProgramEntry",
+        )
+        # Entry with no program (org-wide, e.g. login) — should also appear
+        # since _scoped_audit_qs filters by program_id__in, NULL is excluded
+        _create_audit_entry(
+            program_id=None,
+            user_display="OrgWideEntry",
+        )
+
+        self.client.login(username="manager", password="testpass123")
+        resp = self.client.get("/admin/audit/")
+        self.assertEqual(resp.status_code, 200)
+
+        page = resp.context["page"]
+        displays = [e.user_display for e in page.object_list]
+        self.assertIn("OwnProgramEntry", displays)
+        self.assertNotIn("OtherProgramEntry", displays)
+        # Org-wide entries (program_id=None) are excluded by scoped filter
+        self.assertNotIn("OrgWideEntry", displays)
+
+    def test_pm_export_only_contains_own_program_entries(self):
+        """PM exporting CSV from /admin/audit/export/ should only get scoped entries."""
+        other_program = Program.objects.create(name="Other Program", status="active")
+
+        _create_audit_entry(
+            program_id=self.program.pk,
+            user_display="OwnExportEntry",
+        )
+        _create_audit_entry(
+            program_id=other_program.pk,
+            user_display="OtherExportEntry",
+        )
+
+        self.client.login(username="manager", password="testpass123")
+        resp = self.client.get("/admin/audit/export/")
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode("utf-8")
+        self.assertIn("OwnExportEntry", content)
+        self.assertNotIn("OtherExportEntry", content)
+
     # ── Filtering within program audit log ───────────────────────
 
     def test_filter_by_action_in_program_log(self):

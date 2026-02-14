@@ -10736,6 +10736,9 @@ msgstr "Échec de livraison du courriel"
 msgid "Full communication log form"
 msgstr "Formulaire complet de communication"
 
+msgid "Detailed contact form"
+msgstr "Formulaire de contact détaillé"
+
 msgid "Loading…"
 msgstr "Chargement…"
 
@@ -10768,6 +10771,9 @@ msgstr "Portail"
 
 msgid "Quick log communication"
 msgstr "Saisie rapide de communication"
+
+msgid "Record a contact"
+msgstr "Enregistrer un contact"
 
 msgid "Reminder sent by email"
 msgstr "Rappel envoyé par courriel"
@@ -11046,6 +11052,9 @@ msgstr "Afficher plus"
 msgid "Communications"
 msgstr "Communications"
 
+msgid "Contacts"
+msgstr "Contacts"
+
 msgid "Filter timeline"
 msgstr "Filtrer le fil chronologique"
 
@@ -11065,16 +11074,87 @@ msgid "Export PDF for"
 msgstr "Exporter le PDF pour"
 
 msgid "Export all data for"
-msgstr "Exporter toutes les donn\u00e9es pour"
+msgstr "Exporter toutes les données pour"
 
 msgid "More actions"
-msgstr "Plus d\u2019actions"
+msgstr "Plus d\\u2019actions"
+
+msgid "More"
+msgstr "Plus"
+
+msgid "Client actions"
+msgstr "Actions pour le participant"
 
 msgid "This file will contain personal information."
 msgstr "Ce fichier contiendra des renseignements personnels."
 
 msgid "This participant's data is scheduled for irreversible deletion."
-msgstr "Les donn\u00e9es de ce participant sont programm\u00e9es pour une suppression irr\u00e9versible."
+msgstr ""
+"Les données de ce participant sont programmées pour une suppression "
+"irréversible."
 
 msgid "You don't have the required permissions for this page."
 msgstr "Vous n'avez pas les permissions requises pour cette page."
+
+msgid "Documents"
+msgstr "Documents"
+
+msgid "Search documents for"
+msgstr "Rechercher des documents pour"
+
+msgid "Open documents folder for"
+msgstr "Ouvrir le dossier de documents pour"
+
+msgid "Record a Contact"
+msgstr "Enregistrer un contact"
+
+msgid "Record a Call"
+msgstr "Enregistrer un appel"
+
+msgid "Record a Text"
+msgstr "Enregistrer un message texte"
+
+msgid "Record an Email"
+msgstr "Enregistrer un courriel"
+
+msgid "Record a Visit"
+msgstr "Enregistrer une visite"
+
+msgid "Contact recorded."
+msgstr "Contact enregistré."
+
+msgid ""
+"Had a call, email, text, or visit? Record it here so it's part of the client"
+" file. For clinical notes with engagement and goals, use a Progress Note "
+"instead."
+msgstr ""
+"Vous avez eu un appel, un courriel, un message texte ou une visite\\u00a0? "
+"Enregistrez-le ici pour qu'il fasse partie du dossier. Pour des notes "
+"cliniques avec l'engagement et les objectifs, utilisez plutôt une Note de "
+"suivi."
+
+msgid "Outcome"
+msgstr "Résultat"
+
+msgid "Reached"
+msgstr "Rejoint"
+
+msgid "Voicemail"
+msgstr "Boîte vocale"
+
+msgid "No Answer"
+msgstr "Pas de réponse"
+
+msgid "Left Message"
+msgstr "Message laissé"
+
+msgid "Wrong Number"
+msgstr "Mauvais numéro"
+
+msgid "Contact attempt result — used for funder reporting"
+msgstr ""
+"Résultat de la tentative de contact — utilisé pour les rapports aux "
+"bailleurs de fonds"
+
+msgid "\\u2014 Select \\u2014"
+msgstr "— Sélectionner —"

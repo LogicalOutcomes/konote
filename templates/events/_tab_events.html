@@ -1,6 +1,6 @@
 {% load i18n %}
 {% load permissions_tags %}
-<!-- Partial: Events tab content -->
+<!-- Partial: Timeline tab content -->
 {% has_permission "event.view" as can_view_events %}
 {% if user.is_admin and not can_view_events %}
 <p class="notice" role="status">
@@ -61,7 +61,7 @@
 {% endif %}
 {% endfor %}
 
-<!-- Quick-log communication buttons -->
+<!-- Record a contact buttons -->
 {% include "communications/_quick_log_buttons.html" %}
 
 <!-- Timeline with filters (UXP5) -->
@@ -87,7 +87,7 @@
                 aria-pressed="{% if active_filter == 'communications' %}true{% else %}false{% endif %}"
                 hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=communications"
                 hx-target="#timeline-entries"
-                hx-swap="innerHTML">{% trans "Communications" %}</button>
+                hx-swap="innerHTML">{% trans "Contacts" %}</button>
     </div>
     <div id="timeline-entries">
         {% include "events/_timeline_entries.html" %}

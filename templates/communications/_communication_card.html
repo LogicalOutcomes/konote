@@ -24,6 +24,10 @@
             <span class="badge badge-neutral">{% trans "Auto" %}</span>
         {% endif %}
 
+        {% if comm.outcome %}
+            <span class="badge badge-neutral">{{ comm.get_outcome_display }}</span>
+        {% endif %}
+
         <strong><time datetime="{{ comm.created_at|date:'c' }}">{{ comm.created_at|date }}</time></strong>
 
         {% if comm.logged_by %}

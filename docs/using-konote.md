@@ -16,9 +16,12 @@ Welcome to KoNote! This guide covers the everyday tasks you'll do as a staff mem
 4. [Viewing Client Information](#viewing-client-information)
 5. [Writing Progress Notes](#writing-progress-notes)
 6. [Recording Events](#recording-events)
-7. [Viewing the Outcome Plan](#viewing-the-outcome-plan)
-8. [Outcome Insights](#outcome-insights)
-9. [Tips & Shortcuts](#tips--shortcuts)
+7. [Logging Communications](#logging-communications)
+8. [Scheduling Meetings](#scheduling-meetings)
+9. [Using the Calendar Feed](#using-the-calendar-feed)
+10. [Viewing the Outcome Plan](#viewing-the-outcome-plan)
+11. [Outcome Insights](#outcome-insights)
+12. [Tips & Shortcuts](#tips--shortcuts)
 
 ---
 
@@ -96,6 +99,7 @@ When you open a client's file, you'll see several **tabs**:
 | **Notes** | Progress notes timeline — everything recorded about this client |
 | **Plan** | Their outcome plan with sections, targets, and metrics |
 | **Events** | Discrete events like intake, discharge, hospital visits, crises |
+| **Communications** | Communication history — phone calls, emails, texts, in-person contacts |
 | **Analysis** | Charts showing progress over time |
 
 ### Switching between tabs
@@ -235,6 +239,117 @@ The client will appear in the **Priority Items** section of your home page until
 3. Add a resolution note.
 4. Save.
 
+### Recommend alert cancellation
+
+Alerts use a **two-person safety rule** — staff recommend cancellation, and a program manager reviews the recommendation before the alert is actually removed.
+
+1. Find the alert in the **Events** tab.
+2. Click **Recommend Cancellation**.
+3. Write your assessment of why the alert should be cancelled.
+4. Click **Submit** — the recommendation is sent to your program manager for review.
+
+If the program manager approves, the alert is cancelled. If they reject it, the alert stays active and you can re-recommend later with new information.
+
+---
+
+## Logging Communications
+
+Communications record all client interactions — phone calls, emails, text messages, and in-person conversations. They appear on the client timeline alongside events and progress notes, giving everyone a complete picture of contact with the client.
+
+### Quick-log (two clicks)
+
+The fastest way to record a communication:
+
+1. Open the client's file.
+2. Go to the **Events** tab.
+3. Click the channel button for the type of contact: **Phone**, **Email**, **SMS**, or **In Person**.
+4. The direction is set automatically — phone defaults to inbound, email and SMS default to outbound. One click logs the communication.
+
+That's it. The entry is saved to the client's timeline immediately.
+
+### Full communication form
+
+Use this when you need to capture more detail:
+
+1. Open the client's file.
+2. Go to the **Events** tab.
+3. Click **Log Communication**.
+4. Fill in:
+   - **Channel** — Phone, Email, SMS, or In Person
+   - **Direction** — Toggle between **Inbound** (they contacted you) and **Outbound** (you contacted them)
+   - **Subject** — A brief description of what the communication was about (optional)
+   - **Content** — Details of the conversation (optional)
+5. Click **Save**.
+
+**Tip:** If messaging features are enabled for your agency and the client has consented to receive messages, you may also see a **Send Reminder** option on scheduled meetings.
+
+---
+
+## Scheduling Meetings
+
+Meetings let you schedule and track appointments with clients.
+
+### Create a meeting
+
+1. Open the client's file.
+2. Go to the **Events** tab.
+3. Click **+ New Meeting**.
+4. Fill in:
+   - **Date and time** — When the meeting will take place
+   - **Location** — Where you'll meet (optional)
+5. You are automatically added as an attendee.
+6. Click **Save**.
+
+### Meeting statuses
+
+Each meeting has a status you can update as things change:
+
+- **Scheduled** — The meeting is coming up
+- **Completed** — The meeting happened as planned
+- **Cancelled** — The meeting was called off
+- **No Show** — The client did not attend
+
+To change a status, open the meeting and use the **Status** dropdown.
+
+### View all your meetings
+
+1. Click **Meetings** in the main navigation.
+2. Upcoming meetings appear at the top; past meetings are listed below.
+
+### Sending reminders
+
+If SMS or email messaging is enabled for your agency and the client has given consent, you can send a reminder directly from a scheduled meeting. Open the meeting and click **Send Reminder**.
+
+---
+
+## Using the Calendar Feed
+
+You can subscribe to your KoNote meetings in Outlook, Google Calendar, Apple Calendar, or any app that supports iCal feeds. New meetings appear automatically, and cancelled ones disappear — no manual updates needed.
+
+### Set up your calendar feed
+
+1. Click **Meetings** in the main navigation.
+2. Click **Calendar Feed Settings**.
+3. Click **Generate Feed URL**.
+4. Copy the URL.
+5. In your calendar app, add a new **subscription** or **iCal feed** and paste the URL.
+
+Your KoNote meetings will now appear in your calendar and stay in sync.
+
+### Privacy
+
+Calendar entries show **initials and record ID only** — not full client names. This keeps information private even if someone else sees your calendar.
+
+### Regenerating the URL
+
+If you need to revoke access to your feed (for example, if you shared the URL accidentally):
+
+1. Go to **Meetings** → **Calendar Feed Settings**.
+2. Click **Regenerate Feed URL**.
+3. Copy the new URL and update your calendar subscription.
+
+The old URL will stop working immediately.
+
 ---
 
 ## Viewing the Outcome Plan
@@ -318,6 +433,10 @@ If your admin has turned on AI assistance, you'll see a **Draft report summary**
 | Create/edit clients | Staff and above |
 | Write progress notes | Staff and above |
 | Record events and alerts | Staff and above |
+| Log communications | Staff and above |
+| Schedule meetings | Staff and above |
+| Send message reminders | Staff (if messaging enabled and client consented) |
+| Review alert cancellations | Program managers |
 | Edit plan targets | Coordinators and admins |
 | Create plan templates | Admins only |
 | Manage users | Admins only |
@@ -342,11 +461,14 @@ If your admin has turned on AI assistance, you'll see a **Draft report summary**
 | Document a full session | Notes tab → + Progress Note |
 | Record an intake or discharge | Events tab → + New Event |
 | Flag a safety concern | Events tab → + New Alert |
+| Log a phone call | Events tab → Phone (quick-log button) |
+| Schedule a meeting | Events tab → + New Meeting |
+| See your calendar | Meetings (main navigation) |
 | See who needs attention | Check Priority Items on home page |
 | View progress charts | Client file → Analysis tab |
 | See program patterns | Insights (main navigation) |
 
 ---
 
-**Version 2.0** — KoNote
-Last updated: 2026-02-04
+**Version 2.1** — KoNote
+Last updated: 2026-02-13

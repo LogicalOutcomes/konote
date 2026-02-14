@@ -73,33 +73,33 @@ All docs lagged behind recent feature work (messaging, calendar, meetings, conse
 #### KoNote Website (konote-website repo)
 
 - [x] Update features.html — added messaging, meetings/calendar, consent cards; removed scheduling caveat; two-person safety rule — 2026-02-13 (DOC-WEB1)
-- [ ] Fix website footer — change `KoNote-Redux` repo link to current `KoNote` repo URL across all pages (DOC-WEB2)
-- [ ] Update website README — fix old repo reference, add `evidence.html` and `demo.html` to structure section (DOC-WEB3)
+- [x] Fix website footer — changed `KoNote-Redux` repo link to `KoNote` across all 9 HTML pages + documentation links — 2026-02-13 (DOC-WEB2)
+- [x] Update website README — fixed repo reference, added `evidence.html` and `demo.html` to structure section — 2026-02-13 (DOC-WEB3)
 
 #### App Documentation (docs/ folder)
 
-- [ ] Update docs/index.md "What's New" — add messaging/communications, meetings/calendar with iCal feed, consent management with withdrawal tracking, alert safety workflow (two-person rule), funder profiles with small-cell suppression (DOC-INDEX1)
-- [ ] Update using-KoNote.md — add staff guide sections for: logging communications (quick-log + full form), scheduling meetings, using calendar feed (iCal), recommending alert cancellation, viewing communication history on timeline (DOC-USER1)
-- [ ] Update administering-KoNote.md — add admin sections for: messaging settings and feature toggles (SMS, email), calendar feed token management, communication channel configuration, funder profile setup (DOC-ADMIN1)
-- [ ] Update technical-documentation.md — add Communication and Meeting models, consent fields on ClientFile, new permission keys (meeting.*, communication.*, alert.recommend_cancel, alert.review_cancel_recommendation), messaging services layer (DOC-TECH1)
-- [ ] Update deploying-KoNote.md — add Twilio account setup for SMS, SMTP configuration for email (Google Workspace / M365), env vars for messaging features. Fix case mismatch: docs/index.md references `deploying-KoNote.md` — verify filename consistency (DOC-DEPLOY1)
+- [x] Update docs/index.md "What's New" — added 6 new feature bullets, staff quick links for messaging/meetings/calendar — 2026-02-13 (DOC-INDEX1)
+- [x] Update using-KoNote.md — added staff guide sections for communications, meetings, calendar feed, alert cancellation recommendations — 2026-02-13 (DOC-USER1)
+- [x] Update administering-KoNote.md — added messaging settings, calendar feed management, funder profile setup sections — 2026-02-13 (DOC-ADMIN1)
+- [x] Update technical-documentation.md — added Communication/Meeting models, consent fields, new permission keys, messaging services layer, URL routes — 2026-02-13 (DOC-TECH1)
+- [x] Update deploying-KoNote.md — added Twilio SMS setup, SMTP email config, demo email testing, messaging checklist — 2026-02-13 (DOC-DEPLOY1)
 
 #### Cross-Cutting
 
-- [ ] Create CHANGELOG.md — user-facing release notes summarising what's changed, grouped by feature area. Agencies need this to know what's new between updates (DOC-CHANGE1)
+- [x] Create CHANGELOG.md — user-facing release notes for v2.1.0 and v2.0.0, grouped by feature area — 2026-02-13 (DOC-CHANGE1)
 
 ### QA Scenario Coverage: New Features — See `tasks/qa-new-feature-scenarios.md`
 
 7 new scenarios (SCN-080 through SCN-086) covering messaging, meetings, calendar, consent guardrails, permission enforcement, and funder reporting. Scenarios go in konote-qa-scenarios repo; test methods go here.
 
-- [ ] Write SCN-085 — front desk denied messaging/meetings (QA-SCN1)
-- [ ] Write SCN-080 — staff logs a phone call via quick-log (QA-SCN2)
-- [ ] Write SCN-083 — staff sets up calendar feed (QA-SCN3)
-- [ ] Write SCN-081 — staff schedules meeting and sends reminder (QA-SCN4)
-- [ ] Write SCN-082 — PM reviews meeting dashboard and updates status (QA-SCN5)
-- [ ] Write SCN-084 — consent/messaging interaction with consent blocks (QA-SCN6)
-- [ ] Write SCN-086 — funder report with small-cell suppression (QA-SCN7)
-- [ ] Add test methods for SCN-080–086 in tests/scenario_eval/test_scenario_eval.py (QA-SCN8)
+- [x] Write SCN-085 — front desk denied messaging/meetings — 2026-02-13 (QA-SCN1)
+- [x] Write SCN-080 — staff logs a phone call via quick-log — 2026-02-13 (QA-SCN2)
+- [x] Write SCN-083 — staff sets up calendar feed — 2026-02-13 (QA-SCN3)
+- [x] Write SCN-081 — staff schedules meeting and sends reminder — 2026-02-13 (QA-SCN4)
+- [x] Write SCN-082 — PM reviews meeting dashboard and updates status — 2026-02-13 (QA-SCN5)
+- [x] Write SCN-084 — consent/messaging interaction with consent blocks — 2026-02-13 (QA-SCN6)
+- [x] Write SCN-086 — funder report with small-cell suppression — 2026-02-13 (QA-SCN7)
+- [x] Add test methods for SCN-080–086 in tests/scenario_eval/test_scenario_eval.py — 2026-02-13 (QA-SCN8)
 - [x] Verify seed_demo_data has prerequisite data for new scenarios — 2026-02-13 (QA-SCN10)
 
 ### Messaging, Meetings & Calendar
@@ -137,8 +137,8 @@ See `tasks/messaging-calendar-plan.md` (phase-by-phase build) and `tasks/messagi
 ### Nav & Permission Fixes
 
 - [x] Extract duplicated audit scoping block into `_scoped_audit_qs` helper + exempt `/admin/audit/` from admin-only middleware — 2026-02-13 (NAV-FIX1)
-- [ ] Add test: PM only sees audit entries for their own programs (scoped filtering) (NAV-FIX2)
-- [ ] Fix pre-existing `meeting.create` test failure — view uses `@requires_permission("event.create")` but matrix key is `meeting.create` (NAV-FIX3)
+- [x] Add test: PM only sees audit entries for their own programs (scoped filtering) — 2026-02-13 (NAV-FIX2)
+- [x] Fix meeting permission decorators — changed `event.create` to `meeting.create`/`meeting.edit` on 3 meeting views, updated checks.py and test enforcement — 2026-02-13 (NAV-FIX3)
 
 ### Permissions Phase 2
 
@@ -208,6 +208,8 @@ See `tasks/messaging-calendar-plan.md` (phase-by-phase build) and `tasks/messagi
 
 ## Recently Done
 
+- [x] **Documentation catch-up** — updated all 5 app docs (index, staff guide, admin guide, technical, deploying), created CHANGELOG.md, fixed website repo links (9 HTML + README) — 2026-02-13 (DOC-INDEX1 through DOC-CHANGE1, DOC-WEB2, DOC-WEB3)
+- [x] **Nav & permission fixes** — meeting decorators now use `meeting.create`/`meeting.edit` (was `event.create`), PM audit scoping test added — 2026-02-13 (NAV-FIX2, NAV-FIX3)
 - [x] **Permissions & audit scoping** — extracted `_scoped_audit_qs` helper, exempted `/admin/audit/` from admin-only middleware, improved 403 page, participant detail redesign, QA scenario coverage — PR #73 merged 2026-02-13 (NAV-FIX1)
 - [x] **Session review fixes** — DRY email logic in seed.py, heading accessibility fix (h3→h2), simplified save(), test RBAC corrections — 2026-02-13 (REV-FIX1)
 - [x] **Demo email support** — `DEMO_EMAIL_BASE` env var for tagged demo emails, Resend.com docs in .env.example — 2026-02-13 (EMAIL1)
