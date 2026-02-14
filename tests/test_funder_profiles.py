@@ -1,4 +1,4 @@
-"""Tests for funder profile system — CSV parser, demographic blocklists, custom bins, category merging."""
+"""Tests for report template system — CSV parser, demographic blocklists, custom bins, category merging."""
 from datetime import date
 from unittest.mock import patch
 
@@ -16,7 +16,7 @@ from apps.clients.models import (
 )
 from apps.programs.models import Program, UserProgramRole
 from apps.reports.csv_parser import (
-    parse_funder_profile_csv,
+    parse_report_template_csv,
     validate_parsed_profile,
     generate_sample_csv,
     save_parsed_profile,
@@ -28,7 +28,7 @@ from apps.reports.demographics import (
     _find_age_bin,
     _apply_category_merge,
 )
-from apps.reports.models import FunderProfile, DemographicBreakdown
+from apps.reports.models import ReportTemplate, DemographicBreakdown
 import konote.encryption as enc_module
 
 
@@ -45,7 +45,7 @@ class CSVParserValidTest(TestCase):
             "bin,Age Groups,18,64,Adult\n"
             "bin,Age Groups,65,999,Senior\n"
         )
-        parsed, errors = parse_funder_profile_csv(csv_content)
+        parsed, errors = parse_report_template_csv(csv_content)
         assert not errors, f"Unexpected errors: {errors}"
         assert parsed.name == "Test Funder"
         assert len(parsed.breakdowns) == 1
@@ -61,7 +61,7 @@ class CSVParserValidTest(TestCase):
             "bin,Age,0,18,Young\n"
             "bin,Age,19,999,Old\n"
         )
-        parsed, errors = parse_funder_profile_csv(csv_content)
+        parsed, errors = parse_report_template_csv(csv_content)
         assert not errors
         assert parsed.description == "A test description"
 
@@ -72,7 +72,7 @@ class CSVParserValidTest(TestCase):
             'merge,Employment Status,Employed,"Full-time,Part-time,Contract"\n'
             'merge,Employment Status,Unemployed,"Unemployed,Seeking"\n'
         )
-        parsed, errors = parse_funder_profile_csv(csv_content)
+        parsed, errors = parse_report_template_csv(csv_content)
         assert not errors, f"Unexpected errors: {errors}"
         assert len(parsed.breakdowns) == 1
         bd = parsed.breakdowns[0]
@@ -91,7 +91,7 @@ class CSVParserValidTest(TestCase):
             'merge,Gender,Male,"Male,Man"\n'
             'merge,Gender,Female,"Female,Woman"\n'
         )
-        parsed, errors = parse_funder_profile_csv(csv_content)
+        parsed, errors = parse_report_template_csv(csv_content)
         assert not errors, f"Unexpected errors: {errors}"
         assert len(parsed.breakdowns) == 2
 
@@ -101,7 +101,7 @@ class CSVParserValidTest(TestCase):
             "breakdown,Status,custom_field,Status\n"
             "keep_all,Status\n"
         )
-        parsed, errors = parse_funder_profile_csv(csv_content)
+        parsed, errors = parse_report_template_csv(csv_content)
         assert not errors, f"Unexpected errors: {errors}"
         assert parsed.breakdowns[0].keep_all is True
 
@@ -110,7 +110,7 @@ class CSVParserInvalidTest(TestCase):
     """Test CSV parsing with invalid inputs."""
 
     def test_empty_csv(self):
-        parsed, errors = parse_funder_profile_csv("")
+        parsed, errors = parse_report_template_csv("")
         assert errors
         assert any("profile_name" in e.lower() for e in errors)
 
@@ -119,7 +119,7 @@ class CSVParserInvalidTest(TestCase):
             "breakdown,Age,age\n"
             "bin,0,17,Youth\n"
         )
-        parsed, errors = parse_funder_profile_csv(csv_content)
+        parsed, errors = parse_report_template_csv(csv_content)
         assert errors
         assert any("profile_name" in e.lower() for e in errors)
 
@@ -129,7 +129,7 @@ class CSVParserInvalidTest(TestCase):
             "breakdown,Age,age\n"
             "bin,Age,abc,def,Label\n"
         )
-        parsed, errors = parse_funder_profile_csv(csv_content)
+        parsed, errors = parse_report_template_csv(csv_content)
         assert errors
 
     def test_bin_without_breakdown(self):
@@ -137,7 +137,7 @@ class CSVParserInvalidTest(TestCase):
             "profile_name,No Breakdown\n"
             "bin,Nonexistent,0,17,Youth\n"
         )
-        parsed, errors = parse_funder_profile_csv(csv_content)
+        parsed, errors = parse_report_template_csv(csv_content)
         assert errors
 
 
@@ -146,13 +146,13 @@ class CSVParserSampleTest(TestCase):
 
     def test_sample_csv_parses_cleanly(self):
         sample = generate_sample_csv()
-        parsed, errors = parse_funder_profile_csv(sample)
+        parsed, errors = parse_report_template_csv(sample)
         assert not errors, f"Sample CSV had parse errors: {errors}"
         assert parsed.name
 
     def test_sample_csv_validates_cleanly(self):
         sample = generate_sample_csv()
-        parsed, _ = parse_funder_profile_csv(sample)
+        parsed, _ = parse_report_template_csv(sample)
         warnings = validate_parsed_profile(parsed)
         # Warnings are okay but there should be no showstoppers
         assert isinstance(warnings, list)
@@ -388,11 +388,11 @@ class CategoryMergeTest(TestCase):
         assert c2.pk in groups.get("Not Employed", [])
 
 
-# ─── FunderProfile model tests ───────────────────────────────────────
+# ─── ReportTemplate model tests ──────────────────────────────────────
 
 @override_settings(FIELD_ENCRYPTION_KEY=Fernet.generate_key().decode())
-class FunderProfileModelTest(TestCase):
-    """Test FunderProfile and DemographicBreakdown model operations."""
+class ReportTemplateModelTest(TestCase):
+    """Test ReportTemplate and DemographicBreakdown model operations."""
 
     @classmethod
     def setUpClass(cls):
@@ -400,12 +400,12 @@ class FunderProfileModelTest(TestCase):
         enc_module._fernet_instance = None
 
     def test_create_profile_with_breakdowns(self):
-        profile = FunderProfile.objects.create(
+        profile = ReportTemplate.objects.create(
             name="Test Funder",
             description="Testing",
         )
         bd = DemographicBreakdown.objects.create(
-            funder_profile=profile,
+            report_template=profile,
             label="Age Categories",
             source_type="age",
             bins_json=[
@@ -419,7 +419,7 @@ class FunderProfileModelTest(TestCase):
 
     def test_profile_program_link(self):
         program = Program.objects.create(name="Test", status="active")
-        profile = FunderProfile.objects.create(name="Linked Funder")
+        profile = ReportTemplate.objects.create(name="Linked Funder")
         profile.programs.add(program)
         assert program in profile.programs.all()
 
@@ -434,7 +434,7 @@ class FunderProfileModelTest(TestCase):
             "bin,Age Buckets,0,17,Under 18\n"
             "bin,Age Buckets,18,999,18 and over\n"
         )
-        parsed, errors = parse_funder_profile_csv(csv_content)
+        parsed, errors = parse_report_template_csv(csv_content)
         assert not errors
         profile = save_parsed_profile(parsed, created_by=admin)
         assert profile.pk is not None
@@ -447,7 +447,7 @@ class FunderProfileModelTest(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY=Fernet.generate_key().decode())
 class FunderProfileAdminAccessTest(TestCase):
-    """Test that funder profile admin views are restricted to admins."""
+    """Test that report template admin views are restricted to admins."""
 
     @classmethod
     def setUpClass(cls):
@@ -465,21 +465,21 @@ class FunderProfileAdminAccessTest(TestCase):
 
     def test_admin_can_access_profile_list(self):
         self.client.login(username="admin_fp", password="pass123")
-        response = self.client.get("/admin/settings/funder-profiles/")
+        response = self.client.get("/admin/settings/report-templates/")
         assert response.status_code == 200
 
     def test_staff_cannot_access_profile_list(self):
         self.client.login(username="staff_fp", password="pass123")
-        response = self.client.get("/admin/settings/funder-profiles/")
+        response = self.client.get("/admin/settings/report-templates/")
         assert response.status_code in (302, 403)
 
     def test_admin_can_access_upload(self):
         self.client.login(username="admin_fp", password="pass123")
-        response = self.client.get("/admin/settings/funder-profiles/upload/")
+        response = self.client.get("/admin/settings/report-templates/upload/")
         assert response.status_code == 200
 
     def test_admin_can_download_sample(self):
         self.client.login(username="admin_fp", password="pass123")
-        response = self.client.get("/admin/settings/funder-profiles/sample.csv")
+        response = self.client.get("/admin/settings/report-templates/sample.csv")
         assert response.status_code == 200
         assert "text/csv" in response["Content-Type"]

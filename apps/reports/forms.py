@@ -1,36 +1,12 @@
-"""Forms for the reports app — metric export filtering, funder reports, and individual client export."""
+"""Forms for the reports app — metric export filtering, report templates, and individual client export."""
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from apps.programs.models import Program
 from apps.plans.models import MetricDefinition
 from .demographics import get_demographic_field_choices
-from .models import FunderProfile
-from .utils import get_fiscal_year_choices, get_fiscal_year_range, get_current_fiscal_year
-
-
-# --- Context-specific recipient choices ---
-# Different export types have different legitimate audiences.
-# Individual client data should NEVER be offered to funders.
-# Funders need aggregate outcomes, not individual clinical records.
-
-AGGREGATE_RECIPIENT_CHOICES = [
-    ("", _("— Select recipient —")),
-    ("self", _("Keeping for my records")),
-    ("colleague", _("Sharing with colleague")),
-    ("funder", _("Sharing with funder")),
-    ("board", _("Sharing with board")),
-    ("other", _("Other")),
-]
-
-CLINICAL_RECIPIENT_CHOICES = [
-    ("", _("— Select recipient —")),
-    ("self", _("Keeping for my records")),
-    ("colleague", _("Sharing with colleague")),
-    ("client", _("Client access request (PIPEDA)")),
-    ("supervisor", _("Sharing with supervisor")),
-    ("other", _("Other")),
-]
+from .models import ReportTemplate
+from .utils import get_fiscal_year_choices, get_fiscal_year_range, get_current_fiscal_year, is_aggregate_only_user
 
 
 class ExportRecipientMixin:
@@ -40,55 +16,58 @@ class ExportRecipientMixin:
     Security requirement: All exports must document who is receiving
     the data. This creates accountability and enables audit review.
 
-    Subclasses set recipient_choices to control which audiences are
-    offered. Individual-level exports must NOT include "funder".
+    Uses open text fields to avoid exposing inappropriate predefined
+    audiences for sensitive exports.
     """
-
-    recipient_choices = AGGREGATE_RECIPIENT_CHOICES  # default; override per form
-    recipient_placeholder = _("e.g., Community Foundation, Jane Smith")  # default; override per form
 
     def add_recipient_fields(self):
         """Add recipient fields to the form. Call in __init__ after super()."""
-        self.fields["recipient"] = forms.ChoiceField(
-            choices=self.recipient_choices,
+        self.fields["recipient"] = forms.CharField(
             required=True,
             label=_("Who is receiving this data?"),
-            help_text=_("Required for audit purposes."),
-            error_messages={"required": _("Please select who will receive this export.")},
-        )
-        self.fields["recipient_detail"] = forms.CharField(
-            required=False,
+            help_text=_("Required for audit purposes (name and organisation)."),
             max_length=200,
-            label=_("Recipient details"),
-            help_text=_("Name of recipient or organisation."),
-            widget=forms.TextInput(attrs={"placeholder": self.recipient_placeholder}),
+            widget=forms.TextInput(attrs={"placeholder": _("e.g., Jane Smith, Sunrise Community Services")}),
+            error_messages={"required": _("Please enter who will receive this export.")},
+        )
+        self.fields["recipient_reason"] = forms.CharField(
+            required=True,
+            max_length=250,
+            label=_("Reason"),
+            help_text=_("Required for audit purposes."),
+            widget=forms.TextInput(attrs={"placeholder": _("e.g., Board reporting, case conference, client request")}),
+            error_messages={"required": _("Please enter the reason for this export.")},
         )
 
     def get_recipient_display(self):
         """Return a formatted string describing the recipient for audit logs."""
-        recipient = self.cleaned_data.get("recipient", "")
-        detail = self.cleaned_data.get("recipient_detail", "").strip()
+        recipient = (self.cleaned_data.get("recipient") or "").strip()
+        reason = (self.cleaned_data.get("recipient_reason") or "").strip()
+        if not recipient:
+            recipient = "Not specified"
+        if not reason:
+            reason = "Not specified"
+        return f"{recipient} | Reason: {reason}"
 
-        labels = {
-            "self": "Self (personal records)",
-            "colleague": "Colleague",
-            "funder": "Funder",
-            "board": "Board",
-            "client": "Client access request (PIPEDA)",
-            "supervisor": "Supervisor",
-        }
-        base = labels.get(recipient, recipient.title() if recipient else "Not specified")
-        if recipient == "self":
-            return base
-        if detail:
-            return f"{base}: {detail}"
-        return f"{base} (unspecified)" if recipient else "Not specified"
+    def clean_recipient(self):
+        """Validate recipient text for privacy-sensitive exports."""
+        recipient = (self.cleaned_data.get("recipient") or "").strip()
+        if not recipient:
+            return recipient
+
+        if getattr(self, "contains_client_identifying_data", False):
+            lowered = recipient.lower()
+            blocked_terms = ("funder", "funding", "foundation", "grant")
+            if any(term in lowered for term in blocked_terms):
+                raise forms.ValidationError(
+                    _("For security, funders are not valid recipients for exports that include participant-identifying data.")
+                )
+
+        return recipient
 
 
 class MetricExportForm(ExportRecipientMixin, forms.Form):
     """Filter form for the aggregate metric CSV export."""
-
-    recipient_choices = AGGREGATE_RECIPIENT_CHOICES
 
     program = forms.ModelChoiceField(
         queryset=Program.objects.filter(status="active"),
@@ -124,25 +103,26 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
     # Demographic grouping (optional)
     group_by = forms.ChoiceField(
         required=False,
-        label=_("Legacy single-field grouping"),
-        help_text=_("Ignored when a funder profile is selected above."),
+        label=_("Grouping"),
+        help_text=_("Used only when no reporting template is selected above."),
     )
 
-    # Funder profile — selects demographic breakdown configuration
-    funder_profile = forms.ModelChoiceField(
-        queryset=FunderProfile.objects.none(),
+    # Report template — selects demographic breakdown configuration
+    report_template = forms.ModelChoiceField(
+        queryset=ReportTemplate.objects.none(),
         required=False,
-        empty_label=_("No funder profile"),
-        label=_("Funder demographic profile"),
+        empty_label=_("No reporting template"),
+        label=_("Reporting template"),
         help_text=_(
-            "Select a funder profile to use their specific demographic categories. "
-            "Leave blank to use the legacy single-field grouping above."
+            "Select a reporting template to use specific demographic categories. "
+            "Leave blank to use Grouping above."
         ),
     )
 
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+        self.contains_client_identifying_data = bool(user and not is_aggregate_only_user(user))
         # Scope program dropdown to programs the user can export from
         if user:
             from .utils import get_manageable_programs
@@ -152,12 +132,12 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         self.fields["fiscal_year"].choices = fy_choices
         # Build demographic grouping choices dynamically
         self.fields["group_by"].choices = get_demographic_field_choices()
-        # Scope funder profiles to programs the user can access
+        # Scope report templates to programs the user can access
         if user:
             from .utils import get_manageable_programs
             accessible_programs = get_manageable_programs(user)
-            self.fields["funder_profile"].queryset = (
-                FunderProfile.objects.filter(
+            self.fields["report_template"].queryset = (
+                ReportTemplate.objects.filter(
                     programs__in=accessible_programs
                 ).distinct().order_by("name")
             )
@@ -216,14 +196,12 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
 
 class FunderReportForm(ExportRecipientMixin, forms.Form):
     """
-    Form for funder report export.
+    Form for program outcome report template export.
 
     This form is simpler than the full metric export form, as funder reports
     have a fixed structure. Users select a program and fiscal year,
     and the report is generated with all applicable data.
     """
-
-    recipient_choices = AGGREGATE_RECIPIENT_CHOICES
 
     program = forms.ModelChoiceField(
         queryset=Program.objects.filter(status="active"),
@@ -250,14 +228,14 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
         label=_("Export format"),
     )
 
-    # Funder profile — selects demographic breakdown configuration
-    funder_profile = forms.ModelChoiceField(
-        queryset=FunderProfile.objects.none(),
+    # Report template — selects demographic breakdown configuration
+    report_template = forms.ModelChoiceField(
+        queryset=ReportTemplate.objects.none(),
         required=False,
         empty_label=_("Default age categories"),
-        label=_("Funder demographic profile"),
+        label=_("Reporting template"),
         help_text=_(
-            "Select a funder profile to use their specific demographic categories. "
+            "Select a reporting template to use specific demographic categories. "
             "Leave blank for the default Canadian nonprofit age groupings."
         ),
     )
@@ -265,6 +243,7 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
     def __init__(self, *args, **kwargs):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+        self.contains_client_identifying_data = False
         # Scope program dropdown to programs the user can export from
         if user:
             from .utils import get_manageable_programs
@@ -274,12 +253,12 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
         self.fields["fiscal_year"].choices = get_fiscal_year_choices()
         # Default to current fiscal year
         self.fields["fiscal_year"].initial = str(get_current_fiscal_year())
-        # Scope funder profiles to programs the user can access
+        # Scope report templates to programs the user can access
         if user:
             from .utils import get_manageable_programs
             accessible_programs = get_manageable_programs(user)
-            self.fields["funder_profile"].queryset = (
-                FunderProfile.objects.filter(
+            self.fields["report_template"].queryset = (
+                ReportTemplate.objects.filter(
                     programs__in=accessible_programs
                 ).distinct().order_by("name")
             )
@@ -304,19 +283,19 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
         else:
             raise forms.ValidationError(_("Please select a fiscal year."))
 
-        # Validate that the selected funder profile is linked to the
+        # Validate that the selected reporting template is linked to the
         # selected program.  Without this check an executive could pick
-        # a profile intended for a different program, producing a report
+        # a template intended for a different program, producing a report
         # with empty or misleading breakdown sections.
-        funder_profile = cleaned.get("funder_profile")
+        report_template = cleaned.get("report_template")
         program = cleaned.get("program")
-        if funder_profile and program:
-            if not funder_profile.programs.filter(pk=program.pk).exists():
+        if report_template and program:
+            if not report_template.programs.filter(pk=program.pk).exists():
                 self.add_error(
-                    "funder_profile",
-                    _("This funder profile is not linked to the selected program. "
-                      "Choose a different profile or ask an administrator to "
-                      "assign this profile to the program."),
+                    "report_template",
+                    _("This reporting template is not linked to the selected program. "
+                      "Choose a different template or ask an administrator to "
+                      "assign this template to the program."),
                 )
 
         return cleaned
@@ -331,9 +310,6 @@ class IndividualClientExportForm(ExportRecipientMixin, forms.Form):
 
     Funders are NOT a valid recipient for individual client data.
     """
-
-    recipient_choices = CLINICAL_RECIPIENT_CHOICES
-    recipient_placeholder = _("e.g., Jane Smith, Clinical Supervisor")
 
     FORMAT_CHOICES = [
         ("pdf", _("PDF (printable report)")),
@@ -379,4 +355,5 @@ class IndividualClientExportForm(ExportRecipientMixin, forms.Form):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.contains_client_identifying_data = True
         self.add_recipient_fields()

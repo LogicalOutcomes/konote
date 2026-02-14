@@ -9,7 +9,33 @@ class QuickLogForm(forms.Form):
     Channel and direction are pre-filled from the button clicked.
     Staff just types optional notes and clicks save.
     """
-    channel = forms.CharField(widget=forms.HiddenInput)
+    CHANNEL_CHOICES = [
+        ("phone", _("Phone Call")),
+        ("sms", _("Text Message")),
+        ("email", _("Email")),
+        ("in_person", _("In Person")),
+    ]
+
+    PHONE_OUTCOME_CHOICES = [
+        ("", _("— Select —")),
+        ("reached", _("Reached")),
+        ("voicemail", _("Voicemail")),
+        ("no_answer", _("No Answer")),
+        ("left_message", _("Left Message")),
+        ("wrong_number", _("Wrong Number")),
+    ]
+
+    NON_PHONE_OUTCOME_CHOICES = [
+        ("", _("— Select —")),
+        ("reached", _("Reached")),
+        ("left_message", _("Left Message")),
+        ("no_answer", _("No Response")),
+    ]
+
+    channel = forms.ChoiceField(
+        choices=CHANNEL_CHOICES,
+        label=_("Channel"),
+    )
     direction = forms.CharField(widget=forms.HiddenInput, initial="outbound")
     notes = forms.CharField(
         required=False,
@@ -22,15 +48,20 @@ class QuickLogForm(forms.Form):
     outcome = forms.ChoiceField(
         required=False,
         label=_("Outcome"),
-        choices=[
-            ("", _("\u2014 Select \u2014")),
-            ("reached", _("Reached")),
-            ("voicemail", _("Voicemail")),
-            ("no_answer", _("No Answer")),
-            ("left_message", _("Left Message")),
-            ("wrong_number", _("Wrong Number")),
-        ],
+        choices=PHONE_OUTCOME_CHOICES,
     )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        channel = None
+        if self.is_bound:
+            channel = self.data.get("channel")
+        if not channel:
+            channel = self.initial.get("channel")
+        self.fields["outcome"].choices = self._get_outcome_choices(channel)
+
+    def _get_outcome_choices(self, channel):
+        return self.PHONE_OUTCOME_CHOICES if channel == "phone" else self.NON_PHONE_OUTCOME_CHOICES
 
     def clean_channel(self):
         channel = self.cleaned_data["channel"]
@@ -45,6 +76,12 @@ class QuickLogForm(forms.Form):
             raise forms.ValidationError(_("Invalid direction."))
         return direction
 
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("channel") == "sms" and cleaned.get("outcome") == "voicemail":
+            self.add_error("outcome", _("Voicemail is not a valid outcome for text messages."))
+        return cleaned
+
 
 class PersonalNoteForm(forms.Form):
     """Validates the personal note field on the send-reminder preview."""
@@ -57,6 +94,22 @@ class PersonalNoteForm(forms.Form):
 
 class CommunicationLogForm(forms.Form):
     """Full form for detailed communication logging — all fields available."""
+    PHONE_OUTCOME_CHOICES = [
+        ("", _("— Select —")),
+        ("reached", _("Reached")),
+        ("voicemail", _("Voicemail")),
+        ("no_answer", _("No Answer")),
+        ("left_message", _("Left Message")),
+        ("wrong_number", _("Wrong Number")),
+    ]
+
+    NON_PHONE_OUTCOME_CHOICES = [
+        ("", _("— Select —")),
+        ("reached", _("Reached")),
+        ("left_message", _("Left Message")),
+        ("no_answer", _("No Response")),
+    ]
+
     direction = forms.ChoiceField(
         choices=[
             ("outbound", _("Outgoing (we contacted them)")),
@@ -91,12 +144,23 @@ class CommunicationLogForm(forms.Form):
     outcome = forms.ChoiceField(
         required=False,
         label=_("Outcome"),
-        choices=[
-            ("", _("\u2014 Select \u2014")),
-            ("reached", _("Reached")),
-            ("voicemail", _("Voicemail")),
-            ("no_answer", _("No Answer")),
-            ("left_message", _("Left Message")),
-            ("wrong_number", _("Wrong Number")),
-        ],
+        choices=PHONE_OUTCOME_CHOICES,
     )
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("channel") == "sms" and cleaned.get("outcome") == "voicemail":
+            self.add_error("outcome", _("Voicemail is not a valid outcome for text messages."))
+        return cleaned
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        channel = None
+        if self.is_bound:
+            channel = self.data.get("channel")
+        if not channel:
+            channel = self.initial.get("channel")
+        self.fields["outcome"].choices = self._get_outcome_choices(channel)
+
+    def _get_outcome_choices(self, channel):
+        return self.PHONE_OUTCOME_CHOICES if channel == "phone" else self.NON_PHONE_OUTCOME_CHOICES

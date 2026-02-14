@@ -1,6 +1,6 @@
-"""CSV parser for funder profile uploads.
+"""CSV parser for report template uploads.
 
-Parses a structured CSV file into a FunderProfile with DemographicBreakdowns.
+Parses a structured CSV file into a ReportTemplate with DemographicBreakdowns.
 
 CSV format (each row starts with a type prefix):
     profile_name,United Way Greater Toronto
@@ -43,16 +43,16 @@ class ParsedBreakdown:
 
 @dataclass
 class ParsedProfile:
-    """Intermediate representation of a complete funder profile."""
+    """Intermediate representation of a complete report template."""
     name: str = ""
     description: str = ""
     breakdowns: list[ParsedBreakdown] = field(default_factory=list)
     raw_csv: str = ""
 
 
-def parse_funder_profile_csv(csv_content: str) -> tuple[ParsedProfile | None, list[str]]:
+def parse_report_template_csv(csv_content: str) -> tuple[ParsedProfile | None, list[str]]:
     """
-    Parse a funder profile CSV string into a ParsedProfile.
+    Parse a report template CSV string into a ParsedProfile.
 
     Args:
         csv_content: The raw CSV text content.
@@ -290,22 +290,22 @@ def _parse_keep_all_row(
     bd.keep_all = True
 
 
-def save_parsed_profile(parsed: ParsedProfile, created_by) -> "FunderProfile":
+def save_parsed_profile(parsed: ParsedProfile, created_by) -> "ReportTemplate":
     """
-    Save a ParsedProfile to the database, creating FunderProfile and
+    Save a ParsedProfile to the database, creating ReportTemplate and
     DemographicBreakdown objects.
 
     Args:
-        parsed: A validated ParsedProfile from parse_funder_profile_csv().
+        parsed: A validated ParsedProfile from parse_report_template_csv().
         created_by: The User who uploaded the profile.
 
     Returns:
-        The created FunderProfile instance.
+        The created ReportTemplate instance.
     """
     from apps.clients.models import CustomFieldDefinition
-    from .models import DemographicBreakdown, FunderProfile
+    from .models import DemographicBreakdown, ReportTemplate
 
-    profile = FunderProfile.objects.create(
+    profile = ReportTemplate.objects.create(
         name=parsed.name,
         description=parsed.description,
         source_csv=parsed.raw_csv,
@@ -331,7 +331,7 @@ def save_parsed_profile(parsed: ParsedProfile, created_by) -> "FunderProfile":
                 ).first()
 
         DemographicBreakdown.objects.create(
-            funder_profile=profile,
+            report_template=profile,
             label=bd.label,
             source_type=bd.source_type,
             custom_field=custom_field,
@@ -350,7 +350,7 @@ def validate_parsed_profile(parsed: ParsedProfile) -> list[str]:
     referenced custom fields exist and referenced option labels match.
 
     Args:
-        parsed: A ParsedProfile from parse_funder_profile_csv().
+        parsed: A ParsedProfile from parse_report_template_csv().
 
     Returns:
         List of warning messages (non-fatal). Empty if everything matches.
@@ -414,14 +414,14 @@ def generate_sample_csv() -> str:
         A string containing a valid sample CSV.
     """
     lines = [
-        "# KoNote Funder Profile CSV Template",
+        "# KoNote Report Template CSV Template",
         "# Lines starting with # are comments and will be ignored.",
         "#",
         "# INSTRUCTIONS:",
         "# 1. Replace the profile name and description below",
         "# 2. Define your age breakdowns (bins)",
         "# 3. Define custom field breakdowns (merge or keep_all)",
-        "# 4. Upload this file in Admin → Funder Profiles",
+        "# 4. Upload this file in Admin → Report Templates",
         "#",
         "# TIP: Use Claude to generate this CSV from your funder's",
         "#       reporting template (PDF, Excel, or email).",

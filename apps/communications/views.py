@@ -44,9 +44,10 @@ def quick_log(request, client_id):
         return HttpResponseForbidden(_("You do not have access to this client."))
 
     channel = request.GET.get("channel") or request.POST.get("channel", "")
+    mode = request.GET.get("mode", "")
 
-    # Cancel button or no channel specified — return the buttons view
-    if request.method == "GET" and not channel:
+    # Explicit button mode (used by cancel action)
+    if request.method == "GET" and mode == "buttons":
         recent = (
             Communication.objects.filter(client_file=client)
             .order_by("-created_at")[:5]
@@ -82,7 +83,10 @@ def quick_log(request, client_id):
                 "recent_communications": recent,
             })
     else:
-        # Smart direction defaults based on channel
+        # Default to phone so staff can submit quickly, while still allowing
+        # channel changes from the form dropdown.
+        if not channel:
+            channel = "phone"
         direction_defaults = {
             "phone": "inbound",
             "sms": "outbound",

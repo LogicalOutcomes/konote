@@ -65,11 +65,13 @@
         <div>
             <label for="id_birth_date">{% trans "Date of Birth" %}</label>
             <input type="date" name="birth_date" id="id_birth_date" value="{{ form.birth_date.value|default:'' }}"
+                   data-year-shortcut="true"
                    hx-get="{% url 'clients:check_duplicate' %}"
                    hx-trigger="change"
                    hx-target="#duplicate-banner"
                    hx-include="[name='phone'], [name='first_name'], [name='birth_date'], [name='exclude']"
                    hx-sync="#duplicate-banner:replace">
+            <small>{% trans "Tip: You can type a 4-digit year (for example 1955) and the date will jump to that year." %}</small>
         </div>
         <div>
             <label for="id_record_id">{% trans "Record ID" %}</label>

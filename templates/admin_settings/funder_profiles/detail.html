@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ profile.name }} — {% trans "Funder Profile" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{{ profile.name }} — {% trans "Report Template" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>
     <h1>{{ profile.name }}</h1>
-    <p>{% if profile.description %}{{ profile.description }}{% else %}{% trans "Funder demographic profile" %}{% endif %}</p>
+    <p>{% if profile.description %}{{ profile.description }}{% else %}{% trans "Reporting template" %}{% endif %}</p>
 </hgroup>
 
 <div class="grid" style="margin-bottom: 1.5rem;">
@@ -81,10 +81,10 @@
 {% endfor %}
 
 <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-    <a href="{% url 'admin_settings:funder_profile_edit_programs' profile.pk %}" role="button" class="outline">{% trans "Edit Programs" %}</a>
-    <a href="{% url 'admin_settings:funder_profile_download_csv' profile.pk %}" role="button" class="outline secondary">{% trans "Download CSV" %}</a>
-    <a href="{% url 'admin_settings:funder_profile_delete' profile.pk %}" role="button" class="outline" style="--pico-color: var(--pico-color-red-500); --pico-border-color: var(--pico-color-red-500);">{% trans "Delete Profile" %}</a>
+    <a href="{% url 'admin_settings:report_template_edit_programs' profile.pk %}" role="button" class="outline">{% trans "Edit Programs" %}</a>
+    <a href="{% url 'admin_settings:report_template_download_csv' profile.pk %}" role="button" class="outline secondary">{% trans "Download CSV" %}</a>
+    <a href="{% url 'admin_settings:report_template_delete' profile.pk %}" role="button" class="outline" style="--pico-color: var(--pico-color-red-500); --pico-border-color: var(--pico-color-red-500);">{% trans "Delete Template" %}</a>
 </div>
 
-<p style="margin-top: 1.5rem;"><a href="{% url 'admin_settings:funder_profile_list' %}">{% trans "← Back to Profiles" %}</a></p>
+<p style="margin-top: 1.5rem;"><a href="{% url 'admin_settings:report_template_list' %}">{% trans "← Back to Templates" %}</a></p>
 {% endblock %}

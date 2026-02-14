@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Preview Funder Profile" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% trans "Preview Report Template" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% trans "Preview Funder Profile" %}</h1>
+    <h1>{% trans "Preview Report Template" %}</h1>
     <p>{% trans "Review the parsed profile before saving." %}</p>
 </hgroup>
 
@@ -61,13 +61,13 @@
 </article>
 
 <h3>{% trans "Assign to Programs" %}</h3>
-<form method="post" action="{% url 'admin_settings:funder_profile_confirm' %}">
+<form method="post" action="{% url 'admin_settings:report_template_confirm' %}">
     {% csrf_token %}
     <input type="hidden" name="csv_content" value="{{ csv_content }}">
 
     <fieldset>
         <legend>{% trans "Programs" %}</legend>
-        <p><small>{% trans "Select which programs should use this funder profile. You can change this later." %}</small></p>
+        <p><small>{% trans "Select which programs should use this report template. You can change this later." %}</small></p>
         {% for program in programs %}
         <label>
             <input type="checkbox" name="programs" value="{{ program.pk }}">
@@ -77,10 +77,10 @@
     </fieldset>
 
     <div style="margin-top: 1rem;">
-        <button type="submit">{% trans "Save Profile" %}</button>
-        <a href="{% url 'admin_settings:funder_profile_upload' %}" role="button" class="outline secondary">{% trans "Back" %}</a>
+        <button type="submit">{% trans "Save Template" %}</button>
+        <a href="{% url 'admin_settings:report_template_upload' %}" role="button" class="outline secondary">{% trans "Back" %}</a>
     </div>
 </form>
 
-<p><a href="{% url 'admin_settings:funder_profile_list' %}">{% trans "← Back to Profiles" %}</a></p>
+    <p><a href="{% url 'admin_settings:report_template_list' %}">{% trans "← Back to Templates" %}</a></p>
 {% endblock %}

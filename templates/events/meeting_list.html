@@ -5,9 +5,14 @@
 
 {% block content %}
 {% include "_breadcrumbs.html" %}
-<hgroup>
-    <h1>{% trans "My Meetings" %}</h1>
-</hgroup>
+<section class="meetings-page" aria-labelledby="my-meetings-heading">
+    <header class="meetings-header">
+        <hgroup>
+            <h1 id="my-meetings-heading">{% trans "My Meetings" %}</h1>
+            <p class="secondary">{% trans "See upcoming meetings and recent activity in one place." %}</p>
+        </hgroup>
+        <a href="{% url 'events:calendar_feed_settings' %}" role="button" class="outline meetings-feed-link">{% trans "Calendar Feed Settings" %}</a>
+    </header>
 
 {% if health_warnings %}
 {% for warning in health_warnings %}
@@ -18,23 +23,42 @@
 {% endfor %}
 {% endif %}
 
+<section class="meetings-summary-bar" aria-label="{% trans 'Meeting summary' %}">
+    <article class="meetings-summary-card">
+        <strong>{{ upcoming_meetings|length }}</strong>
+        <span class="secondary">{% trans "Upcoming (30 days)" %}</span>
+    </article>
+    <article class="meetings-summary-card">
+        <strong>{{ past_meetings|length }}</strong>
+        <span class="secondary">{% trans "Recent (7 days)" %}</span>
+    </article>
+</section>
+
+<section class="meetings-section" aria-labelledby="upcoming-meetings-heading">
 {% if upcoming_meetings %}
-<h2>{% trans "Upcoming" %}</h2>
+<h2 id="upcoming-meetings-heading">{% trans "Upcoming" %}</h2>
+<div class="meetings-list">
 {% for meeting in upcoming_meetings %}
 {% include "events/_meeting_card.html" with meeting=meeting %}
 {% endfor %}
+</div>
 {% else %}
-<p class="secondary">{% trans "No upcoming meetings." %}</p>
+<p class="secondary meetings-empty">{% trans "No upcoming meetings." %}</p>
 {% endif %}
+</section>
 
 {% if past_meetings %}
-<details>
-    <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Recent" %}</h2></summary>
+<details class="meetings-history">
+    <summary>
+        <span class="meetings-history-title">{% trans "Recent" %} ({{ past_meetings|length }})</span>
+        <small class="secondary">{% trans "Last 7 days" %}</small>
+    </summary>
+    <div class="meetings-list">
     {% for meeting in past_meetings %}
     {% include "events/_meeting_card.html" with meeting=meeting %}
     {% endfor %}
+    </div>
 </details>
 {% endif %}
-
-<a href="{% url 'events:calendar_feed_settings' %}" class="secondary" style="font-size: 0.875rem;">{% trans "Calendar Feed Settings" %}</a>
+</section>
 {% endblock %}

@@ -1,4 +1,4 @@
-"""Admin views for funder profile management — upload, preview, CRUD."""
+"""Admin views for report template management — upload, preview, CRUD."""
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -9,19 +9,19 @@ from apps.auth_app.decorators import admin_required
 
 from apps.reports.csv_parser import (
     generate_sample_csv,
-    parse_funder_profile_csv,
+    parse_report_template_csv,
     save_parsed_profile,
     validate_parsed_profile,
 )
-from apps.reports.models import FunderProfile
+from apps.reports.models import ReportTemplate
 from apps.programs.models import Program
 
 
 @login_required
 @admin_required
-def funder_profile_list(request):
-    """List all funder profiles with their linked programs."""
-    profiles = FunderProfile.objects.prefetch_related("programs", "breakdowns").all()
+def report_template_list(request):
+    """List all report templates with their linked programs."""
+    profiles = ReportTemplate.objects.prefetch_related("programs", "breakdowns").all()
     return render(request, "admin_settings/funder_profiles/list.html", {
         "profiles": profiles,
     })
@@ -29,8 +29,8 @@ def funder_profile_list(request):
 
 @login_required
 @admin_required
-def funder_profile_upload(request):
-    """Upload a funder profile CSV."""
+def report_template_upload(request):
+    """Upload a report template CSV."""
     if request.method != "POST":
         return render(request, "admin_settings/funder_profiles/upload.html")
 
@@ -51,7 +51,7 @@ def funder_profile_upload(request):
         return render(request, "admin_settings/funder_profiles/upload.html")
 
     # Parse the CSV
-    parsed, errors = parse_funder_profile_csv(csv_content)
+    parsed, errors = parse_report_template_csv(csv_content)
 
     if errors:
         return render(request, "admin_settings/funder_profiles/upload.html", {
@@ -75,21 +75,21 @@ def funder_profile_upload(request):
 
 @login_required
 @admin_required
-def funder_profile_confirm(request):
-    """Confirm and save a previewed funder profile."""
+def report_template_confirm(request):
+    """Confirm and save a previewed report template."""
     if request.method != "POST":
-        return redirect("admin_settings:funder_profile_list")
+        return redirect("admin_settings:report_template_list")
 
     csv_content = request.POST.get("csv_content", "")
     if not csv_content:
         messages.error(request, _("No CSV data found. Please try uploading again."))
-        return redirect("admin_settings:funder_profile_upload")
+        return redirect("admin_settings:report_template_upload")
 
     # Re-parse (the preview page passes the CSV content through a hidden field)
-    parsed, errors = parse_funder_profile_csv(csv_content)
+    parsed, errors = parse_report_template_csv(csv_content)
     if errors:
         messages.error(request, _("CSV validation failed. Please correct errors and re-upload."))
-        return redirect("admin_settings:funder_profile_upload")
+        return redirect("admin_settings:report_template_upload")
 
     # Save to database
     profile = save_parsed_profile(parsed, created_by=request.user)
@@ -102,18 +102,18 @@ def funder_profile_confirm(request):
 
     messages.success(
         request,
-        _('Funder profile "%(name)s" created with %(count)d demographic breakdown(s).')
+        _('Report template "%(name)s" created with %(count)d demographic breakdown(s).')
         % {"name": profile.name, "count": profile.breakdowns.count()},
     )
-    return redirect("admin_settings:funder_profile_detail", profile_id=profile.pk)
+    return redirect("admin_settings:report_template_detail", profile_id=profile.pk)
 
 
 @login_required
 @admin_required
-def funder_profile_detail(request, profile_id):
-    """View a funder profile's breakdowns and linked programs."""
+def report_template_detail(request, profile_id):
+    """View a report template's breakdowns and linked programs."""
     profile = get_object_or_404(
-        FunderProfile.objects.prefetch_related("breakdowns", "programs"),
+        ReportTemplate.objects.prefetch_related("breakdowns", "programs"),
         pk=profile_id,
     )
     return render(request, "admin_settings/funder_profiles/detail.html", {
@@ -123,16 +123,16 @@ def funder_profile_detail(request, profile_id):
 
 @login_required
 @admin_required
-def funder_profile_edit_programs(request, profile_id):
-    """Edit which programs are linked to a funder profile."""
-    profile = get_object_or_404(FunderProfile, pk=profile_id)
+def report_template_edit_programs(request, profile_id):
+    """Edit which programs are linked to a report template."""
+    profile = get_object_or_404(ReportTemplate, pk=profile_id)
 
     if request.method == "POST":
         program_ids = request.POST.getlist("programs")
         programs = Program.objects.filter(pk__in=program_ids, status="active")
         profile.programs.set(programs)
         messages.success(request, _("Program assignments updated."))
-        return redirect("admin_settings:funder_profile_detail", profile_id=profile.pk)
+        return redirect("admin_settings:report_template_detail", profile_id=profile.pk)
 
     programs = Program.objects.filter(status="active").order_by("name")
     linked_ids = set(profile.programs.values_list("pk", flat=True))
@@ -145,15 +145,15 @@ def funder_profile_edit_programs(request, profile_id):
 
 @login_required
 @admin_required
-def funder_profile_delete(request, profile_id):
-    """Delete a funder profile (with confirmation)."""
-    profile = get_object_or_404(FunderProfile, pk=profile_id)
+def report_template_delete(request, profile_id):
+    """Delete a report template (with confirmation)."""
+    profile = get_object_or_404(ReportTemplate, pk=profile_id)
 
     if request.method == "POST":
         name = profile.name
         profile.delete()
-        messages.success(request, _('Funder profile "%(name)s" deleted.') % {"name": name})
-        return redirect("admin_settings:funder_profile_list")
+        messages.success(request, _('Report template "%(name)s" deleted.') % {"name": name})
+        return redirect("admin_settings:report_template_list")
 
     return render(request, "admin_settings/funder_profiles/confirm_delete.html", {
         "profile": profile,
@@ -162,25 +162,25 @@ def funder_profile_delete(request, profile_id):
 
 @login_required
 @admin_required
-def funder_profile_download_csv(request, profile_id):
+def report_template_download_csv(request, profile_id):
     """Download the original CSV that was used to create a profile."""
-    profile = get_object_or_404(FunderProfile, pk=profile_id)
+    profile = get_object_or_404(ReportTemplate, pk=profile_id)
 
     if not profile.source_csv:
         messages.warning(request, _("No source CSV available for this profile."))
-        return redirect("admin_settings:funder_profile_detail", profile_id=profile.pk)
+        return redirect("admin_settings:report_template_detail", profile_id=profile.pk)
 
     response = HttpResponse(profile.source_csv, content_type="text/csv; charset=utf-8")
     safe_name = profile.name.replace(" ", "_").replace("/", "_")
-    response["Content-Disposition"] = f'attachment; filename="funder_profile_{safe_name}.csv"'
+    response["Content-Disposition"] = f'attachment; filename="report_template_{safe_name}.csv"'
     return response
 
 
 @login_required
 @admin_required
-def funder_profile_sample_csv(request):
-    """Download a sample/template CSV for creating funder profiles."""
+def report_template_sample_csv(request):
+    """Download a sample/template CSV for creating report templates."""
     csv_content = generate_sample_csv()
     response = HttpResponse(csv_content, content_type="text/csv; charset=utf-8")
-    response["Content-Disposition"] = 'attachment; filename="funder_profile_template.csv"'
+    response["Content-Disposition"] = 'attachment; filename="report_template_sample.csv"'
     return response

@@ -8,6 +8,8 @@ Covers:
 
 TEST-9 from code review.
 """
+from datetime import timezone as dt_timezone
+
 from cryptography.fernet import Fernet
 from django.test import TestCase, override_settings
 from django.utils import timezone
@@ -93,6 +95,22 @@ class EventFormTest(TestCase):
             "start_timestamp": "2026-03-01T14:00",
         })
         self.assertTrue(form.is_valid(), form.errors)
+
+    def test_event_form_standard_datetime_local_interpreted_as_eastern(self):
+        """datetime-local input should be interpreted in app timezone (Eastern) and stored aware."""
+        form = EventForm(data={
+            "title": "Meeting",
+            "all_day": False,
+            "start_timestamp": "2026-03-01T14:00",
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+
+        start_ts = form.cleaned_data["start_timestamp"]
+        self.assertTrue(timezone.is_aware(start_ts))
+
+        # March 1 is still EST (UTC-5): 14:00 ET should be 19:00 UTC.
+        self.assertEqual(start_ts.astimezone(dt_timezone.utc).hour, 19)
+        self.assertEqual(start_ts.astimezone(dt_timezone.utc).minute, 0)
 
     # ------------------------------------------------------------------
     # Queryset filtering

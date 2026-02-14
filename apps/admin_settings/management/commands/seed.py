@@ -387,6 +387,8 @@ class Command(BaseCommand):
                         client_file=client, program=extra, status="enrolled",
                     )
 
+        self._seed_demo_reporting_template(all_programs)
+
         self.stdout.write("  Demo data: 6 users, 5 programs, 15 clients created.")
         self.stdout.write("    - Casey Worker: program_manager(Employment) + staff(Housing, Kitchen)")
         self.stdout.write("    - Noor Worker:  staff(Youth Drop-In, Newcomer, Kitchen)")
@@ -447,6 +449,46 @@ class Command(BaseCommand):
             name__in=portal_metrics
         ).update(portal_visibility="yes")
         self.stdout.write(f"  Portal visibility: {updated} metrics set to visible.")
+
+    def _seed_demo_reporting_template(self, programs):
+        """Create a demo-only report template with a sample funder profile."""
+        from apps.reports.models import DemographicBreakdown, ReportTemplate
+
+        profile_name = "Reporting template"
+        profile, created = ReportTemplate.objects.get_or_create(
+            name=profile_name,
+            defaults={
+                "description": (
+                    "Sample report template for Canadian Community Fund "
+                    "quarterly outcomes."
+                ),
+            },
+        )
+
+        if created:
+            DemographicBreakdown.objects.create(
+                report_template=profile,
+                label="Age Group",
+                source_type="age",
+                bins_json=[
+                    {"min": 0, "max": 12, "label": "Child (0-12)"},
+                    {"min": 13, "max": 17, "label": "Youth (13-17)"},
+                    {"min": 18, "max": 24, "label": "Young Adult (18-24)"},
+                    {"min": 25, "max": 64, "label": "Adult (25-64)"},
+                    {"min": 65, "max": 999, "label": "Senior (65+)"},
+                ],
+                sort_order=0,
+            )
+
+        profile.programs.set(programs)
+        if created:
+            self.stdout.write(
+                "  Demo report template: 'Reporting template' (Canadian Community Fund) created."
+            )
+        else:
+            self.stdout.write(
+                "  Demo report template: 'Reporting template' already exists; programs synced."
+            )
 
     def _update_demo_client_fields(self):
         """Populate custom field values and consent for demo clients."""

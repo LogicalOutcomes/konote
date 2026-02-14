@@ -338,7 +338,7 @@ class TestPeriodicScenarios(ScenarioRunner):
         self._run_periodic("SCN-082")
 
     def test_funder_report_suppression(self):
-        """SCN-086: Funder Report Suppression — funder profile with small-cell suppression."""
+        """SCN-086: Funder Report Suppression — report template with small-cell suppression."""
         self._run_periodic("SCN-086")
 
 

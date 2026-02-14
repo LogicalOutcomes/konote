@@ -162,7 +162,7 @@
             <div class="consent-section">
                 <label for="{{ form.consent_confirmed.id_for_label }}">
                     {{ form.consent_confirmed }}
-                    {% trans "We created this note together" %}
+                    {% trans "We created this note together (this is recommended)" %}
                 </label>
                 {% if form.consent_confirmed.errors %}
                 <small class="error" id="consent-error" role="alert">{{ form.consent_confirmed.errors.0 }}</small>

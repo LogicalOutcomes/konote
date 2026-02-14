@@ -61,9 +61,9 @@ class EventForm(forms.ModelForm):
         # If editing an existing all-day event, populate date fields
         if self.instance and self.instance.pk and self.instance.all_day:
             if self.instance.start_timestamp:
-                self.initial["start_date"] = self.instance.start_timestamp.date()
+                self.initial["start_date"] = timezone.localtime(self.instance.start_timestamp).date()
             if self.instance.end_timestamp:
-                self.initial["end_date"] = self.instance.end_timestamp.date()
+                self.initial["end_date"] = timezone.localtime(self.instance.end_timestamp).date()
 
     def clean(self):
         cleaned_data = super().clean()
@@ -157,13 +157,19 @@ class MeetingQuickCreateForm(forms.Form):
     """Quick-create form — 3 fields, under 60 seconds to fill in."""
 
     start_timestamp = forms.DateTimeField(
-        label=_("Date & Time"),
-        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
+        label=_("Date and Time"),
+        widget=forms.DateTimeInput(attrs={
+            "type": "datetime-local",
+            "aria-describedby": "meeting-start-required meeting-start-help",
+        }),
     )
     location = forms.CharField(
         max_length=255, required=False,
         label=_("Location"),
-        widget=forms.TextInput(attrs={"placeholder": _("e.g. Office, Room 201, Phone call")}),
+        widget=forms.TextInput(attrs={
+            "placeholder": _("Choose from list or type location"),
+            "list": "meeting-location-options",
+        }),
     )
     send_reminder = forms.BooleanField(
         required=False, initial=True,
@@ -175,13 +181,19 @@ class MeetingEditForm(forms.Form):
     """Full edit form for meetings — all fields available."""
 
     start_timestamp = forms.DateTimeField(
-        label=_("Date & Time"),
-        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
+        label=_("Date and Time"),
+        widget=forms.DateTimeInput(attrs={
+            "type": "datetime-local",
+            "aria-describedby": "meeting-start-required meeting-start-help",
+        }),
     )
     location = forms.CharField(
         max_length=255, required=False,
         label=_("Location"),
-        widget=forms.TextInput(attrs={"placeholder": _("e.g. Office, Room 201, Phone call")}),
+        widget=forms.TextInput(attrs={
+            "placeholder": _("Choose from list or type location"),
+            "list": "meeting-location-options",
+        }),
     )
     duration_minutes = forms.IntegerField(
         required=False, min_value=5, max_value=480,

@@ -27,11 +27,30 @@ document.body.addEventListener("htmx:configRequest", function (event) {
 // When a form has validation errors, move focus to the error summary
 // so keyboard/screen reader users know the form failed
 (function () {
+    function enableDateYearShortcut() {
+        var dateInputs = document.querySelectorAll('input[type="date"][data-year-shortcut="true"]');
+        dateInputs.forEach(function (input) {
+            input.addEventListener("input", function (event) {
+                var raw = (event.target.value || "").trim();
+                if (/^\d{4}$/.test(raw)) {
+                    event.target.value = raw + "-01-01";
+                }
+            });
+            input.addEventListener("blur", function (event) {
+                var raw = (event.target.value || "").trim();
+                if (/^\d{4}$/.test(raw)) {
+                    event.target.value = raw + "-01-01";
+                }
+            });
+        });
+    }
+
     function focusErrorSummary() {
         var summary = document.getElementById("form-error-summary");
         if (summary) {
             summary.focus();
         }
+        enableDateYearShortcut();
     }
     if (document.readyState === "loading") {
         document.addEventListener("DOMContentLoaded", focusErrorSummary);

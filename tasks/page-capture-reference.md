@@ -1,5 +1,7 @@
 # Page Capture — Reference Guide
 
+For recurring schedule and canonical command flow, see `tasks/recurring-tasks.md` (`QA-FULL1`).
+
 ## Overview
 
 The page capture system takes screenshots of every KoNote page for every authorized persona at multiple breakpoints. It is Step 1 of the page audit pipeline:

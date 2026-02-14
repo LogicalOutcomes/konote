@@ -6,6 +6,7 @@
 {% block content %}
 <hgroup>
     <h1>{% blocktrans with first=client.display_name last=client.last_name %}New Alert for {{ first }} {{ last }}{% endblocktrans %}</h1>
+    <p>{% trans "Use an alert for important safety or service information that all staff should see right away (for example: immediate risk, urgent access needs, or critical care instructions)." %}</p>
 </hgroup>
 
 <form method="post">

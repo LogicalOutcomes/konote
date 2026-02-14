@@ -5,31 +5,13 @@
 {% if can_log_comm %}
 <div id="quick-log-container" class="quick-log-section">
     <h2>{% trans "Record a Contact" %}</h2>
-    <p><small class="secondary">{% trans "Had a call, email, text, or visit? Record it here so it's part of the client file. For clinical notes with engagement and goals, use a Progress Note instead." %}</small></p>
+    <p><small class="secondary">{% trans "Use this for call, text, email, or visit logs. Use Notes for session details, goals, and progress reflections." %}</small></p>
     <div class="quick-log-buttons" role="group" aria-label="{% trans 'Record a contact' %}">
         <button class="outline"
-                hx-get="{% url 'communications:quick_log' client_id=client.pk %}?channel=phone"
+                hx-get="{% url 'communications:quick_log' client_id=client.pk %}"
                 hx-target="#quick-log-container"
                 hx-swap="innerHTML">
-            {% trans "Record a Call" %}
-        </button>
-        <button class="outline"
-                hx-get="{% url 'communications:quick_log' client_id=client.pk %}?channel=sms"
-                hx-target="#quick-log-container"
-                hx-swap="innerHTML">
-            {% trans "Record a Text" %}
-        </button>
-        <button class="outline"
-                hx-get="{% url 'communications:quick_log' client_id=client.pk %}?channel=email"
-                hx-target="#quick-log-container"
-                hx-swap="innerHTML">
-            {% trans "Record an Email" %}
-        </button>
-        <button class="outline"
-                hx-get="{% url 'communications:quick_log' client_id=client.pk %}?channel=in_person"
-                hx-target="#quick-log-container"
-                hx-swap="innerHTML">
-            {% trans "Record a Visit" %}
+            {% trans "Record Communication" %}
         </button>
     </div>
     <p><a href="{% url 'communications:communication_log' client_id=client.pk %}" class="secondary" style="font-size: 0.875rem;">{% trans "Detailed contact form" %}</a></p>

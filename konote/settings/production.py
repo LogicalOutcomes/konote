@@ -17,13 +17,78 @@ Optional but recommended:
 - ALLOWED_HOSTS: Comma-separated list of allowed domains (auto-detected for known platforms)
 """
 import os
+from urllib.parse import urlsplit
 from .base import *  # noqa: F401, F403
 
 DEBUG = False
 
+
+def _normalize_host_entry(value):
+    """Normalize one ALLOWED_HOSTS entry.
+
+    Accepts hostnames or accidental URLs and returns host-only values.
+    """
+    if not value:
+        return ""
+
+    text = value.strip()
+    if not text:
+        return ""
+
+    if "://" in text:
+        parsed = urlsplit(text)
+        host = parsed.hostname or ""
+    else:
+        host = text.split("/", 1)[0]
+
+    host = host.strip().lower().rstrip(".")
+    if host.startswith("*."):
+        host = f".{host[2:]}"
+
+    return host
+
+
+def _normalize_origin_entry(value):
+    """Normalize one CSRF_TRUSTED_ORIGINS entry.
+
+    Accepts full origins or bare hostnames and returns HTTPS origins.
+    """
+    if not value:
+        return ""
+
+    text = value.strip()
+    if not text:
+        return ""
+
+    if "://" in text:
+        parsed = urlsplit(text)
+        scheme = (parsed.scheme or "https").lower()
+        host = parsed.hostname or ""
+        port = parsed.port
+    else:
+        scheme = "https"
+        host_part = text.split("/", 1)[0].strip().lower().rstrip(".")
+        if host_part.startswith("."):
+            host_part = f"*{host_part}"
+        host = host_part
+        port = None
+
+    if not host:
+        return ""
+
+    origin = f"{scheme}://{host}"
+    if port:
+        origin = f"{origin}:{port}"
+    return origin
+
+
+def _split_csv_env(name):
+    return [item.strip() for item in os.environ.get(name, "").split(",") if item.strip()]
+
 # ALLOWED_HOSTS — start with explicit configuration, then auto-detect
-_allowed_hosts = os.environ.get("ALLOWED_HOSTS", "").split(",")
-ALLOWED_HOSTS = [h.strip() for h in _allowed_hosts if h.strip()]
+_allowed_hosts = _split_csv_env("ALLOWED_HOSTS")
+ALLOWED_HOSTS = [_normalize_host_entry(h) for h in _allowed_hosts]
+ALLOWED_HOSTS = [h for h in ALLOWED_HOSTS if h]
 
 # Auto-detect platform and add appropriate domains
 # ─────────────────────────────────────────────────────────────────────
@@ -75,9 +140,9 @@ CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "True").lower() != "fa
 # submissions (login, logout, etc.) fail with 403 "CSRF verification failed".
 # Mirrors the ALLOWED_HOSTS auto-detection above.
 _trusted_origins = []
-_explicit = os.environ.get("CSRF_TRUSTED_ORIGINS", "")
-if _explicit:
-    _trusted_origins.extend([o.strip() for o in _explicit.split(",") if o.strip()])
+_explicit = _split_csv_env("CSRF_TRUSTED_ORIGINS")
+_trusted_origins.extend([_normalize_origin_entry(o) for o in _explicit])
+_trusted_origins = [o for o in _trusted_origins if o]
 
 if os.environ.get("RAILWAY_ENVIRONMENT"):
     _trusted_origins.append("https://*.railway.app")

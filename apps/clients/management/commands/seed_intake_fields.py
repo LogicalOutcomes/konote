@@ -77,9 +77,10 @@ INTAKE_FIELD_GROUPS = [
             ("Primary Phone", "text", True, True, "edit", "(416) 555-0123", [], "phone"),
             ("Secondary Phone", "text", False, True, "edit", "", [], "phone"),
             ("Email", "text", False, True, "edit", "email@example.com", []),
+            ("Secondary Email", "text", False, True, "edit", "", []),
             ("Mailing Address", "textarea", False, True, "edit", "Street address, city", []),
             ("Postal Code", "text", False, False, "edit", "A1A 1A1", [], "postal_code"),
-            ("Province or Territory", "select", False, False, "edit", "", [
+            ("Province or Territory", "select_other", False, False, "edit", "", [
                 "Alberta",
                 "British Columbia",
                 "Manitoba",
@@ -106,10 +107,9 @@ INTAKE_FIELD_GROUPS = [
                 "Evening (5pm-8pm)",
                 "Any time",
             ]),
-            ("Preferred Language of Service", "select", False, False, "edit", "", [
+            ("Preferred Language of Service", "select_other", False, False, "edit", "", [
                 "English",
                 "French",
-                "Other",
             ]),
         ],
     ),
@@ -122,14 +122,13 @@ INTAKE_FIELD_GROUPS = [
         20,
         [
             ("Emergency Contact Name", "text", True, True, "edit", "Full name", []),
-            ("Emergency Contact Relationship", "select", False, False, "edit", "", [
+            ("Emergency Contact Relationship", "select_other", False, False, "edit", "", [
                 "Parent/Guardian",
                 "Spouse/Partner",
                 "Sibling",
                 "Other family member",
                 "Friend",
                 "Case worker",
-                "Other",
             ]),
             ("Emergency Contact Phone", "text", True, True, "edit", "(416) 555-0123", [], "phone"),
         ],
@@ -144,7 +143,7 @@ INTAKE_FIELD_GROUPS = [
         30,
         [
             # Administrative fields — front desk can edit
-            ("Referral Source", "select", False, False, "edit", "", [
+            ("Referral Source", "select_other", False, False, "edit", "", [
                 "Self-referral",
                 "Family/Friend",
                 "Community agency",
@@ -154,7 +153,6 @@ INTAKE_FIELD_GROUPS = [
                 "Justice system",
                 "Shelter/Housing provider",
                 "Online search",
-                "Other",
             ]),
             ("Referring Agency Name", "text", False, False, "edit", "If referred by an agency", []),
             # Clinical fields — front desk can view but not edit
@@ -181,13 +179,12 @@ INTAKE_FIELD_GROUPS = [
         40,
         [
             ("Accommodation Needs", "textarea", False, False, "edit", "Any accommodations we should be aware of", []),
-            ("Preferred Communication Format", "select", False, False, "edit", "", [
+            ("Preferred Communication Format", "select_other", False, False, "edit", "", [
                 "Standard print",
                 "Large print",
                 "Audio",
                 "Electronic/Digital",
                 "Sign language interpreter",
-                "Other",
             ]),
         ],
     ),

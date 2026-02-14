@@ -942,6 +942,7 @@ def suggest_metrics(target_description, program_name):
 | `DATABASE_URL` | Main PostgreSQL connection string |
 | `AUDIT_DATABASE_URL` | Audit PostgreSQL connection string |
 | `ALLOWED_HOSTS` | Comma-separated list of allowed hostnames |
+| `CSRF_TRUSTED_ORIGINS` | Comma-separated HTTPS origins for CSRF validation |
 | `AUTH_MODE` | `local` or `azure` |
 
 ### Optional Environment Variables

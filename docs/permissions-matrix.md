@@ -87,9 +87,9 @@
 | **Manage users** | — | — | Scoped | — | Yes |
 | **System settings** | — | — | — | — | Yes |
 | **Manage programs** | — | — | Scoped | — | Yes |
-| **View audit log** | — | — | Scoped | Yes | Yes |
+| **View audit log** | — | — | Scoped | — | Yes |
 | **Create/edit custom field definitions** | — | — | — | — | Yes |
-| **Manage funder profiles** | — | — | — | — | Yes |
+| **Manage report templates** | — | — | — | — | Yes |
 | **Manage note templates** | — | — | — | — | Yes |
 | **Manage plan templates** | — | — | — | — | Yes |
 | **Manage event types** | — | — | — | — | Yes |
@@ -105,6 +105,8 @@
 - **Scoped** = Only for their assigned clients/groups within their program
 - **Per field** = Depends on each field's individual access setting
 - **—** = Not allowed
+
+**Note on Executive audit access:** Executives do not have access to the audit log. Under PIPEDA principle 4.4 (limiting use, disclosure, and retention), access to detailed audit trails — which may contain client identifiers and staff activity records — is restricted to those with an operational need. Executives who require oversight of audit activity should request aggregate compliance reports from an administrator.
 
 ---
 

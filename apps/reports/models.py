@@ -1,4 +1,4 @@
-"""Models for the reports app — secure export link tracking and funder profiles."""
+"""Models for the reports app — secure export link tracking and report templates."""
 import os
 import uuid
 from datetime import timedelta
@@ -10,12 +10,12 @@ from django.utils.translation import gettext_lazy as _
 
 
 # ---------------------------------------------------------------------------
-# Funder Profile — demographic breakdown configuration uploaded as CSV
+# Report Template — demographic breakdown configuration uploaded as CSV
 # ---------------------------------------------------------------------------
 
-class FunderProfile(models.Model):
+class ReportTemplate(models.Model):
     """
-    A funder's reporting requirements for demographic breakdowns.
+    A reporting template's requirements for demographic breakdowns.
 
     Admins create profiles by uploading a CSV (typically generated with
     Claude's help from a funder's reporting template). Each profile
@@ -28,7 +28,7 @@ class FunderProfile(models.Model):
 
     name = models.CharField(
         max_length=255,
-        help_text=_("Funder name, e.g., 'United Way Greater Toronto'."),
+        help_text=_("Template name, e.g., 'United Way Greater Toronto'."),
     )
     description = models.TextField(
         blank=True,
@@ -37,8 +37,8 @@ class FunderProfile(models.Model):
     programs = models.ManyToManyField(
         "programs.Program",
         blank=True,
-        related_name="funder_profiles",
-        help_text=_("Programs that report to this funder."),
+        related_name="report_templates",
+        help_text=_("Programs linked to this reporting template."),
     )
     source_csv = models.TextField(
         blank=True,
@@ -48,14 +48,14 @@ class FunderProfile(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
-        related_name="created_funder_profiles",
+        related_name="created_report_templates",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["name"]
-        db_table = "funder_profiles"
+        db_table = "report_templates"
 
     def __str__(self):
         return self.name
@@ -63,7 +63,7 @@ class FunderProfile(models.Model):
 
 class DemographicBreakdown(models.Model):
     """
-    One demographic dimension within a funder profile.
+    One demographic dimension within a report template.
 
     Each breakdown defines how to slice client data for a single
     demographic dimension (e.g., age groups, employment status).
@@ -78,8 +78,8 @@ class DemographicBreakdown(models.Model):
         ("custom_field", _("Custom intake field")),
     ]
 
-    funder_profile = models.ForeignKey(
-        FunderProfile,
+    report_template = models.ForeignKey(
+        ReportTemplate,
         on_delete=models.CASCADE,
         related_name="breakdowns",
     )
@@ -125,7 +125,7 @@ class DemographicBreakdown(models.Model):
         db_table = "demographic_breakdowns"
 
     def __str__(self):
-        return f"{self.funder_profile.name} — {self.label}"
+        return f"{self.report_template.name} — {self.label}"
 
 
 class SecureExportLink(models.Model):

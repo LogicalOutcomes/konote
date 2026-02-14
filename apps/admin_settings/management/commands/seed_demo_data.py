@@ -25,7 +25,14 @@ from django.utils import timezone
 
 from apps.clients.models import ClientDetailValue, ClientFile, CustomFieldDefinition
 from apps.communications.models import Communication
-from apps.events.models import Alert, CalendarFeedToken, Event, EventType, Meeting
+from apps.events.models import (
+    Alert,
+    AlertCancellationRecommendation,
+    CalendarFeedToken,
+    Event,
+    EventType,
+    Meeting,
+)
 from apps.groups.models import (
     Group,
     GroupMembership,
@@ -1005,6 +1012,15 @@ class Command(BaseCommand):
         except User.DoesNotExist:
             pass  # Workers not yet created — full seed below will handle it
 
+        # Always ensure at least one pending alert cancellation recommendation
+        # exists for the Reviews queue (idempotent).
+        try:
+            worker1 = User.objects.get(username="demo-worker-1")
+            workers_early = {"demo-worker-1": worker1}
+            self._ensure_pending_alert_recommendation(workers_early, programs_by_name)
+        except User.DoesNotExist:
+            pass
+
         # Check if rich data already exists
         force = options.get("force", False)
         demo_notes_exist = ProgressNote.objects.filter(
@@ -1096,6 +1112,9 @@ class Command(BaseCommand):
 
         # --- Create alerts for specific clients ---
         self._create_alerts(workers, programs_by_name)
+
+        # --- Ensure one pending recommendation exists for Reviews queue demo ---
+        self._ensure_pending_alert_recommendation(workers, programs_by_name)
 
         # --- Create demo groups ---
         self._create_demo_groups(workers, programs_by_name, now)
@@ -1484,6 +1503,43 @@ class Command(BaseCommand):
                     author=author,
                     author_program=program,
                 )
+
+    def _ensure_pending_alert_recommendation(self, workers, programs_by_name):
+        """Ensure one pending cancellation recommendation exists for demo reviews."""
+        client = ClientFile.objects.filter(record_id="DEMO-005").first()
+        if not client:
+            return
+
+        program = programs_by_name.get("Housing Stability")
+        recommender = workers.get("demo-worker-1")
+        if not program or not recommender:
+            return
+
+        alert = Alert.objects.filter(
+            client_file=client,
+            author_program=program,
+            status="default",
+        ).order_by("-created_at").first()
+
+        if not alert:
+            alert = Alert.objects.create(
+                client_file=client,
+                content="Eviction risk — legal aid case pending. Monitor closely.",
+                author=recommender,
+                author_program=program,
+            )
+
+        if AlertCancellationRecommendation.objects.filter(alert=alert, status="pending").exists():
+            return
+
+        AlertCancellationRecommendation.objects.create(
+            alert=alert,
+            recommended_by=recommender,
+            assessment=(
+                "Client has had six weeks of stable housing check-ins with no new "
+                "risk indicators. Recommend closing this alert and monitoring in regular notes."
+            ),
+        )
 
     # ------------------------------------------------------------------
     # Demo groups: groups and projects

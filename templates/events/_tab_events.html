@@ -10,7 +10,7 @@
 {% has_permission "meeting.create" as can_create_meeting %}
 <div class="action-bar" role="group" aria-label="{% trans 'Actions' %}">
     {% if can_create_meeting %}
-    <a href="{% url 'events:meeting_create' client_id=client.pk %}" role="button">{% trans "Schedule Meeting" %}</a>
+    <a href="{% url 'events:meeting_create' client_id=client.pk %}" role="button" class="meeting-create-btn">{% trans "Schedule Meeting" %}</a>
     {% endif %}
     <a href="{% url 'events:event_create' client_id=client.pk %}" role="button" class="outline">{% trans "Record Event" %}</a>
     <a href="{% url 'events:alert_create' client_id=client.pk %}" role="button" class="outline secondary">{% trans "New Alert" %}</a>

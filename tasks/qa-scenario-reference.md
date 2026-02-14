@@ -1,5 +1,7 @@
 # QA Scenario Testing — Reference Guide
 
+For recurring schedule and canonical command flow, see `tasks/recurring-tasks.md` (`UX-WALK1`, `QA-FULL1`).
+
 ## Running Specific Scenarios
 
 To run only specific scenarios, use pytest's `-k` flag:

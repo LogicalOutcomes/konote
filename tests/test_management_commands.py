@@ -245,6 +245,20 @@ class SeedDemoDataTest(TestCase):
         )
         self.assertGreater(demo_clients.count(), 0)
 
+        from apps.events.models import AlertCancellationRecommendation
+        from apps.reports.models import ReportTemplate
+
+        self.assertTrue(
+            AlertCancellationRecommendation.objects.filter(
+                status="pending",
+                alert__client_file__record_id__startswith="DEMO-",
+            ).exists()
+        )
+
+        demo_template = ReportTemplate.objects.filter(name="Reporting template").first()
+        self.assertIsNotNone(demo_template)
+        self.assertIn("Canadian Community Fund", demo_template.description)
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, DEMO_MODE=False)
 class UpdateDemoClientFieldsTest(TestCase):

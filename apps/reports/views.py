@@ -1,4 +1,4 @@
-"""Report views — aggregate metric CSV export, funder report, client analysis charts, and secure links."""
+"""Report views — aggregate metric CSV export, report template report, client analysis charts, and secure links."""
 import csv
 import io
 import json
@@ -32,11 +32,12 @@ from .demographics import (
     aggregate_by_demographic, get_age_range, group_clients_by_age,
     group_clients_by_custom_field, parse_grouping_choice,
 )
-from .models import DemographicBreakdown, FunderProfile, SecureExportLink
+from .models import DemographicBreakdown, ReportTemplate, SecureExportLink
 from .suppression import suppress_small_cell
 from .forms import FunderReportForm, MetricExportForm
 from .aggregations import aggregate_metrics, _stats_from_list
 from .utils import (
+    can_create_export,
     can_download_pii_export,
     get_manageable_programs,
     is_aggregate_only_user,
@@ -331,19 +332,22 @@ def export_form(request):
         })
 
     program = form.cleaned_data["program"]
+    if not can_create_export(request.user, "metrics", program=program):
+        return HttpResponseForbidden("You do not have permission to export data for this program.")
+
     selected_metrics = form.cleaned_data["metrics"]
     date_from = form.cleaned_data["date_from"]
     date_to = form.cleaned_data["date_to"]
     group_by_value = form.cleaned_data.get("group_by", "")
     include_achievement = form.cleaned_data.get("include_achievement_rate", False)
-    funder_profile = form.cleaned_data.get("funder_profile")
+    report_template = form.cleaned_data.get("report_template")
 
     # Parse the grouping choice (legacy single-field mode)
     grouping_type, grouping_field = parse_grouping_choice(group_by_value)
 
-    # If a funder profile is selected, it overrides the legacy group_by
+    # If a report template is selected, it overrides the legacy group_by
     # (the form already tells users the legacy field is ignored).
-    if funder_profile:
+    if report_template:
         grouping_type = "none"
         grouping_field = None
 
@@ -484,11 +488,11 @@ def export_form(request):
                         "max": stats.get("max", "N/A"),
                     })
 
-        # ── Funder profile multi-breakdown (overrides legacy group_by) ──
-        funder_breakdown_sections = []
-        if funder_profile:
+        # ── Report template multi-breakdown (overrides legacy group_by) ──
+        report_template_breakdown_sections = []
+        if report_template:
             breakdowns = DemographicBreakdown.objects.filter(
-                funder_profile=funder_profile,
+                report_template=report_template,
             ).select_related("custom_field").order_by("sort_order")
 
             for bd in breakdowns:
@@ -568,7 +572,7 @@ def export_form(request):
                         })
 
                 if section_rows:
-                    funder_breakdown_sections.append({
+                    report_template_breakdown_sections.append({
                         "label": bd.label,
                         "rows": section_rows,
                     })
@@ -642,9 +646,9 @@ def export_form(request):
                         demo_row["max"],
                     ]))
 
-            # Funder profile multi-breakdown sections
-            if funder_breakdown_sections:
-                for section in funder_breakdown_sections:
+            # Report template multi-breakdown sections
+            if report_template_breakdown_sections:
+                for section in report_template_breakdown_sections:
                     writer.writerow([])
                     writer.writerow(sanitise_csv_row([f"# ===== {section['label'].upper()} ====="]))
                     writer.writerow(sanitise_csv_row([
@@ -937,20 +941,44 @@ def funder_report_form(request):
     - Age demographics
     - Outcome achievement rates
     """
+    def _template_preview_items(bound_form):
+        return (
+            bound_form.fields["report_template"].queryset
+            .prefetch_related("breakdowns__custom_field")
+            .order_by("name")
+        )
+
     if request.method != "POST":
         form = FunderReportForm(user=request.user)
-        return render(request, "reports/funder_report_form.html", {"form": form})
+        return render(
+            request,
+            "reports/funder_report_form.html",
+            {
+                "form": form,
+                "template_preview_items": _template_preview_items(form),
+            },
+        )
 
     form = FunderReportForm(request.POST, user=request.user)
     if not form.is_valid():
-        return render(request, "reports/funder_report_form.html", {"form": form})
+        return render(
+            request,
+            "reports/funder_report_form.html",
+            {
+                "form": form,
+                "template_preview_items": _template_preview_items(form),
+            },
+        )
 
     program = form.cleaned_data["program"]
+    if not can_create_export(request.user, "funder_report", program=program):
+        return HttpResponseForbidden("You do not have permission to export data for this program.")
+
     date_from = form.cleaned_data["date_from"]
     date_to = form.cleaned_data["date_to"]
     fiscal_year_label = form.cleaned_data["fiscal_year_label"]
     export_format = form.cleaned_data["format"]
-    funder_profile = form.cleaned_data.get("funder_profile")
+    report_template = form.cleaned_data.get("report_template")
 
     # Generate report data
     # Security: Pass user for demo/real filtering
@@ -960,7 +988,7 @@ def funder_report_form(request):
         date_to=date_to,
         fiscal_year_label=fiscal_year_label,
         user=request.user,
-        funder_profile=funder_profile,
+        report_template=report_template,
     )
 
     # Capture raw integer count before suppression — needed for
@@ -981,7 +1009,7 @@ def funder_report_form(request):
                 report_data["age_demographics"][age_group] = suppress_small_cell(count, program)
 
     # Suppress custom demographic section counts for confidential programs.
-    # Without this, funder profile breakdowns (e.g. Gender Identity) could
+    # Without this, reporting-template breakdowns (e.g. Gender Identity) could
     # leak small-cell counts that enable re-identification — a PIPEDA issue.
     if program.is_confidential and "custom_demographic_sections" in report_data:
         for section in report_data["custom_demographic_sections"]:
@@ -1004,7 +1032,7 @@ def funder_report_form(request):
     if export_format == "pdf":
         from .pdf_views import generate_funder_report_pdf
         pdf_response = generate_funder_report_pdf(request, report_data)
-        filename = f"Funder_Report_{safe_name}_{safe_fy}.pdf"
+        filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.pdf"
         content = pdf_response.content
     else:
         # Build CSV in memory buffer
@@ -1013,7 +1041,7 @@ def funder_report_form(request):
         csv_rows = generate_funder_report_csv_rows(report_data)
         for row in csv_rows:
             writer.writerow(sanitise_csv_row(row))
-        filename = f"Funder_Report_{safe_name}_{safe_fy}.csv"
+        filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.csv"
         content = csv_buffer.getvalue()
 
     # Save to file and create secure download link
@@ -1053,7 +1081,7 @@ def funder_report_form(request):
             "total_individuals_served": report_data["total_individuals_served"],
             "recipient": recipient,
             "secure_link_id": str(link.id),
-            "funder_profile": funder_profile.name if funder_profile else None,
+            "report_template": report_template.name if report_template else None,
         },
     )
 

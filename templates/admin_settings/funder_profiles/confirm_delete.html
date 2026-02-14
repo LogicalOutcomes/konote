@@ -5,7 +5,7 @@
 
 {% block content %}
 <hgroup>
-    <h1>{% trans "Delete Funder Profile" %}</h1>
+    <h1>{% trans "Delete Report Template" %}</h1>
     <p>{% blocktrans with name=profile.name %}Are you sure you want to delete "{{ name }}"?{% endblocktrans %}</p>
 </hgroup>
 
@@ -17,7 +17,7 @@
 </article>
 
 <dl>
-    <dt>{% trans "Profile Name" %}</dt>
+    <dt>{% trans "Template Name" %}</dt>
     <dd>{{ profile.name }}</dd>
     <dt>{% trans "Breakdowns" %}</dt>
     <dd>{{ profile.breakdowns.count }}</dd>
@@ -27,7 +27,7 @@
 
 <form method="post">
     {% csrf_token %}
-    <button type="submit" style="--pico-background-color: var(--pico-color-red-500); --pico-border-color: var(--pico-color-red-500);">{% trans "Yes, Delete Profile" %}</button>
-    <a href="{% url 'admin_settings:funder_profile_detail' profile.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    <button type="submit" style="--pico-background-color: var(--pico-color-red-500); --pico-border-color: var(--pico-color-red-500);">{% trans "Yes, Delete Template" %}</button>
+    <a href="{% url 'admin_settings:report_template_detail' profile.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
 </form>
 {% endblock %}
