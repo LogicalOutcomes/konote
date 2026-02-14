@@ -102,9 +102,9 @@ class Command(BaseCommand):
                 is_enabled=True
             )
             FeatureToggle.objects.filter(
-                feature_key__in=["messaging_sms", "messaging_email"]
+                feature_key="messaging_email"
             ).update(is_enabled=True)
-            self.stdout.write("  Demo mode: participant_portal, messaging_sms, messaging_email enabled.")
+            self.stdout.write("  Demo mode: participant_portal, messaging_email enabled.")
 
     def _seed_instance_settings(self):
         from apps.admin_settings.models import InstanceSetting

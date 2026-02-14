@@ -10737,7 +10737,7 @@ msgid "Full communication log form"
 msgstr "Formulaire complet de communication"
 
 msgid "Detailed contact form"
-msgstr "Formulaire de contact d\\u00e9taill\\u00e9"
+msgstr "Formulaire de contact détaillé"
 
 msgid "Loading…"
 msgstr "Chargement…"
@@ -11074,7 +11074,7 @@ msgid "Export PDF for"
 msgstr "Exporter le PDF pour"
 
 msgid "Export all data for"
-msgstr "Exporter toutes les donn\\u00e9es pour"
+msgstr "Exporter toutes les données pour"
 
 msgid "More actions"
 msgstr "Plus d\\u2019actions"
@@ -11090,8 +11090,8 @@ msgstr "Ce fichier contiendra des renseignements personnels."
 
 msgid "This participant's data is scheduled for irreversible deletion."
 msgstr ""
-"Les donn\\u00e9es de ce participant sont programm\\u00e9es pour une "
-"suppression irr\\u00e9versible."
+"Les données de ce participant sont programmées pour une suppression "
+"irréversible."
 
 msgid "You don't have the required permissions for this page."
 msgstr "Vous n'avez pas les permissions requises pour cette page."
@@ -11121,7 +11121,7 @@ msgid "Record a Visit"
 msgstr "Enregistrer une visite"
 
 msgid "Contact recorded."
-msgstr "Contact enregistr\\u00e9."
+msgstr "Contact enregistré."
 
 msgid ""
 "Had a call, email, text, or visit? Record it here so it's part of the client"
@@ -11130,34 +11130,31 @@ msgid ""
 msgstr ""
 "Vous avez eu un appel, un courriel, un message texte ou une visite\\u00a0? "
 "Enregistrez-le ici pour qu'il fasse partie du dossier. Pour des notes "
-"cliniques avec l'engagement et les objectifs, utilisez plut\\u00f4t une Note"
-" de suivi."
+"cliniques avec l'engagement et les objectifs, utilisez plutôt une Note de "
+"suivi."
 
 msgid "Outcome"
-msgstr "R\\u00e9sultat"
-
-msgid "\\u2014 Select \\u2014"
-msgstr "\\u2014 S\\u00e9lectionner \\u2014"
+msgstr "Résultat"
 
 msgid "Reached"
 msgstr "Rejoint"
 
 msgid "Voicemail"
-msgstr "Bo\\u00eete vocale"
+msgstr "Boîte vocale"
 
 msgid "No Answer"
-msgstr "Pas de r\\u00e9ponse"
+msgstr "Pas de réponse"
 
 msgid "Left Message"
-msgstr "Message laiss\\u00e9"
+msgstr "Message laissé"
 
 msgid "Wrong Number"
-msgstr "Mauvais num\\u00e9ro"
-
-msgid "Contact attempt result \\u2014 used for funder reporting"
-msgstr ""
-"R\\u00e9sultat de la tentative de contact \\u2014 utilis\\u00e9 pour les "
-"rapports aux bailleurs de fonds"
+msgstr "Mauvais numéro"
 
 msgid "Contact attempt result — used for funder reporting"
-msgstr "R\u00e9sultat de la tentative de contact — utilis\u00e9 pour les rapports aux bailleurs de fonds"
+msgstr ""
+"Résultat de la tentative de contact — utilisé pour les rapports aux "
+"bailleurs de fonds"
+
+msgid "\\u2014 Select \\u2014"
+msgstr "— Sélectionner —"
