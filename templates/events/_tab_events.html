@@ -61,10 +61,10 @@
 {% endif %}
 {% endfor %}
 
-<!-- Record a contact buttons -->
-{% include "communications/_quick_log_buttons.html" %}
+<!-- Log a contact (inline quick note) -->
+{% include "notes/_quick_note_inline_buttons.html" %}
 
-<!-- Timeline with filters (UXP5) -->
+<!-- Timeline with filters -->
 <h2>{% trans "Timeline" %}</h2>
 <div id="timeline-section">
     <div class="filter-bar" role="group" aria-label="{% trans 'Filter timeline' %}">
@@ -73,21 +73,21 @@
                 hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=all"
                 hx-target="#timeline-entries"
                 hx-swap="innerHTML">{% trans "All" %}</button>
-        <button class="filter-btn{% if active_filter == 'notes' %} filter-active{% endif %}"
-                aria-pressed="{% if active_filter == 'notes' %}true{% else %}false{% endif %}"
-                hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=notes"
+        <button class="filter-btn{% if active_filter == 'sessions' %} filter-active{% endif %}"
+                aria-pressed="{% if active_filter == 'sessions' %}true{% else %}false{% endif %}"
+                hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=sessions"
                 hx-target="#timeline-entries"
-                hx-swap="innerHTML">{% trans "Notes" %}</button>
+                hx-swap="innerHTML">{% trans "Sessions" %}</button>
+        <button class="filter-btn{% if active_filter == 'contacts' %} filter-active{% endif %}"
+                aria-pressed="{% if active_filter == 'contacts' %}true{% else %}false{% endif %}"
+                hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=contacts"
+                hx-target="#timeline-entries"
+                hx-swap="innerHTML">{% trans "Phone & Text" %}</button>
         <button class="filter-btn{% if active_filter == 'events' %} filter-active{% endif %}"
                 aria-pressed="{% if active_filter == 'events' %}true{% else %}false{% endif %}"
                 hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=events"
                 hx-target="#timeline-entries"
                 hx-swap="innerHTML">{% trans "Events" %}</button>
-        <button class="filter-btn{% if active_filter == 'communications' %} filter-active{% endif %}"
-                aria-pressed="{% if active_filter == 'communications' %}true{% else %}false{% endif %}"
-                hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=communications"
-                hx-target="#timeline-entries"
-                hx-swap="innerHTML">{% trans "Contacts" %}</button>
     </div>
     <div id="timeline-entries">
         {% include "events/_timeline_entries.html" %}

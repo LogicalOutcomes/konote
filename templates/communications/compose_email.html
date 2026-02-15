@@ -1,0 +1,96 @@
+{% extends "clients/_client_layout.html" %}
+{% load i18n %}
+
+{% block tab_content %}
+<h2>{% trans "Send Email to" %} {{ client.display_name }} {{ client.last_name }}</h2>
+
+{% if not allowed %}
+{# Cannot send — explain why clearly #}
+<article role="alert" aria-label="{% trans 'Email cannot be sent' %}">
+    <header><strong>{% trans "Email cannot be sent" %}</strong></header>
+    <p>{{ reason }}</p>
+    <p class="secondary">
+        {% if "consent" in reason|lower %}
+            {% trans "To send emails, the participant must consent to email communication. You can update consent in the Edit screen." %}
+        {% elif "email" in reason|lower and "not" in reason|lower or "address" in reason|lower %}
+            {% trans "To send emails, an email address must be on file. You can add one in the Edit screen." %}
+        {% elif "record-keeping" in reason|lower %}
+            {% trans "Your organisation's messaging settings are set to record-keeping only. An administrator can change this in Admin Settings." %}
+        {% elif "safety" in reason|lower %}
+            {% trans "Safety-First mode is active. An administrator can change this in Admin Settings." %}
+        {% elif "set up" in reason|lower %}
+            {% trans "Email has not been set up yet. An administrator can enable it in Admin Settings." %}
+        {% else %}
+            {% trans "Contact your administrator for help." %}
+        {% endif %}
+    </p>
+</article>
+<a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Back" %}</a>
+
+{% elif preview %}
+{# Preview step — show what will be sent #}
+<p class="secondary">{% trans "Review this email before sending." %}</p>
+
+<article style="border: 1px solid var(--pico-muted-border-color);">
+    <p><strong>{% trans "To" %}:</strong> {{ masked_email }}</p>
+    <p><strong>{% trans "Subject" %}:</strong> {{ form.subject.value }}</p>
+    <hr>
+    <p style="white-space: pre-wrap;">{{ form.message.value }}</p>
+    <hr>
+    <p class="secondary" style="font-size: 0.8125rem;">
+        <em>{% trans "An unsubscribe link will be added automatically (required by law)." %}</em>
+    </p>
+</article>
+
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="subject" value="{{ form.subject.value }}">
+    <input type="hidden" name="message" value="{{ form.message.value }}">
+    <input type="hidden" name="action" value="send">
+    <div class="grid">
+        <button type="submit">{% trans "Send Email" %}</button>
+        <button type="submit" name="action" value="" class="outline secondary" formnovalidate>{% trans "Edit" %}</button>
+    </div>
+</form>
+
+{% else %}
+{# Compose form #}
+<p class="secondary">
+    {% trans "This will send an email from your organisation to the participant. They will receive it at their email address on file." %}
+</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% if form.errors %}
+    <div role="alert" class="error-summary">
+        <p><strong>{% trans "Please correct the errors below." %}</strong></p>
+        <ul>
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+
+    <label for="compose-email-to">{% trans "To" %}</label>
+    <output id="compose-email-to" class="form-output">{{ masked_email }}</output>
+
+    <label for="id_subject">{{ form.subject.label }}</label>
+    {{ form.subject }}
+    {% if form.subject.errors %}<small class="badge badge-danger">{{ form.subject.errors.0 }}</small>{% endif %}
+
+    <label for="id_message">{{ form.message.label }}</label>
+    {{ form.message }}
+    {% if form.message.errors %}<small class="badge badge-danger">{{ form.message.errors.0 }}</small>{% endif %}
+
+    <input type="hidden" name="action" value="preview">
+    <div class="grid">
+        <button type="submit">{% trans "Preview" %}</button>
+        <a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endif %}
+{% endblock %}

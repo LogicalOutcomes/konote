@@ -154,14 +154,14 @@ class AlertRecommendationWorkflowTest(TestCase):
         response = self.client.get("/events/alerts/recommendations/")
         self.assertEqual(response.status_code, 200)
 
-    def test_pm_queue_explains_reviews_scope(self):
-        """Queue explains that Reviews currently contains alert recommendations only."""
+    def test_pm_queue_explains_page_purpose(self):
+        """Queue explains that this page is for reviewing alert cancellation recommendations."""
         self.client.login(username="pm1", password="testpass123")
         response = self.client.get("/events/alerts/recommendations/")
         self.assertEqual(response.status_code, 200)
         self.assertContains(
             response,
-            "The Reviews menu currently contains alert cancellation recommendations only.",
+            "Staff recommendations to cancel safety alerts appear here for your review.",
         )
 
     def test_pm_approve_cancels_alert(self):

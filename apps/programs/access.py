@@ -49,12 +49,17 @@ def get_accessible_programs(user, active_program_ids=None):
     )
 
 
-def get_author_program(user, client):
-    """Return the shared program where user has the highest role, or None.
+def get_author_program(user, client, permission_key=None):
+    """Return the best shared program for this user+client, or None.
 
-    Used when creating notes/events to tag them with the authoring program.
-    Picks the program where the user has the highest role so notes are
-    attributed to the most appropriate program context.
+    When permission_key is provided (from the decorator), prefers a program
+    where the user's role actually grants that permission.  This prevents
+    a higher-ranked role that *denies* a specific action from shadowing a
+    lower-ranked role that allows it.
+
+    Without permission_key, falls back to the highest-ranked role (used
+    when tagging notes/events with their authoring program after access
+    has already been checked).
     """
     from apps.auth_app.constants import ROLE_RANK
 
@@ -66,27 +71,41 @@ def get_author_program(user, client):
             client_file=client, status="enrolled"
         ).values_list("program_id", flat=True)
     )
-    best_program_id = None
-    best_rank = -1
-    for program_id, role in user_roles:
-        if program_id in client_program_ids:
-            rank = ROLE_RANK.get(role, 0)
-            if rank > best_rank:
-                best_rank = rank
-                best_program_id = program_id
-    if best_program_id is not None:
-        return Program.objects.get(pk=best_program_id)
-    return None
+
+    # Collect all shared (program_id, role) pairs
+    shared = [
+        (pid, role) for pid, role in user_roles if pid in client_program_ids
+    ]
+    if not shared:
+        return None
+
+    if permission_key:
+        from apps.auth_app.permissions import can_access, DENY
+        # Prefer programs where the role grants the permission
+        allowed = [
+            (pid, role) for pid, role in shared
+            if can_access(role, permission_key) != DENY
+        ]
+        pool = allowed if allowed else shared
+    else:
+        pool = shared
+
+    # Pick highest-ranked role from the pool
+    best_pid = max(pool, key=lambda pr: ROLE_RANK.get(pr[1], 0))[0]
+    return Program.objects.get(pk=best_pid)
 
 
 def get_program_from_client(request, client_id, **kwargs):
-    """Find the shared program where user has the highest role for a client.
+    """Find the best shared program for a client, permission-aware.
 
     For use as a get_program_fn with @requires_permission decorator.
+    The decorator passes permission_key so we can prefer a program
+    where the user's role actually grants the needed permission.
     Raises ValueError if no shared program (decorator converts to 403).
     """
+    permission_key = kwargs.get("permission_key")
     client = get_object_or_404(ClientFile, pk=client_id)
-    program = get_author_program(request.user, client)
+    program = get_author_program(request.user, client, permission_key)
     if program is None:
         raise ValueError(f"User has no shared program with client {client_id}")
     return program

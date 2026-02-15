@@ -1541,6 +1541,47 @@ class GenerateFunderReportDataTests(TestCase):
         self.assertEqual(report_data["total_individuals_served"], 1)
         self.assertEqual(report_data["total_contacts"], 1)
 
+    def test_report_data_includes_contact_breakdown(self):
+        """Funder report should include contact breakdown by outcome."""
+        from apps.reports.funder_report import generate_funder_report_data
+
+        client = ClientFile.objects.create()
+        client.first_name = "Test"
+        client.last_name = "Client"
+        client.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=client, program=self.program,
+        )
+
+        # Create phone notes with different outcomes
+        ProgressNote.objects.create(
+            client_file=client, note_type="quick",
+            interaction_type="phone", outcome="reached",
+            author=self.user, notes_text="Reached them.",
+        )
+        ProgressNote.objects.create(
+            client_file=client, note_type="quick",
+            interaction_type="phone", outcome="no_answer",
+            author=self.user, notes_text="No answer.",
+        )
+        ProgressNote.objects.create(
+            client_file=client, note_type="quick",
+            interaction_type="sms", outcome="left_message",
+            author=self.user, notes_text="Left message.",
+        )
+
+        report_data = generate_funder_report_data(
+            self.program,
+            date_from=date(2025, 4, 1),
+            date_to=date(2026, 3, 31),
+            fiscal_year_label="FY 2025-26",
+        )
+
+        cb = report_data["contact_breakdown"]
+        self.assertEqual(cb["total_contacts"], 3)
+        self.assertEqual(cb["successful_contacts"], 1)
+        self.assertEqual(cb["contact_attempts"], 2)
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class GenerateFunderReportCSVRowsTests(TestCase):
@@ -1653,8 +1694,8 @@ class FunderReportViewTests(TestCase):
         from apps.reports.models import DemographicBreakdown, ReportTemplate
 
         template = ReportTemplate.objects.create(
-            name="Reporting template",
-            description="Sample report template for Canadian Community Fund",
+            name="Canadian Community Foundation — Quarterly Outcomes",
+            description="Matches the demographic breakdown required by the Canadian Community Foundation.",
         )
         template.programs.add(self.program)
         DemographicBreakdown.objects.create(
@@ -1672,7 +1713,7 @@ class FunderReportViewTests(TestCase):
         resp = self.client.get("/reports/funder-report/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Preview available reporting templates")
-        self.assertContains(resp, "Reporting template")
+        self.assertContains(resp, "Canadian Community Foundation")
         self.assertContains(resp, "Child (0-12)")
 
     def _get_download_content(self, download_resp):

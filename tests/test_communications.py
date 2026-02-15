@@ -124,7 +124,7 @@ class CommunicationLogFormTest(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class QuickLogViewTest(TestCase):
-    """Test the quick_log HTMX endpoint."""
+    """Test the quick_log endpoint (deprecated — now redirects to Quick Notes)."""
 
     databases = {"default", "audit"}
 
@@ -152,68 +152,28 @@ class QuickLogViewTest(TestCase):
     def tearDown(self):
         enc_module._fernet = None
 
-    def test_get_no_channel_returns_unified_form(self):
-        """GET without ?channel returns the unified quick-log form."""
+    def test_get_redirects_to_timeline(self):
+        """GET redirects to event list (deprecated view)."""
         self.client.login(username="test_staff", password="testpass123")
         url = f"/communications/client/{self.client_file.pk}/quick-log/"
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Record Communication")
-        self.assertContains(response, "Channel")
+        self.assertEqual(response.status_code, 302)
 
-    def test_get_with_channel_returns_form(self):
-        """GET with ?channel=phone returns the mini form."""
-        self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/quick-log/?channel=phone"
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Notes (optional)")
-
-    def test_post_creates_communication(self):
-        """POST with valid data creates a Communication and returns buttons."""
+    def test_post_redirects_to_timeline(self):
+        """POST redirects to event list (deprecated view)."""
         self.client.login(username="test_staff", password="testpass123")
         url = f"/communications/client/{self.client_file.pk}/quick-log/"
         response = self.client.post(url, {
             "channel": "phone",
             "direction": "outbound",
-            "notes": "Called to confirm appointment",
         })
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(Communication.objects.count(), 1)
-        comm = Communication.objects.first()
-        self.assertEqual(comm.channel, "phone")
-        self.assertEqual(comm.direction, "outbound")
-        self.assertEqual(comm.logged_by, self.staff)
-
-    def test_post_with_outcome_saves_outcome(self):
-        """POST with outcome saves it on the Communication record."""
-        self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/quick-log/"
-        response = self.client.post(url, {
-            "channel": "phone",
-            "direction": "outbound",
-            "notes": "Left voicemail",
-            "outcome": "voicemail",
-        })
-        self.assertEqual(response.status_code, 200)
-        comm = Communication.objects.first()
-        self.assertEqual(comm.outcome, "voicemail")
-
-    def test_post_invalid_form_returns_form(self):
-        """POST with invalid channel returns the form with errors."""
-        self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/quick-log/"
-        response = self.client.post(url, {
-            "channel": "bad_channel",
-            "direction": "outbound",
-        })
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 302)
         self.assertEqual(Communication.objects.count(), 0)
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class CommunicationLogViewTest(TestCase):
-    """Test the full communication_log form view."""
+    """Test the communication_log view (deprecated — now redirects to Quick Notes)."""
 
     databases = {"default", "audit"}
 
@@ -241,29 +201,12 @@ class CommunicationLogViewTest(TestCase):
     def tearDown(self):
         enc_module._fernet = None
 
-    def test_get_returns_form(self):
-        """GET returns the full communication log form."""
+    def test_get_redirects_to_quick_notes(self):
+        """GET redirects to quick notes (deprecated view)."""
         self.client.login(username="test_staff", password="testpass123")
         url = f"/communications/client/{self.client_file.pk}/log/"
         response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Record a Contact")
-
-    def test_post_creates_communication_and_redirects(self):
-        """POST with valid data creates a Communication and redirects to events."""
-        self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/log/"
-        response = self.client.post(url, {
-            "direction": "outbound",
-            "channel": "email",
-            "subject": "Follow-up",
-            "content": "Discussed next steps.",
-        })
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Communication.objects.count(), 1)
-        comm = Communication.objects.first()
-        self.assertEqual(comm.channel, "email")
-        self.assertEqual(comm.subject, "Follow-up")
 
 
 # -----------------------------------------------------------------------
@@ -395,30 +338,208 @@ class CommunicationPermissionTest(TestCase):
     def tearDown(self):
         enc_module._fernet = None
 
-    def test_receptionist_blocked_from_quick_log(self):
-        """Receptionist should get 403 on quick_log."""
+    def test_receptionist_blocked_from_compose_email(self):
+        """Receptionist should get 403 on compose_email."""
         self.client.login(username="test_receptionist", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/quick-log/"
+        url = f"/communications/client/{self.client_file.pk}/compose-email/"
         response = self.client.get(url)
         self.assertIn(response.status_code, (403, 302))
 
-    def test_receptionist_blocked_from_full_log(self):
-        """Receptionist should get 403 on communication_log."""
+    def test_staff_can_access_compose_email(self):
+        """Staff should access compose_email without 403."""
+        self.client.login(username="test_staff", password="testpass123")
+        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        response = self.client.get(url)
+        self.assertNotEqual(response.status_code, 403)
+
+
+# -----------------------------------------------------------------------
+# Compose Email view tests
+# -----------------------------------------------------------------------
+
+def _enable_messaging():
+    """Enable messaging feature toggles and profile for tests."""
+    from apps.admin_settings.models import FeatureToggle, InstanceSetting
+    InstanceSetting.objects.update_or_create(
+        setting_key="messaging_profile",
+        defaults={"setting_value": "staff_sent"},
+    )
+    FeatureToggle.objects.update_or_create(
+        feature_key="messaging_email",
+        defaults={"is_enabled": True},
+    )
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ComposeEmailViewTest(TestCase):
+    """Test the compose_email view for sending free-form emails."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        from datetime import date
+        enc_module._fernet = None
+        self.program = Program.objects.create(
+            name="Test Program", colour_hex="#10B981",
+        )
+        self.staff = User.objects.create_user(
+            username="test_staff", password="testpass123",
+            display_name="Test Staff",
+        )
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.program,
+            role="staff", status="active",
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.email = "test@example.com"
+        self.client_file.email_consent = True
+        self.client_file.email_consent_date = date.today()
+        self.client_file.consent_messaging_type = "express"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program,
+        )
+        _enable_messaging()
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_get_returns_compose_form(self):
+        """GET returns 200 with compose form when email is allowed."""
+        self.client.login(username="test_staff", password="testpass123")
+        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Send Email to")
+        self.assertContains(response, "Subject")
+        self.assertContains(response, "Message")
+
+    def test_get_shows_masked_email(self):
+        """Response contains masked email, not the full address."""
+        self.client.login(username="test_staff", password="testpass123")
+        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        response = self.client.get(url)
+        content = response.content.decode()
+        self.assertIn("te***@example.com", content)
+        self.assertNotIn("test@example.com", content)
+
+    def test_get_blocked_no_consent(self):
+        """GET shows reason when consent is missing."""
+        self.client_file.email_consent = False
+        self.client_file.save()
+        self.client.login(username="test_staff", password="testpass123")
+        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Email cannot be sent")
+        self.assertContains(response, "consent")
+
+    def test_get_blocked_no_email(self):
+        """GET shows reason when no email on file."""
+        self.client_file.email = ""
+        self.client_file.save()
+        self.client.login(username="test_staff", password="testpass123")
+        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Email cannot be sent")
+
+    def test_post_preview_shows_preview(self):
+        """POST with action=preview shows preview content."""
+        self.client.login(username="test_staff", password="testpass123")
+        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        response = self.client.post(url, {
+            "action": "preview",
+            "subject": "Follow-up",
+            "message": "Hope you are doing well.",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Follow-up")
+        self.assertContains(response, "Hope you are doing well.")
+        self.assertContains(response, "Send Email")
+        self.assertContains(response, "unsubscribe")
+
+    def test_post_preview_invalid_shows_errors(self):
+        """POST with action=preview and missing subject shows errors."""
+        self.client.login(username="test_staff", password="testpass123")
+        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        response = self.client.post(url, {
+            "action": "preview",
+            "subject": "",
+            "message": "Body text",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "correct the errors")
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_post_send_creates_communication(self):
+        """POST with action=send creates Communication with method=staff_sent."""
+        self.client.login(username="test_staff", password="testpass123")
+        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        response = self.client.post(url, {
+            "action": "send",
+            "subject": "Check-in",
+            "message": "Just checking in.",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Communication.objects.count(), 1)
+        comm = Communication.objects.first()
+        self.assertEqual(comm.method, "staff_sent")
+        self.assertEqual(comm.direction, "outbound")
+        self.assertEqual(comm.channel, "email")
+        self.assertEqual(comm.subject, "Check-in")
+        self.assertEqual(comm.delivery_status, "sent")
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_post_send_creates_audit_log(self):
+        """POST with action=send creates an audit log entry."""
+        from apps.audit.models import AuditLog
+        self.client.login(username="test_staff", password="testpass123")
+        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        self.client.post(url, {
+            "action": "send",
+            "subject": "Test",
+            "message": "Test body.",
+        })
+        audit = AuditLog.objects.using("audit").filter(
+            resource_type="communication",
+        ).last()
+        self.assertIsNotNone(audit)
+        self.assertEqual(audit.metadata["method"], "staff_sent")
+
+    @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+    def test_post_send_redirects_to_client_detail(self):
+        """POST with action=send redirects to client detail on success."""
+        self.client.login(username="test_staff", password="testpass123")
+        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        response = self.client.post(url, {
+            "action": "send",
+            "subject": "Redirect test",
+            "message": "Body.",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(f"/clients/{self.client_file.pk}/", response.url)
+
+    def test_receptionist_blocked(self):
+        """Receptionist should get 403 on compose_email."""
+        receptionist = User.objects.create_user(
+            username="test_receptionist", password="testpass123",
+            display_name="Test Receptionist",
+        )
+        UserProgramRole.objects.create(
+            user=receptionist, program=self.program,
+            role="receptionist", status="active",
+        )
         self.client.login(username="test_receptionist", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/log/"
+        url = f"/communications/client/{self.client_file.pk}/compose-email/"
         response = self.client.get(url)
         self.assertIn(response.status_code, (403, 302))
 
-    def test_staff_can_access_quick_log(self):
-        """Staff should access quick_log without 403."""
-        self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/quick-log/"
+    def test_unauthenticated_redirects_to_login(self):
+        """Unauthenticated user gets redirect to login."""
+        url = f"/communications/client/{self.client_file.pk}/compose-email/"
         response = self.client.get(url)
-        self.assertNotEqual(response.status_code, 403)
-
-    def test_staff_can_access_full_log(self):
-        """Staff should access communication_log without 403."""
-        self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/log/"
-        response = self.client.get(url)
-        self.assertNotEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn("login", response.url)

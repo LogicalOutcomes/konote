@@ -376,3 +376,43 @@ def count_notes_by_program(
         note_filter &= Q(note_type=note_type)
 
     return ProgressNote.objects.filter(note_filter).count()
+
+
+def count_contacts_by_outcome(
+    program,
+    date_from: date | None = None,
+    date_to: date | None = None,
+) -> dict[str, int]:
+    """
+    Count contact notes by outcome for funder reporting.
+
+    Counts ProgressNotes with contact interaction types (phone, sms, email)
+    and splits by outcome (reached vs. attempted).
+
+    Returns:
+        Dict with keys: total_contacts, successful_contacts, contact_attempts
+    """
+    client_ids = ClientProgramEnrolment.objects.filter(
+        program=program, status="enrolled"
+    ).values_list("client_file_id", flat=True)
+
+    note_filter = Q(
+        client_file_id__in=client_ids,
+        status="default",
+        interaction_type__in=("phone", "sms", "email"),
+    )
+
+    if date_from or date_to:
+        date_filter = _build_date_filter(date_from, date_to)
+        note_filter &= date_filter
+
+    contacts = ProgressNote.objects.filter(note_filter)
+    total = contacts.count()
+    successful = contacts.filter(outcome="reached").count()
+    attempts = contacts.filter(outcome__in=("no_answer", "left_message")).count()
+
+    return {
+        "total_contacts": total,
+        "successful_contacts": successful,
+        "contact_attempts": attempts,
+    }

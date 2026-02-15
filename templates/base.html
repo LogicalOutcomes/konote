@@ -94,7 +94,7 @@
             {% endif %}
             {% has_permission "alert.review_cancel_recommendation" as can_review_recommendations %}
             {% if can_review_recommendations %}
-            <li><a href="{% url 'events:alert_recommendation_queue' %}"{% if nav_active == "recommendations" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reviews" %}{% if pending_recommendation_count %} <span class="badge badge-warning">{{ pending_recommendation_count }}</span>{% endif %}</a></li>
+            <li><a href="{% url 'events:alert_recommendation_queue' %}"{% if nav_active == "recommendations" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Approvals" %}{% if pending_recommendation_count %} <span class="badge badge-warning">{{ pending_recommendation_count }}</span>{% endif %}</a></li>
             {% endif %}
             {% if user.is_admin %}
             <li>

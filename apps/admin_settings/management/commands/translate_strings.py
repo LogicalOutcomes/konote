@@ -112,11 +112,13 @@ class Command(BaseCommand):
         existing_msgids = {entry.msgid for entry in po}
 
         translated_count = sum(
-            1 for entry in po if entry.msgstr and not entry.obsolete
+            1 for entry in po
+            if (entry.msgstr or entry.msgstr_plural) and not entry.obsolete
         )
         empty_count = sum(
             1 for entry in po
-            if not entry.msgstr and not entry.obsolete and entry.msgid
+            if not entry.msgstr and not entry.msgstr_plural
+            and not entry.obsolete and entry.msgid
         )
 
         self.stdout.write(
@@ -233,7 +235,8 @@ class Command(BaseCommand):
         # ----------------------------------------------------------
         remaining_empty = sum(
             1 for entry in po
-            if not entry.msgstr and not entry.obsolete and entry.msgid
+            if not entry.msgstr and not entry.msgstr_plural
+            and not entry.obsolete and entry.msgid
         )
         self._print_summary(remaining_empty, dry_run=False)
 

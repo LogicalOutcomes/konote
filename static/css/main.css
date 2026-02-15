@@ -41,7 +41,8 @@
     outline: 2px solid var(--kn-primary);
     outline-offset: 4px;
 }
-#main-content:focus:not(:focus-visible) {
+#main-content:focus:not(:focus-visible),
+#main-content.js-programmatic-focus:focus {
     outline: none;
 }
 
@@ -326,6 +327,17 @@ nav.breadcrumb [aria-current="page"] {
 .badge-primary { background: var(--kn-info-bg);    color: var(--kn-info-fg); }
 
 /* ---- Form error summary (BUG-17 — WCAG 3.3.1 Error Identification) ---- */
+/* ---- Read-only output styled like a disabled input ---- */
+output.form-output {
+    display: block;
+    padding: var(--kn-space-sm) var(--kn-space-base);
+    margin-bottom: var(--kn-space-base);
+    background: var(--kn-surface);
+    border: 1px solid var(--kn-border);
+    border-radius: var(--kn-radius-sm);
+    color: var(--kn-text-secondary);
+}
+
 .form-error-summary {
     background: var(--kn-danger-bg);
     color: var(--kn-danger-fg);

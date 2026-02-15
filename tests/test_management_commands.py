@@ -255,9 +255,11 @@ class SeedDemoDataTest(TestCase):
             ).exists()
         )
 
-        demo_template = ReportTemplate.objects.filter(name="Reporting template").first()
+        demo_template = ReportTemplate.objects.filter(
+            name="Canadian Community Foundation — Quarterly Outcomes"
+        ).first()
         self.assertIsNotNone(demo_template)
-        self.assertIn("Canadian Community Fund", demo_template.description)
+        self.assertIn("Canadian Community Foundation", demo_template.description)
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, DEMO_MODE=False)

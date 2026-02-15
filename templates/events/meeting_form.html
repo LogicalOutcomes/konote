@@ -1,7 +1,12 @@
 {% extends "base.html" %}
 {% load i18n %}
+{% load static %}
 
 {% block title %}{% if editing %}{% trans "Edit Meeting" %}{% else %}{% trans "New Meeting" %}{% endif %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/meeting-picker.css' %}">
+{% endblock %}
 
 {% block content %}
 <hgroup>
@@ -12,13 +17,29 @@
 <form method="post" id="meeting-form">
     {% csrf_token %}
 
+    {# ---- Location (first — determines context for the rest) ---- #}
+    <label for="{{ form.location.id_for_label }}">
+        {{ form.location.label }}
+    </label>
+    {{ form.location }}
+    <datalist id="meeting-location-options">
+        <option value="{% trans "In person" %}">
+        <option value="{% trans "Phone" %}">
+    </datalist>
+    <small>{% trans "Choose In person or Phone, or type a custom location." %}</small>
+    {% if form.location.errors %}
+    <small class="badge badge-danger" role="alert">{{ form.location.errors.0 }}</small>
+    {% endif %}
+
+    {# ---- Date and Time (enhanced by meeting-picker.js) ---- #}
     <label for="{{ form.start_timestamp.id_for_label }}">
         {{ form.start_timestamp.label }}
     </label>
     <small id="meeting-start-required">{% trans "* Required field." %}</small>
     {{ form.start_timestamp }}
+    {# Fallback button — hidden when JS enhancement loads #}
     <button type="button" id="open-datetime-picker" class="secondary outline">
-        <span aria-hidden="true">📅</span>
+        <span aria-hidden="true">&#x1f4c5;</span>
         {% trans "Open calendar and time picker" %}
     </button>
     <small id="meeting-start-help">{% trans "Required. Pick from the calendar or type the date and time." %}</small>
@@ -26,19 +47,7 @@
     <small class="badge badge-danger" role="alert">{{ form.start_timestamp.errors.0 }}</small>
     {% endif %}
 
-    <label for="{{ form.location.id_for_label }}">
-        {{ form.location.label }}
-    </label>
-    {{ form.location }}
-    <datalist id="meeting-location-options">
-        <option value="In person">
-        <option value="Phone">
-    </datalist>
-    <small>{% trans "Choose In person or Phone, or type a custom location." %}</small>
-    {% if form.location.errors %}
-    <small class="badge badge-danger" role="alert">{{ form.location.errors.0 }}</small>
-    {% endif %}
-
+    {# ---- Reminder (create mode only) ---- #}
     {% if not editing %}
     {% if features.messaging_sms or features.messaging_email %}
     {% if can_send_reminders %}
@@ -60,6 +69,7 @@
     {% endif %}
     {% endif %}
 
+    {# ---- Duration & Status (edit mode only) ---- #}
     {% if editing %}
     <label for="{{ form.duration_minutes.id_for_label }}">
         {{ form.duration_minutes.label }}
@@ -78,8 +88,12 @@
     {% endif %}
     {% endif %}
 
+    {# ---- Action buttons ---- #}
     <div role="group">
-        <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% trans "Create a Meeting" %}{% endif %}</button>
+        <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% trans "Create Meeting" %}{% endif %}</button>
+        {% if not editing %}
+        <button type="submit" name="save_and_new" value="1" class="secondary">{% trans "Save & Schedule Another" %}</button>
+        {% endif %}
         <a href="{% url 'events:event_list' client_id=client.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
     </div>
 </form>
@@ -87,21 +101,5 @@
 
 {% block extra_scripts %}
 {{ block.super }}
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    var pickerButton = document.getElementById("open-datetime-picker");
-    var dateTimeInput = document.getElementById("{{ form.start_timestamp.id_for_label }}");
-    if (!pickerButton || !dateTimeInput) {
-        return;
-    }
-    pickerButton.addEventListener("click", function () {
-        if (typeof dateTimeInput.showPicker === "function") {
-            dateTimeInput.showPicker();
-            return;
-        }
-        dateTimeInput.focus();
-        dateTimeInput.click();
-    });
-});
-</script>
+<script src="{% static 'js/meeting-picker.js' %}"></script>
 {% endblock %}

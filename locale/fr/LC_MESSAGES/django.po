@@ -10048,9 +10048,6 @@ msgstr ""
 "Examiner les recommandations du personnel pour annuler les alertes de "
 "sécurité."
 
-msgid "Reviews"
-msgstr "Examens"
-
 msgid "Staff Assessment"
 msgstr "Évaluation du personnel"
 
@@ -11205,6 +11202,26 @@ msgstr ""
 msgid "No reporting template"
 msgstr "Aucun modèle de rapport"
 
+msgid ""
+"Reporting templates define the demographic categories your funder requires "
+"(e.g., age groups, employment status). Select one to format your report to "
+"match a funder's requirements, or leave blank to use Grouping above."
+msgstr ""
+"Les modèles de rapport définissent les catégories démographiques exigées par"
+" votre bailleur de fonds (p. ex., groupes d'âge, statut d'emploi). "
+"Sélectionnez-en un pour formater votre rapport selon les exigences du "
+"bailleur, ou laissez vide pour utiliser le regroupement ci-dessus."
+
+msgid ""
+"Reporting templates define the demographic categories your funder requires. "
+"Select one to match a specific funder's format, or leave blank for the "
+"default age groupings."
+msgstr ""
+"Les modèles de rapport définissent les catégories démographiques exigées par"
+" votre bailleur de fonds. Sélectionnez-en un pour correspondre au format "
+"d'un bailleur spécifique, ou laissez vide pour les catégories d'âge par "
+"défaut."
+
 msgid "Please enter the reason for this export."
 msgstr "Veuillez saisir la raison de cette exportation."
 
@@ -11435,17 +11452,19 @@ msgid "Upcoming (30 days)"
 msgstr "À venir (30 jours)"
 
 msgid ""
-"The Reviews menu currently contains alert cancellation recommendations only."
+"The Approvals menu currently contains alert cancellation recommendations "
+"only."
 msgstr ""
-"Le menu Révisions contient actuellement uniquement les recommandations "
-"d’annulation d’alerte."
+"Le menu Approbations contient actuellement uniquement les recommandations "
+"d'annulation d'alerte."
 
 msgid ""
-"The \\\"Reporting template\\\" entry is demo sample data only and is not "
-"required for production use."
+"The \\\"Canadian Community Foundation\\\" entry is demo sample data only and"
+" is not required for production use."
 msgstr ""
-"L’entrée \"Reporting template\" est un exemple de données de démonstration "
-"uniquement et n’est pas requise pour une utilisation en production."
+"L'entrée « Canadian Community Foundation » est un exemple de données de "
+"démonstration uniquement et n'est pas requise pour une utilisation en "
+"production."
 
 msgid "Keeps all source categories"
 msgstr "Conserve toutes les catégories sources"
@@ -11466,3 +11485,382 @@ msgstr ""
 "Les gestionnaires de programme et les membres de la direction peuvent "
 "consulter ici les ventilations des modèles. La gestion des modèles demeure "
 "réservée aux administrateurs dans Paramètres."
+
+msgid "Access denied. You can only edit event types in your programs."
+msgstr ""
+"Accès refusé. Vous ne pouvez modifier les types d'événements que dans vos "
+"programmes."
+
+msgid "Access denied. You can only edit metrics in your programs."
+msgstr ""
+"Accès refusé. Vous ne pouvez modifier les indicateurs que dans vos "
+"programmes."
+
+msgid "Access denied. You can only edit templates in your programs."
+msgstr ""
+"Accès refusé. Vous ne pouvez modifier les modèles que dans vos programmes."
+
+msgid "Access denied. You can only manage metrics in your programs."
+msgstr ""
+"Accès refusé. Vous ne pouvez gérer les indicateurs que dans vos programmes."
+
+msgid ""
+"Access denied. You can only manage registration links in your programs."
+msgstr ""
+"Accès refusé. Vous ne pouvez gérer les liens d'inscription que dans vos "
+"programmes."
+
+msgid "Access denied. You can only manage roles in your programs."
+msgstr "Accès refusé. Vous ne pouvez gérer les rôles que dans vos programmes."
+
+msgid "Access denied. You can only manage users in your programs."
+msgstr ""
+"Accès refusé. Vous ne pouvez gérer les utilisateurs que dans vos programmes."
+
+msgid ""
+"Staff recommendations to cancel safety alerts appear here for your review. "
+"Approving a recommendation permanently removes the alert; rejecting keeps it"
+" active."
+msgstr ""
+"Les recommandations du personnel pour annuler les alertes de sécurité "
+"apparaissent ici pour votre examen. L'approbation d'une recommandation "
+"supprime définitivement l'alerte; le rejet la maintient active."
+
+msgid "Author (the staff member who recorded the value)"
+msgstr "Auteur (le membre du personnel qui a enregistré la valeur)"
+
+msgid "Client Record ID (an internal number — not the participant's name)"
+msgstr ""
+"Identifiant du dossier client (un numéro interne — pas le nom du "
+"participant)"
+
+msgid "Data contents"
+msgstr "Contenu des données"
+
+msgid "Date of Service"
+msgstr "Date de service"
+
+msgid ""
+"Each row in the exported file represents one metric value recorded for one "
+"participant. The columns are:"
+msgstr ""
+"Chaque ligne du fichier exporté représente une valeur d'indicateur "
+"enregistrée pour un participant. Les colonnes sont :"
+
+msgid ""
+"Handle the file according to your organisation's data protection policies. "
+"All downloads are logged for audit purposes."
+msgstr ""
+"Traitez le fichier conformément aux politiques de protection des données de "
+"votre organisation. Tous les téléchargements sont consignés à des fins de "
+"vérification."
+
+msgid ""
+"If demographic grouping is selected, an additional column will show the "
+"group label (e.g. age range) — not the underlying birth date or field value."
+msgstr ""
+"Si le regroupement démographique est sélectionné, une colonne supplémentaire"
+" affichera l'étiquette du groupe (p. ex. tranche d'âge) — pas la date de "
+"naissance ou la valeur du champ sous-jacent."
+
+msgid "Only administrators can deactivate admin accounts."
+msgstr ""
+"Seuls les administrateurs peuvent désactiver les comptes administrateurs."
+
+msgid "Pending Alert Approvals"
+msgstr "Approbations d'alertes en attente"
+
+msgid "Personal information notice"
+msgstr "Avis relatif aux renseignements personnels"
+
+msgid "Team Members"
+msgstr "Membres de l'équipe"
+
+msgid ""
+"This export contains client record IDs, metric values, dates of service, and"
+" staff names."
+msgstr ""
+"Cette exportation contient les identifiants des dossiers clients, les "
+"valeurs des indicateurs, les dates de service et les noms du personnel."
+
+msgid ""
+"This export contains summary statistics only (averages, counts, minimums, "
+"maximums). No participant names, record IDs, or individual data are "
+"included."
+msgstr ""
+"Cette exportation contient uniquement des statistiques sommaires (moyennes, "
+"totaux, minimums, maximums). Aucun nom de participant, identifiant de "
+"dossier ou donnée individuelle n'est inclus."
+
+msgid "What This Export Contains"
+msgstr "Contenu de cette exportation"
+
+msgid "What this export contains"
+msgstr "Contenu de cette exportation"
+
+msgid "What's in this file"
+msgstr "Contenu de ce fichier"
+
+msgid "You can only assign roles in your own programs."
+msgstr "Vous ne pouvez attribuer des rôles que dans vos propres programmes."
+
+msgid ""
+"Alerts cannot be edited once created. To remove an alert, a staff member "
+"recommends cancellation and a program manager reviews it. All actions are "
+"recorded in the audit log."
+msgstr ""
+"Les alertes ne peuvent pas être modifiées une fois créées. Pour supprimer "
+"une alerte, un membre du personnel recommande l'annulation et un "
+"gestionnaire de programme la révise. Toutes les actions sont consignées dans"
+" le journal de vérification."
+
+msgid "Be specific and actionable — what should staff do or be aware of?"
+msgstr "Soyez précis et concret — que doit faire ou savoir le personnel?"
+
+msgid ""
+"Keep it brief — alerts appear at the top of the client's timeline for every "
+"visit."
+msgstr ""
+"Soyez bref — les alertes apparaissent en haut du fil chronologique du client"
+" à chaque visite."
+
+msgid ""
+"Stick to facts — avoid opinions, speculation, or unnecessary personal "
+"details."
+msgstr ""
+"Tenez-vous-en aux faits — évitez les opinions, les spéculations ou les "
+"détails personnels inutiles."
+
+msgid ""
+"This alert will be visible to all staff and program managers who have access"
+" to this client's file. Write only what is necessary for others to act "
+"safely."
+msgstr ""
+"Cette alerte sera visible par tout le personnel et les gestionnaires de "
+"programme ayant accès au dossier de ce client. N'écrivez que ce qui est "
+"nécessaire pour que les autres puissent agir en toute sécurité."
+
+msgid "Tips for writing a good alert"
+msgstr "Conseils pour rédiger une bonne alerte"
+
+msgid "Use plain language — avoid abbreviations or jargon."
+msgstr "Utilisez un langage simple — évitez les abréviations et le jargon."
+
+msgid "Who will see this alert"
+msgstr "Qui verra cette alerte"
+
+msgid ""
+"Example: Client has expressed thoughts of self-harm during last two "
+"sessions. Safety plan is in place\\u2009—\\u2009see case notes from Jan 15. "
+"All staff should check in about the safety plan at each visit."
+msgstr ""
+"Exemple\\u00a0: Le client a exprimé des pensées d'automutilation lors des "
+"deux dernières séances. Un plan de sécurité est en place\\u2009—\\u2009voir "
+"les notes du 15 janvier. Tout le personnel devrait vérifier le plan de "
+"sécurité à chaque visite."
+
+msgid "In person"
+msgstr "En personne"
+
+msgid "Save & Schedule Another"
+msgstr "Enregistrer et planifier une autre"
+
+msgid "Adding Documents"
+msgstr "Ajouter des documents"
+
+msgid "Click the"
+msgstr "Cliquez sur le"
+
+msgid "Documents button"
+msgstr "bouton Documents"
+
+msgid "Email sent successfully."
+msgstr "Courriel envoyé avec succès."
+
+msgid "Front Desk staff do not see the Documents button"
+msgstr "Le personnel de la réception ne voit pas le bouton Documents"
+
+msgid "I don't see the Documents button"
+msgstr "Je ne vois pas le bouton Documents"
+
+msgid ""
+"If clicking the button gives you an 'Access Denied' message, you may not "
+"have permission in SharePoint or Google Drive itself. Contact your "
+"administrator for access."
+msgstr ""
+"Si un message « Accès refusé » s'affiche lorsque vous cliquez sur le bouton,"
+" il se peut que vous n'ayez pas les permissions dans SharePoint ou Google "
+"Drive. Contactez votre administrateur pour obtenir l'accès."
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Opening Documents"
+msgstr "Ouvrir les documents"
+
+msgid "Set up document storage"
+msgstr "Configurer le stockage de documents"
+
+msgid "Staff Sent"
+msgstr "Envoyé par le personnel"
+
+msgid ""
+"To add a document, click the Documents button to open the external folder, "
+"then upload files directly in SharePoint or Google Drive. All document "
+"management (uploading, organising, deleting) happens in the external system,"
+" not in KoNote."
+msgstr ""
+"Pour ajouter un document, cliquez sur le bouton Documents pour ouvrir le "
+"dossier externe, puis téléversez les fichiers directement dans SharePoint ou"
+" Google Drive. Toute la gestion des documents (téléversement, organisation, "
+"suppression) se fait dans le système externe, pas dans KoNote."
+
+msgid "Type your message here..."
+msgstr "Tapez votre message ici..."
+
+msgid ""
+"Your administrator may not have configured document storage yet — ask them "
+"to set it up under Admin → Settings"
+msgstr ""
+"Votre administrateur n'a peut-être pas encore configuré le stockage de "
+"documents — demandez-lui de le configurer sous Admin → Paramètres"
+
+msgid "button in the top-right toolbar"
+msgstr "bouton dans la barre d'outils en haut à droite"
+
+msgid "e.g. Follow-up from today's session"
+msgstr "p. ex. Suivi de la séance d'aujourd'hui"
+
+#: templates/pages/help.html (Documents section - blocktrans)
+#, python-format
+msgid ""
+"KoNote does not store documents directly. Instead, the Documents button on a"
+" %(client)s's record opens their folder in your organisation's external "
+"document storage (such as SharePoint or Google Drive) in a new browser tab."
+msgstr ""
+"KoNote ne stocke pas les documents directement. Le bouton Documents sur le "
+"dossier d'un(e) %(client)s ouvre plutôt son dossier dans le système de "
+"stockage externe de votre organisation (comme SharePoint ou Google Drive) "
+"dans un nouvel onglet du navigateur."
+
+#: templates/pages/help.html (Documents section - blocktrans)
+#, python-format
+msgid ""
+"A new tab opens showing that %(client)s's folder in your external storage"
+msgstr ""
+"Un nouvel onglet s'ouvre affichant le dossier de ce/cette %(client)s dans "
+"votre stockage externe"
+
+#: templates/pages/help.html (Documents section - blocktrans)
+#, python-format
+msgid "The %(client)s may not have a Record ID assigned"
+msgstr "Le/La %(client)s n'a peut-être pas de numéro de dossier attribué"
+
+#: templates/pages/help.html (Quick Reference - blocktrans)
+#, python-format
+msgid "Access a %(client)s's documents"
+msgstr "Accéder aux documents d'un(e) %(client)s"
+
+msgid "(optional)"
+msgstr "(facultatif)"
+
+msgid "An unsubscribe link will be added automatically (required by law)."
+msgstr ""
+"Un lien de désabonnement sera ajouté automatiquement (requis par la loi)."
+
+msgid "Client consent must be recorded before creating notes."
+msgstr ""
+"Le consentement du client doit être enregistré avant de créer des notes."
+
+msgid "Contact logging has moved to Quick Notes."
+msgstr "L'enregistrement des contacts a été déplacé vers les notes rapides."
+
+msgid "Contact your administrator for help."
+msgstr "Contactez votre administrateur pour obtenir de l'aide."
+
+msgid "Email cannot be sent"
+msgstr "Le courriel ne peut pas être envoyé"
+
+msgid ""
+"Email has not been set up yet. An administrator can enable it in Admin "
+"Settings."
+msgstr ""
+"Le courriel n'a pas encore été configuré. Un administrateur peut l'activer "
+"dans les paramètres d'administration."
+
+msgid "Log Contact"
+msgstr "Enregistrer un contact"
+
+msgid "Log a contact"
+msgstr "Enregistrer un contact"
+
+msgid ""
+"Log a phone call, text, email, or visit. This creates a note that counts in "
+"reports."
+msgstr ""
+"Enregistrez un appel téléphonique, un texto, un courriel ou une visite. Ceci"
+" crée une note qui compte dans les rapports."
+
+msgid "Note saved."
+msgstr "Note enregistrée."
+
+msgid "Please select an outcome."
+msgstr "Veuillez sélectionner un résultat."
+
+msgid "Recipient email address (not editable)"
+msgstr "Adresse courriel du destinataire (non modifiable)"
+
+msgid "Review this email before sending."
+msgstr "Vérifiez ce courriel avant de l'envoyer."
+
+msgid ""
+"Safety-First mode is active. An administrator can change this in Admin "
+"Settings."
+msgstr ""
+"Le mode Sécurité d'abord est actif. Un administrateur peut modifier cela "
+"dans les paramètres d'administration."
+
+msgid "Send Email"
+msgstr "Envoyer le courriel"
+
+msgid "Send Email to"
+msgstr "Envoyer un courriel à"
+
+msgid ""
+"This will send an email from your organisation to the participant. They will"
+" receive it at their email address on file."
+msgstr ""
+"Ceci enverra un courriel de votre organisme au participant. Il le recevra à "
+"l'adresse courriel inscrite à son dossier."
+
+msgid ""
+"To send emails, an email address must be on file. You can add one in the "
+"Edit screen."
+msgstr ""
+"Pour envoyer des courriels, une adresse courriel doit être inscrite au "
+"dossier. Vous pouvez en ajouter une dans l'écran Modifier."
+
+msgid ""
+"To send emails, the participant must consent to email communication. You can"
+" update consent in the Edit screen."
+msgstr ""
+"Pour envoyer des courriels, le participant doit consentir à la communication"
+" par courriel. Vous pouvez mettre à jour le consentement dans l'écran "
+"Modifier."
+
+msgid ""
+"Your organisation's messaging settings are set to record-keeping only. An "
+"administrator can change this in Admin Settings."
+msgstr ""
+"Les paramètres de messagerie de votre organisme sont réglés sur « tenue de "
+"dossiers uniquement ». Un administrateur peut modifier cela dans les "
+"paramètres d'administration."
+
+msgid "Phone & Text"
+msgstr "Téléphone et texto"
+
+msgid "No phone or text contacts recorded yet."
+msgstr "Aucun contact téléphonique ou par texto enregistré."
+
+msgid "No session notes recorded yet."
+msgstr "Aucune note de séance enregistrée."

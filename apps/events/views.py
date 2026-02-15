@@ -201,14 +201,19 @@ def event_list(request, client_id):
     # Sort newest first
     timeline.sort(key=lambda x: x["date"], reverse=True)
 
-    # Timeline filtering (UXP5)
+    # Timeline filtering — interaction-type-based (replaces source-based UXP5)
     filter_type = request.GET.get("filter", "all")
-    if filter_type == "notes":
-        timeline = [e for e in timeline if e["type"] == "note"]
+    if filter_type == "sessions":
+        timeline = [e for e in timeline if
+                    e["type"] == "note" and e["obj"].interaction_type in
+                    ("session", "group", "home_visit", "collateral")]
+    elif filter_type == "contacts":
+        timeline = [e for e in timeline if
+                    (e["type"] == "note" and e["obj"].interaction_type in ("phone", "sms", "email")) or
+                    e["type"] == "communication"]
     elif filter_type == "events":
         timeline = [e for e in timeline if e["type"] == "event"]
-    elif filter_type == "communications":
-        timeline = [e for e in timeline if e["type"] == "communication"]
+    # "all" shows everything (default)
 
     # Pagination — 20 entries per page with "Show more"
     page_size = 20
@@ -219,15 +224,11 @@ def event_list(request, client_id):
     has_more = len(timeline) > offset + page_size
     timeline = timeline[offset:offset + page_size]
 
-    # Recent communications for the quick-log section
-    recent_communications = communications.order_by("-created_at")[:5]
-
     context = {
         "client": client,
         "events": events,
         "alerts": alerts,
         "timeline": timeline,
-        "recent_communications": recent_communications,
         "active_tab": "events",
         "show_program_ui": program_ctx["show_program_ui"],
         "active_filter": filter_type,
@@ -255,7 +256,9 @@ def event_create(request, client_id):
         if form.is_valid():
             event = form.save(commit=False)
             event.client_file = client
-            event.author_program = _get_author_program(request.user, client)
+            event.author_program = getattr(
+                request, "user_program", None
+            ) or _get_author_program(request.user, client)
             event.save()
             messages.success(request, _("Event created."))
             return redirect("events:event_list", client_id=client.pk)
@@ -511,7 +514,7 @@ def alert_recommendation_review(request, recommendation_id):
         form = AlertReviewRecommendationForm()
 
     breadcrumbs = [
-        {"url": reverse("events:alert_recommendation_queue"), "label": _("Reviews")},
+        {"url": reverse("events:alert_recommendation_queue"), "label": _("Approvals")},
         {"url": "", "label": _("Review Recommendation")},
     ]
     return render(request, "events/alert_recommendation_review.html", {
@@ -563,6 +566,9 @@ def meeting_create(request, client_id):
             # Add the requesting user as an attendee
             meeting.attendees.add(request.user)
             messages.success(request, _("Meeting created."))
+            # "Save & Schedule Another" keeps the user on the create form
+            if request.POST.get("save_and_new"):
+                return redirect("events:meeting_create", client_id=client.pk)
             return redirect("events:event_list", client_id=client.pk)
     else:
         form = MeetingQuickCreateForm()
@@ -752,6 +758,7 @@ def calendar_feed(request, token):
     cal = ICalCalendar()
     cal.add("prodid", "-//KoNote//Calendar Feed//EN")
     cal.add("version", "2.0")
+    cal.add("method", "PUBLISH")
     cal.add("calscale", "GREGORIAN")
     cal.add("x-wr-calname", "KoNote Meetings")
 
@@ -788,8 +795,7 @@ def calendar_feed(request, token):
 
         cal.add_component(ical_event)
 
-    response = HttpResponse(cal.to_ical(), content_type="text/calendar")
-    response["Content-Disposition"] = 'attachment; filename="konote-meetings.ics"'
+    response = HttpResponse(cal.to_ical(), content_type="text/calendar; charset=utf-8")
     return response
 
 

@@ -196,7 +196,9 @@ def requires_permission(permission_key, get_program_fn=None, get_client_fn=None,
                 # Program-scoped: get role in the specific program
                 from apps.programs.models import UserProgramRole
                 try:
-                    program = get_program_fn(request, *args, **kwargs)
+                    program = get_program_fn(
+                        request, *args, permission_key=permission_key, **kwargs
+                    )
                 except Exception as e:
                     return _render_403(
                         request,
@@ -224,6 +226,7 @@ def requires_permission(permission_key, get_program_fn=None, get_client_fn=None,
 
                 user_role = role_obj.role
                 request.user_program_role = role_obj.role
+                request.user_program = program
             else:
                 # No program in URL — use highest role across all programs
                 # Check ClientAccessBlock if client function provided
