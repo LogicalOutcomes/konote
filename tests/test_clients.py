@@ -24,9 +24,13 @@ class ClientViewsTest(TestCase):
         # Admin with program manager role — admins need a program role to access clients
         self.admin = User.objects.create_user(username="admin", password="testpass123", is_admin=True)
         self.staff = User.objects.create_user(username="staff", password="testpass123", is_admin=False)
+        self.pm = User.objects.create_user(username="pm", password="testpass123", is_admin=False)
+        self.receptionist = User.objects.create_user(username="receptionist", password="testpass123", is_admin=False)
         self.prog_a = Program.objects.create(name="Program A", colour_hex="#10B981")
         self.prog_b = Program.objects.create(name="Program B", colour_hex="#3B82F6")
         UserProgramRole.objects.create(user=self.staff, program=self.prog_a, role="staff")
+        UserProgramRole.objects.create(user=self.pm, program=self.prog_a, role="program_manager")
+        UserProgramRole.objects.create(user=self.receptionist, program=self.prog_a, role="receptionist")
         # Give admin access to both programs so they can see all clients
         UserProgramRole.objects.create(user=self.admin, program=self.prog_a, role="program_manager")
         UserProgramRole.objects.create(user=self.admin, program=self.prog_b, role="program_manager")
@@ -163,7 +167,7 @@ class ClientViewsTest(TestCase):
 
     def test_edit_client(self):
         cf = self._create_client("Jane", "Doe", [self.prog_a])
-        # Staff role has client.edit permission; program_manager does not
+        # Staff role has client.edit SCOPED (same as program_manager)
         self.client.login(username="staff", password="testpass123")
         resp = self.client.post(f"/clients/{cf.pk}/edit/", {
             "first_name": "Janet",
@@ -178,6 +182,38 @@ class ClientViewsTest(TestCase):
         self.assertEqual(resp.status_code, 302)
         cf.refresh_from_db()
         self.assertEqual(cf.first_name, "Janet")
+
+    def test_pm_can_edit_client(self):
+        """Program managers have client.edit SCOPED — can edit clients in their program."""
+        cf = self._create_client("Jane", "Doe", [self.prog_a])
+        self.client.login(username="pm", password="testpass123")
+        resp = self.client.post(f"/clients/{cf.pk}/edit/", {
+            "first_name": "Janet",
+            "last_name": "Doe",
+            "middle_name": "",
+            "birth_date": "",
+            "record_id": "",
+            "status": "active",
+            "preferred_language": "en",
+            "programs": [self.prog_a.pk],
+        })
+        self.assertEqual(resp.status_code, 302)
+        cf.refresh_from_db()
+        self.assertEqual(cf.first_name, "Janet")
+
+    def test_pm_cannot_edit_contact(self):
+        """Program managers have client.edit_contact DENY — cannot edit contact info."""
+        cf = self._create_client("Jane", "Doe", [self.prog_a])
+        self.client.login(username="pm", password="testpass123")
+        resp = self.client.get(f"/clients/{cf.pk}/edit-contact/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_receptionist_cannot_edit_client(self):
+        """Receptionists have client.edit DENY — cannot edit client records."""
+        cf = self._create_client("Jane", "Doe", [self.prog_a])
+        self.client.login(username="receptionist", password="testpass123")
+        resp = self.client.get(f"/clients/{cf.pk}/edit/")
+        self.assertEqual(resp.status_code, 403)
 
     def test_client_detail(self):
         cf = self._create_client("Jane", "Doe", [self.prog_a])

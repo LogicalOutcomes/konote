@@ -133,11 +133,12 @@ class EventCRUDTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Test event")
 
-    def test_event_list_meeting_button_has_visibility_class(self):
+    def test_event_list_has_schedule_meeting_link(self):
+        """Schedule Meeting link appears in client Actions dropdown on events page."""
         self.http.login(username="staff", password="pass")
         resp = self.http.get(f"/events/client/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "meeting-create-btn")
+        self.assertContains(resp, "Schedule Meeting")
 
     def test_event_create_all_day(self):
         """All-day events should save with date only (time at midnight)."""
