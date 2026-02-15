@@ -29,6 +29,8 @@ TEST_KEY = Fernet.generate_key().decode()
 class PortalAuthTests(TestCase):
     """Test portal authentication flows."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         # Reset Fernet singleton so override_settings takes effect
         enc_module._fernet = None

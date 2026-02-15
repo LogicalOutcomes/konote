@@ -39,6 +39,8 @@ TEST_KEY = Fernet.generate_key().decode()
 class PortalIDORTests(TestCase):
     """Verify that one participant cannot access another's data."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         # Reset Fernet singleton so override_settings takes effect
         enc_module._fernet = None

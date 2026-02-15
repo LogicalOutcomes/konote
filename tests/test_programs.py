@@ -11,6 +11,8 @@ TEST_KEY = Fernet.generate_key().decode()
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ProgramViewsTest(TestCase):
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.client = Client()

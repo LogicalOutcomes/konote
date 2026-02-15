@@ -149,6 +149,8 @@ class ClientAccessTest(TestCase):
 class ReceptionistFieldAccessTest(TestCase):
     """Front desk staff should only see/edit fields based on front_desk_access setting."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
 
@@ -474,6 +476,8 @@ class ReceptionistPlansAccessTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class SensitiveFieldReceptionistAccessTest(TestCase):
     """Sensitive (encrypted) custom fields should work correctly with front desk access levels."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None

@@ -19,6 +19,8 @@ TEST_KEY = Fernet.generate_key().decode()
 class Error403ResponseTest(TestCase):
     """403 Forbidden responses should contain meaningful error messages."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
 
@@ -144,6 +146,8 @@ class FormValidationErrorTest(TestCase):
 class HTMXPartialResponseTest(TestCase):
     """HTMX requests should receive appropriate partial responses."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
 
@@ -219,6 +223,8 @@ class HTMXPartialResponseTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class CustomFieldEditHTMXTest(TestCase):
     """Custom field editing via HTMX should handle errors gracefully."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None

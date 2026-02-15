@@ -719,7 +719,8 @@ class ExecutiveAggregateExportTest(TestCase):
             "date_to": "2030-12-31",
             "metrics": [self.metric_def.pk],
             "format": "csv",
-            "recipient": "self",
+            "recipient": "Self — for my own records",
+            "recipient_reason": "Testing export permissions",
         })
         return resp
 

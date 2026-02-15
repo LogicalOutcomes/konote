@@ -87,18 +87,24 @@ class SwitchLanguageViewTest(TestCase):
         self.assertEqual(cookie["max-age"], settings.LANGUAGE_COOKIE_AGE)
 
 
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local")
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local", RATELIMIT_ENABLE=False)
 class SyncLanguageOnLoginTest(TestCase):
     """Test the sync_language_on_login utility."""
 
     databases = {"default", "audit"}
 
     def setUp(self):
+        from django.core.cache import cache
+
         enc_module._fernet = None
+        cache.clear()
         self.http = Client()
 
     def tearDown(self):
+        from django.core.cache import cache
+
         enc_module._fernet = None
+        cache.clear()
 
     def test_login_saves_language_to_new_user(self):
         """First login with no preferred_language saves current lang to profile."""
@@ -171,21 +177,27 @@ class BilingualLoginPageTest(TestCase):
         self.assertContains(resp, "English")
 
 
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local")
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local", RATELIMIT_ENABLE=False)
 class LogoutClearsCookieTest(TestCase):
     """Test that logout clears the language cookie."""
 
     databases = {"default", "audit"}
 
     def setUp(self):
+        from django.core.cache import cache
+
         enc_module._fernet = None
+        cache.clear()
         self.http = Client()
         self.user = User.objects.create_user(
             username="logoutuser", password="testpass123", display_name="Logout User"
         )
 
     def tearDown(self):
+        from django.core.cache import cache
+
         enc_module._fernet = None
+        cache.clear()
 
     def test_logout_deletes_language_cookie(self):
         """Logging out clears the language cookie so next user gets fresh state."""
@@ -213,18 +225,24 @@ class LogoutClearsCookieTest(TestCase):
         self.assertContains(resp, "lang-chooser")
 
 
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local")
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local", RATELIMIT_ENABLE=False)
 class LoginSetsCookieTest(TestCase):
     """Test that login sets the language cookie to the user's preference."""
 
     databases = {"default", "audit"}
 
     def setUp(self):
+        from django.core.cache import cache
+
         enc_module._fernet = None
+        cache.clear()
         self.http = Client()
 
     def tearDown(self):
+        from django.core.cache import cache
+
         enc_module._fernet = None
+        cache.clear()
 
     def test_login_sets_cookie_to_saved_preference(self):
         """User with preferred_language='fr' gets French cookie on login."""
@@ -257,14 +275,17 @@ class LoginSetsCookieTest(TestCase):
         )
 
 
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local")
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local", RATELIMIT_ENABLE=False)
 class SharedBrowserScenarioTest(TestCase):
     """Test that language doesn't bleed between users on the same browser."""
 
     databases = {"default", "audit"}
 
     def setUp(self):
+        from django.core.cache import cache
+
         enc_module._fernet = None
+        cache.clear()
         self.http = Client()
         # User A prefers French
         self.user_a = User.objects.create_user(
@@ -280,7 +301,10 @@ class SharedBrowserScenarioTest(TestCase):
         self.user_b.save(update_fields=["preferred_language"])
 
     def tearDown(self):
+        from django.core.cache import cache
+
         enc_module._fernet = None
+        cache.clear()
 
     def test_user_b_not_affected_by_user_a_language(self):
         """User A (French) logs out → User B logs in → gets English, not French."""

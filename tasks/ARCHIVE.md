@@ -4,6 +4,16 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Completed 2026-02-15
+
+### Moved from Recently Done (2026-02-15 test & quality fixes)
+
+- [x] Fixed cross-program permission denial for mixed-role users — 2026-02-15 (PERM-FIX1)
+- [x] Generated missing migrations for Communication and AuditLog models — 2026-02-15 (MIG-FIX1)
+- [x] Translated 25 new strings and fixed plural counting in translate_strings — 2026-02-15 (I18N-ALERT1)
+
+---
+
 ## Completed 2026-02-14
 
 ### Moved from Recently Done (2026-02-15 session review #2)

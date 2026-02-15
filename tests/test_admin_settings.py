@@ -85,6 +85,8 @@ class TerminologyTest(TestCase):
 class BilingualTerminologyTest(TestCase):
     """Tests for bilingual (English/French) terminology support (I18N2)."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         from django.core.cache import cache
@@ -98,7 +100,7 @@ class BilingualTerminologyTest(TestCase):
         terms = get_default_terms_for_language("en")
         self.assertEqual(terms["client"], "Participant")
         self.assertEqual(terms["target"], "Target")
-        self.assertEqual(terms["progress_note"], "Progress Note")
+        self.assertEqual(terms["progress_note"], "Note")
 
     def test_get_default_terms_french(self):
         """Default terms in French use second value of tuple."""
@@ -180,6 +182,8 @@ class BilingualTerminologyTest(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class FeatureToggleTest(TestCase):
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.client = Client()
@@ -238,6 +242,8 @@ class InstanceSettingsTest(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class UserManagementTest(TestCase):
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.client = Client()
@@ -318,6 +324,8 @@ class UserManagementTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class DocumentStorageSettingsTest(TestCase):
     """Tests for document storage configuration (DOC5)."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None

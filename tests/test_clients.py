@@ -435,6 +435,8 @@ class ClientViewsTest(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class CustomFieldTest(TestCase):
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.client = Client()
@@ -501,6 +503,8 @@ class CustomFieldTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class SelectOtherFieldTest(TestCase):
     """Tests for the select_other input type (dropdown with free-text Other option)."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None
@@ -616,6 +620,8 @@ class SelectOtherFieldTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ConsentRecordingTest(TestCase):
     """Tests for consent recording workflow (PRIV1)."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None

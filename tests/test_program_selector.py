@@ -213,6 +213,8 @@ class ProgramContextHelpersTest(TestCase):
 class ProgramSwitcherViewTest(TestCase):
     """Test the switch_program and select_program views."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.http = Client()
@@ -291,6 +293,8 @@ class ProgramSwitcherViewTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ForcedSelectionRedirectTest(TestCase):
     """Test that mixed-tier users are redirected to select a program."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None
@@ -378,6 +382,8 @@ class ForcedSelectionRedirectTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ClientFilteringByActiveProgram(TestCase):
     """Test that client lists respect the active program context."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None

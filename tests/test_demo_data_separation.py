@@ -65,6 +65,8 @@ class DemoDataManagerTest(TestCase):
 class DemoDataVisibilityTest(TestCase):
     """Test that demo users see demo data and real users see real data."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.http_client = Client()
@@ -137,6 +139,8 @@ class DemoDataVisibilityTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ImpersonationGuardTest(TestCase):
     """Test that impersonation is only allowed for demo users."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None

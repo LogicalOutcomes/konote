@@ -223,6 +223,8 @@ class GroupDetailSessionCountsTest(TestCase):
 class SessionLogHappyPathTest(TestCase):
     """Test the session_log view: session creation, attendance, highlights, redirects, access."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.client = Client()
