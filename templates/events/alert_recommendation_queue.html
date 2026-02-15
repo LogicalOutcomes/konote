@@ -1,18 +1,14 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Pending Alert Recommendations" %}{% endblock %}
+{% block title %}{% trans "Pending Alert Approvals" %}{% endblock %}
 
 {% block content %}
 {% include "_breadcrumbs.html" %}
 <hgroup>
-    <h1>{% trans "Pending Alert Recommendations" %}</h1>
-    <p>{% trans "Review staff recommendations to cancel safety alerts." %}</p>
+    <h1>{% trans "Pending Alert Approvals" %}</h1>
+    <p>{% trans "Staff recommendations to cancel safety alerts appear here for your review. Approving a recommendation permanently removes the alert; rejecting keeps it active." %}</p>
 </hgroup>
-
-<article>
-    <p>{% trans "The Reviews menu currently contains alert cancellation recommendations only." %}</p>
-</article>
 
 {% if pending_recommendations %}
 {% for rec in pending_recommendations %}

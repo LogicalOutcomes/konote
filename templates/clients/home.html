@@ -106,14 +106,14 @@
     {% include "clients/_search_results.html" %}
 </div>
 
-<!-- Stats row -->
+<!-- Stats row (clinical staff only — Front Desk doesn't need these) -->
+{% if not is_receptionist %}
 <div class="stats-row">
     <dl class="stat-card">
         <dt>{% blocktrans with clients=term.client_plural|default:"Participants" %}Active {{ clients }}{% endblocktrans %}</dt>
         <dd class="stat-value">{{ active_count }}</dd>
         <dd class="stat-subtext">{% blocktrans with total=total_count %}of {{ total }} total{% endblocktrans %}</dd>
     </dl>
-    {% if not is_receptionist %}
     <dl class="stat-card{% if alert_count > 0 %} stat-card-alert{% endif %}">
         <dt>{% if alert_count > 0 %}<span class="stat-icon" aria-hidden="true">&#9888;</span> {% endif %}{% trans "Active Alerts" %}</dt>
         <dd class="stat-value">{{ alert_count }}</dd>
@@ -134,8 +134,8 @@
         <dd class="stat-value">{{ follow_up_count }}</dd>
         <dd class="stat-subtext">{% trans "need your attention" %}</dd>
     </dl>
-    {% endif %}
 </div>
+{% endif %}
 
 <!-- Two-column dashboard -->
 <div class="dashboard-grid">

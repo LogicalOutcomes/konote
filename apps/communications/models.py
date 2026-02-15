@@ -35,6 +35,7 @@ class Communication(models.Model):
 
     METHOD_CHOICES = [
         ("manual_log", _("Manual Log")),
+        ("staff_sent", _("Staff Sent")),
         ("system_sent", _("System Sent")),
         ("system_received", _("System Received")),
     ]

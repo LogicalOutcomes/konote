@@ -17,6 +17,7 @@
             <li><a href="#searching">{% blocktrans with clients=term.client_plural|default:"Participants" %}Searching for {{ clients }}{% endblocktrans %}</a></li>
             <li><a href="#files">{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}{{ client }} {{ file }}s{% endblocktrans %}</a></li>
             <li><a href="#notes">{{ term.progress_note_plural }}</a></li>
+            <li><a href="#documents">{% trans "Documents" %}</a></li>
             <li><a href="#events">{% trans "Events and Alerts" %}</a></li>
             <li><a href="#plans">{{ term.plan }}s</a></li>
             <li><a href="#reports">{% trans "Analysis and Reports" %}</a></li>
@@ -127,6 +128,32 @@
                 </tr>
             </tbody>
         </table>
+    </section>
+
+    <!-- Documents -->
+    <section id="documents">
+        <h2>{% trans "Documents" %}</h2>
+
+        <p>{% blocktrans with client=term.client|default:"Participant" %}KoNote does not store documents directly. Instead, the Documents button on a {{ client }}'s record opens their folder in your organisation's external document storage (such as SharePoint or Google Drive) in a new browser tab.{% endblocktrans %}</p>
+
+        <h3>{% trans "Opening Documents" %}</h3>
+        <ol>
+            <li>{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}Open the {{ client }}'s {{ file }}{% endblocktrans %}</li>
+            <li>{% trans "Click the" %} <strong>{% trans "Documents" %}</strong> {% trans "button in the top-right toolbar" %}</li>
+            <li>{% blocktrans with client=term.client|default:"Participant" %}A new tab opens showing that {{ client }}'s folder in your external storage{% endblocktrans %}</li>
+        </ol>
+
+        <h3>{% trans "Adding Documents" %}</h3>
+        <p>{% trans "To add a document, click the Documents button to open the external folder, then upload files directly in SharePoint or Google Drive. All document management (uploading, organising, deleting) happens in the external system, not in KoNote." %}</p>
+
+        <h3>{% trans "I don't see the Documents button" %}</h3>
+        <ul>
+            <li>{% trans "Your administrator may not have configured document storage yet — ask them to set it up under Admin → Settings" %}</li>
+            <li>{% blocktrans with client=term.client|default:"Participant" %}The {{ client }} may not have a Record ID assigned{% endblocktrans %}</li>
+            <li>{% trans "Front Desk staff do not see the Documents button" %}</li>
+        </ul>
+
+        <p><strong>{% trans "Note:" %}</strong> {% trans "If clicking the button gives you an 'Access Denied' message, you may not have permission in SharePoint or Google Drive itself. Contact your administrator for access." %}</p>
     </section>
 
     <!-- Progress Notes -->
@@ -449,6 +476,10 @@
                     <td>{% trans "Admin" %} → {% trans "Settings" %} → {% trans "Features" %}</td>
                 </tr>
                 <tr>
+                    <td>{% trans "Set up document storage" %}</td>
+                    <td>{% trans "Admin" %} → {% trans "Settings" %} → {% trans "Document Storage" %}</td>
+                </tr>
+                <tr>
                     <td>{% trans "View audit logs" %}</td>
                     <td>{% trans "Admin" %} → {% trans "Audit Log" %}</td>
                 </tr>
@@ -551,6 +582,10 @@
                 <tr>
                     <td>{% trans "Flag a safety concern" %}</td>
                     <td>{% trans "Events tab" %} → + {% trans "New" %} {{ term.alert|capfirst }}</td>
+                </tr>
+                <tr>
+                    <td>{% blocktrans with client=term.client|default:"Participant" %}Access a {{ client }}'s documents{% endblocktrans %}</td>
+                    <td>{% blocktrans with client=term.client|default:"Participant" file=term.file|default:"File" %}{{ client }} {{ file }}{% endblocktrans %} → {% trans "Documents button" %}</td>
                 </tr>
                 <tr>
                     <td>{% trans "See who needs attention" %}</td>

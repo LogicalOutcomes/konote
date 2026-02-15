@@ -1,6 +1,6 @@
 # KoNote UX Walkthrough Report
 
-**Generated:** 2026-02-13 17:32:44  
+**Generated:** 2026-02-15 09:57:38  
 **Command:** `pytest tests/ux_walkthrough/ -v`
 
 ## Summary
@@ -9,8 +9,8 @@
 |--------|----------|----------|
 | Pages visited | 321 | 321 (same) |
 | Critical issues | 0 |
-| Warnings | 2 | 2 (same) |
-| Info items | 28 | 28 (same) |
+| Warnings | 0 |
+| Info items | 27 | 27 (same) |
 
 ## Critical Issues
 
@@ -18,11 +18,7 @@ _No critical issues found._
 
 ## Warning Issues
 
-- **[Direct Service] Events tab** `/events/client/1/`
-  Heading level skipped: <h1> followed by <h3>
-
-- **[Program Manager] Events tab** `/events/client/1/`
-  Heading level skipped: <h1> followed by <h3>
+_No warning issues found._
 
 ## Info Issues
 
@@ -50,9 +46,6 @@ _No critical issues found._
 - **[Direct Service] Form validation — empty quick note** `/notes/client/1/quick/`
   Error list #notes-text-errors not linked via aria-describedby
 
-- **[Direct Service] Form validation — empty quick note** `/notes/client/1/quick/`
-  Error list #consent-errors not linked via aria-describedby
-
 - **[Browser] Focus Management** `/plans/client/7/`
   Plan section: No edit button found
 
@@ -66,34 +59,34 @@ _No critical issues found._
   [mobile] Client detail: Touch target too small — <button> "" is 39x13px (min 44x44)
 
 - **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Home" is 55x38px (min 44x44)
+  [mobile] Client detail: Touch target too small — <a> "Home" is 50x35px (min 44x44)
 
 - **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Participants" is 91x38px (min 44x44)
+  [mobile] Client detail: Touch target too small — <a> "Participants" is 82x35px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "Add Note" is 145x28px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <a> "Edit" is 113x28px (min 44x44)
+
+- **[Browser] Responsive Layout** `/clients/5/`
+  [mobile] Client detail: Touch target too small — <button> "More ▾" is 69x28px (min 44x44)
 
 - **[Browser] Responsive Layout** `/clients/5/`
   [mobile] Client detail: Touch target too small — <a> "Info" is 48x38px (min 44x44)
 
 - **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Plan1" is 69x38px (min 44x44)
+  [mobile] Client detail: Touch target too small — <a> "Plan (1)" is 79x38px (min 44x44)
 
 - **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Progress Note1" is 128x38px (min 44x44)
+  [mobile] Client detail: Touch target too small — <a> "Note (1)" is 83x38px (min 44x44)
 
 - **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Events2" is 83x38px (min 44x44)
+  [mobile] Client detail: Touch target too small — <a> "Timeline (2)" is 106x38px (min 44x44)
 
 - **[Browser] Responsive Layout** `/clients/5/`
   [mobile] Client detail: Touch target too small — <a> "Analysis" is 72x38px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Edit" is 343x36px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "← Back to List" is 75x18px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Export PDF" is 343x36px (min 44x44)
 
 - **[Browser] Responsive Layout** `/clients/5/`
   [mobile] Client detail: Touch target too small — <button> "✎ Edit" is 70x28px (min 44x44)
@@ -227,7 +220,7 @@ _No critical issues found._
 | Step | URL | Status | Issues |
 |------|-----|--------|--------|
 | Admin dashboard (403) | `/admin/settings/` | 403 | None |
-| Form validation errors | `/notes/client/1/quick/` | 200 | 2 issue(s) |
+| Form validation errors | `/notes/client/1/quick/` | 200 | 1 issue(s) |
 | Home page | `/` | 200 | None |
 | Client list | `/clients/` | 200 | None |
 | Create client form | `/clients/create/` | 200 | None |
@@ -245,7 +238,7 @@ _No critical issues found._
 | Note detail | `/notes/1/` | 200 | None |
 | Plan view | `/plans/client/1/` | 200 | None |
 | Section create form | `/plans/client/1/sections/create/` | 200 | None |
-| Events tab | `/events/client/1/` | 200 | 1 issue(s) |
+| Events tab | `/events/client/1/` | 200 | None |
 | Event create form | `/events/client/1/create/` | 200 | None |
 | Alert create form | `/events/client/1/alerts/create/` | 200 | None |
 | Client analysis | `/reports/client/1/analysis/` | 200 | None |
@@ -333,7 +326,7 @@ _No critical issues found._
 | Target history | `/plans/targets/1/history/` | 200 | None |
 | Metrics export form | `/reports/export/` | 200 | None |
 | Funder report form | `/reports/funder-report/` | 200 | None |
-| Events tab | `/events/client/1/` | 200 | 1 issue(s) |
+| Events tab | `/events/client/1/` | 200 | None |
 | Event create form (403) | `/events/client/1/create/` | 403 | None |
 | Client analysis | `/reports/client/1/analysis/` | 200 | None |
 | Review new client | `/clients/3/` | 200 | None |
@@ -606,25 +599,25 @@ _Tested with Playwright (headless Chromium) + axe-core._
 
 - **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <button> "" is 39x13px (min 44x44)
 
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Home" is 55x38px (min 44x44)
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Home" is 50x35px (min 44x44)
 
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Participants" is 91x38px (min 44x44)
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Participants" is 82x35px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Add Note" is 145x28px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Edit" is 113x28px (min 44x44)
+
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <button> "More ▾" is 69x28px (min 44x44)
 
 - **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Info" is 48x38px (min 44x44)
 
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Plan1" is 69x38px (min 44x44)
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Plan (1)" is 79x38px (min 44x44)
 
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Progress Note1" is 128x38px (min 44x44)
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Note (1)" is 83x38px (min 44x44)
 
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Events2" is 83x38px (min 44x44)
+- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Timeline (2)" is 106x38px (min 44x44)
 
 - **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Analysis" is 72x38px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Edit" is 343x36px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "← Back to List" is 75x18px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Export PDF" is 343x36px (min 44x44)
 
 - **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <button> "✎ Edit" is 70x28px (min 44x44)
 
@@ -637,10 +630,6 @@ _Tested with Playwright (headless Chromium) + axe-core._
 - **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "Jane Doe" is 62x20px (min 44x44)
 
 ## Recommendations
-
-### Short-term (Warnings)
-
-- **Heading structure:** 2 pages with heading issues.
 
 ---
 

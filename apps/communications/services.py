@@ -266,6 +266,75 @@ def send_email_message(to_email, subject, body_text, body_html=None):
         return False, error_msg
 
 
+def send_staff_email(client_file, subject, body_text, logged_by, author_program=None, request=None):
+    """Send a free-form email composed by staff to a participant.
+
+    Pre-checks consent via can_send(). Appends CASL-required unsubscribe
+    link. Sends via send_email_message(). Logs to Communication model
+    with method=staff_sent and creates an audit log entry.
+
+    Note: A Communication record is created even when delivery fails
+    (delivery_status="failed"). This is intentional — PIPEDA and CASL
+    require an audit trail of all outbound communication attempts.
+
+    Returns (success: bool, error_or_none: str|None).
+    """
+    allowed, reason = can_send(client_file, "email")
+    if not allowed:
+        return False, reason
+
+    email = client_file.email
+    if not email:
+        return False, _("No email address on file")
+
+    # Append CASL-required unsubscribe link
+    unsubscribe_path = generate_unsubscribe_url(client_file, "email")
+    if request:
+        unsubscribe_url = request.build_absolute_uri(unsubscribe_path)
+    else:
+        unsubscribe_url = unsubscribe_path
+    body_with_footer = (
+        f"{body_text}\n\n---\n"
+        f"{_('To stop receiving these messages')}: {unsubscribe_url}"
+    )
+
+    success, error = send_email_message(email, subject, body_with_footer)
+
+    # Log to Communication model
+    comm = Communication.objects.create(
+        client_file=client_file,
+        direction="outbound",
+        channel="email",
+        method="staff_sent",
+        subject=subject,
+        content=body_text,
+        delivery_status="sent" if success else "failed",
+        delivery_status_display="" if success else (error or ""),
+        logged_by=logged_by,
+        author_program=author_program,
+    )
+
+    # Audit log
+    from apps.audit.models import AuditLog
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=logged_by.pk if logged_by else None,
+        user_display=getattr(logged_by, "display_name", str(logged_by)) if logged_by else "System",
+        action="create",
+        resource_type="communication",
+        resource_id=comm.pk,
+        is_demo_context=getattr(logged_by, "is_demo", False) if logged_by else False,
+        metadata={
+            "client_file_id": client_file.pk,
+            "channel": "email",
+            "direction": "outbound",
+            "method": "staff_sent",
+        },
+    )
+
+    return success, error
+
+
 def send_reminder(meeting, logged_by=None, personal_note=""):
     """Send an appointment reminder for a meeting.
 

@@ -63,6 +63,7 @@ INTAKE_FIELD_GROUPS = [
         "Contact Information",
         10,
         [
+            # Identity — "What should I call you? How should I refer to you?"
             ("Preferred Name", "text", False, False, "edit", "What name do you prefer to be called?", []),
             # Pronouns — per HL7 Personal Pronouns ValueSet v2.0.0 + common combinations
             # from Trevor Project 2024 National Survey. Agencies can customise options.
@@ -74,10 +75,29 @@ INTAKE_FIELD_GROUPS = [
                 "They/them",
                 "Prefer not to answer",
             ]),
+            # Contact details — phones then emails
             ("Primary Phone", "text", True, True, "edit", "(416) 555-0123", [], "phone"),
             ("Secondary Phone", "text", False, True, "edit", "", [], "phone"),
             ("Email", "text", False, True, "edit", "email@example.com", []),
             ("Secondary Email", "text", False, True, "edit", "", []),
+            # Communication preferences — how/when/what language to reach them
+            ("Preferred Contact Method", "select", False, False, "edit", "", [
+                "Phone call",
+                "Text message",
+                "Email",
+                "In person",
+            ]),
+            ("Best Time to Contact", "select", False, False, "edit", "", [
+                "Morning (9am-12pm)",
+                "Afternoon (12pm-5pm)",
+                "Evening (5pm-8pm)",
+                "Any time",
+            ]),
+            ("Preferred Language of Service", "select_other", False, False, "edit", "", [
+                "English",
+                "French",
+            ]),
+            # Address — less urgent, often not needed at first contact
             ("Mailing Address", "textarea", False, True, "edit", "Street address, city", []),
             ("Postal Code", "text", False, False, "edit", "A1A 1A1", [], "postal_code"),
             ("Province or Territory", "select_other", False, False, "edit", "", [
@@ -95,22 +115,6 @@ INTAKE_FIELD_GROUPS = [
                 "Saskatchewan",
                 "Yukon",
             ]),
-            ("Preferred Contact Method", "select", False, False, "edit", "", [
-                "Phone call",
-                "Text message",
-                "Email",
-                "In person",
-            ]),
-            ("Best Time to Contact", "select", False, False, "edit", "", [
-                "Morning (9am-12pm)",
-                "Afternoon (12pm-5pm)",
-                "Evening (5pm-8pm)",
-                "Any time",
-            ]),
-            ("Preferred Language of Service", "select_other", False, False, "edit", "", [
-                "English",
-                "French",
-            ]),
         ],
     ),
     # -------------------------------------------------------------------------
@@ -126,7 +130,7 @@ INTAKE_FIELD_GROUPS = [
                 "Parent/Guardian",
                 "Spouse/Partner",
                 "Sibling",
-                "Other family member",
+                "Another family member",
                 "Friend",
                 "Case worker",
             ]),
@@ -626,6 +630,68 @@ class Command(BaseCommand):
             name="Gender Identity",
             input_type="select",
         ).update(input_type="select_other")
+
+        # Emergency Contact Relationship: ensure select_other (not select) so "Other"
+        # shows a text field for specifying the relationship
+        fixups += CustomFieldDefinition.objects.filter(
+            group__title="Emergency Contact",
+            name="Emergency Contact Relationship",
+            input_type="select",
+        ).update(input_type="select_other")
+
+        # Preferred Communication Format: ensure select_other (not select) so "Other"
+        # shows a text field for specifying the format (e.g. Braille)
+        fixups += CustomFieldDefinition.objects.filter(
+            group__title="Accessibility & Accommodation",
+            name="Preferred Communication Format",
+            input_type="select",
+        ).update(input_type="select_other")
+
+        # Emergency Contact Relationship: rename "Other family member" to avoid
+        # confusion with the system "Other" free-text option
+        for field in CustomFieldDefinition.objects.filter(
+            group__title="Emergency Contact",
+            name="Emergency Contact Relationship",
+        ):
+            opts = field.options_json if isinstance(field.options_json, list) else []
+            if "Other family member" in opts:
+                opts[opts.index("Other family member")] = "Another family member"
+                field.options_json = opts
+                field.save(update_fields=["options_json"])
+                fixups += 1
+
+        # select_other fields: remove "Other" from options_json if present —
+        # the template already adds an "Other" option with __other__ value,
+        # so having it in the list too creates a duplicate in the dropdown.
+        for field in CustomFieldDefinition.objects.filter(input_type="select_other"):
+            opts = field.options_json if isinstance(field.options_json, list) else []
+            if "Other" in opts:
+                opts.remove("Other")
+                field.options_json = opts
+                field.save(update_fields=["options_json"])
+                fixups += 1
+
+        # Contact Information: fix sort_order so fields are grouped logically
+        # Identity → Contact details → Communication preferences → Address
+        CONTACT_SORT_ORDER = {
+            "Preferred Name": 0,
+            "Pronouns": 10,
+            "Primary Phone": 20,
+            "Secondary Phone": 30,
+            "Email": 40,
+            "Secondary Email": 50,
+            "Preferred Contact Method": 60,
+            "Best Time to Contact": 70,
+            "Preferred Language of Service": 80,
+            "Mailing Address": 90,
+            "Postal Code": 100,
+            "Province or Territory": 110,
+        }
+        for field_name, sort_val in CONTACT_SORT_ORDER.items():
+            fixups += CustomFieldDefinition.objects.filter(
+                group__title="Contact Information",
+                name=field_name,
+            ).exclude(sort_order=sort_val).update(sort_order=sort_val)
 
         if fixups:
             self.stdout.write(f"  Updated {fixups} stale field(s) from earlier seeds.")

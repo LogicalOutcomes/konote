@@ -33,22 +33,20 @@ def home(request):
                     "name": f"{c.first_name} {c.last_name}",
                 })
 
-    # --- Quick stats ---
-    # CONF9: Use active program context from middleware if available
-    active_ids = getattr(request, "active_program_ids", None)
-    accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
-    active_count = accessible.filter(status="active").count()
-    total_count = accessible.count()
-
     # --- Check user role to determine if clinical data should be shown ---
     # BUG-12: Get user's highest role across all programs
     user_role = _get_user_highest_role(request.user)
     is_receptionist = user_role == "receptionist"
 
+    # CONF9: Use active program context from middleware if available
+    active_ids = getattr(request, "active_program_ids", None)
+    accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
+
     # --- Clinical data (hidden from Front Desk) ---
-    # Security: Front Desk should not see alerts, notes, or follow-ups
+    # Security: Front Desk should not see stats, alerts, notes, or follow-ups
     if is_receptionist:
-        # Front Desk sees only basic client counts
+        active_count = 0
+        total_count = 0
         active_alerts = []
         alert_count = 0
         notes_today_count = 0
@@ -57,6 +55,9 @@ def home(request):
         needs_attention = []
         needs_attention_count = 0
     else:
+        # --- Quick stats ---
+        active_count = accessible.filter(status="active").count()
+        total_count = accessible.count()
         # Clinical staff sees full dashboard
         accessible_ids = list(accessible.values_list("pk", flat=True))
 

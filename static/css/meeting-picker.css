@@ -1,0 +1,243 @@
+/* Meeting Picker — progressive enhancement styles
+   Only affects elements created by meeting-picker.js.
+   Uses KoNote theme variables from theme.css. */
+
+/* ---- Container ---- */
+.mp-section {
+    margin-bottom: var(--kn-space-lg);
+}
+.mp-section-label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--kn-text-secondary);
+    margin-bottom: var(--kn-space-sm);
+}
+
+/* ---- Selection summary (live region) ---- */
+.mp-summary {
+    background: var(--kn-primary-subtle);
+    border: 1px solid var(--kn-primary);
+    border-radius: var(--kn-radius-card);
+    padding: var(--kn-space-md) var(--kn-space-base);
+    font-weight: 500;
+    color: var(--kn-text);
+    margin-bottom: var(--kn-space-lg);
+}
+
+/* ---- Chip buttons (date quick-picks, location) ---- */
+.mp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--kn-space-sm);
+    margin-bottom: var(--kn-space-sm);
+}
+.mp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--kn-space-xs);
+    padding: var(--kn-space-sm) var(--kn-space-base);
+    border: 1.5px solid var(--kn-border);
+    border-radius: 999px;
+    background: var(--kn-card-bg);
+    color: var(--kn-text);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--kn-transition);
+    min-height: 44px;  /* WCAG 2.5.8 touch target */
+    white-space: nowrap;
+    /* Remove default button styles */
+    font-family: inherit;
+    line-height: 1.4;
+}
+.mp-chip:hover {
+    border-color: var(--kn-primary);
+    background: var(--kn-primary-subtle);
+}
+.mp-chip:focus-visible {
+    outline: 3px solid var(--kn-primary);
+    outline-offset: 2px;
+}
+.mp-chip[aria-checked="true"] {
+    background: var(--kn-primary);
+    color: var(--kn-text-inverse);
+    border-color: var(--kn-primary);
+}
+.mp-chip[aria-checked="true"]:hover {
+    background: var(--kn-primary-hover);
+}
+
+/* Chip sub-text (e.g. date under "Today") */
+.mp-chip-sub {
+    font-weight: 400;
+    opacity: 0.85;
+    font-size: 0.8125rem;
+}
+
+/* ---- Weekday row ---- */
+.mp-weekdays {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--kn-space-xs);
+}
+.mp-weekday {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: var(--kn-space-sm) var(--kn-space-md);
+    border: 1.5px solid var(--kn-border);
+    border-radius: var(--kn-radius-card);
+    background: var(--kn-card-bg);
+    color: var(--kn-text);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--kn-transition);
+    min-height: 44px;
+    min-width: 56px;
+    font-family: inherit;
+    line-height: 1.3;
+}
+.mp-weekday:hover {
+    border-color: var(--kn-primary);
+    background: var(--kn-primary-subtle);
+}
+.mp-weekday:focus-visible {
+    outline: 3px solid var(--kn-primary);
+    outline-offset: 2px;
+}
+.mp-weekday[aria-checked="true"] {
+    background: var(--kn-primary);
+    color: var(--kn-text-inverse);
+    border-color: var(--kn-primary);
+}
+.mp-weekday-name {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.mp-weekday-date {
+    font-size: 0.9375rem;
+    font-weight: 600;
+}
+
+/* ---- "Other date" fallback row ---- */
+.mp-other-date {
+    display: flex;
+    align-items: center;
+    gap: var(--kn-space-sm);
+    margin-top: var(--kn-space-sm);
+}
+.mp-other-date label {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--kn-text-secondary);
+    white-space: nowrap;
+}
+.mp-other-date input[type="date"] {
+    max-width: 200px;
+    margin: 0;
+}
+
+/* ---- Time slot grid ---- */
+.mp-time-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: var(--kn-space-xs);
+}
+.mp-time-slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--kn-space-sm);
+    border: 1.5px solid var(--kn-border);
+    border-radius: var(--kn-radius-sm);
+    background: var(--kn-card-bg);
+    color: var(--kn-text);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+    transition: all var(--kn-transition);
+    min-height: 44px;
+    font-family: inherit;
+    line-height: 1;
+}
+.mp-time-slot:hover {
+    border-color: var(--kn-primary);
+    background: var(--kn-primary-subtle);
+}
+.mp-time-slot:focus-visible {
+    outline: 3px solid var(--kn-primary);
+    outline-offset: 2px;
+}
+.mp-time-slot[aria-checked="true"] {
+    background: var(--kn-primary);
+    color: var(--kn-text-inverse);
+    border-color: var(--kn-primary);
+}
+
+/* ---- Location chips ---- */
+.mp-location-custom {
+    margin-top: var(--kn-space-sm);
+}
+.mp-location-custom input {
+    margin: 0;
+    max-width: 300px;
+}
+
+/* ---- Divider between sections ---- */
+.mp-divider {
+    border: none;
+    border-top: 1px solid var(--kn-border-light);
+    margin: var(--kn-space-lg) 0;
+}
+
+/* ---- Hidden state (JS hides the native input) ---- */
+.mp-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* ---- Responsive: stack on small screens ---- */
+@media (max-width: 480px) {
+    .mp-time-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .mp-weekdays {
+        gap: var(--kn-space-xs);
+    }
+    .mp-weekday {
+        min-width: 48px;
+        padding: var(--kn-space-sm) var(--kn-space-sm);
+    }
+}
+
+/* ---- Dark mode adjustments ---- */
+@media (prefers-color-scheme: dark) {
+    .mp-chip,
+    .mp-weekday,
+    .mp-time-slot {
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+    .mp-chip:hover,
+    .mp-weekday:hover,
+    .mp-time-slot:hover {
+        border-color: var(--kn-primary);
+    }
+    .mp-summary {
+        border-color: var(--kn-primary);
+    }
+}

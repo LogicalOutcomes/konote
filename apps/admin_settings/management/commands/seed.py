@@ -454,13 +454,15 @@ class Command(BaseCommand):
         """Create a demo-only report template with a sample funder profile."""
         from apps.reports.models import DemographicBreakdown, ReportTemplate
 
-        profile_name = "Reporting template"
+        profile_name = "Canadian Community Foundation — Quarterly Outcomes"
         profile, created = ReportTemplate.objects.get_or_create(
             name=profile_name,
             defaults={
                 "description": (
-                    "Sample report template for Canadian Community Fund "
-                    "quarterly outcomes."
+                    "Matches the demographic breakdown required by the "
+                    "Canadian Community Foundation for quarterly outcome "
+                    "reports. Groups participants by standard age categories "
+                    "(Child, Youth, Young Adult, Adult, Senior)."
                 ),
             },
         )
@@ -483,11 +485,11 @@ class Command(BaseCommand):
         profile.programs.set(programs)
         if created:
             self.stdout.write(
-                "  Demo report template: 'Reporting template' (Canadian Community Fund) created."
+                f"  Demo report template: '{profile_name}' created."
             )
         else:
             self.stdout.write(
-                "  Demo report template: 'Reporting template' already exists; programs synced."
+                f"  Demo report template: '{profile_name}' already exists; programs synced."
             )
 
     def _update_demo_client_fields(self):

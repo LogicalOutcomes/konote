@@ -94,6 +94,14 @@ def compose_email(request, client_id):
                 return redirect("clients:client_detail", client_id=client.pk)
             else:
                 messages.error(request, error)
+                return render(request, "communications/compose_email.html", {
+                    "client": client,
+                    "form": form,
+                    "allowed": allowed,
+                    "reason": reason,
+                    "masked_email": masked_email,
+                    "preview": True,
+                })
 
     elif request.method == "POST" and action == "preview":
         form = SendEmailForm(request.POST)

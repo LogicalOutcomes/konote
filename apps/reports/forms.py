@@ -114,8 +114,9 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         empty_label=_("No reporting template"),
         label=_("Reporting template"),
         help_text=_(
-            "Select a reporting template to use specific demographic categories. "
-            "Leave blank to use Grouping above."
+            "Reporting templates define the demographic categories your funder requires "
+            "(e.g., age groups, employment status). Select one to format your report "
+            "to match a funder's requirements, or leave blank to use Grouping above."
         ),
     )
 
@@ -235,8 +236,9 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
         empty_label=_("Default age categories"),
         label=_("Reporting template"),
         help_text=_(
-            "Select a reporting template to use specific demographic categories. "
-            "Leave blank for the default Canadian nonprofit age groupings."
+            "Reporting templates define the demographic categories your funder requires. "
+            "Select one to match a specific funder's format, or leave blank for "
+            "the default age groupings."
         ),
     )
 

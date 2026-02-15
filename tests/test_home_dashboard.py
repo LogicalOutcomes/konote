@@ -76,9 +76,9 @@ class HomeDashboardPermissionsTest(TestCase):
         self.assertEqual(len(response.context["pending_follow_ups"]), 0)
         self.assertEqual(len(response.context["needs_attention"]), 0)
 
-        # Verify basic client counts are still visible
-        self.assertEqual(response.context["active_count"], 1)
-        self.assertEqual(response.context["total_count"], 1)
+        # Stats are not shown to Front Desk — counts are zeroed out
+        self.assertEqual(response.context["active_count"], 0)
+        self.assertEqual(response.context["total_count"], 0)
 
     def test_staff_can_see_clinical_metrics(self):
         """Clinical staff should see full dashboard with alerts, notes, follow-ups."""
@@ -113,8 +113,10 @@ class HomeDashboardPermissionsTest(TestCase):
         self.assertNotIn("Needs Attention", content)
         self.assertNotIn("Priority Items", content)
 
+        # Stats row should NOT appear for Front Desk either
+        self.assertNotIn("Active Participants", content)
+
         # Basic sections should still appear
-        self.assertIn("Active Participants", content)  # or "Active clients"
         self.assertIn("Recently Viewed", content)
 
     def test_staff_dashboard_html_shows_clinical_sections(self):

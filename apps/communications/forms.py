@@ -92,6 +92,24 @@ class PersonalNoteForm(forms.Form):
     )
 
 
+class SendEmailForm(forms.Form):
+    """Form for composing and sending a free-form email to a participant."""
+    subject = forms.CharField(
+        max_length=255,
+        label=_("Subject"),
+        widget=forms.TextInput(attrs={
+            "placeholder": _("e.g. Follow-up from today's session"),
+        }),
+    )
+    message = forms.CharField(
+        label=_("Message"),
+        widget=forms.Textarea(attrs={
+            "rows": 6,
+            "placeholder": _("Type your message here..."),
+        }),
+    )
+
+
 class CommunicationLogForm(forms.Form):
     """Full form for detailed communication logging — all fields available."""
     PHONE_OUTCOME_CHOICES = [

@@ -30,6 +30,15 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Messaging module — consultant setup (Twilio, SMTP, cron), then safe-to-contact fields, composed messages, bulk messaging (see tasks/messaging-calendar-plan.md) (MSG-P0)
 - [ ] Agency Onboarding Interview Pack — 12 refinements including session split, privacy prerequisites, plain-language wording, deployment checklist (see tasks/agency-permissions-interview.md) (ONBOARD1–12)
 - [ ] Permissions Phase 2 — scoped admin tiers, discharge access transitions, consent model, DV-safe mode (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P1–12)
+- [ ] PM Admin Access — let PMs manage templates, event types, metrics, registrations, and team members for their own programs (see tasks/pm-admin-access.md) (PM-ADMIN1–8)
+  - [ ] Add permission keys to matrix for all six feature areas (PM-ADMIN1)
+  - [ ] Replace @admin_required with @requires_permission on Team Members views + enforce elevation constraint (PM-ADMIN2)
+  - [ ] Scope Plan Templates to programs and open to PMs (PM-ADMIN3)
+  - [ ] Scope Note Templates to programs and open to PMs (PM-ADMIN4)
+  - [ ] Scope Event Types to programs and open to PMs (PM-ADMIN5)
+  - [ ] Scope Metrics to programs and open to PMs (PM-ADMIN6)
+  - [ ] Scope Registration Links to programs and open to PMs (PM-ADMIN7)
+  - [ ] Update navigation to show PM-accessible admin items based on permissions (PM-ADMIN8)
 
 ## Parking Lot
 
@@ -57,6 +66,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Translated 25 new strings and fixed plural counting in translate_strings — 2026-02-15 (I18N-ALERT1)
 - [x] Clarified export report privacy wording — 2026-02-14 (EXP-PRIV2)
 - [x] Clarified Reviews menu scope as alert-cancellation recommendations only — 2026-02-14 (UX-REVIEW2)
 - [x] Refreshed calendar view usability and layout — 2026-02-14 (CAL-UI1)

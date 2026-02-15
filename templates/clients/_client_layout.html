@@ -22,10 +22,14 @@
         <a href="{{ document_folder_url }}" role="button" class="outline secondary" target="_blank" rel="noopener noreferrer" aria-label="{% if document_storage.provider == 'google_drive' %}{% trans 'Search documents for' %}{% else %}{% trans 'Open documents folder for' %}{% endif %} {{ client.display_name }} {{ client.last_name }}">{% trans "Documents" %}</a>
         {% endif %}
         {% has_permission "metric.view_individual" as can_view_metrics %}
-        {% if not client.is_anonymised and not is_receptionist and can_view_metrics or not client.is_anonymised and user_role == "program_manager" %}
+        {% has_permission "communication.log" as can_log_comm %}
+        {% if not client.is_anonymised and not is_receptionist and can_view_metrics or not client.is_anonymised and user_role == "program_manager" or not client.is_anonymised and can_log_comm %}
         <div class="actions-dropdown">
             <button class="outline secondary actions-dropdown-toggle" aria-expanded="false" aria-haspopup="true" aria-label="{% trans 'More actions' %}">{% trans "More" %} ▾</button>
             <ul class="actions-dropdown-menu" role="menu" hidden>
+                {% if can_log_comm and not client.is_anonymised %}
+                <li role="none"><a role="menuitem" href="{% url 'communications:compose_email' client_id=client.pk %}">{% trans "Send Email" %}</a></li>
+                {% endif %}
                 {% if not client.is_anonymised and not is_receptionist and can_view_metrics %}
                 <li role="none"><a role="menuitem" href="{% url 'reports:client_progress_pdf' client_id=client.pk %}" class="actions-confirm" data-confirm-message="{% trans 'Export PDF for' %} {{ client.display_name }} {{ client.last_name }}? {% trans 'This file will contain personal information.' %}">{% trans "Export PDF" %}</a></li>
                 {% endif %}
