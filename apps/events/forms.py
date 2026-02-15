@@ -121,7 +121,15 @@ class AlertForm(forms.Form):
     """Form for creating an alert on a client file."""
 
     content = forms.CharField(
-        widget=forms.Textarea(attrs={"rows": 4, "placeholder": _("Describe the alert...")}),
+        widget=forms.Textarea(attrs={
+            "rows": 4,
+            "placeholder": _(
+                "Example: Client has expressed thoughts of self-harm during "
+                "last two sessions. Safety plan is in place\u2009—\u2009see case "
+                "notes from Jan 15. All staff should check in about the "
+                "safety plan at each visit."
+            ),
+        }),
         label=_("Alert Content"),
     )
 

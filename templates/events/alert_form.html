@@ -9,6 +9,21 @@
     <p>{% trans "Use an alert for important safety or service information that all staff should see right away (for example: immediate risk, urgent access needs, or critical care instructions)." %}</p>
 </hgroup>
 
+<details open>
+    <summary><strong>{% trans "Who will see this alert" %}</strong></summary>
+    <p>{% trans "This alert will be visible to all staff and program managers who have access to this client's file. Write only what is necessary for others to act safely." %}</p>
+</details>
+
+<details>
+    <summary><strong>{% trans "Tips for writing a good alert" %}</strong></summary>
+    <ul>
+        <li>{% trans "Be specific and actionable — what should staff do or be aware of?" %}</li>
+        <li>{% trans "Stick to facts — avoid opinions, speculation, or unnecessary personal details." %}</li>
+        <li>{% trans "Keep it brief — alerts appear at the top of the client's timeline for every visit." %}</li>
+        <li>{% trans "Use plain language — avoid abbreviations or jargon." %}</li>
+    </ul>
+</details>
+
 <form method="post">
     {% csrf_token %}
 
@@ -22,6 +37,8 @@
     <small class="badge badge-danger">{{ field.errors.0 }}</small>
     {% endif %}
     {% endfor %}
+
+    <p><small class="secondary">{% trans "Alerts cannot be edited once created. To remove an alert, a staff member recommends cancellation and a program manager reviews it. All actions are recorded in the audit log." %}</small></p>
 
     <div role="group">
         <button type="submit">{% trans "Create Alert" %}</button>
