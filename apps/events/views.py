@@ -201,17 +201,9 @@ def event_list(request, client_id):
     # Sort newest first
     timeline.sort(key=lambda x: x["date"], reverse=True)
 
-    # Timeline filtering — interaction-type-based (replaces source-based UXP5)
+    # Timeline filtering — simplified: All or Events only
     filter_type = request.GET.get("filter", "all")
-    if filter_type == "sessions":
-        timeline = [e for e in timeline if
-                    e["type"] == "note" and e["obj"].interaction_type in
-                    ("session", "group", "home_visit", "collateral")]
-    elif filter_type == "contacts":
-        timeline = [e for e in timeline if
-                    (e["type"] == "note" and e["obj"].interaction_type in ("phone", "sms", "email")) or
-                    e["type"] == "communication"]
-    elif filter_type == "events":
+    if filter_type == "events":
         timeline = [e for e in timeline if e["type"] == "event"]
     # "all" shows everything (default)
 

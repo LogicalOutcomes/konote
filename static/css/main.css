@@ -272,6 +272,45 @@ nav.breadcrumb [aria-current="page"] {
 .actions-dropdown-menu li a:hover {
     background: var(--kn-surface-hover, rgba(0, 0, 0, 0.04));
 }
+.actions-dropdown-menu li a small {
+    display: block;
+    font-size: 0.6875rem;
+    color: var(--kn-text-muted, #666);
+    font-weight: normal;
+    margin-top: 0.125rem;
+}
+.actions-dropdown-menu .dropdown-divider {
+    height: 0;
+    margin: var(--kn-space-xs) 0;
+    border: 0;
+    border-top: 1px solid var(--kn-border-light);
+}
+
+/* ---- Timeline note expand (read-only in History) ---- */
+.timeline-note-expand {
+    margin: 0;
+    padding: 0;
+}
+.timeline-note-expand > summary {
+    cursor: pointer;
+    list-style: none;
+}
+.timeline-note-expand > summary::-webkit-details-marker {
+    display: none;
+}
+.timeline-note-expand > summary::marker {
+    display: none;
+    content: "";
+}
+.timeline-note-expand[open] > summary {
+    display: none;
+}
+.timeline-note-full {
+    margin-top: var(--kn-space-xs);
+}
+.timeline-note-link {
+    margin-top: var(--kn-space-xs);
+}
 
 /* ---- Tab bar ---- */
 .tab-bar {

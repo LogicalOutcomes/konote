@@ -640,7 +640,7 @@ msgid "cancelled alert"
 msgstr "alerte annulée"
 
 msgid "Timeline"
-msgstr "Chronologie"
+msgstr "Historique"
 
 msgid "Event"
 msgstr "Événement"
@@ -654,12 +654,33 @@ msgstr "Toute la journée"
 msgid "Full Note"
 msgstr "Note complète"
 
+msgid "Detailed Note"
+msgstr "Note détaillée"
+
 msgid ""
 "No events or notes recorded yet. Add events or progress notes to build a "
 "timeline."
 msgstr ""
 "Aucun événement ou note enregistré pour le moment. Ajoutez des événements ou"
 " des notes de suivi pour construire une chronologie."
+
+msgid "No activity recorded yet."
+msgstr "Aucune activité enregistrée pour le moment."
+
+msgid "To add a note, use the Actions menu above or the Notes tab."
+msgstr "Pour ajouter une note, utilisez le menu Actions ci-dessus ou l'onglet Notes."
+
+msgid "Filter history"
+msgstr "Filtrer l'historique"
+
+msgid "View in Notes"
+msgstr "Voir dans Notes"
+
+msgid "Log a contact or brief update"
+msgstr "Enregistrer un contact ou une brève mise à jour"
+
+msgid "Document a session with outcomes"
+msgstr "Documenter une séance avec les résultats"
 
 #: templates/events/event_form.html
 msgid "New"
@@ -950,6 +971,11 @@ msgstr "Aucun(e) %(clients)s ne correspond à « %(query)s »."
 #, python-format
 msgid "Full %(note)s"
 msgstr "%(note)s complète"
+
+#: templates/notes/_tab_notes.html
+#, python-format
+msgid "Detailed %(note)s"
+msgstr "%(note)s détaillée"
 
 #, python-format
 msgid "Page %(current)s of %(total)s"

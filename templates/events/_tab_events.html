@@ -1,20 +1,12 @@
 {% load i18n %}
 {% load permissions_tags %}
-<!-- Partial: Timeline tab content -->
+<!-- Partial: History tab content (read-only review) -->
 {% has_permission "event.view" as can_view_events %}
 {% if user.is_admin and not can_view_events %}
 <p class="notice" role="status">
     <small>{% blocktrans with program=term.program|default:"program" %}You are an administrator without {{ program }} assignments. To see data, ask another admin to assign you a {{ program }} role.{% endblocktrans %}</small>
 </p>
 {% endif %}
-{% has_permission "meeting.create" as can_create_meeting %}
-<div class="action-bar" role="group" aria-label="{% trans 'Actions' %}">
-    {% if can_create_meeting %}
-    <a href="{% url 'events:meeting_create' client_id=client.pk %}" role="button" class="meeting-create-btn">{% trans "Schedule Meeting" %}</a>
-    {% endif %}
-    <a href="{% url 'events:event_create' client_id=client.pk %}" role="button" class="outline">{% trans "Record Event" %}</a>
-    <a href="{% url 'events:alert_create' client_id=client.pk %}" role="button" class="outline secondary">{% trans "New Alert" %}</a>
-</div>
 
 <!-- Active alerts -->
 {% has_permission "alert.cancel" as can_cancel_alert %}
@@ -61,28 +53,20 @@
 {% endif %}
 {% endfor %}
 
-<!-- Log a contact (inline quick note) -->
-{% include "notes/_quick_note_inline_buttons.html" %}
+<!-- Wayfinding banner -->
+<p class="notice" role="status">
+    <small>{% trans "To add a note, use the Actions menu above or the Notes tab." %}</small>
+</p>
 
-<!-- Timeline with filters -->
-<h2>{% trans "Timeline" %}</h2>
+<!-- History feed with filters -->
+<h2>{% trans "History" %}</h2>
 <div id="timeline-section">
-    <div class="filter-bar" role="group" aria-label="{% trans 'Filter timeline' %}">
+    <div class="filter-bar" role="group" aria-label="{% trans 'Filter history' %}">
         <button class="filter-btn{% if active_filter == 'all' or not active_filter %} filter-active{% endif %}"
                 aria-pressed="{% if active_filter == 'all' or not active_filter %}true{% else %}false{% endif %}"
                 hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=all"
                 hx-target="#timeline-entries"
                 hx-swap="innerHTML">{% trans "All" %}</button>
-        <button class="filter-btn{% if active_filter == 'sessions' %} filter-active{% endif %}"
-                aria-pressed="{% if active_filter == 'sessions' %}true{% else %}false{% endif %}"
-                hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=sessions"
-                hx-target="#timeline-entries"
-                hx-swap="innerHTML">{% trans "Sessions" %}</button>
-        <button class="filter-btn{% if active_filter == 'contacts' %} filter-active{% endif %}"
-                aria-pressed="{% if active_filter == 'contacts' %}true{% else %}false{% endif %}"
-                hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=contacts"
-                hx-target="#timeline-entries"
-                hx-swap="innerHTML">{% trans "Phone & Text" %}</button>
         <button class="filter-btn{% if active_filter == 'events' %} filter-active{% endif %}"
                 aria-pressed="{% if active_filter == 'events' %}true{% else %}false{% endif %}"
                 hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=events"

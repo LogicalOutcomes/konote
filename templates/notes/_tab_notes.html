@@ -10,7 +10,7 @@
 {% if active_service_model != "group" %}
 <div class="action-bar">
     <a href="{% url 'notes:quick_note_create' client_id=client.pk %}" role="button">{{ term.quick_note|default:"Quick Note" }}</a>
-    <a href="{% url 'notes:note_create' client_id=client.pk %}" role="button" class="outline">{% blocktrans with note=term.progress_note|default:"Note" %}Full {{ note }}{% endblocktrans %}</a>
+    <a href="{% url 'notes:note_create' client_id=client.pk %}" role="button" class="outline">{% blocktrans with note=term.progress_note|default:"Note" %}Detailed {{ note }}{% endblocktrans %}</a>
 </div>
 {% endif %}
 
