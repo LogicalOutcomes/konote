@@ -10,6 +10,8 @@
     <p>{% blocktrans with first=client.display_name last=client.last_name %}For {{ first }} {{ last }}{% endblocktrans %}</p>
 </hgroup>
 
+<p>{% trans "A staff member has recommended cancelling the alert below. Review their assessment and decide whether to approve or reject the recommendation." %}</p>
+
 <article aria-label="{% trans 'alert details' %}" style="border-left: 4px solid #F59E0B;">
     <header><strong>{% trans "Alert" %}</strong> — <time datetime="{{ alert.created_at|date:'c' }}">{{ alert.created_at|date }}</time>
         {% if alert.author %}<small class="secondary">{% trans "by" %} {{ alert.author.display_name|default:alert.author }}</small>{% endif %}
@@ -26,12 +28,26 @@
     </small>
 </article>
 
+<h2>{% trans "Your Decision" %}</h2>
+
+<article aria-label="{% trans 'what happens next' %}" style="border-left: 4px solid #F59E0B; background: #FFFBEB;">
+    <p><strong>{% trans "Before you decide:" %}</strong></p>
+    <ul>
+        <li>{% trans "Approving will permanently cancel this alert. It will no longer appear in the client's file. This cannot be undone." %}</li>
+        <li>{% trans "Rejecting will keep the alert active. Your feedback will be shared with the staff member who made the recommendation." %}</li>
+    </ul>
+</article>
+
 <form method="post">
     {% csrf_token %}
 
     <label for="{{ form.review_note.id_for_label }}">
         {{ form.review_note.label }}
     </label>
+    <small id="review-note-help" class="secondary" style="display: block; margin-bottom: 0.5rem;">
+        {% trans "Shared with the recommending staff member and recorded in the audit log." %}<br>
+        {% trans "Required when rejecting — explain why so the staff member can respond. Optional when approving." %}
+    </small>
     {{ form.review_note }}
     {% if form.review_note.errors %}
     <small class="badge badge-danger">{{ form.review_note.errors.0 }}</small>
@@ -39,8 +55,7 @@
 
     <div role="group">
         <button type="submit" name="action" value="approve" class="contrast">{% trans "Approve — Cancel Alert" %}</button>
-        <button type="submit" name="action" value="reject" class="outline">{% trans "Reject" %}</button>
+        <button type="submit" name="action" value="reject" class="outline">{% trans "Reject — Keep Alert Active" %}</button>
     </div>
-    <small class="secondary">{% trans "Approving will permanently cancel the alert. A note is required when rejecting." %}</small>
 </form>
 {% endblock %}
