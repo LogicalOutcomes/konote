@@ -14,26 +14,38 @@
         </p>
     </div>
     <div class="client-actions" role="toolbar" aria-label="{% trans 'Client actions' %}">
-        {% if not is_receptionist and not client.is_anonymised %}
-        <a href="{% url 'notes:note_create' client_id=client.pk %}" role="button" aria-label="{% trans 'Add progress note for' %} {{ client.display_name }} {{ client.last_name }}">{% trans "Add Note" %}</a>
+        {% has_permission "client.edit" as can_edit_client %}
+        {% if not is_receptionist and can_edit_client and not client.is_anonymised %}
         <a href="{% url 'clients:client_edit' client_id=client.pk %}" role="button" class="outline" aria-label="{% trans 'Edit participant record for' %} {{ client.display_name }} {{ client.last_name }}">{% trans "Edit" %}</a>
         {% endif %}
         {% if not is_receptionist and document_storage.is_configured and document_folder_url %}
         <a href="{{ document_folder_url }}" role="button" class="outline secondary" target="_blank" rel="noopener noreferrer" aria-label="{% if document_storage.provider == 'google_drive' %}{% trans 'Search documents for' %}{% else %}{% trans 'Open documents folder for' %}{% endif %} {{ client.display_name }} {{ client.last_name }}">{% trans "Documents" %}</a>
         {% endif %}
+        {% if not is_receptionist and not client.is_anonymised %}
         {% has_permission "metric.view_individual" as can_view_metrics %}
         {% has_permission "communication.log" as can_log_comm %}
-        {% if not client.is_anonymised and not is_receptionist and can_view_metrics or not client.is_anonymised and user_role == "program_manager" or not client.is_anonymised and can_log_comm %}
+        {% has_permission "meeting.create" as can_create_meeting %}
         <div class="actions-dropdown">
-            <button class="outline secondary actions-dropdown-toggle" aria-expanded="false" aria-haspopup="true" aria-label="{% trans 'More actions' %}">{% trans "More" %} ▾</button>
+            <button class="outline actions-dropdown-toggle" aria-expanded="false" aria-haspopup="true" aria-label="{% trans 'Actions' %}">{% trans "Actions" %} ▾</button>
             <ul class="actions-dropdown-menu" role="menu" hidden>
-                {% if can_log_comm and not client.is_anonymised %}
+                <li role="none"><a role="menuitem" href="{% url 'notes:quick_note_create' client_id=client.pk %}">{% trans "Quick Note" %}<small>{% trans "Log a contact or brief update" %}</small></a></li>
+                <li role="none"><a role="menuitem" href="{% url 'notes:note_create' client_id=client.pk %}">{% trans "Detailed Note" %}<small>{% trans "Document a session with outcomes" %}</small></a></li>
+                <li class="dropdown-divider" role="separator"></li>
+                <li role="none"><a role="menuitem" href="{% url 'events:event_create' client_id=client.pk %}">{% trans "Record Event" %}</a></li>
+                <li role="none"><a role="menuitem" href="{% url 'events:alert_create' client_id=client.pk %}">{% trans "New Alert" %}</a></li>
+                {% if can_create_meeting %}
+                <li role="none"><a role="menuitem" href="{% url 'events:meeting_create' client_id=client.pk %}">{% trans "Schedule Meeting" %}</a></li>
+                {% endif %}
+                {% if can_log_comm or can_view_metrics or user_role == "program_manager" %}
+                <li class="dropdown-divider" role="separator"></li>
+                {% endif %}
+                {% if can_log_comm %}
                 <li role="none"><a role="menuitem" href="{% url 'communications:compose_email' client_id=client.pk %}">{% trans "Send Email" %}</a></li>
                 {% endif %}
-                {% if not client.is_anonymised and not is_receptionist and can_view_metrics %}
+                {% if can_view_metrics %}
                 <li role="none"><a role="menuitem" href="{% url 'reports:client_progress_pdf' client_id=client.pk %}" class="actions-confirm" data-confirm-message="{% trans 'Export PDF for' %} {{ client.display_name }} {{ client.last_name }}? {% trans 'This file will contain personal information.' %}">{% trans "Export PDF" %}</a></li>
                 {% endif %}
-                {% if not client.is_anonymised and user_role == "program_manager" %}
+                {% if user_role == "program_manager" %}
                 <li role="none"><a role="menuitem" href="{% url 'reports:client_export' client_id=client.pk %}" class="actions-confirm" data-confirm-message="{% trans 'Export all data for' %} {{ client.display_name }} {{ client.last_name }}? {% trans 'This file will contain personal information.' %}">{% trans "Export All Data" %}</a></li>
                 {% endif %}
             </ul>
@@ -53,7 +65,7 @@
         {% if user_role != "receptionist" %}
         <li>{% if active_tab == "plan" %}<a href="{% url 'plans:plan_view' client_id=client.pk %}" class="tab-active" aria-current="page" aria-label="{{ term.plan|default:'Plan' }}{% if targets_count %}, {{ targets_count }} {% trans 'entries' %}{% endif %}">{{ term.plan|default:"Plan" }}{% if targets_count %} <span class="tab-count" aria-hidden="true">({{ targets_count }})</span>{% endif %}</a>{% else %}<a href="{% url 'plans:plan_view' client_id=client.pk %}" hx-get="{% url 'plans:plan_view' client_id=client.pk %}" hx-target="#tab-content" hx-swap="innerHTML" hx-push-url="true" aria-label="{{ term.plan|default:'Plan' }}{% if targets_count %}, {{ targets_count }} {% trans 'entries' %}{% endif %}">{{ term.plan|default:"Plan" }}{% if targets_count %} <span class="tab-count" aria-hidden="true">({{ targets_count }})</span>{% endif %}</a>{% endif %}</li>
         <li>{% if active_tab == "notes" %}<a href="{% url 'notes:note_list' client_id=client.pk %}" class="tab-active" aria-current="page" aria-label="{{ term.progress_note|default:'Notes' }}{% if notes_count %}, {{ notes_count }} {% trans 'entries' %}{% endif %}">{{ term.progress_note|default:"Notes" }}{% if notes_count %} <span class="tab-count" aria-hidden="true">({{ notes_count }})</span>{% endif %}</a>{% else %}<a href="{% url 'notes:note_list' client_id=client.pk %}" hx-get="{% url 'notes:note_list' client_id=client.pk %}" hx-target="#tab-content" hx-swap="innerHTML" hx-push-url="true" aria-label="{{ term.progress_note|default:'Notes' }}{% if notes_count %}, {{ notes_count }} {% trans 'entries' %}{% endif %}">{{ term.progress_note|default:"Notes" }}{% if notes_count %} <span class="tab-count" aria-hidden="true">({{ notes_count }})</span>{% endif %}</a>{% endif %}</li>
-        <li>{% if active_tab == "events" %}<a href="{% url 'events:event_list' client_id=client.pk %}" class="tab-active" aria-current="page" aria-label="{% trans 'Timeline' %}{% if events_count %}, {{ events_count }} {% trans 'entries' %}{% endif %}">{% trans "Timeline" %}{% if events_count %} <span class="tab-count" aria-hidden="true">({{ events_count }})</span>{% endif %}</a>{% else %}<a href="{% url 'events:event_list' client_id=client.pk %}" hx-get="{% url 'events:event_list' client_id=client.pk %}" hx-target="#tab-content" hx-swap="innerHTML" hx-push-url="true" aria-label="{% trans 'Timeline' %}{% if events_count %}, {{ events_count }} {% trans 'entries' %}{% endif %}">{% trans "Timeline" %}{% if events_count %} <span class="tab-count" aria-hidden="true">({{ events_count }})</span>{% endif %}</a>{% endif %}</li>
+        <li>{% if active_tab == "events" %}<a href="{% url 'events:event_list' client_id=client.pk %}" class="tab-active" aria-current="page" aria-label="{% trans 'History' %}{% if events_count %}, {{ events_count }} {% trans 'entries' %}{% endif %}">{% trans "History" %}{% if events_count %} <span class="tab-count" aria-hidden="true">({{ events_count }})</span>{% endif %}</a>{% else %}<a href="{% url 'events:event_list' client_id=client.pk %}" hx-get="{% url 'events:event_list' client_id=client.pk %}" hx-target="#tab-content" hx-swap="innerHTML" hx-push-url="true" aria-label="{% trans 'History' %}{% if events_count %}, {{ events_count }} {% trans 'entries' %}{% endif %}">{% trans "History" %}{% if events_count %} <span class="tab-count" aria-hidden="true">({{ events_count }})</span>{% endif %}</a>{% endif %}</li>
         <li>{% if active_tab == "analysis" %}<a href="{% url 'reports:client_analysis' client_id=client.pk %}" class="tab-active" aria-current="page" aria-label="{% trans 'Analysis' %}">{% trans "Analysis" %}</a>{% else %}<a href="{% url 'reports:client_analysis' client_id=client.pk %}" hx-get="{% url 'reports:client_analysis' client_id=client.pk %}" hx-target="#tab-content" hx-swap="innerHTML" hx-push-url="true" aria-label="{% trans 'Analysis' %}">{% trans "Analysis" %}</a>{% endif %}</li>
         {% endif %}
     </ul>

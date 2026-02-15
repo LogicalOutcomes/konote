@@ -167,9 +167,9 @@ class AlertReviewRecommendationForm(forms.Form):
     review_note = forms.CharField(
         widget=forms.Textarea(attrs={
             "rows": 3,
-            "placeholder": _("Optional note (required for rejections)..."),
+            "aria-describedby": "review-note-help",
         }),
-        label=_("Review Note"),
+        label=_("Your Feedback"),
         required=False,
     )
 

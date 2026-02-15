@@ -272,6 +272,45 @@ nav.breadcrumb [aria-current="page"] {
 .actions-dropdown-menu li a:hover {
     background: var(--kn-surface-hover, rgba(0, 0, 0, 0.04));
 }
+.actions-dropdown-menu li a small {
+    display: block;
+    font-size: 0.6875rem;
+    color: var(--kn-text-muted, #666);
+    font-weight: normal;
+    margin-top: 0.125rem;
+}
+.actions-dropdown-menu .dropdown-divider {
+    height: 0;
+    margin: var(--kn-space-xs) 0;
+    border: 0;
+    border-top: 1px solid var(--kn-border-light);
+}
+
+/* ---- Timeline note expand (read-only in History) ---- */
+.timeline-note-expand {
+    margin: 0;
+    padding: 0;
+}
+.timeline-note-expand > summary {
+    cursor: pointer;
+    list-style: none;
+}
+.timeline-note-expand > summary::-webkit-details-marker {
+    display: none;
+}
+.timeline-note-expand > summary::marker {
+    display: none;
+    content: "";
+}
+.timeline-note-expand[open] > summary {
+    display: none;
+}
+.timeline-note-full {
+    margin-top: var(--kn-space-xs);
+}
+.timeline-note-link {
+    margin-top: var(--kn-space-xs);
+}
 
 /* ---- Tab bar ---- */
 .tab-bar {
@@ -305,6 +344,8 @@ nav.breadcrumb [aria-current="page"] {
     color: var(--kn-primary-active, var(--kn-primary));
     font-weight: 600;
     border-bottom-color: var(--kn-primary-active, var(--kn-primary));
+    background: var(--kn-primary-subtle);
+    border-radius: var(--kn-radius-sm) var(--kn-radius-sm) 0 0;
     cursor: default;
 }
 
@@ -1957,6 +1998,18 @@ article[aria-label="notification"].fading-out {
         padding: var(--kn-space-sm) 0;
         min-height: 44px;
     }
+    /* Active nav item: left border + background instead of bottom border */
+    #nav-menu li a.nav-active,
+    #nav-menu li summary.nav-active {
+        border-bottom: none;
+        padding-bottom: 0;
+        border-left: 3px solid var(--kn-primary-active, var(--kn-primary));
+        padding-left: var(--kn-space-sm);
+        background: var(--kn-primary-subtle);
+        border-radius: 0 var(--kn-radius-sm) var(--kn-radius-sm) 0;
+        margin-left: calc(-1 * var(--kn-space-base));
+        padding-left: calc(var(--kn-space-base) - 3px);
+    }
     /* Fix dropdown positioning on mobile */
     body > nav details.dropdown {
         position: static;
@@ -2085,6 +2138,13 @@ article[aria-label="notification"].fading-out {
 
 /* ---- Tab bar mobile ---- */
 @media (max-width: 600px) {
+    /* Sticky tab bar so current tab is always visible while scrolling */
+    nav[aria-label*="tabs"] {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--kn-page-bg);
+    }
     .tab-bar {
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
@@ -2101,6 +2161,33 @@ article[aria-label="notification"].fading-out {
     .tab-bar li a {
         white-space: nowrap;
         padding: var(--kn-space-sm) var(--kn-space-md);
+    }
+    /* Edge fade indicators to hint at off-screen tabs */
+    nav[aria-label*="tabs"]::before,
+    nav[aria-label*="tabs"]::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 24px;
+        z-index: 2;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity var(--kn-transition);
+    }
+    nav[aria-label*="tabs"]::before {
+        left: 0;
+        background: linear-gradient(to right, var(--kn-page-bg), transparent);
+    }
+    nav[aria-label*="tabs"]::after {
+        right: 0;
+        background: linear-gradient(to left, var(--kn-page-bg), transparent);
+    }
+    nav[aria-label*="tabs"].fade-left::before {
+        opacity: 1;
+    }
+    nav[aria-label*="tabs"].fade-right::after {
+        opacity: 1;
     }
 }
 

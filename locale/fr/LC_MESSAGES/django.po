@@ -640,7 +640,7 @@ msgid "cancelled alert"
 msgstr "alerte annulée"
 
 msgid "Timeline"
-msgstr "Chronologie"
+msgstr "Historique"
 
 msgid "Event"
 msgstr "Événement"
@@ -654,12 +654,33 @@ msgstr "Toute la journée"
 msgid "Full Note"
 msgstr "Note complète"
 
+msgid "Detailed Note"
+msgstr "Note détaillée"
+
 msgid ""
 "No events or notes recorded yet. Add events or progress notes to build a "
 "timeline."
 msgstr ""
 "Aucun événement ou note enregistré pour le moment. Ajoutez des événements ou"
 " des notes de suivi pour construire une chronologie."
+
+msgid "No activity recorded yet."
+msgstr "Aucune activité enregistrée pour le moment."
+
+msgid "To add a note, use the Actions menu above or the Notes tab."
+msgstr "Pour ajouter une note, utilisez le menu Actions ci-dessus ou l'onglet Notes."
+
+msgid "Filter history"
+msgstr "Filtrer l'historique"
+
+msgid "View in Notes"
+msgstr "Voir dans Notes"
+
+msgid "Log a contact or brief update"
+msgstr "Enregistrer un contact ou une brève mise à jour"
+
+msgid "Document a session with outcomes"
+msgstr "Documenter une séance avec les résultats"
 
 #: templates/events/event_form.html
 msgid "New"
@@ -950,6 +971,11 @@ msgstr "Aucun(e) %(clients)s ne correspond à « %(query)s »."
 #, python-format
 msgid "Full %(note)s"
 msgstr "%(note)s complète"
+
+#: templates/notes/_tab_notes.html
+#, python-format
+msgid "Detailed %(note)s"
+msgstr "%(note)s détaillée"
 
 #, python-format
 msgid "Page %(current)s of %(total)s"
@@ -11864,3 +11890,68 @@ msgstr "Aucun contact téléphonique ou par texto enregistré."
 
 msgid "No session notes recorded yet."
 msgstr "Aucune note de séance enregistrée."
+
+msgid ""
+"A staff member has recommended cancelling the alert below. Review their "
+"assessment and decide whether to approve or reject the recommendation."
+msgstr ""
+"Un membre du personnel a recommandé l'annulation de l'alerte ci-dessous. "
+"Examinez son évaluation et décidez d'approuver ou de rejeter la "
+"recommandation."
+
+msgid ""
+"Approving will permanently cancel this alert. It will no longer appear in "
+"the client's file. This cannot be undone."
+msgstr ""
+"L'approbation annulera définitivement cette alerte. Elle n'apparaîtra plus "
+"dans le dossier du client. Cette action est irréversible."
+
+msgid "Before you decide:"
+msgstr "Avant de décider :"
+
+msgid "Reject — Keep Alert Active"
+msgstr "Rejeter — Garder l'alerte active"
+
+msgid ""
+"Rejecting will keep the alert active. Your feedback will be shared with the "
+"staff member who made the recommendation."
+msgstr ""
+"Le rejet gardera l'alerte active. Vos commentaires seront partagés avec le "
+"membre du personnel qui a fait la recommandation."
+
+msgid ""
+"Required when rejecting — explain why so the staff member can respond. "
+"Optional when approving."
+msgstr ""
+"Obligatoire lors d'un rejet — expliquez pourquoi afin que le membre du "
+"personnel puisse répondre. Facultatif lors d'une approbation."
+
+msgid ""
+"Shared with the recommending staff member and recorded in the audit log."
+msgstr ""
+"Partagé avec le membre du personnel ayant fait la recommandation et "
+"enregistré dans le journal d'audit."
+
+msgid "Your Decision"
+msgstr "Votre décision"
+
+msgid "Your Feedback"
+msgstr "Vos commentaires"
+
+msgid "what happens next"
+msgstr "ce qui se passe ensuite"
+
+msgid "Funder reporting template"
+msgstr "Modèle de rapport pour le bailleur de fonds"
+
+msgid "None — use default age categories"
+msgstr "Aucun — utiliser les catégories d'âge par défaut"
+
+msgid "None — use grouping below"
+msgstr "Aucun — utiliser le regroupement ci-dessous"
+
+msgid "Your admin sets these up to match a specific funder's reporting format (e.g., age brackets, employment categories). Pick one to format your export the way that funder expects. You can preview what each template includes below."
+msgstr "Votre administrateur configure ces modèles pour correspondre au format de rapport d'un bailleur de fonds spécifique (p. ex., tranches d'âge, catégories d'emploi). Choisissez-en un pour formater votre exportation selon les attentes du bailleur. Vous pouvez prévisualiser le contenu de chaque modèle ci-dessous."
+
+msgid "Your admin sets these up to match a specific funder's reporting format (e.g., age brackets, employment categories). Pick one to format your report the way that funder expects. You can preview what each template includes below."
+msgstr "Votre administrateur configure ces modèles pour correspondre au format de rapport d'un bailleur de fonds spécifique (p. ex., tranches d'âge, catégories d'emploi). Choisissez-en un pour formater votre rapport selon les attentes du bailleur. Vous pouvez prévisualiser le contenu de chaque modèle ci-dessous."

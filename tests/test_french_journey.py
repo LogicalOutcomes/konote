@@ -301,16 +301,16 @@ class ClientDetailFrenchTest(FrenchJourneyBaseTest):
         resp = self.http.get(f"/clients/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Info")  # Same in both languages
-        self.assertContains(resp, "\u00c9v\u00e9nements")  # "Events" — Événements
+        self.assertContains(resp, "Historique")  # "History" tab (renamed from Événements)
         self.assertContains(resp, "Analyse")  # "Analysis"
 
     def test_client_detail_buttons_in_french(self):
-        """Edit and Add Note buttons are in French."""
+        """Edit and Actions dropdown are in French."""
         self._login_staff_fr()
         resp = self.http.get(f"/clients/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Modifier")  # "Edit"
-        self.assertContains(resp, "Ajouter une note")  # "Add Note"
+        self.assertContains(resp, "Note rapide")  # Quick Note in Actions dropdown
 
     def test_client_detail_consent_in_french(self):
         """Consent display section is in French."""
@@ -328,7 +328,7 @@ class ClientDetailFrenchTest(FrenchJourneyBaseTest):
 
     def test_client_edit_form_labels_in_french(self):
         """Client edit form has French labels."""
-        # Staff role has client.edit permission; program_manager does not
+        # Staff role has client.edit SCOPED (same as program_manager)
         self._login_staff_fr()
         resp = self.http.get(f"/clients/{self.client_file.pk}/edit/")
         self.assertEqual(resp.status_code, 200)
@@ -393,8 +393,8 @@ class NotesFrenchTest(FrenchJourneyBaseTest):
         self._login_staff_fr()
         resp = self.http.get(f"/notes/client/{self.client_file.pk}/quick/")
         self.assertEqual(resp.status_code, 200)
-        # Consent confirmation in French
-        self.assertContains(resp, "consentement verbal")
+        # Consent confirmation in French (collaborative note-taking prompt)
+        self.assertContains(resp, "cette note ensemble")
 
     def test_note_list_labels_in_french(self):
         """Note list shows French filter and interaction type labels."""
@@ -747,7 +747,7 @@ class FormValidationFrenchTest(FrenchJourneyBaseTest):
         )
         self.assertEqual(resp.status_code, 200)
         # Page re-renders in French (form page, not an error page)
-        self.assertContains(resp, "consentement")
+        self.assertContains(resp, "Consentir et enregistrer")
 
     def test_client_create_missing_required_field(self):
         """Client create with missing required field shows French form."""

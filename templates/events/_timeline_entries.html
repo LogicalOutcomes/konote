@@ -38,7 +38,7 @@
             {% elif entry.obj.note_type == "quick" %}
                 <span class="badge badge-info">{{ term.quick_note|default:"Quick Note" }}</span>
             {% else %}
-                <span class="badge badge-success">{% trans "Full Note" %}</span>
+                <span class="badge badge-success">{% trans "Detailed Note" %}</span>
             {% endif %}
             {% if entry.obj.outcome %}
                 <span class="badge badge-neutral">{{ entry.obj.get_outcome_display }}</span>
@@ -55,9 +55,15 @@
             {% endif %}
         </div>
         {% if entry.obj.status == "cancelled" %}
-            <p><del>{{ entry.obj.notes_text|truncatechars:200 }}</del></p>
+        <p><del>{{ entry.obj.notes_text|truncatechars:200 }}</del></p>
         {% else %}
-            <p>{{ entry.obj.notes_text|truncatechars:200 }}</p>
+        <details class="timeline-note-expand">
+            <summary>{{ entry.obj.notes_text|truncatechars:200 }}</summary>
+            <div class="timeline-note-full">
+                <p>{{ entry.obj.notes_text }}</p>
+                <p class="timeline-note-link"><small><a href="{% url 'notes:note_list' client_id=client.pk %}#note-{{ entry.obj.pk }}">{% trans "View in Notes" %} &rarr;</a></small></p>
+            </div>
+        </details>
         {% endif %}
 
         {% elif entry.type == "communication" %}
@@ -76,14 +82,10 @@
 {% endif %}
 {% else %}
 <div class="empty-state">
-    {% if active_filter == "sessions" %}
-        <p>{% trans "No session notes recorded yet." %}</p>
-    {% elif active_filter == "contacts" %}
-        <p>{% trans "No phone or text contacts recorded yet." %}</p>
-    {% elif active_filter == "events" %}
+    {% if active_filter == "events" %}
         <p>{% trans "No events recorded yet." %}</p>
     {% else %}
-        <p>{% trans "No events or notes recorded yet. Add events or progress notes to build a timeline." %}</p>
+        <p>{% trans "No activity recorded yet." %}</p>
     {% endif %}
 </div>
 {% endif %}

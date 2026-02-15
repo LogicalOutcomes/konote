@@ -27,7 +27,21 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Coming Up
 
-- [ ] Messaging module — consultant setup (Twilio, SMTP, cron), then safe-to-contact fields, composed messages, bulk messaging (see tasks/messaging-calendar-plan.md) (MSG-P0)
+### Phase: Communication Modules (see tasks/messaging-calendar-plan.md)
+
+- [ ] Native appointment tracking — Meeting model, create/edit forms, staff dashboard, status transitions (MSG-MTG1)
+- [ ] iCal calendar feed — private feed URL per staff, .ics generation, "Add to Calendar" button, no PII in feed (MSG-CAL1)
+- [ ] Communication log — quick-log buttons ("Logged a Call", "Logged a Text"), full log form, timeline integration (MSG-LOG1)
+- [ ] Consent and contact fields — SMS/email consent checkboxes, CASL date tracking, phone staleness indicator, preferred language (MSG-CONSENT1)
+- [ ] Outbound email reminders — send appointment reminders via agency's existing Microsoft 365 or Google Workspace SMTP (MSG-EMAIL-OUT1)
+- [ ] Outbound SMS reminders — send appointment reminders via Swift SMS Gateway (Canadian) or Twilio, plain-language error messages on meeting card (MSG-SMS1)
+- [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (MSG-EMAIL-2WAY1)
+- [ ] Automated reminder cron — management command to send reminders for meetings in next 36 hours, retry on failure, system health tracking (MSG-AUTO1)
+- [ ] System health banners — yellow/red banners on staff dashboard for SMS/email failures, alert email to admin after 24h outage (MSG-HEALTH1)
+- [ ] Feature toggles for communication modules — enable/disable email, SMS, and appointments independently per agency (MSG-TOGGLE1)
+
+### Phase: Other Upcoming
+
 - [ ] Agency Onboarding Interview Pack — 12 refinements including session split, privacy prerequisites, plain-language wording, deployment checklist (see tasks/agency-permissions-interview.md) (ONBOARD1–12)
 - [ ] Permissions Phase 2 — scoped admin tiers, discharge access transitions, consent model, DV-safe mode (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P1–12)
 - [ ] PM Admin Access — let PMs manage templates, event types, metrics, registrations, and team members for their own programs (see tasks/pm-admin-access.md) (PM-ADMIN1–8)
@@ -42,6 +56,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Parking Lot
 
+- [ ] Fix pre-existing test failures: language switching (3 tests), plan permissions (5 tests), login redirect (1 test) (TEST-FIX1)
+- [ ] Fix missing `databases = {'default', 'audit'}` on test classes that write audit logs (~10 errors) (TEST-FIX2)
 - [ ] Rename original KoNote GitHub repo to KoNote Classic and add redirect/link to this repo (REPO1)
 - [ ] Delete temporary push folders after OneDrive sync completion (CLEANUP1)
 - [ ] Add stress testing for 50+ concurrent users (QA-T15)
@@ -51,7 +67,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Implement multi-session testing for SCN-046 shared device scenario (QA-W55)
 - [ ] Add front desk message-taking route and permission model (UXP-RECEP)
 - [ ] Add PM team meeting view grouped by staff with safe access utility (UXP-TEAM)
-- [ ] Add actionable admin health banners for SMS/email warnings (UXP-HEALTH)
+- [ ] Participant portal — separate login for participants to view progress and enter data (PORTAL1)
+- [ ] Surveys — lightweight structured feedback collection from participants (SURVEY1)
 - [ ] Add sortable last-contact date on participant list for PM oversight (UXP-CONTACT)
 - [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
 - [ ] Build agency data offboarding command for secure departures and PIPEDA requests (SEC3)
@@ -66,6 +83,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Session review: fixed 5 broken tests, added 3 PM permission tests, updated stale comments — 2026-02-15 (REV-FIX1)
 - [x] Added compose email feature with CASL consent, preview, and audit logging — 2026-02-15 (MSG-EMAIL1)
 - [x] Replaced meeting date/time picker with accessible chip-based UI — 2026-02-15 (UX-MEET2)
 - [x] Renamed Reviews to Approvals and streamlined recommendation queue — 2026-02-15 (UX-REVIEW3)
@@ -75,4 +93,3 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Fixed cross-program permission denial for mixed-role users — 2026-02-15 (PERM-FIX1)
 - [x] Generated missing migrations for Communication and AuditLog models — 2026-02-15 (MIG-FIX1)
 - [x] Translated 25 new strings and fixed plural counting in translate_strings — 2026-02-15 (I18N-ALERT1)
-- [x] Clarified export report privacy wording — 2026-02-14 (EXP-PRIV2)

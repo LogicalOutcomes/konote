@@ -926,7 +926,162 @@ No Celery, no Django-Q, no Redis. A management command on a cron schedule.
 
 ---
 
-## Phase 6 (Future): Background Task Queue
+## Phase 6: Two-Way Email Integration
+
+**Goal:** Coaches can send and receive emails from within KoNote, tied to participant records. All correspondence appears in the participant's timeline alongside progress notes and outcome measurements.
+
+**Why this matters:** This was identified as a high-priority requirement by a prospective agency (February 2026). Coaches currently switch between their email client and their case management tool. Unifying email into the participant record means the full picture is in one place. If a coach leaves, the next coach can see everything.
+
+### 6A. Architecture — Microsoft Graph API + Gmail API
+
+Support both providers since nonprofits split roughly 60/40 between Microsoft 365 and Google Workspace.
+
+**Microsoft 365:**
+- Use Microsoft Graph API for both sending (`POST /users/{id}/sendMail`) and reading email
+- Existing Django package: `django-msgraphbackend` on PyPI
+- Permissions needed: `Mail.Send` and `Mail.Read` — requires agency's M365 admin to grant consent
+- OAuth2 with admin-consented application permissions (one-time setup by consultant)
+- Emails come FROM the coach's real address (or a shared mailbox)
+
+**Google Workspace:**
+- Use Gmail API for sending (`users.messages.send`) and reading
+- OAuth2 consent for Gmail scopes — agency's Google admin controls this
+- Gmail push notifications via Pub/Sub for inbound email detection
+
+### 6B. Email Provider Configuration model
+
+**File:** `apps/communications/models.py`
+
+```python
+class EmailProviderConfig(models.Model):
+    """Agency-level email provider configuration. One per instance."""
+    provider = models.CharField(
+        max_length=15,
+        choices=[
+            ("microsoft", "Microsoft 365"),
+            ("google", "Google Workspace"),
+            ("smtp_only", "SMTP Only (outbound)"),
+        ],
+    )
+    # OAuth2 credentials (encrypted)
+    _client_id_encrypted = models.BinaryField(null=True, blank=True)
+    _client_secret_encrypted = models.BinaryField(null=True, blank=True)
+    tenant_id = models.CharField(max_length=255, blank=True)  # Microsoft only
+
+    # Shared mailbox (optional — if not set, uses coach's own address)
+    shared_mailbox = models.EmailField(blank=True)
+
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_verified_at = models.DateTimeField(null=True, blank=True)
+```
+
+### 6C. Staff Email Token model
+
+Each coach who wants to use email integration authorises their account:
+
+```python
+class StaffEmailToken(models.Model):
+    """OAuth2 token for a staff member's email account."""
+    user = models.OneToOneField("auth_app.User", on_delete=models.CASCADE)
+    _access_token_encrypted = models.BinaryField(null=True, blank=True)
+    _refresh_token_encrypted = models.BinaryField(null=True, blank=True)
+    token_expires_at = models.DateTimeField(null=True, blank=True)
+    email_address = models.EmailField()
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+```
+
+### 6D. Email service layer
+
+**File:** `apps/communications/email_service.py`
+
+```python
+def send_email(client_file, subject, body, sent_by, reply_to=None):
+    """Send an email to a participant and record in Communication log.
+
+    Uses Microsoft Graph or Gmail API depending on agency config.
+    Email is sent FROM the coach's email (or shared mailbox).
+    A Communication record is created with channel='email',
+    method='system_sent', direction='outbound'.
+    """
+    pass
+
+def check_for_replies(user):
+    """Poll for new emails from participants.
+
+    Checks the coach's inbox (or shared mailbox) for replies
+    from known participant email addresses. Creates Communication
+    records with channel='email', method='system_received',
+    direction='inbound'.
+
+    Only stores: sender, subject, plain text body, timestamp.
+    Attachments are noted but not downloaded by default.
+    """
+    pass
+
+def match_email_to_participant(from_address):
+    """Match an inbound email address to a ClientFile.
+
+    Decrypts email addresses and matches. Returns ClientFile or None.
+    Performance note: acceptable up to ~2,000 clients (same ceiling
+    as encrypted client search).
+    """
+    pass
+```
+
+### 6E. Inbound email handling
+
+Two approaches, depending on provider:
+
+**Microsoft Graph:** Use Graph API subscriptions (webhooks) to get notified when new mail arrives. Webhook endpoint in KoNote receives notification, then fetches the email via Graph API.
+
+**Gmail:** Use Gmail push notifications via Google Cloud Pub/Sub. Alternatively, poll every 5 minutes via cron.
+
+**Simpler alternative (recommended for v1):** Poll-based approach. A management command `check_email` runs every 5 minutes via cron. It checks each coach's inbox for new emails from known participant addresses. This avoids webhook infrastructure complexity.
+
+### 6F. Timeline display
+
+Emails appear in the participant timeline with:
+- Direction icon (outbound arrow / inbound arrow)
+- Subject line
+- Preview of first 2 lines
+- "Sent by [coach name]" or "Received from [participant]"
+- Timestamp
+- "View full email" expander
+
+### 6G. Compose view
+
+Coach opens participant page → clicks "Send Email" → sees:
+- To: [participant's email, masked except last 4 chars]
+- From: [coach's email or shared mailbox]
+- Subject: [text field]
+- Body: [text area — plain text, not rich text]
+- [Preview] [Send]
+
+After sending, the email appears immediately in the timeline.
+
+### 6H. Privacy and storage
+
+- Store only metadata + plain text content in KoNote (not HTML, not attachments by default)
+- Email content is encrypted in the Communication model (`_content_encrypted`)
+- Attachments: store filename and size only. Display "1 attachment (report.pdf, 245 KB)" but don't download/store the file. Coach can view in their email client.
+- This avoids KoNote becoming an email archive and keeps storage predictable
+
+### 6I. Tests
+
+- Send email via Microsoft Graph mock: succeeds, Communication created
+- Send email via Gmail API mock: succeeds, Communication created
+- Inbound email matched to correct participant
+- Inbound email from unknown address: logged but not matched
+- Email appears in participant timeline in correct order
+- OAuth2 token refresh works when expired
+- Compose form validates required fields
+- Email content encrypted at rest
+
+---
+
+## Phase 7 (Future): Background Task Queue
 
 **Not needed initially.** The management command handles automated reminders without a task queue. Add Django-Q2 only when:
 - Sending individual messages becomes too slow (synchronous Twilio calls)
@@ -940,7 +1095,7 @@ When that time comes:
 
 ---
 
-## Phase 7 (Future): Calendar Push & WhatsApp
+## Phase 8 (Future): Calendar Push & WhatsApp
 
 ### Calendar push
 
@@ -965,8 +1120,9 @@ Available through Twilio with minimal code changes. The Communication model alre
 | Communications app | `apps/communications/` (new app) | Prevents events/ from becoming a god-app |
 | Communication model | Single model with direction/channel/method | One timeline, one audit trail, extensible |
 | Service layer | `apps/communications/services.py` | Separates business logic from views, docstrings explain rules for AI maintainer |
-| Email backend | Django SMTP with Google Workspace or Microsoft 365 | Org already has one of these, no new account, both offer Canadian data residency |
-| SMS provider | Twilio | Industry standard, Python SDK, Canadian numbers, WhatsApp upgrade path |
+| Email backend (outbound reminders) | Django SMTP with Google Workspace or Microsoft 365 | Org already has one of these, no new account, both offer Canadian data residency |
+| Email integration (two-way) | Microsoft Graph API + Gmail API | Full send/receive tied to participant timeline. OAuth2 admin consent. Dual-provider support covers ~100% of nonprofits. |
+| SMS provider | Twilio or Swift SMS Gateway | Twilio: industry standard, lower cost. Swift SMS Gateway: Canadian data sovereignty. Agency chooses based on privacy requirements. |
 | Background tasks | Management command first, Django-Q2 later | Simplest approach; clear upgrade path |
 | Calendar integration | iCal feed first, API push later | 80% of value for 10% of complexity |
 | PII in calendar feeds | Initials + record ID only | Privacy by design |

@@ -108,7 +108,7 @@
         </label>
     </div>
 
-    {# Reporting template #}
+    {# Funder reporting template #}
     {% if form.report_template %}
     <label for="{{ form.report_template.id_for_label }}">
         {{ form.report_template.label }}
@@ -120,6 +120,53 @@
         <small class="error" role="alert">{{ form.report_template.errors.0 }}</small>
         {% endif %}
     </label>
+    {% endif %}
+
+    {% if template_preview_items %}
+    <details style="margin-bottom: 1rem;">
+        <summary>{% trans "Preview available reporting templates" %}</summary>
+        {% for preview_template in template_preview_items %}
+        <article style="margin-top: 0.75rem;">
+            <header>
+                <strong>{{ preview_template.name }}</strong>
+                {% if preview_template.description %}
+                <br><small class="secondary">{{ preview_template.description }}</small>
+                {% endif %}
+            </header>
+
+            {% for bd in preview_template.breakdowns.all %}
+            <p style="margin-bottom: 0.25rem;"><strong>{{ bd.label }}</strong> —
+                {% if bd.source_type == "age" %}
+                {% trans "Age" %}
+                {% else %}
+                {% trans "Custom field" %}{% if bd.custom_field %}: {{ bd.custom_field.name }}{% endif %}
+                {% endif %}
+            </p>
+            {% if bd.source_type == "age" and bd.bins_json %}
+            <ul style="margin-top: 0; margin-bottom: 0.5rem;">
+                {% for age_bin in bd.bins_json %}
+                <li>{{ age_bin.label }}</li>
+                {% endfor %}
+            </ul>
+            {% elif bd.source_type == "custom_field" %}
+            <p style="margin-top: 0; margin-bottom: 0.5rem;">
+                <small>
+                    {% if bd.keep_all_categories %}
+                    {% trans "Keeps all source categories" %}
+                    {% elif bd.merge_categories_json %}
+                    {% blocktrans with count=bd.merge_categories_json|length %}Includes {{ count }} category merge group(s){% endblocktrans %}
+                    {% else %}
+                    {% trans "No category merges configured" %}
+                    {% endif %}
+                </small>
+            </p>
+            {% endif %}
+            {% empty %}
+            <p><small>{% trans "No demographic breakdowns configured." %}</small></p>
+            {% endfor %}
+        </article>
+        {% endfor %}
+    </details>
     {% endif %}
 
     {# Grouping (used when no reporting template is selected) #}

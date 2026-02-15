@@ -6,9 +6,11 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ## Completed 2026-02-14
 
-### Moved from Recently Done (2026-02-15 session review)
+### Moved from Recently Done (2026-02-15 session review #2)
 
 - [x] Clarified export report privacy wording — 2026-02-14 (EXP-PRIV2)
+
+### Moved from Recently Done (2026-02-15 session review)
 - [x] Clarified Reviews menu scope as alert-cancellation recommendations only — 2026-02-14 (UX-REVIEW2)
 - [x] Refreshed calendar view usability and layout — 2026-02-14 (CAL-UI1)
 - [x] Improved meeting create form clarity for required date/time fields — 2026-02-14 (UX-MEET1)
