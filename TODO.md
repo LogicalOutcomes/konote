@@ -15,11 +15,6 @@
 - [ ] Build weekly export summary email command — GG (EXP2u)
 - [ ] Document scheduled task setup for export monitoring in the runbook — GG (EXP2w)
 
-### Phase: Test & Quality Fixes
-
-- [ ] Fix pre-existing test failures: language switching (3 tests), plan permissions (5 tests), login redirect (1 test) (TEST-FIX1)
-- [ ] Fix missing `databases = {'default', 'audit'}` on test classes that write audit logs (~10 errors) (TEST-FIX2)
-- [ ] Reduce form tab stops with tabindex audit and cleanup (QA-W20)
 
 ## Do Occasionally
 
@@ -86,6 +81,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Fixed 14 pre-existing test failures across plan permissions, login/auth, language switching, export — 2026-02-15 (TEST-FIX1)
+- [x] Added audit database declarations to 41 test classes across 18 files — 2026-02-15 (TEST-FIX2)
+- [x] Tabindex audit: all 10 usages are appropriate tabindex="-1", no cleanup needed — 2026-02-15 (QA-W20)
 - [x] Session review: fixed 5 broken tests, added 3 PM permission tests, updated stale comments — 2026-02-15 (REV-FIX1)
 - [x] Added compose email feature with CASL consent, preview, and audit logging — 2026-02-15 (MSG-EMAIL1)
 - [x] Replaced meeting date/time picker with accessible chip-based UI — 2026-02-15 (UX-MEET2)
@@ -93,6 +91,3 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Hidden stats row from Front Desk on home dashboard — 2026-02-15 (UX-DASH1)
 - [x] Reordered contact fields and fixed select_other naming collisions — 2026-02-15 (DATA-FIX1)
 - [x] Added Documents section to help page — 2026-02-15 (HELP-DOC1)
-- [x] Fixed cross-program permission denial for mixed-role users — 2026-02-15 (PERM-FIX1)
-- [x] Generated missing migrations for Communication and AuditLog models — 2026-02-15 (MIG-FIX1)
-- [x] Translated 25 new strings and fixed plural counting in translate_strings — 2026-02-15 (I18N-ALERT1)
