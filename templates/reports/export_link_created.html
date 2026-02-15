@@ -58,6 +58,27 @@
     {% blocktrans with expires=link.expires_at|date:"M j, H:i" %}This download link expires {{ expires }}. You can return to this page and download again until then.{% endblocktrans %}
 </p>
 
+{# Data contents notice — so recipients know exactly what's in the file #}
+{% if link.contains_pii %}
+<article aria-label="{% trans 'Data contents' %}" style="border-left: 4px solid var(--pico-color-blue-300); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong>{% trans "What's in this file" %}</strong>
+    <p>
+        {% trans "This export contains client record IDs, metric values, dates of service, and staff names." %}
+        {% blocktrans with strong_open="<strong>" strong_close="</strong>" %}It {{ strong_open }}does not{{ strong_close }} contain participant names, contact information, addresses, or session notes.{% endblocktrans %}
+    </p>
+    <p style="margin-bottom: 0;">
+        {% trans "Handle the file according to your organisation's data protection policies. All downloads are logged for audit purposes." %}
+    </p>
+</article>
+{% else %}
+<article aria-label="{% trans 'Data contents' %}" style="border-left: 4px solid var(--pico-color-blue-300); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong>{% trans "What's in this file" %}</strong>
+    <p style="margin-bottom: 0;">
+        {% trans "This export contains summary statistics only (averages, counts, minimums, maximums). No participant names, record IDs, or individual data are included." %}
+    </p>
+</article>
+{% endif %}
+
 {# Secondary action: share link (collapsed by default) #}
 <details style="margin-bottom: 1.5rem;">
     <summary style="cursor: pointer;">
