@@ -41,7 +41,8 @@
     outline: 2px solid var(--kn-primary);
     outline-offset: 4px;
 }
-#main-content:focus:not(:focus-visible) {
+#main-content:focus:not(:focus-visible),
+#main-content.js-programmatic-focus:focus {
     outline: none;
 }
 

@@ -330,6 +330,12 @@ document.body.addEventListener("htmx:afterSwap", function (event) {
         // Don't override if something other than body already has focus
         if (document.activeElement && document.activeElement !== document.body &&
             document.activeElement.tagName !== "HTML") return;
+        // Suppress the visible outline for this programmatic focus.
+        // Skip-link users still get the outline because the class won't be present.
+        main.classList.add("js-programmatic-focus");
+        main.addEventListener("blur", function () {
+            main.classList.remove("js-programmatic-focus");
+        }, { once: true });
         main.focus({ preventScroll: true });
     }
     if (document.readyState === "loading") {
