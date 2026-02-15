@@ -408,6 +408,46 @@ document.addEventListener("click", function (event) {
     }
 })();
 
+// --- Tab bar: scroll active tab into view + edge fade indicators ---
+(function () {
+    function setupTabBar() {
+        var tabBar = document.querySelector(".tab-bar");
+        if (!tabBar) return;
+
+        // Scroll the active tab into view (centred) on mobile
+        var activeTab = tabBar.querySelector(".tab-active, [aria-current='page']");
+        if (activeTab) {
+            activeTab.scrollIntoView({ inline: "center", block: "nearest", behavior: "instant" });
+        }
+
+        // Update edge fade classes based on scroll position
+        var nav = tabBar.closest("nav");
+        if (!nav) return;
+
+        function updateFades() {
+            var scrollLeft = tabBar.scrollLeft;
+            var maxScroll = tabBar.scrollWidth - tabBar.clientWidth;
+            nav.classList.toggle("fade-left", scrollLeft > 4);
+            nav.classList.toggle("fade-right", scrollLeft < maxScroll - 4);
+        }
+
+        tabBar.addEventListener("scroll", updateFades, { passive: true });
+        updateFades();
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", setupTabBar);
+    } else {
+        setupTabBar();
+    }
+    // Re-run after HTMX tab swap so fades update
+    document.body.addEventListener("htmx:afterSettle", function (e) {
+        if (e.detail.target && e.detail.target.id === "tab-content") {
+            setupTabBar();
+        }
+    });
+})();
+
 // --- Note Auto-Save / Draft Recovery ---
 // Saves form data to localStorage as user types, restores on page load
 (function () {
