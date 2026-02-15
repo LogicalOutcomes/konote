@@ -161,6 +161,8 @@ class SensitiveCustomFieldTest(TestCase):
 class RBACBypassTest(TestCase):
     """Attempt to bypass RBAC controls."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.http_client = Client()

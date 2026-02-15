@@ -32,6 +32,8 @@ TEST_KEY = Fernet.generate_key().decode()
 class SessionIsolationTests(TestCase):
     """Verify that staff and portal sessions are fully isolated."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         # Reset Fernet singleton so override_settings takes effect
         enc_module._fernet = None

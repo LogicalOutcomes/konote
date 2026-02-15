@@ -23,6 +23,8 @@ TEST_KEY = Fernet.generate_key().decode()
 class PlanCRUDBaseTest(TestCase):
     """Base class with shared setUp for plan CRUD tests."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.http = Client()

@@ -174,6 +174,8 @@ class InviteModelTest(TestCase):
 class InviteAcceptViewTest(TestCase):
     """Test the invite accept (registration) flow."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.admin = User.objects.create_user(

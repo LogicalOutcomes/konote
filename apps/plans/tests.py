@@ -19,7 +19,13 @@ from .views import _can_edit_plan, _parse_metric_csv
 
 
 class PlanPermissionHelperTest(TestCase):
-    """Test the _can_edit_plan helper."""
+    """Test the _can_edit_plan helper.
+
+    Per the permissions matrix, plan.edit is SCOPED for staff (can edit
+    within their program) and DENY for program_manager/executive/receptionist.
+    Admin status does NOT bypass program role checks (PERM-S2) — an admin
+    needs a staff role to edit plans.
+    """
 
     def setUp(self):
         self.admin = User.objects.create_user(username="admin", password="pass123", is_admin=True)
@@ -44,14 +50,17 @@ class PlanPermissionHelperTest(TestCase):
             user=self.staff, program=self.program, role="staff", status="active"
         )
 
-    def test_admin_can_edit(self):
-        self.assertTrue(_can_edit_plan(self.admin, self.client_file))
+    def test_admin_cannot_edit_without_staff_role(self):
+        """Admin with no program role cannot edit plans (PERM-S2)."""
+        self.assertFalse(_can_edit_plan(self.admin, self.client_file))
 
-    def test_program_manager_can_edit(self):
-        self.assertTrue(_can_edit_plan(self.pm, self.client_file))
+    def test_program_manager_cannot_edit(self):
+        """PM has plan.edit=DENY — managers oversee, staff do clinical work."""
+        self.assertFalse(_can_edit_plan(self.pm, self.client_file))
 
-    def test_staff_cannot_edit(self):
-        self.assertFalse(_can_edit_plan(self.staff, self.client_file))
+    def test_staff_can_edit(self):
+        """Staff has plan.edit=SCOPED — clinical workers edit plans."""
+        self.assertTrue(_can_edit_plan(self.staff, self.client_file))
 
 
 class PlanViewTest(TestCase):
@@ -72,45 +81,70 @@ class PlanViewTest(TestCase):
 
 
 class SectionCreatePermissionTest(TestCase):
-    """Test section create requires admin/PM role."""
+    """Test section create requires plan.edit permission (staff role).
+
+    Per the permissions matrix, plan.edit is SCOPED for staff and DENY for
+    program_manager. Staff (clinical workers) create sections; PMs oversee.
+    """
 
     def setUp(self):
-        self.admin = User.objects.create_user(username="admin", password="pass123", is_admin=True)
         self.staff = User.objects.create_user(username="staff", password="pass123")
+        self.pm = User.objects.create_user(username="pm", password="pass123")
         self.program = Program.objects.create(name="Youth")
         self.client_file = ClientFile()
         self.client_file.first_name = "Test"
         self.client_file.last_name = "User"
         self.client_file.save()
+        from apps.clients.models import ClientProgramEnrolment
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program, status="enrolled"
+        )
         UserProgramRole.objects.create(
             user=self.staff, program=self.program, role="staff", status="active"
         )
+        UserProgramRole.objects.create(
+            user=self.pm, program=self.program, role="program_manager", status="active"
+        )
 
-    def test_admin_can_create_section(self):
+    def test_staff_can_create_section(self):
+        """Staff with plan.edit=SCOPED can create sections."""
         c = TestClient()
-        c.login(username="admin", password="pass123")
+        c.login(username="staff", password="pass123")
         url = reverse("plans:section_create", args=[self.client_file.pk])
         response = c.post(url, {"name": "New Section", "sort_order": 0})
         # Should succeed (redirect or re-render)
         self.assertIn(response.status_code, [200, 302])
 
-    def test_staff_cannot_create_section(self):
+    def test_pm_cannot_create_section(self):
+        """PM with plan.edit=DENY cannot create sections."""
         c = TestClient()
-        c.login(username="staff", password="pass123")
+        c.login(username="pm", password="pass123")
         url = reverse("plans:section_create", args=[self.client_file.pk])
         response = c.post(url, {"name": "New Section", "sort_order": 0})
         self.assertEqual(response.status_code, 403)
 
 
 class TargetEditRevisionTest(TestCase):
-    """Test that editing a target creates a revision."""
+    """Test that editing a target creates a revision.
+
+    Uses a staff user because plan.edit=SCOPED for staff (the role that
+    does clinical plan editing). Admin/PM have plan.edit=DENY.
+    """
 
     def setUp(self):
-        self.admin = User.objects.create_user(username="admin", password="pass123", is_admin=True)
+        self.staff = User.objects.create_user(username="staff", password="pass123")
+        self.program = Program.objects.create(name="RevTest")
         self.client_file = ClientFile()
         self.client_file.first_name = "Rev"
         self.client_file.last_name = "Test"
         self.client_file.save()
+        from apps.clients.models import ClientProgramEnrolment
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program, status="enrolled"
+        )
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.program, role="staff", status="active"
+        )
         self.section = PlanSection.objects.create(
             client_file=self.client_file, name="Section A"
         )
@@ -123,7 +157,7 @@ class TargetEditRevisionTest(TestCase):
 
     def test_edit_creates_revision(self):
         c = TestClient()
-        c.login(username="admin", password="pass123")
+        c.login(username="staff", password="pass123")
         url = reverse("plans:target_edit", args=[self.target.pk])
         c.post(url, {"name": "Updated Name", "description": "Updated description"})
         # Should have one revision with the OLD values
@@ -136,6 +170,8 @@ class TargetEditRevisionTest(TestCase):
 
 class MetricTogglePermissionTest(TestCase):
     """Test metric toggle requires admin."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         self.admin = User.objects.create_user(username="admin", password="pass123", is_admin=True)

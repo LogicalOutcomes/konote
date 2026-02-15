@@ -13,21 +13,27 @@ import konote.encryption as enc_module
 TEST_KEY = Fernet.generate_key().decode()
 
 
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local")
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local", RATELIMIT_ENABLE=False)
 class LoginViewTest(TestCase):
     """Test local username/password login."""
 
     databases = {"default", "audit"}
 
     def setUp(self):
+        from django.core.cache import cache
+
         enc_module._fernet = None
+        cache.clear()
         self.http = Client()
         self.user = User.objects.create_user(
             username="testuser", password="goodpass123", display_name="Test User"
         )
 
     def tearDown(self):
+        from django.core.cache import cache
+
         enc_module._fernet = None
+        cache.clear()
 
     def test_login_page_renders(self):
         resp = self.http.get("/auth/login/")
@@ -130,6 +136,8 @@ class LogoutViewTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class InviteAcceptViewTest(TestCase):
     """Test invite-based registration flow."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None
@@ -536,19 +544,25 @@ class AccountLockoutTest(TestCase):
         self.assertEqual(resp.status_code, 302)  # Redirect on success
 
 
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local")
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local", RATELIMIT_ENABLE=False)
 class ExecutiveLoginRedirectTest(TestCase):
     """BUG-5: Executives should land on aggregate dashboard, not staff home."""
 
     databases = {"default", "audit"}
 
     def setUp(self):
+        from django.core.cache import cache
+
         enc_module._fernet = None
+        cache.clear()
         self.http = Client()
         self.program = Program.objects.create(name="Test Program")
 
     def tearDown(self):
+        from django.core.cache import cache
+
         enc_module._fernet = None
+        cache.clear()
 
     def _create_user(self, username, roles):
         """Create user with specified program roles."""

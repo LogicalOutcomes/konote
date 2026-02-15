@@ -265,6 +265,8 @@ class ValidationTypeModelTest(TestCase):
 class CustomFieldNormalisationIntegrationTest(TestCase):
     """Integration tests for postal code and phone normalisation on save."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.client = Client()

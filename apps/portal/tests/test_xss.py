@@ -41,6 +41,8 @@ IMG_PAYLOAD = '<img onerror=alert(1) src=x>'
 class PortalXSSTests(TestCase):
     """Verify that user-supplied content is HTML-escaped in portal pages."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         # Reset Fernet singleton so override_settings takes effect
         enc_module._fernet = None

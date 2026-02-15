@@ -25,6 +25,8 @@ TEST_KEY = Fernet.generate_key().decode()
 class ConfidentialIsolationTest(TestCase):
     """Test that confidential programs are invisible to non-members."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.http = Client()
@@ -538,6 +540,8 @@ class GroupAccessTest(TestCase):
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class PhoneFieldTest(TestCase):
     """Test the first-class phone field on ClientFile."""
+
+    databases = {"default", "audit"}
 
     def setUp(self):
         enc_module._fernet = None

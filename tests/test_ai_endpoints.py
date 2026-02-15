@@ -19,6 +19,8 @@ TEST_KEY = Fernet.generate_key().decode()
 class AIEndpointBaseTest(TestCase):
     """Base class with shared setUp for AI endpoint tests."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.http = Client()
