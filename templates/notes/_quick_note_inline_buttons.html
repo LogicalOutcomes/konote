@@ -1,0 +1,18 @@
+{% load i18n %}
+{% load permissions_tags %}
+{# Button state for the inline quick note form — appears on client Timeline tab #}
+{% has_permission "note.create" as can_create_note %}
+{% if can_create_note %}
+<div id="quick-note-container" class="quick-log-section">
+    <h2>{% trans "Log Contact" %}</h2>
+    <p><small class="secondary">{% trans "Log a phone call, text, email, or visit. This creates a note that counts in reports." %}</small></p>
+    <div class="quick-log-buttons" role="group" aria-label="{% trans 'Log a contact' %}">
+        <button class="outline"
+                hx-get="{% url 'notes:quick_note_inline' client_id=client.pk %}"
+                hx-target="#quick-note-container"
+                hx-swap="innerHTML">
+            {% trans "Log Contact" %}
+        </button>
+    </div>
+</div>
+{% endif %}

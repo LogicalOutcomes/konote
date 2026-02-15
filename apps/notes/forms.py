@@ -8,30 +8,47 @@ from .models import ProgressNote, ProgressNoteTarget, ProgressNoteTemplate, Prog
 
 
 # Subset for quick notes — group and collateral typically need full notes with target tracking
+# Contact types (phone, sms, email) listed first since contact logging is the primary use case
 QUICK_INTERACTION_CHOICES = [
     ("phone", _("Phone Call")),
+    ("sms", _("Text Message")),
+    ("email", _("Email")),
     ("session", _("Session")),
     ("home_visit", _("Home Visit")),
     ("admin", _("Admin")),
     ("other", _("Other")),
 ]
 
+OUTCOME_CHOICES = [
+    ("", _("— Select —")),
+    ("reached", _("Reached")),
+    ("left_message", _("Left Message")),
+    ("no_answer", _("No Answer")),
+]
+
+# Interaction types that use the outcome field
+CONTACT_TYPES = {"phone", "sms", "email"}
+
 
 class QuickNoteForm(forms.Form):
-    """Simple form for quick notes — just a text area."""
+    """Form for quick notes — supports both session notes and contact logging."""
 
     interaction_type = forms.ChoiceField(
         choices=QUICK_INTERACTION_CHOICES,
         widget=forms.RadioSelect,
         label=_("What kind of interaction?"),
     )
+    outcome = forms.ChoiceField(
+        choices=OUTCOME_CHOICES,
+        required=False,
+        label=_("Outcome"),
+    )
     notes_text = forms.CharField(
         widget=forms.Textarea(attrs={
-            "rows": 5,
+            "rows": 3,
             "placeholder": _("Write your note here..."),
-            "required": True,
         }),
-        required=True,
+        required=False,
     )
     follow_up_date = forms.DateField(
         widget=forms.DateInput(attrs={"type": "date"}),
@@ -45,11 +62,30 @@ class QuickNoteForm(forms.Form):
         help_text=_("Confirm you reviewed this note with the participant."),
     )
 
-    def clean_notes_text(self):
-        text = self.cleaned_data.get("notes_text", "").strip()
-        if not text:
-            raise forms.ValidationError(_("Note text is required."))
-        return text
+    def clean(self):
+        cleaned = super().clean()
+        interaction = cleaned.get("interaction_type", "")
+        outcome = cleaned.get("outcome", "")
+        notes = cleaned.get("notes_text", "").strip()
+
+        if interaction in CONTACT_TYPES:
+            # Outcome is required for contact types
+            if not outcome:
+                self.add_error("outcome", _("Please select an outcome."))
+            # For unsuccessful contacts, auto-fill notes if blank
+            if outcome in ("no_answer", "left_message") and not notes:
+                cleaned["notes_text"] = dict(OUTCOME_CHOICES).get(outcome, outcome)
+            # For reached contacts, notes are required
+            elif outcome == "reached" and not notes:
+                self.add_error("notes_text", _("Note text is required."))
+        else:
+            # Clear outcome for non-contact types
+            cleaned["outcome"] = ""
+            # Notes always required for non-contact types
+            if not notes:
+                self.add_error("notes_text", _("Note text is required."))
+
+        return cleaned
 
 
 class FullNoteForm(forms.Form):

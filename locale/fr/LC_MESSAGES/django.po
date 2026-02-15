@@ -11611,8 +11611,8 @@ msgid ""
 msgstr ""
 "Les alertes ne peuvent pas être modifiées une fois créées. Pour supprimer "
 "une alerte, un membre du personnel recommande l'annulation et un "
-"gestionnaire de programme la révise. Toutes les actions sont consignées "
-"dans le journal de vérification."
+"gestionnaire de programme la révise. Toutes les actions sont consignées dans"
+" le journal de vérification."
 
 msgid "Be specific and actionable — what should staff do or be aware of?"
 msgstr "Soyez précis et concret — que doit faire ou savoir le personnel?"
@@ -11621,8 +11621,8 @@ msgid ""
 "Keep it brief — alerts appear at the top of the client's timeline for every "
 "visit."
 msgstr ""
-"Soyez bref — les alertes apparaissent en haut du fil chronologique du "
-"client à chaque visite."
+"Soyez bref — les alertes apparaissent en haut du fil chronologique du client"
+" à chaque visite."
 
 msgid ""
 "Stick to facts — avoid opinions, speculation, or unnecessary personal "
@@ -11651,10 +11651,216 @@ msgstr "Qui verra cette alerte"
 
 msgid ""
 "Example: Client has expressed thoughts of self-harm during last two "
-"sessions. Safety plan is in place\u2009—\u2009see case notes from Jan 15. "
+"sessions. Safety plan is in place\\u2009—\\u2009see case notes from Jan 15. "
 "All staff should check in about the safety plan at each visit."
 msgstr ""
-"Exemple\u00a0: Le client a exprimé des pensées d'automutilation lors des "
-"deux dernières séances. Un plan de sécurité est en place\u2009—\u2009voir "
+"Exemple\\u00a0: Le client a exprimé des pensées d'automutilation lors des "
+"deux dernières séances. Un plan de sécurité est en place\\u2009—\\u2009voir "
 "les notes du 15 janvier. Tout le personnel devrait vérifier le plan de "
 "sécurité à chaque visite."
+
+msgid "In person"
+msgstr "En personne"
+
+msgid "Save & Schedule Another"
+msgstr "Enregistrer et planifier une autre"
+
+msgid "Adding Documents"
+msgstr "Ajouter des documents"
+
+msgid "Click the"
+msgstr "Cliquez sur le"
+
+msgid "Documents button"
+msgstr "bouton Documents"
+
+msgid "Email sent successfully."
+msgstr "Courriel envoyé avec succès."
+
+msgid "Front Desk staff do not see the Documents button"
+msgstr "Le personnel de la réception ne voit pas le bouton Documents"
+
+msgid "I don't see the Documents button"
+msgstr "Je ne vois pas le bouton Documents"
+
+msgid ""
+"If clicking the button gives you an 'Access Denied' message, you may not "
+"have permission in SharePoint or Google Drive itself. Contact your "
+"administrator for access."
+msgstr ""
+"Si un message « Accès refusé » s'affiche lorsque vous cliquez sur le bouton,"
+" il se peut que vous n'ayez pas les permissions dans SharePoint ou Google "
+"Drive. Contactez votre administrateur pour obtenir l'accès."
+
+msgid "Message"
+msgstr "Message"
+
+msgid "Opening Documents"
+msgstr "Ouvrir les documents"
+
+msgid "Set up document storage"
+msgstr "Configurer le stockage de documents"
+
+msgid "Staff Sent"
+msgstr "Envoyé par le personnel"
+
+msgid ""
+"To add a document, click the Documents button to open the external folder, "
+"then upload files directly in SharePoint or Google Drive. All document "
+"management (uploading, organising, deleting) happens in the external system,"
+" not in KoNote."
+msgstr ""
+"Pour ajouter un document, cliquez sur le bouton Documents pour ouvrir le "
+"dossier externe, puis téléversez les fichiers directement dans SharePoint ou"
+" Google Drive. Toute la gestion des documents (téléversement, organisation, "
+"suppression) se fait dans le système externe, pas dans KoNote."
+
+msgid "Type your message here..."
+msgstr "Tapez votre message ici..."
+
+msgid ""
+"Your administrator may not have configured document storage yet — ask them "
+"to set it up under Admin → Settings"
+msgstr ""
+"Votre administrateur n'a peut-être pas encore configuré le stockage de "
+"documents — demandez-lui de le configurer sous Admin → Paramètres"
+
+msgid "button in the top-right toolbar"
+msgstr "bouton dans la barre d'outils en haut à droite"
+
+msgid "e.g. Follow-up from today's session"
+msgstr "p. ex. Suivi de la séance d'aujourd'hui"
+
+#: templates/pages/help.html (Documents section - blocktrans)
+#, python-format
+msgid ""
+"KoNote does not store documents directly. Instead, the Documents button on a"
+" %(client)s's record opens their folder in your organisation's external "
+"document storage (such as SharePoint or Google Drive) in a new browser tab."
+msgstr ""
+"KoNote ne stocke pas les documents directement. Le bouton Documents sur le "
+"dossier d'un(e) %(client)s ouvre plutôt son dossier dans le système de "
+"stockage externe de votre organisation (comme SharePoint ou Google Drive) "
+"dans un nouvel onglet du navigateur."
+
+#: templates/pages/help.html (Documents section - blocktrans)
+#, python-format
+msgid ""
+"A new tab opens showing that %(client)s's folder in your external storage"
+msgstr ""
+"Un nouvel onglet s'ouvre affichant le dossier de ce/cette %(client)s dans "
+"votre stockage externe"
+
+#: templates/pages/help.html (Documents section - blocktrans)
+#, python-format
+msgid "The %(client)s may not have a Record ID assigned"
+msgstr "Le/La %(client)s n'a peut-être pas de numéro de dossier attribué"
+
+#: templates/pages/help.html (Quick Reference - blocktrans)
+#, python-format
+msgid "Access a %(client)s's documents"
+msgstr "Accéder aux documents d'un(e) %(client)s"
+
+msgid "(optional)"
+msgstr "(facultatif)"
+
+msgid "An unsubscribe link will be added automatically (required by law)."
+msgstr ""
+"Un lien de désabonnement sera ajouté automatiquement (requis par la loi)."
+
+msgid "Client consent must be recorded before creating notes."
+msgstr ""
+"Le consentement du client doit être enregistré avant de créer des notes."
+
+msgid "Contact logging has moved to Quick Notes."
+msgstr "L'enregistrement des contacts a été déplacé vers les notes rapides."
+
+msgid "Contact your administrator for help."
+msgstr "Contactez votre administrateur pour obtenir de l'aide."
+
+msgid "Email cannot be sent"
+msgstr "Le courriel ne peut pas être envoyé"
+
+msgid ""
+"Email has not been set up yet. An administrator can enable it in Admin "
+"Settings."
+msgstr ""
+"Le courriel n'a pas encore été configuré. Un administrateur peut l'activer "
+"dans les paramètres d'administration."
+
+msgid "Log Contact"
+msgstr "Enregistrer un contact"
+
+msgid "Log a contact"
+msgstr "Enregistrer un contact"
+
+msgid ""
+"Log a phone call, text, email, or visit. This creates a note that counts in "
+"reports."
+msgstr ""
+"Enregistrez un appel téléphonique, un texto, un courriel ou une visite. Ceci"
+" crée une note qui compte dans les rapports."
+
+msgid "Note saved."
+msgstr "Note enregistrée."
+
+msgid "Please select an outcome."
+msgstr "Veuillez sélectionner un résultat."
+
+msgid "Recipient email address (not editable)"
+msgstr "Adresse courriel du destinataire (non modifiable)"
+
+msgid "Review this email before sending."
+msgstr "Vérifiez ce courriel avant de l'envoyer."
+
+msgid ""
+"Safety-First mode is active. An administrator can change this in Admin "
+"Settings."
+msgstr ""
+"Le mode Sécurité d'abord est actif. Un administrateur peut modifier cela "
+"dans les paramètres d'administration."
+
+msgid "Send Email"
+msgstr "Envoyer le courriel"
+
+msgid "Send Email to"
+msgstr "Envoyer un courriel à"
+
+msgid ""
+"This will send an email from your organisation to the participant. They will"
+" receive it at their email address on file."
+msgstr ""
+"Ceci enverra un courriel de votre organisme au participant. Il le recevra à "
+"l'adresse courriel inscrite à son dossier."
+
+msgid ""
+"To send emails, an email address must be on file. You can add one in the "
+"Edit screen."
+msgstr ""
+"Pour envoyer des courriels, une adresse courriel doit être inscrite au "
+"dossier. Vous pouvez en ajouter une dans l'écran Modifier."
+
+msgid ""
+"To send emails, the participant must consent to email communication. You can"
+" update consent in the Edit screen."
+msgstr ""
+"Pour envoyer des courriels, le participant doit consentir à la communication"
+" par courriel. Vous pouvez mettre à jour le consentement dans l'écran "
+"Modifier."
+
+msgid ""
+"Your organisation's messaging settings are set to record-keeping only. An "
+"administrator can change this in Admin Settings."
+msgstr ""
+"Les paramètres de messagerie de votre organisme sont réglés sur « tenue de "
+"dossiers uniquement ». Un administrateur peut modifier cela dans les "
+"paramètres d'administration."
+
+msgid "Phone & Text"
+msgstr "Téléphone et texto"
+
+msgid "No phone or text contacts recorded yet."
+msgstr "Aucun contact téléphonique ou par texto enregistré."
+
+msgid "No session notes recorded yet."
+msgstr "Aucune note de séance enregistrée."

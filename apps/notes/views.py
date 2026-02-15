@@ -294,6 +294,7 @@ def quick_note_create(request, client_id):
                     client_file=client,
                     note_type="quick",
                     interaction_type=form.cleaned_data["interaction_type"],
+                    outcome=form.cleaned_data.get("outcome", ""),
                     author=request.user,
                     author_program=_get_author_program(request.user, client),
                     notes_text=form.cleaned_data["notes_text"],
@@ -327,6 +328,68 @@ def quick_note_create(request, client_id):
         "form": form,
         "client": client,
         "breadcrumbs": breadcrumbs,
+    })
+
+
+@login_required
+@requires_permission("note.create", _get_program_from_client)
+def quick_note_inline(request, client_id):
+    """HTMX inline form for logging contacts on the Timeline tab.
+
+    GET: returns the inline form partial.
+    GET ?mode=buttons: returns the buttons partial (for Cancel).
+    POST: creates the note and returns the buttons partial.
+    """
+    client = _get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+
+    # Buttons mode (Cancel action restores the button state)
+    if request.method == "GET" and request.GET.get("mode") == "buttons":
+        return render(request, "notes/_quick_note_inline_buttons.html", {
+            "client": client,
+        })
+
+    # PRIV1: Check client consent
+    if not _check_client_consent(client):
+        return render(request, "notes/_inline_consent_required.html", {"client": client})
+
+    if request.method == "POST":
+        form = QuickNoteForm(request.POST)
+        if form.is_valid():
+            with transaction.atomic():
+                note = ProgressNote(
+                    client_file=client,
+                    note_type="quick",
+                    interaction_type=form.cleaned_data["interaction_type"],
+                    outcome=form.cleaned_data.get("outcome", ""),
+                    author=request.user,
+                    author_program=_get_author_program(request.user, client),
+                    notes_text=form.cleaned_data["notes_text"],
+                    follow_up_date=form.cleaned_data.get("follow_up_date"),
+                )
+                note.save()
+
+                # Auto-complete pending follow-ups
+                ProgressNote.objects.filter(
+                    client_file=client,
+                    author=request.user,
+                    follow_up_date__isnull=False,
+                    follow_up_completed_at__isnull=True,
+                    status="default",
+                ).update(follow_up_completed_at=timezone.now())
+
+            messages.success(request, _("Note saved."))
+            return render(request, "notes/_quick_note_inline_buttons.html", {
+                "client": client,
+            })
+    else:
+        initial_type = request.GET.get("type", "phone")
+        form = QuickNoteForm(initial={"interaction_type": initial_type})
+
+    return render(request, "notes/_quick_note_inline.html", {
+        "form": form,
+        "client": client,
     })
 
 

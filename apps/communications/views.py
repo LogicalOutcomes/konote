@@ -16,7 +16,7 @@ from apps.programs.access import get_author_program, get_client_or_403, get_prog
 
 from apps.auth_app.decorators import requires_permission
 
-from .forms import CommunicationLogForm, PersonalNoteForm, QuickLogForm
+from .forms import CommunicationLogForm, PersonalNoteForm, QuickLogForm, SendEmailForm
 from .models import Communication
 
 
@@ -32,112 +32,90 @@ _get_program_from_client = get_program_from_client
 # ---------------------------------------------------------------------------
 
 @login_required
-@requires_permission("communication.log", _get_program_from_client)
 def quick_log(request, client_id):
-    """HTMX endpoint for quick-action buttons — log a call/text/email in under 10 seconds.
+    """Deprecated: manual contact logging has moved to Quick Notes."""
+    messages.info(request, _("Contact logging has moved to Quick Notes."))
+    return redirect("events:event_list", client_id=client_id)
 
-    POST creates the record and returns the updated quick-log buttons partial.
-    GET with ?channel=xxx returns the mini form for that channel.
+
+@login_required
+def communication_log(request, client_id):
+    """Deprecated: manual contact logging has moved to Quick Notes."""
+    messages.info(request, _("Contact logging has moved to Quick Notes."))
+    return redirect("notes:quick_note_create", client_id=client_id)
+
+
+# ---------------------------------------------------------------------------
+# Compose Email — staff sends a free-form email to a participant
+# ---------------------------------------------------------------------------
+
+@login_required
+@requires_permission("communication.log", _get_program_from_client)
+def compose_email(request, client_id):
+    """Compose and send a free-form email to a participant.
+
+    GET: Show compose form (or explanation if email can't be sent).
+    POST action=preview: Show preview of the message.
+    POST action=send: Send the email and log it.
     """
     client = get_client_or_403(request, client_id)
     if client is None:
         return HttpResponseForbidden(_("You do not have access to this client."))
 
-    channel = request.GET.get("channel") or request.POST.get("channel", "")
-    mode = request.GET.get("mode", "")
+    from .services import can_send, send_staff_email
 
-    # Explicit button mode (used by cancel action)
-    if request.method == "GET" and mode == "buttons":
-        recent = (
-            Communication.objects.filter(client_file=client)
-            .order_by("-created_at")[:5]
-        )
-        return render(request, "communications/_quick_log_buttons.html", {
-            "client": client,
-            "recent_communications": recent,
-        })
+    allowed, reason = can_send(client, "email")
 
-    if request.method == "POST":
-        form = QuickLogForm(request.POST)
-        if form.is_valid():
-            from apps.communications.services import log_communication
+    # Mask email for display
+    masked_email = ""
+    if client.has_email:
+        email_addr = client.email
+        if email_addr and "@" in email_addr:
+            local, domain = email_addr.split("@", 1)
+            masked_email = f"{local[:2]}***@{domain}"
+        elif email_addr:
+            masked_email = "***"
 
-            log_communication(
+    action = request.POST.get("action", "")
+
+    if request.method == "POST" and action == "send":
+        form = SendEmailForm(request.POST)
+        if form.is_valid() and allowed:
+            success, error = send_staff_email(
                 client_file=client,
-                direction=form.cleaned_data["direction"],
-                channel=form.cleaned_data["channel"],
+                subject=form.cleaned_data["subject"],
+                body_text=form.cleaned_data["message"],
                 logged_by=request.user,
-                content=form.cleaned_data.get("notes", ""),
                 author_program=get_author_program(request.user, client),
-                outcome=form.cleaned_data.get("outcome", ""),
+                request=request,
             )
-            messages.success(request, _("Contact recorded."))
+            if success:
+                messages.success(request, _("Email sent successfully."))
+                return redirect("clients:client_detail", client_id=client.pk)
+            else:
+                messages.error(request, error)
 
-            # Return updated buttons (HTMX swaps the whole container)
-            recent = (
-                Communication.objects.filter(client_file=client)
-                .order_by("-created_at")[:5]
-            )
-            return render(request, "communications/_quick_log_buttons.html", {
+    elif request.method == "POST" and action == "preview":
+        form = SendEmailForm(request.POST)
+        if form.is_valid():
+            return render(request, "communications/compose_email.html", {
                 "client": client,
-                "recent_communications": recent,
+                "form": form,
+                "allowed": allowed,
+                "reason": reason,
+                "masked_email": masked_email,
+                "preview": True,
             })
     else:
-        # Default to phone so staff can submit quickly, while still allowing
-        # channel changes from the form dropdown.
-        if not channel:
-            channel = "phone"
-        direction_defaults = {
-            "phone": "inbound",
-            "sms": "outbound",
-            "email": "outbound",
-            "in_person": "inbound",
-        }
-        initial_direction = direction_defaults.get(channel, "outbound")
-        form = QuickLogForm(initial={"channel": channel, "direction": initial_direction})
+        form = SendEmailForm()
 
-    return render(request, "communications/_quick_log_form.html", {
-        "form": form,
+    return render(request, "communications/compose_email.html", {
         "client": client,
-        "channel": channel,
-    })
-
-
-# ---------------------------------------------------------------------------
-# Full communication log form
-# ---------------------------------------------------------------------------
-
-@login_required
-@requires_permission("communication.log", _get_program_from_client)
-def communication_log(request, client_id):
-    """Full form for detailed contact logging — all fields available."""
-    client = get_client_or_403(request, client_id)
-    if client is None:
-        return HttpResponseForbidden(_("You do not have access to this client."))
-
-    if request.method == "POST":
-        form = CommunicationLogForm(request.POST)
-        if form.is_valid():
-            from apps.communications.services import log_communication
-
-            log_communication(
-                client_file=client,
-                direction=form.cleaned_data["direction"],
-                channel=form.cleaned_data["channel"],
-                logged_by=request.user,
-                content=form.cleaned_data.get("content", ""),
-                subject=form.cleaned_data.get("subject", ""),
-                author_program=get_author_program(request.user, client),
-                outcome=form.cleaned_data.get("outcome", ""),
-            )
-            messages.success(request, _("Contact recorded."))
-            return redirect("events:event_list", client_id=client.pk)
-    else:
-        form = CommunicationLogForm()
-
-    return render(request, "communications/communication_log_form.html", {
         "form": form,
-        "client": client,
+        "allowed": allowed,
+        "reason": reason,
+        "masked_email": masked_email,
+        "preview": False,
     })
 
 

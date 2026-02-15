@@ -25,7 +25,7 @@ from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.notes.models import MetricValue, ProgressNote
 
 from .achievements import get_achievement_summary
-from .aggregations import count_clients_by_program, count_notes_by_program
+from .aggregations import count_clients_by_program, count_contacts_by_outcome, count_notes_by_program
 from .demographics import get_age_range, group_clients_by_age, group_clients_by_custom_field
 from .utils import get_fiscal_year_range
 
@@ -250,6 +250,13 @@ def generate_funder_report_data(
         date_to=date_to,
     )
 
+    # Contact attempt breakdown (phone/sms/email notes by outcome)
+    contact_breakdown = count_contacts_by_outcome(
+        program,
+        date_from=date_from,
+        date_to=date_to,
+    )
+
     # Get clients who had activity in the period for demographics
     # (use same logic as count_clients_by_program but get IDs)
     from datetime import datetime, time
@@ -350,6 +357,7 @@ def generate_funder_report_data(
         "total_individuals_served": total_individuals_served,
         "new_clients_this_period": new_clients,
         "total_contacts": total_contacts,
+        "contact_breakdown": contact_breakdown,
 
         # Demographics
         "age_demographics": age_demographics,
@@ -407,6 +415,10 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
     rows.append(["Total Individuals Served", format_number(report_data["total_individuals_served"])])
     rows.append(["New Clients This Period", format_number(report_data["new_clients_this_period"])])
     rows.append(["Total Service Contacts", format_number(report_data["total_contacts"])])
+    cb = report_data.get("contact_breakdown", {})
+    if cb:
+        rows.append(["  Successful Contacts", format_number(cb.get("successful_contacts", 0))])
+        rows.append(["  Contact Attempts (no answer/left message)", format_number(cb.get("contact_attempts", 0))])
     rows.append([])
 
     # Age demographics

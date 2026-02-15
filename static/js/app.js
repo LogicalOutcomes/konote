@@ -1154,3 +1154,61 @@ document.addEventListener("click", function (event) {
         }
     });
 })();
+
+// --- Inline Quick Note progressive disclosure ---
+// Shows/hides outcome and consent fields based on interaction type selection
+(function () {
+    var CONTACT_TYPES = ["phone", "sms", "email"];
+    var CONSENT_TYPES = ["session", "home_visit"];
+
+    function setupInlineQuickNote(container) {
+        var form = container.querySelector("#inline-quick-note-form");
+        if (!form) return;
+
+        var radios = form.querySelectorAll("[name='interaction_type']");
+        var outcomeGroup = container.querySelector("#inline-outcome-group");
+        var consentGroup = container.querySelector("#inline-consent-group");
+        var outcomeSelect = form.querySelector("[name='outcome']");
+
+        function updateVisibility() {
+            var selected = form.querySelector("[name='interaction_type']:checked");
+            if (!selected) return;
+            var type = selected.value;
+            var isContact = CONTACT_TYPES.indexOf(type) !== -1;
+
+            // Show/hide outcome for contact types
+            if (outcomeGroup) {
+                outcomeGroup.hidden = !isContact;
+                if (!isContact && outcomeSelect) {
+                    outcomeSelect.value = "";
+                }
+            }
+
+            // Show/hide consent:
+            // - Always for session/home_visit
+            // - For contacts, only when outcome is "reached"
+            if (consentGroup) {
+                var outcome = outcomeSelect ? outcomeSelect.value : "";
+                var showConsent = CONSENT_TYPES.indexOf(type) !== -1 ||
+                    (isContact && outcome === "reached");
+                consentGroup.hidden = !showConsent;
+            }
+        }
+
+        radios.forEach(function (r) {
+            r.addEventListener("change", updateVisibility);
+        });
+        if (outcomeSelect) {
+            outcomeSelect.addEventListener("change", updateVisibility);
+        }
+        updateVisibility();
+    }
+
+    // Run after HTMX swaps the inline form into the page
+    document.body.addEventListener("htmx:afterSwap", function (event) {
+        var container = event.detail.target;
+        if (container && container.querySelector("#inline-quick-note-form")) {
+            setupInlineQuickNote(container);
+        }
+    });
+})();

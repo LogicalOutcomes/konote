@@ -117,15 +117,117 @@ class NoteViewsTest(TestCase):
         self.assertEqual(ProgressNote.objects.count(), 1)
 
     def test_quick_note_with_phone_interaction_type(self):
-        """Quick note stores the selected interaction type."""
+        """Quick note stores the selected interaction type and outcome."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
             f"/notes/client/{self.client_file.pk}/quick/",
-            {"notes_text": "Called about housing.", "interaction_type": "phone", "consent_confirmed": True},
+            {"notes_text": "Called about housing.", "interaction_type": "phone", "outcome": "reached"},
         )
         self.assertEqual(resp.status_code, 302)
         note = ProgressNote.objects.get(client_file=self.client_file)
         self.assertEqual(note.interaction_type, "phone")
+        self.assertEqual(note.outcome, "reached")
+
+    def test_quick_note_sms_interaction_type(self):
+        """SMS is a valid interaction type for quick notes."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/quick/",
+            {"notes_text": "Texted about appointment.", "interaction_type": "sms", "outcome": "reached"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(client_file=self.client_file)
+        self.assertEqual(note.interaction_type, "sms")
+
+    def test_quick_note_email_interaction_type(self):
+        """Email is a valid interaction type for quick notes."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/quick/",
+            {"notes_text": "Sent intake form.", "interaction_type": "email", "outcome": "reached"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(client_file=self.client_file)
+        self.assertEqual(note.interaction_type, "email")
+
+    def test_quick_note_phone_requires_outcome(self):
+        """Phone interaction type requires an outcome selection."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/quick/",
+            {"notes_text": "Called.", "interaction_type": "phone", "outcome": ""},
+        )
+        self.assertEqual(resp.status_code, 200)  # Re-renders form
+        self.assertEqual(ProgressNote.objects.count(), 0)
+
+    def test_quick_note_no_answer_notes_optional(self):
+        """When outcome is no_answer, notes_text can be blank (auto-filled)."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/quick/",
+            {"notes_text": "", "interaction_type": "phone", "outcome": "no_answer"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(client_file=self.client_file)
+        self.assertEqual(note.outcome, "no_answer")
+        # notes_text should be auto-filled from the outcome label
+        self.assertTrue(note.notes_text)
+
+    def test_quick_note_left_message_notes_optional(self):
+        """When outcome is left_message, notes_text can be blank."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/quick/",
+            {"notes_text": "", "interaction_type": "sms", "outcome": "left_message"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(client_file=self.client_file)
+        self.assertEqual(note.outcome, "left_message")
+
+    def test_quick_note_session_no_outcome_needed(self):
+        """Session interaction type does not require outcome."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/quick/",
+            {"notes_text": "Good session.", "interaction_type": "session"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(client_file=self.client_file)
+        self.assertEqual(note.outcome, "")
+
+    def test_inline_quick_note_get(self):
+        """HTMX inline quick note endpoint returns form partial."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(
+            f"/notes/client/{self.client_file.pk}/inline/",
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Log Contact")
+
+    def test_inline_quick_note_post(self):
+        """HTMX inline quick note creates a note and returns buttons."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/client/{self.client_file.pk}/inline/",
+            {"notes_text": "Quick phone call.", "interaction_type": "phone", "outcome": "reached"},
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(ProgressNote.objects.count(), 1)
+        note = ProgressNote.objects.first()
+        self.assertEqual(note.interaction_type, "phone")
+        self.assertEqual(note.outcome, "reached")
+
+    def test_inline_quick_note_buttons_mode(self):
+        """GET with ?mode=buttons returns the button partial."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(
+            f"/notes/client/{self.client_file.pk}/inline/?mode=buttons",
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Log Contact")
 
     def test_quick_note_invalid_interaction_type_rejected(self):
         """Invalid interaction type values are rejected by form validation."""

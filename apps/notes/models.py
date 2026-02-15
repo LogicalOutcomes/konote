@@ -13,6 +13,8 @@ class ProgressNoteTemplate(models.Model):
         ("session", _("One-on-One Session")),
         ("group", _("Group Session")),
         ("phone", _("Phone Call")),
+        ("sms", _("Text Message")),
+        ("email", _("Email")),
         ("collateral", _("Contact with Others")),
         ("home_visit", _("Home Visit")),
         ("admin", _("Admin / Paperwork")),
@@ -93,6 +95,12 @@ class ProgressNote(models.Model):
         ("default", _("Active")),
         ("cancelled", _("Cancelled")),
     ]
+    OUTCOME_CHOICES = [
+        ("", "---------"),
+        ("reached", _("Reached")),
+        ("left_message", _("Left Message")),
+        ("no_answer", _("No Answer")),
+    ]
 
     client_file = models.ForeignKey("clients.ClientFile", on_delete=models.CASCADE, related_name="progress_notes")
     note_type = models.CharField(max_length=20, choices=NOTE_TYPE_CHOICES)
@@ -101,6 +109,12 @@ class ProgressNote(models.Model):
         choices=INTERACTION_TYPE_CHOICES,
         default="session",
         db_index=True,
+    )
+    outcome = models.CharField(
+        max_length=20,
+        choices=OUTCOME_CHOICES,
+        blank=True,
+        default="",
     )
     status = models.CharField(max_length=20, default="default", choices=STATUS_CHOICES)
     status_reason = models.TextField(default="", blank=True)
