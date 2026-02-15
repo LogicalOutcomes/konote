@@ -4,6 +4,23 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Completed 2026-02-14
+
+### Moved from Recently Done (2026-02-15 session review)
+
+- [x] Clarified export report privacy wording — 2026-02-14 (EXP-PRIV2)
+- [x] Clarified Reviews menu scope as alert-cancellation recommendations only — 2026-02-14 (UX-REVIEW2)
+- [x] Refreshed calendar view usability and layout — 2026-02-14 (CAL-UI1)
+- [x] Improved meeting create form clarity for required date/time fields — 2026-02-14 (UX-MEET1)
+- [x] Fixed Schedule Meeting button visibility and contrast states — 2026-02-14 (UX-MEET3)
+- [x] Restricted Program Manager audit visibility to assigned-program scope — 2026-02-14 (PERM-AUD2)
+- [x] Removed Executive audit log access and route visibility — 2026-02-14 (PERM-AUD1)
+- [x] Limited Program Manager client-data export to program-scoped records — 2026-02-14 (EXP-SCOPE1)
+- [x] Added Other (please specify) support for Province/Territory selections — 2026-02-14 (FORM-PROV1)
+- [x] Added secondary email and phone fields for participant contact details — 2026-02-14 (UX-CONTACT2)
+
+---
+
 ## Completed 2026-02-11 to 2026-02-13
 
 ### Moved from Recently Done (2026-02-13 session review)
