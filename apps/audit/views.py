@@ -110,6 +110,7 @@ def audit_log_list(request):
         "action_filter": action,
         "resource_type": resource_type,
         "demo_filter": demo_filter,
+        "nav_active": "admin",
     }
     return render(request, "audit/log_list.html", context)
 
@@ -283,5 +284,6 @@ def program_audit_log(request, program_id):
         "date_to": date_to,
         "user_display": user_display,
         "action_filter": action,
+        "nav_active": "admin",
     }
     return render(request, "audit/program_audit_log.html", context)

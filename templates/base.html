@@ -117,9 +117,43 @@
                 </details>
             </li>
             {% else %}
+            {% has_permission "user.manage" as can_manage_users %}
+            {% has_permission "template.plan.manage" as can_manage_plan_templates %}
+            {% has_permission "template.note.manage" as can_manage_note_templates %}
+            {% has_permission "event_type.manage" as can_manage_event_types %}
+            {% has_permission "metric.manage" as can_manage_metrics %}
+            {% has_permission "registration.manage" as can_manage_registration %}
             {% has_permission "audit.view" as can_see_audit %}
-            {% if can_see_audit %}
-            <li><a href="/admin/audit/"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Audit Log" %}</a></li>
+            {% if can_manage_users or can_manage_plan_templates or can_manage_note_templates or can_manage_event_types or can_manage_metrics or can_manage_registration or can_see_audit %}
+            <li>
+                <details class="dropdown" role="list">
+                    <summary aria-haspopup="listbox"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Manage" %}</summary>
+                    <ul role="listbox">
+                        {% if can_manage_users %}
+                        <li><a href="/admin/users/">{% trans "Team Members" %}</a></li>
+                        {% endif %}
+                        {% if can_manage_plan_templates %}
+                        <li><a href="/admin/templates/">{% trans "Plan Templates" %}</a></li>
+                        {% endif %}
+                        {% if can_manage_note_templates %}
+                        <li><a href="/admin/settings/note-templates/">{% trans "Note Templates" %}</a></li>
+                        {% endif %}
+                        {% if can_manage_event_types %}
+                        <li><a href="/events/admin/types/">{% trans "Event Types" %}</a></li>
+                        {% endif %}
+                        {% if can_manage_metrics %}
+                        <li><a href="/plans/admin/metrics/">{{ term.metric_plural|default:"Metrics" }}</a></li>
+                        {% endif %}
+                        {% if can_manage_registration %}
+                        <li><a href="/admin/registration/">{% trans "Registration Links" %}</a></li>
+                        <li><a href="/admin/submissions/">{% trans "Pending Submissions" %}{% if pending_submissions_count %} <span class="badge badge-warning">{{ pending_submissions_count }}</span>{% endif %}</a></li>
+                        {% endif %}
+                        {% if can_see_audit %}
+                        <li><a href="/admin/audit/">{% trans "Audit Log" %}</a></li>
+                        {% endif %}
+                    </ul>
+                </details>
+            </li>
             {% endif %}
             {% endif %}
             {% include "_program_switcher.html" %}

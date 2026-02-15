@@ -46,6 +46,11 @@ class MetricDefinition(models.Model):
         ],
         help_text=_("Visibility in participant portal. Default: hidden until explicitly enabled."),
     )
+    owning_program = models.ForeignKey(
+        "programs.Program", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="metric_definitions",
+        help_text="Program that owns this metric. Null = global (admin-created or library).",
+    )
     status = models.CharField(
         max_length=20, default="active",
         choices=[("active", _("Active")), ("deactivated", _("Deactivated"))],
@@ -231,6 +236,11 @@ class PlanTemplate(models.Model):
 
     name = models.CharField(max_length=255)
     description = models.TextField(default="", blank=True)
+    owning_program = models.ForeignKey(
+        "programs.Program", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="plan_templates",
+        help_text="Program that owns this template. Null = global (admin-created).",
+    )
     status = models.CharField(
         max_length=20, default="active",
         choices=[("active", _("Active")), ("archived", _("Archived"))],

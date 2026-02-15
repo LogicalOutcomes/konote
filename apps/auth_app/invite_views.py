@@ -11,7 +11,7 @@ from django.utils.translation import gettext as _
 
 from apps.programs.models import UserProgramRole
 
-from .admin_views import admin_required
+from .decorators import admin_required
 from .forms import InviteAcceptForm, InviteCreateForm
 from .models import Invite
 

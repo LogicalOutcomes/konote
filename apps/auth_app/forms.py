@@ -20,7 +20,10 @@ class LoginForm(forms.Form):
 
 
 class UserCreateForm(forms.ModelForm):
-    """Form for creating a new user."""
+    """Form for creating a new user.
+
+    Pass requesting_user to restrict is_admin for non-admin users.
+    """
 
     password = forms.CharField(
         widget=forms.PasswordInput,
@@ -37,12 +40,22 @@ class UserCreateForm(forms.ModelForm):
         model = User
         fields = ["username", "display_name", "is_admin"]
 
+    def __init__(self, *args, requesting_user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._requesting_user = requesting_user
+        # Non-admin users cannot create admin accounts
+        if requesting_user and not requesting_user.is_admin:
+            del self.fields["is_admin"]
+
     def clean(self):
         cleaned = super().clean()
         pw = cleaned.get("password")
         pw2 = cleaned.get("password_confirm")
         if pw and pw2 and pw != pw2:
             self.add_error("password_confirm", _("Passwords do not match."))
+        # Server-side enforcement: non-admins cannot set is_admin
+        if self._requesting_user and not self._requesting_user.is_admin:
+            cleaned["is_admin"] = False
         return cleaned
 
     def save(self, commit=True):
@@ -56,7 +69,10 @@ class UserCreateForm(forms.ModelForm):
 
 
 class UserEditForm(forms.ModelForm):
-    """Form for editing an existing user."""
+    """Form for editing an existing user.
+
+    Pass requesting_user to restrict is_admin and is_active for non-admin users.
+    """
 
     email = forms.EmailField(required=False, label=_("Email"))
     new_password = forms.CharField(
@@ -71,10 +87,21 @@ class UserEditForm(forms.ModelForm):
         model = User
         fields = ["display_name", "is_admin", "is_active"]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, requesting_user=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self._requesting_user = requesting_user
         if self.instance and self.instance.pk:
             self.fields["email"].initial = self.instance.email
+        # Non-admin users cannot toggle admin status
+        if requesting_user and not requesting_user.is_admin:
+            del self.fields["is_admin"]
+
+    def clean(self):
+        cleaned = super().clean()
+        # Server-side enforcement: non-admins cannot set is_admin
+        if self._requesting_user and not self._requesting_user.is_admin:
+            cleaned["is_admin"] = False
+        return cleaned
 
     def save(self, commit=True):
         user = super().save(commit=False)

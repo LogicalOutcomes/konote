@@ -413,14 +413,39 @@ def target_metrics(request, target_id):
 
 
 # ---------------------------------------------------------------------------
-# Metric library (admin) — PLAN3
+# Metric library (admin + PM) — PLAN3
 # ---------------------------------------------------------------------------
 
+
+def _get_pm_program_ids_for_metrics(user):
+    """Return set of program IDs where the user is an active PM."""
+    return set(
+        UserProgramRole.objects.filter(
+            user=user, role="program_manager", status="active",
+        ).values_list("program_id", flat=True)
+    )
+
+
+def _can_edit_metric(user, metric):
+    """Check if the user can edit a metric definition."""
+    if user.is_admin:
+        return True
+    if metric.owning_program_id is None:
+        return False  # Global/library metrics are admin-only
+    return metric.owning_program_id in _get_pm_program_ids_for_metrics(user)
+
+
 @login_required
-@admin_required
+@requires_permission("metric.manage", allow_admin=True)
 def metric_library(request):
-    """Admin-only page listing all metric definitions by category."""
-    metrics = MetricDefinition.objects.all()
+    """List all metric definitions by category."""
+    if request.user.is_admin:
+        metrics = MetricDefinition.objects.all()
+    else:
+        pm_program_ids = _get_pm_program_ids_for_metrics(request.user)
+        metrics = MetricDefinition.objects.filter(
+            Q(owning_program_id__in=pm_program_ids) | Q(owning_program__isnull=True)
+        )
     metrics_by_category = {}
     for metric in metrics:
         cat = metric.get_category_display()
@@ -428,6 +453,7 @@ def metric_library(request):
 
     return render(request, "plans/metric_library.html", {
         "metrics_by_category": metrics_by_category,
+        "is_admin": request.user.is_admin,
     })
 
 
@@ -477,10 +503,14 @@ def metric_export(request):
 
 
 @login_required
-@admin_required
+@requires_permission("metric.manage", allow_admin=True)
 def metric_toggle(request, metric_id):
     """HTMX POST to toggle is_enabled on a metric definition."""
     metric = get_object_or_404(MetricDefinition, pk=metric_id)
+
+    if not _can_edit_metric(request.user, metric):
+        return HttpResponseForbidden(_("Access denied. You can only manage metrics in your programs."))
+
     if request.method == "POST":
         metric.is_enabled = not metric.is_enabled
         metric.save()
@@ -489,19 +519,24 @@ def metric_toggle(request, metric_id):
 
 
 @login_required
-@admin_required
+@requires_permission("metric.manage", allow_admin=True)
 def metric_create(request):
-    """Admin form to create a custom metric definition."""
+    """Create a custom metric definition."""
     if request.method == "POST":
-        form = MetricDefinitionForm(request.POST)
+        form = MetricDefinitionForm(request.POST, requesting_user=request.user)
         if form.is_valid():
             metric = form.save(commit=False)
             metric.is_library = False
+            # Auto-assign program for single-program PMs
+            if not request.user.is_admin and metric.owning_program_id is None:
+                pm_program_ids = _get_pm_program_ids_for_metrics(request.user)
+                if len(pm_program_ids) == 1:
+                    metric.owning_program_id = next(iter(pm_program_ids))
             metric.save()
             messages.success(request, _("Metric created."))
             return redirect("plans:metric_library")
     else:
-        form = MetricDefinitionForm()
+        form = MetricDefinitionForm(requesting_user=request.user)
 
     return render(request, "plans/metric_form.html", {
         "form": form,
@@ -510,18 +545,22 @@ def metric_create(request):
 
 
 @login_required
-@admin_required
+@requires_permission("metric.manage", allow_admin=True)
 def metric_edit(request, metric_id):
-    """Admin form to edit a metric definition."""
+    """Edit a metric definition."""
     metric = get_object_or_404(MetricDefinition, pk=metric_id)
+
+    if not _can_edit_metric(request.user, metric):
+        return HttpResponseForbidden(_("Access denied. You can only edit metrics in your programs."))
+
     if request.method == "POST":
-        form = MetricDefinitionForm(request.POST, instance=metric)
+        form = MetricDefinitionForm(request.POST, instance=metric, requesting_user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, _("Metric updated."))
             return redirect("plans:metric_library")
     else:
-        form = MetricDefinitionForm(instance=metric)
+        form = MetricDefinitionForm(instance=metric, requesting_user=request.user)
 
     return render(request, "plans/metric_form.html", {
         "form": form,

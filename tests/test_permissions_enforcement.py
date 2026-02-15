@@ -126,13 +126,20 @@ PERMISSION_URL_MAP = {
     "erasure.manage": {"url": "/erasure/"},
 
     # Admin keys — enforced by @admin_required, not permission matrix
-    "user.manage": {"url": "/admin/users/", "admin_only": True},
+    "user.manage": {"url": "/admin/users/"},  # Now uses @requires_permission with allow_admin=True
     "settings.manage": {"url": "/admin/settings/", "admin_only": True},
     "program.manage": {"url": "/programs/create/", "admin_only": True},
 
     # audit.view — lives under /admin/ but middleware exempts it;
     # enforced by @requires_permission("audit.view", allow_admin=True)
     "audit.view": {"url": "/admin/audit/"},
+
+    # PM admin features — enforced by @requires_permission with allow_admin=True
+    "template.plan.manage": {"url": "/admin/templates/"},
+    "template.note.manage": {"url": "/admin/settings/note-templates/"},
+    "event_type.manage": {"url": "/events/admin/types/"},
+    "metric.manage": {"url": "/plans/admin/metrics/"},
+    "registration.manage": {"url": "/admin/registration/"},
 }
 
 ALL_ROLES = ["receptionist", "staff", "program_manager", "executive"]
