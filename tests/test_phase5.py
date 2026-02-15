@@ -217,6 +217,92 @@ class EventCRUDTest(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class CrossProgramPermissionTest(TestCase):
+    """A user with mixed roles (PM in one program, staff in another) should
+    still be allowed to create events via their staff role, even when the
+    client is enrolled in both programs."""
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.user = User.objects.create_user(
+            username="mixed-role", password="pass", is_admin=False
+        )
+
+        # Two programs — user is PM in one, staff in the other
+        self.prog_pm = Program.objects.create(name="Employment", colour_hex="#3B82F6")
+        self.prog_staff = Program.objects.create(name="Kitchen", colour_hex="#10B981")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.prog_pm, role="program_manager"
+        )
+        UserProgramRole.objects.create(
+            user=self.user, program=self.prog_staff, role="staff"
+        )
+
+        # Client enrolled in BOTH programs
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Jordan"
+        self.client_file.last_name = "Rivera"
+        self.client_file.status = "active"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.prog_pm
+        )
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.prog_staff
+        )
+
+        self.event_type = EventType.objects.create(
+            name="Check-in", colour_hex="#10B981"
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_pm_staff_can_create_event_via_staff_program(self):
+        """PM role denies event.create, but staff role allows it.
+        The system should fall back to the staff program."""
+        self.http.login(username="mixed-role", password="pass")
+        resp = self.http.post(
+            f"/events/client/{self.client_file.pk}/create/",
+            {
+                "title": "Kitchen check-in",
+                "description": "Weekly check-in",
+                "start_timestamp": "2026-01-15 10:00",
+                "event_type": self.event_type.pk,
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(Event.objects.count(), 1)
+        event = Event.objects.first()
+        # Event should be attributed to the staff program, not the PM one
+        self.assertEqual(event.author_program, self.prog_staff)
+
+    def test_pm_only_client_still_denied(self):
+        """If client is only in the PM program (no staff fallback),
+        event.create should still be denied."""
+        client_pm_only = ClientFile()
+        client_pm_only.first_name = "Taylor"
+        client_pm_only.last_name = "Chen"
+        client_pm_only.status = "active"
+        client_pm_only.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=client_pm_only, program=self.prog_pm
+        )
+        self.http.login(username="mixed-role", password="pass")
+        resp = self.http.post(
+            f"/events/client/{client_pm_only.pk}/create/",
+            {
+                "title": "Should fail",
+                "start_timestamp": "2026-01-15 10:00",
+                "event_type": self.event_type.pk,
+            },
+        )
+        self.assertEqual(resp.status_code, 403)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class AlertCRUDTest(TestCase):
     databases = {"default", "audit"}
 
