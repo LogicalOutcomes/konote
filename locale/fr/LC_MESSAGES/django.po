@@ -11466,3 +11466,105 @@ msgstr ""
 "Les gestionnaires de programme et les membres de la direction peuvent "
 "consulter ici les ventilations des modèles. La gestion des modèles demeure "
 "réservée aux administrateurs dans Paramètres."
+
+msgid "Access denied. You can only edit event types in your programs."
+msgstr "Accès refusé. Vous ne pouvez modifier les types d'événements que dans vos programmes."
+
+msgid "Access denied. You can only edit metrics in your programs."
+msgstr "Accès refusé. Vous ne pouvez modifier les indicateurs que dans vos programmes."
+
+msgid "Access denied. You can only edit templates in your programs."
+msgstr "Accès refusé. Vous ne pouvez modifier les modèles que dans vos programmes."
+
+msgid "Access denied. You can only manage metrics in your programs."
+msgstr "Accès refusé. Vous ne pouvez gérer les indicateurs que dans vos programmes."
+
+msgid ""
+"Access denied. You can only manage registration links in your programs."
+msgstr ""
+"Accès refusé. Vous ne pouvez gérer les liens d'inscription que dans vos "
+"programmes."
+
+msgid "Access denied. You can only manage roles in your programs."
+msgstr "Accès refusé. Vous ne pouvez gérer les rôles que dans vos programmes."
+
+msgid "Access denied. You can only manage users in your programs."
+msgstr "Accès refusé. Vous ne pouvez gérer les utilisateurs que dans vos programmes."
+
+msgid "Approve or reject staff recommendations to cancel safety alerts."
+msgstr "Approuver ou rejeter les recommandations du personnel pour annuler les alertes de sécurité."
+
+msgid "Author (the staff member who recorded the value)"
+msgstr "Auteur (le membre du personnel qui a enregistré la valeur)"
+
+msgid "Client Record ID (an internal number — not the participant's name)"
+msgstr "Identifiant du dossier client (un numéro interne — pas le nom du participant)"
+
+msgid "Data contents"
+msgstr "Contenu des données"
+
+msgid "Date of Service"
+msgstr "Date de service"
+
+msgid ""
+"Each row in the exported file represents one metric value recorded for one "
+"participant. The columns are:"
+msgstr ""
+"Chaque ligne du fichier exporté représente une valeur d'indicateur "
+"enregistrée pour un participant. Les colonnes sont :"
+
+msgid ""
+"Handle the file according to your organisation's data protection policies. "
+"All downloads are logged for audit purposes."
+msgstr ""
+"Traitez le fichier conformément aux politiques de protection des données de "
+"votre organisation. Tous les téléchargements sont consignés à des fins de "
+"vérification."
+
+msgid ""
+"If demographic grouping is selected, an additional column will show the "
+"group label (e.g. age range) — not the underlying birth date or field value."
+msgstr ""
+"Si le regroupement démographique est sélectionné, une colonne "
+"supplémentaire affichera l'étiquette du groupe (p. ex. tranche d'âge) — pas "
+"la date de naissance ou la valeur du champ sous-jacent."
+
+msgid "Only administrators can deactivate admin accounts."
+msgstr "Seuls les administrateurs peuvent désactiver les comptes administrateurs."
+
+msgid "Pending Alert Approvals"
+msgstr "Approbations d'alertes en attente"
+
+msgid "Personal information notice"
+msgstr "Avis relatif aux renseignements personnels"
+
+msgid "Team Members"
+msgstr "Membres de l'équipe"
+
+msgid ""
+"This export contains client record IDs, metric values, dates of service, and"
+" staff names."
+msgstr ""
+"Cette exportation contient les identifiants des dossiers clients, les "
+"valeurs des indicateurs, les dates de service et les noms du personnel."
+
+msgid ""
+"This export contains summary statistics only (averages, counts, minimums, "
+"maximums). No participant names, record IDs, or individual data are "
+"included."
+msgstr ""
+"Cette exportation contient uniquement des statistiques sommaires (moyennes, "
+"totaux, minimums, maximums). Aucun nom de participant, identifiant de "
+"dossier ou donnée individuelle n'est inclus."
+
+msgid "What This Export Contains"
+msgstr "Contenu de cette exportation"
+
+msgid "What this export contains"
+msgstr "Contenu de cette exportation"
+
+msgid "What's in this file"
+msgstr "Contenu de ce fichier"
+
+msgid "You can only assign roles in your own programs."
+msgstr "Vous ne pouvez attribuer des rôles que dans vos propres programmes."
