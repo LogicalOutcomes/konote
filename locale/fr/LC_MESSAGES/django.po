@@ -667,8 +667,10 @@ msgstr ""
 msgid "No activity recorded yet."
 msgstr "Aucune activité enregistrée pour le moment."
 
-msgid "To add a note, use the Actions menu above or the Notes tab."
-msgstr "Pour ajouter une note, utilisez le menu Actions ci-dessus ou l'onglet Notes."
+msgid "To add a note, use the + New menu above or the Notes tab."
+msgstr ""
+"Pour ajouter une note, utilisez le menu + Nouveau ci-dessus ou l'onglet "
+"Notes."
 
 msgid "Filter history"
 msgstr "Filtrer l'historique"
@@ -772,6 +774,15 @@ msgstr ""
 
 msgid "Actions"
 msgstr "Actions"
+
+msgid "New item menu"
+msgstr "Menu nouvel élément"
+
+msgid "Add note"
+msgstr "Ajouter une note"
+
+msgid "Use the + New menu above to add a note."
+msgstr "Utilisez le menu + Nouveau ci-dessus pour ajouter une note."
 
 #: templates/plans/_target.html
 msgid "None"
@@ -11950,8 +11961,75 @@ msgstr "Aucun — utiliser les catégories d'âge par défaut"
 msgid "None — use grouping below"
 msgstr "Aucun — utiliser le regroupement ci-dessous"
 
-msgid "Your admin sets these up to match a specific funder's reporting format (e.g., age brackets, employment categories). Pick one to format your export the way that funder expects. You can preview what each template includes below."
-msgstr "Votre administrateur configure ces modèles pour correspondre au format de rapport d'un bailleur de fonds spécifique (p. ex., tranches d'âge, catégories d'emploi). Choisissez-en un pour formater votre exportation selon les attentes du bailleur. Vous pouvez prévisualiser le contenu de chaque modèle ci-dessous."
+msgid ""
+"Your admin sets these up to match a specific funder's reporting format "
+"(e.g., age brackets, employment categories). Pick one to format your export "
+"the way that funder expects. You can preview what each template includes "
+"below."
+msgstr ""
+"Votre administrateur configure ces modèles pour correspondre au format de "
+"rapport d'un bailleur de fonds spécifique (p. ex., tranches d'âge, "
+"catégories d'emploi). Choisissez-en un pour formater votre exportation selon"
+" les attentes du bailleur. Vous pouvez prévisualiser le contenu de chaque "
+"modèle ci-dessous."
 
-msgid "Your admin sets these up to match a specific funder's reporting format (e.g., age brackets, employment categories). Pick one to format your report the way that funder expects. You can preview what each template includes below."
-msgstr "Votre administrateur configure ces modèles pour correspondre au format de rapport d'un bailleur de fonds spécifique (p. ex., tranches d'âge, catégories d'emploi). Choisissez-en un pour formater votre rapport selon les attentes du bailleur. Vous pouvez prévisualiser le contenu de chaque modèle ci-dessous."
+msgid ""
+"Your admin sets these up to match a specific funder's reporting format "
+"(e.g., age brackets, employment categories). Pick one to format your report "
+"the way that funder expects. You can preview what each template includes "
+"below."
+msgstr ""
+"Votre administrateur configure ces modèles pour correspondre au format de "
+"rapport d'un bailleur de fonds spécifique (p. ex., tranches d'âge, "
+"catégories d'emploi). Choisissez-en un pour formater votre rapport selon les"
+" attentes du bailleur. Vous pouvez prévisualiser le contenu de chaque modèle"
+" ci-dessous."
+
+msgid "%(term)s program enrolment updated."
+msgstr "Inscription au programme de %(term)s mise à jour."
+
+msgid "Add or remove program enrolments for this participant."
+msgstr "Ajouter ou retirer des inscriptions de programme pour ce participant."
+
+msgid "Current Enrolments"
+msgstr "Inscriptions actuelles"
+
+msgid "French definition (displayed when language is French)"
+msgstr "Définition en français (affichée lorsque la langue est le français)"
+
+msgid "French description (displayed when language is French)"
+msgstr "Description en français (affichée lorsque la langue est le français)"
+
+msgid "French portal description (displayed when language is French)"
+msgstr "Description du portail en français (affichée lorsque la langue est le français)"
+
+msgid "French unit label (e.g., 'pointage', 'jours', '%"
+msgstr "Libellé de l'unité en français (p. ex., « pointage », « jours », « %"
+
+msgid "Participant consents to sharing clinical information across programs"
+msgstr "Le participant consent au partage de renseignements cliniques entre les programmes"
+
+msgid "Reason for transfer (optional)"
+msgstr "Raison du transfert (facultatif)"
+
+msgid ""
+"Select which programs this participant should be enrolled in. Unchecking a "
+"program will unenrol them."
+msgstr ""
+"Sélectionnez les programmes auxquels ce participant doit être inscrit. "
+"Décocher un programme le désinscrit."
+
+msgid "This will be recorded in the audit log."
+msgstr "Ceci sera enregistré dans le journal d'audit."
+
+msgid "Transfer"
+msgstr "Transfert"
+
+msgid "Transfer participant between programs"
+msgstr "Transférer le participant entre les programmes"
+
+msgid "Why is this participant being added to or removed from a program?"
+msgstr "Pourquoi ce participant est-il ajouté ou retiré d'un programme?"
+
+msgid "since"
+msgstr "depuis"

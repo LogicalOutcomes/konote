@@ -55,13 +55,13 @@
 
 <!-- Wayfinding banner -->
 <p class="notice" role="status">
-    <small>{% trans "To add a note, use the Actions menu above or the Notes tab." %}</small>
+    <small>{% trans "To add a note, use the + New menu above or the Notes tab." %}</small>
 </p>
 
 <!-- History feed with filters -->
 <h2>{% trans "History" %}</h2>
 <div id="timeline-section">
-    <div class="filter-bar" role="group" aria-label="{% trans 'Filter history' %}">
+    <div class="filter-bar" role="toolbar" aria-label="{% trans 'Filter history' %}">
         <button class="filter-btn{% if active_filter == 'all' or not active_filter %} filter-active{% endif %}"
                 aria-pressed="{% if active_filter == 'all' or not active_filter %}true{% else %}false{% endif %}"
                 hx-get="{% url 'events:event_list' client_id=client.pk %}?filter=all"

@@ -916,6 +916,61 @@ output.form-output {
     background: var(--kn-primary-subtle, #e8f0fe);
 }
 
+/* ---- Chip buttons (quick-pick pills — shared by meeting picker & follow-up picker) ---- */
+.mp-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--kn-space-sm);
+    margin-bottom: var(--kn-space-sm);
+}
+.mp-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--kn-space-xs);
+    padding: var(--kn-space-sm) var(--kn-space-base);
+    border: 1.5px solid var(--kn-border);
+    border-radius: 999px;
+    background: var(--kn-card-bg);
+    color: var(--kn-text);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--kn-transition);
+    min-height: 44px;  /* WCAG 2.5.8 touch target */
+    white-space: nowrap;
+    font-family: inherit;
+    line-height: 1.4;
+}
+.mp-chip:hover {
+    border-color: var(--kn-primary);
+    background: var(--kn-primary-subtle);
+}
+.mp-chip:focus-visible {
+    outline: 3px solid var(--kn-primary);
+    outline-offset: 2px;
+}
+.mp-chip[aria-checked="true"] {
+    background: var(--kn-primary);
+    color: var(--kn-text-inverse);
+    border-color: var(--kn-primary);
+}
+.mp-chip[aria-checked="true"]:hover {
+    background: var(--kn-primary-hover);
+}
+.mp-chip-sub {
+    font-weight: 400;
+    opacity: 0.85;
+    font-size: 0.8125rem;
+}
+@media (prefers-color-scheme: dark) {
+    .mp-chip {
+        border-color: rgba(255, 255, 255, 0.12);
+    }
+    .mp-chip:hover {
+        border-color: var(--kn-primary);
+    }
+}
+
 /* Focus management for expanded note details */
 .note-detail-content:focus {
     outline: none;
@@ -1082,8 +1137,8 @@ details.search-filters-panel[open] summary {
     line-height: 1.5;
 }
 .filter-btn:hover {
-    border-color: var(--kn-primary, #0d7377);
-    color: var(--kn-primary, #0d7377);
+    border-color: var(--kn-primary-active, var(--kn-primary, #0d7377));
+    color: var(--kn-primary-active, var(--kn-primary, #0d7377));
 }
 .filter-btn[aria-pressed="true"],
 .filter-btn.filter-active {
@@ -1352,6 +1407,22 @@ button.outline.secondary:hover {
     .demo-btn-portal:hover {
         color: #fff;
     }
+}
+
+/* ---- Note list header (contextual shortcut) ---- */
+.note-list-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: var(--kn-space-sm);
+}
+.note-list-header .add-link {
+    font-size: 0.8125rem;
+    color: var(--kn-primary);
+    text-decoration: none;
+}
+.note-list-header .add-link:hover,
+.note-list-header .add-link:focus-visible {
+    text-decoration: underline;
 }
 
 /* ---- Empty states ---- */
