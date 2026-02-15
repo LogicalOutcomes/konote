@@ -16,7 +16,10 @@
     <div class="client-actions" role="toolbar" aria-label="{% trans 'Client actions' %}">
         {% if not is_receptionist and not client.is_anonymised %}
         <a href="{% url 'notes:note_create' client_id=client.pk %}" role="button" aria-label="{% trans 'Add progress note for' %} {{ client.display_name }} {{ client.last_name }}">{% trans "Add Note" %}</a>
+        {% has_permission "client.edit" as can_edit_client %}
+        {% if can_edit_client %}
         <a href="{% url 'clients:client_edit' client_id=client.pk %}" role="button" class="outline" aria-label="{% trans 'Edit participant record for' %} {{ client.display_name }} {{ client.last_name }}">{% trans "Edit" %}</a>
+        {% endif %}
         {% endif %}
         {% if not is_receptionist and document_storage.is_configured and document_folder_url %}
         <a href="{{ document_folder_url }}" role="button" class="outline secondary" target="_blank" rel="noopener noreferrer" aria-label="{% if document_storage.provider == 'google_drive' %}{% trans 'Search documents for' %}{% else %}{% trans 'Open documents folder for' %}{% endif %} {{ client.display_name }} {{ client.last_name }}">{% trans "Documents" %}</a>

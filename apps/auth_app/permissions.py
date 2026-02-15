@@ -212,7 +212,7 @@ PERMISSIONS = {
                                       # emergency contacts, staff alerts. NOT medications.
         "client.view_medications": ALLOW,  # Same access pattern as clinical data
         "client.view_clinical": ALLOW,  # Phase 3: GATED (just-in-time with reason)
-        "client.edit": DENY,  # Phase 3: managers don't edit client records
+        "client.edit": SCOPED,  # Same as staff until Phase 3
         "client.create": SCOPED,  # Intake in smaller programs. Enforced by @requires_permission
         "client.edit_contact": DENY,  # PMs don't edit individual contact info
 
