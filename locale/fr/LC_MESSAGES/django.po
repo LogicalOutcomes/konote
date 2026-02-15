@@ -11914,3 +11914,18 @@ msgstr "Vos commentaires"
 
 msgid "what happens next"
 msgstr "ce qui se passe ensuite"
+
+msgid "Funder reporting template"
+msgstr "Modèle de rapport pour le bailleur de fonds"
+
+msgid "None — use default age categories"
+msgstr "Aucun — utiliser les catégories d'âge par défaut"
+
+msgid "None — use grouping below"
+msgstr "Aucun — utiliser le regroupement ci-dessous"
+
+msgid "Your admin sets these up to match a specific funder's reporting format (e.g., age brackets, employment categories). Pick one to format your export the way that funder expects. You can preview what each template includes below."
+msgstr "Votre administrateur configure ces modèles pour correspondre au format de rapport d'un bailleur de fonds spécifique (p. ex., tranches d'âge, catégories d'emploi). Choisissez-en un pour formater votre exportation selon les attentes du bailleur. Vous pouvez prévisualiser le contenu de chaque modèle ci-dessous."
+
+msgid "Your admin sets these up to match a specific funder's reporting format (e.g., age brackets, employment categories). Pick one to format your report the way that funder expects. You can preview what each template includes below."
+msgstr "Votre administrateur configure ces modèles pour correspondre au format de rapport d'un bailleur de fonds spécifique (p. ex., tranches d'âge, catégories d'emploi). Choisissez-en un pour formater votre rapport selon les attentes du bailleur. Vous pouvez prévisualiser le contenu de chaque modèle ci-dessous."

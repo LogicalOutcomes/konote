@@ -315,12 +315,20 @@ def export_form(request):
     is_aggregate = is_aggregate_only_user(request.user)
     is_pm_export = not is_aggregate and not request.user.is_admin
 
+    def _template_previews(bound_form):
+        return (
+            bound_form.fields["report_template"].queryset
+            .prefetch_related("breakdowns__custom_field")
+            .order_by("name")
+        )
+
     if request.method != "POST":
         form = MetricExportForm(user=request.user)
         return render(request, "reports/export_form.html", {
             "form": form,
             "is_aggregate_only": is_aggregate,
             "is_pm_export": is_pm_export,
+            "template_preview_items": _template_previews(form),
         })
 
     form = MetricExportForm(request.POST, user=request.user)
@@ -329,6 +337,7 @@ def export_form(request):
             "form": form,
             "is_aggregate_only": is_aggregate,
             "is_pm_export": is_pm_export,
+            "template_preview_items": _template_previews(form),
         })
 
     program = form.cleaned_data["program"]

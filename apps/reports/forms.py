@@ -111,12 +111,13 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
     report_template = forms.ModelChoiceField(
         queryset=ReportTemplate.objects.none(),
         required=False,
-        empty_label=_("No reporting template"),
-        label=_("Reporting template"),
+        empty_label=_("None — use grouping below"),
+        label=_("Funder reporting template"),
         help_text=_(
-            "Reporting templates define the demographic categories your funder requires "
-            "(e.g., age groups, employment status). Select one to format your report "
-            "to match a funder's requirements, or leave blank to use Grouping above."
+            "Your admin sets these up to match a specific funder's reporting format "
+            "(e.g., age brackets, employment categories). Pick one to format your "
+            "export the way that funder expects. You can preview what each template "
+            "includes below."
         ),
     )
 
@@ -233,12 +234,13 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
     report_template = forms.ModelChoiceField(
         queryset=ReportTemplate.objects.none(),
         required=False,
-        empty_label=_("Default age categories"),
-        label=_("Reporting template"),
+        empty_label=_("None — use default age categories"),
+        label=_("Funder reporting template"),
         help_text=_(
-            "Reporting templates define the demographic categories your funder requires. "
-            "Select one to match a specific funder's format, or leave blank for "
-            "the default age groupings."
+            "Your admin sets these up to match a specific funder's reporting format "
+            "(e.g., age brackets, employment categories). Pick one to format your "
+            "report the way that funder expects. You can preview what each template "
+            "includes below."
         ),
     )
 
