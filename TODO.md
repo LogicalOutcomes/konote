@@ -66,14 +66,13 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Added compose email feature with CASL consent, preview, and audit logging — 2026-02-15 (MSG-EMAIL1)
+- [x] Replaced meeting date/time picker with accessible chip-based UI — 2026-02-15 (UX-MEET2)
+- [x] Renamed Reviews to Approvals and streamlined recommendation queue — 2026-02-15 (UX-REVIEW3)
+- [x] Hidden stats row from Front Desk on home dashboard — 2026-02-15 (UX-DASH1)
+- [x] Reordered contact fields and fixed select_other naming collisions — 2026-02-15 (DATA-FIX1)
+- [x] Added Documents section to help page — 2026-02-15 (HELP-DOC1)
+- [x] Fixed cross-program permission denial for mixed-role users — 2026-02-15 (PERM-FIX1)
+- [x] Generated missing migrations for Communication and AuditLog models — 2026-02-15 (MIG-FIX1)
 - [x] Translated 25 new strings and fixed plural counting in translate_strings — 2026-02-15 (I18N-ALERT1)
 - [x] Clarified export report privacy wording — 2026-02-14 (EXP-PRIV2)
-- [x] Clarified Reviews menu scope as alert-cancellation recommendations only — 2026-02-14 (UX-REVIEW2)
-- [x] Refreshed calendar view usability and layout — 2026-02-14 (CAL-UI1)
-- [x] Improved meeting create form clarity for required date/time fields — 2026-02-14 (UX-MEET1)
-- [x] Fixed Schedule Meeting button visibility and contrast states — 2026-02-14 (UX-MEET3)
-- [x] Restricted Program Manager audit visibility to assigned-program scope — 2026-02-14 (PERM-AUD2)
-- [x] Removed Executive audit log access and route visibility — 2026-02-14 (PERM-AUD1)
-- [x] Limited Program Manager client-data export to program-scoped records — 2026-02-14 (EXP-SCOPE1)
-- [x] Added Other (please specify) support for Province/Territory selections — 2026-02-14 (FORM-PROV1)
-- [x] Added secondary email and phone fields for participant contact details — 2026-02-14 (UX-CONTACT2)
