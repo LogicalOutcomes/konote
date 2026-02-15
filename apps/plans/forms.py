@@ -91,11 +91,14 @@ class MetricAssignmentForm(forms.Form):
 
 
 class MetricDefinitionForm(forms.ModelForm):
-    """Form for creating/editing a metric definition."""
+    """Form for creating/editing a metric definition.
+
+    Pass requesting_user to scope owning_program choices for PMs.
+    """
 
     class Meta:
         model = MetricDefinition
-        fields = ["name", "definition", "category", "min_value", "max_value", "unit"]
+        fields = ["name", "definition", "category", "min_value", "max_value", "unit", "owning_program"]
         widgets = {
             "name": forms.TextInput(attrs={"placeholder": _("Metric name")}),
             "definition": forms.Textarea(attrs={"rows": 4, "placeholder": _("What this metric measures and how to score it")}),
@@ -103,6 +106,21 @@ class MetricDefinitionForm(forms.ModelForm):
             "max_value": forms.NumberInput(attrs={"step": "any"}),
             "unit": forms.TextInput(attrs={"placeholder": _("e.g., score, days, %")}),
         }
+
+    def __init__(self, *args, requesting_user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if requesting_user and not requesting_user.is_admin:
+            from apps.programs.models import Program, UserProgramRole
+            pm_program_ids = set(
+                UserProgramRole.objects.filter(
+                    user=requesting_user, role="program_manager", status="active",
+                ).values_list("program_id", flat=True)
+            )
+            self.fields["owning_program"].queryset = Program.objects.filter(
+                pk__in=pm_program_ids, status="active",
+            )
+            self.fields["owning_program"].empty_label = None
+            self.fields["owning_program"].required = True
 
 
 class MetricImportForm(forms.Form):

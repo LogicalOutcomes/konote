@@ -58,45 +58,82 @@ def _get_program_from_recommendation(request, recommendation_id, **kwargs):
 
 
 # ---------------------------------------------------------------------------
-# Event Type Admin (admin-only)
+# Event Type Admin (admin + PM access)
 # ---------------------------------------------------------------------------
 
+
+def _get_pm_program_ids(user):
+    """Return set of program IDs where the user is an active PM."""
+    return set(
+        UserProgramRole.objects.filter(
+            user=user, role="program_manager", status="active",
+        ).values_list("program_id", flat=True)
+    )
+
+
+def _can_edit_event_type(user, event_type):
+    """Check if the user can edit an event type."""
+    if user.is_admin:
+        return True
+    if event_type.owning_program_id is None:
+        return False
+    return event_type.owning_program_id in _get_pm_program_ids(user)
+
+
 @login_required
-@admin_required
+@requires_permission("event_type.manage", allow_admin=True)
 def event_type_list(request):
-    """List all event types (admin only)."""
-    event_types = EventType.objects.all()
-    return render(request, "events/event_type_list.html", {"event_types": event_types})
+    """List event types visible to the user."""
+    if request.user.is_admin:
+        event_types = EventType.objects.all()
+    else:
+        pm_program_ids = _get_pm_program_ids(request.user)
+        event_types = EventType.objects.filter(
+            Q(owning_program_id__in=pm_program_ids) | Q(owning_program__isnull=True)
+        )
+    return render(request, "events/event_type_list.html", {
+        "event_types": event_types,
+        "is_admin": request.user.is_admin,
+    })
 
 
 @login_required
-@admin_required
+@requires_permission("event_type.manage", allow_admin=True)
 def event_type_create(request):
-    """Create a new event type (admin only)."""
+    """Create a new event type."""
     if request.method == "POST":
-        form = EventTypeForm(request.POST)
+        form = EventTypeForm(request.POST, requesting_user=request.user)
         if form.is_valid():
-            form.save()
+            event_type = form.save(commit=False)
+            if not request.user.is_admin and event_type.owning_program_id is None:
+                pm_program_ids = _get_pm_program_ids(request.user)
+                if len(pm_program_ids) == 1:
+                    event_type.owning_program_id = next(iter(pm_program_ids))
+            event_type.save()
             messages.success(request, _("Event type created."))
             return redirect("events:event_type_list")
     else:
-        form = EventTypeForm()
+        form = EventTypeForm(requesting_user=request.user)
     return render(request, "events/event_type_form.html", {"form": form, "editing": False})
 
 
 @login_required
-@admin_required
+@requires_permission("event_type.manage", allow_admin=True)
 def event_type_edit(request, type_id):
-    """Edit an event type (admin only)."""
+    """Edit an event type."""
     event_type = get_object_or_404(EventType, pk=type_id)
+
+    if not _can_edit_event_type(request.user, event_type):
+        return HttpResponseForbidden(_("Access denied. You can only edit event types in your programs."))
+
     if request.method == "POST":
-        form = EventTypeForm(request.POST, instance=event_type)
+        form = EventTypeForm(request.POST, instance=event_type, requesting_user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, _("Event type updated."))
             return redirect("events:event_type_list")
     else:
-        form = EventTypeForm(instance=event_type)
+        form = EventTypeForm(instance=event_type, requesting_user=request.user)
     return render(request, "events/event_type_form.html", {
         "form": form,
         "editing": True,
@@ -384,11 +421,11 @@ def alert_recommendation_queue(request):
     ).order_by("-created_at")
 
     breadcrumbs = [
-        {"url": "", "label": _("Reviews")},
+        {"url": "", "label": _("Approvals")},
     ]
     return render(request, "events/alert_recommendation_queue.html", {
         "pending_recommendations": pending,
-        "nav_active": "recommendations",
+        "nav_active": "manage",
         "breadcrumbs": breadcrumbs,
     })
 

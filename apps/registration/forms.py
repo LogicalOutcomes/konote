@@ -6,13 +6,16 @@ from apps.clients.models import CustomFieldDefinition, CustomFieldGroup
 from apps.clients.validators import (
     normalize_phone_number, validate_phone_number,
 )
-from apps.programs.models import Program
+from apps.programs.models import Program, UserProgramRole
 
 from .models import RegistrationLink
 
 
 class RegistrationLinkForm(forms.ModelForm):
-    """Form for creating/editing registration links."""
+    """Form for creating/editing registration links.
+
+    Pass requesting_user to scope program choices for PMs.
+    """
 
     class Meta:
         model = RegistrationLink
@@ -42,14 +45,22 @@ class RegistrationLinkForm(forms.ModelForm):
             "closes_at": "Leave blank for no deadline.",
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, requesting_user=None, **kwargs):
         super().__init__(*args, **kwargs)
         # Only show active, non-confidential programs — registration links
         # cannot be created for confidential programs (safety risk: partner
         # discovers DV intake URL in browser history).
-        self.fields["program"].queryset = Program.objects.filter(
-            status="active", is_confidential=False,
-        )
+        base_qs = Program.objects.filter(status="active", is_confidential=False)
+
+        if requesting_user and not requesting_user.is_admin:
+            pm_program_ids = set(
+                UserProgramRole.objects.filter(
+                    user=requesting_user, role="program_manager", status="active",
+                ).values_list("program_id", flat=True)
+            )
+            base_qs = base_qs.filter(pk__in=pm_program_ids)
+
+        self.fields["program"].queryset = base_qs
         # Only show active field groups
         self.fields["field_groups"].queryset = CustomFieldGroup.objects.filter(status="active")
 

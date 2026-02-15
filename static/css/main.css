@@ -41,6 +41,9 @@
     outline: 2px solid var(--kn-primary);
     outline-offset: 4px;
 }
+#main-content:focus:not(:focus-visible) {
+    outline: none;
+}
 
 /* ---- Demo mode banner ---- */
 .demo-banner {

@@ -1,18 +1,25 @@
-"""User management views — admin only."""
+"""User management views — admin and PM access.
+
+Admins: full access to all users.
+PMs with user.manage: SCOPED: manage staff/receptionist in their own programs.
+Invites and impersonation remain admin-only (separate views).
+"""
 import logging
 
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 
+from apps.programs.access import get_user_program_ids
 from apps.programs.models import Program, UserProgramRole
 
-from .decorators import admin_required
+from .decorators import admin_required, requires_permission
 from .forms import UserCreateForm, UserEditForm, UserProgramRoleForm
 from .models import User
 
@@ -22,10 +29,43 @@ from .models import User
 _PM_BLOCKED_ROLE_ASSIGNMENTS = {"program_manager", "executive"}
 
 
+def _get_pm_program_ids(user):
+    """Return set of program IDs where the user is an active PM."""
+    return set(
+        UserProgramRole.objects.filter(
+            user=user, role="program_manager", status="active",
+        ).values_list("program_id", flat=True)
+    )
+
+
+def _user_in_pm_programs(pm_user, target_user):
+    """Check if the target user shares at least one program with the PM."""
+    pm_programs = _get_pm_program_ids(pm_user)
+    target_programs = set(
+        UserProgramRole.objects.filter(
+            user=target_user, status="active",
+        ).values_list("program_id", flat=True)
+    )
+    return bool(pm_programs & target_programs)
+
+
 @login_required
-@admin_required
+@requires_permission("user.manage", allow_admin=True)
 def user_list(request):
-    users = User.objects.all().order_by("-is_admin", "display_name")
+    if request.user.is_admin:
+        users = User.objects.all().order_by("-is_admin", "display_name")
+    else:
+        # PMs see only users who share a program with them
+        pm_program_ids = _get_pm_program_ids(request.user)
+        user_ids_in_programs = set(
+            UserProgramRole.objects.filter(
+                program_id__in=pm_program_ids, status="active",
+            ).values_list("user_id", flat=True)
+        )
+        users = User.objects.filter(
+            pk__in=user_ids_in_programs,
+        ).order_by("-is_admin", "display_name")
+
     # Prefetch program roles for display
     user_roles = {}
     for role in UserProgramRole.objects.filter(
@@ -41,43 +81,57 @@ def user_list(request):
 
 
 @login_required
-@admin_required
+@requires_permission("user.manage", allow_admin=True)
 def user_create(request):
     if request.method == "POST":
-        form = UserCreateForm(request.POST)
+        form = UserCreateForm(request.POST, requesting_user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, _("User created."))
             return redirect("admin_users:user_list")
     else:
-        form = UserCreateForm()
+        form = UserCreateForm(requesting_user=request.user)
     return render(request, "auth_app/user_form.html", {"form": form, "editing": False})
 
 
 @login_required
-@admin_required
+@requires_permission("user.manage", allow_admin=True)
 def user_edit(request, user_id):
     user = get_object_or_404(User, pk=user_id)
+
+    # PMs can only edit users who share a program with them
+    if not request.user.is_admin:
+        if not _user_in_pm_programs(request.user, user):
+            return HttpResponseForbidden(_("Access denied. You can only manage users in your programs."))
+
     if request.method == "POST":
-        form = UserEditForm(request.POST, instance=user)
+        form = UserEditForm(request.POST, instance=user, requesting_user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, _("User updated."))
             return redirect("admin_users:user_list")
     else:
-        form = UserEditForm(instance=user)
+        form = UserEditForm(instance=user, requesting_user=request.user)
     return render(request, "auth_app/user_form.html", {
         "form": form, "editing": True, "edit_user": user,
     })
 
 
 @login_required
-@admin_required
+@requires_permission("user.manage", allow_admin=True)
 def user_deactivate(request, user_id):
     user = get_object_or_404(User, pk=user_id)
+
+    # PMs can only deactivate users in their programs
+    if not request.user.is_admin:
+        if not _user_in_pm_programs(request.user, user):
+            return HttpResponseForbidden(_("Access denied. You can only manage users in your programs."))
+
     if request.method == "POST":
         if user == request.user:
             messages.error(request, _("You cannot deactivate your own account."))
+        elif user.is_admin and not request.user.is_admin:
+            messages.error(request, _("Only administrators can deactivate admin accounts."))
         else:
             user.is_active = False
             user.save()
@@ -141,10 +195,16 @@ def impersonate_user(request, user_id):
 
 
 @login_required
-@admin_required
+@requires_permission("user.manage", allow_admin=True)
 def user_roles(request, user_id):
     """Manage a user's program role assignments."""
     edit_user = get_object_or_404(User, pk=user_id)
+
+    # PMs can only manage roles for users in their programs
+    if not request.user.is_admin:
+        if not _user_in_pm_programs(request.user, edit_user):
+            return HttpResponseForbidden(_("Access denied. You can only manage users in your programs."))
+
     roles = (
         UserProgramRole.objects.filter(user=edit_user, status="active")
         .select_related("program")
@@ -154,28 +214,43 @@ def user_roles(request, user_id):
     form = UserProgramRoleForm()
     # Exclude programs the user is already assigned to
     assigned_program_ids = roles.values_list("program_id", flat=True)
-    form.fields["program"].queryset = Program.objects.filter(
-        status="active",
-    ).exclude(pk__in=assigned_program_ids)
+
+    if request.user.is_admin:
+        available_programs = Program.objects.filter(
+            status="active",
+        ).exclude(pk__in=assigned_program_ids)
+    else:
+        # PMs can only assign to their own programs
+        pm_program_ids = _get_pm_program_ids(request.user)
+        available_programs = Program.objects.filter(
+            status="active", pk__in=pm_program_ids,
+        ).exclude(pk__in=assigned_program_ids)
+
+    form.fields["program"].queryset = available_programs
+
+    # For non-admin users, restrict role choices (no PM/executive)
+    if not request.user.is_admin:
+        form.fields["role"].choices = [
+            (value, label) for value, label in UserProgramRole.ROLE_CHOICES
+            if value not in _PM_BLOCKED_ROLE_ASSIGNMENTS
+        ]
 
     return render(request, "auth_app/user_roles.html", {
         "edit_user": edit_user,
         "roles": roles,
         "form": form,
-        "has_available_programs": form.fields["program"].queryset.exists(),
+        "has_available_programs": available_programs.exists(),
     })
 
 
 @login_required
-@admin_required
+@requires_permission("user.manage", allow_admin=True)
 def user_role_add(request, user_id):
     """Add a program role assignment (POST only).
 
     No-elevation constraint: non-admin users with user.manage: SCOPED
     (program managers) cannot assign PM or executive roles, and cannot
-    elevate front desk to staff. This constraint is enforced here even
-    though PMs currently can't reach this view (@admin_required blocks
-    them). When PM access is wired in Wave 5, this guard will be active.
+    elevate front desk to staff.
     """
     edit_user = get_object_or_404(User, pk=user_id)
     if request.method == "POST":
@@ -186,6 +261,15 @@ def user_role_add(request, user_id):
 
             # No-elevation constraint for non-admin users
             if not request.user.is_admin:
+                # PMs can only assign roles in their own programs
+                pm_program_ids = _get_pm_program_ids(request.user)
+                if program.pk not in pm_program_ids:
+                    messages.error(
+                        request,
+                        _("You can only assign roles in your own programs."),
+                    )
+                    return redirect("admin_users:user_roles", user_id=edit_user.pk)
+
                 if role in _PM_BLOCKED_ROLE_ASSIGNMENTS:
                     messages.error(
                         request,
@@ -231,11 +315,18 @@ def user_role_add(request, user_id):
 
 
 @login_required
-@admin_required
+@requires_permission("user.manage", allow_admin=True)
 def user_role_remove(request, user_id, role_id):
     """Remove a program role assignment (POST only)."""
     edit_user = get_object_or_404(User, pk=user_id)
     role_obj = get_object_or_404(UserProgramRole, pk=role_id, user=edit_user)
+
+    # PMs can only remove roles in their own programs
+    if not request.user.is_admin:
+        pm_program_ids = _get_pm_program_ids(request.user)
+        if role_obj.program_id not in pm_program_ids:
+            return HttpResponseForbidden(_("Access denied. You can only manage roles in your programs."))
+
     if request.method == "POST":
         role_obj.status = "removed"
         role_obj.save()

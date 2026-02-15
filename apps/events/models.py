@@ -10,6 +10,11 @@ class EventType(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(default="", blank=True)
     colour_hex = models.CharField(max_length=7, default="#6B7280")
+    owning_program = models.ForeignKey(
+        "programs.Program", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="event_types",
+        help_text="Program that owns this event type. Null = global (admin-created).",
+    )
     status = models.CharField(
         max_length=20, default="active",
         choices=[("active", "Active"), ("archived", "Archived")],

@@ -26,6 +26,11 @@ class ProgressNoteTemplate(models.Model):
         default="session",
         help_text="Pre-fills the interaction type when this template is selected.",
     )
+    owning_program = models.ForeignKey(
+        "programs.Program", on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="note_templates",
+        help_text="Program that owns this template. Null = global (admin-created).",
+    )
     status = models.CharField(
         max_length=20, default="active",
         choices=[("active", "Active"), ("archived", "Archived")],

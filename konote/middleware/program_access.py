@@ -31,7 +31,12 @@ ADMIN_ONLY_PATTERNS = [
 # Exceptions: URLs under /admin/ that have their own permission checks
 # and should NOT be blanket-blocked by the middleware.
 ADMIN_EXEMPT_PATTERNS = [
-    re.compile(r"^/admin/audit/"),  # audit.view: SCOPED for program_manager
+    re.compile(r"^/admin/audit/"),            # audit.view: SCOPED for PMs
+    re.compile(r"^/admin/users/"),            # user.manage: SCOPED for PMs
+    re.compile(r"^/admin/templates/"),        # template.plan.manage: SCOPED for PMs
+    re.compile(r"^/admin/settings/note-templates/"),  # template.note.manage: SCOPED for PMs
+    re.compile(r"^/admin/registration/"),     # registration.manage: SCOPED for PMs
+    re.compile(r"^/admin/submissions/"),      # registration.manage: SCOPED for PMs
 ]
 
 

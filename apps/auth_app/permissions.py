@@ -102,6 +102,13 @@ PERMISSIONS = {
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "program.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "audit.view": DENY,  # Enforced by @admin_required (not matrix-driven)
+
+        # PM admin features — receptionist has no access
+        "template.plan.manage": DENY,
+        "template.note.manage": DENY,
+        "event_type.manage": DENY,
+        "metric.manage": DENY,
+        "registration.manage": DENY,
     },
 
     "staff": {
@@ -186,6 +193,13 @@ PERMISSIONS = {
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "program.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "audit.view": DENY,  # Enforced by @admin_required (not matrix-driven)
+
+        # PM admin features — staff has no access
+        "template.plan.manage": DENY,
+        "template.note.manage": DENY,
+        "event_type.manage": DENY,
+        "metric.manage": DENY,
+        "registration.manage": DENY,
     },
 
     "program_manager": {
@@ -278,6 +292,13 @@ PERMISSIONS = {
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
         "program.manage": SCOPED,  # Own program only. Enforced by @requires_permission
         "audit.view": SCOPED,  # QA oversight for own program. Enforced by @requires_permission
+
+        # PM admin features — PMs manage these for their own programs
+        "template.plan.manage": SCOPED,  # Create/edit plan templates in own program
+        "template.note.manage": SCOPED,  # Create/edit note templates in own program
+        "event_type.manage": SCOPED,     # Create/edit event types in own program
+        "metric.manage": SCOPED,         # Create/edit metrics in own program
+        "registration.manage": SCOPED,   # Manage registration links for own program
     },
 
     "executive": {
@@ -358,6 +379,13 @@ PERMISSIONS = {
         "settings.manage": DENY,  # Override to ALLOW if executive is operational ED
         "program.manage": DENY,  # Override to ALLOW if executive is operational ED
         "audit.view": DENY,   # Executive has no audit access
+
+        # PM admin features — executives don't manage templates/config
+        "template.plan.manage": DENY,
+        "template.note.manage": DENY,
+        "event_type.manage": DENY,
+        "metric.manage": DENY,
+        "registration.manage": DENY,
     },
 }
 
@@ -505,6 +533,13 @@ def permission_to_plain_english(perm_key, perm_level):
         "settings.manage": "Change system configuration, feature toggles, and terminology",
         "program.manage": "Create, edit, or archive programs",
         "audit.view": "View the audit log",
+
+        # PM admin features
+        "template.plan.manage": "Create, edit, or delete plan templates",
+        "template.note.manage": "Create, edit, or delete progress note templates",
+        "event_type.manage": "Create, edit, or delete event types",
+        "metric.manage": "Create, edit, or delete outcome metrics",
+        "registration.manage": "Manage registration links and pending submissions",
     }
 
     base = TRANSLATIONS.get(perm_key, perm_key)

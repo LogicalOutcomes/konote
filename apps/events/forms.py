@@ -2,19 +2,38 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from apps.programs.models import Program, UserProgramRole
+
 from .models import Alert, Event, EventType
 
 
 class EventTypeForm(forms.ModelForm):
-    """Admin form for creating/editing event types."""
+    """Form for creating/editing event types.
+
+    Pass requesting_user to scope owning_program choices for PMs.
+    """
 
     class Meta:
         model = EventType
-        fields = ["name", "description", "colour_hex", "status"]
+        fields = ["name", "description", "colour_hex", "owning_program", "status"]
         widgets = {
             "colour_hex": forms.TextInput(attrs={"type": "color"}),
             "description": forms.Textarea(attrs={"rows": 3}),
         }
+
+    def __init__(self, *args, requesting_user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if requesting_user and not requesting_user.is_admin:
+            pm_program_ids = set(
+                UserProgramRole.objects.filter(
+                    user=requesting_user, role="program_manager", status="active",
+                ).values_list("program_id", flat=True)
+            )
+            self.fields["owning_program"].queryset = Program.objects.filter(
+                pk__in=pm_program_ids, status="active",
+            )
+            self.fields["owning_program"].empty_label = None
+            self.fields["owning_program"].required = True
 
 
 class EventForm(forms.ModelForm):

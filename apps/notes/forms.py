@@ -2,6 +2,8 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from apps.programs.models import Program, UserProgramRole
+
 from .models import ProgressNote, ProgressNoteTarget, ProgressNoteTemplate, ProgressNoteTemplateSection
 
 
@@ -199,11 +201,28 @@ class MetricValueForm(forms.Form):
 
 
 class NoteTemplateForm(forms.ModelForm):
-    """Form for creating/editing progress note templates."""
+    """Form for creating/editing progress note templates.
+
+    Pass requesting_user to scope owning_program choices for PMs.
+    """
 
     class Meta:
         model = ProgressNoteTemplate
-        fields = ["name", "default_interaction_type", "status"]
+        fields = ["name", "default_interaction_type", "owning_program", "status"]
+
+    def __init__(self, *args, requesting_user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if requesting_user and not requesting_user.is_admin:
+            pm_program_ids = set(
+                UserProgramRole.objects.filter(
+                    user=requesting_user, role="program_manager", status="active",
+                ).values_list("program_id", flat=True)
+            )
+            self.fields["owning_program"].queryset = Program.objects.filter(
+                pk__in=pm_program_ids, status="active",
+            )
+            self.fields["owning_program"].empty_label = None
+            self.fields["owning_program"].required = True
 
 
 class NoteTemplateSectionForm(forms.ModelForm):

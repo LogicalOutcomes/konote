@@ -1,11 +1,18 @@
-"""Admin views for plan template CRUD (PLAN4) and apply-to-client (PLAN5)."""
+"""Admin views for plan template CRUD (PLAN4) and apply-to-client (PLAN5).
+
+Admins: full access to all templates.
+PMs with template.plan.manage: SCOPED: manage templates in their own programs,
+read-only view of global (admin-created) templates.
+"""
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.db.models import Q
+from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.translation import gettext as _
 
-from apps.auth_app.decorators import admin_required
+from apps.auth_app.decorators import admin_required, requires_permission
 from apps.clients.models import ClientFile
 from apps.clients.views import get_client_queryset
 from apps.plans.admin_forms import (
@@ -20,6 +27,25 @@ from apps.plans.models import (
     PlanTemplateSection,
     PlanTemplateTarget,
 )
+from apps.programs.models import UserProgramRole
+
+
+def _get_pm_program_ids(user):
+    """Return set of program IDs where the user is an active PM."""
+    return set(
+        UserProgramRole.objects.filter(
+            user=user, role="program_manager", status="active",
+        ).values_list("program_id", flat=True)
+    )
+
+
+def _can_edit_template(user, template):
+    """Check if the user can edit a template (admin or PM who owns it)."""
+    if user.is_admin:
+        return True
+    if template.owning_program_id is None:
+        return False  # Global templates are admin-only
+    return template.owning_program_id in _get_pm_program_ids(user)
 
 
 # ---------------------------------------------------------------------------
@@ -27,25 +53,40 @@ from apps.plans.models import (
 # ---------------------------------------------------------------------------
 
 @login_required
-@admin_required
+@requires_permission("template.plan.manage", allow_admin=True)
 def template_list(request):
     """List all plan templates."""
-    templates = PlanTemplate.objects.prefetch_related("sections").all()
-    return render(request, "plans/template_list.html", {"templates": templates})
+    if request.user.is_admin:
+        templates = PlanTemplate.objects.prefetch_related("sections").all()
+    else:
+        pm_program_ids = _get_pm_program_ids(request.user)
+        templates = PlanTemplate.objects.prefetch_related("sections").filter(
+            Q(owning_program_id__in=pm_program_ids) | Q(owning_program__isnull=True)
+        )
+    return render(request, "plans/template_list.html", {
+        "templates": templates,
+        "is_admin": request.user.is_admin,
+    })
 
 
 @login_required
-@admin_required
+@requires_permission("template.plan.manage", allow_admin=True)
 def template_create(request):
     """Create a new plan template."""
     if request.method == "POST":
-        form = PlanTemplateForm(request.POST)
+        form = PlanTemplateForm(request.POST, requesting_user=request.user)
         if form.is_valid():
-            form.save()
+            template = form.save(commit=False)
+            # Non-admin users: auto-assign to their program if only one
+            if not request.user.is_admin and template.owning_program_id is None:
+                pm_program_ids = _get_pm_program_ids(request.user)
+                if len(pm_program_ids) == 1:
+                    template.owning_program_id = next(iter(pm_program_ids))
+            template.save()
             messages.success(request, _("Template created."))
             return redirect("plan_templates:template_list")
     else:
-        form = PlanTemplateForm()
+        form = PlanTemplateForm(requesting_user=request.user)
 
     return render(request, "plans/template_form.html", {
         "form": form,
@@ -54,19 +95,22 @@ def template_create(request):
 
 
 @login_required
-@admin_required
+@requires_permission("template.plan.manage", allow_admin=True)
 def template_edit(request, template_id):
     """Edit an existing plan template."""
     template = get_object_or_404(PlanTemplate, pk=template_id)
 
+    if not _can_edit_template(request.user, template):
+        return HttpResponseForbidden(_("Access denied. You can only edit templates in your programs."))
+
     if request.method == "POST":
-        form = PlanTemplateForm(request.POST, instance=template)
+        form = PlanTemplateForm(request.POST, instance=template, requesting_user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, _("Template updated."))
             return redirect("plan_templates:template_detail", template_id=template.pk)
     else:
-        form = PlanTemplateForm(instance=template)
+        form = PlanTemplateForm(instance=template, requesting_user=request.user)
 
     return render(request, "plans/template_form.html", {
         "form": form,
@@ -76,23 +120,33 @@ def template_edit(request, template_id):
 
 
 @login_required
-@admin_required
+@requires_permission("template.plan.manage", allow_admin=True)
 def template_detail(request, template_id):
     """Show a template with its sections and targets."""
     template = get_object_or_404(
         PlanTemplate.objects.prefetch_related("sections__targets"),
         pk=template_id,
     )
-    return render(request, "plans/template_detail.html", {"template": template})
+
+    # PMs can view global templates but not edit
+    can_edit = _can_edit_template(request.user, template)
+
+    return render(request, "plans/template_detail.html", {
+        "template": template,
+        "can_edit": can_edit,
+    })
 
 
 # --- Template sections ---
 
 @login_required
-@admin_required
+@requires_permission("template.plan.manage", allow_admin=True)
 def template_section_create(request, template_id):
     """Add a section to a template."""
     template = get_object_or_404(PlanTemplate, pk=template_id)
+
+    if not _can_edit_template(request.user, template):
+        return HttpResponseForbidden(_("Access denied. You can only edit templates in your programs."))
 
     if request.method == "POST":
         form = PlanTemplateSectionForm(request.POST)
@@ -113,11 +167,14 @@ def template_section_create(request, template_id):
 
 
 @login_required
-@admin_required
+@requires_permission("template.plan.manage", allow_admin=True)
 def template_section_edit(request, section_id):
     """Edit a template section."""
     section = get_object_or_404(PlanTemplateSection, pk=section_id)
     template = section.plan_template
+
+    if not _can_edit_template(request.user, template):
+        return HttpResponseForbidden(_("Access denied. You can only edit templates in your programs."))
 
     if request.method == "POST":
         form = PlanTemplateSectionForm(request.POST, instance=section)
@@ -137,11 +194,14 @@ def template_section_edit(request, section_id):
 
 
 @login_required
-@admin_required
+@requires_permission("template.plan.manage", allow_admin=True)
 def template_section_delete(request, section_id):
     """Delete a template section after POST confirmation."""
     section = get_object_or_404(PlanTemplateSection, pk=section_id)
     template = section.plan_template
+
+    if not _can_edit_template(request.user, template):
+        return HttpResponseForbidden(_("Access denied. You can only edit templates in your programs."))
 
     if request.method == "POST":
         section.delete()
@@ -158,11 +218,14 @@ def template_section_delete(request, section_id):
 # --- Template targets ---
 
 @login_required
-@admin_required
+@requires_permission("template.plan.manage", allow_admin=True)
 def template_target_create(request, section_id):
     """Add a target to a template section."""
     section = get_object_or_404(PlanTemplateSection, pk=section_id)
     template = section.plan_template
+
+    if not _can_edit_template(request.user, template):
+        return HttpResponseForbidden(_("Access denied. You can only edit templates in your programs."))
 
     if request.method == "POST":
         form = PlanTemplateTargetForm(request.POST)
@@ -184,12 +247,15 @@ def template_target_create(request, section_id):
 
 
 @login_required
-@admin_required
+@requires_permission("template.plan.manage", allow_admin=True)
 def template_target_edit(request, target_id):
     """Edit a template target."""
     target = get_object_or_404(PlanTemplateTarget, pk=target_id)
     section = target.template_section
     template = section.plan_template
+
+    if not _can_edit_template(request.user, template):
+        return HttpResponseForbidden(_("Access denied. You can only edit templates in your programs."))
 
     if request.method == "POST":
         form = PlanTemplateTargetForm(request.POST, instance=target)
@@ -210,12 +276,15 @@ def template_target_edit(request, target_id):
 
 
 @login_required
-@admin_required
+@requires_permission("template.plan.manage", allow_admin=True)
 def template_target_delete(request, target_id):
     """Delete a template target after POST confirmation."""
     target = get_object_or_404(PlanTemplateTarget, pk=target_id)
     section = target.template_section
     template = section.plan_template
+
+    if not _can_edit_template(request.user, template):
+        return HttpResponseForbidden(_("Access denied. You can only edit templates in your programs."))
 
     if request.method == "POST":
         target.delete()
