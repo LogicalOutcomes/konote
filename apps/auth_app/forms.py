@@ -43,9 +43,11 @@ class UserCreateForm(forms.ModelForm):
     def __init__(self, *args, requesting_user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self._requesting_user = requesting_user
-        # Non-admin users cannot create admin accounts
+        # Non-admin users cannot create admin accounts — hide the field
+        # (use HiddenInput, not del, to avoid Django _post_clean crash)
         if requesting_user and not requesting_user.is_admin:
-            del self.fields["is_admin"]
+            self.fields["is_admin"].widget = forms.HiddenInput()
+            self.fields["is_admin"].initial = False
 
     def clean(self):
         cleaned = super().clean()
@@ -92,15 +94,23 @@ class UserEditForm(forms.ModelForm):
         self._requesting_user = requesting_user
         if self.instance and self.instance.pk:
             self.fields["email"].initial = self.instance.email
-        # Non-admin users cannot toggle admin status
+        # Non-admin users cannot toggle admin status or deactivate accounts
+        # (PMs must use the dedicated deactivate view instead).
+        # Use HiddenInput, not del, to avoid Django _post_clean crash.
         if requesting_user and not requesting_user.is_admin:
-            del self.fields["is_admin"]
+            self.fields["is_admin"].widget = forms.HiddenInput()
+            self.fields["is_admin"].initial = False
+            self.fields["is_active"].widget = forms.HiddenInput()
+            if self.instance and self.instance.pk:
+                self.fields["is_active"].initial = self.instance.is_active
 
     def clean(self):
         cleaned = super().clean()
-        # Server-side enforcement: non-admins cannot set is_admin
+        # Server-side enforcement: non-admins cannot set is_admin or is_active
         if self._requesting_user and not self._requesting_user.is_admin:
             cleaned["is_admin"] = False
+            if self.instance and self.instance.pk:
+                cleaned["is_active"] = self.instance.is_active
         return cleaned
 
     def save(self, commit=True):
