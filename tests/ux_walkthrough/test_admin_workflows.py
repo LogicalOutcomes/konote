@@ -744,36 +744,36 @@ class AdminCustomFieldWorkflow(UxScenarioBase):
 
         # View custom field admin
         resp = self.visit(
-            role, "Custom field admin", "/clients/admin/fields/",
+            role, "Custom field admin", "/participants/admin/fields/",
         )
         self.record_scenario(
             self.SCENARIO, role, "View custom field admin",
-            "/clients/admin/fields/", resp.status_code, [],
+            "/participants/admin/fields/", resp.status_code, [],
         )
 
         # Create field group
         resp = self.visit(
             role, "Create field group form",
-            "/clients/admin/fields/groups/create/",
+            "/participants/admin/fields/groups/create/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open create field group form",
-            "/clients/admin/fields/groups/create/", resp.status_code, [],
+            "/participants/admin/fields/groups/create/", resp.status_code, [],
         )
 
         resp = self.visit_and_follow(
             role, "Submit new field group",
-            "/clients/admin/fields/groups/create/",
+            "/participants/admin/fields/groups/create/",
             data={
                 "title": "Intake Information",
                 "sort_order": "1",
                 "status": "active",
             },
-            expected_redirect="/clients/admin/fields/",
+            expected_redirect="/participants/admin/fields/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create field group",
-            "/clients/admin/fields/groups/create/", resp.status_code, [],
+            "/participants/admin/fields/groups/create/", resp.status_code, [],
         )
 
         # Find the group
@@ -784,16 +784,16 @@ class AdminCustomFieldWorkflow(UxScenarioBase):
         # Create a dropdown field definition
         resp = self.visit(
             role, "Create field definition form",
-            "/clients/admin/fields/create/",
+            "/participants/admin/fields/create/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open create field definition form",
-            "/clients/admin/fields/create/", resp.status_code, [],
+            "/participants/admin/fields/create/", resp.status_code, [],
         )
 
         resp = self.visit_and_follow(
             role, "Submit dropdown field",
-            "/clients/admin/fields/create/",
+            "/participants/admin/fields/create/",
             data={
                 "group": group.pk,
                 "name": "Referral Source",
@@ -806,17 +806,17 @@ class AdminCustomFieldWorkflow(UxScenarioBase):
                 "sort_order": "1",
                 "status": "active",
             },
-            expected_redirect="/clients/admin/fields/",
+            expected_redirect="/participants/admin/fields/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create dropdown field",
-            "/clients/admin/fields/create/", resp.status_code, [],
+            "/participants/admin/fields/create/", resp.status_code, [],
         )
 
         # Create a text field
         resp = self.visit_and_follow(
             role, "Submit text field",
-            "/clients/admin/fields/create/",
+            "/participants/admin/fields/create/",
             data={
                 "group": group.pk,
                 "name": "Housing Status",
@@ -829,21 +829,21 @@ class AdminCustomFieldWorkflow(UxScenarioBase):
                 "sort_order": "2",
                 "status": "active",
             },
-            expected_redirect="/clients/admin/fields/",
+            expected_redirect="/participants/admin/fields/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create sensitive text field",
-            "/clients/admin/fields/create/", resp.status_code, [],
+            "/participants/admin/fields/create/", resp.status_code, [],
         )
 
         # Verify the admin page shows both fields
         resp = self.visit(
-            role, "Custom field admin (populated)", "/clients/admin/fields/",
+            role, "Custom field admin (populated)", "/participants/admin/fields/",
             role_should_see=["Referral Source", "Housing Status"],
         )
         self.record_scenario(
             self.SCENARIO, role, "Fields visible in admin",
-            "/clients/admin/fields/", resp.status_code, [],
+            "/participants/admin/fields/", resp.status_code, [],
         )
 
         # Edit a field
@@ -855,11 +855,11 @@ class AdminCustomFieldWorkflow(UxScenarioBase):
 
         resp = self.visit(
             role, "Edit field definition form",
-            f"/clients/admin/fields/{field_def.pk}/edit/",
+            f"/participants/admin/fields/{field_def.pk}/edit/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open edit field definition form",
-            f"/clients/admin/fields/{field_def.pk}/edit/",
+            f"/participants/admin/fields/{field_def.pk}/edit/",
             resp.status_code, [],
         )
 
@@ -1299,7 +1299,7 @@ class AdminFrenchWorkflow(UxScenarioBase):
             ("Programs list", "/programs/"),
             ("Event types", "/events/admin/types/"),
             ("Note templates", "/admin/settings/note-templates/"),
-            ("Custom fields", "/clients/admin/fields/"),
+            ("Custom fields", "/participants/admin/fields/"),
             ("Registration links", "/admin/registration/"),
             ("Audit log", "/admin/audit/"),
         ]

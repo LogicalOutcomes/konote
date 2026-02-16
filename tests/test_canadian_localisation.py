@@ -298,7 +298,7 @@ class CustomFieldNormalisationIntegrationTest(TestCase):
     def test_postal_code_normalised_on_save(self):
         """Postal code is normalised to 'A1A 1A1' when saved."""
         resp = self.client.post(
-            f"/clients/{self.cf.pk}/custom-fields/",
+            f"/participants/{self.cf.pk}/custom-fields/",
             {
                 f"custom_{self.postal_field.pk}": "k1a0b1",
                 f"custom_{self.phone_field.pk}": "",
@@ -313,7 +313,7 @@ class CustomFieldNormalisationIntegrationTest(TestCase):
     def test_phone_normalised_on_save(self):
         """Phone number is normalised to '(XXX) XXX-XXXX' when saved."""
         resp = self.client.post(
-            f"/clients/{self.cf.pk}/custom-fields/",
+            f"/participants/{self.cf.pk}/custom-fields/",
             {
                 f"custom_{self.postal_field.pk}": "",
                 f"custom_{self.phone_field.pk}": "613-555-1234",
@@ -328,7 +328,7 @@ class CustomFieldNormalisationIntegrationTest(TestCase):
     def test_phone_with_country_code_normalised(self):
         """Phone with +1 country code is normalised correctly."""
         resp = self.client.post(
-            f"/clients/{self.cf.pk}/custom-fields/",
+            f"/participants/{self.cf.pk}/custom-fields/",
             {
                 f"custom_{self.postal_field.pk}": "",
                 f"custom_{self.phone_field.pk}": "+1 416 555 0123",
@@ -343,7 +343,7 @@ class CustomFieldNormalisationIntegrationTest(TestCase):
     def test_invalid_postal_code_shows_error(self):
         """Invalid postal code shows an error message, does not save."""
         resp = self.client.post(
-            f"/clients/{self.cf.pk}/custom-fields/",
+            f"/participants/{self.cf.pk}/custom-fields/",
             {
                 f"custom_{self.postal_field.pk}": "12345",
                 f"custom_{self.phone_field.pk}": "",
@@ -359,7 +359,7 @@ class CustomFieldNormalisationIntegrationTest(TestCase):
     def test_invalid_phone_shows_error(self):
         """Invalid phone number shows an error message, does not save."""
         resp = self.client.post(
-            f"/clients/{self.cf.pk}/custom-fields/",
+            f"/participants/{self.cf.pk}/custom-fields/",
             {
                 f"custom_{self.postal_field.pk}": "",
                 f"custom_{self.phone_field.pk}": "555",

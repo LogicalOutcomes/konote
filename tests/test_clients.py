@@ -50,7 +50,7 @@ class ClientViewsTest(TestCase):
         self._create_client("Alice", "Smith", [self.prog_a])
         self._create_client("Bob", "Jones", [self.prog_b])
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/clients/")
+        resp = self.client.get("/participants/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Alice")
         self.assertContains(resp, "Bob")
@@ -59,14 +59,14 @@ class ClientViewsTest(TestCase):
         self._create_client("Alice", "Smith", [self.prog_a])
         self._create_client("Bob", "Jones", [self.prog_b])
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.get("/clients/")
+        resp = self.client.get("/participants/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Alice")
         self.assertNotContains(resp, "Bob")
 
     def test_create_client(self):
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.post("/clients/create/", {
+        resp = self.client.post("/participants/create/", {
             "first_name": "Test",
             "last_name": "User",
             "preferred_name": "",
@@ -86,7 +86,7 @@ class ClientViewsTest(TestCase):
     def test_create_client_redirect_to_profile(self):
         """After creating a participant, redirect to profile with success message (QA-W7/W8)."""
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.post("/clients/create/", {
+        resp = self.client.post("/participants/create/", {
             "first_name": "Test",
             "last_name": "Redirect",
             "preferred_name": "",
@@ -114,7 +114,7 @@ class ClientViewsTest(TestCase):
     def test_create_client_redirect_staff_user(self):
         """BUG-7 reproduction: staff user creating a participant should redirect to profile, not 404."""
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.post("/clients/create/", {
+        resp = self.client.post("/participants/create/", {
             "first_name": "Staff",
             "last_name": "Created",
             "preferred_name": "",
@@ -132,7 +132,7 @@ class ClientViewsTest(TestCase):
     def test_create_client_with_preferred_name(self):
         """Preferred name is saved and used as display_name."""
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.post("/clients/create/", {
+        resp = self.client.post("/participants/create/", {
             "first_name": "Jonathan",
             "last_name": "Smith",
             "preferred_name": "Jay",
@@ -161,7 +161,7 @@ class ClientViewsTest(TestCase):
         cf.preferred_name = "Jay"
         cf.save()
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get(f"/clients/{cf.pk}/")
+        resp = self.client.get(f"/participants/{cf.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Jay")
 
@@ -169,7 +169,7 @@ class ClientViewsTest(TestCase):
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         # Staff role has client.edit SCOPED (same as program_manager)
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.post(f"/clients/{cf.pk}/edit/", {
+        resp = self.client.post(f"/participants/{cf.pk}/edit/", {
             "first_name": "Janet",
             "last_name": "Doe",
             "middle_name": "",
@@ -186,7 +186,7 @@ class ClientViewsTest(TestCase):
         """Program managers have client.edit SCOPED — can edit clients in their program."""
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="pm", password="testpass123")
-        resp = self.client.post(f"/clients/{cf.pk}/edit/", {
+        resp = self.client.post(f"/participants/{cf.pk}/edit/", {
             "first_name": "Janet",
             "last_name": "Doe",
             "middle_name": "",
@@ -203,14 +203,14 @@ class ClientViewsTest(TestCase):
         """Program managers have client.edit_contact DENY — cannot edit contact info."""
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="pm", password="testpass123")
-        resp = self.client.get(f"/clients/{cf.pk}/edit-contact/")
+        resp = self.client.get(f"/participants/{cf.pk}/edit-contact/")
         self.assertEqual(resp.status_code, 403)
 
     def test_receptionist_cannot_edit_client(self):
         """Receptionists have client.edit DENY — cannot edit client records."""
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="receptionist", password="testpass123")
-        resp = self.client.get(f"/clients/{cf.pk}/edit/")
+        resp = self.client.get(f"/participants/{cf.pk}/edit/")
         self.assertEqual(resp.status_code, 403)
 
     # --- Transfer tests ---
@@ -221,7 +221,7 @@ class ClientViewsTest(TestCase):
         UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.post(f"/clients/{cf.pk}/transfer/", {
+        resp = self.client.post(f"/participants/{cf.pk}/transfer/", {
             "programs": [self.prog_a.pk, self.prog_b.pk],
         })
         self.assertEqual(resp.status_code, 302)
@@ -237,7 +237,7 @@ class ClientViewsTest(TestCase):
         UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
         cf = self._create_client("Jane", "Doe", [self.prog_a, self.prog_b])
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.post(f"/clients/{cf.pk}/transfer/", {
+        resp = self.client.post(f"/participants/{cf.pk}/transfer/", {
             "programs": [self.prog_a.pk],  # Removing prog_b
         })
         self.assertEqual(resp.status_code, 302)
@@ -250,7 +250,7 @@ class ClientViewsTest(TestCase):
         """Receptionists have client.transfer DENY — get 403."""
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="receptionist", password="testpass123")
-        resp = self.client.get(f"/clients/{cf.pk}/transfer/")
+        resp = self.client.get(f"/participants/{cf.pk}/transfer/")
         self.assertEqual(resp.status_code, 403)
 
     def test_transfer_creates_audit_log(self):
@@ -259,7 +259,7 @@ class ClientViewsTest(TestCase):
         UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="staff", password="testpass123")
-        self.client.post(f"/clients/{cf.pk}/transfer/", {
+        self.client.post(f"/participants/{cf.pk}/transfer/", {
             "programs": [self.prog_a.pk, self.prog_b.pk],
             "transfer_reason": "Client needs housing support",
         })
@@ -279,7 +279,7 @@ class ClientViewsTest(TestCase):
         cf = self._create_client("Jane", "Doe", [self.prog_a, conf_prog])
         self.client.login(username="staff", password="testpass123")
         # Staff only sees prog_a, not conf_prog
-        resp = self.client.post(f"/clients/{cf.pk}/transfer/", {
+        resp = self.client.post(f"/participants/{cf.pk}/transfer/", {
             "programs": [self.prog_a.pk],
         })
         self.assertEqual(resp.status_code, 302)
@@ -296,7 +296,7 @@ class ClientViewsTest(TestCase):
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="staff", password="testpass123")
         # POST to edit — programs field is no longer on the edit form
-        resp = self.client.post(f"/clients/{cf.pk}/edit/", {
+        resp = self.client.post(f"/participants/{cf.pk}/edit/", {
             "first_name": "Janet",
             "last_name": "Doe",
             "middle_name": "",
@@ -318,7 +318,7 @@ class ClientViewsTest(TestCase):
         UserProgramRole.objects.create(user=self.pm, program=self.prog_b, role="program_manager")
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="pm", password="testpass123")
-        resp = self.client.post(f"/clients/{cf.pk}/transfer/", {
+        resp = self.client.post(f"/participants/{cf.pk}/transfer/", {
             "programs": [self.prog_a.pk, self.prog_b.pk],
         })
         self.assertEqual(resp.status_code, 302)
@@ -333,14 +333,14 @@ class ClientViewsTest(TestCase):
     def test_client_detail(self):
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get(f"/clients/{cf.pk}/")
+        resp = self.client.get(f"/participants/{cf.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Jane")
 
     def test_search_finds_client(self):
         self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/clients/search/?q=jane")
+        resp = self.client.get("/participants/search/?q=jane")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Jane")
 
@@ -352,7 +352,7 @@ class ClientViewsTest(TestCase):
         note.save()
         self.client.login(username="admin", password="testpass123")
         # Search for text in the note — should find the client
-        resp = self.client.get("/clients/search/?q=housing")
+        resp = self.client.get("/participants/search/?q=housing")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Jane")
 
@@ -364,7 +364,7 @@ class ClientViewsTest(TestCase):
         note.save()
         self.client.login(username="admin", password="testpass123")
         # Search for text in the note — should find the client
-        resp = self.client.get("/clients/?q=intake")
+        resp = self.client.get("/participants/?q=intake")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Jane")
 
@@ -372,12 +372,12 @@ class ClientViewsTest(TestCase):
         self._create_client("Alice", "Smith", [self.prog_a])
         self._create_client("Bob", "Jones", [self.prog_b])
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.get("/clients/search/?q=")
+        resp = self.client.get("/participants/search/?q=")
         self.assertNotContains(resp, "Bob")
 
     def test_search_empty_query(self):
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/clients/search/?q=")
+        resp = self.client.get("/participants/search/?q=")
         self.assertEqual(resp.status_code, 200)
 
     def test_filter_by_status(self):
@@ -390,13 +390,13 @@ class ClientViewsTest(TestCase):
         self.client.login(username="staff", password="testpass123")
 
         # Filter to active only
-        resp = self.client.get("/clients/?status=active")
+        resp = self.client.get("/participants/?status=active")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Active Client")
         self.assertNotContains(resp, "Discharged Client")
 
         # Filter to discharged only
-        resp = self.client.get("/clients/?status=discharged")
+        resp = self.client.get("/participants/?status=discharged")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Discharged Client")
         self.assertNotContains(resp, "Active Client")
@@ -410,13 +410,13 @@ class ClientViewsTest(TestCase):
         self.client.login(username="staff", password="testpass123")
 
         # Filter to Program A
-        resp = self.client.get(f"/clients/?program={self.prog_a.pk}")
+        resp = self.client.get(f"/participants/?program={self.prog_a.pk}")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Alice Alpha")
         self.assertNotContains(resp, "Bob Beta")
 
         # Filter to Program B
-        resp = self.client.get(f"/clients/?program={self.prog_b.pk}")
+        resp = self.client.get(f"/participants/?program={self.prog_b.pk}")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Bob Beta")
         self.assertNotContains(resp, "Alice Alpha")
@@ -433,7 +433,7 @@ class ClientViewsTest(TestCase):
         self.client.login(username="staff", password="testpass123")
 
         # Filter to Program A + Active
-        resp = self.client.get(f"/clients/?program={self.prog_a.pk}&status=active")
+        resp = self.client.get(f"/participants/?program={self.prog_a.pk}&status=active")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Alice Active")
         self.assertNotContains(resp, "Alice Discharged")
@@ -443,7 +443,7 @@ class ClientViewsTest(TestCase):
         """HTMX requests should return only the table partial."""
         self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.get("/clients/?status=active", HTTP_HX_REQUEST="true")
+        resp = self.client.get("/participants/?status=active", HTTP_HX_REQUEST="true")
         self.assertEqual(resp.status_code, 200)
         # Should NOT contain page structure elements (no extends base.html)
         self.assertNotContains(resp, "<!DOCTYPE")
@@ -462,13 +462,13 @@ class ClientViewsTest(TestCase):
         self.client.login(username="staff", password="testpass123")
 
         # Filter to active only
-        resp = self.client.get("/clients/search/?q=person&status=active")
+        resp = self.client.get("/participants/search/?q=person&status=active")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Active Person")
         self.assertNotContains(resp, "Discharged Person")
 
         # Filter to discharged only
-        resp = self.client.get("/clients/search/?q=person&status=discharged")
+        resp = self.client.get("/participants/search/?q=person&status=discharged")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Discharged Person")
         self.assertNotContains(resp, "Active Person")
@@ -482,13 +482,13 @@ class ClientViewsTest(TestCase):
         self.client.login(username="staff", password="testpass123")
 
         # Filter to Program A
-        resp = self.client.get(f"/clients/search/?q=test&program={self.prog_a.pk}")
+        resp = self.client.get(f"/participants/search/?q=test&program={self.prog_a.pk}")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Alice Test")
         self.assertNotContains(resp, "Bob Test")
 
         # Filter to Program B
-        resp = self.client.get(f"/clients/search/?q=test&program={self.prog_b.pk}")
+        resp = self.client.get(f"/participants/search/?q=test&program={self.prog_b.pk}")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Bob Test")
         self.assertNotContains(resp, "Alice Test")
@@ -509,7 +509,7 @@ class ClientViewsTest(TestCase):
 
         # Filter to recent clients only (last 7 days)
         week_ago = (timezone.now() - timedelta(days=7)).strftime("%Y-%m-%d")
-        resp = self.client.get(f"/clients/search/?q=client&date_from={week_ago}")
+        resp = self.client.get(f"/participants/search/?q=client&date_from={week_ago}")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "New Client")
         self.assertNotContains(resp, "Old Client")
@@ -524,7 +524,7 @@ class ClientViewsTest(TestCase):
         self.client.login(username="staff", password="testpass123")
 
         # Filter to active only (no search query)
-        resp = self.client.get("/clients/search/?status=active")
+        resp = self.client.get("/participants/search/?status=active")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Active Person")
         self.assertNotContains(resp, "Discharged Person")
@@ -541,7 +541,7 @@ class ClientViewsTest(TestCase):
         self.client.login(username="staff", password="testpass123")
 
         # Search "Alice" + Program A + Active
-        resp = self.client.get(f"/clients/search/?q=alice&program={self.prog_a.pk}&status=active")
+        resp = self.client.get(f"/participants/search/?q=alice&program={self.prog_a.pk}&status=active")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Alice Active")
         self.assertNotContains(resp, "Alice Discharged")
@@ -563,12 +563,12 @@ class CustomFieldTest(TestCase):
     def test_custom_field_admin_requires_admin(self):
         staff = User.objects.create_user(username="staff", password="testpass123", is_admin=False)
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.get("/clients/admin/fields/")
+        resp = self.client.get("/participants/admin/fields/")
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_can_view_custom_field_admin(self):
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/clients/admin/fields/")
+        resp = self.client.get("/participants/admin/fields/")
         self.assertEqual(resp.status_code, 200)
 
     def test_save_custom_field_value(self):
@@ -583,7 +583,7 @@ class CustomFieldTest(TestCase):
         cf.save()
         # Enrol client in program so admin has access
         ClientProgramEnrolment.objects.create(client_file=cf, program=self.program)
-        resp = self.client.post(f"/clients/{cf.pk}/custom-fields/", {
+        resp = self.client.post(f"/participants/{cf.pk}/custom-fields/", {
             f"custom_{field_def.pk}": "she/her",
         })
         self.assertEqual(resp.status_code, 302)
@@ -604,7 +604,7 @@ class CustomFieldTest(TestCase):
         cf.save()
         # Enrol client in program so admin has access
         ClientProgramEnrolment.objects.create(client_file=cf, program=self.program)
-        resp = self.client.post(f"/clients/{cf.pk}/custom-fields/", {
+        resp = self.client.post(f"/participants/{cf.pk}/custom-fields/", {
             f"custom_{field_def.pk}": "secret-value-123",
         })
         self.assertEqual(resp.status_code, 302)
@@ -642,7 +642,7 @@ class SelectOtherFieldTest(TestCase):
 
     def test_save_standard_option(self):
         """Selecting a standard dropdown option stores that value."""
-        resp = self.client.post(f"/clients/{self.cf.pk}/custom-fields/", {
+        resp = self.client.post(f"/participants/{self.cf.pk}/custom-fields/", {
             f"custom_{self.pronouns_field.pk}": "They/them",
             f"custom_{self.pronouns_field.pk}_other": "",
         })
@@ -652,7 +652,7 @@ class SelectOtherFieldTest(TestCase):
 
     def test_save_other_uses_free_text(self):
         """Selecting 'Other' stores the free-text value, not '__other__'."""
-        resp = self.client.post(f"/clients/{self.cf.pk}/custom-fields/", {
+        resp = self.client.post(f"/participants/{self.cf.pk}/custom-fields/", {
             f"custom_{self.pronouns_field.pk}": "__other__",
             f"custom_{self.pronouns_field.pk}_other": "xe/xem",
         })
@@ -662,7 +662,7 @@ class SelectOtherFieldTest(TestCase):
 
     def test_save_other_strips_whitespace(self):
         """Free-text Other value has whitespace stripped."""
-        resp = self.client.post(f"/clients/{self.cf.pk}/custom-fields/", {
+        resp = self.client.post(f"/participants/{self.cf.pk}/custom-fields/", {
             f"custom_{self.pronouns_field.pk}": "__other__",
             f"custom_{self.pronouns_field.pk}_other": "  ze/zir  ",
         })
@@ -672,7 +672,7 @@ class SelectOtherFieldTest(TestCase):
 
     def test_pronouns_encrypted_when_sensitive(self):
         """Pronouns field with is_sensitive=True stores encrypted value."""
-        self.client.post(f"/clients/{self.cf.pk}/custom-fields/", {
+        self.client.post(f"/participants/{self.cf.pk}/custom-fields/", {
             f"custom_{self.pronouns_field.pk}": "She/her",
             f"custom_{self.pronouns_field.pk}_other": "",
         })
@@ -689,7 +689,7 @@ class SelectOtherFieldTest(TestCase):
         cdv.save()
         # Fetch the edit view (HTMX partial)
         resp = self.client.get(
-            f"/clients/{self.cf.pk}/custom-fields/edit/",
+            f"/participants/{self.cf.pk}/custom-fields/edit/",
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(resp.status_code, 200)
@@ -705,7 +705,7 @@ class SelectOtherFieldTest(TestCase):
         cdv.set_value("They/them")
         cdv.save()
         resp = self.client.get(
-            f"/clients/{self.cf.pk}/custom-fields/edit/",
+            f"/participants/{self.cf.pk}/custom-fields/edit/",
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(resp.status_code, 200)
@@ -725,7 +725,7 @@ class SelectOtherFieldTest(TestCase):
         self.client.login(username="frontdesk", password="testpass123")
         # Display view should show the value
         resp = self.client.get(
-            f"/clients/{self.cf.pk}/custom-fields/display/",
+            f"/participants/{self.cf.pk}/custom-fields/display/",
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(resp.status_code, 200)
@@ -756,7 +756,7 @@ class ConsentRecordingTest(TestCase):
     def test_consent_display_shows_no_consent(self):
         """Client detail shows 'no consent' warning when consent not recorded."""
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.get(f"/clients/{self.cf.pk}/")
+        resp = self.client.get(f"/participants/{self.cf.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "No consent on file")
 
@@ -765,7 +765,7 @@ class ConsentRecordingTest(TestCase):
         from django.utils import timezone
         self.client.login(username="staff", password="testpass123")
         today = timezone.now().strftime("%Y-%m-%d")
-        resp = self.client.post(f"/clients/{self.cf.pk}/consent/", {
+        resp = self.client.post(f"/participants/{self.cf.pk}/consent/", {
             "consent_type": "written",
             "consent_date": today,
             "notes": "Signed consent form on file.",
@@ -783,7 +783,7 @@ class ConsentRecordingTest(TestCase):
         self.cf.save()
 
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.get(f"/clients/{self.cf.pk}/")
+        resp = self.client.get(f"/participants/{self.cf.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Consent on file")
         self.assertContains(resp, "verbal")
@@ -793,7 +793,7 @@ class ConsentRecordingTest(TestCase):
         from django.utils import timezone
         self.client.login(username="receptionist", password="testpass123")
         today = timezone.now().strftime("%Y-%m-%d")
-        resp = self.client.post(f"/clients/{self.cf.pk}/consent/", {
+        resp = self.client.post(f"/participants/{self.cf.pk}/consent/", {
             "consent_type": "written",
             "consent_date": today,
         })

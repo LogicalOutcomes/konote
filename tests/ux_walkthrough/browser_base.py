@@ -320,7 +320,7 @@ class BrowserTestBase(StaticLiveServerTestCase):
         return get_report()
 
     def live_url(self, path):
-        """Full URL from a path, e.g. '/clients/' -> 'http://localhost:PORT/clients/'."""
+        """Full URL from a path, e.g. '/participants/' -> 'http://localhost:PORT/participants/'."""
         return f"{self.live_server_url}{path}"
 
     def login_via_browser(self, username):

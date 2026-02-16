@@ -24,7 +24,7 @@ class TestCountUserActions(TestCase):
 
     def test_counts_user_facing_actions(self):
         actions = [
-            {"goto": "/clients/"},
+            {"goto": "/participants/"},
             {"fill": ["#name", "Jane"]},
             {"click": "button[type='submit']"},
             {"press": "Tab"},
@@ -48,7 +48,7 @@ class TestCountUserActions(TestCase):
     def test_mixed_actions(self):
         actions = [
             {"login_as": "staff"},
-            {"goto": "/clients/"},
+            {"goto": "/participants/"},
             {"wait_for": "networkidle"},
             {"fill": ["#search", "Jane"]},
             {"wait_htmx": True},

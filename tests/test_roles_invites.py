@@ -65,7 +65,7 @@ class RoleHierarchyTest(TestCase):
         enc_module._fernet = None
 
     def test_receptionist_can_access_client(self):
-        request = self.factory.get(f"/clients/{self.client.pk}/")
+        request = self.factory.get(f"/participants/{self.client.pk}/")
         request.user = self.receptionist
         request.session = {}
         response = self.middleware(request)
@@ -73,7 +73,7 @@ class RoleHierarchyTest(TestCase):
         self.assertEqual(request.user_program_role, "receptionist")
 
     def test_counsellor_gets_staff_role(self):
-        request = self.factory.get(f"/clients/{self.client.pk}/")
+        request = self.factory.get(f"/participants/{self.client.pk}/")
         request.user = self.counsellor
         request.session = {}
         response = self.middleware(request)
@@ -81,7 +81,7 @@ class RoleHierarchyTest(TestCase):
         self.assertEqual(request.user_program_role, "staff")
 
     def test_manager_gets_program_manager_role(self):
-        request = self.factory.get(f"/clients/{self.client.pk}/")
+        request = self.factory.get(f"/participants/{self.client.pk}/")
         request.user = self.manager
         request.session = {}
         response = self.middleware(request)

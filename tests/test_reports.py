@@ -2421,7 +2421,7 @@ class IndividualClientExportViewTests(TestCase):
     def test_export_button_on_client_detail(self):
         """The client detail page should show an 'Export All Data' button for staff."""
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.get(f"/clients/{self.client_file.pk}/")
+        resp = self.client.get(f"/participants/{self.client_file.pk}/")
         self.assertContains(resp, "Export All Data")
         self.assertContains(resp, self.export_url)
 
