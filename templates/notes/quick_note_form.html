@@ -51,20 +51,9 @@
     </div>
     {% endif %}
 
-    <!-- Sticky footer with consent and save -->
-    <div class="sticky-form-footer{% if form.consent_confirmed.errors %} has-error{% endif %}" role="region" aria-label="{% trans 'Consent and save' %}">
+    <!-- Sticky footer with save -->
+    <div class="sticky-form-footer" role="region" aria-label="{% trans 'Save' %}">
         <div class="sticky-form-footer-inner">
-            <div class="consent-section">
-                <label for="{{ form.consent_confirmed.id_for_label }}">
-                    {{ form.consent_confirmed }}
-                    {% trans "We created this note together (this is recommended)" %}
-                </label>
-                {% if form.consent_confirmed.errors %}
-                <div id="consent-errors" role="alert">
-                    {{ form.consent_confirmed.errors }}
-                </div>
-                {% endif %}
-            </div>
             <span class="autosave-indicator" id="autosave-status" hidden aria-live="polite" role="status">
                 <span class="status-text">{% trans "Saved" %}</span>
             </span>
