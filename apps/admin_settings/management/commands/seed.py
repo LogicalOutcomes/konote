@@ -432,29 +432,53 @@ class Command(BaseCommand):
         return f"{username}@example.com"
 
     def _seed_demo_portal_participant(self):
-        """Create a demo ParticipantUser so the portal can be tested."""
+        """Create demo ParticipantUsers and invites so the portal can be tested."""
+        from datetime import timedelta
+
+        from django.utils import timezone
+
         from apps.clients.models import ClientFile
         from apps.plans.models import MetricDefinition
-        from apps.portal.models import ParticipantUser
+        from apps.portal.models import ParticipantUser, PortalInvite
 
-        demo_client = ClientFile.objects.filter(record_id="DEMO-001").first()
-        if not demo_client:
-            self.stdout.write("  ⚠ DEMO-001 not found — skipping portal participant.")
-            return
+        # Portal accounts: DEMO-001 (Jordan), DEMO-004 (Sam), DEMO-010 (Amara)
+        portal_accounts = [
+            ("DEMO-001", "demo-portal", "Jordan"),
+            ("DEMO-004", "demo-portal-sam", "Sam"),
+            ("DEMO-010", "demo-portal-amara", "Amara"),
+        ]
+        for record_id, email_user, display_name in portal_accounts:
+            client = ClientFile.objects.filter(record_id=record_id).first()
+            if not client:
+                self.stdout.write(f"  \u26a0 {record_id} not found — skipping portal account.")
+                continue
+            if not ParticipantUser.objects.filter(client_file=client).exists():
+                participant = ParticipantUser.objects.create_participant(
+                    email=self._demo_email(email_user),
+                    client_file=client,
+                    display_name=display_name,
+                    password="demo1234",
+                )
+                participant.mfa_method = "exempt"
+                participant.journal_disclosure_shown = True
+                participant.save(update_fields=["mfa_method", "journal_disclosure_shown"])
+                self.stdout.write(f"  Demo portal participant: {display_name} ({record_id}) created.")
+            else:
+                self.stdout.write(f"  Demo portal participant: {display_name} ({record_id}) already exists.")
 
-        if not ParticipantUser.objects.filter(client_file=demo_client).exists():
-            participant = ParticipantUser.objects.create_participant(
-                email=self._demo_email("demo-portal"),
-                client_file=demo_client,
-                display_name="Jordan",
-                password="demo1234",
-            )
-            participant.mfa_method = "exempt"
-            participant.journal_disclosure_shown = True
-            participant.save(update_fields=["mfa_method", "journal_disclosure_shown"])
-            self.stdout.write("  Demo portal participant: Jordan (DEMO-001) created.")
-        else:
-            self.stdout.write("  Demo portal participant: already exists.")
+        # Pending invite for DEMO-002
+        demo_002 = ClientFile.objects.filter(record_id="DEMO-002").first()
+        if demo_002 and not PortalInvite.objects.filter(client_file=demo_002, status="pending").exists():
+            from apps.auth_app.models import User
+            admin = User.objects.filter(is_staff=True).first()
+            if admin:
+                PortalInvite.objects.create(
+                    client_file=demo_002,
+                    invited_by=admin,
+                    verbal_code="1234",
+                    expires_at=timezone.now() + timedelta(days=7),
+                )
+                self.stdout.write("  Demo portal invite: DEMO-002 pending invite created.")
 
         # Make some metrics portal-visible so the demo shows charts
         portal_metrics = [

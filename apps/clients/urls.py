@@ -6,7 +6,13 @@ from django.shortcuts import render
 from django.urls import path
 from django.utils import timezone
 
-from apps.portal.staff_views import create_staff_portal_note
+from apps.portal.staff_views import (
+    create_portal_invite,
+    create_staff_portal_note,
+    portal_manage,
+    portal_reset_mfa,
+    portal_revoke_access,
+)
 
 from . import erasure_views, views
 
@@ -132,4 +138,9 @@ urlpatterns = [
     path("<int:client_id>/erase/", erasure_views.erasure_request_create, name="client_erasure_request"),
     # Portal staff note
     path("<int:client_id>/portal-note/", create_staff_portal_note, name="create_staff_portal_note"),
+    # Portal management
+    path("<int:client_id>/portal-invite/", create_portal_invite, name="create_portal_invite"),
+    path("<int:client_id>/portal/", portal_manage, name="portal_manage"),
+    path("<int:client_id>/portal/revoke/", portal_revoke_access, name="portal_revoke"),
+    path("<int:client_id>/portal/reset-mfa/", portal_reset_mfa, name="portal_reset_mfa"),
 ]

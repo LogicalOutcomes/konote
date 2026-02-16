@@ -80,6 +80,10 @@
             {% if can_see_meetings %}
             <li><a href="{% url 'events:meeting_list' %}"{% if nav_active == "meetings" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Meetings" %}</a></li>
             {% endif %}
+            {% has_permission "message.view" as can_see_messages %}
+            {% if can_see_messages %}
+            <li><a href="{% url 'communications:my_messages' %}"{% if nav_active == "messages" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Messages" %}{% if unread_message_count %} <span class="badge badge-warning">{{ unread_message_count }}</span>{% endif %}</a></li>
+            {% endif %}
             {% if has_program_roles and not can_see_clients %}
             <li><a href="{% url 'clients:executive_dashboard' %}"{% if nav_active == "executive" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Dashboard" %}</a></li>
             {% endif %}
@@ -101,6 +105,7 @@
                 <details class="dropdown" role="list">
                     <summary aria-haspopup="listbox"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Admin" %}</summary>
                     <ul role="listbox">
+                        <li><a href="{% url 'reports:team_meeting_view' %}">{% trans "Team Activity" %}</a></li>
                         <li><a href="/plans/admin/metrics/">{{ term.metric_plural|default:"Metrics" }}</a></li>
                         <li><a href="/admin/templates/">{% trans "Plan Templates" %}</a></li>
                         <li><a href="/admin/settings/note-templates/">{% trans "Note Templates" %}</a></li>
@@ -129,6 +134,7 @@
                 <details class="dropdown" role="list">
                     <summary aria-haspopup="listbox"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Manage" %}</summary>
                     <ul role="listbox">
+                        <li><a href="{% url 'reports:team_meeting_view' %}">{% trans "Team Activity" %}</a></li>
                         {% if can_manage_users %}
                         <li><a href="/admin/users/">{% trans "Team Members" %}</a></li>
                         {% endif %}

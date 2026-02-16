@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Leave Message" %} — {{ client.display_name }}{% endblock %}
+
+{% block content %}
+{% if breadcrumbs %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul>
+        {% for crumb in breadcrumbs %}
+        {% if crumb.url %}<li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+        {% else %}<li>{{ crumb.label }}</li>{% endif %}
+        {% endfor %}
+    </ul>
+</nav>
+{% endif %}
+
+<h1>{% blocktrans with name=client.display_name %}Leave Message about {{ name }}{% endblocktrans %}</h1>
+
+<p>{% blocktrans with term=term.client|default:"participant" %}Leave a message for the case worker assigned to this {{ term }}.{% endblocktrans %}</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label for="id_for_user">{{ form.for_user.label }}</label>
+    {{ form.for_user }}
+    <small>{% trans "Leave blank to notify all case workers on this file." %}</small>
+
+    <label for="id_message">{{ form.message.label }}</label>
+    {{ form.message }}
+    {% if form.message.errors %}
+    <small class="error">{{ form.message.errors.0 }}</small>
+    {% endif %}
+
+    <div class="grid">
+        <button type="submit">{% trans "Leave Message" %}</button>
+        <a href="{% url 'clients:client_detail' client.pk %}" role="button" class="secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

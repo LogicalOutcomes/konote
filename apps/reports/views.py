@@ -1237,6 +1237,142 @@ def manage_export_links(request):
 
 
 @login_required
+def team_meeting_view(request):
+    """Staff activity summary for team meetings — PM/admin only.
+
+    Groups recent activity (notes, meetings, comms) by staff member.
+    Shows last 7 days by default, configurable to 14 or 30.
+    """
+    from datetime import timedelta
+
+    from django.db.models import Count, Max, Q
+    from django.utils.translation import gettext as _
+
+    from apps.auth_app.decorators import _get_user_highest_role
+    from apps.auth_app.constants import ROLE_RANK
+    from apps.programs.models import UserProgramRole, Program
+    from apps.programs.access import get_user_program_ids
+    from apps.notes.models import ProgressNote
+    from apps.communications.models import Communication
+    from apps.events.models import Meeting
+
+    # Check PM/admin permission
+    role = _get_user_highest_role(request.user)
+    if ROLE_RANK.get(role, 0) < ROLE_RANK.get("program_manager", 99):
+        if not getattr(request.user, "is_admin", False):
+            return HttpResponseForbidden(_("This view is for program managers only."))
+
+    # Get accessible programs
+    user_program_ids = list(get_user_program_ids(request.user))
+    accessible_programs = Program.objects.filter(pk__in=user_program_ids, status="active")
+
+    # Date range filter
+    days = request.GET.get("days", "7")
+    try:
+        days = int(days)
+    except (ValueError, TypeError):
+        days = 7
+    if days not in (7, 14, 30):
+        days = 7
+    cutoff = timezone.now() - timedelta(days=days)
+
+    # Program filter
+    program_filter = request.GET.get("program", "")
+    if program_filter:
+        try:
+            filter_program_ids = [int(program_filter)]
+            # Ensure the user has access to this program
+            filter_program_ids = [pid for pid in filter_program_ids if pid in user_program_ids]
+        except (ValueError, TypeError):
+            filter_program_ids = user_program_ids
+    else:
+        filter_program_ids = user_program_ids
+
+    # Get staff members in filtered programs
+    staff_roles = UserProgramRole.objects.filter(
+        program_id__in=filter_program_ids,
+        role__in=["staff", "program_manager"],
+        status="active",
+    ).select_related("user", "program").order_by("user__display_name")
+
+    # Deduplicate by user and collect role/program info
+    user_map = {}  # user_id -> {user, role_display}
+    user_programs_map = {}  # user_id -> [program_name, ...]
+    for role_obj in staff_roles:
+        uid = role_obj.user.pk
+        if uid not in user_map:
+            user_map[uid] = {"user": role_obj.user, "role_display": role_obj.get_role_display()}
+            user_programs_map[uid] = []
+        user_programs_map[uid].append(role_obj.program.name)
+
+    staff_user_ids = list(user_map.keys())
+
+    # Batch aggregation: 3 aggregate queries instead of 7N individual queries
+    note_agg = {}
+    for row in ProgressNote.objects.filter(
+        author_id__in=staff_user_ids,
+        author_program_id__in=filter_program_ids,
+        created_at__gte=cutoff,
+        status="default",
+    ).values("author_id").annotate(
+        count=Count("pk"), last_date=Max("created_at"),
+    ):
+        note_agg[row["author_id"]] = (row["count"], row["last_date"])
+
+    comm_agg = {}
+    for row in Communication.objects.filter(
+        logged_by_id__in=staff_user_ids,
+        author_program_id__in=filter_program_ids,
+        created_at__gte=cutoff,
+    ).values("logged_by_id").annotate(
+        count=Count("pk"), last_date=Max("created_at"),
+    ):
+        comm_agg[row["logged_by_id"]] = (row["count"], row["last_date"])
+
+    meeting_agg = {}
+    for row in Meeting.objects.filter(
+        attendees__in=staff_user_ids,
+        event__start_timestamp__gte=cutoff,
+    ).values("attendees").annotate(
+        count=Count("pk"), last_date=Max("event__start_timestamp"),
+    ):
+        meeting_agg[row["attendees"]] = (row["count"], row["last_date"])
+
+    # Build activity list from aggregated results
+    staff_activity = []
+    for uid, info in user_map.items():
+        note_count, last_note = note_agg.get(uid, (0, None))
+        comm_count, last_comm = comm_agg.get(uid, (0, None))
+        meeting_count, last_meeting = meeting_agg.get(uid, (0, None))
+        total = note_count + comm_count + meeting_count
+
+        staff_activity.append({
+            "user": info["user"],
+            "role_display": info["role_display"],
+            "programs": user_programs_map.get(uid, []),
+            "note_count": note_count,
+            "comm_count": comm_count,
+            "meeting_count": meeting_count,
+            "total_activity": total,
+            "last_note": last_note,
+            "last_comm": last_comm,
+            "last_meeting": last_meeting,
+        })
+
+    # Sort: most active first, then alphabetical
+    staff_activity.sort(key=lambda x: (-x["total_activity"], x["user"].display_name))
+
+    return render(request, "reports/team_meeting.html", {
+        "staff_activity": staff_activity,
+        "accessible_programs": accessible_programs,
+        "program_filter": program_filter,
+        "days": days,
+        "cutoff": cutoff,
+        "nav_active": "admin",
+    })
+
+
+@login_required
 @admin_required
 def revoke_export_link(request, link_id):
     """

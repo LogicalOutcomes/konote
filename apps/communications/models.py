@@ -181,3 +181,70 @@ class SystemHealthCheck(models.Model):
         obj.consecutive_failures += 1
         obj.last_failure_reason = reason[:255]
         obj.save(update_fields=["last_failure_at", "consecutive_failures", "last_failure_reason"])
+
+
+class StaffMessage(models.Model):
+    """Staff-to-staff messages about participants — operational, not clinical.
+
+    Use case: Front desk leaves message for case worker ("Mike called, wants to reschedule").
+    Content is encrypted because it may contain client name (PII).
+    """
+
+    STATUS_CHOICES = [
+        ("unread", _("Unread")),
+        ("read", _("Read")),
+        ("archived", _("Archived")),
+    ]
+
+    client_file = models.ForeignKey(
+        "clients.ClientFile",
+        on_delete=models.CASCADE,
+        related_name="staff_messages",
+    )
+    _content_encrypted = models.BinaryField()
+    left_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="left_messages",
+    )
+    for_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="received_messages",
+        help_text=_("Staff member this message is for. Blank = any case worker on this file."),
+    )
+    status = models.CharField(max_length=20, default="unread", choices=STATUS_CHOICES)
+    author_program = models.ForeignKey(
+        "programs.Program",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        app_label = "communications"
+        db_table = "staff_messages"
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["client_file", "-created_at"]),
+            models.Index(fields=["for_user", "status", "-created_at"]),
+        ]
+
+    def __str__(self):
+        date_str = self.created_at.strftime("%Y-%m-%d %H:%M") if self.created_at else "(no date)"
+        by_who = self.left_by.display_name if self.left_by else "Unknown"
+        return f"Message from {by_who} — {date_str}"
+
+    @property
+    def content(self):
+        return decrypt_field(self._content_encrypted)
+
+    @content.setter
+    def content(self, value):
+        self._content_encrypted = encrypt_field(value)

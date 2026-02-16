@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Invite to Portal" %} — {{ client_file }}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Invite to Portal" %}</h1>
+<p>{% blocktrans %}Create a secure link for this participant to set up their portal account. The link expires after 7 days.{% endblocktrans %}</p>
+
+{% if created_invite %}
+{# Invite was just created — show success and details #}
+<article aria-label="{% trans 'Invite created' %}" style="border-left: 4px solid var(--pico-primary); background: var(--pico-card-background-color);">
+    <h2>{% trans "Invite created" %}</h2>
+
+    <p><strong>{% trans "Share this link with the participant:" %}</strong></p>
+    <pre style="word-break: break-all; white-space: pre-wrap; user-select: all;">{{ invite_url }}</pre>
+
+    {% if created_invite.verbal_code %}
+    <p><strong>{% trans "Verification code:" %}</strong> <code>{{ created_invite.verbal_code }}</code></p>
+    <p class="secondary"><small>{% trans "Share this code verbally — do not write it down or include it in the link." %}</small></p>
+    {% endif %}
+
+    <p class="secondary"><small>{% trans "Expires:" %} {{ created_invite.expires_at|date:"N j, Y g:i A" }}</small></p>
+</article>
+
+<div class="button-group">
+    <a href="{% url 'clients:client_detail' client_id=client_file.pk %}" role="button">{% trans "Back to participant" %}</a>
+    <a href="{% url 'clients:portal_manage' client_id=client_file.pk %}" role="button" class="outline secondary">{% trans "Manage portal access" %}</a>
+</div>
+
+{% else %}
+{# Show the invite form #}
+
+{% if existing_invite %}
+<article aria-label="{% trans 'Existing invite' %}" style="border-left: 4px solid var(--pico-muted-border-color); background: var(--pico-card-background-color);">
+    <p>{% trans "A pending invite already exists for this participant." %}</p>
+    <p class="secondary"><small>{% trans "Expires:" %} {{ existing_invite.expires_at|date:"N j, Y g:i A" }}</small></p>
+    <p class="secondary"><small>{% trans "You can create a new invite — the old one will remain valid until it expires." %}</small></p>
+</article>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+
+    <label for="id_verbal_code">{{ form.verbal_code.label }}</label>
+    {{ form.verbal_code }}
+    {% if form.verbal_code.help_text %}
+    <small>{{ form.verbal_code.help_text }}</small>
+    {% endif %}
+    {% if form.verbal_code.errors %}
+    <p role="alert" class="error">{{ form.verbal_code.errors.0 }}</p>
+    {% endif %}
+
+    <div class="button-group">
+        <button type="submit">{% trans "Create invite" %}</button>
+        <a href="{% url 'clients:client_detail' client_id=client_file.pk %}" class="secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endif %}
+{% endblock %}
