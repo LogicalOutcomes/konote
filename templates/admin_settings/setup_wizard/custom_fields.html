@@ -1,0 +1,54 @@
+{% extends "admin_settings/setup_wizard/_wizard_base.html" %}
+{% load i18n %}
+
+{% block wizard_content %}
+<h2>{% trans "Step 7: Custom Fields" %}</h2>
+<p>{% trans "Define custom field groups for client intake forms. You can add individual fields to each group later." %}</p>
+
+<form method="post" id="fields-form">
+    {% csrf_token %}
+
+    <div id="groups-list">
+        {% if current_data %}
+            {% for grp in current_data %}
+            <fieldset class="repeatable-group">
+                <legend class="sr-only">{% trans "Field Group" %} {{ forloop.counter }}</legend>
+                <label>{% trans "Group Title" %}
+                    <input type="text" name="group_title" value="{{ grp.title }}" required>
+                </label>
+            </fieldset>
+            {% endfor %}
+        {% else %}
+            <fieldset class="repeatable-group">
+                <legend class="sr-only">{% trans "Field Group" %} 1</legend>
+                <label>{% trans "Group Title" %}
+                    <input type="text" name="group_title" placeholder="{% trans 'e.g. Demographics' %}">
+                </label>
+            </fieldset>
+        {% endif %}
+    </div>
+
+    <button type="button" class="add-btn" onclick="addGroup()">+ {% trans "Add another group" %}</button>
+
+    <div class="wizard-nav">
+        <a href="{% url 'admin_settings:setup_wizard_step' step='plan_templates' %}" role="button" class="outline">&larr; {% trans "Back" %}</a>
+        <span class="spacer"></span>
+        <button type="submit">{% trans "Next: Review" %} &rarr;</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function addGroup() {
+    var list = document.getElementById("groups-list");
+    var count = list.querySelectorAll(".repeatable-group").length + 1;
+    var group = document.createElement("fieldset");
+    group.className = "repeatable-group";
+    group.innerHTML = "<legend class=\"sr-only\">Field Group " + count + "</legend>" +
+        "<label>Group Title<input type=\"text\" name=\"group_title\"></label>";
+    list.appendChild(group);
+    group.querySelector("input").focus();
+}
+</script>
+{% endblock %}

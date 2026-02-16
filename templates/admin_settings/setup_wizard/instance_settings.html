@@ -1,0 +1,44 @@
+{% extends "admin_settings/setup_wizard/_wizard_base.html" %}
+{% load i18n %}
+
+{% block wizard_content %}
+<h2>{% trans "Step 1: Instance Settings" %}</h2>
+<p>{% trans "Set up basic information about your organisation." %}</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label for="product_name">{% trans "Product Name" %}</label>
+    <input type="text" id="product_name" name="product_name"
+           value="{{ current_data.product_name|default:'KoNote' }}"
+           placeholder="KoNote"
+           aria-describedby="product_name_help">
+    <small id="product_name_help">{% trans "Shown in the header and page titles." %}</small>
+
+    <label for="support_email">{% trans "Support Email" %}</label>
+    <input type="email" id="support_email" name="support_email"
+           value="{{ current_data.support_email|default:'' }}"
+           placeholder="support@example.ca"
+           aria-describedby="support_email_help">
+    <small id="support_email_help">{% trans "Displayed in the footer for staff to contact." %}</small>
+
+    <label for="logo_url">{% trans "Logo URL" %}</label>
+    <input type="url" id="logo_url" name="logo_url"
+           value="{{ current_data.logo_url|default:'' }}"
+           placeholder="https://example.ca/logo.png"
+           aria-describedby="logo_url_help">
+    <small id="logo_url_help">{% trans "URL to your organisation logo image. Optional." %}</small>
+
+    <label for="date_format">{% trans "Date Format" %}</label>
+    <select id="date_format" name="date_format">
+        <option value="YYYY-MM-DD"{% if current_data.date_format == 'YYYY-MM-DD' or not current_data.date_format %} selected{% endif %}>2026-02-16 (ISO)</option>
+        <option value="MMM D, YYYY"{% if current_data.date_format == 'MMM D, YYYY' %} selected{% endif %}>Feb 16, 2026</option>
+        <option value="DD/MM/YYYY"{% if current_data.date_format == 'DD/MM/YYYY' %} selected{% endif %}>16/02/2026</option>
+    </select>
+
+    <div class="wizard-nav">
+        <span class="spacer"></span>
+        <button type="submit">{% trans "Next: Terminology" %} &rarr;</button>
+    </div>
+</form>
+{% endblock %}
