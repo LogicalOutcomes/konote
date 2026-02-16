@@ -1,0 +1,68 @@
+{% extends "admin_settings/setup_wizard/_wizard_base.html" %}
+{% load i18n %}
+
+{% block wizard_content %}
+<h2>{% trans "Step 4: Programs" %}</h2>
+<p>{% trans "Add the programs your organisation runs. You can add more later." %}</p>
+
+<form method="post" id="programs-form">
+    {% csrf_token %}
+
+    <div id="programs-list">
+        {% if current_data %}
+            {% for prog in current_data %}
+            <fieldset class="repeatable-group">
+                <legend class="sr-only">{% trans "Program" %} {{ forloop.counter }}</legend>
+                <label>{% trans "Program Name" %}
+                    <input type="text" name="program_name" value="{{ prog.name }}" required>
+                </label>
+                <label>{% trans "Description" %}
+                    <textarea name="program_description" rows="2">{{ prog.description }}</textarea>
+                </label>
+                <label>{% trans "Colour" %}
+                    <input type="color" name="program_colour" value="{{ prog.colour_hex|default:'#3B82F6' }}">
+                </label>
+            </fieldset>
+            {% endfor %}
+        {% else %}
+            <fieldset class="repeatable-group">
+                <legend class="sr-only">{% trans "Program" %} 1</legend>
+                <label>{% trans "Program Name" %}
+                    <input type="text" name="program_name" placeholder="{% trans 'e.g. Youth Housing' %}">
+                </label>
+                <label>{% trans "Description" %}
+                    <textarea name="program_description" rows="2" placeholder="{% trans 'Brief description of this program' %}"></textarea>
+                </label>
+                <label>{% trans "Colour" %}
+                    <input type="color" name="program_colour" value="#3B82F6">
+                </label>
+            </fieldset>
+        {% endif %}
+    </div>
+
+    <button type="button" class="add-btn" onclick="addProgram()">+ {% trans "Add another program" %}</button>
+
+    <div class="wizard-nav">
+        <a href="{% url 'admin_settings:setup_wizard_step' step='features' %}" role="button" class="outline">&larr; {% trans "Back" %}</a>
+        <span class="spacer"></span>
+        <button type="submit">{% trans "Next: Metrics" %} &rarr;</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function addProgram() {
+    var list = document.getElementById("programs-list");
+    var count = list.querySelectorAll(".repeatable-group").length + 1;
+    var group = document.createElement("fieldset");
+    group.className = "repeatable-group";
+    group.innerHTML = "<legend class=\"sr-only\">Program " + count + "</legend>" +
+        "<label>Program Name<input type=\"text\" name=\"program_name\"></label>" +
+        "<label>Description<textarea name=\"program_description\" rows=\"2\"></textarea></label>" +
+        "<label>Colour<input type=\"color\" name=\"program_colour\" value=\"#3B82F6\"></label>";
+    list.appendChild(group);
+    group.querySelector("input").focus();
+}
+</script>
+{% endblock %}

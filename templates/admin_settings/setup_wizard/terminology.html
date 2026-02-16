@@ -1,0 +1,43 @@
+{% extends "admin_settings/setup_wizard/_wizard_base.html" %}
+{% load i18n %}
+
+{% block wizard_content %}
+<h2>{% trans "Step 2: Terminology" %}</h2>
+<p>{% trans "Customise the words used throughout the system. Leave blank to keep the default." %}</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <figure>
+    <table role="grid" aria-label="{% trans 'Terminology overrides' %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Term" %}</th>
+                <th scope="col">{% trans "Default" %}</th>
+                <th scope="col">{% trans "Your Term" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for key, defaults in default_terms.items %}
+            <tr>
+                <td><strong>{{ key }}</strong></td>
+                <td>{{ defaults.0 }}</td>
+                <td>
+                    <input type="text" name="term_{{ key }}"
+                           value="{% if key in current_data %}{{ current_data|dictsort:key }}{% endif %}"
+                           placeholder="{{ defaults.0 }}"
+                           aria-label="{% blocktrans with term=key %}Override for {{ term }}{% endblocktrans %}">
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </figure>
+
+    <div class="wizard-nav">
+        <a href="{% url 'admin_settings:setup_wizard_step' step='instance_settings' %}" role="button" class="outline">&larr; {% trans "Back" %}</a>
+        <span class="spacer"></span>
+        <button type="submit">{% trans "Next: Features" %} &rarr;</button>
+    </div>
+</form>
+{% endblock %}

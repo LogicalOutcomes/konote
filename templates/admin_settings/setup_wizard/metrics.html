@@ -1,0 +1,61 @@
+{% extends "admin_settings/setup_wizard/_wizard_base.html" %}
+{% load i18n %}
+
+{% block wizard_content %}
+<h2>{% trans "Step 5: Metrics" %}</h2>
+<p>{% trans "Choose which metrics to enable from the library. You can change these later." %}</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    <div style="margin-bottom: 1rem;">
+        <button type="button" class="outline" onclick="toggleAll(true)">{% trans "Select All" %}</button>
+        <button type="button" class="outline" onclick="toggleAll(false)">{% trans "Deselect All" %}</button>
+    </div>
+
+    <figure>
+    <table role="grid" aria-label="{% trans 'Metric library' %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Metric" %}</th>
+                <th scope="col">{% trans "Definition" %}</th>
+                <th scope="col">{% trans "Category" %}</th>
+                <th scope="col">{% trans "Enable" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in metrics %}
+            <tr>
+                <td><strong>{{ m.name }}</strong></td>
+                <td>{{ m.definition }}</td>
+                <td>{{ m.category }}</td>
+                <td>
+                    <input type="checkbox" name="metric_{{ m.name }}"
+                           {% if m.is_enabled %}checked{% endif %}
+                           role="switch"
+                           aria-label="{% blocktrans with metric=m.name %}Toggle {{ metric }}{% endblocktrans %}">
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </figure>
+
+    <div class="wizard-nav">
+        <a href="{% url 'admin_settings:setup_wizard_step' step='programs' %}" role="button" class="outline">&larr; {% trans "Back" %}</a>
+        <span class="spacer"></span>
+        <button type="submit">{% trans "Next: Plan Templates" %} &rarr;</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleAll(state) {
+    var checkboxes = document.querySelectorAll("table input[type=checkbox]");
+    for (var i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = state;
+    }
+}
+</script>
+{% endblock %}
