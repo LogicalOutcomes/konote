@@ -1712,9 +1712,10 @@ class FunderReportViewTests(TestCase):
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get("/reports/funder-report/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Preview available reporting templates")
+        self.assertContains(resp, "template-preview")
         self.assertContains(resp, "Canadian Community Foundation")
         self.assertContains(resp, "Child (0-12)")
+        self.assertContains(resp, "Demographic breakdowns in this template:")
 
     def _get_download_content(self, download_resp):
         """Read content from a download response (streaming or regular)."""

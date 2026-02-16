@@ -120,53 +120,50 @@
         <small class="error" role="alert">{{ form.report_template.errors.0 }}</small>
         {% endif %}
     </label>
-    {% endif %}
 
-    {% if template_preview_items %}
-    <details style="margin-bottom: 1rem;">
-        <summary>{% trans "Preview available reporting templates" %}</summary>
-        {% for preview_template in template_preview_items %}
-        <article style="margin-top: 0.75rem;">
-            <header>
-                <strong>{{ preview_template.name }}</strong>
-                {% if preview_template.description %}
-                <br><small class="secondary">{{ preview_template.description }}</small>
-                {% endif %}
-            </header>
+    {# Dynamic preview: shows breakdowns for the selected template #}
+    {% for preview_template in template_preview_items %}
+    <article class="template-preview" data-template-id="{{ preview_template.pk }}"
+             style="display: none; margin-bottom: 1rem; border-left: 4px solid var(--pico-color-blue-500); padding: 0.75rem 1rem;"
+             aria-live="polite">
+        <strong>{{ preview_template.name }}</strong>
+        {% if preview_template.description %}
+        <br><small class="secondary">{{ preview_template.description }}</small>
+        {% endif %}
 
-            {% for bd in preview_template.breakdowns.all %}
-            <p style="margin-bottom: 0.25rem;"><strong>{{ bd.label }}</strong> —
-                {% if bd.source_type == "age" %}
-                {% trans "Age" %}
-                {% else %}
-                {% trans "Custom field" %}{% if bd.custom_field %}: {{ bd.custom_field.name }}{% endif %}
-                {% endif %}
-            </p>
-            {% if bd.source_type == "age" and bd.bins_json %}
-            <ul style="margin-top: 0; margin-bottom: 0.5rem;">
-                {% for age_bin in bd.bins_json %}
-                <li>{{ age_bin.label }}</li>
-                {% endfor %}
-            </ul>
-            {% elif bd.source_type == "custom_field" %}
-            <p style="margin-top: 0; margin-bottom: 0.5rem;">
-                <small>
-                    {% if bd.keep_all_categories %}
-                    {% trans "Keeps all source categories" %}
-                    {% elif bd.merge_categories_json %}
-                    {% blocktrans with count=bd.merge_categories_json|length %}Includes {{ count }} category merge group(s){% endblocktrans %}
-                    {% else %}
-                    {% trans "No category merges configured" %}
-                    {% endif %}
-                </small>
-            </p>
+        <p style="margin-top: 0.5rem; margin-bottom: 0.25rem;"><strong>{% trans "Demographic breakdowns in this template:" %}</strong></p>
+        {% for bd in preview_template.breakdowns.all %}
+        <p style="margin-bottom: 0.25rem; padding-left: 1rem;"><strong>{{ bd.label }}</strong> —
+            {% if bd.source_type == "age" %}
+            {% trans "Age" %}
+            {% else %}
+            {% trans "Custom field" %}{% if bd.custom_field %}: {{ bd.custom_field.name }}{% endif %}
             {% endif %}
-            {% empty %}
-            <p><small>{% trans "No demographic breakdowns configured." %}</small></p>
+        </p>
+        {% if bd.source_type == "age" and bd.bins_json %}
+        <ul style="margin-top: 0; margin-bottom: 0.5rem; padding-left: 2rem;">
+            {% for age_bin in bd.bins_json %}
+            <li>{{ age_bin.label }}</li>
             {% endfor %}
-        </article>
+        </ul>
+        {% elif bd.source_type == "custom_field" %}
+        <p style="margin-top: 0; margin-bottom: 0.5rem; padding-left: 1rem;">
+            <small>
+                {% if bd.keep_all_categories %}
+                {% trans "Keeps all source categories" %}
+                {% elif bd.merge_categories_json %}
+                {% blocktrans with count=bd.merge_categories_json|length %}Includes {{ count }} category merge group(s){% endblocktrans %}
+                {% else %}
+                {% trans "No category merges configured" %}
+                {% endif %}
+            </small>
+        </p>
+        {% endif %}
+        {% empty %}
+        <p><small>{% trans "No demographic breakdowns configured." %}</small></p>
         {% endfor %}
-    </details>
+    </article>
+    {% endfor %}
     {% endif %}
 
     {# Grouping (used when no reporting template is selected) #}
@@ -308,6 +305,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 cb.checked = false;
             });
         });
+    }
+
+    // Dynamic template preview — show breakdowns for the selected template
+    var templateSelect = document.getElementById('id_report_template');
+    if (templateSelect) {
+        function showSelectedPreview() {
+            var previews = document.querySelectorAll('.template-preview');
+            previews.forEach(function(el) { el.style.display = 'none'; });
+
+            var selected = templateSelect.value;
+            if (selected) {
+                var match = document.querySelector('.template-preview[data-template-id="' + selected + '"]');
+                if (match) match.style.display = 'block';
+            }
+        }
+
+        templateSelect.addEventListener('change', showSelectedPreview);
+        showSelectedPreview();
     }
 });
 </script>

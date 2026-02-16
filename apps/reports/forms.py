@@ -138,11 +138,17 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         if user:
             from .utils import get_manageable_programs
             accessible_programs = get_manageable_programs(user)
-            self.fields["report_template"].queryset = (
+            template_qs = (
                 ReportTemplate.objects.filter(
                     programs__in=accessible_programs
                 ).distinct().order_by("name")
             )
+            if template_qs.exists():
+                self.fields["report_template"].queryset = template_qs
+            else:
+                del self.fields["report_template"]
+        else:
+            del self.fields["report_template"]
         # Add recipient tracking fields for audit purposes
         self.add_recipient_fields()
 
@@ -261,11 +267,17 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
         if user:
             from .utils import get_manageable_programs
             accessible_programs = get_manageable_programs(user)
-            self.fields["report_template"].queryset = (
+            template_qs = (
                 ReportTemplate.objects.filter(
                     programs__in=accessible_programs
                 ).distinct().order_by("name")
             )
+            if template_qs.exists():
+                self.fields["report_template"].queryset = template_qs
+            else:
+                del self.fields["report_template"]
+        else:
+            del self.fields["report_template"]
         # Add recipient tracking fields for audit purposes
         self.add_recipient_fields()
 

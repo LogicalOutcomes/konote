@@ -319,6 +319,8 @@ def export_form(request):
     is_pm_export = not is_aggregate and not request.user.is_admin
 
     def _template_previews(bound_form):
+        if "report_template" not in bound_form.fields:
+            return ReportTemplate.objects.none()
         return (
             bound_form.fields["report_template"].queryset
             .prefetch_related("breakdowns__custom_field")
@@ -954,6 +956,8 @@ def funder_report_form(request):
     - Outcome achievement rates
     """
     def _template_preview_items(bound_form):
+        if "report_template" not in bound_form.fields:
+            return ReportTemplate.objects.none()
         return (
             bound_form.fields["report_template"].queryset
             .prefetch_related("breakdowns__custom_field")
