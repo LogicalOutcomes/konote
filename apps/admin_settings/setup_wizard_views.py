@@ -1,9 +1,10 @@
 """Setup wizard views for first-run guided configuration."""
 import json
 
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.utils.translation import gettext as _
 
@@ -278,7 +279,8 @@ def _handle_review(request, context, wizard_data):
             messages.success(request, _("Setup configuration applied successfully."))
             return redirect("admin_settings:setup_wizard_complete")
         except Exception as e:
-            messages.error(request, _("Error applying configuration: ") + str(e))
+            logging.getLogger("konote.setup").exception("Setup wizard apply failed")
+            messages.error(request, _("Error applying configuration. Please check the logs and try again."))
 
     # Preview what will be applied
     preview = apply_setup_config(wizard_data, dry_run=True)
