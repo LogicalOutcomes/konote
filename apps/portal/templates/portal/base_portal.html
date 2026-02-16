@@ -70,6 +70,13 @@
             <li><a href="{% url 'portal:dashboard' %}" {% if portal_page == 'dashboard' %}aria-current="page"{% endif %}>{% trans "Home" %}</a></li>
             <li><a href="{% url 'portal:goals' %}" {% if portal_page == 'goals' %}aria-current="page"{% endif %}>{% trans "My Goals" %}</a></li>
             <li><a href="{% url 'portal:progress' %}" {% if portal_page == 'progress' %}aria-current="page"{% endif %}>{% trans "My Progress" %}</a></li>
+            <li><a href="{% url 'portal:milestones' %}" {% if portal_page == 'milestones' %}aria-current="page"{% endif %}>{% trans "Milestones" %}</a></li>
+            {% if features.portal_journal %}
+            <li><a href="{% url 'portal:journal' %}" {% if portal_page == 'journal' %}aria-current="page"{% endif %}>{% trans "My Journal" %}</a></li>
+            {% endif %}
+            {% if features.portal_messaging %}
+            <li><a href="{% url 'portal:message_to_worker' %}" {% if portal_page == 'message' %}aria-current="page"{% endif %}>{% trans "Messages" %}</a></li>
+            {% endif %}
             <li><a href="{% url 'portal:settings' %}" {% if portal_page == 'settings' %}aria-current="page"{% endif %}>{% trans "Settings" %}</a></li>
         </ul>
         <ul>

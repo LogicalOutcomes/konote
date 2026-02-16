@@ -274,8 +274,14 @@ def portal_context(request):
             page = "dashboard"
         elif url_name in ("goals", "goal_detail"):
             page = "goals"
-        elif url_name in ("progress", "milestones"):
+        elif url_name == "progress":
             page = "progress"
+        elif url_name == "milestones":
+            page = "milestones"
+        elif url_name in ("journal", "journal_new", "journal_disclosure"):
+            page = "journal"
+        elif url_name in ("message_to_worker", "discuss_next"):
+            page = "message"
         elif url_name == "settings":
             page = "settings"
 
