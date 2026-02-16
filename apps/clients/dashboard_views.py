@@ -175,7 +175,7 @@ def executive_dashboard(request):
     client records. This protects client confidentiality while giving
     leadership the oversight they need.
     """
-    from apps.clients.models import ClientFile, ClientProgramEnrolment
+    from apps.clients.models import ClientProgramEnrolment
     from apps.groups.models import Group
     from apps.notes.models import ProgressNote
     from apps.programs.models import Program, UserProgramRole
@@ -192,6 +192,13 @@ def executive_dashboard(request):
         ).values_list("program_id", flat=True)
     )
     programs = Program.objects.filter(pk__in=user_program_ids, status="active")
+
+    # Only users assigned to at least one programme may view this page
+    if not user_program_ids:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden(
+            "Access restricted to staff assigned to at least one programme."
+        )
 
     # Program filter
     selected_program_id = request.GET.get("program")

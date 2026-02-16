@@ -105,7 +105,9 @@
                 {% if stat.engagement_quality is not None %}
                 <div class="metric-row {% if stat.engagement_quality >= 70 %}metric-success{% elif stat.engagement_quality >= 40 %}metric-neutral{% else %}metric-warning{% endif %}">
                     <span class="metric-label">{% trans "Engagement Quality" %}</span>
-                    <span class="metric-value">{{ stat.engagement_quality }}%</span>
+                    <span class="metric-value">{{ stat.engagement_quality }}%
+                        <span class="sr-only">{% if stat.engagement_quality >= 70 %}({% trans "Good" %}){% elif stat.engagement_quality >= 40 %}({% trans "Fair" %}){% else %}({% trans "Low" %}){% endif %}</span>
+                    </span>
                 </div>
                 {% endif %}
 
@@ -119,14 +121,19 @@
                 {% if show_events and stat.no_show_rate is not None %}
                 <div class="metric-row {% if stat.no_show_rate > 30 %}metric-alert{% elif stat.no_show_rate > 15 %}metric-warning{% endif %}">
                     <span class="metric-label">{% trans "No-Show Rate" %}</span>
-                    <span class="metric-value">{{ stat.no_show_rate }}%</span>
+                    <span class="metric-value">{{ stat.no_show_rate }}%
+                        {% if stat.no_show_rate > 30 %}<span class="sr-only">({% trans "High" %})</span>
+                        {% elif stat.no_show_rate > 15 %}<span class="sr-only">({% trans "Elevated" %})</span>{% endif %}
+                    </span>
                 </div>
                 {% endif %}
 
                 {% if stat.group_attendance is not None %}
                 <div class="metric-row {% if stat.group_attendance >= 75 %}metric-success{% elif stat.group_attendance >= 50 %}metric-neutral{% else %}metric-warning{% endif %}">
                     <span class="metric-label">{% trans "Group Attendance" %}</span>
-                    <span class="metric-value">{{ stat.group_attendance }}%</span>
+                    <span class="metric-value">{{ stat.group_attendance }}%
+                        <span class="sr-only">{% if stat.group_attendance >= 75 %}({% trans "Good" %}){% elif stat.group_attendance >= 50 %}({% trans "Fair" %}){% else %}({% trans "Low" %}){% endif %}</span>
+                    </span>
                 </div>
                 {% endif %}
 
@@ -295,9 +302,10 @@
     padding: 0.25rem 1rem;
 }
 
-.metric-success .metric-value { color: var(--pico-ins-color, #2e7d32); }
+.metric-success .metric-value { color: var(--kn-success-fg); }
+.metric-neutral .metric-value { color: var(--pico-muted-color); }
 .metric-warning .metric-value { color: var(--pico-mark-background-color, #f9a825); }
-.metric-alert .metric-value { color: var(--pico-del-color, #c62828); }
+.metric-alert .metric-value { color: var(--kn-danger-fg); }
 
 .program-metrics hr {
     margin: 0.5rem 0;

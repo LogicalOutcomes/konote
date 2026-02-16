@@ -12432,3 +12432,65 @@ msgid ""
 msgstr ""
 "Pour des raisons de sécurité, il y a un court délai avant que le "
 "téléchargement ne soit disponible. Les administrateurs ont été avisés."
+
+#: templates/clients/executive_dashboard.html (sr-only status labels)
+msgid "Good"
+msgstr "Bon"
+
+msgid "Fair"
+msgstr "Acceptable"
+
+msgid "High"
+msgstr "Élevé"
+
+msgid "15 minutes"
+msgstr "15 minutes"
+
+msgid "30 minutes"
+msgstr "30 minutes"
+
+msgid "60 minutes"
+msgstr "60 minutes"
+
+msgid ""
+"Configure the location options and time slots shown when scheduling "
+"meetings."
+msgstr ""
+"Configurez les options de lieu et les créneaux horaires affichés lors de la "
+"planification de réunions."
+
+msgid "Custom Location"
+msgstr "Lieu personnalisé"
+
+msgid "Earliest time slot shown when scheduling meetings (0–23)."
+msgstr "Premier créneau horaire affiché lors de la planification de réunions (0–23)."
+
+msgid "Gap between time slots in the meeting picker."
+msgstr "Intervalle entre les créneaux horaires dans le sélecteur de réunions."
+
+msgid "Latest time slot shown when scheduling meetings (1–24)."
+msgstr "Dernier créneau horaire affiché lors de la planification de réunions (1–24)."
+
+msgid "Location Options"
+msgstr "Options de lieu"
+
+msgid "One option per line. Workers can also type a custom location."
+msgstr "Une option par ligne. Les intervenants peuvent aussi saisir un lieu personnalisé."
+
+msgid "Please type a location."
+msgstr "Veuillez saisir un lieu."
+
+msgid "Select a location…"
+msgstr "Sélectionner un lieu…"
+
+msgid "Time Slot End Hour"
+msgstr "Heure de fin des créneaux"
+
+msgid "Time Slot Interval"
+msgstr "Intervalle des créneaux"
+
+msgid "Time Slot Start Hour"
+msgstr "Heure de début des créneaux"
+
+msgid "Type your location"
+msgstr "Saisir votre lieu"

@@ -59,14 +59,14 @@ class ExecutiveDashboardViewTest(TestCase):
         resp = self.http.get("/clients/executive/")
         self.assertEqual(resp.status_code, 302)
 
-    def test_no_programs_shows_empty_state(self):
+    def test_no_programs_returns_403(self):
+        """Users with no programme assignments get a 403, not an empty page."""
         no_prog_user = User.objects.create_user(
             username="noprog", password="testpass123"
         )
         self.http.login(username="noprog", password="testpass123")
         resp = self.http.get("/clients/executive/")
-        self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "No programs assigned")
+        self.assertEqual(resp.status_code, 403)
 
     def test_active_count(self):
         self._create_client("active", [self.prog_a])
