@@ -47,14 +47,10 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Add legacy system import migration scenario test (QA-T16)
 - [ ] Add onboarding guidance for new users (help link or first-run banner) (QA-W19)
 - [ ] Implement multi-session testing for SCN-046 shared device scenario (QA-W55)
-- [ ] Add front desk message-taking route and permission model (UXP-RECEP)
-- [ ] Add PM team meeting view grouped by staff with safe access utility (UXP-TEAM)
-- [ ] Participant portal — separate login for participants to view progress and enter data (PORTAL1)
-- [ ] Surveys — lightweight structured feedback collection from participants (SURVEY1)
-- [ ] Add sortable last-contact date on participant list for PM oversight (UXP-CONTACT)
+- [ ] Surveys — lightweight structured feedback collection from participants (see tasks/surveys-design.md) (SURVEY1)
 - [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
 - [ ] Build agency data offboarding command for secure departures and PIPEDA requests (SEC3)
-- [ ] Add first-run setup wizard for guided initial configuration (SETUP1)
+- [ ] Add first-run setup wizard UI for guided initial configuration (SETUP1-UI)
 - [ ] Add TOTP multi-factor authentication (see tasks/mfa-implementation.md) (SEC2)
 - [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
 - [ ] Add bulk operations for discharge and assignment workflows (UX17)
@@ -65,6 +61,11 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Portal staff management — invite flow, manage/revoke/reset MFA views, demo seed data, portal section on client info tab — 2026-02-15 (PORTAL1)
+- [x] Apply setup management command — `apply_setup` reads JSON config and creates settings, terminology, features, programs, templates, custom fields, metrics; sample config for Youth Services agency; 16 tests — 2026-02-15 (SETUP1)
+- [x] Staff messaging — leave/view messages on client files, unread badge, My Messages page — 2026-02-15 (UXP-RECEP)
+- [x] Team activity report — PM meeting prep view showing notes, comms, and meetings by staff — 2026-02-15 (UXP-TEAM)
+- [x] Last-contact column on participant list for PM oversight — 2026-02-15 (UXP-CONTACT)
 - [x] Weekly export summary email command — `send_export_summary` queries last 7 days of exports and emails digest to admins — 2026-02-15 (EXP2u)
 - [x] Enriched demo seed data — emails, portal content, meetings, registration submissions for all 15 clients — 2026-02-15 (DEMO-ENRICH1)
 - [x] Permissions Phase 2: `client.transfer` — separate permission + dedicated transfer page with audit logging; `plan.template_edit` already done via PM-ADMIN — 2026-02-15 (PERM-P1, PERM-P2)
