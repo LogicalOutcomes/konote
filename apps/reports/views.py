@@ -910,8 +910,8 @@ def client_analysis(request, client_id):
             if data_points:
                 chart_data.append({
                     "target_name": target.name,
-                    "metric_name": metric_def.name,
-                    "unit": metric_def.unit or "",
+                    "metric_name": metric_def.translated_name,
+                    "unit": metric_def.translated_unit or "",
                     "min_value": metric_def.min_value,
                     "max_value": metric_def.max_value,
                     "data_points": data_points,
