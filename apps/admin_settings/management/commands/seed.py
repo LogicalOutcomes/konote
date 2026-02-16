@@ -406,6 +406,7 @@ class Command(BaseCommand):
                     )
 
         self._seed_demo_reporting_template(all_programs)
+        self._seed_demo_registration_link(employment)
 
         self.stdout.write("  Demo data: 6 users, 5 programs, 15 clients created.")
         self.stdout.write("    - Casey Worker: program_manager(Employment) + staff(Housing, Kitchen)")
@@ -467,6 +468,28 @@ class Command(BaseCommand):
             name__in=portal_metrics
         ).update(portal_visibility="yes")
         self.stdout.write(f"  Portal visibility: {updated} metrics set to visible.")
+
+    def _seed_demo_registration_link(self, employment_program):
+        """Create a registration link with slug 'demo' for the website demo page."""
+        from apps.registration.models import RegistrationLink
+
+        link, created = RegistrationLink.objects.get_or_create(
+            slug="demo",
+            defaults={
+                "program": employment_program,
+                "title": "Supported Employment — Demo Registration",
+                "description": (
+                    "This is a demo registration form. Use any name you like "
+                    "— this is a test environment."
+                ),
+                "auto_approve": True,
+                "is_active": True,
+            },
+        )
+        if created:
+            self.stdout.write("  Demo registration link: /register/demo/ created.")
+        else:
+            self.stdout.write("  Demo registration link: already exists.")
 
     def _seed_demo_reporting_template(self, programs):
         """Create a demo-only report template with a sample funder profile."""
