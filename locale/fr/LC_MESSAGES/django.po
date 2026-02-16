@@ -12463,19 +12463,23 @@ msgid "Custom Location"
 msgstr "Lieu personnalisé"
 
 msgid "Earliest time slot shown when scheduling meetings (0–23)."
-msgstr "Premier créneau horaire affiché lors de la planification de réunions (0–23)."
+msgstr ""
+"Premier créneau horaire affiché lors de la planification de réunions (0–23)."
 
 msgid "Gap between time slots in the meeting picker."
 msgstr "Intervalle entre les créneaux horaires dans le sélecteur de réunions."
 
 msgid "Latest time slot shown when scheduling meetings (1–24)."
-msgstr "Dernier créneau horaire affiché lors de la planification de réunions (1–24)."
+msgstr ""
+"Dernier créneau horaire affiché lors de la planification de réunions (1–24)."
 
 msgid "Location Options"
 msgstr "Options de lieu"
 
 msgid "One option per line. Workers can also type a custom location."
-msgstr "Une option par ligne. Les intervenants peuvent aussi saisir un lieu personnalisé."
+msgstr ""
+"Une option par ligne. Les intervenants peuvent aussi saisir un lieu "
+"personnalisé."
 
 msgid "Please type a location."
 msgstr "Veuillez saisir un lieu."
@@ -12494,3 +12498,211 @@ msgstr "Heure de début des créneaux"
 
 msgid "Type your location"
 msgstr "Saisir votre lieu"
+
+msgid "(completed)"
+msgstr ""
+
+msgid "Add another group"
+msgstr ""
+
+msgid "Add another program"
+msgstr ""
+
+msgid "Add another template"
+msgstr ""
+
+msgid "Add the programs your organisation runs. You can add more later."
+msgstr ""
+
+msgid "Applied configuration summary"
+msgstr ""
+
+msgid "Apply Configuration"
+msgstr ""
+
+msgid "Brief description of this program"
+msgstr ""
+
+msgid "Brief description of this template"
+msgstr ""
+
+msgid ""
+"Choose which metrics to enable from the library. You can change these later."
+msgstr ""
+
+msgid "Choose which modules to enable for your organisation."
+msgstr ""
+
+msgid "Colour"
+msgstr ""
+
+msgid "Configuration Summary"
+msgstr ""
+
+msgid "Configuration preview"
+msgstr ""
+
+msgid "Configure your KoNote instance step by step."
+msgstr ""
+
+msgid ""
+"Customise the words used throughout the system. Leave blank to keep the "
+"default."
+msgstr ""
+
+msgid ""
+"Define custom field groups for client intake forms. You can add individual "
+"fields to each group later."
+msgstr ""
+
+msgid ""
+"Define plan templates that staff can use when creating client plans. You can"
+" add sections and targets later."
+msgstr ""
+
+msgid "Deselect All"
+msgstr ""
+
+msgid "Displayed in the footer for staff to contact."
+msgstr ""
+
+msgid "Error applying configuration. Please check the logs and try again."
+msgstr ""
+
+msgid "Feature Toggles"
+msgstr ""
+
+msgid "Field Group"
+msgstr ""
+
+msgid "Go to Admin Settings"
+msgstr ""
+
+msgid "Group Title"
+msgstr ""
+
+msgid "Grouping is handled by the selected reporting template."
+msgstr "Le regroupement est géré par le modèle de rapport sélectionné."
+
+msgid "Metric library"
+msgstr ""
+
+msgid "Metrics"
+msgstr ""
+
+msgid "Next: Custom Fields"
+msgstr ""
+
+msgid "Next: Features"
+msgstr ""
+
+msgid "Next: Metrics"
+msgstr ""
+
+msgid "Next: Plan Templates"
+msgstr ""
+
+msgid "Next: Programs"
+msgstr ""
+
+msgid "Next: Review"
+msgstr ""
+
+msgid "Next: Terminology"
+msgstr ""
+
+msgid "Plan Template"
+msgstr ""
+
+msgid "Program Name"
+msgstr ""
+
+msgid "Raw configuration (JSON)"
+msgstr ""
+
+msgid "Result"
+msgstr ""
+
+msgid "Review & Apply"
+msgstr ""
+
+msgid "Review your configuration before applying it to the system."
+msgstr ""
+
+msgid "Run Wizard Again"
+msgstr ""
+
+msgid "Select All"
+msgstr ""
+
+msgid "Set up basic information about your organisation."
+msgstr ""
+
+msgid "Setup Complete"
+msgstr ""
+
+msgid "Setup Wizard"
+msgstr ""
+
+msgid "Setup configuration applied successfully."
+msgstr ""
+
+msgid "Setup wizard reset. You can start over."
+msgstr ""
+
+msgid "Step 1: Instance Settings"
+msgstr ""
+
+msgid "Step 2: Terminology"
+msgstr ""
+
+msgid "Step 3: Feature Toggles"
+msgstr ""
+
+msgid "Step 4: Programs"
+msgstr ""
+
+msgid "Step 5: Metrics"
+msgstr ""
+
+msgid "Step 6: Plan Templates"
+msgstr ""
+
+msgid "Step 7: Custom Fields"
+msgstr ""
+
+msgid "Step 8: Review & Apply"
+msgstr ""
+
+msgid "Terminology overrides"
+msgstr ""
+
+msgid "URL to your organisation logo image. Optional."
+msgstr ""
+
+msgid "Wizard progress"
+msgstr ""
+
+msgid "Your KoNote instance has been configured successfully."
+msgstr ""
+
+msgid "Your Term"
+msgstr ""
+
+msgid "e.g. Demographics"
+msgstr ""
+
+msgid "e.g. Youth Housing"
+msgstr ""
+
+msgid "e.g. Youth Housing Plan"
+msgstr ""
+
+msgid "edit"
+msgstr ""
+
+msgid "mark complete"
+msgstr ""
+
+msgid "reactivate"
+msgstr ""
