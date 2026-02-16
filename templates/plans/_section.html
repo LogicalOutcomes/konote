@@ -1,6 +1,6 @@
 {% load i18n %}
 <header>
-    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+    <div class="section-card-header">
         <h2 style="margin: 0;" id="section-heading-{{ section.pk }}">
             {{ section.name }}
             {% if section.status == "default" %}
@@ -12,23 +12,21 @@
             {% endif %}
         </h2>
         {% if can_edit %}
-        <div role="group">
-            <button class="outline small"
-                    hx-get="{% url 'plans:section_edit' section_id=section.pk %}"
-                    hx-target="#section-{{ section.pk }}"
-                    hx-swap="innerHTML"
-                    aria-label="{% blocktrans with name=section.name %}Edit {{ name }}{% endblocktrans %}">
-                {% trans "Edit" %}
-            </button>
-            <button class="outline small secondary"
-                    hx-get="{% url 'plans:section_status' section_id=section.pk %}"
-                    hx-target="#section-{{ section.pk }}"
-                    hx-swap="innerHTML"
-                    hx-confirm="{% trans 'Change the status of this section? This may affect related targets.' %}"
-                    aria-label="{% blocktrans with name=section.name %}Change status of {{ name }}{% endblocktrans %}">
-                {% trans "Status" %}
-            </button>
-        </div>
+        <span class="section-actions">
+            <a href="#"
+               class="section-action-link"
+               hx-get="{% url 'plans:section_edit' section_id=section.pk %}"
+               hx-target="#section-{{ section.pk }}"
+               hx-swap="innerHTML"
+               aria-label="{% blocktrans with name=section.name %}Edit {{ name }}{% endblocktrans %}">{% trans "edit" %}</a>
+            <span class="section-action-sep" aria-hidden="true">&middot;</span>
+            <a href="#"
+               class="section-action-link"
+               hx-get="{% url 'plans:section_status' section_id=section.pk %}"
+               hx-target="#section-{{ section.pk }}"
+               hx-swap="innerHTML"
+               aria-label="{% blocktrans with name=section.name %}Change status of {{ name }}{% endblocktrans %}">{% if section.status == "default" %}{% trans "mark complete" %}{% elif section.status == "completed" %}{% trans "reactivate" %}{% else %}{% trans "reactivate" %}{% endif %}</a>
+        </span>
         {% endif %}
     </div>
     {% if section.program and not hide_program_dot %}
