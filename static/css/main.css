@@ -460,13 +460,15 @@ output.form-output {
     width: 100%;
 }
 .client-table th:nth-child(1),
-.client-table td:nth-child(1) { width: 40%; }
+.client-table td:nth-child(1) { width: 30%; }
 .client-table th:nth-child(2),
-.client-table td:nth-child(2) { width: 15%; font-variant-numeric: tabular-nums; }
+.client-table td:nth-child(2) { width: 12%; font-variant-numeric: tabular-nums; }
 .client-table th:nth-child(3),
-.client-table td:nth-child(3) { width: 15%; }
+.client-table td:nth-child(3) { width: 10%; }
 .client-table th:nth-child(4),
 .client-table td:nth-child(4) { width: 30%; }
+.client-table th:nth-child(5),
+.client-table td:nth-child(5) { width: 18%; white-space: nowrap; }
 .client-table td:first-child {
     font-weight: 500;
     overflow: hidden;
