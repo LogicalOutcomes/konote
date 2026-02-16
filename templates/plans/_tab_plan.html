@@ -5,9 +5,11 @@
     <a href="{% url 'plans:section_create' client_id=client.pk %}" role="button" class="outline">
         {% blocktrans with section=term.section|default:"Section" %}Add {{ section }}{% endblocktrans %}
     </a>
+    {% if can_apply_template %}
     <a href="{% url 'plan_templates:template_apply_list' client_id=client.pk %}" role="button" class="outline secondary">
         {% trans "Apply Template" %}
     </a>
+    {% endif %}
 </div>
 {% else %}
 <p class="notice" role="status">
