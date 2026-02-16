@@ -10,7 +10,7 @@
 </hgroup>
 
 {% if parse_errors %}
-<article aria-label="{% trans 'Import errors' %}" class="error-box" style="background-color: var(--pico-del-color); padding: 1rem; border-radius: var(--pico-border-radius); margin-bottom: 1rem;">
+<article aria-label="{% trans 'Import errors' %}" class="error-box" style="background-color: var(--kn-danger-bg); color: var(--kn-danger-fg); padding: 1rem; border-radius: var(--pico-border-radius); margin-bottom: 1rem;">
     <strong>{% trans "Errors found in CSV:" %}</strong>
     <ul style="margin-bottom: 0;">
         {% for error in parse_errors %}

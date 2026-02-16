@@ -30,7 +30,7 @@
         </div>
     </div>
     {% if safety_first %}
-    <p role="alert" style="color: var(--pico-del-color); font-weight: 600;">
+    <p role="alert" style="color: var(--kn-danger-fg); font-weight: 600;">
         {% trans "All outbound messaging is currently disabled." %}
     </p>
     {% endif %}
@@ -54,7 +54,7 @@
             {% trans "Staff can send appointment reminders and messages directly from KoNote. Every message requires a person to click send." %}
         </p>
         {% if not email_configured and not sms_configured %}
-        <p style="font-size: 0.8125rem; color: var(--pico-del-color);">
+        <p style="font-size: 0.8125rem; color: var(--kn-danger-fg);">
             {% trans "Requires email or SMS to be set up first." %}
         </p>
         {% endif %}
@@ -63,7 +63,7 @@
             {% trans "KoNote automatically sends reminders before meetings. Requires email or SMS setup." %}
         </p>
         {% if not email_configured and not sms_configured %}
-        <p style="font-size: 0.8125rem; color: var(--pico-del-color);">
+        <p style="font-size: 0.8125rem; color: var(--kn-danger-fg);">
             {% trans "Requires email or SMS to be set up first." %}
         </p>
         {% endif %}
@@ -87,7 +87,7 @@
             {% if health_checks.email %}
             {% with h=health_checks.email %}
             {% if h.consecutive_failures > 0 %}
-            <p style="font-size: 0.8125rem; color: var(--pico-del-color);">
+            <p style="font-size: 0.8125rem; color: var(--kn-danger-fg);">
                 {% blocktrans with count=h.consecutive_failures %}{{ count }} recent failure(s){% endblocktrans %}
                 — {{ h.last_failure_reason }}
             </p>
@@ -106,7 +106,7 @@
             {% if health_checks.sms %}
             {% with h=health_checks.sms %}
             {% if h.consecutive_failures > 0 %}
-            <p style="font-size: 0.8125rem; color: var(--pico-del-color);">
+            <p style="font-size: 0.8125rem; color: var(--kn-danger-fg);">
                 {% blocktrans with count=h.consecutive_failures %}{{ count }} recent failure(s){% endblocktrans %}
                 — {{ h.last_failure_reason }}
             </p>
@@ -181,7 +181,7 @@
 {% block extra_head %}
 <style>
     .safety-first-active {
-        border-color: var(--pico-del-color);
+        border-color: var(--kn-danger-fg);
         border-width: 2px;
     }
 </style>
