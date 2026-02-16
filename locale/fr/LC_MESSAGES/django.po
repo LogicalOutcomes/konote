@@ -12324,20 +12324,111 @@ msgstr "Le code de vérification doit comporter exactement 4 chiffres."
 msgid "Demographic breakdowns in this template:"
 msgstr "Ventilations démographiques dans ce modèle :"
 
-#: templates/reports/export_form.html templates/reports/funder_report_form.html
+#: templates/reports/export_form.html
+#: templates/reports/funder_report_form.html
 msgid ""
 "\n"
-"            <strong>Admin tip:</strong> You have report templates configured, "
-"but none are linked to programs yet.\n"
-"            To use them here, go to <a href=\"%(settings_url)s\">Settings "
-"&rarr; Report Templates</a>,\n"
+"            <strong>Admin tip:</strong> You have report templates configured, but none are linked to programs yet.\n"
+"            To use them here, go to <a href=\"%(settings_url)s\">Settings &rarr; Report Templates</a>,\n"
 "            open a template, and assign it to the relevant program(s).\n"
 "            "
 msgstr ""
 "\n"
-"            <strong>Conseil admin :</strong> Vous avez des modèles de rapport "
-"configurés, mais aucun n'est encore lié à des programmes.\n"
-"            Pour les utiliser ici, allez dans <a href=\"%(settings_url)s\">"
-"Paramètres &rarr; Modèles de rapport</a>,\n"
+"            <strong>Conseil admin :</strong> Vous avez des modèles de rapport configurés, mais aucun n'est encore lié à des programmes.\n"
+"            Pour les utiliser ici, allez dans <a href=\"%(settings_url)s\">Paramètres &rarr; Modèles de rapport</a>,\n"
 "            ouvrez un modèle et associez-le aux programmes concernés.\n"
 "            "
+
+#: templates/clients/executive_dashboard.html
+msgid "Without Notes This Month"
+msgstr "Sans notes ce mois-ci"
+
+#: templates/clients/executive_dashboard.html
+msgid "Overdue Follow-ups"
+msgstr "Suivis en retard"
+
+#: templates/clients/executive_dashboard.html
+msgid "Active Safety Alerts"
+msgstr "Alertes de sécurité actives"
+
+#: templates/clients/executive_dashboard.html
+msgid "Needs attention"
+msgstr "Nécessite une attention"
+
+#: templates/clients/executive_dashboard.html
+msgid "No-Show Rate"
+msgstr "Taux d'absence"
+
+#: templates/clients/executive_dashboard.html
+msgid "Engagement Quality"
+msgstr "Qualité de l'engagement"
+
+#: templates/clients/executive_dashboard.html
+msgid "Goal Completion Rate"
+msgstr "Taux d'atteinte des objectifs"
+
+#: templates/clients/executive_dashboard.html
+msgid "Intake Pipeline"
+msgstr "Inscriptions en attente"
+
+#: templates/clients/executive_dashboard.html
+msgid "Group Attendance"
+msgstr "Taux de présence aux groupes"
+
+#: templates/clients/executive_dashboard.html
+msgid "Portal Adoption"
+msgstr "Adoption du portail"
+
+#: templates/clients/executive_dashboard.html
+msgid "Filter by"
+msgstr "Filtrer par"
+
+msgid "No program assignments"
+msgstr "Aucune affectation de programme"
+
+msgid ""
+"To see team activity, ask an administrator to assign you to one or more "
+"programs."
+msgstr ""
+"Pour voir l'activité de l'équipe, demandez à un administrateur de vous "
+"affecter à un ou plusieurs programmes."
+
+msgid ""
+"You are not currently assigned to any programs. This view shows staff "
+"activity for the programs you are assigned to."
+msgstr ""
+"Vous n'êtes actuellement affecté(e) à aucun programme. Cette vue affiche "
+"l'activité du personnel pour les programmes auxquels vous êtes affecté(e)."
+
+#: templates/reports/team_meeting.html
+#, python-format
+msgid "Showing activity since %(date)s"
+msgstr "Activité depuis le %(date)s"
+
+#: templates/reports/_insights_basic.html
+#: templates/reports/_insights_client.html
+#, python-format
+msgid "On their %(target)s goal"
+msgstr "Sur leur objectif %(target)s"
+
+#: templates/reports/_insights_ai.html
+#, python-format
+msgid "Generated %(dt)s"
+msgstr "Généré le %(dt)s"
+
+#: templates/reports/export_link_created.html
+#, python-format
+msgid ""
+"It %(strong_open)sdoes not%(strong_close)s contain participant names, "
+"contact information, addresses, or session notes."
+msgstr ""
+"Il ne contient %(strong_open)spas%(strong_close)s de noms de participants, "
+"de coordonnées, d'adresses ni de notes de séance."
+
+#: templates/reports/export_link_pending.html
+msgid ""
+"For security, there is a short delay before the download becomes available. "
+"Administrators have been notified."
+msgstr ""
+"Pour des raisons de sécurité, il y a un court délai avant que le "
+"téléchargement ne soit disponible. Les administrateurs ont été avisés."

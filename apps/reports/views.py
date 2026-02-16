@@ -1390,6 +1390,7 @@ def team_meeting_view(request):
     return render(request, "reports/team_meeting.html", {
         "staff_activity": staff_activity,
         "accessible_programs": accessible_programs,
+        "has_program_roles": bool(user_program_ids),
         "program_filter": program_filter,
         "days": days,
         "cutoff": cutoff,
