@@ -55,7 +55,7 @@
     {% if user.is_authenticated %}
     <nav class="container-fluid">
         <ul>
-            <li><a href="/" class="contrast">
+            <li><a href="{% if is_admin_only %}{% url 'admin_settings:dashboard' %}{% else %}/{% endif %}" class="contrast">
                 <strong>{{ site.product_name|default:"KoNote" }}</strong>
             </a></li>
             <li>
