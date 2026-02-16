@@ -20,6 +20,13 @@ Welcome! Find what you need based on what you're trying to do.
 
 ## What's New
 
+- **Staff messaging & My Messages** — leave messages for case workers about participants, view and manage your inbox. Front desk can leave messages; staff and PMs can read messages for their programs.
+- **Client transfer workflow** — move participants between programs with a dedicated transfer form, permission key, and full audit trail. Confidential program enrolments are preserved.
+- **PM admin self-service** — program managers can now manage their own program's plan templates, note templates, event types, metrics, and registration links without needing a system administrator
+- **Portal staff management** — invite participants to the portal, manage and revoke access, reset MFA — all from the client detail page
+- **Automated meeting reminders** — the `send_reminders` command sends SMS/email reminders for meetings in the next 36 hours, with automatic retry for failures
+- **Weekly export summary emails** — the `send_export_summary` command emails admins a digest of all export activity for privacy oversight
+- **System health monitoring banners** — the Meetings page shows yellow/red warnings when SMS or email channels are experiencing failures
 - **Messaging & communications** — log phone calls, emails, SMS, and in-person contacts on the client timeline. Quick-log buttons for common interactions.
 - **Meetings & calendar** — schedule meetings with clients, track status (completed/cancelled/no-show), and subscribe to an iCal feed in Outlook or Google Calendar
 - **Consent management** — CASL-compliant consent tracking for SMS and email, with withdrawal dates and implied/express consent types
@@ -48,8 +55,12 @@ Welcome! Find what you need based on what you're trying to do.
 
 - [Privacy Policy Template](privacy-policy-template.md) — customise before going live
 - [Agency Setup](administering-KoNote.md#agency-configuration) — terminology, features, programs
+- [PM Admin Access](administering-KoNote.md#program-manager-administration) — let PMs manage their own program config
 - [Registration Forms](administering-KoNote.md#set-up-registration-forms) — public signup forms, reviewing submissions
 - [User Management](administering-KoNote.md#user-management) — creating accounts, assigning roles
+- [Automated Reminders](administering-KoNote.md#automated-reminders) — set up scheduled SMS/email meeting reminders
+- [Weekly Export Summary](administering-KoNote.md#weekly-export-summary-email) — privacy oversight digest for admins
+- [System Health Monitoring](administering-KoNote.md#system-health-monitoring) — SMS/email channel health banners
 - [Backup & Restore](administering-KoNote.md#backup-and-restore) — protecting your data
 - [Security Operations](administering-KoNote.md#security-operations) — audit logs, encryption keys
 - [Export Operations](export-runbook.md) — managing exports and download links
@@ -62,6 +73,8 @@ Welcome! Find what you need based on what you're trying to do.
 - [Writing Progress Notes](using-KoNote.md#writing-progress-notes)
 - [Recording Events](using-KoNote.md#recording-events)
 - [Logging Communications](using-KoNote.md#logging-communications)
+- [Staff Messaging](using-KoNote.md#staff-messaging) — leave and read messages about participants
+- [Client Transfer](using-KoNote.md#transferring-a-client) — move participants between programs
 - [Scheduling Meetings](using-KoNote.md#scheduling-meetings)
 - [Using the Calendar Feed](using-KoNote.md#using-the-calendar-feed)
 - [Viewing Plans](using-KoNote.md#viewing-the-outcome-plan)
