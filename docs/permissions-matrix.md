@@ -1,7 +1,7 @@
 # KoNote Permissions Matrix
 
 > **Source of truth:** [permissions.py](../apps/auth_app/permissions.py)
-> **Last updated:** 2026-02-13
+> **Last updated:** 2026-02-16
 
 ---
 
@@ -31,6 +31,7 @@
 | Create new clients | Yes | Scoped | Scoped | — | — |
 | Edit client records | — | Scoped | — | — | — |
 | Edit contact info (phone/email) | Yes | Scoped | — | — | — |
+| Transfer between programs | — | Scoped | Scoped | — | — |
 | View consent records | — | Scoped | Yes | — | — |
 | Manage consent | — | Scoped | Scoped | — | — |
 | View intake forms | — | Scoped | Yes | — | — |
@@ -62,6 +63,9 @@
 | **Communications** | | | | | |
 | View communication logs | — | Scoped | Yes | — | — |
 | Log communications | — | Scoped | Scoped | — | — |
+| **Staff Messaging** | | | | | |
+| Leave messages for case workers | Yes | Yes | Yes | — | — |
+| Read staff messages | — | Scoped | Yes | — | — |
 | **Reports & Export** | | | | | |
 | Generate program reports | — | — | Yes | Yes (view) | — |
 | Generate funder reports | — | — | Yes | Yes | — |
@@ -90,10 +94,11 @@
 | **View audit log** | — | — | Scoped | — | Yes |
 | **Create/edit custom field definitions** | — | — | — | — | Yes |
 | **Manage report templates** | — | — | — | — | Yes |
-| **Manage note templates** | — | — | — | — | Yes |
-| **Manage plan templates** | — | — | — | — | Yes |
-| **Manage event types** | — | — | — | — | Yes |
-| **Manage registration forms** | — | — | — | — | Yes |
+| **Manage note templates** | — | — | Scoped | — | Yes |
+| **Manage plan templates** | — | — | Scoped | — | Yes |
+| **Manage event types** | — | — | Scoped | — | Yes |
+| **Manage outcome metrics** | — | — | Scoped | — | Yes |
+| **Manage registration forms** | — | — | Scoped | — | Yes |
 | **Merge duplicate clients** | — | — | — | — | Yes |
 | **Send invitations** | — | — | — | — | Yes |
 | **Configure terminology** | — | — | — | — | Yes |
@@ -155,6 +160,50 @@ Consent records are **immutable after creation**. Once recorded, a consent recor
 ### Executive Aggregate-Only
 
 Executives see org-wide numbers and reports but **never** individual client names, records, or group rosters. They are redirected away from client/group detail pages.
+
+### Client Transfers (`client.transfer`)
+
+Transferring a participant between programs is a separate permission from editing client records. This allows organisations to control who can move people between service streams.
+
+| Role | Access | Notes |
+|------|--------|-------|
+| **Front Desk** | Denied | Program transfers are staff/PM decisions |
+| **Direct Service** | Scoped | Outreach and drop-in staff manage intake-to-program enrolment within their program |
+| **Program Manager** | Scoped | PMs manage program enrolment for their programs |
+| **Executive** | Denied | Executives don't manage individual enrolments |
+
+The transfer form only shows programs the user has access to. Confidential program enrolments are preserved — the transfer does not reveal or modify enrolments in programs the user cannot see.
+
+### Program Manager Admin Permissions
+
+Program managers can manage configuration items for their own programs. These permissions are **scoped** — PMs can only create, edit, and delete items that belong to their program. Global items (created by administrators) are visible in read-only mode.
+
+| Permission Key | What it controls | PM Access |
+|---------------|-----------------|-----------|
+| `template.plan.manage` | Plan templates (sections and targets) | Scoped — own program only |
+| `template.note.manage` | Progress note templates (structure and sections) | Scoped — own program only |
+| `event_type.manage` | Event types (intake, discharge, crisis, etc.) | Scoped — own program only |
+| `metric.manage` | Outcome metrics (create, edit, enable/disable) | Scoped — own program only |
+| `registration.manage` | Public registration links and pending submissions | Scoped — own program only |
+
+**Important constraints:**
+- PMs **cannot** edit global templates or metrics created by administrators — they can only view them
+- PMs **cannot** change system-wide settings, terminology, or feature toggles
+- PMs **cannot** elevate user roles (e.g., promote a front desk worker to staff) or create PM/executive/admin accounts
+- When a PM creates a new item and manages only one program, the item is auto-assigned to that program
+
+### Staff Messaging (`message.leave`, `message.view`)
+
+Staff messaging allows team members to leave operational messages about participants (e.g., "Sarah called, wants to reschedule Tuesday").
+
+| Role | Leave messages | Read messages |
+|------|---------------|---------------|
+| **Front Desk** | Yes | No |
+| **Direct Service** | Yes | Scoped (own program) |
+| **Program Manager** | Yes | Yes (full program) |
+| **Executive** | No | No |
+
+Messages are encrypted because they may contain participant names (PII). Each message is tied to a client file and optionally to a specific staff recipient.
 
 ---
 
