@@ -641,7 +641,7 @@ output.form-output {
 /* ---- Stats row ---- */
 .stats-row {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: var(--kn-space-base);
     margin-bottom: var(--kn-space-lg);
 }
@@ -668,7 +668,7 @@ output.form-output {
     background: var(--kn-card-bg);
     border: 1px solid var(--kn-border-light);
     border-radius: var(--kn-radius-card);
-    padding: var(--kn-space-base);
+    padding: var(--kn-space-sm) var(--kn-space-xs);
     margin: 0;
     text-align: center;
 }
@@ -681,7 +681,7 @@ output.form-output {
     margin-bottom: var(--kn-space-xs);
 }
 .stat-card .stat-value {
-    font-size: 1.75rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: var(--kn-text);
     line-height: 1;
@@ -818,7 +818,7 @@ output.form-output {
 .quick-links {
     display: flex;
     align-items: center;
-    gap: var(--kn-space-base);
+    gap: var(--kn-space-sm);
     padding: var(--kn-space-base);
     background: var(--kn-primary-subtle);
     border-radius: var(--kn-radius-card);

@@ -37,6 +37,16 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 
 **Never commit to `main` directly.** If you accidentally do, stop and move the commit to a new branch before continuing.
 
+### Concurrent Session Safety
+
+**Multiple Claude Code conversations sharing one repo directory WILL destroy each other's work.** When one session runs `git checkout`, it overwrites files on disk — wiping uncommitted edits from all other sessions.
+
+**Rules:**
+- **One session actively editing code at a time.** Do not run two Claude Code conversations that do git operations on the same repo simultaneously.
+- **If parallel work is needed**, use `git worktree add` to give each session its own directory.
+- **Verify branch immediately before every commit** — in the SAME Bash call as the commit, not in a separate tool call. Another session can switch the branch in the gap between calls.
+- **Never leave edits uncommitted across multiple tool calls.** Edit then commit then next edit. Do not batch.
+
 ## Terminal Command Rules
 
 - **Long-running commands** (pytest with Playwright, Django server, migrations): these can take 1–5 minutes. If the terminal reports "Command is still running", **wait for the final output**. Do NOT run `echo`, `type`, or other polling commands to check status — this causes an infinite loop. The terminal will return output automatically when the command finishes.
