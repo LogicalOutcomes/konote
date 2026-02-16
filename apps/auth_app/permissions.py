@@ -37,6 +37,7 @@ PERMISSIONS = {
         "client.edit_contact": ALLOW,  # Phone + email ONLY — not address or emergency contact
                                        # (safety implications for DV). Replace with PER_FIELD in Phase 2.
                                        # Enforced by @requires_permission
+        "client.transfer": DENY,  # Program transfers are PM/staff decisions, not front desk
 
         "attendance.check_in": ALLOW,  # Primary function. Enforced by view-level check
         "attendance.view_report": DENY,
@@ -123,6 +124,8 @@ PERMISSIONS = {
         "client.edit": SCOPED,  # Enforced by @requires_permission
         "client.create": SCOPED,  # Creates in own program, especially outreach. Enforced by @requires_permission
         "client.edit_contact": SCOPED,  # Phone + email within own program. Enforced by @requires_permission
+        "client.transfer": SCOPED,  # Outreach/drop-in staff manage intake-to-program enrolment.
+                                    # Enforced by @requires_permission
 
         "attendance.check_in": SCOPED,
         "attendance.view_report": SCOPED,
@@ -215,6 +218,8 @@ PERMISSIONS = {
         "client.edit": SCOPED,  # Same as staff until Phase 3
         "client.create": SCOPED,  # Intake in smaller programs. Enforced by @requires_permission
         "client.edit_contact": DENY,  # PMs don't edit individual contact info
+        "client.transfer": SCOPED,  # PMs manage program enrolment for their programs.
+                                    # Enforced by @requires_permission
 
         "attendance.check_in": DENY,
         "attendance.view_report": ALLOW,  # Aggregate attendance
@@ -311,6 +316,7 @@ PERMISSIONS = {
         "client.edit": DENY,
         "client.create": DENY,  # Executives don't do intake
         "client.edit_contact": DENY,
+        "client.transfer": DENY,  # Executives don't manage individual enrolments
 
         "attendance.check_in": DENY,
         "attendance.view_report": ALLOW,  # Aggregate only, org-wide

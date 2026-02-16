@@ -4,6 +4,44 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Completed 2026-02-15 (task audit cleanup)
+
+### PM Admin Access (PM-ADMIN1–8) — all complete
+
+- [x] Added permission keys to matrix for all six feature areas — 2026-02-14 (PM-ADMIN1)
+- [x] Replaced @admin_required with @requires_permission on Team Members views + enforced elevation constraint — 2026-02-14 (PM-ADMIN2)
+- [x] Scoped Plan Templates to programs and opened to PMs — 2026-02-14 (PM-ADMIN3)
+- [x] Scoped Note Templates to programs and opened to PMs — 2026-02-14 (PM-ADMIN4)
+- [x] Scoped Event Types to programs and opened to PMs — 2026-02-14 (PM-ADMIN5)
+- [x] Scoped Metrics to programs and opened to PMs — 2026-02-14 (PM-ADMIN6)
+- [x] Scoped Registration Links to programs and opened to PMs — 2026-02-14 (PM-ADMIN7)
+- [x] Updated navigation to show PM-accessible admin items based on permissions — 2026-02-14 (PM-ADMIN8)
+
+### Communication Modules (7 of 10 MSG tasks) — complete
+
+- [x] Native appointment tracking — Meeting model, quick-create, full CRUD, status transitions — 2026-02-14 (MSG-MTG1)
+- [x] iCal calendar feed — CalendarFeedToken, .ics generation, privacy (initials only), rate limiting — 2026-02-14 (MSG-CAL1)
+- [x] Communication log — Communication model, quick-log, full form, encrypted content — 2026-02-14 (MSG-LOG1)
+- [x] Consent and contact fields — SMS/email consent, CASL dates, preferred language, phone staleness — 2026-02-14 (MSG-CONSENT1)
+- [x] Outbound email reminders — compose + preview, SMTP sending, CASL unsubscribe, bilingual templates — 2026-02-14 (MSG-EMAIL-OUT1)
+- [x] Outbound SMS reminders — Twilio integration, plain-language errors, CASL opt-out — 2026-02-14 (MSG-SMS1)
+- [x] Feature toggles for communication modules — messaging_sms and messaging_email toggles with enforcement — 2026-02-14 (MSG-TOGGLE1)
+
+### Moved from Recently Done (2026-02-15 task audit)
+
+- [x] Fixed 14 pre-existing test failures across plan permissions, login/auth, language switching, export — 2026-02-15 (TEST-FIX1)
+- [x] Added audit database declarations to 41 test classes across 18 files — 2026-02-15 (TEST-FIX2)
+- [x] Tabindex audit: all 10 usages are appropriate tabindex="-1", no cleanup needed — 2026-02-15 (QA-W20)
+- [x] Session review: fixed 5 broken tests, added 3 PM permission tests, updated stale comments — 2026-02-15 (REV-FIX1)
+- [x] Added compose email feature with CASL consent, preview, and audit logging — 2026-02-15 (MSG-EMAIL1)
+- [x] Replaced meeting date/time picker with accessible chip-based UI — 2026-02-15 (UX-MEET2)
+- [x] Renamed Reviews to Approvals and streamlined recommendation queue — 2026-02-15 (UX-REVIEW3)
+- [x] Hidden stats row from Front Desk on home dashboard — 2026-02-15 (UX-DASH1)
+- [x] Reordered contact fields and fixed select_other naming collisions — 2026-02-15 (DATA-FIX1)
+- [x] Added Documents section to help page — 2026-02-15 (HELP-DOC1)
+
+---
+
 ## Completed 2026-02-15
 
 ### Moved from Recently Done (2026-02-15 test & quality fixes)

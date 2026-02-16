@@ -103,29 +103,21 @@ class ClientFileForm(forms.Form):
         label=_("Client consents to email reminders"),
     )
 
-    # Program enrolment checkboxes — populated dynamically
+    # Program enrolment — used by create view only (edit no longer manages programs).
+    # Transfer view has its own form (ClientTransferForm).
     programs = forms.ModelMultipleChoiceField(
         queryset=Program.objects.none(),
         widget=forms.CheckboxSelectMultiple,
-        required=True,
+        required=False,
         label=_("Programs"),
         error_messages={"required": _("Please select at least one program.")},
-    )
-
-    # Cross-program sharing consent (PHIPA compliance)
-    cross_program_sharing_consent = forms.BooleanField(
-        required=False,
-        label=_("Client consents to sharing clinical information across programs"),
-        help_text=_(
-            "Required under Ontario privacy law (PHIPA) before clinical notes "
-            "from one program can be viewed by staff in another program."
-        ),
     )
 
     def __init__(self, *args, available_programs=None, **kwargs):
         super().__init__(*args, **kwargs)
         if available_programs is not None:
             self.fields["programs"].queryset = available_programs
+            self.fields["programs"].required = True
             # Pre-select when user has exactly one program (IMPROVE-2)
             if not self.is_bound and available_programs.count() == 1:
                 self.initial["programs"] = [available_programs.first().pk]
@@ -136,6 +128,45 @@ class ClientFileForm(forms.Form):
             validate_phone_number(phone)
             phone = normalize_phone_number(phone)
         return phone
+
+
+class ClientTransferForm(forms.Form):
+    """Form for transferring a client between programs.
+
+    Separated from ClientFileForm so transfers have their own permission
+    (client.transfer) and audit trail. Gated by @requires_permission.
+    """
+
+    programs = forms.ModelMultipleChoiceField(
+        queryset=Program.objects.none(),
+        widget=forms.CheckboxSelectMultiple,
+        required=True,
+        label=_("Programs"),
+        error_messages={"required": _("Please select at least one program.")},
+    )
+
+    cross_program_sharing_consent = forms.BooleanField(
+        required=False,
+        label=_("Participant consents to sharing clinical information across programs"),
+        help_text=_(
+            "Required under Ontario privacy law (PHIPA) before clinical notes "
+            "from one program can be viewed by staff in another program."
+        ),
+    )
+
+    transfer_reason = forms.CharField(
+        required=False,
+        label=_("Reason for transfer (optional)"),
+        widget=forms.Textarea(attrs={
+            "rows": 2,
+            "placeholder": _("Why is this participant being added to or removed from a program?"),
+        }),
+    )
+
+    def __init__(self, *args, available_programs=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if available_programs is not None:
+            self.fields["programs"].queryset = available_programs
 
 
 class CustomFieldGroupForm(forms.ModelForm):

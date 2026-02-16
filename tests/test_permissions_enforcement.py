@@ -52,6 +52,7 @@ PERMISSION_URL_MAP = {
     "client.create": {"url": "/clients/create/"},
     "client.edit": {"url": "/clients/{client_id}/edit/"},
     "client.edit_contact": {"url": "/clients/{client_id}/edit-contact/"},
+    "client.transfer": {"url": "/clients/{client_id}/transfer/"},
     "client.view_name": {"skip": "field_level"},
     "client.view_contact": {"skip": "field_level"},
     "client.view_safety": {"skip": "field_level"},

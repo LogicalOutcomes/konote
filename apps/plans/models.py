@@ -23,19 +23,35 @@ class MetricDefinition(models.Model):
     ]
 
     name = models.CharField(max_length=255)
+    name_fr = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_("French name (displayed when language is French)"),
+    )
     definition = models.TextField(help_text="What this metric measures and how to score it.")
+    definition_fr = models.TextField(
+        blank=True, default="",
+        help_text=_("French definition (displayed when language is French)"),
+    )
     category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default="custom")
     is_library = models.BooleanField(default=False, help_text="Part of the built-in metric library.")
     is_enabled = models.BooleanField(default=True, help_text="Available for use in this instance.")
     min_value = models.FloatField(null=True, blank=True, help_text="Minimum valid value.")
     max_value = models.FloatField(null=True, blank=True, help_text="Maximum valid value.")
     unit = models.CharField(max_length=50, default="", blank=True, help_text="e.g., 'score', 'days', '%'")
+    unit_fr = models.CharField(
+        max_length=50, blank=True, default="",
+        help_text=_("French unit label (e.g., 'pointage', 'jours', '%')"),
+    )
     portal_description = models.TextField(
         blank=True, default="",
         help_text=_(
             "Plain-language explanation shown to participants in the portal. "
             "Describe what the metric measures and what the numbers mean."
         ),
+    )
+    portal_description_fr = models.TextField(
+        blank=True, default="",
+        help_text=_("French portal description (displayed when language is French)"),
     )
     portal_visibility = models.CharField(
         max_length=20, default="no",
@@ -56,6 +72,42 @@ class MetricDefinition(models.Model):
         choices=[("active", _("Active")), ("deactivated", _("Deactivated"))],
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def translated_name(self):
+        """Return French name when active language is French, else English."""
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.name_fr:
+            return self.name_fr
+        return self.name
+
+    @property
+    def translated_definition(self):
+        """Return French definition when active language is French, else English."""
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.definition_fr:
+            return self.definition_fr
+        return self.definition
+
+    @property
+    def translated_unit(self):
+        """Return French unit label when active language is French, else English."""
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.unit_fr:
+            return self.unit_fr
+        return self.unit
+
+    @property
+    def translated_portal_description(self):
+        """Return French portal description when active language is French, else English."""
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.portal_description_fr:
+            return self.portal_description_fr
+        return self.portal_description
 
     class Meta:
         app_label = "plans"
@@ -235,7 +287,15 @@ class PlanTemplate(models.Model):
     """A reusable plan structure that can be applied to new clients."""
 
     name = models.CharField(max_length=255)
+    name_fr = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_("French name (displayed when language is French)"),
+    )
     description = models.TextField(default="", blank=True)
+    description_fr = models.TextField(
+        blank=True, default="",
+        help_text=_("French description (displayed when language is French)"),
+    )
     owning_program = models.ForeignKey(
         "programs.Program", on_delete=models.SET_NULL, null=True, blank=True,
         related_name="plan_templates",
@@ -246,6 +306,24 @@ class PlanTemplate(models.Model):
         choices=[("active", _("Active")), ("archived", _("Archived"))],
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    @property
+    def translated_name(self):
+        """Return French name when active language is French, else English."""
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.name_fr:
+            return self.name_fr
+        return self.name
+
+    @property
+    def translated_description(self):
+        """Return French description when active language is French, else English."""
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.description_fr:
+            return self.description_fr
+        return self.description
 
     class Meta:
         app_label = "plans"
@@ -259,8 +337,21 @@ class PlanTemplate(models.Model):
 class PlanTemplateSection(models.Model):
     plan_template = models.ForeignKey(PlanTemplate, on_delete=models.CASCADE, related_name="sections")
     name = models.CharField(max_length=255)
+    name_fr = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_("French name (displayed when language is French)"),
+    )
     program = models.ForeignKey("programs.Program", on_delete=models.SET_NULL, null=True, blank=True)
     sort_order = models.IntegerField(default=0)
+
+    @property
+    def translated_name(self):
+        """Return French name when active language is French, else English."""
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.name_fr:
+            return self.name_fr
+        return self.name
 
     class Meta:
         app_label = "plans"
@@ -271,8 +362,34 @@ class PlanTemplateSection(models.Model):
 class PlanTemplateTarget(models.Model):
     template_section = models.ForeignKey(PlanTemplateSection, on_delete=models.CASCADE, related_name="targets")
     name = models.CharField(max_length=255)
+    name_fr = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_("French name (displayed when language is French)"),
+    )
     description = models.TextField(default="", blank=True)
+    description_fr = models.TextField(
+        blank=True, default="",
+        help_text=_("French description (displayed when language is French)"),
+    )
     sort_order = models.IntegerField(default=0)
+
+    @property
+    def translated_name(self):
+        """Return French name when active language is French, else English."""
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.name_fr:
+            return self.name_fr
+        return self.name
+
+    @property
+    def translated_description(self):
+        """Return French description when active language is French, else English."""
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.description_fr:
+            return self.description_fr
+        return self.description
 
     class Meta:
         app_label = "plans"

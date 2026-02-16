@@ -1,290 +1,398 @@
 [
   {
     "name": "PHQ-9 (Depression)",
+    "name_fr": "PHQ-9 (Dépression)",
     "definition": "Patient Health Questionnaire-9. Scores 0-27. Measures depression severity: 0-4 minimal, 5-9 mild, 10-14 moderate, 15-19 moderately severe, 20-27 severe.",
+    "definition_fr": "Questionnaire sur la santé du patient-9. Scores 0-27. Mesure la sévérité de la dépression : 0-4 minimale, 5-9 légère, 10-14 modérée, 15-19 modérément sévère, 20-27 sévère.",
     "category": "mental_health",
     "min_value": 0,
     "max_value": 27,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "GAD-7 (Anxiety)",
+    "name_fr": "GAD-7 (Anxiété)",
     "definition": "Generalized Anxiety Disorder-7. Scores 0-21. Measures anxiety severity: 0-4 minimal, 5-9 mild, 10-14 moderate, 15-21 severe.",
+    "definition_fr": "Trouble d'anxiété généralisée-7. Scores 0-21. Mesure la sévérité de l'anxiété : 0-4 minimale, 5-9 légère, 10-14 modérée, 15-21 sévère.",
     "category": "mental_health",
     "min_value": 0,
     "max_value": 21,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Wellness Scale",
+    "name_fr": "Échelle de bien-être",
     "definition": "Self-reported overall wellness on a 1-10 scale. 1 = very poor, 10 = excellent.",
+    "definition_fr": "Bien-être général auto-déclaré sur une échelle de 1 à 10. 1 = très mauvais, 10 = excellent.",
     "category": "mental_health",
     "min_value": 1,
     "max_value": 10,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Coping Skills Rating",
+    "name_fr": "Évaluation des capacités d'adaptation",
     "definition": "Staff assessment of client's coping skills. 1 = very limited, 5 = well-developed.",
+    "definition_fr": "Évaluation par le personnel des capacités d'adaptation du participant. 1 = très limitées, 5 = bien développées.",
     "category": "mental_health",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "K10 (Psychological Distress)",
+    "name_fr": "K10 (Détresse psychologique)",
     "definition": "Kessler Psychological Distress Scale. Scores 10-50. 10-19 likely well, 20-24 mild, 25-29 moderate, 30-50 severe distress.",
+    "definition_fr": "Échelle de détresse psychologique de Kessler. Scores 10-50. 10-19 probablement bien, 20-24 légère, 25-29 modérée, 30-50 détresse sévère.",
     "category": "mental_health",
     "min_value": 10,
     "max_value": 50,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Housing Stability Index",
+    "name_fr": "Indice de stabilité du logement",
     "definition": "Composite measure of housing stability. 1 = homeless/crisis, 5 = stable long-term housing.",
+    "definition_fr": "Mesure composite de la stabilité du logement. 1 = sans-abri/crise, 5 = logement stable à long terme.",
     "category": "housing",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Nights in Shelter (past 30 days)",
+    "name_fr": "Nuits en refuge (30 derniers jours)",
     "definition": "Number of nights spent in emergency shelter in the past 30 days.",
+    "definition_fr": "Nombre de nuits passées dans un refuge d'urgence au cours des 30 derniers jours.",
     "category": "housing",
     "min_value": 0,
     "max_value": 30,
-    "unit": "nights"
+    "unit": "nights",
+    "unit_fr": "nuits"
   },
   {
     "name": "Monthly Income",
+    "name_fr": "Revenu mensuel",
     "definition": "Client's total monthly income from all sources, in local currency.",
+    "definition_fr": "Revenu mensuel total du participant provenant de toutes les sources, en monnaie locale.",
     "category": "housing",
     "min_value": 0,
     "max_value": null,
-    "unit": "$"
+    "unit": "$",
+    "unit_fr": "$"
   },
   {
     "name": "Housing Readiness",
+    "name_fr": "Préparation au logement",
     "definition": "Assessment of readiness for independent housing. 1 = not ready, 5 = fully ready.",
+    "definition_fr": "Évaluation de la préparation au logement autonome. 1 = pas prêt, 5 = entièrement prêt.",
     "category": "housing",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Job Readiness Score",
+    "name_fr": "Pointage de préparation à l'emploi",
     "definition": "Assessment of employment readiness. 1 = significant barriers, 5 = job-ready.",
+    "definition_fr": "Évaluation de la préparation à l'emploi. 1 = obstacles importants, 5 = prêt à travailler.",
     "category": "employment",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Hours Worked (past week)",
+    "name_fr": "Heures travaillées (semaine dernière)",
     "definition": "Number of paid hours worked in the past 7 days.",
+    "definition_fr": "Nombre d'heures rémunérées travaillées au cours des 7 derniers jours.",
     "category": "employment",
     "min_value": 0,
     "max_value": 168,
-    "unit": "hours"
+    "unit": "hours",
+    "unit_fr": "heures"
   },
   {
     "name": "Employment Status",
+    "name_fr": "Statut d'emploi",
     "definition": "Current employment status. 1 = unemployed, 2 = casual/temporary, 3 = part-time, 4 = full-time, 5 = full-time stable.",
+    "definition_fr": "Statut d'emploi actuel. 1 = sans emploi, 2 = occasionnel/temporaire, 3 = temps partiel, 4 = temps plein, 5 = temps plein stable.",
     "category": "employment",
     "min_value": 1,
     "max_value": 5,
-    "unit": "status"
+    "unit": "status",
+    "unit_fr": "statut"
   },
   {
     "name": "Job Applications (past month)",
+    "name_fr": "Candidatures (dernier mois)",
     "definition": "Number of job applications submitted in the past 30 days.",
+    "definition_fr": "Nombre de candidatures soumises au cours des 30 derniers jours.",
     "category": "employment",
     "min_value": 0,
     "max_value": null,
-    "unit": "applications"
+    "unit": "applications",
+    "unit_fr": "candidatures"
   },
   {
     "name": "Days Clean",
+    "name_fr": "Jours d'abstinence",
     "definition": "Consecutive days without substance use (self-reported).",
+    "definition_fr": "Jours consécutifs sans consommation de substances (auto-déclaré).",
     "category": "substance_use",
     "min_value": 0,
     "max_value": null,
-    "unit": "days"
+    "unit": "days",
+    "unit_fr": "jours"
   },
   {
     "name": "Cravings Intensity",
+    "name_fr": "Intensité des envies",
     "definition": "Self-reported craving intensity. 0 = no cravings, 10 = extreme cravings.",
+    "definition_fr": "Intensité des envies auto-déclarée. 0 = aucune envie, 10 = envies extrêmes.",
     "category": "substance_use",
     "min_value": 0,
     "max_value": 10,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Harm Reduction Score",
+    "name_fr": "Pointage de réduction des méfaits",
     "definition": "Composite harm reduction measure. Tracks reduction in risky behaviours. 1 = high risk, 5 = low risk.",
+    "definition_fr": "Mesure composite de réduction des méfaits. Suivi de la diminution des comportements à risque. 1 = risque élevé, 5 = faible risque.",
     "category": "substance_use",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "School Attendance Rate",
+    "name_fr": "Taux de présence scolaire",
     "definition": "Percentage of school days attended in the past month.",
+    "definition_fr": "Pourcentage de jours d'école fréquentés au cours du dernier mois.",
     "category": "youth",
     "min_value": 0,
     "max_value": 100,
-    "unit": "%"
+    "unit": "%",
+    "unit_fr": "%"
   },
   {
     "name": "Family Connection Score",
+    "name_fr": "Pointage de liens familiaux",
     "definition": "Quality of family/caregiver relationship. 1 = no contact/conflict, 5 = strong positive connection.",
+    "definition_fr": "Qualité de la relation familiale/avec les aidants. 1 = aucun contact/conflit, 5 = lien positif fort.",
     "category": "youth",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Risk Behaviour Index",
+    "name_fr": "Indice de comportements à risque",
     "definition": "Assessment of engagement in risky behaviours. 1 = frequent high-risk, 5 = no risky behaviours.",
+    "definition_fr": "Évaluation de l'engagement dans des comportements à risque. 1 = risque élevé fréquent, 5 = aucun comportement à risque.",
     "category": "youth",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Goal Progress (1-10)",
+    "name_fr": "Progrès vers l'objectif (1-10)",
     "definition": "Client's self-assessed progress toward their stated goal. 1 = no progress, 10 = goal achieved. Note: Consider using the qualitative progress descriptors (harder/holding/shifting/good place) for richer, less reductive tracking.",
+    "definition_fr": "Progrès auto-évalué du participant vers son objectif déclaré. 1 = aucun progrès, 10 = objectif atteint. Remarque : envisagez d'utiliser les descripteurs qualitatifs de progrès pour un suivi plus riche.",
     "category": "general",
     "min_value": 1,
     "max_value": 10,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Client Satisfaction",
+    "name_fr": "Satisfaction du participant",
     "definition": "Client satisfaction with services. 1 = very dissatisfied, 5 = very satisfied. Note: Consider using the engagement observation and client voice fields for richer feedback capture.",
+    "definition_fr": "Satisfaction du participant envers les services. 1 = très insatisfait, 5 = très satisfait. Remarque : envisagez d'utiliser les champs d'observation de l'engagement et de la voix du participant pour une rétroaction plus riche.",
     "category": "general",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Life Skills Assessment",
+    "name_fr": "Évaluation des compétences de vie",
     "definition": "Composite life skills score. Covers budgeting, cooking, communication, time management. 1 = very limited, 5 = independent.",
+    "definition_fr": "Pointage composite des compétences de vie. Couvre le budget, la cuisine, la communication, la gestion du temps. 1 = très limité, 5 = autonome.",
     "category": "general",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Social Support Network",
+    "name_fr": "Réseau de soutien social",
     "definition": "Size and quality of support network. 1 = isolated, 5 = strong diverse network.",
+    "definition_fr": "Taille et qualité du réseau de soutien. 1 = isolé, 5 = réseau diversifié et solide.",
     "category": "general",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Service Engagement",
+    "name_fr": "Engagement dans les services",
     "definition": "Level of engagement with program services. 1 = disengaged, 5 = fully engaged.",
+    "definition_fr": "Niveau d'engagement dans les services du programme. 1 = désengagé, 5 = pleinement engagé.",
     "category": "general",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "How are you feeling today?",
+    "name_fr": "Comment vous sentez-vous aujourd'hui?",
     "definition": "Simple wellbeing check-in at each session. 1 = not great at all, 2 = struggling a bit, 3 = okay, 4 = pretty good, 5 = really good.",
+    "definition_fr": "Vérification simple du bien-être à chaque séance. 1 = pas bien du tout, 2 = un peu difficile, 3 = correct, 4 = assez bien, 5 = très bien.",
     "category": "general",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Since we last met, how are things going?",
+    "name_fr": "Depuis notre dernière rencontre, comment ça va?",
     "definition": "Change since previous session. 1 = much harder, 2 = a bit harder, 3 = about the same, 4 = a bit better, 5 = much better.",
+    "definition_fr": "Changement depuis la séance précédente. 1 = beaucoup plus difficile, 2 = un peu plus difficile, 3 = à peu près pareil, 4 = un peu mieux, 5 = beaucoup mieux.",
     "category": "general",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "How ready do you feel for work?",
+    "name_fr": "Vous sentez-vous prêt(e) à travailler?",
     "definition": "Self-reported readiness for job searching or starting work. 1 = not at all ready, 5 = completely ready.",
+    "definition_fr": "Préparation auto-déclarée pour la recherche d'emploi ou le début du travail. 1 = pas du tout prêt(e), 5 = tout à fait prêt(e).",
     "category": "employment",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Confidence in your job search",
+    "name_fr": "Confiance dans votre recherche d'emploi",
     "definition": "How confident do you feel about finding work? Covers applications, interviews, and next steps. 1 = very anxious, 5 = very confident.",
+    "definition_fr": "À quel point avez-vous confiance de trouver un emploi? Comprend les candidatures, les entrevues et les prochaines étapes. 1 = très anxieux/anxieuse, 5 = très confiant(e).",
     "category": "employment",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "How safe do you feel where you live?",
+    "name_fr": "Vous sentez-vous en sécurité là où vous vivez?",
     "definition": "Self-reported feeling of safety and security in current living situation. 1 = not safe at all, 5 = very safe and settled.",
+    "definition_fr": "Sentiment auto-déclaré de sécurité dans la situation de logement actuelle. 1 = pas du tout en sécurité, 5 = très en sécurité et installé(e).",
     "category": "housing",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "How connected do you feel to the group?",
+    "name_fr": "Vous sentez-vous connecté(e) au groupe?",
     "definition": "Sense of belonging and connection in group activities. 1 = not at all connected, 5 = really feel like I belong.",
+    "definition_fr": "Sentiment d'appartenance et de connexion dans les activités de groupe. 1 = pas du tout connecté(e), 5 = je sens vraiment que j'appartiens.",
     "category": "youth",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Confidence navigating services",
+    "name_fr": "Confiance à naviguer les services",
     "definition": "How confident are you accessing community services on your own? Doctor, school, transit, government. 1 = not confident, 5 = very confident.",
+    "definition_fr": "À quel point avez-vous confiance pour accéder seul(e) aux services communautaires? Médecin, école, transport, gouvernement. 1 = pas confiant(e), 5 = très confiant(e).",
     "category": "general",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Comfort with English in daily life",
+    "name_fr": "Aisance avec l'anglais au quotidien",
     "definition": "Self-reported comfort using English for everyday tasks like shopping, appointments, and conversations. 1 = very difficult, 5 = very comfortable.",
+    "definition_fr": "Aisance auto-déclarée à utiliser l'anglais pour les tâches quotidiennes comme les achats, les rendez-vous et les conversations. 1 = très difficile, 5 = très à l'aise.",
     "category": "general",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Cooking confidence",
+    "name_fr": "Confiance en cuisine",
     "definition": "How confident do you feel preparing a healthy meal from scratch? 1 = not confident at all, 5 = very confident.",
+    "definition_fr": "À quel point avez-vous confiance pour préparer un repas sain à partir de zéro? 1 = pas du tout confiant(e), 5 = très confiant(e).",
     "category": "general",
     "min_value": 1,
     "max_value": 5,
-    "unit": "score"
+    "unit": "score",
+    "unit_fr": "pointage"
   },
   {
     "name": "Healthy meals prepared this week",
+    "name_fr": "Repas sains préparés cette semaine",
     "definition": "Number of healthy meals the participant prepared at home this week.",
+    "definition_fr": "Nombre de repas sains préparés à la maison par le participant cette semaine.",
     "category": "general",
     "min_value": 0,
     "max_value": 14,
-    "unit": "meals"
+    "unit": "meals",
+    "unit_fr": "repas"
   },
   {
     "name": "Sessions attended this month",
+    "name_fr": "Séances suivies ce mois-ci",
     "definition": "Number of program sessions attended in the past month.",
+    "definition_fr": "Nombre de séances du programme suivies au cours du dernier mois.",
     "category": "general",
     "min_value": 0,
     "max_value": 20,
-    "unit": "sessions"
+    "unit": "sessions",
+    "unit_fr": "séances"
   },
   {
     "name": "Community connections this month",
+    "name_fr": "Liens communautaires ce mois-ci",
     "definition": "Number of new community connections or resources accessed this month. Includes services, neighbours, groups, or supports.",
+    "definition_fr": "Nombre de nouveaux liens communautaires ou ressources accédées ce mois-ci. Comprend les services, les voisins, les groupes ou les soutiens.",
     "category": "general",
     "min_value": 0,
     "max_value": 20,
-    "unit": "connections"
+    "unit": "connections",
+    "unit_fr": "liens"
   }
 ]

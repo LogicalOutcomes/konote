@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% blocktrans with client=term.client|default:"Participant" %}Transfer {{ client }}{% endblocktrans %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+<hgroup>
+    <h1>{% blocktrans with first=client.display_name last=client.last_name %}Transfer {{ first }} {{ last }}{% endblocktrans %}</h1>
+    <p>{% trans "Add or remove program enrolments for this participant." %}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% include "includes/_form_errors.html" %}
+
+    {% if current_enrolments %}
+    <section aria-labelledby="current-label">
+        <h2 id="current-label" style="font-size: 1rem;">{% trans "Current Enrolments" %}</h2>
+        <ul style="list-style: none; padding: 0;">
+            {% for e in current_enrolments %}
+            <li style="margin-bottom: var(--kn-space-xs);">
+                <span class="program-dot" style="background-color: {{ e.program.colour_hex }}" aria-hidden="true"></span>
+                {{ e.program.translated_name }}
+                <small class="secondary">{% trans "since" %} {{ e.enrolled_at|date:"M d, Y" }}</small>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endif %}
+
+    <fieldset>
+        <legend>{{ term.program_plural|default:"Programs" }}</legend>
+        <p class="secondary" style="margin-bottom: var(--kn-space-sm);">{% trans "Select which programs this participant should be enrolled in. Unchecking a program will unenrol them." %}</p>
+        {% for program in form.programs.field.queryset %}
+        <label>
+            <input type="checkbox" name="programs" value="{{ program.pk }}"
+                   {% if program.pk in form.programs.value or program.pk|stringformat:"d" in form.programs.value %}checked{% endif %}>
+            <span class="program-dot" style="background-color: {{ program.colour_hex }}" aria-hidden="true"></span>
+            {{ program.translated_name }}
+        </label>
+        {% endfor %}
+        {% if form.programs.errors %}<small class="badge badge-danger">{{ form.programs.errors.0 }}</small>{% endif %}
+    </fieldset>
+
+    <fieldset>
+        <legend>{% trans "Cross-Program Sharing" %}</legend>
+        <label>
+            <input type="checkbox" name="cross_program_sharing_consent" id="id_cross_program_sharing_consent"
+                   {% if form.cross_program_sharing_consent.value %}checked{% endif %}>
+            {% trans "Participant consents to sharing clinical information across programs" %}
+        </label>
+        <small class="secondary">{% trans "Required under Ontario privacy law (PHIPA) before clinical notes from one program can be viewed by staff in another program." %}</small>
+    </fieldset>
+
+    <div>
+        <label for="id_transfer_reason">{% trans "Reason for transfer (optional)" %}</label>
+        <textarea name="transfer_reason" id="id_transfer_reason" rows="2" placeholder="{% trans "Why is this participant being added to or removed from a program?" %}">{{ form.transfer_reason.value|default:'' }}</textarea>
+        <small class="secondary">{% trans "This will be recorded in the audit log." %}</small>
+    </div>
+
+    <div role="group" style="margin-top: var(--kn-space-base);">
+        <button type="submit">{% trans "Save Changes" %}</button>
+        <a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

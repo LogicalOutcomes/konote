@@ -27,55 +27,7 @@
     margin-bottom: var(--kn-space-lg);
 }
 
-/* ---- Chip buttons (date quick-picks, location) ---- */
-.mp-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--kn-space-sm);
-    margin-bottom: var(--kn-space-sm);
-}
-.mp-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--kn-space-xs);
-    padding: var(--kn-space-sm) var(--kn-space-base);
-    border: 1.5px solid var(--kn-border);
-    border-radius: 999px;
-    background: var(--kn-card-bg);
-    color: var(--kn-text);
-    font-size: 0.9375rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--kn-transition);
-    min-height: 44px;  /* WCAG 2.5.8 touch target */
-    white-space: nowrap;
-    /* Remove default button styles */
-    font-family: inherit;
-    line-height: 1.4;
-}
-.mp-chip:hover {
-    border-color: var(--kn-primary);
-    background: var(--kn-primary-subtle);
-}
-.mp-chip:focus-visible {
-    outline: 3px solid var(--kn-primary);
-    outline-offset: 2px;
-}
-.mp-chip[aria-checked="true"] {
-    background: var(--kn-primary);
-    color: var(--kn-text-inverse);
-    border-color: var(--kn-primary);
-}
-.mp-chip[aria-checked="true"]:hover {
-    background: var(--kn-primary-hover);
-}
-
-/* Chip sub-text (e.g. date under "Today") */
-.mp-chip-sub {
-    font-weight: 400;
-    opacity: 0.85;
-    font-size: 0.8125rem;
-}
+/* Chip buttons (.mp-chip, .mp-chips, .mp-chip-sub) are now in main.css */
 
 /* ---- Weekday row ---- */
 .mp-weekdays {
@@ -226,13 +178,12 @@
 }
 
 /* ---- Dark mode adjustments ---- */
+/* .mp-chip dark mode is now in main.css */
 @media (prefers-color-scheme: dark) {
-    .mp-chip,
     .mp-weekday,
     .mp-time-slot {
         border-color: rgba(255, 255, 255, 0.12);
     }
-    .mp-chip:hover,
     .mp-weekday:hover,
     .mp-time-slot:hover {
         border-color: var(--kn-primary);

@@ -308,6 +308,14 @@ KoNote can log communications and optionally send SMS or email reminders to clie
 
 See `.env.example` for details and example values.
 
+**Export notification recipients:** When someone exports a report containing individual participant data, KoNote sends a notification email. By default this goes to all system administrators. To send it to specific people instead (e.g. a privacy officer or ED), set:
+
+| Variable | What it is |
+|----------|------------|
+| `EXPORT_NOTIFICATION_EMAILS` | Comma-separated email addresses (e.g. `privacy@agency.ca,ed@agency.ca`) |
+
+If this variable is not set, notifications fall back to all active admin users.
+
 **Health warnings:** If SMS or email delivery fails repeatedly, staff see a warning banner on the Meetings page. Admins receive an email alert after 3 or more consecutive failures.
 
 ---
