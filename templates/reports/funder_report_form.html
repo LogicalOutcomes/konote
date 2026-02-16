@@ -127,6 +127,18 @@
     {% endfor %}
     {% endif %}
 
+    {% if show_template_hint %}
+    <p style="color: var(--pico-muted-color); margin-bottom: 1rem;">
+        <small>
+            {% blocktrans with settings_url="/admin/settings/report-templates/" %}
+            <strong>Admin tip:</strong> You have report templates configured, but none are linked to programs yet.
+            To use them here, go to <a href="{{ settings_url }}">Settings &rarr; Report Templates</a>,
+            open a template, and assign it to the relevant program(s).
+            {% endblocktrans %}
+        </small>
+    </p>
+    {% endif %}
+
     {# Export format #}
     <fieldset>
         <legend>{{ form.format.label }}</legend>
