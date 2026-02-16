@@ -12,21 +12,54 @@
     {% endif %}
 </header>
 
-{# Overall summary cards #}
+{# Program filter #}
+{% if programs|length > 1 %}
+<form method="get" action="" class="program-filter-form">
+    <label for="program-filter">{% trans "Filter by" %} {{ term.program|default:"Program" }}:</label>
+    <select id="program-filter" name="program" onchange="this.form.submit()">
+        <option value="">{% trans "All" %} {{ term.program_plural|default:"Programs" }}</option>
+        {% for prog in programs %}
+        <option value="{{ prog.pk }}" {% if prog.pk == selected_program_id %}selected{% endif %}>
+            {{ prog.translated_name }}
+        </option>
+        {% endfor %}
+    </select>
+</form>
+{% endif %}
+
+{# Top-line summary cards #}
 <section class="stats-overview" aria-label="{% trans 'Organization Summary' %}">
     <div class="stats-grid">
         <article class="stat-card">
-            <div class="stat-value">{{ total_clients }}</div>
-            <div class="stat-label">{% trans "Total" %} {{ term.client_plural|default:"Participants" }}</div>
-        </article>
-        <article class="stat-card">
             <div class="stat-value">{{ total_active }}</div>
-            <div class="stat-label">{% trans "Active" %}</div>
+            <div class="stat-label">{% trans "Active" %} {{ term.client_plural|default:"Participants" }}</div>
         </article>
-        <article class="stat-card {% if overall_consent_pct >= 90 %}stat-success{% elif overall_consent_pct >= 70 %}stat-warning{% else %}stat-alert{% endif %}">
-            <div class="stat-value">{{ overall_consent_pct }}%</div>
-            <div class="stat-label">{% trans "Consent Compliance" %}</div>
+
+        <article class="stat-card {% if without_notes > 0 %}stat-alert{% endif %}">
+            <div class="stat-value">{{ without_notes }}</div>
+            <div class="stat-label">{% trans "Without Notes This Month" %}</div>
+            {% if without_notes > 0 %}
+            <div class="stat-flag">{% trans "Needs attention" %}</div>
+            {% endif %}
         </article>
+
+        <article class="stat-card {% if overdue_followups > 5 %}stat-alert{% elif overdue_followups > 0 %}stat-warning{% endif %}">
+            <div class="stat-value">{{ overdue_followups }}</div>
+            <div class="stat-label">{% trans "Overdue Follow-ups" %}</div>
+            {% if overdue_followups > 0 %}
+            <div class="stat-flag">{% trans "Needs attention" %}</div>
+            {% endif %}
+        </article>
+
+        {% if show_alerts %}
+        <article class="stat-card {% if active_alerts > 0 %}stat-alert{% endif %}">
+            <div class="stat-value">{{ active_alerts }}</div>
+            <div class="stat-label">{% trans "Active Safety Alerts" %}</div>
+            {% if active_alerts > 0 %}
+            <div class="stat-flag">{% trans "Needs attention" %}</div>
+            {% endif %}
+        </article>
+        {% endif %}
     </div>
 </section>
 
@@ -44,6 +77,7 @@
             </header>
 
             <div class="program-metrics">
+                {# Census #}
                 <div class="metric-row">
                     <span class="metric-label">{% trans "Total" %} {{ term.client_plural|default:"Participants" }}</span>
                     <span class="metric-value">{{ stat.total }}</span>
@@ -52,15 +86,10 @@
                     <span class="metric-label">{% trans "Active" %}</span>
                     <span class="metric-value">{{ stat.active }}</span>
                 </div>
-                <div class="metric-row">
-                    <span class="metric-label">{% trans "Inactive" %}</span>
-                    <span class="metric-value">{{ stat.inactive }}</span>
-                </div>
-                <div class="metric-row">
-                    <span class="metric-label">{% trans "Discharged" %}</span>
-                    <span class="metric-value">{{ stat.discharged }}</span>
-                </div>
+
                 <hr>
+
+                {# Activity #}
                 <div class="metric-row highlight">
                     <span class="metric-label">{% trans "New this month" %}</span>
                     <span class="metric-value">{{ stat.new_this_month }}</span>
@@ -69,11 +98,59 @@
                     <span class="metric-label">{% trans "Notes this week" %}</span>
                     <span class="metric-value">{{ stat.notes_this_week }}</span>
                 </div>
+
                 <hr>
-                <div class="metric-row {% if stat.consent_pct >= 90 %}metric-success{% elif stat.consent_pct >= 70 %}metric-warning{% else %}metric-alert{% endif %}">
-                    <span class="metric-label">{% trans "Consent compliance" %}</span>
-                    <span class="metric-value">{{ stat.consent_pct }}%</span>
+
+                {# Engagement & outcomes #}
+                {% if stat.engagement_quality is not None %}
+                <div class="metric-row {% if stat.engagement_quality >= 70 %}metric-success{% elif stat.engagement_quality >= 40 %}metric-neutral{% else %}metric-warning{% endif %}">
+                    <span class="metric-label">{% trans "Engagement Quality" %}</span>
+                    <span class="metric-value">{{ stat.engagement_quality }}%
+                        <span class="sr-only">{% if stat.engagement_quality >= 70 %}({% trans "Good" %}){% elif stat.engagement_quality >= 40 %}({% trans "Fair" %}){% else %}({% trans "Low" %}){% endif %}</span>
+                    </span>
                 </div>
+                {% endif %}
+
+                {% if stat.goal_completion is not None %}
+                <div class="metric-row">
+                    <span class="metric-label">{% trans "Goal Completion Rate" %}</span>
+                    <span class="metric-value">{{ stat.goal_completion }}%</span>
+                </div>
+                {% endif %}
+
+                {% if show_events and stat.no_show_rate is not None %}
+                <div class="metric-row {% if stat.no_show_rate > 30 %}metric-alert{% elif stat.no_show_rate > 15 %}metric-warning{% endif %}">
+                    <span class="metric-label">{% trans "No-Show Rate" %}</span>
+                    <span class="metric-value">{{ stat.no_show_rate }}%
+                        {% if stat.no_show_rate > 30 %}<span class="sr-only">({% trans "High" %})</span>
+                        {% elif stat.no_show_rate > 15 %}<span class="sr-only">({% trans "Elevated" %})</span>{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+
+                {% if stat.group_attendance is not None %}
+                <div class="metric-row {% if stat.group_attendance >= 75 %}metric-success{% elif stat.group_attendance >= 50 %}metric-neutral{% else %}metric-warning{% endif %}">
+                    <span class="metric-label">{% trans "Group Attendance" %}</span>
+                    <span class="metric-value">{{ stat.group_attendance }}%
+                        <span class="sr-only">{% if stat.group_attendance >= 75 %}({% trans "Good" %}){% elif stat.group_attendance >= 50 %}({% trans "Fair" %}){% else %}({% trans "Low" %}){% endif %}</span>
+                    </span>
+                </div>
+                {% endif %}
+
+                <hr>
+
+                {# Pipeline & adoption #}
+                <div class="metric-row">
+                    <span class="metric-label">{% trans "Intake Pipeline" %}</span>
+                    <span class="metric-value">{{ stat.intake_pending }}</span>
+                </div>
+
+                {% if show_portal and stat.portal_adoption is not None %}
+                <div class="metric-row">
+                    <span class="metric-label">{% trans "Portal Adoption" %}</span>
+                    <span class="metric-value">{{ stat.portal_adoption }}%</span>
+                </div>
+                {% endif %}
             </div>
         </article>
         {% endfor %}
@@ -107,13 +184,34 @@
     margin-top: 0;
 }
 
+/* Program filter */
+.program-filter-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: var(--kn-space-lg, 2rem);
+}
+
+.program-filter-form label {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.program-filter-form select {
+    margin-bottom: 0;
+    width: auto;
+    min-width: 200px;
+}
+
+/* Summary cards */
 .stats-overview {
     margin-bottom: var(--kn-space-lg, 2rem);
 }
 
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
     gap: var(--kn-space-base, 1rem);
 }
 
@@ -135,10 +233,21 @@
     font-size: 0.875rem;
 }
 
-.stat-success .stat-value { color: var(--pico-ins-color, #2e7d32); }
-.stat-warning .stat-value { color: var(--pico-mark-background-color, #f9a825); }
-.stat-alert .stat-value { color: var(--pico-del-color, #c62828); }
+.stat-flag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 0.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
 
+.stat-success .stat-value { color: var(--kn-success-fg); }
+.stat-warning .stat-value { color: var(--pico-mark-background-color, #f9a825); }
+.stat-warning .stat-flag { color: var(--pico-mark-background-color, #f9a825); }
+.stat-alert .stat-value { color: var(--kn-danger-fg); }
+.stat-alert .stat-flag { color: var(--kn-danger-fg); }
+
+/* Program cards */
 .program-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -193,9 +302,10 @@
     padding: 0.25rem 1rem;
 }
 
-.metric-success .metric-value { color: var(--pico-ins-color, #2e7d32); }
+.metric-success .metric-value { color: var(--kn-success-fg); }
+.metric-neutral .metric-value { color: var(--pico-muted-color); }
 .metric-warning .metric-value { color: var(--pico-mark-background-color, #f9a825); }
-.metric-alert .metric-value { color: var(--pico-del-color, #c62828); }
+.metric-alert .metric-value { color: var(--kn-danger-fg); }
 
 .program-metrics hr {
     margin: 0.5rem 0;
@@ -203,6 +313,7 @@
     border-top: 1px solid var(--pico-muted-border-color);
 }
 
+/* Guidance */
 .executive-guidance {
     margin-top: var(--kn-space-lg, 2rem);
     padding: var(--kn-space-base, 1rem);

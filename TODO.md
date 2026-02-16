@@ -53,6 +53,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Add first-run setup wizard UI for guided initial configuration (SETUP1-UI)
 - [ ] Add TOTP multi-factor authentication (see tasks/mfa-implementation.md) (SEC2)
 - [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
+- [ ] Optimise executive dashboard queries — reduce N+1 per-program loop with prefetching or aggregation (PERF2)
+- [ ] Review and merge fix/audit-log-pm-scoping branch — large restructuring (58 files, 3,858 deletions) needs dedicated review session (AUDIT-SCOPE1)
 - [ ] Add bulk operations for discharge and assignment workflows (UX17)
 - [ ] Re-add API-based auto-translation to translate_strings for production use (I18N-API1)
 - [ ] Document local PostgreSQL setup for security_audit and pytest workflows (DEV-PG1)
