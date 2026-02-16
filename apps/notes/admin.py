@@ -12,7 +12,7 @@ from .models import (
 
 @admin.register(ProgressNoteTemplate)
 class ProgressNoteTemplateAdmin(admin.ModelAdmin):
-    list_display = ("name", "status", "created_at")
+    list_display = ("name", "name_fr", "status", "created_at")
     list_filter = ("status",)
 
 

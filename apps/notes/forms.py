@@ -51,7 +51,7 @@ class QuickNoteForm(forms.Form):
         required=False,
     )
     follow_up_date = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(attrs={"type": "date", "data-followup-picker": "true"}),
         required=False,
         label=_("Follow up by"),
         help_text=_("(optional — adds to your home page reminders)"),
@@ -111,7 +111,7 @@ class FullNoteForm(forms.Form):
         required=False,
     )
     follow_up_date = forms.DateField(
-        widget=forms.DateInput(attrs={"type": "date"}),
+        widget=forms.DateInput(attrs={"type": "date", "data-followup-picker": "true"}),
         required=False,
         label=_("Follow up by"),
         help_text=_("(optional — adds to your home page reminders)"),
@@ -187,14 +187,14 @@ class MetricValueForm(forms.Form):
         super().__init__(*args, **kwargs)
         if metric_def:
             self.metric_def = metric_def
-            label = metric_def.name
-            if metric_def.unit:
-                label += f" ({metric_def.unit})"
+            label = metric_def.translated_name
+            if metric_def.translated_unit:
+                label += f" ({metric_def.translated_unit})"
             self.fields["value"].label = label
             # Set help text from definition
             help_parts = []
-            if metric_def.definition:
-                help_parts.append(metric_def.definition)
+            if metric_def.translated_definition:
+                help_parts.append(metric_def.translated_definition)
             if metric_def.min_value is not None or metric_def.max_value is not None:
                 range_str = _("Range: ")
                 if metric_def.min_value is not None:
@@ -244,7 +244,7 @@ class NoteTemplateForm(forms.ModelForm):
 
     class Meta:
         model = ProgressNoteTemplate
-        fields = ["name", "default_interaction_type", "owning_program", "status"]
+        fields = ["name", "name_fr", "default_interaction_type", "owning_program", "status"]
 
     def __init__(self, *args, requesting_user=None, **kwargs):
         super().__init__(*args, **kwargs)
@@ -266,7 +266,7 @@ class NoteTemplateSectionForm(forms.ModelForm):
 
     class Meta:
         model = ProgressNoteTemplateSection
-        fields = ["name", "section_type", "sort_order"]
+        fields = ["name", "name_fr", "section_type", "sort_order"]
 
 
 class NoteCancelForm(forms.Form):

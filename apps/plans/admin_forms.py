@@ -13,7 +13,7 @@ class PlanTemplateForm(forms.ModelForm):
 
     class Meta:
         model = PlanTemplate
-        fields = ["name", "description", "owning_program", "status"]
+        fields = ["name", "name_fr", "description", "description_fr", "owning_program", "status"]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
         }
@@ -45,7 +45,7 @@ class PlanTemplateSectionForm(forms.ModelForm):
 
     class Meta:
         model = PlanTemplateSection
-        fields = ["name", "program", "sort_order"]
+        fields = ["name", "name_fr", "program", "sort_order"]
 
 
 class PlanTemplateTargetForm(forms.ModelForm):
@@ -53,7 +53,7 @@ class PlanTemplateTargetForm(forms.ModelForm):
 
     class Meta:
         model = PlanTemplateTarget
-        fields = ["name", "description", "sort_order"]
+        fields = ["name", "name_fr", "description", "description_fr", "sort_order"]
         widgets = {
             "description": forms.Textarea(attrs={"rows": 3}),
         }

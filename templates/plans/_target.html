@@ -21,7 +21,7 @@
 </td>
 <td>
     {% for metric in target.metrics.all %}
-        <span class="badge badge-neutral" title="{{ metric.definition|truncatewords:10 }}">{{ metric.name }}</span>
+        <span class="badge badge-neutral" title="{{ metric.translated_definition|truncatewords:10 }}">{{ metric.translated_name }}</span>
     {% empty %}
         <small class="secondary">{% trans "None" %}</small>
     {% endfor %}

@@ -7,13 +7,6 @@
     <small>{% blocktrans with program=term.program|default:"program" %}You are an administrator without {{ program }} assignments. To see data, ask another admin to assign you a {{ program }} role.{% endblocktrans %}</small>
 </p>
 {% endif %}
-{% if active_service_model != "group" %}
-<div class="action-bar">
-    <a href="{% url 'notes:quick_note_create' client_id=client.pk %}" role="button">{{ term.quick_note|default:"Quick Note" }}</a>
-    <a href="{% url 'notes:note_create' client_id=client.pk %}" role="button" class="outline">{% blocktrans with note=term.progress_note|default:"Note" %}Detailed {{ note }}{% endblocktrans %}</a>
-</div>
-{% endif %}
-
 <!-- Search and filters -->
 <form method="get" action="{% url 'notes:note_list' client_id=client.pk %}">
     <div class="note-search-field">
@@ -78,6 +71,11 @@
 </form>
 
 {% if page %}
+{% if active_service_model != "group" %}
+<div class="note-list-header">
+    <a href="{% url 'notes:quick_note_create' client_id=client.pk %}" class="add-link">+ {% trans "Add note" %}</a>
+</div>
+{% endif %}
 <div id="notes-timeline">
     {% for note in page %}
     <article class="note-card note-card--{{ note.interaction_type }}{% if note.status == 'cancelled' %} note-card--cancelled{% endif %}"
@@ -113,6 +111,7 @@
 <div class="empty-state">
     <p>{% blocktrans with notes=term.progress_note|default:"notes" %}No {{ notes }} recorded yet.{% endblocktrans %}</p>
     {% if active_service_model != "group" %}
+    <p><small>{% trans "Use the + New menu above to add a note." %}</small></p>
     <a href="{% url 'notes:quick_note_create' client_id=client.pk %}" role="button">{% trans "Add the first note" %}</a>
     {% endif %}
 </div>

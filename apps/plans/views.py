@@ -471,18 +471,25 @@ def metric_export(request):
     response.write("\ufeff")
 
     writer = csv.writer(response)
-    writer.writerow(["id", "name", "definition", "category", "min_value",
-                     "max_value", "unit", "is_enabled", "status"])
+    writer.writerow(["id", "name", "name_fr", "definition", "definition_fr",
+                     "category", "min_value", "max_value", "unit", "unit_fr",
+                     "portal_description", "portal_description_fr",
+                     "is_enabled", "status"])
 
     for m in metrics:
         writer.writerow(sanitise_csv_row([
             m.pk,
             m.name,
+            m.name_fr,
             m.definition,
+            m.definition_fr,
             m.category,
             m.min_value if m.min_value is not None else "",
             m.max_value if m.max_value is not None else "",
             m.unit,
+            m.unit_fr,
+            m.portal_description,
+            m.portal_description_fr,
             "yes" if m.is_enabled else "no",
             m.status,
         ]))
@@ -670,6 +677,12 @@ def _parse_metric_csv(csv_file):
             elif category not in VALID_CATEGORIES:
                 row_errors.append(f"invalid category '{category}' (valid: {', '.join(VALID_CATEGORIES.keys())})")
 
+            # Optional French translation fields
+            name_fr = row.get("name_fr", "")
+            definition_fr = row.get("definition_fr", "")
+            unit_fr = row.get("unit_fr", "")
+            portal_description_fr = row.get("portal_description_fr", "")
+
             # Optional numeric fields
             min_value = row.get("min_value", "")
             max_value = row.get("max_value", "")
@@ -721,11 +734,15 @@ def _parse_metric_csv(csv_file):
                     "id": metric_id,
                     "action": action,
                     "name": name,
+                    "name_fr": name_fr,
                     "definition": definition,
+                    "definition_fr": definition_fr,
                     "category": category,
                     "min_value": parsed_min,
                     "max_value": parsed_max,
                     "unit": unit,
+                    "unit_fr": unit_fr,
+                    "portal_description_fr": portal_description_fr,
                     "is_enabled": is_enabled,
                     "status": status,
                 })
@@ -766,11 +783,15 @@ def metric_import(request):
             for row_data in cached_rows:
                 fields = {
                     "name": row_data["name"],
+                    "name_fr": row_data.get("name_fr", ""),
                     "definition": row_data["definition"],
+                    "definition_fr": row_data.get("definition_fr", ""),
                     "category": row_data["category"],
                     "min_value": row_data["min_value"],
                     "max_value": row_data["max_value"],
                     "unit": row_data["unit"],
+                    "unit_fr": row_data.get("unit_fr", ""),
+                    "portal_description_fr": row_data.get("portal_description_fr", ""),
                     "is_enabled": row_data.get("is_enabled", True),
                     "status": row_data.get("status", "active"),
                 }

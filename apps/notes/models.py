@@ -22,6 +22,10 @@ class ProgressNoteTemplate(models.Model):
     ]
 
     name = models.CharField(max_length=255)
+    name_fr = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_("French name (displayed when language is French)"),
+    )
     default_interaction_type = models.CharField(
         max_length=20,
         choices=INTERACTION_TYPE_CHOICES,
@@ -39,6 +43,15 @@ class ProgressNoteTemplate(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @property
+    def translated_name(self):
+        """Return French name when active language is French, else English."""
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.name_fr:
+            return self.name_fr
+        return self.name
 
     class Meta:
         app_label = "notes"
@@ -59,8 +72,21 @@ class ProgressNoteTemplateSection(models.Model):
 
     template = models.ForeignKey(ProgressNoteTemplate, on_delete=models.CASCADE, related_name="sections")
     name = models.CharField(max_length=255)
+    name_fr = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_("French name (displayed when language is French)"),
+    )
     section_type = models.CharField(max_length=20, choices=SECTION_TYPE_CHOICES, default="basic")
     sort_order = models.IntegerField(default=0)
+
+    @property
+    def translated_name(self):
+        """Return French name when active language is French, else English."""
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.name_fr:
+            return self.name_fr
+        return self.name
 
     class Meta:
         app_label = "notes"

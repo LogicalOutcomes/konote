@@ -60,10 +60,13 @@ def _notify_admins_elevated_export(link, request):
     Fails gracefully — logs a warning if email sending fails but does not
     block the export creation.
     """
-    admins = User.objects.filter(is_admin=True, is_active=True)
-    admin_emails = [u.email for u in admins if u.email]
+    # Use configured notification recipients, falling back to all active admins
+    admin_emails = list(getattr(settings, "EXPORT_NOTIFICATION_EMAILS", []))
     if not admin_emails:
-        logger.warning("No admin email addresses found for elevated export notification (link %s)", link.id)
+        admins = User.objects.filter(is_admin=True, is_active=True)
+        admin_emails = [u.email for u in admins if u.email]
+    if not admin_emails:
+        logger.warning("No email addresses found for elevated export notification (link %s)", link.id)
         return
 
     manage_url = request.build_absolute_uri(

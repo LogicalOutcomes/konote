@@ -378,6 +378,15 @@ KoNote has features that can be turned on or off for each agency. Walk through t
 
 **7.2** For each feature marked "Off" that they want on: "Let me explain what turning this on means for privacy and workload."
 
+**7.3** "When someone exports a report that contains individual participant data, KoNote sends an email notification as an audit trail. Who should receive those notifications — your privacy officer, your ED, or someone else?"
+
+*The notification goes to all system administrators by default, but many agencies prefer it to go to a privacy officer or executive director instead — especially if the admin is a part-time tech person. You can list multiple email addresses.*
+
+| Export Notification Decision | Choice | Notes |
+|---|---|---|
+| Who receives export notifications? | Default (admins) / Specific people | |
+| Email addresses (if specific) | | |
+
 ---
 
 ## After the Interview
@@ -398,6 +407,7 @@ Write up a one-page summary of all decisions made, organized as:
 > **Executive Access:** [Who, what level]
 > **Safety Measures:** [Access blocks, confidential programs, DV safeguards]
 > **Feature Toggles:** [What's on/off]
+> **Export Notification Recipients:** [Default (admins) or specific email addresses]
 > **Privacy Request Handler:** [Who]
 > **Staff Departure Process:** [Summary]
 

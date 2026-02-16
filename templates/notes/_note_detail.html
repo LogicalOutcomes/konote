@@ -13,7 +13,7 @@
             <small>({{ note.author_program.translated_name }})</small>
         {% endif %}
         {% if note.template %}
-            <small>| {% trans "Template:" %} {{ note.template.name }}</small>
+            <small>| {% trans "Template:" %} {{ note.template.translated_name }}</small>
         {% endif %}
     </div>
 </header>
@@ -41,7 +41,7 @@
             {% for mv in entry.metric_values.all %}
             {% if mv.metric_def %}
             <tr>
-                <td>{{ mv.metric_def.name }}{% if mv.metric_def.unit %} ({{ mv.metric_def.unit }}){% endif %}</td>
+                <td>{{ mv.metric_def.translated_name }}{% if mv.metric_def.translated_unit %} ({{ mv.metric_def.translated_unit }}){% endif %}</td>
                 <td>{{ mv.value }}</td>
             </tr>
             {% endif %}

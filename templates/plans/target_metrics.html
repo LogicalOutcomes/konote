@@ -19,9 +19,9 @@
         <label>
             <input type="checkbox" name="metrics" value="{{ metric.pk }}"
                    {% if metric.pk in form.initial.metrics %}checked{% endif %}>
-            <strong>{{ metric.name }}</strong>
-            {% if metric.unit %}<small>({{ metric.unit }})</small>{% endif %}
-            <br><small>{{ metric.definition|truncatewords:20 }}</small>
+            <strong>{{ metric.translated_name }}</strong>
+            {% if metric.translated_unit %}<small>({{ metric.translated_unit }})</small>{% endif %}
+            <br><small>{{ metric.translated_definition|truncatewords:20 }}</small>
         </label>
         {% endfor %}
     </fieldset>

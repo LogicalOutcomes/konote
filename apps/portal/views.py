@@ -835,16 +835,16 @@ def goal_detail(request, target_id):
         )
 
         if values.exists():
-            chart_data[metric_def.name] = {
+            chart_data[metric_def.translated_name] = {
                 "labels": [
                     v.progress_note_target.progress_note.created_at.strftime("%Y-%m-%d")
                     for v in values
                 ],
                 "values": [v.value for v in values],
-                "unit": metric_def.unit or "",
+                "unit": metric_def.translated_unit or "",
                 "min_value": metric_def.min_value,
                 "max_value": metric_def.max_value,
-                "description": metric_def.portal_description or "",
+                "description": metric_def.translated_portal_description or "",
             }
 
     return render(request, "portal/goal_detail.html", {
@@ -890,15 +890,15 @@ def progress_view(request):
     # Group by metric definition for chart rendering
     metrics_data = {}
     for mv in values:
-        metric_name = mv.metric_def.name
+        metric_name = mv.metric_def.translated_name
         if metric_name not in metrics_data:
             metrics_data[metric_name] = {
                 "labels": [],
                 "values": [],
-                "unit": mv.metric_def.unit or "",
+                "unit": mv.metric_def.translated_unit or "",
                 "min_value": mv.metric_def.min_value,
                 "max_value": mv.metric_def.max_value,
-                "description": mv.metric_def.portal_description or "",
+                "description": mv.metric_def.translated_portal_description or "",
                 "goal_names": set(),
             }
         note_date = mv.progress_note_target.progress_note.created_at.strftime("%Y-%m-%d")

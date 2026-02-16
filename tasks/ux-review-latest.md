@@ -1,6 +1,6 @@
 # KoNote UX Walkthrough Report
 
-**Generated:** 2026-02-15 09:57:38  
+**Generated:** 2026-02-15 18:16:05  
 **Command:** `pytest tests/ux_walkthrough/ -v`
 
 ## Summary
@@ -10,7 +10,7 @@
 | Pages visited | 321 | 321 (same) |
 | Critical issues | 0 |
 | Warnings | 0 |
-| Info items | 27 | 27 (same) |
+| Info items | 8 | 27 (down 19) |
 
 ## Critical Issues
 
@@ -46,67 +46,11 @@ _No warning issues found._
 - **[Direct Service] Form validation — empty quick note** `/notes/client/1/quick/`
   Error list #notes-text-errors not linked via aria-describedby
 
-- **[Browser] Focus Management** `/plans/client/7/`
-  Plan section: No edit button found
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Skip to main content" is 1x1px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "KoNote" is 69x38px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <button> "" is 39x13px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Home" is 50x35px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Participants" is 82x35px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Add Note" is 145x28px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Edit" is 113x28px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <button> "More ▾" is 69x28px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Info" is 48x38px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Plan (1)" is 79x38px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Note (1)" is 83x38px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Timeline (2)" is 106x38px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <a> "Analysis" is 72x38px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/5/`
-  [mobile] Client detail: Touch target too small — <button> "✎ Edit" is 70x28px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/`
-  [mobile] Client list: Touch target too small — <a> "Skip to main content" is 1x1px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/`
-  [mobile] Client list: Touch target too small — <a> "KoNote" is 69x38px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/`
-  [mobile] Client list: Touch target too small — <button> "" is 39x13px (min 44x44)
-
-- **[Browser] Responsive Layout** `/clients/`
-  [mobile] Client list: Touch target too small — <a> "Jane Doe" is 62x20px (min 44x44)
-
 ## Known Limitations
 
-- Colour contrast, focus management, and responsive layout are tested via Playwright browser tests
-- Colour contrast checks depend on CDN (axe-core) — require internet
+- Colour contrast not tested (requires browser rendering)
+- Focus management after HTMX swaps not tested
+- Visual layout / responsive behaviour not tested
 
 ## Per-Role Walkthrough Results
 
@@ -582,52 +526,6 @@ _No warning issues found._
 | Direct Service | Own program group accessible | `/groups/1/` | 200 | None |
 | Direct Service | Session log blocked | `/groups/2/session/` | 403 | None |
 | Direct Service | Target history blocked | `/plans/targets/2/history/` | 403 | None |
-
-## Browser-Based Findings
-
-_Tested with Playwright (headless Chromium) + axe-core._
-
-### Focus Management
-
-- **[INFO]** `/plans/client/7/` — Plan section: No edit button found
-
-### Responsive Layout
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Skip to main content" is 1x1px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "KoNote" is 69x38px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <button> "" is 39x13px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Home" is 50x35px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Participants" is 82x35px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Add Note" is 145x28px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Edit" is 113x28px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <button> "More ▾" is 69x28px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Info" is 48x38px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Plan (1)" is 79x38px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Note (1)" is 83x38px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Timeline (2)" is 106x38px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <a> "Analysis" is 72x38px (min 44x44)
-
-- **[INFO]** `/clients/5/` — [mobile] Client detail: Touch target too small — <button> "✎ Edit" is 70x28px (min 44x44)
-
-- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "Skip to main content" is 1x1px (min 44x44)
-
-- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "KoNote" is 69x38px (min 44x44)
-
-- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <button> "" is 39x13px (min 44x44)
-
-- **[INFO]** `/clients/` — [mobile] Client list: Touch target too small — <a> "Jane Doe" is 62x20px (min 44x44)
 
 ## Recommendations
 

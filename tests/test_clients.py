@@ -177,7 +177,6 @@ class ClientViewsTest(TestCase):
             "record_id": "",
             "status": "active",
             "preferred_language": "en",
-            "programs": [self.prog_a.pk],
         })
         self.assertEqual(resp.status_code, 302)
         cf.refresh_from_db()
@@ -195,7 +194,6 @@ class ClientViewsTest(TestCase):
             "record_id": "",
             "status": "active",
             "preferred_language": "en",
-            "programs": [self.prog_a.pk],
         })
         self.assertEqual(resp.status_code, 302)
         cf.refresh_from_db()
@@ -214,6 +212,123 @@ class ClientViewsTest(TestCase):
         self.client.login(username="receptionist", password="testpass123")
         resp = self.client.get(f"/clients/{cf.pk}/edit/")
         self.assertEqual(resp.status_code, 403)
+
+    # --- Transfer tests ---
+
+    def test_staff_can_transfer_client(self):
+        """Staff have client.transfer SCOPED — can add a program."""
+        # Give staff access to both programs
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        cf = self._create_client("Jane", "Doe", [self.prog_a])
+        self.client.login(username="staff", password="testpass123")
+        resp = self.client.post(f"/clients/{cf.pk}/transfer/", {
+            "programs": [self.prog_a.pk, self.prog_b.pk],
+        })
+        self.assertEqual(resp.status_code, 302)
+        # Verify new enrollment created
+        self.assertTrue(
+            ClientProgramEnrolment.objects.filter(
+                client_file=cf, program=self.prog_b, status="enrolled",
+            ).exists()
+        )
+
+    def test_staff_transfer_removes_program(self):
+        """Staff can unenrol a client from a program via transfer."""
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        cf = self._create_client("Jane", "Doe", [self.prog_a, self.prog_b])
+        self.client.login(username="staff", password="testpass123")
+        resp = self.client.post(f"/clients/{cf.pk}/transfer/", {
+            "programs": [self.prog_a.pk],  # Removing prog_b
+        })
+        self.assertEqual(resp.status_code, 302)
+        enrolment = ClientProgramEnrolment.objects.get(
+            client_file=cf, program=self.prog_b,
+        )
+        self.assertEqual(enrolment.status, "unenrolled")
+
+    def test_receptionist_cannot_transfer(self):
+        """Receptionists have client.transfer DENY — get 403."""
+        cf = self._create_client("Jane", "Doe", [self.prog_a])
+        self.client.login(username="receptionist", password="testpass123")
+        resp = self.client.get(f"/clients/{cf.pk}/transfer/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_transfer_creates_audit_log(self):
+        """Transfer creates an audit log entry with program change details."""
+        from apps.audit.models import AuditLog
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        cf = self._create_client("Jane", "Doe", [self.prog_a])
+        self.client.login(username="staff", password="testpass123")
+        self.client.post(f"/clients/{cf.pk}/transfer/", {
+            "programs": [self.prog_a.pk, self.prog_b.pk],
+            "transfer_reason": "Client needs housing support",
+        })
+        log = AuditLog.objects.using("audit").filter(
+            resource_type="enrolment", resource_id=cf.pk,
+        ).first()
+        self.assertIsNotNone(log)
+        self.assertTrue(log.metadata["transfer"])
+        self.assertIn(self.prog_b.pk, log.metadata["programs_added"])
+        self.assertEqual(log.metadata["reason"], "Client needs housing support")
+
+    def test_transfer_preserves_confidential_enrollments(self):
+        """Confidential program enrolments are not touched by transfer."""
+        conf_prog = Program.objects.create(
+            name="Confidential", colour_hex="#EF4444", is_confidential=True,
+        )
+        cf = self._create_client("Jane", "Doe", [self.prog_a, conf_prog])
+        self.client.login(username="staff", password="testpass123")
+        # Staff only sees prog_a, not conf_prog
+        resp = self.client.post(f"/clients/{cf.pk}/transfer/", {
+            "programs": [self.prog_a.pk],
+        })
+        self.assertEqual(resp.status_code, 302)
+        # Confidential enrollment should still be enrolled
+        self.assertTrue(
+            ClientProgramEnrolment.objects.filter(
+                client_file=cf, program=conf_prog, status="enrolled",
+            ).exists()
+        )
+
+    def test_edit_no_longer_changes_programs(self):
+        """Edit form POST does not affect program enrolments (use transfer instead)."""
+        UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
+        cf = self._create_client("Jane", "Doe", [self.prog_a])
+        self.client.login(username="staff", password="testpass123")
+        # POST to edit — programs field is no longer on the edit form
+        resp = self.client.post(f"/clients/{cf.pk}/edit/", {
+            "first_name": "Janet",
+            "last_name": "Doe",
+            "middle_name": "",
+            "birth_date": "",
+            "record_id": "",
+            "status": "active",
+            "preferred_language": "en",
+        })
+        self.assertEqual(resp.status_code, 302)
+        # Should still only be enrolled in prog_a — edit doesn't touch enrolments
+        self.assertFalse(
+            ClientProgramEnrolment.objects.filter(
+                client_file=cf, program=self.prog_b, status="enrolled",
+            ).exists()
+        )
+
+    def test_pm_can_transfer_client(self):
+        """PMs have client.transfer SCOPED — can transfer clients."""
+        UserProgramRole.objects.create(user=self.pm, program=self.prog_b, role="program_manager")
+        cf = self._create_client("Jane", "Doe", [self.prog_a])
+        self.client.login(username="pm", password="testpass123")
+        resp = self.client.post(f"/clients/{cf.pk}/transfer/", {
+            "programs": [self.prog_a.pk, self.prog_b.pk],
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(
+            ClientProgramEnrolment.objects.filter(
+                client_file=cf, program=self.prog_b, status="enrolled",
+            ).exists()
+        )
+
+    # --- End transfer tests ---
 
     def test_client_detail(self):
         cf = self._create_client("Jane", "Doe", [self.prog_a])

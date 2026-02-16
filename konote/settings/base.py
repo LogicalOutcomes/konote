@@ -271,6 +271,12 @@ SECURE_EXPORT_LINK_EXPIRY_HOURS = int(os.environ.get("SECURE_EXPORT_LINK_EXPIRY_
 # During this delay, admins are notified and can revoke the export
 ELEVATED_EXPORT_DELAY_MINUTES = int(os.environ.get("ELEVATED_EXPORT_DELAY_MINUTES", "10"))
 
+# Override who receives elevated export notifications (comma-separated emails)
+# If empty, notifications go to all active admin users
+EXPORT_NOTIFICATION_EMAILS = [
+    e.strip() for e in os.environ.get("EXPORT_NOTIFICATION_EMAILS", "").split(",") if e.strip()
+]
+
 # Email — console backend for development, SMTP for production
 # Set EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend in production
 EMAIL_BACKEND = os.environ.get(

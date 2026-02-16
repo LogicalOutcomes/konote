@@ -16,7 +16,7 @@ from apps.auth_app.decorators import admin_required, requires_permission
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 
-from .forms import ClientContactForm, ClientFileForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm
+from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm
 from .helpers import get_client_tab_counts, get_document_folder_url
 from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldGroup
 from .validators import (
@@ -252,12 +252,8 @@ def client_edit(request, client_id):
     # Security: Only fetch clients matching user's demo status
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
-    available_programs = _get_accessible_programs(request.user)
-    current_program_ids = list(
-        ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled").values_list("program_id", flat=True)
-    )
     if request.method == "POST":
-        form = ClientFileForm(request.POST, available_programs=available_programs)
+        form = ClientFileForm(request.POST)
         if form.is_valid():
             client.first_name = form.cleaned_data["first_name"]
             client.last_name = form.cleaned_data["last_name"]
@@ -269,9 +265,6 @@ def client_edit(request, client_id):
             client.record_id = form.cleaned_data["record_id"]
             client.status = form.cleaned_data["status"]
             client.preferred_language = form.cleaned_data.get("preferred_language", "en")
-            client.cross_program_sharing_consent = form.cleaned_data.get(
-                "cross_program_sharing_consent", False
-            )
             # CASL consent — record/clear dates based on checkbox changes
             consent_changes = []
             new_sms = form.cleaned_data.get("sms_consent", False)
@@ -310,25 +303,6 @@ def client_edit(request, client_id):
                     is_demo_context=getattr(user, "is_demo", False),
                     metadata={"consent_changes": consent_changes},
                 )
-            # Sync enrolments — only touch programs the user has access to.
-            # Confidential program enrolments the user can't see are preserved.
-            accessible_program_ids = _get_user_program_ids(request.user)
-            selected_ids = set(p.pk for p in form.cleaned_data["programs"])
-            # Unenrol removed programs (only within user's accessible programs)
-            for enrolment in ClientProgramEnrolment.objects.filter(
-                client_file=client, status="enrolled",
-                program_id__in=accessible_program_ids,
-            ):
-                if enrolment.program_id not in selected_ids:
-                    enrolment.status = "unenrolled"
-                    enrolment.save()
-            # Enrol new programs
-            for program_id in selected_ids:
-                if program_id not in current_program_ids:
-                    ClientProgramEnrolment.objects.update_or_create(
-                        client_file=client, program_id=program_id,
-                        defaults={"status": "enrolled"},
-                    )
             messages.success(request, _("%(term)s file updated.") % {"term": request.get_term("client")})
             return redirect("clients:client_detail", client_id=client.pk)
     else:
@@ -346,18 +320,113 @@ def client_edit(request, client_id):
                 "preferred_language": client.preferred_language,
                 "sms_consent": client.sms_consent,
                 "email_consent": client.email_consent,
-                "programs": current_program_ids,
-                "cross_program_sharing_consent": client.cross_program_sharing_consent,
             },
-            available_programs=available_programs,
         )
     # Breadcrumbs: Participants > [Name] > Edit
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
         {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
-        {"url": "", "label": "Edit"},
+        {"url": "", "label": _("Edit")},
     ]
     return render(request, "clients/form.html", {"form": form, "editing": True, "client": client, "breadcrumbs": breadcrumbs})
+
+
+@login_required
+@requires_permission("client.transfer", _get_program_from_client)
+def client_transfer(request, client_id):
+    """Transfer a client between programs (enrol/unenrol).
+
+    Separated from client_edit so transfers have their own permission key
+    (client.transfer) and audit trail. Only touches programs the user has
+    access to — confidential program enrolments are preserved.
+    """
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+    available_programs = _get_accessible_programs(request.user)
+    current_program_ids = set(
+        ClientProgramEnrolment.objects.filter(
+            client_file=client, status="enrolled",
+        ).values_list("program_id", flat=True)
+    )
+    if request.method == "POST":
+        form = ClientTransferForm(request.POST, available_programs=available_programs)
+        if form.is_valid():
+            accessible_program_ids = _get_user_program_ids(request.user)
+            selected_ids = set(p.pk for p in form.cleaned_data["programs"])
+            added = []
+            removed = []
+            # Unenrol removed programs (only within user's accessible programs)
+            for enrolment in ClientProgramEnrolment.objects.filter(
+                client_file=client, status="enrolled",
+                program_id__in=accessible_program_ids,
+            ):
+                if enrolment.program_id not in selected_ids:
+                    enrolment.status = "unenrolled"
+                    enrolment.unenrolled_at = timezone.now()
+                    enrolment.save()
+                    removed.append(enrolment.program_id)
+            # Enrol in new programs
+            for program_id in selected_ids:
+                if program_id not in current_program_ids:
+                    ClientProgramEnrolment.objects.update_or_create(
+                        client_file=client, program_id=program_id,
+                        defaults={"status": "enrolled", "unenrolled_at": None},
+                    )
+                    added.append(program_id)
+            # Update cross-program sharing consent
+            client.cross_program_sharing_consent = form.cleaned_data.get(
+                "cross_program_sharing_consent", False
+            )
+            client.save()
+            # Audit log for transfer (always log, even if no changes)
+            if added or removed:
+                from apps.audit.models import AuditLog
+                AuditLog.objects.using("audit").create(
+                    event_timestamp=timezone.now(),
+                    user_id=request.user.pk,
+                    user_display=(
+                        request.user.display_name
+                        if hasattr(request.user, "display_name")
+                        else str(request.user)
+                    ),
+                    action="update",
+                    resource_type="enrolment",
+                    resource_id=client.pk,
+                    is_demo_context=getattr(request.user, "is_demo", False),
+                    metadata={
+                        "transfer": True,
+                        "programs_added": added,
+                        "programs_removed": removed,
+                        "reason": form.cleaned_data.get("transfer_reason", ""),
+                    },
+                )
+            messages.success(
+                request,
+                _("%(term)s program enrolment updated.")
+                % {"term": request.get_term("client")},
+            )
+            return redirect("clients:client_detail", client_id=client.pk)
+    else:
+        form = ClientTransferForm(
+            initial={
+                "programs": list(current_program_ids),
+                "cross_program_sharing_consent": client.cross_program_sharing_consent,
+            },
+            available_programs=available_programs,
+        )
+    breadcrumbs = [
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
+        {"url": "", "label": _("Transfer")},
+    ]
+    return render(request, "clients/transfer.html", {
+        "form": form,
+        "client": client,
+        "breadcrumbs": breadcrumbs,
+        "current_enrolments": ClientProgramEnrolment.objects.filter(
+            client_file=client, status="enrolled",
+        ).select_related("program"),
+    })
 
 
 @login_required

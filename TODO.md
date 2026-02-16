@@ -2,6 +2,7 @@
 
 ## Flagged
 
+- [ ] Review requirements analysis doc with Sophie before sending to client (docs/konote-requirements-analysis-draft.md) — GG (DOC-REQ1)
 - [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — GG (ONBOARD-APPROVE)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GG (SEC3-Q1)
 
@@ -14,6 +15,8 @@
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — GG (OPS4)
 - [ ] Build weekly export summary email command — GG (EXP2u)
 - [ ] Document scheduled task setup for export monitoring in the runbook — GG (EXP2w)
+
+### Phase: Communication Modules — complete!
 
 
 ## Do Occasionally
@@ -28,32 +31,14 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Coming Up
 
-### Phase: Communication Modules (see tasks/messaging-calendar-plan.md)
+### Phase: Post-Launch Communication Enhancements
 
-- [ ] Native appointment tracking — Meeting model, create/edit forms, staff dashboard, status transitions (MSG-MTG1)
-- [ ] iCal calendar feed — private feed URL per staff, .ics generation, "Add to Calendar" button, no PII in feed (MSG-CAL1)
-- [ ] Communication log — quick-log buttons ("Logged a Call", "Logged a Text"), full log form, timeline integration (MSG-LOG1)
-- [ ] Consent and contact fields — SMS/email consent checkboxes, CASL date tracking, phone staleness indicator, preferred language (MSG-CONSENT1)
-- [ ] Outbound email reminders — send appointment reminders via agency's existing Microsoft 365 or Google Workspace SMTP (MSG-EMAIL-OUT1)
-- [ ] Outbound SMS reminders — send appointment reminders via Swift SMS Gateway (Canadian) or Twilio, plain-language error messages on meeting card (MSG-SMS1)
-- [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (MSG-EMAIL-2WAY1)
-- [ ] Automated reminder cron — management command to send reminders for meetings in next 36 hours, retry on failure, system health tracking (MSG-AUTO1)
-- [ ] System health banners — yellow/red banners on staff dashboard for SMS/email failures, alert email to admin after 24h outage (MSG-HEALTH1)
-- [ ] Feature toggles for communication modules — enable/disable email, SMS, and appointments independently per agency (MSG-TOGGLE1)
+- [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
 
 ### Phase: Other Upcoming
 
 - [ ] Agency Onboarding Interview Pack — 12 refinements including session split, privacy prerequisites, plain-language wording, deployment checklist (see tasks/agency-permissions-interview.md) (ONBOARD1–12)
-- [ ] Permissions Phase 2 — scoped admin tiers, discharge access transitions, consent model, DV-safe mode (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P1–12)
-- [ ] PM Admin Access — let PMs manage templates, event types, metrics, registrations, and team members for their own programs (see tasks/pm-admin-access.md) (PM-ADMIN1–8)
-  - [ ] Add permission keys to matrix for all six feature areas (PM-ADMIN1)
-  - [ ] Replace @admin_required with @requires_permission on Team Members views + enforce elevation constraint (PM-ADMIN2)
-  - [ ] Scope Plan Templates to programs and open to PMs (PM-ADMIN3)
-  - [ ] Scope Note Templates to programs and open to PMs (PM-ADMIN4)
-  - [ ] Scope Event Types to programs and open to PMs (PM-ADMIN5)
-  - [ ] Scope Metrics to programs and open to PMs (PM-ADMIN6)
-  - [ ] Scope Registration Links to programs and open to PMs (PM-ADMIN7)
-  - [ ] Update navigation to show PM-accessible admin items based on permissions (PM-ADMIN8)
+- [ ] Permissions Phase 2 — remaining 10 items: discharge access transitions, consent model, DV-safe mode, GATED clinical access, group schedule vs roster, per-field front desk edit, SCOPED→PROGRAM rename, funder report key, alert escalation, dashboard split (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P3–12)
 
 ## Parking Lot
 
@@ -81,13 +66,11 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
-- [x] Fixed 14 pre-existing test failures across plan permissions, login/auth, language switching, export — 2026-02-15 (TEST-FIX1)
-- [x] Added audit database declarations to 41 test classes across 18 files — 2026-02-15 (TEST-FIX2)
-- [x] Tabindex audit: all 10 usages are appropriate tabindex="-1", no cleanup needed — 2026-02-15 (QA-W20)
+- [x] Permissions Phase 2: `client.transfer` — separate permission + dedicated transfer page with audit logging; `plan.template_edit` already done via PM-ADMIN — 2026-02-15 (PERM-P1, PERM-P2)
+- [x] Automated reminder cron — management command sends reminders for meetings in next 36h, retries failures — 2026-02-15 (MSG-AUTO1)
+- [x] System health banners on staff meeting dashboard for SMS/email failures — 2026-02-15 (MSG-HEALTH1)
+- [x] PM Admin Access complete — all 8 tasks: scoped permissions for templates, event types, metrics, registration, team members + PM nav menu — 2026-02-15 (PM-ADMIN1–8)
+- [x] Communication Modules 7/10 complete — meetings, iCal, comm log, consent fields, outbound email, outbound SMS, feature toggles — 2026-02-15 (MSG-MTG1, MSG-CAL1, MSG-LOG1, MSG-CONSENT1, MSG-EMAIL-OUT1, MSG-SMS1, MSG-TOGGLE1)
+- [x] Fixed 14 pre-existing test failures and added audit DB declarations to 41 test classes — 2026-02-15 (TEST-FIX1, TEST-FIX2)
 - [x] Session review: fixed 5 broken tests, added 3 PM permission tests, updated stale comments — 2026-02-15 (REV-FIX1)
-- [x] Added compose email feature with CASL consent, preview, and audit logging — 2026-02-15 (MSG-EMAIL1)
-- [x] Replaced meeting date/time picker with accessible chip-based UI — 2026-02-15 (UX-MEET2)
-- [x] Renamed Reviews to Approvals and streamlined recommendation queue — 2026-02-15 (UX-REVIEW3)
-- [x] Hidden stats row from Front Desk on home dashboard — 2026-02-15 (UX-DASH1)
-- [x] Reordered contact fields and fixed select_other naming collisions — 2026-02-15 (DATA-FIX1)
-- [x] Added Documents section to help page — 2026-02-15 (HELP-DOC1)
+- [x] UX polish: accessible meeting date picker, Approvals rename, Front Desk dashboard, contact fields, help docs — 2026-02-15 (UX-MEET2, UX-REVIEW3, UX-DASH1, DATA-FIX1, HELP-DOC1)

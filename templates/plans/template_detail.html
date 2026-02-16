@@ -1,19 +1,19 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{{ template.name }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{{ template.translated_name }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 <nav aria-label="{% trans 'Breadcrumb' %}">
     <ul>
         <li><a href="{% url 'plan_templates:template_list' %}">{% trans "Templates" %}</a></li>
-        <li>{{ template.name }}</li>
+        <li>{{ template.translated_name }}</li>
     </ul>
 </nav>
 
 <hgroup>
-    <h1>{{ template.name }}</h1>
-    {% if template.description %}<p>{{ template.description }}</p>{% endif %}
+    <h1>{{ template.translated_name }}</h1>
+    {% if template.translated_description %}<p>{{ template.translated_description }}</p>{% endif %}
 </hgroup>
 
 <p>
@@ -41,7 +41,7 @@
 <article>
     <header>
         <hgroup>
-            <h3>{{ section.name }}</h3>
+            <h3>{{ section.translated_name }}</h3>
             {% if section.program %}
             <p><small>{{ term.program|default:"Program" }}: {{ section.program.translated_name }}</small></p>
             {% endif %}
@@ -56,7 +56,7 @@
     <h4>{{ term.target_plural|default:"Targets" }}</h4>
 
     {% if section.targets.all %}
-    <table role="grid" aria-label="{{ term.target_plural|default:'Targets' }} in {{ section.name }}">
+    <table role="grid" aria-label="{{ term.target_plural|default:'Targets' }} in {{ section.translated_name }}">
         <thead>
             <tr>
                 <th scope="col">{% trans "Name" %}</th>
@@ -68,8 +68,8 @@
         <tbody>
             {% for target in section.targets.all %}
             <tr>
-                <td>{{ target.name }}</td>
-                <td>{{ target.description|truncatewords:12 }}</td>
+                <td>{{ target.translated_name }}</td>
+                <td>{{ target.translated_description|truncatewords:12 }}</td>
                 <td>{{ target.sort_order }}</td>
                 <td>
                     <a href="{% url 'plan_templates:template_target_edit' target_id=target.pk %}">{% trans "Edit" %}</a>

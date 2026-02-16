@@ -52,8 +52,9 @@ class Command(BaseCommand):
             metrics = json.load(f)
 
         created = 0
+        updated_fr = 0
         for m in metrics:
-            _, was_created = MetricDefinition.objects.get_or_create(
+            obj, was_created = MetricDefinition.objects.get_or_create(
                 name=m["name"],
                 defaults={
                     "definition": m["definition"],
@@ -63,11 +64,28 @@ class Command(BaseCommand):
                     "min_value": m.get("min_value"),
                     "max_value": m.get("max_value"),
                     "unit": m.get("unit", ""),
+                    "name_fr": m.get("name_fr", ""),
+                    "definition_fr": m.get("definition_fr", ""),
+                    "unit_fr": m.get("unit_fr", ""),
                 },
             )
             if was_created:
                 created += 1
-        self.stdout.write(f"  Metrics: {created} created, {len(metrics) - created} already existed.")
+            else:
+                # Backfill French translations for existing metrics
+                changed = False
+                for fr_field in ("name_fr", "definition_fr", "unit_fr"):
+                    new_val = m.get(fr_field, "")
+                    if new_val and not getattr(obj, fr_field):
+                        setattr(obj, fr_field, new_val)
+                        changed = True
+                if changed:
+                    obj.save()
+                    updated_fr += 1
+        msg = f"  Metrics: {created} created, {len(metrics) - created} already existed."
+        if updated_fr:
+            msg += f" {updated_fr} backfilled with French translations."
+        self.stdout.write(msg)
 
     def _seed_feature_toggles(self):
         from apps.admin_settings.models import FeatureToggle

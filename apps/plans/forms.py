@@ -98,13 +98,16 @@ class MetricDefinitionForm(forms.ModelForm):
 
     class Meta:
         model = MetricDefinition
-        fields = ["name", "definition", "category", "min_value", "max_value", "unit", "owning_program"]
+        fields = ["name", "name_fr", "definition", "definition_fr", "category", "min_value", "max_value", "unit", "unit_fr", "owning_program"]
         widgets = {
             "name": forms.TextInput(attrs={"placeholder": _("Metric name")}),
+            "name_fr": forms.TextInput(attrs={"placeholder": _("French metric name (optional)")}),
             "definition": forms.Textarea(attrs={"rows": 4, "placeholder": _("What this metric measures and how to score it")}),
+            "definition_fr": forms.Textarea(attrs={"rows": 4, "placeholder": _("French definition (optional)")}),
             "min_value": forms.NumberInput(attrs={"step": "any"}),
             "max_value": forms.NumberInput(attrs={"step": "any"}),
             "unit": forms.TextInput(attrs={"placeholder": _("e.g., score, days, %")}),
+            "unit_fr": forms.TextInput(attrs={"placeholder": _("e.g., pointage, jours, %")}),
         }
 
     def __init__(self, *args, requesting_user=None, **kwargs):
@@ -128,7 +131,7 @@ class MetricImportForm(forms.Form):
 
     csv_file = forms.FileField(
         label=_("CSV File"),
-        help_text=_("Upload a CSV with columns: name, definition, category, min_value, max_value, unit"),
+        help_text=_("Upload a CSV with columns: name, definition, category, min_value, max_value, unit. Optional French columns: name_fr, definition_fr, unit_fr"),
     )
 
     def clean_csv_file(self):

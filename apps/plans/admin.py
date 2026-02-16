@@ -14,9 +14,9 @@ from .models import (
 
 @admin.register(MetricDefinition)
 class MetricDefinitionAdmin(admin.ModelAdmin):
-    list_display = ("name", "category", "is_library", "is_enabled", "status")
+    list_display = ("name", "name_fr", "category", "is_library", "is_enabled", "status")
     list_filter = ("category", "is_library", "is_enabled", "status")
-    search_fields = ("name",)
+    search_fields = ("name", "name_fr")
 
 
 @admin.register(PlanSection)
@@ -42,7 +42,7 @@ class PlanTargetMetricAdmin(admin.ModelAdmin):
 
 @admin.register(PlanTemplate)
 class PlanTemplateAdmin(admin.ModelAdmin):
-    list_display = ("name", "status", "created_at")
+    list_display = ("name", "name_fr", "status", "created_at")
     list_filter = ("status",)
 
 
