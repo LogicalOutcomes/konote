@@ -4,19 +4,19 @@
 {% block title %}{{ term.client_plural|default:"Participants" }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1>{{ term.client_plural|default:"Participants" }}</h1>
-    <p>{% blocktrans with client=term.client|default:"participant" %}All {{ client }} files you have access to.{% endblocktrans %}</p>
+<div class="page-header page-header--with-action">
+    <div>
+        <h1>{{ term.client_plural|default:"Participants" }}</h1>
+        <p>{% blocktrans with client=term.client|default:"participant" %}All {{ client }} files you have access to.{% endblocktrans %}</p>
+    </div>
+    {% if can_create %}
+    <a href="{% url 'clients:client_create' %}" role="button" class="page-header__action">{% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}</a>
+    {% endif %}
 </div>
 
-{% if can_create %}
-<p><a href="{% url 'clients:client_create' %}" role="button">{% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}</a></p>
-{% endif %}
-
-<!-- Search — first interactive element after skip link for keyboard users (BUG-18) -->
-<form id="client-filters" role="search">
-    <div class="filter-field filter-field--search">
-        <label for="client-search">{% blocktrans with clients=term.client_plural|default:"Participants" %}Search {{ clients }}{% endblocktrans %}</label>
+<!-- Search and filters — combined toolbar -->
+<form id="client-filters" class="client-toolbar" role="search">
+    <div class="client-toolbar__search">
         <input type="search"
                id="client-search"
                name="q"
@@ -29,48 +29,41 @@
                hx-include="#client-filters"
                hx-indicator="#loading-bar">
     </div>
-
-    <!-- Filter controls -->
-    <details class="filter-bar" open>
-        <summary>{% trans "Filters" %}</summary>
-        <div class="filter-row">
-            <div class="filter-field">
-                <label for="filter-status">{% trans "Status" %}</label>
-                <select id="filter-status"
-                        name="status"
-                        hx-get="{% url 'clients:client_list' %}"
-                        hx-target="#client-list-container"
-                        hx-include="#client-filters"
-                        hx-indicator="#loading-bar"
-                        hx-push-url="true">
-                    <option value="">{% trans "All statuses" %}</option>
-                    <option value="active"{% if status_filter == "active" %} selected{% endif %}>{% trans "Active" %}</option>
-                    <option value="inactive"{% if status_filter == "inactive" %} selected{% endif %}>{% trans "Inactive" %}</option>
-                    <option value="discharged"{% if status_filter == "discharged" %} selected{% endif %}>{% trans "Discharged" %}</option>
-                </select>
-            </div>
-            {% if features.programs and accessible_programs %}
-            <div class="filter-field">
-                <label for="filter-program">{{ term.program|default:"Program" }}</label>
-                <select id="filter-program"
-                        name="program"
-                        hx-get="{% url 'clients:client_list' %}"
-                        hx-target="#client-list-container"
-                        hx-include="#client-filters"
-                        hx-indicator="#loading-bar"
-                        hx-push-url="true">
-                    <option value="">{% blocktrans with programs=term.program_plural|default:"programs" %}All {{ programs }}{% endblocktrans %}</option>
-                    {% for prog in accessible_programs %}
-                    <option value="{{ prog.pk }}"{% if program_filter == prog.pk|stringformat:"d" %} selected{% endif %}>{{ prog.translated_name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            {% endif %}
-            <div class="filter-actions">
-                <a href="{% url 'clients:client_list' %}" class="secondary" role="button">{% trans "Clear filters" %}</a>
-            </div>
+    <div class="client-toolbar__filters">
+        <div class="filter-field">
+            <label for="filter-status" class="visually-hidden">{% trans "Status" %}</label>
+            <select id="filter-status"
+                    name="status"
+                    hx-get="{% url 'clients:client_list' %}"
+                    hx-target="#client-list-container"
+                    hx-include="#client-filters"
+                    hx-indicator="#loading-bar"
+                    hx-push-url="true">
+                <option value="">{% trans "All statuses" %}</option>
+                <option value="active"{% if status_filter == "active" %} selected{% endif %}>{% trans "Active" %}</option>
+                <option value="inactive"{% if status_filter == "inactive" %} selected{% endif %}>{% trans "Inactive" %}</option>
+                <option value="discharged"{% if status_filter == "discharged" %} selected{% endif %}>{% trans "Discharged" %}</option>
+            </select>
         </div>
-    </details>
+        {% if features.programs and accessible_programs %}
+        <div class="filter-field">
+            <label for="filter-program" class="visually-hidden">{{ term.program|default:"Program" }}</label>
+            <select id="filter-program"
+                    name="program"
+                    hx-get="{% url 'clients:client_list' %}"
+                    hx-target="#client-list-container"
+                    hx-include="#client-filters"
+                    hx-indicator="#loading-bar"
+                    hx-push-url="true">
+                <option value="">{% blocktrans with programs=term.program_plural|default:"programs" %}All {{ programs }}{% endblocktrans %}</option>
+                {% for prog in accessible_programs %}
+                <option value="{{ prog.pk }}"{% if program_filter == prog.pk|stringformat:"d" %} selected{% endif %}>{{ prog.translated_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+        <a href="{% url 'clients:client_list' %}" class="client-toolbar__clear">{% trans "Clear" %}</a>
+    </div>
 </form>
 
 <!-- Screen reader loading announcement (BLOCKER-1 / WCAG 4.1.3) -->

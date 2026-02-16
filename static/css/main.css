@@ -210,6 +210,85 @@ nav.breadcrumb [aria-current="page"] {
     margin-bottom: 0;
 }
 
+/* ---- Page header with action button (inline layout) ---- */
+.page-header--with-action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--kn-space-base);
+    margin-bottom: var(--kn-space-sm);
+}
+.page-header__action {
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    padding: var(--kn-space-sm) var(--kn-space-base);
+}
+
+/* ---- Client list toolbar (search + filters in one row) ---- */
+.client-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--kn-space-sm);
+    margin-bottom: var(--kn-space-sm);
+    flex-wrap: wrap;
+}
+.client-toolbar__search {
+    flex: 1;
+    min-width: 180px;
+    max-width: 320px;
+}
+.client-toolbar__search input[type="search"] {
+    width: 100%;
+    margin-bottom: 0;
+    padding: var(--kn-space-sm) var(--kn-space-base);
+    font-size: 0.875rem;
+}
+.client-toolbar__filters {
+    display: flex;
+    align-items: center;
+    gap: var(--kn-space-sm);
+    flex-wrap: wrap;
+}
+.client-toolbar__filters .filter-field {
+    min-width: auto;
+    max-width: none;
+    flex: none;
+}
+.client-toolbar__filters select {
+    margin-bottom: 0;
+    font-size: 0.8125rem;
+    padding: var(--kn-space-sm) var(--kn-space-lg) var(--kn-space-sm) var(--kn-space-sm);
+}
+.client-toolbar__clear {
+    font-size: 0.8125rem;
+    color: var(--kn-text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+}
+.client-toolbar__clear:hover {
+    color: var(--kn-text);
+}
+/* Remove figure margin around the client table */
+.client-table-wrap {
+    margin: 0;
+    overflow-x: auto;
+}
+@media (max-width: 600px) {
+    .page-header--with-action {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .client-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .client-toolbar__search {
+        max-width: none;
+    }
+}
+
 /* ---- Client detail header ---- */
 .client-header {
     display: flex;
@@ -473,13 +552,15 @@ output.form-output {
     width: 100%;
 }
 .client-table th:nth-child(1),
-.client-table td:nth-child(1) { width: 40%; }
+.client-table td:nth-child(1) { width: 28%; }
 .client-table th:nth-child(2),
-.client-table td:nth-child(2) { width: 15%; font-variant-numeric: tabular-nums; }
+.client-table td:nth-child(2) { width: 12%; font-variant-numeric: tabular-nums; }
 .client-table th:nth-child(3),
-.client-table td:nth-child(3) { width: 15%; }
+.client-table td:nth-child(3) { width: 12%; }
 .client-table th:nth-child(4),
 .client-table td:nth-child(4) { width: 30%; }
+.client-table th:nth-child(5),
+.client-table td:nth-child(5) { width: 18%; }
 .client-table td:first-child {
     font-weight: 500;
     overflow: hidden;

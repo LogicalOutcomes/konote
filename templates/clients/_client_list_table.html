@@ -1,6 +1,6 @@
 {% load i18n %}
 {% if page.object_list %}
-<figure>
+<figure class="client-table-wrap">
 <table role="grid" class="client-table" aria-label="{% blocktrans with clients=term.client_plural|default:'Participants' %}{{ clients }} list{% endblocktrans %}">
     <thead>
         <tr>
