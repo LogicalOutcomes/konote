@@ -8,6 +8,12 @@ This guide covers everything administrators need to configure, maintain, and sec
 | Choose which outcome metrics to use | [Manage Outcome Metrics](#manage-outcome-metrics) |
 | Set up public registration forms | [Registration Forms](#set-up-registration-forms) |
 | Create user accounts | [User Management](#user-management) |
+| Let program managers manage their own config | [PM Administration](#program-manager-administration) |
+| Manage participant portal access | [Staff Portal Management](#staff-portal-management) |
+| Set up automated reminders | [Automated Reminders](#automated-reminders) |
+| Get weekly export activity reports | [Weekly Export Summary](#weekly-export-summary-email) |
+| Understand system health banners | [System Health Monitoring](#system-health-monitoring) |
+| Set up a new instance from a config file | [Apply Setup Command](#apply-setup-command) |
 | Back up my data | [Backup and Restore](#backup-and-restore) |
 | Configure messaging and reminders | [Messaging Settings](#messaging-settings) |
 | Set up report templates | [Report Template Setup](#report-template-setup) |
@@ -842,6 +848,327 @@ Some privacy regulations require the ability to permanently delete personal data
 
 ---
 
+## Program Manager Administration
+
+Program managers can now manage configuration for their own programs without needing a full system administrator. This reduces the administrative burden on admins and lets PMs customise their program workflows independently.
+
+### What PMs Can Manage
+
+| Area | What they can do | Where to find it |
+|------|-----------------|------------------|
+| **Plan templates** | Create, edit, and delete plan templates for their program | Admin → Plan Templates |
+| **Note templates** | Create, edit, and delete progress note templates for their program | Admin → Note Templates |
+| **Event types** | Create, edit, and delete event types for their program | Admin → Event Types |
+| **Outcome metrics** | Create, edit, enable/disable metrics for their program | Admin → Metric Library |
+| **Registration links** | Create and manage public registration links for their program | Admin → Registration |
+| **Team members** | View and manage staff assignments within their program | User Management → Roles |
+
+### How Scoping Works
+
+- PMs see **their own program's items** plus **global items** (created by admins) in read-only mode
+- PMs can only **edit or delete items that belong to their program** — global templates and metrics created by administrators are read-only for PMs
+- When a PM creates a new template or metric, it is automatically assigned to their program (if they manage only one program)
+- If a PM manages multiple programs, they choose which program to assign the new item to
+- PMs **cannot** change system-wide settings, terminology, feature toggles, or create other PM/admin accounts
+
+### What Admins Still Control
+
+These tasks remain admin-only:
+
+- Instance settings (product name, logo, support email)
+- Terminology customisation
+- Feature toggles (enabling/disabling modules)
+- Custom client field definitions
+- Report templates
+- User management (creating admins, executives, or PMs)
+- Merging duplicate clients
+- Secure export link management
+
+> **Tip:** If a program manager needs a global template modified, they should ask an admin. PMs can create a program-specific copy of a global template and customise that instead.
+
+---
+
+## Staff Portal Management
+
+The participant portal gives clients a secure way to view their goals, progress, and journal entries. Staff manage portal access from the client detail page.
+
+### Inviting a Participant to the Portal
+
+1. Navigate to the participant's client detail page
+2. Click **Portal** → **Create Invite**
+3. Optionally set a **verbal code** — an extra verification step the participant must enter when accepting the invite (useful when you want to confirm identity in person or by phone)
+4. Click **Create Invite**
+5. Copy the generated invite link and share it with the participant
+
+The invite link is valid for **7 days** and can only be used once. When the participant opens the link, they create their own email, display name, and password. They are then guided through a consent flow before reaching their dashboard.
+
+> **Tip:** If a verbal code is set, share it separately from the invite link (e.g., tell the participant in person and send the link by email). This adds a layer of identity verification.
+
+### Managing Portal Access
+
+From the client detail page, click **Portal** → **Manage Portal** to see:
+
+- Whether the participant has an active portal account
+- A list of all invites (pending, accepted, expired)
+- Any pending correction requests from the participant
+
+### Revoking Portal Access
+
+If a participant should no longer have portal access:
+
+1. Go to their client detail page → **Portal** → **Manage Portal**
+2. Click **Revoke Access**
+
+This deactivates their account immediately. They will not be able to log in. Historical data (journal entries, messages) is preserved.
+
+### Resetting Multi-Factor Authentication
+
+If a participant is locked out of their MFA (lost their phone, can't access their authenticator app):
+
+1. Go to their client detail page → **Portal** → **Manage Portal**
+2. Click **Reset MFA**
+
+This clears their MFA setup. The next time they log in, they can set up MFA again from their portal settings.
+
+All portal management actions (invite creation, access revocation, MFA resets) are recorded in the audit log.
+
+---
+
+## Automated Reminders
+
+KoNote can automatically send SMS or email reminders for upcoming meetings. This requires the `send_reminders` management command to run on a schedule.
+
+### How It Works
+
+1. The command looks for meetings in the next **36 hours** (by default) that are scheduled and haven't been reminded yet
+2. For each meeting, it sends a reminder via the participant's preferred contact method (SMS or email)
+3. Participants must have **active consent** for the chosen channel — if no consent, the reminder is skipped (not treated as a failure)
+4. Failed reminders are **retried automatically** on the next run
+5. After each batch, the system checks messaging channel health and sends admin alerts if channels are failing persistently
+
+### Prerequisites
+
+- **SMS Messaging** and/or **Email Messaging** must be enabled in Features
+- SMS and/or email service must be configured (see [Messaging Settings](#messaging-settings))
+- The participant must have a valid phone number or email address
+- The participant must have active consent for the channel
+
+### Running Manually
+
+```bash
+# Send reminders for meetings in the next 36 hours
+python manage.py send_reminders
+
+# Preview what would be sent without actually sending
+python manage.py send_reminders --dry-run
+
+# Use a custom lookahead window (e.g., 24 hours)
+python manage.py send_reminders --hours 24
+```
+
+### Setting Up as a Scheduled Task
+
+**Linux/Mac (cron) — run hourly:**
+
+```bash
+# Add to crontab with: crontab -e
+0 * * * * cd /path/to/konote && python manage.py send_reminders >> /var/log/konote-reminders.log 2>&1
+```
+
+**Docker Compose — run hourly:**
+
+```bash
+0 * * * * docker compose -f /path/to/docker-compose.yml exec -T web python manage.py send_reminders >> /var/log/konote-reminders.log 2>&1
+```
+
+**Railway:**
+
+Add a cron job service in your Railway project configuration that runs `python manage.py send_reminders` on an hourly schedule (e.g., `0 * * * *`).
+
+**Windows Task Scheduler:**
+
+Create a scheduled task that runs hourly:
+
+```powershell
+$Action = New-ScheduledTaskAction -Execute "python" -Argument "manage.py send_reminders" -WorkingDirectory "C:\KoNote\KoNote-web"
+$Trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Hours 1)
+Register-ScheduledTask -TaskName "KoNote Reminders" -Action $Action -Trigger $Trigger
+```
+
+### Output
+
+Each run reports a summary:
+
+- **Sent** — reminder delivered successfully
+- **Skipped** — participant has no consent or no contact information (won't change on retry)
+- **Failed** — delivery error (will be retried on the next run)
+
+---
+
+## Weekly Export Summary Email
+
+KoNote can email administrators a weekly digest of all data export activity. This helps with privacy oversight and funder compliance.
+
+### What the Summary Includes
+
+- Total number of exports in the period
+- Breakdown by export type (program report, funder report, data extract, etc.)
+- Count of elevated exports (exports flagged for extra monitoring)
+- Download status (downloaded, pending, revoked)
+- Top 5 staff members by export volume
+
+### Running Manually
+
+```bash
+# Send the weekly summary email to admins
+python manage.py send_export_summary
+
+# Preview without sending
+python manage.py send_export_summary --dry-run
+
+# Use a custom lookback window (e.g., 14 days)
+python manage.py send_export_summary --days 14
+```
+
+### Setting Up as a Scheduled Task
+
+Run this command **once per week** (e.g., every Monday morning):
+
+**Linux/Mac (cron):**
+
+```bash
+# Run every Monday at 8:00 AM
+0 8 * * 1 cd /path/to/konote && python manage.py send_export_summary >> /var/log/konote-export-summary.log 2>&1
+```
+
+**Docker Compose:**
+
+```bash
+0 8 * * 1 docker compose -f /path/to/docker-compose.yml exec -T web python manage.py send_export_summary >> /var/log/konote-export-summary.log 2>&1
+```
+
+**Railway:**
+
+Add a cron job service that runs `python manage.py send_export_summary` on a weekly schedule (e.g., `0 8 * * 1` for Monday at 8:00 AM).
+
+### Who Receives the Email
+
+- If `EXPORT_NOTIFICATION_EMAILS` is set in your environment variables, the summary goes to those addresses
+- Otherwise, it goes to all active admin users who have an email address on file
+
+The command is **stateless and idempotent** — running it multiple times in the same week sends duplicate emails, but causes no data changes. If no exports occurred in the period, the email still sends (showing zero counts).
+
+---
+
+## System Health Monitoring
+
+KoNote tracks the health of SMS and email messaging channels and surfaces warnings when something is wrong.
+
+### How It Works
+
+Every time KoNote sends (or attempts to send) an SMS or email reminder, it records the result in a `SystemHealthCheck` record for that channel. The system tracks:
+
+- When the last successful send occurred
+- When the last failure occurred
+- How many consecutive failures have happened
+- The reason for the last failure
+
+### Staff-Visible Banners
+
+When messaging is enabled and a channel has recent failures, staff see warning banners on the **Meetings** page:
+
+| Condition | Banner colour | Message |
+|-----------|--------------|---------|
+| 1–2 failures in the last 24 hours | Yellow (warning) | "X SMS/Email reminder(s) could not be sent recently." |
+| 3 or more consecutive failures | Red (danger) | "SMS/Email reminders have not been working since [date]. Please contact your support person." |
+
+Banners disappear automatically once the channel starts working again (the failure counter resets on success).
+
+### Admin Alert Emails
+
+After **24 hours of sustained failures**, administrators receive an email alert. This gives your support team early warning to investigate connectivity, credentials, or service outages.
+
+### Viewing Health Status
+
+Administrators can also see channel health status on the **Messaging Settings** page (gear icon → Messaging). This shows the current state of each channel, including the last success/failure timestamps and failure count.
+
+### Common Causes of Failures
+
+| Channel | Common issue | What to check |
+|---------|-------------|---------------|
+| **SMS** | Invalid Twilio credentials | Verify `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_FROM_NUMBER` in environment variables |
+| **SMS** | Account balance exhausted | Check your Twilio account balance |
+| **Email** | SMTP authentication failed | Verify `EMAIL_HOST_USER` and `EMAIL_HOST_PASSWORD` |
+| **Email** | Connection timeout | Check `EMAIL_HOST` and `EMAIL_PORT` settings |
+
+---
+
+## Apply Setup Command
+
+> **Status:** The `apply_setup` management command is **planned but not yet built**. It will be created when the first agency requests setup assistance. The design is documented below so you know what to expect.
+
+The `apply_setup` command will create a full agency configuration from a single JSON file. This is intended for consultants setting up new KoNote instances, replacing the need to manually configure each setting through the web interface.
+
+### How It Will Work
+
+```bash
+# Apply a configuration file
+python manage.py apply_setup config.json
+
+# Preview without making changes
+python manage.py apply_setup config.json --dry-run
+```
+
+The command will create, in order:
+
+1. **Instance settings** — product name, logo, support email, date format
+2. **Terminology overrides** — customised terms (e.g., "Client" → "Participant")
+3. **Feature toggles** — which modules to enable or disable
+4. **Programs** — service lines with names, descriptions, and colours
+5. **Plan templates** — complete templates with sections and targets
+6. **Custom field groups and fields** — agency-specific data fields
+7. **Metric enable/disable flags** — which metrics from the library to activate
+
+### Configuration File Format
+
+The configuration file is a JSON document. Here is a simplified example:
+
+```json
+{
+  "instance_settings": {
+    "product_name": "Youth Services — KoNote",
+    "support_email": "support@agency.ca"
+  },
+  "terminology": {
+    "client": "Participant",
+    "target": "Goal"
+  },
+  "features": {
+    "programs": true,
+    "events": true,
+    "alerts": false
+  },
+  "programs": [
+    {
+      "name": "Youth Housing",
+      "description": "Transitional housing support for youth aged 16–24",
+      "colour_hex": "#6366F1"
+    }
+  ],
+  "metrics_enabled": ["PHQ-9 (Depression)", "GAD-7 (Anxiety)"]
+}
+```
+
+See `tasks/setup-wizard-design.md` in the codebase for the full configuration file specification.
+
+### Important Notes
+
+- The command is **not idempotent** — running it twice creates duplicates. Clear the database or remove items manually before re-running.
+- User accounts, custom metrics, and client data imports are handled separately through their own workflows.
+- For now, use the web interface to configure your instance manually (see [Agency Configuration](#agency-configuration)).
+
+---
+
 ## Troubleshooting
 
 ### Q: I see a login error
@@ -872,5 +1199,5 @@ Some privacy regulations require the ability to permanently delete personal data
 
 ---
 
-**Version 2.1** — KoNote
-Last updated: 2026-02-13
+**Version 2.2** — KoNote
+Last updated: 2026-02-16

@@ -562,7 +562,7 @@ class UxScenarioBase(UxWalkthroughBase):
         """
         from apps.clients.models import ClientFile
 
-        self.client.post("/clients/create/", data={
+        self.client.post("/participants/create/", data={
             "first_name": first_name,
             "last_name": last_name,
             "middle_name": "",

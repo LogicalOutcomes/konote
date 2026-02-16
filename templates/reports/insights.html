@@ -45,7 +45,7 @@
     </div>
 
     {% if form.non_field_errors %}
-    <article style="background: var(--kn-danger-bg);" role="alert">
+    <article role="alert" style="background: var(--kn-danger-bg); color: var(--kn-danger-fg);">
         {% for error in form.non_field_errors %}
         <p>{{ error }}</p>
         {% endfor %}

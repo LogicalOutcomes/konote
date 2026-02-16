@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Setup Complete" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Setup Complete" %}</h1>
+    <p>{% trans "Your KoNote instance has been configured successfully." %}</p>
+</hgroup>
+
+{% if summary %}
+<article>
+    <header>
+        <h2>{% trans "Configuration Summary" %}</h2>
+    </header>
+
+    <figure>
+    <table role="grid" aria-label="{% trans 'Applied configuration summary' %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Section" %}</th>
+                <th scope="col">{% trans "Result" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for section, result in summary.items %}
+            <tr>
+                <td><strong>{{ section }}</strong></td>
+                <td>{{ result }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </figure>
+</article>
+{% endif %}
+
+<div class="wizard-nav">
+    <a href="{% url 'admin_settings:dashboard' %}" role="button">{% trans "Go to Admin Settings" %}</a>
+    <span class="spacer"></span>
+    <a href="{% url 'admin_settings:setup_wizard' %}" role="button" class="outline">{% trans "Run Wizard Again" %}</a>
+</div>
+{% endblock %}

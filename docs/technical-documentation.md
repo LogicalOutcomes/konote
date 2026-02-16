@@ -19,10 +19,11 @@ This document provides a comprehensive technical reference for developers, syste
 11. [Forms & Validation](#forms--validation)
 12. [Frontend Stack](#frontend-stack)
 13. [AI Integration](#ai-integration)
-14. [Configuration Reference](#configuration-reference)
-15. [Testing](#testing)
-16. [Development Guidelines](#development-guidelines)
-17. [Extensions & Customization](#extensions--customization)
+14. [Management Commands](#management-commands)
+15. [Configuration Reference](#configuration-reference)
+16. [Testing](#testing)
+17. [Development Guidelines](#development-guidelines)
+18. [Extensions & Customization](#extensions--customization)
 
 ---
 
@@ -103,14 +104,17 @@ KoNote-web/
 ├── apps/                      # Django applications
 │   ├── auth_app/              # User, Invite, Azure AD SSO
 │   ├── programs/              # Program, UserProgramRole
-│   ├── clients/               # ClientFile, custom fields
+│   ├── clients/               # ClientFile, custom fields, erasure, merge
 │   ├── plans/                 # PlanSection, PlanTarget, Metrics
 │   ├── notes/                 # ProgressNote, MetricValue
-│   ├── events/                # Event, EventType, Alert
-│   ├── communications/       # Communication logging and messaging
+│   ├── events/                # Event, EventType, Alert, Meeting
+│   ├── communications/        # Communication logging, reminders, staff messages
+│   ├── groups/                # Group sessions, attendance, projects
+│   ├── registration/          # Self-service registration links
+│   ├── portal/                # Participant-facing portal
 │   ├── admin_settings/        # Terminology, Features, Settings
 │   ├── audit/                 # AuditLog (separate DB)
-│   └── reports/               # CSV export, charts, PDFs
+│   └── reports/               # CSV export, charts, PDFs, insights
 │
 ├── templates/                 # Django templates (by app)
 │   ├── base.html              # Base template with layout
@@ -273,25 +277,34 @@ GRANT USAGE, SELECT ON SEQUENCE audit_auditlog_id_seq TO konote_audit;
 | `CalendarFeedToken` | Token-based iCal feed authentication |
 
 ### communications
-**Purpose:** Client interaction logging and messaging
+**Purpose:** Client interaction logging, messaging, and staff-to-staff messages
 
 | Model | Description |
 |-------|-------------|
-| `Communication` | Logged interaction (phone, email, SMS, in-person) with encrypted content |
-| `SystemHealthCheck` | Tracks SMS/email delivery health for staff warnings |
+| `Communication` | Logged interaction (phone, email, SMS, in-person, portal, WhatsApp) with encrypted content. Tracks direction (inbound/outbound), method (manual log, staff sent, system sent), delivery status, and call outcome. |
+| `SystemHealthCheck` | Tracks SMS/email delivery health for staff-visible banners. One row per channel, updated on every send attempt. Triggers admin alert emails after 24 hours of sustained failures. |
+| `StaffMessage` | Staff-to-staff messages about participants (e.g., "Mike called, wants to reschedule"). Content is encrypted. Can be targeted to a specific staff member or left unassigned for any case worker. Statuses: unread, read, archived. |
 
 **Key Views:**
-- `quick_log` — Two-click communication logging (channel buttons)
-- `communication_log` — Full form with direction, subject, content
-- `send_reminder_preview` — Preview and send meeting reminder (SMS or email)
-- `email_unsubscribe` — Public token-based consent withdrawal
+- `quick_log` — Deprecated redirect; contact logging has moved to Quick Notes
+- `communication_log` — Deprecated redirect; contact logging has moved to Quick Notes
+- `compose_email` — Compose and send a free-form email to a participant (with preview step)
+- `send_reminder_preview` — Preview and send meeting reminder (SMS or email) with personal note
+- `email_unsubscribe` — Public token-based consent withdrawal (no login required)
+- `leave_message` — Leave a staff-to-staff message about a participant
+- `client_messages` — View messages for a specific client (scoped to current user or unassigned)
+- `mark_message_read` — Mark a staff message as read (HTMX endpoint)
+- `my_messages` — Dashboard showing all unread messages for the current staff member
 
 **Services Layer** (`apps/communications/services.py`):
 - `check_consent(client, channel)` — CASL consent verification
 - `can_send(client, channel)` — Full pre-send check chain (safety mode → profile → toggle → consent → contact info)
 - `send_reminder(meeting, logged_by, personal_note)` — Orchestrates SMS/email delivery
+- `send_staff_email(client_file, subject, body_text, logged_by, ...)` — Send a free-form email from staff
 - `send_sms(phone, body)` — Twilio integration
 - `send_email_message(email, subject, body_text, body_html)` — Django SMTP
+- `render_message_template(template_key, client, meeting)` — Render SMS/email templates with participant data
+- `check_and_send_health_alert()` — Check messaging channel health and alert admins if channels are failing
 
 ### admin_settings
 **Purpose:** Instance configuration
@@ -317,6 +330,99 @@ GRANT USAGE, SELECT ON SEQUENCE audit_auditlog_id_seq TO konote_audit;
 - Funder report export
 - Client analysis charts (Chart.js)
 - PDF reports (WeasyPrint)
+- Outcome Insights dashboard (program-level and client-level)
+- Team meeting view (client summary for case conferences)
+- Secure export links with time-limited, token-based download URLs
+
+### groups
+**Purpose:** Group-based service delivery and project tracking
+
+| Model | Description |
+|-------|-------------|
+| `Group` | A group or project linked to a program. Types: `group` (attendance and session notes) or `project` (goal-oriented with milestones and outcomes). |
+| `GroupMembership` | Links a client (or named non-client) to a group with a role (member or leader). |
+| `GroupSession` | A single session for a group — date, facilitator, group vibe rating, encrypted notes. |
+| `GroupSessionAttendance` | Per-member attendance for a session (defaults to present — facilitator unchecks absentees). |
+| `GroupSessionHighlight` | Individual observation about a member during a session (encrypted). |
+| `ProjectMilestone` | A milestone within a project-type group — title, status, due date, completion date. |
+| `ProjectOutcome` | A recorded result or outcome for a project — description, evidence, date. |
+
+**Key Views:**
+- `group_list` — List all groups the user has access to
+- `group_detail` — Group detail with members, sessions, and (for projects) milestones and outcomes
+- `group_create` / `group_edit` — Create and edit groups
+- `session_log` — Log a group session with attendance, notes, and member highlights
+- `membership_add` / `membership_remove` — Manage group membership
+- `milestone_create` / `milestone_edit` — Create and edit project milestones
+- `outcome_create` — Record project outcomes
+- `attendance_report` — Attendance summary for a group
+
+### registration
+**Purpose:** Self-service program registration via shareable links
+
+| Model | Description |
+|-------|-------------|
+| `RegistrationLink` | A shareable URL for public program registration. Configurable with custom field groups, capacity limits, deadlines, and auto-approve option. |
+| `RegistrationSubmission` | A submitted registration with encrypted PII, custom field values, and status tracking (pending, approved, rejected, waitlisted). Includes email hash for duplicate detection. |
+
+**Key Views (public, no login required):**
+- `public_registration_form` — Renders the registration form for a given link slug
+- `registration_submitted` — Confirmation page after submission
+
+**Key Views (admin, login required):**
+- `link_list` / `link_create` / `link_edit` / `link_delete` — Manage registration links
+- `link_embed` — Get embed code for the registration link
+- `submission_list` — View all submissions across links
+- `submission_detail` — Review a single submission
+- `submission_approve` / `submission_reject` / `submission_waitlist` — Change submission status
+- `submission_merge` — Merge a submission with an existing client record
+
+### portal
+**Purpose:** Participant-facing portal for viewing goals, progress, and communicating with staff
+
+The portal is a separate interface for participants (clients). It uses its own authentication system (`ParticipantUser`) with a separate session key — participants are not Django `User` objects and do not have access to the staff interface.
+
+| Model | Description |
+|-------|-------------|
+| `ParticipantUser` | Portal login account linked to a `ClientFile` via OneToOne. Email stored as HMAC-SHA-256 hash (for lookup) and Fernet-encrypted (for display). Supports TOTP-based MFA, account lockout, and preferred language. |
+| `PortalInvite` | Single-use invite for a participant to create a portal account. Includes a secure URL token, optional verbal verification code, expiry date, and consent screen tracking. |
+| `ParticipantJournalEntry` | Private journal entry written by a participant (encrypted). Optionally linked to a plan target. |
+| `ParticipantMessage` | Message from a participant to staff. Types: `general` or `pre_session` (what the participant wants to discuss next time). Encrypted at rest. |
+| `StaffPortalNote` | Note from staff visible in the participant's portal dashboard (encrypted). |
+| `CorrectionRequest` | Participant request to correct data in their record (PHIPA/PIPEDA right of correction). Data types: goal, metric, reflection. Staff review and record outcome. |
+
+**Portal Views (participant-facing, at `/my/`):**
+- `portal_login` / `portal_logout` / `emergency_logout` — Authentication (including panic/safety button)
+- `accept_invite` — Accept a portal invite and create an account
+- `consent_flow` — Multi-screen privacy consent after registration
+- `mfa_setup` / `mfa_verify` — TOTP multi-factor authentication
+- `dashboard` — Participant home page with greeting, highlights, and new-since-last-visit count
+- `goals_list` / `goal_detail` — View plan sections and targets with progress charts
+- `progress_view` — Overall progress charts for all portal-visible metrics
+- `my_words` — Participant reflections and client words from progress notes
+- `milestones` — Completed goals
+- `journal_list` / `journal_create` / `journal_disclosure` — Private journal with one-time privacy notice
+- `message_create` — Send a message to staff
+- `discuss_next` — Pre-session prompt ("What I want to discuss next time")
+- `correction_request_create` — Request a correction to recorded information
+- `settings_view` / `password_change` — Account settings
+- `password_reset_request` / `password_reset_confirm` — Password recovery flow
+- `safety_help` — Pre-auth safety page (private browsing guidance, emergency logout info)
+
+**Staff-Side Portal Views (at `/clients/<id>/portal*`):**
+- `portal_manage` — View portal access status, invites, and pending corrections for a participant
+- `create_portal_invite` — Generate a portal invite with optional verbal verification code
+- `create_staff_portal_note` — Write a note visible in the participant's portal
+- `portal_revoke_access` — Deactivate a participant's portal account
+- `portal_reset_mfa` — Reset MFA for a participant's account
+
+**Security Architecture:**
+- Separate session key (`_portal_participant_id`) — participant sessions do not overlap with staff sessions
+- Every view scopes queries to `request.participant_user.client_file` — no cross-client data access
+- MFA challenge expires after 5 minutes with a maximum of 5 attempts
+- Account lockout after 5 failed login attempts (15-minute lockout)
+- All portal actions are audit-logged with `[portal]` user_display prefix
+- Feature-gated: the entire `/my/` URL namespace returns 404 if the `participant_portal` toggle is disabled
 
 ---
 
@@ -650,12 +756,33 @@ MIDDLEWARE = [
 ### Clients
 
 ```
-/clients/                       GET         Client list
-/clients/create/                GET, POST   New client
-/clients/<id>/                  GET         Client detail
-/clients/<id>/edit/             GET, POST   Edit client
-/clients/<id>/delete/           POST        Mark inactive
-/clients/custom-fields/         GET         Custom field management
+/clients/executive/                             GET         Executive dashboard
+/clients/                                       GET         Client list
+/clients/create/                                GET, POST   New client
+/clients/check-duplicate/                       POST        Duplicate detection (HTMX)
+/clients/search/                                GET         Client search (partial)
+/clients/<id>/                                  GET         Client detail
+/clients/<id>/edit/                             GET, POST   Edit client
+/clients/<id>/transfer/                         GET, POST   Transfer client between programs
+/clients/<id>/edit-contact/                     GET, POST   Edit contact information
+/clients/<id>/confirm-phone/                    POST        Confirm phone number
+/clients/<id>/custom-fields/                    POST        Save custom fields
+/clients/<id>/custom-fields/display/            GET         Custom fields display partial
+/clients/<id>/custom-fields/edit/               GET         Custom fields edit partial
+/clients/<id>/consent/display/                  GET         Consent display partial
+/clients/<id>/consent/edit/                     GET         Consent edit partial
+/clients/<id>/consent/                          POST        Save consent settings
+/clients/<id>/erase/                            GET, POST   Create erasure request
+/clients/<id>/portal-note/                      GET, POST   Create staff portal note
+/clients/<id>/portal-invite/                    GET, POST   Create portal invite
+/clients/<id>/portal/                           GET         Manage portal access
+/clients/<id>/portal/revoke/                    POST        Revoke portal access
+/clients/<id>/portal/reset-mfa/                 POST        Reset portal MFA
+/clients/admin/fields/                          GET         Custom field admin
+/clients/admin/fields/groups/create/            GET, POST   Create field group
+/clients/admin/fields/groups/<id>/edit/         GET, POST   Edit field group
+/clients/admin/fields/create/                   GET, POST   Create field definition
+/clients/admin/fields/<id>/edit/                GET, POST   Edit field definition
 ```
 
 ### Plans
@@ -681,33 +808,61 @@ MIDDLEWARE = [
 ### Admin
 
 ```
-/admin/settings/                GET         Settings dashboard
-/admin/settings/terminology/    GET, POST   Terminology overrides
-/admin/settings/features/       GET, POST   Feature toggles
-/admin/settings/instance/       GET, POST   Instance settings
-/programs/                      GET         Program list
-/programs/create/               GET, POST   New program
-/programs/<id>/                 GET         Program detail
-/audit/log/                     GET         Audit log viewer
+/admin/settings/                                    GET         Settings dashboard
+/admin/settings/terminology/                        GET, POST   Terminology overrides
+/admin/settings/terminology/reset/<key>/            POST        Reset terminology override
+/admin/settings/features/                           GET, POST   Feature toggles
+/admin/settings/instance/                           GET, POST   Instance settings
+/admin/settings/messaging/                          GET, POST   Messaging settings (SMS/email)
+/admin/settings/diagnose-charts/                    GET         Chart diagnostics
+/admin/settings/demo-directory/                     GET         Demo user directory
+/admin/settings/report-templates/                   GET         Funder report templates
+/admin/settings/report-templates/upload/            GET, POST   Upload report template
+/admin/settings/report-templates/confirm/           POST        Confirm template upload
+/admin/settings/report-templates/sample.csv         GET         Download sample CSV
+/admin/settings/report-templates/<id>/              GET         Template detail
+/admin/settings/report-templates/<id>/programs/     GET, POST   Edit template programs
+/admin/settings/report-templates/<id>/delete/       POST        Delete template
+/admin/settings/report-templates/<id>/download/     GET         Download template CSV
+/admin/settings/note-templates/                     ...         Note template management
+/admin/templates/                                   ...         Plan template management
+/admin/users/                                       ...         User management
+/admin/audit/                                       GET         Audit log viewer
+/admin/audit/export/                                GET         Audit log CSV export
+/audit/program/<id>/                                GET         Per-program audit log (PM)
+/programs/                                          GET         Program list
+/programs/create/                                   GET, POST   New program
+/programs/<id>/                                     GET         Program detail
 ```
 
 ### Reports
 
 ```
-/reports/export/                GET, POST   Metric CSV export
-/reports/funder-report/         GET, POST   Funder report export
-/reports/client-data-export/    GET, POST   Client data CSV export (admin)
-/reports/client/<id>/analysis/  GET         Client analysis charts
-/reports/client/<id>/pdf/       GET         Client progress PDF
+/reports/insights/                                  GET         Program outcome insights
+/reports/client/<id>/insights/                      GET         Client insights partial
+/reports/export/                                    GET, POST   Metric CSV export
+/reports/funder-report/                             GET, POST   Funder report export
+/reports/client/<id>/analysis/                      GET         Client analysis charts
+/reports/client/<id>/pdf/                           GET         Client progress PDF
+/reports/client/<id>/export/                        GET         Client data export
+/reports/team-meeting/                              GET         Team meeting view
+/reports/download/<uuid>/                           GET         Download secure export link
+/reports/export-links/                              GET         Manage export links
+/reports/export-links/<uuid>/revoke/                POST        Revoke export link
 ```
 
 ### Communications
 
 ```
-/communications/client/<id>/quick-log/                  GET, POST   Quick-log communication
-/communications/client/<id>/log/                        GET, POST   Full communication form
-/communications/client/<id>/meeting/<event_id>/send-reminder/  GET, POST   Send meeting reminder
-/communications/unsubscribe/<token>/                    GET, POST   Unsubscribe (public)
+/communications/client/<id>/quick-log/                          GET         Quick-log (deprecated, redirects)
+/communications/client/<id>/log/                                GET         Full log (deprecated, redirects)
+/communications/client/<id>/compose-email/                      GET, POST   Compose and send email
+/communications/client/<id>/meeting/<event_id>/send-reminder/   GET, POST   Send meeting reminder
+/communications/unsubscribe/<token>/                            GET, POST   Unsubscribe (public)
+/communications/my-messages/                                    GET         Staff message dashboard
+/communications/client/<id>/leave-message/                      GET, POST   Leave staff message
+/communications/client/<id>/messages/                           GET         Client messages
+/communications/client/<id>/message/<msg_id>/read/              POST        Mark message read (HTMX)
 ```
 
 ### Meetings & Calendar
@@ -719,6 +874,82 @@ MIDDLEWARE = [
 /events/meetings/<event_id>/status/                     POST        Update status (HTMX)
 /events/calendar/settings/                              GET, POST   Calendar feed settings
 /calendar/<token>/feed.ics                              GET         iCal feed (public, token auth)
+```
+
+### Groups
+
+```
+/groups/                                            GET         Group list
+/groups/create/                                     GET, POST   Create group
+/groups/<id>/                                       GET         Group detail
+/groups/<id>/edit/                                  GET, POST   Edit group
+/groups/<id>/session/                               GET, POST   Log group session
+/groups/<id>/member/add/                            GET, POST   Add group member
+/groups/member/<membership_id>/remove/              POST        Remove group member
+/groups/<id>/milestone/                             GET, POST   Create milestone (projects)
+/groups/milestone/<milestone_id>/edit/              GET, POST   Edit milestone
+/groups/<id>/outcome/                               GET, POST   Record outcome (projects)
+/groups/<id>/attendance/                            GET         Attendance report
+```
+
+### Self-Service Registration
+
+```
+/register/<slug>/                                   GET, POST   Public registration form
+/register/<slug>/submitted/                         GET         Submission confirmation
+/admin/registration/                                GET         Registration link list
+/admin/registration/create/                         GET, POST   Create registration link
+/admin/registration/<id>/edit/                      GET, POST   Edit registration link
+/admin/registration/<id>/delete/                    POST        Delete registration link
+/admin/registration/<id>/embed/                     GET         Embed code for link
+/admin/submissions/                                 GET         Submission list
+/admin/submissions/<id>/                            GET         Submission detail
+/admin/submissions/<id>/approve/                    POST        Approve submission
+/admin/submissions/<id>/reject/                     POST        Reject submission
+/admin/submissions/<id>/waitlist/                   POST        Waitlist submission
+/admin/submissions/<id>/merge/                      POST        Merge with existing client
+```
+
+### Erasure & Merge
+
+```
+/erasure/                                           GET         Pending erasure requests
+/erasure/history/                                   GET         Erasure history
+/erasure/<id>/                                      GET         Erasure request detail
+/erasure/<id>/approve/                              POST        Approve erasure
+/erasure/<id>/reject/                               POST        Reject erasure
+/erasure/<id>/cancel/                               POST        Cancel erasure
+/erasure/<id>/receipt/                              GET         Erasure receipt PDF
+/merge/                                             GET         Duplicate merge candidates
+/merge/<client_a_id>/<client_b_id>/                 GET, POST   Compare and merge clients
+```
+
+### Participant Portal (at `/my/`)
+
+```
+/my/login/                                          GET, POST   Participant login
+/my/logout/                                         POST        Participant logout
+/my/emergency-logout/                               POST        Panic/safety button (sendBeacon)
+/my/invite/<token>/                                 GET, POST   Accept portal invite
+/my/consent/                                        GET, POST   Consent flow
+/my/mfa/setup/                                      GET, POST   TOTP MFA setup
+/my/mfa/verify/                                     GET, POST   MFA verification
+/my/safety/                                         GET         Safety help page (pre-auth)
+/my/password/change/                                GET, POST   Change password
+/my/password/reset/                                 GET, POST   Request password reset
+/my/password/reset/confirm/                         GET, POST   Confirm password reset
+/my/                                                GET         Participant dashboard
+/my/settings/                                       GET         Portal settings
+/my/goals/                                          GET         Goals list
+/my/goals/<target_id>/                              GET         Goal detail with charts
+/my/progress/                                       GET         Overall progress charts
+/my/milestones/                                     GET         Completed goals
+/my/correction/new/                                 GET, POST   Request data correction
+/my/journal/                                        GET         Journal entries
+/my/journal/new/                                    GET, POST   New journal entry
+/my/journal/disclosure/                             GET, POST   Journal privacy notice
+/my/message/                                        GET, POST   Message to worker
+/my/discuss-next/                                   GET, POST   Pre-session discussion topics
 ```
 
 ### HTMX Endpoints
@@ -928,6 +1159,118 @@ def suggest_metrics(target_description, program_name):
 
     return call_openrouter(prompt)
 ```
+
+---
+
+## Management Commands
+
+KoNote includes several custom management commands for scheduled tasks, maintenance, and deployment. All commands support `--help` for full usage details.
+
+### Scheduled Commands
+
+These commands are intended to run on a schedule (cron, Railway cron, Azure scheduled task, etc.).
+
+#### `send_reminders` — Automated Appointment Reminders
+
+Finds upcoming meetings that have not yet received a reminder and sends SMS or email notifications via the client's preferred contact channel.
+
+```bash
+python manage.py send_reminders              # Send reminders for meetings in next 36 hours
+python manage.py send_reminders --dry-run    # Preview without sending
+python manage.py send_reminders --hours 24   # Custom lookahead window
+```
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--dry-run` | off | Show which meetings would get reminders without actually sending |
+| `--hours` | 36 | How far ahead to look for upcoming meetings (in hours) |
+
+**Behaviour:**
+- Finds meetings with status `scheduled`, `reminder_sent=False`, and start time within the lookahead window
+- Sends via the client's preferred contact method (SMS or email) using the `send_reminder()` service
+- Skips clients without consent or contact information (logged as "skipped", not counted as failures)
+- Failed sends are retried on subsequent runs (the `reminder_sent` flag stays `False`)
+- After processing, triggers a system health check and alerts admins if a messaging channel is persistently failing
+
+**Recommended schedule:** Hourly.
+
+**Location:** `apps/communications/management/commands/send_reminders.py`
+
+#### `send_export_summary` — Weekly Export Activity Report
+
+Emails admins a summary of data export activity for compliance monitoring. Shows how many exports were created, who exported what, and whether any exports are pending download or have been revoked.
+
+```bash
+python manage.py send_export_summary              # Send email to admins
+python manage.py send_export_summary --dry-run     # Preview without sending
+python manage.py send_export_summary --days 14     # Custom lookback window
+```
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--dry-run` | off | Show the summary without sending the email |
+| `--days` | 7 | Number of days to look back for export activity |
+
+**Behaviour:**
+- Queries `SecureExportLink` records created within the lookback period
+- Breaks down exports by type, counts elevated exports, downloaded vs. pending, and revoked links
+- Lists the top 5 exporters by display name
+- Sends the summary via email to addresses in `EXPORT_NOTIFICATION_EMAILS` (setting), or falls back to all active admin users
+- Uses both plain text and HTML email templates (`reports/email/weekly_export_summary.txt` and `.html`)
+- Stateless and idempotent — safe to run multiple times
+
+**Recommended schedule:** Weekly (e.g., Monday morning).
+
+**Location:** `apps/reports/management/commands/send_export_summary.py`
+
+#### `cleanup_expired_exports` — Export File Cleanup
+
+Removes expired secure export links and their associated files from disk. Also cleans up orphan files that have no matching database record.
+
+```bash
+python manage.py cleanup_expired_exports          # Delete expired links + orphan files
+python manage.py cleanup_expired_exports --dry-run # Preview what would be deleted
+```
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `--dry-run` | off | Show what would be deleted without actually deleting |
+
+**Behaviour:**
+- Deletes `SecureExportLink` records that expired more than 1 day ago (grace period to avoid deleting mid-download)
+- Removes the associated file on disk for each deleted record
+- Scans the `SECURE_EXPORT_DIR` directory for orphan files with no matching database record and removes them
+- Deletes the database record first, then the file — if the file delete fails, the orphan is caught on the next run
+
+**Recommended schedule:** Daily.
+
+**Location:** `apps/reports/management/commands/cleanup_expired_exports.py`
+
+### Utility Commands
+
+These commands are run manually during deployment, maintenance, or development.
+
+| Command | App | Description |
+|---------|-----|-------------|
+| `security_audit` | `audit` | Run a comprehensive security check (encryption, RBAC, audit log, configuration). See [Security Operations](security-operations.md) for details. |
+| `rotate_encryption_key` | `auth_app` | Re-encrypt all PII fields with a new Fernet key. See [Security Operations](security-operations.md#rotating-the-encryption-key). |
+| `validate_permissions` | `auth_app` | Verify the permission matrix is consistent and all views reference valid permission keys. |
+| `lockdown_audit_db` | `audit` | Generate SQL statements to configure INSERT-only permissions on the audit database. |
+| `startup_check` | `audit` | Run at container startup to verify database connectivity and configuration. |
+| `check_translations` | `admin_settings` | Verify that all template translation strings have corresponding entries in `.po` files. |
+| `translate_strings` | `admin_settings` | Extract translatable strings from templates and compile `.po` → `.mo` files. |
+| `preflight` | `admin_settings` | Shared pre-flight checks used by QA skills (database, settings, test data). |
+| `seed_demo_data` | `admin_settings` | Populate the database with realistic demo data for presentations and testing. |
+| `seed` | `admin_settings` | Lightweight seed command for development setup. |
+| `seed_event_types` | `events` | Create default event types (intake, discharge, etc.). |
+| `seed_note_templates` | `notes` | Create default progress note templates. |
+| `seed_default_funder_profile` | `reports` | Create a default funder report profile. |
+| `seed_intake_fields` | `clients` | Create default custom field groups and fields for client intake. |
+| `alert_expired_retention` | `clients` | Check for client records past their retention period and flag them for review. |
+| `migrate_phone_field` | `clients` | One-time migration helper for phone field encryption changes. |
+| `update_demo_client_fields` | `clients` | Update demo client records with fresh test data. |
+| `check_document_url` | `admin_settings` | Verify that the document storage URL template is correctly configured. |
+| `diagnose_charts` | `admin_settings` | Debug helper for Chart.js metric visualisation issues. |
 
 ---
 
@@ -1738,5 +2081,5 @@ When considering a new feature or extension:
 
 ---
 
-**Version 1.4** — KoNote Web Technical Documentation
-Last updated: 2026-02-13
+**Version 1.5** — KoNote Web Technical Documentation
+Last updated: 2026-02-16

@@ -159,14 +159,41 @@ Every significant action in KoNote is logged to a separate audit database. This 
 | Exports | Who exported what data, recipient |
 | Admin actions | Settings changes, user management |
 
+### Who Can See What
+
+Audit log visibility is scoped by role:
+
+| Role | What They See |
+|------|---------------|
+| **Admin** | All audit log entries across the entire instance |
+| **Program Manager** | Only entries for programs they are assigned to (via `program_id` on the audit record) |
+| **Staff / Front Desk / Executive** | No access to the audit log viewer |
+
+**How PM scoping works:** When a program manager opens the audit log, KoNote filters entries to only those where the `program_id` matches one of the PM's active program assignments. This means:
+
+- PMs see client record views, note creation, and other actions tied to their programs
+- Org-wide entries (login events, settings changes, exports) are **only visible to admins** because those entries have no `program_id`
+- PMs can also access a dedicated per-program audit log at `/audit/program/<id>/`, which shows entries for clients enrolled in that program
+
+This scoping was introduced in PR #88. The `@requires_permission("audit.view")` decorator enforces access: the permission matrix grants `SCOPED` access to program managers and `DENY` to all other non-admin roles.
+
 ### Viewing Audit Logs
 
 #### Through the Web Interface
+
+**As an Admin:**
 
 1. Log in as an Admin
 2. Click **Admin** in the navigation
 3. Select **Audit Logs**
 4. Use filters to narrow by date, user, or action type
+
+**As a Program Manager:**
+
+1. Log in as a Program Manager
+2. Click **Admin** in the navigation
+3. Select **Audit Logs** — you will see only entries for your assigned programs
+4. Alternatively, navigate to a program's detail page and click **Audit Log** to see entries specific to that program
 
 #### Through the Database
 

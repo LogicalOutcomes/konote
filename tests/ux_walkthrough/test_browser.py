@@ -85,12 +85,12 @@ class ColourContrastBrowserTest(BrowserTestBase):
         pk = self.client_a.pk
         pages = [
             (None, "/auth/login/", "Login page"),
-            ("staff", "/clients/", "Client list"),
-            ("staff", f"/clients/{pk}/", "Client detail"),
+            ("staff", "/participants/", "Client list"),
+            ("staff", f"/participants/{pk}/", "Client detail"),
             ("staff", f"/notes/client/{pk}/", "Notes timeline"),
             ("manager", f"/plans/client/{pk}/", "Plan view"),
             ("admin", "/admin/settings/", "Admin settings"),
-            ("executive", "/clients/executive/", "Executive dashboard"),
+            ("executive", "/participants/executive/", "Executive dashboard"),
         ]
         self._check_pages(pages, scheme_label="light")
 
@@ -105,8 +105,8 @@ class ColourContrastBrowserTest(BrowserTestBase):
         pk = self.client_a.pk
         pages = [
             (None, "/auth/login/", "Login page"),
-            ("staff", "/clients/", "Client list"),
-            ("staff", f"/clients/{pk}/", "Client detail"),
+            ("staff", "/participants/", "Client list"),
+            ("staff", f"/participants/{pk}/", "Client detail"),
             ("staff", f"/notes/client/{pk}/", "Notes timeline"),
             ("admin", "/admin/settings/", "Admin settings"),
         ]
@@ -131,7 +131,7 @@ class FocusManagementBrowserTest(BrowserTestBase):
     def test_custom_fields_edit_toggle(self):
         """After clicking Edit on custom fields, focus should be inside the form."""
         pk = self.client_a.pk
-        url = f"/clients/{pk}/"
+        url = f"/participants/{pk}/"
         self.login_via_browser("staff")
         self.page.goto(self.live_url(url))
         self.page.wait_for_load_state("networkidle")
@@ -160,7 +160,7 @@ class FocusManagementBrowserTest(BrowserTestBase):
     def test_consent_form_toggle(self):
         """After clicking Update/Record Consent, focus should be inside the form."""
         pk = self.client_a.pk
-        url = f"/clients/{pk}/"
+        url = f"/participants/{pk}/"
         self.login_via_browser("staff")
         self.page.goto(self.live_url(url))
         self.page.wait_for_load_state("networkidle")
@@ -197,7 +197,7 @@ class FocusManagementBrowserTest(BrowserTestBase):
 
     def test_search_focus_stays_on_input(self):
         """After typing in search, focus should stay on the search input."""
-        url = "/clients/search/"
+        url = "/participants/search/"
         self.login_via_browser("staff")
         self.page.goto(self.live_url(url))
         self.page.wait_for_load_state("networkidle")
@@ -315,8 +315,8 @@ class ResponsiveLayoutBrowserTest(BrowserTestBase):
         pk = self.client_a.pk
         pages = [
             (None, "/auth/login/", "Login"),
-            ("staff", "/clients/", "Client list"),
-            ("staff", f"/clients/{pk}/", "Client detail"),
+            ("staff", "/participants/", "Client list"),
+            ("staff", f"/participants/{pk}/", "Client detail"),
             ("staff", f"/notes/client/{pk}/", "Notes timeline"),
             ("manager", f"/plans/client/{pk}/", "Plan view"),
         ]
@@ -374,8 +374,8 @@ class ResponsiveLayoutBrowserTest(BrowserTestBase):
 
         pk = self.client_a.pk
         pages = [
-            (f"/clients/{pk}/", "Client detail"),
-            ("/clients/", "Client list"),
+            (f"/participants/{pk}/", "Client detail"),
+            ("/participants/", "Client list"),
         ]
 
         for path, label in pages:
@@ -419,14 +419,14 @@ class ResponsiveLayoutBrowserTest(BrowserTestBase):
         """On mobile, the navigation should be accessible."""
         self.page.set_viewport_size({"width": 375, "height": 667})
         self.login_via_browser("staff")
-        self.page.goto(self.live_url("/clients/"))
+        self.page.goto(self.live_url("/participants/"))
         self.page.wait_for_load_state("networkidle")
 
         # Check if nav element is present
         nav = self.page.locator("nav")
         if nav.count() == 0:
             self.record_browser_finding(
-                "Responsive Layout", "warning", "/clients/",
+                "Responsive Layout", "warning", "/participants/",
                 "[mobile] No <nav> element found",
             )
             return
@@ -445,6 +445,6 @@ class ResponsiveLayoutBrowserTest(BrowserTestBase):
                     visible_count += 1
             if visible_count == 0:
                 self.record_browser_finding(
-                    "Responsive Layout", "warning", "/clients/",
+                    "Responsive Layout", "warning", "/participants/",
                     "[mobile] Navigation toggle exists but menu links not visible after click",
                 )

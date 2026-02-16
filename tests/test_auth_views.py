@@ -585,7 +585,7 @@ class ExecutiveLoginRedirectTest(TestCase):
         self._create_user("exec_user", ["executive"])
         resp = self._login("exec_user")
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(resp.url, "/clients/executive/")
+        self.assertEqual(resp.url, "/participants/executive/")
 
     def test_staff_redirects_to_home(self):
         self._create_user("staff_user", ["staff"])

@@ -520,7 +520,7 @@ class ComposeEmailViewTest(TestCase):
             "message": "Body.",
         })
         self.assertEqual(response.status_code, 302)
-        self.assertIn(f"/clients/{self.client_file.pk}/", response.url)
+        self.assertIn(f"/participants/{self.client_file.pk}/", response.url)
 
     def test_receptionist_blocked(self):
         """Receptionist should get 403 on compose_email."""

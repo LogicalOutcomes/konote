@@ -1,0 +1,61 @@
+{% extends "admin_settings/setup_wizard/_wizard_base.html" %}
+{% load i18n %}
+
+{% block wizard_content %}
+<h2>{% trans "Step 6: Plan Templates" %}</h2>
+<p>{% trans "Define plan templates that staff can use when creating client plans. You can add sections and targets later." %}</p>
+
+<form method="post" id="templates-form">
+    {% csrf_token %}
+
+    <div id="templates-list">
+        {% if current_data %}
+            {% for tpl in current_data %}
+            <fieldset class="repeatable-group">
+                <legend class="sr-only">{% trans "Plan Template" %} {{ forloop.counter }}</legend>
+                <label>{% trans "Template Name" %}
+                    <input type="text" name="template_name" value="{{ tpl.name }}" required>
+                </label>
+                <label>{% trans "Description" %}
+                    <textarea name="template_description" rows="2">{{ tpl.description }}</textarea>
+                </label>
+            </fieldset>
+            {% endfor %}
+        {% else %}
+            <fieldset class="repeatable-group">
+                <legend class="sr-only">{% trans "Plan Template" %} 1</legend>
+                <label>{% trans "Template Name" %}
+                    <input type="text" name="template_name" placeholder="{% trans 'e.g. Youth Housing Plan' %}">
+                </label>
+                <label>{% trans "Description" %}
+                    <textarea name="template_description" rows="2" placeholder="{% trans 'Brief description of this template' %}"></textarea>
+                </label>
+            </fieldset>
+        {% endif %}
+    </div>
+
+    <button type="button" class="add-btn" onclick="addTemplate()">+ {% trans "Add another template" %}</button>
+
+    <div class="wizard-nav">
+        <a href="{% url 'admin_settings:setup_wizard_step' step='metrics' %}" role="button" class="outline">&larr; {% trans "Back" %}</a>
+        <span class="spacer"></span>
+        <button type="submit">{% trans "Next: Custom Fields" %} &rarr;</button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function addTemplate() {
+    var list = document.getElementById("templates-list");
+    var count = list.querySelectorAll(".repeatable-group").length + 1;
+    var group = document.createElement("fieldset");
+    group.className = "repeatable-group";
+    group.innerHTML = "<legend class=\"sr-only\">Plan Template " + count + "</legend>" +
+        "<label>Template Name<input type=\"text\" name=\"template_name\"></label>" +
+        "<label>Description<textarea name=\"template_description\" rows=\"2\"></textarea></label>";
+    list.appendChild(group);
+    group.querySelector("input").focus();
+}
+</script>
+{% endblock %}

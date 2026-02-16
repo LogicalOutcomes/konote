@@ -58,14 +58,14 @@ class Error403ResponseTest(TestCase):
         """403 responses should contain friendly access message."""
         # Receptionist has client.create ALLOW but client.edit DENY
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/edit/")
+        response = self.client.get(f"/participants/{self.client_file.pk}/edit/")
         self.assertEqual(response.status_code, 403)
         self.assertContains(response, "have access to this page", status_code=403)
 
     def test_403_contains_helpful_instructions(self):
         """403 responses should contain helpful next steps."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/edit/")
+        response = self.client.get(f"/participants/{self.client_file.pk}/edit/")
         self.assertEqual(response.status_code, 403)
         # Should contain suggestions for what user can do
         self.assertContains(response, "What you can do", status_code=403)
@@ -74,7 +74,7 @@ class Error403ResponseTest(TestCase):
         """403 for accessing client in wrong program should have error content."""
         # other_staff is in Program B, client is in Program A
         self.client.force_login(self.other_staff)
-        response = self.client.get(f"/clients/{self.client_file.pk}/")
+        response = self.client.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 403)
         self.assertContains(response, "have access to this page", status_code=403)
 
@@ -82,7 +82,7 @@ class Error403ResponseTest(TestCase):
         """HTMX requests should still get meaningful error content."""
         self.client.force_login(self.receptionist)
         response = self.client.get(
-            f"/clients/{self.client_file.pk}/edit/",
+            f"/participants/{self.client_file.pk}/edit/",
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(response.status_code, 403)
@@ -117,7 +117,7 @@ class FormValidationErrorTest(TestCase):
     def test_client_create_missing_required_fields_shows_form(self):
         """Submitting client form without required fields should re-render form with errors."""
         self.client.force_login(self.staff_user)
-        response = self.client.post("/clients/create/", {
+        response = self.client.post("/participants/create/", {
             # Missing first_name and last_name (required)
             "status": "active",
         })
@@ -131,7 +131,7 @@ class FormValidationErrorTest(TestCase):
     def test_client_create_valid_data_redirects(self):
         """Submitting valid client form should redirect (success)."""
         self.client.force_login(self.staff_user)
-        response = self.client.post("/clients/create/", {
+        response = self.client.post("/participants/create/", {
             "first_name": "New",
             "last_name": "Client",
             "status": "active",
@@ -170,7 +170,7 @@ class HTMXPartialResponseTest(TestCase):
         """Client list HTMX request should return table partial, not full page."""
         self.client.force_login(self.staff_user)
         response = self.client.get(
-            "/clients/",
+            "/participants/",
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(response.status_code, 200)
@@ -181,7 +181,7 @@ class HTMXPartialResponseTest(TestCase):
     def test_client_list_normal_returns_full_page(self):
         """Normal client list request should return full page."""
         self.client.force_login(self.staff_user)
-        response = self.client.get("/clients/")
+        response = self.client.get("/participants/")
         self.assertEqual(response.status_code, 200)
         # Should contain full page structure
         self.assertContains(response, "<!DOCTYPE html>")
@@ -190,7 +190,7 @@ class HTMXPartialResponseTest(TestCase):
         """Client detail HTMX request should return tab partial."""
         self.client.force_login(self.staff_user)
         response = self.client.get(
-            f"/clients/{self.client_file.pk}/",
+            f"/participants/{self.client_file.pk}/",
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(response.status_code, 200)
@@ -201,7 +201,7 @@ class HTMXPartialResponseTest(TestCase):
         """Client search HTMX request should return search results partial."""
         self.client.force_login(self.staff_user)
         response = self.client.get(
-            "/clients/search/?q=Test",
+            "/participants/search/?q=Test",
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(response.status_code, 200)
@@ -269,7 +269,7 @@ class CustomFieldEditHTMXTest(TestCase):
 
         self.client.force_login(self.receptionist)
         response = self.client.get(
-            f"/clients/{self.client_file.pk}/custom-fields/edit/",
+            f"/participants/{self.client_file.pk}/custom-fields/edit/",
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(response.status_code, 403)
@@ -278,7 +278,7 @@ class CustomFieldEditHTMXTest(TestCase):
         """Staff can always enter edit mode for custom fields."""
         self.client.force_login(self.staff_user)
         response = self.client.get(
-            f"/clients/{self.client_file.pk}/custom-fields/edit/",
+            f"/participants/{self.client_file.pk}/custom-fields/edit/",
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(response.status_code, 200)
@@ -287,7 +287,7 @@ class CustomFieldEditHTMXTest(TestCase):
         """Saving custom fields via HTMX should return the display partial."""
         self.client.force_login(self.staff_user)
         response = self.client.post(
-            f"/clients/{self.client_file.pk}/custom-fields/",
+            f"/participants/{self.client_file.pk}/custom-fields/",
             {f"custom_{self.editable_field.pk}": "6135551234"},
             HTTP_HX_REQUEST="true",
         )

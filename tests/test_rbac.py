@@ -105,14 +105,14 @@ class ClientAccessTest(TestCase):
         enc_module._fernet = None
 
     def test_staff_with_matching_program_can_access_client(self):
-        request = self.factory.get(f"/clients/{self.client.pk}/")
+        request = self.factory.get(f"/participants/{self.client.pk}/")
         request.user = self.staff_a
         request.session = {}
         response = self.middleware(request)
         self.assertEqual(response.status_code, 200)
 
     def test_staff_without_matching_program_blocked(self):
-        request = self.factory.get(f"/clients/{self.client.pk}/")
+        request = self.factory.get(f"/participants/{self.client.pk}/")
         request.user = self.staff_b
         request.session = {}
         response = self.middleware(request)
@@ -120,7 +120,7 @@ class ClientAccessTest(TestCase):
 
     def test_admin_without_program_role_blocked_from_client(self):
         """Admins without program roles cannot access client data."""
-        request = self.factory.get(f"/clients/{self.client.pk}/")
+        request = self.factory.get(f"/participants/{self.client.pk}/")
         request.user = self.admin_user
         request.session = {}
         response = self.middleware(request)
@@ -131,7 +131,7 @@ class ClientAccessTest(TestCase):
         UserProgramRole.objects.create(
             user=self.admin_user, program=self.program_a, role="program_manager"
         )
-        request = self.factory.get(f"/clients/{self.client.pk}/")
+        request = self.factory.get(f"/participants/{self.client.pk}/")
         request.user = self.admin_user
         request.session = {}
         response = self.middleware(request)
@@ -212,7 +212,7 @@ class ReceptionistFieldAccessTest(TestCase):
     def test_receptionist_sees_view_and_edit_fields(self):
         """Front desk staff see fields with access='view' or 'edit', not 'none'."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/")
+        response = self.client.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 200)
 
         # Should see phone (edit access)
@@ -226,7 +226,7 @@ class ReceptionistFieldAccessTest(TestCase):
     def test_staff_sees_all_fields(self):
         """Staff should see all custom fields regardless of front_desk_access."""
         self.client.force_login(self.staff_user)
-        response = self.client.get(f"/clients/{self.client_file.pk}/")
+        response = self.client.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 200)
 
         # Should see all fields
@@ -238,32 +238,32 @@ class ReceptionistFieldAccessTest(TestCase):
     def test_receptionist_cannot_edit_client_basic_info(self):
         """Front desk staff should not see the Edit button for basic client info."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/")
+        response = self.client.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 200)
 
         # Should NOT have edit link for basic info
-        self.assertNotContains(response, f"/clients/{self.client_file.pk}/edit/")
+        self.assertNotContains(response, f"/participants/{self.client_file.pk}/edit/")
 
     def test_staff_can_see_edit_button(self):
         """Staff should see the Edit button."""
         self.client.force_login(self.staff_user)
-        response = self.client.get(f"/clients/{self.client_file.pk}/")
+        response = self.client.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 200)
 
         # Should have edit link
-        self.assertContains(response, f"/clients/{self.client_file.pk}/edit/")
+        self.assertContains(response, f"/participants/{self.client_file.pk}/edit/")
 
     def test_receptionist_blocked_from_edit_endpoint(self):
         """Front desk staff should get 403 when accessing edit endpoint directly."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/edit/")
+        response = self.client.get(f"/participants/{self.client_file.pk}/edit/")
         self.assertEqual(response.status_code, 403)
 
     def test_receptionist_can_save_editable_fields(self):
         """Front desk staff can save fields with front_desk_access='edit'."""
         self.client.force_login(self.receptionist)
         response = self.client.post(
-            f"/clients/{self.client_file.pk}/custom-fields/",
+            f"/participants/{self.client_file.pk}/custom-fields/",
             {f"custom_{self.phone_field.pk}": "6135559999"},
         )
         # Should redirect (success), not 403
@@ -279,7 +279,7 @@ class ReceptionistFieldAccessTest(TestCase):
         self.client.force_login(self.receptionist)
         # Try to save the address field (view-only for front desk)
         response = self.client.post(
-            f"/clients/{self.client_file.pk}/custom-fields/",
+            f"/participants/{self.client_file.pk}/custom-fields/",
             {f"custom_{self.address_field.pk}": "456 New St"},
         )
         # Should redirect but NOT save (field not in editable list)
@@ -295,7 +295,7 @@ class ReceptionistFieldAccessTest(TestCase):
         self.client.force_login(self.receptionist)
         # Try to save the case notes field (hidden from front desk)
         response = self.client.post(
-            f"/clients/{self.client_file.pk}/custom-fields/",
+            f"/participants/{self.client_file.pk}/custom-fields/",
             {f"custom_{self.notes_field.pk}": "Trying to inject data"},
         )
         # Should redirect but NOT save (field not in editable list)
@@ -309,7 +309,7 @@ class ReceptionistFieldAccessTest(TestCase):
     def test_receptionist_can_create_client(self):
         """Receptionist has client.create: ALLOW per permissions matrix — front desk does intake."""
         self.client.force_login(self.receptionist)
-        response = self.client.get("/clients/create/")
+        response = self.client.get("/participants/create/")
         self.assertEqual(response.status_code, 200)
 
 
@@ -535,7 +535,7 @@ class SensitiveFieldReceptionistAccessTest(TestCase):
     def test_receptionist_sees_sensitive_field_with_edit_access(self):
         """Front desk staff can see sensitive fields if front_desk_access='edit'."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/")
+        response = self.client.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 200)
 
         # Should see the emergency contact (decrypted)
@@ -545,7 +545,7 @@ class SensitiveFieldReceptionistAccessTest(TestCase):
     def test_receptionist_cannot_see_sensitive_field_with_none_access(self):
         """Front desk staff cannot see sensitive fields if front_desk_access='none'."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/clients/{self.client_file.pk}/")
+        response = self.client.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 200)
 
         # Should NOT see the clinical assessment
@@ -555,7 +555,7 @@ class SensitiveFieldReceptionistAccessTest(TestCase):
     def test_staff_sees_all_sensitive_fields(self):
         """Staff can see all sensitive fields regardless of front_desk_access."""
         self.client.force_login(self.staff_user)
-        response = self.client.get(f"/clients/{self.client_file.pk}/")
+        response = self.client.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 200)
 
         # Should see both fields
@@ -566,7 +566,7 @@ class SensitiveFieldReceptionistAccessTest(TestCase):
         """Front desk staff can edit sensitive fields if front_desk_access='edit'."""
         self.client.force_login(self.receptionist)
         response = self.client.post(
-            f"/clients/{self.client_file.pk}/custom-fields/",
+            f"/participants/{self.client_file.pk}/custom-fields/",
             {f"custom_{self.emergency_field.pk}": "Dad: 555-9999"},
         )
         self.assertEqual(response.status_code, 302)
@@ -583,7 +583,7 @@ class SensitiveFieldReceptionistAccessTest(TestCase):
         """Front desk staff cannot edit sensitive fields if front_desk_access='none'."""
         self.client.force_login(self.receptionist)
         response = self.client.post(
-            f"/clients/{self.client_file.pk}/custom-fields/",
+            f"/participants/{self.client_file.pk}/custom-fields/",
             {f"custom_{self.assessment_field.pk}": "Trying to modify clinical data"},
         )
         self.assertEqual(response.status_code, 302)

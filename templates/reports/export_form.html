@@ -62,7 +62,7 @@
     {% csrf_token %}
 
     {% if form.non_field_errors %}
-    <article style="background: var(--kn-danger-bg);" aria-label="{% trans 'Form errors' %}" role="alert">
+    <article aria-label="{% trans 'Form errors' %}" role="alert" style="background: var(--kn-danger-bg); color: var(--kn-danger-fg);">
         {% for error in form.non_field_errors %}
         <p>{{ error }}</p>
         {% endfor %}
@@ -178,13 +178,11 @@
     </p>
     {% endif %}
 
-    {# Grouping (used when no reporting template is selected) #}
-    <label for="{{ form.group_by.id_for_label }}">
+    {# Grouping (disabled when a reporting template is selected) #}
+    <label for="{{ form.group_by.id_for_label }}" id="grouping-container">
         {{ form.group_by.label }}
         {{ form.group_by }}
-        {% if form.group_by.help_text %}
-        <small>{{ form.group_by.help_text }}</small>
-        {% endif %}
+        <small id="grouping-note">{{ form.group_by.help_text }}</small>
         {% if form.group_by.errors %}
         <small class="error" role="alert">{{ form.group_by.errors.0 }}</small>
         {% endif %}
@@ -335,6 +333,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
         templateSelect.addEventListener('change', showSelectedPreview);
         showSelectedPreview();
+    }
+
+    // Disable grouping when a reporting template is selected
+    var groupBySelect = document.getElementById('id_group_by');
+    if (templateSelect && groupBySelect) {
+        var groupingContainer = document.getElementById('grouping-container');
+        var groupingNote = document.getElementById('grouping-note');
+        var defaultHelpText = groupingNote ? groupingNote.textContent : '';
+
+        // Link the help text to the select for screen readers
+        groupBySelect.setAttribute('aria-describedby', 'grouping-note');
+
+        function toggleGrouping() {
+            var templateSelected = templateSelect.value !== '';
+            groupBySelect.disabled = templateSelected;
+            if (groupingContainer) {
+                groupingContainer.style.opacity = templateSelected ? '0.5' : '1';
+            }
+            if (groupingNote) {
+                groupingNote.textContent = templateSelected
+                    ? '{% filter escapejs %}{% trans "Grouping is handled by the selected reporting template." %}{% endfilter %}'
+                    : defaultHelpText;
+            }
+        }
+
+        templateSelect.addEventListener('change', toggleGrouping);
+        toggleGrouping(); // Handle pre-filled forms on page load
     }
 });
 </script>

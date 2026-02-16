@@ -218,7 +218,7 @@ class RBACBypassTest(TestCase):
         self.http_client.login(username="user_a", password="testpass123")
 
         # User A tries to access Client B's detail page
-        response = self.http_client.get(f"/clients/{self.client_b.pk}/")
+        response = self.http_client.get(f"/participants/{self.client_b.pk}/")
 
         # Should be forbidden
         self.assertEqual(response.status_code, 403)
@@ -229,7 +229,7 @@ class RBACBypassTest(TestCase):
 
         # Try HTMX request to client in other program
         response = self.http_client.get(
-            f"/clients/{self.client_b.pk}/",
+            f"/participants/{self.client_b.pk}/",
             HTTP_HX_REQUEST="true",
         )
 
@@ -239,7 +239,7 @@ class RBACBypassTest(TestCase):
         """User CAN access clients in their program."""
         self.http_client.login(username="user_a", password="testpass123")
 
-        response = self.http_client.get(f"/clients/{self.client_a.pk}/")
+        response = self.http_client.get(f"/participants/{self.client_a.pk}/")
 
         # Should succeed
         self.assertEqual(response.status_code, 200)
@@ -249,7 +249,7 @@ class RBACBypassTest(TestCase):
         self.http_client.login(username="admin_only", password="testpass123")
 
         # Admin tries to access any client
-        response = self.http_client.get(f"/clients/{self.client_a.pk}/")
+        response = self.http_client.get(f"/participants/{self.client_a.pk}/")
 
         # Should be forbidden (admin role doesn't grant client access)
         self.assertEqual(response.status_code, 403)
@@ -298,7 +298,7 @@ class AuditCoverageTest(TestCase):
         initial_count = AuditLog.objects.using("audit").filter(action="view").count()
 
         self.http_client.login(username="auditor", password="testpass123")
-        self.http_client.get(f"/clients/{self.test_client.pk}/")
+        self.http_client.get(f"/participants/{self.test_client.pk}/")
 
         new_count = AuditLog.objects.using("audit").filter(action="view").count()
 

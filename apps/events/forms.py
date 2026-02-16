@@ -180,6 +180,20 @@ class AlertReviewRecommendationForm(forms.Form):
         return cleaned_data
 
 
+DEFAULT_LOCATION_OPTIONS = ["In person", "Phone", "Video call"]
+
+
+def _build_location_choices(location_options):
+    """Build (value, label) choices from a list of location option strings."""
+    choices = [("", _("Select a location…"))]
+    for opt in location_options:
+        opt = opt.strip()
+        if opt:
+            choices.append((opt, opt))
+    choices.append(("__other__", _("Other")))
+    return choices
+
+
 class MeetingQuickCreateForm(forms.Form):
     """Quick-create form — 3 fields, under 60 seconds to fill in."""
 
@@ -190,18 +204,36 @@ class MeetingQuickCreateForm(forms.Form):
             "aria-describedby": "meeting-start-required meeting-start-help",
         }),
     )
-    location = forms.CharField(
-        max_length=255, required=False,
+    location = forms.ChoiceField(
+        required=False,
         label=_("Location"),
+    )
+    location_custom = forms.CharField(
+        max_length=255, required=False,
+        label=_("Custom Location"),
         widget=forms.TextInput(attrs={
-            "placeholder": _("Choose from list or type location"),
-            "list": "meeting-location-options",
+            "placeholder": _("Type your location"),
         }),
     )
     send_reminder = forms.BooleanField(
         required=False, initial=True,
         label=_("Send reminder to client"),
     )
+
+    def __init__(self, *args, location_choices=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        options = location_choices or DEFAULT_LOCATION_OPTIONS
+        self.fields["location"].choices = _build_location_choices(options)
+
+    def clean(self):
+        cleaned_data = super().clean()
+        location = cleaned_data.get("location", "")
+        if location == "__other__":
+            custom = cleaned_data.get("location_custom", "").strip()
+            if not custom:
+                self.add_error("location_custom", _("Please type a location."))
+            cleaned_data["location"] = custom
+        return cleaned_data
 
 
 class MeetingEditForm(forms.Form):
@@ -214,12 +246,15 @@ class MeetingEditForm(forms.Form):
             "aria-describedby": "meeting-start-required meeting-start-help",
         }),
     )
-    location = forms.CharField(
-        max_length=255, required=False,
+    location = forms.ChoiceField(
+        required=False,
         label=_("Location"),
+    )
+    location_custom = forms.CharField(
+        max_length=255, required=False,
+        label=_("Custom Location"),
         widget=forms.TextInput(attrs={
-            "placeholder": _("Choose from list or type location"),
-            "list": "meeting-location-options",
+            "placeholder": _("Type your location"),
         }),
     )
     duration_minutes = forms.IntegerField(
@@ -235,3 +270,25 @@ class MeetingEditForm(forms.Form):
         ],
         label=_("Status"),
     )
+
+    def __init__(self, *args, location_choices=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        options = location_choices or DEFAULT_LOCATION_OPTIONS
+        self.fields["location"].choices = _build_location_choices(options)
+        # If editing and current location isn't in the choices, pre-select "Other"
+        if self.initial.get("location"):
+            current = self.initial["location"]
+            known_values = [v for v, _ in self.fields["location"].choices if v not in ("", "__other__")]
+            if current not in known_values:
+                self.initial["location_custom"] = current
+                self.initial["location"] = "__other__"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        location = cleaned_data.get("location", "")
+        if location == "__other__":
+            custom = cleaned_data.get("location_custom", "").strip()
+            if not custom:
+                self.add_error("location_custom", _("Please type a location."))
+            cleaned_data["location"] = custom
+        return cleaned_data

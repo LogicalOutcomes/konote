@@ -27,7 +27,7 @@
 
 <form method="post">
     {% csrf_token %}
-    <button type="submit" style="--pico-background-color: var(--kn-danger-fg); --pico-border-color: var(--kn-danger-fg);">{% trans "Yes, Delete Template" %}</button>
+    <button type="submit" style="background-color: var(--kn-danger-fg); border-color: var(--kn-danger-fg); color: #fff;">{% trans "Yes, Delete Template" %}</button>
     <a href="{% url 'admin_settings:report_template_detail' profile.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
 </form>
 {% endblock %}

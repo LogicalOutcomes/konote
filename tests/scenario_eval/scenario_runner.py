@@ -689,7 +689,7 @@ class ScenarioRunner(BrowserTestBase):
                         or persona_data.get("role", "")).lower()
         if persona_role == "executive":
             # Executives see aggregate stats, not individual client rows
-            self.page.goto(self.live_url("/clients/executive/"))
+            self.page.goto(self.live_url("/participants/executive/"))
             self._wait_for_idle()
             has_data = self.page.evaluate("""() => {
                 const cards = document.querySelectorAll(
@@ -700,7 +700,7 @@ class ScenarioRunner(BrowserTestBase):
             if not has_data:
                 return (False, "Executive dashboard has no stat cards")
         else:
-            self.page.goto(self.live_url("/clients/"))
+            self.page.goto(self.live_url("/participants/"))
             self._wait_for_idle()
             has_data = self.page.evaluate("""() => {
                 const rows = document.querySelectorAll(
@@ -997,7 +997,7 @@ class ScenarioRunner(BrowserTestBase):
         # Each moment maps to a page we can actually navigate to
         key_pages = [
             ("/", "dashboard"),
-            ("/clients/", "client_list"),
+            ("/participants/", "client_list"),
         ]
 
         # Capture the dashboard and client list
@@ -1248,7 +1248,7 @@ class ScenarioRunner(BrowserTestBase):
     # the runner extracts IDs from the current URL and stores them
     # so later steps can use {client_id}, {group_id}, etc.
     _URL_VAR_PATTERNS = [
-        (re.compile(r"/clients/(\d+)"), "client_id"),
+        (re.compile(r"/participants/(\d+)"), "client_id"),
         (re.compile(r"/groups/(\d+)"), "group_id"),
         (re.compile(r"/programs/(\d+)"), "program_id"),
         (re.compile(r"/notes/(\d+)"), "note_id"),
@@ -1361,7 +1361,7 @@ class ScenarioRunner(BrowserTestBase):
         """Execute a list of Playwright actions from a scenario step.
 
         Actions are simple dicts like:
-            - goto: "/clients/"
+            - goto: "/participants/"
             - fill: ["#selector", "value"]
             - click: "button[type='submit']"
             - press: "Tab"

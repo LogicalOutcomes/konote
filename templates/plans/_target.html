@@ -28,18 +28,18 @@
 </td>
 {% if can_edit %}
 <td>
-    <div role="group">
-        <a href="{% url 'plans:target_edit' target_id=target.pk %}" class="outline small" role="button" aria-label="{% blocktrans with name=target.name %}Edit {{ name }}{% endblocktrans %}">{% trans "Edit" %}</a>
-        <button class="outline small secondary"
+    <div class="actions-dropdown">
+        <button class="outline small actions-dropdown-toggle" aria-expanded="false" aria-haspopup="true" aria-label="{% blocktrans with name=target.name %}Actions for {{ name }}{% endblocktrans %}">{% trans "Actions" %} &#9662;</button>
+        <ul class="actions-dropdown-menu" role="menu" hidden>
+            <li role="none"><a role="menuitem" href="{% url 'plans:target_edit' target_id=target.pk %}">{% trans "Edit" %}<small>{% blocktrans with target=term.target|default:"goal" %}Edit this {{ target }}{% endblocktrans %}</small></a></li>
+            <li role="none"><a role="menuitem" href="#"
                 hx-get="{% url 'plans:target_status' target_id=target.pk %}"
                 hx-target="#target-{{ target.pk }}"
-                hx-swap="innerHTML"
-                hx-confirm="{% trans 'Change the status of this target?' %}"
-                aria-label="{% blocktrans with name=target.name %}Change status of {{ name }}{% endblocktrans %}">
-            {% trans "Status" %}
-        </button>
-        <a href="{% url 'plans:target_metrics' target_id=target.pk %}" class="outline small secondary" role="button" aria-label="{% blocktrans with name=target.name %}Manage metrics for {{ name }}{% endblocktrans %}">{{ term.metric_plural|default:"Metrics" }}</a>
-        <a href="{% url 'plans:target_history' target_id=target.pk %}" class="outline small secondary" role="button" aria-label="{% blocktrans with name=target.name %}View history of {{ name }}{% endblocktrans %}">{% trans "History" %}</a>
+                hx-swap="innerHTML">{% if target.status == "default" %}{% trans "Mark Complete" %}{% elif target.status == "completed" %}{% trans "Reactivate" %}{% else %}{% trans "Reactivate" %}{% endif %}<small>{% if target.status == "default" %}{% trans "Change status to completed or deactivated" %}{% else %}{% trans "Set back to active" %}{% endif %}</small></a></li>
+            <li class="dropdown-divider" role="separator"></li>
+            <li role="none"><a role="menuitem" href="{% url 'plans:target_metrics' target_id=target.pk %}">{{ term.metric_plural|default:"Metrics" }}<small>{% trans "Choose how to measure progress" %}</small></a></li>
+            <li role="none"><a role="menuitem" href="{% url 'plans:target_history' target_id=target.pk %}">{% trans "History" %}<small>{% trans "View past changes" %}</small></a></li>
+        </ul>
     </div>
 </td>
 {% endif %}

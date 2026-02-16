@@ -4,6 +4,20 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-02-16 housekeeping)
+
+- [x] Enriched demo seed data — emails, portal content, meetings, registration submissions for all 15 clients — 2026-02-15 (DEMO-ENRICH1)
+- [x] Permissions Phase 2: `client.transfer` — separate permission + dedicated transfer page with audit logging; `plan.template_edit` already done via PM-ADMIN — 2026-02-15 (PERM-P1, PERM-P2)
+- [x] Automated reminder cron — management command sends reminders for meetings in next 36h, retries failures — 2026-02-15 (MSG-AUTO1)
+- [x] System health banners on staff meeting dashboard for SMS/email failures — 2026-02-15 (MSG-HEALTH1)
+- [x] PM Admin Access complete — all 8 tasks: scoped permissions for templates, event types, metrics, registration, team members + PM nav menu — 2026-02-15 (PM-ADMIN1–8)
+- [x] Communication Modules 7/10 complete — meetings, iCal, comm log, consent fields, outbound email, outbound SMS, feature toggles — 2026-02-15 (MSG-MTG1, MSG-CAL1, MSG-LOG1, MSG-CONSENT1, MSG-EMAIL-OUT1, MSG-SMS1, MSG-TOGGLE1)
+- [x] Fixed 14 pre-existing test failures and added audit DB declarations to 41 test classes — 2026-02-15 (TEST-FIX1, TEST-FIX2)
+- [x] Session review: fixed 5 broken tests, added 3 PM permission tests, updated stale comments — 2026-02-15 (REV-FIX1)
+- [x] UX polish: accessible meeting date picker, Approvals rename, Front Desk dashboard, contact fields, help docs — 2026-02-15 (UX-MEET2, UX-REVIEW3, UX-DASH1, DATA-FIX1, HELP-DOC1)
+
+---
+
 ## Completed 2026-02-15 (task audit cleanup)
 
 ### PM Admin Access (PM-ADMIN1–8) — all complete

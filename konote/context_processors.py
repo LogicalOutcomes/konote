@@ -25,7 +25,7 @@ def nav_active(request):
         section = "admin"
     elif path.startswith("/communications/my-messages"):
         section = "messages"
-    elif path.startswith(("/clients/", "/plans/", "/notes/", "/events/")):
+    elif path.startswith(("/participants/", "/plans/", "/notes/", "/events/")):
         section = "clients"
     elif path == "/":
         section = "clients"

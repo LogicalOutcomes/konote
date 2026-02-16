@@ -73,7 +73,7 @@
     </fieldset>
 
     {% if form.errors %}
-    <article aria-label="{% trans 'Errors' %}" role="alert" style="border-left: 4px solid var(--kn-danger-fg); padding: 1rem; margin-bottom: 1.5rem;">
+    <article aria-label="{% trans 'Errors' %}" role="alert" style="background: var(--kn-danger-bg); border-left: 4px solid var(--kn-danger-fg); padding: 1rem; margin-bottom: 1.5rem;">
         <strong>{% trans "Please correct the following:" %}</strong>
         <ul>
             {% for field, errors in form.errors.items %}

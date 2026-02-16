@@ -523,17 +523,17 @@ class ErasureViewPermissionTests(TestCase):
     def test_staff_cannot_access_request_form(self):
         """Staff role can no longer create erasure requests (PM+ required)."""
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.get(f"/clients/{self.cf.pk}/erase/")
+        resp = self.client.get(f"/participants/{self.cf.pk}/erase/")
         self.assertEqual(resp.status_code, 403)
 
     def test_pm_can_access_request_form(self):
         self.client.login(username="pm", password="testpass123")
-        resp = self.client.get(f"/clients/{self.cf.pk}/erase/")
+        resp = self.client.get(f"/participants/{self.cf.pk}/erase/")
         self.assertEqual(resp.status_code, 200)
 
     def test_receptionist_cannot_access_request_form(self):
         self.client.login(username="recep", password="testpass123")
-        resp = self.client.get(f"/clients/{self.cf.pk}/erase/")
+        resp = self.client.get(f"/participants/{self.cf.pk}/erase/")
         self.assertEqual(resp.status_code, 403)
 
     def test_pm_can_access_pending_list(self):
@@ -585,7 +585,7 @@ class ErasureViewWorkflowTests(TestCase):
     def test_create_request_via_post(self):
         """PM can create an erasure request with tier and acknowledgements."""
         self.client.login(username="pm", password="testpass123")
-        resp = self.client.post(f"/clients/{self.cf.pk}/erase/", {
+        resp = self.client.post(f"/participants/{self.cf.pk}/erase/", {
             "erasure_tier": "anonymise",
             "reason_category": "client_requested",
             "request_reason": "Client asked for data removal.",
@@ -608,7 +608,7 @@ class ErasureViewWorkflowTests(TestCase):
         self.cf.save()
 
         self.client.login(username="pm", password="testpass123")
-        resp = self.client.post(f"/clients/{self.cf.pk}/erase/", {
+        resp = self.client.post(f"/participants/{self.cf.pk}/erase/", {
             "erasure_tier": "full_erasure",
             "reason_category": "retention_expired",
             "request_reason": "Trying to bypass retention.",
@@ -632,7 +632,7 @@ class ErasureViewWorkflowTests(TestCase):
             programs_required=[self.prog.pk],
         )
         self.client.login(username="pm", password="testpass123")
-        resp = self.client.post(f"/clients/{self.cf.pk}/erase/", {
+        resp = self.client.post(f"/participants/{self.cf.pk}/erase/", {
             "erasure_tier": "anonymise",
             "reason_category": "client_requested",
             "request_reason": "Another attempt.",
@@ -657,7 +657,7 @@ class ErasureViewWorkflowTests(TestCase):
         UserProgramRole.objects.create(user=pm2, program=self.prog, role="program_manager")
 
         self.client.login(username="pm", password="testpass123")
-        self.client.post(f"/clients/{self.cf.pk}/erase/", {
+        self.client.post(f"/participants/{self.cf.pk}/erase/", {
             "erasure_tier": "full_erasure",
             "reason_category": "client_requested",
             "request_reason": "Client asked.",
@@ -685,7 +685,7 @@ class ErasureViewWorkflowTests(TestCase):
         UserProgramRole.objects.create(user=pm2, program=self.prog, role="program_manager")
 
         self.client.login(username="pm", password="testpass123")
-        self.client.post(f"/clients/{self.cf.pk}/erase/", {
+        self.client.post(f"/participants/{self.cf.pk}/erase/", {
             "erasure_tier": "anonymise",
             "reason_category": "client_requested",
             "request_reason": "Client asked.",
@@ -976,13 +976,13 @@ class DemoDataSeparationTests(TestCase):
 
     def test_demo_user_cannot_erase_real_client(self):
         self.client.login(username="demo_staff", password="testpass123")
-        resp = self.client.get(f"/clients/{self.real_client.pk}/erase/")
+        resp = self.client.get(f"/participants/{self.real_client.pk}/erase/")
         # 403 (middleware blocks — no program overlap) or 404 (queryset filters)
         self.assertIn(resp.status_code, [403, 404])
 
     def test_real_user_cannot_erase_demo_client(self):
         self.client.login(username="real_staff", password="testpass123")
-        resp = self.client.get(f"/clients/{self.demo_client.pk}/erase/")
+        resp = self.client.get(f"/participants/{self.demo_client.pk}/erase/")
         self.assertIn(resp.status_code, [403, 404])
 
 
@@ -1482,7 +1482,7 @@ class EmailNotificationWarningTests(TestCase):
             role="program_manager", status="active",
         )
         resp = self.client.post(
-            f"/clients/{self.cf.pk}/erase/",
+            f"/participants/{self.cf.pk}/erase/",
             {
                 "erasure_tier": "anonymise",
                 "reason_category": "client_requested",

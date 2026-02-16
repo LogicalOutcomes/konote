@@ -67,7 +67,7 @@
 
 <h2>{% trans "Diagnosis" %}</h2>
 {% if diagnosis %}
-<article style="background: {% if diagnosis_type == 'error' %}var(--kn-danger-bg){% elif diagnosis_type == 'warning' %}var(--kn-warning-bg){% else %}var(--kn-success-bg){% endif %}; color: {% if diagnosis_type == 'error' %}var(--kn-danger-fg){% elif diagnosis_type == 'warning' %}var(--kn-warning-fg){% else %}var(--kn-success-fg){% endif %};">
+<article style="{% if diagnosis_type == 'error' %}background: var(--kn-danger-bg); color: var(--kn-danger-fg);{% elif diagnosis_type == 'warning' %}background: var(--kn-warning-bg, #fff3cd); color: var(--kn-warning-fg, #856404);{% else %}background: var(--kn-success-bg, #d1e7dd); color: var(--kn-success-fg, #0f5132);{% endif %}">
     <p><strong>{{ diagnosis }}</strong></p>
 </article>
 {% endif %}

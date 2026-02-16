@@ -886,7 +886,7 @@ class IframeEmbedSecurityTest(TestCase):
         # Embed template should have .embed-container class
         self.assertContains(response, "embed-container")
         # Should NOT have the main site navigation
-        self.assertNotContains(response, 'href="/clients/"')
+        self.assertNotContains(response, 'href="/participants/"')
 
     def test_submitted_page_respects_embed_mode(self):
         """Submitted confirmation page should respect embed mode."""
