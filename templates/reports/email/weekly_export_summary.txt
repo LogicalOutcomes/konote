@@ -1,0 +1,19 @@
+{% load i18n %}{% blocktrans with name=product_name %}{{ name }} — Export Activity Summary{% endblocktrans %}
+
+{% blocktrans with start=period_start end=period_end %}Period: {{ start }} to {{ end }}{% endblocktrans %}
+
+{% if total_count %}{% blocktrans count counter=total_count %}{{ counter }} export was created during this period.{% plural %}{{ counter }} exports were created during this period.{% endblocktrans %}
+
+{% trans "Breakdown by type:" %}
+{% for item in by_type %}  - {{ item.label }}: {{ item.count }}
+{% endfor %}
+{% trans "Elevated exports:" %} {{ elevated_count }}
+{% trans "Downloaded:" %} {{ downloaded_count }}
+{% trans "Pending download:" %} {{ pending_count }}
+{% trans "Revoked:" %} {{ revoked_count }}
+{% if top_exporters %}
+{% trans "Top exporters:" %}
+{% for exp in top_exporters %}  - {{ exp.created_by__display_name }}: {{ exp.count }}
+{% endfor %}{% endif %}{% else %}{% trans "No exports were created during this period. System is operating normally." %}
+{% endif %}
+{% blocktrans with name=product_name %}This is an automated weekly summary from {{ name }}.{% endblocktrans %}

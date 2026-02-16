@@ -1,0 +1,85 @@
+{% load i18n %}<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"></head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.5; color: #333; max-width: 600px; margin: 0 auto; padding: 1rem;">
+
+<h2 style="color: #1e40af; border-bottom: 2px solid #3b82f6; padding-bottom: 0.5rem;">
+    {% trans "Export Activity Summary" %}
+</h2>
+
+<p style="color: #6b7280;">
+    {% blocktrans with start=period_start end=period_end %}Period: {{ start }} to {{ end }}{% endblocktrans %}
+</p>
+
+{% if total_count %}
+<p>{% blocktrans count counter=total_count %}<strong>{{ counter }}</strong> export was created during this period.{% plural %}<strong>{{ counter }}</strong> exports were created during this period.{% endblocktrans %}</p>
+
+<table style="width: 100%; border-collapse: collapse; margin: 1rem 0;">
+    <thead>
+        <tr style="background: #f9fafb;">
+            <th scope="col" style="text-align: left; padding: 0.5rem; border-bottom: 2px solid #e5e7eb;">{% trans "Export Type" %}</th>
+            <th scope="col" style="text-align: right; padding: 0.5rem; border-bottom: 2px solid #e5e7eb;">{% trans "Count" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in by_type %}
+        <tr>
+            <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">{{ item.label }}</td>
+            <td style="text-align: right; padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">{{ item.count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table style="width: 100%; border-collapse: collapse; margin: 1rem 0;">
+    <tr>
+        <td style="padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: bold;">{% trans "Elevated exports" %}</td>
+        <td style="padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; text-align: right;">{{ elevated_count }}</td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: bold;">{% trans "Downloaded" %}</td>
+        <td style="padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; text-align: right;">{{ downloaded_count }}</td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: bold;">{% trans "Pending download" %}</td>
+        <td style="padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; text-align: right;">{{ pending_count }}</td>
+    </tr>
+    <tr>
+        <td style="padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; background: #f9fafb; font-weight: bold;">{% trans "Revoked" %}</td>
+        <td style="padding: 0.5rem 0.75rem; border: 1px solid #e5e7eb; text-align: right;">{{ revoked_count }}</td>
+    </tr>
+</table>
+
+{% if top_exporters %}
+<h3 style="margin-top: 1.5rem;">{% trans "Top Exporters" %}</h3>
+<table style="width: 100%; border-collapse: collapse; margin: 1rem 0;">
+    <thead>
+        <tr style="background: #f9fafb;">
+            <th scope="col" style="text-align: left; padding: 0.5rem; border-bottom: 2px solid #e5e7eb;">{% trans "Staff Member" %}</th>
+            <th scope="col" style="text-align: right; padding: 0.5rem; border-bottom: 2px solid #e5e7eb;">{% trans "Exports" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for exp in top_exporters %}
+        <tr>
+            <td style="padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">{{ exp.created_by__display_name }}</td>
+            <td style="text-align: right; padding: 0.5rem; border-bottom: 1px solid #e5e7eb;">{{ exp.count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% else %}
+<div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px 20px; margin: 1rem 0;">
+    <p style="margin: 0;">{% trans "No exports were created during this period. System is operating normally." %}</p>
+</div>
+{% endif %}
+
+<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 1.5rem 0;">
+<p style="font-size: 0.85rem; color: #6b7280;">
+    {% blocktrans with name=product_name %}This is an automated weekly summary from {{ name }}.{% endblocktrans %}
+</p>
+
+</body>
+</html>

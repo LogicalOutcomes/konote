@@ -12054,7 +12054,8 @@ msgid "French metric name (optional)"
 msgstr "Nom de l'indicateur en français (facultatif)"
 
 msgid "French name (optional — shown when language is French)"
-msgstr "Nom en français (facultatif — affiché lorsque la langue est le français)"
+msgstr ""
+"Nom en français (facultatif — affiché lorsque la langue est le français)"
 
 msgid "French portal description (optional)"
 msgstr "Description du portail en français (facultatif)"
@@ -12067,7 +12068,60 @@ msgid ""
 " unit. Optional French columns: name_fr, definition_fr, unit_fr"
 msgstr ""
 "Téléversez un CSV avec les colonnes : name, definition, category, min_value,"
-" max_value, unit. Colonnes françaises facultatives : name_fr, definition_fr, unit_fr"
+" max_value, unit. Colonnes françaises facultatives : name_fr, definition_fr,"
+" unit_fr"
 
 msgid "e.g., pointage, jours, %"
 msgstr "p. ex., pointage, jours, %"
+
+msgid "Downloaded"
+msgstr "Téléchargées"
+
+msgid "Elevated exports"
+msgstr "Exportations élevées"
+
+msgid "Export Activity Summary"
+msgstr "Résumé de l'activité d'exportation"
+
+msgid "Export Type"
+msgstr "Type d'exportation"
+
+msgid "Exports"
+msgstr "Exportations"
+
+msgid ""
+"No exports were created during this period. System is operating normally."
+msgstr ""
+"Aucune exportation n'a été créée durant cette période. Le système fonctionne "
+"normalement."
+
+msgid "Pending download"
+msgstr "En attente de téléchargement"
+
+msgid "Staff Member"
+msgstr "Membre du personnel"
+
+msgid "Top Exporters"
+msgstr "Principaux exportateurs"
+
+#: templates/reports/email/weekly_export_summary.txt
+#: templates/reports/email/weekly_export_summary.html
+msgid "%(name)s — Export Activity Summary"
+msgstr "%(name)s — Résumé de l'activité d'exportation"
+
+#: templates/reports/email/weekly_export_summary.txt
+#: templates/reports/email/weekly_export_summary.html
+msgid "Period: %(start)s to %(end)s"
+msgstr "Période : %(start)s au %(end)s"
+
+#: templates/reports/email/weekly_export_summary.txt
+#: templates/reports/email/weekly_export_summary.html
+msgid "%(counter)s export was created during this period."
+msgid_plural "%(counter)s exports were created during this period."
+msgstr[0] "%(counter)s exportation a été créée durant cette période."
+msgstr[1] "%(counter)s exportations ont été créées durant cette période."
+
+#: templates/reports/email/weekly_export_summary.txt
+#: templates/reports/email/weekly_export_summary.html
+msgid "This is an automated weekly summary from %(name)s."
+msgstr "Ceci est un résumé hebdomadaire automatique de %(name)s."
