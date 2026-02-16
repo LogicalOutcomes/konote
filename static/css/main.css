@@ -2287,11 +2287,21 @@ article[aria-label="notification"].fading-out {
         margin-left: 0;
         width: 100%;
         flex-wrap: wrap;
+        position: relative;
     }
     .client-actions a[role="button"],
     .client-actions button {
         flex: 1 1 auto;
         text-align: center;
+        min-width: 0;
+    }
+    /* Keep dropdown menu within the viewport on mobile */
+    .actions-dropdown {
+        position: static;
+    }
+    .actions-dropdown-menu {
+        left: 0;
+        right: 0;
         min-width: 0;
     }
 }
