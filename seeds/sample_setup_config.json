@@ -1,0 +1,281 @@
+{
+  "instance_settings": {
+    "product_name": "Youth Services - KoNote",
+    "support_email": "tech@youthservices.ca",
+    "logo_url": "",
+    "date_format": "YYYY-MM-DD",
+    "time_format": "h:mma",
+    "session_timeout_minutes": "30",
+    "print_header": "Youth Services of Simcoe County",
+    "print_footer": "CONFIDENTIAL — Do not distribute"
+  },
+  "terminology": {
+    "client": "Youth",
+    "client_plural": "Youth",
+    "worker": "Counsellor",
+    "worker_plural": "Counsellors",
+    "plan": "Service Plan",
+    "plan_plural": "Service Plans",
+    "target": "Goal",
+    "target_plural": "Goals",
+    "progress_note": "Session Note",
+    "progress_note_plural": "Session Notes",
+    "enrolment": "Registration",
+    "enrolment_plural": "Registrations"
+  },
+  "features": {
+    "programs": true,
+    "events": true,
+    "quick_notes": true,
+    "alerts": true,
+    "analysis_charts": true,
+    "groups": true,
+    "shift_summaries": false,
+    "client_avatar": false,
+    "ai_assist": false,
+    "participant_portal": false,
+    "messaging_sms": false,
+    "messaging_email": true
+  },
+  "programs": [
+    {
+      "name": "Youth Mental Health",
+      "name_fr": "Sant\u00e9 mentale des jeunes",
+      "description": "Individual and group counselling for youth aged 12-18 experiencing anxiety, depression, or emotional difficulties.",
+      "colour_hex": "#8B5CF6",
+      "service_model": "both"
+    },
+    {
+      "name": "Transitional Housing",
+      "name_fr": "Logement de transition",
+      "description": "Supported housing for youth aged 16-24 transitioning from care or experiencing homelessness.",
+      "colour_hex": "#F59E0B",
+      "service_model": "individual"
+    },
+    {
+      "name": "Employment Readiness",
+      "name_fr": "Pr\u00e9paration \u00e0 l\u2019emploi",
+      "description": "Resume building, interview skills, and job coaching for youth aged 15-24.",
+      "colour_hex": "#10B981",
+      "service_model": "individual"
+    },
+    {
+      "name": "Youth Drop-In",
+      "name_fr": "Centre sans rendez-vous pour les jeunes",
+      "description": "Open drop-in programming including homework help, recreation, and peer mentorship for youth aged 12-18.",
+      "colour_hex": "#3B82F6",
+      "service_model": "group"
+    }
+  ],
+  "plan_templates": [
+    {
+      "name": "Mental Health Support Plan",
+      "name_fr": "Plan de soutien en sant\u00e9 mentale",
+      "description": "Standard plan template for youth mental health counselling.",
+      "sections": [
+        {
+          "name": "Emotional Wellbeing",
+          "name_fr": "Bien-\u00eatre \u00e9motionnel",
+          "targets": [
+            {
+              "name": "Develop healthy coping strategies",
+              "description": "Youth will identify and practise at least 3 healthy coping strategies for managing stress and difficult emotions."
+            },
+            {
+              "name": "Improve self-regulation skills",
+              "description": "Youth will demonstrate improved ability to manage emotional responses in everyday situations."
+            }
+          ]
+        },
+        {
+          "name": "Social Connections",
+          "name_fr": "Liens sociaux",
+          "targets": [
+            {
+              "name": "Build positive peer relationships",
+              "description": "Youth will identify and maintain at least 2 positive peer relationships."
+            },
+            {
+              "name": "Increase community involvement",
+              "description": "Youth will participate in at least one community activity or group per month."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Housing Stability Plan",
+      "name_fr": "Plan de stabilit\u00e9 du logement",
+      "description": "Standard plan template for transitional housing program.",
+      "sections": [
+        {
+          "name": "Housing Stability",
+          "name_fr": "Stabilit\u00e9 du logement",
+          "targets": [
+            {
+              "name": "Maintain stable housing for 3+ months",
+              "description": "Youth will maintain current housing placement with consistent compliance with house rules."
+            },
+            {
+              "name": "Develop independent living skills",
+              "description": "Youth will demonstrate competency in budgeting, cooking, cleaning, and household management."
+            }
+          ]
+        },
+        {
+          "name": "Education and Employment",
+          "name_fr": "\u00c9ducation et emploi",
+          "targets": [
+            {
+              "name": "Enrol in or maintain education or employment",
+              "description": "Youth will be actively enrolled in school, training, or employed at least part-time."
+            }
+          ]
+        },
+        {
+          "name": "Life Skills",
+          "name_fr": "Comp\u00e9tences de vie",
+          "targets": [
+            {
+              "name": "Create and follow a monthly budget",
+              "description": "Youth will develop a realistic monthly budget and track expenses for at least 2 consecutive months."
+            },
+            {
+              "name": "Access community resources independently",
+              "description": "Youth will navigate at least 3 community services (doctor, transit, government) without staff support."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Employment Readiness Plan",
+      "name_fr": "Plan de pr\u00e9paration \u00e0 l\u2019emploi",
+      "description": "Standard plan template for employment readiness program.",
+      "sections": [
+        {
+          "name": "Job Search Skills",
+          "name_fr": "Comp\u00e9tences de recherche d\u2019emploi",
+          "targets": [
+            {
+              "name": "Complete a polished resume and cover letter",
+              "description": "Youth will create an up-to-date resume and tailored cover letter suitable for their target job type."
+            },
+            {
+              "name": "Develop interview confidence",
+              "description": "Youth will participate in at least 3 mock interviews and demonstrate improved performance."
+            }
+          ]
+        },
+        {
+          "name": "Employment Outcomes",
+          "name_fr": "R\u00e9sultats d\u2019emploi",
+          "targets": [
+            {
+              "name": "Secure employment or training placement",
+              "description": "Youth will obtain a job offer, volunteer placement, or enrol in a skills training program."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "custom_field_groups": [
+    {
+      "title": "Demographics",
+      "fields": [
+        {
+          "name": "Gender Identity",
+          "input_type": "select",
+          "options": ["Woman", "Man", "Non-binary", "Two-Spirit", "Prefer not to say", "Other"],
+          "is_required": false,
+          "is_sensitive": true
+        },
+        {
+          "name": "Indigenous Identity",
+          "input_type": "select",
+          "options": ["First Nations", "M\u00e9tis", "Inuit", "Non-Indigenous", "Prefer not to say"],
+          "is_required": false,
+          "is_sensitive": true
+        },
+        {
+          "name": "Primary Language",
+          "input_type": "select",
+          "options": ["English", "French", "Arabic", "Mandarin", "Somali", "Tamil", "Other"],
+          "is_required": false,
+          "is_sensitive": false
+        }
+      ]
+    },
+    {
+      "title": "Referral Information",
+      "fields": [
+        {
+          "name": "Referral Source",
+          "input_type": "select",
+          "options": ["Self-referral", "School", "Children's Aid Society", "Hospital", "Community Agency", "Family", "Other"],
+          "is_required": true,
+          "is_sensitive": false
+        },
+        {
+          "name": "Referral Date",
+          "input_type": "date",
+          "is_required": false,
+          "is_sensitive": false
+        },
+        {
+          "name": "Referring Worker Name",
+          "input_type": "text",
+          "is_required": false,
+          "is_sensitive": false
+        }
+      ]
+    },
+    {
+      "title": "Education",
+      "fields": [
+        {
+          "name": "Current School",
+          "input_type": "text",
+          "is_required": false,
+          "is_sensitive": false
+        },
+        {
+          "name": "Grade Level",
+          "input_type": "select",
+          "options": ["Grade 7", "Grade 8", "Grade 9", "Grade 10", "Grade 11", "Grade 12", "Post-secondary", "Not in school"],
+          "is_required": false,
+          "is_sensitive": false
+        }
+      ]
+    }
+  ],
+  "metrics_enabled": [
+    "PHQ-9 (Depression)",
+    "GAD-7 (Anxiety)",
+    "Wellness Scale",
+    "Coping Skills Rating",
+    "Housing Stability Index",
+    "Housing Readiness",
+    "Job Readiness Score",
+    "School Attendance Rate",
+    "Family Connection Score",
+    "Risk Behaviour Index",
+    "Goal Progress (1-10)",
+    "Life Skills Assessment",
+    "Social Support Network",
+    "How are you feeling today?",
+    "Since we last met, how are things going?",
+    "How connected do you feel to the group?",
+    "Confidence navigating services"
+  ],
+  "metrics_disabled": [
+    "Days Clean",
+    "Cravings Intensity",
+    "Harm Reduction Score",
+    "Monthly Income",
+    "Cooking confidence",
+    "Healthy meals prepared this week",
+    "Comfort with English in daily life"
+  ]
+}

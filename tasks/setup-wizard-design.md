@@ -293,7 +293,7 @@ python manage.py apply_setup setup_config.json --dry-run  # Preview without chan
    - Metric enable/disable flags
 4. Reports summary of what was created
 
-**Not idempotent** — running twice will create duplicates. Clear the database or use Django admin to remove items before re-running.
+**Idempotent** — uses `get_or_create()` throughout, so running twice is safe and will not create duplicates.
 
 ---
 
