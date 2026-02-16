@@ -13,7 +13,6 @@
 - [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — GG (ONBOARD-GATE)
 - [ ] Verify production email configuration for exports, erasure alerts, and password resets — GG (OPS3)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — GG (OPS4)
-- [ ] Build weekly export summary email command — GG (EXP2u)
 - [ ] Document scheduled task setup for export monitoring in the runbook — GG (EXP2w)
 
 ### Phase: Communication Modules — complete!
@@ -66,6 +65,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Weekly export summary email command — `send_export_summary` queries last 7 days of exports and emails digest to admins — 2026-02-15 (EXP2u)
+- [x] Enriched demo seed data — emails, portal content, meetings, registration submissions for all 15 clients — 2026-02-15 (DEMO-ENRICH1)
 - [x] Permissions Phase 2: `client.transfer` — separate permission + dedicated transfer page with audit logging; `plan.template_edit` already done via PM-ADMIN — 2026-02-15 (PERM-P1, PERM-P2)
 - [x] Automated reminder cron — management command sends reminders for meetings in next 36h, retries failures — 2026-02-15 (MSG-AUTO1)
 - [x] System health banners on staff meeting dashboard for SMS/email failures — 2026-02-15 (MSG-HEALTH1)
