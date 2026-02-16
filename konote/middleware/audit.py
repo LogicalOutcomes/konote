@@ -14,8 +14,8 @@ AUDITABLE_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
 # URL patterns for client record views (GET requests to log for compliance)
 # Includes both main app and Django admin paths.
 CLIENT_VIEW_PATTERNS = [
-    re.compile(r"^/clients/(\d+)/?$"),                          # /clients/123/
-    re.compile(r"^/clients/(\d+)/"),                             # /clients/123/anything
+    re.compile(r"^/participants/(\d+)/?$"),                      # /participants/123/
+    re.compile(r"^/participants/(\d+)/"),                         # /participants/123/anything
     re.compile(r"^/django-admin/clients/clientfile/(\d+)/"),     # Django admin client view
 ]
 
@@ -26,7 +26,7 @@ class AuditMiddleware:
 
     Logs:
     - All state-changing requests (POST/PUT/PATCH/DELETE)
-    - Client record views (GET /clients/<id>) for compliance
+    - Client record views (GET /participants/<id>) for compliance
     - Failed access attempts (403) on client records — critical for DV audit trails
 
     Captures: user, action, path, IP address, timestamp, confidential context.

@@ -11,7 +11,7 @@ from apps.auth_app.permissions import DENY, can_access
 # URL patterns that require program-level access checks
 # Maps URL regex to the URL kwarg containing the client ID
 CLIENT_URL_PATTERNS = [
-    (re.compile(r"^/clients/(?P<client_id>\d+)"), "client_id"),
+    (re.compile(r"^/participants/(?P<client_id>\d+)"), "client_id"),
     (re.compile(r"^/notes/client/(?P<client_id>\d+)"), "client_id"),
     (re.compile(r"^/reports/client/(?P<client_id>\d+)"), "client_id"),
     (re.compile(r"^/plans/client/(?P<client_id>\d+)"), "client_id"),
@@ -125,7 +125,7 @@ class ProgramAccessMiddleware:
             if path.startswith("/groups/"):
                 return redirect("clients:executive_dashboard")
             # Also redirect from staff dashboard (root) and client list
-            if path in ("/", "/clients/", "/clients"):
+            if path in ("/", "/participants/", "/participants"):
                 return redirect("clients:executive_dashboard")
 
         # Client-scoped routes — check program overlap (admins are NOT exempt)
