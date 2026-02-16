@@ -143,12 +143,42 @@ class InstanceSettingsForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": 2}),
     )
 
+    # Meeting scheduling settings
+    meeting_location_options = forms.CharField(
+        required=False,
+        label=_("Location Options"),
+        help_text=_("One option per line. Workers can also type a custom location."),
+        widget=forms.Textarea(attrs={"rows": 4, "placeholder": "In person\nPhone\nVideo call"}),
+    )
+    meeting_time_start = forms.IntegerField(
+        min_value=0, max_value=23, initial=9,
+        label=_("Time Slot Start Hour"),
+        help_text=_("Earliest time slot shown when scheduling meetings (0–23)."),
+    )
+    meeting_time_end = forms.IntegerField(
+        min_value=1, max_value=24, initial=17,
+        label=_("Time Slot End Hour"),
+        help_text=_("Latest time slot shown when scheduling meetings (1–24)."),
+    )
+    meeting_time_step = forms.ChoiceField(
+        choices=[
+            ("15", _("15 minutes")),
+            ("30", _("30 minutes")),
+            ("60", _("60 minutes")),
+        ],
+        initial="30",
+        label=_("Time Slot Interval"),
+        help_text=_("Gap between time slots in the meeting picker."),
+    )
+
     SETTING_KEYS = [
         "product_name", "support_email", "logo_url",
         "date_format", "session_timeout_minutes",
         "document_storage_provider", "document_storage_url_template",
         "privacy_officer_name", "privacy_officer_email",
         "portal_footer_text", "portal_footer_text_fr",
+        "meeting_location_options", "meeting_time_start",
+        "meeting_time_end", "meeting_time_step",
     ]
 
     def __init__(self, *args, **kwargs):

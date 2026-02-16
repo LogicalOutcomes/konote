@@ -18,10 +18,13 @@
 (function () {
     "use strict";
 
-    // ---- Configuration ----
-    var MIN_HOUR = 9;   // 9:00 AM
-    var MAX_HOUR = 16;  // last slot is 4:30 PM
-    var STEP_MINUTES = 30;
+    // ---- Configuration (read from data attributes, fall back to defaults) ----
+    var configEl = document.getElementById("meeting-time-config");
+    var MIN_HOUR = configEl ? parseInt(configEl.getAttribute("data-time-start"), 10) || 9 : 9;
+    var MAX_HOUR_RAW = configEl ? parseInt(configEl.getAttribute("data-time-end"), 10) || 17 : 17;
+    var STEP_MINUTES = configEl ? parseInt(configEl.getAttribute("data-time-step"), 10) || 30 : 30;
+    // MAX_HOUR is the last hour that gets slots — e.g. end=17 means last slot at 16:30 (with 30-min step)
+    var MAX_HOUR = MAX_HOUR_RAW - 1;
     var WEEKDAYS_TO_SHOW = 5; // Mon-Fri
 
     // ---- Locale helpers ----

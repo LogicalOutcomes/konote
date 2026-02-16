@@ -79,6 +79,25 @@
         {% endfor %}
     </fieldset>
 
+    <fieldset>
+        <legend>{% trans "Meetings" %}</legend>
+        <p><small>{% trans "Configure the location options and time slots shown when scheduling meetings." %}</small></p>
+
+        {% for field in form %}
+            {% if field.name == "meeting_location_options" or field.name == "meeting_time_start" or field.name == "meeting_time_end" or field.name == "meeting_time_step" %}
+            <label for="{{ field.id_for_label }}">
+                {{ field.label }}
+                {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+            {% if field.errors %}
+            <small class="badge badge-danger">{{ field.errors.0 }}</small>
+            {% endif %}
+            {% endif %}
+        {% endfor %}
+    </fieldset>
+
     <div role="group">
         <button type="submit">{% trans "Save Changes" %}</button>
         <a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline">{% trans "Back" %}</a>
