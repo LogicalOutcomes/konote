@@ -61,6 +61,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Fix portal nav: add missing links (Milestones, Journal, Messages), restore Leave quickly spacing, register feature toggles — 2026-02-15 (PORTAL-FIX1)
+- [x] Update UX walkthrough report with browser-based findings, remove consent checkbox from quick notes — 2026-02-15 (UX-WALK2)
 - [x] Portal staff management — invite flow, manage/revoke/reset MFA views, demo seed data, portal section on client info tab — 2026-02-15 (PORTAL1)
 - [x] Apply setup management command — `apply_setup` reads JSON config and creates settings, terminology, features, programs, templates, custom fields, metrics; sample config for Youth Services agency; 16 tests — 2026-02-15 (SETUP1)
 - [x] Staff messaging — leave/view messages on client files, unread badge, My Messages page — 2026-02-15 (UXP-RECEP)
