@@ -2189,9 +2189,12 @@ article[aria-label="notification"].fading-out {
         margin-left: calc(-1 * var(--kn-space-base));
         padding-left: calc(var(--kn-space-base) - 3px);
     }
-    /* Fix dropdown positioning on mobile */
+    /* Fix dropdown positioning on mobile — use "relative" (not "static")
+       so z-index still works. Pico CSS creates a fixed z-index:1 overlay
+       on details.dropdown[open] > summary::before; dropdown items need
+       z-index to sit above that overlay, which requires positioning. */
     body > nav details.dropdown {
-        position: static;
+        position: relative;
     }
     body > nav details.dropdown summary {
         min-height: 44px;
@@ -2200,7 +2203,8 @@ article[aria-label="notification"].fading-out {
         padding: var(--kn-space-sm) 0;
     }
     body > nav details.dropdown ul {
-        position: static;
+        position: relative;
+        z-index: 99;
         box-shadow: none;
         padding-left: var(--kn-space-base);
         border-top: 1px solid var(--kn-border-light);
