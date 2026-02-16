@@ -62,12 +62,20 @@ def terminology(request):
 
 
 def features(request):
-    """Inject feature toggles into all templates."""
+    """Inject feature toggles into all templates.
+
+    Merges database flags with defaults so that features not yet stored
+    in the database still get their default enabled/disabled state.
+    """
     from apps.admin_settings.models import FeatureToggle
+    from apps.admin_settings.views import DEFAULT_FEATURES, FEATURES_DEFAULT_ENABLED
 
     flags = cache.get("feature_toggles")
     if flags is None:
-        flags = FeatureToggle.get_all_flags()
+        db_flags = FeatureToggle.get_all_flags()
+        # Start with defaults, then override with whatever is in the database
+        flags = {key: key in FEATURES_DEFAULT_ENABLED for key in DEFAULT_FEATURES}
+        flags.update(db_flags)
         cache.set("feature_toggles", flags, 300)
     return {"features": flags}
 

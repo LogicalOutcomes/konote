@@ -129,10 +129,12 @@ DEFAULT_FEATURES = {
     "require_client_consent": _lazy("Require participant consent before notes (PIPEDA/PHIPA)"),
     "messaging_email": _lazy("Send email reminders and messages to clients"),
     "messaging_sms": _lazy("Send text message reminders to clients"),
+    "portal_journal": _lazy("Participant portal — private journal"),
+    "portal_messaging": _lazy("Participant portal — messages to worker"),
 }
 
 # Features that default to enabled (most default to disabled)
-FEATURES_DEFAULT_ENABLED = {"require_client_consent"}
+FEATURES_DEFAULT_ENABLED = {"require_client_consent", "portal_journal", "portal_messaging"}
 
 
 @login_required
