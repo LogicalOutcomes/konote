@@ -22,7 +22,7 @@
 </article>
 
 {% elif reason == "revoked" %}
-<article aria-label="{% trans 'Link revoked' %}" role="alert" style="border-left: 4px solid var(--pico-color-red-500); padding: 1rem; margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'Link revoked' %}" role="alert" style="background: var(--kn-danger-bg); border-left: 4px solid var(--kn-danger-fg); padding: 1rem; margin-bottom: 1.5rem;">
     <strong><span aria-hidden="true">&#x1F6AB;</span> {% trans "This link has been revoked" %}</strong>
     <p style="margin-bottom: 0;">
         {% blocktrans %}
