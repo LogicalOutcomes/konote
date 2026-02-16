@@ -11,7 +11,7 @@
 
 {# Reason-specific messaging #}
 {% if reason == "expired" %}
-<article aria-label="{% trans 'Link expired' %}" role="alert" style="border-left: 4px solid var(--pico-color-yellow-500); padding: 1rem; margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'Link expired' %}" role="alert" style="border-left: 4px solid var(--kn-warning-fg); padding: 1rem; margin-bottom: 1.5rem;">
     <strong><span aria-hidden="true">&#x23F0;</span> {% trans "This link has expired" %}</strong>
     <p style="margin-bottom: 0;">
         {% blocktrans %}
@@ -35,7 +35,7 @@
 
 {% else %}
 {# reason == "missing" — file deleted from server (e.g., Railway restart) #}
-<article aria-label="{% trans 'File unavailable' %}" role="alert" style="border-left: 4px solid var(--pico-color-yellow-500); padding: 1rem; margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'File unavailable' %}" role="alert" style="border-left: 4px solid var(--kn-warning-fg); padding: 1rem; margin-bottom: 1.5rem;">
     <strong><span aria-hidden="true">&#x1F4C1;</span> {% trans "Export file no longer available" %}</strong>
     <p style="margin-bottom: 0;">
         {% blocktrans %}

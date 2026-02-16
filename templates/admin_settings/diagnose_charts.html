@@ -92,7 +92,7 @@
             <td>{{ sim.metric }}</td>
             <td>{{ sim.values_found }}</td>
             <td>{{ sim.numeric_values }}</td>
-            <td>{% if sim.would_show %}<mark style="background: #90EE90;">{% trans "YES" %}</mark>{% else %}<mark style="background: #FFB6C1;">{% trans "NO" %}</mark>{% endif %}</td>
+            <td>{% if sim.would_show %}<mark style="background: var(--kn-success-bg); color: var(--kn-success-fg);">{% trans "YES" %}</mark>{% else %}<mark style="background: var(--kn-danger-bg); color: var(--kn-danger-fg);">{% trans "NO" %}</mark>{% endif %}</td>
         </tr>
         {% empty %}
         <tr>

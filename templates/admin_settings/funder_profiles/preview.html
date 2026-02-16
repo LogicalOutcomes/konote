@@ -10,7 +10,7 @@
 </hgroup>
 
 {% if warnings %}
-<article class="pico-background-yellow-50" aria-label="{% trans 'Warnings' %}" style="border-left: 4px solid var(--pico-color-yellow-500); padding: 1rem; margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'Warnings' %}" style="background: var(--kn-warning-bg); border-left: 4px solid var(--kn-warning-fg); padding: 1rem; margin-bottom: 1.5rem;">
     <strong>{% trans "Warnings" %}</strong>
     <ul style="margin-bottom: 0;">
         {% for warning in warnings %}

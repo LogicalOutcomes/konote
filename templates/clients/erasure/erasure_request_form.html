@@ -9,7 +9,7 @@
     <p>{{ client }}</p>
 </hgroup>
 
-<article aria-label="warning" class="warning" style="border-left: 4px solid var(--pico-del-color); background: var(--pico-del-color-bg, rgba(255,0,0,0.05));">
+<article aria-label="warning" class="warning" style="border-left: 4px solid var(--kn-danger-fg); background: var(--kn-danger-bg);">
     <strong>{% trans "This action cannot be undone." %}</strong>
     {% trans "Once all program managers approve, participant data will be permanently anonymised or erased depending on the level selected below." %}
 </article>
@@ -167,7 +167,7 @@
         var allChecked = Array.from(acks).every(function(cb) { return cb.checked; });
         submitBtn.disabled = !allChecked;
         if (allChecked) {
-            submitBtn.style.backgroundColor = 'var(--pico-del-color)';
+            submitBtn.style.backgroundColor = 'var(--kn-danger-fg)';
             submitBtn.style.opacity = '1';
         } else {
             submitBtn.style.backgroundColor = '';

@@ -14,7 +14,7 @@
 </hgroup>
 
 {% if er.status == "pending" %}
-<article aria-label="warning" class="warning" style="border-left: 4px solid var(--pico-del-color); background: var(--pico-del-color-bg, rgba(255,0,0,0.05));">
+<article aria-label="warning" class="warning" style="border-left: 4px solid var(--kn-danger-fg); background: var(--kn-danger-bg);">
     <strong>{% trans "This action cannot be undone." %}</strong>
     {% if er.erasure_tier == "full_erasure" %}
     {% trans "Once all program managers approve, the client's data will be permanently deleted." %}
@@ -25,7 +25,7 @@
 {% endif %}
 
 {% if receipt_not_downloaded %}
-<article aria-label="{% trans 'Receipt warning' %}" style="border-left: 4px solid var(--pico-color-orange-500, orange); background: var(--pico-ins-color-bg, rgba(255,165,0,0.05));">
+<article aria-label="{% trans 'Receipt warning' %}" style="border-left: 4px solid var(--kn-warning-fg); background: var(--kn-warning-bg);">
     <strong>{% trans "PDF receipt has not been downloaded." %}</strong>
     {% trans "Download the PDF receipt before approving. Once erased, client details cannot be recovered from the system." %}
 </article>
@@ -44,19 +44,19 @@
 {% endif %}
 
 {% if days_pending is not None and days_pending >= 30 %}
-<article aria-label="{% trans 'PIPEDA deadline warning' %}" style="border-left: 4px solid var(--pico-del-color); background: var(--pico-del-color-bg, rgba(255,0,0,0.05));">
+<article aria-label="{% trans 'PIPEDA deadline warning' %}" style="border-left: 4px solid var(--kn-danger-fg); background: var(--kn-danger-bg);">
     <strong>{% trans "Overdue — PIPEDA 30-Day Deadline" %}</strong>
     <p>{% blocktrans with days=days_pending %}This request has been pending for {{ days }} days. PIPEDA requires a response within 30 days of receiving an erasure request.{% endblocktrans %}</p>
 </article>
 {% elif days_pending is not None and days_pending >= 25 %}
-<article aria-label="{% trans 'PIPEDA deadline approaching' %}" style="border-left: 4px solid var(--pico-color-orange-500, orange); background: var(--pico-ins-color-bg, rgba(255,165,0,0.05));">
+<article aria-label="{% trans 'PIPEDA deadline approaching' %}" style="border-left: 4px solid var(--kn-warning-fg); background: var(--kn-warning-bg);">
     <strong>{% trans "Approaching PIPEDA Deadline" %}</strong>
     <p>{% blocktrans with days=days_pending %}This request has been pending for {{ days }} days. The 30-day PIPEDA response deadline is approaching.{% endblocktrans %}</p>
 </article>
 {% endif %}
 
 {% if deadlocked and er.status == "pending" %}
-<article aria-label="deadlock notice" class="warning" style="border-left: 4px solid var(--pico-color-orange-500, orange);">
+<article aria-label="deadlock notice" class="warning" style="border-left: 4px solid var(--kn-warning-fg);">
     <strong>{% trans "Deadlock Detected" %}</strong>
     <p>{% trans "The person who requested this erasure is the only program manager for the remaining programs. An admin can approve as a fallback." %}</p>
 </article>
@@ -166,7 +166,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="program_id" value="{{ ps.pk }}">
                 {{ approval_form.review_notes }}
-                <button type="submit" style="background-color: var(--pico-del-color); padding: 0.25rem 0.75rem; font-size: 0.875rem;" {% trans "Are you sure you want to approve this erasure? This cannot be undone." as approve_msg %}onclick="return confirm('{{ approve_msg|escapejs }}')">{% trans "Approve" %}</button>
+                <button type="submit" style="background-color: var(--kn-danger-fg); padding: 0.25rem 0.75rem; font-size: 0.875rem;" {% trans "Are you sure you want to approve this erasure? This cannot be undone." as approve_msg %}onclick="return confirm('{{ approve_msg|escapejs }}')">{% trans "Approve" %}</button>
             </form>
             {% elif admin_can_approve %}
             <form method="post" action="{% url 'erasure_approve' pk=er.pk %}" style="display: inline;" aria-label="{% blocktrans with name=ps.name %}Admin fallback approval for {{ name }}{% endblocktrans %}">

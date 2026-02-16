@@ -59,7 +59,7 @@
             </thead>
             <tbody>
                 {% for entry in page.object_list %}
-                <tr{% if entry.action == "access_denied" %} style="background: var(--pico-del-color, #e53935); color: white;"{% endif %}>
+                <tr{% if entry.action == "access_denied" %} style="background: var(--kn-danger-fg); color: white;"{% endif %}>
                     <td>{{ entry.event_timestamp|date:"Y-m-d H:i" }}</td>
                     <td>{{ entry.user_display }}</td>
                     <td>{{ entry.ip_address|default:"\u2014" }}</td>

@@ -96,7 +96,7 @@
                 {% for entry in page.object_list %}
                 <tr{% if entry.is_demo_context %} style="opacity: 0.7;"{% endif %}>
                     <td>{{ entry.event_timestamp|date:"Y-m-d H:i" }}</td>
-                    <td>{{ entry.user_display }}{% if entry.is_demo_context %} <small style="color: var(--pico-del-color, #e53935);">(demo)</small>{% endif %}</td>
+                    <td>{{ entry.user_display }}{% if entry.is_demo_context %} <small style="color: var(--kn-danger-fg);">(demo)</small>{% endif %}</td>
                     <td>
                         <span class="badge {% if entry.action == 'create' or entry.action == 'post' %}badge-success{% elif entry.action == 'view' or entry.action == 'login' %}badge-info{% elif entry.action == 'update' or entry.action == 'put' or entry.action == 'patch' %}badge-warning{% elif entry.action == 'delete' %}badge-danger{% else %}badge-neutral{% endif %}">
                             {{ entry.get_action_display }}
