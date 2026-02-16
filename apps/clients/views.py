@@ -171,7 +171,10 @@ def client_list(request):
     search_query = _strip_accents(request.GET.get("q", "").strip().lower())
     sort_by = request.GET.get("sort", "name")
 
-    # Batch-query last contact dates (3 queries total — not 3N)
+    # Batch-query last contact dates (3 aggregate queries total — not 3N).
+    # Queries all accessible client IDs, not just the current page, because
+    # sort-by-last-contact needs the full list before pagination. Acceptable
+    # up to ~2,000 clients (same ceiling as the encrypted-field search loop).
     all_client_ids = list(clients.values_list("pk", flat=True))
     last_contact_map = _get_last_contact_dates(all_client_ids)
 

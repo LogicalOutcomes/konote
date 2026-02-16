@@ -14,7 +14,7 @@ from apps.clients.models import ClientFile
 from apps.events.models import Event, Meeting
 from apps.programs.access import get_author_program, get_client_or_403, get_program_from_client
 
-from apps.auth_app.decorators import requires_permission
+from apps.auth_app.decorators import requires_permission, requires_permission_global
 
 from django.db import models as db_models
 
@@ -416,16 +416,10 @@ def mark_message_read(request, client_id, message_id):
 
 
 @login_required
+@requires_permission_global("message.view")
 def my_messages(request):
     """Dashboard showing all unread messages for the current user."""
     from .models import StaffMessage
-    from apps.auth_app.permissions import can_access, DENY
-    from apps.auth_app.decorators import _get_user_highest_role
-
-    role = _get_user_highest_role(request.user)
-    if can_access(role, "message.view") == DENY:
-        return HttpResponseForbidden(_("You do not have permission to view messages."))
-
     from apps.programs.access import get_user_program_ids
     from apps.clients.models import ClientProgramEnrolment
 

@@ -6,13 +6,16 @@ creating portal invites, and managing portal access.
 """
 from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.admin_settings.models import FeatureToggle
+from apps.audit.models import AuditLog
 from apps.auth_app.decorators import requires_permission
 from apps.clients.models import ClientFile
 from apps.portal.forms import StaffPortalInviteForm, StaffPortalNoteForm
@@ -85,11 +88,36 @@ def create_portal_invite(request, client_id):
                 verbal_code=form.cleaned_data.get("verbal_code") or "",
                 expires_at=timezone.now() + timedelta(days=7),
             )
+
+            # Build invite URL — use portal domain if configured
+            invite_path = reverse("portal:accept_invite", args=[invite.token])
+            portal_domain = getattr(settings, "PORTAL_DOMAIN", "")
+            if portal_domain:
+                scheme = "https" if request.is_secure() else "http"
+                invite_url = f"{scheme}://{portal_domain}{invite_path}"
+            else:
+                invite_url = request.build_absolute_uri(invite_path)
+
+            # Audit log — invite creation is an access-granting event
+            AuditLog.objects.using("audit").create(
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=request.user.display_name,
+                action="create",
+                resource_type="portal_invite",
+                resource_id=invite.pk,
+                metadata={
+                    "client_file_id": client_file.pk,
+                    "expires_at": invite.expires_at.isoformat(),
+                    "has_verbal_code": bool(invite.verbal_code),
+                },
+            )
+
             return render(request, "portal/staff_invite_create.html", {
                 "form": form,
                 "client_file": client_file,
-                "invite": invite,
-                "created": True,
+                "created_invite": invite,
+                "invite_url": invite_url,
             })
     else:
         form = StaffPortalInviteForm()
@@ -97,7 +125,7 @@ def create_portal_invite(request, client_id):
     return render(request, "portal/staff_invite_create.html", {
         "form": form,
         "client_file": client_file,
-        "pending_invite": pending,
+        "existing_invite": pending,
     })
 
 
@@ -146,6 +174,19 @@ def portal_revoke_access(request, client_id):
         account.is_active = False
         account.save(update_fields=["is_active"])
 
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=request.user.display_name,
+            action="update",
+            resource_type="portal_account",
+            resource_id=account.pk,
+            metadata={
+                "client_file_id": client_file.pk,
+                "operation": "revoke_access",
+            },
+        )
+
     return redirect("clients:portal_manage", client_id=client_id)
 
 
@@ -163,8 +204,23 @@ def portal_reset_mfa(request, client_id):
     ).first()
 
     if account:
+        previous_method = account.mfa_method
         account.mfa_method = "none"
         account.totp_secret = ""
         account.save(update_fields=["mfa_method", "totp_secret"])
+
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=request.user.display_name,
+            action="update",
+            resource_type="portal_account",
+            resource_id=account.pk,
+            metadata={
+                "client_file_id": client_file.pk,
+                "operation": "reset_mfa",
+                "previous_mfa_method": previous_method,
+            },
+        )
 
     return redirect("clients:portal_manage", client_id=client_id)

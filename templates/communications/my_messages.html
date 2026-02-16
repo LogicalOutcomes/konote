@@ -28,7 +28,7 @@
                 </small>
             </div>
         </header>
-        <p>{{ msg.content }}</p>
+        <p>{{ msg.content|truncatewords:50 }}</p>
         <footer>
             <form method="post"
                   action="{% url 'communications:mark_message_read' client_id=msg.client_file.pk message_id=msg.pk %}"
