@@ -9,6 +9,9 @@ Creates:
 - Alerts for clients with notable situations
 - Custom field values (contact info, emergency contacts, referral sources)
 - Demo groups (service, activity, project) with sessions, attendance, and highlights
+- Email and staff-sent communications with varied delivery statuses
+- Portal content (journal entries, messages, staff notes, correction requests)
+- Registration submissions in various review states
 
 This gives charts and reports meaningful data to display.
 
@@ -50,7 +53,15 @@ from apps.plans.models import (
     PlanTargetMetric,
     PlanTargetRevision,
 )
+from apps.portal.models import (
+    CorrectionRequest,
+    ParticipantJournalEntry,
+    ParticipantMessage,
+    ParticipantUser,
+    StaffPortalNote,
+)
 from apps.programs.models import Program
+from apps.registration.models import RegistrationLink, RegistrationSubmission
 from seeds.demo_client_fields import CLIENT_CUSTOM_FIELDS
 
 User = get_user_model()
@@ -1021,6 +1032,24 @@ class Command(BaseCommand):
         except User.DoesNotExist:
             pass
 
+        # Always ensure portal content exists (idempotent).
+        # Runs before the early-return guard because seed.py creates the
+        # ParticipantUser AFTER seed_demo_data returns on first run.
+        try:
+            worker1 = User.objects.get(username="demo-worker-1")
+            workers_early = {"demo-worker-1": worker1}
+            self._create_demo_portal_content(workers_early, timezone.now())
+        except User.DoesNotExist:
+            pass
+
+        # Always ensure registration submissions exist (idempotent).
+        try:
+            worker1 = User.objects.get(username="demo-worker-1")
+            workers_early = {"demo-worker-1": worker1}
+            self._create_demo_registration_submissions(workers_early, programs_by_name, timezone.now())
+        except User.DoesNotExist:
+            pass
+
         # Check if rich data already exists
         force = options.get("force", False)
         demo_notes_exist = ProgressNote.objects.filter(
@@ -1051,12 +1080,32 @@ class Command(BaseCommand):
             alert_count = Alert.objects.filter(
                 client_file__record_id__startswith="DEMO-"
             ).delete()[0]
+            # Delete portal content (journal entries, messages, staff notes, corrections)
+            journal_count = ParticipantJournalEntry.objects.filter(
+                client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
+            message_count = ParticipantMessage.objects.filter(
+                client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
+            staff_note_count = StaffPortalNote.objects.filter(
+                client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
+            correction_count = CorrectionRequest.objects.filter(
+                client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
+            # Delete registration submissions (keep the link itself)
+            submission_count = RegistrationSubmission.objects.filter(
+                registration_link__slug="demo"
+            ).delete()[0]
             # Delete calendar feed tokens for demo workers
             demo_users = User.objects.filter(is_demo=True)
             CalendarFeedToken.objects.filter(user__in=demo_users).delete()
             self.stdout.write(
                 f"  --force: Deleted {comm_count} communications, {note_count} notes, "
-                f"{plan_count} plans, {event_count} events, {alert_count} alerts."
+                f"{plan_count} plans, {event_count} events, {alert_count} alerts, "
+                f"{journal_count} journal entries, {message_count} portal messages, "
+                f"{staff_note_count} staff notes, {correction_count} correction requests, "
+                f"{submission_count} registration submissions."
             )
 
         # Fetch workers
@@ -1125,6 +1174,15 @@ class Command(BaseCommand):
         # --- Create demo communication logs ---
         self._create_demo_communications(workers, programs_by_name, now)
 
+        # --- Create email/staff-sent communications with varied statuses ---
+        self._create_demo_email_communications(workers, programs_by_name, now)
+
+        # --- Create portal content (journal, messages, notes, corrections) ---
+        self._create_demo_portal_content(workers, now)
+
+        # --- Create registration submissions ---
+        self._create_demo_registration_submissions(workers, programs_by_name, now)
+
         # --- Set contact info and messaging consent ---
         self._set_client_contact_and_consent(now)
 
@@ -1137,8 +1195,6 @@ class Command(BaseCommand):
 
     def _create_demo_registration_link(self, programs_by_name, created_by):
         """Create a public registration link with slug 'demo' for the project website."""
-        from apps.registration.models import RegistrationLink
-
         program = programs_by_name.get("Supported Employment")
         if not program:
             self.stdout.write(self.style.WARNING(
@@ -1987,6 +2043,114 @@ class Command(BaseCommand):
                 "duration": 30,
                 "reminder_status": "not_sent",
             },
+            # --- Additional meetings for full coverage ---
+            # DEMO-003 (Avery) — discharge planning, multi-attendee
+            {
+                "record_id": "DEMO-003",
+                "worker": worker1,
+                "program": "Supported Employment",
+                "days_offset": -14,
+                "location": "Office A — 2nd floor",
+                "status": "completed",
+                "duration": 30,
+                "reminder_status": "sent",
+            },
+            {
+                "record_id": "DEMO-003",
+                "attendees": [worker1, worker2],
+                "program": "Supported Employment",
+                "days_offset": -3,
+                "location": "Conference Room B",
+                "status": "completed",
+                "duration": 45,
+                "reminder_status": "sent",
+            },
+            # DEMO-008 (Maya) — return after withdrawal
+            {
+                "record_id": "DEMO-008",
+                "worker": worker2,
+                "program": "Youth Drop-In",
+                "days_offset": -8,
+                "location": "Youth Room",
+                "status": "completed",
+                "duration": 30,
+                "reminder_status": "sent",
+            },
+            {
+                "record_id": "DEMO-008",
+                "worker": worker2,
+                "program": "Youth Drop-In",
+                "days_offset": 5,
+                "location": "Youth Room",
+                "status": "scheduled",
+                "duration": 30,
+                "reminder_status": "not_sent",
+            },
+            # DEMO-009 (Zara) — cancelled + completed
+            {
+                "record_id": "DEMO-009",
+                "worker": worker2,
+                "program": "Youth Drop-In",
+                "days_offset": -12,
+                "location": "Youth Room",
+                "status": "cancelled",
+                "duration": 30,
+                "reminder_status": "sent",
+            },
+            {
+                "record_id": "DEMO-009",
+                "worker": worker2,
+                "program": "Youth Drop-In",
+                "days_offset": -6,
+                "location": "Library study room",
+                "status": "completed",
+                "duration": 45,
+                "reminder_status": "sent",
+            },
+            # DEMO-012 (Carlos) — multi-attendee coordination
+            {
+                "record_id": "DEMO-012",
+                "attendees": [worker2, worker1],
+                "program": "Newcomer Connections",
+                "days_offset": -9,
+                "location": "Settlement Office",
+                "status": "completed",
+                "duration": 60,
+                "reminder_status": "sent",
+            },
+            {
+                "record_id": "DEMO-012",
+                "worker": worker2,
+                "program": "Newcomer Connections",
+                "days_offset": 8,
+                "location": "Settlement Office",
+                "status": "scheduled",
+                "duration": 45,
+                "reminder_status": "not_sent",
+            },
+            # DEMO-014 (Liam) — kitchen follow-up
+            {
+                "record_id": "DEMO-014",
+                "worker": worker2,
+                "program": "Community Kitchen",
+                "days_offset": -7,
+                "location": "Kitchen",
+                "status": "completed",
+                "duration": 30,
+                "reminder_status": "sent",
+            },
+            # DEMO-015 (Nadia) — cancelled by client
+            {
+                "record_id": "DEMO-015",
+                "worker": worker2,
+                "program": "Community Kitchen",
+                "days_offset": -5,
+                "location": "Kitchen",
+                "status": "cancelled",
+                "duration": 45,
+                "reminder_status": "sent",
+                "reminder_status_reason": "Client called to cancel — feeling unwell.",
+            },
         ]
 
         created = 0
@@ -2024,8 +2188,12 @@ class Command(BaseCommand):
                 status=md["status"],
                 reminder_sent=md["reminder_status"] == "sent",
                 reminder_status=md["reminder_status"],
+                reminder_status_reason=md.get("reminder_status_reason", ""),
             )
-            meeting.attendees.add(md["worker"])
+            # Support single worker or explicit attendee list
+            attendees = md.get("attendees", [md["worker"]] if "worker" in md else [])
+            for a in attendees:
+                meeting.attendees.add(a)
             created += 1
 
         self.stdout.write(f"  Demo meetings: {created} created.")
@@ -2213,6 +2381,585 @@ class Command(BaseCommand):
                 created += 1
 
         self.stdout.write(f"  Demo communications: {created} logged.")
+
+    # ------------------------------------------------------------------
+    # Email and staff-sent communications with varied delivery statuses
+    # ------------------------------------------------------------------
+
+    def _create_demo_email_communications(self, workers, programs_by_name, now):
+        """Create email-channel, staff-sent, and system-sent communications.
+
+        Also fills the 5 clients that had zero communications (DEMO-003, 006,
+        009, 012, 015) and adds delivery-status variety (bounced, failed,
+        pending, blocked) that was missing from the manual-log comms.
+        """
+        worker1 = workers["demo-worker-1"]
+        worker2 = workers["demo-worker-2"]
+
+        email_comm_data = [
+            # ---- Staff-sent emails (clients with email addresses) ----
+            # DEMO-001 (Jordan) — Supported Employment
+            {
+                "record_id": "DEMO-001",
+                "worker": worker1,
+                "program": "Supported Employment",
+                "comms": [
+                    {"channel": "email", "direction": "outbound", "method": "staff_sent",
+                     "days_ago": 22, "subject": "Interview prep resources",
+                     "content": "Hi Jordan — attached are the practice questions we talked about. You've got this!",
+                     "delivery_status": "delivered"},
+                    {"channel": "email", "direction": "outbound", "method": "staff_sent",
+                     "days_ago": 10, "subject": "Resume workshop this Thursday",
+                     "content": "Just a reminder about the resume workshop at 2 pm on Thursday. Bring a printed copy of your current resume.",
+                     "delivery_status": "delivered"},
+                ],
+            },
+            # DEMO-003 (Avery) — Supported Employment — currently zero comms
+            {
+                "record_id": "DEMO-003",
+                "worker": worker1,
+                "program": "Supported Employment",
+                "comms": [
+                    {"channel": "email", "direction": "outbound", "method": "staff_sent",
+                     "days_ago": 18, "subject": "Part-time schedule update",
+                     "content": "Hi Avery — your employer confirmed the new hours starting next Monday. Let me know if you have questions.",
+                     "delivery_status": "delivered"},
+                    {"channel": "email", "direction": "outbound", "method": "staff_sent",
+                     "days_ago": 5, "subject": "Program completion survey",
+                     "content": "As you near the end of the program, we'd love your feedback. Here's a short survey link.",
+                     "delivery_status": "bounced",
+                     "delivery_status_display": "Mailbox full — message bounced back."},
+                    {"channel": "phone", "direction": "inbound", "method": "manual_log",
+                     "days_ago": 12, "subject": "Reference letter request",
+                     "content": "Avery called asking for a reference letter for a new job application. Will prepare it this week.",
+                     "delivery_status": "delivered", "outcome": "reached"},
+                ],
+            },
+            # DEMO-009 (Zara) — Youth Drop-In — currently zero comms
+            {
+                "record_id": "DEMO-009",
+                "worker": worker2,
+                "program": "Youth Drop-In",
+                "comms": [
+                    {"channel": "email", "direction": "outbound", "method": "staff_sent",
+                     "days_ago": 20, "subject": "Field trip permission form",
+                     "content": "Hi — please find the attached permission form for next week's field trip. Have a parent sign and bring it to the next session.",
+                     "delivery_status": "delivered"},
+                    {"channel": "email", "direction": "outbound", "method": "staff_sent",
+                     "days_ago": 7, "subject": "Homework help session moved to Wednesday",
+                     "content": "The Tuesday homework help session is moving to Wednesday this week only. Same time, same room.",
+                     "delivery_status": "pending"},
+                    {"channel": "phone", "direction": "inbound", "method": "manual_log",
+                     "days_ago": 14, "subject": "Parent called about schedule",
+                     "content": "Zara's mum called to ask about the holiday schedule. Confirmed the program runs through the break.",
+                     "delivery_status": "delivered", "outcome": "reached"},
+                ],
+            },
+            # DEMO-012 (Carlos) — Newcomer Connections — currently zero comms
+            {
+                "record_id": "DEMO-012",
+                "worker": worker2,
+                "program": "Newcomer Connections",
+                "comms": [
+                    {"channel": "email", "direction": "outbound", "method": "staff_sent",
+                     "days_ago": 30, "subject": "Welcome to the program",
+                     "content": "Hi Carlos — welcome to Newcomer Connections! Your first appointment is next Tuesday at 10 am.",
+                     "delivery_status": "delivered"},
+                    {"channel": "email", "direction": "outbound", "method": "staff_sent",
+                     "days_ago": 16, "subject": "Language class confirmation",
+                     "content": "You're registered for the intermediate English class starting March 3. Location: Community Centre, Room 4.",
+                     "delivery_status": "delivered"},
+                    {"channel": "email", "direction": "outbound", "method": "staff_sent",
+                     "days_ago": 4, "subject": "Document checklist for PR application",
+                     "content": "Attached is the checklist we discussed. Bring everything to our next meeting and we'll go through it together.",
+                     "delivery_status": "failed",
+                     "delivery_status_display": "Email address may no longer be valid."},
+                ],
+            },
+            # DEMO-014 (Liam) — Community Kitchen — has 1 in-person, add emails
+            {
+                "record_id": "DEMO-014",
+                "worker": worker2,
+                "program": "Community Kitchen",
+                "comms": [
+                    {"channel": "email", "direction": "outbound", "method": "staff_sent",
+                     "days_ago": 24, "subject": "Volunteer schedule for February",
+                     "content": "Hi Liam — here's the volunteer schedule for next month. You're down for Tuesday and Thursday sessions.",
+                     "delivery_status": "delivered"},
+                    {"channel": "email", "direction": "outbound", "method": "staff_sent",
+                     "days_ago": 6, "subject": "Food handler certificate information",
+                     "content": "If you're interested in the food handler certification, the next course is March 15. The agency covers the fee.",
+                     "delivery_status": "delivered"},
+                ],
+            },
+            # ---- Manual-log comms for clients with no phone/email ----
+            # DEMO-006 (Jesse) — Housing Stability — no phone, no email
+            {
+                "record_id": "DEMO-006",
+                "worker": worker1,
+                "program": "Housing Stability",
+                "comms": [
+                    {"channel": "in_person", "direction": "outbound", "method": "manual_log",
+                     "days_ago": 18, "subject": "Drop-in visit at shelter",
+                     "content": "Visited Jesse at the shelter. Looking better — mentioned sleeping through the night for the first time in weeks.",
+                     "delivery_status": "delivered"},
+                    {"channel": "in_person", "direction": "outbound", "method": "manual_log",
+                     "days_ago": 6, "subject": "Met at agency front desk",
+                     "content": "Jesse came to the office to pick up housing application forms. Seemed more hopeful today.",
+                     "delivery_status": "delivered"},
+                ],
+            },
+            # DEMO-015 (Nadia) — Community Kitchen — currently zero comms
+            {
+                "record_id": "DEMO-015",
+                "worker": worker2,
+                "program": "Community Kitchen",
+                "comms": [
+                    {"channel": "phone", "direction": "outbound", "method": "manual_log",
+                     "days_ago": 16, "subject": "Session reminder",
+                     "content": "Left voicemail reminding Nadia about Saturday's session. Mentioned we'll be making pasta from scratch.",
+                     "delivery_status": "delivered", "outcome": "voicemail"},
+                    {"channel": "sms", "direction": "outbound", "method": "manual_log",
+                     "days_ago": 10, "subject": "",
+                     "content": "Hi Nadia — here's the grocery list for this week's session. See you Saturday!",
+                     "delivery_status": "delivered"},
+                    {"channel": "in_person", "direction": "outbound", "method": "manual_log",
+                     "days_ago": 3, "subject": "Post-session chat",
+                     "content": "Quick chat after session. Nadia said she made the soup at home and her roommate loved it.",
+                     "delivery_status": "delivered"},
+                ],
+            },
+            # ---- System-sent messages (meeting reminders) ----
+            {
+                "record_id": "DEMO-004",
+                "worker": worker1,
+                "program": "Housing Stability",
+                "comms": [
+                    {"channel": "sms", "direction": "outbound", "method": "system_sent",
+                     "days_ago": 6, "subject": "Meeting reminder",
+                     "content": "Reminder: You have a meeting with Casey at Housing Support Office tomorrow at 10 am.",
+                     "delivery_status": "delivered",
+                     "external_id": "demo-sms-001"},
+                ],
+            },
+            {
+                "record_id": "DEMO-002",
+                "worker": worker1,
+                "program": "Supported Employment",
+                "comms": [
+                    {"channel": "sms", "direction": "outbound", "method": "system_sent",
+                     "days_ago": 6, "subject": "Meeting reminder",
+                     "content": "Reminder: You have a meeting at Community Room on Friday at 2 pm.",
+                     "delivery_status": "sent",
+                     "external_id": "demo-sms-002"},
+                ],
+            },
+            {
+                "record_id": "DEMO-010",
+                "worker": worker2,
+                "program": "Newcomer Connections",
+                "comms": [
+                    {"channel": "sms", "direction": "outbound", "method": "staff_sent",
+                     "days_ago": 9, "subject": "",
+                     "content": "Community potluck this Saturday at 2 pm — would love to see you there!",
+                     "delivery_status": "blocked",
+                     "delivery_status_display": "Carrier rejected the message."},
+                ],
+            },
+            # DEMO-007 (Jayden) — staff-sent SMS
+            {
+                "record_id": "DEMO-007",
+                "worker": worker2,
+                "program": "Youth Drop-In",
+                "comms": [
+                    {"channel": "sms", "direction": "outbound", "method": "staff_sent",
+                     "days_ago": 5, "subject": "",
+                     "content": "See you at tomorrow's session! We're doing the mural project.",
+                     "delivery_status": "sent"},
+                ],
+            },
+        ]
+
+        created = 0
+        for group in email_comm_data:
+            client = ClientFile.objects.filter(record_id=group["record_id"]).first()
+            if not client:
+                continue
+            program = programs_by_name.get(group["program"])
+            if not program:
+                continue
+
+            for c in group["comms"]:
+                comm = Communication(
+                    client_file=client,
+                    direction=c["direction"],
+                    channel=c["channel"],
+                    method=c.get("method", "manual_log"),
+                    subject=c.get("subject", ""),
+                    outcome=c.get("outcome", ""),
+                    logged_by=group["worker"],
+                    author_program=program,
+                    delivery_status=c.get("delivery_status", "delivered"),
+                    delivery_status_display=c.get("delivery_status_display", ""),
+                    external_id=c.get("external_id", ""),
+                )
+                comm.content = c.get("content", "")
+                comm.save()
+                # Backdate created_at
+                backdate = now - timedelta(
+                    days=c["days_ago"], hours=random.randint(8, 17)
+                )
+                Communication.objects.filter(pk=comm.pk).update(created_at=backdate)
+                created += 1
+
+        self.stdout.write(f"  Email/staff-sent communications: {created} logged.")
+
+    # ------------------------------------------------------------------
+    # Portal content: journal entries, messages, staff notes, corrections
+    # ------------------------------------------------------------------
+
+    def _create_demo_portal_content(self, workers, now):
+        """Create portal content for DEMO-001 (Jordan Rivera).
+
+        Only DEMO-001 has a ParticipantUser account. This method is called
+        from the idempotent section of handle() so it works even when
+        seed.py creates the ParticipantUser after seed_demo_data returns.
+        """
+        participant = ParticipantUser.objects.filter(
+            client_file__record_id="DEMO-001"
+        ).first()
+        if not participant:
+            self.stdout.write("  Portal content: DEMO-001 has no portal account. Skipping.")
+            return
+
+        # Skip if journal entries already exist (idempotent)
+        if ParticipantJournalEntry.objects.filter(
+            participant_user=participant
+        ).exists():
+            self.stdout.write("  Portal content: already exists. Skipping.")
+            return
+
+        client = participant.client_file
+        worker1 = workers.get("demo-worker-1")
+
+        # Look up Jordan's plan targets for linking
+        jordan_targets = list(PlanTarget.objects.filter(
+            plan_section__client_file=client
+        ))
+        interview_target = next(
+            (t for t in jordan_targets if "interview" in (t.name or "").lower()),
+            jordan_targets[0] if jordan_targets else None,
+        )
+        applications_target = next(
+            (t for t in jordan_targets if "application" in (t.name or "").lower()),
+            jordan_targets[1] if len(jordan_targets) > 1 else None,
+        )
+
+        # --- Journal entries ---
+        journal_data = [
+            {
+                "days_ago": 52,
+                "target": interview_target,
+                "content": (
+                    "Had my first mock interview today. It was terrifying but Casey "
+                    "said I did okay. I keep replaying the parts I messed up."
+                ),
+            },
+            {
+                "days_ago": 40,
+                "target": None,
+                "content": (
+                    "Bad day. Couldn't get out of bed until noon. Feeling like "
+                    "nobody's going to hire me. But I made it to the drop-in at "
+                    "least."
+                ),
+            },
+            {
+                "days_ago": 28,
+                "target": applications_target,
+                "content": (
+                    "Sent out three applications this week! Two online and one in "
+                    "person at the cafe on Queen Street. The in-person one felt "
+                    "weird but I did it."
+                ),
+            },
+            {
+                "days_ago": 15,
+                "target": interview_target,
+                "content": (
+                    "Got called back for the retail job! Real interview next "
+                    "Wednesday. Casey is going to do one more practice run with me. "
+                    "Nervous but also kind of excited?"
+                ),
+            },
+            {
+                "days_ago": 6,
+                "target": None,
+                "content": (
+                    "Interview went better than I thought. I remembered to breathe "
+                    "and make eye contact like we practised. Haven't heard back yet "
+                    "though."
+                ),
+            },
+            {
+                "days_ago": 1,
+                "target": None,
+                "content": (
+                    "Cooking class was fun — made lentil soup and brought some "
+                    "home. Having something good to eat when I got back made the "
+                    "whole day feel better."
+                ),
+            },
+        ]
+
+        journal_count = 0
+        for jd in journal_data:
+            entry = ParticipantJournalEntry(
+                participant_user=participant,
+                client_file=client,
+                plan_target=jd["target"],
+            )
+            entry.content = jd["content"]
+            entry.save()
+            backdate = now - timedelta(days=jd["days_ago"], hours=random.randint(18, 22))
+            ParticipantJournalEntry.objects.filter(pk=entry.pk).update(created_at=backdate)
+            journal_count += 1
+
+        # --- Participant messages ---
+        message_data = [
+            {
+                "days_ago": 45,
+                "message_type": "general",
+                "archived_days_ago": 30,
+                "content": (
+                    "Hi Casey, I lost the bus route info you gave me. Can you send "
+                    "it again?"
+                ),
+            },
+            {
+                "days_ago": 20,
+                "message_type": "pre_session",
+                "archived_days_ago": 18,
+                "content": (
+                    "Before our Thursday meeting — I wanted to let you know I've "
+                    "been feeling really anxious this week. Just so you know."
+                ),
+            },
+            {
+                "days_ago": 8,
+                "message_type": "general",
+                "archived_days_ago": None,
+                "content": (
+                    "Is there a dress code for the interview? I don't have dress "
+                    "shoes. Is that going to be a problem?"
+                ),
+            },
+            {
+                "days_ago": 2,
+                "message_type": "pre_session",
+                "archived_days_ago": None,
+                "content": (
+                    "I'd like to talk about what happens after I get a job. Like, "
+                    "do I still come here?"
+                ),
+            },
+        ]
+
+        msg_count = 0
+        for md in message_data:
+            msg = ParticipantMessage(
+                participant_user=participant,
+                client_file=client,
+                message_type=md["message_type"],
+            )
+            msg.content = md["content"]
+            msg.save()
+            backdate = now - timedelta(days=md["days_ago"], hours=random.randint(8, 20))
+            updates = {"created_at": backdate}
+            if md["archived_days_ago"] is not None:
+                updates["archived_at"] = now - timedelta(days=md["archived_days_ago"])
+            ParticipantMessage.objects.filter(pk=msg.pk).update(**updates)
+            msg_count += 1
+
+        # --- Staff portal notes ---
+        note_data = [
+            {
+                "days_ago": 38,
+                "content": (
+                    "Great work showing up every week, Jordan. Consistency matters "
+                    "and you're building a real routine."
+                ),
+            },
+            {
+                "days_ago": 14,
+                "content": (
+                    "You've been doing amazing with the interview prep. Remember — "
+                    "they called YOU back. That says something."
+                ),
+            },
+            {
+                "days_ago": 3,
+                "content": (
+                    "So proud of how the interview went. Whatever happens with this "
+                    "one, you showed you can do it. We'll keep going."
+                ),
+            },
+        ]
+
+        note_count = 0
+        for nd in note_data:
+            note = StaffPortalNote(
+                client_file=client,
+                from_user=worker1,
+                is_active=True,
+            )
+            note.content = nd["content"]
+            note.save()
+            backdate = now - timedelta(days=nd["days_ago"], hours=random.randint(9, 16))
+            StaffPortalNote.objects.filter(pk=note.pk).update(created_at=backdate)
+            note_count += 1
+
+        # --- Correction requests ---
+        correction_data = [
+            {
+                "days_ago": 10,
+                "data_type": "goal",
+                "object_id": interview_target.pk if interview_target else 1,
+                "status": "corrected",
+                "resolved_days_ago": 7,
+                "description": (
+                    "It says my goal is to 'build interview skills' but I'd "
+                    "rather it say 'feel ready for interviews'. Can you change it?"
+                ),
+                "staff_response": "Updated the goal wording as requested.",
+            },
+            {
+                "days_ago": 3,
+                "data_type": "metric",
+                "object_id": 1,  # placeholder — metric value PK
+                "status": "pending",
+                "resolved_days_ago": None,
+                "description": (
+                    "The confidence score from last week seems wrong — I said 7 "
+                    "but it shows 5. Can someone check?"
+                ),
+                "staff_response": "",
+            },
+        ]
+
+        correction_count = 0
+        for cd in correction_data:
+            req = CorrectionRequest(
+                participant_user=participant,
+                client_file=client,
+                data_type=cd["data_type"],
+                object_id=cd["object_id"],
+                status=cd["status"],
+                staff_response=cd["staff_response"],
+            )
+            req.description = cd["description"]
+            req.save()
+            updates = {
+                "created_at": now - timedelta(days=cd["days_ago"]),
+            }
+            if cd["resolved_days_ago"] is not None:
+                updates["resolved_at"] = now - timedelta(days=cd["resolved_days_ago"])
+            CorrectionRequest.objects.filter(pk=req.pk).update(**updates)
+            correction_count += 1
+
+        self.stdout.write(
+            f"  Portal content: {journal_count} journal entries, "
+            f"{msg_count} messages, {note_count} staff notes, "
+            f"{correction_count} correction requests."
+        )
+
+    # ------------------------------------------------------------------
+    # Registration submissions with varied review statuses
+    # ------------------------------------------------------------------
+
+    def _create_demo_registration_submissions(self, workers, programs_by_name, now):
+        """Create demo registration submissions for the 'demo' registration link."""
+        link = RegistrationLink.objects.filter(slug="demo").first()
+        if not link:
+            self.stdout.write("  Registration submissions: no demo link found. Skipping.")
+            return
+
+        # Skip if submissions already exist (idempotent)
+        if RegistrationSubmission.objects.filter(registration_link=link).exists():
+            self.stdout.write("  Registration submissions: already exist. Skipping.")
+            return
+
+        reviewer = User.objects.filter(is_admin=True).first() or workers.get("demo-worker-1")
+
+        submission_data = [
+            {
+                "first_name": "Aisha", "last_name": "Nkomo",
+                "email": "aisha.nkomo@example.com", "phone": "4165552001",
+                "status": "approved", "days_ago": 14, "reviewed_days_ago": 12,
+                "review_notes": "Documents verified. Assigned to Casey.",
+                "field_values": {"how_heard": "Community poster", "notes": "Available weekday mornings."},
+            },
+            {
+                "first_name": "Luca", "last_name": "Bianchi",
+                "email": "luca.bianchi@example.com", "phone": "6475552002",
+                "status": "approved", "days_ago": 10, "reviewed_days_ago": 8,
+                "review_notes": "Previous participant returning. Welcome back.",
+                "field_values": {"how_heard": "Previous enrolment", "notes": "Was in the program last year."},
+            },
+            {
+                "first_name": "Min-Ji", "last_name": "Park",
+                "email": "minji.park@example.com", "phone": "9055552003",
+                "status": "pending", "days_ago": 3, "reviewed_days_ago": None,
+                "review_notes": "",
+                "field_values": {"how_heard": "Friend", "notes": "Looking forward to the program."},
+            },
+            {
+                "first_name": "Tariq", "last_name": "Hassan",
+                "email": "tariq.hassan@example.com", "phone": "4165552004",
+                "status": "pending", "days_ago": 1, "reviewed_days_ago": None,
+                "review_notes": "",
+                "field_values": {"how_heard": "Online search", "notes": ""},
+            },
+            {
+                "first_name": "Svetlana", "last_name": "Petrov",
+                "email": "svetlana.petrov@example.com", "phone": "6475552005",
+                "status": "rejected", "days_ago": 7, "reviewed_days_ago": 5,
+                "review_notes": "Referred to partner agency — not in our catchment area.",
+                "field_values": {"how_heard": "Community agency", "notes": "Lives in Mississauga."},
+            },
+            {
+                "first_name": "Derek", "last_name": "Okafor",
+                "email": "derek.okafor@example.com", "phone": "9055552006",
+                "status": "waitlist", "days_ago": 5, "reviewed_days_ago": 4,
+                "review_notes": "Program at capacity. Added to wait list for next cohort.",
+                "field_values": {"how_heard": "Shelter staff", "notes": "Currently staying at Fred Victor."},
+            },
+        ]
+
+        created = 0
+        for sd in submission_data:
+            sub = RegistrationSubmission(
+                registration_link=link,
+                field_values=sd["field_values"],
+                status=sd["status"],
+            )
+            sub.first_name = sd["first_name"]
+            sub.last_name = sd["last_name"]
+            sub.email = sd["email"]
+            sub.phone = sd["phone"]
+            sub.save()
+
+            # Backdate submitted_at and optionally set reviewed_at/reviewed_by
+            updates = {
+                "submitted_at": now - timedelta(days=sd["days_ago"], hours=random.randint(8, 18)),
+            }
+            if sd["reviewed_days_ago"] is not None:
+                updates["reviewed_at"] = now - timedelta(days=sd["reviewed_days_ago"])
+                updates["reviewed_by"] = reviewer
+            RegistrationSubmission.objects.filter(pk=sub.pk).update(**updates)
+            created += 1
+
+        self.stdout.write(f"  Registration submissions: {created} created.")
 
     # ------------------------------------------------------------------
     # Contact info and messaging consent on ClientFile model fields
