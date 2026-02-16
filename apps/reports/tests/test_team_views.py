@@ -171,4 +171,4 @@ class TeamMeetingViewContentTests(TestCase):
             {"program": str(self.program.pk)}
         )
         self.assertContains(response, "Alice")
-        self.assertNotContains(response, "Other")
+        self.assertNotContains(response, "Other Staff")

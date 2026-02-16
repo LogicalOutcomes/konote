@@ -1293,7 +1293,7 @@ def team_meeting_view(request):
         program_id__in=filter_program_ids,
         role__in=["staff", "program_manager"],
         status="active",
-    ).select_related("user", "program").order_by("user__last_name", "user__first_name")
+    ).select_related("user", "program").order_by("user__display_name")
 
     # Deduplicate by user (a user might have roles in multiple programs)
     seen_users = set()
@@ -1367,7 +1367,7 @@ def team_meeting_view(request):
         })
 
     # Sort: most active first, then alphabetical
-    staff_activity.sort(key=lambda x: (-x["total_activity"], x["user"].last_name))
+    staff_activity.sort(key=lambda x: (-x["total_activity"], x["user"].display_name))
 
     return render(request, "reports/team_meeting.html", {
         "staff_activity": staff_activity,

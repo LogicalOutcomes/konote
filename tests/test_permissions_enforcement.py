@@ -105,6 +105,10 @@ PERMISSION_URL_MAP = {
     "communication.log": {"url": "/communications/client/{client_id}/quick-log/"},
     "communication.view": {"skip": "timeline_integration"},
 
+    # Staff message keys
+    "message.leave": {"url": "/communications/client/{client_id}/leave-message/"},
+    "message.view": {"url": "/communications/client/{client_id}/messages/"},
+
     # Metric / report keys
     "metric.view_individual": {"url": "/reports/client/{client_id}/analysis/"},
     "metric.view_aggregate": {"skip": "view_internal"},
