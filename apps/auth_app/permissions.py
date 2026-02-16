@@ -110,6 +110,9 @@ PERMISSIONS = {
         "event_type.manage": DENY,
         "metric.manage": DENY,
         "registration.manage": DENY,
+
+        "message.leave": ALLOW,    # Front desk can leave messages for case workers
+        "message.view": DENY,      # Cannot read messages left for others
     },
 
     "staff": {
@@ -203,6 +206,9 @@ PERMISSIONS = {
         "event_type.manage": DENY,
         "metric.manage": DENY,
         "registration.manage": DENY,
+
+        "message.leave": ALLOW,    # Staff can leave messages for each other
+        "message.view": SCOPED,    # Can read messages for clients in their program
     },
 
     "program_manager": {
@@ -304,6 +310,9 @@ PERMISSIONS = {
         "event_type.manage": SCOPED,     # Create/edit event types in own program
         "metric.manage": SCOPED,         # Create/edit metrics in own program
         "registration.manage": SCOPED,   # Manage registration links for own program
+
+        "message.leave": ALLOW,    # PMs can leave messages
+        "message.view": ALLOW,     # Can read all messages in their program
     },
 
     "executive": {
@@ -392,6 +401,9 @@ PERMISSIONS = {
         "event_type.manage": DENY,
         "metric.manage": DENY,
         "registration.manage": DENY,
+
+        "message.leave": DENY,     # Executives don't interact with individual clients
+        "message.view": DENY,      # No access to operational messages
     },
 }
 
@@ -546,6 +558,9 @@ def permission_to_plain_english(perm_key, perm_level):
         "event_type.manage": "Create, edit, or delete event types",
         "metric.manage": "Create, edit, or delete outcome metrics",
         "registration.manage": "Manage registration links and pending submissions",
+
+        "message.leave": "Leave messages for case workers about participants",
+        "message.view": "Read messages left by front desk or other staff",
     }
 
     base = TRANSLATIONS.get(perm_key, perm_key)

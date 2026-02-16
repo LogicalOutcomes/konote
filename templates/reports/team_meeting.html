@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Team Activity" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Team Activity Summary" %}</h1>
+
+<p>{% trans "Activity overview for team meeting prep — shows notes, communications, and meetings by staff member." %}</p>
+
+<form method="get" class="grid">
+    <div>
+        <label for="program">{{ term.program|default:"Program" }}</label>
+        <select name="program" id="program">
+            <option value="">{% trans "All" %} {{ term.program_plural|default:"Programs" }}</option>
+            {% for program in accessible_programs %}
+                <option value="{{ program.pk }}"{% if program_filter == program.pk|stringformat:"s" %} selected{% endif %}>
+                    {{ program.translated_name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div>
+        <label for="days">{% trans "Time Range" %}</label>
+        <select name="days" id="days">
+            <option value="7"{% if days == 7 %} selected{% endif %}>{% trans "Last 7 days" %}</option>
+            <option value="14"{% if days == 14 %} selected{% endif %}>{% trans "Last 14 days" %}</option>
+            <option value="30"{% if days == 30 %} selected{% endif %}>{% trans "Last 30 days" %}</option>
+        </select>
+    </div>
+
+    <div style="display: flex; align-items: flex-end;">
+        <button type="submit">{% trans "Filter" %}</button>
+    </div>
+</form>
+
+<p><small>{% blocktrans with date=cutoff|date:"SHORT_DATE_FORMAT" %}Showing activity since {{ date }}{% endblocktrans %}</small></p>
+
+{% if staff_activity %}
+<figure>
+<table role="grid" aria-label="{% trans 'Team activity summary' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Staff Member" %}</th>
+            <th scope="col">{% trans "Role" %}</th>
+            <th scope="col" style="text-align:center;">{% trans "Notes" %}</th>
+            <th scope="col" style="text-align:center;">{% trans "Comms" %}</th>
+            <th scope="col" style="text-align:center;">{% trans "Meetings" %}</th>
+            <th scope="col" style="text-align:center;">{% trans "Total" %}</th>
+            <th scope="col">{% trans "Last Activity" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in staff_activity %}
+        <tr>
+            <td>
+                <strong>{{ item.user.display_name }}</strong>
+                {% if item.programs|length > 0 %}
+                <br><small>{{ item.programs|join:", " }}</small>
+                {% endif %}
+            </td>
+            <td>{{ item.role_display }}</td>
+            <td style="text-align:center;">
+                {% if item.note_count %}
+                    <strong>{{ item.note_count }}</strong>
+                {% else %}
+                    <span style="color: var(--muted-color);">0</span>
+                {% endif %}
+            </td>
+            <td style="text-align:center;">
+                {% if item.comm_count %}
+                    <strong>{{ item.comm_count }}</strong>
+                {% else %}
+                    <span style="color: var(--muted-color);">0</span>
+                {% endif %}
+            </td>
+            <td style="text-align:center;">
+                {% if item.meeting_count %}
+                    <strong>{{ item.meeting_count }}</strong>
+                {% else %}
+                    <span style="color: var(--muted-color);">0</span>
+                {% endif %}
+            </td>
+            <td style="text-align:center;">
+                {% if item.total_activity %}
+                    <strong>{{ item.total_activity }}</strong>
+                {% else %}
+                    <span style="color: var(--muted-color);">0</span>
+                {% endif %}
+            </td>
+            <td>
+                {% with last_note=item.last_note last_comm=item.last_comm last_meeting=item.last_meeting %}
+                {% if last_note or last_comm or last_meeting %}
+                    {% if last_note %}
+                    <small>{% trans "Note:" %} {{ last_note|date:"M j" }}</small><br>
+                    {% endif %}
+                    {% if last_comm %}
+                    <small>{% trans "Comm:" %} {{ last_comm|date:"M j" }}</small><br>
+                    {% endif %}
+                    {% if last_meeting %}
+                    <small>{% trans "Meeting:" %} {{ last_meeting|date:"M j" }}</small>
+                    {% endif %}
+                {% else %}
+                    <span style="color: var(--muted-color);">{% trans "None" %}</span>
+                {% endif %}
+                {% endwith %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% else %}
+<p>{% trans "No staff activity found for this period." %}</p>
+{% endif %}
+{% endblock %}

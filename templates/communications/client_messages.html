@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Messages" %} — {{ client.display_name }}{% endblock %}
+
+{% block content %}
+{% if breadcrumbs %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul>
+        {% for crumb in breadcrumbs %}
+        {% if crumb.url %}<li><a href="{{ crumb.url }}">{{ crumb.label }}</a></li>
+        {% else %}<li>{{ crumb.label }}</li>{% endif %}
+        {% endfor %}
+    </ul>
+</nav>
+{% endif %}
+
+<h1>{% blocktrans with name=client.display_name %}Messages for {{ name }}{% endblocktrans %}</h1>
+
+{% if staff_messages %}
+    {% for msg in staff_messages %}
+        {% include "communications/_message_card.html" %}
+    {% endfor %}
+{% else %}
+    <p>{% trans "No messages." %}</p>
+{% endif %}
+
+<a href="{% url 'clients:client_detail' client.pk %}" role="button" class="secondary">{% trans "Back" %}</a>
+{% endblock %}

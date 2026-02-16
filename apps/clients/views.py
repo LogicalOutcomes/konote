@@ -73,6 +73,62 @@ def _get_accessible_clients(user, active_program_ids=None):
     return base_queryset.filter(pk__in=client_ids).prefetch_related("enrolments__program")
 
 
+def _get_last_contact_dates(client_ids):
+    """Batch-query last contact dates for a list of clients.
+
+    Returns dict: {client_id: datetime or None}
+
+    Performance: 3 aggregate queries instead of 3N individual queries.
+    """
+    from django.db.models import Max
+    from apps.communications.models import Communication
+    from apps.events.models import Meeting
+
+    if not client_ids:
+        return {}
+
+    # Query 1: Last note date per client
+    note_dates = dict(
+        ProgressNote.objects.filter(
+            client_file_id__in=client_ids,
+            status="default",
+        ).values("client_file_id").annotate(
+            last_date=Max("created_at")
+        ).values_list("client_file_id", "last_date")
+    )
+
+    # Query 2: Last communication date per client
+    comm_dates = dict(
+        Communication.objects.filter(
+            client_file_id__in=client_ids,
+        ).values("client_file_id").annotate(
+            last_date=Max("created_at")
+        ).values_list("client_file_id", "last_date")
+    )
+
+    # Query 3: Last meeting date per client (Meeting -> Event -> client_file)
+    meeting_dates = dict(
+        Meeting.objects.filter(
+            event__client_file_id__in=client_ids,
+        ).values("event__client_file_id").annotate(
+            last_date=Max("event__start_timestamp")
+        ).values_list("event__client_file_id", "last_date")
+    )
+
+    # Merge: find max date across all three sources per client
+    result = {}
+    for client_id in client_ids:
+        dates = [
+            note_dates.get(client_id),
+            comm_dates.get(client_id),
+            meeting_dates.get(client_id),
+        ]
+        valid_dates = [d for d in dates if d is not None]
+        result[client_id] = max(valid_dates) if valid_dates else None
+
+    return result
+
+
 def _find_clients_with_matching_notes(client_ids, query_lower):
     """Return set of client IDs whose progress notes contain the search query.
 
@@ -113,6 +169,11 @@ def client_list(request):
     status_filter = request.GET.get("status", "")
     program_filter = request.GET.get("program", "")
     search_query = _strip_accents(request.GET.get("q", "").strip().lower())
+    sort_by = request.GET.get("sort", "name")
+
+    # Batch-query last contact dates (3 queries total — not 3N)
+    all_client_ids = list(clients.values_list("pk", flat=True))
+    last_contact_map = _get_last_contact_dates(all_client_ids)
 
     # Decrypt names and build display list — two passes when searching:
     # 1. Apply status/program filters, match by name/record ID
@@ -138,7 +199,7 @@ def client_list(request):
                 continue
 
         name = f"{client.display_name} {client.last_name}"
-        item = {"client": client, "name": name, "programs": programs}
+        item = {"client": client, "name": name, "programs": programs, "last_contact": last_contact_map.get(client.pk)}
 
         # Apply text search (name, record ID, or — via second pass — note content)
         # BUG-13: accent-insensitive — strip accents from name/record before comparing
@@ -159,8 +220,17 @@ def client_list(request):
         for cid in note_matched_ids:
             client_data.append(unmatched[cid])
 
-    # Sort by name
-    client_data.sort(key=lambda c: c["name"].lower())
+    # Sort by name or last contact
+    if sort_by == "last_contact":
+        from datetime import datetime as dt
+        epoch = dt(2000, 1, 1, 0, 0)
+        min_dt = timezone.make_aware(epoch) if timezone.is_aware(timezone.now()) else epoch
+        client_data.sort(
+            key=lambda c: c["last_contact"] or min_dt,
+            reverse=True,
+        )
+    else:
+        client_data.sort(key=lambda c: c["name"].lower())
     paginator = Paginator(client_data, 25)
     page = paginator.get_page(request.GET.get("page"))
 
@@ -176,6 +246,7 @@ def client_list(request):
         "status_filter": status_filter,
         "program_filter": program_filter,
         "search_query": request.GET.get("q", ""),
+        "sort_by": sort_by,
         "can_create": can_create,
     }
 

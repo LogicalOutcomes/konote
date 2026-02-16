@@ -23,6 +23,8 @@ def nav_active(request):
         section = "groups"
     elif path.startswith(("/admin/", "/erasure/", "/merge/")):
         section = "admin"
+    elif path.startswith("/communications/my-messages"):
+        section = "messages"
     elif path.startswith(("/clients/", "/plans/", "/notes/", "/events/")):
         section = "clients"
     elif path == "/":
@@ -278,6 +280,50 @@ def portal_context(request):
             page = "settings"
 
     return {"participant": participant, "portal_page": page}
+
+
+def unread_messages(request):
+    """Inject unread staff message count for nav badge.
+
+    Only calculated for authenticated users who have message.view permission.
+    Scoped to messages assigned to the user or unassigned, within accessible clients.
+    Cached 1 minute per user.
+    """
+    if not hasattr(request, "user") or not request.user.is_authenticated:
+        return {}
+
+    from apps.auth_app.permissions import DENY, can_access
+    from apps.auth_app.decorators import _get_user_highest_role
+
+    role = _get_user_highest_role(request.user)
+    if can_access(role, "message.view") == DENY:
+        return {}
+
+    cache_key = f"unread_message_count_{request.user.pk}"
+    count = cache.get(cache_key)
+    if count is None:
+        from django.db import models as db_models
+
+        from apps.clients.models import ClientProgramEnrolment
+        from apps.communications.models import StaffMessage
+        from apps.programs.access import get_user_program_ids
+
+        user_program_ids = set(get_user_program_ids(request.user))
+        accessible_client_ids = set(
+            ClientProgramEnrolment.objects.filter(
+                program_id__in=user_program_ids,
+                status="enrolled",
+            ).values_list("client_file_id", flat=True)
+        )
+
+        count = StaffMessage.objects.filter(
+            client_file_id__in=accessible_client_ids,
+            status="unread",
+        ).filter(
+            db_models.Q(for_user=request.user) | db_models.Q(for_user__isnull=True)
+        ).count()
+        cache.set(cache_key, count, 60)  # 1 min cache
+    return {"unread_message_count": count if count > 0 else None}
 
 
 def active_program_context(request):

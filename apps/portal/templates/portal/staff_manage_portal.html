@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Portal Access" %} — {{ client_file }}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Portal Access" %}</h1>
+<p>{% blocktrans with name=client_file %}Manage portal access for {{ name }}.{% endblocktrans %}</p>
+
+{# Current account status #}
+<section>
+    <h2 style="font-size: 1rem;">{% trans "Account Status" %}</h2>
+
+    {% if portal_account %}
+    <dl class="info-grid-compact">
+        <div class="info-field">
+            <dt>{% trans "Status" %}</dt>
+            <dd>
+                {% if portal_account.is_active %}
+                <span class="badge badge-success">{% trans "Active" %}</span>
+                {% else %}
+                <span class="badge badge-neutral">{% trans "Deactivated" %}</span>
+                {% endif %}
+            </dd>
+        </div>
+        <div class="info-field">
+            <dt>{% trans "Display name" %}</dt>
+            <dd>{{ portal_account.display_name }}</dd>
+        </div>
+        <div class="info-field">
+            <dt>{% trans "MFA method" %}</dt>
+            <dd>{{ portal_account.get_mfa_method_display }}</dd>
+        </div>
+        <div class="info-field">
+            <dt>{% trans "Created" %}</dt>
+            <dd>{{ portal_account.created_at|date:"N j, Y" }}</dd>
+        </div>
+    </dl>
+
+    {% if portal_account.is_active %}
+    <div class="button-group" style="margin-top: var(--kn-space-base);">
+        <form method="post" action="{% url 'clients:portal_reset_mfa' client_id=client_file.pk %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="outline secondary">{% trans "Reset MFA" %}</button>
+        </form>
+        <form method="post" action="{% url 'clients:portal_revoke' client_id=client_file.pk %}" style="display: inline;" onsubmit="return confirm('{% trans "Are you sure you want to revoke portal access? The participant will be logged out immediately." %}');">
+            {% csrf_token %}
+            <button type="submit" class="outline" style="color: var(--pico-del-color); border-color: var(--pico-del-color);">{% trans "Revoke Access" %}</button>
+        </form>
+    </div>
+    {% endif %}
+
+    {% else %}
+    <p class="secondary">{% trans "No portal account exists for this participant." %}</p>
+    <a href="{% url 'clients:create_portal_invite' client_id=client_file.pk %}" role="button">{% trans "Invite to Portal" %}</a>
+    {% endif %}
+</section>
+
+{# Pending correction requests #}
+{% if pending_corrections %}
+<section>
+    <h2 style="font-size: 1rem;">{% trans "Pending Correction Requests" %}</h2>
+    <p>{% blocktrans count counter=pending_corrections %}{{ counter }} correction request is waiting for review.{% plural %}{{ counter }} correction requests are waiting for review.{% endblocktrans %}</p>
+</section>
+{% endif %}
+
+{# Invite history #}
+{% if invites %}
+<section>
+    <h2 style="font-size: 1rem;">{% trans "Invite History" %}</h2>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th>{% trans "Date" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th>{% trans "Invited by" %}</th>
+                <th>{% trans "Expires" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for invite in invites %}
+            <tr>
+                <td>{{ invite.created_at|date:"N j, Y" }}</td>
+                <td>
+                    {% if invite.status == "pending" %}
+                    <span class="badge badge-info">{% trans "Pending" %}</span>
+                    {% elif invite.status == "accepted" %}
+                    <span class="badge badge-success">{% trans "Accepted" %}</span>
+                    {% elif invite.status == "expired" %}
+                    <span class="badge badge-neutral">{% trans "Expired" %}</span>
+                    {% elif invite.status == "revoked" %}
+                    <span class="badge badge-warning">{% trans "Revoked" %}</span>
+                    {% endif %}
+                </td>
+                <td>{{ invite.invited_by.get_full_name|default:invite.invited_by.username|default:"—" }}</td>
+                <td>{{ invite.expires_at|date:"N j, Y" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+<div class="button-group">
+    {% if portal_account.is_active or not portal_account %}
+    <a href="{% url 'clients:create_portal_invite' client_id=client_file.pk %}" role="button" class="outline">{% trans "Create New Invite" %}</a>
+    {% endif %}
+    <a href="{% url 'clients:client_detail' client_id=client_file.pk %}" role="button" class="outline secondary">{% trans "Back to participant" %}</a>
+</div>
+{% endblock %}

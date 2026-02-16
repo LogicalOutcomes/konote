@@ -12092,8 +12092,8 @@ msgstr "Exportations"
 msgid ""
 "No exports were created during this period. System is operating normally."
 msgstr ""
-"Aucune exportation n'a été créée durant cette période. Le système fonctionne "
-"normalement."
+"Aucune exportation n'a été créée durant cette période. Le système fonctionne"
+" normalement."
 
 msgid "Pending download"
 msgstr "En attente de téléchargement"
@@ -12125,3 +12125,182 @@ msgstr[1] "%(counter)s exportations ont été créées durant cette période."
 #: templates/reports/email/weekly_export_summary.html
 msgid "This is an automated weekly summary from %(name)s."
 msgstr "Ceci est un résumé hebdomadaire automatique de %(name)s."
+
+#: templates/clients/_client_list_table.html
+msgid "Last Contact"
+msgstr "Dernier contact"
+
+msgid "A pending invite already exists for this participant."
+msgstr "Une invitation en attente existe déjà pour ce participant."
+
+msgid "Account Status"
+msgstr "État du compte"
+
+msgid ""
+"Activity overview for team meeting prep — shows notes, communications, and "
+"meetings by staff member."
+msgstr ""
+"Aperçu des activités pour la préparation des réunions d\u2019équipe — notes, "
+"communications et réunions par membre du personnel."
+
+msgid ""
+"Are you sure you want to revoke portal access? The participant will be "
+"logged out immediately."
+msgstr ""
+"Voulez-vous vraiment révoquer l\u2019accès au portail ? Le participant sera "
+"déconnecté immédiatement."
+
+msgid "Back to participant"
+msgstr "Retour au participant"
+
+msgid "Comm:"
+msgstr "Comm. :"
+
+msgid "Comms"
+msgstr "Communications"
+
+msgid "Create New Invite"
+msgstr "Créer une nouvelle invitation"
+
+msgid "Create invite"
+msgstr "Créer une invitation"
+
+msgid "Existing invite"
+msgstr "Invitation existante"
+
+msgid "Expires:"
+msgstr "Expiration :"
+
+msgid "For"
+msgstr "Pour"
+
+msgid "For: Any case worker"
+msgstr "Pour : Tout intervenant"
+
+msgid "Invite History"
+msgstr "Historique des invitations"
+
+msgid "Invite created"
+msgstr "Invitation créée"
+
+msgid "Invite to Portal"
+msgstr "Inviter au portail"
+
+msgid "Invited by"
+msgstr "Invité par"
+
+msgid "Last 14 days"
+msgstr "Derniers 14 jours"
+
+msgid "Last 30 days"
+msgstr "Derniers 30 jours"
+
+msgid "Last Activity"
+msgstr "Dernière activité"
+
+msgid "Leave Message"
+msgstr "Laisser un message"
+
+msgid "Leave blank to notify all case workers on this file."
+msgstr "Laissez vide pour notifier tous les intervenants de ce dossier."
+
+msgid "MFA method"
+msgstr "Méthode AMF"
+
+msgid "Manage portal access"
+msgstr "Gérer l\u2019accès au portail"
+
+msgid "Mark as Read"
+msgstr "Marquer comme lu"
+
+msgid "Meeting:"
+msgstr "Réunion :"
+
+msgid "Message left successfully."
+msgstr "Message laissé avec succès."
+
+msgid "Messages"
+msgstr "Messages"
+
+msgid "My Messages"
+msgstr "Mes messages"
+
+msgid "No messages."
+msgstr "Aucun message."
+
+msgid "No portal account exists for this participant."
+msgstr "Aucun compte portail n\u2019existe pour ce participant."
+
+msgid "No staff activity found for this period."
+msgstr "Aucune activité du personnel trouvée pour cette période."
+
+msgid "No unread messages."
+msgstr "Aucun message non lu."
+
+msgid "Pending Correction Requests"
+msgstr "Demandes de correction en attente"
+
+msgid "Portal Access"
+msgstr "Accès au portail"
+
+msgid "Reset MFA"
+msgstr "Réinitialiser l\u2019AMF"
+
+msgid "Revoke Access"
+msgstr "Révoquer l\u2019accès"
+
+msgid "Selected staff member not found."
+msgstr "Membre du personnel sélectionné introuvable."
+
+msgid ""
+"Share this code verbally — do not write it down or include it in the link."
+msgstr ""
+"Partagez ce code verbalement — ne l\u2019écrivez pas et ne l\u2019incluez pas dans le "
+"lien."
+
+msgid "Share this link with the participant:"
+msgstr "Partagez ce lien avec le participant :"
+
+msgid ""
+"Staff member this message is for. Blank = any case worker on this file."
+msgstr "Membre du personnel destinataire. Vide = tout intervenant de ce dossier."
+
+msgid "Team Activity"
+msgstr "Activité de l\u2019équipe"
+
+msgid "Team Activity Summary"
+msgstr "Résumé de l\u2019activité de l\u2019équipe"
+
+msgid "Team activity summary"
+msgstr "Résumé de l\u2019activité de l\u2019équipe"
+
+msgid "This view is for program managers only."
+msgstr "Cette vue est réservée aux gestionnaires de programme."
+
+msgid "Time Range"
+msgstr "Période"
+
+msgid "Unread"
+msgstr "Non lu"
+
+msgid "Verification code:"
+msgstr "Code de vérification :"
+
+msgid "View Messages"
+msgstr "Voir les messages"
+
+msgid ""
+"You can create a new invite — the old one will remain valid until it "
+"expires."
+msgstr ""
+"Vous pouvez créer une nouvelle invitation — l\u2019ancienne restera valide "
+"jusqu\u2019à son expiration."
+
+msgid "You do not have permission to view messages."
+msgstr "Vous n\u2019avez pas la permission de voir les messages."
+
+msgid "e.g. Sarah called, wants to reschedule Thursday appointment"
+msgstr "ex. Sarah a appelé, veut reporter le rendez-vous de jeudi"
+
+msgid "— Any case worker —"
+msgstr "— Tout intervenant —"

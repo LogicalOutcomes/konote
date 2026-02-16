@@ -15,6 +15,8 @@ urlpatterns = [
     path("client/<int:client_id>/analysis/", views.client_analysis, name="client_analysis"),
     path("client/<int:client_id>/pdf/", pdf_views.client_progress_pdf, name="client_progress_pdf"),
     path("client/<int:client_id>/export/", pdf_views.client_export, name="client_export"),
+    # Team meeting view
+    path("team-meeting/", views.team_meeting_view, name="team_meeting_view"),
     # Secure export links
     path("download/<uuid:link_id>/", views.download_export, name="download_export"),
     path("export-links/", views.manage_export_links, name="manage_export_links"),

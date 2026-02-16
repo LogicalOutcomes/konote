@@ -18,7 +18,7 @@
 
     <div class="button-group">
         <button type="submit">{% trans "Save note" %}</button>
-        <a href="{% url 'client_detail' pk=client_file.pk %}" class="secondary">{% trans "Cancel" %}</a>
+        <a href="{% url 'clients:client_detail' client_id=client_file.pk %}" class="secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
 
