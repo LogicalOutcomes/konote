@@ -8,6 +8,16 @@
 
 ## Active Work
 
+### Phase: Plan Page UX Overhaul
+
+**Phase B — AI Goal Builder** (see tasks/plan-page-ux-overhaul.md)
+
+- [ ] Build `build_goal()` AI function combining outcome improvement + metric suggestion in one call (PLAN-B1)
+- [ ] Create Goal Builder HTMX panel — conversational "What does the participant want to achieve?" flow (PLAN-B2)
+- [ ] Wire Goal Builder to create PlanTarget + attach metrics + assign section in one save (PLAN-B3)
+- [ ] Add PII scrubbing to Goal Builder input before AI call (PLAN-B4)
+- [ ] Add Goal Builder tests — AI mock, PII safety, form validation (PLAN-B5)
+
 ### Phase: Launch Readiness
 
 - [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — GG (ONBOARD-GATE)
@@ -61,6 +71,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Plan page Phase A — subtle text links, actions dropdown, plain-language status forms, no browser confirm dialogs — 2026-02-16 (PLAN-A1–A5)
 - [x] Review and merge fix/audit-log-pm-scoping — fixes PM audit log scoping bug — 2026-02-16 (AUDIT-SCOPE1)
 - [x] Delete temporary push folders and junk files (C:\Temp\konote-push, _ul, NUL) — 2026-02-16 (CLEANUP1)
 - [x] Fix portal nav: add missing links (Milestones, Journal, Messages), restore Leave quickly spacing, register feature toggles — 2026-02-15 (PORTAL-FIX1)
