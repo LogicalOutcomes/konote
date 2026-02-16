@@ -1,16 +1,22 @@
-"""Executive dashboard — aggregate, de-identified metrics for leadership."""
+"""Executive dashboard -- aggregate, de-identified metrics for leadership.
+
+Performance note: The per-program statistics section uses batch queries
+(annotate + values) instead of per-program loops.  This reduces the query
+count from ~12 * N (where N = number of programs) to a fixed ~10 queries
+regardless of how many programs exist.
+"""
 from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
+from django.db.models import Count, Q
 from django.shortcuts import render
 from django.utils import timezone
 
 
 # ---------------------------------------------------------------------------
-# Metric helper functions
+# Metric helper functions (single-program versions, kept for unit tests)
 # ---------------------------------------------------------------------------
-
 def _count_without_notes(active_client_ids, program_ids, month_start):
     """Active clients with no ProgressNote created this month."""
     from apps.notes.models import ProgressNote
@@ -145,6 +151,258 @@ def _calc_portal_adoption(active_client_ids):
 
 
 # ---------------------------------------------------------------------------
+# Batch metric helpers (all programs in one query each)
+# ---------------------------------------------------------------------------
+
+def _batch_enrolment_stats(filtered_program_ids, base_client_ids, month_start):
+    """Return per-program client counts in a single pass.
+
+    Returns dict of program_id -> {total, active, new_this_month, active_ids,
+    enrolled_ids}.
+    """
+    from apps.clients.models import ClientProgramEnrolment
+
+    # One query: all enrolments for filtered programs, joined to client status
+    enrolments = (
+        ClientProgramEnrolment.objects.filter(
+            program_id__in=filtered_program_ids,
+            status="enrolled",
+            client_file_id__in=base_client_ids,
+        )
+        .values_list(
+            "program_id",
+            "client_file_id",
+            "client_file__status",
+            "client_file__created_at",
+        )
+    )
+
+    stats = {}
+    for pid in filtered_program_ids:
+        stats[pid] = {
+            "total": 0,
+            "active": 0,
+            "new_this_month": 0,
+            "active_ids": set(),
+            "enrolled_ids": set(),
+        }
+
+    for prog_id, client_id, client_status, created_at in enrolments:
+        s = stats.get(prog_id)
+        if s is None:
+            continue
+        s["total"] += 1
+        s["enrolled_ids"].add(client_id)
+        if client_status == "active":
+            s["active"] += 1
+            s["active_ids"].add(client_id)
+        if created_at and created_at >= month_start:
+            s["new_this_month"] += 1
+
+    return stats
+
+
+def _batch_notes_this_week(filtered_program_ids, week_start):
+    """Count notes created this week, grouped by author_program_id."""
+    from apps.notes.models import ProgressNote
+
+    rows = (
+        ProgressNote.objects.filter(
+            author_program_id__in=filtered_program_ids,
+            created_at__gte=week_start,
+            status="default",
+        )
+        .values("author_program_id")
+        .annotate(cnt=Count("id"))
+    )
+    return {r["author_program_id"]: r["cnt"] for r in rows}
+
+
+def _batch_engagement_quality(filtered_program_ids, month_start):
+    """Engagement quality % per program in one query.
+
+    Returns dict of program_id -> int (percentage) or None.
+    """
+    from apps.notes.models import ProgressNote
+
+    rows = (
+        ProgressNote.objects.filter(
+            author_program_id__in=filtered_program_ids,
+            created_at__gte=month_start,
+            status="default",
+        )
+        .exclude(engagement_observation__in=["", "no_interaction"])
+        .values("author_program_id")
+        .annotate(
+            total=Count("id"),
+            positive=Count(
+                "id",
+                filter=Q(engagement_observation__in=["engaged", "valuing"]),
+            ),
+        )
+    )
+    result = {}
+    for r in rows:
+        total = r["total"]
+        if total == 0:
+            result[r["author_program_id"]] = None
+        else:
+            result[r["author_program_id"]] = round(r["positive"] / total * 100)
+    return result
+
+
+def _batch_goal_completion(filtered_program_ids):
+    """Goal completion % per program in one query.
+
+    Returns dict of program_id -> int (percentage) or None.
+    """
+    from apps.plans.models import PlanTarget
+
+    rows = (
+        PlanTarget.objects.filter(
+            plan_section__program_id__in=filtered_program_ids,
+            status__in=["default", "completed"],
+        )
+        .values("plan_section__program_id")
+        .annotate(
+            total=Count("id"),
+            completed=Count("id", filter=Q(status="completed")),
+        )
+    )
+    result = {}
+    for r in rows:
+        pid = r["plan_section__program_id"]
+        total = r["total"]
+        if total == 0:
+            result[pid] = None
+        else:
+            result[pid] = round(r["completed"] / total * 100)
+    return result
+
+
+def _batch_intake_pending(filtered_program_ids):
+    """Pending intake count per program in one query."""
+    from apps.registration.models import RegistrationSubmission
+
+    rows = (
+        RegistrationSubmission.objects.filter(
+            registration_link__program_id__in=filtered_program_ids,
+            status="pending",
+        )
+        .values("registration_link__program_id")
+        .annotate(cnt=Count("id"))
+    )
+    return {r["registration_link__program_id"]: r["cnt"] for r in rows}
+
+
+def _batch_no_show_rate(filtered_program_ids, month_start):
+    """No-show rate per program in one query.
+
+    Returns dict of program_id -> int (percentage) or None.
+    """
+    from apps.events.models import Meeting
+
+    rows = (
+        Meeting.objects.filter(
+            event__author_program_id__in=filtered_program_ids,
+            event__start_timestamp__gte=month_start,
+            status__in=["completed", "no_show"],
+        )
+        .values("event__author_program_id")
+        .annotate(
+            total=Count("id"),
+            no_shows=Count("id", filter=Q(status="no_show")),
+        )
+    )
+    result = {}
+    for r in rows:
+        pid = r["event__author_program_id"]
+        total = r["total"]
+        if total == 0:
+            result[pid] = None
+        else:
+            result[pid] = round(r["no_shows"] / total * 100)
+    return result
+
+
+def _batch_group_attendance(filtered_program_ids, month_start):
+    """Group attendance % per program in one query.
+
+    Returns a tuple of (attendance_map, programs_with_groups) where
+    attendance_map is dict of program_id -> int (percentage) or None,
+    and programs_with_groups is a set of program IDs that have active groups.
+    """
+    from apps.groups.models import Group, GroupSessionAttendance
+
+    # Which programs have active groups? (one query)
+    programs_with_groups = set(
+        Group.objects.filter(
+            program_id__in=filtered_program_ids,
+            status="active",
+        ).values_list("program_id", flat=True)
+    )
+
+    if not programs_with_groups:
+        return {}, programs_with_groups
+
+    rows = (
+        GroupSessionAttendance.objects.filter(
+            group_session__group__program_id__in=programs_with_groups,
+            group_session__session_date__gte=month_start.date(),
+        )
+        .values("group_session__group__program_id")
+        .annotate(
+            total=Count("id"),
+            present=Count("id", filter=Q(present=True)),
+        )
+    )
+    result = {}
+    for r in rows:
+        pid = r["group_session__group__program_id"]
+        total = r["total"]
+        if total == 0:
+            result[pid] = None
+        else:
+            result[pid] = round(r["present"] / total * 100)
+    return result, programs_with_groups
+
+
+def _batch_portal_adoption(enrolment_stats):
+    """Portal adoption % per program in one query.
+
+    Takes the enrolment_stats dict (from _batch_enrolment_stats) and returns
+    dict of program_id -> int (percentage) or None.
+    """
+    from apps.portal.models import ParticipantUser
+
+    # Collect all active client IDs across all programs
+    all_active_ids = set()
+    for s in enrolment_stats.values():
+        all_active_ids.update(s["active_ids"])
+
+    if not all_active_ids:
+        return {}
+
+    # One query: which active clients have portal accounts?
+    clients_with_portal = set(
+        ParticipantUser.objects.filter(
+            client_file_id__in=all_active_ids,
+            is_active=True,
+        ).values_list("client_file_id", flat=True)
+    )
+
+    result = {}
+    for pid, s in enrolment_stats.items():
+        active_ids = s["active_ids"]
+        if not active_ids:
+            result[pid] = None
+        else:
+            with_portal = len(active_ids & clients_with_portal)
+            result[pid] = round(with_portal / len(active_ids) * 100)
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Feature flags (reuse cached context processor pattern)
 # ---------------------------------------------------------------------------
 
@@ -162,6 +420,7 @@ def _get_feature_flags():
     return flags
 
 
+
 # ---------------------------------------------------------------------------
 # Main view
 # ---------------------------------------------------------------------------
@@ -174,10 +433,12 @@ def executive_dashboard(request):
     Executives see high-level program metrics without access to individual
     client records. This protects client confidentiality while giving
     leadership the oversight they need.
+
+    Optimised: uses batch queries (annotate/values grouped by program_id)
+    instead of per-program loops. Total query count is fixed (~10) regardless
+    of the number of programs.
     """
     from apps.clients.models import ClientProgramEnrolment
-    from apps.groups.models import Group
-    from apps.notes.models import ProgressNote
     from apps.programs.models import Program, UserProgramRole
 
     from .views import get_client_queryset
@@ -242,7 +503,7 @@ def executive_dashboard(request):
     )
     filtered_program_ids = list(filtered_programs.values_list("pk", flat=True))
 
-    # ── Top-line summary cards ──────────────────────────────────────────
+    # -- Top-line summary cards ------------------------------------------
     total_active = len(all_active_ids)
     without_notes = _count_without_notes(all_active_ids, filtered_program_ids, month_start)
     overdue_followups = _count_overdue_followups(all_client_ids, today)
@@ -250,61 +511,77 @@ def executive_dashboard(request):
     show_alerts = flags.get("alerts", False)
     active_alerts = _count_active_alerts(all_client_ids) if show_alerts else None
 
-    # ── Per-program cards ───────────────────────────────────────────────
-    program_stats = []
-    total_clients = 0
-
+    # -- Per-program cards (batch queries) -------------------------------
     show_events = flags.get("events", False)
     show_portal = flags.get("portal_journal", False) or flags.get("portal_messaging", False)
 
+    # All base_client IDs (for filtering enrolments to accessible clients)
+    base_client_ids = set(base_clients.values_list("pk", flat=True))
+
+    # Batch: enrolment stats (total, active, new_this_month per program)
+    enrolment_stats = _batch_enrolment_stats(
+        filtered_program_ids, base_client_ids, month_start,
+    )
+
+    # Batch: notes this week per program
+    notes_week_map = _batch_notes_this_week(filtered_program_ids, week_start)
+
+    # Batch: engagement quality per program
+    engagement_map = _batch_engagement_quality(filtered_program_ids, month_start)
+
+    # Batch: goal completion per program
+    goal_map = _batch_goal_completion(filtered_program_ids)
+
+    # Batch: intake pending per program
+    intake_map = _batch_intake_pending(filtered_program_ids)
+
+    # Batch: no-show rate per program (conditional)
+    no_show_map = (
+        _batch_no_show_rate(filtered_program_ids, month_start)
+        if show_events else {}
+    )
+
+    # Batch: group attendance per program
+    group_att_map, programs_with_groups = _batch_group_attendance(
+        filtered_program_ids, month_start,
+    )
+
+    # Batch: portal adoption per program (conditional)
+    portal_map = (
+        _batch_portal_adoption(enrolment_stats)
+        if show_portal else {}
+    )
+
+    # Assemble per-program stat dicts
+    program_stats = []
+    total_clients = 0
+
     for program in filtered_programs:
-        # Clients enrolled in this program
-        enrolled_client_ids = set(
-            ClientProgramEnrolment.objects.filter(
-                program=program, status="enrolled"
-            ).values_list("client_file_id", flat=True)
-        )
-        program_clients = base_clients.filter(pk__in=enrolled_client_ids)
-
-        active = program_clients.filter(status="active").count()
-        total = program_clients.count()
-        active_ids = set(
-            program_clients.filter(status="active").values_list("pk", flat=True)
-        )
-
-        new_this_month = program_clients.filter(created_at__gte=month_start).count()
-
-        notes_this_week = ProgressNote.objects.filter(
-            client_file_id__in=enrolled_client_ids,
-            created_at__gte=week_start,
-            status="default",
-        ).count()
+        pid = program.pk
+        es = enrolment_stats.get(pid, {})
 
         stat = {
             "program": program,
-            "total": total,
-            "active": active,
-            "new_this_month": new_this_month,
-            "notes_this_week": notes_this_week,
-            # New metrics
-            "engagement_quality": _calc_engagement_quality(program, month_start),
-            "goal_completion": _calc_goal_completion(program),
-            "intake_pending": _count_intake_pending(program),
+            "total": es.get("total", 0),
+            "active": es.get("active", 0),
+            "new_this_month": es.get("new_this_month", 0),
+            "notes_this_week": notes_week_map.get(pid, 0),
+            "engagement_quality": engagement_map.get(pid),
+            "goal_completion": goal_map.get(pid),
+            "intake_pending": intake_map.get(pid, 0),
         }
 
-        # Conditional metrics
         if show_events:
-            stat["no_show_rate"] = _calc_no_show_rate(program, month_start)
+            stat["no_show_rate"] = no_show_map.get(pid)
 
-        has_groups = Group.objects.filter(program=program, status="active").exists()
-        if has_groups:
-            stat["group_attendance"] = _calc_group_attendance(program, month_start)
+        if pid in programs_with_groups:
+            stat["group_attendance"] = group_att_map.get(pid)
 
         if show_portal:
-            stat["portal_adoption"] = _calc_portal_adoption(active_ids)
+            stat["portal_adoption"] = portal_map.get(pid)
 
         program_stats.append(stat)
-        total_clients += total
+        total_clients += es.get("total", 0)
 
     return render(request, "clients/executive_dashboard.html", {
         "programs": programs,
