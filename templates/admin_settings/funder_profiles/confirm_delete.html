@@ -9,7 +9,7 @@
     <p>{% blocktrans with name=profile.name %}Are you sure you want to delete "{{ name }}"?{% endblocktrans %}</p>
 </hgroup>
 
-<article class="pico-background-red-100" aria-label="{% trans 'Warning' %}" role="alert" style="border-left: 4px solid var(--pico-color-red-500); padding: 1rem; margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'Warning' %}" role="alert" style="background: var(--kn-danger-bg); border-left: 4px solid var(--kn-danger-fg); padding: 1rem; margin-bottom: 1.5rem;">
     <strong>{% trans "This action cannot be undone." %}</strong>
     <p style="margin-bottom: 0;">
         {% blocktrans %}Deleting this profile will remove all its demographic breakdown definitions. Existing reports that were generated using this profile will not be affected, but future reports will no longer be able to use these breakdowns.{% endblocktrans %}
@@ -27,7 +27,7 @@
 
 <form method="post">
     {% csrf_token %}
-    <button type="submit" style="--pico-background-color: var(--pico-color-red-500); --pico-border-color: var(--pico-color-red-500);">{% trans "Yes, Delete Template" %}</button>
+    <button type="submit" style="--pico-background-color: var(--kn-danger-fg); --pico-border-color: var(--kn-danger-fg);">{% trans "Yes, Delete Template" %}</button>
     <a href="{% url 'admin_settings:report_template_detail' profile.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
 </form>
 {% endblock %}

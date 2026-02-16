@@ -67,7 +67,7 @@
 
 <h2>{% trans "Diagnosis" %}</h2>
 {% if diagnosis %}
-<article class="{% if diagnosis_type == 'error' %}pico-background-red-500{% elif diagnosis_type == 'warning' %}pico-background-yellow-500{% else %}pico-background-green-500{% endif %}">
+<article style="background: {% if diagnosis_type == 'error' %}var(--kn-danger-bg){% elif diagnosis_type == 'warning' %}var(--kn-warning-bg){% else %}var(--kn-success-bg){% endif %}; color: {% if diagnosis_type == 'error' %}var(--kn-danger-fg){% elif diagnosis_type == 'warning' %}var(--kn-warning-fg){% else %}var(--kn-success-fg){% endif %};">
     <p><strong>{{ diagnosis }}</strong></p>
 </article>
 {% endif %}
@@ -92,7 +92,7 @@
             <td>{{ sim.metric }}</td>
             <td>{{ sim.values_found }}</td>
             <td>{{ sim.numeric_values }}</td>
-            <td>{% if sim.would_show %}<mark style="background: #90EE90;">{% trans "YES" %}</mark>{% else %}<mark style="background: #FFB6C1;">{% trans "NO" %}</mark>{% endif %}</td>
+            <td>{% if sim.would_show %}<mark style="background: var(--kn-success-bg); color: var(--kn-success-fg);">{% trans "YES" %}</mark>{% else %}<mark style="background: var(--kn-danger-bg); color: var(--kn-danger-fg);">{% trans "NO" %}</mark>{% endif %}</td>
         </tr>
         {% empty %}
         <tr>

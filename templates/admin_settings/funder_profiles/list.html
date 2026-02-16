@@ -50,7 +50,7 @@
                     &nbsp;|&nbsp;
                     <a href="{% url 'admin_settings:report_template_edit_programs' profile.pk %}" class="secondary">{% trans "Programs" %}</a>
                     &nbsp;|&nbsp;
-                    <a href="{% url 'admin_settings:report_template_delete' profile.pk %}" class="secondary" style="color: var(--pico-color-red-500);">{% trans "Delete" %}</a>
+                    <a href="{% url 'admin_settings:report_template_delete' profile.pk %}" class="secondary" style="color: var(--kn-danger-fg);">{% trans "Delete" %}</a>
                 </td>
             </tr>
             {% endfor %}
