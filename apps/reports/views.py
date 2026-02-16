@@ -319,28 +319,41 @@ def export_form(request):
     is_pm_export = not is_aggregate and not request.user.is_admin
 
     def _template_previews(bound_form):
+        if "report_template" not in bound_form.fields:
+            return ReportTemplate.objects.none()
         return (
             bound_form.fields["report_template"].queryset
             .prefetch_related("breakdowns__custom_field")
             .order_by("name")
         )
 
+    # Show admin hint when templates exist but none are linked to programs
+    show_template_hint = (
+        request.user.is_admin
+        and ReportTemplate.objects.exists()
+    )
+
     if request.method != "POST":
         form = MetricExportForm(user=request.user)
+        # Only show hint if the dropdown is actually hidden
+        hint = show_template_hint and "report_template" not in form.fields
         return render(request, "reports/export_form.html", {
             "form": form,
             "is_aggregate_only": is_aggregate,
             "is_pm_export": is_pm_export,
             "template_preview_items": _template_previews(form),
+            "show_template_hint": hint,
         })
 
     form = MetricExportForm(request.POST, user=request.user)
     if not form.is_valid():
+        hint = show_template_hint and "report_template" not in form.fields
         return render(request, "reports/export_form.html", {
             "form": form,
             "is_aggregate_only": is_aggregate,
             "is_pm_export": is_pm_export,
             "template_preview_items": _template_previews(form),
+            "show_template_hint": hint,
         })
 
     program = form.cleaned_data["program"]
@@ -954,31 +967,43 @@ def funder_report_form(request):
     - Outcome achievement rates
     """
     def _template_preview_items(bound_form):
+        if "report_template" not in bound_form.fields:
+            return ReportTemplate.objects.none()
         return (
             bound_form.fields["report_template"].queryset
             .prefetch_related("breakdowns__custom_field")
             .order_by("name")
         )
 
+    # Show admin hint when templates exist but none are linked to programs
+    show_template_hint = (
+        request.user.is_admin
+        and ReportTemplate.objects.exists()
+    )
+
     if request.method != "POST":
         form = FunderReportForm(user=request.user)
+        hint = show_template_hint and "report_template" not in form.fields
         return render(
             request,
             "reports/funder_report_form.html",
             {
                 "form": form,
                 "template_preview_items": _template_preview_items(form),
+                "show_template_hint": hint,
             },
         )
 
     form = FunderReportForm(request.POST, user=request.user)
     if not form.is_valid():
+        hint = show_template_hint and "report_template" not in form.fields
         return render(
             request,
             "reports/funder_report_form.html",
             {
                 "form": form,
                 "template_preview_items": _template_preview_items(form),
+                "show_template_hint": hint,
             },
         )
 
