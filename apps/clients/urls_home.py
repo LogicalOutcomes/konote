@@ -2,7 +2,7 @@
 from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import path
 from django.utils import timezone
 
@@ -16,6 +16,15 @@ def home(request):
     from apps.clients.views import _get_accessible_clients, _get_accessible_programs, get_client_queryset
     from apps.events.models import Alert
     from apps.notes.models import ProgressNote
+    from apps.programs.models import UserProgramRole
+
+    # --- Admin-only users have no program roles and cannot see participants ---
+    # Redirect them to the admin settings dashboard instead.
+    has_program_roles = UserProgramRole.objects.filter(
+        user=request.user, status="active"
+    ).exists()
+    if request.user.is_admin and not has_program_roles:
+        return redirect("admin_settings:dashboard")
 
     # --- Recently viewed clients (stored in session) ---
     # Security: Filter by user's demo status to enforce data separation

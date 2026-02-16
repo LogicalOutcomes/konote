@@ -182,3 +182,40 @@ class CommunicationLogForm(forms.Form):
 
     def _get_outcome_choices(self, channel):
         return self.PHONE_OUTCOME_CHOICES if channel == "phone" else self.NON_PHONE_OUTCOME_CHOICES
+
+
+class StaffMessageForm(forms.Form):
+    """Form for leaving messages for case workers."""
+
+    message = forms.CharField(
+        label=_("Message"),
+        widget=forms.Textarea(attrs={
+            "rows": 3,
+            "placeholder": _("e.g. Sarah called, wants to reschedule Thursday appointment"),
+        }),
+        max_length=500,
+    )
+
+    for_user = forms.IntegerField(
+        required=False,
+        widget=forms.Select(),
+        label=_("For"),
+    )
+
+    def __init__(self, *args, staff_choices=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        choices = [("", _("— Any case worker —"))]
+        if staff_choices:
+            choices.extend(staff_choices)
+        self.fields["for_user"].widget = forms.Select(choices=choices)
+
+    def clean_for_user(self):
+        user_id = self.cleaned_data.get("for_user")
+        if user_id:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            try:
+                return User.objects.get(pk=user_id)
+            except User.DoesNotExist:
+                raise forms.ValidationError(_("Selected staff member not found."))
+        return None

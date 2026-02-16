@@ -12092,8 +12092,8 @@ msgstr "Exportations"
 msgid ""
 "No exports were created during this period. System is operating normally."
 msgstr ""
-"Aucune exportation n'a été créée durant cette période. Le système fonctionne "
-"normalement."
+"Aucune exportation n'a été créée durant cette période. Le système fonctionne"
+" normalement."
 
 msgid "Pending download"
 msgstr "En attente de téléchargement"
@@ -12125,3 +12125,647 @@ msgstr[1] "%(counter)s exportations ont été créées durant cette période."
 #: templates/reports/email/weekly_export_summary.html
 msgid "This is an automated weekly summary from %(name)s."
 msgstr "Ceci est un résumé hebdomadaire automatique de %(name)s."
+
+#: templates/clients/_client_list_table.html
+msgid "Last Contact"
+msgstr "Dernier contact"
+
+msgid "A pending invite already exists for this participant."
+msgstr "Une invitation en attente existe déjà pour ce participant."
+
+msgid "Account Status"
+msgstr "État du compte"
+
+msgid ""
+"Activity overview for team meeting prep — shows notes, communications, and "
+"meetings by staff member."
+msgstr ""
+"Aperçu des activités pour la préparation des réunions d\\u2019équipe — "
+"notes, communications et réunions par membre du personnel."
+
+msgid ""
+"Are you sure you want to revoke portal access? The participant will be "
+"logged out immediately."
+msgstr ""
+"Voulez-vous vraiment révoquer l\\u2019accès au portail ? Le participant sera"
+" déconnecté immédiatement."
+
+msgid "Back to participant"
+msgstr "Retour au participant"
+
+msgid "Comm:"
+msgstr "Comm. :"
+
+msgid "Comms"
+msgstr "Communications"
+
+msgid "Create New Invite"
+msgstr "Créer une nouvelle invitation"
+
+msgid "Create invite"
+msgstr "Créer une invitation"
+
+msgid "Existing invite"
+msgstr "Invitation existante"
+
+msgid "Expires:"
+msgstr "Expiration :"
+
+msgid "For"
+msgstr "Pour"
+
+msgid "For: Any case worker"
+msgstr "Pour : Tout intervenant"
+
+msgid "Invite History"
+msgstr "Historique des invitations"
+
+msgid "Invite created"
+msgstr "Invitation créée"
+
+msgid "Invite to Portal"
+msgstr "Inviter au portail"
+
+msgid "Invited by"
+msgstr "Invité par"
+
+msgid "Last 14 days"
+msgstr "Derniers 14 jours"
+
+msgid "Last 30 days"
+msgstr "Derniers 30 jours"
+
+msgid "Last Activity"
+msgstr "Dernière activité"
+
+msgid "Leave Message"
+msgstr "Laisser un message"
+
+msgid "Leave blank to notify all case workers on this file."
+msgstr "Laissez vide pour notifier tous les intervenants de ce dossier."
+
+msgid "MFA method"
+msgstr "Méthode AMF"
+
+msgid "Manage portal access"
+msgstr "Gérer l\\u2019accès au portail"
+
+msgid "Mark as Read"
+msgstr "Marquer comme lu"
+
+msgid "Meeting:"
+msgstr "Réunion :"
+
+msgid "Message left successfully."
+msgstr "Message laissé avec succès."
+
+msgid "Messages"
+msgstr "Messages"
+
+msgid "My Messages"
+msgstr "Mes messages"
+
+msgid "No messages."
+msgstr "Aucun message."
+
+msgid "No portal account exists for this participant."
+msgstr "Aucun compte portail n\\u2019existe pour ce participant."
+
+msgid "No staff activity found for this period."
+msgstr "Aucune activité du personnel trouvée pour cette période."
+
+msgid "No unread messages."
+msgstr "Aucun message non lu."
+
+msgid "Pending Correction Requests"
+msgstr "Demandes de correction en attente"
+
+msgid "Portal Access"
+msgstr "Accès au portail"
+
+msgid "Reset MFA"
+msgstr "Réinitialiser l\\u2019AMF"
+
+msgid "Revoke Access"
+msgstr "Révoquer l\\u2019accès"
+
+msgid "Selected staff member not found."
+msgstr "Membre du personnel sélectionné introuvable."
+
+msgid ""
+"Share this code verbally — do not write it down or include it in the link."
+msgstr ""
+"Partagez ce code verbalement — ne l\\u2019écrivez pas et ne l\\u2019incluez "
+"pas dans le lien."
+
+msgid "Share this link with the participant:"
+msgstr "Partagez ce lien avec le participant :"
+
+msgid ""
+"Staff member this message is for. Blank = any case worker on this file."
+msgstr ""
+"Membre du personnel destinataire. Vide = tout intervenant de ce dossier."
+
+msgid "Team Activity"
+msgstr "Activité de l\\u2019équipe"
+
+msgid "Team Activity Summary"
+msgstr "Résumé de l\\u2019activité de l\\u2019équipe"
+
+msgid "Team activity summary"
+msgstr "Résumé de l\\u2019activité de l\\u2019équipe"
+
+msgid "This view is for program managers only."
+msgstr "Cette vue est réservée aux gestionnaires de programme."
+
+msgid "Time Range"
+msgstr "Période"
+
+msgid "Unread"
+msgstr "Non lu"
+
+msgid "Verification code:"
+msgstr "Code de vérification :"
+
+msgid "View Messages"
+msgstr "Voir les messages"
+
+msgid ""
+"You can create a new invite — the old one will remain valid until it "
+"expires."
+msgstr ""
+"Vous pouvez créer une nouvelle invitation — l\\u2019ancienne restera valide "
+"jusqu\\u2019à son expiration."
+
+msgid "You do not have permission to view messages."
+msgstr "Vous n\\u2019avez pas la permission de voir les messages."
+
+msgid "e.g. Sarah called, wants to reschedule Thursday appointment"
+msgstr "ex. Sarah a appelé, veut reporter le rendez-vous de jeudi"
+
+msgid "— Any case worker —"
+msgstr "— Tout intervenant —"
+
+msgid "No portal account."
+msgstr "Aucun compte portail."
+
+msgid "Portal access: Active"
+msgstr "Accès au portail\\u00a0: Actif"
+
+msgid "Portal access: Deactivated"
+msgstr "Accès au portail\\u00a0: Désactivé"
+
+msgid "Verification code (optional)"
+msgstr "Code de vérification (facultatif)"
+
+msgid "Verification code must be exactly 4 digits."
+msgstr "Le code de vérification doit comporter exactement 4 chiffres."
+
+msgid "Demographic breakdowns in this template:"
+msgstr "Ventilations démographiques dans ce modèle :"
+
+#: templates/reports/export_form.html
+#: templates/reports/funder_report_form.html
+msgid ""
+"\n"
+"            <strong>Admin tip:</strong> You have report templates configured, but none are linked to programs yet.\n"
+"            To use them here, go to <a href=\"%(settings_url)s\">Settings &rarr; Report Templates</a>,\n"
+"            open a template, and assign it to the relevant program(s).\n"
+"            "
+msgstr ""
+"\n"
+"            <strong>Conseil admin :</strong> Vous avez des modèles de rapport configurés, mais aucun n'est encore lié à des programmes.\n"
+"            Pour les utiliser ici, allez dans <a href=\"%(settings_url)s\">Paramètres &rarr; Modèles de rapport</a>,\n"
+"            ouvrez un modèle et associez-le aux programmes concernés.\n"
+"            "
+
+#: templates/clients/executive_dashboard.html
+msgid "Without Notes This Month"
+msgstr "Sans notes ce mois-ci"
+
+#: templates/clients/executive_dashboard.html
+msgid "Overdue Follow-ups"
+msgstr "Suivis en retard"
+
+#: templates/clients/executive_dashboard.html
+msgid "Active Safety Alerts"
+msgstr "Alertes de sécurité actives"
+
+#: templates/clients/executive_dashboard.html
+msgid "Needs attention"
+msgstr "Nécessite une attention"
+
+#: templates/clients/executive_dashboard.html
+msgid "No-Show Rate"
+msgstr "Taux d'absence"
+
+#: templates/clients/executive_dashboard.html
+msgid "Engagement Quality"
+msgstr "Qualité de l'engagement"
+
+#: templates/clients/executive_dashboard.html
+msgid "Goal Completion Rate"
+msgstr "Taux d'atteinte des objectifs"
+
+#: templates/clients/executive_dashboard.html
+msgid "Intake Pipeline"
+msgstr "Inscriptions en attente"
+
+#: templates/clients/executive_dashboard.html
+msgid "Group Attendance"
+msgstr "Taux de présence aux groupes"
+
+#: templates/clients/executive_dashboard.html
+msgid "Portal Adoption"
+msgstr "Adoption du portail"
+
+#: templates/clients/executive_dashboard.html
+msgid "Filter by"
+msgstr "Filtrer par"
+
+msgid "No program assignments"
+msgstr "Aucune affectation de programme"
+
+msgid ""
+"To see team activity, ask an administrator to assign you to one or more "
+"programs."
+msgstr ""
+"Pour voir l'activité de l'équipe, demandez à un administrateur de vous "
+"affecter à un ou plusieurs programmes."
+
+msgid ""
+"You are not currently assigned to any programs. This view shows staff "
+"activity for the programs you are assigned to."
+msgstr ""
+"Vous n'êtes actuellement affecté(e) à aucun programme. Cette vue affiche "
+"l'activité du personnel pour les programmes auxquels vous êtes affecté(e)."
+
+#: templates/reports/team_meeting.html
+#, python-format
+msgid "Showing activity since %(date)s"
+msgstr "Activité depuis le %(date)s"
+
+#: templates/reports/_insights_basic.html
+#: templates/reports/_insights_client.html
+#, python-format
+msgid "On their %(target)s goal"
+msgstr "Sur leur objectif %(target)s"
+
+#: templates/reports/_insights_ai.html
+#, python-format
+msgid "Generated %(dt)s"
+msgstr "Généré le %(dt)s"
+
+#: templates/reports/export_link_created.html
+#, python-format
+msgid ""
+"It %(strong_open)sdoes not%(strong_close)s contain participant names, "
+"contact information, addresses, or session notes."
+msgstr ""
+"Il ne contient %(strong_open)spas%(strong_close)s de noms de participants, "
+"de coordonnées, d'adresses ni de notes de séance."
+
+#: templates/reports/export_link_pending.html
+msgid ""
+"For security, there is a short delay before the download becomes available. "
+"Administrators have been notified."
+msgstr ""
+"Pour des raisons de sécurité, il y a un court délai avant que le "
+"téléchargement ne soit disponible. Les administrateurs ont été avisés."
+
+#: templates/clients/executive_dashboard.html (sr-only status labels)
+msgid "Good"
+msgstr "Bon"
+
+msgid "Fair"
+msgstr "Acceptable"
+
+msgid "High"
+msgstr "Élevé"
+
+msgid "15 minutes"
+msgstr "15 minutes"
+
+msgid "30 minutes"
+msgstr "30 minutes"
+
+msgid "60 minutes"
+msgstr "60 minutes"
+
+msgid ""
+"Configure the location options and time slots shown when scheduling "
+"meetings."
+msgstr ""
+"Configurez les options de lieu et les créneaux horaires affichés lors de la "
+"planification de réunions."
+
+msgid "Custom Location"
+msgstr "Lieu personnalisé"
+
+msgid "Earliest time slot shown when scheduling meetings (0–23)."
+msgstr ""
+"Premier créneau horaire affiché lors de la planification de réunions (0–23)."
+
+msgid "Gap between time slots in the meeting picker."
+msgstr "Intervalle entre les créneaux horaires dans le sélecteur de réunions."
+
+msgid "Latest time slot shown when scheduling meetings (1–24)."
+msgstr ""
+"Dernier créneau horaire affiché lors de la planification de réunions (1–24)."
+
+msgid "Location Options"
+msgstr "Options de lieu"
+
+msgid "One option per line. Workers can also type a custom location."
+msgstr ""
+"Une option par ligne. Les intervenants peuvent aussi saisir un lieu "
+"personnalisé."
+
+msgid "Please type a location."
+msgstr "Veuillez saisir un lieu."
+
+msgid "Select a location…"
+msgstr "Sélectionner un lieu…"
+
+msgid "Time Slot End Hour"
+msgstr "Heure de fin des créneaux"
+
+msgid "Time Slot Interval"
+msgstr "Intervalle des créneaux"
+
+msgid "Time Slot Start Hour"
+msgstr "Heure de début des créneaux"
+
+msgid "Type your location"
+msgstr "Saisir votre lieu"
+
+msgid "(completed)"
+msgstr ""
+
+msgid "Add another group"
+msgstr ""
+
+msgid "Add another program"
+msgstr ""
+
+msgid "Add another template"
+msgstr ""
+
+msgid "Add the programs your organisation runs. You can add more later."
+msgstr ""
+
+msgid "Applied configuration summary"
+msgstr ""
+
+msgid "Apply Configuration"
+msgstr ""
+
+msgid "Brief description of this program"
+msgstr ""
+
+msgid "Brief description of this template"
+msgstr ""
+
+msgid ""
+"Choose which metrics to enable from the library. You can change these later."
+msgstr ""
+
+msgid "Choose which modules to enable for your organisation."
+msgstr ""
+
+msgid "Colour"
+msgstr ""
+
+msgid "Configuration Summary"
+msgstr ""
+
+msgid "Configuration preview"
+msgstr ""
+
+msgid "Configure your KoNote instance step by step."
+msgstr ""
+
+msgid ""
+"Customise the words used throughout the system. Leave blank to keep the "
+"default."
+msgstr ""
+
+msgid ""
+"Define custom field groups for client intake forms. You can add individual "
+"fields to each group later."
+msgstr ""
+
+msgid ""
+"Define plan templates that staff can use when creating client plans. You can"
+" add sections and targets later."
+msgstr ""
+
+msgid "Deselect All"
+msgstr ""
+
+msgid "Displayed in the footer for staff to contact."
+msgstr ""
+
+msgid "Error applying configuration. Please check the logs and try again."
+msgstr ""
+
+msgid "Feature Toggles"
+msgstr ""
+
+msgid "Field Group"
+msgstr ""
+
+msgid "Go to Admin Settings"
+msgstr ""
+
+msgid "Group Title"
+msgstr ""
+
+msgid "Grouping is handled by the selected reporting template."
+msgstr "Le regroupement est géré par le modèle de rapport sélectionné."
+
+msgid "Metric library"
+msgstr ""
+
+msgid "Metrics"
+msgstr ""
+
+msgid "Next: Custom Fields"
+msgstr ""
+
+msgid "Next: Features"
+msgstr ""
+
+msgid "Next: Metrics"
+msgstr ""
+
+msgid "Next: Plan Templates"
+msgstr ""
+
+msgid "Next: Programs"
+msgstr ""
+
+msgid "Next: Review"
+msgstr ""
+
+msgid "Next: Terminology"
+msgstr ""
+
+msgid "Plan Template"
+msgstr ""
+
+msgid "Program Name"
+msgstr ""
+
+msgid "Raw configuration (JSON)"
+msgstr ""
+
+msgid "Result"
+msgstr ""
+
+msgid "Review & Apply"
+msgstr ""
+
+msgid "Review your configuration before applying it to the system."
+msgstr ""
+
+msgid "Run Wizard Again"
+msgstr ""
+
+msgid "Select All"
+msgstr ""
+
+msgid "Set up basic information about your organisation."
+msgstr ""
+
+msgid "Setup Complete"
+msgstr ""
+
+msgid "Setup Wizard"
+msgstr ""
+
+msgid "Setup configuration applied successfully."
+msgstr ""
+
+msgid "Setup wizard reset. You can start over."
+msgstr ""
+
+msgid "Step 1: Instance Settings"
+msgstr ""
+
+msgid "Step 2: Terminology"
+msgstr ""
+
+msgid "Step 3: Feature Toggles"
+msgstr ""
+
+msgid "Step 4: Programs"
+msgstr ""
+
+msgid "Step 5: Metrics"
+msgstr ""
+
+msgid "Step 6: Plan Templates"
+msgstr ""
+
+msgid "Step 7: Custom Fields"
+msgstr ""
+
+msgid "Step 8: Review & Apply"
+msgstr ""
+
+msgid "Terminology overrides"
+msgstr ""
+
+msgid "URL to your organisation logo image. Optional."
+msgstr ""
+
+msgid "Wizard progress"
+msgstr ""
+
+msgid "Your KoNote instance has been configured successfully."
+msgstr ""
+
+msgid "Your Term"
+msgstr ""
+
+msgid "e.g. Demographics"
+msgstr ""
+
+msgid "e.g. Youth Housing"
+msgstr ""
+
+msgid "e.g. Youth Housing Plan"
+msgstr ""
+
+msgid "edit"
+msgstr "modifier"
+
+msgid "mark complete"
+msgstr "marquer comme terminé"
+
+msgid "reactivate"
+msgstr "réactiver"
+
+msgid "Change status to completed or deactivated"
+msgstr "Changer le statut en terminé ou désactivé"
+
+msgid "Choose how to measure progress"
+msgstr "Choisir comment mesurer les progrès"
+
+msgid "Currently:"
+msgstr "Actuellement :"
+
+msgid "Mark Complete"
+msgstr "Marquer comme terminé"
+
+msgid "Reactivate"
+msgstr "Réactiver"
+
+msgid "Set back to active"
+msgstr "Remettre en état actif"
+
+msgid "View past changes"
+msgstr "Voir les modifications passées"
+
+#: templates/plans/_target.html
+#, python-format
+msgid "Edit this %(target)s"
+msgstr "Modifier ce %(target)s"
+
+#: templates/plans/_section_status.html
+#, python-format
+msgid ""
+"Completing or deactivating this area will also affect %(count)s active "
+"%(targets)s within it. You can undo this later."
+msgstr ""
+"Terminer ou désactiver ce domaine affectera également %(count)s "
+"%(targets)s actifs. Vous pourrez annuler cette action plus tard."
+
+#: templates/plans/_section_status.html
+#, python-format
+msgid ""
+"This area has %(count)s %(targets)s. Reactivating it will make them "
+"editable again."
+msgstr ""
+"Ce domaine contient %(count)s %(targets)s. Le réactiver les rendra "
+"modifiables à nouveau."
+
+#: templates/plans/_target_status.html
+#, python-format
+msgid ""
+"You can mark this %(target)s as completed when it's been achieved, or "
+"deactivate it if it's no longer relevant. You can undo this later."
+msgstr ""
+"Vous pouvez marquer ce %(target)s comme terminé lorsqu'il est atteint, "
+"ou le désactiver s'il n'est plus pertinent. Vous pourrez annuler cette "
+"action plus tard."
+
+#: templates/plans/_target_status.html
+#, python-format
+msgid ""
+"Reactivating this %(target)s will make it editable and visible in "
+"progress notes again."
+msgstr ""
+"Réactiver ce %(target)s le rendra modifiable et visible dans les notes "
+"de suivi à nouveau."

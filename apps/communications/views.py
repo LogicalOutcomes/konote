@@ -14,9 +14,11 @@ from apps.clients.models import ClientFile
 from apps.events.models import Event, Meeting
 from apps.programs.access import get_author_program, get_client_or_403, get_program_from_client
 
-from apps.auth_app.decorators import requires_permission
+from apps.auth_app.decorators import requires_permission, requires_permission_global
 
-from .forms import CommunicationLogForm, PersonalNoteForm, QuickLogForm, SendEmailForm
+from django.db import models as db_models
+
+from .forms import CommunicationLogForm, PersonalNoteForm, QuickLogForm, SendEmailForm, StaffMessageForm
 from .models import Communication
 
 
@@ -281,4 +283,162 @@ def email_unsubscribe(request, token):
         "confirm": True,
         "channel": channel,
         "channel_display": channel_display,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Staff Messages — front desk leaves messages for case workers
+# ---------------------------------------------------------------------------
+
+@login_required
+@requires_permission("message.leave", _get_program_from_client)
+def leave_message(request, client_id):
+    """Leave a message for a case worker about a participant."""
+    client = get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden(_("You do not have access to this client."))
+
+    # Build staff choices for dropdown
+    from apps.programs.access import get_user_program_ids
+    from apps.clients.models import ClientProgramEnrolment
+    from apps.programs.models import UserProgramRole
+
+    user_program_ids = set(get_user_program_ids(request.user))
+    client_program_ids = set(
+        ClientProgramEnrolment.objects.filter(
+            client_file=client, status="enrolled"
+        ).values_list("program_id", flat=True)
+    )
+    shared_program_ids = client_program_ids & user_program_ids
+
+    staff_user_ids = UserProgramRole.objects.filter(
+        program_id__in=shared_program_ids,
+        role__in=["staff", "program_manager"],
+        status="active",
+    ).values_list("user_id", flat=True).distinct()
+
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    staff_users = User.objects.filter(pk__in=staff_user_ids).order_by("display_name")
+    staff_choices = [(u.pk, u.display_name) for u in staff_users]
+
+    if request.method == "POST":
+        form = StaffMessageForm(request.POST, staff_choices=staff_choices)
+        if form.is_valid():
+            from .models import StaffMessage
+
+            msg = StaffMessage()
+            msg.client_file = client
+            msg.content = form.cleaned_data["message"]
+            msg.left_by = request.user
+            msg.for_user = form.cleaned_data.get("for_user")
+            msg.author_program = get_author_program(request.user, client)
+            msg.save()
+
+            messages.success(request, _("Message left successfully."))
+            return redirect("clients:client_detail", client_id=client.pk)
+    else:
+        form = StaffMessageForm(staff_choices=staff_choices)
+
+    from django.urls import reverse
+    breadcrumbs = [
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
+        {"url": "", "label": _("Leave Message")},
+    ]
+
+    return render(request, "communications/leave_message.html", {
+        "client": client,
+        "form": form,
+        "breadcrumbs": breadcrumbs,
+    })
+
+
+@login_required
+@requires_permission("message.view", _get_program_from_client)
+def client_messages(request, client_id):
+    """View messages for a specific client."""
+    client = get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden(_("You do not have access to this client."))
+
+    from .models import StaffMessage
+
+    # Show messages for this user or unassigned
+    staff_messages = StaffMessage.objects.filter(
+        client_file=client,
+        status__in=["unread", "read"],
+    ).filter(
+        db_models.Q(for_user=request.user) | db_models.Q(for_user__isnull=True)
+    ).select_related("left_by", "for_user")
+
+    from django.urls import reverse
+    breadcrumbs = [
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
+        {"url": "", "label": _("Messages")},
+    ]
+
+    return render(request, "communications/client_messages.html", {
+        "client": client,
+        "staff_messages": staff_messages,
+        "breadcrumbs": breadcrumbs,
+    })
+
+
+@login_required
+@requires_permission("message.view", _get_program_from_client)
+def mark_message_read(request, client_id, message_id):
+    """Mark a message as read (HTMX POST)."""
+    if request.method != "POST":
+        return redirect("communications:client_messages", client_id=client_id)
+
+    client = get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden(_("You do not have access to this client."))
+
+    from .models import StaffMessage
+
+    msg = get_object_or_404(StaffMessage, pk=message_id, client_file=client)
+
+    if msg.for_user == request.user or msg.for_user is None:
+        msg.status = "read"
+        msg.read_at = timezone.now()
+        msg.save(update_fields=["status", "read_at"])
+
+    if request.headers.get("HX-Request"):
+        return render(request, "communications/_message_card.html", {
+            "msg": msg,
+            "client": client,
+        })
+
+    return redirect("communications:client_messages", client_id=client.pk)
+
+
+@login_required
+@requires_permission_global("message.view")
+def my_messages(request):
+    """Dashboard showing all unread messages for the current user."""
+    from .models import StaffMessage
+    from apps.programs.access import get_user_program_ids
+    from apps.clients.models import ClientProgramEnrolment
+
+    user_program_ids = set(get_user_program_ids(request.user))
+    accessible_client_ids = set(
+        ClientProgramEnrolment.objects.filter(
+            program_id__in=user_program_ids,
+            status="enrolled",
+        ).values_list("client_file_id", flat=True)
+    )
+
+    staff_messages = StaffMessage.objects.filter(
+        client_file_id__in=accessible_client_ids,
+        status="unread",
+    ).filter(
+        db_models.Q(for_user=request.user) | db_models.Q(for_user__isnull=True)
+    ).select_related("left_by", "for_user", "client_file")
+
+    return render(request, "communications/my_messages.html", {
+        "staff_messages": staff_messages,
+        "nav_active": "messages",
     })

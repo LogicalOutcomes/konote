@@ -401,3 +401,31 @@ class StaffPortalNoteForm(forms.Form):
         if not text:
             raise forms.ValidationError(_("Note cannot be empty."))
         return text
+
+
+class StaffPortalInviteForm(forms.Form):
+    """Form for staff to create a portal invite for a participant."""
+
+    verbal_code = forms.CharField(
+        label=_("Verification code (optional)"),
+        max_length=4,
+        required=False,
+        widget=forms.TextInput(attrs={
+            "inputmode": "numeric",
+            "pattern": "[0-9]{4}",
+            "placeholder": "0000",
+            "autocomplete": "off",
+        }),
+        help_text=_(
+            "Optional 4-digit code to verify in person. "
+            "Share this verbally \u2014 do not write it down."
+        ),
+    )
+
+    def clean_verbal_code(self):
+        code = self.cleaned_data.get("verbal_code", "").strip()
+        if code and (not code.isdigit() or len(code) != 4):
+            raise forms.ValidationError(
+                _("Verification code must be exactly 4 digits.")
+            )
+        return code

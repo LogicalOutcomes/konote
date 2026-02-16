@@ -532,6 +532,26 @@ def _get_program_from_meeting(request, event_id, **kwargs):
 # Meeting CRUD (client-scoped)
 # ---------------------------------------------------------------------------
 
+def _get_meeting_settings():
+    """Read meeting scheduling settings from InstanceSetting."""
+    from apps.admin_settings.models import InstanceSetting
+    from .forms import DEFAULT_LOCATION_OPTIONS
+
+    settings = InstanceSetting.get_all()
+    raw_locations = settings.get("meeting_location_options", "")
+    if raw_locations.strip():
+        location_choices = [line.strip() for line in raw_locations.splitlines() if line.strip()]
+    else:
+        location_choices = DEFAULT_LOCATION_OPTIONS
+
+    return {
+        "location_choices": location_choices,
+        "meeting_time_start": int(settings.get("meeting_time_start", 9)),
+        "meeting_time_end": int(settings.get("meeting_time_end", 17)),
+        "meeting_time_step": int(settings.get("meeting_time_step", 30)),
+    }
+
+
 @login_required
 @requires_permission("meeting.create", _get_program_from_client)
 def meeting_create(request, client_id):
@@ -540,8 +560,10 @@ def meeting_create(request, client_id):
     if client is None:
         return HttpResponseForbidden("You do not have access to this client.")
 
+    mtg_settings = _get_meeting_settings()
+
     if request.method == "POST":
-        form = MeetingQuickCreateForm(request.POST)
+        form = MeetingQuickCreateForm(request.POST, location_choices=mtg_settings["location_choices"])
         if form.is_valid():
             # Create the underlying Event
             event = Event.objects.create(
@@ -563,7 +585,7 @@ def meeting_create(request, client_id):
                 return redirect("events:meeting_create", client_id=client.pk)
             return redirect("events:event_list", client_id=client.pk)
     else:
-        form = MeetingQuickCreateForm()
+        form = MeetingQuickCreateForm(location_choices=mtg_settings["location_choices"])
 
     # Check if this client has consented to reminders
     can_send_reminders = client.sms_consent or client.email_consent
@@ -573,6 +595,9 @@ def meeting_create(request, client_id):
         "client": client,
         "editing": False,
         "can_send_reminders": can_send_reminders,
+        "meeting_time_start": mtg_settings["meeting_time_start"],
+        "meeting_time_end": mtg_settings["meeting_time_end"],
+        "meeting_time_step": mtg_settings["meeting_time_step"],
     })
 
 
@@ -586,9 +611,10 @@ def meeting_update(request, client_id, event_id):
 
     event = get_object_or_404(Event, pk=event_id, client_file=client)
     meeting = get_object_or_404(Meeting, event=event)
+    mtg_settings = _get_meeting_settings()
 
     if request.method == "POST":
-        form = MeetingEditForm(request.POST)
+        form = MeetingEditForm(request.POST, location_choices=mtg_settings["location_choices"])
         if form.is_valid():
             # Update the Event
             event.start_timestamp = form.cleaned_data["start_timestamp"]
@@ -601,18 +627,24 @@ def meeting_update(request, client_id, event_id):
             messages.success(request, _("Meeting updated."))
             return redirect("events:event_list", client_id=client.pk)
     else:
-        form = MeetingEditForm(initial={
-            "start_timestamp": event.start_timestamp.strftime("%Y-%m-%dT%H:%M") if event.start_timestamp else "",
-            "location": meeting.location,
-            "duration_minutes": meeting.duration_minutes,
-            "status": meeting.status,
-        })
+        form = MeetingEditForm(
+            initial={
+                "start_timestamp": event.start_timestamp.strftime("%Y-%m-%dT%H:%M") if event.start_timestamp else "",
+                "location": meeting.location,
+                "duration_minutes": meeting.duration_minutes,
+                "status": meeting.status,
+            },
+            location_choices=mtg_settings["location_choices"],
+        )
 
     return render(request, "events/meeting_form.html", {
         "form": form,
         "client": client,
         "meeting": meeting,
         "editing": True,
+        "meeting_time_start": mtg_settings["meeting_time_start"],
+        "meeting_time_end": mtg_settings["meeting_time_end"],
+        "meeting_time_step": mtg_settings["meeting_time_step"],
     })
 
 

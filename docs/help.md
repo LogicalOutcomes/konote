@@ -11,9 +11,12 @@ Welcome to KoNote! This guide helps you find what you need quickly.
 | Find a client | [Searching for Clients](#searching-for-clients) |
 | Write a progress note | [Progress Notes](#progress-notes) |
 | Record an event or alert | [Events and Alerts](#events-and-alerts) |
+| Leave a message for a case worker | [Staff Messaging](#staff-messaging) |
+| Transfer a client between programs | [Client Transfer](#client-transfer) |
 | View or edit a client's plan | [Outcome Plans](#outcome-plans) |
 | See progress charts | [Analysis and Reports](#analysis-and-reports) |
 | See program patterns | [Outcome Insights](#outcome-insights) |
+| Invite a participant to the portal | [Portal Staff Management](#portal-staff-management) |
 | Review registration submissions | [Registration Forms](#registration-forms) |
 | Change my password | [Account Settings](#account-settings) |
 | Get admin help | [Administrator Tasks](#administrator-tasks) |
@@ -86,10 +89,10 @@ When you open a client's file, you'll see several tabs:
 
 | Tab | What You'll Find |
 |-----|------------------|
-| **Info** | Basic information, program enrolments, custom fields |
-| **Notes** | Progress notes timeline |
+| **Info** | Basic information, program enrolments, custom fields, and staff messaging |
 | **Plan** | Outcome plan with sections, targets, and metrics |
-| **Events** | Events and alerts |
+| **Notes** | Progress notes timeline |
+| **History** | Events, meetings, and alerts |
 | **Analysis** | Progress charts over time |
 
 ### Editing Client Information
@@ -211,6 +214,98 @@ The client will appear in **Priority Items** on the home page until the alert is
 2. Click **Resolve** or **Cancel Alert**
 3. Add a resolution note
 4. Save
+
+---
+
+## Staff Messaging
+
+Staff messaging is for internal communication between staff members about a client. Clients do not see these messages.
+
+### My Messages Page
+
+Click **Messages** in the main navigation to see all your unread messages. Each message shows who left it, when, and which client it's about. Click **Mark as Read** to clear it.
+
+**Unread badge:** A number badge appears next to **Messages** in the navigation when you have unread messages. It updates automatically as you read messages.
+
+### Leaving a Message
+
+1. Open the client's file
+2. On the **Info** tab, click **Leave Message**
+3. Choose a specific staff member from the dropdown, or leave blank for all case workers
+4. Type your message
+5. Click **Leave Message**
+
+### Viewing Messages on a Client File
+
+1. Open the client's file
+2. On the **Info** tab, click **View Messages**
+3. You'll see messages addressed to you or to "any case worker"
+
+---
+
+## Client Transfer
+
+Transfer moves a client between programs without creating a duplicate record. Use it when someone graduates from one service and starts another, or when you need to adjust enrolments.
+
+### Where to Find It
+
+Open the client's file, click the **Actions** menu, then click **Transfer**.
+
+### Who Can Do It
+
+Only staff with the **client.transfer** permission (typically program managers and administrators).
+
+### What Happens
+
+- Check or uncheck programs to enrol or unenrol the client
+- Set cross-program sharing consent if needed
+- Add an optional reason (recorded in the audit log)
+- You can only change programs you have access to — other enrolments remain untouched
+
+---
+
+## Portal Staff Management
+
+If the participant portal feature is enabled, staff can invite participants to create a portal account and manage their access.
+
+### Inviting a Participant
+
+1. Open the client's file
+2. On the **Info** tab, expand **Participant Portal**
+3. Click **Invite to Portal**
+4. Optionally set a **verification code** (shared verbally, not in writing)
+5. Click **Create invite** — you'll get a link to share with the participant
+
+The invite link expires after 7 days. You can create a new invite at any time.
+
+### Managing Portal Access
+
+From the client's **Info** tab under **Participant Portal**, click **Manage portal access** to:
+
+- View the participant's account status (active or deactivated)
+- **Reset MFA** if they're locked out of their authenticator
+- **Revoke access** if the participant should no longer have portal access
+- See invite history
+
+---
+
+## Meeting Reminders
+
+If SMS or email messaging is enabled for your agency, you can send appointment reminders to participants.
+
+### How Reminders Work
+
+1. When scheduling a meeting, check **Send reminder to client** to send one automatically
+2. For existing meetings, find the meeting in the **History** tab and click **Send Reminder**
+3. A preview shows the exact message before it's sent — review it and click **Send**
+4. The meeting card updates to show "Reminder sent"
+
+### What Staff See
+
+- A **Send Reminder** button appears on scheduled meetings (not on completed, cancelled, or no-show meetings)
+- The button is disabled if the client hasn't consented to receiving messages
+- Each meeting can have one reminder sent
+- The reminder channel (SMS or email) is determined by the client's preferred contact method
 
 ---
 
@@ -391,9 +486,9 @@ Your access depends on your assigned role:
 
 | Role | What You Can Do |
 |------|-----------------|
-| **Front Desk** | View limited client info, update contact details |
-| **Staff** | Full client access, write notes, record events |
-| **Program Manager** | All staff abilities plus edit plans, manage team |
+| **Front Desk** | View limited client info, update contact details, leave messages |
+| **Staff** | Full client access, write notes, record events, leave and view messages |
+| **Program Manager** | All staff abilities plus edit plans, manage team, transfer clients |
 | **Administrator** | System settings, user management, all configuration |
 
 **Note:** Administrators without a program assignment cannot see client data. This is a security feature.
@@ -554,10 +649,15 @@ For security, KoNote logs you out after inactivity. Log in again to continue. Yo
 | I want to... | Do this... |
 |--------------|------------|
 | Find a client | Type name in search bar |
-| Write a quick update | Notes tab → + Quick Note |
-| Document a session | Notes tab → + Progress Note |
-| Record intake/discharge | Events tab → + New Event |
-| Flag a safety concern | Events tab → + New Alert |
+| Write a quick update | Actions menu → Quick Note |
+| Document a session | Actions menu → Detailed Note |
+| Record intake/discharge | Actions menu → Record Event |
+| Flag a safety concern | Actions menu → New Alert |
+| Schedule a meeting | Actions menu → Schedule Meeting |
+| Leave a message for a case worker | Info tab → Leave Message |
+| See my unread messages | Messages (main navigation) |
+| Transfer a client | Actions menu → Transfer |
+| Invite to the participant portal | Info tab → Participant Portal → Invite to Portal |
 | See who needs attention | Check Priority Items on home page |
 | View progress charts | Client file → Analysis tab |
 | See program patterns | Insights (main navigation) |
@@ -584,4 +684,4 @@ For security, KoNote logs you out after inactivity. Log in again to continue. Yo
 
 **KoNote** — Participant Outcome Management
 
-Last updated: 2026-02-04
+Last updated: 2026-02-16

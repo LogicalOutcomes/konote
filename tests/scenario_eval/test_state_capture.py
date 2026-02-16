@@ -14,18 +14,18 @@ class TestUrlToSlug(TestCase):
     """Test URL-to-slug conversion for screenshot filenames."""
 
     def test_simple_path(self):
-        self.assertEqual(_url_to_slug("http://localhost:8000/clients/"), "clients")
+        self.assertEqual(_url_to_slug("http://localhost:8000/participants/"), "participants")
 
     def test_nested_path(self):
         self.assertEqual(
-            _url_to_slug("http://localhost:8000/clients/executive/"),
-            "clients-executive",
+            _url_to_slug("http://localhost:8000/participants/executive/"),
+            "participants-executive",
         )
 
     def test_path_with_id(self):
         self.assertEqual(
-            _url_to_slug("http://localhost:8000/clients/42/notes/"),
-            "clients-42-notes",
+            _url_to_slug("http://localhost:8000/participants/42/notes/"),
+            "participants-42-notes",
         )
 
     def test_admin_settings(self):
@@ -42,32 +42,32 @@ class TestUrlToSlug(TestCase):
 
     def test_no_trailing_slash(self):
         self.assertEqual(
-            _url_to_slug("http://localhost:8000/clients"),
-            "clients",
+            _url_to_slug("http://localhost:8000/participants"),
+            "participants",
         )
 
     def test_deep_path(self):
         self.assertEqual(
-            _url_to_slug("http://localhost:8000/clients/42/plans/5/edit/"),
-            "clients-42-plans-5-edit",
+            _url_to_slug("http://localhost:8000/participants/42/plans/5/edit/"),
+            "participants-42-plans-5-edit",
         )
 
     def test_query_params_ignored(self):
         self.assertEqual(
-            _url_to_slug("http://localhost:8000/clients/?search=jane&page=2"),
-            "clients",
+            _url_to_slug("http://localhost:8000/participants/?search=jane&page=2"),
+            "participants",
         )
 
     def test_fragment_ignored(self):
         self.assertEqual(
-            _url_to_slug("http://localhost:8000/clients/#section"),
-            "clients",
+            _url_to_slug("http://localhost:8000/participants/#section"),
+            "participants",
         )
 
     def test_special_characters_removed(self):
         self.assertEqual(
-            _url_to_slug("http://localhost:8000/clients/some%20path/"),
-            "clients-some20path",
+            _url_to_slug("http://localhost:8000/participants/some%20path/"),
+            "participants-some20path",
         )
 
     def test_truncation_at_max_length(self):
@@ -84,9 +84,9 @@ class TestUrlToSlug(TestCase):
 
     def test_default_max_length_is_60(self):
         # 60 characters should be enough for most routes
-        normal_url = "http://localhost:8000/clients/executive/"
+        normal_url = "http://localhost:8000/participants/executive/"
         slug = _url_to_slug(normal_url)
-        self.assertEqual(slug, "clients-executive")
+        self.assertEqual(slug, "participants-executive")
         self.assertLessEqual(len(slug), 60)
 
 

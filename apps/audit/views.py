@@ -19,23 +19,26 @@ from .models import AuditLog
 def _scoped_audit_qs(request):
     """Return an AuditLog queryset scoped to the user's access level.
 
-    Admins and executives see all entries. Program managers see entries
-    scoped to their programs (audit.view: SCOPED in permissions matrix).
+    Admins see all entries. Program managers see entries scoped to their
+    programs (audit.view: SCOPED in permissions matrix). Non-admin users
+    without PM roles are already blocked by the @requires_permission
+    decorator, so this function only needs to handle admin vs PM scoping.
     """
-    from apps.auth_app.permissions import SCOPED, can_access
     from apps.programs.models import UserProgramRole
 
     qs = AuditLog.objects.using("audit").all()
 
     if not getattr(request.user, "is_admin", False):
-        user_role = getattr(request, "user_program_role", None)
-        if user_role and can_access(user_role, "audit.view") == SCOPED:
-            user_program_ids = list(
-                UserProgramRole.objects.filter(
-                    user=request.user, status="active",
-                ).values_list("program_id", flat=True)
-            )
-            qs = qs.filter(program_id__in=user_program_ids)
+        # Scope to programs where the user has an active role.
+        # request.user_program_role is only set by middleware for
+        # client-scoped URLs, so we query program IDs directly
+        # (consistent with all other admin views).
+        user_program_ids = list(
+            UserProgramRole.objects.filter(
+                user=request.user, status="active",
+            ).values_list("program_id", flat=True)
+        )
+        qs = qs.filter(program_id__in=user_program_ids)
 
     return qs
 

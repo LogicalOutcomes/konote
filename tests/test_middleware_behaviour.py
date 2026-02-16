@@ -63,7 +63,7 @@ class AuditMiddlewareBehaviourTest(TestCase):
     def test_audit_logs_post_request(self):
         """POST to a client edit URL should create an AuditLog with action='post'."""
         self.http.login(username="staffuser", password="testpass123")
-        url = f"/clients/{self.client_file.pk}/edit/"
+        url = f"/participants/{self.client_file.pk}/edit/"
         self.http.post(url, {
             "first_name": "Updated",
             "last_name": "Client",
@@ -80,12 +80,12 @@ class AuditMiddlewareBehaviourTest(TestCase):
 
     # 2. GET to a client detail URL creates an audit log with action="view"
     def test_audit_logs_client_view(self):
-        """GET /clients/<id>/ should create an AuditLog with action='view'."""
+        """GET /participants/<id>/ should create an AuditLog with action='view'."""
         self.http.login(username="staffuser", password="testpass123")
-        url = f"/clients/{self.client_file.pk}/"
+        url = f"/participants/{self.client_file.pk}/"
         self.http.get(url)
         entries = AuditLog.objects.using("audit").filter(
-            action="view", resource_type="clients",
+            action="view", resource_type="participants",
         )
         self.assertTrue(entries.exists(), "GET on client detail should create 'view' audit entry")
 
@@ -103,7 +103,7 @@ class AuditMiddlewareBehaviourTest(TestCase):
             user=outsider, program=other_program, role="staff", status="active",
         )
         self.http.login(username="outsider", password="testpass123")
-        url = f"/clients/{self.client_file.pk}/"
+        url = f"/participants/{self.client_file.pk}/"
         resp = self.http.get(url)
         self.assertEqual(resp.status_code, 403)
         entries = AuditLog.objects.using("audit").filter(action="access_denied")
@@ -115,7 +115,7 @@ class AuditMiddlewareBehaviourTest(TestCase):
     # 4. Unauthenticated requests do NOT create audit entries
     def test_audit_skips_unauthenticated(self):
         """Request without login should not create any AuditLog entry."""
-        url = f"/clients/{self.client_file.pk}/"
+        url = f"/participants/{self.client_file.pk}/"
         self.http.get(url)  # redirects to login
         count = AuditLog.objects.using("audit").count()
         self.assertEqual(count, 0, "Unauthenticated requests should not create audit entries")
@@ -133,19 +133,19 @@ class AuditMiddlewareBehaviourTest(TestCase):
 
     # 6. AuditLog entry has the correct resource_type
     def test_audit_extracts_resource_type(self):
-        """Client view audit entry should have resource_type='clients'."""
+        """Client view audit entry should have resource_type='participants'."""
         self.http.login(username="staffuser", password="testpass123")
-        url = f"/clients/{self.client_file.pk}/"
+        url = f"/participants/{self.client_file.pk}/"
         self.http.get(url)
         entry = AuditLog.objects.using("audit").filter(action="view").first()
         self.assertIsNotNone(entry, "Should have a view audit entry")
-        self.assertEqual(entry.resource_type, "clients")
+        self.assertEqual(entry.resource_type, "participants")
 
     # 7. AuditLog entry has the correct resource_id
     def test_audit_extracts_resource_id(self):
         """Client view audit entry should have the correct resource_id."""
         self.http.login(username="staffuser", password="testpass123")
-        url = f"/clients/{self.client_file.pk}/"
+        url = f"/participants/{self.client_file.pk}/"
         self.http.get(url)
         entry = AuditLog.objects.using("audit").filter(action="view").first()
         self.assertIsNotNone(entry, "Should have a view audit entry")
@@ -155,7 +155,7 @@ class AuditMiddlewareBehaviourTest(TestCase):
     def test_audit_never_crashes_on_error(self):
         """If AuditLog.create raises an exception, the response should still be returned."""
         self.http.login(username="staffuser", password="testpass123")
-        url = f"/clients/{self.client_file.pk}/"
+        url = f"/participants/{self.client_file.pk}/"
         with patch(
             "apps.audit.models.AuditLog.objects",
         ) as mock_objects:

@@ -1,6 +1,19 @@
 {% load i18n %}
-<header><h2>{% blocktrans with section=term.section|default:"Section" %}Change {{ section }} Status{% endblocktrans %}</h2></header>
-<p>{% trans "Current:" %} <strong>{{ section.get_status_display }}</strong></p>
+<header>
+    <h2>{% blocktrans with section=term.section|default:"Section" %}Change {{ section }} Status{% endblocktrans %}</h2>
+</header>
+<p>{% trans "Currently:" %} <strong>{{ section.get_status_display }}</strong></p>
+{% if active_target_count > 0 %}
+<p class="status-change-notice">
+    <small>
+        {% if section.status == "default" %}
+            {% blocktrans with count=active_target_count targets=term.target_plural|default:"goals" %}Completing or deactivating this area will also affect {{ count }} active {{ targets }} within it. You can undo this later.{% endblocktrans %}
+        {% else %}
+            {% blocktrans with count=active_target_count targets=term.target_plural|default:"goals" %}This area has {{ count }} {{ targets }}. Reactivating it will make them editable again.{% endblocktrans %}
+        {% endif %}
+    </small>
+</p>
+{% endif %}
 <form method="post"
       hx-post="{% url 'plans:section_status' section_id=section.pk %}"
       hx-target="#section-{{ section.pk }}"
@@ -13,8 +26,8 @@
     <small class="error" role="alert">{{ field.errors.0 }}</small>
     {% endif %}
     {% endfor %}
-    <div role="group">
-        <button type="submit">{% trans "Update Status" %}</button>
-        <button type="button" class="outline secondary" onclick="location.reload()">{% trans "Cancel" %}</button>
-    </div>
+    <footer class="status-form-actions">
+        <button type="submit" class="small">{% trans "Save" %}</button>
+        <button type="button" class="outline secondary small" onclick="location.reload()">{% trans "Cancel" %}</button>
+    </footer>
 </form>

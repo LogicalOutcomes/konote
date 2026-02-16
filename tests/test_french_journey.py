@@ -141,7 +141,7 @@ class LanguageSwitchingFrenchTest(FrenchJourneyBaseTest):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'lang="fr"')
         # Step 2: Create form stays French
-        resp = self.http.get("/clients/create/")
+        resp = self.http.get("/participants/create/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'lang="fr"')
         self.assertContains(resp, "Pr\u00e9nom")  # "First Name" in French
@@ -157,7 +157,7 @@ class LanguageSwitchingFrenchTest(FrenchJourneyBaseTest):
         self.admin.save(update_fields=["preferred_language"])
         self.http.login(username="admin", password="pass")
         # Do NOT set cookie — rely on preferred_language alone
-        resp = self.http.get("/clients/create/")
+        resp = self.http.get("/participants/create/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'lang="fr"')
         self.assertContains(resp, "Pr\u00e9nom")  # French label
@@ -258,7 +258,7 @@ class ClientListFrenchTest(FrenchJourneyBaseTest):
     def test_client_list_labels_in_french(self):
         """Client list page shows French filter and column labels."""
         self._login_staff_fr()
-        resp = self.http.get("/clients/")
+        resp = self.http.get("/participants/")
         self.assertEqual(resp.status_code, 200)
         # Filter labels
         self.assertContains(resp, "Filtres")  # "Filters"
@@ -268,7 +268,7 @@ class ClientListFrenchTest(FrenchJourneyBaseTest):
     def test_client_list_status_options_in_french(self):
         """Status dropdown options appear in French."""
         self._login_staff_fr()
-        resp = self.http.get("/clients/")
+        resp = self.http.get("/participants/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Tous les statuts")  # "All statuses"
         self.assertContains(resp, "Inactif")  # "Inactive"
@@ -276,14 +276,14 @@ class ClientListFrenchTest(FrenchJourneyBaseTest):
     def test_client_list_clear_filters_in_french(self):
         """Clear filters button text is in French."""
         self._login_staff_fr()
-        resp = self.http.get("/clients/")
+        resp = self.http.get("/participants/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Effacer les filtres")  # "Clear filters"
 
     def test_empty_client_list_in_french(self):
         """Empty client list (filtered to no results) shows French empty state."""
         self._login_staff_fr()
-        resp = self.http.get("/clients/?status=discharged")
+        resp = self.http.get("/participants/?status=discharged")
         self.assertEqual(resp.status_code, 200)
         # Page renders without error in French context
 
@@ -298,7 +298,7 @@ class ClientDetailFrenchTest(FrenchJourneyBaseTest):
     def test_client_detail_tabs_in_french(self):
         """Client detail tabs are rendered in French."""
         self._login_staff_fr()
-        resp = self.http.get(f"/clients/{self.client_file.pk}/")
+        resp = self.http.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Info")  # Same in both languages
         self.assertContains(resp, "Historique")  # "History" tab (renamed from Événements)
@@ -307,7 +307,7 @@ class ClientDetailFrenchTest(FrenchJourneyBaseTest):
     def test_client_detail_buttons_in_french(self):
         """Edit and Actions dropdown are in French."""
         self._login_staff_fr()
-        resp = self.http.get(f"/clients/{self.client_file.pk}/")
+        resp = self.http.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Modifier")  # "Edit"
         self.assertContains(resp, "Note rapide")  # Quick Note in Actions dropdown
@@ -315,14 +315,14 @@ class ClientDetailFrenchTest(FrenchJourneyBaseTest):
     def test_client_detail_consent_in_french(self):
         """Consent display section is in French."""
         self._login_staff_fr()
-        resp = self.http.get(f"/clients/{self.client_file.pk}/")
+        resp = self.http.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Consentement")  # Part of privacy consent labels
 
     def test_client_detail_record_id_label_in_french(self):
         """Client detail shows the Record ID in the subtitle."""
         self._login_staff_fr()
-        resp = self.http.get(f"/clients/{self.client_file.pk}/")
+        resp = self.http.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "REC-2026-001")  # Record ID appears in subtitle
 
@@ -330,7 +330,7 @@ class ClientDetailFrenchTest(FrenchJourneyBaseTest):
         """Client edit form has French labels."""
         # Staff role has client.edit SCOPED (same as program_manager)
         self._login_staff_fr()
-        resp = self.http.get(f"/clients/{self.client_file.pk}/edit/")
+        resp = self.http.get(f"/participants/{self.client_file.pk}/edit/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Pr\u00e9nom")  # "First Name"
         self.assertContains(resp, "Nom de famille")  # "Last Name"
@@ -345,7 +345,7 @@ class ClientDetailFrenchTest(FrenchJourneyBaseTest):
         on the create form to ensure nothing appears in English.
         """
         self._login_admin_fr()
-        resp = self.http.get("/clients/create/")
+        resp = self.http.get("/participants/create/")
         self.assertEqual(resp.status_code, 200)
         # HTML lang attribute
         self.assertContains(resp, 'lang="fr"')
@@ -752,7 +752,7 @@ class FormValidationFrenchTest(FrenchJourneyBaseTest):
     def test_client_create_missing_required_field(self):
         """Client create with missing required field shows French form."""
         self._login_admin_fr()
-        resp = self.http.post("/clients/create/", {
+        resp = self.http.post("/participants/create/", {
             "first_name": "",
             "last_name": "",
             "status": "active",
@@ -792,7 +792,7 @@ class DateTimeFormattingFrenchTest(FrenchJourneyBaseTest):
     def test_client_detail_dates_render_in_french_context(self):
         """Client detail page renders dates while in French locale."""
         self._login_staff_fr()
-        resp = self.http.get(f"/clients/{self.client_file.pk}/")
+        resp = self.http.get(f"/participants/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         # Page renders without error — dates formatted correctly
         self.assertContains(resp, "2026")  # Year appears in date display

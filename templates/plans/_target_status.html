@@ -5,8 +5,17 @@
           hx-target="#target-{{ target.pk }}"
           hx-swap="innerHTML">
         {% csrf_token %}
-        <h3>{% blocktrans with target=term.target|default:"Target" %}Change {{ target }} Status{% endblocktrans %}</h3>
-        <p>{% trans "Current:" %} <strong>{{ target.get_status_display }}</strong></p>
+        <h3>{% blocktrans with target=term.target|default:"Goal" %}Change {{ target }} Status{% endblocktrans %}</h3>
+        <p>{% trans "Currently:" %} <strong>{{ target.get_status_display }}</strong></p>
+        <p class="status-change-notice">
+            <small>
+                {% if target.status == "default" %}
+                    {% blocktrans with target=term.target|default:"goal" %}You can mark this {{ target }} as completed when it's been achieved, or deactivate it if it's no longer relevant. You can undo this later.{% endblocktrans %}
+                {% else %}
+                    {% blocktrans with target=term.target|default:"goal" %}Reactivating this {{ target }} will make it editable and visible in progress notes again.{% endblocktrans %}
+                {% endif %}
+            </small>
+        </p>
         {% for field in form %}
         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
         {{ field }}
@@ -14,9 +23,9 @@
         <small class="error" role="alert">{{ field.errors.0 }}</small>
         {% endif %}
         {% endfor %}
-        <div role="group">
-            <button type="submit">{% trans "Update Status" %}</button>
-            <button type="button" class="outline secondary" onclick="location.reload()">{% trans "Cancel" %}</button>
-        </div>
+        <footer class="status-form-actions">
+            <button type="submit" class="small">{% trans "Save" %}</button>
+            <button type="button" class="outline secondary small" onclick="location.reload()">{% trans "Cancel" %}</button>
+        </footer>
     </form>
 </td>

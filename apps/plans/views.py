@@ -14,6 +14,7 @@ from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
 from apps.auth_app.decorators import admin_required, program_role_required, requires_permission
+from apps.auth_app.permissions import DENY, can_access
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.access import (
     build_program_display_context,
@@ -136,11 +137,18 @@ def plan_view(request, client_id):
             else:
                 general_sections.append(section)
 
+    # Check if user can apply templates (admin or PM with template.plan.manage)
+    can_apply_template = request.user.is_admin or any(
+        can_access(r.role, "template.plan.manage") != DENY
+        for r in UserProgramRole.objects.filter(user=request.user, status="active")
+    )
+
     context = {
         "client": client,
         "active_sections": active_sections,
         "inactive_sections": inactive_sections,
         "can_edit": can_edit,
+        "can_apply_template": can_apply_template,
         "active_tab": "plan",
         "show_grouping": program_ctx["show_grouping"],
         "show_program_ui": program_ctx["show_program_ui"],
@@ -233,9 +241,11 @@ def section_status(request, section_id):
     else:
         form = PlanSectionStatusForm(instance=section)
 
+    active_target_count = section.targets.filter(status="default").count()
     return render(request, "plans/_section_status.html", {
         "section": section,
         "form": form,
+        "active_target_count": active_target_count,
     })
 
 

@@ -303,12 +303,20 @@ def template_target_delete(request, target_id):
 # ---------------------------------------------------------------------------
 
 @login_required
-@admin_required
+@requires_permission("template.plan.manage", allow_admin=True)
 def template_apply_list(request, client_id):
     """Show active templates that can be applied to a client."""
     base_queryset = get_client_queryset(request.user)
     client_file = get_object_or_404(base_queryset, pk=client_id)
-    templates = PlanTemplate.objects.filter(status="active").prefetch_related("sections__targets")
+    if request.user.is_admin:
+        templates = PlanTemplate.objects.filter(status="active").prefetch_related("sections__targets")
+    else:
+        pm_program_ids = _get_pm_program_ids(request.user)
+        templates = PlanTemplate.objects.filter(
+            status="active",
+        ).filter(
+            Q(owning_program_id__in=pm_program_ids) | Q(owning_program__isnull=True)
+        ).prefetch_related("sections__targets")
 
     return render(request, "plans/template_apply.html", {
         "client_file": client_file,
@@ -317,7 +325,7 @@ def template_apply_list(request, client_id):
 
 
 @login_required
-@admin_required
+@requires_permission("template.plan.manage", allow_admin=True)
 def template_apply(request, client_id, template_id):
     """Apply a template to a client — copies sections and targets."""
     if request.method != "POST":

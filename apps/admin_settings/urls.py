@@ -2,6 +2,7 @@ from django.urls import path
 
 from . import views
 from . import report_template_views
+from . import setup_wizard_views
 
 app_name = "admin_settings"
 urlpatterns = [
@@ -22,4 +23,9 @@ urlpatterns = [
     path("report-templates/<int:profile_id>/programs/", report_template_views.report_template_edit_programs, name="report_template_edit_programs"),
     path("report-templates/<int:profile_id>/delete/", report_template_views.report_template_delete, name="report_template_delete"),
     path("report-templates/<int:profile_id>/download/", report_template_views.report_template_download_csv, name="report_template_download_csv"),
+    # Setup wizard -- specific routes before the <str:step> catch-all
+    path("setup-wizard/", setup_wizard_views.setup_wizard, name="setup_wizard"),
+    path("setup-wizard/complete/", setup_wizard_views.setup_wizard_complete, name="setup_wizard_complete"),
+    path("setup-wizard/reset/", setup_wizard_views.setup_wizard_reset, name="setup_wizard_reset"),
+    path("setup-wizard/<str:step>/", setup_wizard_views.setup_wizard, name="setup_wizard_step"),
 ]

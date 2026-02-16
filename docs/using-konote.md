@@ -17,11 +17,15 @@ Welcome to KoNote! This guide covers the everyday tasks you'll do as a staff mem
 5. [Writing Progress Notes](#writing-progress-notes)
 6. [Recording Events](#recording-events)
 7. [Logging Communications](#logging-communications)
-8. [Scheduling Meetings](#scheduling-meetings)
-9. [Using the Calendar Feed](#using-the-calendar-feed)
-10. [Viewing the Outcome Plan](#viewing-the-outcome-plan)
-11. [Outcome Insights](#outcome-insights)
-12. [Tips & Shortcuts](#tips--shortcuts)
+8. [Staff Messaging](#staff-messaging)
+9. [Scheduling Meetings](#scheduling-meetings)
+10. [Using the Calendar Feed](#using-the-calendar-feed)
+11. [Viewing the Outcome Plan](#viewing-the-outcome-plan)
+12. [Outcome Insights](#outcome-insights)
+13. [Transferring a Client Between Programs](#transferring-a-client-between-programs)
+14. [The Participant List](#the-participant-list)
+15. [The Actions Menu](#the-actions-menu)
+16. [Tips & Shortcuts](#tips--shortcuts)
 
 ---
 
@@ -95,11 +99,10 @@ When you open a client's file, you'll see several **tabs**:
 
 | Tab | What you'll find |
 |-----|------------------|
-| **Info** | Basic information, program enrolments, and custom fields |
-| **Notes** | Progress notes timeline — everything recorded about this client |
+| **Info** | Basic information, program enrolments, custom fields, and staff messaging |
 | **Plan** | Their outcome plan with sections, targets, and metrics |
-| **Events** | Discrete events like intake, discharge, hospital visits, crises |
-| **Communications** | Communication history — phone calls, emails, texts, in-person contacts |
+| **Notes** | Progress notes timeline — everything recorded about this client |
+| **History** | Events, meetings, and alerts — discrete occurrences on the timeline |
 | **Analysis** | Charts showing progress over time |
 
 ### Switching between tabs
@@ -285,6 +288,42 @@ Use this when you need to capture more detail:
 
 ---
 
+## Staff Messaging
+
+Staff messaging lets you leave internal notes for other case workers about a client. Messages appear on the client's file and on your **My Messages** page. This is for staff-to-staff communication only — clients do not see these messages.
+
+### Leave a message
+
+1. Open the client's file.
+2. On the **Info** tab, click **Leave Message**.
+3. Choose **who the message is for** from the dropdown — pick a specific case worker, or leave it blank to notify all case workers assigned to this file.
+4. Type your message.
+5. Click **Leave Message**.
+
+The message is saved immediately and appears on the recipient's My Messages page.
+
+### View messages on a client file
+
+1. Open the client's file.
+2. On the **Info** tab, click **View Messages**.
+3. You'll see all unread and read messages for this client that are addressed to you or to "any case worker."
+
+### My Messages page
+
+Click **Messages** in the main navigation to see all your unread messages in one place. Each message shows:
+
+- The **client's name** (click to open their file)
+- **Who left it** and **when**
+- A preview of the message content
+
+Click **Mark as Read** to clear a message. The unread count in the navigation badge updates automatically.
+
+### Unread badge
+
+When you have unread messages, a **badge** appears next to **Messages** in the navigation bar showing the count. The badge disappears when all messages have been marked as read.
+
+---
+
 ## Scheduling Meetings
 
 Meetings let you schedule and track appointments with clients.
@@ -292,13 +331,15 @@ Meetings let you schedule and track appointments with clients.
 ### Create a meeting
 
 1. Open the client's file.
-2. Go to the **Events** tab.
-3. Click **+ New Meeting**.
-4. Fill in:
-   - **Date and time** — When the meeting will take place
-   - **Location** — Where you'll meet (optional)
+2. From the **Actions** menu (top of the client file), click **Schedule Meeting**.
+3. Fill in:
+   - **Location** — Choose from the dropdown (e.g., In person, Phone, Video call). Select **Other** to type a custom location.
+   - **Date and time** — Pick from the calendar and time slot picker, or type the date and time directly.
+4. Optionally, check **Send reminder to client** if messaging is enabled and the client has consented.
 5. You are automatically added as an attendee.
-6. Click **Save**.
+6. Click **Create Meeting**.
+
+**Tip:** Click **Save & Schedule Another** to quickly create multiple meetings in a row.
 
 ### Meeting statuses
 
@@ -318,7 +359,17 @@ To change a status, open the meeting and use the **Status** dropdown.
 
 ### Sending reminders
 
-If SMS or email messaging is enabled for your agency and the client has given consent, you can send a reminder directly from a scheduled meeting. Open the meeting and click **Send Reminder**.
+If SMS or email messaging is enabled for your agency and the client has given consent, you can send a reminder directly from a scheduled meeting:
+
+1. Find the meeting in the client's **History** tab (or in your **Meetings** list).
+2. Click **Send Reminder** below the meeting.
+3. A preview appears showing the exact message that will be sent and the channel (SMS or email). The recipient's contact details are partially masked for privacy.
+4. Optionally add a **personal note** to the reminder.
+5. Click **Send** to deliver the reminder.
+
+The meeting card updates to show that a reminder has been sent. Each meeting can only have one reminder sent.
+
+**Note:** If the client hasn't consented to receiving messages, the Send Reminder button will show as disabled with an explanation.
 
 ---
 
@@ -411,6 +462,63 @@ If your admin has turned on AI assistance, you'll see a **Draft report summary**
 
 ---
 
+## Transferring a Client Between Programs
+
+If a client needs to move between programs — for example, graduating from one service and starting another — you can transfer them without creating a new record.
+
+### Who can transfer clients
+
+Only staff with the **client.transfer** permission can perform transfers. This is typically program managers and administrators.
+
+### How to transfer
+
+1. Open the client's file.
+2. Click the **Actions** menu at the top of the page.
+3. Click **Transfer**.
+4. On the Transfer page, you'll see:
+   - **Current enrolments** — which programs the client is already in
+   - **Program checkboxes** — check or uncheck programs to enrol or unenrol the client
+   - **Cross-program sharing consent** — check this if the client consents to sharing clinical information across programs (required under Ontario privacy law before notes from one program can be viewed by staff in another)
+   - **Reason for transfer** — optionally explain why the transfer is happening (this is recorded in the audit log)
+5. Click **Save Changes**.
+
+**Important:** You can only add or remove programs that you have access to. Programs outside your access remain unchanged. Every transfer is logged in the audit trail with the reason you provide.
+
+---
+
+## The Participant List
+
+### Last Contact column
+
+The participant list now includes a **Last Contact** column showing when each client was last contacted. This helps you quickly see who might need follow-up.
+
+- The date appears as a short format (e.g., "Feb 10") with a relative time underneath (e.g., "3 days ago").
+- If there has been no contact recorded, it shows **Never**.
+- You can **sort by Last Contact** by clicking the column header — useful for finding clients who haven't been contacted recently.
+
+---
+
+## The Actions Menu
+
+When you open a client's file, you'll see an **Actions** button at the top of the page. This is a single dropdown menu that gives you quick access to everything you can do for that client:
+
+| Action | What it does |
+|--------|-------------|
+| **Quick Note** | Log a contact or brief update |
+| **Detailed Note** | Document a session with outcomes |
+| **Record Event** | Add an intake, discharge, or other event |
+| **New Alert** | Flag a safety concern |
+| **Schedule Meeting** | Book a meeting with the client |
+| **Send Email** | Compose and send an email to the client (if messaging is enabled) |
+| **Export PDF** | Download a progress report as PDF |
+| **Export All Data** | Download the client's complete data (program managers only) |
+| **Edit** | Edit the client record |
+| **Transfer** | Transfer between programs (requires transfer permission) |
+
+Not all items appear for all users — what you see depends on your role and permissions.
+
+---
+
 ## Tips & Shortcuts
 
 ### Keyboard navigation
@@ -433,11 +541,13 @@ If your admin has turned on AI assistance, you'll see a **Draft report summary**
 | Create/edit clients | Staff and above |
 | Write progress notes | Staff and above |
 | Record events and alerts | Staff and above |
-| Log communications | Staff and above |
+| Leave staff messages | Staff and above |
 | Schedule meetings | Staff and above |
 | Send message reminders | Staff (if messaging enabled and client consented) |
+| Transfer clients between programs | Staff with transfer permission (typically program managers) |
 | Review alert cancellations | Program managers |
 | Edit plan targets | Coordinators and admins |
+| Invite participants to the portal | Staff and above (if portal enabled) |
 | Create plan templates | Admins only |
 | Manage users | Admins only |
 | Change system settings | Admins only |
@@ -457,18 +567,21 @@ If your admin has turned on AI assistance, you'll see a **Draft report summary**
 | I want to... | Do this... |
 |--------------|------------|
 | Find a client | Type their name in the search bar |
-| Write a quick update | Notes tab → + Quick Note |
-| Document a full session | Notes tab → + Progress Note |
-| Record an intake or discharge | Events tab → + New Event |
-| Flag a safety concern | Events tab → + New Alert |
-| Log a phone call | Events tab → Phone (quick-log button) |
-| Schedule a meeting | Events tab → + New Meeting |
+| Write a quick update | Actions menu → Quick Note |
+| Document a full session | Actions menu → Detailed Note |
+| Record an intake or discharge | Actions menu → Record Event |
+| Flag a safety concern | Actions menu → New Alert |
+| Schedule a meeting | Actions menu → Schedule Meeting |
+| Leave a message for a case worker | Info tab → Leave Message |
+| See my unread messages | Messages (main navigation) |
+| Transfer a client between programs | Actions menu → Transfer |
 | See your calendar | Meetings (main navigation) |
 | See who needs attention | Check Priority Items on home page |
+| See who hasn't been contacted recently | Sort participant list by Last Contact |
 | View progress charts | Client file → Analysis tab |
 | See program patterns | Insights (main navigation) |
 
 ---
 
-**Version 2.1** — KoNote
-Last updated: 2026-02-13
+**Version 2.2** — KoNote
+Last updated: 2026-02-16

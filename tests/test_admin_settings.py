@@ -235,6 +235,9 @@ class InstanceSettingsTest(TestCase):
             "date_format": "Y-m-d",
             "session_timeout_minutes": "60",
             "document_storage_provider": "none",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
         })
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(InstanceSetting.get("product_name"), "MyApp")
@@ -342,6 +345,9 @@ class DocumentStorageSettingsTest(TestCase):
             "date_format": "Y-m-d",
             "session_timeout_minutes": "30",
             "document_storage_provider": "sharepoint",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
             "document_storage_url_template": "https://contoso.sharepoint.com/sites/konote/Clients/{record_id}/",
         })
         self.assertEqual(resp.status_code, 302)
@@ -363,6 +369,9 @@ class DocumentStorageSettingsTest(TestCase):
             "session_timeout_minutes": "30",
             "document_storage_provider": "google_drive",
             "document_storage_url_template": "https://drive.google.com/drive/search?q={record_id}",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
         })
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
@@ -384,6 +393,9 @@ class DocumentStorageSettingsTest(TestCase):
             "session_timeout_minutes": "30",
             "document_storage_provider": "none",
             "document_storage_url_template": "",
+            "meeting_time_start": "9",
+            "meeting_time_end": "17",
+            "meeting_time_step": "30",
         })
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(

@@ -1,105 +1,15 @@
-from datetime import timedelta
-
-from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Q
-from django.shortcuts import render
 from django.urls import path
-from django.utils import timezone
 
-from apps.portal.staff_views import create_staff_portal_note
+from apps.portal.staff_views import (
+    create_portal_invite,
+    create_staff_portal_note,
+    portal_manage,
+    portal_reset_mfa,
+    portal_revoke_access,
+)
 
 from . import erasure_views, views
-
-
-@login_required
-def executive_dashboard(request):
-    """
-    Executive dashboard with aggregate statistics only.
-
-    Executives see high-level program metrics without access to individual
-    client records. This protects client confidentiality while giving
-    leadership the oversight they need.
-    """
-    from apps.clients.models import ClientFile, ClientProgramEnrolment
-    from apps.notes.models import ProgressNote
-    from apps.programs.models import Program, UserProgramRole
-
-    # Get programs the executive is assigned to
-    user_program_ids = list(
-        UserProgramRole.objects.filter(
-            user=request.user, status="active"
-        ).values_list("program_id", flat=True)
-    )
-    programs = Program.objects.filter(pk__in=user_program_ids, status="active")
-
-    # Base client queryset (respects demo/real separation)
-    from apps.clients.views import get_client_queryset
-    base_clients = get_client_queryset(request.user)
-
-    # Calculate time boundaries
-    now = timezone.now()
-    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    week_start = now - timedelta(days=now.weekday())
-
-    # Build program statistics
-    program_stats = []
-    total_clients = 0
-    total_active = 0
-    total_with_consent = 0
-
-    for program in programs:
-        # Clients enrolled in this program
-        enrolled_client_ids = ClientProgramEnrolment.objects.filter(
-            program=program, status="enrolled"
-        ).values_list("client_file_id", flat=True)
-
-        # Filter to accessible clients
-        program_clients = base_clients.filter(pk__in=enrolled_client_ids)
-
-        active = program_clients.filter(status="active").count()
-        inactive = program_clients.filter(status="inactive").count()
-        discharged = program_clients.filter(status="discharged").count()
-        total = active + inactive + discharged
-
-        # New this month
-        new_this_month = program_clients.filter(created_at__gte=month_start).count()
-
-        # Notes this week
-        notes_this_week = ProgressNote.objects.filter(
-            client_file_id__in=enrolled_client_ids,
-            created_at__gte=week_start,
-        ).count()
-
-        # Consent compliance
-        with_consent = program_clients.exclude(consent_given_at__isnull=True).count()
-
-        program_stats.append({
-            "program": program,
-            "total": total,
-            "active": active,
-            "inactive": inactive,
-            "discharged": discharged,
-            "new_this_month": new_this_month,
-            "notes_this_week": notes_this_week,
-            "consent_count": with_consent,
-            "consent_pct": round(with_consent / total * 100) if total > 0 else 0,
-        })
-
-        total_clients += total
-        total_active += active
-        total_with_consent += with_consent
-
-    # Overall statistics
-    overall_consent_pct = round(total_with_consent / total_clients * 100) if total_clients > 0 else 0
-
-    return render(request, "clients/executive_dashboard.html", {
-        "program_stats": program_stats,
-        "total_clients": total_clients,
-        "total_active": total_active,
-        "overall_consent_pct": overall_consent_pct,
-        "data_refreshed_at": now,
-        "nav_active": "executive",
-    })
+from .dashboard_views import executive_dashboard
 
 
 app_name = "clients"
@@ -132,4 +42,9 @@ urlpatterns = [
     path("<int:client_id>/erase/", erasure_views.erasure_request_create, name="client_erasure_request"),
     # Portal staff note
     path("<int:client_id>/portal-note/", create_staff_portal_note, name="create_staff_portal_note"),
+    # Portal management
+    path("<int:client_id>/portal-invite/", create_portal_invite, name="create_portal_invite"),
+    path("<int:client_id>/portal/", portal_manage, name="portal_manage"),
+    path("<int:client_id>/portal/revoke/", portal_revoke_access, name="portal_revoke"),
+    path("<int:client_id>/portal/reset-mfa/", portal_reset_mfa, name="portal_reset_mfa"),
 ]

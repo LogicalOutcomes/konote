@@ -39,6 +39,22 @@
     </dl>
 </section>
 
+{# Staff message actions — leave or view messages #}
+{% if not client.is_anonymised %}
+{% has_permission "message.leave" as can_leave_message %}
+{% has_permission "message.view" as can_view_messages %}
+{% if can_leave_message or can_view_messages %}
+<section class="quick-info-section">
+    {% if can_leave_message %}
+    <a href="{% url 'communications:leave_message' client.pk %}" role="button" class="outline">{% trans "Leave Message" %}</a>
+    {% endif %}
+    {% if can_view_messages %}
+    <a href="{% url 'communications:client_messages' client.pk %}" role="button" class="secondary outline">{% trans "View Messages" %}</a>
+    {% endif %}
+</section>
+{% endif %}
+{% endif %}
+
 {# Contact & Messaging Consent — staff and above #}
 {% if not is_receptionist and not client.is_anonymised %}
 <section>
@@ -149,6 +165,27 @@
             <p class="secondary">{% trans "Clinical notes are only visible within the program where they were recorded. Under Ontario privacy law (PHIPA), express consent is required before clinical information can be shared across programs." %}</p>
             {% endif %}
             <small class="secondary"><em>{% trans "Note: Cross-program note filtering will be enforced in a future update. This setting is being recorded now for when enforcement is enabled." %}</em></small>
+        </div>
+    </details>
+</section>
+{% endif %}
+
+{# Participant Portal — staff + PM, gated on feature toggle #}
+{% if features.participant_portal and not is_receptionist and not client.is_anonymised %}
+<section>
+    <details>
+        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Participant Portal" %}</h2></summary>
+        <div style="margin-top: var(--kn-space-base);">
+            {% if client.portal_account.is_active %}
+            <p><span class="badge badge-success">{% trans "Portal access: Active" %}</span></p>
+            <a href="{% url 'clients:portal_manage' client_id=client.pk %}" class="secondary" style="font-size: 0.875rem;">{% trans "Manage portal access" %}</a>
+            {% elif client.portal_account.pk %}
+            <p><span class="badge badge-neutral">{% trans "Portal access: Deactivated" %}</span></p>
+            <a href="{% url 'clients:portal_manage' client_id=client.pk %}" class="secondary" style="font-size: 0.875rem;">{% trans "Manage portal access" %}</a>
+            {% else %}
+            <p class="secondary">{% trans "No portal account." %}</p>
+            <a href="{% url 'clients:create_portal_invite' client_id=client.pk %}" role="button" class="outline" style="font-size: 0.875rem;">{% trans "Invite to Portal" %}</a>
+            {% endif %}
         </div>
     </details>
 </section>

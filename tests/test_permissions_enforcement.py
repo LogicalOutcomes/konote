@@ -49,10 +49,10 @@ TEST_KEY = Fernet.generate_key().decode()
 
 PERMISSION_URL_MAP = {
     # Client keys
-    "client.create": {"url": "/clients/create/"},
-    "client.edit": {"url": "/clients/{client_id}/edit/"},
-    "client.edit_contact": {"url": "/clients/{client_id}/edit-contact/"},
-    "client.transfer": {"url": "/clients/{client_id}/transfer/"},
+    "client.create": {"url": "/participants/create/"},
+    "client.edit": {"url": "/participants/{client_id}/edit/"},
+    "client.edit_contact": {"url": "/participants/{client_id}/edit-contact/"},
+    "client.transfer": {"url": "/participants/{client_id}/transfer/"},
     "client.view_name": {"skip": "field_level"},
     "client.view_contact": {"skip": "field_level"},
     "client.view_safety": {"skip": "field_level"},
@@ -61,7 +61,7 @@ PERMISSION_URL_MAP = {
     "client.delete": {"skip": "admin_erasure_workflow"},
 
     # Consent / intake keys
-    "consent.manage": {"url": "/clients/{client_id}/consent/edit/"},
+    "consent.manage": {"url": "/participants/{client_id}/consent/edit/"},
     "consent.view": {"skip": "field_level"},
     "intake.view": {"skip": "no_decorator"},
     "intake.edit": {"skip": "no_decorator"},
@@ -104,6 +104,10 @@ PERMISSION_URL_MAP = {
     # Communication keys
     "communication.log": {"url": "/communications/client/{client_id}/quick-log/"},
     "communication.view": {"skip": "timeline_integration"},
+
+    # Staff message keys
+    "message.leave": {"url": "/communications/client/{client_id}/leave-message/"},
+    "message.view": {"url": "/communications/client/{client_id}/messages/"},
 
     # Metric / report keys
     "metric.view_individual": {"url": "/reports/client/{client_id}/analysis/"},

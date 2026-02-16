@@ -1,0 +1,41 @@
+{% load i18n %}
+<article id="message-{{ msg.pk }}">
+    <header>
+        <div>
+            <strong>
+                {% if msg.for_user %}
+                    {% blocktrans with name=msg.for_user.display_name %}For: {{ name }}{% endblocktrans %}
+                {% else %}
+                    {% trans "For: Any case worker" %}
+                {% endif %}
+            </strong>
+            <br>
+            <small>
+                {% if msg.left_by %}
+                {% blocktrans with name=msg.left_by.display_name date=msg.created_at|date:"SHORT_DATETIME_FORMAT" %}From {{ name }} on {{ date }}{% endblocktrans %}
+                {% else %}
+                {{ msg.created_at|date:"SHORT_DATETIME_FORMAT" }}
+                {% endif %}
+            </small>
+        </div>
+    </header>
+
+    <p>{{ msg.content }}</p>
+
+    {% if msg.status == "unread" %}
+        <footer>
+            <form method="post"
+                  action="{% url 'communications:mark_message_read' client_id=client.pk message_id=msg.pk %}"
+                  hx-post="{% url 'communications:mark_message_read' client_id=client.pk message_id=msg.pk %}"
+                  hx-target="#message-{{ msg.pk }}"
+                  hx-swap="outerHTML">
+                {% csrf_token %}
+                <button type="submit" class="secondary outline">{% trans "Mark as Read" %}</button>
+            </form>
+        </footer>
+    {% elif msg.read_at %}
+        <footer>
+            <small>{% trans "Read" %} {{ msg.read_at|date:"SHORT_DATETIME_FORMAT" }}</small>
+        </footer>
+    {% endif %}
+</article>
