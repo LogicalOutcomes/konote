@@ -775,6 +775,15 @@ msgstr ""
 msgid "Actions"
 msgstr "Actions"
 
+msgid "Actions menu"
+msgstr "Menu actions"
+
+msgid "Edit participant record"
+msgstr "Modifier le dossier du participant"
+
+msgid "Transfer between programs"
+msgstr "Transférer entre les programmes"
+
 msgid "New item menu"
 msgstr "Menu nouvel élément"
 
@@ -12001,13 +12010,17 @@ msgid "French description (displayed when language is French)"
 msgstr "Description en français (affichée lorsque la langue est le français)"
 
 msgid "French portal description (displayed when language is French)"
-msgstr "Description du portail en français (affichée lorsque la langue est le français)"
+msgstr ""
+"Description du portail en français (affichée lorsque la langue est le "
+"français)"
 
 msgid "French unit label (e.g., 'pointage', 'jours', '%"
 msgstr "Libellé de l'unité en français (p. ex., « pointage », « jours », « %"
 
 msgid "Participant consents to sharing clinical information across programs"
-msgstr "Le participant consent au partage de renseignements cliniques entre les programmes"
+msgstr ""
+"Le participant consent au partage de renseignements cliniques entre les "
+"programmes"
 
 msgid "Reason for transfer (optional)"
 msgstr "Raison du transfert (facultatif)"
@@ -12033,3 +12046,28 @@ msgstr "Pourquoi ce participant est-il ajouté ou retiré d'un programme?"
 
 msgid "since"
 msgstr "depuis"
+
+msgid "French definition (optional)"
+msgstr "Définition en français (facultatif)"
+
+msgid "French metric name (optional)"
+msgstr "Nom de l'indicateur en français (facultatif)"
+
+msgid "French name (optional — shown when language is French)"
+msgstr "Nom en français (facultatif — affiché lorsque la langue est le français)"
+
+msgid "French portal description (optional)"
+msgstr "Description du portail en français (facultatif)"
+
+msgid "French unit label (optional)"
+msgstr "Libellé de l'unité en français (facultatif)"
+
+msgid ""
+"Upload a CSV with columns: name, definition, category, min_value, max_value,"
+" unit. Optional French columns: name_fr, definition_fr, unit_fr"
+msgstr ""
+"Téléversez un CSV avec les colonnes : name, definition, category, min_value,"
+" max_value, unit. Colonnes françaises facultatives : name_fr, definition_fr, unit_fr"
+
+msgid "e.g., pointage, jours, %"
+msgstr "p. ex., pointage, jours, %"
