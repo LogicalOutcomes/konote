@@ -8,12 +8,6 @@
 
 <p>{% trans "Activity overview for team meeting prep — shows notes, communications, and meetings by staff member." %}</p>
 
-{% if not has_program_roles %}
-<article aria-label="{% trans 'No program assignments' %}">
-    <p>{% trans "You are not currently assigned to any programs. This view shows staff activity for the programs you are assigned to." %}</p>
-    <p>{% trans "To see team activity, ask an administrator to assign you to one or more programs." %}</p>
-</article>
-{% else %}
 <form method="get" class="grid">
     <div>
         <label for="program">{{ term.program|default:"Program" }}</label>
@@ -119,6 +113,5 @@
 </figure>
 {% else %}
 <p>{% trans "No staff activity found for this period." %}</p>
-{% endif %}
 {% endif %}
 {% endblock %}
