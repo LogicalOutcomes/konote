@@ -262,4 +262,3 @@ def _apply_custom_fields(groups_data, stdout):
 
     _log(stdout, f"  Custom fields: {group_count} groups, {field_count} fields.")
     return {"Custom fields": f"{group_count} group(s), {field_count} field(s)"}
-
