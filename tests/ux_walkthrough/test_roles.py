@@ -30,30 +30,30 @@ class ReceptionistWalkthroughTest(UxWalkthroughBase):
         self.visit(role, "Home page", "/")
 
         # 2. Client list
-        self.visit(role, "Client list", "/clients/")
+        self.visit(role, "Client list", "/participants/")
 
         # 3. Search
-        self.visit(role, "Search for client", f"/clients/search/?q=Jane")
+        self.visit(role, "Search for client", f"/participants/search/?q=Jane")
 
         # 4. Client detail — should NOT see note/plan edit buttons
         self.visit(
             role,
             "Client detail",
-            f"/clients/{cid}/",
+            f"/participants/{cid}/",
             role_should_not_see=["Create Note", "Quick Note", "Edit Plan"],
         )
 
         # 5. Custom fields display (HTMX)
-        self.visit_htmx(role, "Custom fields display", f"/clients/{cid}/custom-fields/display/")
+        self.visit_htmx(role, "Custom fields display", f"/participants/{cid}/custom-fields/display/")
 
         # 6. Custom fields edit (HTMX) — editable fields only
-        self.visit_htmx(role, "Custom fields edit", f"/clients/{cid}/custom-fields/edit/")
+        self.visit_htmx(role, "Custom fields edit", f"/participants/{cid}/custom-fields/edit/")
 
         # 7. Consent display (HTMX)
-        self.visit_htmx(role, "Consent display", f"/clients/{cid}/consent/display/")
+        self.visit_htmx(role, "Consent display", f"/participants/{cid}/consent/display/")
 
         # 8. Create client form (receptionist CAN create — client.create: ALLOW)
-        self.visit(role, "Create client form", "/clients/create/")
+        self.visit(role, "Create client form", "/participants/create/")
 
         # 9. BLOCKED: notes
         self.visit_forbidden(role, "Notes list (403)", f"/notes/client/{cid}/")
@@ -82,7 +82,7 @@ class ReceptionistWalkthroughTest(UxWalkthroughBase):
         self.visit(
             role,
             "Client detail (FR)",
-            f"/clients/{self.client_a.pk}/",
+            f"/participants/{self.client_a.pk}/",
             expected_lang="fr",
         )
 
@@ -111,16 +111,16 @@ class StaffWalkthroughTest(UxWalkthroughBase):
         self.visit(role, "Home page", "/")
 
         # 2. Client list
-        self.visit(role, "Client list", "/clients/")
+        self.visit(role, "Client list", "/participants/")
 
         # 3. Create client form (GET)
-        self.visit(role, "Create client form", "/clients/create/")
+        self.visit(role, "Create client form", "/participants/create/")
 
         # 4. Submit create client
         self.visit_and_follow(
             role,
             "Create client submit",
-            "/clients/create/",
+            "/participants/create/",
             data={
                 "first_name": "New",
                 "last_name": "Client",
@@ -130,26 +130,26 @@ class StaffWalkthroughTest(UxWalkthroughBase):
                 "status": "active",
                 "programs": [self.program_a.pk],
             },
-            expected_redirect="/clients/",
+            expected_redirect="/participants/",
         )
 
         # 5. Client detail — should see Create Note, NOT Edit Plan
         self.visit(
             role,
             "Client detail",
-            f"/clients/{cid}/",
+            f"/participants/{cid}/",
             role_should_see=["Note"],
             role_should_not_see=["Edit Plan", "Add Section"],
         )
 
         # 6. Edit client form (GET)
-        self.visit(role, "Edit client form", f"/clients/{cid}/edit/")
+        self.visit(role, "Edit client form", f"/participants/{cid}/edit/")
 
         # 7. Submit edit client
         self.visit_and_follow(
             role,
             "Edit client submit",
-            f"/clients/{cid}/edit/",
+            f"/participants/{cid}/edit/",
             data={
                 "first_name": "Jane",
                 "last_name": "Doe-Updated",
@@ -159,18 +159,18 @@ class StaffWalkthroughTest(UxWalkthroughBase):
                 "status": "active",
                 "programs": [self.program_a.pk],
             },
-            expected_redirect=f"/clients/{cid}/",
+            expected_redirect=f"/participants/{cid}/",
         )
 
         # 8. Consent edit (HTMX partial)
-        self.visit_htmx(role, "Consent edit form", f"/clients/{cid}/consent/edit/")
+        self.visit_htmx(role, "Consent edit form", f"/participants/{cid}/consent/edit/")
 
         # 9. Submit consent
         today = timezone.now().strftime("%Y-%m-%d")
         self.visit_and_follow(
             role,
             "Consent submit",
-            f"/clients/{cid}/consent/",
+            f"/participants/{cid}/consent/",
             data={
                 "consent_type": "written",
                 "consent_date": today,
@@ -179,7 +179,7 @@ class StaffWalkthroughTest(UxWalkthroughBase):
         )
 
         # 10. Custom fields edit (HTMX)
-        self.visit_htmx(role, "Custom fields edit", f"/clients/{cid}/custom-fields/edit/")
+        self.visit_htmx(role, "Custom fields edit", f"/participants/{cid}/custom-fields/edit/")
 
         # 11. Quick note form (GET)
         self.visit(role, "Quick note form", f"/notes/client/{cid}/quick/")
@@ -279,8 +279,8 @@ class ManagerWalkthroughTest(UxWalkthroughBase):
 
         # Core pages
         self.visit(role, "Home page", "/")
-        self.visit(role, "Client list", "/clients/")
-        self.visit(role, "Client detail", f"/clients/{cid}/")
+        self.visit(role, "Client list", "/participants/")
+        self.visit(role, "Client detail", f"/participants/{cid}/")
 
         # Notes — manager can view AND create (note.create: SCOPED)
         self.visit(role, "Notes timeline", f"/notes/client/{cid}/")
@@ -352,14 +352,14 @@ class ExecutiveWalkthroughTest(UxWalkthroughBase):
         role = "Executive"
 
         # 1. Executive dashboard
-        self.visit(role, "Executive dashboard", "/clients/executive/")
+        self.visit(role, "Executive dashboard", "/participants/executive/")
 
         # 2. Client list → should redirect to exec dashboard
-        self.visit_redirect(role, "Client list redirect", "/clients/")
+        self.visit_redirect(role, "Client list redirect", "/participants/")
 
         # 3. Client detail → should redirect to exec dashboard
         self.visit_redirect(
-            role, "Client detail redirect", f"/clients/{self.client_a.pk}/"
+            role, "Client detail redirect", f"/participants/{self.client_a.pk}/"
         )
 
         # 4. Programs list (should be accessible)
@@ -417,11 +417,11 @@ class AdminWalkthroughTest(UxWalkthroughBase):
         self.visit(role, "Create registration link", "/admin/registration/create/")
 
         # Custom fields
-        self.visit(role, "Custom field admin", "/clients/admin/fields/")
+        self.visit(role, "Custom field admin", "/participants/admin/fields/")
         self.visit(
-            role, "Create field group", "/clients/admin/fields/groups/create/"
+            role, "Create field group", "/participants/admin/fields/groups/create/"
         )
-        self.visit(role, "Create field definition", "/clients/admin/fields/create/")
+        self.visit(role, "Create field definition", "/participants/admin/fields/create/")
 
         # Event types
         self.visit(role, "Event types list", "/events/admin/types/")
@@ -447,7 +447,7 @@ class AdminWalkthroughTest(UxWalkthroughBase):
         self.visit_forbidden(
             role,
             "Client detail without program role (403)",
-            f"/clients/{self.client_a.pk}/",
+            f"/participants/{self.client_a.pk}/",
         )
 
     def test_non_admin_blocked_from_admin_pages(self):
@@ -478,7 +478,7 @@ class AdminPMWalkthroughTest(UxWalkthroughBase):
         cid = self.client_a.pk
 
         # Can access client data (has program role)
-        self.visit(role, "Client detail", f"/clients/{cid}/")
+        self.visit(role, "Client detail", f"/participants/{cid}/")
         self.visit(role, "Notes timeline", f"/notes/client/{cid}/")
         self.visit(role, "Plan view", f"/plans/client/{cid}/")
 

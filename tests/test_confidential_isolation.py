@@ -99,43 +99,43 @@ class ConfidentialIsolationTest(TestCase):
 
     def test_standard_staff_sees_standard_client(self):
         self.http.login(username="standard_staff", password="testpass123")
-        resp = self.http.get("/clients/")
+        resp = self.http.get("/participants/")
         self.assertContains(resp, "Alice")
 
     def test_standard_staff_does_not_see_confidential_only_client(self):
         self.http.login(username="standard_staff", password="testpass123")
-        resp = self.http.get("/clients/")
+        resp = self.http.get("/participants/")
         self.assertNotContains(resp, "Bob")
 
     def test_standard_staff_sees_dual_enrolled_client(self):
         """Dual-enrolled clients are visible if user has access to ANY of their programs."""
         self.http.login(username="standard_staff", password="testpass123")
-        resp = self.http.get("/clients/")
+        resp = self.http.get("/participants/")
         self.assertContains(resp, "Carol")
 
     def test_standard_staff_does_not_see_confidential_program_name(self):
         """The confidential program name must never appear for standard staff."""
         self.http.login(username="standard_staff", password="testpass123")
-        resp = self.http.get("/clients/")
+        resp = self.http.get("/participants/")
         self.assertNotContains(resp, "Counselling Services")
 
     def test_confidential_staff_sees_their_clients(self):
         self.http.login(username="conf_staff", password="testpass123")
-        resp = self.http.get("/clients/")
+        resp = self.http.get("/participants/")
         self.assertContains(resp, "Bob")
 
     # ---- Client detail ----
 
     def test_standard_staff_cannot_access_confidential_client_detail(self):
         self.http.login(username="standard_staff", password="testpass123")
-        resp = self.http.get(f"/clients/{self.confidential_client.pk}/")
+        resp = self.http.get(f"/participants/{self.confidential_client.pk}/")
         self.assertIn(resp.status_code, [403, 404])
 
     def test_dual_client_detail_hides_confidential_enrolment(self):
         """When standard staff views a dual-enrolled client, the confidential
         program enrolment must not be shown."""
         self.http.login(username="standard_staff", password="testpass123")
-        resp = self.http.get(f"/clients/{self.dual_client.pk}/")
+        resp = self.http.get(f"/participants/{self.dual_client.pk}/")
         self.assertNotContains(resp, "Counselling Services")
         self.assertContains(resp, "Employment Services")
 
@@ -148,7 +148,7 @@ class ConfidentialIsolationTest(TestCase):
 
         # Submit edit form with only the standard program checked
         resp = self.http.post(
-            f"/clients/{self.dual_client.pk}/edit/",
+            f"/participants/{self.dual_client.pk}/edit/",
             {
                 "first_name": "Carol",
                 "last_name": "Dual",
@@ -189,13 +189,13 @@ class ConfidentialIsolationTest(TestCase):
 
     def test_search_does_not_reveal_confidential_clients(self):
         self.http.login(username="standard_staff", password="testpass123")
-        resp = self.http.get("/clients/search/?q=Bob")
+        resp = self.http.get("/participants/search/?q=Bob")
         self.assertNotContains(resp, "Bob")
 
     def test_search_no_hint_about_hidden_data(self):
         """UI must never say 'some programs may not be included' or similar."""
         self.http.login(username="standard_staff", password="testpass123")
-        resp = self.http.get("/clients/search/?q=nonexistent")
+        resp = self.http.get("/participants/search/?q=nonexistent")
         content = resp.content.decode()
         self.assertNotIn("may not be included", content)
         self.assertNotIn("hidden clients", content.lower())
@@ -255,7 +255,7 @@ class DuplicateMatchingTest(TestCase):
         """HTMX endpoint returns banner when phone matches standard client."""
         self.http.login(username="staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {"phone": "(613) 555-9999"},
         )
         self.assertEqual(resp.status_code, 200)
@@ -265,7 +265,7 @@ class DuplicateMatchingTest(TestCase):
     def test_phone_match_returns_empty_for_no_match(self):
         self.http.login(username="staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {"phone": "(613) 555-0000"},
         )
         self.assertEqual(resp.status_code, 200)
@@ -276,7 +276,7 @@ class DuplicateMatchingTest(TestCase):
         in duplicate matching results."""
         self.http.login(username="staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {"phone": "(613) 555-8888"},
         )
         self.assertEqual(resp.status_code, 200)
@@ -286,7 +286,7 @@ class DuplicateMatchingTest(TestCase):
     def test_empty_phone_returns_empty(self):
         self.http.login(username="staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {"phone": ""},
         )
         self.assertEqual(resp.status_code, 200)
@@ -303,7 +303,7 @@ class DuplicateMatchingTest(TestCase):
         )
         self.http.login(username="demo_staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {"phone": "(613) 555-9999"},
         )
         self.assertEqual(resp.status_code, 200)
@@ -316,20 +316,20 @@ class DuplicateMatchingTest(TestCase):
         """First 3 chars of first name + exact DOB returns banner."""
         self.http.login(username="staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {"first_name": "Jan", "birth_date": "2001-03-15"},
         )
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "similar name and date of birth")
         self.assertContains(resp, "Check existing records")
-        self.assertContains(resp, f"/clients/{self.existing.pk}/")
+        self.assertContains(resp, f"/participants/{self.existing.pk}/")
 
     def test_name_dob_case_insensitive(self):
         """Name matching must be case-insensitive."""
         self.http.login(username="staff", password="testpass123")
         for name in ["jan", "JAN", "Jan", "jAn"]:
             resp = self.http.get(
-                "/clients/check-duplicate/",
+                "/participants/check-duplicate/",
                 {"first_name": name, "birth_date": "2001-03-15"},
             )
             self.assertContains(
@@ -341,7 +341,7 @@ class DuplicateMatchingTest(TestCase):
         """CRITICAL: Confidential clients must never appear in name+DOB matching."""
         self.http.login(username="staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {"first_name": "Sec", "birth_date": "1990-06-20"},
         )
         self.assertEqual(resp.status_code, 200)
@@ -352,7 +352,7 @@ class DuplicateMatchingTest(TestCase):
         """When phone matches, show phone banner even if name+DOB also matches."""
         self.http.login(username="staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {
                 "phone": "(613) 555-9999",
                 "first_name": "Jan",
@@ -367,7 +367,7 @@ class DuplicateMatchingTest(TestCase):
         """When phone is provided but doesn't match, fall back to name+DOB."""
         self.http.login(username="staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {
                 "phone": "(613) 555-0000",
                 "first_name": "Jan",
@@ -376,13 +376,13 @@ class DuplicateMatchingTest(TestCase):
         )
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "similar name and date of birth")
-        self.assertContains(resp, f"/clients/{self.existing.pk}/")
+        self.assertContains(resp, f"/participants/{self.existing.pk}/")
 
     def test_partial_data_first_name_only_returns_empty(self):
         """First name alone (no DOB) must not trigger matching."""
         self.http.login(username="staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {"first_name": "Jan"},
         )
         self.assertEqual(resp.status_code, 200)
@@ -392,7 +392,7 @@ class DuplicateMatchingTest(TestCase):
         """DOB alone (no first name) must not trigger matching."""
         self.http.login(username="staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {"birth_date": "2001-03-15"},
         )
         self.assertEqual(resp.status_code, 200)
@@ -402,7 +402,7 @@ class DuplicateMatchingTest(TestCase):
         """First name with fewer than 3 chars must not trigger matching."""
         self.http.login(username="staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {"first_name": "Ja", "birth_date": "2001-03-15"},
         )
         self.assertEqual(resp.status_code, 200)
@@ -412,7 +412,7 @@ class DuplicateMatchingTest(TestCase):
         """Editing a client must not match against themselves via name+DOB."""
         self.http.login(username="staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {
                 "first_name": "Jan",
                 "birth_date": "2001-03-15",
@@ -432,7 +432,7 @@ class DuplicateMatchingTest(TestCase):
         )
         self.http.login(username="demo_staff2", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {"first_name": "Jan", "birth_date": "2001-03-15"},
         )
         self.assertEqual(resp.status_code, 200)
@@ -442,7 +442,7 @@ class DuplicateMatchingTest(TestCase):
         """Same name prefix but different DOB must not match."""
         self.http.login(username="staff", password="testpass123")
         resp = self.http.get(
-            "/clients/check-duplicate/",
+            "/participants/check-duplicate/",
             {"first_name": "Jan", "birth_date": "2001-03-16"},
         )
         self.assertEqual(resp.status_code, 200)
@@ -583,7 +583,7 @@ class PhoneFieldTest(TestCase):
 
     def test_create_client_with_phone(self):
         self.http.login(username="staff", password="testpass123")
-        resp = self.http.post("/clients/create/", {
+        resp = self.http.post("/participants/create/", {
             "first_name": "New",
             "last_name": "Client",
             "status": "active",
@@ -817,7 +817,7 @@ class AuditConfidentialTaggingTest(TestCase):
 
     def test_standard_client_view_not_tagged_confidential(self):
         self.http.login(username="audit_staff", password="testpass123")
-        self.http.get(f"/clients/{self.standard_client.pk}/")
+        self.http.get(f"/participants/{self.standard_client.pk}/")
 
         log = AuditLog.objects.using("audit").filter(
             resource_id=self.standard_client.pk, action="view",
@@ -827,7 +827,7 @@ class AuditConfidentialTaggingTest(TestCase):
 
     def test_confidential_client_view_tagged(self):
         self.http.login(username="audit_staff", password="testpass123")
-        self.http.get(f"/clients/{self.conf_client.pk}/")
+        self.http.get(f"/participants/{self.conf_client.pk}/")
 
         log = AuditLog.objects.using("audit").filter(
             resource_id=self.conf_client.pk, action="view",
@@ -846,7 +846,7 @@ class AuditConfidentialTaggingTest(TestCase):
             user=outsider, program=self.standard_prog, role="staff",
         )
         self.http.login(username="outsider", password="testpass123")
-        resp = self.http.get(f"/clients/{self.conf_client.pk}/")
+        resp = self.http.get(f"/participants/{self.conf_client.pk}/")
         self.assertIn(resp.status_code, [403, 404])
 
         log = AuditLog.objects.using("audit").filter(

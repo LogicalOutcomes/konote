@@ -53,9 +53,9 @@ def _url_to_slug(url, max_length=60):
     """Convert a URL into a short, filesystem-safe slug for screenshot filenames.
 
     Examples:
-        http://localhost:8000/clients/          → 'clients'
-        http://localhost:8000/clients/executive/ → 'clients-executive'
-        http://localhost:8000/clients/42/notes/  → 'clients-42-notes'
+        http://localhost:8000/participants/          → 'participants'
+        http://localhost:8000/participants/executive/ → 'participants-executive'
+        http://localhost:8000/participants/42/notes/  → 'participants-42-notes'
         http://localhost:8000/admin/settings/    → 'admin-settings'
         http://localhost:8000/                   → 'home'
     """

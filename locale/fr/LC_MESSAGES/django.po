@@ -12699,10 +12699,73 @@ msgid "e.g. Youth Housing Plan"
 msgstr ""
 
 msgid "edit"
-msgstr ""
+msgstr "modifier"
 
 msgid "mark complete"
-msgstr ""
+msgstr "marquer comme terminé"
 
 msgid "reactivate"
+msgstr "réactiver"
+
+msgid "Change status to completed or deactivated"
+msgstr "Changer le statut en terminé ou désactivé"
+
+msgid "Choose how to measure progress"
+msgstr "Choisir comment mesurer les progrès"
+
+msgid "Currently:"
+msgstr "Actuellement :"
+
+msgid "Mark Complete"
+msgstr "Marquer comme terminé"
+
+msgid "Reactivate"
+msgstr "Réactiver"
+
+msgid "Set back to active"
+msgstr "Remettre en état actif"
+
+msgid "View past changes"
+msgstr "Voir les modifications passées"
+
+#: templates/plans/_target.html
+#, python-format
+msgid "Edit this %(target)s"
+msgstr "Modifier ce %(target)s"
+
+#: templates/plans/_section_status.html
+#, python-format
+msgid ""
+"Completing or deactivating this area will also affect %(count)s active "
+"%(targets)s within it. You can undo this later."
 msgstr ""
+"Terminer ou désactiver ce domaine affectera également %(count)s "
+"%(targets)s actifs. Vous pourrez annuler cette action plus tard."
+
+#: templates/plans/_section_status.html
+#, python-format
+msgid ""
+"This area has %(count)s %(targets)s. Reactivating it will make them "
+"editable again."
+msgstr ""
+"Ce domaine contient %(count)s %(targets)s. Le réactiver les rendra "
+"modifiables à nouveau."
+
+#: templates/plans/_target_status.html
+#, python-format
+msgid ""
+"You can mark this %(target)s as completed when it's been achieved, or "
+"deactivate it if it's no longer relevant. You can undo this later."
+msgstr ""
+"Vous pouvez marquer ce %(target)s comme terminé lorsqu'il est atteint, "
+"ou le désactiver s'il n'est plus pertinent. Vous pourrez annuler cette "
+"action plus tard."
+
+#: templates/plans/_target_status.html
+#, python-format
+msgid ""
+"Reactivating this %(target)s will make it editable and visible in "
+"progress notes again."
+msgstr ""
+"Réactiver ce %(target)s le rendra modifiable et visible dans les notes "
+"de suivi à nouveau."

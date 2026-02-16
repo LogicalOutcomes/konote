@@ -67,11 +67,11 @@ class CrossProgramIsolationScenario(UxScenarioBase):
         self.login_as("staff", forbidden_content=CASEY_FORBIDDEN)
         role = "Direct Service"
 
-        resp = self.visit(role, "Client list (Housing only)", "/clients/")
+        resp = self.visit(role, "Client list (Housing only)", "/participants/")
         # visit() already ran _scan_response via session forbidden content
         self.record_scenario(
             self.SCENARIO, role, "Client list (Housing only)",
-            "/clients/", resp.status_code, [],
+            "/participants/", resp.status_code, [],
         )
 
     def test_search_hides_other_programs(self):
@@ -85,14 +85,14 @@ class CrossProgramIsolationScenario(UxScenarioBase):
         self.login_as("staff")  # No session forbidden — we check manually
         role = "Direct Service"
 
-        url = "/clients/search/?q=Bob"
+        url = "/participants/search/?q=Bob"
         resp = self.visit(role, "Search for Bob (should find no results)", url)
 
         # Check that no link to Bob's client profile appears in results
         issues = []
         if resp.status_code == 200:
             body = resp.content.decode("utf-8", errors="replace")
-            bob_url = f"/clients/{self.client_b.pk}/"
+            bob_url = f"/participants/{self.client_b.pk}/"
             if bob_url in body:
                 issues.append(self._make_issue(
                     Severity.CRITICAL, url, role,
@@ -110,7 +110,7 @@ class CrossProgramIsolationScenario(UxScenarioBase):
         self.login_as("staff", forbidden_content=CASEY_FORBIDDEN)
         role = "Direct Service"
 
-        url = f"/clients/{self.client_b.pk}/"
+        url = f"/participants/{self.client_b.pk}/"
         resp = self.visit_forbidden(
             role, "Direct access to Bob's profile (403)", url,
         )
@@ -124,7 +124,7 @@ class CrossProgramIsolationScenario(UxScenarioBase):
         self.login_as("staff", forbidden_content=CASEY_FORBIDDEN)
         role = "Direct Service"
 
-        url = f"/clients/{self.client_b.pk}/custom-fields/display/"
+        url = f"/participants/{self.client_b.pk}/custom-fields/display/"
         resp = self.client.get(url, HTTP_HX_REQUEST="true")
         # Should be 403 — middleware blocks before the view runs
         issues = []
@@ -144,7 +144,7 @@ class CrossProgramIsolationScenario(UxScenarioBase):
         self.login_as("staff", forbidden_content=CASEY_FORBIDDEN)
         role = "Direct Service"
 
-        url = f"/clients/{self.client_a.pk}/"
+        url = f"/participants/{self.client_a.pk}/"
         resp = self.visit(role, "Access Jane's profile (own program)", url)
         # Jane's data should be visible — check status is 200
         issues = []
@@ -178,7 +178,7 @@ class CrossProgramIsolationScenario(UxScenarioBase):
         self.login_as("admin")
         role = "Admin (no program)"
 
-        url = f"/clients/{self.client_a.pk}/"
+        url = f"/participants/{self.client_a.pk}/"
         resp = self.visit_forbidden(
             role, "Admin blocked from client detail (403)", url,
         )
@@ -217,20 +217,20 @@ class MorningIntakeScenario(UxScenarioBase):
         # Dana searches — Maria isn't in the system yet
         resp = self.visit(
             role, "Search for unknown client",
-            "/clients/search/?q=Maria",
+            "/participants/search/?q=Maria",
         )
         self.record_scenario(
             self.SCENARIO, role, "Search for Maria (not found)",
-            "/clients/search/?q=Maria", resp.status_code, [],
+            "/participants/search/?q=Maria", resp.status_code, [],
         )
 
         # Dana opens the create form (client.create: ALLOW for receptionist)
         resp = self.visit(
-            role, "Create client form", "/clients/create/",
+            role, "Create client form", "/participants/create/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Dana opens create form",
-            "/clients/create/", resp.status_code, [],
+            "/participants/create/", resp.status_code, [],
         )
 
         # =============================================================
@@ -248,11 +248,11 @@ class MorningIntakeScenario(UxScenarioBase):
 
         # Casey views Maria's new profile
         resp = self.visit(
-            role, "View new client profile", f"/clients/{cid}/",
+            role, "View new client profile", f"/participants/{cid}/",
         )
         self.record_scenario(
             self.SCENARIO, role, "View Maria's profile",
-            f"/clients/{cid}/", resp.status_code, [],
+            f"/participants/{cid}/", resp.status_code, [],
         )
 
         # Casey writes a quick note about the intake
@@ -290,11 +290,11 @@ class MorningIntakeScenario(UxScenarioBase):
 
         # Morgan views Maria's profile
         resp = self.visit(
-            role, "Review new client", f"/clients/{cid}/",
+            role, "Review new client", f"/participants/{cid}/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Review Maria's profile",
-            f"/clients/{cid}/", resp.status_code, [],
+            f"/participants/{cid}/", resp.status_code, [],
         )
 
         # Morgan views the plan page (read-only — plan.edit: DENY)
@@ -355,8 +355,8 @@ class FrenchWorkdayScenario(UxScenarioBase):
 
         pages = [
             ("Home page", "/"),
-            ("Client list", "/clients/"),
-            ("Client detail", f"/clients/{cid}/"),
+            ("Client list", "/participants/"),
+            ("Client detail", f"/participants/{cid}/"),
             ("Programs list", "/programs/"),
         ]
 
@@ -402,13 +402,13 @@ class NoteContentSearchScenario(UxScenarioBase):
         self.login_as("staff", forbidden_content=CASEY_FORBIDDEN)
         role = "Direct Service"
 
-        url = "/clients/?q=seemed+well"
+        url = "/participants/?q=seemed+well"
         resp = self.visit(role, "Search client list by note text", url)
 
         issues = []
         if resp.status_code == 200:
             body = resp.content.decode("utf-8", errors="replace")
-            jane_url = f"/clients/{self.client_a.pk}/"
+            jane_url = f"/participants/{self.client_a.pk}/"
             if jane_url not in body:
                 issues.append(self._make_issue(
                     Severity.CRITICAL, url, role,
@@ -426,13 +426,13 @@ class NoteContentSearchScenario(UxScenarioBase):
         self.login_as("staff")
         role = "Direct Service"
 
-        url = "/clients/search/?q=seemed+well"
+        url = "/participants/search/?q=seemed+well"
         resp = self.visit(role, "Dedicated search by note text", url)
 
         issues = []
         if resp.status_code == 200:
             body = resp.content.decode("utf-8", errors="replace")
-            jane_url = f"/clients/{self.client_a.pk}/"
+            jane_url = f"/participants/{self.client_a.pk}/"
             if jane_url not in body:
                 issues.append(self._make_issue(
                     Severity.CRITICAL, url, role,
@@ -454,13 +454,13 @@ class NoteContentSearchScenario(UxScenarioBase):
         self.login_as("staff")
         role = "Direct Service"
 
-        url = "/clients/search/?q=vocational"
+        url = "/participants/search/?q=vocational"
         resp = self.visit(role, "Search for other program's note content", url)
 
         issues = []
         if resp.status_code == 200:
             body = resp.content.decode("utf-8", errors="replace")
-            bob_url = f"/clients/{self.client_b.pk}/"
+            bob_url = f"/participants/{self.client_b.pk}/"
             if bob_url in body:
                 issues.append(self._make_issue(
                     Severity.CRITICAL, url, role,

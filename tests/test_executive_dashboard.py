@@ -51,12 +51,12 @@ class ExecutiveDashboardViewTest(TestCase):
 
     def test_dashboard_loads(self):
         self.http.login(username="exec", password="testpass123")
-        resp = self.http.get("/clients/executive/")
+        resp = self.http.get("/participants/executive/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Executive Overview")
 
     def test_dashboard_requires_login(self):
-        resp = self.http.get("/clients/executive/")
+        resp = self.http.get("/participants/executive/")
         self.assertEqual(resp.status_code, 302)
 
     def test_no_programs_returns_403(self):
@@ -65,7 +65,7 @@ class ExecutiveDashboardViewTest(TestCase):
             username="noprog", password="testpass123"
         )
         self.http.login(username="noprog", password="testpass123")
-        resp = self.http.get("/clients/executive/")
+        resp = self.http.get("/participants/executive/")
         self.assertEqual(resp.status_code, 403)
 
     def test_active_count(self):
@@ -74,7 +74,7 @@ class ExecutiveDashboardViewTest(TestCase):
         self._create_client("inactive", [self.prog_a])
 
         self.http.login(username="exec", password="testpass123")
-        resp = self.http.get("/clients/executive/")
+        resp = self.http.get("/participants/executive/")
         self.assertEqual(resp.context["total_active"], 2)
 
     def test_without_notes_count(self):
@@ -89,7 +89,7 @@ class ExecutiveDashboardViewTest(TestCase):
         )
 
         self.http.login(username="exec", password="testpass123")
-        resp = self.http.get("/clients/executive/")
+        resp = self.http.get("/participants/executive/")
         self.assertEqual(resp.context["without_notes"], 1)
 
     def test_overdue_followups(self):
@@ -113,7 +113,7 @@ class ExecutiveDashboardViewTest(TestCase):
         )
 
         self.http.login(username="exec", password="testpass123")
-        resp = self.http.get("/clients/executive/")
+        resp = self.http.get("/participants/executive/")
         self.assertEqual(resp.context["overdue_followups"], 1)
 
     def test_program_filter_valid(self):
@@ -121,7 +121,7 @@ class ExecutiveDashboardViewTest(TestCase):
         self._create_client("active", [self.prog_b])
 
         self.http.login(username="exec", password="testpass123")
-        resp = self.http.get(f"/clients/executive/?program={self.prog_a.pk}")
+        resp = self.http.get(f"/participants/executive/?program={self.prog_a.pk}")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context["total_active"], 1)
         self.assertEqual(resp.context["selected_program_id"], self.prog_a.pk)
@@ -131,7 +131,7 @@ class ExecutiveDashboardViewTest(TestCase):
         self._create_client("active", [self.prog_a])
 
         self.http.login(username="exec", password="testpass123")
-        resp = self.http.get("/clients/executive/?program=abc")
+        resp = self.http.get("/participants/executive/?program=abc")
         self.assertEqual(resp.status_code, 200)
         self.assertIsNone(resp.context["selected_program_id"])
 
@@ -140,7 +140,7 @@ class ExecutiveDashboardViewTest(TestCase):
         other_prog = Program.objects.create(name="Secret Program", colour_hex="#FF0000")
 
         self.http.login(username="exec", password="testpass123")
-        resp = self.http.get(f"/clients/executive/?program={other_prog.pk}")
+        resp = self.http.get(f"/participants/executive/?program={other_prog.pk}")
         self.assertEqual(resp.status_code, 200)
         self.assertIsNone(resp.context["selected_program_id"])
 

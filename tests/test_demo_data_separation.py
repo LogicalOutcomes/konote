@@ -105,33 +105,33 @@ class DemoDataVisibilityTest(TestCase):
 
     def test_real_user_sees_only_real_clients(self):
         self.http_client.login(username="real-staff", password="testpass123")
-        resp = self.http_client.get("/clients/")
+        resp = self.http_client.get("/participants/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Real")
         self.assertNotContains(resp, "Demo")
 
     def test_demo_user_sees_only_demo_clients(self):
         self.http_client.login(username="demo-staff", password="testpass123")
-        resp = self.http_client.get("/clients/")
+        resp = self.http_client.get("/participants/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Demo")
         self.assertNotContains(resp, "Real Client")
 
     def test_real_user_cannot_access_demo_client_detail(self):
         self.http_client.login(username="real-admin", password="testpass123")
-        resp = self.http_client.get(f"/clients/{self.demo_client.pk}/")
+        resp = self.http_client.get(f"/participants/{self.demo_client.pk}/")
         # Should get 403 or redirect, not 200
         self.assertIn(resp.status_code, [403, 404, 302])
 
     def test_demo_user_cannot_access_real_client_detail(self):
         self.http_client.login(username="demo-admin", password="testpass123")
-        resp = self.http_client.get(f"/clients/{self.real_client.pk}/")
+        resp = self.http_client.get(f"/participants/{self.real_client.pk}/")
         # Should get 403 or redirect, not 200
         self.assertIn(resp.status_code, [403, 404, 302])
 
     def test_search_respects_demo_status(self):
         self.http_client.login(username="real-staff", password="testpass123")
-        resp = self.http_client.get("/clients/search/?q=Client")
+        resp = self.http_client.get("/participants/search/?q=Client")
         self.assertContains(resp, "Real")
         self.assertNotContains(resp, "DEMO-001")
 

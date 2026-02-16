@@ -1913,6 +1913,20 @@ p.notice.warning {
     100% { transform: scaleX(1); transform-origin: left; }
 }
 
+/* ---- Status change form (plan) ---- */
+.status-change-notice {
+    padding: var(--kn-space-sm) var(--kn-space-base);
+    background: var(--kn-surface-hover, rgba(0, 0, 0, 0.02));
+    border-radius: var(--kn-radius-card);
+    border-left: 3px solid var(--kn-primary);
+    margin-bottom: var(--kn-space-sm);
+}
+.status-form-actions {
+    display: flex;
+    gap: var(--kn-space-sm);
+    margin-top: var(--kn-space-sm);
+}
+
 /* ---- Touch target sizing (WCAG 2.5.8 Level AA — minimum 24×24px) ---- */
 input[type="checkbox"],
 input[type="radio"] {
@@ -2485,6 +2499,10 @@ article[aria-label="notification"].fading-out {
 /* ---- Section card mobile ---- */
 @media (max-width: 480px) {
     .section-card header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .section-card-header {
         flex-direction: column;
         align-items: flex-start;
     }

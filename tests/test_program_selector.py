@@ -431,7 +431,7 @@ class ClientFilteringByActiveProgram(TestCase):
         self.http.post("/programs/switch/", {
             "program": str(self.employment.pk), "next": "/",
         })
-        resp = self.http.get("/clients/")
+        resp = self.http.get("/participants/")
         self.assertContains(resp, "Alice")
         self.assertNotContains(resp, "Bob")
 
@@ -440,7 +440,7 @@ class ClientFilteringByActiveProgram(TestCase):
         self.http.post("/programs/switch/", {
             "program": str(self.counselling.pk), "next": "/",
         })
-        resp = self.http.get("/clients/")
+        resp = self.http.get("/participants/")
         self.assertContains(resp, "Bob")
         self.assertNotContains(resp, "Alice")
 
@@ -449,7 +449,7 @@ class ClientFilteringByActiveProgram(TestCase):
         self.http.post("/programs/switch/", {
             "program": "all_standard", "next": "/",
         })
-        resp = self.http.get("/clients/")
+        resp = self.http.get("/participants/")
         self.assertContains(resp, "Alice")
         self.assertNotContains(resp, "Bob")
 
@@ -462,7 +462,7 @@ class ClientFilteringByActiveProgram(TestCase):
         })
         # Should still access confidential client by direct URL
         # (middleware checks all programs, not just active)
-        resp = self.http.get(f"/clients/{self.conf_client.pk}/")
+        resp = self.http.get(f"/participants/{self.conf_client.pk}/")
         self.assertEqual(resp.status_code, 200)
 
 

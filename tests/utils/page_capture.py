@@ -75,7 +75,7 @@ def resolve_url_pattern(pattern, test_data):
     """Replace <int:xxx> / <slug:xxx> placeholders with real values.
 
     Args:
-        pattern: URL pattern, e.g. "/clients/<int:client_id>/edit/"
+        pattern: URL pattern, e.g. "/participants/<int:client_id>/edit/"
         test_data: dict mapping placeholder names to values,
                    e.g. {"client_id": 42, "note_id": 7, "slug": "intake"}
 

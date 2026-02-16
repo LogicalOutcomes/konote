@@ -22,7 +22,7 @@ urlpatterns = [
     path("i18n/", include("django.conf.urls.i18n")),
     path("i18n/switch/", switch_language, name="switch_language"),
     path("auth/", include("apps.auth_app.urls")),
-    path("clients/", include("apps.clients.urls")),
+    path("participants/", include("apps.clients.urls")),
     path("programs/", include("apps.programs.urls")),
     path("plans/", include("apps.plans.urls")),
     path("admin/templates/", include("apps.plans.admin_urls")),
