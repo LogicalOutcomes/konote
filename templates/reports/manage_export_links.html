@@ -11,14 +11,14 @@
 
 {% if messages %}
 {% for message in messages %}
-<article aria-label="{% trans 'Status message' %}" role="status" style="border-left: 4px solid {% if message.tags == 'success' %}var(--pico-color-green-500){% else %}var(--pico-color-yellow-500){% endif %}; padding: 1rem; margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'Status message' %}" role="status" style="border-left: 4px solid {% if message.tags == 'success' %}var(--kn-success-fg){% else %}var(--kn-warning-fg){% endif %}; padding: 1rem; margin-bottom: 1.5rem;">
     <p style="margin-bottom: 0;">{{ message }}</p>
 </article>
 {% endfor %}
 {% endif %}
 
 {% if pending_elevated %}
-<article aria-label="{% trans 'Pending elevated exports' %}" role="alert" style="border-left: 4px solid var(--pico-color-red-500); padding: 1rem; margin-bottom: 1.5rem; background: var(--pico-color-red-50, #fff5f5);">
+<article aria-label="{% trans 'Pending elevated exports' %}" role="alert" style="border-left: 4px solid var(--kn-danger-fg); padding: 1rem; margin-bottom: 1.5rem; background: var(--kn-danger-bg);">
     <strong><span aria-hidden="true">&#x26A0;</span> {% blocktrans count counter=pending_elevated|length %}{{ counter }} elevated export is pending review{% plural %}{{ counter }} elevated exports are pending review{% endblocktrans %}</strong>
     <p style="margin-bottom: 0;">
         {% trans "The exports below are in the delay period. You can revoke them before the download becomes available." %}
@@ -57,22 +57,22 @@
             </td>
             <td>
                 {% if link.is_elevated %}
-                    <mark style="background: var(--pico-color-orange-100, #fff3e0); color: var(--pico-color-orange-700, #e65100); font-size: 0.75rem; margin-bottom: 0.25rem;">{% trans "Elevated" %}</mark><br>
+                    <mark style="background: var(--kn-warning-bg); color: var(--kn-warning-fg); font-size: 0.75rem; margin-bottom: 0.25rem;">{% trans "Elevated" %}</mark><br>
                 {% endif %}
                 {% if link.revoked %}
-                    <mark style="background: var(--pico-color-red-100); color: var(--pico-color-red-700);">{% trans "Revoked" %}</mark>
+                    <mark style="background: var(--kn-danger-bg); color: var(--kn-danger-fg);">{% trans "Revoked" %}</mark>
                     {% if link.revoked_by %}
                         <br><small>{% blocktrans with name=link.revoked_by.display_name %}by {{ name }}{% endblocktrans %}</small>
                     {% endif %}
                 {% elif link.status_display == "Expired" %}
-                    <mark style="background: var(--pico-color-yellow-100); color: var(--pico-color-yellow-700);">{% trans "Expired" %}</mark>
+                    <mark style="background: var(--kn-warning-bg); color: var(--kn-warning-fg);">{% trans "Expired" %}</mark>
                 {% elif link.status_display == "File Missing" %}
-                    <mark style="background: var(--pico-color-yellow-100); color: var(--pico-color-yellow-700);">{% trans "File Missing" %}</mark>
+                    <mark style="background: var(--kn-warning-bg); color: var(--kn-warning-fg);">{% trans "File Missing" %}</mark>
                 {% elif link.status_display == "Pending" %}
-                    <mark style="background: var(--pico-color-orange-100, #fff3e0); color: var(--pico-color-orange-700, #e65100);">{% trans "Pending" %}</mark>
+                    <mark style="background: var(--kn-warning-bg); color: var(--kn-warning-fg);">{% trans "Pending" %}</mark>
                     <br><small>{% blocktrans with time=link.available_at|date:"H:i" %}Available at {{ time }}{% endblocktrans %}</small>
                 {% else %}
-                    <mark style="background: var(--pico-color-green-100); color: var(--pico-color-green-700);">{% trans "Active" %}</mark>
+                    <mark style="background: var(--kn-success-bg); color: var(--kn-success-fg);">{% trans "Active" %}</mark>
                     <br><small>{% blocktrans with time=link.expires_at|date:"Y-m-d H:i" %}Expires: {{ time }}{% endblocktrans %}</small>
                 {% endif %}
             </td>

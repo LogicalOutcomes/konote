@@ -9,7 +9,7 @@
     <p>{% trans "Generate a standardised program outcome report with service statistics, demographics, and outcomes." %}</p>
 </hgroup>
 
-<article class="pico-background-yellow-50" aria-label="{% trans 'Draft Template Notice' %}" role="alert" style="border-left: 4px solid var(--pico-color-yellow-500); padding: 1rem; margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'Draft Template Notice' %}" role="alert" style="background: var(--kn-warning-bg); border-left: 4px solid var(--kn-warning-fg); padding: 1rem; margin-bottom: 1.5rem;">
     <strong><span aria-hidden="true">⚠️</span> {% trans "Draft Template — Customise for Your Needs" %}</strong>
     <p style="margin-bottom: 0;">
         {% blocktrans %}
@@ -41,7 +41,7 @@
     {% csrf_token %}
 
     {% if form.non_field_errors %}
-    <article class="pico-background-red-100" aria-label="{% trans 'Form errors' %}" role="alert">
+    <article style="background: var(--kn-danger-bg);" aria-label="{% trans 'Form errors' %}" role="alert">
         {% for error in form.non_field_errors %}
         <p>{{ error }}</p>
         {% endfor %}
@@ -85,7 +85,7 @@
     {# Dynamic preview: shows breakdowns for the selected template #}
     {% for preview_template in template_preview_items %}
     <article class="template-preview" data-template-id="{{ preview_template.pk }}"
-             style="display: none; margin-bottom: 1rem; border-left: 4px solid var(--pico-color-blue-500); padding: 0.75rem 1rem;"
+             style="display: none; margin-bottom: 1rem; border-left: 4px solid var(--kn-info-fg); padding: 0.75rem 1rem;"
              aria-live="polite">
         <strong>{{ preview_template.name }}</strong>
         {% if preview_template.description %}

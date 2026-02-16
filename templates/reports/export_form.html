@@ -38,7 +38,7 @@
     </p>
 </article>
 
-<article class="pico-background-yellow-50" aria-label="{% trans 'Personal information notice' %}" role="alert" style="border-left: 4px solid var(--pico-color-yellow-500); padding: 1rem; margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'Personal information notice' %}" role="alert" style="background: var(--kn-warning-bg); border-left: 4px solid var(--kn-warning-fg); padding: 1rem; margin-bottom: 1.5rem;">
     <strong><span aria-hidden="true">⚠️</span> {% trans "Personal information notice" %}</strong>
     <p>
         {% blocktrans with strong_open="<strong>" strong_close="</strong>" %}This export {{ strong_open }}does not{{ strong_close }} contain participant names, contact information, addresses, or session notes. However, it {{ strong_open }}does{{ strong_close }} contain client record IDs and staff names, which are considered personal information.{% endblocktrans %}
@@ -49,7 +49,7 @@
 </article>
 
 {% if is_pm_export %}
-<article class="pico-background-yellow-50" aria-label="{% trans 'Elevated export notice' %}" style="border-left: 4px solid var(--pico-color-orange-500); padding: 1rem; margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'Elevated export notice' %}" style="background: var(--kn-warning-bg); border-left: 4px solid var(--kn-warning-fg); padding: 1rem; margin-bottom: 1.5rem;">
     <strong><span aria-hidden="true">&#x23F3;</span> {% trans "Elevated Export — Delay Applied" %}</strong>
     <p style="margin-bottom: 0;">
         {% trans "Because this export contains individual client data, a 10-minute delay will be applied before the download link becomes active. Administrators will be notified by email." %}
@@ -62,7 +62,7 @@
     {% csrf_token %}
 
     {% if form.non_field_errors %}
-    <article class="pico-background-red-100" aria-label="{% trans 'Form errors' %}" role="alert">
+    <article style="background: var(--kn-danger-bg);" aria-label="{% trans 'Form errors' %}" role="alert">
         {% for error in form.non_field_errors %}
         <p>{{ error }}</p>
         {% endfor %}
@@ -124,7 +124,7 @@
     {# Dynamic preview: shows breakdowns for the selected template #}
     {% for preview_template in template_preview_items %}
     <article class="template-preview" data-template-id="{{ preview_template.pk }}"
-             style="display: none; margin-bottom: 1rem; border-left: 4px solid var(--pico-color-blue-500); padding: 0.75rem 1rem;"
+             style="display: none; margin-bottom: 1rem; border-left: 4px solid var(--kn-info-fg); padding: 0.75rem 1rem;"
              aria-live="polite">
         <strong>{{ preview_template.name }}</strong>
         {% if preview_template.description %}

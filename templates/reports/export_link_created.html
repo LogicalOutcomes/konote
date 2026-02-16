@@ -13,7 +13,7 @@
 
 {% if link.is_elevated and not link.is_available %}
 {# ── Elevated export: delay still active ── #}
-<article aria-label="{% trans 'Download pending' %}" style="border-left: 4px solid var(--pico-color-yellow-500); padding: 1rem; margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'Download pending' %}" style="border-left: 4px solid var(--kn-warning-fg); padding: 1rem; margin-bottom: 1.5rem;">
     <strong><span aria-hidden="true">&#x23F3;</span> {% trans "Download available shortly" %}</strong>
     <p>
         {% blocktrans with time=link.available_at|date:"H:i" strong_open="<strong>" strong_close="</strong>" %}Because this export contains sensitive data, there is a short security delay. Your download will be available at {{ strong_open }}{{ time }}{{ strong_close }}.{% endblocktrans %}
@@ -29,7 +29,7 @@
 
 {% else %}
 {# ── Normal export: ready for immediate download ── #}
-<article aria-label="{% trans 'Success' %}" style="border-left: 4px solid var(--pico-color-green-500); padding: 1rem; margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'Success' %}" style="border-left: 4px solid var(--kn-success-fg); padding: 1rem; margin-bottom: 1.5rem;">
     <strong><span aria-hidden="true">&#x2705;</span> {% trans "Report generated successfully" %}</strong>
     <p style="margin-bottom: 0;">
         {% if is_pdf %}
@@ -60,7 +60,7 @@
 
 {# Data contents notice — so recipients know exactly what's in the file #}
 {% if link.contains_pii %}
-<article aria-label="{% trans 'Data contents' %}" style="border-left: 4px solid var(--pico-color-blue-300); padding: 1rem; margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'Data contents' %}" style="border-left: 4px solid var(--kn-info-fg); padding: 1rem; margin-bottom: 1.5rem;">
     <strong>{% trans "What's in this file" %}</strong>
     <p>
         {% trans "This export contains client record IDs, metric values, dates of service, and staff names." %}
@@ -71,7 +71,7 @@
     </p>
 </article>
 {% else %}
-<article aria-label="{% trans 'Data contents' %}" style="border-left: 4px solid var(--pico-color-blue-300); padding: 1rem; margin-bottom: 1.5rem;">
+<article aria-label="{% trans 'Data contents' %}" style="border-left: 4px solid var(--kn-info-fg); padding: 1rem; margin-bottom: 1.5rem;">
     <strong>{% trans "What's in this file" %}</strong>
     <p style="margin-bottom: 0;">
         {% trans "This export contains summary statistics only (averages, counts, minimums, maximums). No participant names, record IDs, or individual data are included." %}
@@ -105,7 +105,7 @@
                 <span aria-hidden="true">&#x1F4CB;</span> {% trans "Copy Link" %}
             </button>
         </div>
-        <small id="copy-feedback" aria-live="polite" style="display: none; color: var(--pico-color-green-500);">
+        <small id="copy-feedback" aria-live="polite" style="display: none; color: var(--kn-success-fg);">
             {% trans "Link copied to clipboard." %}
         </small>
     </div>
