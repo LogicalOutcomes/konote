@@ -16,30 +16,15 @@
     <div class="client-actions" role="toolbar" aria-label="{% trans 'Client actions' %}">
         {% has_permission "client.edit" as can_edit_client %}
         {% has_permission "client.transfer" as can_transfer_client %}
-        {% if not client.is_anonymised %}
-        {% if can_edit_client and not is_receptionist or can_transfer_client %}
-        <div class="actions-dropdown">
-            <button class="outline secondary actions-dropdown-toggle" aria-expanded="false" aria-haspopup="true" aria-label="{% trans 'Actions menu' %}">{% trans "Actions" %} ▾</button>
-            <ul class="actions-dropdown-menu" role="menu" hidden>
-                {% if can_edit_client and not is_receptionist %}
-                <li role="none"><a role="menuitem" href="{% url 'clients:client_edit' client_id=client.pk %}">{% trans "Edit" %}<small>{% trans "Edit participant record" %}</small></a></li>
-                {% endif %}
-                {% if can_transfer_client %}
-                <li role="none"><a role="menuitem" href="{% url 'clients:client_transfer' client_id=client.pk %}">{% trans "Transfer" %}<small>{% trans "Transfer between programs" %}</small></a></li>
-                {% endif %}
-            </ul>
-        </div>
-        {% endif %}
-        {% endif %}
-        {% if not is_receptionist and document_storage.is_configured and document_folder_url %}
-        <a href="{{ document_folder_url }}" role="button" class="outline secondary" target="_blank" rel="noopener noreferrer" aria-label="{% if document_storage.provider == 'google_drive' %}{% trans 'Search documents for' %}{% else %}{% trans 'Open documents folder for' %}{% endif %} {{ client.display_name }} {{ client.last_name }}">{% trans "Documents" %}</a>
-        {% endif %}
-        {% if not is_receptionist and not client.is_anonymised %}
         {% has_permission "metric.view_individual" as can_view_metrics %}
         {% has_permission "communication.log" as can_log_comm %}
         {% has_permission "meeting.create" as can_create_meeting %}
+        {% if not is_receptionist and document_storage.is_configured and document_folder_url %}
+        <a href="{{ document_folder_url }}" role="button" class="outline secondary" target="_blank" rel="noopener noreferrer" aria-label="{% if document_storage.provider == 'google_drive' %}{% trans 'Search documents for' %}{% else %}{% trans 'Open documents folder for' %}{% endif %} {{ client.display_name }} {{ client.last_name }}">{% trans "Documents" %}</a>
+        {% endif %}
+        {% if not client.is_anonymised and not is_receptionist %}
         <div class="actions-dropdown">
-            <button class="outline actions-dropdown-toggle" aria-expanded="false" aria-haspopup="true" aria-label="{% trans 'New item menu' %}">+ {% trans "New" %} ▾</button>
+            <button class="outline actions-dropdown-toggle" aria-expanded="false" aria-haspopup="true" aria-label="{% trans 'Actions menu' %}">{% trans "Actions" %} ▾</button>
             <ul class="actions-dropdown-menu" role="menu" hidden>
                 <li role="none"><a role="menuitem" href="{% url 'notes:quick_note_create' client_id=client.pk %}">{% trans "Quick Note" %}<small>{% trans "Log a contact or brief update" %}</small></a></li>
                 <li role="none"><a role="menuitem" href="{% url 'notes:note_create' client_id=client.pk %}">{% trans "Detailed Note" %}<small>{% trans "Document a session with outcomes" %}</small></a></li>
@@ -60,6 +45,15 @@
                 {% endif %}
                 {% if user_role == "program_manager" %}
                 <li role="none"><a role="menuitem" href="{% url 'reports:client_export' client_id=client.pk %}" class="actions-confirm" data-confirm-message="{% trans 'Export all data for' %} {{ client.display_name }} {{ client.last_name }}? {% trans 'This file will contain personal information.' %}">{% trans "Export All Data" %}</a></li>
+                {% endif %}
+                {% if can_edit_client or can_transfer_client %}
+                <li class="dropdown-divider" role="separator"></li>
+                {% endif %}
+                {% if can_edit_client %}
+                <li role="none"><a role="menuitem" href="{% url 'clients:client_edit' client_id=client.pk %}">{% trans "Edit" %}<small>{% trans "Edit participant record" %}</small></a></li>
+                {% endif %}
+                {% if can_transfer_client %}
+                <li role="none"><a role="menuitem" href="{% url 'clients:client_transfer' client_id=client.pk %}">{% trans "Transfer" %}<small>{% trans "Transfer between programs" %}</small></a></li>
                 {% endif %}
             </ul>
         </div>
