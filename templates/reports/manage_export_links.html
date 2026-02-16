@@ -18,7 +18,7 @@
 {% endif %}
 
 {% if pending_elevated %}
-<article aria-label="{% trans 'Pending elevated exports' %}" role="alert" style="border-left: 4px solid var(--pico-color-red-500); padding: 1rem; margin-bottom: 1.5rem; background: var(--pico-color-red-50, #fff5f5);">
+<article aria-label="{% trans 'Pending elevated exports' %}" role="alert" style="border-left: 4px solid var(--kn-danger-fg); padding: 1rem; margin-bottom: 1.5rem; background: var(--kn-danger-bg);">
     <strong><span aria-hidden="true">&#x26A0;</span> {% blocktrans count counter=pending_elevated|length %}{{ counter }} elevated export is pending review{% plural %}{{ counter }} elevated exports are pending review{% endblocktrans %}</strong>
     <p style="margin-bottom: 0;">
         {% trans "The exports below are in the delay period. You can revoke them before the download becomes available." %}

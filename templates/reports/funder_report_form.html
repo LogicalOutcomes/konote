@@ -41,7 +41,7 @@
     {% csrf_token %}
 
     {% if form.non_field_errors %}
-    <article class="pico-background-red-100" aria-label="{% trans 'Form errors' %}" role="alert">
+    <article aria-label="{% trans 'Form errors' %}" role="alert" style="background: var(--kn-danger-bg); color: var(--kn-danger-fg);">
         {% for error in form.non_field_errors %}
         <p>{{ error }}</p>
         {% endfor %}
