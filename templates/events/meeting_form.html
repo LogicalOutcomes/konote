@@ -22,30 +22,41 @@
         {{ form.location.label }}
     </label>
     {{ form.location }}
-    <datalist id="meeting-location-options">
-        <option value="{% trans "In person" %}">
-        <option value="{% trans "Phone" %}">
-    </datalist>
-    <small>{% trans "Choose In person or Phone, or type a custom location." %}</small>
     {% if form.location.errors %}
     <small class="badge badge-danger" role="alert">{{ form.location.errors.0 }}</small>
     {% endif %}
 
+    {# Custom location text input — shown when "Other" is selected #}
+    <div id="location-custom-wrapper" style="display: none; margin-top: 0.5rem;">
+        <label for="{{ form.location_custom.id_for_label }}">
+            {{ form.location_custom.label }}
+        </label>
+        {{ form.location_custom }}
+        {% if form.location_custom.errors %}
+        <small class="badge badge-danger" role="alert">{{ form.location_custom.errors.0 }}</small>
+        {% endif %}
+    </div>
+
     {# ---- Date and Time (enhanced by meeting-picker.js) ---- #}
-    <label for="{{ form.start_timestamp.id_for_label }}">
-        {{ form.start_timestamp.label }}
-    </label>
-    <small id="meeting-start-required">{% trans "* Required field." %}</small>
-    {{ form.start_timestamp }}
-    {# Fallback button — hidden when JS enhancement loads #}
-    <button type="button" id="open-datetime-picker" class="secondary outline">
-        <span aria-hidden="true">&#x1f4c5;</span>
-        {% trans "Open calendar and time picker" %}
-    </button>
-    <small id="meeting-start-help">{% trans "Required. Pick from the calendar or type the date and time." %}</small>
-    {% if form.start_timestamp.errors %}
-    <small class="badge badge-danger" role="alert">{{ form.start_timestamp.errors.0 }}</small>
-    {% endif %}
+    <div id="meeting-time-config"
+         data-time-start="{{ meeting_time_start|default:'9' }}"
+         data-time-end="{{ meeting_time_end|default:'17' }}"
+         data-time-step="{{ meeting_time_step|default:'30' }}">
+        <label for="{{ form.start_timestamp.id_for_label }}">
+            {{ form.start_timestamp.label }}
+        </label>
+        <small id="meeting-start-required">{% trans "* Required field." %}</small>
+        {{ form.start_timestamp }}
+        {# Fallback button — hidden when JS enhancement loads #}
+        <button type="button" id="open-datetime-picker" class="secondary outline">
+            <span aria-hidden="true">&#x1f4c5;</span>
+            {% trans "Open calendar and time picker" %}
+        </button>
+        <small id="meeting-start-help">{% trans "Required. Pick from the calendar or type the date and time." %}</small>
+        {% if form.start_timestamp.errors %}
+        <small class="badge badge-danger" role="alert">{{ form.start_timestamp.errors.0 }}</small>
+        {% endif %}
+    </div>
 
     {# ---- Reminder (create mode only) ---- #}
     {% if not editing %}
@@ -102,4 +113,26 @@
 {% block extra_scripts %}
 {{ block.super }}
 <script src="{% static 'js/meeting-picker.js' %}"></script>
+<script>
+(function () {
+    var locationSelect = document.getElementById("{{ form.location.id_for_label }}");
+    var customWrapper = document.getElementById("location-custom-wrapper");
+    var customInput = document.getElementById("{{ form.location_custom.id_for_label }}");
+
+    if (!locationSelect || !customWrapper) return;
+
+    function toggleCustom() {
+        if (locationSelect.value === "__other__") {
+            customWrapper.style.display = "";
+            if (customInput) customInput.focus();
+        } else {
+            customWrapper.style.display = "none";
+        }
+    }
+
+    locationSelect.addEventListener("change", toggleCustom);
+    // Show on page load if "Other" is pre-selected (edit mode)
+    toggleCustom();
+})();
+</script>
 {% endblock %}
