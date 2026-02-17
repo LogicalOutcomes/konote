@@ -13204,3 +13204,26 @@ msgstr "quelque chose bouge"
 
 msgid "Audit log entries"
 msgstr "Entrées du journal d'audit"
+
+msgid "Can edit plans"
+msgstr "Plans modifiables"
+
+msgid "Edit Plan"
+msgstr "Modifier le plan"
+
+msgid "Edit Plan — disabled"
+msgstr "Modifier le plan — désactivé"
+
+msgid "Editable plan"
+msgstr "Plan modifiable"
+
+msgid "You can edit plans for this participant"
+msgstr "Vous pouvez modifier les plans de ce participant"
+
+msgid ""
+"Editing requires a staff role in one of this participant's enrolled "
+"%(program)ss. Contact your administrator if you need edit access."
+msgstr ""
+"La modification nécessite un rôle de personnel dans l'un des %(program)ss "
+"auxquels ce participant est inscrit. Contactez votre administrateur si vous "
+"avez besoin d'un accès en modification."
