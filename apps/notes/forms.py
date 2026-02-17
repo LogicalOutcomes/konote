@@ -47,6 +47,9 @@ class QuickNoteForm(forms.Form):
         widget=forms.Textarea(attrs={
             "rows": 3,
             "placeholder": _("Write your note here..."),
+            # ID must match the error container in quick_note_form.html.
+            # Explicit here because this form uses <div> not <small class="error">,
+            # so the app.js auto-linker does not apply.
             "aria-describedby": "notes-text-errors",
         }),
         required=False,
