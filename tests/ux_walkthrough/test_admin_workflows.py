@@ -32,10 +32,9 @@ class AdminDashboardWorkflow(UxScenarioBase):
         self.login_as("admin")
         role = "Admin"
 
-        # Home page — should have a link to admin settings
-        resp = self.visit(
+        # Admin-only users (no program roles) are redirected from / to admin settings
+        resp = self.visit_redirect(
             role, "Home page (find admin link)", "/",
-            role_should_see=["Settings"],
         )
         self.record_scenario(
             self.SCENARIO, role, "Home page — admin link visible",
