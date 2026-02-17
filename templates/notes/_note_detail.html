@@ -83,7 +83,7 @@
     <a href="#"
        hx-get="{% url 'notes:note_summary' note_id=note.pk %}"
        hx-target="#note-{{ note.pk }}"
-       hx-swap="innerHTML"
+       hx-swap="innerHTML focus-scroll:false"
        class="secondary">{% trans "Collapse" %}</a>
 </footer>
 </div>

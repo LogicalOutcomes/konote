@@ -9061,6 +9061,15 @@ msgid ""
 msgstr ""
 "Comme cette exportation contient des données individuelles, un délai de 10 "
 "minutes sera appliqué avant que le lien de téléchargement ne devienne actif."
+
+msgid ""
+"Because this export contains individual client data, a %(minutes)s-minute "
+"delay will be applied before the download link becomes active. "
+"Administrators will be notified by email."
+msgstr ""
+"Comme cette exportation contient des données individuelles, un délai de "
+"%(minutes)s minutes sera appliqué avant que le lien de téléchargement ne "
+"devienne actif. Les administrateurs seront avisés par courriel."
 " Les administrateurs seront avisés par courriel."
 
 msgid "French version. Leave blank to use the English text."
@@ -12872,3 +12881,131 @@ msgstr ""
 "Pour obtenir des renseignements sur un(e) %(client)s en particulier ou "
 "produire un rapport détaillé, communiquez avec le ou la gestionnaire de ce "
 "programme."
+
+msgid "Add Meetings to Your Calendar"
+msgstr "Ajouter les rencontres à votre calendrier"
+
+msgid "Add meetings to your calendar"
+msgstr "Ajouter les rencontres à votre calendrier"
+
+msgid "Apple Calendar (Mac)"
+msgstr "Apple Calendar (Mac)"
+
+msgid "Calendar link"
+msgstr "Lien de calendrier"
+
+msgid "Change the status of this goal? You can reactivate it later if needed."
+msgstr "Modifier le statut de cet objectif? Vous pourrez le réactiver plus tard au besoin."
+
+msgid "Choose \\\"From URL\\\""
+msgstr "Choisissez « À partir de l'URL »"
+
+msgid "Click the + next to \\\"Other calendars\\\" on the left"
+msgstr "Cliquez sur le + à côté de « Autres agendas » sur la gauche"
+
+msgid ""
+"Copy this link and paste it into your calendar app using the steps below."
+msgstr ""
+"Copiez ce lien et collez-le dans votre application de calendrier en suivant "
+"les étapes ci-dessous."
+
+msgid "Get a new link"
+msgstr "Obtenir un nouveau lien"
+
+msgid "Go to File → New Calendar Subscription"
+msgstr "Allez dans Fichier → Nouvel abonnement au calendrier"
+
+msgid "How to add it"
+msgstr "Comment l'ajouter"
+
+msgid ""
+"If you think someone else has your calendar link, you can replace it with a "
+"new one. Your old link will stop working and you'll need to set up your "
+"calendar app again."
+msgstr ""
+"Si vous pensez que quelqu'un d'autre a votre lien de calendrier, vous pouvez "
+"le remplacer par un nouveau. Votre ancien lien cessera de fonctionner et "
+"vous devrez reconfigurer votre application de calendrier."
+
+msgid "Mark this section as complete? You can reactivate it later if needed."
+msgstr "Marquer cette section comme terminée? Vous pourrez la réactiver plus tard au besoin."
+
+msgid "Open Settings → Calendar → Accounts"
+msgstr "Ouvrez Réglages → Calendrier → Comptes"
+
+msgid "Open the Calendar app"
+msgstr "Ouvrez l'application Calendrier"
+
+msgid "Outlook (desktop or web)"
+msgstr "Outlook (bureau ou Web)"
+
+msgid "Outlook calendar link"
+msgstr "Lien de calendrier Outlook"
+
+msgid "Outlook link"
+msgstr "Lien Outlook"
+
+msgid ""
+"Outlook sometimes needs a different format. If the link above doesn't work "
+"in Outlook, try this one instead."
+msgstr ""
+"Outlook a parfois besoin d'un format différent. Si le lien ci-dessus ne "
+"fonctionne pas dans Outlook, essayez celui-ci à la place."
+
+msgid "Paste the Outlook link above (not the regular one)"
+msgstr "Collez le lien Outlook ci-dessus (pas le lien habituel)"
+
+msgid "Paste the link and tap Next"
+msgstr "Collez le lien et appuyez sur Suivant"
+
+msgid "Paste the link you copied above and click Subscribe"
+msgstr "Collez le lien copié ci-dessus et cliquez sur S'abonner"
+
+msgid "Paste the link you copied above and click \\\"Add calendar\\\""
+msgstr "Collez le lien copié ci-dessus et cliquez sur « Ajouter un calendrier »"
+
+msgid "Reactivate this goal?"
+msgstr "Réactiver cet objectif?"
+
+msgid "Reactivate this section?"
+msgstr "Réactiver cette section?"
+
+msgid "Replace my calendar link"
+msgstr "Remplacer mon lien de calendrier"
+
+msgid "Set up my calendar link"
+msgstr "Configurer mon lien de calendrier"
+
+msgid "Tap \\\"Add Account\\\" → \\\"Other\\\" → \\\"Add Subscribed Calendar\\\""
+msgstr "Appuyez sur « Ajouter un compte » → « Autre » → « Ajouter un calendrier avec abonnement »"
+
+msgid ""
+"This will replace your calendar link. Your old link will stop working and "
+"you will need to set up your calendar app again. Continue?"
+msgstr ""
+"Cela remplacera votre lien de calendrier. Votre ancien lien cessera de "
+"fonctionner et vous devrez reconfigurer votre application de calendrier. "
+"Continuer?"
+
+msgid ""
+"To see your meetings in Google Calendar, Outlook, Apple Calendar, or another"
+" calendar app, create a calendar link. Once set up, new meetings will appear"
+" in your calendar automatically."
+msgstr ""
+"Pour voir vos rencontres dans Google Calendar, Outlook, Apple Calendar ou une"
+" autre application de calendrier, créez un lien de calendrier. Une fois "
+"configuré, les nouvelles rencontres apparaîtront automatiquement dans votre "
+"calendrier."
+
+msgid "Your calendar link"
+msgstr "Votre lien de calendrier"
+
+msgid ""
+"Your meetings will show up in your personal calendar app and stay up to date"
+" automatically."
+msgstr ""
+"Vos rencontres apparaîtront dans votre application de calendrier personnel "
+"et resteront à jour automatiquement."
+
+msgid "iPhone or iPad"
+msgstr "iPhone ou iPad"

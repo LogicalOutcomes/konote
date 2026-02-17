@@ -311,10 +311,11 @@ document.body.addEventListener("click", function (e) {
 
 // Focus management for note detail expansion (accessibility)
 // When a note card expands via HTMX, move focus to the detail content
+// Use preventScroll so the page doesn't jump when expanding/collapsing notes
 document.body.addEventListener("htmx:afterSwap", function (event) {
     var detail = event.detail.target.querySelector(".note-detail-content");
     if (detail) {
-        detail.focus();
+        detail.focus({ preventScroll: true });
     }
 });
 
