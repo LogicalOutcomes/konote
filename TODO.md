@@ -43,10 +43,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 **Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
 
-- [ ] Design "Questions for You" portal feature — participant-facing forms/check-ins/assessments assigned by staff, with pending/completed list (see tasks/portal-questions-design.md) (PORTAL-Q1)
-- [ ] Add AI-driven plain-language interpretation below charts so staff who find visuals confusing can read what's happening in words (UX-INSIGHT4)
-- [ ] Surface consolidated important suggestions to Executive Dashboard — group similar suggestions, show themes with counts, protect participant identity (see tasks/insights-suggestions-improvements.md) (UX-INSIGHT5)
-- [ ] Design suggestion tracking/consolidation system — mark suggestions addressed, group recurring themes across participants, create feedback loop (see tasks/insights-suggestions-improvements.md) (UX-INSIGHT6)
+- [ ] Build suggestion tracking/consolidation system — SuggestionTheme + SuggestionLink models, manual linking UI, integration with Insights and Dashboard (see tasks/suggestion-tracking-design.md) (UX-INSIGHT6)
+- [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
 
 ## Parking Lot
 
@@ -70,6 +68,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Insights & Suggestions Batch — template-driven chart interpretations, suggestion highlights on exec dashboard, suggestion tracking design doc, portal questions design doc — 2026-02-17 (UX-INSIGHT4, UX-INSIGHT5, UX-INSIGHT6, PORTAL-Q1)
 - [x] UX Batch 3 — button sizing, dynamic terminology, staff contact info, chart descriptions, suggestion count fix, export delay wording, configurable Leave Quickly URL — 2026-02-17 (UX-MSG1, UX-MSG2, UX-PROG2, UX-INSIGHT2, UX-INSIGHT3, UX-EXPORT1, UX-SAFETY1)
 - [x] UX Batch 2 — hx-confirm on plan actions, scroll position preservation, autofocus search, calendar sync rewrite — 2026-02-17 (UX6, UX7, UX9, UX-CAL1)
 - [x] UX text rewrites (already on main) — Executive Overview intro, Need More Details, Programs subtitle, Insights intro, Approvals intro — 2026-02-17 (UX-DASH1, UX-DASH2, UX-PROG1, UX-INSIGHTS1, UX-ALERT1)
