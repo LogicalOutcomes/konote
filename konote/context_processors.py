@@ -420,7 +420,7 @@ def active_program_context(request):
     elif value is not None:
         try:
             program = Program.objects.get(pk=int(value))
-            active_name = program.name
+            active_name = program.translated_name
             active_service_model = program.service_model
             role_obj = UserProgramRole.objects.filter(
                 user=request.user, program=program, status="active",

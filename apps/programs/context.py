@@ -27,7 +27,7 @@ def get_user_program_tiers(user):
     for r in roles:
         entry = {
             "id": r.program_id,
-            "name": r.program.name,
+            "name": r.program.translated_name,
             "role": r.role,
             "role_display": r.get_role_display(),
         }

@@ -350,7 +350,7 @@ def generate_funder_report_data(
 
         # Organisation information
         "organisation_name": organisation_name,
-        "program_name": program.name,
+        "program_name": program.translated_name,
         "program_description": program.description or "",
 
         # Service statistics

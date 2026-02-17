@@ -285,7 +285,7 @@ def switch_program(request):
         return HttpResponseForbidden(_("You do not have access to this program."))
 
     set_active_program(request.session, program_id)
-    messages.info(request, _("Now viewing: %(name)s") % {"name": role.program.name})
+    messages.info(request, _("Now viewing: %(name)s") % {"name": role.program.translated_name})
 
     # Audit-log switches to confidential programs
     if role.program.is_confidential:

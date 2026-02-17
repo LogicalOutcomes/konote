@@ -45,6 +45,8 @@ class InsightsFilterForm(forms.Form):
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
+        # Show translated program names in the dropdown (BUG-11)
+        self.fields["program"].label_from_instance = lambda obj: obj.translated_name
         # Scope to programs the user has active roles in
         if user:
             from apps.programs.access import get_accessible_programs
