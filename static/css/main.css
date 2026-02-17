@@ -3356,6 +3356,15 @@ article[aria-label="notification"].fading-out {
 }
 .insight-quote--compact { margin: 0.5rem 0 0; padding: 0.3rem 0.75rem; }
 .feedback-item .insight-quote--compact:last-child { margin-bottom: 0; }
+.insight-interpretation {
+    font-size: 0.9rem;
+    color: var(--kn-text);
+    background: var(--pico-card-sectionning-background-color);
+    border-left: 3px solid var(--kn-success-fg, #27ae60);
+    padding: 0.5rem 0.75rem;
+    margin: 0.5rem 0 1rem;
+    border-radius: 0 var(--pico-border-radius) var(--pico-border-radius) 0;
+}
 
 /* ──── Goal Builder ──── */
 .goal-builder {
