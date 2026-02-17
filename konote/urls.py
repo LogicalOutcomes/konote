@@ -32,6 +32,7 @@ urlpatterns = [
     path("calendar/<str:token>/feed.ics", calendar_feed, name="calendar_feed"),
     path("reports/", include("apps.reports.urls")),
     path("groups/", include("apps.groups.urls")),
+    path("admin/suggestions/", include("apps.notes.suggestion_urls")),
     path("admin/settings/note-templates/", include("apps.notes.admin_urls")),
     path("admin/settings/", include("apps.admin_settings.urls")),
     # Redirect /settings/ to /admin/settings/ for convenience
