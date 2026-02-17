@@ -43,9 +43,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 **Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
 
-- [ ] 🔨 Plan page loses HTML formatting after hitting Back from edit form in manager mode (https://konote.llewelyn.ca/plans/client/1951/) — likely a partial HTMX response returned without the base template (UX-PLAN3)
-- [ ] 🔨 Reword confusing plan view-only message — explain why they can view but not edit, and what role is needed (see C:\Users\gilli\.claude\plans\enchanted-roaming-sparrow.md) (UX-PLAN1)
-- [ ] 🔨 Manager plan-edit discoverability — disable "Edit Plan" in actions dropdown (with tooltip) when user lacks edit access, and add "My Program Participants" filter or badge on participant list so managers can find editable participants without trial and error (UX-PLAN2)
 - [ ] Build suggestion tracking/consolidation system — SuggestionTheme + SuggestionLink models, manual linking UI, integration with Insights and Dashboard (see tasks/suggestion-tracking-design.md) (UX-INSIGHT6)
 - [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
 
@@ -71,6 +68,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Plan UX fixes — HTMX Back-button cache fix, reworded view-only message, disabled Edit Plan button with tooltip, editable-plans filter and badge on participant list — 2026-02-17 (UX-PLAN1, UX-PLAN2, UX-PLAN3)
 - [x] Dark mode WCAG AA contrast — breadcrumbs, add-link, tab-count badges — 2026-02-17 (UX-WALK3, UX-WALK4)
 - [x] Insights & Suggestions Batch — template-driven chart interpretations, suggestion highlights on exec dashboard, suggestion tracking design doc, portal questions design doc — 2026-02-17 (UX-INSIGHT4, UX-INSIGHT5, UX-INSIGHT6, PORTAL-Q1)
 - [x] UX Batch 3 — button sizing, dynamic terminology, staff contact info, chart descriptions, suggestion count fix, export delay wording, configurable Leave Quickly URL — 2026-02-17 (UX-MSG1, UX-MSG2, UX-PROG2, UX-INSIGHT2, UX-INSIGHT3, UX-EXPORT1, UX-SAFETY1)
