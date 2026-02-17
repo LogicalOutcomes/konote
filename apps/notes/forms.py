@@ -47,6 +47,7 @@ class QuickNoteForm(forms.Form):
         widget=forms.Textarea(attrs={
             "rows": 3,
             "placeholder": _("Write your note here..."),
+            "aria-describedby": "notes-text-errors",
         }),
         required=False,
     )
