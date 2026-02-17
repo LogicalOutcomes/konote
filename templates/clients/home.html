@@ -23,6 +23,7 @@
             <input type="search"
                    id="client-search"
                    name="q"
+                   autofocus
                    placeholder="{% trans 'Name or ID...' %}"
                    aria-label="{% blocktrans with clients=term.client_plural|default:'participants' %}Search {{ clients }}{% endblocktrans %}"
                    hx-get="{% url 'clients:client_search' %}"
