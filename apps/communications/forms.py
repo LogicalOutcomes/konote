@@ -202,9 +202,10 @@ class StaffMessageForm(forms.Form):
         label=_("For"),
     )
 
-    def __init__(self, *args, staff_choices=None, **kwargs):
+    def __init__(self, *args, staff_choices=None, worker_term=None, **kwargs):
         super().__init__(*args, **kwargs)
-        choices = [("", _("— Any case worker —"))]
+        label = _("— Any %(worker)s —") % {"worker": worker_term or _("worker")}
+        choices = [("", label)]
         if staff_choices:
             choices.extend(staff_choices)
         self.fields["for_user"].widget = forms.Select(choices=choices)

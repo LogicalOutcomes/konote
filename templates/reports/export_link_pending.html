@@ -13,9 +13,9 @@
 <article aria-label="{% trans 'Pending notice' %}" style="border-left: 4px solid var(--kn-warning-fg); padding: 1rem; margin-bottom: 1.5rem;">
     <strong><span aria-hidden="true">&#x23F3;</span> {% trans "Elevated Export — Download Not Yet Available" %}</strong>
     <p>
-        {% blocktrans %}
-        For security, there is a short delay before the download becomes available.
-        Administrators have been notified.
+        {% blocktrans with minutes=delay_minutes %}
+        For security, this export has a {{ minutes }}-minute waiting period before the download becomes available.
+        Administrators have been notified and can review or revoke it during this time.
         {% endblocktrans %}
     </p>
     <p style="margin-bottom: 0;">

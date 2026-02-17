@@ -76,6 +76,7 @@
 {# ── Hero: Descriptor trend chart ── #}
 {% if structured.descriptor_trend %}
 <h2>{% trans "Progress Trend" %}</h2>
+<p class="chart-description muted">{% trans "Each line shows the percentage of participants at each stage of progress over time. Rising green ('In a good place') and blue ('Something's shifting') lines mean more people are moving forward." %}</p>
 <div class="chart-container" style="position: relative; height: 300px;">
     <canvas id="descriptor-trend-chart"
             aria-label="{% trans 'Line chart showing participant progress descriptor trends by month' %}"
@@ -113,6 +114,7 @@
 {# ── Engagement distribution ── #}
 {% if structured.engagement_distribution %}
 <h3>{% trans "Engagement" %}</h3>
+<p class="chart-description muted">{% trans "How actively participants are engaging with their program — based on what staff observe during sessions." %}</p>
 <div class="descriptor-pills">
     {% for label, pct in structured.engagement_distribution.items %}
     <span class="pill pill--engagement">{{ label }}: {{ pct }}%</span>
@@ -123,6 +125,7 @@
 {# ── Descriptor snapshot (current totals) ── #}
 {% if structured.descriptor_distribution %}
 <h3>{% trans "Current Period" %}</h3>
+<p class="chart-description muted">{% trans "A snapshot of where participants are right now — staff record this each time they write a progress note." %}</p>
 <div class="descriptor-pills">
     {% for label, pct in structured.descriptor_distribution.items %}
     <span class="pill pill--descriptor">{{ label }}: {{ pct }}%</span>
@@ -133,6 +136,7 @@
 {# ── Participant feedback (suggestions) ── #}
 {% if structured.suggestion_total %}
 <h3>{% trans "Participant Suggestions" %}</h3>
+<p class="chart-description muted">{% trans "Things participants have asked for or suggested — recorded by staff in progress notes. These can help shape program improvements." %}</p>
 <p class="muted">
     {% blocktrans with total=structured.suggestion_total count counter=structured.suggestion_total %}{{ total }} suggestion recorded this period.{% plural %}{{ total }} suggestions recorded this period.{% endblocktrans %}
 </p>
@@ -152,8 +156,6 @@
     </cite>
 </blockquote>
 {% endfor %}
-{% elif can_view_notes and structured.participant_count >= min_participants %}
-<p class="muted">{% trans "No suggestion text long enough to display. Short suggestions (under 5 words) are counted above but not shown." %}</p>
 {% endif %}
 {% endif %}
 

@@ -1190,6 +1190,7 @@ def download_export(request, link_id):
         return render(request, "reports/export_link_pending.html", {
             "link": link,
             "available_at": link.available_at,
+            "delay_minutes": getattr(settings, "ELEVATED_EXPORT_DELAY_MINUTES", 10),
         })
 
     # Check file exists separately (Railway ephemeral storage may lose files)

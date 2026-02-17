@@ -2707,6 +2707,8 @@ article[aria-label="notification"].fading-out {
 .button-row button,
 .button-row a[role="button"] {
     margin: 0;
+    flex: 1;
+    text-align: center;
 }
 
 /* Error state for consent */

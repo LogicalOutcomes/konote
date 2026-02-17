@@ -143,6 +143,14 @@ class InstanceSettingsForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": 2}),
     )
 
+    portal_safe_exit_url = forms.URLField(
+        required=False, label=_("Leave Quickly Destination URL"),
+        help_text=_("Where the 'Leave quickly' button sends participants. "
+                     "Choose something that looks normal in browser history "
+                     "(e.g. a weather or news site). Default: theweathernetwork.com"),
+        widget=forms.URLInput(attrs={"placeholder": "https://www.theweathernetwork.com"}),
+    )
+
     # Meeting scheduling settings
     meeting_location_options = forms.CharField(
         required=False,
@@ -177,6 +185,7 @@ class InstanceSettingsForm(forms.Form):
         "document_storage_provider", "document_storage_url_template",
         "privacy_officer_name", "privacy_officer_email",
         "portal_footer_text", "portal_footer_text_fr",
+        "portal_safe_exit_url",
         "meeting_location_options", "meeting_time_start",
         "meeting_time_end", "meeting_time_step",
     ]

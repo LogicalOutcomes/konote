@@ -48,12 +48,14 @@ def program_list(request):
             program=program, role="program_manager", status="active"
         ).select_related("user").first()
         manager_name = manager_role.user.display_name if manager_role else None
+        manager_email = manager_role.user.email if manager_role else None
 
         user_count = UserProgramRole.objects.filter(program=program, status="active").count()
         program_data.append({
             "program": program,
             "user_count": user_count,
             "manager_name": manager_name,
+            "manager_email": manager_email,
             "user_has_access": program.pk in user_program_ids,
         })
     return render(request, "programs/list.html", {

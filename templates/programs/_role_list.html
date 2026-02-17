@@ -5,6 +5,7 @@
     <thead>
         <tr>
             <th scope="col">{% trans "User" %}</th>
+            <th scope="col">{% trans "Email" %}</th>
             <th scope="col">{% trans "Role" %}</th>
             <th scope="col">{% trans "Status" %}</th>
             {% if is_admin %}<th scope="col"></th>{% endif %}
@@ -14,6 +15,7 @@
         {% for role in roles %}
         <tr>
             <td>{{ role.user.display_name }}</td>
+            <td>{% if role.user.email and role.status == "active" %}<a href="mailto:{{ role.user.email }}">{{ role.user.email }}</a>{% else %}—{% endif %}</td>
             <td>
                 {% if role.role == "program_manager" %}
                     <span class="badge badge-info">{% trans "Program Manager" %}</span>

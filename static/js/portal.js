@@ -8,8 +8,11 @@ function quickExit() {
     try { localStorage.clear(); } catch (e) { /* ignore */ }
     // Best-effort session destruction via sendBeacon
     navigator.sendBeacon('/my/emergency-logout/');
+    // Read configurable exit URL from button data attribute (set by admin)
+    var btn = document.getElementById('quick-exit');
+    var exitUrl = (btn && btn.dataset.exitUrl) || 'https://www.theweathernetwork.com';
     // Replace current history entry so back button doesn't return here
-    window.location.replace('https://www.google.ca');
+    window.location.replace(exitUrl);
 }
 
 // Dismiss "new since last visit" banner
