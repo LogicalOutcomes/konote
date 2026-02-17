@@ -1,0 +1,68 @@
+{% load i18n %}
+{# HTMX partial: unlinked suggestions for the Link More tab #}
+
+{% if unlinked %}
+<form method="post" action="{% url 'suggestion_themes:theme_detail' theme.pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="link_notes">
+
+    <p class="muted">{% blocktrans count total=total_unlinked %}{{ total }} ungrouped suggestion in this program.{% plural %}{{ total }} ungrouped suggestions in this program.{% endblocktrans %}</p>
+
+    <fieldset>
+        <legend class="visually-hidden">{% trans "Select suggestions to link to this theme" %}</legend>
+        {% for s in unlinked %}
+        <label class="suggestion-checkbox" style="display:flex;gap:0.75rem;align-items:start;margin-bottom:0.75rem;cursor:pointer;">
+            <input type="checkbox" name="note_ids" value="{{ s.note_id }}">
+            <div>
+                <span class="suggestion-preview" title="{{ s.text }}">{{ s.preview }}</span>
+                {% if s.priority == "urgent" %}
+                <span class="badge badge-danger">{% trans "Urgent" %}</span>
+                {% elif s.priority == "important" %}
+                <span class="badge badge-warning">{% trans "Important" %}</span>
+                {% elif s.priority_label %}
+                <span class="badge badge-neutral">{{ s.priority_label }}</span>
+                {% endif %}
+                <small class="muted">{{ s.date|date:"M j, Y" }}</small>
+                <details class="suggestion-expand" style="margin-top:0.25rem;">
+                    <summary style="font-size:0.85rem;">{% trans "Show full text" %}</summary>
+                    <blockquote class="insight-quote insight-quote--compact" style="margin-top:0.25rem;">
+                        <p>"{{ s.text }}"</p>
+                    </blockquote>
+                </details>
+            </div>
+        </label>
+        {% endfor %}
+    </fieldset>
+
+    <button type="submit">{% trans "Link Selected" %}</button>
+
+    {% if has_more %}
+    <button type="button" class="secondary"
+            hx-get="{% url 'suggestion_themes:unlinked_partial' theme.pk %}?offset={{ next_offset }}"
+            hx-target="#unlinked-more"
+            hx-swap="innerHTML">
+        {% trans "Show more" %}
+    </button>
+    <div id="unlinked-more"></div>
+    {% endif %}
+</form>
+{% else %}
+<p class="muted">{% trans "All suggestions in this program have already been linked to a theme." %}</p>
+{% endif %}
+
+{# ── Already linked to other themes ── #}
+{% if linked_to_other %}
+<details style="margin-top:1.5rem;">
+    <summary class="muted">{% trans "Already linked to other themes" %} ({{ linked_to_other|length }})</summary>
+    <div style="margin-top:0.5rem;">
+        {% for s in linked_to_other %}
+        <div style="margin-bottom:0.75rem;padding-left:0.75rem;border-left:2px solid var(--pico-muted-border-color);">
+            <span>{{ s.preview }}</span>
+            {% for t in s.themes %}
+            <span class="badge badge-neutral" style="font-size:0.75rem;">{{ t }}</span>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+</details>
+{% endif %}

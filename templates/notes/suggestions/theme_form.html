@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if editing %}{% trans "Edit Theme" %}{% else %}{% trans "New Theme" %}{% endif %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+
+<h1>{% if editing %}{% trans "Edit Theme" %}{% else %}{% trans "New Theme" %}{% endif %}</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    <label for="id_name">{{ form.name.label }}
+        {{ form.name }}
+        {% if form.name.errors %}<small class="error">{{ form.name.errors.0 }}</small>{% endif %}
+    </label>
+
+    <label for="id_program">{{ form.program.label }}
+        {{ form.program }}
+        {% if form.program.errors %}<small class="error">{{ form.program.errors.0 }}</small>{% endif %}
+    </label>
+
+    <label for="id_description">{{ form.description.label }}
+        {{ form.description }}
+    </label>
+
+    {% if editing %}
+    <label for="id_status">{{ form.status.label }}
+        {{ form.status }}
+    </label>
+
+    <div id="addressed-note-field" {% if form.instance.status != "addressed" %}hidden{% endif %}>
+        <label for="id_addressed_note">{{ form.addressed_note.label }}
+            {{ form.addressed_note }}
+        </label>
+    </div>
+    {% endif %}
+
+    <div class="grid">
+        <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% trans "Create Theme" %}{% endif %}</button>
+        <a href="{% if editing %}{% url 'suggestion_themes:theme_detail' theme.pk %}{% else %}{% url 'suggestion_themes:theme_list' %}{% endif %}" role="button" class="secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+
+{% if editing %}
+<script>
+(function() {
+    var statusSelect = document.getElementById('id_status');
+    var noteField = document.getElementById('addressed-note-field');
+    if (statusSelect && noteField) {
+        statusSelect.addEventListener('change', function() {
+            noteField.hidden = (this.value !== 'addressed');
+        });
+    }
+})();
+</script>
+{% endif %}
+
+{% endblock %}

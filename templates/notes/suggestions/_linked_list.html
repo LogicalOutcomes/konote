@@ -1,0 +1,42 @@
+{% load i18n %}
+{# Partial: linked suggestion list (rendered inside theme_detail.html) #}
+
+{% if linked_notes %}
+{% for s in linked_notes %}
+<article class="suggestion-card">
+    <blockquote class="insight-quote">
+        <p>"{{ s.text }}"</p>
+        <cite>
+            {% if s.priority == "urgent" %}
+            <span class="badge badge-danger">{% trans "Urgent" %}</span>
+            {% elif s.priority == "important" %}
+            <span class="badge badge-warning">{% trans "Important" %}</span>
+            {% elif s.priority == "worth_exploring" %}
+            <span class="badge badge-neutral">{% trans "Worth exploring" %}</span>
+            {% elif s.priority == "noted" %}
+            <span class="badge badge-neutral">{% trans "Noted" %}</span>
+            {% endif %}
+            &middot;
+            {{ s.date|date:"M j, Y" }}
+            {% if s.linked_by %}
+            &middot;
+            {% blocktrans with name=s.linked_by %}Linked by {{ name }}{% endblocktrans %}
+            {% endif %}
+        </cite>
+    </blockquote>
+    {% if can_manage %}
+    <form method="post" style="margin-top:0.25rem;">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="unlink">
+        <input type="hidden" name="link_id" value="{{ s.link_id }}">
+        <button type="submit" class="outline secondary" style="padding:0.25rem 0.5rem;font-size:0.85rem;color:var(--kn-text);"
+                aria-label="{% blocktrans with text=s.text|truncatewords:5 %}Remove suggestion: {{ text }}{% endblocktrans %}">
+            {% trans "Remove" %}
+        </button>
+    </form>
+    {% endif %}
+</article>
+{% endfor %}
+{% else %}
+<p class="muted">{% trans "No suggestions linked to this theme yet." %}{% if can_manage %} {% trans "Click \"Link More\" to find suggestions to add." %}{% endif %}</p>
+{% endif %}

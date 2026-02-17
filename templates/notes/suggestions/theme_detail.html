@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ theme.name }} — {% trans "Suggestion Themes" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+
+{# ── Header ── #}
+<hgroup>
+    <h1>
+        {{ theme.name }}
+        {% if theme.priority == "urgent" %}
+        <span class="badge badge-danger">{% trans "Urgent" %}</span>
+        {% elif theme.priority == "important" %}
+        <span class="badge badge-warning">{% trans "Important" %}</span>
+        {% endif %}
+    </h1>
+    <p>
+        {{ theme.program.name }}
+        &middot;
+        {% if theme.status == "open" %}
+        <span class="badge badge-neutral">{% trans "Open" %}</span>
+        {% elif theme.status == "in_progress" %}
+        <span class="badge badge-warning">{% trans "In Progress" %}</span>
+        {% elif theme.status == "addressed" %}
+        <span class="badge badge-success">{% trans "Addressed" %}</span>
+        {% elif theme.status == "wont_do" %}
+        <span class="badge badge-neutral">{% trans "Won't Do" %}</span>
+        {% endif %}
+        &middot;
+        {% trans "Created" %} {{ theme.created_at|date:"M j, Y" }}
+    </p>
+</hgroup>
+
+{% if theme.description %}
+<p>{{ theme.description }}</p>
+{% endif %}
+
+{% if theme.status == "addressed" and theme.addressed_note %}
+<article class="theme-resolution">
+    <strong>{% trans "Resolution:" %}</strong>
+    <p>{{ theme.addressed_note }}</p>
+</article>
+{% endif %}
+
+{# ── Status actions (PMs/admin only) ── #}
+{% if can_manage %}
+<section aria-label="{% trans 'Theme actions' %}">
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+        {% if theme.status == "open" %}
+        <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="status_update">
+            <input type="hidden" name="new_status" value="in_progress">
+            <button type="submit" class="secondary">{% trans "Start Working on This" %}</button>
+        </form>
+        {% endif %}
+
+        {% if theme.status == "in_progress" %}
+        <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="status_update">
+            <input type="hidden" name="new_status" value="addressed">
+            <button type="submit" class="secondary">{% trans "Mark as Addressed" %}</button>
+        </form>
+        {% endif %}
+
+        {% if theme.status == "addressed" or theme.status == "wont_do" %}
+        <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="status_update">
+            <input type="hidden" name="new_status" value="open">
+            <button type="submit" class="secondary">{% trans "Reopen" %}</button>
+        </form>
+        {% endif %}
+
+        {% if theme.status != "wont_do" %}
+        <form method="post" style="display:inline;" onsubmit="return confirm('{% trans "Are you sure? This marks the theme as something that won\'t be acted on." %}');">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="status_update">
+            <input type="hidden" name="new_status" value="wont_do">
+            <button type="submit" class="outline secondary" style="color:var(--kn-text);">{% trans "Won't Do" %}</button>
+        </form>
+        {% endif %}
+
+        <a href="{% url 'suggestion_themes:theme_edit' theme.pk %}" role="button" class="outline" style="color:var(--kn-text);">{% trans "Edit Theme" %}</a>
+    </div>
+</section>
+{% endif %}
+
+{# ── Tabs: Linked / Link More ── #}
+<div class="theme-tabs" role="tablist" aria-label="{% trans 'Theme suggestions' %}">
+    <button role="tab" aria-selected="true" aria-controls="linked-tab" id="linked-tab-btn" class="tab-btn active" onclick="switchTab('linked')">
+        {% trans "Linked" %} ({{ linked_notes|length }})
+    </button>
+    {% if can_manage %}
+    <button role="tab" aria-selected="false" aria-controls="unlinked-tab" id="unlinked-tab-btn" class="tab-btn" onclick="switchTab('unlinked')">
+        {% trans "Link More" %}
+    </button>
+    {% endif %}
+</div>
+
+{# ── Tab 1: Linked suggestions ── #}
+<section id="linked-tab" role="tabpanel" aria-labelledby="linked-tab-btn">
+    {% include "notes/suggestions/_linked_list.html" %}
+</section>
+
+{# ── Tab 2: Unlinked suggestions (lazy-loaded) ── #}
+{% if can_manage %}
+<section id="unlinked-tab" role="tabpanel" aria-labelledby="unlinked-tab-btn" hidden>
+    <div id="unlinked-content"
+         hx-get="{% url 'suggestion_themes:unlinked_partial' theme.pk %}"
+         hx-trigger="load"
+         hx-swap="innerHTML">
+        <p class="muted" aria-busy="true">{% trans "Loading suggestions..." %}</p>
+    </div>
+</section>
+{% endif %}
+
+<script>
+function switchTab(tab) {
+    var linkedTab = document.getElementById('linked-tab');
+    var linkedBtn = document.getElementById('linked-tab-btn');
+    var unlinkedTab = document.getElementById('unlinked-tab');
+    var unlinkedBtn = document.getElementById('unlinked-tab-btn');
+
+    if (tab === 'linked') {
+        linkedTab.hidden = false;
+        linkedBtn.classList.add('active');
+        linkedBtn.setAttribute('aria-selected', 'true');
+        if (unlinkedTab) {
+            unlinkedTab.hidden = true;
+            unlinkedBtn.classList.remove('active');
+            unlinkedBtn.setAttribute('aria-selected', 'false');
+        }
+    } else {
+        linkedTab.hidden = true;
+        linkedBtn.classList.remove('active');
+        linkedBtn.setAttribute('aria-selected', 'false');
+        if (unlinkedTab) {
+            unlinkedTab.hidden = false;
+            unlinkedBtn.classList.add('active');
+            unlinkedBtn.setAttribute('aria-selected', 'true');
+        }
+    }
+}
+</script>
+{% endblock %}
