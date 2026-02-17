@@ -322,8 +322,9 @@ def leave_message(request, client_id):
     staff_users = User.objects.filter(pk__in=staff_user_ids).order_by("display_name")
     staff_choices = [(u.pk, u.display_name) for u in staff_users]
 
+    worker_term = request.get_term("worker", "worker")
     if request.method == "POST":
-        form = StaffMessageForm(request.POST, staff_choices=staff_choices)
+        form = StaffMessageForm(request.POST, staff_choices=staff_choices, worker_term=worker_term)
         if form.is_valid():
             from .models import StaffMessage
 
@@ -338,7 +339,7 @@ def leave_message(request, client_id):
             messages.success(request, _("Message left successfully."))
             return redirect("clients:client_detail", client_id=client.pk)
     else:
-        form = StaffMessageForm(staff_choices=staff_choices)
+        form = StaffMessageForm(staff_choices=staff_choices, worker_term=worker_term)
 
     from django.urls import reverse
     breadcrumbs = [
