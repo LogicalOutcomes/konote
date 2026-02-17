@@ -357,6 +357,22 @@ document.addEventListener("keydown", function (e) {
     }
 });
 
+// Block interactions on aria-disabled="true" buttons (WCAG 4.1.2)
+// Unlike the HTML `disabled` attribute, aria-disabled keeps the element in the
+// tab order (so keyboard users can reach and read it) but does not block events.
+// These listeners ensure no action fires when the user clicks or presses Enter/Space.
+document.addEventListener("click", function (e) {
+    var btn = e.target.closest("button[aria-disabled='true']");
+    if (btn) { e.preventDefault(); e.stopPropagation(); }
+});
+document.addEventListener("keydown", function (e) {
+    if ((e.key === "Enter" || e.key === " ") &&
+        e.target.getAttribute("aria-disabled") === "true" &&
+        e.target.tagName === "BUTTON") {
+        e.preventDefault();
+    }
+});
+
 // --- Select All / Deselect All for metric checkboxes (export form) ---
 document.addEventListener("click", function (event) {
     var target = event.target;

@@ -467,6 +467,15 @@ nav.breadcrumb [aria-current="page"] {
     cursor: help;
 }
 
+/* Keyboard-accessible disabled button (aria-disabled="true" pattern)
+   Keeps the element in the tab order so keyboard users can discover it
+   and read its aria-describedby explanation. The JS in app.js blocks
+   actual click/Enter/Space interactions. */
+button[aria-disabled="true"]:focus-visible {
+    outline: 2px solid var(--pico-primary-focus);
+    outline-offset: 2px;
+}
+
 /* Filter checkbox inline label */
 .filter-checkbox {
     display: inline-flex;

@@ -34,7 +34,7 @@
     <tbody>
         {% for item in page %}
         <tr>
-            <td><a href="{% url 'clients:client_detail' client_id=item.client.pk %}">{{ item.name }}</a>{% if item.can_edit_plan %} <span class="badge badge-edit-plan" title="{% trans 'You can edit plans for this participant' %}" aria-hidden="true">&#9998;</span><span class="visually-hidden">{% trans "Editable plan" %}</span>{% endif %}</td>
+            <td><a href="{% url 'clients:client_detail' client_id=item.client.pk %}">{{ item.name }}</a>{% if item.can_edit_plan %} <span class="badge badge-edit-plan" title="{% trans 'You can edit plans for this participant' %}" aria-hidden="true">&#9998;</span><span class="sr-only">{% trans "Editable plan" %}</span>{% endif %}</td>
             <td data-label="{% trans 'ID' %}">{{ item.client.record_id|default:"—" }}</td>
             <td data-label="{% trans 'Status' %}">
                 {% if item.client.status == "active" %}

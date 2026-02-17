@@ -3,13 +3,16 @@
 
 {% block tab_actions %}
 {% if not can_edit %}
-<button disabled
+<button type="button"
+        aria-disabled="true"
+        tabindex="0"
         class="outline secondary"
         title="{% blocktrans with program=term.program|default:'program' %}Editing requires a staff role in one of this participant's enrolled {{ program }}s. Contact your administrator if you need edit access.{% endblocktrans %}"
-        aria-label="{% trans 'Edit Plan — disabled' %}"
+        aria-describedby="edit-plan-disabled-reason"
         style="opacity: 0.5; cursor: not-allowed;">
     {% trans "Edit Plan" %}
 </button>
+<span id="edit-plan-disabled-reason" class="sr-only">{% blocktrans with program=term.program|default:'program' %}Editing requires a staff role in one of this participant's enrolled {{ program }}s. Contact your administrator if you need edit access.{% endblocktrans %}</span>
 {% endif %}
 {% endblock %}
 
