@@ -52,22 +52,23 @@ class SafeLocaleMiddleware(LocaleMiddleware):
                     request.LANGUAGE_CODE = pref
                     user_has_preference = True
 
-            # BUG-9: Only validate .mo file when language came from cookie/header
-            # (anonymous users or users without a saved preference). When the
-            # user has an explicit preference, trust it — if translations are
-            # missing, the page will show untranslated strings but the lang
-            # attribute will correctly reflect the user's choice.
+            # BUG-14: Never revert language based on .mo validation. If the
+            # user chose French (via preference, cookie, or header), honour
+            # that choice. Missing translations show as English strings, but
+            # the lang attribute must reflect the user's language choice for
+            # WCAG 3.1.1 compliance. Log a warning for missing .mo files
+            # so developers can add translations.
             if not user_has_preference:
                 current_lang = translation.get_language()
                 if current_lang and current_lang.startswith("fr"):
                     test_str = translation.gettext("Program Outcome Report")
                     if test_str == "Program Outcome Report":
                         logger.warning(
-                            "French .mo catalog may be missing: "
-                            "project string not translated."
+                            "French .mo catalog may be incomplete: "
+                            "probe string 'Program Outcome Report' not "
+                            "translated. lang attribute stays '%s' per "
+                            "WCAG 3.1.1.", current_lang
                         )
-                        translation.activate("en")
-                        request.LANGUAGE_CODE = "en"
 
         except Exception as e:
             # Log the error and fall back to English
