@@ -1,64 +1,85 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Calendar Feed" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+{% block title %}{% trans "Add Meetings to Your Calendar" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
 
 {% block content %}
 {% include "_breadcrumbs.html" %}
 <hgroup>
-    <h1>{% trans "Calendar Feed" %}</h1>
-    <p>{% trans "Subscribe to your meetings in Google Calendar, Outlook, or any calendar app." %}</p>
+    <h1>{% trans "Add Meetings to Your Calendar" %}</h1>
+    <p>{% trans "Your meetings will show up in your personal calendar app and stay up to date automatically." %}</p>
 </hgroup>
 
 {% if feed_url %}
 <section>
-    <label for="feed-url">{% trans "Your calendar feed URL:" %}</label>
+    <h2>{% trans "Your calendar link" %}</h2>
+    <p>{% trans "Copy this link and paste it into your calendar app using the steps below." %}</p>
     <div role="group">
-        <input type="text" id="feed-url" value="{{ feed_url }}" readonly aria-label="{% trans 'Calendar feed URL' %}">
+        <input type="text" id="feed-url" value="{{ feed_url }}" readonly aria-label="{% trans 'Calendar link' %}">
         <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('feed-url').value)" class="outline">{% trans "Copy" %}</button>
     </div>
-    <small class="secondary">{% trans "Paste this URL into your calendar app's \"Subscribe\" or \"Add calendar from URL\" option." %}</small>
 
     {% if outlook_subscribe_url %}
-    <label for="outlook-url" style="margin-top: 1rem;">{% trans "Outlook subscribe URL:" %}</label>
+    <h3 style="margin-top: 1.5rem;">{% trans "Outlook link" %}</h3>
+    <p>{% trans "Outlook sometimes needs a different format. If the link above doesn't work in Outlook, try this one instead." %}</p>
     <div role="group">
-        <input type="text" id="outlook-url" value="{{ outlook_subscribe_url }}" readonly aria-label="{% trans 'Outlook subscribe URL' %}">
+        <input type="text" id="outlook-url" value="{{ outlook_subscribe_url }}" readonly aria-label="{% trans 'Outlook calendar link' %}">
         <button type="button" onclick="navigator.clipboard.writeText(document.getElementById('outlook-url').value)" class="outline">{% trans "Copy" %}</button>
     </div>
-    <small class="secondary">{% trans "Use this webcal URL in Outlook if the standard URL shows an error." %}</small>
     {% endif %}
 </section>
 
-<details>
-    <summary>{% trans "Instructions" %}</summary>
+<section>
+    <h2>{% trans "How to add it" %}</h2>
+
     <h3>{% trans "Google Calendar" %}</h3>
     <ol>
         <li>{% trans "Open Google Calendar in your browser" %}</li>
-        <li>{% trans "Click the + next to \"Other calendars\"" %}</li>
-        <li>{% trans "Select \"From URL\"" %}</li>
-        <li>{% trans "Paste the URL above and click \"Add calendar\"" %}</li>
+        <li>{% trans "Click the + next to \"Other calendars\" on the left" %}</li>
+        <li>{% trans "Choose \"From URL\"" %}</li>
+        <li>{% trans "Paste the link you copied above and click \"Add calendar\"" %}</li>
     </ol>
-    <h3>{% trans "Outlook" %}</h3>
+
+    <h3>{% trans "Outlook (desktop or web)" %}</h3>
     <ol>
         <li>{% trans "Open Outlook Calendar" %}</li>
         <li>{% trans "Click \"Add calendar\" then \"Subscribe from web\"" %}</li>
-        <li>{% trans "Paste the Outlook subscribe URL above" %}</li>
+        <li>{% trans "Paste the Outlook link above (not the regular one)" %}</li>
     </ol>
-</details>
 
-<form method="post">
-    {% csrf_token %}
-    <input type="hidden" name="action" value="regenerate">
-    <button type="submit" class="outline secondary">{% trans "Regenerate Feed URL" %}</button>
-    <small class="secondary">{% trans "This will invalidate your current URL. You'll need to re-add it to your calendar." %}</small>
-</form>
+    <h3>{% trans "Apple Calendar (Mac)" %}</h3>
+    <ol>
+        <li>{% trans "Open the Calendar app" %}</li>
+        <li>{% trans "Go to File → New Calendar Subscription" %}</li>
+        <li>{% trans "Paste the link you copied above and click Subscribe" %}</li>
+    </ol>
+
+    <h3>{% trans "iPhone or iPad" %}</h3>
+    <ol>
+        <li>{% trans "Open Settings → Calendar → Accounts" %}</li>
+        <li>{% trans "Tap \"Add Account\" → \"Other\" → \"Add Subscribed Calendar\"" %}</li>
+        <li>{% trans "Paste the link and tap Next" %}</li>
+    </ol>
+</section>
+
+<section>
+    <h2>{% trans "Get a new link" %}</h2>
+    <p>{% trans "If you think someone else has your calendar link, you can replace it with a new one. Your old link will stop working and you'll need to set up your calendar app again." %}</p>
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="regenerate">
+        <button type="submit" class="outline secondary" hx-confirm="{% trans 'This will replace your calendar link. Your old link will stop working and you will need to set up your calendar app again. Continue?' %}">{% trans "Replace my calendar link" %}</button>
+    </form>
+</section>
 
 {% else %}
-<p>{% trans "You don't have a calendar feed yet." %}</p>
+<article>
+    <p>{% trans "To see your meetings in Google Calendar, Outlook, Apple Calendar, or another calendar app, create a calendar link. Once set up, new meetings will appear in your calendar automatically." %}</p>
+</article>
 <form method="post">
     {% csrf_token %}
     <input type="hidden" name="action" value="generate">
-    <button type="submit">{% trans "Generate Calendar Feed" %}</button>
+    <button type="submit">{% trans "Set up my calendar link" %}</button>
 </form>
 {% endif %}
 {% endblock %}
