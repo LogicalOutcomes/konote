@@ -80,6 +80,25 @@
     </fieldset>
 
     <fieldset>
+        <legend>{% trans "Participant Portal" %}</legend>
+        <p><small>{% trans "Settings for the participant-facing portal." %}</small></p>
+
+        {% for field in form %}
+            {% if field.name == "portal_footer_text" or field.name == "portal_footer_text_fr" or field.name == "portal_safe_exit_url" %}
+            <label for="{{ field.id_for_label }}">
+                {{ field.label }}
+                {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+            </label>
+            {{ field }}
+            {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+            {% if field.errors %}
+            <small class="badge badge-danger">{{ field.errors.0 }}</small>
+            {% endif %}
+            {% endif %}
+        {% endfor %}
+    </fieldset>
+
+    <fieldset>
         <legend>{% trans "Meetings" %}</legend>
         <p><small>{% trans "Configure the location options and time slots shown when scheduling meetings." %}</small></p>
 
