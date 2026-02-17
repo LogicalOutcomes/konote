@@ -22,7 +22,7 @@
 <div id="goal-builder-container"></div>
 {% else %}
 <p class="notice" role="status">
-    <small>{% blocktrans with client=term.client|default:"participant" program=term.program|default:"program" %}View only — to edit this plan, you must be assigned to a {{ program }} this {{ client }} is enrolled in.{% endblocktrans %}</small>
+    <small>{% blocktrans with client=term.client|default:"participant" program=term.program|default:"program" %}View only — you can see this plan because this {{ client }} is on your caseload, but editing requires a staff role in one of their enrolled {{ program }}s. Contact your administrator if you need edit access.{% endblocktrans %}</small>
 </p>
 {% endif %}
 
