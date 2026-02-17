@@ -1,4 +1,17 @@
 {% extends "clients/_client_layout.html" %}
+{% load i18n %}
+
+{% block tab_actions %}
+{% if not can_edit %}
+<button disabled
+        class="outline secondary"
+        title="{% blocktrans with program=term.program|default:'program' %}Editing requires a staff role in one of this participant's enrolled {{ program }}s. Contact your administrator if you need edit access.{% endblocktrans %}"
+        aria-label="{% trans 'Edit Plan — disabled' %}"
+        style="opacity: 0.5; cursor: not-allowed;">
+    {% trans "Edit Plan" %}
+</button>
+{% endif %}
+{% endblock %}
 
 {% block tab_content %}
 {% include "plans/_tab_plan.html" %}
