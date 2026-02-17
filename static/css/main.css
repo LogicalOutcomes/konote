@@ -3448,3 +3448,71 @@ article[aria-label="notification"].fading-out {
         background: rgba(220, 53, 69, 0.15);
     }
 }
+
+/* ---- Mobile touch targets (WCAG 2.2 AA — 44×44px minimum) ---- */
+/* Rules below are scoped to mobile breakpoints so desktop layout  */
+/* is unaffected. Supplements existing touch target rules above.   */
+
+/* Hamburger menu button — appears at ≤768px */
+@media (max-width: 768px) {
+    .nav-toggle {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+@media (max-width: 600px) {
+    /* KoNote logo / brand link in top nav */
+    body > nav a.contrast {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+    }
+
+    /* Breadcrumb navigation links */
+    nav.breadcrumb a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+    }
+
+    /* Client detail tabs (Info, Plan, Notes, History, Analysis) */
+    .tab-bar li a {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Actions ▾ dropdown trigger and ✎ Edit button on client pages */
+    .actions-dropdown-toggle,
+    .custom-fields-header button {
+        min-height: 44px;
+    }
+
+    /* "New Participant" and other page-header action links */
+    .page-header__action {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+    }
+
+    /* Filter toolbar status/program dropdowns */
+    .filter-field select {
+        min-height: 44px;
+    }
+
+    /* "Clear" filter link */
+    .client-toolbar__clear {
+        min-height: 44px;
+        display: flex;
+        align-items: center;
+        padding: 0 var(--kn-space-xs);
+    }
+
+    /* Client name links in the stacked mobile participant list */
+    .client-table td:first-child a {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+    }
+}

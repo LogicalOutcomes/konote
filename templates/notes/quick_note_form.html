@@ -36,6 +36,7 @@
     <label for="{{ form.notes_text.id_for_label }}">{{ term.progress_note|default:"Note" }}</label>
     {{ form.notes_text }}
     {% if form.notes_text.errors %}
+    {# id="notes-text-errors" must match aria-describedby in QuickNoteForm (apps/notes/forms.py) #}
     <div id="notes-text-errors" role="alert">
         {{ form.notes_text.errors }}
     </div>
