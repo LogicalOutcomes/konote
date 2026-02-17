@@ -313,7 +313,7 @@ def _handle_link_notes(request, theme):
             note = ProgressNote.objects.get(pk=note_id)
             if note.author_program_id != theme.program_id:
                 continue
-            _, created = SuggestionLink.objects.get_or_create(
+            link_obj, created = SuggestionLink.objects.get_or_create(
                 theme=theme, progress_note=note,
                 defaults={"linked_by": request.user, "auto_linked": False},
             )
