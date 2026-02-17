@@ -12739,14 +12739,14 @@ msgid ""
 "Completing or deactivating this area will also affect %(count)s active "
 "%(targets)s within it. You can undo this later."
 msgstr ""
-"Terminer ou désactiver ce domaine affectera également %(count)s "
-"%(targets)s actifs. Vous pourrez annuler cette action plus tard."
+"Terminer ou désactiver ce domaine affectera également %(count)s %(targets)s "
+"actifs. Vous pourrez annuler cette action plus tard."
 
 #: templates/plans/_section_status.html
 #, python-format
 msgid ""
-"This area has %(count)s %(targets)s. Reactivating it will make them "
-"editable again."
+"This area has %(count)s %(targets)s. Reactivating it will make them editable"
+" again."
 msgstr ""
 "Ce domaine contient %(count)s %(targets)s. Le réactiver les rendra "
 "modifiables à nouveau."
@@ -12757,15 +12757,118 @@ msgid ""
 "You can mark this %(target)s as completed when it's been achieved, or "
 "deactivate it if it's no longer relevant. You can undo this later."
 msgstr ""
-"Vous pouvez marquer ce %(target)s comme terminé lorsqu'il est atteint, "
-"ou le désactiver s'il n'est plus pertinent. Vous pourrez annuler cette "
-"action plus tard."
+"Vous pouvez marquer ce %(target)s comme terminé lorsqu'il est atteint, ou le"
+" désactiver s'il n'est plus pertinent. Vous pourrez annuler cette action "
+"plus tard."
 
 #: templates/plans/_target_status.html
 #, python-format
 msgid ""
-"Reactivating this %(target)s will make it editable and visible in "
-"progress notes again."
+"Reactivating this %(target)s will make it editable and visible in progress "
+"notes again."
 msgstr ""
-"Réactiver ce %(target)s le rendra modifiable et visible dans les notes "
-"de suivi à nouveau."
+"Réactiver ce %(target)s le rendra modifiable et visible dans les notes de "
+"suivi à nouveau."
+
+msgid "+ Create new section"
+msgstr ""
+
+msgid ""
+"A high-level look at how your programs are doing. This dashboard shows "
+"overall numbers — individual participant records are kept private."
+msgstr ""
+"Un aperçu général du fonctionnement de vos programmes. Ce tableau de bord "
+"affiche les chiffres globaux — les dossiers individuels restent "
+"confidentiels."
+
+msgid "Build a Goal"
+msgstr ""
+
+msgid "Cancel — go back to plan"
+msgstr ""
+
+msgid "Custom metric (1–5 scale)"
+msgstr ""
+
+msgid "Define what each level means (1 = ..., 2 = ..., etc.)"
+msgstr ""
+
+msgid "Description (SMART outcome)"
+msgstr ""
+
+msgid "Draft Goal"
+msgstr ""
+
+msgid "Draft goal"
+msgstr ""
+
+msgid "Goal Builder"
+msgstr ""
+
+msgid "Have a conversation to define a measurable goal together."
+msgstr ""
+
+msgid "New section name"
+msgstr ""
+
+msgid "Save Goal"
+msgstr ""
+
+msgid "Scale descriptors"
+msgstr ""
+
+msgid ""
+"See how participants are doing over time, what's working, and what they're "
+"asking for."
+msgstr ""
+"Voyez comment les participants évoluent au fil du temps, ce qui fonctionne "
+"et ce qu'ils demandent."
+
+msgid "Send"
+msgstr ""
+
+msgid "Thinking..."
+msgstr ""
+
+msgid "Type your response..."
+msgstr ""
+
+msgid ""
+"When a staff member believes a safety alert is no longer needed, their "
+"recommendation appears here. You can approve it (which removes the alert) or"
+" reject it (which keeps the alert in place)."
+msgstr ""
+"Lorsqu'un membre du personnel estime qu'une alerte de sécurité n'est plus "
+"nécessaire, sa recommandation apparaît ici. Vous pouvez l'approuver (ce qui "
+"supprime l'alerte) ou la rejeter (ce qui maintient l'alerte en place)."
+
+msgid "name"
+msgstr ""
+
+#, python-format
+msgid "All %(programs)s at your agency."
+msgstr "Tous les %(programs)s de votre organisme."
+
+#, python-format
+msgid ""
+"Leave a message for the %(worker_term)s assigned to this %(client_term)s."
+msgstr ""
+"Laissez un message pour le ou la %(worker_term)s assigné(e) à ce ou cette "
+"%(client_term)s."
+
+#, python-format
+msgid "Leave blank to notify all %(workers)s on this file."
+msgstr "Laissez vide pour notifier tous les %(workers)s de ce dossier."
+
+#, python-format
+msgid "For: Any %(worker)s"
+msgstr "Pour : Tout(e) %(worker)s"
+
+#, python-format
+msgid ""
+"For information about a specific %(client)s or to run a detailed report, "
+"reach out to the Program Manager for that program."
+msgstr ""
+"Pour obtenir des renseignements sur un(e) %(client)s en particulier ou "
+"produire un rapport détaillé, communiquez avec le ou la gestionnaire de ce "
+"programme."

@@ -143,12 +143,17 @@ def plan_view(request, client_id):
         for r in UserProgramRole.objects.filter(user=request.user, status="active")
     )
 
+    # Check if AI Goal Builder is available
+    from konote.ai_views import _ai_enabled
+    ai_enabled = can_edit and _ai_enabled()
+
     context = {
         "client": client,
         "active_sections": active_sections,
         "inactive_sections": inactive_sections,
         "can_edit": can_edit,
         "can_apply_template": can_apply_template,
+        "ai_enabled": ai_enabled,
         "active_tab": "plan",
         "show_grouping": program_ctx["show_grouping"],
         "show_program_ui": program_ctx["show_program_ui"],

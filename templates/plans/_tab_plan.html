@@ -2,6 +2,14 @@
 <!-- Partial: Plan tab content -->
 {% if can_edit and active_service_model != "group" %}
 <div class="action-bar">
+    {% if ai_enabled %}
+    <button type="button"
+            hx-get="{% url 'ai:goal_builder_start' client_id=client.pk %}"
+            hx-target="#goal-builder-container"
+            hx-swap="innerHTML">
+        {% trans "Build a Goal" %}
+    </button>
+    {% endif %}
     <a href="{% url 'plans:section_create' client_id=client.pk %}" role="button" class="outline">
         {% blocktrans with section=term.section|default:"Section" %}Add {{ section }}{% endblocktrans %}
     </a>
@@ -11,6 +19,7 @@
     </a>
     {% endif %}
 </div>
+<div id="goal-builder-container"></div>
 {% else %}
 <p class="notice" role="status">
     <small>{% blocktrans with client=term.client|default:"participant" program=term.program|default:"program" %}View only — to edit this plan, you must be assigned to a {{ program }} this {{ client }} is enrolled in.{% endblocktrans %}</small>

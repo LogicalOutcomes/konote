@@ -29,13 +29,26 @@ def is_ai_available():
     return bool(getattr(settings, "OPENROUTER_API_KEY", ""))
 
 
-def _call_openrouter(system_prompt, user_message, max_tokens=1024):
+def _call_openrouter(system_prompt, user_message=None, max_tokens=1024, messages=None):
     """
     Low-level POST to OpenRouter.  Returns the response text, or None on
     any failure (network, auth, timeout, malformed response).
+
+    For single-turn calls, pass user_message (string).
+    For multi-turn calls, pass messages (list of {"role": ..., "content": ...}).
     """
     if not is_ai_available():
         return None
+
+    if messages is not None:
+        api_messages = [
+            {"role": "system", "content": system_prompt + _SAFETY_FOOTER},
+        ] + messages
+    else:
+        api_messages = [
+            {"role": "system", "content": system_prompt + _SAFETY_FOOTER},
+            {"role": "user", "content": user_message},
+        ]
 
     try:
         resp = requests.post(
@@ -48,10 +61,7 @@ def _call_openrouter(system_prompt, user_message, max_tokens=1024):
             },
             json={
                 "model": getattr(settings, "OPENROUTER_MODEL", "anthropic/claude-sonnet-4-20250514"),
-                "messages": [
-                    {"role": "system", "content": system_prompt + _SAFETY_FOOTER},
-                    {"role": "user", "content": user_message},
-                ],
+                "messages": api_messages,
                 "max_tokens": max_tokens,
             },
             timeout=TIMEOUT_SECONDS,
@@ -364,6 +374,151 @@ def validate_insights_response(response, original_quotes):
         response["participant_feedback"] = verified_feedback
     else:
         response["participant_feedback"] = []
+
+    return response
+
+
+def build_goal_chat(messages, program_name, metric_catalogue, existing_sections):
+    """
+    Multi-turn conversational goal builder.
+
+    Sends the full conversation history to the AI along with program context.
+    The AI guides the worker (and participant) through defining a measurable goal.
+
+    Args:
+        messages: list of {"role": "user"|"assistant", "content": str}
+                  — PII-scrubbed conversation history
+        program_name: str — the program this goal belongs to
+        metric_catalogue: list of dicts {id, name, definition, category}
+        existing_sections: list of str — names of existing plan sections
+
+    Returns:
+        dict {message, questions, draft} or None on failure.
+        draft (when present): {name, description, client_goal, metric, suggested_section}
+    """
+    system = (
+        "You are a goal-setting facilitator for a Canadian nonprofit. "
+        "A caseworker (and possibly the participant they work with) is defining "
+        "a new goal for the participant's plan. Guide them through a conversation "
+        "to create a well-structured, measurable goal.\n\n"
+        "YOUR ROLE:\n"
+        "- Ask clarifying questions to understand what the participant wants to achieve\n"
+        "- After 1–2 rounds of questions, present a structured draft goal\n"
+        "- Refine the draft based on feedback until the worker is satisfied\n"
+        "- Use warm, professional language — you may be read aloud to participants\n"
+        "- Use Canadian English spelling (colour, centre, programme is NOT used)\n\n"
+        "TECHNICAL REQUIREMENTS — every goal must have:\n"
+        "- A concise target name (under 80 characters)\n"
+        "- A SMART description (Specific, Measurable, Achievable, Relevant, Time-bound)\n"
+        "- The participant's own words — how they would describe this goal themselves\n"
+        "- A measurable metric on a 1–5 scale with clear descriptors for each level\n"
+        "- A suggested plan section (from the existing sections, or a new one)\n\n"
+        "METRIC RULES:\n"
+        "- Check the provided metric catalogue FIRST. If an existing metric fits well, "
+        "use it (set existing_metric_id to its id).\n"
+        "- Only suggest a custom metric when no existing one is a good match.\n"
+        "- Custom metrics MUST have a 1–5 scale with a clear descriptor for each level "
+        "(e.g., '1 = No housing leads\\n2 = Actively searching\\n...').\n"
+        "- The metric must produce meaningful data when tracked over time in progress notes.\n\n"
+        f"PROGRAM: {program_name}\n\n"
+        f"EXISTING PLAN SECTIONS: {json.dumps(existing_sections) if existing_sections else 'None yet — suggest a new section name.'}\n\n"
+        f"AVAILABLE METRICS:\n{json.dumps(metric_catalogue, indent=2) if metric_catalogue else 'No metrics in the library yet.'}\n\n"
+        "RESPONSE FORMAT — always return a JSON object:\n"
+        "{\n"
+        '  "message": "Your conversational response to the worker/participant",\n'
+        '  "questions": ["Optional clarifying questions — omit if presenting a draft"],\n'
+        '  "draft": null or {\n'
+        '    "name": "Concise target name",\n'
+        '    "description": "SMART outcome statement",\n'
+        '    "client_goal": "How the participant would say it in their own words",\n'
+        '    "metric": {\n'
+        '      "existing_metric_id": null or integer,\n'
+        '      "name": "Metric name",\n'
+        '      "definition": "1 = Level 1 descriptor\\n2 = Level 2\\n3 = Level 3\\n4 = Level 4\\n5 = Level 5",\n'
+        '      "min_value": 1,\n'
+        '      "max_value": 5,\n'
+        '      "unit": "score"\n'
+        "    },\n"
+        '    "suggested_section": "Section name"\n'
+        "  }\n"
+        "}\n\n"
+        "Return ONLY the JSON object, no other text. "
+        "Include a draft as soon as you have enough information (usually after 1–2 exchanges). "
+        "Update the draft each time the worker provides feedback."
+    )
+
+    result = _call_openrouter(system, max_tokens=1024, messages=messages)
+    if result is None:
+        return None
+
+    # Strip markdown fences if present
+    text = result.strip()
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = [l for l in lines if not l.strip().startswith("```")]
+        text = "\n".join(lines).strip()
+
+    try:
+        parsed = json.loads(text)
+    except (json.JSONDecodeError, TypeError):
+        logger.warning("Could not parse goal builder response: %s", text[:300])
+        return None
+
+    return _validate_goal_chat_response(parsed, metric_catalogue)
+
+
+def _validate_goal_chat_response(response, metric_catalogue):
+    """Validate the structure of a goal builder AI response.
+
+    Returns the response dict if valid, or None if validation fails.
+    """
+    if not isinstance(response, dict):
+        logger.warning("Goal builder response is not a dict")
+        return None
+
+    if "message" not in response or not isinstance(response["message"], str):
+        logger.warning("Goal builder response missing 'message' string")
+        return None
+
+    # Ensure questions is a list (or absent)
+    if "questions" in response and not isinstance(response["questions"], list):
+        response["questions"] = []
+
+    # Validate draft structure if present
+    draft = response.get("draft")
+    if draft is not None:
+        if not isinstance(draft, dict):
+            response["draft"] = None
+        else:
+            # Required draft fields
+            for key in ("name", "description", "client_goal"):
+                if not isinstance(draft.get(key), str):
+                    draft[key] = ""
+
+            # Validate metric sub-object
+            metric = draft.get("metric")
+            if isinstance(metric, dict):
+                # Validate existing_metric_id against catalogue
+                eid = metric.get("existing_metric_id")
+                if eid is not None:
+                    catalogue_ids = {m["id"] for m in metric_catalogue} if metric_catalogue else set()
+                    if eid not in catalogue_ids:
+                        metric["existing_metric_id"] = None
+                # Ensure required metric fields
+                for key in ("name", "definition"):
+                    if not isinstance(metric.get(key), str):
+                        metric[key] = ""
+                if not isinstance(metric.get("min_value"), (int, float)):
+                    metric["min_value"] = 1
+                if not isinstance(metric.get("max_value"), (int, float)):
+                    metric["max_value"] = 5
+                if not isinstance(metric.get("unit"), str):
+                    metric["unit"] = "score"
+            else:
+                draft["metric"] = None
+
+            if not isinstance(draft.get("suggested_section"), str):
+                draft["suggested_section"] = ""
 
     return response
 

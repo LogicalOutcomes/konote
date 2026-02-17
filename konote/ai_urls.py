@@ -10,4 +10,8 @@ urlpatterns = [
     path("generate-narrative/", ai_views.generate_narrative_view, name="generate_narrative"),
     path("suggest-note-structure/", ai_views.suggest_note_structure_view, name="suggest_note_structure"),
     path("outcome-insights/", ai_views.outcome_insights_view, name="outcome_insights"),
+    # Goal Builder
+    path("goal-builder/<int:client_id>/", ai_views.goal_builder_start, name="goal_builder_start"),
+    path("goal-builder/<int:client_id>/chat/", ai_views.goal_builder_chat, name="goal_builder_chat"),
+    path("goal-builder/<int:client_id>/save/", ai_views.goal_builder_save, name="goal_builder_save"),
 ]

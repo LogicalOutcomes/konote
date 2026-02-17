@@ -6,7 +6,7 @@
 {% block content %}
 <header class="page-header">
     <h1>{% trans "Executive Overview" %}</h1>
-    <p class="page-subtitle">{% trans "Aggregate statistics across your programs. Individual participant records are not accessible from this view to protect confidentiality." %}</p>
+    <p class="page-subtitle">{% trans "A high-level look at how your programs are doing. This dashboard shows overall numbers — individual participant records are kept private." %}</p>
     {% if data_refreshed_at %}
     <p class="data-timestamp">{% trans "Last updated" %}: {{ data_refreshed_at|date:"SHORT_DATETIME_FORMAT" }}</p>
     {% endif %}
@@ -163,7 +163,7 @@
 {# Guidance #}
 <section class="executive-guidance" aria-label="{% trans 'Getting More Information' %}">
     <h2>{% trans "Need More Details?" %}</h2>
-    <p>{% trans "For individual client information or detailed reports, please contact your Program Manager. This dashboard provides oversight while ensuring client confidentiality is maintained." %}</p>
+    <p>{% blocktrans with client=term.client|default:"participant" %}For information about a specific {{ client }} or to run a detailed report, reach out to the Program Manager for that program.{% endblocktrans %}</p>
 </section>
 
 <style>

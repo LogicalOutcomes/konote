@@ -161,7 +161,7 @@ class AlertRecommendationWorkflowTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(
             response,
-            "Staff recommendations to cancel safety alerts appear here for your review.",
+            "When a staff member believes a safety alert is no longer needed",
         )
 
     def test_pm_approve_cancels_alert(self):

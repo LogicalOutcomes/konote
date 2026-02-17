@@ -6,7 +6,7 @@
                 {% if msg.for_user %}
                     {% blocktrans with name=msg.for_user.display_name %}For: {{ name }}{% endblocktrans %}
                 {% else %}
-                    {% trans "For: Any case worker" %}
+                    {% blocktrans with worker=term.worker|default:"worker" %}For: Any {{ worker }}{% endblocktrans %}
                 {% endif %}
             </strong>
             <br>

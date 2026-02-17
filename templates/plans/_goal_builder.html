@@ -1,0 +1,138 @@
+{% load i18n %}
+{# Goal Builder conversational panel — loaded via HTMX into #goal-builder-container #}
+<article class="goal-builder" aria-label="{% trans 'Goal Builder' %}">
+    <header>
+        <h3 style="margin: 0;">{% trans "Goal Builder" %}</h3>
+        <small>{% trans "Have a conversation to define a measurable goal together." %}</small>
+    </header>
+
+    {# ── Chat message history ── #}
+    <div class="goal-builder-chat" id="goal-builder-chat" role="log" aria-live="polite">
+        {% if not messages %}
+        <div class="gb-message gb-assistant">
+            <p>{% blocktrans with client=term.client|default:"participant" %}What does the {{ client }} want to work on? Describe it in plain language — for example, "find stable housing" or "get better at managing anxiety".{% endblocktrans %}</p>
+        </div>
+        {% endif %}
+
+        {% for msg in messages %}
+        <div class="gb-message gb-{{ msg.role }}">
+            <p>{{ msg.content }}</p>
+            {% if msg.questions %}
+            <ul class="gb-questions">
+                {% for q in msg.questions %}
+                <li>{{ q }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if error %}
+    <div class="gb-error" role="alert">
+        <small>{{ error }}</small>
+    </div>
+    {% endif %}
+
+    {# ── Draft card (shown when AI has enough info) ── #}
+    {% if draft %}
+    <div class="gb-draft" aria-label="{% trans 'Draft goal' %}">
+        <h4>{% trans "Draft Goal" %}</h4>
+        <form method="post"
+              action="{% url 'ai:goal_builder_save' client_id=client.pk %}"
+              id="goal-builder-save-form">
+            {% csrf_token %}
+
+            <label for="gb-name">{{ term.target|default:"Target" }} {% trans "name" %}</label>
+            <input type="text" id="gb-name" name="name"
+                   value="{{ draft.name }}" maxlength="255" required>
+
+            <label for="gb-description">{% trans "Description (SMART outcome)" %}</label>
+            <textarea id="gb-description" name="description"
+                      rows="3">{{ draft.description }}</textarea>
+
+            <label for="gb-client-goal">{% blocktrans with client=term.client|default:"participant" %}{{ client }}'s own words{% endblocktrans %}</label>
+            <textarea id="gb-client-goal" name="client_goal"
+                      rows="2">{{ draft.client_goal }}</textarea>
+
+            {# Section selection #}
+            <label for="gb-section">{{ term.section|default:"Section" }}</label>
+            <select id="gb-section" name="section_id"
+                    onchange="document.getElementById('gb-new-section-row').style.display = this.value === '' ? 'block' : 'none';">
+                {% for s in sections %}
+                <option value="{{ s.pk }}" {% if draft.suggested_section == s.name %}selected{% endif %}>{{ s.name }}</option>
+                {% endfor %}
+                <option value="">{% trans "+ Create new section" %}</option>
+            </select>
+            <div id="gb-new-section-row" style="display: {% if not sections %}block{% else %}none{% endif %};">
+                <input type="text" name="new_section_name"
+                       placeholder="{% trans 'New section name' %}"
+                       value="{% if not sections %}{{ draft.suggested_section }}{% endif %}"
+                       maxlength="255">
+            </div>
+
+            {# Metric #}
+            {% if draft.metric %}
+            {% if draft.metric.existing_metric_id %}
+            <input type="hidden" name="existing_metric_id" value="{{ draft.metric.existing_metric_id }}">
+            <div class="gb-metric-info">
+                <strong>{{ term.metric|default:"Metric" }}:</strong> {{ draft.metric.name }}
+                <br><small>{{ draft.metric.definition }}</small>
+            </div>
+            {% else %}
+            <details open>
+                <summary>{% trans "Custom metric (1–5 scale)" %}</summary>
+                <label for="gb-metric-name">{% trans "Metric name" %}</label>
+                <input type="text" id="gb-metric-name" name="metric_name"
+                       value="{{ draft.metric.name }}" maxlength="255">
+
+                <label for="gb-metric-def">{% trans "Scale descriptors" %}</label>
+                <textarea id="gb-metric-def" name="metric_definition"
+                          rows="5">{{ draft.metric.definition }}</textarea>
+                <small>{% trans "Define what each level means (1 = ..., 2 = ..., etc.)" %}</small>
+
+                <input type="hidden" name="metric_min" value="{{ draft.metric.min_value|default:1 }}">
+                <input type="hidden" name="metric_max" value="{{ draft.metric.max_value|default:5 }}">
+                <input type="hidden" name="metric_unit" value="{{ draft.metric.unit|default:'score' }}">
+            </details>
+            {% endif %}
+            {% endif %}
+
+            <div role="group" style="margin-top: var(--kn-space-base);">
+                <button type="submit">{% trans "Save Goal" %}</button>
+                <button type="button" class="outline secondary"
+                        hx-get="{% url 'ai:goal_builder_start' client_id=client.pk %}"
+                        hx-target="#goal-builder-container"
+                        hx-swap="innerHTML">{% trans "Start Over" %}</button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    {# ── Chat input ── #}
+    <form class="gb-input"
+          hx-post="{% url 'ai:goal_builder_chat' client_id=client.pk %}"
+          hx-target="#goal-builder-container"
+          hx-swap="innerHTML"
+          hx-indicator="#gb-loading">
+        {% csrf_token %}
+        <div role="group">
+            <input type="text" name="message"
+                   placeholder="{% trans 'Type your response...' %}"
+                   maxlength="1000" required autofocus
+                   aria-label="{% trans 'Your message' %}">
+            <button type="submit">{% trans "Send" %}</button>
+        </div>
+        <div id="gb-loading" class="htmx-indicator">
+            <div class="loading-bar"></div>
+            <small>{% trans "Thinking..." %}</small>
+        </div>
+    </form>
+
+    {# Cancel link #}
+    <div style="text-align: centre; margin-top: var(--kn-space-sm);">
+        <a href="{% url 'plans:plan_view' client_id=client.pk %}"
+           class="secondary"
+           style="font-size: 0.85em;">{% trans "Cancel — go back to plan" %}</a>
+    </div>
+</article>

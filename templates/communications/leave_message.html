@@ -17,14 +17,14 @@
 
 <h1>{% blocktrans with name=client.display_name %}Leave Message about {{ name }}{% endblocktrans %}</h1>
 
-<p>{% blocktrans with term=term.client|default:"participant" %}Leave a message for the case worker assigned to this {{ term }}.{% endblocktrans %}</p>
+<p>{% blocktrans with client_term=term.client|default:"participant" worker_term=term.worker|default:"worker" %}Leave a message for the {{ worker_term }} assigned to this {{ client_term }}.{% endblocktrans %}</p>
 
 <form method="post">
     {% csrf_token %}
 
     <label for="id_for_user">{{ form.for_user.label }}</label>
     {{ form.for_user }}
-    <small>{% trans "Leave blank to notify all case workers on this file." %}</small>
+    <small>{% blocktrans with workers=term.worker_plural|default:"workers" %}Leave blank to notify all {{ workers }} on this file.{% endblocktrans %}</small>
 
     <label for="id_message">{{ form.message.label }}</label>
     {{ form.message }}
@@ -32,9 +32,9 @@
     <small class="error">{{ form.message.errors.0 }}</small>
     {% endif %}
 
-    <div class="grid">
+    <div class="button-row">
         <button type="submit">{% trans "Leave Message" %}</button>
-        <a href="{% url 'clients:client_detail' client.pk %}" role="button" class="secondary">{% trans "Cancel" %}</a>
+        <a href="{% url 'clients:client_detail' client.pk %}" role="button" class="secondary outline">{% trans "Cancel" %}</a>
     </div>
 </form>
 {% endblock %}
