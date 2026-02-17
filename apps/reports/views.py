@@ -333,6 +333,8 @@ def export_form(request):
         and ReportTemplate.objects.exists()
     )
 
+    delay_minutes = getattr(settings, "ELEVATED_EXPORT_DELAY_MINUTES", 10)
+
     if request.method != "POST":
         form = MetricExportForm(user=request.user)
         # Only show hint if the dropdown is actually hidden
@@ -341,6 +343,7 @@ def export_form(request):
             "form": form,
             "is_aggregate_only": is_aggregate,
             "is_pm_export": is_pm_export,
+            "delay_minutes": delay_minutes,
             "template_preview_items": _template_previews(form),
             "show_template_hint": hint,
         })
@@ -352,6 +355,7 @@ def export_form(request):
             "form": form,
             "is_aggregate_only": is_aggregate,
             "is_pm_export": is_pm_export,
+            "delay_minutes": delay_minutes,
             "template_preview_items": _template_previews(form),
             "show_template_hint": hint,
         })
@@ -419,6 +423,7 @@ def export_form(request):
                 "no_data": True,
                 "is_aggregate_only": is_aggregate,
                 "is_pm_export": is_pm_export,
+                "delay_minutes": delay_minutes,
             },
         )
 
