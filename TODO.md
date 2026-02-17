@@ -68,6 +68,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Plan UX fixes — HTMX Back-button cache fix, reworded view-only message, disabled Edit Plan button with tooltip, editable-plans filter and badge on participant list — 2026-02-17 (UX-PLAN1, UX-PLAN2, UX-PLAN3)
 - [x] Dark mode WCAG AA contrast — breadcrumbs, add-link, tab-count badges — 2026-02-17 (UX-WALK3, UX-WALK4)
 - [x] Insights & Suggestions Batch — template-driven chart interpretations, suggestion highlights on exec dashboard, suggestion tracking design doc, portal questions design doc — 2026-02-17 (UX-INSIGHT4, UX-INSIGHT5, UX-INSIGHT6, PORTAL-Q1)
 - [x] UX Batch 3 — button sizing, dynamic terminology, staff contact info, chart descriptions, suggestion count fix, export delay wording, configurable Leave Quickly URL — 2026-02-17 (UX-MSG1, UX-MSG2, UX-PROG2, UX-INSIGHT2, UX-INSIGHT3, UX-EXPORT1, UX-SAFETY1)

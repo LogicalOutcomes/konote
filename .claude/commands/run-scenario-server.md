@@ -34,7 +34,7 @@ Set `SCENARIO_HOLDOUT_DIR` to the path confirmed by preflight, then run:
 pytest tests/scenario_eval/ -v --no-llm
 ```
 
-**This takes 2–5 minutes.** Wait for it to finish. Do NOT poll or run other commands while it runs.
+**This takes 2–5 minutes.** Use `timeout: 360000` (6 minutes) on the Bash call — the default 2-minute timeout will cause it to freeze mid-run. Wait for it to finish. Do NOT poll or run other commands while it runs.
 
 ### Step 4: Report results
 

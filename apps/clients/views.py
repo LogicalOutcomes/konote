@@ -13,6 +13,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.auth_app.decorators import admin_required, requires_permission
+from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 
@@ -165,9 +166,21 @@ def client_list(request):
     accessible_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
     user_program_ids = _get_user_program_ids(request.user, active_program_ids=active_ids)
 
+    # Compute program IDs where user can edit plans.
+    # Uses PERMISSIONS.keys() so any future roles are automatically included.
+    plan_edit_program_ids = set(
+        UserProgramRole.objects.filter(user=request.user, status="active")
+        .exclude(role__in=[
+            r for r in PERMISSIONS.keys()
+            if can_access(r, "plan.edit") == DENY
+        ])
+        .values_list("program_id", flat=True)
+    )
+
     # Get filter values from query params
     status_filter = request.GET.get("status", "")
     program_filter = request.GET.get("program", "")
+    editable_filter = request.GET.get("editable", "")
     search_query = _strip_accents(request.GET.get("q", "").strip().lower())
     sort_by = request.GET.get("sort", "name")
 
@@ -202,7 +215,14 @@ def client_list(request):
                 continue
 
         name = f"{client.display_name} {client.last_name}"
-        item = {"client": client, "name": name, "programs": programs, "last_contact": last_contact_map.get(client.pk)}
+        # Check if user can edit plans for this participant
+        enrolled_prog_ids = {p.pk for p in programs}
+        can_edit_plan = bool(plan_edit_program_ids & enrolled_prog_ids)
+        item = {"client": client, "name": name, "programs": programs, "last_contact": last_contact_map.get(client.pk), "can_edit_plan": can_edit_plan}
+
+        # Apply editable plans filter
+        if editable_filter and not can_edit_plan:
+            continue
 
         # Apply text search (name, record ID, or — via second pass — note content)
         # BUG-13: accent-insensitive — strip accents from name/record before comparing
@@ -248,6 +268,8 @@ def client_list(request):
         "accessible_programs": accessible_programs,
         "status_filter": status_filter,
         "program_filter": program_filter,
+        "editable_filter": editable_filter,
+        "has_plan_edit_programs": bool(plan_edit_program_ids),
         "search_query": request.GET.get("q", ""),
         "sort_by": sort_by,
         "can_create": can_create,
