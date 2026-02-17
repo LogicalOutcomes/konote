@@ -25,6 +25,7 @@
                hx-get="{% url 'plans:section_status' section_id=section.pk %}"
                hx-target="#section-{{ section.pk }}"
                hx-swap="innerHTML"
+               hx-confirm="{% if section.status == 'default' %}{% trans 'Mark this section as complete? You can reactivate it later if needed.' %}{% else %}{% trans 'Reactivate this section?' %}{% endif %}"
                aria-label="{% blocktrans with name=section.name %}Change status of {{ name }}{% endblocktrans %}">{% if section.status == "default" %}{% trans "mark complete" %}{% elif section.status == "completed" %}{% trans "reactivate" %}{% else %}{% trans "reactivate" %}{% endif %}</a>
         </span>
         {% endif %}

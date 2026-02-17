@@ -35,7 +35,8 @@
             <li role="none"><a role="menuitem" href="#"
                 hx-get="{% url 'plans:target_status' target_id=target.pk %}"
                 hx-target="#target-{{ target.pk }}"
-                hx-swap="innerHTML">{% if target.status == "default" %}{% trans "Mark Complete" %}{% elif target.status == "completed" %}{% trans "Reactivate" %}{% else %}{% trans "Reactivate" %}{% endif %}<small>{% if target.status == "default" %}{% trans "Change status to completed or deactivated" %}{% else %}{% trans "Set back to active" %}{% endif %}</small></a></li>
+                hx-swap="innerHTML"
+                hx-confirm="{% if target.status == 'default' %}{% trans 'Change the status of this goal? You can reactivate it later if needed.' %}{% else %}{% trans 'Reactivate this goal?' %}{% endif %}">{% if target.status == "default" %}{% trans "Mark Complete" %}{% elif target.status == "completed" %}{% trans "Reactivate" %}{% else %}{% trans "Reactivate" %}{% endif %}<small>{% if target.status == "default" %}{% trans "Change status to completed or deactivated" %}{% else %}{% trans "Set back to active" %}{% endif %}</small></a></li>
             <li class="dropdown-divider" role="separator"></li>
             <li role="none"><a role="menuitem" href="{% url 'plans:target_metrics' target_id=target.pk %}">{{ term.metric_plural|default:"Metrics" }}<small>{% trans "Choose how to measure progress" %}</small></a></li>
             <li role="none"><a role="menuitem" href="{% url 'plans:target_history' target_id=target.pk %}">{% trans "History" %}<small>{% trans "View past changes" %}</small></a></li>
