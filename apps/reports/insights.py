@@ -330,9 +330,8 @@ def collect_quotes(program=None, client_file=None, date_from=None, date_to=None,
             suggestion = note.participant_suggestion
             if suggestion:
                 suggestion = suggestion.strip()
-                word_count = len(suggestion.split())
                 normalised = suggestion.lower().strip()
-                if word_count >= 5 and normalised not in seen_texts:
+                if normalised and normalised not in seen_texts:
                     seen_texts.add(normalised)
                     priority = note.suggestion_priority if note.suggestion_priority else ""
                     quote = {
