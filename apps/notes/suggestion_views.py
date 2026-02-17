@@ -55,7 +55,7 @@ def _log_audit(request, action, theme, old_values=None, new_values=None):
 # ── Views ────────────────────────────────────────────────────────────
 
 @login_required
-@requires_permission("suggestion_theme.view")
+@requires_permission("suggestion_theme.view", allow_admin=True)
 def theme_list(request):
     """List all suggestion themes the user can see, sorted by recently active."""
     accessible_programs = get_accessible_programs(request.user)
@@ -90,7 +90,7 @@ def theme_list(request):
 
 
 @login_required
-@requires_permission("suggestion_theme.manage")
+@requires_permission("suggestion_theme.manage", allow_admin=True)
 def theme_form(request, pk=None):
     """Create or edit a suggestion theme."""
     if pk:
@@ -140,7 +140,7 @@ def theme_form(request, pk=None):
 
 
 @login_required
-@requires_permission("suggestion_theme.view")
+@requires_permission("suggestion_theme.view", allow_admin=True)
 def theme_detail(request, pk):
     """View a theme. PMs/admins can update status, link, and unlink."""
     theme = get_object_or_404(SuggestionTheme, pk=pk)
@@ -202,7 +202,7 @@ def theme_detail(request, pk):
 
 
 @login_required
-@requires_permission("suggestion_theme.manage")
+@requires_permission("suggestion_theme.manage", allow_admin=True)
 def unlinked_partial(request, pk):
     """HTMX endpoint: lazy-load unlinked suggestions for the Link More tab."""
     theme = get_object_or_404(SuggestionTheme, pk=pk)

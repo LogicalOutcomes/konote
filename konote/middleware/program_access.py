@@ -37,6 +37,7 @@ ADMIN_EXEMPT_PATTERNS = [
     re.compile(r"^/admin/settings/note-templates/"),  # template.note.manage: SCOPED for PMs
     re.compile(r"^/admin/registration/"),     # registration.manage: SCOPED for PMs
     re.compile(r"^/admin/submissions/"),      # registration.manage: SCOPED for PMs
+    re.compile(r"^/admin/suggestions/"),      # suggestion_theme.view/manage: SCOPED/ALLOW for PMs/staff
 ]
 
 
