@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.auth_app.decorators import admin_required, requires_permission
-from apps.auth_app.permissions import DENY, can_access
+from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 
@@ -166,11 +166,12 @@ def client_list(request):
     accessible_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
     user_program_ids = _get_user_program_ids(request.user, active_program_ids=active_ids)
 
-    # Compute program IDs where user can edit plans (staff role with plan.edit != DENY)
+    # Compute program IDs where user can edit plans.
+    # Uses PERMISSIONS.keys() so any future roles are automatically included.
     plan_edit_program_ids = set(
         UserProgramRole.objects.filter(user=request.user, status="active")
         .exclude(role__in=[
-            r for r in ["receptionist", "staff", "program_manager", "executive"]
+            r for r in PERMISSIONS.keys()
             if can_access(r, "plan.edit") == DENY
         ])
         .values_list("program_id", flat=True)
