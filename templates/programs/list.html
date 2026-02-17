@@ -40,7 +40,12 @@
                 <a href="{% url 'programs:program_detail' program_id=item.program.pk %}">{{ item.program.translated_name }}</a>
             </td>
             <td>{{ item.program.description|default:"—"|truncatewords:10 }}</td>
-            <td>{{ item.manager_name|default:"—" }}</td>
+            <td>
+                {{ item.manager_name|default:"—" }}
+                {% if item.manager_email %}
+                <br><small><a href="mailto:{{ item.manager_email }}">{{ item.manager_email }}</a></small>
+                {% endif %}
+            </td>
             <td>
                 {% if item.program.status == "active" %}
                     <span class="badge badge-success">{% trans "Active" %}</span>
