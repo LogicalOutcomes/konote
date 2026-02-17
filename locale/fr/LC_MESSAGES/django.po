@@ -13080,8 +13080,8 @@ msgstr ""
 
 #, python-format
 msgid ""
-"%(pct)s%% of participants are actively engaged. There may be room to explore "
-"what would help others connect more."
+"%(pct)s%% of participants are actively engaged. There may be room to explore"
+" what would help others connect more."
 msgstr ""
 "%(pct)s %% des participant(e)s sont activement engagé(e)s. Il pourrait être "
 "utile d'explorer ce qui aiderait les autres à s'impliquer davantage."
@@ -13107,7 +13107,8 @@ msgid "'harder right now' dropped from %(start)s%% to %(end)s%%"
 msgstr "« plus difficile en ce moment » a baissé de %(start)s %% à %(end)s %%"
 
 msgid "'harder right now' rose from %(start)s%% to %(end)s%%"
-msgstr "« plus difficile en ce moment » a augmenté de %(start)s %% à %(end)s %%"
+msgstr ""
+"« plus difficile en ce moment » a augmenté de %(start)s %% à %(end)s %%"
 
 msgid "Important Suggestions"
 msgstr "Suggestions importantes"
@@ -13116,14 +13117,16 @@ msgid "Over this period, %(changes)s."
 msgstr "Au cours de cette période, %(changes)s."
 
 msgid "Progress levels have been relatively stable over this period."
-msgstr "Les niveaux de progrès sont restés relativement stables au cours de cette période."
+msgstr ""
+"Les niveaux de progrès sont restés relativement stables au cours de cette "
+"période."
 
 #, python-format
 msgid ""
 "Right now, the largest group of participants (%(pct)s%%) are '%(label)s'."
 msgstr ""
-"Actuellement, le groupe le plus important de participant(e)s (%(pct)s %%) "
-"se trouve dans la catégorie « %(label)s »."
+"Actuellement, le groupe le plus important de participant(e)s (%(pct)s %%) se"
+" trouve dans la catégorie « %(label)s »."
 
 msgid "Review in Outcome Insights"
 msgstr "Consulter dans Perspectives des résultats"
@@ -13163,8 +13166,8 @@ msgid ""
 "the share of participants 'in a good place' dropped from %(start)s%% to "
 "%(end)s%%"
 msgstr ""
-"la proportion de participant(e)s « en bonne posture » a baissé de "
-"%(start)s %% à %(end)s %%"
+"la proportion de participant(e)s « en bonne posture » a baissé de %(start)s "
+"%% à %(end)s %%"
 
 #, python-format
 msgid ""
@@ -13178,7 +13181,8 @@ msgid "View in Outcome Insights"
 msgstr "Voir dans Perspectives des résultats"
 
 msgid "With only one month of data, it is too early to spot trends."
-msgstr "Avec un seul mois de données, il est trop tôt pour identifier des tendances."
+msgstr ""
+"Avec un seul mois de données, il est trop tôt pour identifier des tendances."
 
 msgid "harder right now"
 msgstr "plus difficile en ce moment"
@@ -13194,3 +13198,6 @@ msgstr "en bonne posture"
 
 msgid "something's shifting"
 msgstr "quelque chose bouge"
+
+msgid "Audit log entries"
+msgstr "Entrées du journal d'audit"
