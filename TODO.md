@@ -43,6 +43,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 **Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
 
+- [ ] Plan page loses HTML formatting after hitting Back from edit form in manager mode (https://konote.llewelyn.ca/plans/client/1951/) — likely a partial HTMX response returned without the base template (UX-PLAN3)
+- [ ] Reword confusing plan view-only message — explain why they can view but not edit, and what role is needed (see C:\Users\gilli\.claude\plans\enchanted-roaming-sparrow.md) (UX-PLAN1)
+- [ ] Manager plan-edit discoverability — disable "Edit Plan" in actions dropdown (with tooltip) when user lacks edit access, and add "My Program Participants" filter or badge on participant list so managers can find editable participants without trial and error (UX-PLAN2)
 - [ ] Build suggestion tracking/consolidation system — SuggestionTheme + SuggestionLink models, manual linking UI, integration with Insights and Dashboard (see tasks/suggestion-tracking-design.md) (UX-INSIGHT6)
 - [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
 
