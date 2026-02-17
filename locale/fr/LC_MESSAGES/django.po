@@ -13345,3 +13345,17 @@ msgstr "Ne sera pas fait"
 
 msgid "suggestion(s)"
 msgstr "suggestion(s)"
+
+#. blocktrans count: _unlinked_list.html
+msgid "%(total)s ungrouped suggestion in this program."
+msgid_plural "%(total)s ungrouped suggestions in this program."
+msgstr[0] "%(total)s suggestion non regroupée dans ce programme."
+msgstr[1] "%(total)s suggestions non regroupées dans ce programme."
+
+#. blocktrans with: _linked_list.html
+msgid "Linked by %(name)s"
+msgstr "Lié par %(name)s"
+
+#. blocktrans with: _linked_list.html aria-label
+msgid "Remove suggestion: %(text)s"
+msgstr "Retirer la suggestion : %(text)s"
