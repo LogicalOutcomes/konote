@@ -402,6 +402,37 @@ def _batch_portal_adoption(enrolment_stats):
     return result
 
 
+def _batch_suggestion_counts(filtered_program_ids):
+    """Suggestion counts per program, grouped by priority, in one query.
+
+    Returns dict of program_id -> {total, important, urgent}.
+    """
+    from apps.notes.models import ProgressNote
+
+    rows = (
+        ProgressNote.objects.filter(
+            author_program_id__in=filtered_program_ids,
+            status="default",
+        )
+        .exclude(suggestion_priority="")
+        .values("author_program_id", "suggestion_priority")
+        .annotate(count=Count("id"))
+    )
+
+    result = {}
+    for r in rows:
+        pid = r["author_program_id"]
+        if pid not in result:
+            result[pid] = {"total": 0, "important": 0, "urgent": 0}
+        result[pid]["total"] += r["count"]
+        if r["suggestion_priority"] == "important":
+            result[pid]["important"] = r["count"]
+        elif r["suggestion_priority"] == "urgent":
+            result[pid]["urgent"] = r["count"]
+
+    return result
+
+
 # ---------------------------------------------------------------------------
 # Feature flags (reuse cached context processor pattern)
 # ---------------------------------------------------------------------------
@@ -552,6 +583,9 @@ def executive_dashboard(request):
         if show_portal else {}
     )
 
+    # Batch: suggestion counts per program
+    suggestion_map = _batch_suggestion_counts(filtered_program_ids)
+
     # Assemble per-program stat dicts
     program_stats = []
     total_clients = 0
@@ -580,8 +614,17 @@ def executive_dashboard(request):
         if show_portal:
             stat["portal_adoption"] = portal_map.get(pid)
 
+        sugg = suggestion_map.get(pid, {})
+        stat["suggestion_total"] = sugg.get("total", 0)
+        stat["suggestion_important"] = sugg.get("important", 0) + sugg.get("urgent", 0)
+
         program_stats.append(stat)
         total_clients += es.get("total", 0)
+
+    total_suggestions_important = sum(
+        s.get("important", 0) + s.get("urgent", 0)
+        for s in suggestion_map.values()
+    )
 
     return render(request, "clients/executive_dashboard.html", {
         "programs": programs,
@@ -594,6 +637,7 @@ def executive_dashboard(request):
         "show_alerts": show_alerts,
         "show_events": show_events,
         "show_portal": show_portal,
+        "total_suggestions_important": total_suggestions_important,
         "selected_program_id": selected_program_id,
         "data_refreshed_at": now,
         "nav_active": "executive",

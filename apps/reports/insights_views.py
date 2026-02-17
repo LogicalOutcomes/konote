@@ -12,6 +12,13 @@ from apps.programs.models import UserProgramRole
 from apps.notes.models import ProgressNote
 from .insights import get_structured_insights, collect_quotes, MIN_PARTICIPANTS_FOR_QUOTES
 from .insights_forms import InsightsFilterForm
+from .interpretations import (
+    interpret_progress_trend,
+    interpret_engagement,
+    interpret_descriptor_snapshot,
+    interpret_suggestions,
+    interpret_client_trend,
+)
 
 # Map DB values to human-readable labels for suggestion priorities
 _PRIORITY_LABELS = dict(ProgressNote.SUGGESTION_PRIORITY_CHOICES)
@@ -99,6 +106,19 @@ def program_insights(request):
             else:
                 other_quotes.append(q)
 
+        # Plain-language interpretations (only when enough data)
+        interp = {}
+        if data_tier != "sparse":
+            interp = {
+                "interp_trend": interpret_progress_trend(structured["descriptor_trend"]),
+                "interp_engagement": interpret_engagement(structured["engagement_raw"]),
+                "interp_snapshot": interpret_descriptor_snapshot(structured["descriptor_trend"]),
+                "interp_suggestions": interpret_suggestions(
+                    structured["suggestion_total"],
+                    structured["suggestion_important_count"],
+                ),
+            }
+
         context.update({
             "program": program,
             "date_from": date_from,
@@ -110,6 +130,7 @@ def program_insights(request):
             "min_participants": MIN_PARTICIPANTS_FOR_QUOTES,
             "chart_data_json": structured["descriptor_trend"],
             "show_results": True,
+            **interp,
         })
 
     # Check if AI is available for the template
@@ -179,6 +200,17 @@ def client_insights_partial(request, client_id):
         else:
             other_quotes.append(q)
 
+    # Plain-language interpretations (only when enough data)
+    interp = {}
+    if data_tier != "sparse":
+        interp = {
+            "interp_trend": interpret_client_trend(structured["descriptor_trend"]),
+            "interp_suggestions": interpret_suggestions(
+                structured["suggestion_total"],
+                structured["suggestion_important_count"],
+            ),
+        }
+
     context = {
         "client": client,
         "date_from": date_from,
@@ -190,6 +222,7 @@ def client_insights_partial(request, client_id):
         "chart_data_json": structured["descriptor_trend"],
         "ai_enabled": ai_enabled,
         "scope": "client",
+        **interp,
     }
 
     return render(request, "reports/_insights_client.html", context)

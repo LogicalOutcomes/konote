@@ -60,6 +60,14 @@
             {% endif %}
         </article>
         {% endif %}
+
+        {% if total_suggestions_important > 0 %}
+        <article class="stat-card stat-warning">
+            <div class="stat-value">{{ total_suggestions_important }}</div>
+            <div class="stat-label">{% trans "Important Suggestions" %}</div>
+            <div class="stat-flag">{% trans "Review in Outcome Insights" %}</div>
+        </article>
+        {% endif %}
     </div>
 </section>
 
@@ -149,6 +157,23 @@
                 <div class="metric-row">
                     <span class="metric-label">{% trans "Portal Adoption" %}</span>
                     <span class="metric-value">{{ stat.portal_adoption }}%</span>
+                </div>
+                {% endif %}
+
+                {% if stat.suggestion_total > 0 %}
+                <hr>
+                {# Participant suggestions #}
+                <div class="metric-row {% if stat.suggestion_important > 0 %}metric-warning{% endif %}">
+                    <span class="metric-label">{% trans "Suggestions" %}</span>
+                    <span class="metric-value">
+                        {{ stat.suggestion_total }}
+                        {% if stat.suggestion_important > 0 %}
+                        <small>({{ stat.suggestion_important }} {% trans "important" %})</small>
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="metric-row">
+                    <a href="{% url 'reports:program_insights' %}?program={{ stat.program.pk }}" class="metric-link">{% trans "View in Outcome Insights" %} &rarr;</a>
                 </div>
                 {% endif %}
             </div>
@@ -312,6 +337,13 @@
     border: none;
     border-top: 1px solid var(--pico-muted-border-color);
 }
+
+.metric-link {
+    font-size: 0.8125rem;
+    color: var(--pico-primary);
+    text-decoration: none;
+}
+.metric-link:hover { text-decoration: underline; }
 
 /* Guidance */
 .executive-guidance {

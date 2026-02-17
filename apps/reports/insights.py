@@ -89,12 +89,15 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
     engagement_total = sum(row["count"] for row in engagement_counts)
     engagement_labels = dict(ProgressNote.ENGAGEMENT_CHOICES)
     engagement_distribution = {}
+    engagement_raw = {}  # Raw DB keys for interpretation functions
     for row in engagement_counts:
-        label = engagement_labels.get(row["engagement_observation"], row["engagement_observation"])
+        raw_key = row["engagement_observation"]
+        label = engagement_labels.get(raw_key, raw_key)
         if label == "---------":
             continue
         pct = round(row["count"] / engagement_total * 100, 1) if engagement_total else 0
         engagement_distribution[label] = pct
+        engagement_raw[raw_key] = pct
 
     # ── Descriptor distribution (from ProgressNoteTarget.progress_descriptor) ──
     targets_qs = ProgressNoteTarget.objects.filter(
@@ -124,12 +127,15 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
     suggestion_labels = dict(ProgressNote.SUGGESTION_PRIORITY_CHOICES)
     suggestion_distribution = {}
     suggestion_total = 0
+    suggestion_important_count = 0  # important + urgent
     for row in suggestion_counts:
         if not row["suggestion_priority"]:
             continue
         label = suggestion_labels.get(row["suggestion_priority"], row["suggestion_priority"])
         suggestion_distribution[label] = row["count"]
         suggestion_total += row["count"]
+        if row["suggestion_priority"] in ("important", "urgent"):
+            suggestion_important_count += row["count"]
 
     # ── Descriptor trend by month (percentages) ──
     descriptor_by_month = (
@@ -172,9 +178,11 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
         "month_count": month_count,
         "descriptor_distribution": descriptor_distribution,
         "engagement_distribution": engagement_distribution,
+        "engagement_raw": engagement_raw,
         "descriptor_trend": descriptor_trend,
         "suggestion_total": suggestion_total,
         "suggestion_distribution": suggestion_distribution,
+        "suggestion_important_count": suggestion_important_count,
     }
 
 

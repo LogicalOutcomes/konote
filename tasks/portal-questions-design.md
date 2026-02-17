@@ -63,14 +63,14 @@ These examples show the range of nonprofits that might use this:
 | After-school program | "End of term feedback" | 6 mixed questions | End of term |
 | Housing support | "Monthly housing stability" | 8 scale + text | Monthly |
 
-## Design Decisions to Make
+## Design Decisions (Resolved)
 
-1. **Naming:** "Questions for You" vs "Check-Ins" vs "Forms" vs "Things to Fill In" — what feels least clinical and most inviting?
-2. **One-at-a-time vs scrolling form:** For short forms (3-5 questions), a single scrolling page is probably fine. For longer ones (10+), one question per screen may feel less overwhelming. Do we support both, or pick one?
-3. **Reminders:** Should the dashboard highlight overdue or new forms? A gentle "You have a new check-in" banner?
-4. **Partial saves:** If someone closes the browser mid-form, do we save their progress? (Recommended: yes, auto-save after each question.)
-5. **Viewing past responses:** Can participants always see what they submitted, or only if the staff allows it? (Recommended: always visible — it's their data.)
-6. **Connection to outcomes:** Some forms might map to plan metrics (e.g., a self-rating scale feeds into a progress chart). This connection is powerful but adds complexity — possibly a later enhancement.
+1. **Naming:** "Questions for You" — warm, clear, non-clinical. Used consistently in dashboard card and nav.
+2. **One-at-a-time vs scrolling form:** Scrolling form for all lengths. Simpler to build, works well on mobile with Pico CSS. Progress indicator shows "Question 2 of 5" at top.
+3. **Reminders:** Dashboard card shows a badge with pending count. No email/push notifications in Phase 1.
+4. **Partial saves:** Yes — auto-save via HTMX after each question loses focus. Participants can close the browser and resume later.
+5. **Viewing past responses:** Always visible. Participants can always see what they submitted — it's their data.
+6. **Connection to outcomes:** Deferred to a later phase. Survey responses are stored independently for now.
 
 ## What Staff See (Brief — Full Detail in SURVEY1)
 
@@ -89,6 +89,104 @@ This feature builds on the SURVEY1 foundation (survey builder, question types, r
 - Auto-save for partial answers
 
 The survey builder itself (creating questions, assigning to participants) is staff-side work covered by SURVEY1.
+
+---
+
+## Implementation Details
+
+### Build Order
+
+**SURVEY1 must be built first.** PORTAL-Q1 depends on:
+- `Survey` and `SurveyQuestion` models (staff-side, built in SURVEY1)
+- Survey assignment infrastructure (who gets which survey)
+
+PORTAL-Q1 adds the participant-facing views on top of that foundation.
+
+### New Models (added by PORTAL-Q1)
+
+#### SurveyAssignment
+
+Tracks which surveys are assigned to which participants.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | AutoField | PK |
+| `survey` | FK → Survey | Which survey |
+| `participant_user` | FK → User | Portal user (participant) |
+| `status` | CharField | `pending` / `in_progress` / `completed` |
+| `due_date` | DateField (nullable) | Optional deadline |
+| `started_at` | DateTimeField (nullable) | When they first opened it |
+| `completed_at` | DateTimeField (nullable) | When they submitted |
+| `assigned_by` | FK → User | Staff member who assigned it |
+| `created_at` | DateTimeField | Auto |
+
+Unique constraint: `(survey, participant_user)` — one assignment per survey per participant.
+
+#### PartialAnswer
+
+Stores in-progress answers for auto-save. Moved to `SurveyResponse` on final submit.
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `id` | AutoField | PK |
+| `assignment` | FK → SurveyAssignment | Which assignment |
+| `question` | FK → SurveyQuestion | Which question |
+| `value_encrypted` | BinaryField | Fernet-encrypted answer text |
+| `updated_at` | DateTimeField | Auto (tracks last auto-save) |
+
+Unique constraint: `(assignment, question)` — one partial answer per question per assignment.
+
+### URLs
+
+All under the portal namespace (`/my/`):
+
+| URL | View | Method | Description |
+|-----|------|--------|-------------|
+| `/my/questions/` | `questions_list` | GET | List pending and completed assignments |
+| `/my/questions/<id>/` | `question_form` | GET | Show the scrolling form for an assignment |
+| `/my/questions/<id>/save/` | `question_autosave` | POST (HTMX) | Auto-save a single answer |
+| `/my/questions/<id>/submit/` | `question_submit` | POST | Final submission |
+| `/my/questions/<id>/review/` | `question_review` | GET | Read-only view of completed answers |
+
+### Templates
+
+| Template | Description |
+|----------|-------------|
+| `templates/portal/questions_list.html` | Two sections: "Pending" (with due dates) and "Completed" (with completion dates). Empty state: "No questions right now." |
+| `templates/portal/question_form.html` | Scrolling form with all questions. Progress indicator at top. Auto-save via HTMX on blur. Submit button at bottom. |
+| `templates/portal/question_review.html` | Read-only view of submitted answers. "Submitted on [date]" header. |
+
+### Dashboard Card
+
+In `templates/portal/dashboard.html`, a new card conditional on `features.surveys`:
+
+```
+Questions for You
+Forms and check-ins from your [worker]
+[1 new]
+```
+
+- Badge shows count of pending assignments
+- Hidden when no assignments exist (pending or completed)
+- Tapping goes to `/my/questions/`
+
+### Auto-Save Flow
+
+1. Participant opens a form → `started_at` is set, status moves to `in_progress`
+2. As they fill in each question, HTMX fires on `blur` (field loses focus)
+3. `question_autosave` encrypts the answer and upserts into `PartialAnswer`
+4. On submit, all `PartialAnswer` rows are moved to `SurveyResponse`, assignment status → `completed`
+5. `PartialAnswer` rows are deleted after successful submit
+
+### Accessibility
+
+- All form fields have proper `<label>` elements
+- Rating scales use `<fieldset>` + `<legend>` with radio buttons
+- Focus management: after auto-save, focus stays on the current field
+- Keyboard navigation works for all question types
+- Progress indicator uses `aria-live="polite"` for screen readers
+
+---
 
 ## Out of Scope for Initial Design
 

@@ -12436,9 +12436,9 @@ msgstr ""
 #: templates/reports/export_link_pending.html
 #, python-format
 msgid ""
-"For security, this export has a %(minutes)s-minute waiting period before the "
-"download becomes available. Administrators have been notified and can review "
-"or revoke it during this time."
+"For security, this export has a %(minutes)s-minute waiting period before the"
+" download becomes available. Administrators have been notified and can "
+"review or revoke it during this time."
 msgstr ""
 "Pour des raisons de sécurité, cette exportation a un délai d'attente de "
 "%(minutes)s minutes avant que le téléchargement ne soit disponible. Les "
@@ -13063,3 +13063,134 @@ msgstr "intervenant(e)"
 #, python-format
 msgid "— Any %(worker)s —"
 msgstr "— Tout(e) %(worker)s —"
+
+msgid " and "
+msgstr " et "
+
+msgid "%(total)s suggestions were recorded this period."
+msgstr "%(total)s suggestions ont été consignées pour cette période."
+
+#, python-format
+msgid ""
+"%(pct)s%% of participants are actively engaged or finding value in their "
+"program."
+msgstr ""
+"%(pct)s %% des participant(e)s sont activement engagé(e)s ou trouvent de la "
+"valeur dans leur programme."
+
+#, python-format
+msgid ""
+"%(pct)s%% of participants are actively engaged. There may be room to explore "
+"what would help others connect more."
+msgstr ""
+"%(pct)s %% des participant(e)s sont activement engagé(e)s. Il pourrait être "
+"utile d'explorer ce qui aiderait les autres à s'impliquer davantage."
+
+#, python-format
+msgid ""
+"%(total)s suggestions were recorded, including %(important)s marked as "
+"important or urgent."
+msgstr ""
+"%(total)s suggestions ont été consignées, dont %(important)s marquées comme "
+"importantes ou urgentes."
+
+#, python-format
+msgid ""
+"About %(pct)s%% of participants are actively engaged. Considering what "
+"barriers might be affecting engagement could be helpful."
+msgstr ""
+"Environ %(pct)s %% des participant(e)s sont activement engagé(e)s. Il "
+"pourrait être utile de réfléchir aux obstacles qui pourraient affecter "
+"l'engagement."
+
+msgid "'harder right now' dropped from %(start)s%% to %(end)s%%"
+msgstr "« plus difficile en ce moment » a baissé de %(start)s %% à %(end)s %%"
+
+msgid "'harder right now' rose from %(start)s%% to %(end)s%%"
+msgstr "« plus difficile en ce moment » a augmenté de %(start)s %% à %(end)s %%"
+
+msgid "Important Suggestions"
+msgstr "Suggestions importantes"
+
+msgid "Over this period, %(changes)s."
+msgstr "Au cours de cette période, %(changes)s."
+
+msgid "Progress levels have been relatively stable over this period."
+msgstr "Les niveaux de progrès sont restés relativement stables au cours de cette période."
+
+#, python-format
+msgid ""
+"Right now, the largest group of participants (%(pct)s%%) are '%(label)s'."
+msgstr ""
+"Actuellement, le groupe le plus important de participant(e)s (%(pct)s %%) "
+"se trouve dans la catégorie « %(label)s »."
+
+msgid "Review in Outcome Insights"
+msgstr "Consulter dans Perspectives des résultats"
+
+msgid "Suggestions"
+msgstr "Suggestions"
+
+#, python-format
+msgid ""
+"The share of notes where they felt 'in a good place' decreased from "
+"%(start)s%% to %(end)s%% over this period."
+msgstr ""
+"La proportion de notes où la personne se sentait « en bonne posture » a "
+"diminué de %(start)s %% à %(end)s %% au cours de cette période."
+
+msgid "Their progress has been relatively steady over this period."
+msgstr "Leur progrès est resté relativement stable au cours de cette période."
+
+#, python-format
+msgid ""
+"Their recent notes show a shift towards feeling 'in a good place' — up from "
+"%(start)s%% to %(end)s%%."
+msgstr ""
+"Leurs notes récentes montrent une évolution vers le sentiment d'être « en "
+"bonne posture » — passant de %(start)s %% à %(end)s %%."
+
+#, python-format
+msgid ""
+"Their recent notes show more sessions feeling 'harder right now' — up from "
+"%(start)s%% to %(end)s%%."
+msgstr ""
+"Leurs notes récentes montrent davantage de séances ressenties comme « plus "
+"difficiles en ce moment » — passant de %(start)s %% à %(end)s %%."
+
+#, python-format
+msgid ""
+"the share of participants 'in a good place' dropped from %(start)s%% to "
+"%(end)s%%"
+msgstr ""
+"la proportion de participant(e)s « en bonne posture » a baissé de "
+"%(start)s %% à %(end)s %%"
+
+#, python-format
+msgid ""
+"the share of participants 'in a good place' rose from %(start)s%% to "
+"%(end)s%%"
+msgstr ""
+"la proportion de participant(e)s « en bonne posture » a augmenté de "
+"%(start)s %% à %(end)s %%"
+
+msgid "View in Outcome Insights"
+msgstr "Voir dans Perspectives des résultats"
+
+msgid "With only one month of data, it is too early to spot trends."
+msgstr "Avec un seul mois de données, il est trop tôt pour identifier des tendances."
+
+msgid "harder right now"
+msgstr "plus difficile en ce moment"
+
+msgid "holding steady"
+msgstr "se maintient"
+
+msgid "important"
+msgstr "important"
+
+msgid "in a good place"
+msgstr "en bonne posture"
+
+msgid "something's shifting"
+msgstr "quelque chose bouge"

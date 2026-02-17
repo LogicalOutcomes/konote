@@ -109,6 +109,7 @@
         </tbody>
     </table>
 </details>
+{% if interp_trend %}<p class="insight-interpretation">{{ interp_trend }}</p>{% endif %}
 {% endif %}
 
 {# ── Engagement distribution ── #}
@@ -120,6 +121,7 @@
     <span class="pill pill--engagement">{{ label }}: {{ pct }}%</span>
     {% endfor %}
 </div>
+{% if interp_engagement %}<p class="insight-interpretation">{{ interp_engagement }}</p>{% endif %}
 {% endif %}
 
 {# ── Descriptor snapshot (current totals) ── #}
@@ -131,6 +133,7 @@
     <span class="pill pill--descriptor">{{ label }}: {{ pct }}%</span>
     {% endfor %}
 </div>
+{% if interp_snapshot %}<p class="insight-interpretation">{{ interp_snapshot }}</p>{% endif %}
 {% endif %}
 
 {# ── Participant feedback (suggestions) ── #}
@@ -145,6 +148,7 @@
     <span class="pill pill--engagement">{{ label }}: {{ count }}</span>
     {% endfor %}
 </div>
+{% if interp_suggestions %}<p class="insight-interpretation">{{ interp_suggestions }}</p>{% endif %}
 {% if suggestions %}
 {% for s in suggestions %}
 <blockquote class="insight-quote">
