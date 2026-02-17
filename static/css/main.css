@@ -458,6 +458,26 @@ nav.breadcrumb [aria-current="page"] {
 .badge-danger  { background: var(--kn-danger-bg);  color: var(--kn-danger-fg); }
 .badge-neutral { background: var(--kn-neutral-bg); color: var(--kn-neutral-fg); }
 .badge-primary { background: var(--kn-info-bg);    color: var(--kn-info-fg); }
+.badge-edit-plan {
+    font-size: 0.7em;
+    padding: 0.1em 0.35em;
+    background: transparent;
+    color: var(--kn-text);
+    border: 1px solid var(--pico-muted-border-color);
+    cursor: help;
+}
+
+/* Filter checkbox inline label */
+.filter-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    font-size: 0.875rem;
+    cursor: pointer;
+    white-space: nowrap;
+    margin-bottom: 0;
+}
+.filter-checkbox input[type="checkbox"] { margin: 0; }
 
 /* ---- Form error summary (BUG-17 — WCAG 3.3.1 Error Identification) ---- */
 /* ---- Read-only output styled like a disabled input ---- */
