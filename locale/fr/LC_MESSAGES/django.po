@@ -9069,8 +9069,8 @@ msgid ""
 msgstr ""
 "Comme cette exportation contient des données individuelles, un délai de "
 "%(minutes)s minutes sera appliqué avant que le lien de téléchargement ne "
-"devienne actif. Les administrateurs seront avisés par courriel."
-" Les administrateurs seront avisés par courriel."
+"devienne actif. Les administrateurs seront avisés par courriel. Les "
+"administrateurs seront avisés par courriel."
 
 msgid "French version. Leave blank to use the English text."
 msgstr "Version française. Laissez vide pour utiliser le texte anglais."
@@ -12435,12 +12435,16 @@ msgstr ""
 "de coordonnées, d'adresses ni de notes de séance."
 
 #: templates/reports/export_link_pending.html
+#, python-format
 msgid ""
-"For security, there is a short delay before the download becomes available. "
-"Administrators have been notified."
+"For security, this export has a %(minutes)s-minute waiting period before the "
+"download becomes available. Administrators have been notified and can review "
+"or revoke it during this time."
 msgstr ""
-"Pour des raisons de sécurité, il y a un court délai avant que le "
-"téléchargement ne soit disponible. Les administrateurs ont été avisés."
+"Pour des raisons de sécurité, cette exportation a un délai d'attente de "
+"%(minutes)s minutes avant que le téléchargement ne soit disponible. Les "
+"administrateurs ont été avisés et peuvent la réviser ou la révoquer pendant "
+"ce temps."
 
 #: templates/clients/executive_dashboard.html (sr-only status labels)
 msgid "Good"
@@ -12809,22 +12813,22 @@ msgid "Draft Goal"
 msgstr ""
 
 msgid "Draft goal"
-msgstr ""
+msgstr "Brouillon d'objectif"
 
 msgid "Goal Builder"
-msgstr ""
+msgstr "Bâtisseur d'objectifs"
 
 msgid "Have a conversation to define a measurable goal together."
-msgstr ""
+msgstr "Discutez ensemble pour définir un objectif mesurable."
 
 msgid "New section name"
-msgstr ""
+msgstr "Nom de la nouvelle section"
 
 msgid "Save Goal"
-msgstr ""
+msgstr "Enregistrer l'objectif"
 
 msgid "Scale descriptors"
-msgstr ""
+msgstr "Descripteurs d'échelle"
 
 msgid ""
 "See how participants are doing over time, what's working, and what they're "
@@ -12834,13 +12838,13 @@ msgstr ""
 "et ce qu'ils demandent."
 
 msgid "Send"
-msgstr ""
+msgstr "Envoyer"
 
 msgid "Thinking..."
-msgstr ""
+msgstr "Réflexion en cours..."
 
 msgid "Type your response..."
-msgstr ""
+msgstr "Tapez votre réponse..."
 
 msgid ""
 "When a staff member believes a safety alert is no longer needed, their "
@@ -12852,7 +12856,7 @@ msgstr ""
 "supprime l'alerte) ou la rejeter (ce qui maintient l'alerte en place)."
 
 msgid "name"
-msgstr ""
+msgstr "nom"
 
 #, python-format
 msgid "All %(programs)s at your agency."
@@ -12895,7 +12899,9 @@ msgid "Calendar link"
 msgstr "Lien de calendrier"
 
 msgid "Change the status of this goal? You can reactivate it later if needed."
-msgstr "Modifier le statut de cet objectif? Vous pourrez le réactiver plus tard au besoin."
+msgstr ""
+"Modifier le statut de cet objectif? Vous pourrez le réactiver plus tard au "
+"besoin."
 
 msgid "Choose \\\"From URL\\\""
 msgstr "Choisissez « À partir de l'URL »"
@@ -12923,12 +12929,14 @@ msgid ""
 "new one. Your old link will stop working and you'll need to set up your "
 "calendar app again."
 msgstr ""
-"Si vous pensez que quelqu'un d'autre a votre lien de calendrier, vous pouvez "
-"le remplacer par un nouveau. Votre ancien lien cessera de fonctionner et "
+"Si vous pensez que quelqu'un d'autre a votre lien de calendrier, vous pouvez"
+" le remplacer par un nouveau. Votre ancien lien cessera de fonctionner et "
 "vous devrez reconfigurer votre application de calendrier."
 
 msgid "Mark this section as complete? You can reactivate it later if needed."
-msgstr "Marquer cette section comme terminée? Vous pourrez la réactiver plus tard au besoin."
+msgstr ""
+"Marquer cette section comme terminée? Vous pourrez la réactiver plus tard au"
+" besoin."
 
 msgid "Open Settings → Calendar → Accounts"
 msgstr "Ouvrez Réglages → Calendrier → Comptes"
@@ -12962,7 +12970,8 @@ msgid "Paste the link you copied above and click Subscribe"
 msgstr "Collez le lien copié ci-dessus et cliquez sur S'abonner"
 
 msgid "Paste the link you copied above and click \\\"Add calendar\\\""
-msgstr "Collez le lien copié ci-dessus et cliquez sur « Ajouter un calendrier »"
+msgstr ""
+"Collez le lien copié ci-dessus et cliquez sur « Ajouter un calendrier »"
 
 msgid "Reactivate this goal?"
 msgstr "Réactiver cet objectif?"
@@ -12977,7 +12986,9 @@ msgid "Set up my calendar link"
 msgstr "Configurer mon lien de calendrier"
 
 msgid "Tap \\\"Add Account\\\" → \\\"Other\\\" → \\\"Add Subscribed Calendar\\\""
-msgstr "Appuyez sur « Ajouter un compte » → « Autre » → « Ajouter un calendrier avec abonnement »"
+msgstr ""
+"Appuyez sur « Ajouter un compte » → « Autre » → « Ajouter un calendrier avec"
+" abonnement »"
 
 msgid ""
 "This will replace your calendar link. Your old link will stop working and "
@@ -12992,8 +13003,8 @@ msgid ""
 " calendar app, create a calendar link. Once set up, new meetings will appear"
 " in your calendar automatically."
 msgstr ""
-"Pour voir vos rencontres dans Google Calendar, Outlook, Apple Calendar ou une"
-" autre application de calendrier, créez un lien de calendrier. Une fois "
+"Pour voir vos rencontres dans Google Calendar, Outlook, Apple Calendar ou "
+"une autre application de calendrier, créez un lien de calendrier. Une fois "
 "configuré, les nouvelles rencontres apparaîtront automatiquement dans votre "
 "calendrier."
 
@@ -13009,3 +13020,47 @@ msgstr ""
 
 msgid "iPhone or iPad"
 msgstr "iPhone ou iPad"
+
+msgid ""
+"A snapshot of where participants are right now — staff record this each time"
+" they write a progress note."
+msgstr ""
+"Un aperçu de la situation actuelle des participants — le personnel note ceci"
+" chaque fois qu'il rédige une note de suivi."
+
+msgid ""
+"Each line shows the percentage of participants at each stage of progress "
+"over time. Rising green ('In a good place') and blue ('Something's "
+"shifting') lines mean more people are moving forward."
+msgstr ""
+"Chaque ligne montre le pourcentage de participants à chaque étape de "
+"progression au fil du temps. Des lignes vertes (« En bonne posture ») et "
+"bleues (« Quelque chose bouge ») qui montent signifient que plus de gens "
+"avancent."
+
+msgid ""
+"How actively participants are engaging with their program — based on what "
+"staff observe during sessions."
+msgstr ""
+"Le niveau d'engagement des participants dans leur programme — selon ce que "
+"le personnel observe pendant les séances."
+
+msgid "Leave Quickly Destination URL"
+msgstr "URL de destination du bouton Quitter rapidement"
+
+msgid "Settings for the participant-facing portal."
+msgstr "Paramètres du portail destiné aux participants."
+
+msgid ""
+"Things participants have asked for or suggested — recorded by staff in "
+"progress notes. These can help shape program improvements."
+msgstr ""
+"Ce que les participants ont demandé ou suggéré — consigné par le personnel "
+"dans les notes de suivi. Cela peut aider à améliorer le programme."
+
+msgid "worker"
+msgstr "intervenant(e)"
+
+#, python-format
+msgid "— Any %(worker)s —"
+msgstr "— Tout(e) %(worker)s —"
