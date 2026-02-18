@@ -23,22 +23,9 @@ NOTE_URL_PATTERNS = [
     re.compile(r"^/notes/(?P<note_id>\d+)"),
 ]
 
-# URLs that only admins can access (view decorators handle their own checks)
-ADMIN_ONLY_PATTERNS = [
-    re.compile(r"^/admin/"),
-]
-
-# Exceptions: URLs under /admin/ that have their own permission checks
-# and should NOT be blanket-blocked by the middleware.
-ADMIN_EXEMPT_PATTERNS = [
-    re.compile(r"^/admin/audit/"),            # audit.view: SCOPED for PMs
-    re.compile(r"^/admin/users/"),            # user.manage: SCOPED for PMs
-    re.compile(r"^/admin/templates/"),        # template.plan.manage: SCOPED for PMs
-    re.compile(r"^/admin/settings/note-templates/"),  # template.note.manage: SCOPED for PMs
-    re.compile(r"^/admin/registration/"),     # registration.manage: SCOPED for PMs
-    re.compile(r"^/admin/submissions/"),      # registration.manage: SCOPED for PMs
-    re.compile(r"^/admin/suggestions/"),      # suggestion_theme.view/manage: SCOPED/ALLOW for PMs/staff
-]
+# URLs that only admins can access. PM-accessible management pages now
+# live under /manage/ so no exemption list is needed here.
+ADMIN_ONLY_PREFIX = "/admin/"
 
 
 class ProgramAccessMiddleware:
@@ -64,6 +51,7 @@ class ProgramAccessMiddleware:
         "/merge/",
         "/audit/",
         "/admin/",
+        "/manage/",
         "/erasure/",
         "/reports/export/",
     )
@@ -83,21 +71,15 @@ class ProgramAccessMiddleware:
         else:
             request.active_program_ids = None
 
-        # Admin-only routes (checked BEFORE program selection — admin routes
-        # have their own access control and don't need program context).
-        # Some /admin/ sub-paths are exempt because they have their own
-        # @requires_permission decorator (e.g. /admin/audit/ checks audit.view).
-        for pattern in ADMIN_ONLY_PATTERNS:
-            if pattern.match(path):
-                # Check exemptions first — these views enforce their own perms
-                if any(ep.match(path) for ep in ADMIN_EXEMPT_PATTERNS):
-                    break  # fall through to normal request handling
-                if not request.user.is_admin:
-                    return self._forbidden_response(
-                        request,
-                        "Access denied. Admin privileges are required to view this page."
-                    )
-                return self.get_response(request)
+        # Admin-only routes: /admin/ now only contains admin settings.
+        # PM-accessible management pages live under /manage/ instead.
+        if path.startswith(ADMIN_ONLY_PREFIX):
+            if not request.user.is_admin:
+                return self._forbidden_response(
+                    request,
+                    "Access denied. Admin privileges are required to view this page."
+                )
+            return self.get_response(request)
 
         # CONF9: Force program selection for mixed-tier users without a selection.
         # Placed after admin-only check so admin routes aren't affected.
