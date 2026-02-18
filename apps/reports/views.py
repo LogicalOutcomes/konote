@@ -5,6 +5,7 @@ import json
 import logging
 import os
 import uuid
+from collections import defaultdict
 from datetime import datetime, time, timedelta
 
 from django.conf import settings
