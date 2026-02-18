@@ -67,14 +67,14 @@ PERMISSION_URL_MAP = {
     "intake.edit": {"skip": "no_decorator"},
 
     # Note keys
-    "note.view": {"url": "/notes/client/{client_id}/"},
-    "note.create": {"url": "/notes/client/{client_id}/quick/"},
+    "note.view": {"url": "/notes/participant/{client_id}/"},
+    "note.create": {"url": "/notes/participant/{client_id}/quick/"},
     "note.edit": {"url": "/notes/{note_id}/cancel/"},
     "note.delete": {"skip": "no_view"},
 
     # Plan keys
-    "plan.view": {"url": "/plans/client/{client_id}/"},
-    "plan.edit": {"url": "/plans/client/{client_id}/sections/create/"},
+    "plan.view": {"url": "/plans/participant/{client_id}/"},
+    "plan.edit": {"url": "/plans/participant/{client_id}/sections/create/"},
     "plan.delete": {"skip": "no_view"},
 
     # Group keys
@@ -88,33 +88,33 @@ PERMISSION_URL_MAP = {
     "group.view_report": {"url": "/groups/{group_id}/attendance/"},
 
     # Event / alert keys
-    "event.view": {"url": "/events/client/{client_id}/"},
-    "event.create": {"url": "/events/client/{client_id}/create/"},
+    "event.view": {"url": "/events/participant/{client_id}/"},
+    "event.create": {"url": "/events/participant/{client_id}/create/"},
     "alert.view": {"skip": "implicit"},
-    "alert.create": {"url": "/events/client/{client_id}/alerts/create/"},
+    "alert.create": {"url": "/events/participant/{client_id}/alerts/create/"},
     "alert.cancel": {"url": "/events/alerts/{alert_id}/cancel/"},
     "alert.recommend_cancel": {"url": "/events/alerts/{alert_id}/recommend-cancel/"},
     "alert.review_cancel_recommendation": {"url": "/events/alerts/recommendations/"},
 
     # Meeting keys
     "meeting.view": {"skip": "implicit_own_meetings"},
-    "meeting.create": {"url": "/events/client/{client_id}/meetings/create/"},
-    "meeting.edit": {"url": "/events/client/{client_id}/meetings/{event_id}/"},
+    "meeting.create": {"url": "/events/participant/{client_id}/meetings/create/"},
+    "meeting.edit": {"url": "/events/participant/{client_id}/meetings/{event_id}/"},
 
     # Communication keys
-    "communication.log": {"url": "/communications/client/{client_id}/quick-log/"},
+    "communication.log": {"url": "/communications/participant/{client_id}/quick-log/"},
     "communication.view": {"skip": "timeline_integration"},
 
     # Staff message keys
-    "message.leave": {"url": "/communications/client/{client_id}/leave-message/"},
-    "message.view": {"url": "/communications/client/{client_id}/messages/"},
+    "message.leave": {"url": "/communications/participant/{client_id}/leave-message/"},
+    "message.view": {"url": "/communications/participant/{client_id}/messages/"},
 
     # Metric / report keys
-    "metric.view_individual": {"url": "/reports/client/{client_id}/analysis/"},
+    "metric.view_individual": {"url": "/reports/participant/{client_id}/analysis/"},
     "metric.view_aggregate": {"skip": "view_internal"},
     "report.program_report": {"url": "/reports/export/"},
     "report.funder_report": {"url": "/reports/export/"},
-    "report.data_extract": {"url": "/reports/client/{client_id}/export/"},
+    "report.data_extract": {"url": "/reports/participant/{client_id}/export/"},
 
     # Insights
     "insights.view": {"url": "/reports/insights/"},

@@ -99,7 +99,7 @@ class EventCRUDTest(TestCase):
     def test_event_create_happy_path(self):
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/events/client/{self.client_file.pk}/create/",
+            f"/events/participant/{self.client_file.pk}/create/",
             {
                 "title": "Initial intake",
                 "description": "Client intake meeting",
@@ -113,7 +113,7 @@ class EventCRUDTest(TestCase):
     def test_staff_cannot_create_event_for_inaccessible_client(self):
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/events/client/{self.other_client.pk}/create/",
+            f"/events/participant/{self.other_client.pk}/create/",
             {
                 "title": "Should fail",
                 "start_timestamp": "2026-01-15 10:00",
@@ -129,14 +129,14 @@ class EventCRUDTest(TestCase):
             event_type=self.event_type,
         )
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/events/client/{self.client_file.pk}/")
+        resp = self.http.get(f"/events/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Test event")
 
     def test_event_list_has_schedule_meeting_link(self):
         """Schedule Meeting link appears in client Actions dropdown on events page."""
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/events/client/{self.client_file.pk}/")
+        resp = self.http.get(f"/events/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Schedule Meeting")
 
@@ -144,7 +144,7 @@ class EventCRUDTest(TestCase):
         """All-day events should save with date only (time at midnight)."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/events/client/{self.client_file.pk}/create/",
+            f"/events/participant/{self.client_file.pk}/create/",
             {
                 "title": "All day workshop",
                 "description": "Full day training",
@@ -163,7 +163,7 @@ class EventCRUDTest(TestCase):
         """All-day events can have a multi-day span."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/events/client/{self.client_file.pk}/create/",
+            f"/events/participant/{self.client_file.pk}/create/",
             {
                 "title": "Conference",
                 "all_day": "on",
@@ -188,7 +188,7 @@ class EventCRUDTest(TestCase):
             all_day=True,
         )
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/events/client/{self.client_file.pk}/")
+        resp = self.http.get(f"/events/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "All Day")
         self.assertContains(resp, "All day event")
@@ -197,7 +197,7 @@ class EventCRUDTest(TestCase):
         """All-day events must have a start date."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/events/client/{self.client_file.pk}/create/",
+            f"/events/participant/{self.client_file.pk}/create/",
             {
                 "title": "Missing date",
                 "all_day": "on",
@@ -211,7 +211,7 @@ class EventCRUDTest(TestCase):
 
     def test_meeting_create_form_explains_required_and_picker(self):
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/events/client/{self.client_file.pk}/meetings/create/")
+        resp = self.http.get(f"/events/participant/{self.client_file.pk}/meetings/create/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "* Required field.")
         self.assertContains(resp, "Open calendar and time picker")
@@ -266,7 +266,7 @@ class CrossProgramPermissionTest(TestCase):
         The system should fall back to the staff program."""
         self.http.login(username="mixed-role", password="pass")
         resp = self.http.post(
-            f"/events/client/{self.client_file.pk}/create/",
+            f"/events/participant/{self.client_file.pk}/create/",
             {
                 "title": "Kitchen check-in",
                 "description": "Weekly check-in",
@@ -293,7 +293,7 @@ class CrossProgramPermissionTest(TestCase):
         )
         self.http.login(username="mixed-role", password="pass")
         resp = self.http.post(
-            f"/events/client/{client_pm_only.pk}/create/",
+            f"/events/participant/{client_pm_only.pk}/create/",
             {
                 "title": "Should fail",
                 "start_timestamp": "2026-01-15 10:00",
@@ -335,7 +335,7 @@ class AlertCRUDTest(TestCase):
     def test_alert_create(self):
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/events/client/{self.client_file.pk}/alerts/create/",
+            f"/events/participant/{self.client_file.pk}/alerts/create/",
             {"content": "Safety concern noted"},
         )
         self.assertEqual(resp.status_code, 302)
@@ -483,7 +483,7 @@ class AnalysisChartTest(TestCase):
 
     def test_analysis_page_loads(self):
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/reports/client/{self.client_file.pk}/analysis/")
+        resp = self.http.get(f"/reports/participant/{self.client_file.pk}/analysis/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Analysis")
 
@@ -509,7 +509,7 @@ class AnalysisChartTest(TestCase):
             progress_note_target=pnt, metric_def=metric, value="12",
         )
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/reports/client/{self.client_file.pk}/analysis/")
+        resp = self.http.get(f"/reports/participant/{self.client_file.pk}/analysis/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "PHQ-9")
 

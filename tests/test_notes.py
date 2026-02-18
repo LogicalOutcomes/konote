@@ -55,7 +55,7 @@ class NoteViewsTest(TestCase):
     def test_quick_note_create_happy_path(self):
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/quick/",
+            f"/notes/participant/{self.client_file.pk}/quick/",
             {"notes_text": "Client seemed well today.", "interaction_type": "session", "consent_confirmed": True},
         )
         self.assertEqual(resp.status_code, 302)
@@ -67,7 +67,7 @@ class NoteViewsTest(TestCase):
     def test_quick_note_empty_text_rejected(self):
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/quick/",
+            f"/notes/participant/{self.client_file.pk}/quick/",
             {"notes_text": "   ", "interaction_type": "session", "consent_confirmed": True},
         )
         self.assertEqual(resp.status_code, 200)  # Re-renders form with errors
@@ -77,7 +77,7 @@ class NoteViewsTest(TestCase):
         """Notes cannot be saved without confirming consent."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/quick/",
+            f"/notes/participant/{self.client_file.pk}/quick/",
             {"notes_text": "Valid text but no consent."},
         )
         self.assertEqual(resp.status_code, 200)  # Re-renders form with errors
@@ -86,7 +86,7 @@ class NoteViewsTest(TestCase):
     def test_staff_cannot_create_note_for_inaccessible_client(self):
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.other_client.pk}/quick/",
+            f"/notes/participant/{self.other_client.pk}/quick/",
             {"notes_text": "Should not work."},
         )
         self.assertEqual(resp.status_code, 403)
@@ -95,7 +95,7 @@ class NoteViewsTest(TestCase):
         """Admins without program roles cannot access client data (RBAC restriction)."""
         self.http.login(username="admin", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.other_client.pk}/quick/",
+            f"/notes/participant/{self.other_client.pk}/quick/",
             {"notes_text": "Admin note."},
         )
         self.assertEqual(resp.status_code, 403)
@@ -110,7 +110,7 @@ class NoteViewsTest(TestCase):
         self.other_client.save()
         self.http.login(username="admin", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.other_client.pk}/quick/",
+            f"/notes/participant/{self.other_client.pk}/quick/",
             {"notes_text": "Admin note.", "interaction_type": "session", "consent_confirmed": True},
         )
         self.assertEqual(resp.status_code, 302)
@@ -120,7 +120,7 @@ class NoteViewsTest(TestCase):
         """Quick note stores the selected interaction type and outcome."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/quick/",
+            f"/notes/participant/{self.client_file.pk}/quick/",
             {"notes_text": "Called about housing.", "interaction_type": "phone", "outcome": "reached"},
         )
         self.assertEqual(resp.status_code, 302)
@@ -132,7 +132,7 @@ class NoteViewsTest(TestCase):
         """SMS is a valid interaction type for quick notes."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/quick/",
+            f"/notes/participant/{self.client_file.pk}/quick/",
             {"notes_text": "Texted about appointment.", "interaction_type": "sms", "outcome": "reached"},
         )
         self.assertEqual(resp.status_code, 302)
@@ -143,7 +143,7 @@ class NoteViewsTest(TestCase):
         """Email is a valid interaction type for quick notes."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/quick/",
+            f"/notes/participant/{self.client_file.pk}/quick/",
             {"notes_text": "Sent intake form.", "interaction_type": "email", "outcome": "reached"},
         )
         self.assertEqual(resp.status_code, 302)
@@ -154,7 +154,7 @@ class NoteViewsTest(TestCase):
         """Phone interaction type requires an outcome selection."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/quick/",
+            f"/notes/participant/{self.client_file.pk}/quick/",
             {"notes_text": "Called.", "interaction_type": "phone", "outcome": ""},
         )
         self.assertEqual(resp.status_code, 200)  # Re-renders form
@@ -164,7 +164,7 @@ class NoteViewsTest(TestCase):
         """When outcome is no_answer, notes_text can be blank (auto-filled)."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/quick/",
+            f"/notes/participant/{self.client_file.pk}/quick/",
             {"notes_text": "", "interaction_type": "phone", "outcome": "no_answer"},
         )
         self.assertEqual(resp.status_code, 302)
@@ -177,7 +177,7 @@ class NoteViewsTest(TestCase):
         """When outcome is left_message, notes_text can be blank."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/quick/",
+            f"/notes/participant/{self.client_file.pk}/quick/",
             {"notes_text": "", "interaction_type": "sms", "outcome": "left_message"},
         )
         self.assertEqual(resp.status_code, 302)
@@ -188,7 +188,7 @@ class NoteViewsTest(TestCase):
         """Session interaction type does not require outcome."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/quick/",
+            f"/notes/participant/{self.client_file.pk}/quick/",
             {"notes_text": "Good session.", "interaction_type": "session"},
         )
         self.assertEqual(resp.status_code, 302)
@@ -199,7 +199,7 @@ class NoteViewsTest(TestCase):
         """HTMX inline quick note endpoint returns form partial."""
         self.http.login(username="staff", password="pass")
         resp = self.http.get(
-            f"/notes/client/{self.client_file.pk}/inline/",
+            f"/notes/participant/{self.client_file.pk}/inline/",
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(resp.status_code, 200)
@@ -209,7 +209,7 @@ class NoteViewsTest(TestCase):
         """HTMX inline quick note creates a note and returns buttons."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/inline/",
+            f"/notes/participant/{self.client_file.pk}/inline/",
             {"notes_text": "Quick phone call.", "interaction_type": "phone", "outcome": "reached"},
             HTTP_HX_REQUEST="true",
         )
@@ -223,7 +223,7 @@ class NoteViewsTest(TestCase):
         """GET with ?mode=buttons returns the button partial."""
         self.http.login(username="staff", password="pass")
         resp = self.http.get(
-            f"/notes/client/{self.client_file.pk}/inline/?mode=buttons",
+            f"/notes/participant/{self.client_file.pk}/inline/?mode=buttons",
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(resp.status_code, 200)
@@ -233,7 +233,7 @@ class NoteViewsTest(TestCase):
         """Invalid interaction type values are rejected by form validation."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/quick/",
+            f"/notes/participant/{self.client_file.pk}/quick/",
             {"notes_text": "Valid text.", "interaction_type": "hacked", "consent_confirmed": True},
         )
         self.assertEqual(resp.status_code, 200)  # Re-renders form with errors
@@ -254,7 +254,7 @@ class NoteViewsTest(TestCase):
             interaction_type="session",
         )
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/notes/client/{self.client_file.pk}/?interaction=phone")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/?interaction=phone")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Phone call note")
         self.assertNotContains(resp, "Session note")
@@ -266,7 +266,7 @@ class NoteViewsTest(TestCase):
             notes_text="Any note", author=self.staff,
         )
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/notes/client/{self.client_file.pk}/?interaction=invalid")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/?interaction=invalid")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Any note")
 
@@ -276,7 +276,7 @@ class NoteViewsTest(TestCase):
             notes_text="Test note", author=self.staff,
         )
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/notes/client/{self.client_file.pk}/")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Test note")
 
@@ -297,7 +297,7 @@ class NoteViewsTest(TestCase):
 
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/new/",
+            f"/notes/participant/{self.client_file.pk}/new/",
             {
                 "interaction_type": "session",
                 "summary": "Good session",
@@ -331,7 +331,7 @@ class NoteViewsTest(TestCase):
 
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/new/",
+            f"/notes/participant/{self.client_file.pk}/new/",
             {
                 f"target_{target.pk}-target_id": str(target.pk),
                 f"target_{target.pk}-notes": "",
@@ -429,7 +429,7 @@ class NoteViewsTest(TestCase):
         ClientProgramEnrolment.objects.create(client_file=client_no_consent, program=self.prog)
 
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/notes/client/{client_no_consent.pk}/quick/")
+        resp = self.http.get(f"/notes/participant/{client_no_consent.pk}/quick/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Consent Required")
         self.assertContains(resp, "Cannot create notes")
@@ -438,7 +438,7 @@ class NoteViewsTest(TestCase):
         """Notes can be created when client has consent recorded."""
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/quick/",
+            f"/notes/participant/{self.client_file.pk}/quick/",
             {"notes_text": "Consent is on file.", "interaction_type": "session", "consent_confirmed": True},
         )
         self.assertEqual(resp.status_code, 302)  # Redirect = success
@@ -459,7 +459,7 @@ class NoteViewsTest(TestCase):
 
         self.http.login(username="staff", password="pass")
         resp = self.http.post(
-            f"/notes/client/{client_no_consent.pk}/quick/",
+            f"/notes/participant/{client_no_consent.pk}/quick/",
             {"notes_text": "No consent needed.", "interaction_type": "session", "consent_confirmed": True},
         )
         self.assertEqual(resp.status_code, 302)  # Redirect = success
@@ -475,7 +475,7 @@ class NoteViewsTest(TestCase):
         ClientProgramEnrolment.objects.create(client_file=client_no_consent, program=self.prog)
 
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/notes/client/{client_no_consent.pk}/new/")
+        resp = self.http.get(f"/notes/participant/{client_no_consent.pk}/new/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Consent Required")
 
@@ -510,13 +510,13 @@ class QualitativeSummaryTest(TestCase):
         """Staff user without any program role cannot access qualitative summary."""
         no_role_user = User.objects.create_user(username="norole", password="pass", is_admin=False)
         self.http.login(username="norole", password="pass")
-        resp = self.http.get(f"/notes/client/{self.client_file.pk}/qualitative/")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/qualitative/")
         self.assertEqual(resp.status_code, 403)
 
     def test_qualitative_summary_happy_path_empty(self):
         """Staff with program role gets 200 even when no plan targets exist."""
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/notes/client/{self.client_file.pk}/qualitative/")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/qualitative/")
         self.assertEqual(resp.status_code, 200)
 
     def test_qualitative_summary_shows_descriptor_distribution(self):
@@ -537,7 +537,7 @@ class QualitativeSummaryTest(TestCase):
         )
 
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/notes/client/{self.client_file.pk}/qualitative/")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/qualitative/")
         self.assertEqual(resp.status_code, 200)
         # The view renders descriptor labels — "Something's shifting" is the label
         # for the "shifting" value. Check that the page contains descriptor content.
@@ -560,12 +560,12 @@ class QualitativeSummaryTest(TestCase):
         pnt.save()
 
         self.http.login(username="staff", password="pass")
-        resp = self.http.get(f"/notes/client/{self.client_file.pk}/qualitative/")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/qualitative/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "I feel more confident about interviews now.")
 
     def test_qualitative_summary_receptionist_blocked(self):
         """Receptionist role is blocked by minimum_role('staff') decorator."""
         self.http.login(username="recep", password="pass")
-        resp = self.http.get(f"/notes/client/{self.client_file.pk}/qualitative/")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/qualitative/")
         self.assertEqual(resp.status_code, 403)

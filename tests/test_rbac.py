@@ -346,23 +346,23 @@ class ReceptionistNotesAccessTest(TestCase):
     def test_receptionist_blocked_from_note_list(self):
         """Front desk staff cannot access the notes list (requires staff role)."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/notes/client/{self.client_file.pk}/")
+        response = self.client.get(f"/notes/participant/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 403)
 
     def test_staff_can_access_note_list(self):
         """Staff can access the notes list."""
         self.client.force_login(self.staff_user)
-        response = self.client.get(f"/notes/client/{self.client_file.pk}/")
+        response = self.client.get(f"/notes/participant/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 200)
 
     def test_receptionist_blocked_from_quick_note_create(self):
         """Front desk staff cannot create quick notes."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/notes/client/{self.client_file.pk}/quick/")
+        response = self.client.get(f"/notes/participant/{self.client_file.pk}/quick/")
         self.assertEqual(response.status_code, 403)
 
         # Also test POST
-        response = self.client.post(f"/notes/client/{self.client_file.pk}/quick/", {
+        response = self.client.post(f"/notes/participant/{self.client_file.pk}/quick/", {
             "notes_text": "Test note",
         })
         self.assertEqual(response.status_code, 403)
@@ -370,7 +370,7 @@ class ReceptionistNotesAccessTest(TestCase):
     def test_receptionist_blocked_from_full_note_create(self):
         """Front desk staff cannot create full notes."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/notes/client/{self.client_file.pk}/new/")
+        response = self.client.get(f"/notes/participant/{self.client_file.pk}/new/")
         self.assertEqual(response.status_code, 403)
 
     def test_receptionist_blocked_from_note_cancel(self):
@@ -438,25 +438,25 @@ class ReceptionistPlansAccessTest(TestCase):
     def test_receptionist_blocked_from_plan_view(self):
         """Receptionist has plan.view: DENY per permissions matrix — cannot view plans."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/plans/client/{self.client_file.pk}/")
+        response = self.client.get(f"/plans/participant/{self.client_file.pk}/")
         self.assertEqual(response.status_code, 403)
 
     def test_receptionist_blocked_from_section_create(self):
         """Receptionist has plan.edit: DENY per permissions matrix."""
         self.client.force_login(self.receptionist)
-        response = self.client.get(f"/plans/client/{self.client_file.pk}/sections/create/")
+        response = self.client.get(f"/plans/participant/{self.client_file.pk}/sections/create/")
         self.assertEqual(response.status_code, 403)
 
     def test_staff_can_create_section(self):
         """Staff has plan.edit: SCOPED per permissions matrix — can create sections."""
         self.client.force_login(self.staff_user)
-        response = self.client.get(f"/plans/client/{self.client_file.pk}/sections/create/")
+        response = self.client.get(f"/plans/participant/{self.client_file.pk}/sections/create/")
         self.assertEqual(response.status_code, 200)
 
     def test_manager_blocked_from_section_create(self):
         """Program manager has plan.edit: DENY per permissions matrix — cannot create sections."""
         self.client.force_login(self.manager)
-        response = self.client.get(f"/plans/client/{self.client_file.pk}/sections/create/")
+        response = self.client.get(f"/plans/participant/{self.client_file.pk}/sections/create/")
         self.assertEqual(response.status_code, 403)
 
     def test_receptionist_blocked_from_target_create(self):

@@ -155,14 +155,14 @@ class QuickLogViewTest(TestCase):
     def test_get_redirects_to_timeline(self):
         """GET redirects to event list (deprecated view)."""
         self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/quick-log/"
+        url = f"/communications/participant/{self.client_file.pk}/quick-log/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
 
     def test_post_redirects_to_timeline(self):
         """POST redirects to event list (deprecated view)."""
         self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/quick-log/"
+        url = f"/communications/participant/{self.client_file.pk}/quick-log/"
         response = self.client.post(url, {
             "channel": "phone",
             "direction": "outbound",
@@ -204,7 +204,7 @@ class CommunicationLogViewTest(TestCase):
     def test_get_redirects_to_quick_notes(self):
         """GET redirects to quick notes (deprecated view)."""
         self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/log/"
+        url = f"/communications/participant/{self.client_file.pk}/log/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
 
@@ -341,14 +341,14 @@ class CommunicationPermissionTest(TestCase):
     def test_receptionist_blocked_from_compose_email(self):
         """Receptionist should get 403 on compose_email."""
         self.client.login(username="test_receptionist", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        url = f"/communications/participant/{self.client_file.pk}/compose-email/"
         response = self.client.get(url)
         self.assertIn(response.status_code, (403, 302))
 
     def test_staff_can_access_compose_email(self):
         """Staff should access compose_email without 403."""
         self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        url = f"/communications/participant/{self.client_file.pk}/compose-email/"
         response = self.client.get(url)
         self.assertNotEqual(response.status_code, 403)
 
@@ -409,7 +409,7 @@ class ComposeEmailViewTest(TestCase):
     def test_get_returns_compose_form(self):
         """GET returns 200 with compose form when email is allowed."""
         self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        url = f"/communications/participant/{self.client_file.pk}/compose-email/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Send Email to")
@@ -419,7 +419,7 @@ class ComposeEmailViewTest(TestCase):
     def test_get_shows_masked_email(self):
         """Response contains masked email, not the full address."""
         self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        url = f"/communications/participant/{self.client_file.pk}/compose-email/"
         response = self.client.get(url)
         content = response.content.decode()
         self.assertIn("te***@example.com", content)
@@ -430,7 +430,7 @@ class ComposeEmailViewTest(TestCase):
         self.client_file.email_consent = False
         self.client_file.save()
         self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        url = f"/communications/participant/{self.client_file.pk}/compose-email/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Email cannot be sent")
@@ -441,7 +441,7 @@ class ComposeEmailViewTest(TestCase):
         self.client_file.email = ""
         self.client_file.save()
         self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        url = f"/communications/participant/{self.client_file.pk}/compose-email/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Email cannot be sent")
@@ -449,7 +449,7 @@ class ComposeEmailViewTest(TestCase):
     def test_post_preview_shows_preview(self):
         """POST with action=preview shows preview content."""
         self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        url = f"/communications/participant/{self.client_file.pk}/compose-email/"
         response = self.client.post(url, {
             "action": "preview",
             "subject": "Follow-up",
@@ -464,7 +464,7 @@ class ComposeEmailViewTest(TestCase):
     def test_post_preview_invalid_shows_errors(self):
         """POST with action=preview and missing subject shows errors."""
         self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        url = f"/communications/participant/{self.client_file.pk}/compose-email/"
         response = self.client.post(url, {
             "action": "preview",
             "subject": "",
@@ -477,7 +477,7 @@ class ComposeEmailViewTest(TestCase):
     def test_post_send_creates_communication(self):
         """POST with action=send creates Communication with method=staff_sent."""
         self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        url = f"/communications/participant/{self.client_file.pk}/compose-email/"
         response = self.client.post(url, {
             "action": "send",
             "subject": "Check-in",
@@ -497,7 +497,7 @@ class ComposeEmailViewTest(TestCase):
         """POST with action=send creates an audit log entry."""
         from apps.audit.models import AuditLog
         self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        url = f"/communications/participant/{self.client_file.pk}/compose-email/"
         self.client.post(url, {
             "action": "send",
             "subject": "Test",
@@ -513,7 +513,7 @@ class ComposeEmailViewTest(TestCase):
     def test_post_send_redirects_to_client_detail(self):
         """POST with action=send redirects to client detail on success."""
         self.client.login(username="test_staff", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        url = f"/communications/participant/{self.client_file.pk}/compose-email/"
         response = self.client.post(url, {
             "action": "send",
             "subject": "Redirect test",
@@ -533,13 +533,13 @@ class ComposeEmailViewTest(TestCase):
             role="receptionist", status="active",
         )
         self.client.login(username="test_receptionist", password="testpass123")
-        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        url = f"/communications/participant/{self.client_file.pk}/compose-email/"
         response = self.client.get(url)
         self.assertIn(response.status_code, (403, 302))
 
     def test_unauthenticated_redirects_to_login(self):
         """Unauthenticated user gets redirect to login."""
-        url = f"/communications/client/{self.client_file.pk}/compose-email/"
+        url = f"/communications/participant/{self.client_file.pk}/compose-email/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertIn("login", response.url)

@@ -390,7 +390,7 @@ class NotesFrenchTest(FrenchJourneyBaseTest):
     def test_quick_note_form_in_french(self):
         """Quick note form shows French labels."""
         self._login_staff_fr()
-        resp = self.http.get(f"/notes/client/{self.client_file.pk}/quick/")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/quick/")
         self.assertEqual(resp.status_code, 200)
         # Interaction type fieldset in French
         self.assertContains(resp, "interaction")
@@ -402,7 +402,7 @@ class NotesFrenchTest(FrenchJourneyBaseTest):
             notes_text="Note de test", author=self.staff,
         )
         self._login_staff_fr()
-        resp = self.http.get(f"/notes/client/{self.client_file.pk}/")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         # Filter labels (template now uses interaction types, not note types)
         self.assertContains(resp, "Filtrer les notes")  # "Filter notes"
@@ -416,7 +416,7 @@ class NotesFrenchTest(FrenchJourneyBaseTest):
             notes_text="Texte de test", author=self.staff,
         )
         self._login_staff_fr()
-        resp = self.http.get(f"/notes/client/{self.client_file.pk}/")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         # Interaction type options (replaced old note_type filter)
         self.assertContains(resp, "S\u00e9ance individuelle")  # "One-on-One Session"
@@ -432,7 +432,7 @@ class NotesFrenchTest(FrenchJourneyBaseTest):
             notes_text="Note date", author=self.staff,
         )
         self._login_staff_fr()
-        resp = self.http.get(f"/notes/client/{self.client_file.pk}/")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Date de d\u00e9but")  # "From date"
         self.assertContains(resp, "Date de fin")  # "To date"
@@ -441,7 +441,7 @@ class NotesFrenchTest(FrenchJourneyBaseTest):
     def test_empty_notes_state_in_french(self):
         """Empty notes list shows French empty state message."""
         self._login_staff_fr()
-        resp = self.http.get(f"/notes/client/{self.client_file.pk}/")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         # Empty state (uses terminology-aware string)
         self.assertContains(resp, "Ajouter la premi\u00e8re note")  # "Add the first note"
@@ -469,7 +469,7 @@ class NotesFrenchTest(FrenchJourneyBaseTest):
             client_file=no_consent, program=self.program,
         )
         self._login_staff_fr()
-        resp = self.http.get(f"/notes/client/{no_consent.pk}/quick/")
+        resp = self.http.get(f"/notes/participant/{no_consent.pk}/quick/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Consentement requis")  # "Consent Required"
 
@@ -484,7 +484,7 @@ class PlansFrenchTest(FrenchJourneyBaseTest):
     def test_plan_view_renders_in_french(self):
         """Plan view page renders without error in French context."""
         self._login_staff_fr()
-        resp = self.http.get(f"/plans/client/{self.client_file.pk}/")
+        resp = self.http.get(f"/plans/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         # HTML lang attribute should indicate French
         self.assertContains(resp, 'lang="fr"')
@@ -500,7 +500,7 @@ class PlansFrenchTest(FrenchJourneyBaseTest):
             name="Trouver un logement stable",
         )
         self._login_staff_fr()
-        resp = self.http.get(f"/plans/client/{self.client_file.pk}/")
+        resp = self.http.get(f"/plans/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Objectifs de logement")
         self.assertContains(resp, "Trouver un logement stable")
@@ -563,7 +563,7 @@ class ReportsFrenchTest(FrenchJourneyBaseTest):
     def test_analysis_tab_in_french(self):
         """Client analysis tab shows French labels."""
         self._login_staff_fr()
-        resp = self.http.get(f"/reports/client/{self.client_file.pk}/analysis/")
+        resp = self.http.get(f"/reports/participant/{self.client_file.pk}/analysis/")
         self.assertEqual(resp.status_code, 200)
         # Empty state message
         self.assertContains(resp, "Aucune donn\u00e9e de mesure enregistr\u00e9e")
@@ -741,7 +741,7 @@ class FormValidationFrenchTest(FrenchJourneyBaseTest):
         """Quick note with empty text re-renders form in French."""
         self._login_staff_fr()
         resp = self.http.post(
-            f"/notes/client/{self.client_file.pk}/quick/",
+            f"/notes/participant/{self.client_file.pk}/quick/",
             {"notes_text": "   ", "consent_confirmed": True},
         )
         self.assertEqual(resp.status_code, 200)
@@ -815,7 +815,7 @@ class EventsFrenchTest(FrenchJourneyBaseTest):
     def test_events_tab_in_french(self):
         """Client events tab renders in French."""
         self._login_staff_fr()
-        resp = self.http.get(f"/events/client/{self.client_file.pk}/")
+        resp = self.http.get(f"/events/participant/{self.client_file.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Enregistrer un \u00e9v\u00e9nement")  # "Record Event" (UXP4)
 
@@ -824,7 +824,7 @@ class EventsFrenchTest(FrenchJourneyBaseTest):
         event_type = EventType.objects.create(name="Rendez-vous")
         self._login_staff_fr()
         resp = self.http.get(
-            f"/events/client/{self.client_file.pk}/create/?type={event_type.pk}"
+            f"/events/participant/{self.client_file.pk}/create/?type={event_type.pk}"
         )
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Date et heure de d\u00e9but")  # "Start Date & Time"

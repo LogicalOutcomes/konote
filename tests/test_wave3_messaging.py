@@ -356,7 +356,7 @@ class SendReminderPreviewTests(TestCase):
         enc_module._fernet = None
 
     def test_get_returns_preview(self):
-        url = f"/communications/client/{self.client_file.pk}/meeting/{self.meeting.event_id}/send-reminder/"
+        url = f"/communications/participant/{self.client_file.pk}/meeting/{self.meeting.event_id}/send-reminder/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Reminder")
@@ -364,7 +364,7 @@ class SendReminderPreviewTests(TestCase):
     def test_get_shows_blocked_reason_when_not_allowed(self):
         self.client_file.sms_consent = False
         self.client_file.save()
-        url = f"/communications/client/{self.client_file.pk}/meeting/{self.meeting.event_id}/send-reminder/"
+        url = f"/communications/participant/{self.client_file.pk}/meeting/{self.meeting.event_id}/send-reminder/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Cannot send")
@@ -372,7 +372,7 @@ class SendReminderPreviewTests(TestCase):
     @patch("apps.communications.services.send_sms")
     def test_post_sends_reminder(self, mock_sms):
         mock_sms.return_value = (True, "SM123")
-        url = f"/communications/client/{self.client_file.pk}/meeting/{self.meeting.event_id}/send-reminder/"
+        url = f"/communications/participant/{self.client_file.pk}/meeting/{self.meeting.event_id}/send-reminder/"
         response = self.client.post(url)
         self.assertEqual(response.status_code, 200)
         self.meeting.refresh_from_db()
@@ -381,7 +381,7 @@ class SendReminderPreviewTests(TestCase):
 
     def test_unauthenticated_redirects(self):
         self.client.logout()
-        url = f"/communications/client/{self.client_file.pk}/meeting/{self.meeting.event_id}/send-reminder/"
+        url = f"/communications/participant/{self.client_file.pk}/meeting/{self.meeting.event_id}/send-reminder/"
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
 

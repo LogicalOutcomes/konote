@@ -891,7 +891,7 @@ class IndividualClientExportPermissionTest(TestCase):
         )
 
     def _export_url(self):
-        return f"/reports/client/{self.client_file.pk}/export/"
+        return f"/reports/participant/{self.client_file.pk}/export/"
 
     def test_admin_can_access_individual_client_export(self):
         self.http_client.login(username="admin", password="testpass123")
@@ -981,7 +981,7 @@ class ClientProgressPdfPermissionTest(TestCase):
         )
 
     def _pdf_url(self):
-        return f"/reports/client/{self.client_file.pk}/pdf/"
+        return f"/reports/participant/{self.client_file.pk}/pdf/"
 
     def test_pm_can_download_client_pdf(self):
         """PM CAN download client progress PDF (metric.view_individual=ALLOW)."""
@@ -1061,7 +1061,7 @@ class ClientAnalysisPermissionTest(TestCase):
         )
 
     def _analysis_url(self):
-        return f"/reports/client/{self.client_file.pk}/analysis/"
+        return f"/reports/participant/{self.client_file.pk}/analysis/"
 
     def test_executive_cannot_view_client_analysis(self):
         """Executive must NOT see individual client metrics (metric.view_individual=DENY)."""
