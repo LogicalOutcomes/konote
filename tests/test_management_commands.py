@@ -399,18 +399,6 @@ class CheckTranslationsTest(TestCase):
         self.assertIn("Translation Check", out.getvalue())
 
 
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
-class TranslateStringsTest(TestCase):
-    """Tests for the translate_strings command."""
-
-    databases = {"default", "audit"}
-
-    def setUp(self):
-        enc_module._fernet = None
-
-    def tearDown(self):
-        enc_module._fernet = None
-
 
 # =========================================================================
 # Utility Commands
