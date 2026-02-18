@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('notes', '0013_suggestion_themes'),
+        ('notes', '0014_alter_suggestiontheme_priority'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

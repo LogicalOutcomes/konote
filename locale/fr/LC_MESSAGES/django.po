@@ -13396,3 +13396,43 @@ msgstr ""
 
 msgid "View Suggestion Themes"
 msgstr "Voir les thèmes de suggestions"
+
+msgid "AI Generated"
+msgstr "Généré par l'IA"
+
+msgid "Active Suggestion Themes"
+msgstr "Thèmes de suggestions actifs"
+
+msgid "Manual"
+msgstr "Manuel"
+
+msgid "Mark addressed"
+msgstr "Marquer comme traité"
+
+msgid ""
+"Recurring patterns identified from participant suggestions. Update the "
+"status as your program responds to feedback."
+msgstr ""
+"Tendances récurrentes identifiées à partir des suggestions des participants."
+" Mettez à jour le statut à mesure que votre programme répond aux commentaires."
+
+msgid "Suggestion theme progress"
+msgstr "Progression des thèmes de suggestions"
+
+msgid "Themes addressed"
+msgstr "Thèmes traités"
+
+msgid "Working on it"
+msgstr "En cours"
+
+msgid "suggestion"
+msgstr "suggestion"
+
+msgid "suggestions"
+msgstr "suggestions"
+
+#. blocktrans — responsiveness summary (singular)
+msgid "%(addressed)s of %(total)s suggestion theme addressed"
+msgid_plural "%(addressed)s of %(total)s suggestion themes addressed"
+msgstr[0] "%(addressed)s thème de suggestion traité sur %(total)s"
+msgstr[1] "%(addressed)s thèmes de suggestions traités sur %(total)s"
