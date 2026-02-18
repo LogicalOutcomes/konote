@@ -75,11 +75,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Fix portal session isolation test — accept 404 as valid denial — 2026-02-18 (TEST-PORTAL1)
 - [x] Fix BLOCKER-1 a11y test — updated to expect skip link (WCAG best practice) — 2026-02-18 (TEST-A11Y1)
 
-### Phase: AI Target Suggestion — Polish
-
-- [ ] Use CSS custom property for error colour in `.ai-suggest-error` instead of hardcoded `#dc3545` (AI-CSS1)
-- [ ] Add `%(client)s` form of "What does the client want to work on?" blocktrans msgid to .po file — pre-existing gap (AI-I18N1)
-- [ ] Add `@require_POST` decorator to all AI views for explicitness (AI-VIEWS1)
+### Phase: AI Target Suggestion — Polish — complete!
 
 ### Phase: UX Fixes
 
@@ -111,6 +107,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Use CSS custom property for error colour in `.ai-suggest-error` and `.gb-error` — replaced hardcoded `#dc3545` with theme tokens — 2026-02-18 (AI-CSS1)
+- [x] Add `%(client)s` blocktrans msgids to .po file with French translations — 2026-02-18 (AI-I18N1)
+- [x] Add `@require_POST` decorator to all 8 AI POST-only views — 2026-02-18 (AI-VIEWS1)
 - [x] Add test coverage for `ai_enabled` in goal_create view context — one test with AI on, one with AI off — 2026-02-18 (TEST-GB1)
 - [x] Git housekeeping — deleted 31+ stale branches, cleared 10 stashes, removed 3 worktrees, rebased and merged PR #136 (cleanup) and PR #143 (10 test fixes) — 2026-02-18 (HOUSEKEEP1)
 - [x] Agency Onboarding Interview Pack — 12 refinements: session split, privacy opener, role name alignment, jargon removal, summaries, warmer scenarios, deployment checklists — 2026-02-18 (ONBOARD1–12)
@@ -119,11 +118,3 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] UX walkthrough fixes — strengthen touch target CSS with !important overrides, add aria-label to submissions table; UX5/UX10/UX11 already done — 2026-02-17 (UX-WALK6)
 - [x] Mobile touch targets WCAG fix — enforce 44px minimum with explicit padding on nav, breadcrumbs, tabs, buttons, selects at mobile breakpoints — 2026-02-17 (UX-WALK5)
 - [x] Fix 3 failing scenario tests — empty prerequisite guard, Priya Sharma test client, logout dropdown fallback + crash guard — 2026-02-17 (QA-FIX1, QA-FIX2, QA-FIX3)
-- [x] Add demo content for suggestion themes (11 themes, 29 links) and staff messages (7 messages) — 2026-02-17 (DEMO-SUG1)
-- [x] Remove blue border/outline around page — permanent fix, removed fragile :focus-visible on main content — 2026-02-17 (UI-FIX1)
-- [x] Suggestion tracking system — SuggestionTheme/SuggestionLink models, CRUD + linking UI, Outcome Insights integration, Executive Dashboard theme counts, contextual toast on note save, 23 tests — 2026-02-17 (UX-INSIGHT6)
-- [x] Plan UX fixes — HTMX Back-button cache fix, reworded view-only message, disabled Edit Plan button with tooltip, editable-plans filter and badge on participant list — 2026-02-17 (UX-PLAN1, UX-PLAN2, UX-PLAN3)
-- [x] Dark mode WCAG AA contrast — breadcrumbs, add-link, tab-count badges — 2026-02-17 (UX-WALK3, UX-WALK4)
-- [x] Insights & Suggestions Batch — template-driven chart interpretations, suggestion highlights on exec dashboard, suggestion tracking design doc, portal questions design doc — 2026-02-17 (UX-INSIGHT4, UX-INSIGHT5, UX-INSIGHT6, PORTAL-Q1)
-- [x] UX Batch 3 — button sizing, dynamic terminology, staff contact info, chart descriptions, suggestion count fix, export delay wording, configurable Leave Quickly URL — 2026-02-17 (UX-MSG1, UX-MSG2, UX-PROG2, UX-INSIGHT2, UX-INSIGHT3, UX-EXPORT1, UX-SAFETY1)
-- [x] UX Batch 2 — hx-confirm on plan actions, scroll position preservation, autofocus search, calendar sync rewrite — 2026-02-17 (UX6, UX7, UX9, UX-CAL1)
