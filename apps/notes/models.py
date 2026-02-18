@@ -1,6 +1,7 @@
 """Progress notes and metric value recording."""
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Lower
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
@@ -382,6 +383,10 @@ class SuggestionTheme(models.Model):
         help_text="Auto-calculated from linked suggestions via recalculate_theme_priority(). Do not set manually.",
     )
     addressed_note = models.TextField(blank=True, default="")
+    was_reopened = models.BooleanField(
+        default=False,
+        help_text="Set when an addressed theme is reopened by AI finding new suggestions.",
+    )
     source = models.CharField(
         max_length=20, choices=SOURCE_CHOICES, default="manual",
     )
@@ -405,6 +410,12 @@ class SuggestionTheme(models.Model):
         ordering = ["-updated_at"]
         indexes = [
             models.Index(fields=["program", "status"], name="idx_theme_program_status"),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                Lower("name"), "program",
+                name="unique_theme_per_program",
+            ),
         ]
 
     def __str__(self):
@@ -482,18 +493,18 @@ def deduplicate_themes(theme_dicts):
     """
     groups = {}  # (program_id, name_lower) -> merged dict
     for t in theme_dicts:
-        key = (t["program_id"], t["name"].strip().lower())
+        key = (t["program_id"], " ".join(t["name"].split()).lower())
         if key not in groups:
-            groups[key] = dict(t)
+            merged = dict(t)
+            merged["_winner_count"] = t["link_count"]
+            groups[key] = merged
         else:
             existing = groups[key]
             existing["link_count"] += t["link_count"]
             # Keep pk from the record with the most links
-            if t["link_count"] > (existing.get("_winner_count") or existing["link_count"] - t["link_count"]):
+            if t["link_count"] > existing["_winner_count"]:
                 existing["pk"] = t["pk"]
-            existing["_winner_count"] = max(
-                existing.get("_winner_count", 0), t["link_count"],
-            )
+                existing["_winner_count"] = t["link_count"]
             # Keep highest priority
             if THEME_PRIORITY_RANK.get(t["priority"], 0) > THEME_PRIORITY_RANK.get(existing["priority"], 0):
                 existing["priority"] = t["priority"]

@@ -21,29 +21,15 @@
 
 - [x] Add French translations for 10 new strings in goal_form.html and _goal_builder.html — extract, translate, compile .po/.mo — 2026-02-18 (I18N-GB1)
 
-### Phase: Suggestion Themes — Review Follow-up (PRs #147, #149)
+### Phase: Suggestion Themes — Review Follow-up (PRs #147, #149) — complete!
 
-- [ ] Add test for AI engine reopen-addressed-theme behaviour in test_theme_engine.py — process_ai_themes() should set addressed themes back to open (THEME-FIX1)
-- [ ] Fix `_winner_count` initialisation bug in deduplicate_themes() — first item's link_count not tracked, wrong pk chosen when 3+ duplicates exist (THEME-FIX2)
-- [ ] Align whitespace normalisation in deduplicate_themes() and merge_duplicate_themes to use `" ".join(name.split()).lower()` instead of `.strip().lower()` (THEME-FIX3)
-- [ ] Add TODO comment in entrypoint.sh linking merge step to future unique constraint migration — remove both together (THEME-FIX4)
-- [ ] Add unique constraint migration on SuggestionTheme(program, name) — run merge_duplicate_themes first, then deploy migration (THEME-FIX5)
-- [ ] Consider "Reopened" badge on theme rows if managers report confusion about addressed themes reappearing (THEME-FIX6)
+### Phase: Near-Term Improvements — complete!
 
-### Phase: Near-Term Improvements
-
-- [ ] Fix false "You're offline" on back button — service worker serves offline.html on any navigation fetch failure, not just actual offline; HTMX Vary header makes back-button navigations prone to this (BUG-SW1)
-- [ ] Convert 12 hardcoded `/manage/` URLs in base.html to `{% url %}` tags for maintainability (URL-CLEAN1)
-- [ ] Move `plans/admin/metrics/` redirect before `plans/` include in urls.py for consistency with events redirect ordering (URL-CLEAN2)
-- [ ] Audit all views for missing permission checks — PERMISSION-5 revealed nav hides link but view is unguarded (QA-W60)
-- [ ] Optimise executive dashboard queries — reduce N+1 per-program loop with prefetching or aggregation (PERF2)
-- [ ] Add program parameter to _ensure_client note creation — currently hardcodes program_a (QA-W61)
 - [ ] Fix report export 500 error — missing defaultdict import, suppressed-value type crashes in CSV generation, no error handling (see .claude/plans/enchanted-brewing-cocke.md) (BUG-EXP1)
 
 ### Phase: Post-Housekeeping Verification
 
 - [ ] Run full test suite (`pytest -m "not browser and not scenario_eval"`) to verify PR #143 test fixes pass against current main (VERIFY1)
-- [ ] Confirm export form select-all still works after duplicate script removal in PR #136 — grep for `select-all-metrics` handler in app.js (VERIFY2)
 
 ## Do Occasionally
 
@@ -83,7 +69,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 **Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
 
 - [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
-- [ ] Fix executive dashboard "Need More Details?" text — remove reference to specific participants; simplify to "For detailed reports, reach out to the Program Manager for that program." (UX-DASH1)
 
 ## Parking Lot
 
@@ -108,6 +93,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Active batch — theme fixes (FIX1–6), near-term improvements (BUG-SW1, URL-CLEAN1/2, QA-W60/W61), dashboard text (UX-DASH1), PERF2 already done, VERIFY2 confirmed — 2026-02-18 (THEME-FIX1–6, BUG-SW1, URL-CLEAN1, URL-CLEAN2, QA-W60, QA-W61, PERF2, UX-DASH1, VERIFY2)
 - [x] Use CSS custom property for error colour in `.ai-suggest-error` and `.gb-error` — replaced hardcoded `#dc3545` with theme tokens — 2026-02-18 (AI-CSS1)
 - [x] Add `%(client)s` blocktrans msgids to .po file with French translations — 2026-02-18 (AI-I18N1)
 - [x] Add `@require_POST` decorator to all 8 AI POST-only views — 2026-02-18 (AI-VIEWS1)
@@ -119,3 +105,4 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] UX walkthrough fixes — strengthen touch target CSS with !important overrides, add aria-label to submissions table; UX5/UX10/UX11 already done — 2026-02-17 (UX-WALK6)
 - [x] Mobile touch targets WCAG fix — enforce 44px minimum with explicit padding on nav, breadcrumbs, tabs, buttons, selects at mobile breakpoints — 2026-02-17 (UX-WALK5)
 - [x] Fix 3 failing scenario tests — empty prerequisite guard, Priya Sharma test client, logout dropdown fallback + crash guard — 2026-02-17 (QA-FIX1, QA-FIX2, QA-FIX3)
+- [x] Add demo content for suggestion themes (11 themes, 29 links) and staff messages (7 messages) — 2026-02-17 (DEMO-SUG1)

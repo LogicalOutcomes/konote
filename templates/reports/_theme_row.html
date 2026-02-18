@@ -22,7 +22,7 @@
 {% else %}
 <tr id="theme-{{ theme.pk }}">
     <td>
-        <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}">{{ theme.name }}</a>
+        <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}">{{ theme.name }}</a>{% if theme.was_reopened %} <span class="badge badge-neutral badge-sm" title="{% trans 'Previously addressed, reopened by new suggestions' %}">{% trans "Reopened" %}</span>{% endif %}
     </td>
     <td style="text-align:right;">{{ theme.link_count }}</td>
     <td>
