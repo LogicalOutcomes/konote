@@ -482,7 +482,7 @@ def deduplicate_themes(theme_dicts):
     """
     groups = {}  # (program_id, name_lower) -> merged dict
     for t in theme_dicts:
-        key = (t["program_id"], t["name"].strip().lower())
+        key = (t["program_id"], " ".join(t["name"].split()).lower())
         if key not in groups:
             merged = dict(t)
             merged["_winner_count"] = t["link_count"]

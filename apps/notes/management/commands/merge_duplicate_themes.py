@@ -29,7 +29,7 @@ class Command(BaseCommand):
         # Group all themes by (program_id, normalised name)
         groups = defaultdict(list)
         for theme in SuggestionTheme.objects.select_related("program").order_by("pk"):
-            key = (theme.program_id, theme.name.strip().lower())
+            key = (theme.program_id, " ".join(theme.name.split()).lower())
             groups[key].append(theme)
 
         # Filter to groups with duplicates
