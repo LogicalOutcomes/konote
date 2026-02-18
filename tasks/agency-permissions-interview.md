@@ -18,6 +18,8 @@ Your agency is the custodian of your clients' personal information. Under Canadi
 
 KoNote records consent when clients share their information, and clients have the right to ask what you hold about them and to withdraw consent. The interview will cover who at your agency handles those requests.
 
+If your agency handles health information in Ontario, additional rules under PHIPA (the Personal Health Information Protection Act) may apply — we can discuss that separately if needed.
+
 Good permission setup also protects your agency if something goes wrong — a lost laptop, a stolen password, or a staff member who shouldn't have seen something. The less information any one account can access, the less is exposed in an incident. Setting this up well now saves real headaches later.
 
 ### Send the Agency a Prep Sheet (1 week ahead)
@@ -112,6 +114,8 @@ Program Managers already get some admin-like powers for their own program (manag
 - **"Our admin needs to troubleshoot issues with client records."** → Consider giving them a PM role in one program (limited scope) rather than Direct Service in all programs (full clinical access everywhere). They can see enough to troubleshoot without having blanket access.
 
 #### Record
+
+*Tip: Don't just check boxes — jot a few words in the Notes column about why you made each choice. When you review this at 30 days, those notes will remind you of the reasoning.*
 
 | Person/Title | Program(s) | Program Role | System Admin? | Notes |
 |---|---|---|---|---|
@@ -488,7 +492,7 @@ Use the Configuration Summary to set up the agency's KoNote instance. Work throu
 
 **Notifications & Security**
 - [ ] Set export notification recipients (default admins, or specific email addresses from Section 7)
-- [ ] Verify encryption key is backed up securely (see deploying-konote.md)
+- [ ] Verify encryption key is backed up securely (see [deploying-konote.md](../docs/deploying-konote.md))
 - [ ] Verify database backups are configured and tested
 - [ ] Confirm email is working (send a test notification)
 
