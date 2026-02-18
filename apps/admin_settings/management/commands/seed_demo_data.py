@@ -12,6 +12,8 @@ Creates:
 - Email and staff-sent communications with varied delivery statuses
 - Portal content (journal entries, messages, staff notes, correction requests)
 - Registration submissions in various review states
+- Suggestion themes linked to participant suggestions (for Outcome Insights)
+- Staff-to-staff messages (internal operational messages about participants)
 
 This gives charts and reports meaningful data to display.
 
@@ -1367,6 +1369,12 @@ class Command(BaseCommand):
 
         # --- Create calendar feed tokens for demo workers ---
         self._create_demo_calendar_feeds(workers)
+
+        # --- Create suggestion themes and link to notes ---
+        self._create_demo_suggestion_themes(workers, programs_by_name)
+
+        # --- Create staff-to-staff messages ---
+        self._create_demo_staff_messages(workers, programs_by_name, now)
 
         self.stdout.write(self.style.SUCCESS(
             "  Demo rich data seeded successfully (15 clients across 5 programs)."
