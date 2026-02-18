@@ -190,7 +190,7 @@ class ApplySetupTests(TestCase):
             TerminologyOverride.objects.get(term_key="target").display_value,
             "Goal",
         )
-        self.assertIn("3 created", out.getvalue())
+        self.assertIn("3 term(s) set", out.getvalue())
 
     def test_creates_terminology_with_french(self):
         """Terminology overrides with dict values should store both en and fr."""
