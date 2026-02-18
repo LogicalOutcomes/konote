@@ -17,7 +17,6 @@
 
 ### Phase: Bug Fixes
 
-- [ ] Remove blue border/outline appearing around the page (e.g. Outcome Insights) — (UI-FIX1)
 - [ ] Add demo suggestion content (themes + ungrouped suggestions) so executive dashboard display can be verified — (DEMO-SUG1)
 
 ### Phase: Communication Modules — complete!
@@ -72,6 +71,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Remove blue border/outline around page — permanent fix, removed fragile :focus-visible on main content — 2026-02-17 (UI-FIX1)
 - [x] Suggestion tracking system — SuggestionTheme/SuggestionLink models, CRUD + linking UI, Outcome Insights integration, Executive Dashboard theme counts, contextual toast on note save, 23 tests — 2026-02-17 (UX-INSIGHT6)
 - [x] Plan UX fixes — HTMX Back-button cache fix, reworded view-only message, disabled Edit Plan button with tooltip, editable-plans filter and badge on participant list — 2026-02-17 (UX-PLAN1, UX-PLAN2, UX-PLAN3)
 - [x] Dark mode WCAG AA contrast — breadcrumbs, add-link, tab-count badges — 2026-02-17 (UX-WALK3, UX-WALK4)
