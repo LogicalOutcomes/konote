@@ -444,7 +444,7 @@ class ApplySetupTests(TestCase):
 
         self.assertTrue(MetricDefinition.objects.get(name="PHQ-9 (Depression)").is_enabled)
         self.assertTrue(MetricDefinition.objects.get(name="GAD-7 (Anxiety)").is_enabled)
-        self.assertIn("2 metrics enabled", out.getvalue())
+        self.assertIn("2 enabled", out.getvalue())
 
     def test_disables_metrics(self):
         """Metrics listed in metrics_disabled should be set to is_enabled=False."""
@@ -472,7 +472,7 @@ class ApplySetupTests(TestCase):
 
         self.assertFalse(MetricDefinition.objects.get(name="Days Clean").is_enabled)
         self.assertFalse(MetricDefinition.objects.get(name="Cravings Intensity").is_enabled)
-        self.assertIn("2 metrics disabled", out.getvalue())
+        self.assertIn("2 disabled", out.getvalue())
 
     # ------------------------------------------------------------------
     # Idempotency
