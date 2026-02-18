@@ -92,7 +92,9 @@ KoNote-web/
 │   │   └── test.py            # Test runner config
 │   ├── middleware/
 │   │   ├── audit.py           # AuditMiddleware
+│   │   ├── htmx_vary.py       # HtmxVaryMiddleware
 │   │   ├── program_access.py  # ProgramAccessMiddleware
+│   │   ├── safe_locale.py     # SafeLocaleMiddleware
 │   │   └── terminology.py     # TerminologyMiddleware
 │   ├── encryption.py          # Fernet encrypt/decrypt helpers
 │   ├── db_router.py           # AuditRouter for dual-database
@@ -106,7 +108,7 @@ KoNote-web/
 │   ├── programs/              # Program, UserProgramRole
 │   ├── clients/               # ClientFile, custom fields, erasure, merge
 │   ├── plans/                 # PlanSection, PlanTarget, Metrics
-│   ├── notes/                 # ProgressNote, MetricValue
+│   ├── notes/                 # ProgressNote, MetricValue, SuggestionTheme
 │   ├── events/                # Event, EventType, Alert, Meeting
 │   ├── communications/        # Communication logging, reminders, staff messages
 │   ├── groups/                # Group sessions, attendance, projects
@@ -263,6 +265,8 @@ GRANT USAGE, SELECT ON SEQUENCE audit_auditlog_id_seq TO konote_audit;
 | `ProgressNoteTemplate` | Reusable note structure |
 | `ProgressNoteTarget` | Note linked to specific target |
 | `MetricValue` | Individual metric measurement |
+| `SuggestionTheme` | Recurring theme identified from participant suggestions. Source: manual or AI-generated. Status workflow (open → in progress → addressed). |
+| `SuggestionLink` | Links a progress note's suggestion to a theme. Tracks auto-linked vs. manual linking. |
 
 ### events
 **Purpose:** Client timeline
@@ -409,7 +413,7 @@ The portal is a separate interface for participants (clients). It uses its own a
 - `password_reset_request` / `password_reset_confirm` — Password recovery flow
 - `safety_help` — Pre-auth safety page (private browsing guidance, emergency logout info)
 
-**Staff-Side Portal Views (at `/clients/<id>/portal*`):**
+**Staff-Side Portal Views (at `/participants/<id>/portal*`):**
 - `portal_manage` — View portal access status, invites, and pending corrections for a participant
 - `create_portal_invite` — Generate a portal invite with optional verbal verification code
 - `create_staff_portal_note` — Write a note visible in the participant's portal
@@ -539,7 +543,8 @@ def decrypt_field(encrypted_value):
 | Role | Scope | Permissions |
 |------|-------|-------------|
 | **Admin** | Instance-wide | Manage settings, users, programs; no client data access without program role |
-| **Program Manager** | Assigned programs | Full client access, manage program staff |
+| **Executive** | Assigned programs | Dashboard and reports only; no individual client data access |
+| **Program Manager** | Assigned programs | Full client access, manage program staff and templates |
 | **Staff** | Assigned programs | Full client records in assigned programs |
 | **Front Desk** | Assigned programs | Limited client info (name, status) |
 
@@ -553,8 +558,8 @@ class ProgramAccessMiddleware:
             if not request.user.is_admin:
                 return HttpResponseForbidden()
 
-        # Client routes require program access
-        if '/clients/' in request.path:
+        # Participant routes require program access
+        if '/participants/' in request.path:
             client_id = extract_client_id(request.path)
             if client_id:
                 if not user_can_access_client(request.user, client_id):
@@ -704,23 +709,43 @@ Order matters — middleware executes top-to-bottom on request, bottom-to-top on
 
 ```python
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',      # HTTPS headers
-    'whitenoise.middleware.WhiteNoiseMiddleware',         # Static files
+    'django.middleware.security.SecurityMiddleware',              # HTTPS headers
+    'whitenoise.middleware.WhiteNoiseMiddleware',                 # Static files
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'konote.middleware.htmx_vary.HtmxVaryMiddleware',            # Vary: HX-Request header
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'konote.middleware.program_access.ProgramAccessMiddleware',  # RBAC
-    'konote.middleware.terminology.TerminologyMiddleware',       # Terms
-    'konote.middleware.audit.AuditMiddleware',                   # Logging
-    'csp.middleware.CSPMiddleware',                              # CSP headers
+    'apps.portal.middleware.DomainEnforcementMiddleware',         # Portal domain isolation
+    'apps.portal.middleware.PortalAuthMiddleware',                # Participant session auth
+    'konote.middleware.safe_locale.SafeLocaleMiddleware',         # User language preference
+    'konote.middleware.audit.AuditMiddleware',                    # Logging
+    'konote.middleware.program_access.ProgramAccessMiddleware',   # RBAC
+    'konote.middleware.terminology.TerminologyMiddleware',        # Terms
     'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',                               # CSP headers
 ]
 ```
 
 ### Custom Middleware
 
+**HtmxVaryMiddleware:**
+- Adds `Vary: HX-Request` header to prevent caching bugs when HTMX partial and full-page requests share the same URL
+
+**DomainEnforcementMiddleware:**
+- Ensures portal requests stay on the portal domain and staff requests stay on the staff domain
+
+**PortalAuthMiddleware:**
+- Authenticates participant users via separate session key (`_portal_participant_id`)
+- Populates `request.participant_user` for portal views
+
+**SafeLocaleMiddleware:**
+- Activates the user's preferred language after authentication
+- Reads `user.preferred_language` and activates the corresponding locale
+
 **ProgramAccessMiddleware:**
-- Enforces admin-only routes (`/admin/*`)
+- Enforces admin-only routes (`/admin/*`) and management routes (`/manage/*`)
 - Validates client access based on program roles
 - Returns 403 Forbidden for unauthorized access
 
@@ -753,36 +778,36 @@ MIDDLEWARE = [
 /auth/invites/create/           GET, POST   Create invite (admin)
 ```
 
-### Clients
+### Participants (formerly /clients/)
 
 ```
-/clients/executive/                             GET         Executive dashboard
-/clients/                                       GET         Client list
-/clients/create/                                GET, POST   New client
-/clients/check-duplicate/                       POST        Duplicate detection (HTMX)
-/clients/search/                                GET         Client search (partial)
-/clients/<id>/                                  GET         Client detail
-/clients/<id>/edit/                             GET, POST   Edit client
-/clients/<id>/transfer/                         GET, POST   Transfer client between programs
-/clients/<id>/edit-contact/                     GET, POST   Edit contact information
-/clients/<id>/confirm-phone/                    POST        Confirm phone number
-/clients/<id>/custom-fields/                    POST        Save custom fields
-/clients/<id>/custom-fields/display/            GET         Custom fields display partial
-/clients/<id>/custom-fields/edit/               GET         Custom fields edit partial
-/clients/<id>/consent/display/                  GET         Consent display partial
-/clients/<id>/consent/edit/                     GET         Consent edit partial
-/clients/<id>/consent/                          POST        Save consent settings
-/clients/<id>/erase/                            GET, POST   Create erasure request
-/clients/<id>/portal-note/                      GET, POST   Create staff portal note
-/clients/<id>/portal-invite/                    GET, POST   Create portal invite
-/clients/<id>/portal/                           GET         Manage portal access
-/clients/<id>/portal/revoke/                    POST        Revoke portal access
-/clients/<id>/portal/reset-mfa/                 POST        Reset portal MFA
-/clients/admin/fields/                          GET         Custom field admin
-/clients/admin/fields/groups/create/            GET, POST   Create field group
-/clients/admin/fields/groups/<id>/edit/         GET, POST   Edit field group
-/clients/admin/fields/create/                   GET, POST   Create field definition
-/clients/admin/fields/<id>/edit/                GET, POST   Edit field definition
+/participants/executive/                             GET         Executive dashboard
+/participants/                                       GET         Participant list
+/participants/create/                                GET, POST   New participant
+/participants/check-duplicate/                       POST        Duplicate detection (HTMX)
+/participants/search/                                GET         Participant search (partial)
+/participants/<id>/                                  GET         Participant detail
+/participants/<id>/edit/                             GET, POST   Edit participant
+/participants/<id>/transfer/                         GET, POST   Transfer between programs
+/participants/<id>/edit-contact/                     GET, POST   Edit contact information
+/participants/<id>/confirm-phone/                    POST        Confirm phone number
+/participants/<id>/custom-fields/                    POST        Save custom fields
+/participants/<id>/custom-fields/display/            GET         Custom fields display partial
+/participants/<id>/custom-fields/edit/               GET         Custom fields edit partial
+/participants/<id>/consent/display/                  GET         Consent display partial
+/participants/<id>/consent/edit/                     GET         Consent edit partial
+/participants/<id>/consent/                          POST        Save consent settings
+/participants/<id>/erase/                            GET, POST   Create erasure request
+/participants/<id>/portal-note/                      GET, POST   Create staff portal note
+/participants/<id>/portal-invite/                    GET, POST   Create portal invite
+/participants/<id>/portal/                           GET         Manage portal access
+/participants/<id>/portal/revoke/                    POST        Revoke portal access
+/participants/<id>/portal/reset-mfa/                 POST        Reset portal MFA
+/participants/admin/fields/                          GET         Custom field admin
+/participants/admin/fields/groups/create/            GET, POST   Create field group
+/participants/admin/fields/groups/<id>/edit/         GET, POST   Edit field group
+/participants/admin/fields/create/                   GET, POST   Create field definition
+/participants/admin/fields/<id>/edit/                GET, POST   Edit field definition
 ```
 
 ### Plans
@@ -805,7 +830,35 @@ MIDDLEWARE = [
 /notes/templates/               GET         Note templates (admin)
 ```
 
-### Admin
+### Manage (PM + Admin accessible)
+
+```
+/manage/templates/                                  GET         Plan template list
+/manage/templates/create/                           GET, POST   Create plan template
+/manage/templates/<id>/edit/                        GET, POST   Edit plan template
+/manage/note-templates/                             GET         Note template list
+/manage/note-templates/create/                      GET, POST   Create note template
+/manage/note-templates/<id>/edit/                   GET, POST   Edit note template
+/manage/event-types/                                GET         Event type list
+/manage/event-types/create/                         GET, POST   Create event type
+/manage/event-types/<id>/edit/                      GET, POST   Edit event type
+/manage/metrics/                                    GET         Metric library
+/manage/metrics/create/                             GET, POST   Create metric
+/manage/metrics/<id>/edit/                          GET, POST   Edit metric
+/manage/users/                                      GET         User list
+/manage/users/create/                               GET, POST   Create user
+/manage/users/<id>/edit/                            GET, POST   Edit user
+/manage/audit/                                      GET         Audit log viewer
+/manage/audit/export/                               GET         Audit log CSV export
+/manage/suggestions/                                GET         Suggestion theme list
+/manage/suggestions/create/                         GET, POST   Create suggestion theme
+/manage/suggestions/<id>/                           GET         Theme detail
+/manage/suggestions/<id>/status/                    POST        Update theme status
+```
+
+> **Note:** Old `/admin/templates/`, `/admin/users/`, `/admin/audit/`, and `/admin/suggestions/` URLs redirect permanently to their `/manage/` equivalents.
+
+### Admin Settings (Admin only)
 
 ```
 /admin/settings/                                    GET         Settings dashboard
@@ -824,11 +877,6 @@ MIDDLEWARE = [
 /admin/settings/report-templates/<id>/programs/     GET, POST   Edit template programs
 /admin/settings/report-templates/<id>/delete/       POST        Delete template
 /admin/settings/report-templates/<id>/download/     GET         Download template CSV
-/admin/settings/note-templates/                     ...         Note template management
-/admin/templates/                                   ...         Plan template management
-/admin/users/                                       ...         User management
-/admin/audit/                                       GET         Audit log viewer
-/admin/audit/export/                                GET         Audit log CSV export
 /audit/program/<id>/                                GET         Per-program audit log (PM)
 /programs/                                          GET         Program list
 /programs/create/                                   GET, POST   New program
@@ -897,17 +945,17 @@ MIDDLEWARE = [
 ```
 /register/<slug>/                                   GET, POST   Public registration form
 /register/<slug>/submitted/                         GET         Submission confirmation
-/admin/registration/                                GET         Registration link list
-/admin/registration/create/                         GET, POST   Create registration link
-/admin/registration/<id>/edit/                      GET, POST   Edit registration link
-/admin/registration/<id>/delete/                    POST        Delete registration link
-/admin/registration/<id>/embed/                     GET         Embed code for link
-/admin/submissions/                                 GET         Submission list
-/admin/submissions/<id>/                            GET         Submission detail
-/admin/submissions/<id>/approve/                    POST        Approve submission
-/admin/submissions/<id>/reject/                     POST        Reject submission
-/admin/submissions/<id>/waitlist/                   POST        Waitlist submission
-/admin/submissions/<id>/merge/                      POST        Merge with existing client
+/manage/registration/                               GET         Registration link list
+/manage/registration/create/                        GET, POST   Create registration link
+/manage/registration/<id>/edit/                     GET, POST   Edit registration link
+/manage/registration/<id>/delete/                   POST        Delete registration link
+/manage/registration/<id>/embed/                    GET         Embed code for link
+/manage/submissions/                                GET         Submission list
+/manage/submissions/<id>/                           GET         Submission detail
+/manage/submissions/<id>/approve/                   POST        Approve submission
+/manage/submissions/<id>/reject/                    POST        Reject submission
+/manage/submissions/<id>/waitlist/                  POST        Waitlist submission
+/manage/submissions/<id>/merge/                     POST        Merge with existing client
 ```
 
 ### Erasure & Merge
@@ -957,7 +1005,7 @@ MIDDLEWARE = [
 ```
 /ai/suggest-metrics/            POST        Metric suggestions
 /ai/improve-outcome/            POST        Outcome improvement
-/clients/search/                GET         Client search (partial)
+/participants/search/            GET         Participant search (partial)
 /notes/<id>/preview/            GET         Note preview (partial)
 ```
 
@@ -1271,6 +1319,10 @@ These commands are run manually during deployment, maintenance, or development.
 | `update_demo_client_fields` | `clients` | Update demo client records with fresh test data. |
 | `check_document_url` | `admin_settings` | Verify that the document storage URL template is correctly configured. |
 | `diagnose_charts` | `admin_settings` | Debug helper for Chart.js metric visualisation issues. |
+| `apply_setup` | `admin_settings` | Configure a new instance from a YAML/JSON configuration file. |
+| `send_reminders` | `communications` | Send SMS/email reminders for meetings in the next 36 hours. |
+| `send_export_summary` | `reports` | Email admins a digest of all export activity for privacy oversight. |
+| `cleanup_expired_exports` | `reports` | Delete export files past their expiry date. |
 
 ---
 
@@ -1331,17 +1383,46 @@ pytest --cov=apps --cov-report=html
 
 ```
 tests/
-├── conftest.py              # Fixtures (users, clients, programs)
-├── test_auth_views.py       # Login, registration, SSO
-├── test_rbac.py             # Access control enforcement
-├── test_clients.py          # Client CRUD, custom fields
-├── test_plan_crud.py        # Plan/target/metric management
-├── test_notes.py            # Progress notes, metric recording
-├── test_programs.py         # Program management
-├── test_admin_settings.py   # Terminology, features, settings
-├── test_ai_endpoints.py     # AI suggestion endpoints
-├── test_encryption.py       # Fernet encryption/decryption
-└── test_phase5.py           # Integration scenarios
+├── conftest.py                      # Fixtures (users, clients, programs)
+├── test_auth_views.py               # Login, registration, SSO
+├── test_rbac.py                     # Access control enforcement
+├── test_permissions_enforcement.py  # Permission matrix enforcement
+├── test_clients.py                  # Client CRUD, custom fields
+├── test_plan_crud.py                # Plan/target/metric management
+├── test_goal_builder.py             # Goal Builder combined form
+├── test_notes.py                    # Progress notes, metric recording
+├── test_programs.py                 # Program management
+├── test_communications.py           # Communications, messaging
+├── test_wave3_messaging.py          # Staff messages
+├── test_send_reminders.py           # Meeting reminder command
+├── test_groups_phase2.py            # Groups and projects
+├── test_registration.py             # Self-service registration
+├── test_admin_settings.py           # Terminology, features, settings
+├── test_setup_wizard.py             # First-run setup wizard
+├── test_executive_dashboard.py      # Executive dashboard
+├── test_dashboard_suggestions.py    # Suggestion theme dashboard
+├── test_insights.py                 # Outcome Insights
+├── test_interpretations.py          # Chart interpretations
+├── test_reports.py                  # Reports and exports
+├── test_export_permissions.py       # Export access control
+├── test_export_summary.py           # Weekly export summary
+├── test_funder_profiles.py          # Funder report templates
+├── test_erasure.py                  # Data erasure workflow
+├── test_merge.py                    # Duplicate detection and merge
+├── test_alert_recommendation.py     # Alert cancellation two-person rule
+├── test_security.py                 # Security checks
+├── test_encryption.py               # Fernet encryption/decryption
+├── test_cross_program_security.py   # Cross-program access isolation
+├── test_confidential_isolation.py   # Confidential program isolation
+├── test_demo_data_separation.py     # Demo/real data separation
+├── test_french_journey.py           # French language user journey
+├── test_language_switching.py        # Language switcher
+├── test_canadian_localisation.py    # Postal code, phone formats
+├── test_ai_endpoints.py             # AI suggestion endpoints
+├── test_blocker_a11y.py             # Accessibility blocker tests
+├── test_calendar_feed_settings.py   # Calendar feed integration
+├── test_audit_views.py              # Audit log views
+└── test_phase5.py                   # Integration scenarios
 ```
 
 ### Key Fixtures
