@@ -1,0 +1,73 @@
+{% load i18n %}
+{# Single <tr> for the active themes table — returned by HTMX status update #}
+
+{% if theme.status == "addressed" %}
+<tr id="theme-{{ theme.pk }}" class="theme-row-addressed">
+    <td><s>{{ theme.name }}</s></td>
+    <td>{{ theme.link_count }}</td>
+    <td>—</td>
+    <td><span class="badge badge-success badge-sm">{% trans "Addressed" %}</span></td>
+    <td></td>
+</tr>
+
+{% elif theme.status == "wont_do" %}
+<tr id="theme-{{ theme.pk }}" class="theme-row-addressed">
+    <td><s>{{ theme.name }}</s></td>
+    <td>{{ theme.link_count }}</td>
+    <td>—</td>
+    <td><span class="badge badge-neutral badge-sm">{% trans "Won't Do" %}</span></td>
+    <td></td>
+</tr>
+
+{% else %}
+<tr id="theme-{{ theme.pk }}">
+    <td>
+        <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}">{{ theme.name }}</a>
+    </td>
+    <td>{{ theme.link_count }}</td>
+    <td>
+        {% if theme.priority == "urgent" %}
+        <span class="badge badge-danger badge-sm">{% trans "Urgent" %}</span>
+        {% elif theme.priority == "important" %}
+        <span class="badge badge-warning badge-sm">{% trans "Important" %}</span>
+        {% else %}
+        —
+        {% endif %}
+    </td>
+    <td>
+        {% if theme.status == "in_progress" %}
+        <span class="badge badge-warning badge-sm">{% trans "In Progress" %}</span>
+        {% else %}
+        <span class="badge badge-neutral badge-sm">{% trans "Open" %}</span>
+        {% endif %}
+    </td>
+    <td>
+        {% if can_manage_themes %}
+        <div class="theme-row-actions">
+            {% if theme.status == "open" %}
+            <button
+                hx-post="{% url 'suggestion_themes:status_update' pk=theme.pk %}"
+                hx-vals='{"new_status": "in_progress"}'
+                hx-target="#theme-{{ theme.pk }}"
+                hx-swap="outerHTML"
+                class="outline secondary"
+                style="padding: 0.15rem 0.5rem; font-size: 0.8rem;"
+                type="button">
+                {% trans "Working on it" %}
+            </button>
+            {% endif %}
+            <button
+                hx-post="{% url 'suggestion_themes:status_update' pk=theme.pk %}"
+                hx-vals='{"new_status": "addressed"}'
+                hx-target="#theme-{{ theme.pk }}"
+                hx-swap="outerHTML"
+                class="outline secondary"
+                style="padding: 0.15rem 0.5rem; font-size: 0.8rem;"
+                type="button">
+                {% trans "Addressed" %}
+            </button>
+        </div>
+        {% endif %}
+    </td>
+</tr>
+{% endif %}
