@@ -152,6 +152,10 @@ def program_insights(request):
             "active_themes": active_themes,
             "addressed_themes_count": addressed_themes_count,
             "total_theme_count": total_theme_count,
+            "can_manage_themes": UserProgramRole.objects.filter(
+                user=request.user, program=program,
+                role="program_manager", status="active",
+            ).exists() or request.user.is_superuser,
             "data_tier": data_tier,
             "min_participants": MIN_PARTICIPANTS_FOR_QUOTES,
             "chart_data_json": structured["descriptor_trend"],
