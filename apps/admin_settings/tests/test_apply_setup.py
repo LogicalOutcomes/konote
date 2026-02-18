@@ -411,8 +411,8 @@ class ApplySetupTests(TestCase):
         self.assertEqual(date_field.input_type, "date")
 
         output = out.getvalue()
-        self.assertIn("2 groups", output)
-        self.assertIn("3 fields", output)
+        self.assertIn("2 group(s)", output)
+        self.assertIn("3 field(s)", output)
 
     # ------------------------------------------------------------------
     # Metrics enable/disable
