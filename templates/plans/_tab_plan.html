@@ -4,20 +4,10 @@
 {# ── Action bar (editors only) ── #}
 {% if can_edit and active_service_model != "group" %}
 <div class="action-bar">
-    {# Primary action: Add a Goal #}
-    {% if ai_enabled %}
-    <button type="button"
-            hx-get="{% url 'ai:goal_builder_start' client_id=client.pk %}"
-            hx-target="#goal-builder-container"
-            hx-swap="innerHTML"
-            hx-on::after-swap="document.getElementById('goal-builder-container').scrollIntoView({behavior:'smooth'}); document.querySelector('.goal-builder')?.focus()">
-        {% blocktrans with target=term.target|default:"Goal" %}Add a {{ target }}{% endblocktrans %}
-    </button>
-    {% else %}
+    {# Primary action: Add a Goal (always links to goal_create — AI built into that page) #}
     <a href="{% url 'plans:goal_create' client_id=client.pk %}" role="button">
         {% blocktrans with target=term.target|default:"Goal" %}Add a {{ target }}{% endblocktrans %}
     </a>
-    {% endif %}
 
     {# Secondary actions (text links, only when plan already has content) #}
     {% if active_sections or inactive_sections %}
@@ -34,7 +24,6 @@
     </span>
     {% endif %}
 </div>
-<div id="goal-builder-container"></div>
 {% elif not can_edit %}
 <p class="notice" role="status">
     <small>{% blocktrans with client=term.client|default:"participant" program=term.program|default:"program" %}View only — you can see this plan because this {{ client }} is on your caseload, but editing requires a staff role in one of their enrolled {{ program }}s. Contact your administrator if you need edit access.{% endblocktrans %}</small>
@@ -119,19 +108,9 @@
     {% if can_edit %}
     <p>{% blocktrans with client=client.display_name %}This is where you'll build {{ client }}'s plan together.{% endblocktrans %}</p>
     <p>{% trans "Start by adding their first goal." %}</p>
-    {% if ai_enabled %}
-    <button type="button"
-            hx-get="{% url 'ai:goal_builder_start' client_id=client.pk %}"
-            hx-target="#goal-builder-container"
-            hx-swap="innerHTML"
-            hx-on::after-swap="document.getElementById('goal-builder-container').scrollIntoView({behavior:'smooth'}); document.querySelector('.goal-builder')?.focus()">
-        {% blocktrans with target=term.target|default:"Goal" %}Add a {{ target }}{% endblocktrans %}
-    </button>
-    {% else %}
     <a href="{% url 'plans:goal_create' client_id=client.pk %}" role="button">
         {% blocktrans with target=term.target|default:"Goal" %}Add a {{ target }}{% endblocktrans %}
     </a>
-    {% endif %}
     {% if can_apply_template %}
     <p><small><a href="{% url 'plan_templates:template_apply_list' client_id=client.pk %}" class="secondary">{% trans "Or start from a template" %}</a></small></p>
     {% endif %}
