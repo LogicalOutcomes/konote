@@ -160,15 +160,29 @@
                 </div>
                 {% endif %}
 
-                {% if stat.theme_total > 0 %}
+                {% if stat.top_themes %}
                 <hr>
-                {# Theme action status — executives care about throughput #}
+                {# Theme names — executives see what suggestions are about #}
                 <div class="metric-row">
                     <span class="metric-label">{% trans "Suggestion Themes" %}</span>
-                    <span class="metric-value">
-                        {{ stat.theme_open }} {% trans "open" %}{% if stat.theme_in_progress %}, {{ stat.theme_in_progress }} {% trans "in progress" %}{% endif %}
-                    </span>
                 </div>
+                <ul class="theme-compact-list" aria-label="{{ stat.program.translated_name }} {% trans 'suggestion themes' %}">
+                    {% for theme in stat.top_themes %}
+                    <li>
+                        <span class="theme-name-compact">{{ theme.name }}</span>
+                        {% if theme.priority == "urgent" %}
+                        <span class="badge badge-danger badge-sm">{% trans "Urgent" %}</span>
+                        {% elif theme.priority == "important" %}
+                        <span class="badge badge-warning badge-sm">{% trans "Important" %}</span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% if stat.theme_total > 3 %}
+                <div class="metric-row">
+                    <a href="{% url 'suggestion_themes:theme_list' %}?program={{ stat.program.pk }}" class="metric-link">+{{ stat.theme_total|add:"-3" }} {% trans "more" %} &rarr;</a>
+                </div>
+                {% endif %}
                 <div class="metric-row">
                     <a href="{% url 'suggestion_themes:theme_list' %}?program={{ stat.program.pk }}" class="metric-link">{% trans "View themes" %} &rarr;</a>
                 </div>
