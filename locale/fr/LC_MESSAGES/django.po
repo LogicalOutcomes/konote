@@ -13242,7 +13242,9 @@ msgstr "Déjà liées à d'autres thèmes"
 
 msgid ""
 "Are you sure? This marks the theme as something that won\\'t be acted on."
-msgstr "Êtes-vous sûr? Cela marque le thème comme quelque chose qui ne sera pas traité."
+msgstr ""
+"Êtes-vous sûr? Cela marque le thème comme quelque chose qui ne sera pas "
+"traité."
 
 msgid "Click \\\"Link More\\\" to find suggestions to add."
 msgstr "Cliquez sur « Lier plus » pour trouver des suggestions à ajouter."
@@ -13259,7 +13261,9 @@ msgstr "Filtrer les thèmes"
 msgid ""
 "Group similar participant suggestions and track whether they've been "
 "addressed."
-msgstr "Regrouper les suggestions similaires des participants et suivre si elles ont été traitées."
+msgstr ""
+"Regrouper les suggestions similaires des participants et suivre si elles ont"
+" été traitées."
 
 msgid "Invalid status."
 msgstr "Statut invalide."
@@ -13284,7 +13288,9 @@ msgstr "Nouveau thème"
 
 msgid ""
 "No suggestion themes yet. Create one to start grouping participant feedback."
-msgstr "Aucun thème de suggestions. Créez-en un pour commencer à regrouper les commentaires des participants."
+msgstr ""
+"Aucun thème de suggestions. Créez-en un pour commencer à regrouper les "
+"commentaires des participants."
 
 msgid "No suggestions linked to this theme yet."
 msgstr "Aucune suggestion liée à ce thème pour le moment."
@@ -13359,3 +13365,12 @@ msgstr "Lié par %(name)s"
 #. blocktrans with: _linked_list.html aria-label
 msgid "Remove suggestion: %(text)s"
 msgstr "Retirer la suggestion : %(text)s"
+
+msgid "Not yet linked to a theme."
+msgstr "Pas encore liée à un thème."
+
+msgid "Ungrouped Suggestions"
+msgstr "Suggestions non regroupées"
+
+msgid "View all themes"
+msgstr "Voir tous les thèmes"
