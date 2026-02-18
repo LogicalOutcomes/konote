@@ -60,6 +60,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 **Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
 
 - [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
+- [ ] Fix executive dashboard "Need More Details?" text — remove reference to specific participants; simplify to "For detailed reports, reach out to the Program Manager for that program." (UX-DASH1)
 
 ## Parking Lot
 

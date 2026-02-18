@@ -169,7 +169,7 @@
                 <ul class="theme-compact-list" role="list" aria-label="{{ stat.program.translated_name }} {% trans 'suggestion themes' %}">
                     {% for theme in stat.top_themes %}
                     <li>
-                        <span class="theme-name-compact">{{ theme.name }}</span>
+                        <span class="theme-name-compact">{{ theme.name }} <small class="theme-count">({{ theme.link_count }})</small></span>
                         {% if theme.priority == "urgent" %}
                         <span class="badge badge-danger badge-sm">{% trans "Urgent" %}</span>
                         {% elif theme.priority == "important" %}
@@ -396,6 +396,11 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+.theme-count {
+    color: var(--pico-muted-color);
+    font-weight: 600;
 }
 
 .badge-sm {

@@ -119,8 +119,12 @@ def program_insights(request):
         )
 
         # Responsiveness summary: "X of Y themes addressed"
-        all_themes = SuggestionTheme.objects.filter(program=program)
-        addressed_themes_count = all_themes.filter(status="addressed").count()
+        addressed_themes = (
+            SuggestionTheme.objects.filter(program=program, status="addressed")
+            .annotate(link_count=Count("links"))
+            .order_by("-updated_at")
+        )
+        addressed_themes_count = addressed_themes.count()
         total_theme_count = active_themes.count() + addressed_themes_count
 
         # Split suggestions into linked vs unlinked (ungrouped)
@@ -152,6 +156,7 @@ def program_insights(request):
             "suggestions": suggestions,
             "unlinked_suggestions": unlinked_suggestions,
             "active_themes": active_themes,
+            "addressed_themes": addressed_themes,
             "addressed_themes_count": addressed_themes_count,
             "total_theme_count": total_theme_count,
             "can_manage_themes": UserProgramRole.objects.filter(

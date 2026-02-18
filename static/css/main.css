@@ -3669,6 +3669,61 @@ article[aria-label="notification"].fading-out {
     border-bottom: 1px solid var(--pico-muted-border-color);
 }
 
+/* ── Unified Feedback Section (Insights) ── */
+.feedback-summary-box {
+    padding: 0.75rem 1rem;
+    background: var(--kn-card-bg, #f8f9fa);
+    border: 1px solid var(--pico-muted-border-color);
+    border-radius: var(--pico-border-radius);
+    margin: 0.75rem 0;
+    font-size: 0.9rem;
+}
+.feedback-summary-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.feedback-summary-note {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+}
+.feedback-themes-table {
+    font-size: 0.9rem;
+    margin: 0.75rem 0;
+}
+.feedback-themes-table th {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--pico-muted-color);
+    font-weight: 600;
+}
+.feedback-themes-table td {
+    vertical-align: middle;
+}
+.theme-row-actions {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+}
+.theme-row-addressed td {
+    opacity: 0.6;
+}
+.addressed-themes-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+}
+.addressed-themes-list li {
+    padding: 0.2rem 0;
+    font-size: 0.9rem;
+}
+.addressed-themes-list li::before {
+    content: "\2713 ";
+    color: var(--kn-success-fg);
+    margin-right: 0.25rem;
+}
 
 /* ── Combined Goal Form ── */
 

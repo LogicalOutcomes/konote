@@ -392,13 +392,13 @@ def theme_status_update(request, pk):
         new_values={"status": new_status},
     )
 
-    # Return updated theme card for HTMX swap.
+    # Return updated theme row for HTMX swap (table-based layout).
     theme = (
         SuggestionTheme.objects.filter(pk=pk)
         .annotate(link_count=Count("links"))
         .first()
     )
-    return render(request, "reports/_theme_card.html", {
+    return render(request, "reports/_theme_row.html", {
         "theme": theme,
         "can_manage_themes": True,
     })
