@@ -3221,3 +3221,78 @@ class Command(BaseCommand):
 
         if created:
             self.stdout.write(f"  Calendar feed tokens: {created} created for demo workers.")
+
+    def _create_demo_suggestion_themes(self, workers, programs_by_name):
+        """Create suggestion themes and link them to existing demo notes."""
+        theme_count = 0
+        link_count = 0
+
+        for program_name, theme_defs in PROGRAM_THEMES.items():
+            program = programs_by_name.get(program_name)
+            if not program:
+                continue
+
+            # Get demo notes with suggestions for this program
+            notes_with_suggestions = list(
+                ProgressNote.objects.filter(
+                    client_file__record_id__startswith="DEMO-",
+                    author_program=program,
+                ).exclude(suggestion_priority="")
+                .select_related("client_file")
+            )
+
+            worker_username = PROGRAM_WORKER.get(program_name, "demo-worker-1")
+            author = workers.get(worker_username)
+
+            for theme_def in theme_defs:
+                theme = SuggestionTheme.objects.create(
+                    program=program,
+                    name=theme_def["name"],
+                    description=theme_def["description"],
+                    status=theme_def["status"],
+                    source=theme_def.get("source", "ai_generated"),
+                    keywords=theme_def.get("keywords", ""),
+                    addressed_note=theme_def.get("addressed_note", ""),
+                    created_by=author,
+                )
+                theme_count += 1
+
+                # Link notes via keyword matching
+                keywords = {
+                    kw.strip().lower()
+                    for kw in theme_def.get("keywords", "").split(",")
+                    if kw.strip()
+                }
+                linked_notes = []
+                for note in notes_with_suggestions:
+                    suggestion_text = (note.participant_suggestion or "").lower()
+                    if any(kw in suggestion_text for kw in keywords):
+                        SuggestionLink.objects.create(
+                            theme=theme,
+                            progress_note=note,
+                            auto_linked=True,
+                            linked_by=author,
+                        )
+                        linked_notes.append(note)
+                        link_count += 1
+
+                # If no keyword matches, link 1-2 arbitrary notes so theme isn't empty
+                if not linked_notes and notes_with_suggestions:
+                    for fallback_note in notes_with_suggestions[:2]:
+                        if not SuggestionLink.objects.filter(
+                            theme=theme, progress_note=fallback_note
+                        ).exists():
+                            SuggestionLink.objects.create(
+                                theme=theme,
+                                progress_note=fallback_note,
+                                auto_linked=False,
+                                linked_by=author,
+                            )
+                            link_count += 1
+
+                # Recalculate priority from linked note priorities
+                recalculate_theme_priority(theme)
+
+        self.stdout.write(
+            f"  Suggestion themes: {theme_count} themes, {link_count} links created."
+        )
