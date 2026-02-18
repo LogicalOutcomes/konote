@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -128,7 +129,7 @@ def theme_form(request, pk=None):
         )
 
     breadcrumbs = [
-        {"url": "/admin/suggestions/", "label": _("Suggestion Themes")},
+        {"url": reverse("suggestion_themes:theme_list"), "label": _("Suggestion Themes")},
         {"url": "", "label": _("Edit Theme") if editing else _("New Theme")},
     ]
     return render(request, "notes/suggestions/theme_form.html", {
@@ -189,7 +190,7 @@ def theme_detail(request, pk):
         })
 
     breadcrumbs = [
-        {"url": "/admin/suggestions/", "label": _("Suggestion Themes")},
+        {"url": reverse("suggestion_themes:theme_list"), "label": _("Suggestion Themes")},
         {"url": "", "label": theme.name},
     ]
     return render(request, "notes/suggestions/theme_detail.html", {
