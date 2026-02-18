@@ -3479,13 +3479,18 @@ article[aria-label="notification"].fading-out {
 
 /* ---- Mobile touch targets (WCAG 2.2 AA — 44×44px minimum) ---- */
 /* Rules below are scoped to mobile breakpoints so desktop layout  */
-/* is unaffected. Supplements existing touch target rules above.   */
+/* is unaffected. Uses explicit padding + min-height + flex display */
+/* to reliably override Pico CSS button/select defaults.           */
 
 /* Hamburger menu button — appears at ≤768px */
 @media (max-width: 768px) {
     .nav-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         min-height: 44px;
         min-width: 44px;
+        padding: 10px;
     }
 }
 
@@ -3495,46 +3500,57 @@ article[aria-label="notification"].fading-out {
         display: flex;
         align-items: center;
         min-height: 44px;
+        padding-top: 4px;
+        padding-bottom: 4px;
     }
 
     /* Breadcrumb navigation links */
-    nav.breadcrumb a {
+    nav.breadcrumb a,
+    nav.breadcrumb [aria-current="page"] {
         display: inline-flex;
         align-items: center;
         min-height: 44px;
+        padding: 6px 4px;
     }
 
     /* Client detail tabs (Info, Plan, Notes, History, Analysis) */
     .tab-bar li a {
-        min-height: 44px;
         display: flex;
         align-items: center;
+        min-height: 44px;
+        padding: 6px 8px;
     }
 
     /* Actions ▾ dropdown trigger and ✎ Edit button on client pages */
     .actions-dropdown-toggle,
     .custom-fields-header button {
+        display: inline-flex;
+        align-items: center;
         min-height: 44px;
+        padding: 8px 12px;
     }
 
     /* "New Participant" and other page-header action links */
     .page-header__action {
-        min-height: 44px;
-        display: flex;
+        display: inline-flex;
         align-items: center;
+        min-height: 44px;
+        padding: 8px 16px;
     }
 
     /* Filter toolbar status/program dropdowns */
     .filter-field select {
         min-height: 44px;
+        padding-top: 8px;
+        padding-bottom: 8px;
     }
 
     /* "Clear" filter link */
     .client-toolbar__clear {
-        min-height: 44px;
-        display: flex;
+        display: inline-flex;
         align-items: center;
-        padding: 0 var(--kn-space-xs);
+        min-height: 44px;
+        padding: 8px var(--kn-space-sm);
     }
 
     /* Client name links in the stacked mobile participant list */
@@ -3542,6 +3558,7 @@ article[aria-label="notification"].fading-out {
         display: flex;
         align-items: center;
         min-height: 44px;
+        padding: 8px 0;
     }
 }
 
