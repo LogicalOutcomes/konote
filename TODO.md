@@ -17,6 +17,11 @@
 
 ### Phase: Communication Modules — complete!
 
+### Phase: QA Round 6 Fixes
+
+- [ ] 🔨 Fix receptionist over-permission on meetings page — add permission check to /events/meetings/ view (PERMISSION-5 -> QA-W56)
+- [ ] 🔨 Fix language middleware — refactor to make user profile preference authoritative, resolving session contamination (BUG-24, BUG-14 -> QA-W57)
+- [ ] 🔨 Translate alert text "Safety concern noted" for French interface (IMPROVE-8 -> QA-W58)
 
 ## Do Occasionally
 
@@ -38,6 +43,10 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] Agency Onboarding Interview Pack — 12 refinements including session split, privacy prerequisites, plain-language wording, deployment checklist (see tasks/agency-permissions-interview.md) (ONBOARD1–12)
 - [ ] Permissions Phase 2 — remaining 10 items: discharge access transitions, consent model, DV-safe mode, GATED clinical access, group schedule vs roster, per-field front desk edit, SCOPED→PROGRAM rename, funder report key, alert escalation, dashboard split (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P3–12)
+
+### Phase: QA Round 6 — Design Tasks
+
+- [ ] Design /admin/ URL restructuring for PM self-service — move management pages to /manage/ so PMs can reach plan templates, note templates, event types (FG-2, PERMISSION-1/2/3, BUG-1 -> QA-W59)
 
 ### Phase: UX Fixes
 
@@ -64,6 +73,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Document local PostgreSQL setup for security_audit and pytest workflows (DEV-PG1)
 - [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
+- [ ] Audit all views for missing permission checks — PERMISSION-5 revealed nav hides link but view is unguarded (QA-W60)
 
 ## Recently Done
 
