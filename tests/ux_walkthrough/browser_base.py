@@ -17,7 +17,7 @@ import tempfile
 
 from cryptography.fernet import Fernet
 from django.contrib.staticfiles.testing import StaticLiveServerTestCase
-from django.test import override_settings
+from django.test import override_settings, tag
 from django.utils import timezone
 
 import konote.encryption as enc_module
@@ -45,6 +45,7 @@ def _get_pw():
     return pw_api
 
 
+@tag("slow")
 @override_settings(
     FIELD_ENCRYPTION_KEY=TEST_KEY,
     RATELIMIT_ENABLE=False,
