@@ -278,6 +278,12 @@ class ScenarioRunner(BrowserTestBase):
         def _client_exists(first):
             return any(c.first_name == first for c in all_clients)
 
+        def _client_full_exists(first, last):
+            return any(
+                c.first_name == first and c.last_name == last
+                for c in all_clients
+            )
+
         from apps.clients.models import ClientDetailValue
         from apps.notes.models import ProgressNote
         staff = User.objects.filter(username="staff").first()
@@ -372,6 +378,22 @@ class ScenarioRunner(BrowserTestBase):
                 ClientDetailValue.objects.create(
                     client_file=priya, field_def=self.phone_field,
                     value="905-555-0233",
+                )
+
+        # SCN-084: Priya Sharma (messaging consent blocks scenario)
+        if not _client_full_exists("Priya", "Sharma"):
+            priya_s = ClientFile.objects.create(is_demo=False)
+            priya_s.first_name = "Priya"
+            priya_s.last_name = "Sharma"
+            priya_s.status = "active"
+            priya_s.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=priya_s, program=self.program_a,
+            )
+            if hasattr(self, "phone_field"):
+                ClientDetailValue.objects.create(
+                    client_file=priya_s, field_def=self.phone_field,
+                    value="416-555-0384",
                 )
 
         # SCN-049: Marcus Williams (shared-device handoff, data bleed test)
