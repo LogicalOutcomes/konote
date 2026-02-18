@@ -19,9 +19,9 @@
 
 ### Phase: QA Round 6 Fixes
 
-- [ ] 🔨 Fix receptionist over-permission on meetings page — add permission check to /events/meetings/ view (PERMISSION-5 -> QA-W56)
-- [ ] 🔨 Fix language middleware — refactor to make user profile preference authoritative, resolving session contamination (BUG-24, BUG-14 -> QA-W57)
-- [ ] 🔨 Translate alert text "Safety concern noted" for French interface (IMPROVE-8 -> QA-W58)
+- [x] Fix receptionist over-permission on meetings page — add permission check to /events/meetings/ view (PERMISSION-5 -> QA-W56)
+- [x] Fix language persistence — set explicit preferred_language for all English test users + harden sync_language_on_login (BUG-24, BUG-14 -> QA-W57)
+- [x] IMPROVE-8 closed — "Safety concern noted" is user-entered alert content (test data), not a translatable UI string. Same finding as QA-W23 from Round 2. (IMPROVE-8 -> QA-W58)
 
 ## Do Occasionally
 
