@@ -1534,6 +1534,45 @@ class ScenarioRunner(BrowserTestBase):
                                 )
                         except Exception:
                             pass
+                    # QA-FIX3: Fallback for logout/sign-out links inside
+                    # a <details> dropdown.  Open the dropdown first.
+                    if not fallback_clicked and re.search(
+                        r"logout|sign.?out", selector, re.I,
+                    ):
+                        try:
+                            # Desktop: open user dropdown then click sign out
+                            dd = self.page.locator(
+                                "details.dropdown",
+                            ).last
+                            if dd.is_visible(timeout=500):
+                                dd.locator("summary").click(timeout=2000)
+                                self.page.wait_for_timeout(300)
+                            so = self.page.get_by_role(
+                                "link", name=re.compile(
+                                    r"sign\s*out|log\s*out", re.I,
+                                ),
+                            ).first
+                            so.click(timeout=5000)
+                            fallback_clicked = True
+                            logger.info(
+                                "Click fallback: opened details dropdown "
+                                "for logout selector=%s",
+                                selector,
+                            )
+                        except Exception:
+                            # Mobile: try the dedicated mobile sign-out link
+                            try:
+                                mob = self.page.locator(
+                                    ".nav-signout-mobile a",
+                                ).first
+                                mob.click(timeout=3000)
+                                fallback_clicked = True
+                                logger.info(
+                                    "Click fallback: mobile sign-out link",
+                                )
+                            except Exception:
+                                pass
+
                     if not fallback_clicked:
                         pass  # Click failed — the LLM evaluator will note it
 
@@ -1743,5 +1782,11 @@ class ScenarioRunner(BrowserTestBase):
                             path=path, full_page=False, timeout=15000,
                         )
 
-            # Small pause between actions for realism
-            self.page.wait_for_timeout(100)
+            # Small pause between actions for realism.
+            # QA-FIX3: Catch TargetClosedError — browser may have closed
+            # after a logout action or navigation away from the page.
+            try:
+                self.page.wait_for_timeout(100)
+            except Exception:
+                logger.info("Page closed during action loop — breaking")
+                break
