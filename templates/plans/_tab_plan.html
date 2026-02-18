@@ -9,7 +9,8 @@
     <button type="button"
             hx-get="{% url 'ai:goal_builder_start' client_id=client.pk %}"
             hx-target="#goal-builder-container"
-            hx-swap="innerHTML">
+            hx-swap="innerHTML"
+            hx-on::after-swap="document.getElementById('goal-builder-container').scrollIntoView({behavior:'smooth'}); document.querySelector('.goal-builder')?.focus()">
         {% blocktrans with target=term.target|default:"Goal" %}Add a {{ target }}{% endblocktrans %}
     </button>
     {% else %}
@@ -122,7 +123,8 @@
     <button type="button"
             hx-get="{% url 'ai:goal_builder_start' client_id=client.pk %}"
             hx-target="#goal-builder-container"
-            hx-swap="innerHTML">
+            hx-swap="innerHTML"
+            hx-on::after-swap="document.getElementById('goal-builder-container').scrollIntoView({behavior:'smooth'}); document.querySelector('.goal-builder')?.focus()">
         {% blocktrans with target=term.target|default:"Goal" %}Add a {{ target }}{% endblocktrans %}
     </button>
     {% else %}
