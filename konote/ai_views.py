@@ -286,18 +286,34 @@ def outcome_insights_view(request):
             known_names.add(display)
 
     scrubbed_quotes = []
+    # Build ephemeral quote_source_map: scrubbed_text → note_id.
+    # This map is NEVER persisted and NEVER sent to the AI.
+    # It exists only to reconnect AI-identified themes back to source notes.
+    quote_source_map = {}
     for q in quotes:
         # Data minimization: only send scrubbed text and target name to AI.
         # note_id is deliberately excluded — internal IDs should not reach
         # external services (prevents correlation if AI provider is breached).
+        scrubbed_text = scrub_pii(q["text"], known_names)
         scrubbed_quotes.append({
-            "text": scrub_pii(q["text"], known_names),
+            "text": scrubbed_text,
             "target_name": q.get("target_name", ""),
         })
+        if q.get("note_id"):
+            quote_source_map[scrubbed_text] = q["note_id"]
+
+    # Pass existing active theme names so the AI reuses them.
+    from apps.notes.models import SuggestionTheme
+    existing_theme_names = list(
+        SuggestionTheme.objects.active()
+        .filter(program=program)
+        .values_list("name", flat=True)
+    )
 
     date_range = f"{dt_from} to {dt_to}"
     result = ai.generate_outcome_insights(
         program.name, date_range, structured, scrubbed_quotes,
+        existing_theme_names=existing_theme_names,
     )
 
     if result is None:
@@ -313,6 +329,14 @@ def outcome_insights_view(request):
             "generated_by": request.user,
         },
     )
+
+    # Persist AI-identified suggestion themes as database records.
+    if result.get("suggestion_themes"):
+        try:
+            from apps.notes.theme_engine import process_ai_themes
+            process_ai_themes(result["suggestion_themes"], quote_source_map, program)
+        except Exception:
+            logger.exception("Failed to process AI suggestion themes")
 
     return render(request, "reports/_insights_ai.html", {
         "summary": result,
