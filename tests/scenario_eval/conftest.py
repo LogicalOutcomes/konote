@@ -7,6 +7,31 @@ from datetime import datetime, timezone
 import pytest
 
 
+def _resolve_holdout_dir():
+    """Resolve the holdout directory, using a sensible default if env var not set.
+
+    Checks SCENARIO_HOLDOUT_DIR env var first, then falls back to the
+    sibling directory ../konote-qa-scenarios relative to the project root.
+    This matches the default in the preflight management command, so the
+    env var is only needed for non-standard layouts.
+    """
+    path = os.environ.get("SCENARIO_HOLDOUT_DIR", "")
+    if path and os.path.isdir(path):
+        return path
+
+    # Default: sibling repo next to konote-app
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__)
+    )))
+    default = os.path.join(os.path.dirname(project_root), "konote-qa-scenarios")
+    if os.path.isdir(default):
+        # Set the env var so downstream code (scenario_loader, etc.) sees it
+        os.environ["SCENARIO_HOLDOUT_DIR"] = default
+        return default
+
+    return None
+
+
 def pytest_addoption(parser):
     """Add --no-llm flag to skip LLM evaluation (dry-run mode)."""
     parser.addoption(
@@ -18,9 +43,16 @@ def pytest_addoption(parser):
 
 
 def pytest_configure(config):
-    """Set SCENARIO_NO_LLM env var if --no-llm flag was passed."""
+    """Configure environment for scenario evaluation tests.
+
+    - Sets SCENARIO_NO_LLM if --no-llm flag was passed
+    - Auto-resolves SCENARIO_HOLDOUT_DIR if not set (uses sibling repo)
+    """
     if config.getoption("--no-llm", default=False):
         os.environ["SCENARIO_NO_LLM"] = "1"
+
+    # Auto-resolve holdout dir early so it's available during collection
+    _resolve_holdout_dir()
 
 
 def pytest_collection_modifyitems(config, items):
@@ -41,12 +73,12 @@ def get_all_results():
 
 @pytest.fixture(scope="session")
 def holdout_dir():
-    """Return the holdout directory path, or skip if not configured."""
-    path = os.environ.get("SCENARIO_HOLDOUT_DIR", "")
-    if not path or not os.path.isdir(path):
+    """Return the holdout directory path, or skip if not found."""
+    path = _resolve_holdout_dir()
+    if not path:
         pytest.skip(
-            "SCENARIO_HOLDOUT_DIR not set or not a valid directory. "
-            "Set it to your konote-qa-scenarios repo path."
+            "Holdout repo not found. Either set SCENARIO_HOLDOUT_DIR or "
+            "clone konote-qa-scenarios next to konote-app."
         )
     return path
 

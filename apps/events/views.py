@@ -649,6 +649,7 @@ def meeting_update(request, client_id, event_id):
 
 
 @login_required
+@requires_permission_global("meeting.view")
 def meeting_list(request):
     """Staff's upcoming meetings dashboard — shows their own meetings."""
     now = timezone.now()
