@@ -25,6 +25,10 @@ echo "Seeding data..."
 python manage.py seed 2>&1 || echo "WARNING: Seed failed (see error above). App will start but may be missing data."
 
 # Merge any duplicate suggestion themes (non-blocking — safe to run repeatedly)
+# TODO: Remove this merge step once the unique constraint migration
+# (SuggestionTheme: program + name) has been deployed and verified.
+# See THEME-FIX5 in TODO.md — the constraint and this merge step
+# should be removed together.
 echo ""
 echo "Merging duplicate suggestion themes..."
 python manage.py merge_duplicate_themes 2>&1 || echo "WARNING: Theme merge failed (see error above). App will start normally."
