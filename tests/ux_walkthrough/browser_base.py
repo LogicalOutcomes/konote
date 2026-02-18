@@ -176,26 +176,34 @@ class BrowserTestBase(StaticLiveServerTestCase):
             colour_hex="#3B82F6",
         )
 
-        # Users
+        # Users — BUG-24/FG-1: Explicit preferred_language prevents session
+        # contamination from setting the wrong language. Without this, the
+        # first login saves whatever thread-local language is active, which
+        # can be stale "fr" from a previous scenario's request.
         self.receptionist_user = User.objects.create_user(
             username="frontdesk", password=TEST_PASSWORD,
             display_name="Dana Front Desk",
+            preferred_language="en",
         )
         self.staff_user = User.objects.create_user(
             username="staff", password=TEST_PASSWORD,
             display_name="Casey Worker",
+            preferred_language="en",
         )
         self.manager_user = User.objects.create_user(
             username="manager", password=TEST_PASSWORD,
             display_name="Morgan Manager",
+            preferred_language="en",
         )
         self.executive_user = User.objects.create_user(
             username="executive", password=TEST_PASSWORD,
             display_name="Eva Executive",
+            preferred_language="en",
         )
         self.admin_user = User.objects.create_user(
             username="admin", password=TEST_PASSWORD,
             display_name="Alex Admin",
+            preferred_language="en",
         )
         self.admin_user.is_admin = True
         self.admin_user.save()

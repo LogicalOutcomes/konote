@@ -152,6 +152,7 @@ class ScenarioRunner(BrowserTestBase):
             staff_new = User.objects.create_user(
                 username="staff_new", password=TEST_PASSWORD,
                 display_name="Casey New",
+                preferred_language="en",
             )
             UserProgramRole.objects.create(
                 user=staff_new, program=self.program_a, role="staff",
@@ -185,6 +186,7 @@ class ScenarioRunner(BrowserTestBase):
             frontdesk2 = User.objects.create_user(
                 username="frontdesk2", password=TEST_PASSWORD,
                 display_name="Omar Hussain",
+                preferred_language="en",
             )
             UserProgramRole.objects.create(
                 user=frontdesk2, program=self.program_b, role="receptionist",
@@ -195,6 +197,7 @@ class ScenarioRunner(BrowserTestBase):
             staff_adhd = User.objects.create_user(
                 username="staff_adhd", password=TEST_PASSWORD,
                 display_name="Casey Parker",
+                preferred_language="en",
             )
             UserProgramRole.objects.create(
                 user=staff_adhd, program=self.program_a, role="staff",
@@ -205,6 +208,7 @@ class ScenarioRunner(BrowserTestBase):
             staff_voice = User.objects.create_user(
                 username="staff_voice", password=TEST_PASSWORD,
                 display_name="Riley Chen",
+                preferred_language="en",
             )
             UserProgramRole.objects.create(
                 user=staff_voice, program=self.program_a, role="staff",
@@ -218,11 +222,16 @@ class ScenarioRunner(BrowserTestBase):
             manager_user = User.objects.create_user(
                 username="manager", password=TEST_PASSWORD,
                 display_name="Morgan Tremblay",
+                preferred_language="en",
             )
             UserProgramRole.objects.create(
                 user=manager_user, program=self.program_a,
                 role="program_manager",
             )
+        # BUG-24: Ensure explicit language even if base class created this user
+        if not manager_user.preferred_language:
+            manager_user.preferred_language = "en"
+            manager_user.save(update_fields=["preferred_language"])
         if not UserProgramRole.objects.filter(
             user=manager_user, program=self.program_b,
         ).exists():
@@ -252,6 +261,7 @@ class ScenarioRunner(BrowserTestBase):
             executive2 = User.objects.create_user(
                 username="executive2", password=TEST_PASSWORD,
                 display_name="Kwame Asante",
+                preferred_language="en",
             )
             executive2.is_admin = True
             executive2.save()
