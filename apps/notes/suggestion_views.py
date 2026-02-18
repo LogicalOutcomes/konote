@@ -315,20 +315,25 @@ def _handle_status_update(request, theme):
 def _handle_link_notes(request, theme):
     """Handle linking selected suggestions to this theme."""
     note_ids = request.POST.getlist("note_ids")
-    linked_count = 0
-    for note_id in note_ids:
-        try:
-            note = ProgressNote.objects.get(pk=note_id)
-            if note.author_program_id != theme.program_id:
-                continue
-            link_obj, created = SuggestionLink.objects.get_or_create(
-                theme=theme, progress_note=note,
-                defaults={"linked_by": request.user, "auto_linked": False},
-            )
-            if created:
-                linked_count += 1
-        except ProgressNote.DoesNotExist:
-            continue
+
+    # Validate notes in one query: must exist and belong to this program
+    valid_notes = ProgressNote.objects.filter(
+        pk__in=note_ids, author_program=theme.program,
+    )
+    # Exclude notes already linked to this theme
+    already_linked = set(
+        SuggestionLink.objects.filter(theme=theme, progress_note__in=valid_notes)
+        .values_list("progress_note_id", flat=True)
+    )
+    new_links = [
+        SuggestionLink(
+            theme=theme, progress_note=note,
+            linked_by=request.user, auto_linked=False,
+        )
+        for note in valid_notes if note.pk not in already_linked
+    ]
+    SuggestionLink.objects.bulk_create(new_links, ignore_conflicts=True)
+    linked_count = len(new_links)
 
     if linked_count:
         recalculate_theme_priority(theme)
