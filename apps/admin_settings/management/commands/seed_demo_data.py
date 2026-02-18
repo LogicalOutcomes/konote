@@ -1228,6 +1228,17 @@ class Command(BaseCommand):
             return
 
         if demo_notes_exist and force:
+            # Delete suggestion themes for demo programs (cascades to SuggestionLink)
+            demo_programs = Program.objects.filter(
+                enrollments__client_file__record_id__startswith="DEMO-"
+            ).distinct()
+            theme_count_del = SuggestionTheme.objects.filter(
+                program__in=demo_programs
+            ).delete()[0]
+            # Delete staff messages for demo clients
+            staff_msg_count = StaffMessage.objects.filter(
+                client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
             # Delete demo communications
             comm_count = Communication.objects.filter(
                 client_file__record_id__startswith="DEMO-"
@@ -1268,7 +1279,8 @@ class Command(BaseCommand):
             demo_users = User.objects.filter(is_demo=True)
             CalendarFeedToken.objects.filter(user__in=demo_users).delete()
             self.stdout.write(
-                f"  --force: Deleted {comm_count} communications, {note_count} notes, "
+                f"  --force: Deleted {theme_count_del} themes, {staff_msg_count} staff messages, "
+                f"{comm_count} communications, {note_count} notes, "
                 f"{plan_count} plans, {event_count} events, {alert_count} alerts, "
                 f"{journal_count} journal entries, {message_count} portal messages, "
                 f"{staff_note_count} staff notes, {correction_count} correction requests, "
