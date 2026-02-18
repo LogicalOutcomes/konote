@@ -417,7 +417,9 @@ def _batch_top_themes(filtered_program_ids, limit_per_program=3):
     themes = list(
         SuggestionTheme.objects.active()
         .filter(program_id__in=filtered_program_ids)
-        .values("pk", "name", "status", "priority", "program_id", "updated_at")
+        .annotate(link_count=Count("links"))
+        .values("pk", "name", "status", "priority", "program_id", "updated_at",
+                "link_count")
     )
 
     # Sort: highest priority first, then most recently updated
