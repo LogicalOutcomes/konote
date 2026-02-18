@@ -9,6 +9,7 @@ This guide covers everything administrators need to configure, maintain, and sec
 | Set up public registration forms | [Registration Forms](#set-up-registration-forms) |
 | Create user accounts | [User Management](#user-management) |
 | Let program managers manage their own config | [PM Administration](#program-manager-administration) |
+| Track and respond to participant feedback | [Suggestion Themes](#suggestion-themes) |
 | Manage participant portal access | [Staff Portal Management](#staff-portal-management) |
 | Set up automated reminders | [Automated Reminders](#automated-reminders) |
 | Get weekly export activity reports | [Weekly Export Summary](#weekly-export-summary-email) |
@@ -229,7 +230,7 @@ Staff can also select **"Freeform"** for unstructured notes without pre-defined 
 
 **Create or edit templates:**
 
-1. Click **Admin** → **Note Templates** (or go to Settings → Note Templates)
+1. Click **Manage** → **Note Templates** (or go to Settings → Note Templates)
 2. Click **+ New Template**
 3. Enter a name (this appears in the "This note is for..." dropdown)
 4. Add sections:
@@ -346,7 +347,7 @@ Report templates let you customise how demographic breakdowns appear in reports.
 
 **To create a report template:**
 
-1. Click **Admin** → **Report Templates**
+1. Click **Manage** → **Report Templates**
 2. Click **Upload CSV** — download the sample CSV template first if needed
 3. The CSV defines demographic dimensions: age bins, custom field categories, and merged categories
 4. Preview the profile, then confirm to save
@@ -373,7 +374,7 @@ When a submission is approved, KoNote automatically creates a new client record 
 
 #### Create a Registration Link
 
-1. Click **Admin** → **Registration**
+1. Click **Manage** → **Registration**
 2. Click **+ New Registration Link**
 3. Fill in:
 
@@ -403,7 +404,7 @@ You'll get a **public URL** (e.g., `https://yoursite.com/register/abc123/`) and 
 
 When someone submits a registration form (and auto-approve is off):
 
-1. Click **Admin** → **Submissions**
+1. Click **Manage** → **Submissions**
 2. You'll see submissions organised by status: **Pending**, **Approved**, **Rejected**, **Waitlisted**
 3. Click a submission to see the details
 
@@ -712,7 +713,7 @@ Every significant action is logged to a separate audit database.
 
 **View audit logs:**
 1. Log in as Admin
-2. Click **Admin** → **Audit Logs**
+2. Click **Manage** → **Audit Logs**
 3. Filter by date, user, or action type
 
 **Query audit database directly:**
@@ -856,12 +857,13 @@ Program managers can now manage configuration for their own programs without nee
 
 | Area | What they can do | Where to find it |
 |------|-----------------|------------------|
-| **Plan templates** | Create, edit, and delete plan templates for their program | Admin → Plan Templates |
-| **Note templates** | Create, edit, and delete progress note templates for their program | Admin → Note Templates |
-| **Event types** | Create, edit, and delete event types for their program | Admin → Event Types |
-| **Outcome metrics** | Create, edit, enable/disable metrics for their program | Admin → Metric Library |
-| **Registration links** | Create and manage public registration links for their program | Admin → Registration |
-| **Team members** | View and manage staff assignments within their program | User Management → Roles |
+| **Plan templates** | Create, edit, and delete plan templates for their program | Manage → Plan Templates |
+| **Note templates** | Create, edit, and delete progress note templates for their program | Manage → Note Templates |
+| **Event types** | Create, edit, and delete event types for their program | Manage → Event Types |
+| **Outcome metrics** | Create, edit, enable/disable metrics for their program | Manage → Metric Library |
+| **Suggestion themes** | Create, edit, and track participant feedback themes | Manage → Suggestions |
+| **Registration links** | Create and manage public registration links for their program | Manage → Registration |
+| **Team members** | View and manage staff assignments within their program | Manage → Users |
 
 ### How Scoping Works
 
@@ -885,6 +887,41 @@ These tasks remain admin-only:
 - Secure export link management
 
 > **Tip:** If a program manager needs a global template modified, they should ask an admin. PMs can create a program-specific copy of a global template and customise that instead.
+
+---
+
+## Suggestion Themes
+
+KoNote automatically identifies recurring themes from participant suggestions captured in progress notes. This helps program managers and executives understand what participants are asking for and track how the agency responds.
+
+### How It Works
+
+1. **Staff capture suggestions** — Every progress note includes a "Participant Suggestions" field. Staff record what participants suggest or request during sessions.
+
+2. **Automatic theme linking** — When a note is saved, KoNote checks the suggestion text against existing theme keywords. If a match is found, the note is automatically linked to that theme (Tier 1 automation).
+
+3. **AI-generated themes** — During Outcome Insights analysis, KoNote can identify new themes from unlinked suggestions using AI (Tier 2 automation, requires OpenRouter API key).
+
+4. **Manual theme management** — Program managers can also create themes manually and link suggestions to them.
+
+### Managing Themes
+
+1. Click **Manage** → **Suggestions** to view all suggestion themes
+2. Each theme shows: name, description, keywords for auto-linking, status, and linked notes count
+3. Create new themes with **Add Theme** — include keywords that will trigger automatic linking
+
+### Theme Status Workflow
+
+| Status | Meaning |
+|--------|---------|
+| **Open** | Theme identified but not yet acted on |
+| **In Progress** | Agency is actively responding to this feedback |
+| **Addressed** | Action has been taken; theme is resolved |
+| **Won't Do** | Theme reviewed but agency decided not to act (with reason) |
+
+### Executive Dashboard Integration
+
+The executive dashboard shows the top suggestion themes per program, giving leadership visibility into what participants across the agency are asking for.
 
 ---
 

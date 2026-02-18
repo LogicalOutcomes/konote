@@ -237,7 +237,7 @@ The client will appear in the **Priority Items** section of your home page until
 
 ### Resolve an alert
 
-1. Find the alert in the Events tab.
+1. Find the alert in the History tab.
 2. Click **Resolve** or **Cancel Alert**.
 3. Add a resolution note.
 4. Save.
