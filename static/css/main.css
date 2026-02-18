@@ -3479,86 +3479,122 @@ article[aria-label="notification"].fading-out {
 
 /* ---- Mobile touch targets (WCAG 2.2 AA — 44×44px minimum) ---- */
 /* Rules below are scoped to mobile breakpoints so desktop layout  */
-/* is unaffected. Uses explicit padding + min-height + flex display */
-/* to reliably override Pico CSS button/select defaults.           */
+/* is unaffected. Uses !important to override Pico CSS defaults    */
+/* which apply competing padding/height via high-specificity rules. */
 
 /* Hamburger menu button — appears at ≤768px */
 @media (max-width: 768px) {
     .nav-toggle {
-        display: flex;
+        display: flex !important;
         align-items: center;
         justify-content: center;
-        min-height: 44px;
-        min-width: 44px;
-        padding: 10px;
+        min-height: 44px !important;
+        min-width: 44px !important;
+        padding: 10px !important;
     }
 }
 
 @media (max-width: 600px) {
     /* KoNote logo / brand link in top nav */
     body > nav a.contrast {
-        display: flex;
+        display: flex !important;
         align-items: center;
-        min-height: 44px;
-        padding-top: 4px;
-        padding-bottom: 4px;
+        min-height: 44px !important;
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
     }
 
     /* Breadcrumb navigation links */
     nav.breadcrumb a,
     nav.breadcrumb [aria-current="page"] {
-        display: inline-flex;
+        display: inline-flex !important;
         align-items: center;
-        min-height: 44px;
-        padding: 6px 4px;
+        min-height: 44px !important;
+        padding: 8px 4px !important;
     }
 
     /* Client detail tabs (Info, Plan, Notes, History, Analysis) */
     .tab-bar li a {
-        display: flex;
+        display: flex !important;
         align-items: center;
-        min-height: 44px;
-        padding: 6px 8px;
+        min-height: 44px !important;
+        padding: 8px 8px !important;
     }
 
     /* Actions ▾ dropdown trigger and ✎ Edit button on client pages */
     .actions-dropdown-toggle,
     .custom-fields-header button {
-        display: inline-flex;
+        display: inline-flex !important;
         align-items: center;
-        min-height: 44px;
-        padding: 8px 12px;
+        min-height: 44px !important;
+        padding: 8px 12px !important;
     }
 
     /* "New Participant" and other page-header action links */
     .page-header__action {
-        display: inline-flex;
+        display: inline-flex !important;
         align-items: center;
-        min-height: 44px;
-        padding: 8px 16px;
+        min-height: 44px !important;
+        padding: 8px 16px !important;
     }
 
     /* Filter toolbar status/program dropdowns */
     .filter-field select {
-        min-height: 44px;
-        padding-top: 8px;
-        padding-bottom: 8px;
+        min-height: 44px !important;
+        padding-top: 8px !important;
+        padding-bottom: 8px !important;
     }
 
     /* "Clear" filter link */
     .client-toolbar__clear {
-        display: inline-flex;
+        display: inline-flex !important;
         align-items: center;
-        min-height: 44px;
-        padding: 8px var(--kn-space-sm);
+        min-height: 44px !important;
+        padding: 8px var(--kn-space-sm) !important;
     }
 
     /* Client name links in the stacked mobile participant list */
     .client-table td:first-child a {
-        display: flex;
+        display: flex !important;
         align-items: center;
-        min-height: 44px;
-        padding: 8px 0;
+        min-height: 44px !important;
+        padding: 8px 0 !important;
+    }
+
+    /* Actions dropdown menu items */
+    .actions-dropdown-menu li a,
+    .actions-dropdown-menu li button {
+        display: flex !important;
+        align-items: center;
+        min-height: 44px !important;
+        padding: 8px var(--kn-space-base, 16px) !important;
+    }
+
+    /* Language toggle links in nav and footer */
+    .lang-link {
+        display: inline-flex !important;
+        align-items: center;
+        min-height: 44px !important;
+        padding: 8px 4px !important;
+    }
+
+    /* Filter toggle buttons (e.g. outcome filter pills) */
+    .filter-btn {
+        min-height: 44px !important;
+        padding: 8px 12px !important;
+    }
+
+    /* Suggestion theme tab buttons */
+    .tab-btn {
+        min-height: 44px !important;
+        padding: 8px 16px !important;
+    }
+
+    /* Extend session and keyboard shortcut utility buttons */
+    .extend-session-btn,
+    .keyboard-shortcuts-btn {
+        min-height: 44px !important;
+        padding: 8px 12px !important;
     }
 }
 
