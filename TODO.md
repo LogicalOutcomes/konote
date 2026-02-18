@@ -23,7 +23,7 @@
 
 ### Phase: Post-Housekeeping Verification
 
-- [ ] Run full test suite (`pytest --exclude-tag=slow`) to verify PR #143 test fixes pass against current main (VERIFY1)
+- [ ] Run full test suite (`pytest -m "not browser and not scenario_eval"`) to verify PR #143 test fixes pass against current main (VERIFY1)
 - [ ] Confirm export form select-all still works after duplicate script removal in PR #136 — grep for `select-all-metrics` handler in app.js (VERIFY2)
 
 ## Do Occasionally
