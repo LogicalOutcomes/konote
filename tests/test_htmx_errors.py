@@ -212,7 +212,7 @@ class HTMXPartialResponseTest(TestCase):
         """Plan view HTMX request should return plan tab partial."""
         self.client.force_login(self.staff_user)
         response = self.client.get(
-            f"/plans/client/{self.client_file.pk}/",
+            f"/plans/participant/{self.client_file.pk}/",
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(response.status_code, 200)

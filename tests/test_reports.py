@@ -2241,7 +2241,7 @@ class IndividualClientExportViewTests(TestCase):
             client_file=self.client_file, program=self.program, status="enrolled",
         )
 
-        self.export_url = f"/reports/client/{self.client_file.pk}/export/"
+        self.export_url = f"/reports/participant/{self.client_file.pk}/export/"
 
     def tearDown(self):
         enc_module._fernet = None
@@ -2580,7 +2580,7 @@ class CsvInjectionIntegrationTests(TestCase):
             client_file=self.client_file, program=self.program, status="enrolled",
         )
 
-        self.export_url = f"/reports/client/{self.client_file.pk}/export/"
+        self.export_url = f"/reports/participant/{self.client_file.pk}/export/"
 
     def tearDown(self):
         enc_module._fernet = None
@@ -2639,7 +2639,7 @@ class FilenameSanitisationIntegrationTests(TestCase):
             client_file=self.client_file, program=self.program, status="enrolled",
         )
 
-        self.export_url = f"/reports/client/{self.client_file.pk}/export/"
+        self.export_url = f"/reports/participant/{self.client_file.pk}/export/"
 
     def tearDown(self):
         enc_module._fernet = None
