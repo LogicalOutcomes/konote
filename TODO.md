@@ -17,6 +17,11 @@
 
 ### Phase: Communication Modules — complete!
 
+### Phase: AI Goal Builder (PR #145 follow-up)
+
+- [x] Add French translations for 10 new strings in goal_form.html and _goal_builder.html — extract, translate, compile .po/.mo — 2026-02-18 (I18N-GB1)
+- [ ] Add test coverage for `ai_enabled` in goal_create view context — one test with AI on, one with AI off (TEST-GB1)
+
 ### Phase: Post-Housekeeping Verification
 
 - [ ] Run full test suite (`pytest --exclude-tag=slow`) to verify PR #143 test fixes pass against current main (VERIFY1)
