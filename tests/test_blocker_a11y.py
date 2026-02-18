@@ -162,8 +162,8 @@ class BlockerA11yTests(StaticLiveServerTestCase):
         finally:
             page.close()
 
-    def test_blocker1_auto_focus_main_content(self):
-        """BLOCKER-1 (Option B): Main content is auto-focused on page load, skip link removed."""
+    def test_blocker1_skip_link_and_focusable_main(self):
+        """BLOCKER-1: Skip link exists and main content is keyboard-focusable."""
         page = self.browser.new_page()
         try:
             # Log in and navigate to dashboard
@@ -179,45 +179,41 @@ class BlockerA11yTests(StaticLiveServerTestCase):
 
             print(f"\n  Dashboard URL: {page.url}")
 
-            # Verify skip link does NOT exist (Option B removes it)
-            skip_link_exists = page.evaluate("""() => {
-                return document.querySelector('a[href="#main-content"]') !== null;
-            }""")
-            print(f"  Skip link exists: {skip_link_exists}")
-            self.assertFalse(skip_link_exists, "Skip link should be removed in Option B implementation")
-
-            # Verify main content is auto-focused on page load
-            focus_info = page.evaluate("""() => {
-                const el = document.activeElement;
+            # Verify skip link exists and targets #main-content
+            skip_link_info = page.evaluate("""() => {
+                const link = document.querySelector('a[href="#main-content"]');
+                if (!link) return null;
                 return {
-                    tag: el.tagName,
-                    id: el.id,
-                    className: el.className,
-                    hasAriaLabel: el.hasAttribute('aria-label'),
-                    ariaLabel: el.getAttribute('aria-label')
+                    exists: true,
+                    href: link.getAttribute('href'),
+                    text: link.textContent.trim(),
+                    className: link.className
                 };
             }""")
-            print(f"  Auto-focus on page load: {json.dumps(focus_info)}")
+            print(f"  Skip link info: {json.dumps(skip_link_info)}")
+            self.assertIsNotNone(skip_link_info, "Skip link should exist for WCAG 2.2 AA compliance")
+            self.assertEqual(skip_link_info["href"], "#main-content", "Skip link should target #main-content")
 
-            # Verify focus is on main content
-            self.assertEqual(focus_info.get("id"), "main-content", "Focus should be on #main-content")
-            self.assertEqual(focus_info.get("tag"), "MAIN", "Focused element should be <main>")
-            self.assertTrue(focus_info.get("hasAriaLabel"), "Main content should have aria-label")
-
-            # Verify visible focus indicator exists (for keyboard-only sighted users)
-            has_outline = page.evaluate("""() => {
+            # Verify main content element is keyboard-focusable
+            main_info = page.evaluate("""() => {
                 const main = document.getElementById('main-content');
-                if (!main) return false;
-                const style = window.getComputedStyle(main);
-                // Check if outline is set (not 'none')
-                return style.outline !== 'none' && style.outlineWidth !== '0px';
+                if (!main) return null;
+                return {
+                    tag: main.tagName,
+                    id: main.id,
+                    tabindex: main.getAttribute('tabindex'),
+                    hasAriaLabel: main.hasAttribute('aria-label'),
+                    ariaLabel: main.getAttribute('aria-label')
+                };
             }""")
-            print(f"  Visible focus indicator: {has_outline}")
-            # Note: This may be false in headless browsers but true in real browsers
-            # The important thing is that the CSS is defined, which we can verify separately
+            print(f"  Main content info: {json.dumps(main_info)}")
+            self.assertIsNotNone(main_info, "Main content element should exist")
+            self.assertEqual(main_info["tag"], "MAIN", "Main content should be a <main> element")
+            self.assertEqual(main_info["tabindex"], "-1", "Main content should have tabindex='-1' for skip link focus")
+            self.assertTrue(main_info["hasAriaLabel"], "Main content should have aria-label")
 
-            page.screenshot(path="C:/Users/gilli/AppData/Local/Temp/blocker1_autofocus.png", full_page=True)
-            print("  >>> BLOCKER-1 (Option B): PASS — main content auto-focused, skip link removed")
+            page.screenshot(path="C:/Users/gilli/AppData/Local/Temp/blocker1_skip_link.png", full_page=True)
+            print("  >>> BLOCKER-1: PASS — skip link exists, main content is keyboard-focusable")
 
         finally:
             page.close()
