@@ -64,6 +64,23 @@ These rules apply to **every phase**. Do not skip them.
 6. **Cache invalidation** — after saving terminology, features, or settings, clear the relevant cache key. Prefer `post_save` signals over manual cache.delete() calls in views.
 7. **HTMX error handling** — `app.js` must include a global `htmx:responseError` handler so network/server errors don't fail silently.
 
+## Testing Strategy
+
+Run **only the tests related to what you changed**, not the full suite. Map changed files to test files:
+
+- Changed `apps/plans/` → run `pytest tests/test_plans.py`
+- Changed `apps/clients/` → run `pytest tests/test_clients.py`
+- Changed `apps/reports/` → run `pytest tests/test_exports.py`
+- Changed a template only (no Python) → no tests needed unless it has logic
+- Changed multiple apps → run each relevant test file
+
+**Do NOT run the full test suite** on every PR. Save it for:
+- End of day (once)
+- Before a production deploy
+- After merging a large or cross-cutting PR
+
+Full suite command: `pytest -m "not browser and not scenario_eval"`
+
 ## Translations
 
 After creating or modifying any template that uses `{% trans %}` or `{% blocktrans %}` tags:

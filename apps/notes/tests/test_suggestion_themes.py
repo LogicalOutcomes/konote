@@ -1,14 +1,16 @@
 """Tests for suggestion theme CRUD and linking (UX-INSIGHT6 Phase 1)."""
+from datetime import datetime, timezone as tz
 from cryptography.fernet import Fernet
 
 from django.contrib.auth import get_user_model
-from django.test import Client as TestClient, TestCase, override_settings
+from django.test import Client as TestClient, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
 import konote.encryption as enc_module
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.notes.models import (
-    ProgressNote, SuggestionLink, SuggestionTheme, recalculate_theme_priority,
+    THEME_PRIORITY_RANK, ProgressNote, SuggestionLink, SuggestionTheme,
+    deduplicate_themes, recalculate_theme_priority,
 )
 from apps.programs.models import Program, UserProgramRole
 
@@ -392,3 +394,142 @@ class SuggestionThemeManagerTests(TestCase):
         self.assertEqual(active.count(), 2)
         names = set(active.values_list("name", flat=True))
         self.assertEqual(names, {"Open theme", "In progress theme"})
+
+
+class DeduplicateThemesUnitTest(SimpleTestCase):
+    """Test deduplicate_themes() helper without database."""
+
+    def _make_theme(self, pk, name, program_id=1, link_count=0, priority="noted"):
+        return {
+            "pk": pk,
+            "name": name,
+            "status": "open",
+            "priority": priority,
+            "program_id": program_id,
+            "updated_at": datetime(2026, 1, 1, tzinfo=tz.utc),
+            "link_count": link_count,
+        }
+
+    def test_no_duplicates_unchanged(self):
+        themes = [
+            self._make_theme(1, "Alpha"),
+            self._make_theme(2, "Beta"),
+        ]
+        result = deduplicate_themes(themes)
+        self.assertEqual(len(result), 2)
+
+    def test_same_name_merged(self):
+        themes = [
+            self._make_theme(1, "Recipe variety", link_count=2, priority="important"),
+            self._make_theme(2, "Recipe variety", link_count=0, priority="noted"),
+        ]
+        result = deduplicate_themes(themes)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["link_count"], 2)
+        self.assertEqual(result[0]["priority"], "important")
+
+    def test_case_insensitive_merge(self):
+        themes = [
+            self._make_theme(1, "Take-home portions"),
+            self._make_theme(2, "take-home portions"),
+        ]
+        result = deduplicate_themes(themes)
+        self.assertEqual(len(result), 1)
+
+    def test_whitespace_normalised(self):
+        themes = [
+            self._make_theme(1, "  Recipe variety  ", link_count=1),
+            self._make_theme(2, "Recipe variety", link_count=1),
+        ]
+        result = deduplicate_themes(themes)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["link_count"], 2)
+
+    def test_different_programs_not_merged(self):
+        themes = [
+            self._make_theme(1, "Same name", program_id=1),
+            self._make_theme(2, "Same name", program_id=2),
+        ]
+        result = deduplicate_themes(themes)
+        self.assertEqual(len(result), 2)
+
+    def test_highest_priority_kept(self):
+        themes = [
+            self._make_theme(1, "Theme", priority="noted"),
+            self._make_theme(2, "Theme", priority="urgent"),
+        ]
+        result = deduplicate_themes(themes)
+        self.assertEqual(result[0]["priority"], "urgent")
+
+    def test_empty_list(self):
+        self.assertEqual(deduplicate_themes([]), [])
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class SuggestionThemeFormDuplicateTests(TestCase):
+    """Test SuggestionThemeForm rejects duplicate names."""
+
+    databases = ["default", "audit"]
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program")
+        SuggestionTheme.objects.create(
+            program=self.program, name="Evening hours", status="open",
+        )
+
+    def test_duplicate_name_rejected(self):
+        from apps.notes.forms import SuggestionThemeForm
+        form = SuggestionThemeForm(data={
+            "name": "Evening hours",
+            "program": self.program.pk,
+            "status": "open",
+            "addressed_note": "",
+        })
+        self.assertFalse(form.is_valid())
+
+    def test_duplicate_name_case_insensitive(self):
+        from apps.notes.forms import SuggestionThemeForm
+        form = SuggestionThemeForm(data={
+            "name": "evening HOURS",
+            "program": self.program.pk,
+            "status": "open",
+            "addressed_note": "",
+        })
+        self.assertFalse(form.is_valid())
+
+    def test_whitespace_normalised_before_check(self):
+        from apps.notes.forms import SuggestionThemeForm
+        form = SuggestionThemeForm(data={
+            "name": "  Evening   hours  ",
+            "program": self.program.pk,
+            "status": "open",
+            "addressed_note": "",
+        })
+        self.assertFalse(form.is_valid())
+
+    def test_editing_same_theme_allowed(self):
+        """Editing a theme should not flag itself as a duplicate."""
+        from apps.notes.forms import SuggestionThemeForm
+        theme = SuggestionTheme.objects.get(name="Evening hours")
+        form = SuggestionThemeForm(
+            data={
+                "name": "Evening hours",
+                "program": self.program.pk,
+                "status": "in_progress",
+                "addressed_note": "",
+            },
+            instance=theme,
+        )
+        self.assertTrue(form.is_valid())
+
+    def test_different_program_allowed(self):
+        from apps.notes.forms import SuggestionThemeForm
+        other_program = Program.objects.create(name="Other Program")
+        form = SuggestionThemeForm(data={
+            "name": "Evening hours",
+            "program": other_program.pk,
+            "status": "open",
+            "addressed_note": "",
+        })
+        self.assertTrue(form.is_valid())
