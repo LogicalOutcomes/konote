@@ -101,6 +101,255 @@
 <form method="post" id="goal-form" novalidate {% if ai_enabled %}hidden{% endif %}>
     {% csrf_token %}
 
+    {% if not ai_enabled %}
+    {# ====== Phase 1: Listen (non-AI only, hidden on POST) ====== #}
+    <div id="goal-phase-1" {% if form.is_bound %}hidden{% endif %}>
+
+        {# ── Participant's words (no name attr — hidden field in phase 2 submits) ── #}
+        <fieldset>
+            <legend>{{ form.client_goal.label }}</legend>
+            <small>{{ form.client_goal.help_text }}</small>
+            <input type="text"
+                   id="phase1-client-goal"
+                   aria-label="{{ form.client_goal.label }}"
+                   value="{{ form.client_goal.value|default_if_none:'' }}"
+                   placeholder="{% trans 'In their own words…' %}"
+                   maxlength="255">
+        </fieldset>
+
+        <div class="phase-action">
+            <button type="button" id="btn-next-phase">
+                {% trans "Next: shape this into a goal" %} &#9656;
+            </button>
+            <a href="{% url 'plans:plan_view' client_id=client.pk %}" class="secondary">{% trans "Cancel" %}</a>
+        </div>
+
+        {% if common_goals %}
+        <div class="entry-divider" aria-hidden="true">
+            <span>{% trans "or" %}</span>
+        </div>
+
+        <div class="common-goal-cards" role="group" aria-label="{% trans 'Common goals in this program' %}">
+            <small class="secondary">{% trans "Quick pick — tap to use an existing goal:" %}</small>
+            <div class="goal-card-grid">
+                {% for goal in common_goals %}
+                <button type="button"
+                        class="goal-card outline"
+                        data-goal-name="{{ goal.name }}"
+                        data-metric-id="{{ goal.metric_id|default:'' }}"
+                        aria-label="{% blocktrans with name=goal.name count=goal.count %}Use {{ name }} ({{ count }} participants){% endblocktrans %}">
+                    <strong>{{ goal.name }}</strong>
+                    {% if goal.metric_name %}
+                    <small>{{ goal.metric_name }}</small>
+                    {% endif %}
+                    <small class="secondary">
+                        {% blocktrans count count=goal.count %}{{ count }} participant{% plural %}{{ count }} participants{% endblocktrans %}
+                    </small>
+                </button>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <a href="#" id="btn-show-all" class="show-all-link">
+            {% trans "Show all fields" %}
+        </a>
+    </div>
+
+    {# ====== Phase 2: Shape the goal (non-AI, hidden on GET) ====== #}
+    <div id="goal-phase-2" {% if not form.is_bound %}hidden{% endif %}>
+
+        {# ── Reference quote — shows what the participant said ── #}
+        <blockquote id="participant-quote" class="participant-quote" hidden>
+            <small>{% blocktrans with name=client.display_name %}{{ name }} said:{% endblocktrans %}</small>
+            <p id="participant-quote-text"></p>
+        </blockquote>
+
+        {# ── Participant's words (hidden field to preserve value for POST) ── #}
+        <input type="hidden"
+               id="{{ form.client_goal.id_for_label }}-phase2"
+               name="client_goal"
+               value="{{ form.client_goal.value|default_if_none:'' }}">
+
+        {# ── Goal name with autocomplete ── #}
+        <fieldset>
+            <legend>{% trans "Give this a short name (2–5 words)" %}</legend>
+
+            <div class="goal-name-autocomplete">
+                <input type="text"
+                       id="{{ form.name.id_for_label }}"
+                       name="name"
+                       value="{{ form.name.value|default_if_none:'' }}"
+                       placeholder="{% trans 'e.g., Connect with community' %}"
+                       maxlength="255"
+                       required
+                       autocomplete="off"
+                       role="combobox"
+                       aria-expanded="false"
+                       aria-autocomplete="list"
+                       aria-controls="goal-suggestions-list"
+                       aria-activedescendant=""
+                       data-suggestions-url="{% url 'plans:goal_name_suggestions' client_id=client.pk %}">
+                <div id="goal-suggestions-list"
+                     role="listbox"
+                     aria-label="{% trans 'Goal name suggestions' %}"
+                     hidden></div>
+                <div aria-live="polite" class="sr-only" id="suggestion-count"></div>
+            </div>
+            {% if form.name.errors %}
+            <small class="error" role="alert">{{ form.name.errors.0 }}</small>
+            {% endif %}
+        </fieldset>
+
+        {# ── Description with sentence template ── #}
+        <fieldset>
+            <legend>{% trans "What will they do, how much, and by when?" %}</legend>
+            <small>{% trans "A good goal answers: What? How often? By when?" %}</small>
+            <textarea id="{{ form.description.id_for_label }}"
+                      name="description"
+                      rows="3"
+                      placeholder="{% blocktrans with name=client.display_name %}e.g., {{ name }} will attend one community event per month by June 2026{% endblocktrans %}">{{ form.description.value|default_if_none:'' }}</textarea>
+            {% if form.description.errors %}
+            <small class="error" role="alert">{{ form.description.errors.0 }}</small>
+            {% endif %}
+        </fieldset>
+
+        {# ── Section picker (SYNC: duplicated in AI path below — keep in sync) ── #}
+        <fieldset>
+            <legend>{{ form.section_choice.label }}</legend>
+
+            {% if preselected_section %}
+            {# Pre-selected and locked #}
+            <input type="hidden" name="section_choice" value="{{ preselected_section.pk }}">
+            <input type="text" value="{{ preselected_section.name }}" disabled
+                   aria-label="{% trans 'Section (pre-selected)' %}">
+            {% else %}
+            <select id="{{ form.section_choice.id_for_label }}"
+                    name="section_choice"
+                    aria-controls="new-section-row"
+                    required>
+                {% for value, label in form.section_choice.field.choices %}
+                <option value="{{ value }}" {% if form.section_choice.value == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <div id="new-section-row"
+                 {% if form.section_choice.value != "new" %}hidden{% endif %}
+                 aria-expanded="{% if form.section_choice.value == 'new' %}true{% else %}false{% endif %}">
+                <label for="{{ form.new_section_name.id_for_label }}">{% trans "New section name" %}</label>
+                <input type="text"
+                       id="{{ form.new_section_name.id_for_label }}"
+                       name="new_section_name"
+                       value="{{ form.new_section_name.value|default_if_none:'' }}"
+                       placeholder="{% trans 'New section name' %}"
+                       maxlength="255">
+                {% if form.new_section_name.errors %}
+                <small class="error" role="alert">{{ form.new_section_name.errors.0 }}</small>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% if form.section_choice.errors %}
+            <small class="error" role="alert">{{ form.section_choice.errors.0 }}</small>
+            {% endif %}
+        </fieldset>
+
+        {# ── Metrics (SYNC: duplicated in AI path below — keep in sync) ── #}
+        <fieldset>
+            <legend>{% trans "How will you track progress?" %}</legend>
+            <small>{{ form.metrics.help_text }}</small>
+
+            {# Tier 1: Universal metrics (always visible, card-style) #}
+            {% if universal_metrics %}
+            <div class="universal-metric-cards" role="group" aria-label="{% trans 'Universal metrics' %}">
+                <small class="tier-label"><strong>{% trans "Recommended" %}</strong></small>
+                {% for metric in universal_metrics %}
+                <label class="metric-card" for="metric-{{ metric.pk }}">
+                    <input type="checkbox"
+                           id="metric-{{ metric.pk }}"
+                           name="metrics"
+                           value="{{ metric.pk }}"
+                           {% if metric.pk in selected_metric_ids %}checked{% endif %}>
+                    <div class="metric-card-body">
+                        <strong>{{ metric.translated_name }}</strong>
+                        <small>{{ metric.translated_definition }}</small>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {# Tier 2: Used in this program (visible if any) #}
+            {% if program_used_metrics %}
+            <details class="metric-tier">
+                <summary>{% trans "Used in this program" %}</summary>
+                <div class="metric-tier-list" role="group" aria-label="{% trans 'Metrics used in this program' %}">
+                    {% for metric in program_used_metrics %}
+                    <label for="metric-{{ metric.pk }}">
+                        <input type="checkbox"
+                               id="metric-{{ metric.pk }}"
+                               name="metrics"
+                               value="{{ metric.pk }}"
+                               {% if metric.pk in selected_metric_ids %}checked{% endif %}>
+                        {{ metric.translated_name }}
+                        <small class="secondary">
+                            {% blocktrans with count=metric.usage_count %}used by {{ count }} participant(s){% endblocktrans %}
+                        </small>
+                    </label>
+                    {% endfor %}
+                </div>
+            </details>
+            {% endif %}
+
+            {# Tier 3: All available metrics (collapsed with search) #}
+            {% if metrics_by_category %}
+            <details class="metric-tier">
+                <summary>{% trans "All available metrics" %}</summary>
+                <div class="metric-search-wrapper">
+                    <input type="search"
+                           id="metric-search"
+                           placeholder="{% trans 'Search metrics…' %}"
+                           aria-label="{% trans 'Filter metrics by name' %}"
+                           autocomplete="off">
+                    <div aria-live="polite" class="sr-only" id="metric-search-count"></div>
+                </div>
+                {% for category, metrics_list in metrics_by_category.items %}
+                <fieldset class="metric-category" data-category="{{ category }}">
+                    <legend>{{ category }}</legend>
+                    {% for metric in metrics_list %}
+                    <label for="metric-{{ metric.pk }}" class="metric-search-item" data-name="{{ metric.translated_name|lower }}">
+                        <input type="checkbox"
+                               id="metric-{{ metric.pk }}"
+                               name="metrics"
+                               value="{{ metric.pk }}"
+                               {% if metric.pk in selected_metric_ids %}checked{% endif %}>
+                        {{ metric.translated_name }}
+                        {% if metric.translated_definition %}
+                        <small>{{ metric.translated_definition|truncatewords:15 }}</small>
+                        {% endif %}
+                    </label>
+                    {% endfor %}
+                </fieldset>
+                {% endfor %}
+            </details>
+            {% endif %}
+
+            {% if form.metrics.errors %}
+            <small class="error" role="alert">{{ form.metrics.errors.0 }}</small>
+            {% endif %}
+        </fieldset>
+
+        {# ── Submit ── #}
+        <div role="group">
+            <button type="submit">{% blocktrans with target=term.target|default:"Goal" %}Add {{ target }}{% endblocktrans %}</button>
+            <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+        </div>
+    </div>
+
+    {# ── Screen reader announcement region ── #}
+    <div aria-live="polite" class="sr-only" id="phase-announce"></div>
+
+    {% else %}
+    {# ====== AI-enabled form layout (unchanged) ====== #}
+
     {# ── 1. Participant's words ── #}
     <fieldset>
         <legend>{{ form.client_goal.label }}</legend>
@@ -130,30 +379,6 @@
         <legend>{{ form.name.label }}</legend>
         <small>{{ form.name.help_text }}</small>
 
-        {# Common goal cards only shown in non-AI mode (AI mode uses entry-point cards instead) #}
-        {% if not ai_enabled and common_goals %}
-        <div class="common-goal-cards" role="group" aria-label="{% trans 'Common goals in this program' %}">
-            <small class="secondary">{% trans "Quick pick — tap to use an existing goal:" %}</small>
-            <div class="goal-card-grid">
-                {% for goal in common_goals %}
-                <button type="button"
-                        class="goal-card outline"
-                        data-goal-name="{{ goal.name }}"
-                        data-metric-id="{{ goal.metric_id|default:'' }}"
-                        aria-label="{% blocktrans with name=goal.name count=goal.count %}Use {{ name }} ({{ count }} participants){% endblocktrans %}">
-                    <strong>{{ goal.name }}</strong>
-                    {% if goal.metric_name %}
-                    <small>{{ goal.metric_name }}</small>
-                    {% endif %}
-                    <small class="secondary">
-                        {% blocktrans count count=goal.count %}{{ count }} participant{% plural %}{{ count }} participants{% endblocktrans %}
-                    </small>
-                </button>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
         <div class="goal-name-autocomplete">
             <input type="text"
                    id="{{ form.name.id_for_label }}"
@@ -180,7 +405,7 @@
         {% endif %}
     </fieldset>
 
-    {# ── 3. Section picker ── #}
+    {# ── 3. Section picker (SYNC: duplicated in non-AI path above — keep in sync) ── #}
     <fieldset>
         <legend>{{ form.section_choice.label }}</legend>
 
@@ -231,7 +456,7 @@
         {% endif %}
     </fieldset>
 
-    {# ── 5. Metric picker — three tiers ── #}
+    {# ── 5. Metric picker — three tiers (SYNC: duplicated in non-AI path above — keep in sync) ── #}
     <fieldset>
         <legend>{{ form.metrics.label }}</legend>
         <small>{{ form.metrics.help_text }}</small>
@@ -321,6 +546,7 @@
         <button type="submit">{% blocktrans with target=term.target|default:"Goal" %}Add {{ target }}{% endblocktrans %}</button>
         <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
+    {% endif %}
 </form>
 {% endblock %}
 
@@ -335,7 +561,89 @@
     var nameInput = document.getElementById("{{ form.name.id_for_label }}");
 
     // ────────────────────────────────────────
-    // Progressive disclosure helpers
+    // Non-AI two-phase disclosure
+    // ────────────────────────────────────────
+
+    var phase1 = document.getElementById("goal-phase-1");
+    var phase2 = document.getElementById("goal-phase-2");
+
+    function revealPhase2() {
+        if (!phase1 || !phase2) return;
+        phase1.hidden = true;
+        phase2.hidden = false;
+
+        // Show participant quote if words were entered
+        var wordsInput = document.getElementById("phase1-client-goal");
+        var quote = document.getElementById("participant-quote");
+        var quoteText = document.getElementById("participant-quote-text");
+        var hiddenClientGoal = document.getElementById("{{ form.client_goal.id_for_label }}-phase2");
+        if (wordsInput && wordsInput.value.trim()) {
+            // Copy value to hidden field for POST
+            if (hiddenClientGoal) hiddenClientGoal.value = wordsInput.value;
+            // Show quote
+            if (quote && quoteText) {
+                quoteText.textContent = "\u201c" + wordsInput.value.trim() + "\u201d";
+                quote.hidden = false;
+            }
+        }
+
+        // Announce to screen readers
+        var announce = document.getElementById("phase-announce");
+        if (announce) announce.textContent = "{% trans 'Form expanded — complete the goal details below.' %}";
+
+        // Focus goal name
+        if (nameInput) nameInput.focus();
+    }
+
+    // Trigger 1: "Next: shape this into a goal" button
+    var nextBtn = document.getElementById("btn-next-phase");
+    if (nextBtn) {
+        nextBtn.addEventListener("click", function() {
+            revealPhase2();
+        });
+    }
+
+    // Trigger 2: Quick pick cards (non-AI phase 1)
+    if (phase1) {
+        var phase1Cards = phase1.querySelectorAll(".goal-card");
+        phase1Cards.forEach(function(card) {
+            card.addEventListener("click", function() {
+                // Pre-fill goal name
+                if (nameInput) nameInput.value = this.dataset.goalName;
+                // Pre-check metric
+                var metricId = this.dataset.metricId;
+                if (metricId) {
+                    var cb = document.getElementById("metric-" + metricId);
+                    if (cb) cb.checked = true;
+                }
+                revealPhase2();
+            });
+        });
+    }
+
+    // Trigger 3: Input blur with content
+    if (phase1) {
+        var wordsField = document.getElementById("phase1-client-goal");
+        if (wordsField) {
+            wordsField.addEventListener("blur", function() {
+                if (this.value.trim().length > 0) {
+                    revealPhase2();
+                }
+            });
+        }
+    }
+
+    // Safety valve: "Show all fields" link
+    var showAllBtn = document.getElementById("btn-show-all");
+    if (showAllBtn) {
+        showAllBtn.addEventListener("click", function(e) {
+            e.preventDefault();
+            revealPhase2();
+        });
+    }
+
+    // ────────────────────────────────────────
+    // AI path: Progressive disclosure helpers
     // ────────────────────────────────────────
 
     function revealForm() {
@@ -483,24 +791,6 @@
                 if (cb) cb.checked = true;
             }
             revealForm();
-        });
-    });
-
-    // ────────────────────────────────────────
-    // Common goal cards (non-AI form version)
-    // ────────────────────────────────────────
-
-    var formGoalCards = goalForm ? goalForm.querySelectorAll(".goal-card") : [];
-    formGoalCards.forEach(function(card) {
-        card.addEventListener("click", function() {
-            if (nameInput) nameInput.value = this.dataset.goalName;
-            var metricId = this.dataset.metricId;
-            if (metricId) {
-                var cb = document.getElementById("metric-" + metricId);
-                if (cb) cb.checked = true;
-            }
-            formGoalCards.forEach(function(c) { c.classList.remove("selected"); });
-            this.classList.add("selected");
         });
     });
 

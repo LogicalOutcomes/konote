@@ -3850,6 +3850,34 @@ article[aria-label="notification"].fading-out {
     border-bottom: 1px solid var(--pico-muted-border-color);
 }
 
+/* Non-AI two-phase form layout */
+.participant-quote {
+    background: var(--kn-primary-subtle);
+    border-left: 3px solid var(--kn-primary);
+    border-radius: var(--kn-radius-card, 8px);
+    padding: var(--kn-space-sm) var(--kn-space-base);
+    margin-bottom: var(--kn-space-lg);
+}
+.participant-quote small {
+    color: var(--kn-text-muted);
+    font-size: 0.8125rem;
+}
+.participant-quote p {
+    font-style: italic;
+    margin: var(--kn-space-xs) 0 0;
+}
+.phase-action {
+    text-align: center;
+    margin: var(--kn-space-lg) 0;
+}
+.show-all-link {
+    display: block;
+    text-align: center;
+    margin-top: var(--kn-space-lg);
+    font-size: 0.875rem;
+    color: var(--kn-text-muted);
+}
+
 /* AI suggestion card */
 .ai-suggestion-card {
     border: 2px solid var(--kn-primary);

@@ -25,6 +25,8 @@
 
 ### Phase: Near-Term Improvements — complete!
 
+- [ ] Fix report export 500 error — missing defaultdict import, suppressed-value type crashes in CSV generation, no error handling (see .claude/plans/enchanted-brewing-cocke.md) (BUG-EXP1)
+
 ### Phase: Post-Housekeeping Verification
 
 - [ ] Run full test suite (`pytest -m "not browser and not scenario_eval"`) to verify PR #143 test fixes pass against current main (VERIFY1)
