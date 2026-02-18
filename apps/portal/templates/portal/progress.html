@@ -39,16 +39,13 @@
 
         var heading = document.createElement('h2');
         heading.id = 'chart-heading-' + index;
-        heading.textContent = chartInfo.metric_name || ('Chart ' + (index + 1));
-        section.appendChild(heading);
-
-        // Show which goal(s) this metric is tracking
+        // Put goal name first in heading for context (e.g., "Find stable housing — Confidence")
         if (chartInfo.goal_names && chartInfo.goal_names.length) {
-            var goalText = document.createElement('p');
-            goalText.className = 'portal-metric-goal';
-            goalText.textContent = '{% trans "Goal" %}: ' + chartInfo.goal_names.join(', ');
-            section.appendChild(goalText);
+            heading.textContent = chartInfo.goal_names.join(', ') + ' \u2014 ' + (chartInfo.metric_name || '');
+        } else {
+            heading.textContent = chartInfo.metric_name || ('Chart ' + (index + 1));
         }
+        section.appendChild(heading);
 
         // Show plain-language description if available
         if (chartInfo.description) {
