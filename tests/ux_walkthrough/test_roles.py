@@ -391,8 +391,8 @@ class AdminWalkthroughTest(UxWalkthroughBase):
         self.visit(role, "Instance settings", "/admin/settings/instance/")
 
         # Metrics library
-        self.visit(role, "Metrics library", "/plans/admin/metrics/")
-        self.visit(role, "Create metric form", "/plans/admin/metrics/create/")
+        self.visit(role, "Metrics library", "/manage/metrics/")
+        self.visit(role, "Create metric form", "/manage/metrics/create/")
 
         # Programs
         self.visit(role, "Programs list", "/programs/")
@@ -402,19 +402,19 @@ class AdminWalkthroughTest(UxWalkthroughBase):
         )
 
         # Users
-        self.visit(role, "User list", "/admin/users/")
-        self.visit(role, "Create user form", "/admin/users/new/")
+        self.visit(role, "User list", "/manage/users/")
+        self.visit(role, "Create user form", "/manage/users/new/")
 
         # Invites
-        self.visit(role, "Invite list", "/admin/users/invites/")
-        self.visit(role, "Create invite form", "/admin/users/invites/new/")
+        self.visit(role, "Invite list", "/manage/users/invites/")
+        self.visit(role, "Create invite form", "/manage/users/invites/new/")
 
         # Audit
-        self.visit(role, "Audit log", "/admin/audit/")
+        self.visit(role, "Audit log", "/manage/audit/")
 
         # Registration
-        self.visit(role, "Registration links", "/admin/registration/")
-        self.visit(role, "Create registration link", "/admin/registration/create/")
+        self.visit(role, "Registration links", "/manage/registration/")
+        self.visit(role, "Create registration link", "/manage/registration/create/")
 
         # Custom fields
         self.visit(role, "Custom field admin", "/participants/admin/fields/")
@@ -424,11 +424,11 @@ class AdminWalkthroughTest(UxWalkthroughBase):
         self.visit(role, "Create field definition", "/participants/admin/fields/create/")
 
         # Event types
-        self.visit(role, "Event types list", "/events/admin/types/")
-        self.visit(role, "Create event type", "/events/admin/types/create/")
+        self.visit(role, "Event types list", "/manage/event-types/")
+        self.visit(role, "Create event type", "/manage/event-types/create/")
 
         # Note templates
-        self.visit(role, "Note templates", "/admin/settings/note-templates/")
+        self.visit(role, "Note templates", "/manage/note-templates/")
 
         # Reports
         self.visit(role, "Export links management", "/reports/export-links/")
@@ -437,7 +437,7 @@ class AdminWalkthroughTest(UxWalkthroughBase):
         self.visit(role, "Diagnose charts", "/admin/settings/diagnose-charts/")
 
         # Submissions
-        self.visit(role, "Pending submissions", "/admin/submissions/")
+        self.visit(role, "Pending submissions", "/manage/submissions/")
 
     def test_admin_blocked_from_client_data(self):
         """Admin WITHOUT program role cannot access client data."""
@@ -459,7 +459,7 @@ class AdminWalkthroughTest(UxWalkthroughBase):
             role, "Admin settings (403)", "/admin/settings/"
         )
         self.visit_forbidden(
-            role, "User list (403)", "/admin/users/"
+            role, "User list (403)", "/manage/users/"
         )
 
 
@@ -484,4 +484,4 @@ class AdminPMWalkthroughTest(UxWalkthroughBase):
 
         # Can also access admin pages
         self.visit(role, "Admin settings", "/admin/settings/")
-        self.visit(role, "User list", "/admin/users/")
+        self.visit(role, "User list", "/manage/users/")

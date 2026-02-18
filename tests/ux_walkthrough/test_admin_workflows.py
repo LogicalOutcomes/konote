@@ -317,25 +317,25 @@ class AdminMetricWorkflow(UxScenarioBase):
         role = "Admin"
 
         # View metric library
-        resp = self.visit(role, "Metric library", "/plans/admin/metrics/")
+        resp = self.visit(role, "Metric library", "/manage/metrics/")
         self.record_scenario(
             self.SCENARIO, role, "View metric library",
-            "/plans/admin/metrics/", resp.status_code, [],
+            "/manage/metrics/", resp.status_code, [],
         )
 
         # Create metric form
         resp = self.visit(
-            role, "Create metric form", "/plans/admin/metrics/create/",
+            role, "Create metric form", "/manage/metrics/create/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open create metric form",
-            "/plans/admin/metrics/create/", resp.status_code, [],
+            "/manage/metrics/create/", resp.status_code, [],
         )
 
         # Submit create metric
         resp = self.visit_and_follow(
             role, "Submit new metric",
-            "/plans/admin/metrics/create/",
+            "/manage/metrics/create/",
             data={
                 "name": "Housing Stability Index",
                 "definition": "1-5 scale measuring housing stability.",
@@ -344,11 +344,11 @@ class AdminMetricWorkflow(UxScenarioBase):
                 "max_value": "5",
                 "unit": "score",
             },
-            expected_redirect="/plans/admin/metrics/",
+            expected_redirect="/manage/metrics/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create metric",
-            "/plans/admin/metrics/create/", resp.status_code, [],
+            "/manage/metrics/create/", resp.status_code, [],
         )
 
         # Find the new metric
@@ -361,16 +361,16 @@ class AdminMetricWorkflow(UxScenarioBase):
 
         # Edit metric
         resp = self.visit(
-            role, "Edit metric form", f"/plans/admin/metrics/{mid}/edit/",
+            role, "Edit metric form", f"/manage/metrics/{mid}/edit/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open edit metric form",
-            f"/plans/admin/metrics/{mid}/edit/", resp.status_code, [],
+            f"/manage/metrics/{mid}/edit/", resp.status_code, [],
         )
 
         resp = self.visit_and_follow(
             role, "Update metric",
-            f"/plans/admin/metrics/{mid}/edit/",
+            f"/manage/metrics/{mid}/edit/",
             data={
                 "name": "Housing Stability Index v2",
                 "definition": "Updated scale.",
@@ -379,21 +379,21 @@ class AdminMetricWorkflow(UxScenarioBase):
                 "max_value": "10",
                 "unit": "score",
             },
-            expected_redirect="/plans/admin/metrics/",
+            expected_redirect="/manage/metrics/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Edit metric saved",
-            f"/plans/admin/metrics/{mid}/edit/", resp.status_code, [],
+            f"/manage/metrics/{mid}/edit/", resp.status_code, [],
         )
 
         # Toggle metric (HTMX)
         resp = self.visit_htmx(
             role, "Toggle metric off",
-            f"/plans/admin/metrics/{mid}/toggle/",
+            f"/manage/metrics/{mid}/toggle/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Toggle metric",
-            f"/plans/admin/metrics/{mid}/toggle/", resp.status_code, [],
+            f"/manage/metrics/{mid}/toggle/", resp.status_code, [],
         )
 
 
@@ -413,35 +413,35 @@ class AdminPlanTemplateWorkflow(UxScenarioBase):
         role = "Admin"
 
         # View template list
-        resp = self.visit(role, "Plan template list", "/admin/templates/")
+        resp = self.visit(role, "Plan template list", "/manage/templates/")
         self.record_scenario(
             self.SCENARIO, role, "View plan template list",
-            "/admin/templates/", resp.status_code, [],
+            "/manage/templates/", resp.status_code, [],
         )
 
         # Create template form
         resp = self.visit(
-            role, "Create template form", "/admin/templates/create/",
+            role, "Create template form", "/manage/templates/create/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open create template form",
-            "/admin/templates/create/", resp.status_code, [],
+            "/manage/templates/create/", resp.status_code, [],
         )
 
         # Submit create template
         resp = self.visit_and_follow(
             role, "Submit new template",
-            "/admin/templates/create/",
+            "/manage/templates/create/",
             data={
                 "name": "Standard Intake Plan",
                 "description": "Default plan template for new intakes.",
                 "status": "active",
             },
-            expected_redirect="/admin/templates/",
+            expected_redirect="/manage/templates/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create template",
-            "/admin/templates/create/", resp.status_code, [],
+            "/manage/templates/create/", resp.status_code, [],
         )
 
         # Find the new template
@@ -454,37 +454,37 @@ class AdminPlanTemplateWorkflow(UxScenarioBase):
 
         # View template detail
         resp = self.visit(
-            role, "Template detail", f"/admin/templates/{tid}/",
+            role, "Template detail", f"/manage/templates/{tid}/",
             role_should_see=["Add Section"],
         )
         self.record_scenario(
             self.SCENARIO, role, "View template detail",
-            f"/admin/templates/{tid}/", resp.status_code, [],
+            f"/manage/templates/{tid}/", resp.status_code, [],
         )
 
         # Add a section
         resp = self.visit(
             role, "Add section form",
-            f"/admin/templates/{tid}/sections/create/",
+            f"/manage/templates/{tid}/sections/create/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open add section form",
-            f"/admin/templates/{tid}/sections/create/", resp.status_code, [],
+            f"/manage/templates/{tid}/sections/create/", resp.status_code, [],
         )
 
         resp = self.visit_and_follow(
             role, "Submit new section",
-            f"/admin/templates/{tid}/sections/create/",
+            f"/manage/templates/{tid}/sections/create/",
             data={
                 "name": "Housing Goals",
                 "program": self.program_a.pk,
                 "sort_order": "1",
             },
-            expected_redirect=f"/admin/templates/{tid}/",
+            expected_redirect=f"/manage/templates/{tid}/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create section",
-            f"/admin/templates/{tid}/sections/create/", resp.status_code, [],
+            f"/manage/templates/{tid}/sections/create/", resp.status_code, [],
         )
 
         # Find the section
@@ -498,52 +498,52 @@ class AdminPlanTemplateWorkflow(UxScenarioBase):
         # Add a target to the section
         resp = self.visit(
             role, "Add target form",
-            f"/admin/templates/sections/{sid}/targets/create/",
+            f"/manage/templates/sections/{sid}/targets/create/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open add target form",
-            f"/admin/templates/sections/{sid}/targets/create/",
+            f"/manage/templates/sections/{sid}/targets/create/",
             resp.status_code, [],
         )
 
         resp = self.visit_and_follow(
             role, "Submit new target",
-            f"/admin/templates/sections/{sid}/targets/create/",
+            f"/manage/templates/sections/{sid}/targets/create/",
             data={
                 "name": "Find stable housing within 6 months",
                 "description": "Measured by Housing Stability Index.",
                 "sort_order": "1",
             },
-            expected_redirect=f"/admin/templates/{tid}/",
+            expected_redirect=f"/manage/templates/{tid}/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create target",
-            f"/admin/templates/sections/{sid}/targets/create/",
+            f"/manage/templates/sections/{sid}/targets/create/",
             resp.status_code, [],
         )
 
         # Edit the template
         resp = self.visit(
-            role, "Edit template form", f"/admin/templates/{tid}/edit/",
+            role, "Edit template form", f"/manage/templates/{tid}/edit/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open edit template form",
-            f"/admin/templates/{tid}/edit/", resp.status_code, [],
+            f"/manage/templates/{tid}/edit/", resp.status_code, [],
         )
 
         resp = self.visit_and_follow(
             role, "Update template",
-            f"/admin/templates/{tid}/edit/",
+            f"/manage/templates/{tid}/edit/",
             data={
                 "name": "Standard Intake Plan v2",
                 "description": "Updated template.",
                 "status": "active",
             },
-            expected_redirect=f"/admin/templates/{tid}/",
+            expected_redirect=f"/manage/templates/{tid}/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Edit template saved",
-            f"/admin/templates/{tid}/edit/", resp.status_code, [],
+            f"/manage/templates/{tid}/edit/", resp.status_code, [],
         )
 
 
@@ -565,28 +565,28 @@ class AdminNoteTemplateWorkflow(UxScenarioBase):
         # View template list
         resp = self.visit(
             role, "Note template list",
-            "/admin/settings/note-templates/",
+            "/manage/note-templates/",
         )
         self.record_scenario(
             self.SCENARIO, role, "View note template list",
-            "/admin/settings/note-templates/", resp.status_code, [],
+            "/manage/note-templates/", resp.status_code, [],
         )
 
         # Create template form
         resp = self.visit(
             role, "Create note template form",
-            "/admin/settings/note-templates/create/",
+            "/manage/note-templates/create/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open create note template form",
-            "/admin/settings/note-templates/create/", resp.status_code, [],
+            "/manage/note-templates/create/", resp.status_code, [],
         )
 
         # Submit create note template with one section (formset)
         # Prefix is "sections" from related_name on the FK
         resp = self.visit_and_follow(
             role, "Submit new note template",
-            "/admin/settings/note-templates/create/",
+            "/manage/note-templates/create/",
             data={
                 "name": "Standard Session Note",
                 "default_interaction_type": "session",
@@ -601,11 +601,11 @@ class AdminNoteTemplateWorkflow(UxScenarioBase):
                 "sections-0-section_type": "basic",
                 "sections-0-sort_order": "1",
             },
-            expected_redirect="/admin/settings/note-templates/",
+            expected_redirect="/manage/note-templates/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create note template with section",
-            "/admin/settings/note-templates/create/",
+            "/manage/note-templates/create/",
             resp.status_code, [],
         )
 
@@ -619,11 +619,11 @@ class AdminNoteTemplateWorkflow(UxScenarioBase):
         # Edit the template
         resp = self.visit(
             role, "Edit note template form",
-            f"/admin/settings/note-templates/{template.pk}/edit/",
+            f"/manage/note-templates/{template.pk}/edit/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open edit note template form",
-            f"/admin/settings/note-templates/{template.pk}/edit/",
+            f"/manage/note-templates/{template.pk}/edit/",
             resp.status_code, [],
         )
 
@@ -645,37 +645,37 @@ class AdminEventTypeWorkflow(UxScenarioBase):
 
         # View event types
         resp = self.visit(
-            role, "Event types list", "/events/admin/types/",
+            role, "Event types list", "/manage/event-types/",
         )
         self.record_scenario(
             self.SCENARIO, role, "View event types list",
-            "/events/admin/types/", resp.status_code, [],
+            "/manage/event-types/", resp.status_code, [],
         )
 
         # Create event type form
         resp = self.visit(
-            role, "Create event type form", "/events/admin/types/create/",
+            role, "Create event type form", "/manage/event-types/create/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open create event type form",
-            "/events/admin/types/create/", resp.status_code, [],
+            "/manage/event-types/create/", resp.status_code, [],
         )
 
         # Submit create event type
         resp = self.visit_and_follow(
             role, "Submit new event type",
-            "/events/admin/types/create/",
+            "/manage/event-types/create/",
             data={
                 "name": "Court Date",
                 "description": "Upcoming court appearances.",
                 "colour_hex": "#EF4444",
                 "status": "active",
             },
-            expected_redirect="/events/admin/types/",
+            expected_redirect="/manage/event-types/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create event type",
-            "/events/admin/types/create/", resp.status_code, [],
+            "/manage/event-types/create/", resp.status_code, [],
         )
 
         # Find the event type
@@ -686,43 +686,43 @@ class AdminEventTypeWorkflow(UxScenarioBase):
         # Edit event type
         resp = self.visit(
             role, "Edit event type form",
-            f"/events/admin/types/{et.pk}/edit/",
+            f"/manage/event-types/{et.pk}/edit/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open edit event type form",
-            f"/events/admin/types/{et.pk}/edit/", resp.status_code, [],
+            f"/manage/event-types/{et.pk}/edit/", resp.status_code, [],
         )
 
         resp = self.visit_and_follow(
             role, "Update event type",
-            f"/events/admin/types/{et.pk}/edit/",
+            f"/manage/event-types/{et.pk}/edit/",
             data={
                 "name": "Court Hearing",
                 "description": "Updated description.",
                 "colour_hex": "#DC2626",
                 "status": "active",
             },
-            expected_redirect="/events/admin/types/",
+            expected_redirect="/manage/event-types/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Edit event type saved",
-            f"/events/admin/types/{et.pk}/edit/", resp.status_code, [],
+            f"/manage/event-types/{et.pk}/edit/", resp.status_code, [],
         )
 
         # Create a second event type to verify list shows multiple
-        self.client.post("/events/admin/types/create/", {
+        self.client.post("/manage/event-types/create/", {
             "name": "Hospital Visit",
             "description": "Emergency room or hospital visit.",
             "colour_hex": "#F59E0B",
             "status": "active",
         })
         resp = self.visit(
-            role, "Event types list (multiple)", "/events/admin/types/",
+            role, "Event types list (multiple)", "/manage/event-types/",
             role_should_see=["Court Hearing", "Hospital Visit"],
         )
         self.record_scenario(
             self.SCENARIO, role, "List shows multiple event types",
-            "/events/admin/types/", resp.status_code, [],
+            "/manage/event-types/", resp.status_code, [],
         )
 
 
@@ -879,25 +879,25 @@ class AdminUserWorkflow(UxScenarioBase):
         role = "Admin"
 
         # View user list
-        resp = self.visit(role, "User list", "/admin/users/")
+        resp = self.visit(role, "User list", "/manage/users/")
         self.record_scenario(
             self.SCENARIO, role, "View user list",
-            "/admin/users/", resp.status_code, [],
+            "/manage/users/", resp.status_code, [],
         )
 
         # Create user form
         resp = self.visit(
-            role, "Create user form", "/admin/users/new/",
+            role, "Create user form", "/manage/users/new/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open create user form",
-            "/admin/users/new/", resp.status_code, [],
+            "/manage/users/new/", resp.status_code, [],
         )
 
         # Submit create user
         resp = self.visit_and_follow(
             role, "Submit new user",
-            "/admin/users/new/",
+            "/manage/users/new/",
             data={
                 "username": "newstaff",
                 "display_name": "Sarah New Staff",
@@ -906,11 +906,11 @@ class AdminUserWorkflow(UxScenarioBase):
                 "password_confirm": "SecurePass123!",
                 "email": "sarah@hopehouse.ca",
             },
-            expected_redirect="/admin/users/",
+            expected_redirect="/manage/users/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create user",
-            "/admin/users/new/", resp.status_code, [],
+            "/manage/users/new/", resp.status_code, [],
         )
 
         # Find the new user
@@ -920,16 +920,16 @@ class AdminUserWorkflow(UxScenarioBase):
 
         # Edit user
         resp = self.visit(
-            role, "Edit user form", f"/admin/users/{new_user.pk}/edit/",
+            role, "Edit user form", f"/manage/users/{new_user.pk}/edit/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open edit user form",
-            f"/admin/users/{new_user.pk}/edit/", resp.status_code, [],
+            f"/manage/users/{new_user.pk}/edit/", resp.status_code, [],
         )
 
         resp = self.visit_and_follow(
             role, "Update user",
-            f"/admin/users/{new_user.pk}/edit/",
+            f"/manage/users/{new_user.pk}/edit/",
             data={
                 "display_name": "Sarah Staff Updated",
                 "is_admin": "",
@@ -937,11 +937,11 @@ class AdminUserWorkflow(UxScenarioBase):
                 "email": "sarah.updated@hopehouse.ca",
                 "new_password": "",
             },
-            expected_redirect="/admin/users/",
+            expected_redirect="/manage/users/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Edit user saved",
-            f"/admin/users/{new_user.pk}/edit/", resp.status_code, [],
+            f"/manage/users/{new_user.pk}/edit/", resp.status_code, [],
         )
 
     def test_password_mismatch_validation(self):
@@ -949,7 +949,7 @@ class AdminUserWorkflow(UxScenarioBase):
         self.login_as("admin")
         role = "Admin"
 
-        response = self.client.post("/admin/users/new/", {
+        response = self.client.post("/manage/users/new/", {
             "username": "baduser",
             "display_name": "Bad User",
             "is_admin": "",
@@ -960,14 +960,14 @@ class AdminUserWorkflow(UxScenarioBase):
 
         from .checker import UxChecker
         checker = UxChecker(
-            response, "/admin/users/new/", role,
+            response, "/manage/users/new/", role,
             "Form validation — password mismatch",
         )
         checker.check_form_errors()
         checker.run_all_checks()
         self.report.record_step(
             role, "User form password mismatch",
-            "/admin/users/new/", response.status_code, checker.issues,
+            "/manage/users/new/", response.status_code, checker.issues,
         )
 
 
@@ -987,35 +987,35 @@ class AdminInviteWorkflow(UxScenarioBase):
         role = "Admin"
 
         # View invite list
-        resp = self.visit(role, "Invite list", "/admin/users/invites/")
+        resp = self.visit(role, "Invite list", "/manage/users/invites/")
         self.record_scenario(
             self.SCENARIO, role, "View invite list",
-            "/admin/users/invites/", resp.status_code, [],
+            "/manage/users/invites/", resp.status_code, [],
         )
 
         # Create invite form
         resp = self.visit(
-            role, "Create invite form", "/admin/users/invites/new/",
+            role, "Create invite form", "/manage/users/invites/new/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open create invite form",
-            "/admin/users/invites/new/", resp.status_code, [],
+            "/manage/users/invites/new/", resp.status_code, [],
         )
 
         # Submit create invite
         resp = self.visit_and_follow(
             role, "Submit new invite",
-            "/admin/users/invites/new/",
+            "/manage/users/invites/new/",
             data={
                 "role": "staff",
                 "programs": [self.program_a.pk],
                 "expires_days": "7",
             },
-            expected_redirect="/admin/users/invites/",
+            expected_redirect="/manage/users/invites/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create invite link",
-            "/admin/users/invites/new/", resp.status_code, [],
+            "/manage/users/invites/new/", resp.status_code, [],
         )
 
 
@@ -1036,27 +1036,27 @@ class AdminRegistrationWorkflow(UxScenarioBase):
 
         # View registration links
         resp = self.visit(
-            role, "Registration links list", "/admin/registration/",
+            role, "Registration links list", "/manage/registration/",
         )
         self.record_scenario(
             self.SCENARIO, role, "View registration links",
-            "/admin/registration/", resp.status_code, [],
+            "/manage/registration/", resp.status_code, [],
         )
 
         # Create registration link form
         resp = self.visit(
             role, "Create registration link form",
-            "/admin/registration/create/",
+            "/manage/registration/create/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Open create registration link form",
-            "/admin/registration/create/", resp.status_code, [],
+            "/manage/registration/create/", resp.status_code, [],
         )
 
         # Submit create registration link
         resp = self.visit_and_follow(
             role, "Submit new registration link",
-            "/admin/registration/create/",
+            "/manage/registration/create/",
             data={
                 "program": self.program_a.pk,
                 "title": "Housing Support Registration",
@@ -1066,20 +1066,20 @@ class AdminRegistrationWorkflow(UxScenarioBase):
                 "closes_at": "",
                 "is_active": "on",
             },
-            expected_redirect="/admin/registration/",
+            expected_redirect="/manage/registration/",
         )
         self.record_scenario(
             self.SCENARIO, role, "Create registration link",
-            "/admin/registration/create/", resp.status_code, [],
+            "/manage/registration/create/", resp.status_code, [],
         )
 
         # View submissions page
         resp = self.visit(
-            role, "Pending submissions", "/admin/submissions/",
+            role, "Pending submissions", "/manage/submissions/",
         )
         self.record_scenario(
             self.SCENARIO, role, "View pending submissions",
-            "/admin/submissions/", resp.status_code, [],
+            "/manage/submissions/", resp.status_code, [],
         )
 
 
@@ -1099,20 +1099,20 @@ class AdminAuditLogWorkflow(UxScenarioBase):
         role = "Admin"
 
         # View audit log
-        resp = self.visit(role, "Audit log list", "/admin/audit/")
+        resp = self.visit(role, "Audit log list", "/manage/audit/")
         self.record_scenario(
             self.SCENARIO, role, "View audit log",
-            "/admin/audit/", resp.status_code, [],
+            "/manage/audit/", resp.status_code, [],
         )
 
         # Filter audit log by date
         resp = self.visit(
             role, "Audit log filtered",
-            "/admin/audit/?date_from=2020-01-01&date_to=2030-12-31",
+            "/manage/audit/?date_from=2020-01-01&date_to=2030-12-31",
         )
         self.record_scenario(
             self.SCENARIO, role, "Filter audit log by date",
-            "/admin/audit/?date_from=2020-01-01&date_to=2030-12-31",
+            "/manage/audit/?date_from=2020-01-01&date_to=2030-12-31",
             resp.status_code, [],
         )
 
@@ -1184,7 +1184,7 @@ class AdminFullSetupScenario(UxScenarioBase):
         # Step 4: Create a metric
         resp = self.visit_and_follow(
             role, "Create first metric",
-            "/plans/admin/metrics/create/",
+            "/manage/metrics/create/",
             data={
                 "name": "Language Proficiency",
                 "definition": "CLB level 1-12.",
@@ -1193,34 +1193,34 @@ class AdminFullSetupScenario(UxScenarioBase):
                 "max_value": "12",
                 "unit": "CLB level",
             },
-            expected_redirect="/plans/admin/metrics/",
+            expected_redirect="/manage/metrics/",
         )
         self.record_scenario(
             self.SCENARIO, role, "4. Create metric",
-            "/plans/admin/metrics/create/", resp.status_code, [],
+            "/manage/metrics/create/", resp.status_code, [],
         )
 
         # Step 5: Create an event type
         resp = self.visit_and_follow(
             role, "Create first event type",
-            "/events/admin/types/create/",
+            "/manage/event-types/create/",
             data={
                 "name": "Orientation Session",
                 "description": "Initial program orientation.",
                 "colour_hex": "#3B82F6",
                 "status": "active",
             },
-            expected_redirect="/events/admin/types/",
+            expected_redirect="/manage/event-types/",
         )
         self.record_scenario(
             self.SCENARIO, role, "5. Create event type",
-            "/events/admin/types/create/", resp.status_code, [],
+            "/manage/event-types/create/", resp.status_code, [],
         )
 
         # Step 6: Create a user
         resp = self.visit_and_follow(
             role, "Create first staff user",
-            "/admin/users/new/",
+            "/manage/users/new/",
             data={
                 "username": "settlementworker",
                 "display_name": "Amir Settlement Worker",
@@ -1229,11 +1229,11 @@ class AdminFullSetupScenario(UxScenarioBase):
                 "password_confirm": "WorkerPass123!",
                 "email": "",
             },
-            expected_redirect="/admin/users/",
+            expected_redirect="/manage/users/",
         )
         self.record_scenario(
             self.SCENARIO, role, "6. Create staff user",
-            "/admin/users/new/", resp.status_code, [],
+            "/manage/users/new/", resp.status_code, [],
         )
 
         # Step 7: Assign user to program
@@ -1293,14 +1293,14 @@ class AdminFrenchWorkflow(UxScenarioBase):
             ("Features", "/admin/settings/features/"),
             ("Instance settings", "/admin/settings/instance/"),
             ("Terminology", "/admin/settings/terminology/"),
-            ("User list", "/admin/users/"),
-            ("Metric library", "/plans/admin/metrics/"),
+            ("User list", "/manage/users/"),
+            ("Metric library", "/manage/metrics/"),
             ("Programs list", "/programs/"),
-            ("Event types", "/events/admin/types/"),
-            ("Note templates", "/admin/settings/note-templates/"),
+            ("Event types", "/manage/event-types/"),
+            ("Note templates", "/manage/note-templates/"),
             ("Custom fields", "/participants/admin/fields/"),
-            ("Registration links", "/admin/registration/"),
-            ("Audit log", "/admin/audit/"),
+            ("Registration links", "/manage/registration/"),
+            ("Audit log", "/manage/audit/"),
         ]
 
         for step_name, url in pages:

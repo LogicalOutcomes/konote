@@ -183,7 +183,7 @@ class MetricTogglePermissionTest(TestCase):
     def test_admin_can_toggle(self):
         c = TestClient()
         c.login(username="admin", password="pass123")
-        url = reverse("plans:metric_toggle", args=[self.metric.pk])
+        url = reverse("metrics:metric_toggle", args=[self.metric.pk])
         response = c.post(url)
         self.assertEqual(response.status_code, 200)
         self.metric.refresh_from_db()
@@ -192,7 +192,7 @@ class MetricTogglePermissionTest(TestCase):
     def test_staff_cannot_toggle(self):
         c = TestClient()
         c.login(username="staff", password="pass123")
-        url = reverse("plans:metric_toggle", args=[self.metric.pk])
+        url = reverse("metrics:metric_toggle", args=[self.metric.pk])
         response = c.post(url)
         self.assertEqual(response.status_code, 403)
 
@@ -213,7 +213,7 @@ class MetricExportTest(TestCase):
     def test_admin_can_export(self):
         c = TestClient()
         c.login(username="admin", password="pass123")
-        response = c.get(reverse("plans:metric_export"))
+        response = c.get(reverse("metrics:metric_export"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
         self.assertIn("metric_definitions.csv", response["Content-Disposition"])
@@ -225,13 +225,13 @@ class MetricExportTest(TestCase):
     def test_staff_cannot_export(self):
         c = TestClient()
         c.login(username="staff", password="pass123")
-        response = c.get(reverse("plans:metric_export"))
+        response = c.get(reverse("metrics:metric_export"))
         self.assertEqual(response.status_code, 403)
 
     def test_export_includes_all_columns(self):
         c = TestClient()
         c.login(username="admin", password="pass123")
-        response = c.get(reverse("plans:metric_export"))
+        response = c.get(reverse("metrics:metric_export"))
         content = response.content.decode("utf-8-sig")
         header_line = content.split("\n")[0]
         for col in ["id", "name", "definition", "category", "min_value",
@@ -311,7 +311,7 @@ class MetricImportUpdateTest(TestCase):
         """Full round-trip: upload CSV with id → preview → confirm → metric updated."""
         c = TestClient()
         c.login(username="admin", password="pass123")
-        url = reverse("plans:metric_import")
+        url = reverse("metrics:metric_import")
 
         # Step 1: Upload CSV with id column
         csv_content = f"id,name,definition,category,min_value,max_value,unit,is_enabled,status\n{self.metric.pk},PHQ-9 Revised,Updated depression scale,mental_health,0,27,score,yes,active\n"

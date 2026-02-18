@@ -31,18 +31,18 @@ class EventTypeAdminTest(TestCase):
     def test_admin_can_list_event_types(self):
         EventType.objects.create(name="Intake", colour_hex="#10B981")
         self.http.login(username="admin", password="pass")
-        resp = self.http.get("/events/admin/types/")
+        resp = self.http.get("/manage/event-types/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Intake")
 
     def test_staff_cannot_access_event_type_admin(self):
         self.http.login(username="staff", password="pass")
-        resp = self.http.get("/events/admin/types/")
+        resp = self.http.get("/manage/event-types/")
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_can_create_event_type(self):
         self.http.login(username="admin", password="pass")
-        resp = self.http.post("/events/admin/types/create/", {
+        resp = self.http.post("/manage/event-types/create/", {
             "name": "Crisis",
             "description": "Crisis event",
             "colour_hex": "#EF4444",
@@ -54,7 +54,7 @@ class EventTypeAdminTest(TestCase):
     def test_admin_can_edit_event_type(self):
         et = EventType.objects.create(name="Old Name", colour_hex="#000000")
         self.http.login(username="admin", password="pass")
-        resp = self.http.post(f"/events/admin/types/{et.pk}/edit/", {
+        resp = self.http.post(f"/manage/event-types/{et.pk}/edit/", {
             "name": "New Name",
             "description": "",
             "colour_hex": "#FF0000",
@@ -412,13 +412,13 @@ class AuditLogViewerTest(TestCase):
             resource_type="session",
         )
         self.http.login(username="admin", password="pass")
-        resp = self.http.get("/admin/audit/")
+        resp = self.http.get("/manage/audit/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "session")
 
     def test_staff_cannot_access_audit_log(self):
         self.http.login(username="staff", password="pass")
-        resp = self.http.get("/admin/audit/")
+        resp = self.http.get("/manage/audit/")
         self.assertEqual(resp.status_code, 403)
 
     def test_audit_log_csv_export(self):
@@ -429,7 +429,7 @@ class AuditLogViewerTest(TestCase):
             resource_type="client",
         )
         self.http.login(username="admin", password="pass")
-        resp = self.http.get("/admin/audit/export/")
+        resp = self.http.get("/manage/audit/export/")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp["Content-Type"], "text/csv")
         self.assertIn("attachment", resp["Content-Disposition"])
@@ -448,7 +448,7 @@ class AuditLogViewerTest(TestCase):
             resource_type="client",
         )
         self.http.login(username="admin", password="pass")
-        resp = self.http.get("/admin/audit/?action=login")
+        resp = self.http.get("/manage/audit/?action=login")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "session")
         # Check that the "create" action's "client" resource_type is not in

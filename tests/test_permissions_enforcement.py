@@ -21,8 +21,8 @@ Admin keys (enforced by @admin_required, not the permission matrix):
   user.manage, settings.manage, program.manage
   Tested separately — non-admin users should always get 403.
 
-Matrix-enforced keys under /admin/ URL:
-  audit.view — middleware exempts /admin/audit/, view uses @requires_permission
+Matrix-enforced keys under /manage/ URL:
+  audit.view — lives under /manage/audit/, view uses @requires_permission
 """
 from cryptography.fernet import Fernet
 from django.test import TestCase, override_settings
@@ -131,20 +131,20 @@ PERMISSION_URL_MAP = {
     "erasure.manage": {"url": "/erasure/"},
 
     # Admin keys — enforced by @admin_required, not permission matrix
-    "user.manage": {"url": "/admin/users/"},  # Now uses @requires_permission with allow_admin=True
+    "user.manage": {"url": "/manage/users/"},  # Now uses @requires_permission with allow_admin=True
     "settings.manage": {"url": "/admin/settings/", "admin_only": True},
     "program.manage": {"url": "/programs/create/", "admin_only": True},
 
-    # audit.view — lives under /admin/ but middleware exempts it;
+    # audit.view — lives under /manage/audit/;
     # enforced by @requires_permission("audit.view", allow_admin=True)
-    "audit.view": {"url": "/admin/audit/"},
+    "audit.view": {"url": "/manage/audit/"},
 
     # PM admin features — enforced by @requires_permission with allow_admin=True
-    "template.plan.manage": {"url": "/admin/templates/"},
-    "template.note.manage": {"url": "/admin/settings/note-templates/"},
-    "event_type.manage": {"url": "/events/admin/types/"},
-    "metric.manage": {"url": "/plans/admin/metrics/"},
-    "registration.manage": {"url": "/admin/registration/"},
+    "template.plan.manage": {"url": "/manage/templates/"},
+    "template.note.manage": {"url": "/manage/note-templates/"},
+    "event_type.manage": {"url": "/manage/event-types/"},
+    "metric.manage": {"url": "/manage/metrics/"},
+    "registration.manage": {"url": "/manage/registration/"},
 }
 
 ALL_ROLES = ["receptionist", "staff", "program_manager", "executive"]

@@ -408,12 +408,12 @@ class NoteViewsTest(TestCase):
 
     def test_admin_can_access_template_list(self):
         self.http.login(username="admin", password="pass")
-        resp = self.http.get("/admin/settings/note-templates/")
+        resp = self.http.get("/manage/note-templates/")
         self.assertEqual(resp.status_code, 200)
 
     def test_staff_cannot_access_template_admin(self):
         self.http.login(username="staff", password="pass")
-        resp = self.http.get("/admin/settings/note-templates/")
+        resp = self.http.get("/manage/note-templates/")
         self.assertEqual(resp.status_code, 403)
 
     # -- Consent Workflow (PRIV1) --
