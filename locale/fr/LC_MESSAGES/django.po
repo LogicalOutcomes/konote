@@ -13569,3 +13569,9 @@ msgstr "Recommandé"
 
 msgid "Registration submissions"
 msgstr "Soumissions d'inscription"
+
+msgid "Active suggestion themes"
+msgstr "Thèmes de suggestions actifs"
+
+msgid "Theme"
+msgstr "Thème"
