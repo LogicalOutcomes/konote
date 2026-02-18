@@ -246,28 +246,31 @@ def unlinked_partial(request, pk):
             "date": note.effective_date,
         })
 
-    # Also get suggestions linked to OTHER themes (for reference)
+    # Also get suggestions linked to OTHER themes (for reference) — single query
     linked_to_other = []
-    other_linked_ids = set(
+    other_links = (
         SuggestionLink.objects.filter(theme__program=theme.program)
         .exclude(theme=theme)
-        .values_list("progress_note_id", flat=True)
+        .select_related("progress_note", "theme")
+        .order_by("progress_note_id")[:25]
     )
-    if other_linked_ids:
-        other_notes = ProgressNote.objects.filter(pk__in=list(other_linked_ids)[:25])
-        for note in other_notes:
-            text = note.participant_suggestion
-            themes_for_note = list(
-                SuggestionLink.objects.filter(progress_note=note)
-                .values_list("theme__name", flat=True)
-            )
-            linked_to_other.append({
-                "note_id": note.pk,
-                "text": text,
-                "preview": (text[:50] + "...") if len(text) > 50 else text,
-                "priority": note.suggestion_priority,
-                "themes": themes_for_note,
-            })
+    # Group theme names by note
+    note_theme_map = {}  # note_id -> {"note": ..., "themes": set()}
+    for link in other_links:
+        nid = link.progress_note_id
+        if nid not in note_theme_map:
+            note_theme_map[nid] = {"note": link.progress_note, "themes": set()}
+        note_theme_map[nid]["themes"].add(link.theme.name)
+    for entry in note_theme_map.values():
+        note = entry["note"]
+        text = note.participant_suggestion
+        linked_to_other.append({
+            "note_id": note.pk,
+            "text": text,
+            "preview": (text[:50] + "...") if len(text) > 50 else text,
+            "priority": note.suggestion_priority,
+            "themes": list(entry["themes"]),
+        })
 
     has_more = (offset + page_size) < total_unlinked
     next_offset = offset + page_size
