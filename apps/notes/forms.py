@@ -314,6 +314,29 @@ class SuggestionThemeForm(forms.ModelForm):
             self.fields["program"].queryset = get_accessible_programs(requesting_user)
         self.fields["addressed_note"].required = False
 
+    def clean_name(self):
+        name = self.cleaned_data.get("name", "")
+        # Normalise: strip and collapse internal whitespace
+        name = " ".join(name.split())
+        return name
+
+    def clean(self):
+        cleaned = super().clean()
+        name = cleaned.get("name", "")
+        program = cleaned.get("program")
+        if name and program:
+            qs = SuggestionTheme.objects.filter(
+                program=program, name__iexact=name,
+            )
+            if self.instance and self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError(
+                    _("A theme called \"%(name)s\" already exists in this program.")
+                    % {"name": name}
+                )
+        return cleaned
+
 
 class SuggestionThemeStatusForm(forms.ModelForm):
     """Inline status update for a suggestion theme.
