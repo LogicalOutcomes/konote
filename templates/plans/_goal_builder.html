@@ -4,6 +4,7 @@
     <header>
         <h3 style="margin: 0;">{% trans "Goal Builder" %}</h3>
         <small>{% trans "Have a conversation to define a measurable goal together." %}</small>
+        <small class="secondary">{% trans "Your conversation is processed by AI. Names and personal details are removed before sending." %}</small>
         <small><a href="{% url 'plans:goal_create' client_id=client.pk %}" class="secondary">{% trans "Prefer to fill in the form yourself? Go to manual form" %}</a></small>
     </header>
 
