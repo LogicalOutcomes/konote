@@ -60,11 +60,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Fix portal session isolation test — accept 404 as valid denial — 2026-02-18 (TEST-PORTAL1)
 - [x] Fix BLOCKER-1 a11y test — updated to expect skip link (WCAG best practice) — 2026-02-18 (TEST-A11Y1)
 
-### Phase: AI Target Suggestion — Polish
-
-- [ ] Use CSS custom property for error colour in `.ai-suggest-error` instead of hardcoded `#dc3545` (AI-CSS1)
-- [ ] Add `%(client)s` form of "What does the client want to work on?" blocktrans msgid to .po file — pre-existing gap (AI-I18N1)
-- [ ] Add `@require_POST` decorator to all AI views for explicitness (AI-VIEWS1)
+### Phase: AI Target Suggestion — Polish — complete!
 
 ### Phase: UX Fixes
 
@@ -96,6 +92,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ## Recently Done
 
 - [x] Active batch — theme fixes (FIX1–6), near-term improvements (BUG-SW1, URL-CLEAN1/2, QA-W60/W61), dashboard text (UX-DASH1), PERF2 already done, VERIFY2 confirmed — 2026-02-18 (THEME-FIX1–6, BUG-SW1, URL-CLEAN1, URL-CLEAN2, QA-W60, QA-W61, PERF2, UX-DASH1, VERIFY2)
+- [x] Use CSS custom property for error colour in `.ai-suggest-error` and `.gb-error` — replaced hardcoded `#dc3545` with theme tokens — 2026-02-18 (AI-CSS1)
+- [x] Add `%(client)s` blocktrans msgids to .po file with French translations — 2026-02-18 (AI-I18N1)
+- [x] Add `@require_POST` decorator to all 8 AI POST-only views — 2026-02-18 (AI-VIEWS1)
 - [x] Add test coverage for `ai_enabled` in goal_create view context — one test with AI on, one with AI off — 2026-02-18 (TEST-GB1)
 - [x] Git housekeeping — deleted 31+ stale branches, cleared 10 stashes, removed 3 worktrees, rebased and merged PR #136 (cleanup) and PR #143 (10 test fixes) — 2026-02-18 (HOUSEKEEP1)
 - [x] Agency Onboarding Interview Pack — 12 refinements: session split, privacy opener, role name alignment, jargon removal, summaries, warmer scenarios, deployment checklists — 2026-02-18 (ONBOARD1–12)

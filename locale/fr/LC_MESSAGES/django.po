@@ -2769,8 +2769,16 @@ msgstr "Nom de la section"
 msgid "Reason for status change (optional)"
 msgstr "Raison du changement de statut (facultatif)"
 
-msgid "What does the client want to work on?"
-msgstr "Sur quoi le participant veut-il travailler?"
+msgid "What does the %(client)s want to work on?"
+msgstr "Sur quoi le/la %(client)s veut-il/elle travailler ?"
+
+msgid ""
+"What does the %(client)s want to work on? Describe it in plain language — "
+"for example, \"find stable housing\" or \"get better at managing anxiety\"."
+msgstr ""
+"Sur quoi le/la %(client)s veut-il/elle travailler ? Décrivez-le en langage "
+"simple — par exemple, « trouver un logement stable » ou « mieux gérer son "
+"anxiété »."
 
 msgid "Write what they said, in their own words."
 msgstr "Écrivez ce qu'il/elle a dit, dans ses propres mots."
