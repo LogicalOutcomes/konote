@@ -4,19 +4,19 @@
 {% if theme.status == "addressed" %}
 <tr id="theme-{{ theme.pk }}" class="theme-row-addressed">
     <td><s>{{ theme.name }}</s></td>
-    <td>{{ theme.link_count }}</td>
+    <td style="text-align:right;">{{ theme.link_count }}</td>
     <td>—</td>
     <td><span class="badge badge-success badge-sm">{% trans "Addressed" %}</span></td>
-    <td></td>
+    {% if can_manage_themes %}<td></td>{% endif %}
 </tr>
 
 {% elif theme.status == "wont_do" %}
 <tr id="theme-{{ theme.pk }}" class="theme-row-addressed">
     <td><s>{{ theme.name }}</s></td>
-    <td>{{ theme.link_count }}</td>
+    <td style="text-align:right;">{{ theme.link_count }}</td>
     <td>—</td>
     <td><span class="badge badge-neutral badge-sm">{% trans "Won't Do" %}</span></td>
-    <td></td>
+    {% if can_manage_themes %}<td></td>{% endif %}
 </tr>
 
 {% else %}
@@ -24,7 +24,7 @@
     <td>
         <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}">{{ theme.name }}</a>
     </td>
-    <td>{{ theme.link_count }}</td>
+    <td style="text-align:right;">{{ theme.link_count }}</td>
     <td>
         {% if theme.priority == "urgent" %}
         <span class="badge badge-danger badge-sm">{% trans "Urgent" %}</span>
@@ -41,8 +41,8 @@
         <span class="badge badge-neutral badge-sm">{% trans "Open" %}</span>
         {% endif %}
     </td>
+    {% if can_manage_themes %}
     <td>
-        {% if can_manage_themes %}
         <div class="theme-row-actions">
             {% if theme.status == "open" %}
             <button
@@ -67,7 +67,7 @@
                 {% trans "Addressed" %}
             </button>
         </div>
-        {% endif %}
     </td>
+    {% endif %}
 </tr>
 {% endif %}
