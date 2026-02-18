@@ -45,7 +45,11 @@ from apps.groups.models import (
     ProjectMilestone,
     ProjectOutcome,
 )
-from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+from apps.communications.models import StaffMessage
+from apps.notes.models import (
+    MetricValue, ProgressNote, ProgressNoteTarget,
+    SuggestionLink, SuggestionTheme, recalculate_theme_priority,
+)
 from apps.plans.models import (
     MetricDefinition,
     PlanSection,
