@@ -645,6 +645,169 @@ PARTICIPANT_SUGGESTIONS = [
 
 
 # ---------------------------------------------------------------------------
+# Suggestion themes — grouped by program for executive dashboard & insights
+# ---------------------------------------------------------------------------
+
+PROGRAM_THEMES = {
+    "Supported Employment": [
+        {
+            "name": "Evening & weekend session availability",
+            "description": "Multiple participants have asked about sessions outside regular business hours to accommodate work schedules.",
+            "status": "open",
+            "source": "ai_generated",
+            "keywords": "evening,weekend,hours,schedule,work,day",
+        },
+        {
+            "name": "Peer mentoring from program alumni",
+            "description": "Interest in connecting with people who have completed the program and found work.",
+            "status": "in_progress",
+            "source": "ai_generated",
+            "keywords": "buddy,mentor,alumni,share,working,group",
+            "addressed_note": "Recruiting two alumni volunteers to pilot monthly peer sessions.",
+        },
+    ],
+    "Housing Stability": [
+        {
+            "name": "Faster response to maintenance requests",
+            "description": "Participants report delays getting landlords to address repairs and want help advocating.",
+            "status": "open",
+            "source": "manual",
+            "keywords": "maintenance,repair,landlord,response",
+        },
+        {
+            "name": "Help navigating tenant rights",
+            "description": "Several participants didn't know their rights around rent increases and eviction notices.",
+            "status": "addressed",
+            "source": "ai_generated",
+            "keywords": "tenant,rights,eviction,rent,legal",
+            "addressed_note": "Created a tenant rights info sheet and added it to intake package.",
+        },
+    ],
+    "Youth Drop-In": [
+        {
+            "name": "More variety in group activities",
+            "description": "Youth want more options beyond the current rotation — art, cooking, outdoor activities.",
+            "status": "open",
+            "source": "ai_generated",
+            "keywords": "group,activities,variety,options",
+        },
+        {
+            "name": "Quiet space for homework",
+            "description": "Some youth want a calmer area to do homework before or after group activities.",
+            "status": "in_progress",
+            "source": "manual",
+            "keywords": "homework,quiet,space,study",
+            "addressed_note": "Testing a homework corner in the back room on Tuesdays and Thursdays.",
+        },
+        {
+            "name": "Later drop-in hours",
+            "description": "Older youth have asked about staying later, especially on Fridays.",
+            "status": "open",
+            "source": "ai_generated",
+            "keywords": "hours,later,evening,stay",
+        },
+    ],
+    "Newcomer Connections": [
+        {
+            "name": "Buddy system for newcomers",
+            "description": "New arrivals feel isolated and want to be paired with someone who arrived earlier.",
+            "status": "open",
+            "source": "ai_generated",
+            "keywords": "buddy,alone,new,paired,start",
+        },
+        {
+            "name": "Childcare during sessions",
+            "description": "Parents with young children struggle to attend without childcare support.",
+            "status": "open",
+            "source": "manual",
+            "keywords": "childcare,children,attend,sessions",
+        },
+    ],
+    "Community Kitchen": [
+        {
+            "name": "Recipe variety and dietary options",
+            "description": "Participants want more recipes reflecting different cultural backgrounds and dietary needs.",
+            "status": "in_progress",
+            "source": "ai_generated",
+            "keywords": "recipe,variety,dietary,cultural,options,materials",
+            "addressed_note": "Surveying participants about dietary needs and cultural preferences.",
+        },
+        {
+            "name": "Take-home portions for families",
+            "description": "Several participants asked about taking extra portions home for family members.",
+            "status": "open",
+            "source": "ai_generated",
+            "keywords": "take,home,family,portions",
+        },
+    ],
+}
+
+
+# ---------------------------------------------------------------------------
+# Staff messages — operational messages between staff about participants
+# ---------------------------------------------------------------------------
+
+DEMO_STAFF_MESSAGES = [
+    {
+        "client": "DEMO-001",
+        "left_by": "demo-frontdesk",
+        "for_user": "demo-worker-1",
+        "message": "Jordan called \u2014 wants to move Thursday's session to Friday if possible",
+        "status": "unread",
+        "days_ago": 1,
+    },
+    {
+        "client": "DEMO-002",
+        "left_by": "demo-frontdesk",
+        "for_user": "demo-worker-1",
+        "message": "Taylor dropped off updated resume at front desk",
+        "status": "unread",
+        "days_ago": 2,
+    },
+    {
+        "client": "DEMO-004",
+        "left_by": "demo-frontdesk",
+        "for_user": "demo-worker-1",
+        "message": "Sam's landlord called asking for a letter of support \u2014 said you'd know what it's about",
+        "status": "read",
+        "days_ago": 4,
+    },
+    {
+        "client": "DEMO-007",
+        "left_by": "demo-frontdesk",
+        "for_user": "demo-worker-2",
+        "message": "Priya's parent called \u2014 family may be away next week",
+        "status": "unread",
+        "days_ago": 1,
+    },
+    {
+        "client": "DEMO-010",
+        "left_by": "demo-frontdesk",
+        "for_user": "demo-worker-2",
+        "message": "Fatima asked if conversation circle can be moved to afternoon",
+        "status": "unread",
+        "days_ago": 3,
+    },
+    {
+        "client": "DEMO-013",
+        "left_by": "demo-worker-2",
+        "for_user": "demo-worker-1",
+        "message": "Checked in with Marcus at kitchen session \u2014 seemed quieter than usual, might be worth a follow-up",
+        "status": "unread",
+        "days_ago": 2,
+    },
+    {
+        "client": "DEMO-005",
+        "left_by": "demo-manager",
+        "for_user": "demo-worker-1",
+        "message": "Kai's housing tribunal date is March 4th \u2014 can you update the file?",
+        "status": "read",
+        "days_ago": 5,
+    },
+]
+
+
+# ---------------------------------------------------------------------------
 # Program-specific note texts
 # ---------------------------------------------------------------------------
 
