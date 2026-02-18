@@ -19,9 +19,9 @@
 
 ### Phase: QA Round 6 Fixes
 
-- [ ] 🔨 Fix receptionist over-permission on meetings page — add permission check to /events/meetings/ view (PERMISSION-5 -> QA-W56)
-- [ ] 🔨 Fix language middleware — refactor to make user profile preference authoritative, resolving session contamination (BUG-24, BUG-14 -> QA-W57)
-- [ ] 🔨 Translate alert text "Safety concern noted" for French interface (IMPROVE-8 -> QA-W58)
+- [x] Fix receptionist over-permission on meetings page — add permission check to /events/meetings/ view (PERMISSION-5 -> QA-W56)
+- [x] Fix language persistence — set explicit preferred_language for all English test users + harden sync_language_on_login (BUG-24, BUG-14 -> QA-W57)
+- [x] IMPROVE-8 closed — "Safety concern noted" is user-entered alert content (test data), not a translatable UI string. Same finding as QA-W23 from Round 2. (IMPROVE-8 -> QA-W58)
 
 ## Do Occasionally
 
@@ -74,6 +74,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
 - [ ] Audit all views for missing permission checks — PERMISSION-5 revealed nav hides link but view is unguarded (QA-W60)
+- [ ] Add program parameter to _ensure_client note creation — currently hardcodes program_a (QA-W61)
+- [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
 
 ## Recently Done
 

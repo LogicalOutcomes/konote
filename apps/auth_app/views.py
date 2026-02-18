@@ -67,7 +67,10 @@ def sync_language_on_login(request, user):
             lang_code = "en"
             translation.activate(lang_code)
     else:
-        lang_code = translation.get_language() or "en"
+        # BUG-24: Use request.LANGUAGE_CODE (set by SafeLocaleMiddleware from
+        # cookie/Accept-Language) rather than translation.get_language() which
+        # can be stale from a previous request's thread-local activation.
+        lang_code = getattr(request, "LANGUAGE_CODE", None) or translation.get_language() or "en"
         user.preferred_language = lang_code
         user.save(update_fields=["preferred_language"])
     return lang_code
