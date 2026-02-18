@@ -20,11 +20,20 @@
     <p>{% trans "No progress notes found for this program in the selected time period. Try a longer time period or check that notes have been recorded." %}</p>
 </article>
 
-{% elif data_tier == "sparse" %}
-{# ── Sparse data: snapshot only ── #}
+{% else %}
+{# ── Data tier notices ── #}
+{% if data_tier == "sparse" %}
 <article class="insights-notice" role="status">
     <p>{% trans "Insights will become richer as more notes are recorded. At least 20 notes across 3 months are needed for trend analysis." %}</p>
 </article>
+{% elif data_tier == "limited" %}
+<article class="insights-notice" role="status">
+    <p>{% trans "Based on limited data. Insights will become more reliable as more notes are recorded." %}</p>
+</article>
+{% endif %}
+
+{# ── Sparse: snapshot only ── #}
+{% if data_tier == "sparse" %}
 
 {% if structured.descriptor_distribution %}
 <h2>{% trans "Progress Snapshot" %}</h2>
@@ -44,68 +53,8 @@
 </div>
 {% endif %}
 
-{% if structured.suggestion_total or active_themes %}
-<h3>{% trans "Participant Suggestions" %}</h3>
-<div class="descriptor-pills">
-    {% for label, count in structured.suggestion_distribution.items %}
-    <span class="pill pill--engagement">{{ label }}: {{ count }}</span>
-    {% endfor %}
-</div>
-
-{% if active_themes %}
-<h4>{% trans "Suggestion Themes" %}</h4>
-{% for theme in active_themes %}
-<div class="theme-summary-card">
-    <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}"><strong>{{ theme.name }}</strong></a>
-    <span class="muted">({{ theme.link_count }} {% trans "suggestion(s)" %})</span>
-    {% if theme.status == "open" %}
-    <span class="badge badge-neutral">{% trans "Open" %}</span>
-    {% elif theme.status == "in_progress" %}
-    <span class="badge badge-warning">{% trans "In Progress" %}</span>
-    {% endif %}
-    {% if theme.priority == "urgent" %}
-    <span class="badge badge-danger">{% trans "Urgent" %}</span>
-    {% elif theme.priority == "important" %}
-    <span class="badge badge-warning">{% trans "Important" %}</span>
-    {% endif %}
-</div>
-{% endfor %}
-<p><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "View all themes" %} &rarr;</a></p>
-{% endif %}
-
-{% if unlinked_suggestions %}
-<h4>{% trans "Ungrouped Suggestions" %}</h4>
-<p class="muted">{% trans "Not yet linked to a theme." %}</p>
-{% for s in unlinked_suggestions %}
-<blockquote class="insight-quote">
-    <p>&ldquo;{{ s.text }}&rdquo;</p>
-    <cite>
-        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span>{% if can_view_notes %} &middot; {% endif %}{% endif %}
-        {% if can_view_notes %}<a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>{% endif %}
-    </cite>
-</blockquote>
-{% endfor %}
-{% elif not active_themes and suggestions %}
-{% for s in suggestions %}
-<blockquote class="insight-quote">
-    <p>&ldquo;{{ s.text }}&rdquo;</p>
-    <cite>
-        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span>{% if can_view_notes %} &middot; {% endif %}{% endif %}
-        {% if can_view_notes %}<a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>{% endif %}
-    </cite>
-</blockquote>
-{% endfor %}
-{% endif %}
-{% endif %}
-
 {% else %}
 {# ── Enough data for trends ── #}
-
-{% if data_tier == "limited" %}
-<article class="insights-notice" role="status">
-    <p>{% trans "Based on limited data. Insights will become more reliable as more notes are recorded." %}</p>
-</article>
-{% endif %}
 
 {# ── Hero: Descriptor trend chart ── #}
 {% if structured.descriptor_trend %}
@@ -170,58 +119,81 @@
 {% if interp_snapshot %}<p class="insight-interpretation">{{ interp_snapshot }}</p>{% endif %}
 {% endif %}
 
-{# ── Participant feedback (suggestions + themes) ── #}
+{% endif %}{# end sparse vs trend #}
+
+{# ══════════════════════════════════════════════════════════════════ #}
+{# ── Participant Feedback — unified section (all data tiers) ───── #}
+{# ══════════════════════════════════════════════════════════════════ #}
 {% if structured.suggestion_total or active_themes %}
-<h3>{% trans "Participant Suggestions" %}</h3>
+<section class="feedback-section" aria-labelledby="feedback-heading">
+<h3 id="feedback-heading">
+    {% trans "Participant Feedback" %}
+    <small class="muted">({% blocktrans with total=structured.suggestion_total count counter=structured.suggestion_total %}{{ total }} suggestion this period{% plural %}{{ total }} suggestions this period{% endblocktrans %})</small>
+</h3>
 <p class="chart-description muted">{% trans "Things participants have asked for or suggested — recorded by staff in progress notes. These can help shape program improvements." %}</p>
-<p class="muted">
-    {% blocktrans with total=structured.suggestion_total count counter=structured.suggestion_total %}{{ total }} suggestion recorded this period.{% plural %}{{ total }} suggestions recorded this period.{% endblocktrans %}
-</p>
-<div class="descriptor-pills">
-    {% for label, count in structured.suggestion_distribution.items %}
-    <span class="pill pill--engagement">{{ label }}: {{ count }}</span>
-    {% endfor %}
-</div>
 {% if interp_suggestions %}<p class="insight-interpretation">{{ interp_suggestions }}</p>{% endif %}
 
-{# Themes first — the primary way to consume grouped feedback #}
-{% if active_themes %}
-<h4>{% trans "Suggestion Themes" %}</h4>
-{% for theme in active_themes %}
-<div class="theme-summary-card">
-    <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}"><strong>{{ theme.name }}</strong></a>
-    <span class="muted">({{ theme.link_count }} {% trans "suggestion(s)" %})</span>
-    {% if theme.status == "open" %}
-    <span class="badge badge-neutral">{% trans "Open" %}</span>
-    {% elif theme.status == "in_progress" %}
-    <span class="badge badge-warning">{% trans "In Progress" %}</span>
-    {% endif %}
-    {% if theme.priority == "urgent" %}
-    <span class="badge badge-danger">{% trans "Urgent" %}</span>
-    {% elif theme.priority == "important" %}
-    <span class="badge badge-warning">{% trans "Important" %}</span>
+{# Summary box: responsiveness + ungrouped count #}
+{% if total_theme_count %}
+<div class="feedback-summary-box" role="status" aria-label="{% trans 'Suggestion theme progress' %}">
+    <div class="feedback-summary-row">
+        <strong>
+            {% blocktrans with addressed=addressed_themes_count total=total_theme_count count counter=addressed_themes_count %}{{ addressed }} of {{ total }} theme addressed{% plural %}{{ addressed }} of {{ total }} themes addressed{% endblocktrans %}
+        </strong>
+        <progress value="{{ addressed_themes_count }}" max="{{ total_theme_count }}"
+                  aria-label="{% trans 'Themes addressed' %}"
+                  style="margin: 0.25rem 0 0; max-width: 300px;">
+        </progress>
+    </div>
+    {% if unlinked_suggestions %}
+    <div class="feedback-summary-note muted">
+        {% blocktrans with count=unlinked_suggestions|length count counter=unlinked_suggestions|length %}{{ count }} suggestion not yet grouped into a theme{% plural %}{{ count }} suggestions not yet grouped into a theme{% endblocktrans %}
+    </div>
     {% endif %}
 </div>
-{% endfor %}
+{% endif %}
+
+{# Active themes table #}
+{% if active_themes %}
+<table class="feedback-themes-table" role="table" aria-label="{% trans 'Active suggestion themes' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Theme" %}</th>
+            <th scope="col" style="width:6rem;text-align:right;">{% trans "Suggestions" %}</th>
+            <th scope="col" style="width:6rem;">{% trans "Priority" %}</th>
+            <th scope="col" style="width:7rem;">{% trans "Status" %}</th>
+            {% if can_manage_themes %}<th scope="col" style="width:12rem;">{% trans "Actions" %}</th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for theme in active_themes %}
+        {% include "reports/_theme_row.html" %}
+        {% endfor %}
+    </tbody>
+</table>
 <p><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "View all themes" %} &rarr;</a></p>
 {% endif %}
 
-{# Ungrouped suggestions — the "inbox" of items not yet linked #}
+{# Ungrouped suggestions #}
 {% if unlinked_suggestions %}
-<h4>{% trans "Ungrouped Suggestions" %}</h4>
-<p class="muted">{% trans "Not yet linked to a theme." %}</p>
-{% for s in unlinked_suggestions %}
-<blockquote class="insight-quote">
-    <p>&ldquo;{{ s.text }}&rdquo;</p>
-    <cite>
-        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span>{% if can_view_notes %} &middot; {% endif %}{% endif %}
-        {% if s.date %}{{ s.date }} &middot; {% endif %}
-        {% if can_view_notes %}<a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>{% endif %}
-    </cite>
-</blockquote>
-{% endfor %}
+<details {% if not active_themes %}open{% endif %}>
+    <summary>
+        {% blocktrans with count=unlinked_suggestions|length count counter=unlinked_suggestions|length %}{{ count }} Ungrouped Suggestion{% plural %}{{ count }} Ungrouped Suggestions{% endblocktrans %}
+    </summary>
+    <p class="muted">{% trans "Not yet linked to a theme." %}</p>
+    {% for s in unlinked_suggestions %}
+    <blockquote class="insight-quote">
+        <p>&ldquo;{{ s.text }}&rdquo;</p>
+        <cite>
+            {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span>{% if can_view_notes %} &middot; {% endif %}{% endif %}
+            {% if s.date %}{{ s.date }} &middot; {% endif %}
+            {% if can_view_notes %}<a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>{% endif %}
+        </cite>
+    </blockquote>
+    {% endfor %}
+</details>
 {% elif not active_themes and suggestions %}
-{# Fallback: no themes exist yet, show all suggestions #}
+{# No themes exist yet — show all suggestions directly #}
 {% for s in suggestions %}
 <blockquote class="insight-quote">
     <p>&ldquo;{{ s.text }}&rdquo;</p>
@@ -233,12 +205,29 @@
 </blockquote>
 {% endfor %}
 {% endif %}
+
+{# Addressed themes (collapsed) #}
+{% if addressed_themes %}
+<details>
+    <summary>
+        {% blocktrans with count=addressed_themes_count count counter=addressed_themes_count %}{{ count }} Addressed Theme{% plural %}{{ count }} Addressed Themes{% endblocktrans %}
+    </summary>
+    <ul class="addressed-themes-list">
+        {% for theme in addressed_themes %}
+        <li>
+            <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}">{{ theme.name }}</a>
+            <span class="muted">({{ theme.link_count }})</span>
+        </li>
+        {% endfor %}
+    </ul>
+</details>
 {% endif %}
 
-{# ── Suggestion Themes ── #}
-{% include "reports/_insights_themes.html" %}
+</section>
+{% endif %}{# end suggestion_total or active_themes #}
 
 {# ── Quotes ── #}
+{% if data_tier != "sparse" %}
 {% if quotes %}
 <h3>{% trans "What participants are saying" %}</h3>
 {% for quote in quotes %}
@@ -260,14 +249,14 @@
     {% trans "Use the AI summary below for a narrative overview of participant feedback." %}
     {% endif %}
 </p>
-{% elif data_tier != "sparse" and structured.participant_count < min_participants %}
+{% elif structured.participant_count < min_participants %}
 <p class="insights-privacy-note">
     {% blocktrans with count=min_participants %}Individual quotes are not shown for programs with fewer than {{ count }} active participants, to protect confidentiality. Quotes are available on each participant's Analysis tab.{% endblocktrans %}
 </p>
 {% endif %}
 
 {# ── AI summary button ── #}
-{% if ai_enabled and data_tier != "sparse" %}
+{% if ai_enabled %}
 <hr>
 <div id="ai-insights-container">
     <button
@@ -283,8 +272,9 @@
     <small class="muted">{% trans "Uses AI to generate a narrative draft with cited quotes. Review before including in reports." %}</small>
 </div>
 {% endif %}
+{% endif %}{# end not sparse #}
 
-{% endif %}{# end data_tier check #}
+{% endif %}{# end note_count > 0 #}
 
 </section>
 
