@@ -27,13 +27,18 @@ urlpatterns = [
     # Redirects for old admin URLs (BEFORE app includes so they match first)
     path("plans/admin/metrics/<path:rest>", RedirectView.as_view(url="/manage/metrics/%(rest)s", permanent=True)),
     path("plans/admin/metrics/", RedirectView.as_view(url="/manage/metrics/", permanent=True)),
+    path("plans/client/<path:rest>", RedirectView.as_view(url="/plans/participant/%(rest)s", permanent=True)),
     path("plans/", include("apps.plans.urls")),
+    path("notes/client/<path:rest>", RedirectView.as_view(url="/notes/participant/%(rest)s", permanent=True)),
     path("notes/", include("apps.notes.urls")),
     path("events/admin/types/<path:rest>", RedirectView.as_view(url="/manage/event-types/%(rest)s", permanent=True)),
     path("events/admin/types/", RedirectView.as_view(url="/manage/event-types/", permanent=True)),
+    path("events/client/<path:rest>", RedirectView.as_view(url="/events/participant/%(rest)s", permanent=True)),
     path("events/", include("apps.events.urls")),
+    path("communications/client/<path:rest>", RedirectView.as_view(url="/communications/participant/%(rest)s", permanent=True)),
     path("communications/", include("apps.communications.urls")),
     path("calendar/<str:token>/feed.ics", calendar_feed, name="calendar_feed"),
+    path("reports/client/<path:rest>", RedirectView.as_view(url="/reports/participant/%(rest)s", permanent=True)),
     path("reports/", include("apps.reports.urls")),
     path("groups/", include("apps.groups.urls")),
 
