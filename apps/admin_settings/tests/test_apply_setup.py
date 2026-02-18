@@ -546,7 +546,7 @@ class ApplySetupTests(TestCase):
         out = StringIO()
         call_command("apply_setup", path, stdout=out)
 
-        self.assertIn("applied successfully", out.getvalue())
+        self.assertIn("Setup complete", out.getvalue())
 
     # ------------------------------------------------------------------
     # Partial config
