@@ -233,7 +233,7 @@ class ApplySetupTests(TestCase):
         self.assertTrue(FeatureToggle.objects.get(feature_key="programs").is_enabled)
         self.assertTrue(FeatureToggle.objects.get(feature_key="events").is_enabled)
         self.assertFalse(FeatureToggle.objects.get(feature_key="shift_summaries").is_enabled)
-        self.assertIn("3 created", out.getvalue())
+        self.assertIn("3 toggle(s) set", out.getvalue())
 
     # ------------------------------------------------------------------
     # Programs
