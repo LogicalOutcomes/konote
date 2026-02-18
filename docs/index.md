@@ -18,28 +18,17 @@ Welcome! Find what you need based on what you're trying to do.
 
 ---
 
-## What's New
+## What's New (v2.2)
 
-- **Staff messaging & My Messages** — leave messages for case workers about participants, view and manage your inbox. Front desk can leave messages; staff and PMs can read messages for their programs.
-- **Client transfer workflow** — move participants between programs with a dedicated transfer form, permission key, and full audit trail. Confidential program enrolments are preserved.
-- **PM admin self-service** — program managers can now manage their own program's plan templates, note templates, event types, metrics, and registration links without needing a system administrator
-- **Portal staff management** — invite participants to the portal, manage and revoke access, reset MFA — all from the client detail page
-- **Automated meeting reminders** — the `send_reminders` command sends SMS/email reminders for meetings in the next 36 hours, with automatic retry for failures
-- **Weekly export summary emails** — the `send_export_summary` command emails admins a digest of all export activity for privacy oversight
-- **System health monitoring banners** — the Meetings page shows yellow/red warnings when SMS or email channels are experiencing failures
-- **Messaging & communications** — log phone calls, emails, SMS, and in-person contacts on the client timeline. Quick-log buttons for common interactions.
-- **Meetings & calendar** — schedule meetings with clients, track status (completed/cancelled/no-show), and subscribe to an iCal feed in Outlook or Google Calendar
-- **Consent management** — CASL-compliant consent tracking for SMS and email, with withdrawal dates and implied/express consent types
-- **Alert safety workflow** — two-person rule for alert cancellation: staff recommend, program managers approve or reject
-- **Report templates** — upload demographic breakdowns as CSV, generate reports with small-cell suppression
-- **Permissions audit & UX** — 48-key permission matrix enforced across all roles, scoped audit logs for program managers, role-aware 403 page
-- **French language support** — full bilingual interface with 748+ translated strings
-- **Client data erasure** — multi-PM approval workflow for PIPEDA/GDPR compliance
-- **Self-service registration** — public forms with capacity limits and duplicate detection
-- **Export hardening** — CSV injection protection, elevated export monitoring, secure download links
-- **Canadian localisation** — postal code and phone number validation
-- **Confidential programs** — sensitive program isolation with audit logging and duplicate detection
-- **Demo mode** — safe evaluation with separated demo data
+- **Suggestion tracking & Outcome Insights** — automated theme identification from participant feedback, responsiveness tracking, and executive dashboard integration
+- **PM self-service administration** — program managers manage their own templates, metrics, event types, and registration links at /manage/
+- **Staff messaging** — leave messages for case workers about participants, with My Messages dashboard and unread badges
+- **Client transfers** — move participants between programs with a dedicated transfer form, audit trail, and cross-program consent
+- **Portal staff management** — invite participants to the portal, manage and revoke access, reset MFA from the client detail page
+- **UX accessibility improvements** — 44px mobile touch targets, dark mode contrast fixes, WCAG 2.2 AA compliance
+- **Automated scheduling** — meeting reminders via SMS/email, weekly export summary emails for privacy oversight
+
+For a full history of changes, see the [Changelog](../CHANGELOG.md).
 
 ---
 
@@ -65,6 +54,7 @@ Welcome! Find what you need based on what you're trying to do.
 - [Security Operations](administering-KoNote.md#security-operations) — audit logs, encryption keys
 - [Export Operations](export-runbook.md) — managing exports and download links
 - [Confidential Programs & Matching](confidential-programs.md) — sensitive program isolation and duplicate detection
+- [Suggestion Themes](administering-KoNote.md#suggestion-themes) — tracking and responding to participant feedback
 - [Security Operations (detailed)](security-operations.md) — encryption, audit logging, erasure, export controls
 
 ### For Staff
@@ -106,5 +96,5 @@ Welcome! Find what you need based on what you're trying to do.
 
 ## Support
 
-- **Documentation issues:** [Open an issue on GitHub](https://github.com/your-org/KoNote-web/issues)
+- **Documentation issues:** [Open an issue on GitHub](https://github.com/gilliankerr/KoNote/issues)
 - **Security vulnerabilities:** See [SECURITY.md](../SECURITY.md)
