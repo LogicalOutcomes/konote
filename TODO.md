@@ -21,6 +21,15 @@
 
 - [x] Add French translations for 10 new strings in goal_form.html and _goal_builder.html — extract, translate, compile .po/.mo — 2026-02-18 (I18N-GB1)
 
+### Phase: Suggestion Themes — Review Follow-up (PRs #147, #149)
+
+- [ ] Add test for AI engine reopen-addressed-theme behaviour in test_theme_engine.py — process_ai_themes() should set addressed themes back to open (THEME-FIX1)
+- [ ] Fix `_winner_count` initialisation bug in deduplicate_themes() — first item's link_count not tracked, wrong pk chosen when 3+ duplicates exist (THEME-FIX2)
+- [ ] Align whitespace normalisation in deduplicate_themes() and merge_duplicate_themes to use `" ".join(name.split()).lower()` instead of `.strip().lower()` (THEME-FIX3)
+- [ ] Add TODO comment in entrypoint.sh linking merge step to future unique constraint migration — remove both together (THEME-FIX4)
+- [ ] Add unique constraint migration on SuggestionTheme(program, name) — run merge_duplicate_themes first, then deploy migration (THEME-FIX5)
+- [ ] Consider "Reopened" badge on theme rows if managers report confusion about addressed themes reappearing (THEME-FIX6)
+
 ### Phase: Post-Housekeeping Verification
 
 - [ ] Run full test suite (`pytest -m "not browser and not scenario_eval"`) to verify PR #143 test fixes pass against current main (VERIFY1)
