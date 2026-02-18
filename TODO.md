@@ -17,6 +17,10 @@
 
 ### Phase: Bug Fixes
 
+- [ ] Fix SCN-037 scenario YAML — empty `user: ''` prerequisite causes `User '' not found` (QA-FIX1)
+- [ ] Fix SCN-084 — seed demo client 'Priya Sharma' or update scenario prerequisites (QA-FIX2)
+- [ ] Fix SCN-049 — Shared Device Handoff selectors fail (`a[href*='marcus']`, logout link), browser crashes (QA-FIX3)
+
 ### Phase: Communication Modules — complete!
 
 
