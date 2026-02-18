@@ -464,6 +464,51 @@ def recalculate_theme_priority(theme):
     theme.save(update_fields=["priority", "updated_at"])
 
 
+def deduplicate_themes(theme_dicts):
+    """Merge theme dicts that share the same (program_id, name) — case-insensitive.
+
+    Used by dashboard and insights views to ensure each category appears
+    exactly once, even if duplicate SuggestionTheme records exist.
+
+    Args:
+        theme_dicts: list of dicts with keys: pk, name, status, priority,
+                     program_id, updated_at, link_count (and any extras).
+
+    Returns:
+        list of merged dicts, one per unique (program_id, lower-name).
+        For duplicates: link_count is summed, highest priority is kept,
+        most recent updated_at is kept, pk from the record with the most
+        links is used (so HTMX buttons target the primary record).
+    """
+    groups = {}  # (program_id, name_lower) -> merged dict
+    for t in theme_dicts:
+        key = (t["program_id"], t["name"].strip().lower())
+        if key not in groups:
+            groups[key] = dict(t)
+        else:
+            existing = groups[key]
+            existing["link_count"] += t["link_count"]
+            # Keep pk from the record with the most links
+            if t["link_count"] > (existing.get("_winner_count") or existing["link_count"] - t["link_count"]):
+                existing["pk"] = t["pk"]
+            existing["_winner_count"] = max(
+                existing.get("_winner_count", 0), t["link_count"],
+            )
+            # Keep highest priority
+            if THEME_PRIORITY_RANK.get(t["priority"], 0) > THEME_PRIORITY_RANK.get(existing["priority"], 0):
+                existing["priority"] = t["priority"]
+            # Keep most recent updated_at
+            if t["updated_at"] > existing["updated_at"]:
+                existing["updated_at"] = t["updated_at"]
+
+    # Clean up internal tracking key
+    result = []
+    for merged in groups.values():
+        merged.pop("_winner_count", None)
+        result.append(merged)
+    return result
+
+
 @receiver(post_delete, sender=SuggestionLink)
 def recalculate_priority_on_link_delete(sender, instance, **kwargs):
     """Recalculate theme priority when a link is deleted (e.g. note erasure)."""
