@@ -11,7 +11,10 @@ from django.db.models import Count
 from apps.auth_app.decorators import requires_permission
 from apps.programs.access import get_accessible_programs, get_client_or_403
 from apps.programs.models import UserProgramRole
-from apps.notes.models import ProgressNote, SuggestionLink, SuggestionTheme
+from apps.notes.models import (
+    ProgressNote, SuggestionLink, SuggestionTheme,
+    THEME_PRIORITY_RANK, deduplicate_themes,
+)
 from .insights import get_structured_insights, collect_quotes, MIN_PARTICIPANTS_FOR_QUOTES
 from .insights_forms import InsightsFilterForm
 from .interpretations import (
@@ -110,22 +113,29 @@ def program_insights(request):
             elif not is_executive_only:
                 other_quotes.append(q)
 
-        # Active suggestion themes for this program
-        active_themes = (
+        # Active suggestion themes for this program (deduplicated by name)
+        active_themes = deduplicate_themes(list(
             SuggestionTheme.objects.active()
             .filter(program=program)
             .annotate(link_count=Count("links"))
-            .order_by("-priority", "-updated_at")
-        )
+            .values("pk", "name", "status", "priority", "program_id",
+                    "updated_at", "link_count")
+        ))
+        active_themes.sort(key=lambda t: (
+            -THEME_PRIORITY_RANK.get(t["priority"], 0),
+            -t["updated_at"].timestamp(),
+        ))
 
         # Responsiveness summary: "X of Y themes addressed"
-        addressed_themes = (
+        addressed_themes = deduplicate_themes(list(
             SuggestionTheme.objects.filter(program=program, status="addressed")
             .annotate(link_count=Count("links"))
-            .order_by("-updated_at")
-        )
-        addressed_themes_count = addressed_themes.count()
-        total_theme_count = active_themes.count() + addressed_themes_count
+            .values("pk", "name", "status", "priority", "program_id",
+                    "updated_at", "link_count")
+        ))
+        addressed_themes.sort(key=lambda t: -t["updated_at"].timestamp())
+        addressed_themes_count = len(addressed_themes)
+        total_theme_count = len(active_themes) + addressed_themes_count
 
         # Split suggestions into linked vs unlinked (ungrouped)
         linked_note_ids = set(
