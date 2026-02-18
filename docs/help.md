@@ -210,7 +210,7 @@ Alerts flag a client as needing attention. Use them for safety concerns or urgen
 The client will appear in **Priority Items** on the home page until the alert is resolved.
 
 **Resolve an alert:**
-1. Find the alert in the Events tab
+1. Find the alert in the History tab
 2. Click **Resolve** or **Cancel Alert**
 3. Add a resolution note
 4. Save
