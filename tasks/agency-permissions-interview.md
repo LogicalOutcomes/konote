@@ -49,7 +49,7 @@ KoNote has two layers of access:
 1. **Program roles** — what client data you can see (one role per program, per person)
 2. **System Administrator** — a separate flag that lets someone manage users, settings, and programs (but does NOT automatically grant access to client data)
 
-These are independent. Someone can be a Staff member who is also an Admin, or an Admin with no program role at all (they can configure the system but can't see any client files).
+These are independent. Someone can be a Direct Service worker who is also an Admin, or an Admin with no program role at all (they can configure the system but can't see any client files).
 
 #### Program Roles
 
@@ -57,8 +57,8 @@ Every person who works with client data gets assigned one of these roles per pro
 
 | Program Role | Typical Job Titles | What They Generally Do |
 |---|---|---|
-| **Receptionist** | Front desk, intake worker, admin assistant | Greet clients, answer phones, book appointments, do intake paperwork |
-| **Staff** | Counsellor, case worker, outreach worker, facilitator | Direct work with clients — notes, plans, group facilitation |
+| **Front Desk** | Receptionist, intake worker, admin assistant | Greet clients, answer phones, book appointments, do intake paperwork |
+| **Direct Service** | Counsellor, case worker, outreach worker, facilitator | Direct work with clients — notes, plans, group facilitation |
 | **Program Manager** | Program coordinator, team lead, clinical supervisor | Oversee a program, supervise staff, review reports |
 | **Executive** | Executive Director, board member, funder liaison | See the big picture — aggregate numbers, not individual files |
 
@@ -68,11 +68,11 @@ The System Administrator flag is separate from program roles. It controls:
 - Creating and deactivating user accounts (across the whole agency)
 - Managing programs (creating, editing, archiving)
 - Changing system settings (feature toggles, terminology, branding)
-- Viewing the full audit log
+- Viewing the full access log (a permanent record of who viewed or changed what)
 
 **The administrator flag does NOT grant access to client data.** An admin with no program role can set up the entire system without ever seeing a client file. If the admin also needs to see client data, they need a program role too.
 
-Program Managers already get some admin-like powers for their own program (managing their team, viewing their program's audit log). The System Administrator flag is for agency-wide system management.
+Program Managers already get some admin-like powers for their own program (managing their team, viewing their program's access log). The System Administrator flag is for agency-wide system management.
 
 #### Questions to Ask
 
@@ -86,7 +86,7 @@ Program Managers already get some admin-like powers for their own program (manag
 
 **1.3** "Do you have any volunteers or students who need system access? What should they be able to see?"
 
-*Typically map to Receptionist (limited view) or Staff (if doing direct service under supervision).*
+*Typically map to Front Desk (limited view) or Direct Service (if doing client work under supervision).*
 
 **1.4** "Is anyone on your board going to use the system? What would they need to see?"
 
@@ -106,10 +106,10 @@ Program Managers already get some admin-like powers for their own program (manag
 
 #### Common Tensions to Explore
 
-- **"Our front desk person also does counselling."** → They'll be Receptionist in the intake flow but Staff in their counselling program. Two role assignments.
-- **"Our ED reads all the client files."** → This is a privacy risk worth discussing. KoNote supports it (give them a Staff or PM role), but the question is whether they *should*. See Section 5.
-- **"We're too small for roles — everyone does everything."** → Fine. Assign everyone as Staff. But still designate at least one person as PM (for reporting) and consider whether front desk volunteers should see clinical notes.
-- **"Our admin needs to troubleshoot issues with client records."** → Consider giving them a PM role in one program (limited scope) rather than Staff in all programs (full clinical access everywhere). They can see enough to troubleshoot without having blanket access.
+- **"Our front desk person also does counselling."** → They'll be Front Desk in the intake flow but Direct Service in their counselling program. Two role assignments.
+- **"Our ED reads all the client files."** → This is a privacy risk worth discussing. KoNote supports it (give them a Direct Service or PM role), but the question is whether they *should*. See Section 5.
+- **"We're too small for roles — everyone does everything."** → Fine. Assign everyone as Direct Service. But still designate at least one person as PM (for reporting) and consider whether front desk volunteers should see clinical notes.
+- **"Our admin needs to troubleshoot issues with client records."** → Consider giving them a PM role in one program (limited scope) rather than Direct Service in all programs (full clinical access everywhere). They can see enough to troubleshoot without having blanket access.
 
 #### Record
 
@@ -148,7 +148,7 @@ Program Managers already get some admin-like powers for their own program (manag
 
 #### Important: The Confidential Program Rule
 
-> When a program is marked as confidential, staff who work in both standard and confidential programs will be asked to choose which context they're working in before seeing any client data. This prevents accidental information leakage — for example, a receptionist covering the front desk for the whole building won't accidentally see that a client is enrolled in the DV program.
+> When a program is marked as confidential, staff who work in both standard and confidential programs will be asked to choose which context they're working in before seeing any client data. This prevents accidental information leakage — for example, a Front Desk worker covering reception for the whole building won't accidentally see that a client is enrolled in the DV program.
 
 **2.5** "Is that separation something you'd want? Or does everyone in your agency already know about all programs?"
 
@@ -189,7 +189,7 @@ Program Managers already get some admin-like powers for their own program (manag
 
 **Goal:** Make the hardest privacy decision — what does the person who answers the phone need to know?
 
-This is where agencies differ the most. KoNote's default gives front desk (Receptionist role) access to:
+This is where agencies differ the most. KoNote's default gives the Front Desk role access to:
 - Client name
 - Phone number and email
 - Emergency contact
@@ -278,7 +278,7 @@ KoNote's default gives Program Managers:
 - Ability to view (not write) clinical notes for oversight purposes
 - Aggregate reporting for their program
 - User management within their program (assigning staff to roles)
-- Audit log for their program
+- Access log for their program
 
 **4.1** "Should Program Managers be able to see individual client files? Or just aggregate numbers?"
 
@@ -286,11 +286,11 @@ KoNote's default gives Program Managers:
 
 **4.2** "Can a PM in Program A see files for clients in Program B?"
 
-*Default: No. PMs are scoped to their own program. Discuss whether this is right for their agency.*
+*Default: No. PMs can only see data for their own program. Discuss whether this is right for their agency.*
 
 **4.3** "Should PMs be able to create or cancel safety alerts?"
 
-*KoNote uses a two-person safety rule by default: Staff create alerts, PMs cancel them. This prevents one person from both raising and dismissing a safety concern. Does this work for your agency, or are you too small for two-person rules?*
+*KoNote uses a two-person safety rule by default: Direct Service workers create alerts, PMs cancel them. This prevents one person from both raising and dismissing a safety concern. Does this work for your agency, or are you too small for two-person rules?*
 
 **4.4** "Should PMs manage their own program's user accounts, or should that be centralized?"
 
@@ -315,13 +315,13 @@ KoNote's default gives Program Managers:
 **5.1** "Who at the leadership level needs access to the system? What do they actually need to see?"
 
 *Common patterns:*
-- **ED who is operational** (meets with clients, supervises staff): Needs a PM or Staff role in specific programs, PLUS Executive for org-wide reporting
+- **ED who is operational** (meets with clients, supervises staff): Needs a PM or Direct Service role in specific programs, PLUS Executive for org-wide reporting
 - **ED who is administrative only**: Executive role is sufficient (aggregate data)
 - **Board members**: Executive role (aggregate only) — or no system access at all if they receive reports through other channels
 
 **5.2** "Is your ED ever involved in direct client work?"
 
-*If yes, they need a program-level role (Staff or PM) in addition to Executive. If no, Executive is sufficient and they will not see individual client files.*
+*If yes, they need a program-level role (Direct Service or PM) in addition to Executive. If no, Executive is sufficient and they will not see individual client files.*
 
 **5.3** "Does your board review client-level data, or just aggregate reports?"
 
@@ -329,7 +329,7 @@ KoNote's default gives Program Managers:
 
 **Important privacy note to share with the agency:**
 
-> Every person who can see individual client data increases your privacy risk surface. It's not that you can't give leadership access — it's that every access point should be intentional and documented. If a privacy breach occurs, you'll need to show that access was appropriate and necessary.
+> Every person who can see individual client data increases the number of people who could be involved in a privacy incident. It's not that you can't give leadership access — it's that every access point should be intentional and documented. If a privacy breach occurs, you'll need to show that access was appropriate and necessary.
 
 #### Record
 
@@ -413,7 +413,7 @@ KoNote has features that can be turned on or off for each agency. Walk through t
 
 **7.2** For each feature marked "Off" that they want on: "Let me explain what turning this on means for privacy and workload."
 
-**7.3** "When someone exports a report that contains individual participant data, KoNote sends an email notification as an audit trail. Who should receive those notifications — your privacy officer, your ED, or someone else?"
+**7.3** "When someone exports a report that contains individual participant data, KoNote sends an email notification so there's a record. Who should receive those notifications — your privacy officer, your ED, or someone else?"
 
 *The notification goes to all system administrators by default, but many agencies prefer it to go to a privacy officer or executive director instead — especially if the admin is a part-time tech person. You can list multiple email addresses.*
 
@@ -437,7 +437,7 @@ Write up a one-page summary of all decisions made, organized as:
 > **Programs:** [List with confidential flags]
 > **System Administrator(s):** [Who has the admin flag, and do they also have a program role?]
 > **Role Assignments:** [Table of people → program roles → programs]
-> **Front Desk Visibility:** [What receptionist can/cannot see]
+> **Front Desk Visibility:** [What Front Desk role can/cannot see]
 > **PM Scope:** [Individual vs aggregate, cross-program access]
 > **Executive Access:** [Who, what level]
 > **Safety Measures:** [Access blocks, confidential programs, DV safeguards]
@@ -467,7 +467,7 @@ Use the Configuration Summary to:
 
 After configuration, do a quick walkthrough with the agency:
 - Log in as a front desk user — show what they can and can't see
-- Log in as a staff user — show program-scoped access
+- Log in as a Direct Service user — show access limited to their program
 - Log in as PM — show oversight capabilities
 - Log in as executive — show aggregate-only view
 - Log in as admin (with no program role) — show they can manage settings but can't see client files
@@ -494,21 +494,21 @@ This builds confidence that the system is doing what they decided.
 - Access blocks for specific staff-client pairs
 
 ### Agencies CANNOT change:
-- The four program roles themselves (Receptionist, Staff, PM, Executive)
+- The four program roles themselves (Front Desk, Direct Service, Program Manager, Executive)
 - The separation between program roles and system administration
 - The core permission rules (e.g., front desk never sees clinical notes)
 - The two-person safety rule for alert cancellation
 - The separation between demo and real data
-- The audit trail (all access is logged, always)
+- The access log (all access is logged, always — it can't be edited or deleted)
 - Encryption of personal information (always on)
 
 ### Privacy Non-Negotiables (built into the system):
 - Clinical notes are never visible to front desk
 - Group membership is never visible to front desk (group type reveals diagnosis)
 - Executive/board members never see individual client data unless explicitly given a program role
-- All data access is logged in an immutable audit trail
-- Personal information is encrypted at rest
-- Deleted records are soft-deleted (audit trail preserved)
+- All data access is logged in a permanent access log that can't be edited or deleted
+- Personal information is encrypted at rest (unreadable if the database is stolen)
+- Deleted records are kept for the access log — they're hidden from users but preserved for accountability
 
 ---
 
@@ -516,7 +516,7 @@ This builds confidence that the system is doing what they decided.
 
 ### "Why can't front desk see everything? They need to help clients."
 
-Front desk staff are often the most trusted people in an agency. The restriction isn't about trust — it's about liability. If front desk can see clinical notes and there's a privacy breach, the agency is liable for every piece of data that was accessible. Limiting access limits the blast radius of any incident.
+Front desk staff are often the most trusted people in an agency. The restriction isn't about trust — it's about liability. If front desk can see clinical notes and there's a privacy breach, the agency is liable for every piece of data that was accessible. Limiting access limits how much information is exposed in any incident.
 
 **Reframe:** "It's not that we don't trust your front desk. It's that if their password is stolen, or they leave their screen unlocked, the damage is contained to names and phone numbers — not clinical histories."
 
@@ -536,8 +536,8 @@ This is common and often legitimate — especially in small agencies where the E
 "Does your ED *need* to see individual client files to do their job, or do they *want* to because they always have? If they need to — great, we'll set that up. If it's habit, there might be a lighter-touch option that still gives them oversight without the liability."
 
 **Options:**
-- ED gets PM role in all programs (full individual access, logged)
-- ED gets Executive role + PM role in one program (oversight for most, detailed access where they supervise)
+- ED gets Program Manager role in all programs (full individual access, logged)
+- ED gets Executive role + Program Manager role in one program (oversight for most, detailed access where they supervise)
 - ED gets Executive role only (aggregate data, requests individual access when needed)
 
 ### "Why is admin separate from the roles? Our admin needs to see client files to help people."
