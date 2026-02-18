@@ -37,9 +37,9 @@ self.addEventListener("fetch", function(event) {
             if (!self.navigator.onLine) {
                 return caches.match(OFFLINE_URL);
             }
-            // Not offline — let the browser handle it normally
-            // (e.g. show its own back/forward cache or error page)
-            return new Response("", { status: 503, statusText: "Service Unavailable" });
+            // Not offline — let the browser show its own error page
+            // (e.g. back/forward cache miss or transient network blip)
+            return Response.error();
         })
     );
 });
