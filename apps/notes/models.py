@@ -406,6 +406,12 @@ class SuggestionTheme(models.Model):
         indexes = [
             models.Index(fields=["program", "status"], name="idx_theme_program_status"),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["program", "name"],
+                name="unique_theme_per_program",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.program})"
