@@ -382,6 +382,10 @@ class SuggestionTheme(models.Model):
         help_text="Auto-calculated from linked suggestions via recalculate_theme_priority(). Do not set manually.",
     )
     addressed_note = models.TextField(blank=True, default="")
+    was_reopened = models.BooleanField(
+        default=False,
+        help_text="Set when an addressed theme is reopened by AI finding new suggestions.",
+    )
     source = models.CharField(
         max_length=20, choices=SOURCE_CHOICES, default="manual",
     )

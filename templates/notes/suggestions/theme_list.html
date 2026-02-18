@@ -51,6 +51,7 @@
             <div style="display:flex;justify-content:space-between;align-items:start;gap:0.5rem;flex-wrap:wrap;">
                 <strong><a href="{% url 'suggestion_themes:theme_detail' theme.pk %}">{{ theme.name }}</a></strong>
                 <div style="display:flex;gap:0.25rem;flex-wrap:wrap;">
+                    {% if theme.was_reopened %}<span class="badge badge-neutral" title="{% trans 'Previously addressed, reopened by new suggestions' %}">{% trans "Reopened" %}</span>{% endif %}
                     {% if theme.status == "open" %}
                     <span class="badge badge-neutral">{% trans "Open" %}</span>
                     {% elif theme.status == "in_progress" %}

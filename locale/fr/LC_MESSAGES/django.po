@@ -13687,3 +13687,9 @@ msgstr ""
 
 msgid "A theme called \\\"%(name)s\\\" already exists in this program."
 msgstr ""
+
+msgid "Previously addressed, reopened by new suggestions"
+msgstr "Précédemment traité, rouvert en raison de nouvelles suggestions"
+
+msgid "Reopened"
+msgstr "Rouvert"

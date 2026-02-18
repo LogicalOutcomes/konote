@@ -335,6 +335,7 @@ class Tier2ProcessAiThemesTests(TestCase):
         process_ai_themes(ai_themes, self.quote_source_map, self.program)
         addressed.refresh_from_db()
         self.assertEqual(addressed.status, "open")
+        self.assertTrue(addressed.was_reopened)
 
     def test_does_not_overwrite_existing_keywords(self):
         existing = SuggestionTheme.objects.create(

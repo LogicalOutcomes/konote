@@ -186,7 +186,8 @@ def process_ai_themes(ai_themes, quote_source_map, program):
                         theme.name, theme.pk,
                     )
                     theme.status = "open"
-                    theme.save(update_fields=["status", "updated_at"])
+                    theme.was_reopened = True
+                    theme.save(update_fields=["status", "was_reopened", "updated_at"])
 
                 # Update keywords if theme has none and AI provided them.
                 if not theme.keywords and ai_theme.get("keywords"):
