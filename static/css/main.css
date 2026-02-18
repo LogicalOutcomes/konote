@@ -3835,6 +3835,77 @@ article[aria-label="notification"].fading-out {
     color: var(--pico-muted-color);
 }
 
+/* ── AI Target Suggestion (redesigned Add Target page) ── */
+
+/* Entry point divider ("or") */
+.entry-divider {
+    display: flex;
+    align-items: center;
+    gap: var(--kn-space-base);
+    margin: var(--kn-space-lg) 0;
+    color: var(--pico-muted-color);
+    font-size: 0.9em;
+}
+.entry-divider::before,
+.entry-divider::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}
+
+/* AI suggestion card */
+.ai-suggestion-card {
+    border: 2px solid var(--kn-primary);
+    border-radius: var(--kn-radius-card, 8px);
+    padding: var(--kn-space-base) var(--kn-space-lg);
+    margin-bottom: var(--kn-space-lg);
+    background: var(--kn-card-bg, var(--pico-card-background-color));
+}
+.ai-suggestion-card .suggestion-intro {
+    color: var(--pico-muted-color);
+    font-style: italic;
+    margin-bottom: var(--kn-space-base);
+}
+.suggestion-details {
+    margin: 0;
+}
+.suggestion-details dt {
+    font-weight: 600;
+    margin-top: var(--kn-space-sm);
+    color: var(--pico-muted-color);
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+.suggestion-details dd {
+    margin-left: 0;
+    margin-bottom: var(--kn-space-sm);
+}
+.suggestion-details .suggestion-name {
+    font-size: 1.1em;
+    font-weight: 600;
+}
+.suggestion-metrics {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+.suggestion-metrics li {
+    padding: var(--kn-space-xs) 0;
+}
+.suggestion-actions {
+    margin-top: var(--kn-space-base);
+}
+
+/* AI error fallback */
+.ai-suggest-error {
+    padding: var(--kn-space-sm) var(--kn-space-base);
+    background: rgba(220, 53, 69, 0.08);
+    border-left: 3px solid #dc3545;
+    border-radius: var(--kn-radius-card, 8px);
+    margin-bottom: var(--kn-space-base);
+}
+
 /* Metric search in Tier 3 */
 .metric-search-wrapper {
     margin-bottom: var(--kn-space-sm);
