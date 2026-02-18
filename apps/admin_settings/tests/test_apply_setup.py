@@ -336,9 +336,9 @@ class ApplySetupTests(TestCase):
         self.assertEqual(targets_s2[0].name, "Build peer relationships")
 
         output = out.getvalue()
-        self.assertIn("1 templates", output)
-        self.assertIn("2 sections", output)
-        self.assertIn("3 targets", output)
+        self.assertIn("1 template(s)", output)
+        self.assertIn("2 section(s)", output)
+        self.assertIn("3 target(s)", output)
 
     # ------------------------------------------------------------------
     # Custom field groups and fields
