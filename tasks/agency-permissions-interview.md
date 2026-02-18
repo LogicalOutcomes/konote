@@ -2,18 +2,29 @@
 
 **Purpose:** Walk a new agency through all the decisions they need to make about who can see and do what in KoNote. The result is a completed Configuration Worksheet that maps directly to system settings.
 
-**Time:** 60-90 minutes
+**Format:** Two sessions, about a week apart
+- **Session 1 — Discovery** (~45 minutes): We learn about your agency — your people, your programs, and how you work. Low-stress; you're just describing your organization.
+- **Session 2 — Decisions** (~45 minutes): Using what we learned in Session 1, we walk through specific choices about who can see what. This is where the real configuration decisions happen.
+
 **Who should be in the room:** Executive Director (or designate), at least one Program Manager, Front Desk lead (if applicable), privacy officer (if they have one)
 
 ---
 
 ## Before the Interview
 
+### Why These Decisions Matter
+
+Your agency is the custodian of your clients' personal information. Under Canadian privacy law (PIPEDA), you have an obligation to limit who can access that information to people who genuinely need it for their work. You also need to be able to show — if anyone asks — that your access decisions were intentional, not just "everyone can see everything."
+
+KoNote records consent when clients share their information, and clients have the right to ask what you hold about them and to withdraw consent. The interview will cover who at your agency handles those requests.
+
+Good permission setup also protects your agency if something goes wrong — a lost laptop, a stolen password, or a staff member who shouldn't have seen something. The less information any one account can access, the less is exposed in an incident. Setting this up well now saves real headaches later.
+
 ### Send the Agency a Prep Sheet (1 week ahead)
 
 > **Getting Ready for Your KoNote Permissions Setup**
 >
-> Next week we'll walk through how to set up who can see and do what in KoNote. To make the most of our time, please think about:
+> We'll be meeting twice over the next couple of weeks to set up who can see and do what in KoNote. To make the most of our time, please think about:
 >
 > 1. **Your staff roles** — a list of job titles and which program(s) each person works in
 > 2. **Your programs/services** — the distinct programs you run (e.g., housing support, youth drop-in, counselling)
@@ -25,7 +36,9 @@
 
 ---
 
-## The Interview
+## Session 1: Discovery (~45 minutes)
+
+*Goal: Understand the agency's people, programs, and how they work. No decisions are made in this session — you're just gathering information.*
 
 ### Section 1: Your People
 
@@ -149,6 +162,28 @@ Program Managers already get some admin-like powers for their own program (manag
 | | | | |
 
 ---
+
+## Between Sessions: Homework for the Agency
+
+*Send this to the agency after Session 1, along with your notes from the Discovery session.*
+
+> **Before Our Next Meeting**
+>
+> Thanks for walking us through your team and programs. Here's a summary of what we learned: [attach Session 1 notes].
+>
+> Before we meet again, please think about these questions — they'll come up in our next session:
+>
+> 1. **Front desk access** — When your front desk person answers the phone and a client calls, what information do they need to pull up? What should they *not* be able to see?
+> 2. **Emergency scenario** — If a client has a medical emergency in your lobby and paramedics ask about allergies or medications, who should be able to look that up?
+> 3. **Leadership access** — Does your ED need to see individual client files, or just the overall numbers? What about board members?
+>
+> There are no wrong answers — these are choices we'll make together.
+
+---
+
+## Session 2: Decisions (~45 minutes)
+
+*Goal: Walk through specific access choices using what was learned in Session 1. Each section ends with a decision table.*
 
 ### Section 3: What Front Desk Can See
 
