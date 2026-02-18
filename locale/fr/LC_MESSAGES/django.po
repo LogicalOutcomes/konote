@@ -13374,3 +13374,12 @@ msgstr "Suggestions non regroupées"
 
 msgid "View all themes"
 msgstr "Voir tous les thèmes"
+
+msgid "View themes"
+msgstr "Voir les thèmes"
+
+msgid "in progress"
+msgstr "en cours"
+
+msgid "open"
+msgstr "ouvert(s)"
