@@ -17,11 +17,10 @@
 
 ### Phase: Communication Modules — complete!
 
-### Phase: QA Round 6 Fixes
+### Phase: Post-Housekeeping Verification
 
-- [x] Fix receptionist over-permission on meetings page — add permission check to /events/meetings/ view (PERMISSION-5 -> QA-W56)
-- [x] Fix language persistence — set explicit preferred_language for all English test users + harden sync_language_on_login (BUG-24, BUG-14 -> QA-W57)
-- [x] IMPROVE-8 closed — "Safety concern noted" is user-entered alert content (test data), not a translatable UI string. Same finding as QA-W23 from Round 2. (IMPROVE-8 -> QA-W58)
+- [ ] Run full test suite (`pytest --exclude-tag=slow`) to verify PR #143 test fixes pass against current main (VERIFY1)
+- [ ] Confirm export form select-all still works after duplicate script removal in PR #136 — grep for `select-all-metrics` handler in app.js (VERIFY2)
 
 ## Do Occasionally
 
@@ -47,12 +46,12 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [x] Design /admin/ URL restructuring for PM self-service — move management pages to /manage/ so PMs can reach plan templates, note templates, event types (FG-2, PERMISSION-1/2/3, BUG-1 -> QA-W59)
 
-### Phase: Pre-existing Test Failures
+### Phase: Pre-existing Test Failures — DONE
 
-- [ ] Fix `apply_setup` command tests (10 failures) — output format changed but tests not updated (TEST-SETUP1)
-- [ ] Fix `translate_strings --no-translate` test — option does not exist (TEST-TRANS1)
-- [ ] Fix portal session isolation test — portal user gets 302 redirect instead of expected 404 on staff pages (TEST-PORTAL1)
-- [ ] Fix BLOCKER-1 a11y test — skip link still exists, test expects Option B (removed) (TEST-A11Y1)
+- [x] Fix `apply_setup` command tests (10 failures) — output format changed but tests not updated — 2026-02-18 (TEST-SETUP1)
+- [x] Fix `translate_strings --no-translate` test — option does not exist — 2026-02-18 (TEST-TRANS1)
+- [x] Fix portal session isolation test — accept 404 as valid denial — 2026-02-18 (TEST-PORTAL1)
+- [x] Fix BLOCKER-1 a11y test — updated to expect skip link (WCAG best practice) — 2026-02-18 (TEST-A11Y1)
 
 ### Phase: UX Fixes
 
@@ -85,9 +84,11 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
 - [ ] Convert 12 hardcoded `/manage/` URLs in base.html to `{% url %}` tags for maintainability (URL-CLEAN1)
 - [ ] Move `plans/admin/metrics/` redirect before `plans/` include in urls.py for consistency with events redirect ordering (URL-CLEAN2)
+- [ ] Add basic smoke test for `translate_strings` command — removed dead test class but no replacement exists (TEST-TRANS2)
 
 ## Recently Done
 
+- [x] Git housekeeping — deleted 31+ stale branches, cleared 10 stashes, removed 3 worktrees, rebased and merged PR #136 (cleanup) and PR #143 (10 test fixes) — 2026-02-18 (HOUSEKEEP1)
 - [x] Agency Onboarding Interview Pack — 12 refinements: session split, privacy opener, role name alignment, jargon removal, summaries, warmer scenarios, deployment checklists — 2026-02-18 (ONBOARD1–12)
 - [x] Move PM management pages from /admin/ to /manage/ — new URL structure, middleware simplification, redirects from old URLs, 1795 tests pass — 2026-02-18 (QA-W59)
 - [x] Fix test suite freezing — add Django @tag('slow') to BrowserTestBase so --exclude-tag=slow properly skips 70 Playwright tests — 2026-02-18 (TEST-FIX1)
