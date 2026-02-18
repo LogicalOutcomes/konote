@@ -484,16 +484,16 @@ def deduplicate_themes(theme_dicts):
     for t in theme_dicts:
         key = (t["program_id"], t["name"].strip().lower())
         if key not in groups:
-            groups[key] = dict(t)
+            merged = dict(t)
+            merged["_winner_count"] = t["link_count"]
+            groups[key] = merged
         else:
             existing = groups[key]
             existing["link_count"] += t["link_count"]
             # Keep pk from the record with the most links
-            if t["link_count"] > (existing.get("_winner_count") or existing["link_count"] - t["link_count"]):
+            if t["link_count"] > existing["_winner_count"]:
                 existing["pk"] = t["pk"]
-            existing["_winner_count"] = max(
-                existing.get("_winner_count", 0), t["link_count"],
-            )
+                existing["_winner_count"] = t["link_count"]
             # Keep highest priority
             if THEME_PRIORITY_RANK.get(t["priority"], 0) > THEME_PRIORITY_RANK.get(existing["priority"], 0):
                 existing["priority"] = t["priority"]
