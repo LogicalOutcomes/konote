@@ -402,30 +402,54 @@ def _batch_portal_adoption(enrolment_stats):
     return result
 
 
-def _batch_theme_counts(filtered_program_ids):
-    """Active suggestion theme counts per program in one query.
+def _batch_top_themes(filtered_program_ids, limit_per_program=3):
+    """Active themes per program: both counts and top theme details in one query.
 
-    Returns dict of program_id -> {total, open, in_progress}.
+    Returns (counts_map, themes_map) where:
+        counts_map: dict of program_id -> {total, open, in_progress}
+        themes_map: dict of program_id -> list of up to *limit_per_program*
+                    theme dicts with keys: pk, name, status, priority
     """
     from apps.notes.models import SuggestionTheme
 
-    rows = (
+    PRIORITY_RANK = {"urgent": 0, "important": 1, "noted": 2}
+
+    themes = list(
         SuggestionTheme.objects.active()
         .filter(program_id__in=filtered_program_ids)
-        .values("program_id", "status")
-        .annotate(cnt=Count("id"))
+        .values("pk", "name", "status", "priority", "program_id", "updated_at")
     )
-    result = {}
-    for r in rows:
-        pid = r["program_id"]
-        if pid not in result:
-            result[pid] = {"total": 0, "open": 0, "in_progress": 0}
-        result[pid]["total"] += r["cnt"]
-        if r["status"] == "open":
-            result[pid]["open"] = r["cnt"]
-        elif r["status"] == "in_progress":
-            result[pid]["in_progress"] = r["cnt"]
-    return result
+
+    # Sort: highest priority first, then most recently updated
+    themes.sort(
+        key=lambda t: (
+            PRIORITY_RANK.get(t["priority"], 9),
+            -t["updated_at"].timestamp(),
+        )
+    )
+
+    # Build both counts and top-N lists in one pass
+    counts_map = {}
+    themes_map = {}
+    for t in themes:
+        pid = t["program_id"]
+
+        # Counts
+        if pid not in counts_map:
+            counts_map[pid] = {"total": 0, "open": 0, "in_progress": 0}
+        counts_map[pid]["total"] += 1
+        if t["status"] == "open":
+            counts_map[pid]["open"] += 1
+        elif t["status"] == "in_progress":
+            counts_map[pid]["in_progress"] += 1
+
+        # Top themes (capped at limit)
+        if pid not in themes_map:
+            themes_map[pid] = []
+        if len(themes_map[pid]) < limit_per_program:
+            themes_map[pid].append(t)
+
+    return counts_map, themes_map
 
 
 def _batch_suggestion_counts(filtered_program_ids):
@@ -612,8 +636,8 @@ def executive_dashboard(request):
     # Batch: suggestion counts per program
     suggestion_map = _batch_suggestion_counts(filtered_program_ids)
 
-    # Batch: active theme counts per program
-    theme_map = _batch_theme_counts(filtered_program_ids)
+    # Batch: active theme counts + top theme details per program
+    theme_map, top_themes_map = _batch_top_themes(filtered_program_ids)
 
     # Assemble per-program stat dicts
     program_stats = []
@@ -651,6 +675,7 @@ def executive_dashboard(request):
         stat["theme_total"] = themes.get("total", 0)
         stat["theme_open"] = themes.get("open", 0)
         stat["theme_in_progress"] = themes.get("in_progress", 0)
+        stat["top_themes"] = top_themes_map.get(pid, [])
 
         program_stats.append(stat)
         total_clients += es.get("total", 0)
