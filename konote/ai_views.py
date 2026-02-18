@@ -9,6 +9,7 @@ from django.http import HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.views.decorators.http import require_POST
 from django_ratelimit.decorators import ratelimit
 
 from apps.admin_settings.models import FeatureToggle
@@ -32,6 +33,7 @@ def _ai_enabled():
 
 
 @login_required
+@require_POST
 @ratelimit(key="user", rate="20/h", method="POST", block=True)
 def suggest_metrics_view(request):
     """Suggest metrics for a plan target description."""
@@ -60,6 +62,7 @@ def suggest_metrics_view(request):
 
 
 @login_required
+@require_POST
 @ratelimit(key="user", rate="20/h", method="POST", block=True)
 def improve_outcome_view(request):
     """Improve a draft outcome statement."""
@@ -79,6 +82,7 @@ def improve_outcome_view(request):
 
 
 @login_required
+@require_POST
 @ratelimit(key="user", rate="20/h", method="POST", block=True)
 def generate_narrative_view(request):
     """Generate an outcome narrative from aggregate metrics."""
@@ -156,6 +160,7 @@ def generate_narrative_view(request):
 
 
 @login_required
+@require_POST
 @ratelimit(key="user", rate="20/h", method="POST", block=True)
 def suggest_note_structure_view(request):
     """Suggest a progress note structure for a plan target."""
@@ -195,6 +200,7 @@ def suggest_note_structure_view(request):
 
 
 @login_required
+@require_POST
 @ratelimit(key="user", rate="20/h", method="POST", block=True)
 def suggest_target_view(request):
     """Suggest a structured target from participant words. HTMX POST.
@@ -268,6 +274,7 @@ def suggest_target_view(request):
 
 
 @login_required
+@require_POST
 @ratelimit(key="user", rate="10/h", method="POST", block=True)
 def outcome_insights_view(request):
     """Generate AI narrative draft from qualitative outcome data. HTMX POST.
@@ -507,6 +514,7 @@ def goal_builder_start(request, client_id):
 
 
 @login_required
+@require_POST
 @ratelimit(key="user", rate="20/h", method="POST", block=True)
 def goal_builder_chat(request, client_id):
     """Process a chat message in the Goal Builder — POST returns updated panel."""
@@ -587,6 +595,7 @@ def goal_builder_chat(request, client_id):
 
 
 @login_required
+@require_POST
 def goal_builder_save(request, client_id):
     """Save a goal from the Goal Builder — POST creates target + metric + section.
 
@@ -594,8 +603,6 @@ def goal_builder_save(request, client_id):
     + metric creation. Custom metric creation (from AI) is handled here before
     calling the helper.
     """
-    if request.method != "POST":
-        return HttpResponseBadRequest("POST required.")
 
     from apps.clients.models import ClientFile
     from apps.plans.models import MetricDefinition, PlanSection
