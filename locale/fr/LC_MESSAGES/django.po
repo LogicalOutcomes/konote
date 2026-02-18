@@ -13325,6 +13325,9 @@ msgstr "Statut mis à jour : %(status)s."
 msgid "Suggestion Themes"
 msgstr "Thèmes de suggestions"
 
+msgid "suggestion themes"
+msgstr "thèmes de suggestions"
+
 msgid "Suggestion removed from theme."
 msgstr "Suggestion retirée du thème."
 
