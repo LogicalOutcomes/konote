@@ -10,6 +10,9 @@ urlpatterns = [
     path("client/<int:client_id>/sections/create/", views.section_create, name="section_create"),
     path("sections/<int:section_id>/edit/", views.section_edit, name="section_edit"),
     path("sections/<int:section_id>/status/", views.section_status, name="section_status"),
+    # Combined goal creation
+    path("client/<int:client_id>/goals/create/", views.goal_create, name="goal_create"),
+    path("client/<int:client_id>/goals/suggestions/", views.goal_name_suggestions, name="goal_name_suggestions"),
     # Target CRUD
     path("sections/<int:section_id>/targets/create/", views.target_create, name="target_create"),
     path("targets/<int:target_id>/edit/", views.target_edit, name="target_edit"),
