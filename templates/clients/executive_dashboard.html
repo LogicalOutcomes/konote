@@ -166,7 +166,7 @@
                 <div class="metric-row">
                     <span class="metric-label">{% trans "Suggestion Themes" %}</span>
                 </div>
-                <ul class="theme-compact-list" aria-label="{{ stat.program.translated_name }} {% trans 'suggestion themes' %}">
+                <ul class="theme-compact-list" role="list" aria-label="{{ stat.program.translated_name }} {% trans 'suggestion themes' %}">
                     {% for theme in stat.top_themes %}
                     <li>
                         <span class="theme-name-compact">{{ theme.name }}</span>
@@ -178,9 +178,9 @@
                     </li>
                     {% endfor %}
                 </ul>
-                {% if stat.theme_total > 3 %}
+                {% if stat.theme_overflow > 0 %}
                 <div class="metric-row">
-                    <a href="{% url 'suggestion_themes:theme_list' %}?program={{ stat.program.pk }}" class="metric-link">+{{ stat.theme_total|add:"-3" }} {% trans "more" %} &rarr;</a>
+                    <a href="{% url 'suggestion_themes:theme_list' %}?program={{ stat.program.pk }}" class="metric-link">+{{ stat.theme_overflow }} {% trans "more" %} &rarr;</a>
                 </div>
                 {% endif %}
                 <div class="metric-row">
@@ -390,6 +390,8 @@
 .theme-name-compact {
     flex: 1;
     min-width: 0;
+    /* Prefixed properties required — no unprefixed equivalent exists.
+       Supported in all modern browsers (Chrome, Firefox 68+, Safari, Edge). */
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;

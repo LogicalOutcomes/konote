@@ -675,7 +675,9 @@ def executive_dashboard(request):
         stat["theme_total"] = themes.get("total", 0)
         stat["theme_open"] = themes.get("open", 0)
         stat["theme_in_progress"] = themes.get("in_progress", 0)
-        stat["top_themes"] = top_themes_map.get(pid, [])
+        top = top_themes_map.get(pid, [])
+        stat["top_themes"] = top
+        stat["theme_overflow"] = max(0, themes.get("total", 0) - len(top))
 
         program_stats.append(stat)
         total_clients += es.get("total", 0)
