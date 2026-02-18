@@ -53,7 +53,7 @@ Claude Code can deploy using the Jelastic REST API. This is useful for:
 $body = @{
     session = "YOUR_SESSION_TOKEN"
     env = '{"shortdomain":"KoNote-prod","region":"default"}'
-    nodes = '[{"nodeType":"docker","fixedCloudlets":4,"flexibleCloudlets":8,"docker":{"image":"ghcr.io/your-org/KoNote-web:latest"}}]'
+    nodes = '[{"nodeType":"docker","fixedCloudlets":4,"flexibleCloudlets":8,"docker":{"image":"ghcr.io/gilliankerr/KoNote:latest"}}]'
 }
 Invoke-RestMethod -Uri "https://app.vap.fullhost.cloud/1.0/environment/control/rest/createenvironment" -Method POST -Body $body
 ```
