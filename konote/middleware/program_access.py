@@ -12,10 +12,11 @@ from apps.auth_app.permissions import DENY, can_access
 # Maps URL regex to the URL kwarg containing the client ID
 CLIENT_URL_PATTERNS = [
     (re.compile(r"^/participants/(?P<client_id>\d+)"), "client_id"),
-    (re.compile(r"^/notes/client/(?P<client_id>\d+)"), "client_id"),
-    (re.compile(r"^/reports/client/(?P<client_id>\d+)"), "client_id"),
-    (re.compile(r"^/plans/client/(?P<client_id>\d+)"), "client_id"),
-    (re.compile(r"^/events/client/(?P<client_id>\d+)"), "client_id"),
+    (re.compile(r"^/notes/participant/(?P<client_id>\d+)"), "client_id"),
+    (re.compile(r"^/reports/participant/(?P<client_id>\d+)"), "client_id"),
+    (re.compile(r"^/plans/participant/(?P<client_id>\d+)"), "client_id"),
+    (re.compile(r"^/events/participant/(?P<client_id>\d+)"), "client_id"),
+    (re.compile(r"^/communications/participant/(?P<client_id>\d+)"), "client_id"),
 ]
 
 # URL patterns for note-specific routes (look up client from note)
