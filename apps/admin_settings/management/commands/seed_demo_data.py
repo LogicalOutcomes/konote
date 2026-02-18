@@ -1232,7 +1232,7 @@ class Command(BaseCommand):
         if demo_notes_exist and force:
             # Delete suggestion themes for demo programs (cascades to SuggestionLink)
             demo_programs = Program.objects.filter(
-                enrollments__client_file__record_id__startswith="DEMO-"
+                client_enrolments__client_file__record_id__startswith="DEMO-"
             ).distinct()
             theme_count_del = SuggestionTheme.objects.filter(
                 program__in=demo_programs
@@ -3345,7 +3345,7 @@ class Command(BaseCommand):
                 continue
 
             # Determine program from client's enrolment
-            enrolment = client.enrollments.select_related("program").first()
+            enrolment = client.enrolments.select_related("program").first()
             author_program = enrolment.program if enrolment else None
 
             msg = StaffMessage(
