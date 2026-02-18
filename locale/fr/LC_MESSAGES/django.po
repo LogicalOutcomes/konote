@@ -13669,3 +13669,6 @@ msgstr ""
 "p. ex., Le participant identifiera et contactera une personne en dehors du "
 "programme pour une activité sociale dans les 3 mois, suivi par des bilans "
 "hebdomadaires."
+
+msgid "Please describe what the participant wants to work on."
+msgstr "Veuillez décrire sur quoi le participant souhaite travailler."

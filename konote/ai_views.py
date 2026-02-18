@@ -8,6 +8,7 @@ from django.db.models import Q as models_Q
 from django.http import HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 from django_ratelimit.decorators import ratelimit
 
 from apps.admin_settings.models import FeatureToggle
@@ -207,7 +208,7 @@ def suggest_target_view(request):
     form = TargetSuggestForm(request.POST)
     if not form.is_valid():
         return render(request, "ai/_error.html", {
-            "message": "Please describe what the participant wants to work on.",
+            "message": _("Please describe what the participant wants to work on."),
         })
 
     participant_words = form.cleaned_data["participant_words"]
