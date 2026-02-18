@@ -5202,8 +5202,11 @@ msgstr "Noms"
 msgid "Need More Details?"
 msgstr "Besoin de plus de détails?"
 
-msgid "For detailed reports, reach out to the Program Manager for that program."
-msgstr "Pour des rapports détaillés, communiquez avec le ou la gestionnaire de ce programme."
+msgid ""
+"For detailed reports, reach out to the Program Manager for that program."
+msgstr ""
+"Pour des rapports détaillés, communiquez avec le ou la gestionnaire de ce "
+"programme."
 
 msgid "New Password"
 msgstr "Nouveau mot de passe"
@@ -13569,3 +13572,100 @@ msgstr "Thèmes de suggestions actifs"
 
 msgid "Theme"
 msgstr "Thème"
+
+msgid ""
+"AI suggestion couldn't be generated right now. You can add the target "
+"manually."
+msgstr ""
+"La suggestion IA n'a pas pu être générée pour le moment. Vous pouvez ajouter"
+" la cible manuellement."
+
+msgid "AI suggestions are a starting point. Always review before saving."
+msgstr "Les suggestions IA sont un point de départ. Vérifiez toujours avant d'enregistrer."
+
+msgid "AI-suggested target"
+msgstr "Cible suggérée par l'IA"
+
+msgid ""
+"Build one social connection outside of program activities within 3 months"
+msgstr ""
+"Établir un lien social en dehors des activités du programme dans les 3 mois"
+
+msgid ""
+"Consider: What specifically will they do or achieve? How will you know when "
+"they've made progress? What's a realistic timeline?"
+msgstr ""
+"Considérez : Que feront-ils concrètement? Comment saurez-vous qu'ils ont "
+"progressé? Quel est un échéancier réaliste?"
+
+msgid "Fill in the form"
+msgstr "Remplir le formulaire"
+
+msgid "For example:"
+msgstr "Par exemple :"
+
+msgid ""
+"Here's a suggestion based on what they shared. Adjust it to fit what you "
+"know about them."
+msgstr ""
+"Voici une suggestion basée sur ce qu'ils ont partagé. Ajustez-la en "
+"fonction de ce que vous savez d'eux."
+
+msgid "Let me edit it"
+msgstr "Modifier la suggestion"
+
+msgid "Make a friend"
+msgstr "Se faire un ami"
+
+msgid "Names and personal details are removed before sending to AI."
+msgstr "Les noms et renseignements personnels sont retirés avant l'envoi à l'IA."
+
+msgid "Or fill in the form manually"
+msgstr "Ou remplir le formulaire manuellement"
+
+msgid "Quick pick from existing goals"
+msgstr "Sélection rapide parmi les objectifs existants"
+
+msgid "Recommended metrics"
+msgstr "Mesures recommandées"
+
+msgid "Shape this target"
+msgstr "Formuler cette cible"
+
+msgid "Start over"
+msgstr "Recommencer"
+
+msgid "Suggested area"
+msgstr "Domaine suggéré"
+
+msgid "Tips for writing a good goal"
+msgstr "Conseils pour rédiger un bon objectif"
+
+msgid ""
+"Try turning their words into something Specific, Measurable, Achievable, "
+"Relevant, and Time-bound (SMART)."
+msgstr ""
+"Essayez de transformer leurs mots en quelque chose de Spécifique, Mesurable,"
+" Atteignable, Pertinent et Temporellement défini (SMART)."
+
+msgid "Use this suggestion"
+msgstr "Utiliser cette suggestion"
+
+msgid "Working on a suggestion…"
+msgstr "Préparation d'une suggestion…"
+
+msgid ""
+"Your conversation is processed by AI. Names and personal details are removed"
+" before sending."
+msgstr ""
+"Votre conversation est traitée par l'IA. Les noms et renseignements "
+"personnels sont retirés avant l'envoi."
+
+msgid ""
+"e.g., Participant will identify and reach out to one person outside the "
+"program for a social activity within 3 months, tracked through weekly check-"
+"ins."
+msgstr ""
+"p. ex., Le participant identifiera et contactera une personne en dehors du "
+"programme pour une activité sociale dans les 3 mois, suivi par des bilans "
+"hebdomadaires."
