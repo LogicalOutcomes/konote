@@ -63,8 +63,8 @@
 
 {% if can_edit and active_service_model != "group" %}
 <footer>
-    <a href="{% url 'plans:target_create' section_id=section.pk %}" role="button" class="outline small">
-        {% blocktrans with target=term.target|default:"Target" %}Add {{ target }}{% endblocktrans %}
+    <a href="{% url 'plans:goal_create' client_id=section.client_file_id %}?section={{ section.pk }}" role="button" class="outline small">
+        {% blocktrans with target=term.target|default:"Goal" %}Add {{ target }}{% endblocktrans %}
     </a>
 </footer>
 {% endif %}
