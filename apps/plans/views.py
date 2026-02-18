@@ -607,6 +607,7 @@ def goal_create(request, client_id):
         "common_goals": common_goals,
         "selected_metric_ids": selected_metric_ids,
         "ai_enabled": ai_enabled,
+        "participant_words": request.POST.get("participant_words", ""),
     }
     return render(request, "plans/goal_form.html", context)
 

@@ -128,6 +128,122 @@ def improve_outcome(draft_text):
     return _call_openrouter(system, f"Draft outcome: {draft_text}")
 
 
+def suggest_target(participant_words, program_name, metric_catalogue, existing_sections):
+    """
+    Single-turn AI call: turn participant words into a structured target suggestion.
+
+    Args:
+        participant_words: str — what the participant said, PII-scrubbed
+        program_name: str — the program this client is enrolled in
+        metric_catalogue: list of dicts {id, name, definition, category}
+        existing_sections: list of str — names of existing plan sections
+
+    Returns:
+        dict {name, description, client_goal, suggested_section,
+              metrics: [{metric_id, name, reason}]}
+        or None on failure.
+    """
+    system = (
+        "You are a goal-setting assistant for a Canadian nonprofit. "
+        "A caseworker has written down what a participant wants to work on, "
+        "in the participant's own words. Turn this into a structured, "
+        "measurable target.\n\n"
+        "LANGUAGE PRINCIPLES:\n"
+        "- Use strengths-based, positive language: 'Build social connections' "
+        "not 'Reduce isolation'\n"
+        "- The participant will see this target. Write the description "
+        "in plain language they would recognise as their own goal.\n"
+        "- Honour the participant's intent — keep their voice.\n"
+        "- Use Canadian English spelling (colour, centre, behaviour).\n\n"
+        "REQUIREMENTS:\n"
+        "- name: A concise target name (under 80 characters)\n"
+        "- description: A SMART outcome statement (Specific, Measurable, "
+        "Achievable, Relevant, Time-bound) written in plain language\n"
+        "- client_goal: The participant's own words, preserved closely\n"
+        "- suggested_section: Pick from the existing sections if one fits, "
+        "or suggest a new section name\n"
+        "- metrics: 1–3 existing metrics from the catalogue that best fit "
+        "this target. Each with metric_id, name, and a one-sentence reason.\n\n"
+        f"PROGRAM: {program_name}\n\n"
+        f"EXISTING PLAN SECTIONS: "
+        f"{json.dumps(existing_sections) if existing_sections else 'None yet — suggest a new section name.'}\n\n"
+        f"AVAILABLE METRICS:\n"
+        f"{json.dumps(metric_catalogue, indent=2) if metric_catalogue else 'No metrics available.'}\n\n"
+        "RESPONSE FORMAT — return ONLY a JSON object:\n"
+        "{\n"
+        '  "name": "Concise target name",\n'
+        '  "description": "SMART outcome statement in plain language",\n'
+        '  "client_goal": "Participant\'s own words, preserved closely",\n'
+        '  "suggested_section": "Section name",\n'
+        '  "metrics": [\n'
+        '    {"metric_id": <int>, "name": "Metric name", '
+        '"reason": "Why this metric fits"}\n'
+        "  ]\n"
+        "}\n\n"
+        "Return ONLY the JSON object, no other text."
+    )
+    user_msg = f"Participant's words: {participant_words}"
+    result = _call_openrouter(system, user_msg, max_tokens=1024)
+    if result is None:
+        return None
+
+    # Strip markdown fences if present
+    text = result.strip()
+    if text.startswith("```"):
+        lines = text.split("\n")
+        lines = [l for l in lines if not l.strip().startswith("```")]
+        text = "\n".join(lines).strip()
+
+    try:
+        parsed = json.loads(text)
+    except (json.JSONDecodeError, TypeError):
+        logger.warning("Could not parse suggest_target response: %s", text[:300])
+        return None
+
+    return _validate_suggest_target_response(parsed, metric_catalogue)
+
+
+def _validate_suggest_target_response(response, metric_catalogue):
+    """Validate the structure of a suggest_target AI response.
+
+    Returns the response dict if valid, or None if validation fails.
+    """
+    if not isinstance(response, dict):
+        logger.warning("suggest_target response is not a dict")
+        return None
+
+    # Required string fields
+    for key in ("name", "description", "client_goal"):
+        if not isinstance(response.get(key), str) or not response[key].strip():
+            logger.warning("suggest_target response missing or empty '%s'", key)
+            return None
+
+    # suggested_section — default to empty string if missing
+    if not isinstance(response.get("suggested_section"), str):
+        response["suggested_section"] = ""
+
+    # Validate metrics array
+    catalogue_ids = {m["id"] for m in metric_catalogue} if metric_catalogue else set()
+    if isinstance(response.get("metrics"), list):
+        valid_metrics = []
+        for m in response["metrics"]:
+            if not isinstance(m, dict):
+                continue
+            mid = m.get("metric_id")
+            if mid not in catalogue_ids:
+                continue
+            if not isinstance(m.get("name"), str):
+                continue
+            if not isinstance(m.get("reason"), str):
+                m["reason"] = ""
+            valid_metrics.append(m)
+        response["metrics"] = valid_metrics
+    else:
+        response["metrics"] = []
+
+    return response
+
+
 def generate_narrative(program_name, date_range, aggregate_stats):
     """
     Turn aggregate program metrics into a professional outcome summary.

@@ -1,0 +1,67 @@
+{% load i18n %}
+{# AI suggestion card — HTMX partial returned by suggest_target_view #}
+<div class="ai-suggestion-card"
+     id="ai-suggestion"
+     aria-label="{% trans 'AI-suggested target' %}"
+     role="region"
+     tabindex="-1">
+
+    <p class="suggestion-intro">
+        {% trans "Here's a suggestion based on what they shared. Adjust it to fit what you know about them." %}
+    </p>
+
+    <dl class="suggestion-details">
+        <dt>{% trans "Target name" %}</dt>
+        <dd class="suggestion-name">{{ suggestion.name }}</dd>
+
+        <dt>{% trans "Description" %}</dt>
+        <dd>{{ suggestion.description }}</dd>
+
+        <dt>{% trans "In their words" %}</dt>
+        <dd><em>{{ suggestion.client_goal }}</em></dd>
+
+        <dt>{% trans "Suggested area" %}</dt>
+        <dd>{{ suggestion.suggested_section }}</dd>
+
+        {% if suggestion.metrics %}
+        <dt>{% trans "Recommended metrics" %}</dt>
+        <dd>
+            <ul class="suggestion-metrics">
+                {% for m in suggestion.metrics %}
+                <li>
+                    <strong>{{ m.name }}</strong>
+                    {% if m.reason %}<br><small class="secondary">{{ m.reason }}</small>{% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        </dd>
+        {% endif %}
+    </dl>
+
+    <div role="group" class="suggestion-actions">
+        <button type="button"
+                id="btn-use-suggestion"
+                data-suggestion="{{ suggestion_json }}"
+                data-section-pk="{{ matched_section_pk|default:'' }}"
+                data-new-section="{{ suggestion.suggested_section }}">
+            {% trans "Use this suggestion" %}
+        </button>
+        <button type="button"
+                id="btn-edit-suggestion"
+                class="outline"
+                data-suggestion="{{ suggestion_json }}"
+                data-section-pk="{{ matched_section_pk|default:'' }}"
+                data-new-section="{{ suggestion.suggested_section }}">
+            {% trans "Let me edit it" %}
+        </button>
+        <button type="button"
+                id="btn-start-over"
+                class="outline secondary">
+            {% trans "Start over" %}
+        </button>
+    </div>
+
+    <small class="secondary">
+        {% trans "AI suggestions are a starting point. Always review before saving." %}
+    </small>
+</div>

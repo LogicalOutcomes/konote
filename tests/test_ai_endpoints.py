@@ -255,3 +255,147 @@ class SuggestNoteStructureViewTest(AIEndpointBaseTest):
         resp = self.http.post(self.url, {"target_id": self.target.pk})
         self.assertEqual(resp.status_code, 302)
         self.assertIn("/auth/login", resp.url)
+
+
+class SuggestTargetViewTest(AIEndpointBaseTest):
+    """Test the suggest-target AI endpoint."""
+
+    def setUp(self):
+        super().setUp()
+        self.url = "/ai/suggest-target/"
+
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Jayden"
+        self.client_file.last_name = "Martinez"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program, status="enrolled"
+        )
+
+        self.section = PlanSection.objects.create(
+            client_file=self.client_file, name="Social Goals", program=self.program,
+        )
+        self.metric = MetricDefinition.objects.create(
+            name="Progress", definition="1-5 progress scale", category="general",
+            min_value=1, max_value=5, unit="score",
+        )
+
+    def test_unauthenticated_redirected(self):
+        resp = self.http.post(self.url, {
+            "participant_words": "I want to make a friend",
+            "client_id": self.client_file.pk,
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/auth/login", resp.url)
+
+    def test_missing_words_returns_error(self):
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(self.url, {"client_id": self.client_file.pk})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "describe what the participant")
+
+    def test_missing_client_id_returns_error(self):
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(self.url, {"participant_words": "I want a friend"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "describe what the participant")
+
+    def test_ai_disabled_returns_403(self):
+        FeatureToggle.objects.filter(feature_key="ai_assist").update(is_enabled=False)
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(self.url, {
+            "participant_words": "I want a friend",
+            "client_id": self.client_file.pk,
+        })
+        self.assertEqual(resp.status_code, 403)
+
+    @override_settings(OPENROUTER_API_KEY="")
+    def test_no_api_key_returns_403(self):
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(self.url, {
+            "participant_words": "I want a friend",
+            "client_id": self.client_file.pk,
+        })
+        self.assertEqual(resp.status_code, 403)
+
+    def test_invalid_client_id_returns_404(self):
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(self.url, {
+            "participant_words": "I want a friend",
+            "client_id": 99999,
+        })
+        self.assertEqual(resp.status_code, 404)
+
+    @patch("konote.ai.suggest_target")
+    def test_happy_path_returns_suggestion_card(self, mock_suggest):
+        mock_suggest.return_value = {
+            "name": "Build social connections",
+            "description": "Jayden will identify and reach out to one person outside the group for a social activity within 3 months.",
+            "client_goal": "I want to make a friend that I can go out with",
+            "suggested_section": "Social Goals",
+            "metrics": [
+                {"metric_id": self.metric.pk, "name": "Progress", "reason": "Tracks steps toward goal"},
+            ],
+        }
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(self.url, {
+            "participant_words": "I want to make a friend that I can go out with",
+            "client_id": self.client_file.pk,
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Build social connections")
+        self.assertContains(resp, "btn-use-suggestion")
+        self.assertContains(resp, "btn-edit-suggestion")
+        self.assertContains(resp, "btn-start-over")
+        mock_suggest.assert_called_once()
+
+    @patch("konote.ai.suggest_target")
+    def test_ai_failure_returns_error_partial(self, mock_suggest):
+        mock_suggest.return_value = None
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(self.url, {
+            "participant_words": "I want a friend",
+            "client_id": self.client_file.pk,
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "couldn't be generated")
+        self.assertContains(resp, "btn-show-manual-form")
+
+    @patch("konote.ai.suggest_target")
+    def test_section_pk_resolved_for_matching_section(self, mock_suggest):
+        mock_suggest.return_value = {
+            "name": "Build social connections",
+            "description": "SMART description",
+            "client_goal": "Make a friend",
+            "suggested_section": "Social Goals",
+            "metrics": [],
+        }
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(self.url, {
+            "participant_words": "Make a friend",
+            "client_id": self.client_file.pk,
+        })
+        self.assertEqual(resp.status_code, 200)
+        # The matched_section_pk should be set in the template context
+        self.assertContains(resp, str(self.section.pk))
+
+    @patch("konote.ai.suggest_target")
+    def test_pii_scrubbed_before_ai_call(self, mock_suggest):
+        """Participant's name should be scrubbed from the words sent to AI."""
+        mock_suggest.return_value = {
+            "name": "Build social connections",
+            "description": "SMART description",
+            "client_goal": "Make a friend",
+            "suggested_section": "Social Goals",
+            "metrics": [],
+        }
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(self.url, {
+            "participant_words": "Jayden wants to make a friend",
+            "client_id": self.client_file.pk,
+        })
+        self.assertEqual(resp.status_code, 200)
+        # The AI function should have been called with scrubbed text
+        call_args = mock_suggest.call_args[0]
+        scrubbed_words = call_args[0]
+        self.assertNotIn("Jayden", scrubbed_words)

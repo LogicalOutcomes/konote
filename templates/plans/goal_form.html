@@ -9,15 +9,6 @@
     <p>{{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
 
-{% if ai_enabled %}
-<aside class="goal-builder-banner" role="note">
-    <p>
-        {% blocktrans with target=term.target|default:"goal" %}Want help turning participant words into a measurable {{ target }}?{% endblocktrans %}
-        <a href="{% url 'plans:plan_view' client_id=client.pk %}#goal-builder-container">{% trans "Use the Goal Builder" %}</a>
-    </p>
-</aside>
-{% endif %}
-
 {% if form.non_field_errors %}
 <div class="error-summary" role="alert" id="error-summary" tabindex="-1">
     <strong>{% trans "Please fix the following:" %}</strong>
@@ -34,7 +25,80 @@
 </div>
 {% endif %}
 
-<form method="post" id="goal-form" novalidate>
+{% if ai_enabled %}
+{# ====== Entry points (AI-assisted page) ====== #}
+<div id="entry-points">
+
+    {# ── AI-assisted path ── #}
+    <fieldset id="ai-entry">
+        <legend>{% blocktrans with client=term.client|default:"participant" %}What does the {{ client }} want to work on?{% endblocktrans %}</legend>
+        <small>{% trans "Write what they said, in their own words." %}</small>
+        <small class="secondary">
+            {% trans "Names and personal details are removed before sending to AI." %}
+        </small>
+        <textarea id="participant-words"
+                  name="participant_words"
+                  rows="2"
+                  placeholder="{% trans 'In their own words…' %}"
+                  maxlength="1000"
+                  aria-label="{% blocktrans with client=term.client|default:"participant" %}What does the {{ client }} want to work on?{% endblocktrans %}">{{ participant_words }}</textarea>
+        <button type="button"
+                id="btn-shape-target"
+                hx-post="{% url 'ai:suggest_target' %}"
+                hx-target="#suggestion-container"
+                hx-swap="innerHTML"
+                hx-indicator="#ai-loading"
+                hx-include="#participant-words, #hidden-client-id"
+                hx-disabled-elt="this">
+            {% trans "Shape this target" %}
+        </button>
+        <input type="hidden" id="hidden-client-id"
+               name="client_id" value="{{ client.pk }}">
+        <div id="ai-loading" class="htmx-indicator">
+            <div class="loading-bar"></div>
+            <small aria-live="polite">{% trans "Working on a suggestion…" %}</small>
+        </div>
+    </fieldset>
+
+    <div class="entry-divider" aria-hidden="true">
+        <span>{% trans "or" %}</span>
+    </div>
+
+    {# ── Quick pick path ── #}
+    {% if common_goals %}
+    <fieldset id="quick-pick-entry">
+        <legend>{% trans "Quick pick from existing goals" %}</legend>
+        <div class="goal-card-grid" role="group" aria-label="{% trans 'Common goals in this program' %}">
+            {% for goal in common_goals %}
+            <button type="button"
+                    class="goal-card outline"
+                    data-goal-name="{{ goal.name }}"
+                    data-metric-id="{{ goal.metric_id|default:'' }}"
+                    aria-label="{% blocktrans with name=goal.name count=goal.count %}Use {{ name }} ({{ count }} participants){% endblocktrans %}">
+                <strong>{{ goal.name }}</strong>
+                {% if goal.metric_name %}
+                <small>{{ goal.metric_name }}</small>
+                {% endif %}
+                <small class="secondary">
+                    {% blocktrans count count=goal.count %}{{ count }} participant{% plural %}{{ count }} participants{% endblocktrans %}
+                </small>
+            </button>
+            {% endfor %}
+        </div>
+    </fieldset>
+    {% endif %}
+
+    <p><a href="#" id="btn-manual-entry" class="secondary">
+        {% trans "Or fill in the form manually" %}
+    </a></p>
+</div>
+
+{# Container for AI suggestion (HTMX swaps here) #}
+<div id="suggestion-container" aria-live="polite"></div>
+{% endif %}
+
+{# ====== The form (hidden when AI enabled, revealed by JS) ====== #}
+<form method="post" id="goal-form" novalidate {% if ai_enabled %}hidden{% endif %}>
     {% csrf_token %}
 
     {# ── 1. Participant's words ── #}
@@ -61,12 +125,13 @@
         </details>
     </aside>
 
-    {# ── 2. Goal name with common cards + autocomplete ── #}
+    {# ── 2. Goal name with autocomplete ── #}
     <fieldset>
         <legend>{{ form.name.label }}</legend>
         <small>{{ form.name.help_text }}</small>
 
-        {% if common_goals %}
+        {# Common goal cards only shown in non-AI mode (AI mode uses entry-point cards instead) #}
+        {% if not ai_enabled and common_goals %}
         <div class="common-goal-cards" role="group" aria-label="{% trans 'Common goals in this program' %}">
             <small class="secondary">{% trans "Quick pick — tap to use an existing goal:" %}</small>
             <div class="goal-card-grid">
@@ -264,7 +329,185 @@
 (function() {
     "use strict";
 
-    // --- Section picker: show/hide "Create new" field ---
+    var goalForm = document.getElementById("goal-form");
+    var entryPoints = document.getElementById("entry-points");
+    var suggestionContainer = document.getElementById("suggestion-container");
+    var nameInput = document.getElementById("{{ form.name.id_for_label }}");
+
+    // ────────────────────────────────────────
+    // Progressive disclosure helpers
+    // ────────────────────────────────────────
+
+    function revealForm() {
+        if (entryPoints) entryPoints.hidden = true;
+        if (goalForm) {
+            goalForm.hidden = false;
+            var firstInput = goalForm.querySelector("input:not([type=hidden]):not([disabled]), textarea, select");
+            if (firstInput) firstInput.focus();
+        }
+    }
+
+    function populateForm(suggestion, sectionPk, newSectionName) {
+        if (!goalForm) return;
+
+        // Participant's words
+        var clientGoal = goalForm.querySelector("[name=client_goal]");
+        if (clientGoal && suggestion.client_goal) clientGoal.value = suggestion.client_goal;
+
+        // Goal name
+        if (nameInput && suggestion.name) nameInput.value = suggestion.name;
+
+        // Description
+        var desc = goalForm.querySelector("[name=description]");
+        if (desc && suggestion.description) desc.value = suggestion.description;
+
+        // Section
+        var sectionSelect = goalForm.querySelector("[name=section_choice]");
+        var newSectionRow = document.getElementById("new-section-row");
+        var newSectionInput = goalForm.querySelector("[name=new_section_name]");
+        if (sectionSelect) {
+            if (sectionPk) {
+                // Select existing section
+                sectionSelect.value = sectionPk;
+                if (newSectionRow) newSectionRow.hidden = true;
+            } else if (newSectionName) {
+                // Create new section
+                sectionSelect.value = "new";
+                if (newSectionRow) {
+                    newSectionRow.hidden = false;
+                    newSectionRow.setAttribute("aria-expanded", "true");
+                }
+                if (newSectionInput) newSectionInput.value = newSectionName;
+            }
+        }
+
+        // Metrics — check boxes matching suggestion metric IDs
+        if (suggestion.metrics && suggestion.metrics.length) {
+            suggestion.metrics.forEach(function(m) {
+                var cb = document.getElementById("metric-" + m.metric_id);
+                if (cb) cb.checked = true;
+            });
+        }
+    }
+
+    // ────────────────────────────────────────
+    // AI suggestion card actions (event delegation)
+    // ────────────────────────────────────────
+
+    if (suggestionContainer) {
+        // After HTMX swaps the suggestion card in, scroll and focus
+        document.addEventListener("htmx:afterSwap", function(evt) {
+            if (evt.detail.target.id !== "suggestion-container") return;
+
+            var card = document.getElementById("ai-suggestion");
+            if (card) {
+                card.scrollIntoView({ behavior: "smooth" });
+                card.focus();
+            }
+            // If error partial was loaded, wire up its button
+            var showFormBtn = document.getElementById("btn-show-manual-form");
+            if (showFormBtn) {
+                showFormBtn.addEventListener("click", function() {
+                    suggestionContainer.innerHTML = "";
+                    // Copy participant words to the form's client_goal field
+                    var pw = document.getElementById("participant-words");
+                    var clientGoal = goalForm ? goalForm.querySelector("[name=client_goal]") : null;
+                    if (pw && clientGoal) clientGoal.value = pw.value;
+                    revealForm();
+                });
+            }
+        });
+
+        // Handle suggestion card button clicks
+        suggestionContainer.addEventListener("click", function(e) {
+            var btn = e.target.closest("button");
+            if (!btn) return;
+
+            if (btn.id === "btn-use-suggestion") {
+                var suggestion = JSON.parse(btn.dataset.suggestion);
+                populateForm(suggestion, btn.dataset.sectionPk, btn.dataset.newSection);
+                // Submit the form directly
+                revealForm();
+                goalForm.submit();
+                return;
+            }
+
+            if (btn.id === "btn-edit-suggestion") {
+                var editSuggestion = JSON.parse(btn.dataset.suggestion);
+                populateForm(editSuggestion, btn.dataset.sectionPk, btn.dataset.newSection);
+                suggestionContainer.innerHTML = "";
+                revealForm();
+                return;
+            }
+
+            if (btn.id === "btn-start-over") {
+                suggestionContainer.innerHTML = "";
+                if (entryPoints) entryPoints.hidden = false;
+                var pw = document.getElementById("participant-words");
+                if (pw) {
+                    pw.value = "";
+                    pw.focus();
+                }
+                return;
+            }
+        });
+    }
+
+    // ────────────────────────────────────────
+    // Entry point: "Or fill in the form manually"
+    // ────────────────────────────────────────
+
+    var manualBtn = document.getElementById("btn-manual-entry");
+    if (manualBtn) {
+        manualBtn.addEventListener("click", function(e) {
+            e.preventDefault();
+            // Copy participant words to the form's client_goal field
+            var pw = document.getElementById("participant-words");
+            var clientGoal = goalForm ? goalForm.querySelector("[name=client_goal]") : null;
+            if (pw && pw.value && clientGoal) clientGoal.value = pw.value;
+            revealForm();
+        });
+    }
+
+    // ────────────────────────────────────────
+    // Quick pick cards (entry point version — AI mode)
+    // ────────────────────────────────────────
+
+    var entryGoalCards = entryPoints ? entryPoints.querySelectorAll(".goal-card") : [];
+    entryGoalCards.forEach(function(card) {
+        card.addEventListener("click", function() {
+            if (nameInput) nameInput.value = this.dataset.goalName;
+            var metricId = this.dataset.metricId;
+            if (metricId) {
+                var cb = document.getElementById("metric-" + metricId);
+                if (cb) cb.checked = true;
+            }
+            revealForm();
+        });
+    });
+
+    // ────────────────────────────────────────
+    // Common goal cards (non-AI form version)
+    // ────────────────────────────────────────
+
+    var formGoalCards = goalForm ? goalForm.querySelectorAll(".goal-card") : [];
+    formGoalCards.forEach(function(card) {
+        card.addEventListener("click", function() {
+            if (nameInput) nameInput.value = this.dataset.goalName;
+            var metricId = this.dataset.metricId;
+            if (metricId) {
+                var cb = document.getElementById("metric-" + metricId);
+                if (cb) cb.checked = true;
+            }
+            formGoalCards.forEach(function(c) { c.classList.remove("selected"); });
+            this.classList.add("selected");
+        });
+    });
+
+    // ────────────────────────────────────────
+    // Section picker: show/hide "Create new" field
+    // ────────────────────────────────────────
+
     var sectionSelect = document.getElementById("{{ form.section_choice.id_for_label }}");
     var newSectionRow = document.getElementById("new-section-row");
     if (sectionSelect && newSectionRow) {
@@ -273,35 +516,20 @@
             newSectionRow.hidden = !isNew;
             newSectionRow.setAttribute("aria-expanded", isNew ? "true" : "false");
             if (isNew) {
-                var nameInput = newSectionRow.querySelector("input[type=text]");
-                if (nameInput) nameInput.focus();
+                var sectionNameInput = newSectionRow.querySelector("input[type=text]");
+                if (sectionNameInput) sectionNameInput.focus();
             }
         });
     }
 
-    // --- Common goal cards: pre-fill name + metric ---
-    var goalCards = document.querySelectorAll(".goal-card");
-    var nameInput = document.getElementById("{{ form.name.id_for_label }}");
-    goalCards.forEach(function(card) {
-        card.addEventListener("click", function() {
-            if (nameInput) nameInput.value = this.dataset.goalName;
-            // Pre-check the associated metric
-            var metricId = this.dataset.metricId;
-            if (metricId) {
-                var cb = document.getElementById("metric-" + metricId);
-                if (cb) cb.checked = true;
-            }
-            // Visual feedback
-            goalCards.forEach(function(c) { c.classList.remove("selected"); });
-            this.classList.add("selected");
-        });
-    });
+    // ────────────────────────────────────────
+    // Goal name autocomplete (load-once, filter client-side)
+    // ────────────────────────────────────────
 
-    // --- Goal name autocomplete (load-once, filter client-side) ---
     var suggestionsLoaded = false;
     var allSuggestions = [];
     var suggestionsList = document.getElementById("goal-suggestions-list");
-    var suggestionCount = document.getElementById("suggestion-count");
+    var autocompleteCount = document.getElementById("suggestion-count");
     var activeIndex = -1;
 
     function loadSuggestions() {
@@ -333,11 +561,11 @@
         var show = visibleCount > 0;
         suggestionsList.hidden = !show;
         nameInput.setAttribute("aria-expanded", show ? "true" : "false");
-        if (suggestionCount) {
+        if (autocompleteCount) {
             if (show) {
-                suggestionCount.textContent = visibleCount + " " + (visibleCount === 1 ? "{% trans 'suggestion available' %}" : "{% trans 'suggestions available' %}");
+                autocompleteCount.textContent = visibleCount + " " + (visibleCount === 1 ? "{% trans 'suggestion available' %}" : "{% trans 'suggestions available' %}");
             } else {
-                suggestionCount.textContent = "";
+                autocompleteCount.textContent = "";
             }
         }
     }
@@ -396,7 +624,6 @@
             }
         });
         nameInput.addEventListener("blur", function() {
-            // Delay to allow click on suggestion
             setTimeout(closeSuggestions, 300);
         });
     }
@@ -407,7 +634,10 @@
         });
     }
 
-    // --- Metric search/filter in Tier 3 ---
+    // ────────────────────────────────────────
+    // Metric search/filter in Tier 3
+    // ────────────────────────────────────────
+
     var metricSearch = document.getElementById("metric-search");
     var metricSearchCount = document.getElementById("metric-search-count");
     if (metricSearch) {
@@ -421,7 +651,6 @@
                 item.hidden = !match;
                 if (match) visibleCount++;
             });
-            // Show/hide empty categories
             document.querySelectorAll(".metric-category").forEach(function(cat) {
                 var hasVisible = cat.querySelector(".metric-search-item:not([hidden])");
                 cat.hidden = !hasVisible;
@@ -436,9 +665,18 @@
         });
     }
 
-    // --- Focus error summary on failed submission ---
+    // ────────────────────────────────────────
+    // Focus error summary on failed submission
+    // ────────────────────────────────────────
+
     var errorSummary = document.getElementById("error-summary");
-    if (errorSummary) errorSummary.focus();
+    if (errorSummary) {
+        // If form had errors, make sure it's visible (not hidden behind entry points)
+        if (goalForm && goalForm.hidden) {
+            revealForm();
+        }
+        errorSummary.focus();
+    }
 })();
 </script>
 {% endblock %}

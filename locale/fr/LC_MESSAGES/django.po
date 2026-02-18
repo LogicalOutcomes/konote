@@ -13574,22 +13574,71 @@ msgid "Theme"
 msgstr "Thème"
 
 msgid ""
-"Build one social connection outside of program activities within 3 months"
+"AI suggestion couldn't be generated right now. You can add the target "
+"manually."
 msgstr ""
-"Créer un lien social en dehors des activités du programme en 3 mois"
+"La suggestion IA n'a pas pu être générée pour le moment. Vous pouvez ajouter"
+" la cible manuellement."
+
+msgid "AI suggestions are a starting point. Always review before saving."
+msgstr ""
+"Les suggestions IA sont un point de départ. Vérifiez toujours avant "
+"d'enregistrer."
+
+msgid "AI-suggested target"
+msgstr "Cible suggérée par l'IA"
+
+msgid ""
+"Build one social connection outside of program activities within 3 months"
+msgstr "Créer un lien social en dehors des activités du programme en 3 mois"
 
 msgid ""
 "Consider: What specifically will they do or achieve? How will you know when "
 "they've made progress? What's a realistic timeline?"
 msgstr ""
-"À considérer\u00a0: Que fera ou accomplira la personne concrètement? Comment "
-"saurez-vous qu'elle progresse? Quel est un délai réaliste?"
+"À considérer\\u00a0: Que fera ou accomplira la personne concrètement? "
+"Comment saurez-vous qu'elle progresse? Quel est un délai réaliste?"
+
+msgid "Fill in the form"
+msgstr "Remplir le formulaire"
 
 msgid "For example:"
-msgstr "Par exemple\u00a0:"
+msgstr "Par exemple\\u00a0:"
+
+msgid ""
+"Here's a suggestion based on what they shared. Adjust it to fit what you "
+"know about them."
+msgstr ""
+"Voici une suggestion basée sur ce qu'ils ont partagé. Ajustez-la en fonction"
+" de ce que vous savez d'eux."
+
+msgid "Let me edit it"
+msgstr "Modifier la suggestion"
 
 msgid "Make a friend"
 msgstr "Se faire un ami"
+
+msgid "Names and personal details are removed before sending to AI."
+msgstr ""
+"Les noms et renseignements personnels sont retirés avant l'envoi à l'IA."
+
+msgid "Or fill in the form manually"
+msgstr "Ou remplir le formulaire manuellement"
+
+msgid "Quick pick from existing goals"
+msgstr "Sélection rapide parmi les objectifs existants"
+
+msgid "Recommended metrics"
+msgstr "Mesures recommandées"
+
+msgid "Shape this target"
+msgstr "Formuler cette cible"
+
+msgid "Start over"
+msgstr "Recommencer"
+
+msgid "Suggested area"
+msgstr "Domaine suggéré"
 
 msgid "Tips for writing a good goal"
 msgstr "Conseils pour rédiger un bon objectif"
@@ -13598,11 +13647,17 @@ msgid ""
 "Try turning their words into something Specific, Measurable, Achievable, "
 "Relevant, and Time-bound (SMART)."
 msgstr ""
-"Essayez de transformer leurs mots en quelque chose de Spécifique, Mesurable, "
-"Atteignable, Réaliste et Temporellement défini (SMART)."
+"Essayez de transformer leurs mots en quelque chose de Spécifique, Mesurable,"
+" Atteignable, Réaliste et Temporellement défini (SMART)."
 
 msgid "Use the Goal Builder"
 msgstr "Utiliser le bâtisseur d'objectifs"
+
+msgid "Use this suggestion"
+msgstr "Utiliser cette suggestion"
+
+msgid "Working on a suggestion…"
+msgstr "Préparation d'une suggestion…"
 
 msgid ""
 "Your conversation is processed by AI. Names and personal details are removed"
@@ -13620,10 +13675,15 @@ msgstr ""
 "dehors du programme pour une activité sociale dans un délai de 3 mois, avec "
 "un suivi lors des rencontres hebdomadaires."
 
+msgid "Please describe what the participant wants to work on."
+msgstr "Veuillez décrire sur quoi le participant souhaite travailler."
+
 #. blocktrans from templates/plans/goal_form.html
 #, python-format
-msgid ""
-"Want help turning participant words into a measurable %(target)s?"
+msgid "Want help turning participant words into a measurable %(target)s?"
 msgstr ""
 "Besoin d'aide pour transformer les mots du ou de la participant(e) en un "
 "%(target)s mesurable?"
+
+msgid "A theme called \\\"%(name)s\\\" already exists in this program."
+msgstr ""

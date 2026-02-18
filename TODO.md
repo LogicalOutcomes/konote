@@ -75,6 +75,12 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Fix portal session isolation test — accept 404 as valid denial — 2026-02-18 (TEST-PORTAL1)
 - [x] Fix BLOCKER-1 a11y test — updated to expect skip link (WCAG best practice) — 2026-02-18 (TEST-A11Y1)
 
+### Phase: AI Target Suggestion — Polish
+
+- [ ] Use CSS custom property for error colour in `.ai-suggest-error` instead of hardcoded `#dc3545` (AI-CSS1)
+- [ ] Add `%(client)s` form of "What does the client want to work on?" blocktrans msgid to .po file — pre-existing gap (AI-I18N1)
+- [ ] Add `@require_POST` decorator to all AI views for explicitness (AI-VIEWS1)
+
 ### Phase: UX Fixes
 
 **Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
