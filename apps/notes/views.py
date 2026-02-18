@@ -14,6 +14,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
@@ -495,10 +496,12 @@ def note_create(request, client_id):
                 if is_pm or getattr(request.user, "is_admin", False):
                     messages.info(
                         request,
-                        _("Suggestion recorded.")
-                        + ' <a href="/admin/suggestions/">'
-                        + _("View Suggestion Themes")
-                        + "</a>",
+                        mark_safe(
+                            _("Suggestion recorded.")
+                            + ' <a href="' + reverse("suggestion_themes:theme_list") + '">'
+                            + _("View Suggestion Themes")
+                            + "</a>"
+                        ),
                     )
                 else:
                     messages.info(
