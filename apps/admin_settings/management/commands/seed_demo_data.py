@@ -3296,3 +3296,58 @@ class Command(BaseCommand):
         self.stdout.write(
             f"  Suggestion themes: {theme_count} themes, {link_count} links created."
         )
+
+    def _create_demo_staff_messages(self, workers, programs_by_name, now):
+        """Create internal staff-to-staff messages about demo participants."""
+        from apps.clients.models import ClientFile
+
+        # Build user lookup — include manager and front desk
+        users_by_username = dict(workers)
+        for username in ("demo-frontdesk", "demo-manager"):
+            try:
+                users_by_username[username] = User.objects.get(username=username)
+            except User.DoesNotExist:
+                self.stdout.write(self.style.WARNING(
+                    f"  {username} not found — skipping staff messages for that user."
+                ))
+
+        created = 0
+        for msg_def in DEMO_STAFF_MESSAGES:
+            client = ClientFile.objects.filter(
+                record_id=msg_def["client"]
+            ).first()
+            if not client:
+                continue
+
+            left_by = users_by_username.get(msg_def["left_by"])
+            for_user = users_by_username.get(msg_def["for_user"])
+            if not left_by:
+                continue
+
+            # Determine program from client's enrolment
+            enrolment = client.enrollments.select_related("program").first()
+            author_program = enrolment.program if enrolment else None
+
+            msg = StaffMessage(
+                client_file=client,
+                left_by=left_by,
+                for_user=for_user,
+                status=msg_def["status"],
+                author_program=author_program,
+            )
+            msg.content = msg_def["message"]
+            msg.save()
+
+            # Backdate created_at
+            days_ago = msg_def.get("days_ago", 1)
+            backdated = now - timedelta(days=days_ago, hours=random.randint(1, 8))
+            StaffMessage.objects.filter(pk=msg.pk).update(created_at=backdated)
+
+            # Set read_at for read messages
+            if msg_def["status"] == "read":
+                read_time = backdated + timedelta(hours=random.randint(1, 12))
+                StaffMessage.objects.filter(pk=msg.pk).update(read_at=read_time)
+
+            created += 1
+
+        self.stdout.write(f"  Staff messages: {created} created.")
