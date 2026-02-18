@@ -486,6 +486,14 @@ def note_create(request, client_id):
                     status="default",
                 ).exclude(pk=note.pk).update(follow_up_completed_at=timezone.now())
 
+            # Tier 1: Auto-link suggestion to existing themes (non-blocking).
+            if note.participant_suggestion and note.suggestion_priority:
+                try:
+                    from apps.notes.theme_engine import try_auto_link_suggestion
+                    try_auto_link_suggestion(note)
+                except Exception:
+                    logger.exception("Auto-link failed for note %s", note.pk)
+
             messages.success(request, _("Progress note saved."))
 
             # Contextual toast when a suggestion was recorded

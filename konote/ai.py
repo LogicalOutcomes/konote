@@ -198,17 +198,23 @@ def _call_insights_api(system_prompt, user_message, max_tokens=2048):
         return _call_openrouter(system_prompt, user_message, max_tokens)
 
 
-def generate_outcome_insights(program_name, date_range, structured_data, quotes):
+def generate_outcome_insights(
+    program_name, date_range, structured_data, quotes,
+    existing_theme_names=None,
+):
     """Generate a report-ready narrative draft from qualitative outcome data.
 
     Args:
         program_name: str
         date_range: str — e.g. "2025-10-01 to 2026-01-31"
         structured_data: dict — output from get_structured_insights()
-        quotes: list of dicts — PII-scrubbed quotes with text, target_name, note_id
+        quotes: list of dicts — PII-scrubbed quotes with text, target_name
+        existing_theme_names: optional list of active theme name strings
+            for the program. AI reuses these names when applicable.
 
     Returns:
-        dict {summary, themes, cited_quotes, recommendations} or None on failure.
+        dict {summary, themes, cited_quotes, recommendations,
+              suggestion_themes} or None on failure.
     """
     system = (
         "You write concise program report drafts for Canadian nonprofits. "
@@ -251,6 +257,22 @@ def generate_outcome_insights(program_name, date_range, structured_data, quotes)
         "prioritised by: (1) any urgent/safety items, (2) highest-frequency "
         "recurring patterns, (3) highest staff-rated priority. Quality over "
         "quantity — 3 actionable findings are better than 10 vague ones.\n\n"
+        "SUGGESTION THEMES — critical for program improvement:\n"
+        "Group all suggestion-source quotes into named themes. A theme is a "
+        "recurring topic across multiple participant suggestions (e.g. "
+        "'Evening availability', 'Transportation barriers').\n"
+        "RULES for themes:\n"
+        "- You will receive a list of existing theme names. Reuse them EXACTLY "
+        "when a suggestion fits an existing theme.\n"
+        "- Only create a new theme when NO existing theme fits.\n"
+        "- Only theme program-design suggestions (scheduling, activities, "
+        "format, resources, staffing). Do NOT theme operational items "
+        "(broken equipment, room temperature, parking, snacks). Categorise "
+        "operational items as 'operational' so the system can skip them.\n"
+        "- A theme needs at least 2 supporting quotes to be worth reporting.\n"
+        "- Each theme needs: name (short label), description (1 sentence), "
+        "category ('program_design' or 'operational'), keywords (3-5 words "
+        "for future matching), and supporting_quotes (verbatim texts).\n\n"
         "Return a JSON object with these keys:\n"
         "- summary: 2-3 paragraphs of narrative text\n"
         "- themes: array of 3-5 theme strings with counts\n"
@@ -260,11 +282,18 @@ def generate_outcome_insights(program_name, date_range, structured_data, quotes)
         "    - finding: 1 sentence describing the feedback\n"
         "    - count: how many participants expressed this\n"
         "    - supporting_quotes: array of {text, note_id} — verbatim only\n"
+        "- suggestion_themes: array of objects, each with:\n"
+        "    - name: short theme label (reuse existing names when possible)\n"
+        "    - description: 1 sentence describing the theme\n"
+        "    - category: 'program_design' or 'operational'\n"
+        "    - keywords: array of 3-5 keywords for this theme\n"
+        "    - supporting_quotes: array of verbatim quote texts\n"
         "- recommendations: 1 paragraph of staff observations based on the "
         "feedback above\n\n"
         "Return ONLY the JSON object, no other text."
     )
 
+    theme_names = existing_theme_names or []
     user_msg = (
         f"Program: {program_name}\n"
         f"Period: {date_range}\n\n"
@@ -276,6 +305,9 @@ def generate_outcome_insights(program_name, date_range, structured_data, quotes)
         f"{json.dumps(structured_data.get('engagement_distribution', {}), indent=2)}\n\n"
         f"Total notes: {structured_data.get('note_count', 0)}\n"
         f"Total participants: {structured_data.get('participant_count', 0)}\n\n"
+        f"Existing suggestion themes for this program "
+        f"(reuse these names when applicable):\n"
+        f"{json.dumps(theme_names, indent=2)}\n\n"
         f"Participant quotes (PII-scrubbed, verbatim):\n"
         f"{json.dumps(quotes, indent=2)}"
     )
@@ -374,6 +406,33 @@ def validate_insights_response(response, original_quotes):
         response["participant_feedback"] = verified_feedback
     else:
         response["participant_feedback"] = []
+
+    # Validate suggestion_themes — optional (older cached responses won't have it)
+    if isinstance(response.get("suggestion_themes"), list):
+        verified_themes = []
+        for st in response["suggestion_themes"]:
+            if not isinstance(st, dict):
+                continue
+            if not st.get("name") or not isinstance(st["name"], str):
+                continue
+            if st.get("category") not in ("program_design", "operational"):
+                st["category"] = "program_design"
+            # Verify supporting quotes are verbatim
+            if isinstance(st.get("supporting_quotes"), list):
+                verified_sq = [
+                    q for q in st["supporting_quotes"]
+                    if isinstance(q, str)
+                    and any(q in orig for orig in original_texts)
+                ]
+                st["supporting_quotes"] = verified_sq
+            else:
+                st["supporting_quotes"] = []
+            if not isinstance(st.get("keywords"), list):
+                st["keywords"] = []
+            verified_themes.append(st)
+        response["suggestion_themes"] = verified_themes
+    else:
+        response["suggestion_themes"] = []
 
     return response
 

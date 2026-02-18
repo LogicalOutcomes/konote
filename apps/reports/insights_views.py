@@ -113,8 +113,13 @@ def program_insights(request):
             SuggestionTheme.objects.active()
             .filter(program=program)
             .annotate(link_count=Count("links"))
-            .order_by("-updated_at")
+            .order_by("-priority", "-updated_at")
         )
+
+        # Responsiveness summary: "X of Y themes addressed"
+        all_themes = SuggestionTheme.objects.filter(program=program)
+        addressed_themes_count = all_themes.filter(status="addressed").count()
+        total_theme_count = active_themes.count() + addressed_themes_count
 
         # Split suggestions into linked vs unlinked (ungrouped)
         linked_note_ids = set(
@@ -145,6 +150,12 @@ def program_insights(request):
             "suggestions": suggestions,
             "unlinked_suggestions": unlinked_suggestions,
             "active_themes": active_themes,
+            "addressed_themes_count": addressed_themes_count,
+            "total_theme_count": total_theme_count,
+            "can_manage_themes": UserProgramRole.objects.filter(
+                user=request.user, program=program,
+                role="program_manager", status="active",
+            ).exists() or request.user.is_superuser,
             "data_tier": data_tier,
             "min_participants": MIN_PARTICIPANTS_FOR_QUOTES,
             "chart_data_json": structured["descriptor_trend"],

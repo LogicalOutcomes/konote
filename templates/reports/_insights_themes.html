@@ -1,0 +1,68 @@
+{% load i18n %}
+{# ── Suggestion Themes — responsiveness summary + active theme cards ── #}
+
+{% if total_theme_count %}
+<div class="theme-responsiveness" role="status" aria-label="{% trans 'Suggestion theme progress' %}">
+    <p>
+        <strong>
+            {% blocktrans with addressed=addressed_themes_count total=total_theme_count count counter=addressed_themes_count %}{{ addressed }} of {{ total }} suggestion theme addressed{% plural %}{{ addressed }} of {{ total }} suggestion themes addressed{% endblocktrans %}
+        </strong>
+    </p>
+    <progress value="{{ addressed_themes_count }}" max="{{ total_theme_count }}"
+              aria-label="{% trans 'Themes addressed' %}"
+              style="margin-bottom: 0.5rem;">
+    </progress>
+</div>
+{% endif %}
+
+{% if active_themes %}
+<h4>{% trans "Active Suggestion Themes" %}</h4>
+<p class="chart-description muted">{% trans "Recurring patterns identified from participant suggestions. Update the status as your program responds to feedback." %}</p>
+
+{% for theme in active_themes %}
+<article class="theme-card" id="theme-{{ theme.pk }}" style="padding: 0.75rem 1rem; margin-bottom: 0.75rem; border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius);">
+    <div style="display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap;">
+        <strong>{{ theme.name }}</strong>
+        {% if theme.priority == "urgent" %}
+        <span class="pill pill--engagement" style="background: #fce4ec; color: #c62828;">{% trans "Urgent" %}</span>
+        {% elif theme.priority == "important" %}
+        <span class="pill pill--engagement" style="background: #fff3e0; color: #e65100;">{% trans "Important" %}</span>
+        {% endif %}
+        <small class="muted">
+            {{ theme.link_count }} {% if theme.link_count == 1 %}{% trans "suggestion" %}{% else %}{% trans "suggestions" %}{% endif %}
+        </small>
+        {% if theme.status == "in_progress" %}
+        <span class="pill pill--descriptor">{% trans "In Progress" %}</span>
+        {% endif %}
+    </div>
+    {% if theme.description %}<p class="muted" style="margin: 0.25rem 0 0.5rem;">{{ theme.description }}</p>{% endif %}
+
+    {% if can_manage_themes %}
+    <div class="theme-actions" style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+        {% if theme.status == "open" %}
+        <button
+            hx-post="{% url 'suggestion_themes:status_update' pk=theme.pk %}"
+            hx-vals='{"new_status": "in_progress"}'
+            hx-target="#theme-{{ theme.pk }}"
+            hx-swap="outerHTML"
+            class="outline secondary"
+            style="padding: 0.25rem 0.75rem; font-size: 0.85rem;"
+            type="button">
+            {% trans "Working on it" %}
+        </button>
+        {% endif %}
+        <button
+            hx-post="{% url 'suggestion_themes:status_update' pk=theme.pk %}"
+            hx-vals='{"new_status": "addressed"}'
+            hx-target="#theme-{{ theme.pk }}"
+            hx-swap="outerHTML"
+            class="outline secondary"
+            style="padding: 0.25rem 0.75rem; font-size: 0.85rem;"
+            type="button">
+            {% trans "Mark addressed" %}
+        </button>
+    </div>
+    {% endif %}
+</article>
+{% endfor %}
+{% endif %}

@@ -286,10 +286,10 @@ class NoteCancelForm(forms.Form):
 
 
 class SuggestionThemeForm(forms.ModelForm):
-    """Create or edit a SuggestionTheme.
+    """Create or edit a SuggestionTheme (kept for backward compat with tests).
 
-    Used for both create/edit pages and inline status updates on the detail page.
-    Program queryset is scoped to the requesting user's accessible programs.
+    In the automated design, themes are created by AI — not by users.
+    This form is only used for manual theme creation if needed.
     """
 
     class Meta:
@@ -313,3 +313,25 @@ class SuggestionThemeForm(forms.ModelForm):
             from apps.programs.access import get_accessible_programs
             self.fields["program"].queryset = get_accessible_programs(requesting_user)
         self.fields["addressed_note"].required = False
+
+
+class SuggestionThemeStatusForm(forms.ModelForm):
+    """Inline status update for a suggestion theme.
+
+    Used on the Insights page and theme detail page to let PMs
+    mark themes as in-progress, addressed, or won't-do.
+    """
+
+    class Meta:
+        model = SuggestionTheme
+        fields = ["status", "addressed_note"]
+        widgets = {
+            "addressed_note": forms.Textarea(attrs={
+                "rows": 2,
+                "placeholder": _("What was done about it?"),
+            }),
+        }
+        labels = {
+            "status": _("Status"),
+            "addressed_note": _("Resolution notes"),
+        }
