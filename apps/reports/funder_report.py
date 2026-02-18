@@ -165,6 +165,8 @@ def format_number(value: int | float | None) -> str:
     """
     if value is None:
         return "N/A"
+    if isinstance(value, str):
+        return value
     if isinstance(value, float):
         return f"{value:,.1f}"
     return f"{value:,}"
