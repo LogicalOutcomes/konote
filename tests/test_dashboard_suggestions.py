@@ -1,13 +1,13 @@
-"""Tests for suggestion counts on the executive dashboard."""
+"""Tests for suggestion counts and theme display on the executive dashboard."""
 from cryptography.fernet import Fernet
 
 from django.contrib.auth import get_user_model
 from django.test import SimpleTestCase, TestCase, override_settings
 
 import konote.encryption as enc_module
-from apps.clients.dashboard_views import _batch_suggestion_counts
+from apps.clients.dashboard_views import _batch_suggestion_counts, _batch_top_themes
 from apps.clients.models import ClientFile, ClientProgramEnrolment
-from apps.notes.models import ProgressNote
+from apps.notes.models import ProgressNote, SuggestionTheme
 from apps.programs.models import Program, UserProgramRole
 
 User = get_user_model()
@@ -21,6 +21,15 @@ class BatchSuggestionCountsUnitTest(SimpleTestCase):
     def test_empty_program_list(self):
         result = _batch_suggestion_counts([])
         self.assertEqual(result, {})
+
+
+class BatchTopThemesUnitTest(SimpleTestCase):
+    """Test edge cases without hitting the database."""
+
+    def test_empty_program_list(self):
+        counts, themes = _batch_top_themes([])
+        self.assertEqual(counts, {})
+        self.assertEqual(themes, {})
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
@@ -95,6 +104,80 @@ class BatchSuggestionCountsTest(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class BatchTopThemesTest(TestCase):
+    """Test _batch_top_themes with real database data."""
+
+    def setUp(self):
+        enc_module._fernet = None
+
+        self.program = Program.objects.create(name="Housing", status="active")
+        self.user = User.objects.create_user(username="worker", password="testpass123")
+
+    def _create_theme(self, name, priority="noted", status="open"):
+        return SuggestionTheme.objects.create(
+            program=self.program,
+            name=name,
+            priority=priority,
+            status=status,
+            created_by=self.user,
+        )
+
+    def test_returns_up_to_3_themes_per_program(self):
+        for i in range(5):
+            self._create_theme(f"Theme {i}")
+
+        counts, themes = _batch_top_themes([self.program.pk])
+        self.assertEqual(len(themes[self.program.pk]), 3)
+        self.assertEqual(counts[self.program.pk]["total"], 5)
+
+    def test_urgent_themes_first(self):
+        self._create_theme("Low priority", priority="noted")
+        self._create_theme("Critical", priority="urgent")
+        self._create_theme("Medium", priority="important")
+
+        _, themes = _batch_top_themes([self.program.pk])
+        names = [t["name"] for t in themes[self.program.pk]]
+        self.assertEqual(names[0], "Critical")
+        self.assertEqual(names[1], "Medium")
+        self.assertEqual(names[2], "Low priority")
+
+    def test_addressed_themes_excluded(self):
+        self._create_theme("Active theme", status="open")
+        self._create_theme("Done theme", status="addressed")
+        self._create_theme("Skipped theme", status="wont_do")
+
+        counts, themes = _batch_top_themes([self.program.pk])
+        self.assertEqual(counts[self.program.pk]["total"], 1)
+        self.assertEqual(len(themes[self.program.pk]), 1)
+        self.assertEqual(themes[self.program.pk][0]["name"], "Active theme")
+
+    def test_counts_include_open_and_in_progress(self):
+        self._create_theme("Open one", status="open")
+        self._create_theme("Open two", status="open")
+        self._create_theme("Working on it", status="in_progress")
+
+        counts, _ = _batch_top_themes([self.program.pk])
+        c = counts[self.program.pk]
+        self.assertEqual(c["total"], 3)
+        self.assertEqual(c["open"], 2)
+        self.assertEqual(c["in_progress"], 1)
+
+    def test_exactly_3_themes_no_overflow(self):
+        """Boundary: exactly 3 themes should return all 3, no extras."""
+        for i in range(3):
+            self._create_theme(f"Theme {i}")
+
+        counts, themes = _batch_top_themes([self.program.pk])
+        self.assertEqual(len(themes[self.program.pk]), 3)
+        self.assertEqual(counts[self.program.pk]["total"], 3)
+
+    def test_no_themes_returns_empty(self):
+        counts, themes = _batch_top_themes([self.program.pk])
+        self.assertEqual(counts, {})
+        self.assertEqual(themes, {})
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ExecutiveDashboardSuggestionViewTest(TestCase):
     """Integration test: verify suggestion card renders on dashboard."""
 
@@ -151,3 +234,62 @@ class ExecutiveDashboardSuggestionViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Suggestions")
         self.assertContains(response, "Outcome Insights")
+
+    def test_dashboard_shows_theme_names(self):
+        SuggestionTheme.objects.create(
+            program=self.program,
+            name="Longer evening hours",
+            priority="important",
+            status="open",
+            created_by=self.user,
+        )
+        self.client.login(username="exec", password="testpass123")
+        response = self.client.get("/participants/executive/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Longer evening hours")
+        self.assertContains(response, "Suggestion Themes")
+
+    def test_dashboard_shows_urgent_badge(self):
+        SuggestionTheme.objects.create(
+            program=self.program,
+            name="Safety concern",
+            priority="urgent",
+            status="open",
+            created_by=self.user,
+        )
+        self.client.login(username="exec", password="testpass123")
+        response = self.client.get("/participants/executive/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Safety concern")
+        self.assertContains(response, "Urgent")
+
+    def test_dashboard_shows_more_count(self):
+        for i in range(5):
+            SuggestionTheme.objects.create(
+                program=self.program,
+                name=f"Theme number {i}",
+                priority="noted",
+                status="open",
+                created_by=self.user,
+            )
+        self.client.login(username="exec", password="testpass123")
+        response = self.client.get("/participants/executive/")
+        self.assertEqual(response.status_code, 200)
+        # 5 themes, showing 3, so "+2 more" should appear
+        self.assertContains(response, "+2")
+        self.assertContains(response, "more")
+
+    def test_dashboard_falls_back_to_count_without_themes(self):
+        """When no themes exist but suggestions do, show count fallback."""
+        ProgressNote.objects.create(
+            client_file=self.client_file,
+            author=self.user,
+            author_program=self.program,
+            note_type="progress",
+            suggestion_priority="noted",
+        )
+        self.client.login(username="exec", password="testpass123")
+        response = self.client.get("/participants/executive/")
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Suggestions")
+        self.assertNotContains(response, "Suggestion Themes")

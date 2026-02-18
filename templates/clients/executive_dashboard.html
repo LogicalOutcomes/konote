@@ -160,15 +160,29 @@
                 </div>
                 {% endif %}
 
-                {% if stat.theme_total > 0 %}
+                {% if stat.top_themes %}
                 <hr>
-                {# Theme action status — executives care about throughput #}
+                {# Theme names — executives see what suggestions are about #}
                 <div class="metric-row">
                     <span class="metric-label">{% trans "Suggestion Themes" %}</span>
-                    <span class="metric-value">
-                        {{ stat.theme_open }} {% trans "open" %}{% if stat.theme_in_progress %}, {{ stat.theme_in_progress }} {% trans "in progress" %}{% endif %}
-                    </span>
                 </div>
+                <ul class="theme-compact-list" role="list" aria-label="{{ stat.program.translated_name }} {% trans 'suggestion themes' %}">
+                    {% for theme in stat.top_themes %}
+                    <li>
+                        <span class="theme-name-compact">{{ theme.name }}</span>
+                        {% if theme.priority == "urgent" %}
+                        <span class="badge badge-danger badge-sm">{% trans "Urgent" %}</span>
+                        {% elif theme.priority == "important" %}
+                        <span class="badge badge-warning badge-sm">{% trans "Important" %}</span>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% if stat.theme_overflow > 0 %}
+                <div class="metric-row">
+                    <a href="{% url 'suggestion_themes:theme_list' %}?program={{ stat.program.pk }}" class="metric-link">+{{ stat.theme_overflow }} {% trans "more" %} &rarr;</a>
+                </div>
+                {% endif %}
                 <div class="metric-row">
                     <a href="{% url 'suggestion_themes:theme_list' %}?program={{ stat.program.pk }}" class="metric-link">{% trans "View themes" %} &rarr;</a>
                 </div>
@@ -279,8 +293,8 @@
 }
 
 .stat-success .stat-value { color: var(--kn-success-fg); }
-.stat-warning .stat-value { color: var(--pico-mark-background-color, #f9a825); }
-.stat-warning .stat-flag { color: var(--pico-mark-background-color, #f9a825); }
+.stat-warning .stat-value { color: var(--kn-warning-fg); }
+.stat-warning .stat-flag { color: var(--kn-warning-fg); }
 .stat-alert .stat-value { color: var(--kn-danger-fg); }
 .stat-alert .stat-flag { color: var(--kn-danger-fg); }
 
@@ -341,7 +355,7 @@
 
 .metric-success .metric-value { color: var(--kn-success-fg); }
 .metric-neutral .metric-value { color: var(--pico-muted-color); }
-.metric-warning .metric-value { color: var(--pico-mark-background-color, #f9a825); }
+.metric-warning .metric-value { color: var(--kn-warning-fg); }
 .metric-alert .metric-value { color: var(--kn-danger-fg); }
 
 .program-metrics hr {
@@ -356,6 +370,40 @@
     text-decoration: none;
 }
 .metric-link:hover { text-decoration: underline; }
+
+/* Theme compact list (per-program cards) */
+.theme-compact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.theme-compact-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.15rem 0;
+    font-size: 0.85rem;
+    gap: 0.25rem;
+}
+
+.theme-name-compact {
+    flex: 1;
+    min-width: 0;
+    /* Prefixed properties required — no unprefixed equivalent exists.
+       Supported in all modern browsers (Chrome, Firefox 68+, Safari, Edge). */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.badge-sm {
+    font-size: 0.7rem;
+    padding: 1px 5px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
 
 /* Guidance */
 .executive-guidance {
