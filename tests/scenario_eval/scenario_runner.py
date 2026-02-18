@@ -278,6 +278,12 @@ class ScenarioRunner(BrowserTestBase):
         def _client_exists(first):
             return any(c.first_name == first for c in all_clients)
 
+        def _client_full_exists(first, last):
+            return any(
+                c.first_name == first and c.last_name == last
+                for c in all_clients
+            )
+
         from apps.clients.models import ClientDetailValue
         from apps.notes.models import ProgressNote
         staff = User.objects.filter(username="staff").first()
@@ -372,6 +378,22 @@ class ScenarioRunner(BrowserTestBase):
                 ClientDetailValue.objects.create(
                     client_file=priya, field_def=self.phone_field,
                     value="905-555-0233",
+                )
+
+        # SCN-084: Priya Sharma (messaging consent blocks scenario)
+        if not _client_full_exists("Priya", "Sharma"):
+            priya_s = ClientFile.objects.create(is_demo=False)
+            priya_s.first_name = "Priya"
+            priya_s.last_name = "Sharma"
+            priya_s.status = "active"
+            priya_s.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=priya_s, program=self.program_a,
+            )
+            if hasattr(self, "phone_field"):
+                ClientDetailValue.objects.create(
+                    client_file=priya_s, field_def=self.phone_field,
+                    value="416-555-0384",
                 )
 
         # SCN-049: Marcus Williams (shared-device handoff, data bleed test)
@@ -571,6 +593,10 @@ class ScenarioRunner(BrowserTestBase):
         for requirement in required_data:
             req_type = requirement.get("type", "")
             req_name = requirement.get("name", "")
+
+            # QA-FIX1: Skip empty/blank prerequisite names (bad YAML data)
+            if not req_name or not req_name.strip():
+                continue
 
             if req_type == "client":
                 from apps.clients.models import ClientFile
@@ -1508,6 +1534,45 @@ class ScenarioRunner(BrowserTestBase):
                                 )
                         except Exception:
                             pass
+                    # QA-FIX3: Fallback for logout/sign-out links inside
+                    # a <details> dropdown.  Open the dropdown first.
+                    if not fallback_clicked and re.search(
+                        r"logout|sign.?out", selector, re.I,
+                    ):
+                        try:
+                            # Desktop: open user dropdown then click sign out
+                            dd = self.page.locator(
+                                "details.dropdown",
+                            ).last
+                            if dd.is_visible(timeout=500):
+                                dd.locator("summary").click(timeout=2000)
+                                self.page.wait_for_timeout(300)
+                            so = self.page.get_by_role(
+                                "link", name=re.compile(
+                                    r"sign\s*out|log\s*out", re.I,
+                                ),
+                            ).first
+                            so.click(timeout=5000)
+                            fallback_clicked = True
+                            logger.info(
+                                "Click fallback: opened details dropdown "
+                                "for logout selector=%s",
+                                selector,
+                            )
+                        except Exception:
+                            # Mobile: try the dedicated mobile sign-out link
+                            try:
+                                mob = self.page.locator(
+                                    ".nav-signout-mobile a",
+                                ).first
+                                mob.click(timeout=3000)
+                                fallback_clicked = True
+                                logger.info(
+                                    "Click fallback: mobile sign-out link",
+                                )
+                            except Exception:
+                                pass
+
                     if not fallback_clicked:
                         pass  # Click failed — the LLM evaluator will note it
 
@@ -1717,5 +1782,11 @@ class ScenarioRunner(BrowserTestBase):
                             path=path, full_page=False, timeout=15000,
                         )
 
-            # Small pause between actions for realism
-            self.page.wait_for_timeout(100)
+            # Small pause between actions for realism.
+            # QA-FIX3: Catch TargetClosedError — browser may have closed
+            # after a logout action or navigation away from the page.
+            try:
+                self.page.wait_for_timeout(100)
+            except Exception:
+                logger.info("Page closed during action loop — breaking")
+                break

@@ -4,6 +4,11 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-02-17 housekeeping, batch 3)
+
+- [x] Plan page Phase A — subtle text links, actions dropdown, plain-language status forms, no browser confirm dialogs — 2026-02-16 (PLAN-A1–A5)
+- [x] Plan page Phase B — AI Goal Builder with chat, draft card, PII scrubbing, 27 tests — 2026-02-16 (PLAN-B1–B5)
+
 ## Moved from Recently Done (2026-02-17 housekeeping, batch 2)
 
 - [x] Review and merge fix/audit-log-pm-scoping — fixes PM audit log scoping bug — 2026-02-16 (AUDIT-SCOPE1)
