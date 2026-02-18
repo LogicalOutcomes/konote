@@ -1,42 +1,31 @@
 # Run Scenario Server: QA Scenario Evaluation Runner
 
-Runs the QA scenario test suite against a live dev server using Playwright. Captures screenshots, page structure, and accessibility data for evaluation by the konote-qa-scenarios repo.
+Runs the QA scenario test suite using Playwright. Captures screenshots, page structure, and accessibility data for evaluation by the konote-qa-scenarios repo.
 
 **This is TEST INFRASTRUCTURE**, not application code.
+
+The test framework handles everything internally: database setup, migrations, test data seeding, live server startup, holdout repo resolution, and cleanup. No manual preflight or server startup needed.
 
 ---
 
 ## Steps
 
-### Step 1: Run preflight check
+### Step 1: Run the scenario tests
 
-Run `python manage.py preflight`. If it fails, show the output to the user and STOP. Do not proceed until all critical checks pass.
-
-If preflight reports missing test data (warning), run `python manage.py seed` then `python manage.py seed_demo_data` before continuing.
-
-If preflight reports pending migrations (warning), run `python manage.py migrate` before continuing.
-
-### Step 2: Start the dev server if not running
-
-Check if `http://127.0.0.1:8000/` responds with HTTP 200.
-
-If NOT responding:
-1. Start `python manage.py runserver` in the background (use `run_in_background: true`)
-2. Poll `http://127.0.0.1:8000/` every 2 seconds, up to 30 seconds
-3. Verify the response is HTTP 200 (not a 500 error page)
-4. If it doesn't come up, read the server's error output and show it to the user. STOP.
-
-### Step 3: Run the scenario tests
-
-Set `SCENARIO_HOLDOUT_DIR` to the path confirmed by preflight, then run:
+Run from the konote-app directory:
 
 ```
 pytest tests/scenario_eval/ -v --no-llm
 ```
 
-**This takes 2–5 minutes.** Use `timeout: 360000` (6 minutes) on the Bash call — the default 2-minute timeout will cause it to freeze mid-run. Wait for it to finish. Do NOT poll or run other commands while it runs.
+**This takes 2-5 minutes.** Use `timeout: 360000` (6 minutes) on the Bash call. Wait for it to finish. Do NOT poll or run other commands while it runs.
 
-### Step 4: Report results
+Notes:
+- `SCENARIO_HOLDOUT_DIR` auto-resolves to `../konote-qa-scenarios` if the repo is cloned next to konote-app. Only set it manually for non-standard layouts.
+- The test framework starts its own live server (via `StaticLiveServerTestCase`) — do NOT start `runserver` separately.
+- If tests skip with "Holdout repo not found", the user needs to clone the konote-qa-scenarios repo next to konote-app.
+
+### Step 2: Report results
 
 After tests complete, report to the user:
 - Number of tests run and pass/fail counts
