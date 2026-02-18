@@ -9,6 +9,15 @@
     <p>{{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
 
+{% if ai_enabled %}
+<aside class="goal-builder-banner" role="note">
+    <p>
+        {% blocktrans with target=term.target|default:"goal" %}Want help turning participant words into a measurable {{ target }}?{% endblocktrans %}
+        <a href="{% url 'plans:plan_view' client_id=client.pk %}#goal-builder-container">{% trans "Use the Goal Builder" %}</a>
+    </p>
+</aside>
+{% endif %}
+
 {% if form.non_field_errors %}
 <div class="error-summary" role="alert" id="error-summary" tabindex="-1">
     <strong>{% trans "Please fix the following:" %}</strong>
