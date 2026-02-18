@@ -13559,3 +13559,6 @@ msgid "%(count)s participant"
 msgid_plural "%(count)s participants"
 msgstr[0] "%(count)s participant"
 msgstr[1] "%(count)s participants"
+
+msgid "Recommended"
+msgstr "Recommandé"
