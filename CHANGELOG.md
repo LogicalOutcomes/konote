@@ -6,6 +6,81 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ---
 
+## [2.2.0] — 2026-02-18
+
+### Added
+
+**Suggestion tracking & Outcome Insights**
+- Capture participant suggestions and reflections in every progress note
+- SuggestionTheme and SuggestionLink system for categorising recurring feedback
+- Two-tier automation: keyword-based auto-linking on note creation, plus AI-generated themes during Outcome Insights analysis
+- Responsiveness tracking with status workflow (open → in progress → addressed)
+- Theme management at /manage/suggestions/ for program managers
+- Executive dashboard shows top suggestion themes per program
+- Contextual toast notification on note save when new suggestions are linked to themes
+
+**Goal Builder**
+- Combined goal creation form with section assignment, target naming, and three-tier universal metrics (Confidence, Progress, Wellbeing)
+- Metric autocomplete from the library
+
+**PM self-service administration**
+- Program managers can manage plan templates, note templates, event types, metrics, registration links, and suggestion themes under /manage/
+- No system admin access needed for programme-level configuration
+
+**Staff messaging**
+- Staff-to-staff messages about participants with My Messages dashboard
+- Unread badge in navigation
+- Front desk can leave messages; staff and program managers read messages for their programs
+
+**Client transfer workflow**
+- Move participants between programs with a dedicated transfer form
+- Permission key (`client.transfer`) with role-based access
+- Cross-program consent tracking and full audit trail
+- Confidential program enrolments are preserved during transfer
+
+**Portal staff management**
+- Invite participants to the portal, manage and revoke access, reset MFA — all from the client detail page
+
+**Automated scheduling**
+- `send_reminders` management command sends SMS/email reminders for meetings in the next 36 hours, with automatic retry for failures
+- `send_export_summary` management command emails admins a weekly digest of all export activity for privacy oversight
+
+**System health monitoring**
+- Staff-visible warning banners (yellow/red) on the Meetings page when SMS or email delivery is failing
+- Admin alert emails after 24 hours of sustained delivery failures
+
+**Onboarding interview guide**
+- Session split into Discovery and Decisions sessions
+- Privacy prerequisites document for agencies to complete before configuration
+- Between-sessions homework with terminology and role alignment exercises
+
+**First-run setup wizard**
+- 8-step guided configuration UI for new instances
+- `apply_setup` management command to configure an instance from a YAML/JSON configuration file
+
+### Changed
+
+- **URL restructuring** — PM-accessible management pages moved from /admin/ to /manage/ (plan templates, note templates, event types, metrics, users, audit logs, suggestions, registration). Old /admin/ URLs redirect permanently.
+- **Client URL prefix** — Changed from /clients/ to /participants/ throughout the application, with redirects from old URLs
+- **Executive dashboard redesigned** — Batch queries replace per-program loops; suggestion theme counts and top themes displayed per program
+- **Actions menu consolidated** — Edit, Transfer, and all client actions merged into a single dropdown
+- **Tab renames** — "Timeline" renamed to "History"; "Note" renamed to "Notes"
+- **Template-driven chart interpretations** — Progress charts now include AI-generated narrative summaries when configured
+
+### Fixed
+
+- Mobile touch targets now meet 44px WCAG 2.2 AA minimum with explicit padding on nav, breadcrumbs, tabs, buttons, and selects
+- Dark mode contrast on breadcrumbs, filter bars, add-link elements, and executive dashboard cards
+- French translation improvements: explicit preferred_language for test users, translated programme names, metric names in analysis view
+- Program manager privilege escalation via user edit form blocked
+- HTMX cache bugs resolved with Vary: HX-Request middleware
+- Heading level accessibility (h1→h3 skip corrected)
+- Disabled buttons now use aria-disabled, tabindex, and aria-describedby for screen reader compatibility
+- Back-button cache handling for plan editing pages
+- Blue border/outline around main page content removed
+
+---
+
 ## [2.1.0] — 2026-02-13
 
 ### Added
