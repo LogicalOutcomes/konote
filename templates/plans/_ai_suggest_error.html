@@ -1,0 +1,8 @@
+{% load i18n %}
+{# Error fallback when AI suggestion fails — HTMX partial #}
+<div class="ai-suggest-error" role="alert">
+    <p>{% trans "AI suggestion couldn't be generated right now. You can add the target manually." %}</p>
+    <button type="button" id="btn-show-manual-form" class="outline">
+        {% trans "Fill in the form" %}
+    </button>
+</div>
