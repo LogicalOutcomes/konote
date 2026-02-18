@@ -13383,3 +13383,16 @@ msgstr "en cours"
 
 msgid "open"
 msgstr "ouvert(s)"
+
+msgid "Suggestion recorded."
+msgstr "Suggestion enregistrée."
+
+msgid ""
+"This suggestion has been recorded. A Program Manager can group it with "
+"similar feedback."
+msgstr ""
+"Cette suggestion a été enregistrée. Un gestionnaire de programme peut la "
+"regrouper avec des commentaires similaires."
+
+msgid "View Suggestion Themes"
+msgstr "Voir les thèmes de suggestions"
