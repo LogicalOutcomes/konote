@@ -145,6 +145,8 @@ PERMISSION_URL_MAP = {
     "event_type.manage": {"url": "/manage/event-types/"},
     "metric.manage": {"url": "/manage/metrics/"},
     "registration.manage": {"url": "/manage/registration/"},
+    "suggestion_theme.view": {"url": "/manage/suggestions/"},
+    "suggestion_theme.manage": {"url": "/manage/suggestions/"},
 }
 
 ALL_ROLES = ["receptionist", "staff", "program_manager", "executive"]
