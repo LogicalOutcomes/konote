@@ -295,28 +295,6 @@ document.addEventListener('DOMContentLoaded', function() {
         dateToInput.value = dateTo;
     });
 
-    // Select all / deselect all for metrics (existing functionality)
-    const selectAllLink = document.getElementById('select-all-metrics');
-    const deselectAllLink = document.getElementById('deselect-all-metrics');
-
-    if (selectAllLink) {
-        selectAllLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.querySelectorAll('input[name="metrics"]').forEach(function(cb) {
-                cb.checked = true;
-            });
-        });
-    }
-
-    if (deselectAllLink) {
-        deselectAllLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.querySelectorAll('input[name="metrics"]').forEach(function(cb) {
-                cb.checked = false;
-            });
-        });
-    }
-
     // Dynamic template preview — show breakdowns for the selected template
     var templateSelect = document.getElementById('id_report_template');
     if (templateSelect) {

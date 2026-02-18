@@ -34,24 +34,9 @@
 | QA-W19 | Onboarding guidance for new users | Large | User model change, new templates, JS tour logic |
 | SETUP1-UI | First-run setup wizard UI | Large | Related to QA-W19 — could combine |
 
-### From Phase 8 (still outstanding)
+### From Phase 8 — ALL COMPLETE
 
-These were identified in an earlier UX review (tasks/phase-8-ux-improvements.md). Items not yet done:
-
-| ID | Summary | Effort | Notes |
-|---|---|---|---|
-| UX5 | Fix N+1 queries in client list | Small | `clients/views.py` — add `prefetch_related` |
-| UX6 | Fix note collapse (preserve scroll) | Small | `_note_detail.html` — HTMX swap |
-| UX7 | Add hx-confirm to destructive actions | Small | `_section.html`, `_target.html` |
-| UX9 | Autofocus search input on home | Tiny | `home.html` |
-| UX10 | Select All for metric export checkboxes | Small | `export_form.html`, JS |
-| UX11 | Fix error toast (close button, auto-dismiss) | Small | `app.js`, `base.html` |
-| UX8 | Admin nav dropdown | Medium | `base.html` |
-| UX3 | Note form target selection checkboxes | Medium | `note_form.html`, JS |
-| UX4 | Notes filtering and pagination | Medium | `note_list.html`, `notes/views.py` |
-| UX2 | HTMX client tabs | Medium | Multiple tab partials |
-| UX12 | Custom fields read-only mode | Medium | `custom_fields` templates |
-| UX1 | Staff dashboard | Large | New view, template, session tracking |
+All Phase 8 UX items (UX1–UX12) were completed 2026-02-02/03. See `tasks/ARCHIVE.md` lines 390–415.
 
 ---
 
