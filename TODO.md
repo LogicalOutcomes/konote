@@ -30,6 +30,15 @@
 - [ ] Add unique constraint migration on SuggestionTheme(program, name) — run merge_duplicate_themes first, then deploy migration (THEME-FIX5)
 - [ ] Consider "Reopened" badge on theme rows if managers report confusion about addressed themes reappearing (THEME-FIX6)
 
+### Phase: Near-Term Improvements
+
+- [ ] Fix false "You're offline" on back button — service worker serves offline.html on any navigation fetch failure, not just actual offline; HTMX Vary header makes back-button navigations prone to this (BUG-SW1)
+- [ ] Convert 12 hardcoded `/manage/` URLs in base.html to `{% url %}` tags for maintainability (URL-CLEAN1)
+- [ ] Move `plans/admin/metrics/` redirect before `plans/` include in urls.py for consistency with events redirect ordering (URL-CLEAN2)
+- [ ] Audit all views for missing permission checks — PERMISSION-5 revealed nav hides link but view is unguarded (QA-W60)
+- [ ] Optimise executive dashboard queries — reduce N+1 per-program loop with prefetching or aggregation (PERF2)
+- [ ] Add program parameter to _ensure_client note creation — currently hardcodes program_a (QA-W61)
+
 ### Phase: Post-Housekeeping Verification
 
 - [ ] Run full test suite (`pytest -m "not browser and not scenario_eval"`) to verify PR #143 test fixes pass against current main (VERIFY1)
@@ -86,17 +95,12 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Add first-run setup wizard UI for guided initial configuration (SETUP1-UI)
 - [ ] Add TOTP multi-factor authentication (see tasks/mfa-implementation.md) (SEC2)
 - [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
-- [ ] Optimise executive dashboard queries — reduce N+1 per-program loop with prefetching or aggregation (PERF2)
 - [ ] Add bulk operations for discharge and assignment workflows (UX17)
 - [ ] Re-add API-based auto-translation to translate_strings for production use (I18N-API1)
 - [ ] Document local PostgreSQL setup for security_audit and pytest workflows (DEV-PG1)
 - [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
-- [ ] Audit all views for missing permission checks — PERMISSION-5 revealed nav hides link but view is unguarded (QA-W60)
-- [ ] Add program parameter to _ensure_client note creation — currently hardcodes program_a (QA-W61)
 - [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
-- [ ] Convert 12 hardcoded `/manage/` URLs in base.html to `{% url %}` tags for maintainability (URL-CLEAN1)
-- [ ] Move `plans/admin/metrics/` redirect before `plans/` include in urls.py for consistency with events redirect ordering (URL-CLEAN2)
 - [ ] Add basic smoke test for `translate_strings` command — removed dead test class but no replacement exists (TEST-TRANS2)
 
 ## Recently Done
