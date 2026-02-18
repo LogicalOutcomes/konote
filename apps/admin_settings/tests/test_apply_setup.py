@@ -156,7 +156,7 @@ class ApplySetupTests(TestCase):
             InstanceSetting.objects.get(setting_key="support_email").setting_value,
             "tech@youth.ca",
         )
-        self.assertIn("2 created", out.getvalue())
+        self.assertIn("2 configured", out.getvalue())
 
     # ------------------------------------------------------------------
     # Terminology overrides
