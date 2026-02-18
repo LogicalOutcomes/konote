@@ -105,13 +105,12 @@
     {# ====== Phase 1: Listen (non-AI only, hidden on POST) ====== #}
     <div id="goal-phase-1" {% if form.is_bound %}hidden{% endif %}>
 
-        {# ── Participant's words ── #}
+        {# ── Participant's words (no name attr — hidden field in phase 2 submits) ── #}
         <fieldset>
             <legend>{{ form.client_goal.label }}</legend>
             <small>{{ form.client_goal.help_text }}</small>
             <input type="text"
-                   id="{{ form.client_goal.id_for_label }}"
-                   name="client_goal"
+                   id="phase1-client-goal"
                    value="{{ form.client_goal.value|default_if_none:'' }}"
                    placeholder="{% trans 'In their own words…' %}"
                    maxlength="255">
@@ -575,7 +574,7 @@
         phase2.hidden = false;
 
         // Show participant quote if words were entered
-        var wordsInput = phase1.querySelector("[name=client_goal]");
+        var wordsInput = document.getElementById("phase1-client-goal");
         var quote = document.getElementById("participant-quote");
         var quoteText = document.getElementById("participant-quote-text");
         var hiddenClientGoal = document.getElementById("{{ form.client_goal.id_for_label }}-phase2");
@@ -623,9 +622,9 @@
         });
     }
 
-    // Trigger 3: Textarea blur with content
+    // Trigger 3: Input blur with content
     if (phase1) {
-        var wordsField = phase1.querySelector("[name=client_goal]");
+        var wordsField = document.getElementById("phase1-client-goal");
         if (wordsField) {
             wordsField.addEventListener("blur", function() {
                 if (this.value.trim().length > 0) {
