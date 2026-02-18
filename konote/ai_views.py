@@ -19,6 +19,7 @@ from konote.forms import (
     ImproveOutcomeForm,
     SuggestMetricsForm,
     SuggestNoteStructureForm,
+    TargetSuggestForm,
 )
 
 
@@ -190,6 +191,79 @@ def suggest_note_structure_view(request):
         return render(request, "ai/_error.html", {"message": "AI suggestion unavailable. Please try again later."})
 
     return render(request, "ai/_note_structure.html", {"sections": sections, "target_name": target.name})
+
+
+@login_required
+@ratelimit(key="user", rate="20/h", method="POST", block=True)
+def suggest_target_view(request):
+    """Suggest a structured target from participant words. HTMX POST.
+
+    Takes the participant's own words and returns an AI-generated suggestion
+    card with target name, SMART description, section, and recommended metrics.
+    """
+    if not _ai_enabled():
+        return HttpResponseForbidden("AI features are not enabled.")
+
+    form = TargetSuggestForm(request.POST)
+    if not form.is_valid():
+        return render(request, "ai/_error.html", {
+            "message": "Please describe what the participant wants to work on.",
+        })
+
+    participant_words = form.cleaned_data["participant_words"]
+    client_id = form.cleaned_data["client_id"]
+
+    from apps.clients.models import ClientFile
+    from apps.plans.models import PlanSection
+    from apps.plans.views import _can_edit_plan
+    from apps.programs.access import get_client_or_403
+    from apps.reports.pii_scrub import scrub_pii
+
+    client_file = get_client_or_403(request, client_id)
+    if client_file is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+    if not _can_edit_plan(request.user, client_file):
+        return HttpResponseForbidden("You don't have permission to edit this plan.")
+
+    # PII-scrub before sending to AI
+    known_names = _get_known_names_for_client(client_file)
+    scrubbed_words = scrub_pii(participant_words, known_names)
+
+    # Build AI context
+    program, metric_catalogue, existing_sections = _get_goal_builder_context(client_file)
+    program_name = program.name if program else "General"
+
+    # Call AI
+    result = ai.suggest_target(scrubbed_words, program_name, metric_catalogue, existing_sections)
+
+    if result is None:
+        return render(request, "plans/_ai_suggest_error.html", {
+            "client": client_file,
+            "participant_words": participant_words,
+        })
+
+    # Resolve suggested section name to a PK if it matches an existing section
+    section_choices = list(
+        PlanSection.objects.filter(client_file=client_file, status="default")
+        .values("pk", "name")
+    )
+    matched_section_pk = None
+    for sc in section_choices:
+        if sc["name"].lower().strip() == result.get("suggested_section", "").lower().strip():
+            matched_section_pk = sc["pk"]
+            break
+
+    # Serialise suggestion for embedding as data attribute
+    suggestion_json = json.dumps(result)
+
+    return render(request, "plans/_ai_suggestion.html", {
+        "suggestion": result,
+        "suggestion_json": suggestion_json,
+        "client": client_file,
+        "participant_words": participant_words,
+        "sections": section_choices,
+        "matched_section_pk": matched_section_pk,
+    })
 
 
 @login_required

@@ -9,6 +9,7 @@ urlpatterns = [
     path("improve-outcome/", ai_views.improve_outcome_view, name="improve_outcome"),
     path("generate-narrative/", ai_views.generate_narrative_view, name="generate_narrative"),
     path("suggest-note-structure/", ai_views.suggest_note_structure_view, name="suggest_note_structure"),
+    path("suggest-target/", ai_views.suggest_target_view, name="suggest_target"),
     path("outcome-insights/", ai_views.outcome_insights_view, name="outcome_insights"),
     # Goal Builder
     path("goal-builder/<int:client_id>/", ai_views.goal_builder_start, name="goal_builder_start"),
