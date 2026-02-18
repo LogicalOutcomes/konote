@@ -118,6 +118,8 @@ Program Managers already get some admin-like powers for their own program (manag
 | | | | Yes / No | |
 | | | | Yes / No | |
 
+*What this means: You've mapped every person at your agency to a KoNote role, and identified who manages the system. This becomes the basis for creating user accounts.*
+
 ---
 
 ### Section 2: Your Programs
@@ -160,6 +162,8 @@ Program Managers already get some admin-like powers for their own program (manag
 |---|---|---|---|
 | | | | |
 | | | | |
+
+*What this means: You've listed your programs and flagged which ones need extra protection. In Session 2, we'll use this to decide who can see what within each program.*
 
 ---
 
@@ -205,37 +209,37 @@ Front desk does NOT see by default:
 
 #### Walk Through Scenarios
 
-Read each scenario aloud and ask: "What would need to happen at your agency?"
+*This is one of the harder parts of the interview — there's no single right answer. Read each scenario aloud and ask: "What would need to happen at your agency?"*
 
 **Scenario A — Phone call:**
-> "A client calls and says: 'I have an appointment today but I'm running late.' The front desk person needs to check whether they have an appointment and with whom."
+> "Imagine a client calls your office and says: 'I have an appointment today but I'm running late.' Your front desk person needs to check whether they have an appointment and with whom."
 
-- *What do they need to see?* (Name, appointment/schedule, their worker's name)
+- *What would your front desk person need to see?* (Name, appointment/schedule, their worker's name)
 - *What should they NOT see?* (Why they're coming, what program they're in)
 
 **Scenario B — Walk-in:**
-> "Someone walks in for the first time. Front desk does the intake — collects their name, contact info, emergency contact, and some demographic information."
+> "Someone walks in for the first time. Your front desk person does the intake — collects their name, contact info, emergency contact, and some demographic information."
 
-- *What intake fields does front desk fill in?*
-- *Are there any fields on your intake form that front desk should NOT fill in?* (e.g., presenting concerns, referral source with clinical detail)
+- *What fields on your intake form does front desk fill in?*
+- *Are there any fields they shouldn't fill in?* (e.g., presenting concerns, referral source with clinical detail)
 
 **Scenario C — Emergency:**
-> "A client has a medical emergency in your lobby. Paramedics arrive and ask: 'Does this person have any allergies? Are they on any medications?'"
+> "This one's harder. A client has a medical emergency in your lobby. Paramedics arrive and ask: 'Does this person have any allergies? Are they on any medications?'"
 
-- *Should front desk be able to see allergies?* (Usually yes — this is a safety issue)
-- *Should front desk be able to see medications?* (This is the tension — medications reveal diagnosis, but paramedics may need it)
+- *Should your front desk be able to see allergies?* (Usually yes — this is a safety issue)
+- *Should they be able to see medications?* (This is a real tension — medications can reveal a diagnosis, but paramedics may need that information)
 
 **Scenario D — Family member calls:**
-> "Someone calls and says 'I'm looking for my partner — are they a client of yours?' Front desk needs to handle this without confirming or denying."
+> "Someone calls and says 'I'm looking for my partner — are they a client of yours?' Your front desk person needs to handle this without confirming or denying."
 
-- *How do you handle this currently?*
-- *What should the system show or not show that could affect this?*
+- *How does your team handle this kind of call today?*
+- *What should the system show — or not show — that could help or hinder this?*
 
 **Scenario E — Group pickup:**
 > "A parent calls to check what time the youth group ends so they can pick up their child."
 
-- *Should front desk know which groups exist and their schedules?*
-- *Should they see who is in the group?* (Remember: group name can reveal reason for service — "Anger Management Group" tells you something about the members)
+- *Should your front desk person know which groups exist and their schedules?*
+- *Should they see who is in each group?* (Keep in mind: a group name like "Anger Management" tells you something about everyone in it)
 
 #### Decision Points
 
@@ -266,6 +270,8 @@ Based on the scenarios, confirm these choices:
 |---|---|---|
 | | None / View / Edit | |
 | | None / View / Edit | |
+
+*What this means: You've decided exactly what your front desk team can and can't see — including which intake fields they can fill in. This protects clinical information while making sure your front desk has what they need to do their job.*
 
 ---
 
@@ -306,6 +312,8 @@ KoNote's default gives Program Managers:
 | Can cancel safety alerts? | Yes / No (2-person rule) | |
 | Can manage users in their program? | Yes / No (centralized) | |
 
+*What this means: You've set the boundaries for your Program Managers — whether they see individual files or just numbers, and how safety alerts are managed. These choices balance oversight with the privacy of your clients.*
+
 ---
 
 ### Section 5: Executive & Board Access
@@ -336,6 +344,8 @@ KoNote's default gives Program Managers:
 | Leader | Role | Sees Individual Data? | Notes |
 |---|---|---|---|
 | | | | |
+
+*What this means: You've decided what your leadership team can see. If your ED or board members don't need individual client files, they won't have access — which keeps your privacy footprint smaller.*
 
 ---
 
@@ -385,6 +395,8 @@ KoNote's default gives Program Managers:
 | Who handles privacy access requests? | PM / Privacy officer / ED | |
 | Staff departure process? | Describe | |
 
+*What this means: You've planned for the hard situations — conflict of interest, domestic violence safety, privacy requests, and staff departures. These plans mean you're ready before something happens, not scrambling after.*
+
 ---
 
 ### Section 7: Features to Turn On
@@ -421,6 +433,8 @@ KoNote has features that can be turned on or off for each agency. Walk through t
 |---|---|---|
 | Who receives export notifications? | Default (admins) / Specific people | |
 | Email addresses (if specific) | | |
+
+*What this means: You've chosen which KoNote features to turn on and who gets notified when data is exported. Your system will only include the tools your agency actually needs.*
 
 ---
 
