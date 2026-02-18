@@ -806,17 +806,29 @@ def export_form(request):
             content = csv_buffer.getvalue()
 
     # Save to file and create secure download link
-    link = _save_export_and_create_link(
-        request=request,
-        content=content,
-        filename=filename,
-        export_type="metrics",
-        client_count=len(unique_clients),
-        includes_notes=False,
-        recipient=recipient,
-        filters_dict=filters_dict,
-        contains_pii=not is_aggregate,
-    )
+    try:
+        link = _save_export_and_create_link(
+            request=request,
+            content=content,
+            filename=filename,
+            export_type="metrics",
+            client_count=len(unique_clients),
+            includes_notes=False,
+            recipient=recipient,
+            filters_dict=filters_dict,
+            contains_pii=not is_aggregate,
+        )
+    except Exception:
+        logger.exception("Failed to save metric export file")
+        from django.contrib import messages
+        messages.error(request, "Something went wrong saving the export. Please try again or contact support.")
+        return render(request, "reports/export_form.html", {
+            "form": form,
+            "export_error": True,
+            "is_aggregate_only": is_aggregate,
+            "is_pm_export": is_pm_export,
+            "delay_minutes": delay_minutes,
+        })
 
     # Audit log with recipient tracking
     audit_metadata = {
@@ -1080,20 +1092,29 @@ def funder_report_form(request):
     safe_name = sanitise_filename(program.name.replace(" ", "_"))
     safe_fy = sanitise_filename(fiscal_year_label.replace(" ", "_"))
 
-    if export_format == "pdf":
-        from .pdf_views import generate_funder_report_pdf
-        pdf_response = generate_funder_report_pdf(request, report_data)
-        filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.pdf"
-        content = pdf_response.content
-    else:
-        # Build CSV in memory buffer
-        csv_buffer = io.StringIO()
-        writer = csv.writer(csv_buffer)
-        csv_rows = generate_funder_report_csv_rows(report_data)
-        for row in csv_rows:
-            writer.writerow(sanitise_csv_row(row))
-        filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.csv"
-        content = csv_buffer.getvalue()
+    try:
+        if export_format == "pdf":
+            from .pdf_views import generate_funder_report_pdf
+            pdf_response = generate_funder_report_pdf(request, report_data)
+            filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.pdf"
+            content = pdf_response.content
+        else:
+            # Build CSV in memory buffer
+            csv_buffer = io.StringIO()
+            writer = csv.writer(csv_buffer)
+            csv_rows = generate_funder_report_csv_rows(report_data)
+            for row in csv_rows:
+                writer.writerow(sanitise_csv_row(row))
+            filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.csv"
+            content = csv_buffer.getvalue()
+    except Exception:
+        logger.exception("Failed to generate funder report export")
+        from django.contrib import messages
+        messages.error(request, "Something went wrong generating the report. Please try again or contact support.")
+        return render(request, "reports/funder_report_form.html", {
+            "form": form,
+            "export_error": True,
+        })
 
     # Save to file and create secure download link
     # Funder reports are always aggregate — no individual client data
