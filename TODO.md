@@ -20,7 +20,6 @@
 ### Phase: AI Goal Builder (PR #145 follow-up)
 
 - [x] Add French translations for 10 new strings in goal_form.html and _goal_builder.html — extract, translate, compile .po/.mo — 2026-02-18 (I18N-GB1)
-- [ ] Add test coverage for `ai_enabled` in goal_create view context — one test with AI on, one with AI off (TEST-GB1)
 
 ### Phase: Post-Housekeeping Verification
 
@@ -93,6 +92,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Add test coverage for `ai_enabled` in goal_create view context — one test with AI on, one with AI off — 2026-02-18 (TEST-GB1)
 - [x] Git housekeeping — deleted 31+ stale branches, cleared 10 stashes, removed 3 worktrees, rebased and merged PR #136 (cleanup) and PR #143 (10 test fixes) — 2026-02-18 (HOUSEKEEP1)
 - [x] Agency Onboarding Interview Pack — 12 refinements: session split, privacy opener, role name alignment, jargon removal, summaries, warmer scenarios, deployment checklists — 2026-02-18 (ONBOARD1–12)
 - [x] Move PM management pages from /admin/ to /manage/ — new URL structure, middleware simplification, redirects from old URLs, 1795 tests pass — 2026-02-18 (QA-W59)
