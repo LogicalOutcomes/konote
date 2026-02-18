@@ -572,6 +572,10 @@ class ScenarioRunner(BrowserTestBase):
             req_type = requirement.get("type", "")
             req_name = requirement.get("name", "")
 
+            # QA-FIX1: Skip empty/blank prerequisite names (bad YAML data)
+            if not req_name or not req_name.strip():
+                continue
+
             if req_type == "client":
                 from apps.clients.models import ClientFile
                 # Encrypted field — must check in Python.
