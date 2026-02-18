@@ -488,3 +488,177 @@ class PlanViewAccessTest(PlanCRUDBaseTest):
         url = reverse("plans:target_history", args=[target.pk])
         resp = self.http.get(url)
         self.assertEqual(resp.status_code, 200)
+
+
+# ---------------------------------------------------------------------------
+# Goal creation (combined form) tests
+# ---------------------------------------------------------------------------
+
+
+class GoalCreateTest(PlanCRUDBaseTest):
+    """Test the combined goal creation view (section + target + metrics in one step)."""
+
+    databases = ("default", "audit")
+
+    def setUp(self):
+        super().setUp()
+        self.section = PlanSection.objects.create(
+            client_file=self.client_file, name="Employment Goals",
+            program=self.program, sort_order=0,
+        )
+        self.metric = MetricDefinition.objects.create(
+            name="Confidence", definition="1-5 scale", category="general",
+            is_universal=True, is_enabled=True, min_value=1, max_value=5,
+        )
+
+    def test_counsellor_can_create_goal_with_existing_section(self):
+        """Staff with plan.edit can create a goal using an existing section."""
+        self.http.login(username="counsellor", password="pass")
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        resp = self.http.post(url, {
+            "client_goal": "I want to get a job",
+            "name": "Find employment",
+            "section_choice": str(self.section.pk),
+            "description": "SMART goal for employment",
+            "metrics": [self.metric.pk],
+        })
+        self.assertEqual(resp.status_code, 302)
+        target = PlanTarget.objects.get(plan_section=self.section)
+        self.assertEqual(target.name, "Find employment")
+        self.assertEqual(target.client_goal, "I want to get a job")
+        self.assertEqual(target.description, "SMART goal for employment")
+        # Revision created
+        self.assertEqual(
+            PlanTargetRevision.objects.filter(plan_target=target).count(), 1
+        )
+        # Metric assigned
+        self.assertEqual(
+            PlanTargetMetric.objects.filter(plan_target=target).count(), 1
+        )
+        self.assertEqual(
+            PlanTargetMetric.objects.get(plan_target=target).metric_def, self.metric
+        )
+
+    def test_counsellor_can_create_goal_with_new_section(self):
+        """Staff can create a goal and a new section simultaneously."""
+        self.http.login(username="counsellor", password="pass")
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        resp = self.http.post(url, {
+            "client_goal": "I want stable housing",
+            "name": "Find stable housing",
+            "section_choice": "new",
+            "new_section_name": "Housing Goals",
+            "description": "",
+            "metrics": [self.metric.pk],
+        })
+        self.assertEqual(resp.status_code, 302)
+        # New section created
+        self.assertTrue(PlanSection.objects.filter(name="Housing Goals").exists())
+        new_section = PlanSection.objects.get(name="Housing Goals")
+        # Target placed in new section
+        target = PlanTarget.objects.get(plan_section=new_section)
+        self.assertEqual(target.name, "Find stable housing")
+
+    def test_goal_without_metrics_is_valid(self):
+        """Metrics are optional — goal can be created without selecting any."""
+        self.http.login(username="counsellor", password="pass")
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        resp = self.http.post(url, {
+            "name": "Manage anxiety",
+            "section_choice": str(self.section.pk),
+        })
+        self.assertEqual(resp.status_code, 302)
+        target = PlanTarget.objects.get(plan_section=self.section)
+        self.assertEqual(target.name, "Manage anxiety")
+        self.assertEqual(PlanTargetMetric.objects.filter(plan_target=target).count(), 0)
+
+    def test_new_section_requires_name(self):
+        """If 'Create new section' is selected, a name must be provided."""
+        self.http.login(username="counsellor", password="pass")
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        resp = self.http.post(url, {
+            "name": "Some goal",
+            "section_choice": "new",
+            "new_section_name": "",  # empty
+        })
+        self.assertEqual(resp.status_code, 200)  # form redisplayed with error
+        self.assertEqual(PlanTarget.objects.count(), 0)
+
+    def test_manager_cannot_create_goal(self):
+        """Program manager has plan.edit: DENY — cannot create goals."""
+        self.http.login(username="manager", password="pass")
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        resp = self.http.post(url, {
+            "name": "Should fail",
+            "section_choice": str(self.section.pk),
+        })
+        self.assertEqual(resp.status_code, 403)
+        self.assertEqual(PlanTarget.objects.count(), 0)
+
+    def test_other_program_manager_cannot_access(self):
+        """Manager of a different program cannot access this client's goal form."""
+        self.http.login(username="other_mgr", password="pass")
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        resp = self.http.get(url)
+        self.assertEqual(resp.status_code, 403)
+
+    def test_unauthenticated_redirected(self):
+        """Unauthenticated users are redirected to login."""
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        resp = self.http.get(url)
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/auth/login", resp.url)
+
+    def test_preselected_section_from_query_param(self):
+        """GET with ?section=<id> pre-selects the section in the form."""
+        self.http.login(username="counsellor", password="pass")
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        resp = self.http.get(url + f"?section={self.section.pk}")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, self.section.name)
+
+    def test_atomic_save_creates_all_objects(self):
+        """Goal creation atomically creates section + target + revision + metrics."""
+        self.http.login(username="counsellor", password="pass")
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        section_count = PlanSection.objects.count()
+        resp = self.http.post(url, {
+            "client_goal": "Test atomicity",
+            "name": "Atomic goal",
+            "section_choice": "new",
+            "new_section_name": "New Section",
+            "description": "Test",
+            "metrics": [self.metric.pk],
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(PlanSection.objects.count(), section_count + 1)
+        self.assertEqual(PlanTarget.objects.count(), 1)
+        self.assertEqual(PlanTargetRevision.objects.count(), 1)
+        self.assertEqual(PlanTargetMetric.objects.count(), 1)
+
+    def test_multiple_metrics_can_be_assigned(self):
+        """Multiple metrics can be selected for a single goal."""
+        metric_b = MetricDefinition.objects.create(
+            name="Progress", definition="1-5 progress scale", category="general",
+            is_universal=True, is_enabled=True, min_value=1, max_value=5,
+        )
+        self.http.login(username="counsellor", password="pass")
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        resp = self.http.post(url, {
+            "name": "Multi-metric goal",
+            "section_choice": str(self.section.pk),
+            "metrics": [self.metric.pk, metric_b.pk],
+        })
+        self.assertEqual(resp.status_code, 302)
+        target = PlanTarget.objects.get(plan_section=self.section)
+        self.assertEqual(
+            PlanTargetMetric.objects.filter(plan_target=target).count(), 2
+        )
+
+    def test_get_shows_form_with_universal_metrics(self):
+        """GET request shows the form with universal metrics in context."""
+        self.http.login(username="counsellor", password="pass")
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        resp = self.http.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Confidence")
