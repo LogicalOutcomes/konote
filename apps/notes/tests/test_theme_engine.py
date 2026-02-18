@@ -319,6 +319,24 @@ class Tier2ProcessAiThemesTests(TestCase):
         existing.refresh_from_db()
         self.assertIn("evening", existing.keywords)
 
+    def test_reopens_addressed_theme(self):
+        """process_ai_themes() should set addressed themes back to open."""
+        addressed = SuggestionTheme.objects.create(
+            program=self.program, name="Evening availability",
+            status="addressed", source="ai_generated",
+        )
+        ai_themes = [{
+            "name": "Evening availability",
+            "description": "Still coming up",
+            "category": "program_design",
+            "keywords": ["evening"],
+            "supporting_quotes": ["We need evening sessions"],
+        }]
+        process_ai_themes(ai_themes, self.quote_source_map, self.program)
+        addressed.refresh_from_db()
+        self.assertEqual(addressed.status, "open")
+        self.assertTrue(addressed.was_reopened)
+
     def test_does_not_overwrite_existing_keywords(self):
         existing = SuggestionTheme.objects.create(
             program=self.program, name="Evening availability",

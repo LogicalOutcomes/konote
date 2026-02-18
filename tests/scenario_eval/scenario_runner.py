@@ -331,10 +331,11 @@ class ScenarioRunner(BrowserTestBase):
                 )
 
             # Progress notes
+            note_program = (programs or [program])[0] if (programs or program) else self.program_a
             for i in range(notes):
                 note = ProgressNote.objects.create(
                     client_file=client, author=staff,
-                    author_program=self.program_a, note_type="quick",
+                    author_program=note_program, note_type="quick",
                 )
                 if note_texts and i < len(note_texts):
                     note.notes_text = note_texts[i]

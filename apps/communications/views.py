@@ -34,6 +34,7 @@ _get_program_from_client = get_program_from_client
 # ---------------------------------------------------------------------------
 
 @login_required
+@requires_permission("communication.log", _get_program_from_client)
 def quick_log(request, client_id):
     """Deprecated: manual contact logging has moved to Quick Notes."""
     messages.info(request, _("Contact logging has moved to Quick Notes."))
@@ -41,6 +42,7 @@ def quick_log(request, client_id):
 
 
 @login_required
+@requires_permission("communication.log", _get_program_from_client)
 def communication_log(request, client_id):
     """Deprecated: manual contact logging has moved to Quick Notes."""
     messages.info(request, _("Contact logging has moved to Quick Notes."))

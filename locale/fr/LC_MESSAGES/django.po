@@ -13694,4 +13694,10 @@ msgstr ""
 "%(target)s mesurable?"
 
 msgid "A theme called \\\"%(name)s\\\" already exists in this program."
-msgstr ""
+msgstr "Un thème nommé « %(name)s » existe déjà dans ce programme."
+
+msgid "Previously addressed, reopened by new suggestions"
+msgstr "Précédemment traité, rouvert en raison de nouvelles suggestions"
+
+msgid "Reopened"
+msgstr "Rouvert"

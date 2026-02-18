@@ -1,6 +1,6 @@
 // KoNote — Minimal service worker for offline fallback only.
 // NOT a full PWA — only caches the offline page.
-var CACHE_NAME = "konote-offline-v1";
+var CACHE_NAME = "konote-offline-v2";
 var OFFLINE_URL = "/static/offline.html";
 
 self.addEventListener("install", function(event) {
@@ -30,7 +30,16 @@ self.addEventListener("fetch", function(event) {
 
     event.respondWith(
         fetch(event.request).catch(function() {
-            return caches.match(OFFLINE_URL);
+            // Only show offline page when actually offline.
+            // Back-button navigations can fail due to Vary header
+            // mismatches (HTMX adds Vary: HX-Request) — these are
+            // not real offline events and should not show offline.html.
+            if (!self.navigator.onLine) {
+                return caches.match(OFFLINE_URL);
+            }
+            // Not offline — let the browser show its own error page
+            // (e.g. back/forward cache miss or transient network blip)
+            return Response.error();
         })
     );
 });
