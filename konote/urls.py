@@ -24,14 +24,14 @@ urlpatterns = [
     path("auth/", include("apps.auth_app.urls")),
     path("participants/", include("apps.clients.urls")),
     path("programs/", include("apps.programs.urls")),
+    # Redirects for old admin URLs (BEFORE app includes so they match first)
+    path("plans/admin/metrics/<path:rest>", RedirectView.as_view(url="/manage/metrics/%(rest)s", permanent=True)),
+    path("plans/admin/metrics/", RedirectView.as_view(url="/manage/metrics/", permanent=True)),
     path("plans/", include("apps.plans.urls")),
     path("notes/", include("apps.notes.urls")),
-    # Redirects for old event type / metric admin URLs (BEFORE app includes)
     path("events/admin/types/<path:rest>", RedirectView.as_view(url="/manage/event-types/%(rest)s", permanent=True)),
     path("events/admin/types/", RedirectView.as_view(url="/manage/event-types/", permanent=True)),
     path("events/", include("apps.events.urls")),
-    path("plans/admin/metrics/<path:rest>", RedirectView.as_view(url="/manage/metrics/%(rest)s", permanent=True)),
-    path("plans/admin/metrics/", RedirectView.as_view(url="/manage/metrics/", permanent=True)),
     path("communications/", include("apps.communications.urls")),
     path("calendar/<str:token>/feed.ics", calendar_feed, name="calendar_feed"),
     path("reports/", include("apps.reports.urls")),
