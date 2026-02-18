@@ -367,7 +367,10 @@ class SuggestionTheme(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True, default="")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="open")
-    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default="noted")
+    priority = models.CharField(
+        max_length=20, choices=PRIORITY_CHOICES, default="noted",
+        help_text="Auto-calculated from linked suggestions via recalculate_theme_priority(). Do not set manually.",
+    )
     addressed_note = models.TextField(blank=True, default="")
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
