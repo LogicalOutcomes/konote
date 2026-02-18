@@ -11,4 +11,5 @@ urlpatterns = [
     path("<int:pk>/", suggestion_views.theme_detail, name="theme_detail"),
     path("<int:pk>/edit/", suggestion_views.theme_form, name="theme_edit"),
     path("<int:pk>/unlinked/", suggestion_views.unlinked_partial, name="unlinked_partial"),
+    path("<int:pk>/status/", suggestion_views.theme_status_update, name="status_update"),
 ]

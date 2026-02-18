@@ -360,3 +360,45 @@ def _handle_unlink(request, theme):
     )
     messages.success(request, _("Suggestion removed from theme."))
     return redirect("suggestion_themes:theme_detail", pk=theme.pk)
+
+
+# ── HTMX inline status update (from Insights page) ──────────────────
+
+@login_required
+@requires_permission("suggestion_theme.manage", allow_admin=True)
+def theme_status_update(request, pk):
+    """HTMX POST: Update theme status inline, return updated card partial."""
+    if request.method != "POST":
+        return HttpResponseForbidden()
+
+    theme = get_object_or_404(SuggestionTheme, pk=pk)
+    if not _can_manage_theme(request.user, theme):
+        return HttpResponseForbidden()
+
+    new_status = request.POST.get("new_status", "")
+    valid_statuses = dict(SuggestionTheme.STATUS_CHOICES)
+    if new_status not in valid_statuses:
+        return HttpResponseForbidden()
+
+    old_status = theme.status
+    theme.status = new_status
+    if new_status == "addressed":
+        theme.addressed_note = request.POST.get("addressed_note", "")
+    theme.save()
+
+    _log_audit(
+        request, "update", theme,
+        old_values={"status": old_status},
+        new_values={"status": new_status},
+    )
+
+    # Return updated theme card for HTMX swap.
+    theme = (
+        SuggestionTheme.objects.filter(pk=pk)
+        .annotate(link_count=Count("links"))
+        .first()
+    )
+    return render(request, "reports/_theme_card.html", {
+        "theme": theme,
+        "can_manage_themes": True,
+    })
