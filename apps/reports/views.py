@@ -409,6 +409,7 @@ def export_form(request):
         )
         .select_related(
             "metric_def",
+            "progress_note_target__plan_target",
             "progress_note_target__progress_note__client_file",
             "progress_note_target__progress_note__author",
         )
