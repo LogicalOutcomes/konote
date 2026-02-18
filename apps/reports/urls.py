@@ -8,13 +8,13 @@ app_name = "reports"
 urlpatterns = [
     # Outcome Insights
     path("insights/", insights_views.program_insights, name="program_insights"),
-    path("client/<int:client_id>/insights/", insights_views.client_insights_partial, name="client_insights"),
+    path("participant/<int:client_id>/insights/", insights_views.client_insights_partial, name="client_insights"),
     # Exports
     path("export/", views.export_form, name="export_form"),
     path("funder-report/", views.funder_report_form, name="funder_report"),
-    path("client/<int:client_id>/analysis/", views.client_analysis, name="client_analysis"),
-    path("client/<int:client_id>/pdf/", pdf_views.client_progress_pdf, name="client_progress_pdf"),
-    path("client/<int:client_id>/export/", pdf_views.client_export, name="client_export"),
+    path("participant/<int:client_id>/analysis/", views.client_analysis, name="client_analysis"),
+    path("participant/<int:client_id>/pdf/", pdf_views.client_progress_pdf, name="client_progress_pdf"),
+    path("participant/<int:client_id>/export/", pdf_views.client_export, name="client_export"),
     # Team meeting view
     path("team-meeting/", views.team_meeting_view, name="team_meeting_view"),
     # Secure export links
