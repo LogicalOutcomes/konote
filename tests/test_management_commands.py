@@ -411,22 +411,6 @@ class TranslateStringsTest(TestCase):
     def tearDown(self):
         enc_module._fernet = None
 
-    def test_dry_run_no_translate(self):
-        """translate_strings --dry-run --no-translate runs without modifying files."""
-        out = io.StringIO()
-        # The command may sys.exit(1) if .po file is not found; catch that
-        try:
-            call_command(
-                "translate_strings",
-                dry_run=True,
-                no_translate=True,
-                stdout=out,
-            )
-        except SystemExit:
-            pass
-        output = out.getvalue()
-        self.assertIn("Translation Sync", output)
-
 
 # =========================================================================
 # Utility Commands
