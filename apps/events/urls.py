@@ -9,9 +9,6 @@ from .views import (
     calendar_feed_settings,
     event_create,
     event_list,
-    event_type_create,
-    event_type_edit,
-    event_type_list,
     meeting_create,
     meeting_list,
     meeting_status_update,
@@ -20,10 +17,6 @@ from .views import (
 
 app_name = "events"
 urlpatterns = [
-    # Event type admin
-    path("admin/types/", event_type_list, name="event_type_list"),
-    path("admin/types/create/", event_type_create, name="event_type_create"),
-    path("admin/types/<int:type_id>/edit/", event_type_edit, name="event_type_edit"),
     # Client events
     path("client/<int:client_id>/", event_list, name="event_list"),
     path("client/<int:client_id>/create/", event_create, name="event_create"),
