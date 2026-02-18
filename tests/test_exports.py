@@ -60,7 +60,12 @@ def _minimal_report_data(**overrides):
         "report_template_name": None,
         "primary_outcome": None,
         "secondary_outcomes": [],
-        "achievement_summary": None,
+        "achievement_summary": {
+            "total_clients": 0,
+            "clients_met_any_target": 0,
+            "overall_rate": 0,
+            "metrics": [],
+        },
         "active_client_count": 50,
         "enrolled_client_count": 55,
     }
