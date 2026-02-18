@@ -155,7 +155,8 @@ def process_ai_themes(ai_themes, quote_source_map, program):
 
     with transaction.atomic():
         for ai_theme in design_themes:
-            theme_name = str(ai_theme.get("name", "")).strip()[:200]
+            # Normalise: strip + collapse internal whitespace
+            theme_name = " ".join(str(ai_theme.get("name", "")).split())[:200]
             if not theme_name:
                 continue
 
@@ -177,6 +178,16 @@ def process_ai_themes(ai_themes, quote_source_map, program):
                     keywords=", ".join(ai_theme.get("keywords", []))[:500],
                 )
             else:
+                # Reopen addressed themes — AI found new suggestions for this
+                # category, so it's still active.
+                if theme.status == "addressed":
+                    logger.info(
+                        "Reopening addressed theme '%s' (pk=%d) — AI found new suggestions",
+                        theme.name, theme.pk,
+                    )
+                    theme.status = "open"
+                    theme.save(update_fields=["status", "updated_at"])
+
                 # Update keywords if theme has none and AI provided them.
                 if not theme.keywords and ai_theme.get("keywords"):
                     theme.keywords = ", ".join(ai_theme["keywords"])[:500]

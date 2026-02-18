@@ -7,7 +7,7 @@ from django.test import SimpleTestCase, TestCase, override_settings
 import konote.encryption as enc_module
 from apps.clients.dashboard_views import _batch_suggestion_counts, _batch_top_themes
 from apps.clients.models import ClientFile, ClientProgramEnrolment
-from apps.notes.models import ProgressNote, SuggestionTheme
+from apps.notes.models import ProgressNote, SuggestionLink, SuggestionTheme
 from apps.programs.models import Program, UserProgramRole
 
 User = get_user_model()
@@ -175,6 +175,48 @@ class BatchTopThemesTest(TestCase):
         counts, themes = _batch_top_themes([self.program.pk])
         self.assertEqual(counts, {})
         self.assertEqual(themes, {})
+
+    def test_duplicate_names_are_merged(self):
+        """Two themes with the same name should appear as one with summed link count."""
+        client = ClientFile.objects.create(record_id="DEDUP-001")
+        ClientProgramEnrolment.objects.create(
+            client_file=client, program=self.program, status="enrolled",
+        )
+        note1 = ProgressNote.objects.create(
+            client_file=client, author=self.user,
+            author_program=self.program, note_type="quick",
+            suggestion_priority="important",
+        )
+        note2 = ProgressNote.objects.create(
+            client_file=client, author=self.user,
+            author_program=self.program, note_type="quick",
+            suggestion_priority="noted",
+        )
+
+        theme_a = self._create_theme("Recipe variety", priority="important")
+        theme_b = self._create_theme("Recipe variety", priority="noted")
+
+        SuggestionLink.objects.create(theme=theme_a, progress_note=note1)
+        SuggestionLink.objects.create(theme=theme_b, progress_note=note2)
+
+        counts, themes = _batch_top_themes([self.program.pk])
+        theme_list = themes[self.program.pk]
+
+        # Should be merged into one
+        names = [t["name"] for t in theme_list]
+        self.assertEqual(names.count("Recipe variety"), 1)
+
+        merged = [t for t in theme_list if t["name"] == "Recipe variety"][0]
+        self.assertEqual(merged["link_count"], 2)
+        self.assertEqual(merged["priority"], "important")
+
+    def test_duplicate_names_case_insensitive(self):
+        """Themes with different casing should still merge."""
+        self._create_theme("Take-home portions", priority="noted")
+        self._create_theme("take-home portions", priority="important")
+
+        counts, themes = _batch_top_themes([self.program.pk])
+        self.assertEqual(counts[self.program.pk]["total"], 1)
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)

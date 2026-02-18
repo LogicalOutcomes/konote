@@ -410,7 +410,7 @@ def _batch_top_themes(filtered_program_ids, limit_per_program=3):
         themes_map: dict of program_id -> list of up to *limit_per_program*
                     theme dicts with keys: pk, name, status, priority
     """
-    from apps.notes.models import SuggestionTheme
+    from apps.notes.models import SuggestionTheme, deduplicate_themes
 
     PRIORITY_RANK = {"urgent": 0, "important": 1, "noted": 2}
 
@@ -421,6 +421,9 @@ def _batch_top_themes(filtered_program_ids, limit_per_program=3):
         .values("pk", "name", "status", "priority", "program_id", "updated_at",
                 "link_count")
     )
+
+    # Merge any duplicate theme names within the same program
+    themes = deduplicate_themes(themes)
 
     # Sort: highest priority first, then most recently updated
     themes.sort(
