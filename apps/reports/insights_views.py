@@ -6,10 +6,12 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import render
 from django.utils.translation import gettext as _
 
+from django.db.models import Count
+
 from apps.auth_app.decorators import requires_permission
 from apps.programs.access import get_accessible_programs, get_client_or_403
 from apps.programs.models import UserProgramRole
-from apps.notes.models import ProgressNote
+from apps.notes.models import ProgressNote, SuggestionLink, SuggestionTheme
 from .insights import get_structured_insights, collect_quotes, MIN_PARTICIPANTS_FOR_QUOTES
 from .insights_forms import InsightsFilterForm
 from .interpretations import (
@@ -106,6 +108,21 @@ def program_insights(request):
             else:
                 other_quotes.append(q)
 
+        # Active suggestion themes for this program
+        active_themes = (
+            SuggestionTheme.objects.active()
+            .filter(program=program)
+            .annotate(link_count=Count("links"))
+            .order_by("-updated_at")
+        )
+
+        # Split suggestions into linked vs unlinked (ungrouped)
+        linked_note_ids = set(
+            SuggestionLink.objects.filter(theme__program=program)
+            .values_list("progress_note_id", flat=True)
+        )
+        unlinked_suggestions = [s for s in suggestions if s["note_id"] not in linked_note_ids]
+
         # Plain-language interpretations (only when enough data)
         interp = {}
         if data_tier != "sparse":
@@ -126,6 +143,8 @@ def program_insights(request):
             "structured": structured,
             "quotes": other_quotes,
             "suggestions": suggestions,
+            "unlinked_suggestions": unlinked_suggestions,
+            "active_themes": active_themes,
             "data_tier": data_tier,
             "min_participants": MIN_PARTICIPANTS_FOR_QUOTES,
             "chart_data_json": structured["descriptor_trend"],
