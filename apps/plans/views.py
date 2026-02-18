@@ -4,7 +4,7 @@ import io
 from collections import OrderedDict
 
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -24,7 +24,11 @@ from apps.programs.access import (
 )
 from apps.programs.models import UserProgramRole
 
+from django.db import transaction
+from django.http import JsonResponse
+
 from .forms import (
+    GoalForm,
     MetricAssignmentForm,
     MetricDefinitionForm,
     MetricImportForm,
@@ -381,6 +385,267 @@ def target_status(request, target_id):
     return render(request, "plans/_target_status.html", {
         "target": target,
         "form": form,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Combined goal creation — shared helper + view + autocomplete
+# ---------------------------------------------------------------------------
+
+
+def _create_goal(*, client_file, user, name, description="", client_goal="",
+                 section=None, new_section_name="", program=None, metric_ids=None):
+    """Atomically create section (if new) + target + revision + metric assignments.
+
+    Called by both goal_create view and goal_builder_save in ai_views.py.
+    Returns the created PlanTarget.
+    """
+    with transaction.atomic():
+        # 1. Determine or create section
+        if section is None and new_section_name:
+            section = PlanSection.objects.create(
+                client_file=client_file,
+                name=new_section_name,
+                program=program,
+            )
+
+        if section is None:
+            raise ValueError("A section or new_section_name is required.")
+
+        # 2. Create PlanTarget with encrypted fields
+        target = PlanTarget(
+            plan_section=section,
+            client_file=client_file,
+        )
+        target.name = name
+        target.description = description
+        target.client_goal = client_goal
+        target.save()
+
+        # 3. Create initial revision
+        PlanTargetRevision.objects.create(
+            plan_target=target,
+            name=target.name,
+            description=target.description,
+            client_goal=target.client_goal,
+            status=target.status,
+            status_reason=target.status_reason,
+            changed_by=user,
+        )
+
+        # 4. Assign metrics
+        if metric_ids:
+            for i, mid in enumerate(metric_ids):
+                PlanTargetMetric.objects.create(
+                    plan_target=target,
+                    metric_def_id=mid,
+                    sort_order=i,
+                )
+
+    return target
+
+
+@login_required
+@requires_permission("plan.edit", _get_program_from_client)
+def goal_create(request, client_id):
+    """Combined goal creation — section + target + metrics in one page."""
+    client = get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden("You do not have access to this client.")
+    if not _can_edit_plan(request.user, client):
+        raise PermissionDenied(_("You don't have permission to access this page."))
+
+    participant_name = client.display_name if hasattr(client, "display_name") else ""
+
+    # Pre-selected section from query param (validate as integer)
+    preselected_section = None
+    try:
+        preselected_section_id = int(request.GET.get("section", ""))
+    except (ValueError, TypeError):
+        preselected_section_id = None
+    if preselected_section_id:
+        preselected_section = PlanSection.objects.filter(
+            pk=preselected_section_id, client_file=client, status="default",
+        ).first()
+
+    # Get program from enrolment (for new section creation)
+    enrolment = (
+        ClientProgramEnrolment.objects.filter(client_file=client, status="enrolled")
+        .select_related("program")
+        .first()
+    )
+    program = enrolment.program if enrolment else None
+
+    if request.method == "POST":
+        form = GoalForm(request.POST, client_file=client,
+                        participant_name=participant_name)
+        if form.is_valid():
+            cleaned = form.cleaned_data
+            section_choice = cleaned["section_choice"]
+
+            # Resolve section
+            section = None
+            if section_choice != "new":
+                section = PlanSection.objects.filter(
+                    pk=int(section_choice), client_file=client,
+                ).first()
+
+            try:
+                _create_goal(
+                    client_file=client,
+                    user=request.user,
+                    name=cleaned["name"],
+                    description=cleaned.get("description", ""),
+                    client_goal=cleaned.get("client_goal", ""),
+                    section=section,
+                    new_section_name=cleaned.get("new_section_name", "").strip(),
+                    program=program,
+                    metric_ids=[m.pk for m in cleaned.get("metrics", [])],
+                )
+                messages.success(request, _("Goal added."))
+                return redirect("plans:plan_view", client_id=client.pk)
+            except ValueError as e:
+                form.add_error(None, str(e))
+    else:
+        initial = {}
+        if preselected_section:
+            initial["section_choice"] = str(preselected_section.pk)
+        form = GoalForm(initial=initial, client_file=client,
+                        participant_name=participant_name)
+
+    # --- Build metric context for 3-tier display ---
+    # Tier 1: Universal metrics
+    universal_metrics = list(
+        MetricDefinition.objects.filter(
+            is_universal=True, is_enabled=True, status="active",
+        )
+    )
+
+    # Tier 2: Metrics already used in this program (excluding universal)
+    program_used_metrics = []
+    if program:
+        universal_ids = {m.pk for m in universal_metrics}
+        program_used_qs = (
+            MetricDefinition.objects.filter(
+                is_enabled=True, status="active",
+                plantargetmetric__plan_target__client_file__enrolments__program=program,
+            )
+            .exclude(pk__in=universal_ids)
+            .distinct()
+        )
+        # Count usage per metric
+        program_used_qs = program_used_qs.annotate(
+            usage_count=Count("plantargetmetric")
+        ).order_by("-usage_count")
+        program_used_metrics = list(program_used_qs)
+
+    # Tier 3: Full library grouped by category (excluding universal + program-used)
+    exclude_ids = {m.pk for m in universal_metrics} | {m.pk for m in program_used_metrics}
+    all_metrics = MetricDefinition.objects.filter(
+        is_enabled=True, status="active",
+    ).exclude(pk__in=exclude_ids).order_by("category", "name")
+    metrics_by_category = {}
+    for metric in all_metrics:
+        cat = metric.get_category_display()
+        metrics_by_category.setdefault(cat, []).append(metric)
+
+    # --- Common goal cards (top 5-8 most common goals in program) ---
+    common_goals = []
+    if program:
+        targets_in_program = PlanTarget.objects.filter(
+            client_file__enrolments__program=program,
+        ).select_related().prefetch_related("metrics")
+        # Decrypt and count names (encrypted fields require Python-side processing)
+        name_counts = {}
+        name_metric = {}
+        for t in targets_in_program:
+            tname = t.name
+            if not tname:
+                continue
+            name_lower = tname.lower().strip()
+            name_counts[name_lower] = name_counts.get(name_lower, 0) + 1
+            # Track display name (keep first capitalisation seen)
+            if name_lower not in name_metric:
+                # Get first metric for this target
+                first_metric = t.metrics.first()
+                name_metric[name_lower] = {
+                    "display_name": tname,
+                    "metric_name": first_metric.translated_name if first_metric else "",
+                    "metric_id": first_metric.pk if first_metric else None,
+                }
+        # Sort by count descending, take top 8
+        sorted_goals = sorted(name_counts.items(), key=lambda x: x[1], reverse=True)
+        for name_lower, count in sorted_goals[:8]:
+            info = name_metric[name_lower]
+            common_goals.append({
+                "name": info["display_name"],
+                "metric_name": info["metric_name"],
+                "metric_id": info["metric_id"],
+                "count": count,
+            })
+
+    # Build a set of integer PKs for selected metrics so the template can
+    # check checkbox state without type-mismatch (POST values are strings).
+    selected_metric_ids = set()
+    for raw in request.POST.getlist("metrics"):
+        try:
+            selected_metric_ids.add(int(raw))
+        except (ValueError, TypeError):
+            pass
+
+    context = {
+        "form": form,
+        "client": client,
+        "preselected_section": preselected_section,
+        "universal_metrics": universal_metrics,
+        "program_used_metrics": program_used_metrics,
+        "metrics_by_category": metrics_by_category,
+        "common_goals": common_goals,
+        "selected_metric_ids": selected_metric_ids,
+    }
+    return render(request, "plans/goal_form.html", context)
+
+
+@login_required
+@requires_permission("plan.view", _get_program_from_client)
+def goal_name_suggestions(request, client_id):
+    """HTMX endpoint: return goal name suggestions for autocomplete.
+
+    Returns all deduplicated target names in the client's programs with usage
+    counts. One server call; subsequent filtering happens client-side in JS.
+    """
+    client = get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden()
+
+    active_ids = getattr(request, "active_program_ids", None)
+    user_program_ids = get_user_program_ids(request.user, active_ids)
+
+    # Load all targets in user's programs, decrypt names, deduplicate
+    targets = PlanTarget.objects.filter(
+        client_file__enrolments__program_id__in=user_program_ids,
+    ).prefetch_related("metrics")
+
+    name_data = {}
+    for t in targets:
+        tname = t.name
+        if not tname:
+            continue
+        name_lower = tname.lower().strip()
+        if name_lower not in name_data:
+            first_metric = t.metrics.first()
+            name_data[name_lower] = {
+                "name": tname,
+                "count": 0,
+                "metric_id": first_metric.pk if first_metric else None,
+            }
+        name_data[name_lower]["count"] += 1
+
+    # Sort by count descending
+    suggestions = sorted(name_data.values(), key=lambda x: x["count"], reverse=True)
+
+    return render(request, "plans/_goal_suggestions.html", {
+        "suggestions": suggestions,
     })
 
 

@@ -394,5 +394,41 @@
     "max_value": 20,
     "unit": "connections",
     "unit_fr": "liens"
+  },
+  {
+    "name": "Confidence",
+    "name_fr": "Confiance",
+    "definition": "How confident do you feel about this? 1 = not at all confident, 2 = a little confident, 3 = somewhat confident, 4 = quite confident, 5 = very confident. The participant answers this at each session.",
+    "definition_fr": "À quel point avez-vous confiance? 1 = pas du tout confiant(e), 2 = un peu confiant(e), 3 = assez confiant(e), 4 = plutôt confiant(e), 5 = très confiant(e). Le participant répond à chaque séance.",
+    "category": "general",
+    "min_value": 1,
+    "max_value": 5,
+    "unit": "score",
+    "unit_fr": "pointage",
+    "is_universal": true
+  },
+  {
+    "name": "Progress",
+    "name_fr": "Progrès",
+    "definition": "How much progress have they made toward this goal? 1 = no progress yet, 2 = early steps, 3 = making headway, 4 = well on track, 5 = goal achieved. The worker assesses this.",
+    "definition_fr": "Combien de progrès ont-ils fait vers cet objectif? 1 = aucun progrès, 2 = premiers pas, 3 = en bonne voie, 4 = bien avancé, 5 = objectif atteint. Le travailleur évalue ceci.",
+    "category": "general",
+    "min_value": 1,
+    "max_value": 5,
+    "unit": "score",
+    "unit_fr": "pointage",
+    "is_universal": true
+  },
+  {
+    "name": "Wellbeing",
+    "name_fr": "Bien-être",
+    "definition": "How are things going in this area of your life? 1 = really struggling, 2 = having a hard time, 3 = getting by, 4 = doing well, 5 = going great. The participant answers this at each session.",
+    "definition_fr": "Comment ça va dans ce domaine de votre vie? 1 = très difficile, 2 = assez difficile, 3 = ça va, 4 = ça va bien, 5 = très bien. Le participant répond à chaque séance.",
+    "category": "general",
+    "min_value": 1,
+    "max_value": 5,
+    "unit": "score",
+    "unit_fr": "pointage",
+    "is_universal": true
   }
 ]

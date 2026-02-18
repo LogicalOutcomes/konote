@@ -1,31 +1,46 @@
 {% load i18n %}
 <!-- Partial: Plan tab content -->
+
+{# ── Action bar (editors only) ── #}
 {% if can_edit and active_service_model != "group" %}
 <div class="action-bar">
+    {# Primary action: Add a Goal #}
     {% if ai_enabled %}
     <button type="button"
             hx-get="{% url 'ai:goal_builder_start' client_id=client.pk %}"
             hx-target="#goal-builder-container"
             hx-swap="innerHTML">
-        {% trans "Build a Goal" %}
+        {% blocktrans with target=term.target|default:"Goal" %}Add a {{ target }}{% endblocktrans %}
     </button>
+    {% else %}
+    <a href="{% url 'plans:goal_create' client_id=client.pk %}" role="button">
+        {% blocktrans with target=term.target|default:"Goal" %}Add a {{ target }}{% endblocktrans %}
+    </a>
     {% endif %}
-    <a href="{% url 'plans:section_create' client_id=client.pk %}" role="button" class="outline">
-        {% blocktrans with section=term.section|default:"Section" %}Add {{ section }}{% endblocktrans %}
-    </a>
-    {% if can_apply_template %}
-    <a href="{% url 'plan_templates:template_apply_list' client_id=client.pk %}" role="button" class="outline secondary">
-        {% trans "Apply Template" %}
-    </a>
+
+    {# Secondary actions (text links, only when plan already has content) #}
+    {% if active_sections or inactive_sections %}
+    <span class="action-bar-secondary">
+        <a href="{% url 'plans:section_create' client_id=client.pk %}" class="secondary">
+            {% blocktrans with section=term.section|default:"section" %}Add {{ section }} only{% endblocktrans %}
+        </a>
+        {% if can_apply_template %}
+        <span aria-hidden="true">&middot;</span>
+        <a href="{% url 'plan_templates:template_apply_list' client_id=client.pk %}" class="secondary">
+            {% trans "Apply template" %}
+        </a>
+        {% endif %}
+    </span>
     {% endif %}
 </div>
 <div id="goal-builder-container"></div>
-{% else %}
+{% elif not can_edit %}
 <p class="notice" role="status">
     <small>{% blocktrans with client=term.client|default:"participant" program=term.program|default:"program" %}View only — you can see this plan because this {{ client }} is on your caseload, but editing requires a staff role in one of their enrolled {{ program }}s. Contact your administrator if you need edit access.{% endblocktrans %}</small>
 </p>
 {% endif %}
 
+{# ── Section create form (if open) ── #}
 {% if show_section_form %}
 <article aria-label="{% trans 'Add section form' %}">
     <header><h2>{% blocktrans with section=term.section|default:"Section" %}Add {{ section }}{% endblocktrans %}</h2></header>
@@ -48,6 +63,7 @@
 </article>
 {% endif %}
 
+{# ── Active sections ── #}
 {% if active_sections %}
 {% if show_grouping and grouped_active_sections %}
 {# Multi-program: group sections by program with colour headers #}
@@ -84,6 +100,7 @@
 {% endif %}
 {% endif %}
 
+{# ── Inactive sections ── #}
 {% if inactive_sections %}
 <details>
     <summary>{% blocktrans with sections=term.section_plural|default:"sections" count=inactive_sections|length %}Completed & deactivated {{ sections }} ({{ count }}){% endblocktrans %}</summary>
@@ -95,8 +112,29 @@
 </details>
 {% endif %}
 
+{# ── Empty state ── #}
 {% if not active_sections and not inactive_sections and not show_section_form %}
-<div class="empty-state">
-    <p>{% blocktrans with sections=term.section_plural|default:"sections" %}No {{ sections }} yet.{% endblocktrans %}{% if can_edit %} {% trans "Use the button above to add one, or apply a template." %}{% endif %}</p>
+<div class="empty-state" role="status">
+    {% if can_edit %}
+    <p>{% blocktrans with client=client.display_name %}This is where you'll build {{ client }}'s plan together.{% endblocktrans %}</p>
+    <p>{% trans "Start by adding their first goal." %}</p>
+    {% if ai_enabled %}
+    <button type="button"
+            hx-get="{% url 'ai:goal_builder_start' client_id=client.pk %}"
+            hx-target="#goal-builder-container"
+            hx-swap="innerHTML">
+        {% blocktrans with target=term.target|default:"Goal" %}Add a {{ target }}{% endblocktrans %}
+    </button>
+    {% else %}
+    <a href="{% url 'plans:goal_create' client_id=client.pk %}" role="button">
+        {% blocktrans with target=term.target|default:"Goal" %}Add a {{ target }}{% endblocktrans %}
+    </a>
+    {% endif %}
+    {% if can_apply_template %}
+    <p><small><a href="{% url 'plan_templates:template_apply_list' client_id=client.pk %}" class="secondary">{% trans "Or start from a template" %}</a></small></p>
+    {% endif %}
+    {% else %}
+    <p>{% blocktrans with client=client.display_name %}No plan has been created yet for {{ client }}.{% endblocktrans %}</p>
+    {% endif %}
 </div>
 {% endif %}

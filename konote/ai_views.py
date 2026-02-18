@@ -513,19 +513,18 @@ def goal_builder_chat(request, client_id):
 
 @login_required
 def goal_builder_save(request, client_id):
-    """Save a goal from the Goal Builder — POST creates target + metric + section."""
+    """Save a goal from the Goal Builder — POST creates target + metric + section.
+
+    Uses the shared _create_goal() helper for atomic section + target + revision
+    + metric creation. Custom metric creation (from AI) is handled here before
+    calling the helper.
+    """
     if request.method != "POST":
         return HttpResponseBadRequest("POST required.")
 
     from apps.clients.models import ClientFile
-    from apps.plans.models import (
-        MetricDefinition,
-        PlanSection,
-        PlanTarget,
-        PlanTargetMetric,
-        PlanTargetRevision,
-    )
-    from apps.plans.views import _can_edit_plan
+    from apps.plans.models import MetricDefinition, PlanSection
+    from apps.plans.views import _can_edit_plan, _create_goal
     from apps.clients.models import ClientProgramEnrolment
 
     client_file = get_object_or_404(ClientFile, pk=client_id)
@@ -554,78 +553,57 @@ def goal_builder_save(request, client_id):
     )
     program = enrolment.program if enrolment else None
 
-    with transaction.atomic():
-        # 1. Determine or create section
-        section = None
-        if cleaned.get("section_id"):
-            section = PlanSection.objects.filter(
-                pk=cleaned["section_id"], client_file=client_file
-            ).first()
+    # Resolve section
+    section = None
+    if cleaned.get("section_id"):
+        section = PlanSection.objects.filter(
+            pk=cleaned["section_id"], client_file=client_file,
+        ).first()
 
-        if section is None and cleaned.get("new_section_name"):
-            section = PlanSection.objects.create(
-                client_file=client_file,
-                name=cleaned["new_section_name"],
-                program=program,
-            )
-
-        if section is None:
-            return render(request, "plans/_goal_builder.html", {
-                "client": client_file,
-                "messages": _get_session_messages(request, client_id),
-                "draft": None,
-                "error": "Could not determine which section to place the goal in.",
-                "sections": list(
-                    client_file.plan_sections.filter(status="default").values("pk", "name")
-                ),
-            })
-
-        # 2. Create PlanTarget with encrypted fields
-        target = PlanTarget(
-            plan_section=section,
-            client_file=client_file,
-        )
-        target.name = cleaned["name"]
-        target.description = cleaned.get("description", "")
-        target.client_goal = cleaned.get("client_goal", "")
-        target.save()
-
-        # 3. Create initial revision
-        PlanTargetRevision.objects.create(
-            plan_target=target,
-            name=target.name,
-            description=target.description,
-            client_goal=target.client_goal,
-            status=target.status,
-            status_reason=target.status_reason,
-            changed_by=request.user,
-        )
-
-        # 4. Handle metric — existing or create custom
-        metric = None
-        if cleaned.get("existing_metric_id"):
-            metric = MetricDefinition.objects.filter(
-                pk=cleaned["existing_metric_id"], is_enabled=True, status="active"
-            ).first()
-
-        if metric is None and cleaned.get("metric_name"):
-            metric = MetricDefinition.objects.create(
-                name=cleaned["metric_name"],
-                definition=cleaned.get("metric_definition", ""),
-                min_value=cleaned.get("metric_min", 1),
-                max_value=cleaned.get("metric_max", 5),
-                unit=cleaned.get("metric_unit", "score"),
-                is_library=False,
-                owning_program=program,
-                category="custom",
-            )
-
+    # Resolve metric — existing or create custom (AI-specific)
+    metric_ids = []
+    if cleaned.get("existing_metric_id"):
+        metric = MetricDefinition.objects.filter(
+            pk=cleaned["existing_metric_id"], is_enabled=True, status="active",
+        ).first()
         if metric:
-            PlanTargetMetric.objects.create(
-                plan_target=target,
-                metric_def=metric,
-                sort_order=0,
-            )
+            metric_ids.append(metric.pk)
+
+    if not metric_ids and cleaned.get("metric_name"):
+        metric = MetricDefinition.objects.create(
+            name=cleaned["metric_name"],
+            definition=cleaned.get("metric_definition", ""),
+            min_value=cleaned.get("metric_min", 1),
+            max_value=cleaned.get("metric_max", 5),
+            unit=cleaned.get("metric_unit", "score"),
+            is_library=False,
+            owning_program=program,
+            category="custom",
+        )
+        metric_ids.append(metric.pk)
+
+    try:
+        _create_goal(
+            client_file=client_file,
+            user=request.user,
+            name=cleaned["name"],
+            description=cleaned.get("description", ""),
+            client_goal=cleaned.get("client_goal", ""),
+            section=section,
+            new_section_name=cleaned.get("new_section_name", ""),
+            program=program,
+            metric_ids=metric_ids,
+        )
+    except ValueError:
+        return render(request, "plans/_goal_builder.html", {
+            "client": client_file,
+            "messages": _get_session_messages(request, client_id),
+            "draft": None,
+            "error": "Could not determine which section to place the goal in.",
+            "sections": list(
+                client_file.plan_sections.filter(status="default").values("pk", "name")
+            ),
+        })
 
     # Clear session conversation
     request.session.pop(_session_key(client_id), None)

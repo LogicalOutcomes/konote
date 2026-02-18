@@ -126,6 +126,103 @@ class MetricDefinitionForm(forms.ModelForm):
             self.fields["owning_program"].required = True
 
 
+class GoalForm(forms.Form):
+    """Combined goal creation form — section + target + metrics in one step.
+
+    Uses plain Form (not ModelForm) because target name/description/client_goal
+    are encrypted properties on the model, not regular Django fields.
+    """
+
+    client_goal = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            "placeholder": _("In their own words…"),
+        }),
+    )
+    name = forms.CharField(
+        max_length=255,
+        widget=forms.TextInput(attrs={
+            "placeholder": _("e.g., Find stable housing"),
+            "autocomplete": "off",
+        }),
+    )
+    section_choice = forms.ChoiceField(required=False)
+    new_section_name = forms.CharField(
+        required=False,
+        max_length=255,
+        widget=forms.TextInput(attrs={
+            "placeholder": _("New section name"),
+        }),
+    )
+    description = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={
+            "rows": 3,
+            "placeholder": _("SMART outcome or additional context"),
+        }),
+    )
+    metrics = forms.ModelMultipleChoiceField(
+        queryset=MetricDefinition.objects.filter(is_enabled=True, status="active"),
+        widget=forms.CheckboxSelectMultiple,
+        required=False,
+    )
+
+    field_order = ["client_goal", "name", "section_choice", "new_section_name",
+                   "description", "metrics"]
+
+    def __init__(self, *args, client_file=None, participant_name="", **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Dynamic label with participant name
+        if participant_name:
+            self.fields["client_goal"].label = (
+                _("What does %s want to work on?") % participant_name
+            )
+        else:
+            self.fields["client_goal"].label = _(
+                "What does the participant want to work on?"
+            )
+        self.fields["client_goal"].help_text = _(
+            "Write what they said, in their own words."
+        )
+        self.fields["name"].label = _("Give this goal a short name")
+        self.fields["name"].help_text = _("A concise name for this goal.")
+        self.fields["section_choice"].label = _(
+            "Which area of the plan does this belong to?"
+        )
+        self.fields["description"].label = _("Add more detail (optional)")
+        self.fields["metrics"].label = _("How will you measure progress?")
+        self.fields["metrics"].help_text = _(
+            "You can add or change metrics later too."
+        )
+
+        # Populate section choices from client's active sections
+        if client_file:
+            sections = PlanSection.objects.filter(
+                client_file=client_file, status="default",
+            ).order_by("sort_order")
+            choices = [(str(s.pk), s.name) for s in sections]
+            choices.append(("new", _("+ Create new section")))
+            self.fields["section_choice"].choices = choices
+
+    def clean(self):
+        cleaned = super().clean()
+        section_choice = cleaned.get("section_choice", "")
+        new_name = cleaned.get("new_section_name", "").strip()
+
+        if section_choice == "new" and not new_name:
+            self.add_error(
+                "new_section_name",
+                _("Please enter a name for the new section."),
+            )
+        elif not section_choice:
+            raise forms.ValidationError(
+                _("Please select a section or create a new one.")
+            )
+
+        return cleaned
+
+
 class MetricImportForm(forms.Form):
     """Form for uploading a CSV file of metric definitions."""
 

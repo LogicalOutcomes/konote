@@ -409,6 +409,7 @@ def export_form(request):
         )
         .select_related(
             "metric_def",
+            "progress_note_target__plan_target",
             "progress_note_target__progress_note__client_file",
             "progress_note_target__progress_note__author",
         )
@@ -717,8 +718,13 @@ def export_form(request):
             client = note.client_file
             unique_clients.add(client.pk)
 
+            # Get goal name from the plan target (encrypted, decrypted via property)
+            plan_target = mv.progress_note_target.plan_target
+            goal_name = plan_target.name if plan_target else ""
+
             row = {
                 "record_id": client.record_id,
+                "goal_name": goal_name,
                 "metric_name": mv.metric_def.name,
                 "value": mv.value,
                 "date": note.effective_date.strftime("%Y-%m-%d"),
@@ -769,15 +775,16 @@ def export_form(request):
 
             # Column headers — include demographic column if grouping enabled
             if grouping_type != "none":
-                writer.writerow(sanitise_csv_row([grouping_label, "Client Record ID", "Metric Name", "Value", "Date", "Author"]))
+                writer.writerow(sanitise_csv_row([grouping_label, "Client Record ID", "Goal", "Metric Name", "Value", "Date", "Author"]))
             else:
-                writer.writerow(sanitise_csv_row(["Client Record ID", "Metric Name", "Value", "Date", "Author"]))
+                writer.writerow(sanitise_csv_row(["Client Record ID", "Goal", "Metric Name", "Value", "Date", "Author"]))
 
             for row in rows:
                 if grouping_type != "none":
                     writer.writerow(sanitise_csv_row([
                         row.get("demographic_group", "Unknown"),
                         row["record_id"],
+                        row.get("goal_name", ""),
                         row["metric_name"],
                         row["value"],
                         row["date"],
@@ -786,6 +793,7 @@ def export_form(request):
                 else:
                     writer.writerow(sanitise_csv_row([
                         row["record_id"],
+                        row.get("goal_name", ""),
                         row["metric_name"],
                         row["value"],
                         row["date"],

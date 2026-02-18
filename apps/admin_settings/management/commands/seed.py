@@ -60,6 +60,7 @@ class Command(BaseCommand):
                     "definition": m["definition"],
                     "category": m["category"],
                     "is_library": True,
+                    "is_universal": m.get("is_universal", False),
                     "is_enabled": True,
                     "min_value": m.get("min_value"),
                     "max_value": m.get("max_value"),
@@ -72,13 +73,16 @@ class Command(BaseCommand):
             if was_created:
                 created += 1
             else:
-                # Backfill French translations for existing metrics
+                # Backfill French translations and is_universal for existing metrics
                 changed = False
                 for fr_field in ("name_fr", "definition_fr", "unit_fr"):
                     new_val = m.get(fr_field, "")
                     if new_val and not getattr(obj, fr_field):
                         setattr(obj, fr_field, new_val)
                         changed = True
+                if m.get("is_universal") and not obj.is_universal:
+                    obj.is_universal = True
+                    changed = True
                 if changed:
                     obj.save()
                     updated_fr += 1

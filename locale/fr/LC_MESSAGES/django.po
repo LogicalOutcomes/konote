@@ -12809,7 +12809,7 @@ msgid "Define what each level means (1 = ..., 2 = ..., etc.)"
 msgstr ""
 
 msgid "Description (SMART outcome)"
-msgstr ""
+msgstr "Description (objectif SMART)"
 
 msgid "Draft Goal"
 msgstr ""
@@ -13417,7 +13417,8 @@ msgid ""
 "status as your program responds to feedback."
 msgstr ""
 "Tendances récurrentes identifiées à partir des suggestions des participants."
-" Mettez à jour le statut à mesure que votre programme répond aux commentaires."
+" Mettez à jour le statut à mesure que votre programme répond aux "
+"commentaires."
 
 msgid "Suggestion theme progress"
 msgstr "Progression des thèmes de suggestions"
@@ -13439,3 +13440,128 @@ msgid "%(addressed)s of %(total)s suggestion theme addressed"
 msgid_plural "%(addressed)s of %(total)s suggestion themes addressed"
 msgstr[0] "%(addressed)s thème de suggestion traité sur %(total)s"
 msgstr[1] "%(addressed)s thèmes de suggestions traités sur %(total)s"
+
+msgid "A concise name for this goal."
+msgstr "Un nom court pour cet objectif."
+
+msgid "Add more detail (optional)"
+msgstr "Ajouter plus de détails (facultatif)"
+
+msgid "All available metrics"
+msgstr "Toutes les mesures disponibles"
+
+msgid "Apply template"
+msgstr "Appliquer un modèle"
+
+msgid "Common goals in this program"
+msgstr "Objectifs courants dans ce programme"
+
+msgid "Filter metrics by name"
+msgstr "Filtrer les mesures par nom"
+
+msgid "Give this goal a short name"
+msgstr "Donnez un nom court à cet objectif"
+
+msgid "Goal added."
+msgstr "Objectif ajouté."
+
+msgid "Goal name suggestions"
+msgstr "Suggestions de noms d'objectifs"
+
+msgid "How will you measure progress?"
+msgstr "Comment allez-vous mesurer les progrès?"
+
+msgid "Metrics used in this program"
+msgstr "Mesures utilisées dans ce programme"
+
+msgid "Or start from a template"
+msgstr "Ou commencer à partir d'un modèle"
+
+msgid "Please enter a name for the new section."
+msgstr "Veuillez entrer un nom pour la nouvelle section."
+
+msgid "Please fix the following:"
+msgstr "Veuillez corriger les éléments suivants :"
+
+msgid "Please select a section or create a new one."
+msgstr "Veuillez sélectionner une section ou en créer une nouvelle."
+
+msgid "Prefer to fill in the form yourself? Go to manual form"
+msgstr "Vous préférez remplir le formulaire vous-même? Aller au formulaire manuel"
+
+msgid "Quick pick — tap to use an existing goal:"
+msgstr "Choix rapide — touchez pour utiliser un objectif existant :"
+
+msgid "SMART outcome or additional context"
+msgstr "Résultat SMART ou contexte supplémentaire"
+
+msgid "Search metrics…"
+msgstr "Rechercher des mesures…"
+
+msgid "Section (pre-selected)"
+msgstr "Section (pré-sélectionnée)"
+
+msgid "Start by adding their first goal."
+msgstr "Commencez par ajouter leur premier objectif."
+
+msgid "Universal metrics"
+msgstr "Mesures universelles"
+
+msgid "Used in this program"
+msgstr "Utilisées dans ce programme"
+
+msgid "What does %s want to work on?"
+msgstr "Sur quoi %s veut-il/elle travailler?"
+
+msgid "Which area of the plan does this belong to?"
+msgstr "Dans quelle section du plan cela s'inscrit-il?"
+
+msgid "You can add or change metrics later too."
+msgstr "Vous pouvez aussi ajouter ou modifier les mesures plus tard."
+
+msgid "e.g., Find stable housing"
+msgstr "ex. : Trouver un logement stable"
+
+msgid "metric matches"
+msgstr "mesure correspond"
+
+msgid "metrics match"
+msgstr "mesures correspondent"
+
+msgid "suggestion available"
+msgstr "suggestion disponible"
+
+msgid "suggestions available"
+msgstr "suggestions disponibles"
+
+#. blocktrans strings from goal creation templates
+msgid "Add %(section)s only"
+msgstr "Ajouter %(section)s seulement"
+
+msgid "Add a %(target)s"
+msgstr "Ajouter un(e) %(target)s"
+
+#, python-format
+msgid "This is where you'll build %(client)s's plan together."
+msgstr "C'est ici que vous construirez le plan de %(client)s ensemble."
+
+#, python-format
+msgid "No plan has been created yet for %(client)s."
+msgstr "Aucun plan n'a encore été créé pour %(client)s."
+
+#, python-format
+msgid "Use %(name)s (%(count)s participants)"
+msgstr "Utiliser %(name)s (%(count)s participants)"
+
+#, python-format
+msgid "used by %(count)s participant(s)"
+msgstr "utilisée par %(count)s participant(s)"
+
+#, python-format
+msgid "%(count)s participant"
+msgid_plural "%(count)s participants"
+msgstr[0] "%(count)s participant"
+msgstr[1] "%(count)s participants"
+
+msgid "Recommended"
+msgstr "Recommandé"
