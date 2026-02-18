@@ -111,18 +111,17 @@
             <small>{{ form.client_goal.help_text }}</small>
             <input type="text"
                    id="phase1-client-goal"
+                   aria-label="{{ form.client_goal.label }}"
                    value="{{ form.client_goal.value|default_if_none:'' }}"
                    placeholder="{% trans 'In their own words…' %}"
                    maxlength="255">
-            {% if form.client_goal.errors %}
-            <small class="error" role="alert">{{ form.client_goal.errors.0 }}</small>
-            {% endif %}
         </fieldset>
 
         <div class="phase-action">
             <button type="button" id="btn-next-phase">
                 {% trans "Next: shape this into a goal" %} &#9656;
             </button>
+            <a href="{% url 'plans:plan_view' client_id=client.pk %}" class="secondary">{% trans "Cancel" %}</a>
         </div>
 
         {% if common_goals %}
@@ -215,7 +214,7 @@
             {% endif %}
         </fieldset>
 
-        {# ── Section picker ── #}
+        {# ── Section picker (SYNC: duplicated in AI path below — keep in sync) ── #}
         <fieldset>
             <legend>{{ form.section_choice.label }}</legend>
 
@@ -253,7 +252,7 @@
             {% endif %}
         </fieldset>
 
-        {# ── Metrics ── #}
+        {# ── Metrics (SYNC: duplicated in AI path below — keep in sync) ── #}
         <fieldset>
             <legend>{% trans "How will you track progress?" %}</legend>
             <small>{{ form.metrics.help_text }}</small>
@@ -406,7 +405,7 @@
         {% endif %}
     </fieldset>
 
-    {# ── 3. Section picker ── #}
+    {# ── 3. Section picker (SYNC: duplicated in non-AI path above — keep in sync) ── #}
     <fieldset>
         <legend>{{ form.section_choice.label }}</legend>
 
@@ -457,7 +456,7 @@
         {% endif %}
     </fieldset>
 
-    {# ── 5. Metric picker — three tiers ── #}
+    {# ── 5. Metric picker — three tiers (SYNC: duplicated in non-AI path above — keep in sync) ── #}
     <fieldset>
         <legend>{{ form.metrics.label }}</legend>
         <small>{{ form.metrics.help_text }}</small>
