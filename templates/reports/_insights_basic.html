@@ -80,8 +80,8 @@
 <blockquote class="insight-quote">
     <p>&ldquo;{{ s.text }}&rdquo;</p>
     <cite>
-        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span> &middot; {% endif %}
-        <a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>
+        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span>{% if can_view_notes %} &middot; {% endif %}{% endif %}
+        {% if can_view_notes %}<a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>{% endif %}
     </cite>
 </blockquote>
 {% endfor %}
@@ -90,8 +90,8 @@
 <blockquote class="insight-quote">
     <p>&ldquo;{{ s.text }}&rdquo;</p>
     <cite>
-        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span> &middot; {% endif %}
-        <a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>
+        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span>{% if can_view_notes %} &middot; {% endif %}{% endif %}
+        {% if can_view_notes %}<a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>{% endif %}
     </cite>
 </blockquote>
 {% endfor %}
@@ -214,9 +214,9 @@
 <blockquote class="insight-quote">
     <p>&ldquo;{{ s.text }}&rdquo;</p>
     <cite>
-        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span> &middot; {% endif %}
+        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span>{% if can_view_notes %} &middot; {% endif %}{% endif %}
         {% if s.date %}{{ s.date }} &middot; {% endif %}
-        <a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>
+        {% if can_view_notes %}<a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>{% endif %}
     </cite>
 </blockquote>
 {% endfor %}
@@ -226,9 +226,9 @@
 <blockquote class="insight-quote">
     <p>&ldquo;{{ s.text }}&rdquo;</p>
     <cite>
-        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span> &middot; {% endif %}
+        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span>{% if can_view_notes %} &middot; {% endif %}{% endif %}
         {% if s.date %}{{ s.date }} &middot; {% endif %}
-        <a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>
+        {% if can_view_notes %}<a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>{% endif %}
     </cite>
 </blockquote>
 {% endfor %}
