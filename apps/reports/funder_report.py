@@ -428,12 +428,15 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
     rows.append(["Age Group", "Count", "Percentage"])
     total_demo = report_data["age_demographics_total"]
     for age_group, count in report_data["age_demographics"].items():
-        if total_demo > 0:
+        if isinstance(count, str) or isinstance(total_demo, str):
+            pct = "*"
+        elif total_demo > 0:
             pct = f"{(count / total_demo * 100):.1f}%"
         else:
             pct = "N/A"
         rows.append([age_group, format_number(count), pct])
-    rows.append(["Total", format_number(total_demo), "100%"])
+    total_pct = "*" if isinstance(total_demo, str) else "100%"
+    rows.append(["Total", format_number(total_demo), total_pct])
     rows.append([])
 
     # Custom demographic sections from report template
@@ -442,12 +445,15 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
         rows.append(["Category", "Count", "Percentage"])
         section_total = section["total"]
         for cat_label, cat_count in section["data"].items():
-            if section_total > 0:
+            if isinstance(cat_count, str) or isinstance(section_total, str):
+                pct = "*"
+            elif section_total > 0:
                 pct = f"{(cat_count / section_total * 100):.1f}%"
             else:
                 pct = "N/A"
             rows.append([cat_label, format_number(cat_count), pct])
-        rows.append(["Total", format_number(section_total), "100%"])
+        total_pct = "*" if isinstance(section_total, str) else "100%"
+        rows.append(["Total", format_number(section_total), total_pct])
         rows.append([])
 
     # Report template note
