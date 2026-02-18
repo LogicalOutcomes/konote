@@ -4,7 +4,10 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.programs.models import Program, UserProgramRole
 
-from .models import ProgressNote, ProgressNoteTarget, ProgressNoteTemplate, ProgressNoteTemplateSection
+from .models import (
+    ProgressNote, ProgressNoteTarget, ProgressNoteTemplate,
+    ProgressNoteTemplateSection, SuggestionTheme,
+)
 
 
 # Subset for quick notes — group and collateral typically need full notes with target tracking
@@ -280,3 +283,33 @@ class NoteCancelForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": 2, "placeholder": _("Reason for cancellation...")}),
         label=_("Reason"),
     )
+
+
+class SuggestionThemeForm(forms.ModelForm):
+    """Create or edit a SuggestionTheme.
+
+    Used for both create/edit pages and inline status updates on the detail page.
+    Program queryset is scoped to the requesting user's accessible programs.
+    """
+
+    class Meta:
+        model = SuggestionTheme
+        fields = ["name", "program", "description", "status", "addressed_note"]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3, "placeholder": _("Optional context about this theme...")}),
+            "addressed_note": forms.Textarea(attrs={"rows": 3, "placeholder": _("What was done about it?")}),
+        }
+        labels = {
+            "name": _("Theme name"),
+            "program": _("Program"),
+            "description": _("Description"),
+            "status": _("Status"),
+            "addressed_note": _("Resolution notes"),
+        }
+
+    def __init__(self, *args, requesting_user=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if requesting_user and not getattr(requesting_user, "is_admin", False):
+            from apps.programs.access import get_accessible_programs
+            self.fields["program"].queryset = get_accessible_programs(requesting_user)
+        self.fields["addressed_note"].required = False

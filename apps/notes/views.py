@@ -14,6 +14,7 @@ from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
@@ -30,6 +31,7 @@ from apps.programs.access import (
     get_program_from_client,
     get_user_program_ids,
 )
+from apps.programs.models import UserProgramRole
 from .forms import FullNoteForm, MetricValueForm, NoteCancelForm, QuickNoteForm, TargetNoteForm
 from .models import MetricValue, ProgressNote, ProgressNoteTarget, ProgressNoteTemplate
 
@@ -485,6 +487,28 @@ def note_create(request, client_id):
                 ).exclude(pk=note.pk).update(follow_up_completed_at=timezone.now())
 
             messages.success(request, _("Progress note saved."))
+
+            # Contextual toast when a suggestion was recorded
+            if form.cleaned_data.get("suggestion_priority"):
+                is_pm = UserProgramRole.objects.filter(
+                    user=request.user, role="program_manager", status="active",
+                ).exists()
+                if is_pm or getattr(request.user, "is_admin", False):
+                    messages.info(
+                        request,
+                        mark_safe(
+                            _("Suggestion recorded.")
+                            + ' <a href="' + reverse("suggestion_themes:theme_list") + '">'
+                            + _("View Suggestion Themes")
+                            + "</a>"
+                        ),
+                    )
+                else:
+                    messages.info(
+                        request,
+                        _("This suggestion has been recorded. A Program Manager can group it with similar feedback."),
+                    )
+
             _portal_access_reminder(request, client)
             return redirect("notes:note_list", client_id=client.pk)
     else:

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load i18n permissions_tags %}
+
+{% block title %}{% trans "Suggestion Themes" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+
+<hgroup>
+    <h1>{% trans "Suggestion Themes" %}</h1>
+    <p>{% trans "Group similar participant suggestions and track whether they've been addressed." %}</p>
+</hgroup>
+
+{# ── Filter bar ── #}
+<form method="get" class="filter-bar" role="search" aria-label="{% trans 'Filter themes' %}">
+    <div class="grid">
+        <label for="status-filter">
+            {% trans "Status" %}
+            <select id="status-filter" name="status">
+                <option value="">{% trans "All statuses" %}</option>
+                {% for value, label in status_choices %}
+                <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label for="program-filter">
+            {% trans "Program" %}
+            <select id="program-filter" name="program">
+                <option value="">{% trans "All programs" %}</option>
+                {% for prog in accessible_programs %}
+                <option value="{{ prog.pk }}" {% if program_filter == prog.pk|stringformat:"d" %}selected{% endif %}>{{ prog.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <div style="display:flex;align-items:end;">
+            <button type="submit" class="secondary">{% trans "Filter" %}</button>
+        </div>
+    </div>
+</form>
+
+{% if can_manage %}
+<p><a href="{% url 'suggestion_themes:theme_create' %}" role="button">{% trans "Create Theme" %}</a></p>
+{% endif %}
+
+{# ── Theme cards ── #}
+{% if themes %}
+<div class="theme-cards">
+    {% for theme in themes %}
+    <article class="theme-card">
+        <header>
+            <div style="display:flex;justify-content:space-between;align-items:start;gap:0.5rem;flex-wrap:wrap;">
+                <strong><a href="{% url 'suggestion_themes:theme_detail' theme.pk %}">{{ theme.name }}</a></strong>
+                <div style="display:flex;gap:0.25rem;flex-wrap:wrap;">
+                    {% if theme.status == "open" %}
+                    <span class="badge badge-neutral">{% trans "Open" %}</span>
+                    {% elif theme.status == "in_progress" %}
+                    <span class="badge badge-warning">{% trans "In Progress" %}</span>
+                    {% elif theme.status == "addressed" %}
+                    <span class="badge badge-success">{% trans "Addressed" %}</span>
+                    {% elif theme.status == "wont_do" %}
+                    <span class="badge badge-neutral">{% trans "Won't Do" %}</span>
+                    {% endif %}
+                    {% if theme.priority == "urgent" %}
+                    <span class="badge badge-danger">{% trans "Urgent" %}</span>
+                    {% elif theme.priority == "important" %}
+                    <span class="badge badge-warning">{% trans "Important" %}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </header>
+        <p>
+            <small class="muted">{{ theme.program.name }}</small>
+            &middot;
+            <small>{{ theme.link_count }} {% trans "suggestion(s)" %}</small>
+            &middot;
+            <small class="muted">{% trans "Updated" %} {{ theme.updated_at|date:"M j, Y" }}</small>
+        </p>
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<p class="muted">
+    {% if status_filter or program_filter %}
+    {% trans "No themes match your filters." %}
+    {% else %}
+    {% trans "No suggestion themes yet. Create one to start grouping participant feedback." %}
+    {% endif %}
+</p>
+{% endif %}
+
+{% endblock %}

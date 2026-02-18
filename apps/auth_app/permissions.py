@@ -67,6 +67,9 @@ PERMISSIONS = {
 
         "insights.view": DENY,  # Outcome insights — staff+ only
 
+        "suggestion_theme.view": DENY,  # Cannot view suggestion themes
+        "suggestion_theme.manage": DENY,  # Cannot create/edit/link themes
+
         "event.view": DENY,
         "event.create": DENY,
 
@@ -159,6 +162,9 @@ PERMISSIONS = {
         "report.data_extract": DENY,
 
         "insights.view": SCOPED,  # Program-level outcome insights. Enforced by @requires_permission
+
+        "suggestion_theme.view": SCOPED,  # View themes in own program
+        "suggestion_theme.manage": DENY,  # Staff cannot create/edit/link themes
 
         "event.view": SCOPED,  # Enforced by @requires_permission
         "event.create": SCOPED,
@@ -258,6 +264,9 @@ PERMISSIONS = {
 
         "insights.view": ALLOW,  # Program-level outcome insights. Enforced by @requires_permission
 
+        "suggestion_theme.view": ALLOW,  # View all themes in own programs
+        "suggestion_theme.manage": SCOPED,  # Create/edit/link themes in own programs
+
         "event.view": ALLOW,  # Phase 3: GATED. Enforced by @requires_permission
         "event.create": DENY,
 
@@ -356,6 +365,9 @@ PERMISSIONS = {
 
         "insights.view": ALLOW,  # Aggregate outcome insights only (quotes suppressed).
                                  # Enforced by @requires_permission
+
+        "suggestion_theme.view": ALLOW,  # View theme summaries (name + count, no quotes)
+        "suggestion_theme.manage": DENY,  # Executives don't manage themes
 
         "event.view": DENY,
         "event.create": DENY,
@@ -533,6 +545,9 @@ def permission_to_plain_english(perm_key, perm_level):
         "custom_field.edit": "Edit custom fields",
 
         "insights.view": "View program outcome insights",
+
+        "suggestion_theme.view": "View suggestion themes",
+        "suggestion_theme.manage": "Create, edit, and link suggestions to themes",
 
         # Clinical records
         "consent.view": "View client consent records",

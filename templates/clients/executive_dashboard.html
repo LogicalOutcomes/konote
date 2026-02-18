@@ -160,9 +160,21 @@
                 </div>
                 {% endif %}
 
-                {% if stat.suggestion_total > 0 %}
+                {% if stat.theme_total > 0 %}
                 <hr>
-                {# Participant suggestions #}
+                {# Theme action status — executives care about throughput #}
+                <div class="metric-row">
+                    <span class="metric-label">{% trans "Suggestion Themes" %}</span>
+                    <span class="metric-value">
+                        {{ stat.theme_open }} {% trans "open" %}{% if stat.theme_in_progress %}, {{ stat.theme_in_progress }} {% trans "in progress" %}{% endif %}
+                    </span>
+                </div>
+                <div class="metric-row">
+                    <a href="{% url 'suggestion_themes:theme_list' %}?program={{ stat.program.pk }}" class="metric-link">{% trans "View themes" %} &rarr;</a>
+                </div>
+                {% elif stat.suggestion_total > 0 %}
+                <hr>
+                {# Fallback: raw suggestion count when no themes exist #}
                 <div class="metric-row {% if stat.suggestion_important > 0 %}metric-warning{% endif %}">
                     <span class="metric-label">{% trans "Suggestions" %}</span>
                     <span class="metric-value">

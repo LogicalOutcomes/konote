@@ -106,6 +106,7 @@
                     <summary aria-haspopup="listbox"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Admin" %}</summary>
                     <ul role="listbox">
                         <li><a href="{% url 'reports:team_meeting_view' %}">{% trans "Team Activity" %}</a></li>
+                        <li><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "Suggestion Themes" %}</a></li>
                         <li><a href="/plans/admin/metrics/">{{ term.metric_plural|default:"Metrics" }}</a></li>
                         <li><a href="/admin/templates/">{% trans "Plan Templates" %}</a></li>
                         <li><a href="/admin/settings/note-templates/">{% trans "Note Templates" %}</a></li>
@@ -135,6 +136,10 @@
                     <summary aria-haspopup="listbox"{% if nav_active == "admin" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Manage" %}</summary>
                     <ul role="listbox">
                         <li><a href="{% url 'reports:team_meeting_view' %}">{% trans "Team Activity" %}</a></li>
+                        {% has_permission "suggestion_theme.view" as can_see_themes %}
+                        {% if can_see_themes %}
+                        <li><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "Suggestion Themes" %}</a></li>
+                        {% endif %}
                         {% if can_manage_users %}
                         <li><a href="/admin/users/">{% trans "Team Members" %}</a></li>
                         {% endif %}

@@ -4,6 +4,10 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-02-17 housekeeping)
+
+- [x] Portal staff management — invite flow, manage/revoke/reset MFA views, demo seed data — 2026-02-15 (PORTAL1)
+
 ## Moved from Recently Done (2026-02-16 housekeeping)
 
 - [x] Enriched demo seed data — emails, portal content, meetings, registration submissions for all 15 clients — 2026-02-15 (DEMO-ENRICH1)

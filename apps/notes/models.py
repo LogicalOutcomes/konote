@@ -1,6 +1,8 @@
 """Progress notes and metric value recording."""
 from django.conf import settings
 from django.db import models
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
 from konote.encryption import decrypt_field, encrypt_field
@@ -320,3 +322,136 @@ class MetricValue(models.Model):
     class Meta:
         app_label = "notes"
         db_table = "metric_values"
+
+
+# ── Suggestion Tracking (UX-INSIGHT6) ────────────────────────────────
+
+# Priority ranking for theme-level rollup — maps note-level priorities
+# to a numeric rank. worth_exploring maps to "noted" at theme level
+# because theme priority is a leadership-facing summary.
+THEME_PRIORITY_RANK = {
+    "urgent": 3,
+    "important": 2,
+    "worth_exploring": 1,
+    "noted": 0,
+}
+
+
+class SuggestionThemeManager(models.Manager):
+    """Custom manager with convenience querysets."""
+
+    def active(self):
+        """Return themes with open or in_progress status."""
+        return self.filter(status__in=["open", "in_progress"])
+
+
+class SuggestionTheme(models.Model):
+    """A recurring theme identified by staff from participant suggestions."""
+
+    STATUS_CHOICES = [
+        ("open", _("Open")),
+        ("in_progress", _("In Progress")),
+        ("addressed", _("Addressed")),
+        ("wont_do", _("Won't Do")),
+    ]
+    PRIORITY_CHOICES = [
+        ("noted", _("Noted")),
+        ("important", _("Important")),
+        ("urgent", _("Urgent")),
+    ]
+
+    program = models.ForeignKey(
+        "programs.Program", on_delete=models.CASCADE,
+        related_name="suggestion_themes",
+    )
+    name = models.CharField(max_length=200)
+    description = models.TextField(blank=True, default="")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="open")
+    priority = models.CharField(
+        max_length=20, choices=PRIORITY_CHOICES, default="noted",
+        help_text="Auto-calculated from linked suggestions via recalculate_theme_priority(). Do not set manually.",
+    )
+    addressed_note = models.TextField(blank=True, default="")
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT,
+        related_name="created_suggestion_themes",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = SuggestionThemeManager()
+
+    class Meta:
+        app_label = "notes"
+        db_table = "suggestion_themes"
+        ordering = ["-updated_at"]
+        indexes = [
+            models.Index(fields=["program", "status"], name="idx_theme_program_status"),
+        ]
+
+    def __str__(self):
+        return f"{self.name} ({self.program})"
+
+
+class SuggestionLink(models.Model):
+    """Links a progress note's suggestion to a theme."""
+
+    theme = models.ForeignKey(
+        SuggestionTheme, on_delete=models.CASCADE, related_name="links",
+    )
+    progress_note = models.ForeignKey(
+        ProgressNote, on_delete=models.CASCADE, related_name="suggestion_links",
+    )
+    auto_linked = models.BooleanField(default=False)
+    linked_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name="suggestion_links_created",
+    )
+    linked_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "notes"
+        db_table = "suggestion_links"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["theme", "progress_note"],
+                name="unique_theme_note_link",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["theme"], name="idx_link_theme"),
+            models.Index(fields=["progress_note"], name="idx_link_note"),
+        ]
+
+    def __str__(self):
+        return f"Link: {self.theme.name} \u2190 note {self.progress_note_id}"
+
+
+def recalculate_theme_priority(theme):
+    """Set theme.priority to the highest-priority linked suggestion.
+
+    Maps note-level priorities to theme-level:
+      urgent → urgent, important → important,
+      worth_exploring/noted/blank → noted
+    """
+    priorities = list(
+        SuggestionLink.objects.filter(theme=theme)
+        .values_list("progress_note__suggestion_priority", flat=True)
+    )
+    if not priorities:
+        theme.priority = "noted"
+    else:
+        best = max(priorities, key=lambda p: THEME_PRIORITY_RANK.get(p, 0))
+        theme.priority = best if best in ("important", "urgent") else "noted"
+    theme.save(update_fields=["priority", "updated_at"])
+
+
+@receiver(post_delete, sender=SuggestionLink)
+def recalculate_priority_on_link_delete(sender, instance, **kwargs):
+    """Recalculate theme priority when a link is deleted (e.g. note erasure)."""
+    try:
+        # Theme might also be deleted in a cascade
+        theme = SuggestionTheme.objects.get(pk=instance.theme_id)
+        recalculate_theme_priority(theme)
+    except SuggestionTheme.DoesNotExist:
+        pass

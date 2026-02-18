@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ theme.name }} — {% trans "Suggestion Themes" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+
+{# ── Header ── #}
+<hgroup>
+    <h1>
+        {{ theme.name }}
+        {% if theme.priority == "urgent" %}
+        <span class="badge badge-danger">{% trans "Urgent" %}</span>
+        {% elif theme.priority == "important" %}
+        <span class="badge badge-warning">{% trans "Important" %}</span>
+        {% endif %}
+    </h1>
+    <p>
+        {{ theme.program.name }}
+        &middot;
+        {% if theme.status == "open" %}
+        <span class="badge badge-neutral">{% trans "Open" %}</span>
+        {% elif theme.status == "in_progress" %}
+        <span class="badge badge-warning">{% trans "In Progress" %}</span>
+        {% elif theme.status == "addressed" %}
+        <span class="badge badge-success">{% trans "Addressed" %}</span>
+        {% elif theme.status == "wont_do" %}
+        <span class="badge badge-neutral">{% trans "Won't Do" %}</span>
+        {% endif %}
+        &middot;
+        {% trans "Created" %} {{ theme.created_at|date:"M j, Y" }}
+    </p>
+</hgroup>
+
+{% if theme.description %}
+<p>{{ theme.description }}</p>
+{% endif %}
+
+{% if theme.status == "addressed" and theme.addressed_note %}
+<article class="theme-resolution">
+    <strong>{% trans "Resolution:" %}</strong>
+    <p>{{ theme.addressed_note }}</p>
+</article>
+{% endif %}
+
+{# ── Status actions (PMs/admin only) ── #}
+{% if can_manage %}
+<section aria-label="{% trans 'Theme actions' %}">
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+        {% if theme.status == "open" %}
+        <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="status_update">
+            <input type="hidden" name="new_status" value="in_progress">
+            <button type="submit" class="secondary">{% trans "Start Working on This" %}</button>
+        </form>
+        {% endif %}
+
+        {% if theme.status == "in_progress" %}
+        <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="status_update">
+            <input type="hidden" name="new_status" value="addressed">
+            <button type="submit" class="secondary">{% trans "Mark as Addressed" %}</button>
+        </form>
+        {% endif %}
+
+        {% if theme.status == "addressed" or theme.status == "wont_do" %}
+        <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="status_update">
+            <input type="hidden" name="new_status" value="open">
+            <button type="submit" class="secondary">{% trans "Reopen" %}</button>
+        </form>
+        {% endif %}
+
+        {% if theme.status != "wont_do" %}
+        <form method="post" style="display:inline;" onsubmit="return confirm('{% trans "Are you sure? This marks the theme as something that won\'t be acted on." %}');">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="status_update">
+            <input type="hidden" name="new_status" value="wont_do">
+            <button type="submit" class="outline secondary" style="color:var(--kn-text);">{% trans "Won't Do" %}</button>
+        </form>
+        {% endif %}
+
+        <a href="{% url 'suggestion_themes:theme_edit' theme.pk %}" role="button" class="outline" style="color:var(--kn-text);">{% trans "Edit Theme" %}</a>
+    </div>
+</section>
+{% endif %}
+
+{# ── Tabs: Linked / Link More ── #}
+<div class="theme-tabs" role="tablist" aria-label="{% trans 'Theme suggestions' %}">
+    <button role="tab" aria-selected="true" aria-controls="linked-tab" id="linked-tab-btn" class="tab-btn active">
+        {% trans "Linked" %} ({{ linked_notes|length }})
+    </button>
+    {% if can_manage %}
+    <button role="tab" aria-selected="false" aria-controls="unlinked-tab" id="unlinked-tab-btn" class="tab-btn">
+        {% trans "Link More" %}
+    </button>
+    {% endif %}
+</div>
+
+{# ── Tab 1: Linked suggestions ── #}
+<section id="linked-tab" role="tabpanel" aria-labelledby="linked-tab-btn" tabindex="0">
+    {% include "notes/suggestions/_linked_list.html" %}
+</section>
+
+{# ── Tab 2: Unlinked suggestions (lazy-loaded) ── #}
+{% if can_manage %}
+<section id="unlinked-tab" role="tabpanel" aria-labelledby="unlinked-tab-btn" tabindex="0" hidden>
+    <div id="unlinked-content"
+         hx-get="{% url 'suggestion_themes:unlinked_partial' theme.pk %}"
+         hx-trigger="load"
+         hx-swap="innerHTML">
+        <p class="muted" aria-busy="true">{% trans "Loading suggestions..." %}</p>
+    </div>
+</section>
+{% endif %}
+
+<script>
+(function() {
+    var tablist = document.querySelector('[role="tablist"]');
+    var tabs = Array.from(tablist.querySelectorAll('[role="tab"]'));
+
+    function switchTab(tab) {
+        tabs.forEach(function(t) {
+            var panelId = t.getAttribute('aria-controls');
+            var panel = document.getElementById(panelId);
+            if (t === tab) {
+                t.classList.add('active');
+                t.setAttribute('aria-selected', 'true');
+                t.setAttribute('tabindex', '0');
+                if (panel) panel.hidden = false;
+            } else {
+                t.classList.remove('active');
+                t.setAttribute('aria-selected', 'false');
+                t.setAttribute('tabindex', '-1');
+                if (panel) panel.hidden = true;
+            }
+        });
+        tab.focus();
+    }
+
+    // Click handler
+    tabs.forEach(function(tab) {
+        tab.addEventListener('click', function() { switchTab(tab); });
+    });
+
+    // Arrow-key navigation per WAI-ARIA tabs pattern
+    tablist.addEventListener('keydown', function(e) {
+        var idx = tabs.indexOf(document.activeElement);
+        if (idx === -1) return;
+        var next;
+        if (e.key === 'ArrowRight') {
+            next = tabs[(idx + 1) % tabs.length];
+        } else if (e.key === 'ArrowLeft') {
+            next = tabs[(idx - 1 + tabs.length) % tabs.length];
+        } else if (e.key === 'Home') {
+            next = tabs[0];
+        } else if (e.key === 'End') {
+            next = tabs[tabs.length - 1];
+        }
+        if (next) {
+            e.preventDefault();
+            switchTab(next);
+        }
+    });
+
+    // Set initial tabindex values (active=0, others=-1)
+    tabs.forEach(function(t) {
+        t.setAttribute('tabindex', t.getAttribute('aria-selected') === 'true' ? '0' : '-1');
+    });
+})();
+</script>
+{% endblock %}

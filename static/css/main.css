@@ -3545,3 +3545,74 @@ article[aria-label="notification"].fading-out {
         min-height: 44px;
     }
 }
+
+
+/* ── Suggestion Themes (UX-INSIGHT6) ── */
+
+.theme-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.theme-card {
+    padding: var(--kn-space-sm) var(--kn-space-md);
+}
+
+.theme-card header {
+    padding: 0;
+    margin: 0 0 0.25rem 0;
+}
+
+.theme-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--pico-muted-border-color);
+    margin-bottom: 1rem;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    color: var(--kn-text);
+    font-weight: normal;
+}
+
+.tab-btn.active {
+    border-bottom-color: var(--pico-primary);
+    font-weight: 600;
+}
+
+.tab-btn:hover {
+    background: var(--kn-hover-bg, rgba(0,0,0,0.04));
+}
+
+.suggestion-card {
+    margin-bottom: 0.75rem;
+    padding: 0;
+}
+
+.suggestion-preview {
+    font-style: italic;
+}
+
+.theme-resolution {
+    background: var(--kn-success-bg);
+    color: var(--kn-success-fg);
+    padding: var(--kn-space-sm) var(--kn-space-md);
+    border-radius: var(--pico-border-radius);
+    margin-bottom: 1rem;
+}
+
+.theme-summary-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}

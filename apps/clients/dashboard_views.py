@@ -402,6 +402,32 @@ def _batch_portal_adoption(enrolment_stats):
     return result
 
 
+def _batch_theme_counts(filtered_program_ids):
+    """Active suggestion theme counts per program in one query.
+
+    Returns dict of program_id -> {total, open, in_progress}.
+    """
+    from apps.notes.models import SuggestionTheme
+
+    rows = (
+        SuggestionTheme.objects.active()
+        .filter(program_id__in=filtered_program_ids)
+        .values("program_id", "status")
+        .annotate(cnt=Count("id"))
+    )
+    result = {}
+    for r in rows:
+        pid = r["program_id"]
+        if pid not in result:
+            result[pid] = {"total": 0, "open": 0, "in_progress": 0}
+        result[pid]["total"] += r["cnt"]
+        if r["status"] == "open":
+            result[pid]["open"] = r["cnt"]
+        elif r["status"] == "in_progress":
+            result[pid]["in_progress"] = r["cnt"]
+    return result
+
+
 def _batch_suggestion_counts(filtered_program_ids):
     """Suggestion counts per program, grouped by priority, in one query.
 
@@ -586,6 +612,9 @@ def executive_dashboard(request):
     # Batch: suggestion counts per program
     suggestion_map = _batch_suggestion_counts(filtered_program_ids)
 
+    # Batch: active theme counts per program
+    theme_map = _batch_theme_counts(filtered_program_ids)
+
     # Assemble per-program stat dicts
     program_stats = []
     total_clients = 0
@@ -617,6 +646,11 @@ def executive_dashboard(request):
         sugg = suggestion_map.get(pid, {})
         stat["suggestion_total"] = sugg.get("total", 0)
         stat["suggestion_important"] = sugg.get("important", 0) + sugg.get("urgent", 0)
+
+        themes = theme_map.get(pid, {})
+        stat["theme_total"] = themes.get("total", 0)
+        stat["theme_open"] = themes.get("open", 0)
+        stat["theme_in_progress"] = themes.get("in_progress", 0)
 
         program_stats.append(stat)
         total_clients += es.get("total", 0)

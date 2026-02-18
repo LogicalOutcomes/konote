@@ -43,7 +43,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 **Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
 
-- [ ] Build suggestion tracking/consolidation system — SuggestionTheme + SuggestionLink models, manual linking UI, integration with Insights and Dashboard (see tasks/suggestion-tracking-design.md) (UX-INSIGHT6)
 - [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
 
 ## Parking Lot
@@ -68,6 +67,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Suggestion tracking system — SuggestionTheme/SuggestionLink models, CRUD + linking UI, Outcome Insights integration, Executive Dashboard theme counts, contextual toast on note save, 23 tests — 2026-02-17 (UX-INSIGHT6)
 - [x] Plan UX fixes — HTMX Back-button cache fix, reworded view-only message, disabled Edit Plan button with tooltip, editable-plans filter and badge on participant list — 2026-02-17 (UX-PLAN1, UX-PLAN2, UX-PLAN3)
 - [x] Dark mode WCAG AA contrast — breadcrumbs, add-link, tab-count badges — 2026-02-17 (UX-WALK3, UX-WALK4)
 - [x] Insights & Suggestions Batch — template-driven chart interpretations, suggestion highlights on exec dashboard, suggestion tracking design doc, portal questions design doc — 2026-02-17 (UX-INSIGHT4, UX-INSIGHT5, UX-INSIGHT6, PORTAL-Q1)
@@ -80,4 +80,3 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Delete temporary push folders and junk files — 2026-02-16 (CLEANUP1)
 - [x] Fix portal nav: add missing links, restore Leave quickly spacing, register feature toggles — 2026-02-15 (PORTAL-FIX1)
 - [x] Update UX walkthrough report with browser-based findings — 2026-02-15 (UX-WALK2)
-- [x] Portal staff management — invite flow, manage/revoke/reset MFA views, demo seed data — 2026-02-15 (PORTAL1)

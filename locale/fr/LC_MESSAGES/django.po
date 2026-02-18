@@ -13227,3 +13227,172 @@ msgstr ""
 "La modification nécessite un rôle de personnel dans l'un des %(program)ss "
 "auxquels ce participant est inscrit. Contactez votre administrateur si vous "
 "avez besoin d'un accès en modification."
+
+msgid "%(count)d suggestion(s) linked."
+msgstr "%(count)d suggestion(s) liée(s)."
+
+msgid "Addressed"
+msgstr "Traité"
+
+msgid "All suggestions in this program have already been linked to a theme."
+msgstr "Toutes les suggestions de ce programme ont déjà été liées à un thème."
+
+msgid "Already linked to other themes"
+msgstr "Déjà liées à d'autres thèmes"
+
+msgid ""
+"Are you sure? This marks the theme as something that won\\'t be acted on."
+msgstr ""
+"Êtes-vous sûr? Cela marque le thème comme quelque chose qui ne sera pas "
+"traité."
+
+msgid "Click \\\"Link More\\\" to find suggestions to add."
+msgstr "Cliquez sur « Lier plus » pour trouver des suggestions à ajouter."
+
+msgid "Create Theme"
+msgstr "Créer un thème"
+
+msgid "Edit Theme"
+msgstr "Modifier le thème"
+
+msgid "Filter themes"
+msgstr "Filtrer les thèmes"
+
+msgid ""
+"Group similar participant suggestions and track whether they've been "
+"addressed."
+msgstr ""
+"Regrouper les suggestions similaires des participants et suivre si elles ont"
+" été traitées."
+
+msgid "Invalid status."
+msgstr "Statut invalide."
+
+msgid "Link More"
+msgstr "Lier plus"
+
+msgid "Link Selected"
+msgstr "Lier la sélection"
+
+msgid "Linked"
+msgstr "Liées"
+
+msgid "Loading suggestions..."
+msgstr "Chargement des suggestions..."
+
+msgid "Mark as Addressed"
+msgstr "Marquer comme traité"
+
+msgid "New Theme"
+msgstr "Nouveau thème"
+
+msgid ""
+"No suggestion themes yet. Create one to start grouping participant feedback."
+msgstr ""
+"Aucun thème de suggestions. Créez-en un pour commencer à regrouper les "
+"commentaires des participants."
+
+msgid "No suggestions linked to this theme yet."
+msgstr "Aucune suggestion liée à ce thème pour le moment."
+
+msgid "No themes match your filters."
+msgstr "Aucun thème ne correspond à vos filtres."
+
+msgid "Optional context about this theme..."
+msgstr "Contexte optionnel sur ce thème..."
+
+msgid "Reopen"
+msgstr "Rouvrir"
+
+msgid "Resolution notes"
+msgstr "Notes de résolution"
+
+msgid "Resolution:"
+msgstr "Résolution :"
+
+msgid "Select suggestions to link to this theme"
+msgstr "Sélectionner les suggestions à lier à ce thème"
+
+msgid "Show full text"
+msgstr "Afficher le texte complet"
+
+msgid "Start Working on This"
+msgstr "Commencer à travailler"
+
+msgid "Status updated to %(status)s."
+msgstr "Statut mis à jour : %(status)s."
+
+msgid "Suggestion Themes"
+msgstr "Thèmes de suggestions"
+
+msgid "Suggestion removed from theme."
+msgstr "Suggestion retirée du thème."
+
+msgid "Theme actions"
+msgstr "Actions du thème"
+
+msgid "Theme created."
+msgstr "Thème créé."
+
+msgid "Theme name"
+msgstr "Nom du thème"
+
+msgid "Theme suggestions"
+msgstr "Suggestions du thème"
+
+msgid "Theme updated."
+msgstr "Thème mis à jour."
+
+msgid "What was done about it?"
+msgstr "Qu'est-ce qui a été fait?"
+
+msgid "Won't Do"
+msgstr "Ne sera pas fait"
+
+msgid "suggestion(s)"
+msgstr "suggestion(s)"
+
+#. blocktrans count: _unlinked_list.html
+msgid "%(total)s ungrouped suggestion in this program."
+msgid_plural "%(total)s ungrouped suggestions in this program."
+msgstr[0] "%(total)s suggestion non regroupée dans ce programme."
+msgstr[1] "%(total)s suggestions non regroupées dans ce programme."
+
+#. blocktrans with: _linked_list.html
+msgid "Linked by %(name)s"
+msgstr "Lié par %(name)s"
+
+#. blocktrans with: _linked_list.html aria-label
+msgid "Remove suggestion: %(text)s"
+msgstr "Retirer la suggestion : %(text)s"
+
+msgid "Not yet linked to a theme."
+msgstr "Pas encore liée à un thème."
+
+msgid "Ungrouped Suggestions"
+msgstr "Suggestions non regroupées"
+
+msgid "View all themes"
+msgstr "Voir tous les thèmes"
+
+msgid "View themes"
+msgstr "Voir les thèmes"
+
+msgid "in progress"
+msgstr "en cours"
+
+msgid "open"
+msgstr "ouvert(s)"
+
+msgid "Suggestion recorded."
+msgstr "Suggestion enregistrée."
+
+msgid ""
+"This suggestion has been recorded. A Program Manager can group it with "
+"similar feedback."
+msgstr ""
+"Cette suggestion a été enregistrée. Un gestionnaire de programme peut la "
+"regrouper avec des commentaires similaires."
+
+msgid "View Suggestion Themes"
+msgstr "Voir les thèmes de suggestions"
