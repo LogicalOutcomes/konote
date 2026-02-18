@@ -1,6 +1,7 @@
 """Progress notes and metric value recording."""
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Lower
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
@@ -412,7 +413,7 @@ class SuggestionTheme(models.Model):
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["program", "name"],
+                Lower("name"), "program",
                 name="unique_theme_per_program",
             ),
         ]
