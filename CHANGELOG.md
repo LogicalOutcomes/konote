@@ -12,7 +12,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 **Suggestion tracking & Outcome Insights**
 - Capture participant suggestions and reflections in every progress note
-- SuggestionTheme and SuggestionLink system for categorising recurring feedback
+- Theme and linking system for categorising recurring feedback across participants
 - Two-tier automation: keyword-based auto-linking on note creation, plus AI-generated themes during Outcome Insights analysis
 - Responsiveness tracking with status workflow (open → in progress → addressed)
 - Theme management at /manage/suggestions/ for program managers
