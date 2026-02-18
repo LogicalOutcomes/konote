@@ -126,7 +126,12 @@ class Command(BaseCommand):
             FeatureToggle.objects.filter(
                 feature_key="messaging_email"
             ).update(is_enabled=True)
-            self.stdout.write("  Demo mode: participant_portal, messaging_email enabled.")
+            FeatureToggle.objects.filter(feature_key="ai_assist").update(
+                is_enabled=True
+            )
+            self.stdout.write(
+                "  Demo mode: participant_portal, messaging_email, ai_assist enabled."
+            )
 
     def _seed_instance_settings(self):
         from apps.admin_settings.models import InstanceSetting
