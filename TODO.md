@@ -15,6 +15,11 @@
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — GG (OPS4)
 - [ ] Document scheduled task setup for export monitoring in the runbook — GG (EXP2w)
 
+### Phase: Bug Fixes
+
+- [ ] Remove blue border/outline appearing around the page (e.g. Outcome Insights) — (UI-FIX1)
+- [ ] Add demo suggestion content (themes + ungrouped suggestions) so executive dashboard display can be verified — (DEMO-SUG1)
+
 ### Phase: Communication Modules — complete!
 
 
