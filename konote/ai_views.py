@@ -1,9 +1,9 @@
 """AI-powered HTMX endpoints — all POST, all rate-limited, no PII."""
 import json
+import logging
 from datetime import date
 
 from django.contrib.auth.decorators import login_required
-from django.db import transaction
 from django.db.models import Q as models_Q
 from django.http import HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
@@ -23,6 +23,8 @@ from konote.forms import (
     SuggestNoteStructureForm,
     TargetSuggestForm,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _ai_enabled():
