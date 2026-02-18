@@ -29,7 +29,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from apps.clients.models import ClientDetailValue, ClientFile, CustomFieldDefinition
-from apps.communications.models import Communication
+from apps.communications.models import Communication, StaffMessage
 from apps.events.models import (
     Alert,
     AlertCancellationRecommendation,
@@ -47,7 +47,6 @@ from apps.groups.models import (
     ProjectMilestone,
     ProjectOutcome,
 )
-from apps.communications.models import StaffMessage
 from apps.notes.models import (
     MetricValue, ProgressNote, ProgressNoteTarget,
     SuggestionLink, SuggestionTheme, recalculate_theme_priority,
@@ -3319,8 +3318,6 @@ class Command(BaseCommand):
 
     def _create_demo_staff_messages(self, workers, programs_by_name, now):
         """Create internal staff-to-staff messages about demo participants."""
-        from apps.clients.models import ClientFile
-
         # Build user lookup — include manager and front desk
         users_by_username = dict(workers)
         for username in ("demo-frontdesk", "demo-manager"):
