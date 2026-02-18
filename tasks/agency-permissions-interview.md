@@ -468,30 +468,63 @@ Send the Configuration Summary to the ED or designated decision-maker with:
 
 ### 3. Configure the System
 
-Use the Configuration Summary to:
-- Create programs (mark confidential ones)
-- Set feature toggles
-- Create user accounts with correct program role assignments
-- Assign the System Administrator flag to designated admin(s)
-- Configure custom field visibility for front desk
-- Set up any access blocks
-- Set terminology overrides if the agency uses different words
+Use the Configuration Summary to set up the agency's KoNote instance. Work through this checklist in order:
+
+**Programs & Features**
+- [ ] Create each program listed in the Configuration Summary
+- [ ] Mark confidential programs with the confidential flag
+- [ ] Set feature toggles (on/off for each feature)
+- [ ] Configure terminology overrides if the agency uses different words (e.g., "Participant" instead of "Client")
+
+**User Accounts & Roles**
+- [ ] Create user accounts for all staff listed in the Configuration Summary
+- [ ] Assign the correct program role to each person in each program
+- [ ] Assign the System Administrator flag to designated admin(s)
+- [ ] Verify admin accounts that should NOT have client access have no program role assigned
+
+**Front Desk & Visibility**
+- [ ] Configure custom field visibility for the Front Desk role (view, edit, or hidden per field)
+- [ ] Set up any client access blocks identified in the interview
+
+**Notifications & Security**
+- [ ] Set export notification recipients (default admins, or specific email addresses from Section 7)
+- [ ] Verify encryption key is backed up securely (see deploying-konote.md)
+- [ ] Verify database backups are configured and tested
+- [ ] Confirm email is working (send a test notification)
 
 ### 4. Verify with a Walkthrough (30 minutes)
 
-After configuration, do a quick walkthrough with the agency:
-- Log in as a front desk user — show what they can and can't see
-- Log in as a Direct Service user — show access limited to their program
-- Log in as PM — show oversight capabilities
-- Log in as executive — show aggregate-only view
-- Log in as admin (with no program role) — show they can manage settings but can't see client files
-- Try to access something they shouldn't — show the "access denied" message
+After configuration, walk through the system with the agency. This builds confidence that it's doing what they decided.
 
-This builds confidence that the system is doing what they decided.
+**Test each role:**
+- [ ] Log in as a Front Desk user — confirm they see only the fields you agreed on (names, contact, allergies) and NOT clinical notes or group membership
+- [ ] Log in as a Direct Service user — confirm they see client data for their program only
+- [ ] Log in as a Program Manager — confirm oversight access (notes, reports) for their program
+- [ ] Log in as an Executive — confirm they see aggregate data only, not individual client files
+- [ ] Log in as a System Administrator (with no program role) — confirm they can manage settings but can't see any client files
 
-### 5. Schedule a 30-Day Check-In
+**Test boundaries:**
+- [ ] Try to access a client in a different program — confirm "access denied"
+- [ ] If you set up a confidential program, verify the context-switching prompt works
+- [ ] If you set up any access blocks, verify the blocked user gets a generic "no access" message
+- [ ] Check the access log — confirm it captured all the test logins and actions
+- [ ] If export notifications are configured, trigger a test export and confirm the email arrives
+
+### 5. 30-Day Check-In
+
+Schedule a follow-up 30 days after go-live. Use this checklist:
 
 > "After your team has used the system for 30 days, let's revisit these decisions. Sometimes agencies discover that front desk needs to see one more field, or that a PM needs different access. That's normal — the system is designed to adjust."
+
+**Review checklist:**
+- [ ] Have any staff requested permission changes? (e.g., "I can't see X and I need it")
+- [ ] Has front desk reported any gaps in what they can see or do?
+- [ ] Have any new staff joined or existing staff left since go-live?
+- [ ] Have any new programs been added?
+- [ ] Review the access log for unusual patterns (e.g., someone accessing files they don't normally need)
+- [ ] Revisit any "we'll decide later" items from the interview
+- [ ] Confirm the staff departure process was documented and shared with the team
+- [ ] Are there any new safety concerns (conflicts of interest, DV situations) that need access blocks?
 
 ---
 
