@@ -593,6 +593,10 @@ def goal_create(request, client_id):
         except (ValueError, TypeError):
             pass
 
+    # Check if AI Goal Builder is available
+    from konote.ai_views import _ai_enabled
+    ai_enabled = _can_edit_plan(request.user, client) and _ai_enabled()
+
     context = {
         "form": form,
         "client": client,
@@ -602,6 +606,7 @@ def goal_create(request, client_id):
         "metrics_by_category": metrics_by_category,
         "common_goals": common_goals,
         "selected_metric_ids": selected_metric_ids,
+        "ai_enabled": ai_enabled,
     }
     return render(request, "plans/goal_form.html", context)
 

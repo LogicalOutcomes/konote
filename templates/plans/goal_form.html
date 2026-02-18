@@ -9,6 +9,15 @@
     <p>{{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
 
+{% if ai_enabled %}
+<aside class="goal-builder-banner" role="note">
+    <p>
+        {% blocktrans with target=term.target|default:"goal" %}Want help turning participant words into a measurable {{ target }}?{% endblocktrans %}
+        <a href="{% url 'plans:plan_view' client_id=client.pk %}#goal-builder-container">{% trans "Use the Goal Builder" %}</a>
+    </p>
+</aside>
+{% endif %}
+
 {% if form.non_field_errors %}
 <div class="error-summary" role="alert" id="error-summary" tabindex="-1">
     <strong>{% trans "Please fix the following:" %}</strong>
@@ -42,6 +51,15 @@
         <small class="error" role="alert">{{ form.client_goal.errors.0 }}</small>
         {% endif %}
     </fieldset>
+
+    {# ── SMART guidance ── #}
+    <aside class="smart-guidance" role="note">
+        <details>
+            <summary>{% trans "Tips for writing a good goal" %}</summary>
+            <p>{% trans "Try turning their words into something Specific, Measurable, Achievable, Relevant, and Time-bound (SMART)." %}</p>
+            <p class="secondary">{% trans "For example:" %} <em>&ldquo;{% trans "Make a friend" %}&rdquo;</em> &rarr; <em>&ldquo;{% trans "Build one social connection outside of program activities within 3 months" %}&rdquo;</em></p>
+        </details>
+    </aside>
 
     {# ── 2. Goal name with common cards + autocomplete ── #}
     <fieldset>
@@ -138,10 +156,11 @@
     {# ── 4. Description ── #}
     <fieldset>
         <legend>{{ form.description.label }}</legend>
+        <small>{% trans "Consider: What specifically will they do or achieve? How will you know when they've made progress? What's a realistic timeline?" %}</small>
         <textarea id="{{ form.description.id_for_label }}"
                   name="description"
-                  rows="3"
-                  placeholder="{% trans 'SMART outcome or additional context' %}">{{ form.description.value|default_if_none:'' }}</textarea>
+                  rows="4"
+                  placeholder="{% trans 'e.g., Participant will identify and reach out to one person outside the program for a social activity within 3 months, tracked through weekly check-ins.' %}">{{ form.description.value|default_if_none:'' }}</textarea>
         {% if form.description.errors %}
         <small class="error" role="alert">{{ form.description.errors.0 }}</small>
         {% endif %}
