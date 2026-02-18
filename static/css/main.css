@@ -48,14 +48,13 @@
     white-space: nowrap;
     border: 0;
 }
-/* Visible focus indicator for keyboard navigation (WCAG 2.4.11 - Focus Appearance) */
-/* When main content is auto-focused, keyboard users need visual confirmation of position */
-#main-content:focus-visible {
-    outline: 2px solid var(--kn-primary);
-    outline-offset: 4px;
-}
-#main-content:focus:not(:focus-visible),
-#main-content.js-programmatic-focus:focus {
+/* Skip-link target: suppress ALL focus outlines on <main>.
+   WCAG 2.4.11 applies to interactive UI components, not landmark targets.
+   The scroll-to-content action is sufficient visual confirmation.
+   Previous attempts to show outline only for keyboard users kept breaking
+   because Chromium treats programmatic .focus() on tabindex="-1" as
+   :focus-visible, and there are many code paths that can focus <main>. */
+#main-content:focus {
     outline: none;
 }
 
