@@ -37,7 +37,7 @@ Multi-service agencies often run casual programs (basketball, employment) alongs
 
 ## Creating a Confidential Program
 
-1. Click **Admin** → **Programs** → **Create Program**
+1. Click **Programs** → **Create Program**
 2. Enter the program name
 3. Look for the **"Is this a confidential program?"** section
 

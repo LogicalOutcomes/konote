@@ -184,14 +184,14 @@ This scoping was introduced in PR #88. The `@requires_permission("audit.view")` 
 **As an Admin:**
 
 1. Log in as an Admin
-2. Click **Admin** in the navigation
+2. Click **Manage** in the navigation
 3. Select **Audit Logs**
 4. Use filters to narrow by date, user, or action type
 
 **As a Program Manager:**
 
 1. Log in as a Program Manager
-2. Click **Admin** in the navigation
+2. Click **Manage** in the navigation
 3. Select **Audit Logs** — you will see only entries for your assigned programs
 4. Alternatively, navigate to a program's detail page and click **Audit Log** to see entries specific to that program
 
@@ -541,7 +541,7 @@ Before deploying to production, verify all items:
 
 - [ ] Login works correctly
 - [ ] Client search returns expected results
-- [ ] Audit logs are being created (check `/admin/audit/`)
+- [ ] Audit logs are being created (check `/manage/audit/`)
 - [ ] SSL certificate is valid (check browser padlock)
 
 ---

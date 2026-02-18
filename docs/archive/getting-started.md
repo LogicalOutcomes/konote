@@ -143,8 +143,8 @@ Docker handles PostgreSQL, the web server, and all dependencies automatically.
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/KoNote-web.git
-cd KoNote-web
+git clone https://github.com/gilliankerr/KoNote.git
+cd KoNote
 ```
 
 **Expected output:**
@@ -297,8 +297,8 @@ For more control over your development environment, or if you prefer not to use 
 ### Step 1: Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/KoNote-web.git
-cd KoNote-web
+git clone https://github.com/gilliankerr/KoNote.git
+cd KoNote
 ```
 
 **Expected output:**
