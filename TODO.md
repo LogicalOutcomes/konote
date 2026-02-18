@@ -38,6 +38,7 @@
 - [ ] Audit all views for missing permission checks — PERMISSION-5 revealed nav hides link but view is unguarded (QA-W60)
 - [ ] Optimise executive dashboard queries — reduce N+1 per-program loop with prefetching or aggregation (PERF2)
 - [ ] Add program parameter to _ensure_client note creation — currently hardcodes program_a (QA-W61)
+- [ ] Fix report export 500 error — missing defaultdict import, suppressed-value type crashes in CSV generation, no error handling (see .claude/plans/enchanted-brewing-cocke.md) (BUG-EXP1)
 
 ### Phase: Post-Housekeeping Verification
 
