@@ -371,6 +371,38 @@
 }
 .metric-link:hover { text-decoration: underline; }
 
+/* Theme compact list (per-program cards) */
+.theme-compact-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.theme-compact-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.15rem 0;
+    font-size: 0.85rem;
+    gap: 0.25rem;
+}
+
+.theme-name-compact {
+    flex: 1;
+    min-width: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.badge-sm {
+    font-size: 0.7rem;
+    padding: 1px 5px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
 /* Guidance */
 .executive-guidance {
     margin-top: var(--kn-space-lg, 2rem);
