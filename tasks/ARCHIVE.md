@@ -4,6 +4,13 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-02-17 housekeeping, batch 2)
+
+- [x] Review and merge fix/audit-log-pm-scoping — fixes PM audit log scoping bug — 2026-02-16 (AUDIT-SCOPE1)
+- [x] Delete temporary push folders and junk files — 2026-02-16 (CLEANUP1)
+- [x] Fix portal nav: add missing links, restore Leave quickly spacing, register feature toggles — 2026-02-15 (PORTAL-FIX1)
+- [x] Update UX walkthrough report with browser-based findings — 2026-02-15 (UX-WALK2)
+
 ## Moved from Recently Done (2026-02-17 housekeeping)
 
 - [x] Portal staff management — invite flow, manage/revoke/reset MFA views, demo seed data — 2026-02-15 (PORTAL1)

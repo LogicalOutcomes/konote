@@ -17,9 +17,6 @@
 
 ### Phase: Bug Fixes
 
-- [ ] Remove blue border/outline appearing around the page (e.g. Outcome Insights) — (UI-FIX1)
-- [ ] Add demo suggestion content (themes + ungrouped suggestions) so executive dashboard display can be verified — (DEMO-SUG1)
-
 ### Phase: Communication Modules — complete!
 
 
@@ -72,6 +69,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Add demo content for suggestion themes (11 themes, 29 links) and staff messages (7 messages) — 2026-02-17 (DEMO-SUG1)
+- [x] Remove blue border/outline around page — permanent fix, removed fragile :focus-visible on main content — 2026-02-17 (UI-FIX1)
 - [x] Suggestion tracking system — SuggestionTheme/SuggestionLink models, CRUD + linking UI, Outcome Insights integration, Executive Dashboard theme counts, contextual toast on note save, 23 tests — 2026-02-17 (UX-INSIGHT6)
 - [x] Plan UX fixes — HTMX Back-button cache fix, reworded view-only message, disabled Edit Plan button with tooltip, editable-plans filter and badge on participant list — 2026-02-17 (UX-PLAN1, UX-PLAN2, UX-PLAN3)
 - [x] Dark mode WCAG AA contrast — breadcrumbs, add-link, tab-count badges — 2026-02-17 (UX-WALK3, UX-WALK4)
@@ -81,7 +80,3 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] UX text rewrites (already on main) — Executive Overview intro, Need More Details, Programs subtitle, Insights intro, Approvals intro — 2026-02-17 (UX-DASH1, UX-DASH2, UX-PROG1, UX-INSIGHTS1, UX-ALERT1)
 - [x] Plan page Phase A — subtle text links, actions dropdown, plain-language status forms, no browser confirm dialogs — 2026-02-16 (PLAN-A1–A5)
 - [x] Plan page Phase B — AI Goal Builder with chat, draft card, PII scrubbing, 27 tests — 2026-02-16 (PLAN-B1–B5)
-- [x] Review and merge fix/audit-log-pm-scoping — fixes PM audit log scoping bug — 2026-02-16 (AUDIT-SCOPE1)
-- [x] Delete temporary push folders and junk files — 2026-02-16 (CLEANUP1)
-- [x] Fix portal nav: add missing links, restore Leave quickly spacing, register feature toggles — 2026-02-15 (PORTAL-FIX1)
-- [x] Update UX walkthrough report with browser-based findings — 2026-02-15 (UX-WALK2)

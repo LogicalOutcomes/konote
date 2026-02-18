@@ -12,6 +12,8 @@ Creates:
 - Email and staff-sent communications with varied delivery statuses
 - Portal content (journal entries, messages, staff notes, correction requests)
 - Registration submissions in various review states
+- Suggestion themes linked to participant suggestions (for Outcome Insights)
+- Staff-to-staff messages (internal operational messages about participants)
 
 This gives charts and reports meaningful data to display.
 
@@ -27,7 +29,7 @@ from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from apps.clients.models import ClientDetailValue, ClientFile, CustomFieldDefinition
-from apps.communications.models import Communication
+from apps.communications.models import Communication, StaffMessage
 from apps.events.models import (
     Alert,
     AlertCancellationRecommendation,
@@ -45,7 +47,10 @@ from apps.groups.models import (
     ProjectMilestone,
     ProjectOutcome,
 )
-from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+from apps.notes.models import (
+    MetricValue, ProgressNote, ProgressNoteTarget,
+    SuggestionLink, SuggestionTheme, recalculate_theme_priority,
+)
 from apps.plans.models import (
     MetricDefinition,
     PlanSection,
@@ -641,6 +646,169 @@ PARTICIPANT_SUGGESTIONS = [
 
 
 # ---------------------------------------------------------------------------
+# Suggestion themes — grouped by program for executive dashboard & insights
+# ---------------------------------------------------------------------------
+
+PROGRAM_THEMES = {
+    "Supported Employment": [
+        {
+            "name": "Evening & weekend session availability",
+            "description": "Multiple participants have asked about sessions outside regular business hours to accommodate work schedules.",
+            "status": "open",
+            "source": "ai_generated",
+            "keywords": "evening,weekend,hours,schedule,work,day",
+        },
+        {
+            "name": "Peer mentoring from program alumni",
+            "description": "Interest in connecting with people who have completed the program and found work.",
+            "status": "in_progress",
+            "source": "ai_generated",
+            "keywords": "buddy,mentor,alumni,share,working,group",
+            "addressed_note": "Recruiting two alumni volunteers to pilot monthly peer sessions.",
+        },
+    ],
+    "Housing Stability": [
+        {
+            "name": "Faster response to maintenance requests",
+            "description": "Participants report delays getting landlords to address repairs and want help advocating.",
+            "status": "open",
+            "source": "manual",
+            "keywords": "maintenance,repair,landlord,response",
+        },
+        {
+            "name": "Help navigating tenant rights",
+            "description": "Several participants didn't know their rights around rent increases and eviction notices.",
+            "status": "addressed",
+            "source": "ai_generated",
+            "keywords": "tenant,rights,eviction,rent,legal",
+            "addressed_note": "Created a tenant rights info sheet and added it to intake package.",
+        },
+    ],
+    "Youth Drop-In": [
+        {
+            "name": "More variety in group activities",
+            "description": "Youth want more options beyond the current rotation — art, cooking, outdoor activities.",
+            "status": "open",
+            "source": "ai_generated",
+            "keywords": "group,activities,variety,options",
+        },
+        {
+            "name": "Quiet space for homework",
+            "description": "Some youth want a calmer area to do homework before or after group activities.",
+            "status": "in_progress",
+            "source": "manual",
+            "keywords": "homework,quiet,space,study",
+            "addressed_note": "Testing a homework corner in the back room on Tuesdays and Thursdays.",
+        },
+        {
+            "name": "Later drop-in hours",
+            "description": "Older youth have asked about staying later, especially on Fridays.",
+            "status": "open",
+            "source": "ai_generated",
+            "keywords": "hours,later,evening,stay",
+        },
+    ],
+    "Newcomer Connections": [
+        {
+            "name": "Buddy system for newcomers",
+            "description": "New arrivals feel isolated and want to be paired with someone who arrived earlier.",
+            "status": "open",
+            "source": "ai_generated",
+            "keywords": "buddy,alone,new,paired,start",
+        },
+        {
+            "name": "Childcare during sessions",
+            "description": "Parents with young children struggle to attend without childcare support.",
+            "status": "open",
+            "source": "manual",
+            "keywords": "childcare,children,attend,sessions",
+        },
+    ],
+    "Community Kitchen": [
+        {
+            "name": "Recipe variety and dietary options",
+            "description": "Participants want more recipes reflecting different cultural backgrounds and dietary needs.",
+            "status": "in_progress",
+            "source": "ai_generated",
+            "keywords": "recipe,variety,dietary,cultural,options,materials",
+            "addressed_note": "Surveying participants about dietary needs and cultural preferences.",
+        },
+        {
+            "name": "Take-home portions for families",
+            "description": "Several participants asked about taking extra portions home for family members.",
+            "status": "open",
+            "source": "ai_generated",
+            "keywords": "take,home,family,portions",
+        },
+    ],
+}
+
+
+# ---------------------------------------------------------------------------
+# Staff messages — operational messages between staff about participants
+# ---------------------------------------------------------------------------
+
+DEMO_STAFF_MESSAGES = [
+    {
+        "client": "DEMO-001",
+        "left_by": "demo-frontdesk",
+        "for_user": "demo-worker-1",
+        "message": "Jordan called \u2014 wants to move Thursday's session to Friday if possible",
+        "status": "unread",
+        "days_ago": 1,
+    },
+    {
+        "client": "DEMO-002",
+        "left_by": "demo-frontdesk",
+        "for_user": "demo-worker-1",
+        "message": "Taylor dropped off updated resume at front desk",
+        "status": "unread",
+        "days_ago": 2,
+    },
+    {
+        "client": "DEMO-004",
+        "left_by": "demo-frontdesk",
+        "for_user": "demo-worker-1",
+        "message": "Sam's landlord called asking for a letter of support \u2014 said you'd know what it's about",
+        "status": "read",
+        "days_ago": 4,
+    },
+    {
+        "client": "DEMO-007",
+        "left_by": "demo-frontdesk",
+        "for_user": "demo-worker-2",
+        "message": "Priya's parent called \u2014 family may be away next week",
+        "status": "unread",
+        "days_ago": 1,
+    },
+    {
+        "client": "DEMO-010",
+        "left_by": "demo-frontdesk",
+        "for_user": "demo-worker-2",
+        "message": "Fatima asked if conversation circle can be moved to afternoon",
+        "status": "unread",
+        "days_ago": 3,
+    },
+    {
+        "client": "DEMO-013",
+        "left_by": "demo-worker-2",
+        "for_user": "demo-worker-1",
+        "message": "Checked in with Marcus at kitchen session \u2014 seemed quieter than usual, might be worth a follow-up",
+        "status": "unread",
+        "days_ago": 2,
+    },
+    {
+        "client": "DEMO-005",
+        "left_by": "demo-manager",
+        "for_user": "demo-worker-1",
+        "message": "Kai's housing tribunal date is March 4th \u2014 can you update the file?",
+        "status": "read",
+        "days_ago": 5,
+    },
+]
+
+
+# ---------------------------------------------------------------------------
 # Program-specific note texts
 # ---------------------------------------------------------------------------
 
@@ -1061,6 +1229,17 @@ class Command(BaseCommand):
             return
 
         if demo_notes_exist and force:
+            # Delete suggestion themes for demo programs (cascades to SuggestionLink)
+            demo_programs = Program.objects.filter(
+                client_enrolments__client_file__record_id__startswith="DEMO-"
+            ).distinct()
+            theme_count_del = SuggestionTheme.objects.filter(
+                program__in=demo_programs
+            ).delete()[0]
+            # Delete staff messages for demo clients
+            staff_msg_count = StaffMessage.objects.filter(
+                client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
             # Delete demo communications
             comm_count = Communication.objects.filter(
                 client_file__record_id__startswith="DEMO-"
@@ -1101,7 +1280,8 @@ class Command(BaseCommand):
             demo_users = User.objects.filter(is_demo=True)
             CalendarFeedToken.objects.filter(user__in=demo_users).delete()
             self.stdout.write(
-                f"  --force: Deleted {comm_count} communications, {note_count} notes, "
+                f"  --force: Deleted {theme_count_del} themes, {staff_msg_count} staff messages, "
+                f"{comm_count} communications, {note_count} notes, "
                 f"{plan_count} plans, {event_count} events, {alert_count} alerts, "
                 f"{journal_count} journal entries, {message_count} portal messages, "
                 f"{staff_note_count} staff notes, {correction_count} correction requests, "
@@ -1188,6 +1368,12 @@ class Command(BaseCommand):
 
         # --- Create calendar feed tokens for demo workers ---
         self._create_demo_calendar_feeds(workers)
+
+        # --- Create suggestion themes and link to notes ---
+        self._create_demo_suggestion_themes(workers, programs_by_name)
+
+        # --- Create staff-to-staff messages ---
+        self._create_demo_staff_messages(workers, programs_by_name, now)
 
         self.stdout.write(self.style.SUCCESS(
             "  Demo rich data seeded successfully (15 clients across 5 programs)."
@@ -3054,3 +3240,131 @@ class Command(BaseCommand):
 
         if created:
             self.stdout.write(f"  Calendar feed tokens: {created} created for demo workers.")
+
+    def _create_demo_suggestion_themes(self, workers, programs_by_name):
+        """Create suggestion themes and link them to existing demo notes."""
+        theme_count = 0
+        link_count = 0
+
+        for program_name, theme_defs in PROGRAM_THEMES.items():
+            program = programs_by_name.get(program_name)
+            if not program:
+                continue
+
+            # Get demo notes with suggestions for this program
+            notes_with_suggestions = list(
+                ProgressNote.objects.filter(
+                    client_file__record_id__startswith="DEMO-",
+                    author_program=program,
+                ).exclude(suggestion_priority="")
+                .select_related("client_file")
+            )
+
+            worker_username = PROGRAM_WORKER.get(program_name, "demo-worker-1")
+            author = workers.get(worker_username)
+
+            for theme_def in theme_defs:
+                theme = SuggestionTheme.objects.create(
+                    program=program,
+                    name=theme_def["name"],
+                    description=theme_def["description"],
+                    status=theme_def["status"],
+                    source=theme_def.get("source", "ai_generated"),
+                    keywords=theme_def.get("keywords", ""),
+                    addressed_note=theme_def.get("addressed_note", ""),
+                    created_by=author,
+                )
+                theme_count += 1
+
+                # Link notes via keyword matching
+                keywords = {
+                    kw.strip().lower()
+                    for kw in theme_def.get("keywords", "").split(",")
+                    if kw.strip()
+                }
+                linked_notes = []
+                for note in notes_with_suggestions:
+                    suggestion_text = (note.participant_suggestion or "").lower()
+                    if any(kw in suggestion_text for kw in keywords):
+                        SuggestionLink.objects.create(
+                            theme=theme,
+                            progress_note=note,
+                            auto_linked=True,
+                            linked_by=author,
+                        )
+                        linked_notes.append(note)
+                        link_count += 1
+
+                # If no keyword matches, link 1-2 arbitrary notes so theme isn't empty
+                if not linked_notes and notes_with_suggestions:
+                    for fallback_note in notes_with_suggestions[:2]:
+                        if not SuggestionLink.objects.filter(
+                            theme=theme, progress_note=fallback_note
+                        ).exists():
+                            SuggestionLink.objects.create(
+                                theme=theme,
+                                progress_note=fallback_note,
+                                auto_linked=False,
+                                linked_by=author,
+                            )
+                            link_count += 1
+
+                # Recalculate priority from linked note priorities
+                recalculate_theme_priority(theme)
+
+        self.stdout.write(
+            f"  Suggestion themes: {theme_count} themes, {link_count} links created."
+        )
+
+    def _create_demo_staff_messages(self, workers, programs_by_name, now):
+        """Create internal staff-to-staff messages about demo participants."""
+        # Build user lookup — include manager and front desk
+        users_by_username = dict(workers)
+        for username in ("demo-frontdesk", "demo-manager"):
+            try:
+                users_by_username[username] = User.objects.get(username=username)
+            except User.DoesNotExist:
+                self.stdout.write(self.style.WARNING(
+                    f"  {username} not found — skipping staff messages for that user."
+                ))
+
+        created = 0
+        for msg_def in DEMO_STAFF_MESSAGES:
+            client = ClientFile.objects.filter(
+                record_id=msg_def["client"]
+            ).first()
+            if not client:
+                continue
+
+            left_by = users_by_username.get(msg_def["left_by"])
+            for_user = users_by_username.get(msg_def["for_user"])
+            if not left_by:
+                continue
+
+            # Determine program from client's enrolment
+            enrolment = client.enrolments.select_related("program").first()
+            author_program = enrolment.program if enrolment else None
+
+            msg = StaffMessage(
+                client_file=client,
+                left_by=left_by,
+                for_user=for_user,
+                status=msg_def["status"],
+                author_program=author_program,
+            )
+            msg.content = msg_def["message"]
+            msg.save()
+
+            # Backdate created_at
+            days_ago = msg_def.get("days_ago", 1)
+            backdated = now - timedelta(days=days_ago, hours=random.randint(1, 8))
+            StaffMessage.objects.filter(pk=msg.pk).update(created_at=backdated)
+
+            # Set read_at for read messages
+            if msg_def["status"] == "read":
+                read_time = backdated + timedelta(hours=random.randint(1, 12))
+                StaffMessage.objects.filter(pk=msg.pk).update(read_at=read_time)
+
+            created += 1
+
+        self.stdout.write(f"  Staff messages: {created} created.")
