@@ -92,24 +92,67 @@ For the research basis behind these design choices, see [Design Principles](docs
 ### Timeline & Events
 - Client timeline with significant events
 - Event types (intake, discharge, crisis, milestone)
-- Safety alerts on client files
+- Safety alerts on client files with two-person cancellation rule
+
+### Communications & Messaging
+- Log phone calls, emails, SMS, and in-person contacts on the client timeline
+- Quick-log buttons for common interactions
+- Staff-to-staff messaging about participants with unread badges and My Messages dashboard
+- System health monitoring banners when SMS or email delivery is failing
+
+### Meetings & Calendar
+- Schedule meetings with clients and track status (scheduled, completed, cancelled, no-show)
+- Subscribe to iCal feeds in Outlook, Google Calendar, or Apple Calendar
+- Privacy-safe summaries — initials and record ID only, no client names in external calendars
+- Automated SMS/email reminders for upcoming meetings
+
+### Consent Management
+- CASL-compliant consent tracking for SMS and email on each client record
+- Express and implied consent types with date tracking
+- Consent withdrawal tracking and signed, time-limited unsubscribe links
+
+### Groups & Projects
+- Session logs and attendance tracking for group-based services
+- Member highlights, milestones, and group-level outcomes
+- Two modes: drop-in groups (attendance) and goal-oriented projects (milestones)
+
+### Participant Portal
+- Separate participant-facing interface for viewing goals, progress, and milestones
+- Journal entries with optional disclosure to staff
+- Messaging between participants and their workers
+- Staff manage portal access, invitations, and MFA resets from the client detail page
+
+### Suggestion Tracking & Outcome Insights
+- Capture participant suggestions and reflections in every progress note
+- Automated theme identification from feedback (keyword matching and AI-generated)
+- Responsiveness tracking — themes move through open → in progress → addressed
+- Executive dashboard shows top themes per program
+
+### Duplicate Detection & Merge
+- Phone number and name/date-of-birth matching across programs
+- Cross-program deduplication that respects confidentiality boundaries
+- Admin merge tool with full data transfer between records
 
 ### Reporting & Analytics
-- Progress charts (Chart.js)
-- Metric export to CSV
+- Progress charts (Chart.js) with template-driven interpretations
+- Metric export to CSV with injection protection
 - PDF reports via WeasyPrint
-- Audit log viewer for compliance
+- Funder profiles with custom age bins, demographic merging, and small-cell suppression
+- Audit log viewer for compliance (program-scoped for managers)
+- Weekly export summary emails for privacy oversight
 
 ### Customisation
 - **Terminology overrides** — call clients "Participants", programs "Services", etc.
 - **Feature toggles** — enable/disable features to match your workflow
-- **Custom fields** — capture agency-specific data
+- **Custom fields** — capture agency-specific data with validation (postal code, phone, email)
 - **Templates** — standardise plans and notes across your team
+- **PM self-service** — program managers manage their own templates, metrics, event types, and registration links
 
 ### Security & Compliance
 - Field-level encryption for all PII (Fernet/AES)
 - Dual-database architecture (app + immutable audit log)
-- Role-based access control (Admin, Program Manager, Staff, Front Desk)
+- Role-based access control (Admin, Program Manager, Staff, Front Desk, Executive)
+- Confidential program isolation for sensitive services (DV, counselling)
 - Session management with configurable timeout
 - HTTPS with HSTS, CSP headers, CSRF protection
 
@@ -121,7 +164,7 @@ For the research basis behind these design choices, see [Design Principles](docs
 - **Demo/real separation** — Immutable `is_demo` flags prevent cross-contamination between evaluation and production data
 
 ### Localisation
-- **French (Français)** — 748 translated strings, header language switcher (Canada.ca convention), cookie-based persistence
+- **French (Français)** — 748+ translated strings, header language switcher (Canada.ca convention), cookie-based persistence
 - **Canadian formats** — Postal code validation (A1A 1A1), phone normalisation ((613) 555-1234), auto-detection from field names
 
 ---
@@ -171,8 +214,8 @@ Then open http://localhost:8000 in your browser.
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-org/KoNote-web.git
-   cd KoNote-web
+   git clone https://github.com/gilliankerr/KoNote.git
+   cd KoNote
    ```
 
 2. **Activate the pre-commit hook**
