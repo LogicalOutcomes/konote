@@ -18,61 +18,61 @@ urlpatterns = [
         name="registration_submitted",
     ),
 
-    # Admin (login required)
+    # Management (login required)
     path(
-        "admin/registration/",
+        "manage/registration/",
         admin_views.link_list,
         name="registration_link_list",
     ),
     path(
-        "admin/registration/create/",
+        "manage/registration/create/",
         admin_views.link_create,
         name="registration_link_create",
     ),
     path(
-        "admin/registration/<int:pk>/edit/",
+        "manage/registration/<int:pk>/edit/",
         admin_views.link_edit,
         name="registration_link_edit",
     ),
     path(
-        "admin/registration/<int:pk>/delete/",
+        "manage/registration/<int:pk>/delete/",
         admin_views.link_delete,
         name="registration_link_delete",
     ),
     path(
-        "admin/registration/<int:pk>/embed/",
+        "manage/registration/<int:pk>/embed/",
         admin_views.link_embed,
         name="registration_link_embed",
     ),
 
     # Submissions
     path(
-        "admin/submissions/",
+        "manage/submissions/",
         admin_views.submission_list,
         name="submission_list",
     ),
     path(
-        "admin/submissions/<int:pk>/",
+        "manage/submissions/<int:pk>/",
         admin_views.submission_detail,
         name="submission_detail",
     ),
     path(
-        "admin/submissions/<int:pk>/approve/",
+        "manage/submissions/<int:pk>/approve/",
         admin_views.submission_approve,
         name="submission_approve",
     ),
     path(
-        "admin/submissions/<int:pk>/reject/",
+        "manage/submissions/<int:pk>/reject/",
         admin_views.submission_reject,
         name="submission_reject",
     ),
     path(
-        "admin/submissions/<int:pk>/waitlist/",
+        "manage/submissions/<int:pk>/waitlist/",
         admin_views.submission_waitlist,
         name="submission_waitlist",
     ),
     path(
-        "admin/submissions/<int:pk>/merge/",
+        "manage/submissions/<int:pk>/merge/",
         admin_views.submission_merge,
         name="submission_merge",
     ),
