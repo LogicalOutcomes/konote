@@ -209,7 +209,10 @@ def unlinked_partial(request, pk):
     if not _can_manage_theme(request.user, theme):
         return HttpResponseForbidden()
 
-    offset = int(request.GET.get("offset", 0))
+    try:
+        offset = max(0, int(request.GET.get("offset", 0)))
+    except (ValueError, TypeError):
+        offset = 0
     page_size = 25
 
     # Find notes with suggestions in this program that aren't linked to ANY theme
