@@ -216,9 +216,10 @@ def unlinked_partial(request, pk):
         offset = 0
     page_size = 25
 
-    # Find notes with suggestions in this program that aren't linked to ANY theme
+    # Find notes with suggestions in this program that aren't linked to a theme in this program
     already_linked_ids = set(
-        SuggestionLink.objects.values_list("progress_note_id", flat=True)
+        SuggestionLink.objects.filter(theme__program=theme.program)
+        .values_list("progress_note_id", flat=True)
     )
     unlinked_qs = (
         ProgressNote.objects.filter(author_program=theme.program)
