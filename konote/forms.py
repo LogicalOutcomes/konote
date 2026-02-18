@@ -28,6 +28,13 @@ class SuggestNoteStructureForm(forms.Form):
     target_id = forms.IntegerField()
 
 
+class TargetSuggestForm(forms.Form):
+    """Form for the single-turn suggest-target AI endpoint."""
+
+    participant_words = forms.CharField(max_length=1000)
+    client_id = forms.IntegerField()
+
+
 class GoalBuilderChatForm(forms.Form):
     """Form for the goal-builder chat AI endpoint."""
 
