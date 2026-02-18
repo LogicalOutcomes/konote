@@ -3607,3 +3607,12 @@ article[aria-label="notification"].fading-out {
     border-radius: var(--pico-border-radius);
     margin-bottom: 1rem;
 }
+
+.theme-summary-card {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--pico-muted-border-color);
+}

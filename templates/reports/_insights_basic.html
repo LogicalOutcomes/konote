@@ -44,14 +44,48 @@
 </div>
 {% endif %}
 
-{% if structured.suggestion_total %}
+{% if structured.suggestion_total or active_themes %}
 <h3>{% trans "Participant Suggestions" %}</h3>
 <div class="descriptor-pills">
     {% for label, count in structured.suggestion_distribution.items %}
     <span class="pill pill--engagement">{{ label }}: {{ count }}</span>
     {% endfor %}
 </div>
-{% if suggestions %}
+
+{% if active_themes %}
+<h4>{% trans "Suggestion Themes" %}</h4>
+{% for theme in active_themes %}
+<div class="theme-summary-card">
+    <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}"><strong>{{ theme.name }}</strong></a>
+    <span class="muted">({{ theme.link_count }} {% trans "suggestion(s)" %})</span>
+    {% if theme.status == "open" %}
+    <span class="badge badge-neutral">{% trans "Open" %}</span>
+    {% elif theme.status == "in_progress" %}
+    <span class="badge badge-warning">{% trans "In Progress" %}</span>
+    {% endif %}
+    {% if theme.priority == "urgent" %}
+    <span class="badge badge-danger">{% trans "Urgent" %}</span>
+    {% elif theme.priority == "important" %}
+    <span class="badge badge-warning">{% trans "Important" %}</span>
+    {% endif %}
+</div>
+{% endfor %}
+<p><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "View all themes" %} &rarr;</a></p>
+{% endif %}
+
+{% if unlinked_suggestions %}
+<h4>{% trans "Ungrouped Suggestions" %}</h4>
+<p class="muted">{% trans "Not yet linked to a theme." %}</p>
+{% for s in unlinked_suggestions %}
+<blockquote class="insight-quote">
+    <p>&ldquo;{{ s.text }}&rdquo;</p>
+    <cite>
+        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span> &middot; {% endif %}
+        <a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>
+    </cite>
+</blockquote>
+{% endfor %}
+{% elif not active_themes and suggestions %}
 {% for s in suggestions %}
 <blockquote class="insight-quote">
     <p>&ldquo;{{ s.text }}&rdquo;</p>
@@ -136,8 +170,8 @@
 {% if interp_snapshot %}<p class="insight-interpretation">{{ interp_snapshot }}</p>{% endif %}
 {% endif %}
 
-{# ── Participant feedback (suggestions) ── #}
-{% if structured.suggestion_total %}
+{# ── Participant feedback (suggestions + themes) ── #}
+{% if structured.suggestion_total or active_themes %}
 <h3>{% trans "Participant Suggestions" %}</h3>
 <p class="chart-description muted">{% trans "Things participants have asked for or suggested — recorded by staff in progress notes. These can help shape program improvements." %}</p>
 <p class="muted">
@@ -149,7 +183,45 @@
     {% endfor %}
 </div>
 {% if interp_suggestions %}<p class="insight-interpretation">{{ interp_suggestions }}</p>{% endif %}
-{% if suggestions %}
+
+{# Themes first — the primary way to consume grouped feedback #}
+{% if active_themes %}
+<h4>{% trans "Suggestion Themes" %}</h4>
+{% for theme in active_themes %}
+<div class="theme-summary-card">
+    <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}"><strong>{{ theme.name }}</strong></a>
+    <span class="muted">({{ theme.link_count }} {% trans "suggestion(s)" %})</span>
+    {% if theme.status == "open" %}
+    <span class="badge badge-neutral">{% trans "Open" %}</span>
+    {% elif theme.status == "in_progress" %}
+    <span class="badge badge-warning">{% trans "In Progress" %}</span>
+    {% endif %}
+    {% if theme.priority == "urgent" %}
+    <span class="badge badge-danger">{% trans "Urgent" %}</span>
+    {% elif theme.priority == "important" %}
+    <span class="badge badge-warning">{% trans "Important" %}</span>
+    {% endif %}
+</div>
+{% endfor %}
+<p><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "View all themes" %} &rarr;</a></p>
+{% endif %}
+
+{# Ungrouped suggestions — the "inbox" of items not yet linked #}
+{% if unlinked_suggestions %}
+<h4>{% trans "Ungrouped Suggestions" %}</h4>
+<p class="muted">{% trans "Not yet linked to a theme." %}</p>
+{% for s in unlinked_suggestions %}
+<blockquote class="insight-quote">
+    <p>&ldquo;{{ s.text }}&rdquo;</p>
+    <cite>
+        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span> &middot; {% endif %}
+        {% if s.date %}{{ s.date }} &middot; {% endif %}
+        <a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>
+    </cite>
+</blockquote>
+{% endfor %}
+{% elif not active_themes and suggestions %}
+{# Fallback: no themes exist yet, show all suggestions #}
 {% for s in suggestions %}
 <blockquote class="insight-quote">
     <p>&ldquo;{{ s.text }}&rdquo;</p>
