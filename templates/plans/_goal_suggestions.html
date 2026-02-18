@@ -1,0 +1,16 @@
+{% load i18n %}
+{# HTMX partial: autocomplete options for goal name input.
+   Loaded once, then filtered client-side in JS. #}
+{% for s in suggestions %}
+<div role="option"
+     id="suggestion-{{ forloop.counter }}"
+     data-name="{{ s.name }}"
+     data-metric-id="{{ s.metric_id|default:'' }}"
+     aria-selected="false"
+     tabindex="-1">
+    {{ s.name }}
+    <small class="secondary">
+        {% blocktrans count count=s.count %}{{ count }} participant{% plural %}{{ count }} participants{% endblocktrans %}
+    </small>
+</div>
+{% endfor %}
