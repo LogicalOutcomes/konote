@@ -74,7 +74,7 @@
             {% csrf_token %}
             <div role="group">
                 <button type="submit" name="confirm_import" value="1">{% blocktrans with count=preview_rows|length metrics=term.metric_plural|default:"Metrics" %}Import {{ count }} {{ metrics }}{% endblocktrans %}</button>
-                <a href="{% url 'plans:metric_import' %}" role="button" class="outline secondary">{% trans "Start Over" %}</a>
+                <a href="{% url 'metrics:metric_import' %}" role="button" class="outline secondary">{% trans "Start Over" %}</a>
             </div>
         </form>
     </footer>
@@ -95,7 +95,7 @@
 
     <div role="group">
         <button type="submit">{% trans "Upload and Preview" %}</button>
-        <a href="{% url 'plans:metric_library' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+        <a href="{% url 'metrics:metric_library' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
 

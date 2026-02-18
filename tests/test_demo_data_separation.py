@@ -163,7 +163,7 @@ class ImpersonationGuardTest(TestCase):
 
     def test_admin_can_impersonate_demo_user(self):
         self.http_client.login(username="admin", password="testpass123")
-        resp = self.http_client.post(f"/admin/users/{self.demo_user.pk}/impersonate/")
+        resp = self.http_client.post(f"/manage/users/{self.demo_user.pk}/impersonate/")
         # Should redirect to home after successful impersonation
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(resp.url, "/")
@@ -171,7 +171,7 @@ class ImpersonationGuardTest(TestCase):
     def test_admin_cannot_impersonate_real_user(self):
         """CRITICAL SECURITY TEST: Admin must NOT be able to impersonate real users."""
         self.http_client.login(username="admin", password="testpass123")
-        resp = self.http_client.post(f"/admin/users/{self.real_user.pk}/impersonate/")
+        resp = self.http_client.post(f"/manage/users/{self.real_user.pk}/impersonate/")
         # Should redirect back to user list with error, not to home
         self.assertEqual(resp.status_code, 302)
         self.assertNotEqual(resp.url, "/")
@@ -183,7 +183,7 @@ class ImpersonationGuardTest(TestCase):
     def test_impersonation_requires_admin(self):
         """Non-admin users cannot use impersonation."""
         self.http_client.login(username="real-staff", password="testpass123")
-        resp = self.http_client.post(f"/admin/users/{self.demo_user.pk}/impersonate/")
+        resp = self.http_client.post(f"/manage/users/{self.demo_user.pk}/impersonate/")
         self.assertEqual(resp.status_code, 403)
 
 
@@ -204,7 +204,7 @@ class IsDemoImmutableTest(TestCase):
             username="target", password="testpass123", is_demo=False
         )
         self.http_client.login(username="admin", password="testpass123")
-        resp = self.http_client.get(f"/admin/users/{target.pk}/")
+        resp = self.http_client.get(f"/manage/users/{target.pk}/")
         # The form should not include is_demo as an editable field
         # (it may be displayed but readonly)
         content = resp.content.decode()

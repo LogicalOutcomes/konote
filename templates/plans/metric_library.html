@@ -10,13 +10,13 @@
 </hgroup>
 
 <div role="group" style="margin-bottom: 1rem;">
-    <a href="{% url 'plans:metric_create' %}" role="button" class="outline">
+    <a href="{% url 'metrics:metric_create' %}" role="button" class="outline">
         {% blocktrans with metric=term.metric|default:"Metric" %}Add Custom {{ metric }}{% endblocktrans %}
     </a>
-    <a href="{% url 'plans:metric_import' %}" role="button" class="outline secondary">
+    <a href="{% url 'metrics:metric_import' %}" role="button" class="outline secondary">
         {% trans "Import from CSV" %}
     </a>
-    <a href="{% url 'plans:metric_export' %}" role="button" class="outline secondary">
+    <a href="{% url 'metrics:metric_export' %}" role="button" class="outline secondary">
         {% trans "Export to CSV" %}
     </a>
 </div>
@@ -55,7 +55,7 @@
                     {% include "plans/_metric_toggle.html" with metric=metric %}
                 </td>
                 <td>
-                    <a href="{% url 'plans:metric_edit' metric_id=metric.pk %}" aria-label="{% blocktrans with name=metric.name %}Edit {{ name }}{% endblocktrans %}">{% trans "Edit" %}</a>
+                    <a href="{% url 'metrics:metric_edit' metric_id=metric.pk %}" aria-label="{% blocktrans with name=metric.name %}Edit {{ name }}{% endblocktrans %}">{% trans "Edit" %}</a>
                 </td>
             </tr>
             {% endfor %}

@@ -24,7 +24,7 @@
 
     <div role="group">
         <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% blocktrans with metric=term.metric|default:"Metric" %}Create {{ metric }}{% endblocktrans %}{% endif %}</button>
-        <a href="{% url 'plans:metric_library' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+        <a href="{% url 'metrics:metric_library' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
 {% endblock %}

@@ -508,14 +508,14 @@ class PlansFrenchTest(FrenchJourneyBaseTest):
     def test_plan_template_list_in_french(self):
         """Plan template list admin page renders in French."""
         self._login_admin_fr()
-        resp = self.http.get("/admin/templates/")
+        resp = self.http.get("/manage/templates/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Cr\u00e9er un mod\u00e8le")  # "Create Template"
 
     def test_metric_library_in_french(self):
         """Metric library page renders in French."""
         self._login_admin_fr()
-        resp = self.http.get("/plans/admin/metrics/")
+        resp = self.http.get("/manage/metrics/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Biblioth\u00e8que")  # "Library"
         self.assertContains(resp, "Importer depuis CSV")  # "Import from CSV"
@@ -628,7 +628,7 @@ class AdminSettingsFrenchTest(FrenchJourneyBaseTest):
     def test_user_list_in_french(self):
         """User management list page renders in French."""
         self._login_admin_fr()
-        resp = self.http.get("/admin/users/")
+        resp = self.http.get("/manage/users/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "G\u00e9rez les comptes utilisateurs et les r\u00f4les.")
         self.assertContains(resp, "Nouvel utilisateur")  # "New User"
@@ -638,7 +638,7 @@ class AdminSettingsFrenchTest(FrenchJourneyBaseTest):
     def test_invite_list_in_french(self):
         """Invite list page renders in French."""
         self._login_admin_fr()
-        resp = self.http.get("/admin/users/invites/")
+        resp = self.http.get("/manage/users/invites/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Nouvelle invitation")  # "New Invite"
         self.assertContains(resp, "nouveaux utilisateurs")  # part of description
@@ -646,7 +646,7 @@ class AdminSettingsFrenchTest(FrenchJourneyBaseTest):
     def test_audit_log_in_french(self):
         """Audit log page renders in French."""
         self._login_admin_fr()
-        resp = self.http.get("/admin/audit/")
+        resp = self.http.get("/manage/audit/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Journal d'audit")  # Page title — plain apostrophe
         self.assertContains(resp, "Utilisateur")  # "User" filter label
@@ -658,7 +658,7 @@ class AdminSettingsFrenchTest(FrenchJourneyBaseTest):
     def test_note_templates_admin_in_french(self):
         """Note templates admin page renders in French."""
         self._login_admin_fr()
-        resp = self.http.get("/admin/settings/note-templates/")
+        resp = self.http.get("/manage/note-templates/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Nouveau mod\u00e8le")  # "New Template"
         self.assertContains(resp, "D\u00e9finissez la structure")  # part of description
@@ -807,7 +807,7 @@ class EventsFrenchTest(FrenchJourneyBaseTest):
     def test_event_type_list_in_french(self):
         """Event type list admin page renders in French."""
         self._login_admin_fr()
-        resp = self.http.get("/events/admin/types/")
+        resp = self.http.get("/manage/event-types/")
         self.assertEqual(resp.status_code, 200)
         # Plain apostrophes in the .po file
         self.assertContains(resp, "Nouveau type d'\u00e9v\u00e9nement")  # "New Event Type"
@@ -841,7 +841,7 @@ class RegistrationFrenchTest(FrenchJourneyBaseTest):
     def test_registration_links_admin_in_french(self):
         """Registration links admin page renders in French."""
         self._login_admin_fr()
-        resp = self.http.get("/admin/registration/")
+        resp = self.http.get("/manage/registration/")
         self.assertEqual(resp.status_code, 200)
         # Plain apostrophe in .po file
         self.assertContains(resp, "Nouveau lien d'inscription")  # "New Registration Link"
@@ -849,7 +849,7 @@ class RegistrationFrenchTest(FrenchJourneyBaseTest):
     def test_submissions_list_in_french(self):
         """Submissions admin page renders in French."""
         self._login_admin_fr()
-        resp = self.http.get("/admin/submissions/")
+        resp = self.http.get("/manage/submissions/")
         self.assertEqual(resp.status_code, 200)
         # Plain apostrophe in .po file
         self.assertContains(resp, "Soumissions d'inscription")  # "Registration Submissions"

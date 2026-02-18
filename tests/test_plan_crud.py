@@ -410,17 +410,17 @@ class MetricLibraryPermissionTest(PlanCRUDBaseTest):
 
     def test_admin_can_access_metric_library(self):
         self.http.login(username="admin", password="pass")
-        resp = self.http.get(reverse("plans:metric_library"))
+        resp = self.http.get(reverse("metrics:metric_library"))
         self.assertEqual(resp.status_code, 200)
 
     def test_staff_cannot_access_metric_library(self):
         self.http.login(username="counsellor", password="pass")
-        resp = self.http.get(reverse("plans:metric_library"))
+        resp = self.http.get(reverse("metrics:metric_library"))
         self.assertEqual(resp.status_code, 403)
 
     def test_admin_can_create_metric(self):
         self.http.login(username="admin", password="pass")
-        resp = self.http.post(reverse("plans:metric_create"), {
+        resp = self.http.post(reverse("metrics:metric_create"), {
             "name": "New Metric",
             "definition": "A test metric",
             "category": "custom",
@@ -433,7 +433,7 @@ class MetricLibraryPermissionTest(PlanCRUDBaseTest):
 
     def test_staff_cannot_create_metric(self):
         self.http.login(username="counsellor", password="pass")
-        resp = self.http.post(reverse("plans:metric_create"), {
+        resp = self.http.post(reverse("metrics:metric_create"), {
             "name": "Hacked Metric",
             "definition": "Should fail",
             "category": "custom",
@@ -445,7 +445,7 @@ class MetricLibraryPermissionTest(PlanCRUDBaseTest):
             name="Toggle Me", definition="Test", category="general"
         )
         self.http.login(username="admin", password="pass")
-        resp = self.http.post(reverse("plans:metric_toggle", args=[metric.pk]))
+        resp = self.http.post(reverse("metrics:metric_toggle", args=[metric.pk]))
         self.assertEqual(resp.status_code, 200)
         metric.refresh_from_db()
         self.assertFalse(metric.is_enabled)
@@ -455,7 +455,7 @@ class MetricLibraryPermissionTest(PlanCRUDBaseTest):
             name="No Toggle", definition="Test", category="general"
         )
         self.http.login(username="counsellor", password="pass")
-        resp = self.http.post(reverse("plans:metric_toggle", args=[metric.pk]))
+        resp = self.http.post(reverse("metrics:metric_toggle", args=[metric.pk]))
         self.assertEqual(resp.status_code, 403)
         metric.refresh_from_db()
         self.assertTrue(metric.is_enabled)

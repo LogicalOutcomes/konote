@@ -25,20 +25,48 @@ urlpatterns = [
     path("participants/", include("apps.clients.urls")),
     path("programs/", include("apps.programs.urls")),
     path("plans/", include("apps.plans.urls")),
-    path("admin/templates/", include("apps.plans.admin_urls")),
     path("notes/", include("apps.notes.urls")),
+    # Redirects for old event type / metric admin URLs (BEFORE app includes)
+    path("events/admin/types/<path:rest>", RedirectView.as_view(url="/manage/event-types/%(rest)s", permanent=True)),
+    path("events/admin/types/", RedirectView.as_view(url="/manage/event-types/", permanent=True)),
     path("events/", include("apps.events.urls")),
+    path("plans/admin/metrics/<path:rest>", RedirectView.as_view(url="/manage/metrics/%(rest)s", permanent=True)),
+    path("plans/admin/metrics/", RedirectView.as_view(url="/manage/metrics/", permanent=True)),
     path("communications/", include("apps.communications.urls")),
     path("calendar/<str:token>/feed.ics", calendar_feed, name="calendar_feed"),
     path("reports/", include("apps.reports.urls")),
     path("groups/", include("apps.groups.urls")),
-    path("admin/suggestions/", include("apps.notes.suggestion_urls")),
-    path("admin/settings/note-templates/", include("apps.notes.admin_urls")),
+
+    # ── /manage/ routes (PM + Admin accessible) ──
+    path("manage/templates/", include("apps.plans.admin_urls")),
+    path("manage/note-templates/", include("apps.notes.admin_urls")),
+    path("manage/event-types/", include("apps.events.manage_urls")),
+    path("manage/metrics/", include("apps.plans.metric_urls")),
+    path("manage/users/", include("apps.auth_app.admin_urls")),
+    path("manage/audit/", include("apps.audit.urls")),
+    path("manage/suggestions/", include("apps.notes.suggestion_urls")),
+
+    # ── /admin/ routes (Admin only) ──
     path("admin/settings/", include("apps.admin_settings.urls")),
     # Redirect /settings/ to /admin/settings/ for convenience
     path("settings/", login_required(RedirectView.as_view(url="/admin/settings/", permanent=False))),
-    path("admin/users/", include("apps.auth_app.admin_urls")),
-    path("admin/audit/", include("apps.audit.urls")),
+
+    # ── Redirects from old /admin/ URLs to new /manage/ locations ──
+    path("admin/templates/<path:rest>", RedirectView.as_view(url="/manage/templates/%(rest)s", permanent=True)),
+    path("admin/templates/", RedirectView.as_view(url="/manage/templates/", permanent=True)),
+    path("admin/settings/note-templates/<path:rest>", RedirectView.as_view(url="/manage/note-templates/%(rest)s", permanent=True)),
+    path("admin/settings/note-templates/", RedirectView.as_view(url="/manage/note-templates/", permanent=True)),
+    path("admin/users/<path:rest>", RedirectView.as_view(url="/manage/users/%(rest)s", permanent=True)),
+    path("admin/users/", RedirectView.as_view(url="/manage/users/", permanent=True)),
+    path("admin/audit/<path:rest>", RedirectView.as_view(url="/manage/audit/%(rest)s", permanent=True)),
+    path("admin/audit/", RedirectView.as_view(url="/manage/audit/", permanent=True)),
+    path("admin/suggestions/<path:rest>", RedirectView.as_view(url="/manage/suggestions/%(rest)s", permanent=True)),
+    path("admin/suggestions/", RedirectView.as_view(url="/manage/suggestions/", permanent=True)),
+    path("admin/registration/<path:rest>", RedirectView.as_view(url="/manage/registration/%(rest)s", permanent=True)),
+    path("admin/registration/", RedirectView.as_view(url="/manage/registration/", permanent=True)),
+    path("admin/submissions/<path:rest>", RedirectView.as_view(url="/manage/submissions/%(rest)s", permanent=True)),
+    path("admin/submissions/", RedirectView.as_view(url="/manage/submissions/", permanent=True)),
+
     path("audit/program/<int:program_id>/", program_audit_log, name="program_audit_log"),
     path("erasure/", include("apps.clients.erasure_urls")),
     path("merge/", include("apps.clients.merge_urls")),

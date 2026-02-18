@@ -1652,11 +1652,11 @@ msgid "No enabled %(metrics)s available."
 msgstr "Aucune %(metrics)s activée disponible."
 
 msgid ""
-"An administrator can add them in the <a href=\"{% url 'plans:metric_library'"
-" %}\">metric library</a>."
+"An administrator can add them in the <a href=\"{% url "
+"'metrics:metric_library' %}\">metric library</a>."
 msgstr ""
 "Un administrateur peut les ajouter dans la <a href=\"{% url "
-"'plans:metric_library' %}\">bibliothèque de mesures</a>."
+"'metrics:metric_library' %}\">bibliothèque de mesures</a>."
 
 #, python-format
 msgid "Save %(metrics)s"
@@ -13487,7 +13487,8 @@ msgid "Please select a section or create a new one."
 msgstr "Veuillez sélectionner une section ou en créer une nouvelle."
 
 msgid "Prefer to fill in the form yourself? Go to manual form"
-msgstr "Vous préférez remplir le formulaire vous-même? Aller au formulaire manuel"
+msgstr ""
+"Vous préférez remplir le formulaire vous-même? Aller au formulaire manuel"
 
 msgid "Quick pick — tap to use an existing goal:"
 msgstr "Choix rapide — touchez pour utiliser un objectif existant :"
@@ -13565,3 +13566,6 @@ msgstr[1] "%(count)s participants"
 
 msgid "Recommended"
 msgstr "Recommandé"
+
+msgid "Registration submissions"
+msgstr "Soumissions d'inscription"

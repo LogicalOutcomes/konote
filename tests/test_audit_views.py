@@ -26,7 +26,7 @@ def _create_audit_entry(**kwargs):
     return AuditLog.objects.using("audit").create(**defaults)
 
 
-# ── audit_log_list view (/admin/audit/) ──────────────────────────
+# ── audit_log_list view (/manage/audit/) ──────────────────────────
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
@@ -47,16 +47,16 @@ class AuditLogListTests(TestCase):
 
     def test_admin_can_view_audit_log(self):
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/admin/audit/")
+        resp = self.client.get("/manage/audit/")
         self.assertEqual(resp.status_code, 200)
 
     def test_non_admin_gets_403(self):
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.get("/admin/audit/")
+        resp = self.client.get("/manage/audit/")
         self.assertEqual(resp.status_code, 403)
 
     def test_anonymous_user_redirects_to_login(self):
-        resp = self.client.get("/admin/audit/")
+        resp = self.client.get("/manage/audit/")
         self.assertEqual(resp.status_code, 302)
         self.assertIn("/auth/login/", resp.url)
 
@@ -66,7 +66,7 @@ class AuditLogListTests(TestCase):
         _create_audit_entry(action="login", user_display="Alice")
         _create_audit_entry(action="export", user_display="Bob")
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/admin/audit/", {"action": "login"})
+        resp = self.client.get("/manage/audit/", {"action": "login"})
         self.assertEqual(resp.status_code, 200)
         # Page should contain only the login entry
         page = resp.context["page"]
@@ -78,7 +78,7 @@ class AuditLogListTests(TestCase):
         _create_audit_entry(user_display="Alice Admin")
         _create_audit_entry(user_display="Bob Staff")
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/admin/audit/", {"user_display": "Alice"})
+        resp = self.client.get("/manage/audit/", {"user_display": "Alice"})
         page = resp.context["page"]
         displays = [e.user_display for e in page.object_list]
         self.assertIn("Alice Admin", displays)
@@ -88,7 +88,7 @@ class AuditLogListTests(TestCase):
         _create_audit_entry(resource_type="clients")
         _create_audit_entry(resource_type="programs")
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/admin/audit/", {"resource_type": "clients"})
+        resp = self.client.get("/manage/audit/", {"resource_type": "clients"})
         page = resp.context["page"]
         types = [e.resource_type for e in page.object_list]
         self.assertIn("clients", types)
@@ -100,7 +100,7 @@ class AuditLogListTests(TestCase):
         self.client.login(username="admin", password="testpass123")
 
         # Filter for real only
-        resp = self.client.get("/admin/audit/", {"demo_filter": "real"})
+        resp = self.client.get("/manage/audit/", {"demo_filter": "real"})
         page = resp.context["page"]
         displays = [e.user_display for e in page.object_list]
         self.assertIn("Real", displays)
@@ -112,7 +112,7 @@ class AuditLogListTests(TestCase):
         self.client.login(username="admin", password="testpass123")
 
         # Filter for demo only
-        resp = self.client.get("/admin/audit/", {"demo_filter": "demo"})
+        resp = self.client.get("/manage/audit/", {"demo_filter": "demo"})
         page = resp.context["page"]
         displays = [e.user_display for e in page.object_list]
         self.assertIn("Demo", displays)
@@ -132,7 +132,7 @@ class AuditLogListTests(TestCase):
             user_display="Recent",
         )
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/admin/audit/", {"date_from": "2026-01-01"})
+        resp = self.client.get("/manage/audit/", {"date_from": "2026-01-01"})
         page = resp.context["page"]
         displays = [e.user_display for e in page.object_list]
         self.assertIn("Recent", displays)
@@ -152,7 +152,7 @@ class AuditLogListTests(TestCase):
             user_display="Recent",
         )
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/admin/audit/", {"date_to": "2025-12-31"})
+        resp = self.client.get("/manage/audit/", {"date_to": "2025-12-31"})
         page = resp.context["page"]
         displays = [e.user_display for e in page.object_list]
         self.assertIn("Old", displays)
@@ -166,18 +166,18 @@ class AuditLogListTests(TestCase):
             _create_audit_entry(user_display=f"User {i}")
         self.client.login(username="admin", password="testpass123")
 
-        resp = self.client.get("/admin/audit/")
+        resp = self.client.get("/manage/audit/")
         page = resp.context["page"]
         self.assertEqual(len(page.object_list), 50)
         self.assertTrue(page.has_next())
 
-        resp2 = self.client.get("/admin/audit/", {"page": "2"})
+        resp2 = self.client.get("/manage/audit/", {"page": "2"})
         page2 = resp2.context["page"]
         self.assertEqual(len(page2.object_list), 5)
         self.assertFalse(page2.has_next())
 
 
-# ── audit_log_export view (/admin/audit/export/) ────────────────
+# ── audit_log_export view (/manage/audit/export/) ────────────────
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
@@ -200,7 +200,7 @@ class AuditLogExportTests(TestCase):
     def test_admin_can_export_csv(self):
         _create_audit_entry(user_display="Alice", action="login")
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/admin/audit/export/")
+        resp = self.client.get("/manage/audit/export/")
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp["Content-Type"], "text/csv")
         self.assertIn("attachment", resp["Content-Disposition"])
@@ -208,11 +208,11 @@ class AuditLogExportTests(TestCase):
 
     def test_non_admin_gets_403(self):
         self.client.login(username="staff", password="testpass123")
-        resp = self.client.get("/admin/audit/export/")
+        resp = self.client.get("/manage/audit/export/")
         self.assertEqual(resp.status_code, 403)
 
     def test_anonymous_user_redirects_to_login(self):
-        resp = self.client.get("/admin/audit/export/")
+        resp = self.client.get("/manage/audit/export/")
         self.assertEqual(resp.status_code, 302)
         self.assertIn("/auth/login/", resp.url)
 
@@ -220,7 +220,7 @@ class AuditLogExportTests(TestCase):
 
     def test_csv_contains_header_row(self):
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/admin/audit/export/")
+        resp = self.client.get("/manage/audit/export/")
         content = resp.content.decode("utf-8")
         # Header row should contain these column names
         self.assertIn("Timestamp", content)
@@ -235,7 +235,7 @@ class AuditLogExportTests(TestCase):
             resource_type="clients",
         )
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/admin/audit/export/")
+        resp = self.client.get("/manage/audit/export/")
         content = resp.content.decode("utf-8")
         self.assertIn("TestExportUser", content)
         self.assertIn("create", content)
@@ -249,7 +249,7 @@ class AuditLogExportTests(TestCase):
             action="export", resource_type="audit_log"
         ).count()
 
-        self.client.get("/admin/audit/export/")
+        self.client.get("/manage/audit/export/")
 
         count_after = AuditLog.objects.using("audit").filter(
             action="export", resource_type="audit_log"
@@ -259,7 +259,7 @@ class AuditLogExportTests(TestCase):
     def test_export_audit_entry_records_user(self):
         """The export audit entry should record the exporting user's ID."""
         self.client.login(username="admin", password="testpass123")
-        self.client.get("/admin/audit/export/")
+        self.client.get("/manage/audit/export/")
         entry = AuditLog.objects.using("audit").filter(
             action="export", resource_type="audit_log"
         ).latest("event_timestamp")
@@ -271,7 +271,7 @@ class AuditLogExportTests(TestCase):
         _create_audit_entry(action="login", user_display="LoginUser")
         _create_audit_entry(action="create", user_display="CreateUser")
         self.client.login(username="admin", password="testpass123")
-        resp = self.client.get("/admin/audit/export/", {"action": "login"})
+        resp = self.client.get("/manage/audit/export/", {"action": "login"})
         content = resp.content.decode("utf-8")
         self.assertIn("LoginUser", content)
         self.assertNotIn("CreateUser", content)
@@ -427,7 +427,7 @@ class ProgramAuditLogTests(TestCase):
     # ── Cross-program scoping (PM sees only own programs) ───────
 
     def test_pm_only_sees_entries_for_own_programs_on_admin_audit(self):
-        """PM viewing /admin/audit/ should only see entries scoped to their programs."""
+        """PM viewing /manage/audit/ should only see entries scoped to their programs."""
         # Create a second program the manager is NOT assigned to
         other_program = Program.objects.create(name="Other Program", status="active")
 
@@ -447,7 +447,7 @@ class ProgramAuditLogTests(TestCase):
         )
 
         self.client.login(username="manager", password="testpass123")
-        resp = self.client.get("/admin/audit/")
+        resp = self.client.get("/manage/audit/")
         self.assertEqual(resp.status_code, 200)
 
         page = resp.context["page"]
@@ -458,7 +458,7 @@ class ProgramAuditLogTests(TestCase):
         self.assertNotIn("OrgWideEntry", displays)
 
     def test_pm_export_only_contains_own_program_entries(self):
-        """PM exporting CSV from /admin/audit/export/ should only get scoped entries."""
+        """PM exporting CSV from /manage/audit/export/ should only get scoped entries."""
         other_program = Program.objects.create(name="Other Program", status="active")
 
         _create_audit_entry(
@@ -471,7 +471,7 @@ class ProgramAuditLogTests(TestCase):
         )
 
         self.client.login(username="manager", password="testpass123")
-        resp = self.client.get("/admin/audit/export/")
+        resp = self.client.get("/manage/audit/export/")
         self.assertEqual(resp.status_code, 200)
         content = resp.content.decode("utf-8")
         self.assertIn("OwnExportEntry", content)

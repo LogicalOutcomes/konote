@@ -111,7 +111,7 @@ def event_type_create(request):
                     event_type.owning_program_id = next(iter(pm_program_ids))
             event_type.save()
             messages.success(request, _("Event type created."))
-            return redirect("events:event_type_list")
+            return redirect("event_types:event_type_list")
     else:
         form = EventTypeForm(requesting_user=request.user)
     return render(request, "events/event_type_form.html", {"form": form, "editing": False})
@@ -131,7 +131,7 @@ def event_type_edit(request, type_id):
         if form.is_valid():
             form.save()
             messages.success(request, _("Event type updated."))
-            return redirect("events:event_type_list")
+            return redirect("event_types:event_type_list")
     else:
         form = EventTypeForm(instance=event_type, requesting_user=request.user)
     return render(request, "events/event_type_form.html", {

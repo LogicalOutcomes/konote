@@ -112,7 +112,7 @@ class TestPMScopingEnforcement(TestCase):
         """PM in Program A gets 403 when editing Program B's template."""
         self._login_pm()
         response = self.client.get(
-            f"/admin/templates/{self.template_b.pk}/edit/"
+            f"/manage/templates/{self.template_b.pk}/edit/"
         )
         self.assertEqual(response.status_code, 403)
 
@@ -120,7 +120,7 @@ class TestPMScopingEnforcement(TestCase):
         """PM gets 403 when editing a global (admin-created) template."""
         self._login_pm()
         response = self.client.get(
-            f"/admin/templates/{self.template_global.pk}/edit/"
+            f"/manage/templates/{self.template_global.pk}/edit/"
         )
         self.assertEqual(response.status_code, 403)
 
@@ -128,7 +128,7 @@ class TestPMScopingEnforcement(TestCase):
         """PM in Program A can edit Program A's template."""
         self._login_pm()
         response = self.client.get(
-            f"/admin/templates/{self.template_a.pk}/edit/"
+            f"/manage/templates/{self.template_a.pk}/edit/"
         )
         self.assertIn(response.status_code, (200, 302))
         self.assertNotEqual(response.status_code, 403)
@@ -141,7 +141,7 @@ class TestPMScopingEnforcement(TestCase):
         """PM in Program A gets 403 when editing Program B's event type."""
         self._login_pm()
         response = self.client.get(
-            f"/events/admin/types/{self.event_type_b.pk}/edit/"
+            f"/manage/event-types/{self.event_type_b.pk}/edit/"
         )
         self.assertEqual(response.status_code, 403)
 
@@ -149,7 +149,7 @@ class TestPMScopingEnforcement(TestCase):
         """PM in Program A can edit Program A's event type."""
         self._login_pm()
         response = self.client.get(
-            f"/events/admin/types/{self.event_type_a.pk}/edit/"
+            f"/manage/event-types/{self.event_type_a.pk}/edit/"
         )
         self.assertIn(response.status_code, (200, 302))
         self.assertNotEqual(response.status_code, 403)
@@ -162,7 +162,7 @@ class TestPMScopingEnforcement(TestCase):
         """PM in Program A gets 403 when editing Program B's metric."""
         self._login_pm()
         response = self.client.get(
-            f"/plans/admin/metrics/{self.metric_b.pk}/edit/"
+            f"/manage/metrics/{self.metric_b.pk}/edit/"
         )
         self.assertEqual(response.status_code, 403)
 
@@ -170,7 +170,7 @@ class TestPMScopingEnforcement(TestCase):
         """PM in Program A can edit Program A's metric."""
         self._login_pm()
         response = self.client.get(
-            f"/plans/admin/metrics/{self.metric_a.pk}/edit/"
+            f"/manage/metrics/{self.metric_a.pk}/edit/"
         )
         self.assertIn(response.status_code, (200, 302))
         self.assertNotEqual(response.status_code, 403)
@@ -183,7 +183,7 @@ class TestPMScopingEnforcement(TestCase):
         """PM cannot assign the program_manager role to another user."""
         self._login_pm()
         response = self.client.post(
-            f"/admin/users/{self.staff_a.pk}/roles/add/",
+            f"/manage/users/{self.staff_a.pk}/roles/add/",
             {"program": self.program_a.pk, "role": "program_manager"},
         )
         # Should get an error message and redirect, not succeed
@@ -200,7 +200,7 @@ class TestPMScopingEnforcement(TestCase):
         """PM cannot assign the executive role to another user."""
         self._login_pm()
         response = self.client.post(
-            f"/admin/users/{self.staff_a.pk}/roles/add/",
+            f"/manage/users/{self.staff_a.pk}/roles/add/",
             {"program": self.program_a.pk, "role": "executive"},
         )
         self.assertIn(response.status_code, (302, 200))
@@ -229,7 +229,7 @@ class TestPMScopingEnforcement(TestCase):
         # Actually the view prevents duplicate program assignments, so
         # let's just verify the PM can reach the roles page.
         response = self.client.get(
-            f"/admin/users/{new_user.pk}/roles/"
+            f"/manage/users/{new_user.pk}/roles/"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -240,7 +240,7 @@ class TestPMScopingEnforcement(TestCase):
     def test_pm_cannot_create_admin_user(self):
         """PM cannot create a user with is_admin=True via POST tampering."""
         self._login_pm()
-        response = self.client.post("/admin/users/new/", {
+        response = self.client.post("/manage/users/new/", {
             "username": "hacked_admin",
             "display_name": "Hacked Admin",
             "password": "testpass123",
@@ -259,7 +259,7 @@ class TestPMScopingEnforcement(TestCase):
         """PM cannot set is_admin=True on an existing user via POST tampering."""
         self._login_pm()
         self.client.post(
-            f"/admin/users/{self.staff_a.pk}/edit/",
+            f"/manage/users/{self.staff_a.pk}/edit/",
             {
                 "display_name": self.staff_a.display_name,
                 "is_admin": True,
@@ -285,7 +285,7 @@ class TestPMScopingEnforcement(TestCase):
         )
         self._login_pm()
         self.client.post(
-            f"/admin/users/{self.admin.pk}/deactivate/"
+            f"/manage/users/{self.admin.pk}/deactivate/"
         )
         self.admin.refresh_from_db()
         self.assertTrue(
@@ -297,7 +297,7 @@ class TestPMScopingEnforcement(TestCase):
         """PM cannot deactivate a user via the edit form (is_active field removed)."""
         self._login_pm()
         self.client.post(
-            f"/admin/users/{self.staff_a.pk}/edit/",
+            f"/manage/users/{self.staff_a.pk}/edit/",
             {
                 "display_name": self.staff_a.display_name,
                 "is_active": False,
@@ -316,7 +316,7 @@ class TestPMScopingEnforcement(TestCase):
     def test_pm_sees_only_own_program_users(self):
         """PM user list should not include users from other programs."""
         self._login_pm()
-        response = self.client.get("/admin/users/")
+        response = self.client.get("/manage/users/")
         self.assertEqual(response.status_code, 200)
         content = response.content.decode()
         # PM should see staff_a (in Program A)
@@ -328,7 +328,7 @@ class TestPMScopingEnforcement(TestCase):
         """PM gets 403 when editing a user from another program."""
         self._login_pm()
         response = self.client.get(
-            f"/admin/users/{self.staff_b.pk}/edit/"
+            f"/manage/users/{self.staff_b.pk}/edit/"
         )
         self.assertEqual(response.status_code, 403)
 
@@ -336,7 +336,7 @@ class TestPMScopingEnforcement(TestCase):
         """PM cannot assign a role in a program they don't manage."""
         self._login_pm()
         response = self.client.post(
-            f"/admin/users/{self.staff_a.pk}/roles/add/",
+            f"/manage/users/{self.staff_a.pk}/roles/add/",
             {"program": self.program_b.pk, "role": "staff"},
         )
         # Should be blocked — verify no role was created in Program B

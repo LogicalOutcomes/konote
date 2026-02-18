@@ -46,7 +46,14 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: QA Round 6 — Design Tasks
 
-- [ ] Design /admin/ URL restructuring for PM self-service — move management pages to /manage/ so PMs can reach plan templates, note templates, event types (FG-2, PERMISSION-1/2/3, BUG-1 -> QA-W59)
+- [x] Design /admin/ URL restructuring for PM self-service — move management pages to /manage/ so PMs can reach plan templates, note templates, event types (FG-2, PERMISSION-1/2/3, BUG-1 -> QA-W59)
+
+### Phase: Pre-existing Test Failures
+
+- [ ] Fix `apply_setup` command tests (10 failures) — output format changed but tests not updated (TEST-SETUP1)
+- [ ] Fix `translate_strings --no-translate` test — option does not exist (TEST-TRANS1)
+- [ ] Fix portal session isolation test — portal user gets 302 redirect instead of expected 404 on staff pages (TEST-PORTAL1)
+- [ ] Fix BLOCKER-1 a11y test — skip link still exists, test expects Option B (removed) (TEST-A11Y1)
 
 ### Phase: UX Fixes
 
@@ -76,9 +83,13 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Audit all views for missing permission checks — PERMISSION-5 revealed nav hides link but view is unguarded (QA-W60)
 - [ ] Add program parameter to _ensure_client note creation — currently hardcodes program_a (QA-W61)
 - [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
+- [ ] Convert 12 hardcoded `/manage/` URLs in base.html to `{% url %}` tags for maintainability (URL-CLEAN1)
+- [ ] Move `plans/admin/metrics/` redirect before `plans/` include in urls.py for consistency with events redirect ordering (URL-CLEAN2)
 
 ## Recently Done
 
+- [x] Move PM management pages from /admin/ to /manage/ — new URL structure, middleware simplification, redirects from old URLs, 1795 tests pass — 2026-02-18 (QA-W59)
+- [x] Fix test suite freezing — add Django @tag('slow') to BrowserTestBase so --exclude-tag=slow properly skips 70 Playwright tests — 2026-02-18 (TEST-FIX1)
 - [x] UX walkthrough fixes — strengthen touch target CSS with !important overrides, add aria-label to submissions table; UX5/UX10/UX11 already done — 2026-02-17 (UX-WALK6)
 - [x] Mobile touch targets WCAG fix — enforce 44px minimum with explicit padding on nav, breadcrumbs, tabs, buttons, selects at mobile breakpoints — 2026-02-17 (UX-WALK5)
 - [x] Fix 3 failing scenario tests — empty prerequisite guard, Priya Sharma test client, logout dropdown fallback + crash guard — 2026-02-17 (QA-FIX1, QA-FIX2, QA-FIX3)
@@ -90,4 +101,3 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Insights & Suggestions Batch — template-driven chart interpretations, suggestion highlights on exec dashboard, suggestion tracking design doc, portal questions design doc — 2026-02-17 (UX-INSIGHT4, UX-INSIGHT5, UX-INSIGHT6, PORTAL-Q1)
 - [x] UX Batch 3 — button sizing, dynamic terminology, staff contact info, chart descriptions, suggestion count fix, export delay wording, configurable Leave Quickly URL — 2026-02-17 (UX-MSG1, UX-MSG2, UX-PROG2, UX-INSIGHT2, UX-INSIGHT3, UX-EXPORT1, UX-SAFETY1)
 - [x] UX Batch 2 — hx-confirm on plan actions, scroll position preservation, autofocus search, calendar sync rewrite — 2026-02-17 (UX6, UX7, UX9, UX-CAL1)
-- [x] UX text rewrites (already on main) — Executive Overview intro, Need More Details, Programs subtitle, Insights intro, Approvals intro — 2026-02-17 (UX-DASH1, UX-DASH2, UX-PROG1, UX-INSIGHTS1, UX-ALERT1)
