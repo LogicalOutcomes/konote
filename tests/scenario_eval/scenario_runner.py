@@ -82,6 +82,43 @@ class ScenarioRunner(BrowserTestBase):
     eval_model = None  # Override LLM model for evaluation (None = default)
     eval_temperature = None  # Override LLM temperature (None = API default)
 
+    def _run_scenario_by_id(self, scenario_id):
+        """Load, execute, and record a scenario by its ID.
+
+        Handles the full lifecycle: discover scenario from holdout YAML,
+        load personas, configure LLM mode, run the scenario (auto-detects
+        DITL narratives vs step-based scenarios), and append to results.
+
+        Returns:
+            ScenarioResult for assertion checks (e.g. calibration scores).
+        """
+        from .scenario_loader import discover_scenarios, load_personas
+        from .conftest import get_all_results
+
+        holdout = os.environ.get("SCENARIO_HOLDOUT_DIR", "")
+        if not holdout or not os.path.isdir(holdout):
+            self.skipTest("SCENARIO_HOLDOUT_DIR not set")
+
+        scenarios = discover_scenarios(holdout, ids=[scenario_id])
+        scn = [s for _, s in scenarios if s["id"] == scenario_id]
+        if not scn:
+            self.skipTest(f"{scenario_id} not found in holdout dir")
+
+        scenario = scn[0]
+        self.personas = load_personas()
+        self.use_llm = not bool(os.environ.get("SCENARIO_NO_LLM", ""))
+
+        screenshot_dir = os.path.join(holdout, "reports", "screenshots")
+
+        # Auto-detect DITL narratives (moments) vs step-based scenarios
+        if scenario.get("moments"):
+            result = self.run_narrative(scenario, screenshot_dir=screenshot_dir)
+        else:
+            result = self.run_scenario(scenario, screenshot_dir=screenshot_dir)
+
+        get_all_results().append(result)
+        return result
+
     # CDP session for network throttling (lazy-created)
     _cdp_session = None
 
