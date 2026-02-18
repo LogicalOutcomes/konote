@@ -1652,11 +1652,11 @@ msgid "No enabled %(metrics)s available."
 msgstr "Aucune %(metrics)s activée disponible."
 
 msgid ""
-"An administrator can add them in the <a href=\"{% url 'plans:metric_library'"
+"An administrator can add them in the <a href=\"{% url 'metrics:metric_library'"
 " %}\">metric library</a>."
 msgstr ""
 "Un administrateur peut les ajouter dans la <a href=\"{% url "
-"'plans:metric_library' %}\">bibliothèque de mesures</a>."
+"'metrics:metric_library' %}\">bibliothèque de mesures</a>."
 
 #, python-format
 msgid "Save %(metrics)s"

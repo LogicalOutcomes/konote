@@ -821,7 +821,7 @@ def metric_create(request):
                     metric.owning_program_id = next(iter(pm_program_ids))
             metric.save()
             messages.success(request, _("Metric created."))
-            return redirect("plans:metric_library")
+            return redirect("metrics:metric_library")
     else:
         form = MetricDefinitionForm(requesting_user=request.user)
 
@@ -845,7 +845,7 @@ def metric_edit(request, metric_id):
         if form.is_valid():
             form.save()
             messages.success(request, _("Metric updated."))
-            return redirect("plans:metric_library")
+            return redirect("metrics:metric_library")
     else:
         form = MetricDefinitionForm(instance=metric, requesting_user=request.user)
 
@@ -1055,7 +1055,7 @@ def metric_import(request):
             cached_rows = request.session.pop("metric_import_rows", None)
             if not cached_rows:
                 messages.error(request, _("Import session expired. Please upload the file again."))
-                return redirect("plans:metric_import")
+                return redirect("metrics:metric_import")
 
             # Create or update the metrics
             created_count = 0
@@ -1111,7 +1111,7 @@ def metric_import(request):
             if updated_count:
                 msg_parts.append(_("%(count)d updated") % {"count": updated_count})
             messages.success(request, _("Import complete: %s.") % ", ".join(msg_parts))
-            return redirect("plans:metric_library")
+            return redirect("metrics:metric_library")
 
         # This is the upload step - parse the CSV
         form = MetricImportForm(request.POST, request.FILES)

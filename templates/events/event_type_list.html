@@ -9,7 +9,7 @@
     <p>{% trans "Manage event categories for participant timelines." %}</p>
 </hgroup>
 
-<p><a href="{% url 'events:event_type_create' %}" role="button">{% trans "New Event Type" %}</a></p>
+<p><a href="{% url 'event_types:event_type_create' %}" role="button">{% trans "New Event Type" %}</a></p>
 
 {% if event_types %}
 <figure>
@@ -37,7 +37,7 @@
                     <span class="badge badge-neutral">{% trans "Archived" %}</span>
                 {% endif %}
             </td>
-            <td><a href="{% url 'events:event_type_edit' type_id=et.pk %}">{% trans "Edit" %}</a></td>
+            <td><a href="{% url 'event_types:event_type_edit' type_id=et.pk %}">{% trans "Edit" %}</a></td>
         </tr>
         {% endfor %}
     </tbody>

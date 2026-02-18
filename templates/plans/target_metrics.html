@@ -26,7 +26,7 @@
         {% endfor %}
     </fieldset>
     {% empty %}
-    {% url 'plans:metric_library' as metric_library_url %}
+    {% url 'metrics:metric_library' as metric_library_url %}
     <p>{% blocktrans with metrics=term.metric_plural|default:"metrics" %}No enabled {{ metrics }} available.{% endblocktrans %} {% blocktrans with url=metric_library_url %}An administrator can add them in the <a href="{{ url }}">metric library</a>.{% endblocktrans %}</p>
     {% endfor %}
 
