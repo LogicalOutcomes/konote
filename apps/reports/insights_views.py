@@ -87,10 +87,12 @@ def program_insights(request):
 
         data_tier = _get_data_tier(structured["note_count"], structured["month_count"])
 
-        # Quotes: privacy-gated, no dates at program level
-        # Executives cannot see quotes (note.view is DENY for executives)
+        # Quotes: privacy-gated, no dates at program level.
+        # Always collect so executives can see suggestion text (program
+        # feedback, not personal data). Other quotes are suppressed for
+        # executive-only users because note.view is DENY for them.
         quotes = []
-        if data_tier != "sparse" and not is_executive_only:
+        if data_tier != "sparse":
             quotes = collect_quotes(
                 program=program,
                 date_from=date_from,
@@ -105,7 +107,7 @@ def program_insights(request):
             if q.get("source") == "suggestion":
                 q["priority_label"] = _PRIORITY_LABELS.get(q.get("priority", ""), "")
                 suggestions.append(q)
-            else:
+            elif not is_executive_only:
                 other_quotes.append(q)
 
         # Active suggestion themes for this program
