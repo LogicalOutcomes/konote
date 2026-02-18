@@ -74,6 +74,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
 - [ ] Audit all views for missing permission checks — PERMISSION-5 revealed nav hides link but view is unguarded (QA-W60)
+- [ ] Add program parameter to _ensure_client note creation — currently hardcodes program_a (QA-W61)
+- [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
 
 ## Recently Done
 
