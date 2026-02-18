@@ -155,13 +155,14 @@
         {# Tier 1: Universal metrics (always visible, card-style) #}
         {% if universal_metrics %}
         <div class="universal-metric-cards" role="group" aria-label="{% trans 'Universal metrics' %}">
+            <small class="tier-label"><strong>{% trans "Recommended" %}</strong></small>
             {% for metric in universal_metrics %}
             <label class="metric-card" for="metric-{{ metric.pk }}">
                 <input type="checkbox"
                        id="metric-{{ metric.pk }}"
                        name="metrics"
                        value="{{ metric.pk }}"
-                       {% if metric.pk in form.metrics.value %}checked{% endif %}>
+                       {% if metric.pk in selected_metric_ids %}checked{% endif %}>
                 <div class="metric-card-body">
                     <strong>{{ metric.translated_name }}</strong>
                     <small>{{ metric.translated_definition }}</small>
@@ -182,7 +183,7 @@
                            id="metric-{{ metric.pk }}"
                            name="metrics"
                            value="{{ metric.pk }}"
-                           {% if metric.pk in form.metrics.value %}checked{% endif %}>
+                           {% if metric.pk in selected_metric_ids %}checked{% endif %}>
                     {{ metric.translated_name }}
                     <small class="secondary">
                         {% blocktrans with count=metric.usage_count %}used by {{ count }} participant(s){% endblocktrans %}
@@ -214,7 +215,7 @@
                            id="metric-{{ metric.pk }}"
                            name="metrics"
                            value="{{ metric.pk }}"
-                           {% if metric.pk in form.metrics.value %}checked{% endif %}>
+                           {% if metric.pk in selected_metric_ids %}checked{% endif %}>
                     {{ metric.translated_name }}
                     {% if metric.translated_definition %}
                     <small>{{ metric.translated_definition|truncatewords:15 }}</small>
@@ -377,7 +378,7 @@
         });
         nameInput.addEventListener("blur", function() {
             // Delay to allow click on suggestion
-            setTimeout(closeSuggestions, 200);
+            setTimeout(closeSuggestions, 300);
         });
     }
     if (suggestionsList) {

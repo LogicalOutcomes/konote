@@ -4,7 +4,7 @@ import io
 from collections import OrderedDict
 
 from django.contrib import messages
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -457,9 +457,12 @@ def goal_create(request, client_id):
 
     participant_name = client.display_name if hasattr(client, "display_name") else ""
 
-    # Pre-selected section from query param
-    preselected_section_id = request.GET.get("section")
+    # Pre-selected section from query param (validate as integer)
     preselected_section = None
+    try:
+        preselected_section_id = int(request.GET.get("section", ""))
+    except (ValueError, TypeError):
+        preselected_section_id = None
     if preselected_section_id:
         preselected_section = PlanSection.objects.filter(
             pk=preselected_section_id, client_file=client, status="default",
@@ -531,7 +534,6 @@ def goal_create(request, client_id):
             .distinct()
         )
         # Count usage per metric
-        from django.db.models import Count
         program_used_qs = program_used_qs.annotate(
             usage_count=Count("plantargetmetric")
         ).order_by("-usage_count")
@@ -582,6 +584,15 @@ def goal_create(request, client_id):
                 "count": count,
             })
 
+    # Build a set of integer PKs for selected metrics so the template can
+    # check checkbox state without type-mismatch (POST values are strings).
+    selected_metric_ids = set()
+    for raw in request.POST.getlist("metrics"):
+        try:
+            selected_metric_ids.add(int(raw))
+        except (ValueError, TypeError):
+            pass
+
     context = {
         "form": form,
         "client": client,
@@ -590,6 +601,7 @@ def goal_create(request, client_id):
         "program_used_metrics": program_used_metrics,
         "metrics_by_category": metrics_by_category,
         "common_goals": common_goals,
+        "selected_metric_ids": selected_metric_ids,
     }
     return render(request, "plans/goal_form.html", context)
 
