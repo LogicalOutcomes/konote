@@ -5202,6 +5202,9 @@ msgstr "Noms"
 msgid "Need More Details?"
 msgstr "Besoin de plus de détails?"
 
+msgid "For detailed reports, reach out to the Program Manager for that program."
+msgstr "Pour des rapports détaillés, communiquez avec le ou la gestionnaire de ce programme."
+
 msgid "New Password"
 msgstr "Nouveau mot de passe"
 
@@ -12878,15 +12881,6 @@ msgstr "Laissez vide pour notifier tous les %(workers)s de ce dossier."
 #, python-format
 msgid "For: Any %(worker)s"
 msgstr "Pour : Tout(e) %(worker)s"
-
-#, python-format
-msgid ""
-"For information about a specific %(client)s or to run a detailed report, "
-"reach out to the Program Manager for that program."
-msgstr ""
-"Pour obtenir des renseignements sur un(e) %(client)s en particulier ou "
-"produire un rapport détaillé, communiquez avec le ou la gestionnaire de ce "
-"programme."
 
 msgid "Add Meetings to Your Calendar"
 msgstr "Ajouter les rencontres à votre calendrier"
