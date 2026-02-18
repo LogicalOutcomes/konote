@@ -14,7 +14,7 @@ urlpatterns = [
     path("participant/<int:client_id>/log/", communication_log, name="communication_log"),
     path("participant/<int:client_id>/compose-email/", compose_email, name="compose_email"),
     path(
-        "client/<int:client_id>/meeting/<int:event_id>/send-reminder/",
+        "participant/<int:client_id>/meeting/<int:event_id>/send-reminder/",
         send_reminder_preview,
         name="send_reminder_preview",
     ),
