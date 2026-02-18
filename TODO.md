@@ -46,7 +46,14 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: QA Round 6 — Design Tasks
 
-- [ ] Design /admin/ URL restructuring for PM self-service — move management pages to /manage/ so PMs can reach plan templates, note templates, event types (FG-2, PERMISSION-1/2/3, BUG-1 -> QA-W59)
+- [x] Design /admin/ URL restructuring for PM self-service — move management pages to /manage/ so PMs can reach plan templates, note templates, event types (FG-2, PERMISSION-1/2/3, BUG-1 -> QA-W59)
+
+### Phase: Pre-existing Test Failures
+
+- [ ] Fix `apply_setup` command tests (10 failures) — output format changed but tests not updated (TEST-SETUP1)
+- [ ] Fix `translate_strings --no-translate` test — option does not exist (TEST-TRANS1)
+- [ ] Fix portal session isolation test — portal user gets 302 redirect instead of expected 404 on staff pages (TEST-PORTAL1)
+- [ ] Fix BLOCKER-1 a11y test — skip link still exists, test expects Option B (removed) (TEST-A11Y1)
 
 ### Phase: UX Fixes
 
@@ -79,6 +86,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Move PM management pages from /admin/ to /manage/ — new URL structure, middleware simplification, redirects from old URLs, 1795 tests pass — 2026-02-18 (QA-W59)
+- [x] Fix test suite freezing — add Django @tag('slow') to BrowserTestBase so --exclude-tag=slow properly skips 70 Playwright tests — 2026-02-18 (TEST-FIX1)
 - [x] UX walkthrough fixes — strengthen touch target CSS with !important overrides, add aria-label to submissions table; UX5/UX10/UX11 already done — 2026-02-17 (UX-WALK6)
 - [x] Mobile touch targets WCAG fix — enforce 44px minimum with explicit padding on nav, breadcrumbs, tabs, buttons, selects at mobile breakpoints — 2026-02-17 (UX-WALK5)
 - [x] Fix 3 failing scenario tests — empty prerequisite guard, Priya Sharma test client, logout dropdown fallback + crash guard — 2026-02-17 (QA-FIX1, QA-FIX2, QA-FIX3)
