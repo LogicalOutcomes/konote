@@ -156,7 +156,7 @@ class ApplySetupTests(TestCase):
             InstanceSetting.objects.get(setting_key="support_email").setting_value,
             "tech@youth.ca",
         )
-        self.assertIn("2 created", out.getvalue())
+        self.assertIn("2 configured", out.getvalue())
 
     # ------------------------------------------------------------------
     # Terminology overrides
@@ -190,7 +190,7 @@ class ApplySetupTests(TestCase):
             TerminologyOverride.objects.get(term_key="target").display_value,
             "Goal",
         )
-        self.assertIn("3 created", out.getvalue())
+        self.assertIn("3 term(s) set", out.getvalue())
 
     def test_creates_terminology_with_french(self):
         """Terminology overrides with dict values should store both en and fr."""
@@ -233,7 +233,7 @@ class ApplySetupTests(TestCase):
         self.assertTrue(FeatureToggle.objects.get(feature_key="programs").is_enabled)
         self.assertTrue(FeatureToggle.objects.get(feature_key="events").is_enabled)
         self.assertFalse(FeatureToggle.objects.get(feature_key="shift_summaries").is_enabled)
-        self.assertIn("3 created", out.getvalue())
+        self.assertIn("3 toggle(s) set", out.getvalue())
 
     # ------------------------------------------------------------------
     # Programs
@@ -336,9 +336,9 @@ class ApplySetupTests(TestCase):
         self.assertEqual(targets_s2[0].name, "Build peer relationships")
 
         output = out.getvalue()
-        self.assertIn("1 templates", output)
-        self.assertIn("2 sections", output)
-        self.assertIn("3 targets", output)
+        self.assertIn("1 template(s)", output)
+        self.assertIn("2 section(s)", output)
+        self.assertIn("3 target(s)", output)
 
     # ------------------------------------------------------------------
     # Custom field groups and fields
@@ -411,8 +411,8 @@ class ApplySetupTests(TestCase):
         self.assertEqual(date_field.input_type, "date")
 
         output = out.getvalue()
-        self.assertIn("2 groups", output)
-        self.assertIn("3 fields", output)
+        self.assertIn("2 group(s)", output)
+        self.assertIn("3 field(s)", output)
 
     # ------------------------------------------------------------------
     # Metrics enable/disable
@@ -444,7 +444,7 @@ class ApplySetupTests(TestCase):
 
         self.assertTrue(MetricDefinition.objects.get(name="PHQ-9 (Depression)").is_enabled)
         self.assertTrue(MetricDefinition.objects.get(name="GAD-7 (Anxiety)").is_enabled)
-        self.assertIn("2 metrics enabled", out.getvalue())
+        self.assertIn("2 enabled", out.getvalue())
 
     def test_disables_metrics(self):
         """Metrics listed in metrics_disabled should be set to is_enabled=False."""
@@ -472,7 +472,7 @@ class ApplySetupTests(TestCase):
 
         self.assertFalse(MetricDefinition.objects.get(name="Days Clean").is_enabled)
         self.assertFalse(MetricDefinition.objects.get(name="Cravings Intensity").is_enabled)
-        self.assertIn("2 metrics disabled", out.getvalue())
+        self.assertIn("2 disabled", out.getvalue())
 
     # ------------------------------------------------------------------
     # Idempotency
@@ -546,7 +546,7 @@ class ApplySetupTests(TestCase):
         out = StringIO()
         call_command("apply_setup", path, stdout=out)
 
-        self.assertIn("applied successfully", out.getvalue())
+        self.assertIn("Setup complete", out.getvalue())
 
     # ------------------------------------------------------------------
     # Partial config

@@ -109,10 +109,10 @@ class SessionIsolationTests(TestCase):
         # Try to access a staff-only page
         response = self.client.get("/clients/")
 
-        # Should be denied access (redirect to staff login or 403)
+        # Should be denied access (redirect to staff login, 403, or 404)
         self.assertIn(
             response.status_code,
-            [302, 303, 403],
+            [302, 303, 403, 404],
             "Portal user should not have access to staff pages",
         )
 

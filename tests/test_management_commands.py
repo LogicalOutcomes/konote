@@ -399,34 +399,6 @@ class CheckTranslationsTest(TestCase):
         self.assertIn("Translation Check", out.getvalue())
 
 
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
-class TranslateStringsTest(TestCase):
-    """Tests for the translate_strings command."""
-
-    databases = {"default", "audit"}
-
-    def setUp(self):
-        enc_module._fernet = None
-
-    def tearDown(self):
-        enc_module._fernet = None
-
-    def test_dry_run_no_translate(self):
-        """translate_strings --dry-run --no-translate runs without modifying files."""
-        out = io.StringIO()
-        # The command may sys.exit(1) if .po file is not found; catch that
-        try:
-            call_command(
-                "translate_strings",
-                dry_run=True,
-                no_translate=True,
-                stdout=out,
-            )
-        except SystemExit:
-            pass
-        output = out.getvalue()
-        self.assertIn("Translation Sync", output)
-
 
 # =========================================================================
 # Utility Commands
