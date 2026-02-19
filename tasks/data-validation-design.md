@@ -82,3 +82,5 @@ Staff enter numeric data (metric values, financial fields) with no plausibility 
 3. Should there be a "data quality score" shown on the report form before generation?
 4. How do we handle metrics with very few data points (not enough history for statistical comparison)?
 5. Should overridden warnings be visible in the exported report itself (so funders know)?
+6. Who reviews override logs, and when? Consider a weekly "data quality digest" email to program managers showing overridden entries.
+7. How should portal self-reported values (participants entering their own financial data) get different plausibility thresholds than staff-entered clinical metrics?
