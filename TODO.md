@@ -48,6 +48,11 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
 
+### Phase: Data Quality
+
+- [ ] Entry-time plausibility warnings — soft-flag unlikely values during data entry for staff confirmation (see tasks/data-validation-design.md) (DQ1)
+- [ ] Pre-report data quality checks — validate data quality before funder report export (see tasks/data-validation-design.md) (DQ2)
+
 ### Phase: Other Upcoming
 
 - [ ] Permissions Phase 2 — remaining 10 items: discharge access transitions, consent model, DV-safe mode, GATED clinical access, group schedule vs roster, per-field front desk edit, SCOPED→PROGRAM rename, funder report key, alert escalation, dashboard split (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P3–12)
@@ -70,6 +75,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 **Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
 
 - [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
+- [ ] Improve Messages page clarity — make sender vs participant roles obvious, improve timestamp readability, add urgent flag option (see tasks/messages-ux-improvements.md) — GG (UX-MSG1)
+- [ ] Redesign detailed notes form — auto-calc metrics, scale pills for 1-5 ratings, field width constraints, card-based target layout (see tasks/notes-form-redesign.md) — GG (UX-NOTES1)
 
 ## Parking Lot
 
