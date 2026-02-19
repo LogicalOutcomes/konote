@@ -3264,17 +3264,22 @@ class Command(BaseCommand):
             author = workers.get(worker_username)
 
             for theme_def in theme_defs:
-                theme = SuggestionTheme.objects.create(
+                theme, was_created = SuggestionTheme.objects.get_or_create(
                     program=program,
                     name=theme_def["name"],
-                    description=theme_def["description"],
-                    status=theme_def["status"],
-                    source=theme_def.get("source", "ai_generated"),
-                    keywords=theme_def.get("keywords", ""),
-                    addressed_note=theme_def.get("addressed_note", ""),
-                    created_by=author,
+                    defaults={
+                        "description": theme_def["description"],
+                        "status": theme_def["status"],
+                        "source": theme_def.get("source", "ai_generated"),
+                        "keywords": theme_def.get("keywords", ""),
+                        "addressed_note": theme_def.get("addressed_note", ""),
+                        "created_by": author,
+                    },
                 )
-                theme_count += 1
+                if was_created:
+                    theme_count += 1
+                else:
+                    continue  # theme already exists, skip re-linking
 
                 # Link notes via keyword matching
                 keywords = {
