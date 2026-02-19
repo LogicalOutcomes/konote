@@ -118,7 +118,7 @@
 }
 
 #session-timeout-warning .warning-content {
-    background: var(--pico-background-color, #fff);
+    background: var(--kn-card-bg, #fff);
     padding: 2rem;
     border-radius: 8px;
     max-width: 400px;
