@@ -2,7 +2,7 @@
 
 ## Flagged
 
-- [ ] Review requirements analysis doc with Sophie before sending to client (docs/konote-requirements-analysis-draft.md) — GG (DOC-REQ1)
+- [ ] Review requirements analysis doc with Sara before sending to client (docs/konote-requirements-analysis-draft.md) — GG (DOC-REQ1)
 - [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — GG (ONBOARD-APPROVE)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GG (SEC3-Q1)
 
@@ -10,6 +10,7 @@
 
 ### Phase: Launch Readiness
 
+- [ ] Complete Agency Deployment Protocol with Prosper Canada — Phase 0 Discovery Call first (see tasks/agency-deployment-protocol.md) — SG (DEPLOY-PC1)
 - [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — GG (ONBOARD-GATE)
 - [ ] Verify production email configuration for exports, erasure alerts, and password resets — GG (OPS3)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — GG (OPS4)
