@@ -165,11 +165,9 @@ class Command(BaseCommand):
         Safe: only deletes objects marked is_demo=True or linked to DEMO- clients.
         """
         from apps.auth_app.models import User
-        from apps.clients.models import ClientDetailValue, ClientFile, ClientProgramEnrolment
-        from apps.communications.models import Communication
-        from apps.events.models import Alert, CalendarFeedToken, Event
-        from apps.notes.models import ProgressNote
-        from apps.plans.models import PlanSection, PlanTarget
+        from apps.clients.models import ClientFile
+        from apps.events.models import CalendarFeedToken
+        from apps.notes.models import SuggestionTheme
         from apps.programs.models import Program, UserProgramRole
 
         demo_clients = ClientFile.objects.filter(
@@ -181,15 +179,13 @@ class Command(BaseCommand):
         self.stdout.write("  Cleaning up old demo data...")
         count = demo_clients.count()
 
-        # Delete rich data (cascades handle MetricValue, ProgressNoteTarget, etc.)
-        Communication.objects.filter(client_file__in=demo_clients).delete()
-        ProgressNote.objects.filter(client_file__in=demo_clients).delete()
-        PlanTarget.objects.filter(client_file__in=demo_clients).delete()
-        PlanSection.objects.filter(client_file__in=demo_clients).delete()
-        Event.objects.filter(client_file__in=demo_clients).delete()
-        Alert.objects.filter(client_file__in=demo_clients).delete()
-        ClientDetailValue.objects.filter(client_file__in=demo_clients).delete()
-        ClientProgramEnrolment.objects.filter(client_file__in=demo_clients).delete()
+        # Delete suggestion themes (linked to Programs, not clients — won't cascade)
+        SuggestionTheme.objects.filter(created_by__is_demo=True).delete()
+
+        # Delete demo clients — CASCADE handles all child objects:
+        # ProgressNote → ProgressNoteTarget → MetricValue,
+        # PlanSection → PlanTarget, Communication, Event, Alert,
+        # ClientDetailValue, ClientProgramEnrolment, ParticipantUser, etc.
         demo_clients.delete()
 
         # Remove calendar feed tokens and roles for demo users
