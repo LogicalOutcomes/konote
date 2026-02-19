@@ -872,7 +872,7 @@ output.form-output {
     border: 1px solid var(--kn-border-light);
     border-radius: var(--kn-radius-card, 8px);
     border-left: 4px solid var(--kn-primary);
-    background: var(--pico-background-color);
+    background: var(--kn-card-bg);
     transition: box-shadow var(--kn-transition), border-color var(--kn-transition);
 }
 .note-card:hover,
@@ -901,7 +901,7 @@ output.form-output {
     line-height: 1.4;
 }
 .note-card-link {
-    color: var(--kn-text-primary, var(--pico-color));
+    color: var(--kn-text);
     text-decoration: none;
 }
 .note-card-link::after {
@@ -957,7 +957,7 @@ output.form-output {
 }
 .note-card-preview {
     font-size: 0.9rem;
-    color: var(--kn-text-primary, var(--pico-color));
+    color: var(--kn-text);
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
@@ -1268,7 +1268,7 @@ details.search-filters-panel[open] summary {
     border: 1px solid var(--pico-muted-border-color);
     border-radius: var(--pico-border-radius);
     background: transparent;
-    color: var(--pico-color);
+    color: var(--kn-text);
     cursor: pointer;
     font-size: 0.875rem;
     line-height: 1.5;

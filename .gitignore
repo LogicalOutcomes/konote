@@ -46,6 +46,9 @@ _ul*
 qa/.qa-handoff*.json
 tests/*.log
 
+# Original document files (converted to .md — originals kept locally for reference)
+tasks/prosper-canada/originals/
+
 # Docker volumes
 pgdata/
 audit_pgdata/
