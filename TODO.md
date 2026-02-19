@@ -10,7 +10,7 @@
 
 ### Phase: Launch Readiness
 
-- [ ] Complete Agency Deployment Protocol with Prosper Canada — Phase 0 Discovery Call first (see tasks/agency-deployment-protocol.md) — SG (DEPLOY-PC1)
+- [ ] Complete Agency Deployment Protocol with Prosper Canada — Phase 0 Discovery Call first (see tasks/prosper-canada/deployment-protocol.md) — SG (DEPLOY-PC1)
 - [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — GG (ONBOARD-GATE)
 - [ ] Verify production email configuration for exports, erasure alerts, and password resets — GG (OPS3)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — GG (OPS4)
