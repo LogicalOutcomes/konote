@@ -427,9 +427,13 @@ class Command(BaseCommand):
         # Populate demo clients with rich data for charts and reports
         from django.core.management import call_command
 
-        call_command("seed_demo_data", stdout=self.stdout)
+        try:
+            call_command("seed_demo_data", stdout=self.stdout)
+        except Exception as e:
+            self.stderr.write(f"  WARNING: seed_demo_data failed: {e}")
+            self.stderr.write("  Continuing with portal participant seeding...")
 
-        # Create a demo participant portal account for Jordan Rivera (DEMO-001)
+        # Create demo portal accounts — runs even if seed_demo_data had errors
         self._seed_demo_portal_participant()
 
     def _demo_email(self, username):
