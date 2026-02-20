@@ -12703,6 +12703,8 @@ msgstr[1] "%(counter)s demandes de correction sont en attente de révision."
 msgid "%(count)s survey assignments are currently pending or in progress."
 msgstr "%(count)s attributions de sondage sont actuellement en attente ou en cours."
 
+# NOTE: Manually added — translate_strings cannot auto-extract this multiline
+# _() call from views.py (~line 751). Update here if the English text changes.
 #: apps/portal/views.py
 #, python-format
 msgid ""
