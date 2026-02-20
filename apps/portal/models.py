@@ -126,6 +126,18 @@ class ParticipantUser(AbstractBaseUser):
         help_text="True after the participant has seen the journal privacy notice.",
     )
 
+    # Password reset
+    password_reset_token_hash = models.CharField(
+        max_length=128, blank=True, default="",
+        help_text="Hashed 6-digit reset code. Never store plaintext.",
+    )
+    password_reset_expires = models.DateTimeField(null=True, blank=True)
+    password_reset_request_count = models.IntegerField(
+        default=0,
+        help_text="Requests this hour. Reset by scheduled task or hourly check.",
+    )
+    password_reset_last_request = models.DateTimeField(null=True, blank=True)
+
     # Timestamps — last_login is inherited from AbstractBaseUser
     # IMPORTANT: last_login must NEVER be exposed to staff users
     created_at = models.DateTimeField(auto_now_add=True)
@@ -185,6 +197,18 @@ class ParticipantUser(AbstractBaseUser):
             email.lower().strip().encode(),
             hashlib.sha256,
         ).hexdigest()
+
+    def can_request_password_reset(self):
+        """Rate limit: max 3 requests per hour."""
+        if self.password_reset_request_count < 3:
+            return True
+        if self.password_reset_last_request:
+            from datetime import timedelta
+            if timezone.now() - self.password_reset_last_request > timedelta(hours=1):
+                self.password_reset_request_count = 0
+                self.save(update_fields=["password_reset_request_count"])
+                return True
+        return False
 
 
 # ---------------------------------------------------------------------------
