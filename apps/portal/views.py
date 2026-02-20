@@ -591,6 +591,7 @@ def dashboard(request):
     pending_surveys = 0
     single_survey_url = None
     try:
+        from django.urls import reverse
         from apps.surveys.engine import is_surveys_enabled
         from apps.surveys.models import SurveyAssignment
         if is_surveys_enabled():
@@ -601,7 +602,10 @@ def dashboard(request):
             )
             pending_surveys = survey_assignments.count()
             if pending_surveys == 1:
-                single_survey_url = f"/my/surveys/{survey_assignments.first().pk}/fill/"
+                single_survey_url = reverse(
+                    "portal:survey_fill",
+                    args=[survey_assignments.first().pk],
+                )
     except Exception:
         pass
 
@@ -1558,6 +1562,7 @@ def _save_page_answers(request, assignment, sections, partial_answers):
 
 
 @portal_login_required
+@require_POST
 def portal_survey_autosave(request, assignment_id):
     """HTMX auto-save: save a single answer to PartialAnswer."""
     from apps.surveys.engine import is_surveys_enabled

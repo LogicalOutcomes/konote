@@ -112,16 +112,18 @@
                 <legend>
                     {{ question.question_text }}{% if question.required %} <abbr title="{% trans 'required' %}" aria-hidden="true">*</abbr>{% endif %}
                 </legend>
+                {% with saved_multi=question.pk|partial_value:partial_answers %}
                 {% for opt in question.options_json %}
                 <label>
                     <input type="checkbox" name="q_{{ question.pk }}" value="{{ opt.value }}"
-                           {% if opt.value|in_multi_value:question.pk|partial_value:partial_answers %}checked{% endif %}
+                           {% if opt.value|in_multi_value:saved_multi %}checked{% endif %}
                            onchange="htmxSaveCheckboxGroup(this)"
                            data-save-url="{% url 'portal:survey_autosave' assignment_id=assignment.pk %}"
                            data-question-id="{{ question.pk }}">
                     {{ opt.label }}
                 </label>
                 {% endfor %}
+                {% endwith %}
             </fieldset>
 
             {% elif question.question_type == "rating_scale" %}
