@@ -1,0 +1,44 @@
+{% load i18n %}
+<article id="message-{{ msg.pk }}" class="message-card{% if msg.is_urgent %} message-urgent{% endif %}{% if not msg.for_user %} message-team{% endif %}">
+    <header>
+        <h2>
+            {% if msg.left_by %}{{ msg.left_by.display_name }}{% else %}{% trans "Unknown" %}{% endif %}
+            {% if msg.is_urgent %}<span class="urgent-label" aria-hidden="true">{% trans "Urgent" %}</span>{% endif %}
+        </h2>
+        {% if msg.is_urgent %}<span class="sr-only">{% trans "Urgent" %}</span>{% endif %}
+        <div class="message-meta">
+            {% if msg.for_user %}
+                {% blocktrans with name=msg.for_user.display_name %}For: {{ name }}{% endblocktrans %}
+            {% else %}
+                {% blocktrans with worker=term.worker|default:"worker" %}For: Any {{ worker }}{% endblocktrans %}
+                <span class="sr-only">({% trans "team message" %})</span>
+            {% endif %}
+            &middot;
+            {% trans "About" %}:
+            <a href="{% url 'clients:client_detail' client_id=msg.client_file.pk %}">{{ msg.client_file.display_name }} {{ msg.client_file.last_name }}</a>
+            &middot;
+            <time datetime="{{ msg.created_at|date:'c' }}" title="{{ msg.created_at|date:'SHORT_DATETIME_FORMAT' }}" data-relative>
+                {{ msg.created_at|date:"SHORT_DATETIME_FORMAT" }}
+            </time>
+        </div>
+    </header>
+
+    <p>{{ msg.content|truncatewords:50 }}</p>
+
+    {% if msg.status == "unread" %}
+    <footer>
+        <form method="post"
+              action="{% url 'communications:mark_message_read' client_id=msg.client_file.pk message_id=msg.pk %}"
+              hx-post="{% url 'communications:mark_message_read' client_id=msg.client_file.pk message_id=msg.pk %}"
+              hx-target="#message-{{ msg.pk }}"
+              hx-swap="outerHTML">
+            {% csrf_token %}
+            <button type="submit" class="secondary outline" aria-label="{% blocktrans with name=msg.left_by.display_name|default:_("Unknown") %}Mark message from {{ name }} as read{% endblocktrans %}">{% trans "Mark as Read" %}</button>
+        </form>
+    </footer>
+    {% elif msg.read_at %}
+    <footer>
+        <small>{% trans "Marked as read" %}</small>
+    </footer>
+    {% endif %}
+</article>

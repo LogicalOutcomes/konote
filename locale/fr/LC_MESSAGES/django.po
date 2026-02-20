@@ -11197,7 +11197,7 @@ msgid ""
 " file. For clinical notes with engagement and goals, use a Progress Note "
 "instead."
 msgstr ""
-"Vous avez eu un appel, un courriel, un message texte ou une visite\\u00a0? "
+"Vous avez eu un appel, un courriel, un message texte ou une visite ? "
 "Enregistrez-le ici pour qu'il fasse partie du dossier. Pour des notes "
 "cliniques avec l'engagement et les objectifs, utilisez plutôt une Note de "
 "suivi."
@@ -11725,7 +11725,7 @@ msgid ""
 "sessions. Safety plan is in place\\u2009—\\u2009see case notes from Jan 15. "
 "All staff should check in about the safety plan at each visit."
 msgstr ""
-"Exemple\\u00a0: Le client a exprimé des pensées d'automutilation lors des "
+"Exemple : Le client a exprimé des pensées d'automutilation lors des "
 "deux dernières séances. Un plan de sécurité est en place\\u2009—\\u2009voir "
 "les notes du 15 janvier. Tout le personnel devrait vérifier le plan de "
 "sécurité à chaque visite."
@@ -12335,10 +12335,10 @@ msgid "No portal account."
 msgstr "Aucun compte portail."
 
 msgid "Portal access: Active"
-msgstr "Accès au portail\\u00a0: Actif"
+msgstr "Accès au portail : Actif"
 
 msgid "Portal access: Deactivated"
-msgstr "Accès au portail\\u00a0: Désactivé"
+msgstr "Accès au portail : Désactivé"
 
 msgid "Verification code (optional)"
 msgstr "Code de vérification (facultatif)"
@@ -13474,7 +13474,7 @@ msgid "Goal name suggestions"
 msgstr "Suggestions de noms d'objectifs"
 
 msgid "How will you measure progress?"
-msgstr "Comment allez-vous mesurer les progrès?"
+msgstr "Comment allez-vous mesurer les progrès ?"
 
 msgid "Metrics used in this program"
 msgstr "Mesures utilisées dans ce programme"
@@ -13604,14 +13604,14 @@ msgid ""
 "Consider: What specifically will they do or achieve? How will you know when "
 "they've made progress? What's a realistic timeline?"
 msgstr ""
-"À considérer\\u00a0: Que fera ou accomplira la personne concrètement? "
+"À considérer : Que fera ou accomplira la personne concrètement? "
 "Comment saurez-vous qu'elle progresse? Quel est un délai réaliste?"
 
 msgid "Fill in the form"
 msgstr "Remplir le formulaire"
 
 msgid "For example:"
-msgstr "Par exemple\\u00a0:"
+msgstr "Par exemple :"
 
 msgid ""
 "Here's a suggestion based on what they shared. Adjust it to fit what you "
@@ -13704,8 +13704,8 @@ msgstr "Rouvert"
 
 msgid "A good goal answers: What? How often? By when?"
 msgstr ""
-"Un bon objectif répond à\\u00a0: Quoi\\u00a0? À quelle fréquence\\u00a0? "
-"D'ici quand\\u00a0?"
+"Un bon objectif répond à : Quoi ? À quelle fréquence ? "
+"D'ici quand ?"
 
 msgid "Form expanded — complete the goal details below."
 msgstr ""
@@ -13715,16 +13715,16 @@ msgid "Give this a short name (2–5 words)"
 msgstr "Donnez un nom court (2 à 5 mots)"
 
 msgid "How will you track progress?"
-msgstr "Comment allez-vous suivre les progrès\\u00a0?"
+msgstr "Comment allez-vous suivre les progrès?"
 
 msgid "Next: shape this into a goal"
-msgstr "Suivant\\u00a0: formuler l'objectif"
+msgstr "Suivant : formuler l'objectif"
 
 msgid "Show all fields"
 msgstr "Afficher tous les champs"
 
 msgid "What will they do, how much, and by when?"
-msgstr "Que feront-ils, combien et d'ici quand\\u00a0?"
+msgstr "Que feront-ils, combien et d'ici quand ?"
 
 msgid "e.g., Connect with community"
 msgstr "p. ex., Se connecter avec la communauté"
@@ -13732,7 +13732,7 @@ msgstr "p. ex., Se connecter avec la communauté"
 #: templates/plans/goal_form.html (blocktrans)
 #, python-format
 msgid "%(name)s said:"
-msgstr "%(name)s a dit\\u00a0:"
+msgstr "%(name)s a dit :"
 
 #: templates/plans/goal_form.html (blocktrans)
 #, python-format
@@ -13740,6 +13740,40 @@ msgid "e.g., %(name)s will attend one community event per month by June 2026"
 msgstr ""
 "p. ex., %(name)s participera à un évènement communautaire par mois d'ici "
 "juin 2026"
+
+msgid "About"
+msgstr "Au sujet de"
+
+msgid "Flag this message as urgent — shown at top of inbox"
+msgstr ""
+"Marquer ce message comme urgent — affiché en haut de la boîte de réception"
+
+msgid "Mark as urgent"
+msgstr "Marquer comme urgent"
+
+msgid "Unknown"
+msgstr "Inconnu"
+
+msgid "Urgent messages appear at the top of the inbox."
+msgstr "Les messages urgents apparaissent en haut de la boîte de réception."
+
+msgid "team message"
+msgstr "message d'équipe"
+
+#, python-format
+msgid "For: %(name)s"
+msgstr "Pour : %(name)s"
+
+#, python-format
+msgid "You have %(count)s unread message(s)."
+msgstr "Vous avez %(count)s message(s) non lu(s)."
+
+#, python-format
+msgid "Mark message from %(name)s as read"
+msgstr "Marquer le message de %(name)s comme lu"
+
+msgid "Marked as read"
+msgstr "Marqué comme lu"
 
 msgid "I have reviewed this note for accuracy"
 msgstr "J'ai vérifié l'exactitude de cette note"
@@ -13773,3 +13807,4 @@ msgstr "Aucun changement noté"
 
 msgid "Sessions attended this month"
 msgstr "Séances suivies ce mois-ci"
+

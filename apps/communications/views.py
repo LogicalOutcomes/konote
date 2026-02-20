@@ -336,6 +336,7 @@ def leave_message(request, client_id):
             msg.left_by = request.user
             msg.for_user = form.cleaned_data.get("for_user")
             msg.author_program = get_author_program(request.user, client)
+            msg.is_urgent = form.cleaned_data.get("is_urgent", False)
             msg.save()
 
             messages.success(request, _("Message left successfully."))
@@ -410,7 +411,13 @@ def mark_message_read(request, client_id, message_id):
         msg.save(update_fields=["status", "read_at"])
 
     if request.headers.get("HX-Request"):
-        return render(request, "communications/_message_card.html", {
+        # Use the correct card partial based on which page initiated the request
+        current_url = request.headers.get("HX-Current-URL", "")
+        if "my-messages" in current_url:
+            template = "communications/_my_message_card.html"
+        else:
+            template = "communications/_message_card.html"
+        return render(request, template, {
             "msg": msg,
             "client": client,
         })
@@ -439,7 +446,7 @@ def my_messages(request):
         status="unread",
     ).filter(
         db_models.Q(for_user=request.user) | db_models.Q(for_user__isnull=True)
-    ).select_related("left_by", "for_user", "client_file")
+    ).select_related("left_by", "for_user", "client_file").order_by("-is_urgent", "-created_at")
 
     return render(request, "communications/my_messages.html", {
         "staff_messages": staff_messages,

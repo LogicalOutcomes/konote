@@ -4176,3 +4176,31 @@ article[aria-label="notification"].fading-out {
     margin-left: var(--kn-space-sm);
     font-size: 0.9em;
 }
+
+/* ---- Staff messages — card styles ---- */
+.message-card {
+    border-left: 4px solid transparent;
+}
+.message-card.message-urgent {
+    border-left-color: var(--kn-urgent);
+    background: var(--kn-urgent-bg);
+}
+.message-card .urgent-label {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--kn-urgent);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-left: var(--kn-space-sm);
+}
+.message-card.message-team {
+    border-left-color: var(--kn-neutral-bg);
+}
+.message-card .message-meta {
+    color: var(--kn-text-muted);
+    font-size: 0.875rem;
+}
+.message-card .message-meta a {
+    color: var(--kn-text-secondary);
+}

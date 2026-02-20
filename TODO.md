@@ -75,7 +75,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 **Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
 
 - [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
-- [ ] Improve Messages page clarity — make sender vs participant roles obvious, improve timestamp readability, add urgent flag option (see tasks/messages-ux-improvements.md) — GG (UX-MSG1)
 - [ ] Redesign detailed notes form — auto-calc metrics, scale pills for 1-5 ratings, field width constraints, card-based target layout (see tasks/notes-form-redesign.md) — GG (UX-NOTES1)
 
 ## Parking Lot
@@ -101,6 +100,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Improve Messages page clarity — sender-first cards, urgent flag, relative timestamps, focus management, French translations — 2026-02-19 (UX-MSG1)
 - [x] Active batch — theme fixes (FIX1–6), near-term improvements (BUG-SW1, URL-CLEAN1/2, QA-W60/W61), dashboard text (UX-DASH1), PERF2 already done, VERIFY2 confirmed — 2026-02-18 (THEME-FIX1–6, BUG-SW1, URL-CLEAN1, URL-CLEAN2, QA-W60, QA-W61, PERF2, UX-DASH1, VERIFY2)
 - [x] Use CSS custom property for error colour in `.ai-suggest-error` and `.gb-error` — replaced hardcoded `#dc3545` with theme tokens — 2026-02-18 (AI-CSS1)
 - [x] Add `%(client)s` blocktrans msgids to .po file with French translations — 2026-02-18 (AI-I18N1)

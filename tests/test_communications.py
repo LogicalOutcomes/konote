@@ -543,3 +543,186 @@ class ComposeEmailViewTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertIn("login", response.url)
+
+
+# -----------------------------------------------------------------------
+# StaffMessage model tests (UX-MSG1)
+# -----------------------------------------------------------------------
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class StaffMessageModelTest(TestCase):
+    """Test StaffMessage model fields and behaviour."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        self.staff = User.objects.create_user(
+            username="test_staff_msg", password="testpass123", display_name="Test Staff",
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_is_urgent_defaults_to_false(self):
+        from apps.communications.models import StaffMessage
+        msg = StaffMessage(client_file=self.client_file, left_by=self.staff)
+        msg.content = "Test message"
+        msg.save()
+        msg.refresh_from_db()
+        self.assertFalse(msg.is_urgent)
+
+    def test_is_urgent_can_be_set_true(self):
+        from apps.communications.models import StaffMessage
+        msg = StaffMessage(client_file=self.client_file, left_by=self.staff, is_urgent=True)
+        msg.content = "Urgent test"
+        msg.save()
+        msg.refresh_from_db()
+        self.assertTrue(msg.is_urgent)
+
+
+# -----------------------------------------------------------------------
+# StaffMessageForm tests (UX-MSG1)
+# -----------------------------------------------------------------------
+
+class StaffMessageFormTest(TestCase):
+    """Test StaffMessageForm validation."""
+
+    def test_valid_with_urgent_flag(self):
+        from apps.communications.forms import StaffMessageForm
+        form = StaffMessageForm(
+            data={"message": "Please call back ASAP", "is_urgent": True},
+            staff_choices=[], worker_term="worker",
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertTrue(form.cleaned_data["is_urgent"])
+
+    def test_urgent_defaults_to_false(self):
+        from apps.communications.forms import StaffMessageForm
+        form = StaffMessageForm(
+            data={"message": "Regular message"},
+            staff_choices=[], worker_term="worker",
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertFalse(form.cleaned_data["is_urgent"])
+
+    def test_valid_without_urgent(self):
+        from apps.communications.forms import StaffMessageForm
+        form = StaffMessageForm(
+            data={"message": "No rush"},
+            staff_choices=[], worker_term="worker",
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+
+
+# -----------------------------------------------------------------------
+# leave_message view tests (UX-MSG1)
+# -----------------------------------------------------------------------
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class LeaveMessageViewTest(TestCase):
+    """Test the leave_message view — creating staff messages."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        self.staff = User.objects.create_user(
+            username="test_staff_lm", password="testpass123", display_name="Test Staff",
+        )
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.program, role="staff", status="active",
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program,
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_post_creates_message(self):
+        from apps.communications.models import StaffMessage
+        self.client.login(username="test_staff_lm", password="testpass123")
+        url = f"/communications/participant/{self.client_file.pk}/leave-message/"
+        response = self.client.post(url, {"message": "Call back please"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(StaffMessage.objects.count(), 1)
+        msg = StaffMessage.objects.first()
+        self.assertEqual(msg.content, "Call back please")
+        self.assertFalse(msg.is_urgent)
+
+    def test_post_creates_urgent_message(self):
+        from apps.communications.models import StaffMessage
+        self.client.login(username="test_staff_lm", password="testpass123")
+        url = f"/communications/participant/{self.client_file.pk}/leave-message/"
+        response = self.client.post(url, {"message": "Emergency!", "is_urgent": "on"})
+        self.assertEqual(response.status_code, 302)
+        msg = StaffMessage.objects.first()
+        self.assertTrue(msg.is_urgent)
+
+
+# -----------------------------------------------------------------------
+# my_messages view tests (UX-MSG1)
+# -----------------------------------------------------------------------
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MyMessagesViewTest(TestCase):
+    """Test the my_messages dashboard view."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        self.staff = User.objects.create_user(
+            username="test_staff_mm", password="testpass123", display_name="Test Staff",
+        )
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.program, role="staff", status="active",
+        )
+        self.sender = User.objects.create_user(
+            username="test_sender", password="testpass123", display_name="Sender",
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program,
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_urgent_messages_sorted_first(self):
+        from apps.communications.models import StaffMessage
+        # Create urgent message first (older)
+        urgent = StaffMessage(client_file=self.client_file, left_by=self.sender, for_user=self.staff, is_urgent=True)
+        urgent.content = "Urgent message"
+        urgent.save()
+        # Create regular message second (newer — without urgent-first sort, this would appear first)
+        regular = StaffMessage(client_file=self.client_file, left_by=self.sender, for_user=self.staff)
+        regular.content = "Regular message"
+        regular.save()
+
+        self.client.login(username="test_staff_mm", password="testpass123")
+        response = self.client.get("/communications/my-messages/")
+        self.assertEqual(response.status_code, 200)
+        msgs = list(response.context["staff_messages"])
+        self.assertTrue(msgs[0].is_urgent)
+        self.assertFalse(msgs[1].is_urgent)
+
+    def test_my_messages_returns_200(self):
+        self.client.login(username="test_staff_mm", password="testpass123")
+        response = self.client.get("/communications/my-messages/")
+        self.assertEqual(response.status_code, 200)
