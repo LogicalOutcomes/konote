@@ -188,7 +188,7 @@ class GoalForm(forms.Form):
         self.fields["name"].label = _("Give this goal a short name")
         self.fields["name"].help_text = _("A concise name for this goal.")
         self.fields["section_choice"].label = _(
-            "Which area of the plan does this belong to?"
+            "Area of the plan"
         )
         self.fields["description"].label = _("Add more detail (optional)")
         self.fields["metrics"].label = _("How will you measure progress?")
