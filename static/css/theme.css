@@ -37,6 +37,7 @@
     --kn-page-bg: #f7f6f3;
     --kn-card-bg: #ffffff;
     --kn-card-hover-bg: #fefefe;
+    --kn-surface-alt: #f8f9fa;
     --kn-border: #d1d5db;
     --kn-border-light: #e8e6e1;
 
@@ -111,6 +112,7 @@
         --kn-page-bg: var(--pico-background-color);
         --kn-card-bg: #1e2533;
         --kn-card-hover-bg: #242d3d;
+        --kn-surface-alt: #2a3441;
         --kn-border: #4a5568;
         --kn-border-light: #2d3748;
 

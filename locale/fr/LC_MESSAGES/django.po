@@ -1222,6 +1222,8 @@ msgid ""
 "Tick the %(targets)s you want to record against. Only selected ones will "
 "appear below."
 msgstr ""
+"Cochez les %(targets)s que vous souhaitez enregistrer. Seuls ceux "
+"sélectionnés apparaîtront ci-dessous."
 "Cochez les %(targets)s pour lesquels vous souhaitez enregistrer des données."
 " Seuls ceux sélectionnés apparaîtront ci-dessous."
 
@@ -8499,6 +8501,8 @@ msgid ""
 "Urgent = safety/access · Important = affects many · Worth exploring = good "
 "idea · Noted = heard and recorded"
 msgstr ""
+"Urgent = sécurité/accès · Important = affecte plusieurs · À explorer = bonne "
+"idée · Noté = entendu et enregistré"
 "Urgent = sécurité/accès · Important = touche plusieurs personnes · À "
 "explorer = bonne idée · Noté = entendu et consigné"
 
@@ -11725,10 +11729,10 @@ msgid ""
 "sessions. Safety plan is in place\\u2009—\\u2009see case notes from Jan 15. "
 "All staff should check in about the safety plan at each visit."
 msgstr ""
-"Exemple : Le client a exprimé des pensées d'automutilation lors des "
-"deux dernières séances. Un plan de sécurité est en place\\u2009—\\u2009voir "
-"les notes du 15 janvier. Tout le personnel devrait vérifier le plan de "
-"sécurité à chaque visite."
+"Exemple : Le client a exprimé des pensées d'automutilation lors des deux "
+"dernières séances. Un plan de sécurité est en place\\u2009—\\u2009voir les "
+"notes du 15 janvier. Tout le personnel devrait vérifier le plan de sécurité "
+"à chaque visite."
 
 msgid "In person"
 msgstr "En personne"
@@ -13604,8 +13608,8 @@ msgid ""
 "Consider: What specifically will they do or achieve? How will you know when "
 "they've made progress? What's a realistic timeline?"
 msgstr ""
-"À considérer : Que fera ou accomplira la personne concrètement? "
-"Comment saurez-vous qu'elle progresse? Quel est un délai réaliste?"
+"À considérer : Que fera ou accomplira la personne concrètement? Comment "
+"saurez-vous qu'elle progresse? Quel est un délai réaliste?"
 
 msgid "Fill in the form"
 msgstr "Remplir le formulaire"
@@ -13703,9 +13707,7 @@ msgid "Reopened"
 msgstr "Rouvert"
 
 msgid "A good goal answers: What? How often? By when?"
-msgstr ""
-"Un bon objectif répond à : Quoi ? À quelle fréquence ? "
-"D'ici quand ?"
+msgstr "Un bon objectif répond à : Quoi ? À quelle fréquence ? D'ici quand ?"
 
 msgid "Form expanded — complete the goal details below."
 msgstr ""
@@ -13808,3 +13810,161 @@ msgstr "Aucun changement noté"
 msgid "Sessions attended this month"
 msgstr "Séances suivies ce mois-ci"
 
+msgid "Anything they'd change about the program?"
+msgstr "Quelque chose qu'ils changeraient au programme ?"
+
+msgid "Awaiting approval"
+msgstr ""
+
+msgid "Characteristic"
+msgstr ""
+
+msgid "Dismissed"
+msgstr ""
+
+msgid "Draft"
+msgstr ""
+
+msgid "Enrolment"
+msgstr ""
+
+msgid "Enrolment date"
+msgstr ""
+
+msgid "Expand target"
+msgstr "Développer la cible"
+
+msgid "For choice questions: list of {value, label, label_fr, score}."
+msgstr ""
+
+msgid "For scales/scores. Stored as plain integer for aggregation."
+msgstr ""
+
+msgid "Fully invested"
+msgstr "Pleinement investi"
+
+msgid "Going through motions"
+msgstr "Fait acte de présence"
+
+msgid "Guarded"
+msgstr "Sur ses gardes"
+
+msgid "How did they feel about today's session?"
+msgstr "Comment se sont-ils sentis par rapport à la séance d'aujourd'hui ?"
+
+msgid "If true, assignment is automatic. If false, staff must approve."
+msgstr ""
+
+msgid "If true, responses are never linked to a participant file."
+msgstr ""
+
+msgid "If true, this section starts a new page in the form."
+msgstr ""
+
+msgid "In progress"
+msgstr ""
+
+msgid "Last completion"
+msgstr ""
+
+msgid "Long text"
+msgstr ""
+
+msgid "Multiple choice"
+msgstr ""
+
+msgid "No 1-on-1"
+msgstr "Pas de 1 à 1"
+
+msgid "No scoring"
+msgstr ""
+
+msgid "Not participating"
+msgstr "Ne participe pas"
+
+msgid "Once per enrolment"
+msgstr ""
+
+msgid "Once per participant"
+msgstr ""
+
+msgid "Optional name for link responses. Not encrypted (non-PII)."
+msgstr ""
+
+msgid "Participant engagement level"
+msgstr "Niveau d'engagement du participant"
+
+msgid "Participant portal"
+msgstr ""
+
+msgid "Please enter a goal name before saving."
+msgstr ""
+
+msgid "Please enter a section name before saving."
+msgstr ""
+
+msgid "Rating scale"
+msgstr ""
+
+msgid "Recurring"
+msgstr ""
+
+msgid "Section only shows when this question has the condition value."
+msgstr ""
+
+msgid "Session notes (optional)"
+msgstr "Notes de session (facultatif)"
+
+msgid "Set a due date this many days after assignment."
+msgstr ""
+
+msgid "Shareable link"
+msgstr ""
+
+msgid "Short text"
+msgstr ""
+
+msgid "Single choice"
+msgstr ""
+
+msgid "Staff data entry"
+msgstr ""
+
+msgid "Sum"
+msgstr ""
+
+msgid "The session overall"
+msgstr "La session dans son ensemble"
+
+msgid "Their perspective"
+msgstr "Leur point de vue"
+
+msgid "Time-based"
+msgstr ""
+
+msgid "What did they say about this?"
+msgstr "Qu'ont-ils dit à ce sujet ?"
+
+msgid "When activated, also assign to participants who already match."
+msgstr ""
+
+msgid "Whether participants see section scores after submission."
+msgstr ""
+
+msgid "Whether this survey appears in the participant portal."
+msgstr ""
+
+msgid "Yes / No"
+msgstr ""
+
+msgid "Your observation, not a score."
+msgstr "Votre observation, pas une note."
+
+msgid "Your observations"
+msgstr "Vos observations"
+
+msgid "auto-calculated"
+msgstr "calculé automatiquement"
+
+msgid "of"
+msgstr "sur"

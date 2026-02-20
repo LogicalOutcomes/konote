@@ -61,13 +61,18 @@
              aria-expanded="false" aria-controls="target-card-body-{{ tf.target.pk }}">
             <div class="target-card-title">
                 <strong>{{ tf.target.name }}</strong>
-                <small class="secondary">— {{ tf.target.plan_section.name }}</small>
+                <span class="target-section-name">— {{ tf.target.plan_section.name }}</span>
             </div>
             <div class="target-card-actions">
                 <button type="button" class="no-change-btn outline secondary"
                         data-target-id="{{ tf.target.pk }}"
                         aria-label="{% trans 'Mark as no change' %}">
                     {% trans "No change" %}
+                </button>
+                <button type="button" class="expand-btn outline secondary"
+                        data-target-id="{{ tf.target.pk }}"
+                        aria-label="{% trans 'Expand target' %}" hidden>
+                    {% trans "Edit" %}
                 </button>
                 <span class="expand-indicator" aria-hidden="true">&#9662;</span>
             </div>
@@ -77,7 +82,7 @@
         <div class="target-card-compact">
             {% if tf.target.client_goal %}
             <div class="client-goal-callout" role="note">
-                <strong>{% trans "In their words:" %}</strong> "{{ tf.target.client_goal }}"
+                <strong>{% trans "What did they say about this?" %}</strong> "{{ tf.target.client_goal }}"
             </div>
             {% endif %}
 
@@ -101,9 +106,9 @@
                 {{ mf.metric_def_id }}
                 {% if mf.auto_calc_value != None %}
                 <div class="auto-calc-metric">
-                    <span class="metric-label">{{ mf.value.label }}</span>
-                    <span class="metric-value" aria-readonly="true">{{ mf.auto_calc_value }}</span>
-                    <small>{% trans "(auto-calculated)" %}</small>
+                    <span class="badge outline" aria-label="{{ mf.value.label }}: {{ mf.auto_calc_value }}, {% trans 'auto-calculated' %}">
+                        {{ mf.value.label }}: <strong>{{ mf.auto_calc_value }}</strong> <small class="secondary">({% trans "auto-calculated" %})</small>
+                    </span>
                 </div>
                 {% elif mf.is_scale %}
                 <div class="scale-metric">
@@ -128,7 +133,7 @@
             </div>
             {% endif %}
 
-            <label for="{{ tf.note_form.client_words.id_for_label }}">{% trans "In their words" %}</label>
+            <label for="{{ tf.note_form.client_words.id_for_label }}">{% trans "What did they say about this?" %}</label>
             {{ tf.note_form.client_words }}
             {% if tf.note_form.client_words.help_text %}<small>{{ tf.note_form.client_words.help_text }}</small>{% endif %}
             {% if tf.note_form.client_words.errors %}<small class="error" id="client-words-error-{{ tf.target.pk }}" role="alert">{{ tf.note_form.client_words.errors.0 }}</small>{% endif %}
@@ -148,66 +153,76 @@
     <p class="empty-state">{% blocktrans with targets=term.target_plural|default:"targets" %}No active {{ targets }} found.{% endblocktrans %} <a href="{% url 'plans:plan_view' client_id=client.pk %}">{% trans "Create a plan" %}</a> {% trans "first." %}</p>
     {% endif %}
 
-    <!-- Zone 3: Wrap-up -->
-    <details class="zone-wrapup">
-        <summary>{% trans "Wrap-up details" %} <small class="secondary">{% trans "(optional)" %}</small></summary>
+    <!-- Zone 3: The Session Overall (Two-Lens Layout) -->
+    <fieldset class="session-overall" role="group" aria-labelledby="session-overall-legend">
+        <legend id="session-overall-legend" class="sr-only">{% trans "The session overall" %}</legend>
+        <h2 aria-hidden="true">{% trans "The session overall" %}</h2>
+        
+        <div class="two-lens-grid">
+            <!-- Left Lens: Their Perspective -->
+            <div class="lens-participant">
+                <h3>{% trans "Their perspective" %}</h3>
+                
+                <label for="{{ form.participant_reflection.id_for_label }}">
+                    {% trans "How did they feel about today's session?" %}
+                </label>
+                {{ form.participant_reflection }}
+                {% if form.participant_reflection.errors %}<small class="error" id="reflection-error" role="alert">{{ form.participant_reflection.errors.0 }}</small>{% endif %}
 
-        <label for="{{ form.summary.id_for_label }}">{% trans "Summary (optional)" %}</label>
-        {{ form.summary }}
-        {% if form.summary.errors %}<small class="error" id="summary-error" role="alert">{{ form.summary.errors.0 }}</small>{% endif %}
+                <label for="{{ form.participant_suggestion.id_for_label }}">{% trans "Anything they'd change about the program?" %}</label>
+                {{ form.participant_suggestion }}
+                {% if form.participant_suggestion.errors %}<small class="error" id="suggestion-error" role="alert">{{ form.participant_suggestion.errors.0 }}</small>{% endif %}
 
-        <div class="wrapup-grid">
-            <div class="field-engagement">
-                <label for="{{ form.engagement_observation.id_for_label }}">{% trans "How engaged was the participant?" %}</label>
-                {{ form.engagement_observation }}
-                <small>{% trans "Your observation — not a score." %}</small>
-                {% if form.engagement_observation.errors %}<small class="error" id="engagement-error" role="alert">{{ form.engagement_observation.errors.0 }}</small>{% endif %}
+                <div class="suggestion-priority-row" id="suggestion-priority-row" hidden>
+                    <label for="{{ form.suggestion_priority.id_for_label }}">{% trans "Priority" %}</label>
+                    {{ form.suggestion_priority }}
+                    <small>{% trans "Urgent = safety/access · Important = affects many · Worth exploring = good idea · Noted = heard and recorded" %}</small>
+                    {% if form.suggestion_priority.errors %}<small class="error" id="priority-error" role="alert">{{ form.suggestion_priority.errors.0 }}</small>{% endif %}
+                </div>
             </div>
-            <div class="field-followup">
-                <label for="{{ form.follow_up_date.id_for_label }}">{% trans "Follow up by" %}</label>
-                {{ form.follow_up_date }}
-                <small>{% trans "(optional — adds to your home page reminders)" %}</small>
-                {% if form.follow_up_date.errors %}<small class="error" id="follow-up-error" role="alert">{{ form.follow_up_date.errors.0 }}</small>{% endif %}
+
+            <!-- Right Lens: Your Observations -->
+            <div class="lens-staff">
+                <h3>{% trans "Your observations" %}</h3>
+                
+                <fieldset class="engagement-fieldset">
+                    <legend>{% trans "Engagement" %}</legend>
+                    <div class="engagement-pills" role="radiogroup" aria-label="{% trans 'Participant engagement level' %}">
+                    {% for radio in form.engagement_observation %}
+                        {% if radio.choice_value %}
+                        <label class="{% if radio.choice_value == 'no_interaction' %}pill-separated{% endif %}">
+                            {{ radio.tag }}<span>{{ radio.choice_label }}</span>
+                        </label>
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+                    <small>{% trans "Your observation, not a score." %}</small>
+                    {% if form.engagement_observation.errors %}<small class="error" id="engagement-error" role="alert">{{ form.engagement_observation.errors.0 }}</small>{% endif %}
+                </fieldset>
+
+                <label for="{{ form.summary.id_for_label }}">{% trans "Session notes (optional)" %}</label>
+                {{ form.summary }}
+                {% if form.summary.errors %}<small class="error" id="summary-error" role="alert">{{ form.summary.errors.0 }}</small>{% endif %}
             </div>
         </div>
-    </details>
+    </fieldset>
 
-    <!-- Zone 4: Participant Voice -->
-    <details class="zone-voice">
-        <summary>{% trans "Participant voice" %} <small class="secondary">{% trans "(optional)" %}</small></summary>
-
-        <label for="{{ form.participant_reflection.id_for_label }}" class="visually-hidden">
-            {% blocktrans with client=term.client|default:"Participant" %}{{ client }}'s response{% endblocktrans %}
-        </label>
-        <label for="{{ form.participant_reflection.id_for_label }}">
-            {% blocktrans with client=term.client|default:"Participant" %}{{ client }}'s reflection{% endblocktrans %}
-        </label>
-        {{ form.participant_reflection }}
-        {% if form.participant_reflection.errors %}<small class="error" id="reflection-error" role="alert">{{ form.participant_reflection.errors.0 }}</small>{% endif %}
-
-        <label for="{{ form.participant_suggestion.id_for_label }}">{% trans "What they'd change" %}</label>
-        {{ form.participant_suggestion }}
-        {% if form.participant_suggestion.errors %}<small class="error" id="suggestion-error" role="alert">{{ form.participant_suggestion.errors.0 }}</small>{% endif %}
-
-        <div class="suggestion-priority-row" id="suggestion-priority-row" hidden>
-            <label for="{{ form.suggestion_priority.id_for_label }}">{% trans "Priority" %}</label>
-            {{ form.suggestion_priority }}
-            <small>{% trans "Urgent = safety/access · Important = affects many · Worth exploring = good idea · Noted = heard and recorded" %}</small>
-            {% if form.suggestion_priority.errors %}<small class="error" id="priority-error" role="alert">{{ form.suggestion_priority.errors.0 }}</small>{% endif %}
+    <!-- Zone 4: Follow-up -->
+    <fieldset class="session-followup">
+        <legend class="sr-only">{% trans "Follow-up" %}</legend>
+        <div class="field-followup">
+            <label for="{{ form.follow_up_date.id_for_label }}">{% trans "Follow up by" %}</label>
+            {{ form.follow_up_date }}
+            <small>{% trans "(optional — adds to your home page reminders)" %}</small>
+            {% if form.follow_up_date.errors %}<small class="error" id="follow-up-error" role="alert">{{ form.follow_up_date.errors.0 }}</small>{% endif %}
         </div>
-    </details>
+    </fieldset>
 
     <!-- Sticky footer with confirmation and save -->
-    <div class="sticky-form-footer{% if form.consent_confirmed.errors %} has-error{% endif %}" role="region" aria-label="{% trans 'Confirm and save' %}">
+    <div class="sticky-form-footer" role="region" aria-label="{% trans 'Confirm and save' %}">
         <div class="sticky-form-footer-inner">
-            <div class="consent-section">
-                <label for="{{ form.consent_confirmed.id_for_label }}">
-                    {{ form.consent_confirmed }}
-                    {% trans "I have reviewed this note for accuracy" %}
-                </label>
-                {% if form.consent_confirmed.errors %}
-                <small class="error" id="consent-error" role="alert">{{ form.consent_confirmed.errors.0 }}</small>
-                {% endif %}
+            <div class="completeness-indicator" aria-live="polite">
+                <span id="completeness-text">✓ 0 {% trans "of" %} 0 {% trans "targets" %}</span>
             </div>
             <span class="autosave-indicator" id="autosave-status" hidden aria-live="polite" role="status">
                 <span class="status-text">{% trans "Saved" %}</span>
@@ -272,19 +287,80 @@ document.querySelectorAll(".no-change-btn").forEach(function (btn) {
             'input[name="target_' + targetId + '-progress_descriptor"][value="holding"]'
         );
         if (holdingRadio) holdingRadio.checked = true;
-        // Show done indicator, hide the card body
-        card.classList.add("done");
-        var indicator = card.querySelector(".target-done-indicator");
-        if (indicator) indicator.hidden = false;
-        // Collapse if expanded
+        
+        // Collapse into single-line strip
+        card.classList.add("collapsed-done");
+        
+        // Hide the card body
         var body = card.querySelector(".target-card-body");
         if (body) body.hidden = true;
         card.classList.remove("expanded");
         card.classList.add("compact");
         var header = card.querySelector(".target-card-header");
         if (header) header.setAttribute("aria-expanded", "false");
+        
+        updateCompleteness();
     });
 });
+
+// "Edit" button on collapsed strip
+document.querySelectorAll(".expand-btn").forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var card = btn.closest(".target-card");
+        card.classList.remove("collapsed-done");
+        
+        // Expand the card body
+        var body = card.querySelector(".target-card-body");
+        if (body) body.hidden = false;
+        card.classList.add("expanded");
+        card.classList.remove("compact");
+        var header = card.querySelector(".target-card-header");
+        if (header) header.setAttribute("aria-expanded", "true");
+        
+        updateCompleteness();
+    });
+});
+
+// Completeness Indicator Logic
+function updateCompleteness() {
+    var indicator = document.getElementById("completeness-text");
+    if (!indicator) return;
+    
+    var selectedTargets = document.querySelectorAll(".target-selector:checked").length;
+    var completedTargets = 0;
+    
+    document.querySelectorAll(".target-card:not([hidden])").forEach(function(card) {
+        // A target is complete if it's collapsed-done OR if it has a progress descriptor selected
+        var isCollapsed = card.classList.contains("collapsed-done");
+        var hasDescriptor = card.querySelector('.descriptor-pills input[type="radio"]:checked');
+        if (isCollapsed || hasDescriptor) {
+            completedTargets++;
+        }
+    });
+    
+    indicator.textContent = "✓ " + completedTargets + " {% trans 'of' %} " + selectedTargets + " {% trans 'targets' %}";
+    
+    var container = indicator.closest(".completeness-indicator");
+    if (container) {
+        if (selectedTargets > 0 && completedTargets === selectedTargets) {
+            container.classList.add("complete");
+        } else {
+            container.classList.remove("complete");
+        }
+    }
+}
+
+// Listen for changes to target selection and radio buttons to update completeness
+document.querySelectorAll(".target-selector").forEach(function (cb) {
+    cb.addEventListener("change", updateCompleteness);
+});
+document.querySelectorAll('.target-card input[type="radio"]').forEach(function (radio) {
+    radio.addEventListener("change", updateCompleteness);
+});
+
+// Initial completeness check
+updateCompleteness();
 
 // Show priority dropdown only when suggestion has content
 var suggestionField = document.querySelector('[name="participant_suggestion"]');

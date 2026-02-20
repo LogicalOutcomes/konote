@@ -80,10 +80,12 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 **Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
 
+- [ ] Fix Add Target form UX: auto-select or clarify "area of the plan", remove "Attendance & Wellbeing" placeholder, and change metric text from "how much progress have they made" to "how much progress have I made" (UX-TARGET1)
 - [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
-- [ ] Redesign detailed notes form — auto-calc metrics, scale pills for 1-5 ratings, field width constraints, card-based target layout (see tasks/notes-form-redesign.md) — GG (UX-NOTES1)
 
-## Parking Lot
+## Recently Done
+
+- [x] Redesign detailed notes form (Round 2) — auto-calc metrics, scale pills, two-lens layout (see docs/plans/2026-02-19-notes-form-redesign-v2.md) — 2026-02-19 (UX-NOTES2)
 
 - [ ] Rename original KoNote GitHub repo to KoNote Classic and add redirect/link to this repo (REPO1)
 - [ ] Add stress testing for 50+ concurrent users (QA-T15)

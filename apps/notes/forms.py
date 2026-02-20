@@ -63,11 +63,6 @@ class QuickNoteForm(forms.Form):
         label=_("Follow up by"),
         help_text=_("(optional — adds to your home page reminders)"),
     )
-    consent_confirmed = forms.BooleanField(
-        required=False,
-        label=_("We created this note together"),
-        help_text=_("Confirm you reviewed this note with the participant."),
-    )
 
     def clean(self):
         cleaned = super().clean()
@@ -126,8 +121,9 @@ class FullNoteForm(forms.Form):
     engagement_observation = forms.ChoiceField(
         choices=ProgressNote.ENGAGEMENT_CHOICES,
         required=False,
-        label=_("How engaged was the participant?"),
-        help_text=_("Your observation — not a score. This is a practice tool, not a performance evaluation."),
+        label=_("Engagement"),
+        widget=forms.RadioSelect,
+        help_text=_("Your observation, not a score."),
     )
     participant_reflection = forms.CharField(
         widget=forms.Textarea(attrs={
@@ -135,7 +131,7 @@ class FullNoteForm(forms.Form):
             "placeholder": _("Their words..."),
         }),
         required=False,
-        label=_("Participant's reflection"),
+        label=_("How did they feel about today's session?"),
         help_text=_("Record their words, not your interpretation."),
     )
     participant_suggestion = forms.CharField(
@@ -144,16 +140,12 @@ class FullNoteForm(forms.Form):
             "placeholder": _('e.g. "Tea is always cold" or "Loves the Friday group" or "Wishes sessions were longer"'),
         }),
         required=False,
-        label=_("What they'd change"),
+        label=_("Anything they'd change about the program?"),
     )
     suggestion_priority = forms.ChoiceField(
         choices=ProgressNote.SUGGESTION_PRIORITY_CHOICES,
         required=False,
         label=_("Priority"),
-    )
-    consent_confirmed = forms.BooleanField(
-        required=False,
-        label=_("I have reviewed this note for accuracy"),
     )
 
 
@@ -164,7 +156,7 @@ class TargetNoteForm(forms.Form):
     client_words = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": _("What did they say about this goal?")}),
         required=False,
-        label=_("In their words"),
+        label=_("What did they say about this?"),
         help_text=_("What did they say about this goal?"),
     )
     progress_descriptor = forms.ChoiceField(
@@ -216,7 +208,7 @@ class MetricValueForm(forms.Form):
                 and metric_def.max_value is not None
                 and metric_def.min_value == int(metric_def.min_value)
                 and metric_def.max_value == int(metric_def.max_value)
-                and (metric_def.max_value - metric_def.min_value) <= 9
+                and (metric_def.max_value - metric_def.min_value) <= 10
             )
 
             if is_scale:
