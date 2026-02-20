@@ -292,6 +292,60 @@ class ConditionValuesEndpointTests(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ConditionalBadgeRenderTests(TestCase):
+    """Test conditional badge appears in admin detail and questions views."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="badge_staff", password="testpass123",
+            display_name="Badge Staff", is_admin=True,
+        )
+        self.client.login(username="badge_staff", password="testpass123")
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys", defaults={"is_enabled": True},
+        )
+        self.survey = Survey.objects.create(
+            name="Badge Test", created_by=self.staff,
+        )
+        self.s1 = SurveySection.objects.create(
+            survey=self.survey, title="Main", sort_order=1,
+        )
+        self.trigger_q = SurveyQuestion.objects.create(
+            section=self.s1, question_text="Has children?",
+            question_type="yes_no", sort_order=1,
+        )
+        self.s2 = SurveySection.objects.create(
+            survey=self.survey, title="Childcare", sort_order=2,
+            condition_question=self.trigger_q, condition_value="1",
+        )
+
+    def test_detail_shows_conditional_badge(self):
+        url = f"/manage/surveys/{self.survey.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Conditional")
+        self.assertContains(resp, "Has children?")
+
+    def test_questions_shows_conditional_badge(self):
+        url = f"/manage/surveys/{self.survey.pk}/questions/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Conditional")
+        self.assertContains(resp, "Has children?")
+
+    def test_detail_no_badge_for_unconditional(self):
+        url = f"/manage/surveys/{self.survey.pk}/"
+        resp = self.client.get(url)
+        # "Main" section should NOT have a Conditional badge
+        content = resp.content.decode()
+        # The badge appears once (for Childcare only), not for Main
+        self.assertEqual(content.count("Conditional"), 1)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class TriggerRuleModelTests(TestCase):
     """Test SurveyTriggerRule creation and constraints."""
 

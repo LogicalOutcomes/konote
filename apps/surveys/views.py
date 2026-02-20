@@ -556,9 +556,12 @@ def staff_data_entry(request, client_id, survey_id):
     if request.method == "POST":
         from apps.portal.survey_helpers import filter_visible_sections
 
+        # Materialise queryset once to avoid duplicate DB hits
+        sections_list = list(sections)
+
         # 1. Collect all submitted answers
         all_answers = {}
-        for section in sections:
+        for section in sections_list:
             for question in section.questions.all().order_by("sort_order"):
                 field_name = f"q_{question.pk}"
                 if question.question_type == "multiple_choice":
@@ -570,14 +573,13 @@ def staff_data_entry(request, client_id, survey_id):
                     all_answers[question.pk] = raw_value
 
         # 2. Determine which sections are visible based on answers
-        all_sections_list = list(sections)
-        visible_sections = filter_visible_sections(all_sections_list, all_answers)
+        visible_sections = filter_visible_sections(sections_list, all_answers)
         visible_section_pks = {s.pk for s in visible_sections}
 
         # 3. Validate required fields only in visible sections
         errors = []
         answers_data = []
-        for section in sections:
+        for section in sections_list:
             for question in section.questions.all().order_by("sort_order"):
                 raw_value = all_answers.get(question.pk, "")
                 if (question.required
