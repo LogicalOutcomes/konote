@@ -9,7 +9,7 @@
     <p>{{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
 
-{% if form.non_field_errors %}
+{% if form.errors %}
 <div class="error-summary" role="alert" id="error-summary" tabindex="-1">
     <strong>{% trans "Please fix the following:" %}</strong>
     <ul>
@@ -546,6 +546,9 @@
         <button type="submit">{% blocktrans with target=term.target|default:"Goal" %}Add {{ target }}{% endblocktrans %}</button>
         <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
+
+    {# ── Screen reader announcement region ── #}
+    <div aria-live="polite" class="sr-only" id="form-announce"></div>
     {% endif %}
 </form>
 {% endblock %}
@@ -732,16 +735,50 @@
             if (!btn) return;
 
             if (btn.id === "btn-use-suggestion") {
-                var suggestion = JSON.parse(btn.dataset.suggestion);
+                var suggestion;
+                try { suggestion = JSON.parse(btn.dataset.suggestion); }
+                catch (_) { suggestion = null; }
+                if (!suggestion) {
+                    // Malformed AI response — fall back to manual entry
+                    suggestionContainer.innerHTML = "";
+                    revealForm();
+                    return;
+                }
                 populateForm(suggestion, btn.dataset.sectionPk, btn.dataset.newSection);
-                // Submit the form directly
+                suggestionContainer.innerHTML = "";
                 revealForm();
+
+                // Verify required fields before auto-submitting.
+                // If section is "new" with no name, show form for review.
+                var announce = document.getElementById("form-announce");
+                var sc = goalForm.querySelector("[name=section_choice]");
+                var nsn = goalForm.querySelector("[name=new_section_name]");
+                if (sc && sc.value === "new" && (!nsn || !nsn.value.trim())) {
+                    if (announce) announce.textContent = "{% trans 'Please enter a section name before saving.' %}";
+                    if (nsn) nsn.focus();
+                    return;
+                }
+                if (!nameInput || !nameInput.value.trim()) {
+                    if (announce) announce.textContent = "{% trans 'Please enter a goal name before saving.' %}";
+                    if (nameInput) nameInput.focus();
+                    return;
+                }
+
+                // Note: form.submit() bypasses the submit event — any future
+                // submit listeners (analytics, spinners) won't fire on this path.
                 goalForm.submit();
                 return;
             }
 
             if (btn.id === "btn-edit-suggestion") {
-                var editSuggestion = JSON.parse(btn.dataset.suggestion);
+                var editSuggestion;
+                try { editSuggestion = JSON.parse(btn.dataset.suggestion); }
+                catch (_) { editSuggestion = null; }
+                if (!editSuggestion) {
+                    suggestionContainer.innerHTML = "";
+                    revealForm();
+                    return;
+                }
                 populateForm(editSuggestion, btn.dataset.sectionPk, btn.dataset.newSection);
                 suggestionContainer.innerHTML = "";
                 revealForm();
