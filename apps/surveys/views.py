@@ -138,7 +138,7 @@ def survey_detail(request, survey_id):
     """View survey details — questions, responses, rules."""
     _surveys_or_404()
     survey = get_object_or_404(Survey, pk=survey_id)
-    sections = survey.sections.filter(is_active=True).prefetch_related("questions")
+    sections = survey.sections.filter(is_active=True).prefetch_related("questions").select_related("condition_question")
     responses = survey.responses.order_by("-submitted_at")[:20]
     rules = survey.trigger_rules.all()
     response_count = survey.responses.count()
@@ -157,7 +157,7 @@ def survey_questions(request, survey_id):
     """Add or edit questions for a survey."""
     _surveys_or_404()
     survey = get_object_or_404(Survey, pk=survey_id)
-    sections = survey.sections.filter(is_active=True).order_by("sort_order")
+    sections = survey.sections.filter(is_active=True).order_by("sort_order").select_related("condition_question")
 
     if request.method == "POST":
         # Process question additions/edits from form
