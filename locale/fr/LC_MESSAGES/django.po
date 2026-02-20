@@ -12554,7 +12554,8 @@ msgid "Assign automatically"
 msgstr "Attribuer automatiquement"
 
 msgid "Assign immediately when a participant is enrolled in a program."
-msgstr "Attribuer immédiatement lorsqu'un participant est inscrit à un programme."
+msgstr ""
+"Attribuer immédiatement lorsqu'un participant est inscrit à un programme."
 
 msgid "Assign on a recurring schedule (e.g., every 30 days after enrolment)."
 msgstr ""
@@ -12562,7 +12563,8 @@ msgstr ""
 "l'inscription)."
 
 msgid "Assign when a participant is enrolled in a specific program."
-msgstr "Attribuer lorsqu'un participant est inscrit à un programme spécifique."
+msgstr ""
+"Attribuer lorsqu'un participant est inscrit à un programme spécifique."
 
 msgid "Assign when a specific event type is recorded for a participant."
 msgstr ""
@@ -12599,8 +12601,8 @@ msgstr "Créer une règle"
 msgid ""
 "Create links that anyone can use to fill out this survey without logging in."
 msgstr ""
-"Créez des liens que n'importe qui peut utiliser pour remplir ce sondage sans "
-"se connecter."
+"Créez des liens que n'importe qui peut utiliser pour remplir ce sondage sans"
+" se connecter."
 
 msgid "Due date (days after assignment)"
 msgstr "Date d'échéance (jours après l'attribution)"
@@ -12618,8 +12620,7 @@ msgid "How often per participant?"
 msgstr "À quelle fréquence par participant?"
 
 msgid "If true, ask respondent for their name (optional, not encrypted)."
-msgstr ""
-"Si activé, demander le nom au répondant (facultatif, non chiffré)."
+msgstr "Si activé, demander le nom au répondant (facultatif, non chiffré)."
 
 msgid "Leave blank for no due date."
 msgstr "Laisser vide pour aucune date d'échéance."
@@ -12785,3 +12786,27 @@ msgstr[1] "%(counter)s sondages en attente"
 #, python-format
 msgid "Add question to %(title)s"
 msgstr "Ajouter une question à %(title)s"
+
+msgid ""
+"High-level program metrics. Individual participant records are kept private."
+msgstr ""
+"Mesures globales du programme. Les dossiers individuels des participants "
+"demeurent confidentiels."
+
+msgid "No notes in 30 days"
+msgstr "Aucune note depuis 30 jours"
+
+msgid "No programs assigned."
+msgstr "Aucun programme attribué."
+
+msgid "Overdue follow-ups"
+msgstr "Suivis en retard"
+
+msgid "Program Health Summary"
+msgstr "Résumé de la santé du programme"
+
+msgid "Total enrolled"
+msgstr "Total inscrits"
+
+msgid "View full executive dashboard"
+msgstr "Voir le tableau de bord complet"
