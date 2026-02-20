@@ -43,11 +43,24 @@
             {% csrf_token %}
             <button type="submit" class="outline secondary">{% trans "Reset MFA" %}</button>
         </form>
+        <form method="post" action="{% url 'clients:portal_staff_login' client_id=client_file.pk %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="outline">{% trans "Generate Login Link" %}</button>
+        </form>
         <form method="post" action="{% url 'clients:portal_revoke' client_id=client_file.pk %}" style="display: inline;" onsubmit="return confirm('{% trans "Are you sure you want to revoke portal access? The participant will be logged out immediately." %}');">
             {% csrf_token %}
             <button type="submit" class="outline" style="color: var(--pico-del-color); border-color: var(--pico-del-color);">{% trans "Revoke Access" %}</button>
         </form>
     </div>
+
+    {% if staff_login_url %}
+    <div role="alert" style="margin-top: var(--kn-space-base); padding: 1rem; background: var(--pico-card-background-color); border-radius: var(--pico-border-radius);">
+        <p><strong>{% trans "Staff-assisted login link (expires in 15 minutes):" %}</strong></p>
+        <code style="word-break: break-all;">{{ staff_login_url }}</code>
+        <p class="secondary" style="margin-top: 0.5rem;">{% blocktrans with time=staff_login_expires|date:"g:i A" %}This link expires at {{ time }}. It can only be used once.{% endblocktrans %}</p>
+    </div>
+    {% endif %}
+
     {% endif %}
 
     {% else %}

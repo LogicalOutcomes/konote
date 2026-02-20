@@ -12,6 +12,12 @@
     <section style="text-align:left; margin:1.5rem auto; max-width:400px">
         <h2>{% trans "Your Scores" %}</h2>
         <table aria-label="{% trans 'Survey scores' %}">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Section" %}</th>
+                    <th scope="col">{% trans "Score" %}</th>
+                </tr>
+            </thead>
             <tbody>
             {% for s in scores %}
                 <tr>

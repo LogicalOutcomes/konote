@@ -25,6 +25,7 @@ TEST_KEY = Fernet.generate_key().decode()
     EMAIL_HASH_KEY="test-hash-key-for-portal-auth",
     PORTAL_DOMAIN="",
     STAFF_DOMAIN="",
+    EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend",
 )
 class PortalAuthTests(TestCase):
     """Test portal authentication flows."""
@@ -194,3 +195,79 @@ class PortalAuthTests(TestCase):
         response = self.client.get("/my/login/")
 
         self.assertEqual(response.status_code, 404)
+
+    # ------------------------------------------------------------------
+    # Password reset
+    # ------------------------------------------------------------------
+
+    def test_password_reset_request_sends_code(self):
+        """POST to reset request should store hashed token and return submitted=True."""
+        response = self.client.post("/my/password/reset/", {
+            "email": "test@example.com",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.participant.refresh_from_db()
+        self.assertTrue(self.participant.password_reset_token_hash)
+        self.assertIsNotNone(self.participant.password_reset_expires)
+
+    def test_password_reset_request_unknown_email_no_leak(self):
+        """Unknown email should show same success page (no enumeration)."""
+        response = self.client.post("/my/password/reset/", {
+            "email": "nonexistent@example.com",
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "code")  # Shows "we sent a code" message
+
+    def test_password_reset_confirm_valid_code(self):
+        """Valid reset code should allow setting a new password."""
+        # First request a reset to generate a token
+        self.client.post("/my/password/reset/", {"email": "test@example.com"})
+        self.participant.refresh_from_db()
+        # Retrieve the plaintext code from the test mail outbox
+        from django.core import mail
+        self.assertEqual(len(mail.outbox), 1)
+        # Extract the 6-digit code from the email body
+        import re
+        code_match = re.search(r"\b(\d{6})\b", mail.outbox[0].body)
+        self.assertIsNotNone(code_match)
+        code = code_match.group(1)
+
+        response = self.client.post("/my/password/reset/confirm/", {
+            "email": "test@example.com",
+            "code": code,
+            "new_password": "NewSecurePass456!",
+            "confirm_password": "NewSecurePass456!",
+        })
+        self.assertEqual(response.status_code, 200)
+        # Verify new password works
+        self.participant.refresh_from_db()
+        self.assertTrue(self.participant.check_password("NewSecurePass456!"))
+
+    def test_password_reset_expired_code(self):
+        """Expired reset code should fail."""
+        self.client.post("/my/password/reset/", {"email": "test@example.com"})
+        self.participant.refresh_from_db()
+        # Expire the token manually
+        from django.utils import timezone
+        from datetime import timedelta
+        self.participant.password_reset_expires = timezone.now() - timedelta(minutes=1)
+        self.participant.save(update_fields=["password_reset_expires"])
+        response = self.client.post("/my/password/reset/confirm/", {
+            "email": "test@example.com",
+            "code": "123456",
+            "new_password": "NewSecurePass456!",
+            "confirm_password": "NewSecurePass456!",
+        })
+        self.assertContains(response, "expired")
+
+    def test_password_reset_rate_limit(self):
+        """More than 3 reset requests in an hour should be rejected."""
+        for _ in range(3):
+            self.client.post("/my/password/reset/", {"email": "test@example.com"})
+        self.participant.refresh_from_db()
+        self.assertEqual(self.participant.password_reset_request_count, 3)
+        response = self.client.post("/my/password/reset/", {"email": "test@example.com"})
+        self.assertEqual(response.status_code, 200)
+        # Should still show "success" but NOT send a 4th email
+        from django.core import mail
+        self.assertEqual(len(mail.outbox), 3)

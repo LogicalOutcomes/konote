@@ -23,6 +23,7 @@ from apps.portal.models import (
     CorrectionRequest,
     ParticipantUser,
     PortalInvite,
+    StaffAssistedLoginToken,
     StaffPortalNote,
 )
 from apps.programs.access import get_program_from_client as _get_program_from_client
@@ -188,6 +189,62 @@ def portal_revoke_access(request, client_id):
         )
 
     return redirect("clients:portal_manage", client_id=client_id)
+
+
+@login_required
+@requires_permission("note.create", _get_program_from_client)
+def generate_staff_login_token(request, client_id):
+    """Generate a one-time staff-assisted login token (POST only)."""
+    _portal_enabled_or_404()
+    if request.method != "POST":
+        raise Http404
+
+    client_file = get_object_or_404(ClientFile, pk=client_id)
+    account = ParticipantUser.objects.filter(
+        client_file=client_file, is_active=True,
+    ).first()
+
+    if not account:
+        raise Http404
+
+    # Create token (15-minute expiry)
+    token_obj = StaffAssistedLoginToken.objects.create(
+        participant_user=account,
+        created_by=request.user,
+        expires_at=timezone.now() + timedelta(minutes=15),
+    )
+
+    # Build the URL
+    login_path = reverse("portal:staff_assisted_login", args=[token_obj.token])
+    portal_domain = getattr(settings, "PORTAL_DOMAIN", "")
+    if portal_domain:
+        scheme = "https" if request.is_secure() else "http"
+        login_url = f"{scheme}://{portal_domain}{login_path}"
+    else:
+        login_url = request.build_absolute_uri(login_path)
+
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=request.user.display_name,
+        action="create",
+        resource_type="staff_assisted_login_token",
+        resource_id=token_obj.pk,
+        metadata={
+            "client_file_id": client_file.pk,
+            "participant_id": str(account.pk),
+            "expires_at": token_obj.expires_at.isoformat(),
+        },
+    )
+
+    return render(request, "portal/staff_manage_portal.html", {
+        "client_file": client_file,
+        "portal_account": account,
+        "invites": PortalInvite.objects.filter(client_file=client_file).order_by("-created_at")[:10],
+        "pending_corrections": CorrectionRequest.objects.filter(client_file=client_file, status="pending").count(),
+        "staff_login_url": login_url,
+        "staff_login_expires": token_obj.expires_at,
+    })
 
 
 @login_required

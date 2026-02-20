@@ -126,6 +126,18 @@ class ParticipantUser(AbstractBaseUser):
         help_text="True after the participant has seen the journal privacy notice.",
     )
 
+    # Password reset
+    password_reset_token_hash = models.CharField(
+        max_length=128, blank=True, default="",
+        help_text="Hashed 6-digit reset code. Never store plaintext.",
+    )
+    password_reset_expires = models.DateTimeField(null=True, blank=True)
+    password_reset_request_count = models.IntegerField(
+        default=0,
+        help_text="Requests this hour. Reset by scheduled task or hourly check.",
+    )
+    password_reset_last_request = models.DateTimeField(null=True, blank=True)
+
     # Timestamps — last_login is inherited from AbstractBaseUser
     # IMPORTANT: last_login must NEVER be exposed to staff users
     created_at = models.DateTimeField(auto_now_add=True)
@@ -185,6 +197,18 @@ class ParticipantUser(AbstractBaseUser):
             email.lower().strip().encode(),
             hashlib.sha256,
         ).hexdigest()
+
+    def can_request_password_reset(self):
+        """Rate limit: max 3 requests per hour."""
+        if self.password_reset_request_count < 3:
+            return True
+        if self.password_reset_last_request:
+            from datetime import timedelta
+            if timezone.now() - self.password_reset_last_request > timedelta(hours=1):
+                self.password_reset_request_count = 0
+                self.save(update_fields=["password_reset_request_count"])
+                return True
+        return False
 
 
 # ---------------------------------------------------------------------------
@@ -516,3 +540,50 @@ class CorrectionRequest(models.Model):
     @description.setter
     def description(self, value):
         self._description_encrypted = encrypt_field(value)
+
+
+# ---------------------------------------------------------------------------
+# G) StaffAssistedLoginToken — one-time token for in-person portal login
+# ---------------------------------------------------------------------------
+
+
+class StaffAssistedLoginToken(models.Model):
+    """One-time token for staff-assisted participant login.
+
+    Staff generates this from the portal management page. The participant
+    uses it in-person at the agency. Token expires in 15 minutes and is
+    deleted after use.
+    """
+
+    token = models.CharField(
+        max_length=64,
+        unique=True,
+        default="",
+        help_text="URL-safe token, single use.",
+    )
+    participant_user = models.ForeignKey(
+        ParticipantUser,
+        on_delete=models.CASCADE,
+        related_name="staff_login_tokens",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+    )
+    expires_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "portal"
+        db_table = "portal_staff_assisted_login_tokens"
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = secrets.token_urlsafe(48)
+        super().save(*args, **kwargs)
+
+    @property
+    def is_valid(self):
+        return timezone.now() < self.expires_at
