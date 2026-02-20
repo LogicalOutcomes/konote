@@ -1849,6 +1849,27 @@ label {
     display: none;
 }
 
+/* Auto-calculated metric display */
+.auto-calc-metric {
+    display: flex;
+    align-items: baseline;
+    gap: var(--kn-space-sm);
+    padding: var(--kn-space-sm) 0;
+    margin-bottom: var(--kn-space-sm);
+}
+.auto-calc-metric .metric-label {
+    font-weight: 500;
+}
+.auto-calc-metric .metric-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--kn-primary);
+}
+.auto-calc-metric small {
+    color: var(--kn-text-muted);
+    font-style: italic;
+}
+
 /* ---- Checkbox list items (target selection) ---- */
 label.checkbox-item {
     display: flex;
