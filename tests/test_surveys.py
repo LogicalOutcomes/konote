@@ -1070,11 +1070,31 @@ class PortalAutoSaveTests(TestCase):
             client_file=self.client_file,
             status="in_progress",
         )
+        # Second participant for IDOR tests
+        self.client_file_b = ClientFile.objects.create(
+            record_id="AUTO-002", status="active",
+        )
+        self.client_file_b.first_name = "Other"
+        self.client_file_b.last_name = "Person"
+        self.client_file_b.save()
+        self.participant_b = ParticipantUser.objects.create_participant(
+            email="other@example.com",
+            client_file=self.client_file_b,
+            display_name="Other P",
+            password="testpass123",
+        )
+        self.assignment_b = SurveyAssignment.objects.create(
+            survey=self.survey,
+            participant_user=self.participant_b,
+            client_file=self.client_file_b,
+            status="in_progress",
+        )
 
-    def _portal_session(self):
+    def _portal_session(self, participant=None):
         """Set up a portal session for the participant."""
+        p = participant or self.participant
         session = self.client.session
-        session["_portal_participant_id"] = str(self.participant.pk)
+        session["_portal_participant_id"] = str(p.pk)
         session.save()
 
     def test_autosave_creates_partial_answer(self):
@@ -1088,6 +1108,9 @@ class PortalAutoSaveTests(TestCase):
         self.assertEqual(PartialAnswer.objects.count(), 1)
         pa = PartialAnswer.objects.first()
         self.assertEqual(pa.question, self.q1)
+        # Verify the decrypted value matches what was saved
+        from konote.encryption import decrypt_field
+        self.assertEqual(decrypt_field(pa.value_encrypted), "Alice")
 
     def test_autosave_updates_existing_partial(self):
         self._portal_session()
@@ -1102,6 +1125,10 @@ class PortalAutoSaveTests(TestCase):
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(PartialAnswer.objects.count(), 1)
+        # Verify value was actually updated, not just count
+        from konote.encryption import decrypt_field
+        pa = PartialAnswer.objects.first()
+        self.assertEqual(decrypt_field(pa.value_encrypted), "Bob")
 
     def test_autosave_requires_htmx(self):
         self._portal_session()
@@ -1139,6 +1166,23 @@ class PortalAutoSaveTests(TestCase):
             {f"q_{self.q1.pk}": "Final Answer", f"q_{self.q2.pk}": "3"},
         )
         self.assertEqual(PartialAnswer.objects.count(), 0)
+
+    def test_autosave_idor_other_participants_assignment(self):
+        """Participant A cannot auto-save to participant B's assignment."""
+        self._portal_session(self.participant)
+        resp = self.client.post(
+            f"/my/surveys/{self.assignment_b.pk}/save/",
+            {"question_id": self.q1.pk, "value": "Hacked"},
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 404)
+        self.assertEqual(PartialAnswer.objects.count(), 0)
+
+    def test_fill_idor_other_participants_assignment(self):
+        """Participant A cannot access participant B's survey form."""
+        self._portal_session(self.participant)
+        resp = self.client.get(f"/my/surveys/{self.assignment_b.pk}/fill/")
+        self.assertEqual(resp.status_code, 404)
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
@@ -1314,6 +1358,118 @@ class StaffLinkGenerationTests(TestCase):
         )
         link.refresh_from_db()
         self.assertFalse(link.is_active)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class SurveyStaffPermissionTests(TestCase):
+    """Test that staff survey views require login and correct permissions."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        from django.core.cache import cache
+        cache.delete("feature_toggles")
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys",
+            defaults={"is_enabled": True},
+        )
+        self.admin = User.objects.create_user(
+            username="perm_admin", password="testpass123",
+            display_name="Perm Admin", is_admin=True,
+        )
+        self.survey = Survey.objects.create(
+            name="Perm Survey", status="active", created_by=self.admin,
+        )
+        SurveySection.objects.create(
+            survey=self.survey, title="S1", sort_order=1,
+        )
+        self.rule = SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="characteristic",
+            program=Program.objects.create(name="Perm Program"),
+            repeat_policy="once_per_participant",
+            auto_assign=True,
+            created_by=self.admin,
+        )
+
+    def test_survey_links_requires_login(self):
+        resp = self.client.get(f"/manage/surveys/{self.survey.pk}/links/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/auth/login/", resp.url)
+
+    def test_survey_rules_list_requires_login(self):
+        resp = self.client.get(f"/manage/surveys/{self.survey.pk}/rules/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/auth/login/", resp.url)
+
+    def test_survey_rule_create_requires_login(self):
+        resp = self.client.get(f"/manage/surveys/{self.survey.pk}/rules/new/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/auth/login/", resp.url)
+
+    def test_survey_rule_deactivate_requires_login(self):
+        resp = self.client.post(
+            f"/manage/surveys/{self.survey.pk}/rules/{self.rule.pk}/deactivate/",
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/auth/login/", resp.url)
+
+    def test_survey_rule_deactivate_rejects_get(self):
+        """GET request to POST-only deactivate view returns 405."""
+        self.client.login(username="perm_admin", password="testpass123")
+        resp = self.client.get(
+            f"/manage/surveys/{self.survey.pk}/rules/{self.rule.pk}/deactivate/",
+        )
+        self.assertEqual(resp.status_code, 405)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class PublicSurveySubmissionTests(TestCase):
+    """Test public survey form submission creates correct data."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="pubsub_staff", password="testpass123",
+            display_name="PubSub Staff",
+        )
+        self.survey = Survey.objects.create(
+            name="PubSub Survey", status="active", created_by=self.staff,
+        )
+        self.section = SurveySection.objects.create(
+            survey=self.survey, title="Feedback", sort_order=1,
+        )
+        self.q1 = SurveyQuestion.objects.create(
+            section=self.section, question_text="How was it?",
+            question_type="short_text", sort_order=1, required=True,
+        )
+        self.link = SurveyLink.objects.create(
+            survey=self.survey, created_by=self.staff,
+        )
+
+    def test_submit_creates_response_with_correct_values(self):
+        """Verify the response and answer values are stored correctly."""
+        resp = self.client.post(
+            f"/s/{self.link.token}/",
+            {f"q_{self.q1.pk}": "Excellent!"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        response = SurveyResponse.objects.get(channel="link")
+        self.assertEqual(response.token, self.link.token)
+        answer = response.answers.first()
+        self.assertEqual(answer.value, "Excellent!")
+
+    def test_honeypot_blocks_bots(self):
+        """Submissions with honeypot field filled are silently discarded."""
+        resp = self.client.post(
+            f"/s/{self.link.token}/",
+            {f"q_{self.q1.pk}": "spam", "website": "http://spam.com"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(SurveyResponse.objects.count(), 0)
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)

@@ -26,11 +26,13 @@ from .forms import (
     SurveyForm,
     SurveyQuestionForm,
     SurveySectionForm,
+    TriggerRuleForm,
 )
 from .models import (
     Survey,
     SurveyAnswer,
     SurveyAssignment,
+    SurveyLink,
     SurveyQuestion,
     SurveyResponse,
     SurveySection,
@@ -744,7 +746,6 @@ def survey_links(request, survey_id):
     if request.method == "POST":
         action = request.POST.get("action", "")
         if action == "create":
-            from .models import SurveyLink
             expires_days = request.POST.get("expires_days", "")
             expires_at = None
             if expires_days:
@@ -763,14 +764,12 @@ def survey_links(request, survey_id):
             messages.success(request, _("Shareable link created."))
         elif action == "deactivate":
             link_id = request.POST.get("link_id")
-            from .models import SurveyLink
             link = get_object_or_404(SurveyLink, pk=link_id, survey=survey)
             link.is_active = False
             link.save(update_fields=["is_active"])
             messages.success(request, _("Link deactivated."))
         return redirect("survey_manage:survey_links", survey_id=survey.pk)
 
-    from .models import SurveyLink
     links = SurveyLink.objects.filter(survey=survey).order_by("-created_at")
     return render(request, "surveys/admin/survey_links.html", {
         "survey": survey,
@@ -806,7 +805,6 @@ def survey_rule_create(request, survey_id):
     survey = get_object_or_404(Survey, pk=survey_id)
 
     if request.method == "POST":
-        from .forms import TriggerRuleForm
         form = TriggerRuleForm(request.POST)
         if form.is_valid():
             rule = form.save(commit=False)
@@ -816,7 +814,6 @@ def survey_rule_create(request, survey_id):
             messages.success(request, _("Trigger rule created."))
             return redirect("survey_manage:survey_rules", survey_id=survey.pk)
     else:
-        from .forms import TriggerRuleForm
         form = TriggerRuleForm()
 
     return render(request, "surveys/admin/rule_form.html", {

@@ -46,7 +46,7 @@
             {% endif %}
             {% if field.errors %}
                 {% for error in field.errors %}
-                    <small class="error">{{ error }}</small>
+                    <small class="error" id="{{ field.id_for_label }}_error" role="alert">{{ error }}</small>
                 {% endfor %}
             {% endif %}
         </div>

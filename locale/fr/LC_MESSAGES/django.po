@@ -12810,3 +12810,6 @@ msgstr "Total inscrits"
 
 msgid "View full executive dashboard"
 msgstr "Voir le tableau de bord complet"
+
+msgid "Website"
+msgstr "Site web"

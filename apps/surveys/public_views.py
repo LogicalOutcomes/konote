@@ -34,6 +34,11 @@ def public_survey_form(request, token):
     ).prefetch_related("questions").order_by("sort_order")
 
     if request.method == "POST":
+        # Honeypot anti-spam check
+        if request.POST.get("website"):
+            # Bots fill in hidden fields; real users won't see it
+            return redirect("public_survey_thank_you", token=link.token)
+
         errors = []
         answers_data = []
 
