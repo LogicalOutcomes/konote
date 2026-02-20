@@ -399,6 +399,37 @@ class CheckTranslationsTest(TestCase):
         self.assertIn("Translation Check", out.getvalue())
 
 
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class TranslateStringsTest(TestCase):
+    """Smoke tests for the translate_strings command."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_dry_run_completes(self):
+        """translate_strings --dry-run extracts strings without modifying files."""
+        out = io.StringIO()
+        call_command("translate_strings", dry_run=True, stdout=out)
+        output = out.getvalue()
+        self.assertIn("Translation Sync", output)
+        self.assertIn("Extracting strings", output)
+        self.assertIn("dry-run", output.lower())
+
+    def test_reports_template_and_python_counts(self):
+        """translate_strings reports how many strings it found."""
+        out = io.StringIO()
+        call_command("translate_strings", dry_run=True, stdout=out)
+        output = out.getvalue()
+        # Should report template and Python extraction counts
+        self.assertIn("Templates:", output)
+        self.assertIn("Python:", output)
+        self.assertIn("Total unique:", output)
+
 
 # =========================================================================
 # Utility Commands
