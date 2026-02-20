@@ -13703,25 +13703,28 @@ msgid "Reopened"
 msgstr "Rouvert"
 
 msgid "A good goal answers: What? How often? By when?"
-msgstr "Un bon objectif répond à\u00a0: Quoi\u00a0? À quelle fréquence\u00a0? D'ici quand\u00a0?"
+msgstr ""
+"Un bon objectif répond à\\u00a0: Quoi\\u00a0? À quelle fréquence\\u00a0? "
+"D'ici quand\\u00a0?"
 
 msgid "Form expanded — complete the goal details below."
-msgstr "Formulaire développé — complétez les détails de l'objectif ci-dessous."
+msgstr ""
+"Formulaire développé — complétez les détails de l'objectif ci-dessous."
 
 msgid "Give this a short name (2–5 words)"
 msgstr "Donnez un nom court (2 à 5 mots)"
 
 msgid "How will you track progress?"
-msgstr "Comment allez-vous suivre les progrès\u00a0?"
+msgstr "Comment allez-vous suivre les progrès\\u00a0?"
 
 msgid "Next: shape this into a goal"
-msgstr "Suivant\u00a0: formuler l'objectif"
+msgstr "Suivant\\u00a0: formuler l'objectif"
 
 msgid "Show all fields"
 msgstr "Afficher tous les champs"
 
 msgid "What will they do, how much, and by when?"
-msgstr "Que feront-ils, combien et d'ici quand\u00a0?"
+msgstr "Que feront-ils, combien et d'ici quand\\u00a0?"
 
 msgid "e.g., Connect with community"
 msgstr "p. ex., Se connecter avec la communauté"
@@ -13729,9 +13732,37 @@ msgstr "p. ex., Se connecter avec la communauté"
 #: templates/plans/goal_form.html (blocktrans)
 #, python-format
 msgid "%(name)s said:"
-msgstr "%(name)s a dit\u00a0:"
+msgstr "%(name)s a dit\\u00a0:"
 
 #: templates/plans/goal_form.html (blocktrans)
 #, python-format
 msgid "e.g., %(name)s will attend one community event per month by June 2026"
-msgstr "p. ex., %(name)s participera à un évènement communautaire par mois d'ici juin 2026"
+msgstr ""
+"p. ex., %(name)s participera à un évènement communautaire par mois d'ici "
+"juin 2026"
+
+msgid "About"
+msgstr "Au sujet de"
+
+msgid "Flag this message as urgent — shown at top of inbox"
+msgstr "Marquer ce message comme urgent — affiché en haut de la boîte de réception"
+
+msgid "Mark as urgent"
+msgstr "Marquer comme urgent"
+
+msgid "Unknown"
+msgstr "Inconnu"
+
+msgid "Urgent messages appear at the top of the inbox."
+msgstr "Les messages urgents apparaissent en haut de la boîte de réception."
+
+msgid "team message"
+msgstr "message d'équipe"
+
+#, python-format
+msgid "For: %(name)s"
+msgstr "Pour : %(name)s"
+
+#, python-format
+msgid "You have %(count)s unread message(s)."
+msgstr "Vous avez %(count)s message(s) non lu(s)."
