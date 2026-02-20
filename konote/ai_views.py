@@ -473,7 +473,15 @@ def _get_goal_builder_context(client_file):
         metrics_qs = metrics_qs.filter(
             models_Q(owning_program__isnull=True) | models_Q(owning_program=program)
         )
-    metric_catalogue = list(metrics_qs.values("id", "name", "definition", "category"))
+    metric_catalogue = [
+        {
+            "metric_id": m["id"],
+            "name": m["name"],
+            "definition": m["definition"],
+            "category": m["category"],
+        }
+        for m in metrics_qs.values("id", "name", "definition", "category")
+    ]
 
     # Existing plan sections for this client
     existing_sections = list(

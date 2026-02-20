@@ -27,7 +27,7 @@
 
 {% if ai_enabled %}
 {# ====== Entry points (AI-assisted page) ====== #}
-<div id="entry-points">
+<div id="entry-points" {% if form.errors %}hidden{% endif %}>
 
     {# ── AI-assisted path ── #}
     <fieldset id="ai-entry">
@@ -98,7 +98,7 @@
 {% endif %}
 
 {# ====== The form (hidden when AI enabled, revealed by JS) ====== #}
-<form method="post" id="goal-form" novalidate {% if ai_enabled %}hidden{% endif %}>
+<form method="post" id="goal-form" novalidate {% if ai_enabled and not form.errors %}hidden{% endif %}>
     {% csrf_token %}
 
     {% if not ai_enabled %}

@@ -13971,3 +13971,6 @@ msgstr "sur"
 
 msgid "Edit target:"
 msgstr "Modifier la cible :"
+
+msgid "Area of the plan"
+msgstr ""
