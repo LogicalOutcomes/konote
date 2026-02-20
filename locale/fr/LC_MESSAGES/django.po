@@ -612,10 +612,8 @@ msgstr "Note détaillée"
 msgid "No activity recorded yet."
 msgstr "Aucune activité enregistrée pour le moment."
 
-msgid "To add a note, use the + New menu above or the Notes tab."
-msgstr ""
-"Pour ajouter une note, utilisez le menu + Nouveau ci-dessus ou l'onglet "
-"Notes."
+msgid "To add a note, use the Actions menu or the Notes tab."
+msgstr "Pour ajouter une note, utilisez le menu Actions ou l'onglet Notes."
 
 msgid "Filter history"
 msgstr "Filtrer l'historique"
@@ -715,8 +713,8 @@ msgstr "Modifier le dossier du participant"
 msgid "Transfer between programs"
 msgstr "Transférer entre les programmes"
 
-msgid "Use the Actions menu above to add a note."
-msgstr "Utilisez le menu Actions ci-dessus pour ajouter une note."
+msgid "Use the Actions menu to add a Quick Note or Detailed Note."
+msgstr "Utilisez le menu Actions pour ajouter une note rapide ou une note détaillée."
 
 #: templates/plans/_target.html
 msgid "None"
@@ -11762,6 +11760,10 @@ msgstr "suggestion disponible"
 
 msgid "suggestions available"
 msgstr "suggestions disponibles"
+
+#. blocktrans strings from goal creation templates
+msgid "Add %(section)s"
+msgstr "Ajouter %(section)s"
 
 msgid "Add a %(target)s"
 msgstr "Ajouter un(e) %(target)s"

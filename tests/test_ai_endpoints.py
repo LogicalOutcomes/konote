@@ -2,7 +2,7 @@
 from unittest.mock import patch
 
 from cryptography.fernet import Fernet
-from django.test import TestCase, Client, override_settings
+from django.test import SimpleTestCase, TestCase, Client, override_settings
 
 from apps.admin_settings.models import FeatureToggle
 from apps.auth_app.models import User
@@ -399,3 +399,31 @@ class SuggestTargetViewTest(AIEndpointBaseTest):
         call_args = mock_suggest.call_args[0]
         scrubbed_words = call_args[0]
         self.assertNotIn("Jayden", scrubbed_words)
+
+
+class ValidateSuggestTargetResponseTest(SimpleTestCase):
+    """Unit tests for _validate_suggest_target_response — no DB needed."""
+
+    def test_metric_catalogue_uses_metric_id_key(self):
+        """Regression for BUG-AI1: catalogue dicts use 'metric_id', not 'id'."""
+        from konote.ai import _validate_suggest_target_response
+
+        catalogue = [
+            {"metric_id": 1, "name": "PHQ-9", "definition": "Depression scale", "category": "mental_health"},
+            {"metric_id": 2, "name": "GAD-7", "definition": "Anxiety scale", "category": "mental_health"},
+        ]
+        response = {
+            "name": "Improve wellbeing",
+            "description": "SMART description here",
+            "client_goal": "Feel better",
+            "suggested_section": "Health",
+            "metrics": [
+                {"metric_id": 1, "name": "PHQ-9", "reason": "Tracks depression"},
+                {"metric_id": 999, "name": "Invalid", "reason": "Not in catalogue"},
+            ],
+        }
+        result = _validate_suggest_target_response(response, catalogue)
+        self.assertIsNotNone(result)
+        # Valid metric kept, invalid metric filtered out
+        self.assertEqual(len(result["metrics"]), 1)
+        self.assertEqual(result["metrics"][0]["metric_id"], 1)
