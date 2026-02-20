@@ -128,7 +128,7 @@ DEFAULT_FEATURES = {
         "when_on": [_lazy("Staff see a program selector when viewing participants"), _lazy("Participants can be enrolled in multiple programs"), _lazy("Templates and metrics can be scoped per program")],
         "when_off": [_lazy("All participants appear in a single list"), _lazy("Program enrolments are hidden but data is preserved")],
         "depends_on": [],
-        "used_by": [],
+        "used_by": ["program_reports", "cross_program_note_sharing"],
     },
     "custom_fields": {
         "label": _lazy("Custom Participant Fields"),
