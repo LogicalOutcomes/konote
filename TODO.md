@@ -98,10 +98,10 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 **Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
 
 - [x] Fix Add Target form UX: auto-select or clarify "area of the plan", remove "Attendance & Wellbeing" placeholder, and change metric text from "how much progress have they made" to "how much progress have I made" — 2026-02-20 (UX-TARGET1)
-- [ ] Change "Add section only" link text to "Add Section" on plan view — (UX-SECTION1)
-- [ ] Remove "+ Add note" link in Notes tab, hide Quick Note from Actions if needed, and update wayfinding text (UX-NOTES3)
-- [ ] Fix "server error occurred" when clicking "Shape this target" (AI Suggestion) — (BUG-AI1)
-- [ ] Investigate/Fix "error message" when clicking "Draft Report summary" on Insights page (BUG-AI2)
+- [x] Change "Add section only" link text to "Add Section" on plan view — 2026-02-20 (UX-SECTION1)
+- [x] Remove "+ Add note" link in Notes tab, update wayfinding text to reference Actions menu — 2026-02-20 (UX-NOTES3)
+- [x] Fix "server error occurred" when clicking "Shape this target" — metric catalogue key mismatch — 2026-02-20 (BUG-AI1)
+- [x] Fix "error message" when clicking "Draft Report summary" — gettext_lazy proxies as JSON keys — 2026-02-20 (BUG-AI2)
 - [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
 
 ## Recently Done
