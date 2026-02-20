@@ -217,7 +217,7 @@ class CrossProgramConsentTest(TestCase):
         self._set_agency_sharing(True)
         self.shared_client.cross_program_sharing = "default"
         self.shared_client.save()
-        resp = self.client.get(f"/participants/{self.shared_client.pk}/notes/")
+        resp = self.client.get(f"/notes/participant/{self.shared_client.pk}/")
         self.assertEqual(resp.status_code, 200)
         note_ids = {n.pk for n in resp.context["page"].object_list}
         self.assertIn(self.note_a.pk, note_ids)
@@ -229,7 +229,7 @@ class CrossProgramConsentTest(TestCase):
         self._set_agency_sharing(True)
         self.shared_client.cross_program_sharing = "restrict"
         self.shared_client.save()
-        resp = self.client.get(f"/participants/{self.shared_client.pk}/notes/")
+        resp = self.client.get(f"/notes/participant/{self.shared_client.pk}/")
         self.assertEqual(resp.status_code, 200)
         note_ids = {n.pk for n in resp.context["page"].object_list}
         # Should see one program's note + null note, but NOT both programs
@@ -244,7 +244,7 @@ class CrossProgramConsentTest(TestCase):
         self._set_agency_sharing(False)
         self.shared_client.cross_program_sharing = "default"
         self.shared_client.save()
-        resp = self.client.get(f"/participants/{self.shared_client.pk}/notes/")
+        resp = self.client.get(f"/notes/participant/{self.shared_client.pk}/")
         self.assertEqual(resp.status_code, 200)
         note_ids = {n.pk for n in resp.context["page"].object_list}
         self.assertIn(self.note_null.pk, note_ids)
@@ -257,7 +257,7 @@ class CrossProgramConsentTest(TestCase):
         self._set_agency_sharing(False)
         self.shared_client.cross_program_sharing = "consent"
         self.shared_client.save()
-        resp = self.client.get(f"/participants/{self.shared_client.pk}/notes/")
+        resp = self.client.get(f"/notes/participant/{self.shared_client.pk}/")
         self.assertEqual(resp.status_code, 200)
         note_ids = {n.pk for n in resp.context["page"].object_list}
         self.assertIn(self.note_a.pk, note_ids)
@@ -276,7 +276,7 @@ class CrossProgramConsentTest(TestCase):
         self.shared_client.cross_program_sharing = "default"
         self.shared_client.save()
         self.client.login(username="single", password="testpass123")
-        resp = self.client.get(f"/participants/{self.shared_client.pk}/notes/")
+        resp = self.client.get(f"/notes/participant/{self.shared_client.pk}/")
         self.assertEqual(resp.status_code, 200)
         note_ids = {n.pk for n in resp.context["page"].object_list}
         # Single-program user always sees their program's notes + null
@@ -289,7 +289,7 @@ class CrossProgramConsentTest(TestCase):
         self._set_agency_sharing(False)
         self.shared_client.cross_program_sharing = "restrict"
         self.shared_client.save()
-        resp = self.client.get(f"/participants/{self.shared_client.pk}/notes/")
+        resp = self.client.get(f"/notes/participant/{self.shared_client.pk}/")
         self.assertEqual(resp.status_code, 200)
         note_ids = {n.pk for n in resp.context["page"].object_list}
         self.assertIn(self.note_null.pk, note_ids)
@@ -299,7 +299,7 @@ class CrossProgramConsentTest(TestCase):
         self._set_agency_sharing(False)
         self.shared_client.cross_program_sharing = "default"
         self.shared_client.save()
-        resp = self.client.get(f"/participants/{self.shared_client.pk}/notes/")
+        resp = self.client.get(f"/notes/participant/{self.shared_client.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertIsNotNone(resp.context.get("consent_viewing_program"))
 
@@ -308,6 +308,6 @@ class CrossProgramConsentTest(TestCase):
         self._set_agency_sharing(True)
         self.shared_client.cross_program_sharing = "default"
         self.shared_client.save()
-        resp = self.client.get(f"/participants/{self.shared_client.pk}/notes/")
+        resp = self.client.get(f"/notes/participant/{self.shared_client.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertIsNone(resp.context.get("consent_viewing_program"))
