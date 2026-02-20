@@ -32,6 +32,11 @@
     <small class="error">{{ form.message.errors.0 }}</small>
     {% endif %}
 
+    <label>
+        {{ form.is_urgent }} {{ form.is_urgent.label }}
+    </label>
+    <small>{{ form.is_urgent.help_text }}</small>
+
     <div class="button-row">
         <button type="submit">{% trans "Leave Message" %}</button>
         <a href="{% url 'clients:client_detail' client.pk %}" role="button" class="secondary outline">{% trans "Cancel" %}</a>
