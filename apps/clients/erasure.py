@@ -338,15 +338,24 @@ def _anonymise_client_pii(client, erasure_code):
         field_def__is_sensitive=False,
     ).update(value="")
 
-    # Deactivate portal account and scrub email
+    # Deactivate portal account and scrub all PII/credentials
     try:
+        import uuid
         from apps.portal.models import ParticipantUser
-        ParticipantUser.objects.filter(client_file=client, is_active=True).update(
-            is_active=False,
-            _email_encrypted=b"",
-            email_hash="",
-            display_name="[Anonymised]",
-        )
+        for acct in ParticipantUser.objects.filter(client_file=client):
+            acct.is_active = False
+            acct._email_encrypted = b""
+            acct._totp_secret_encrypted = b""
+            acct.email_hash = f"anonymised-{uuid.uuid4().hex}"
+            acct.display_name = "[Anonymised]"
+            acct.password = ""
+            acct.password_reset_token_hash = ""
+            acct.password_reset_expires = None
+            acct.save(update_fields=[
+                "is_active", "_email_encrypted", "_totp_secret_encrypted",
+                "email_hash", "display_name", "password",
+                "password_reset_token_hash", "password_reset_expires",
+            ])
     except ImportError:
         pass
 
@@ -391,6 +400,7 @@ def _purge_narrative_content(client):
         )
         CorrectionRequest.objects.filter(client_file=client).update(
             _description_encrypted=b"",
+            staff_response="",
         )
         StaffPortalNote.objects.filter(client_file=client).update(
             _content_encrypted=b"",

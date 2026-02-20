@@ -243,10 +243,28 @@ class ErasurePortalTests(TestCase):
         self.assertEqual(msg._content_encrypted, b"")
 
     def test_anonymise_deactivates_portal_account(self):
-        """_anonymise_client_pii should deactivate the portal account."""
+        """_anonymise_client_pii should deactivate and scrub the portal account."""
         _anonymise_client_pii(self.client_file, "ER-TEST-001")
         self.participant.refresh_from_db()
         self.assertFalse(self.participant.is_active)
+        self.assertEqual(self.participant._email_encrypted, b"")
+        self.assertEqual(self.participant._totp_secret_encrypted, b"")
+        self.assertEqual(self.participant.display_name, "[Anonymised]")
+        self.assertTrue(self.participant.email_hash.startswith("anonymised-"))
+        self.assertEqual(self.participant.password, "")
+        self.assertEqual(self.participant.password_reset_token_hash, "")
+
+    def test_anonymise_two_accounts_no_unique_clash(self):
+        """Anonymising two clients with portal accounts should not raise IntegrityError."""
+        client2 = ClientFile.objects.create(record_id="ERASE-002", status="active")
+        ParticipantUser.objects.create_participant(
+            email="erase2@example.com",
+            client_file=client2,
+            display_name="Erase Test 2",
+            password="TestPass123!",
+        )
+        _anonymise_client_pii(self.client_file, "ER-TEST-001")
+        _anonymise_client_pii(client2, "ER-TEST-002")  # Should not raise
 
 
 @override_settings(
