@@ -375,7 +375,7 @@ class BuildGoalChatFunctionTest(TestCase):
         result = build_goal_chat(
             [{"role": "user", "content": "Find housing"}],
             "Housing Support",
-            [{"id": 1, "name": "PHQ-9", "definition": "test", "category": "mental_health"}],
+            [{"metric_id": 1, "name": "PHQ-9", "definition": "test", "category": "mental_health"}],
             ["Housing"],
         )
         self.assertIsNotNone(result)
@@ -460,7 +460,7 @@ class BuildGoalChatFunctionTest(TestCase):
         result = build_goal_chat(
             [{"role": "user", "content": "test"}],
             "Housing Support",
-            [{"id": 1, "name": "PHQ-9", "definition": "test", "category": "mental_health"}],
+            [{"metric_id": 1, "name": "PHQ-9", "definition": "test", "category": "mental_health"}],
             [],
         )
         # metric_id 999 should be cleared to None since it's not in catalogue
