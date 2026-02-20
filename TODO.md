@@ -67,6 +67,13 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Research/Implement including data visuals (charts/graphs) in PDF reports (REP-PDF1)
 - [ ] Redesign PDF report layout: merge title page with page 2 to eliminate redundant empty space (REP-PDF2)
 
+### Phase: Surveys Future Work
+
+- [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
+- [ ] Build trigger rule management UI (rules currently created via Django admin) (SURVEY-RULES1)
+- [ ] Implement auto-save / partial answers in the portal (SURVEY-AUTOSAVE1)
+- [ ] Run `translate_strings` to extract and compile French translations for the new survey templates (SURVEY-I18N1)
+
 ### Phase: Documentation & Website Updates
 
 - [ ] Create deployment documentation for surveys and portal features (DOC-DEPLOY1)
