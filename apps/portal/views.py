@@ -1183,7 +1183,11 @@ def my_words(request):
 
 @portal_login_required
 def milestones(request):
-    """Completed goals — plan targets with status='completed'."""
+    """Completed goals — plan targets with status='completed'.
+
+    Template expects 'milestones' variable where each item has
+    .name, .client_goal, and .completion_date.
+    """
     from apps.plans.models import PlanTarget
 
     client_file = _get_client_file(request)
@@ -1197,8 +1201,13 @@ def milestones(request):
         .order_by("-updated_at")
     )
 
+    # Attach completion_date (alias for updated_at) for template
+    milestone_list = list(completed_targets)
+    for target in milestone_list:
+        target.completion_date = target.updated_at
+
     return render(request, "portal/milestones.html", {
-        "completed_targets": completed_targets,
+        "milestones": milestone_list,
     })
 
 
