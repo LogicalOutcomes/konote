@@ -714,7 +714,8 @@ msgid "Transfer between programs"
 msgstr "Transférer entre les programmes"
 
 msgid "Use the Actions menu to add a Quick Note or Detailed Note."
-msgstr "Utilisez le menu Actions pour ajouter une note rapide ou une note détaillée."
+msgstr ""
+"Utilisez le menu Actions pour ajouter une note rapide ou une note détaillée."
 
 #: templates/plans/_target.html
 msgid "None"
@@ -11761,10 +11762,6 @@ msgstr "suggestion disponible"
 msgid "suggestions available"
 msgstr "suggestions disponibles"
 
-#. blocktrans strings from goal creation templates
-msgid "Add %(section)s"
-msgstr "Ajouter %(section)s"
-
 msgid "Add a %(target)s"
 msgstr "Ajouter un(e) %(target)s"
 
@@ -12543,3 +12540,39 @@ msgstr "oui — pour commencer une nouvelle page à cette section."
 
 msgid "— Select a survey —"
 msgstr "— Sélectionnez un sondage —"
+
+msgid "No answer"
+msgstr "Aucune réponse"
+
+msgid "Questions for You"
+msgstr "Questions pour vous"
+
+msgid "Survey progress"
+msgstr "Progression du sondage"
+
+msgid "Survey scores"
+msgstr "Scores du sondage"
+
+msgid "Your Scores"
+msgstr "Vos scores"
+
+#: apps/portal/templates/portal/survey_thank_you.html
+#, python-format
+msgid "Your response to \"%(name)s\" has been submitted."
+msgstr "Votre réponse au sondage « %(name)s » a été soumise."
+
+#: apps/portal/templates/portal/survey_thank_you.html
+#, python-format
+msgid "Submitted on %(date)s"
+msgstr "Soumis le %(date)s"
+
+#: apps/portal/templates/portal/dashboard.html
+#, python-format
+msgid "Forms and check-ins from your %(worker_term)s."
+msgstr "Formulaires et suivis de votre %(worker_term)s."
+
+#: apps/portal/templates/portal/dashboard.html
+msgid "%(counter)s survey pending"
+msgid_plural "%(counter)s surveys pending"
+msgstr[0] "%(counter)s sondage en attente"
+msgstr[1] "%(counter)s sondages en attente"

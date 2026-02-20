@@ -42,7 +42,7 @@
     <tbody>
     {% for r in responses %}
         <tr>
-            <td>{{ r.survey.name }}</td>
+            <td>{% if r.assignment_id %}<a href="{% url 'portal:survey_review' assignment_id=r.assignment_id %}">{{ r.survey.name }}</a>{% else %}{{ r.survey.name }}{% endif %}</td>
             <td>{{ r.submitted_at|date:"N j, Y" }}</td>
         </tr>
     {% endfor %}

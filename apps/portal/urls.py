@@ -42,5 +42,7 @@ urlpatterns = [
     # Surveys (portal)
     path("surveys/", views.portal_surveys_list, name="surveys"),
     path("surveys/<int:assignment_id>/fill/", views.portal_survey_fill, name="survey_fill"),
+    path("surveys/<int:assignment_id>/save/", views.portal_survey_autosave, name="survey_autosave"),
+    path("surveys/<int:assignment_id>/review/", views.portal_survey_review, name="survey_review"),
     path("surveys/<int:assignment_id>/thanks/", views.portal_survey_thank_you, name="survey_thank_you"),
 ]

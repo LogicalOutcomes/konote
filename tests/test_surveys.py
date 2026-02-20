@@ -323,6 +323,38 @@ class AssignmentResponseModelTests(TestCase):
         self.assertFalse(created2)
         self.assertEqual(pa.pk, pa2.pk)
 
+    def test_partial_answer_value_property(self):
+        """PartialAnswer.value encrypts on set, decrypts on get."""
+        assignment = SurveyAssignment.objects.create(
+            survey=self.survey,
+            participant_user=self.participant,
+            client_file=self.client_file,
+            status="in_progress",
+        )
+        pa = PartialAnswer(assignment=assignment, question=self.question)
+        pa.value = "test answer"
+        pa.save()
+        # Load fresh instance to verify roundtrip through DB
+        pa_fresh = PartialAnswer.objects.get(pk=pa.pk)
+        self.assertEqual(pa_fresh.value, "test answer")
+        # Encrypted field should not be plain text or empty
+        self.assertNotEqual(pa_fresh.value_encrypted, b"test answer")
+        self.assertNotEqual(pa_fresh.value_encrypted, b"")
+
+    def test_partial_answer_value_empty(self):
+        """PartialAnswer.value handles empty string."""
+        assignment = SurveyAssignment.objects.create(
+            survey=self.survey,
+            participant_user=self.participant,
+            client_file=self.client_file,
+            status="in_progress",
+        )
+        pa = PartialAnswer(assignment=assignment, question=self.question)
+        pa.value = ""
+        pa.save()
+        pa_fresh = PartialAnswer.objects.get(pk=pa.pk)
+        self.assertEqual(pa_fresh.value, "")
+
     def test_anonymous_response(self):
         """Anonymous survey responses have no client_file or assignment."""
         anon_survey = Survey.objects.create(
