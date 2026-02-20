@@ -900,3 +900,60 @@ class PortalAutoSaveTests(TestCase):
             {f"q_{self.q1.pk}": "Final Answer", f"q_{self.q2.pk}": "3"},
         )
         self.assertEqual(PartialAnswer.objects.count(), 0)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class SurveyLinkModelTests(TestCase):
+    """Test SurveyLink model for shareable URLs."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="link_staff", password="testpass123",
+            display_name="Link Staff",
+        )
+        self.survey = Survey.objects.create(
+            name="Link Survey", status="active", created_by=self.staff,
+        )
+        SurveySection.objects.create(
+            survey=self.survey, title="S1", sort_order=1,
+        )
+
+    def test_create_link(self):
+        from apps.surveys.models import SurveyLink
+        link = SurveyLink.objects.create(
+            survey=self.survey,
+            created_by=self.staff,
+        )
+        self.assertTrue(len(link.token) >= 32)
+        self.assertTrue(link.is_active)
+
+    def test_link_token_unique(self):
+        from apps.surveys.models import SurveyLink
+        link1 = SurveyLink.objects.create(
+            survey=self.survey, created_by=self.staff,
+        )
+        link2 = SurveyLink.objects.create(
+            survey=self.survey, created_by=self.staff,
+        )
+        self.assertNotEqual(link1.token, link2.token)
+
+    def test_link_with_expiry(self):
+        from apps.surveys.models import SurveyLink
+        link = SurveyLink.objects.create(
+            survey=self.survey,
+            created_by=self.staff,
+            expires_at=timezone.now() + timedelta(days=7),
+        )
+        self.assertFalse(link.is_expired)
+
+    def test_expired_link(self):
+        from apps.surveys.models import SurveyLink
+        link = SurveyLink.objects.create(
+            survey=self.survey,
+            created_by=self.staff,
+            expires_at=timezone.now() - timedelta(hours=1),
+        )
+        self.assertTrue(link.is_expired)
