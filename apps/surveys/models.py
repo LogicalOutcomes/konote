@@ -3,8 +3,11 @@
 Surveys are structured feedback instruments with optional sections,
 scoring, conditional branching, and bilingual support (EN/FR).
 """
+import secrets
+
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from konote.encryption import decrypt_field, encrypt_field
@@ -353,6 +356,46 @@ class SurveyAnswer(models.Model):
     @value.setter
     def value(self, val):
         self._value_encrypted = encrypt_field(val)
+
+
+class SurveyLink(models.Model):
+    """A shareable link token for a survey. No login required to respond."""
+
+    survey = models.ForeignKey(
+        Survey, on_delete=models.CASCADE, related_name="links",
+    )
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    is_active = models.BooleanField(default=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
+    collect_name = models.BooleanField(
+        default=False,
+        help_text=_("If true, ask respondent for their name (optional, not encrypted)."),
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="survey_links_created",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "surveys"
+        db_table = "survey_links"
+
+    def __str__(self):
+        return f"Link for {self.survey.name} ({self.token[:8]}...)"
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = secrets.token_urlsafe(32)
+        super().save(*args, **kwargs)
+
+    @property
+    def is_expired(self):
+        if self.expires_at and timezone.now() > self.expires_at:
+            return True
+        return False
 
 
 class PartialAnswer(models.Model):
