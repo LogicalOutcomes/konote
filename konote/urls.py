@@ -11,6 +11,7 @@ from django.views.static import serve
 from apps.audit.views import program_audit_log
 from apps.auth_app.views import switch_language
 from apps.events.views import calendar_feed
+from apps.surveys.public_views import public_survey_form, public_survey_thank_you
 from konote.error_views import permission_denied_view
 from konote.page_views import help_view, privacy_view
 
@@ -42,6 +43,9 @@ urlpatterns = [
     path("reports/", include("apps.reports.urls")),
     path("groups/", include("apps.groups.urls")),
     path("surveys/", include("apps.surveys.urls")),
+    # ── Public survey links (no login required) ──
+    path("s/<str:token>/", public_survey_form, name="public_survey_form"),
+    path("s/<str:token>/thanks/", public_survey_thank_you, name="public_survey_thank_you"),
 
     # ── /manage/ routes (PM + Admin accessible) ──
     path("manage/templates/", include("apps.plans.admin_urls")),

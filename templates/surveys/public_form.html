@@ -1,0 +1,109 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ survey.name }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+</head>
+<body>
+<main class="container" style="max-width:720px; padding-top:2rem">
+
+<h1>{{ survey.name }}</h1>
+
+{% if survey.description %}
+<p>{{ survey.description }}</p>
+{% endif %}
+
+{% if errors %}
+<article aria-label="{% trans 'Errors' %}" style="background:var(--pico-del-color, #c62828); color:#fff; padding:1rem; border-radius:4px">
+    <p><strong>{% trans "Please answer all required questions:" %}</strong></p>
+    <ul>
+    {% for err in errors %}
+        <li>{{ err }}</li>
+    {% endfor %}
+    </ul>
+</article>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+
+    {% if link.collect_name %}
+    <label for="respondent_name">{% trans "Your name (optional)" %}</label>
+    <input type="text" id="respondent_name" name="respondent_name"
+           value="{{ posted.respondent_name|default:'' }}">
+    {% endif %}
+
+    {% for section in sections %}
+    <fieldset>
+        <legend>{{ section.title }}</legend>
+        {% if section.instructions %}<p><small>{{ section.instructions }}</small></p>{% endif %}
+
+        {% for question in section.questions.all %}
+        <div style="margin-bottom:1.5rem">
+            <label for="q_{{ question.pk }}">
+                {{ question.question_text }}{% if question.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+            </label>
+
+            {% if question.question_type == "short_text" %}
+            <input type="text" id="q_{{ question.pk }}" name="q_{{ question.pk }}"
+                   value="{{ posted|default_if_none:'' }}"
+                   {% if question.required %}required{% endif %}>
+
+            {% elif question.question_type == "long_text" %}
+            <textarea id="q_{{ question.pk }}" name="q_{{ question.pk }}" rows="4"
+                      {% if question.required %}required{% endif %}>{{ posted|default_if_none:"" }}</textarea>
+
+            {% elif question.question_type == "yes_no" %}
+            <select id="q_{{ question.pk }}" name="q_{{ question.pk }}"
+                    {% if question.required %}required{% endif %}>
+                <option value="">—</option>
+                <option value="1">{% trans "Yes" %}</option>
+                <option value="0">{% trans "No" %}</option>
+            </select>
+
+            {% elif question.question_type == "single_choice" %}
+            {% for opt in question.options_json %}
+            <label>
+                <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}">
+                {{ opt.label }}
+            </label>
+            {% endfor %}
+
+            {% elif question.question_type == "multiple_choice" %}
+            {% for opt in question.options_json %}
+            <label>
+                <input type="checkbox" name="q_{{ question.pk }}" value="{{ opt.value }}">
+                {{ opt.label }}
+            </label>
+            {% endfor %}
+
+            {% elif question.question_type == "rating_scale" %}
+            <div role="group">
+            {% for opt in question.options_json %}
+                <label style="text-align:center">
+                    <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}">
+                    {{ opt.label }}
+                </label>
+            {% endfor %}
+            </div>
+            {% if question.min_value is not None and question.max_value is not None %}
+            <small class="secondary">{% blocktrans with min=question.min_value max=question.max_value %}Scale: {{ min }} to {{ max }}{% endblocktrans %}</small>
+            {% endif %}
+
+            {% endif %}
+        </div>
+        {% endfor %}
+    </fieldset>
+    {% endfor %}
+
+    <button type="submit">{% trans "Submit" %}</button>
+</form>
+
+</main>
+</body>
+</html>
