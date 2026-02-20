@@ -157,14 +157,16 @@
     <details>
         <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Cross-Program Sharing" %}</h2></summary>
         <div style="margin-top: var(--kn-space-base);">
-            {% if client.cross_program_sharing_consent %}
-            <p><span class="badge badge-success">{% trans "Consent given" %}</span></p>
+            {% if client.cross_program_sharing == "consent" %}
+            <p><span class="badge badge-success">{% trans "Share across programs" %}</span></p>
             <p class="secondary">{% trans "This participant has consented to sharing clinical information across programs." %}</p>
+            {% elif client.cross_program_sharing == "restrict" %}
+            <p><span class="badge badge-danger">{% trans "Restricted" %}</span></p>
+            <p class="secondary">{% trans "Clinical notes are restricted to the program where they were recorded." %}</p>
             {% else %}
-            <p><span class="badge badge-neutral">{% trans "No consent" %}</span></p>
-            <p class="secondary">{% trans "Clinical notes are only visible within the program where they were recorded. Under Ontario privacy law (PHIPA), express consent is required before clinical information can be shared across programs." %}</p>
+            <p><span class="badge badge-neutral">{% trans "Follow agency setting" %}</span></p>
+            <p class="secondary">{% trans "Uses the agency-wide default for cross-program note sharing." %}</p>
             {% endif %}
-            <small class="secondary"><em>{% trans "Note: Cross-program note filtering will be enforced in a future update. This setting is being recorded now for when enforcement is enabled." %}</em></small>
         </div>
     </details>
 </section>
