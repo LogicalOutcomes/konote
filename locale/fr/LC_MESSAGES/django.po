@@ -714,7 +714,8 @@ msgid "Transfer between programs"
 msgstr "Transférer entre les programmes"
 
 msgid "Use the Actions menu to add a Quick Note or Detailed Note."
-msgstr "Utilisez le menu Actions pour ajouter une note rapide ou une note détaillée."
+msgstr ""
+"Utilisez le menu Actions pour ajouter une note rapide ou une note détaillée."
 
 #: templates/plans/_target.html
 msgid "None"
@@ -11761,10 +11762,6 @@ msgstr "suggestion disponible"
 msgid "suggestions available"
 msgstr "suggestions disponibles"
 
-#. blocktrans strings from goal creation templates
-msgid "Add %(section)s"
-msgstr "Ajouter %(section)s"
-
 msgid "Add a %(target)s"
 msgstr "Ajouter un(e) %(target)s"
 
@@ -12543,3 +12540,180 @@ msgstr "oui — pour commencer une nouvelle page à cette section."
 
 msgid "— Select a survey —"
 msgstr "— Sélectionnez un sondage —"
+
+msgid "About trigger types"
+msgstr "À propos des types de déclencheurs"
+
+msgid "Also assign to existing participants"
+msgstr "Attribuer aussi aux participants existants"
+
+msgid "Ask respondents for their name (optional, not encrypted)"
+msgstr "Demander le nom aux répondants (facultatif, non chiffré)"
+
+msgid "Assign automatically"
+msgstr "Attribuer automatiquement"
+
+msgid "Assign immediately when a participant is enrolled in a program."
+msgstr "Attribuer immédiatement lorsqu'un participant est inscrit à un programme."
+
+msgid "Assign on a recurring schedule (e.g., every 30 days after enrolment)."
+msgstr ""
+"Attribuer selon un calendrier récurrent (p. ex., tous les 30 jours après "
+"l'inscription)."
+
+msgid "Assign when a participant is enrolled in a specific program."
+msgstr "Attribuer lorsqu'un participant est inscrit à un programme spécifique."
+
+msgid "Assign when a specific event type is recorded for a participant."
+msgstr ""
+"Attribuer lorsqu'un type d'évènement spécifique est enregistré pour un "
+"participant."
+
+msgid "Auto-assign"
+msgstr "Attribution automatique"
+
+msgid ""
+"Configure when this survey should be automatically assigned to participants."
+msgstr ""
+"Configurez quand ce sondage devrait être automatiquement attribué aux "
+"participants."
+
+msgid "Count days from"
+msgstr "Compter les jours à partir de"
+
+msgid "Create New Link"
+msgstr "Créer un nouveau lien"
+
+msgid "Create Rule"
+msgstr "Créer une règle"
+
+msgid ""
+"Create links that anyone can use to fill out this survey without logging in."
+msgstr ""
+"Créez des liens que n'importe qui peut utiliser pour remplir ce sondage sans "
+"se connecter."
+
+msgid "Due date (days after assignment)"
+msgstr "Date d'échéance (jours après l'attribution)"
+
+msgid "Event type"
+msgstr "Type d'évènement"
+
+msgid "Expires after (days)"
+msgstr "Expire après (jours)"
+
+msgid "How often per participant?"
+msgstr "À quelle fréquence par participant?"
+
+msgid "If true, ask respondent for their name (optional, not encrypted)."
+msgstr ""
+"Si activé, demander le nom au répondant (facultatif, non chiffré)."
+
+msgid "Leave blank for no due date."
+msgstr "Laisser vide pour aucune date d'échéance."
+
+msgid "Leave blank for no expiry"
+msgstr "Laisser vide pour aucune expiration"
+
+msgid "Link URL"
+msgstr "URL du lien"
+
+msgid "Link deactivated."
+msgstr "Lien désactivé."
+
+msgid "Manage Rules"
+msgstr "Gérer les règles"
+
+msgid "New Rule"
+msgstr "Nouvelle règle"
+
+msgid "New Trigger Rule"
+msgstr "Nouvelle règle de déclenchement"
+
+msgid "No shareable links yet. Create one below."
+msgstr "Aucun lien partageable pour le moment. Créez-en un ci-dessous."
+
+msgid "No trigger rules configured."
+msgstr "Aucune règle de déclenchement configurée."
+
+msgid "No trigger rules yet. Create one to automatically assign this survey."
+msgstr ""
+"Aucune règle de déclenchement pour le moment. Créez-en une pour attribuer "
+"automatiquement ce sondage."
+
+msgid "Optional. The link will stop working after this many days."
+msgstr "Facultatif. Le lien cessera de fonctionner après ce nombre de jours."
+
+msgid "Program / Event Type"
+msgstr "Programme / Type d'évènement"
+
+msgid "Repeat Policy"
+msgstr "Politique de répétition"
+
+msgid "Repeat every N days"
+msgstr "Répéter tous les N jours"
+
+msgid "Rules that automatically assign this survey to participants."
+msgstr "Règles qui attribuent automatiquement ce sondage aux participants."
+
+msgid "Shareable Links"
+msgstr "Liens partageables"
+
+msgid "Shareable link created."
+msgstr "Lien partageable créé."
+
+msgid "Shareable links"
+msgstr "Liens partageables"
+
+msgid "Survey Unavailable"
+msgstr "Sondage non disponible"
+
+msgid "Survey link URL"
+msgstr "URL du lien de sondage"
+
+msgid "This survey is no longer available."
+msgstr "Ce sondage n'est plus disponible."
+
+msgid "Token"
+msgstr "Jeton"
+
+msgid "Trigger Rules"
+msgstr "Règles de déclenchement"
+
+msgid "Trigger Type"
+msgstr "Type de déclencheur"
+
+msgid "Trigger rule created."
+msgstr "Règle de déclenchement créée."
+
+msgid "Trigger rule deactivated."
+msgstr "Règle de déclenchement désactivée."
+
+msgid "Trigger rules"
+msgstr "Règles de déclenchement"
+
+msgid "When should this survey be assigned?"
+msgstr "Quand ce sondage devrait-il être attribué?"
+
+msgid "Your answers are being saved automatically."
+msgstr "Vos réponses sont sauvegardées automatiquement."
+
+msgid "Your name (optional)"
+msgstr "Votre nom (facultatif)"
+
+#. blocktrans strings from survey templates
+#, python-format
+msgid "Entering survey response on behalf of %(name)s."
+msgstr "Saisie de la réponse au sondage au nom de %(name)s."
+
+#, python-format
+msgid "Scale: %(min)s to %(max)s"
+msgstr "Échelle : %(min)s à %(max)s"
+
+#, python-format
+msgid "Your response to \"%(name)s\" has been submitted."
+msgstr "Votre réponse à « %(name)s » a été soumise."
+
+#, python-format
+msgid "Add question to %(title)s"
+msgstr "Ajouter une question à %(title)s"
