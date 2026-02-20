@@ -180,14 +180,21 @@ class MetricValueForm(forms.Form):
     is_scale = False
     auto_calc_value = None
 
-    def __init__(self, *args, metric_def=None, **kwargs):
+    def __init__(self, *args, metric_def=None, target_name="", **kwargs):
         super().__init__(*args, **kwargs)
+        self.target_name = target_name
         if metric_def:
             self.metric_def = metric_def
             label = metric_def.translated_name
             if metric_def.translated_unit:
                 label += f" ({metric_def.translated_unit})"
             self.fields["value"].label = label
+            # Domain-specific prompt for Self-Efficacy
+            if metric_def.name == "Self-Efficacy" and target_name:
+                from django.utils.translation import gettext
+                self.fields["value"].label = gettext(
+                    "How sure do you feel about being able to %(target)s?"
+                ) % {"target": target_name.lower()}
             # Set help text from definition
             help_parts = []
             if metric_def.translated_definition:
