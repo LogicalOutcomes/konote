@@ -130,7 +130,7 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
             from .utils import get_manageable_programs
             self.fields["program"].queryset = get_manageable_programs(user)
         # Build fiscal year choices dynamically (includes blank option)
-        fy_choices = [("", "— Custom date range —")] + get_fiscal_year_choices()
+        fy_choices = [("", _("— Custom date range —"))] + get_fiscal_year_choices()
         self.fields["fiscal_year"].choices = fy_choices
         # Build demographic grouping choices dynamically
         self.fields["group_by"].choices = get_demographic_field_choices()
