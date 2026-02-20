@@ -11,6 +11,38 @@
 <div role="group" style="margin-bottom: 1rem;">
     <a href="{% url 'reports:client_progress_pdf' client_id=client.pk %}" role="button" class="outline">{% trans "Export as PDF" %}</a>
 </div>
+
+<!-- Timeframe filter -->
+<form method="get" action="{% url 'reports:client_analysis' client_id=client.pk %}">
+    <details class="filter-bar"{% if filter_date_from or filter_date_to or filter_timeframe %} open{% endif %}>
+        <summary>
+            {% trans "Timeframe" %}{% if filter_date_from or filter_date_to or filter_timeframe and filter_timeframe != "all" %}
+                <span class="badge badge-info">1</span>
+            {% endif %}
+        </summary>
+        <div class="filter-fields">
+            <fieldset role="group" style="margin-bottom: 0.5rem;">
+                <legend class="sr-only">{% trans "Quick select" %}</legend>
+                <a href="?timeframe=30d" role="button" class="outline{% if filter_timeframe == '30d' %} contrast{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 30 days" %}</a>
+                <a href="?timeframe=3m" role="button" class="outline{% if filter_timeframe == '3m' %} contrast{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 3 months" %}</a>
+                <a href="?timeframe=6m" role="button" class="outline{% if filter_timeframe == '6m' %} contrast{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 6 months" %}</a>
+                <a href="?timeframe=all" role="button" class="outline{% if not filter_timeframe or filter_timeframe == 'all' %} contrast{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "All time" %}</a>
+            </fieldset>
+            <label>
+                {% trans "From date" %}
+                <input type="date" name="date_from" value="{{ filter_date_from }}">
+            </label>
+            <label>
+                {% trans "To date" %}
+                <input type="date" name="date_to" value="{{ filter_date_to }}">
+            </label>
+        </div>
+        <div role="group">
+            <button type="submit" class="outline">{% trans "Apply filters" %}</button>
+            <a href="{% url 'reports:client_analysis' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Clear" %}</a>
+        </div>
+    </details>
+</form>
 {% endif %}
 
 {% if chart_data %}
