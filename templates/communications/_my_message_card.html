@@ -33,7 +33,7 @@
               hx-target="#message-{{ msg.pk }}"
               hx-swap="outerHTML">
             {% csrf_token %}
-            <button type="submit" class="secondary outline">{% trans "Mark as Read" %}</button>
+            <button type="submit" class="secondary outline" aria-label="{% blocktrans with name=msg.left_by.display_name|default:_("Unknown") %}Mark message from {{ name }} as read{% endblocktrans %}">{% trans "Mark as Read" %}</button>
         </form>
     </footer>
     {% endif %}

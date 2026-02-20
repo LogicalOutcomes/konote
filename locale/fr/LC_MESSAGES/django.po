@@ -13766,3 +13766,7 @@ msgstr "Pour : %(name)s"
 #, python-format
 msgid "You have %(count)s unread message(s)."
 msgstr "Vous avez %(count)s message(s) non lu(s)."
+
+#, python-format
+msgid "Mark message from %(name)s as read"
+msgstr "Marquer le message de %(name)s comme lu"
