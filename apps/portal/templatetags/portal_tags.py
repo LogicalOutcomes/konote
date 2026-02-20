@@ -106,3 +106,11 @@ def portal_display_name(program):
 
     # Last resort — just the plain name
     return getattr(program, "name", "")
+
+
+@register.filter
+def dict_get(d, key):
+    """Look up a key in a dict. Usage: {{ mydict|dict_get:item.pk }}"""
+    if d is None:
+        return ""
+    return d.get(key, "")

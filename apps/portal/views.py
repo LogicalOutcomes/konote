@@ -1320,10 +1320,12 @@ def portal_survey_fill(request, assignment_id):
     """Fill in a survey through the portal — renders all questions."""
     from apps.surveys.engine import is_surveys_enabled
     from apps.surveys.models import (
+        PartialAnswer,
         SurveyAnswer,
         SurveyAssignment,
         SurveyResponse,
     )
+    from konote.encryption import decrypt_field
 
     if not is_surveys_enabled():
         raise Http404
@@ -1341,6 +1343,11 @@ def portal_survey_fill(request, assignment_id):
     sections = survey.sections.filter(
         is_active=True,
     ).prefetch_related("questions").order_by("sort_order")
+
+    # Load existing partial answers for pre-fill
+    partials = {}
+    for pa in PartialAnswer.objects.filter(assignment=assignment):
+        partials[pa.question_id] = decrypt_field(pa.value_encrypted)
 
     if request.method == "POST":
         errors = []
@@ -1368,6 +1375,7 @@ def portal_survey_fill(request, assignment_id):
                 "sections": sections,
                 "posted": request.POST,
                 "errors": errors,
+                "partials": partials,
             })
 
         from django.db import transaction
@@ -1401,6 +1409,9 @@ def portal_survey_fill(request, assignment_id):
             assignment.completed_at = timezone.now()
             assignment.save(update_fields=["status", "completed_at"])
 
+            # Clean up partial answers after successful submit
+            PartialAnswer.objects.filter(assignment=assignment).delete()
+
         _audit_portal_event(request, "portal_survey_submitted", metadata={
             "survey_id": str(survey.pk),
             "assignment_id": str(assignment.pk),
@@ -1420,6 +1431,7 @@ def portal_survey_fill(request, assignment_id):
         "sections": sections,
         "posted": {},
         "errors": [],
+        "partials": partials,
     })
 
 

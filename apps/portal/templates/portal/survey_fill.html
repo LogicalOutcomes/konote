@@ -1,5 +1,5 @@
 {% extends "portal/base_portal.html" %}
-{% load i18n %}
+{% load i18n portal_tags %}
 
 {% block title %}{{ survey.name }}{% endblock %}
 
@@ -37,11 +37,12 @@
 
             {% if question.question_type == "short_text" %}
             <input type="text" id="q_{{ question.pk }}" name="q_{{ question.pk }}"
+                   value="{{ partials|dict_get:question.pk }}"
                    {% if question.required %}required{% endif %}>
 
             {% elif question.question_type == "long_text" %}
             <textarea id="q_{{ question.pk }}" name="q_{{ question.pk }}" rows="4"
-                      {% if question.required %}required{% endif %}></textarea>
+                      {% if question.required %}required{% endif %}>{{ partials|dict_get:question.pk }}</textarea>
 
             {% elif question.question_type == "yes_no" %}
             <select id="q_{{ question.pk }}" name="q_{{ question.pk }}"
