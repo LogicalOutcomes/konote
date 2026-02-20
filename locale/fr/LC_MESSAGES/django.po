@@ -12576,3 +12576,39 @@ msgid "%(counter)s survey pending"
 msgid_plural "%(counter)s surveys pending"
 msgstr[0] "%(counter)s sondage en attente"
 msgstr[1] "%(counter)s sondages en attente"
+
+msgid "Condition value"
+msgstr "Valeur de la condition"
+
+msgid "Conditional"
+msgstr "Conditionnelle"
+
+msgid "Conditional visibility"
+msgstr "Visibilité conditionnelle"
+
+msgid "FY %(start)s-%(end)s"
+msgstr "AF %(start)s-%(end)s"
+
+msgid "Failed to load options. Please try again."
+msgstr "Impossible de charger les options. Veuillez réessayer."
+
+msgid "Leave blank to always show this section."
+msgstr "Laisser vide pour toujours afficher cette section."
+
+msgid "Select a value"
+msgstr "Sélectionner une valeur"
+
+msgid "Show only when"
+msgstr "Afficher seulement quand"
+
+msgid "The answer value that makes this section visible."
+msgstr "La valeur de réponse qui rend cette section visible."
+
+msgid "Type the exact answer value"
+msgstr "Saisissez la valeur exacte de la réponse"
+
+msgid "is answered"
+msgstr "a reçu une réponse"
+
+msgid "— Custom date range —"
+msgstr "— Plage de dates personnalisée —"
