@@ -336,6 +336,7 @@ def leave_message(request, client_id):
             msg.left_by = request.user
             msg.for_user = form.cleaned_data.get("for_user")
             msg.author_program = get_author_program(request.user, client)
+            msg.is_urgent = form.cleaned_data.get("is_urgent", False)
             msg.save()
 
             messages.success(request, _("Message left successfully."))

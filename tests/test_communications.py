@@ -618,3 +618,54 @@ class StaffMessageFormTest(TestCase):
             staff_choices=[], worker_term="worker",
         )
         self.assertTrue(form.is_valid(), form.errors)
+
+
+# -----------------------------------------------------------------------
+# leave_message view tests (UX-MSG1)
+# -----------------------------------------------------------------------
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class LeaveMessageViewTest(TestCase):
+    """Test the leave_message view — creating staff messages."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        self.staff = User.objects.create_user(
+            username="test_staff_lm", password="testpass123", display_name="Test Staff",
+        )
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.program, role="staff", status="active",
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program,
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_post_creates_message(self):
+        from apps.communications.models import StaffMessage
+        self.client.login(username="test_staff_lm", password="testpass123")
+        url = f"/communications/participant/{self.client_file.pk}/leave-message/"
+        response = self.client.post(url, {"message": "Call back please"})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(StaffMessage.objects.count(), 1)
+        msg = StaffMessage.objects.first()
+        self.assertEqual(msg.content, "Call back please")
+        self.assertFalse(msg.is_urgent)
+
+    def test_post_creates_urgent_message(self):
+        from apps.communications.models import StaffMessage
+        self.client.login(username="test_staff_lm", password="testpass123")
+        url = f"/communications/participant/{self.client_file.pk}/leave-message/"
+        response = self.client.post(url, {"message": "Emergency!", "is_urgent": "on"})
+        self.assertEqual(response.status_code, 302)
+        msg = StaffMessage.objects.first()
+        self.assertTrue(msg.is_urgent)
