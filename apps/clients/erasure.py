@@ -67,6 +67,28 @@ def build_data_summary(client_file):
         status_counts = Counter(targets.values_list("status", flat=True))
         summary["outcome_summary"] = dict(status_counts)
 
+    # Portal data counts
+    try:
+        from apps.portal.models import (
+            CorrectionRequest, ParticipantJournalEntry,
+            ParticipantMessage, StaffPortalNote,
+        )
+        summary["portal_journal_entries"] = ParticipantJournalEntry.objects.filter(
+            client_file=client_file
+        ).count()
+        summary["portal_messages"] = ParticipantMessage.objects.filter(
+            client_file=client_file
+        ).count()
+        summary["portal_correction_requests"] = CorrectionRequest.objects.filter(
+            client_file=client_file
+        ).count()
+        summary["portal_staff_notes"] = StaffPortalNote.objects.filter(
+            client_file=client_file
+        ).count()
+        summary["has_portal_account"] = hasattr(client_file, "portal_account")
+    except ImportError:
+        pass
+
     return summary
 
 
@@ -316,6 +338,18 @@ def _anonymise_client_pii(client, erasure_code):
         field_def__is_sensitive=False,
     ).update(value="")
 
+    # Deactivate portal account and scrub email
+    try:
+        from apps.portal.models import ParticipantUser
+        ParticipantUser.objects.filter(client_file=client, is_active=True).update(
+            is_active=False,
+            _email_encrypted=b"",
+            email_hash="",
+            display_name="[Anonymised]",
+        )
+    except ImportError:
+        pass
+
 
 def _purge_narrative_content(client):
     """Blank all narrative/text content from a client's related records.
@@ -342,6 +376,27 @@ def _purge_narrative_content(client):
 
     # Blank event text (titles and descriptions may contain identifying info)
     Event.objects.filter(client_file=client).update(title="", description="")
+
+    # Blank portal content (journal entries, messages, correction descriptions)
+    try:
+        from apps.portal.models import (
+            CorrectionRequest, ParticipantJournalEntry,
+            ParticipantMessage, StaffPortalNote,
+        )
+        ParticipantJournalEntry.objects.filter(client_file=client).update(
+            _content_encrypted=b"",
+        )
+        ParticipantMessage.objects.filter(client_file=client).update(
+            _content_encrypted=b"",
+        )
+        CorrectionRequest.objects.filter(client_file=client).update(
+            _description_encrypted=b"",
+        )
+        StaffPortalNote.objects.filter(client_file=client).update(
+            _content_encrypted=b"",
+        )
+    except ImportError:
+        pass
 
 
 def _log_erasure_audit(erasure_request, client_pk, record_id, action, ip_address):

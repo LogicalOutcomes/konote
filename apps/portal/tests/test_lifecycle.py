@@ -7,6 +7,7 @@ from django.test import TestCase, override_settings
 
 from apps.admin_settings.models import FeatureToggle
 from apps.auth_app.models import User
+from apps.clients.erasure import build_data_summary, _anonymise_client_pii, _purge_narrative_content
 from apps.clients.merge import execute_merge
 from apps.clients.models import ClientFile
 from apps.portal.models import (
@@ -179,3 +180,65 @@ class ClientMergePortalTests(TestCase):
         execute_merge(self.kept, self.archived, {}, {}, self.staff_user, "127.0.0.1")
         msg.refresh_from_db()
         self.assertEqual(msg.client_file_id, self.kept.pk)
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-hash-key-for-lifecycle",
+    PORTAL_DOMAIN="",
+    STAFF_DOMAIN="",
+)
+class ErasurePortalTests(TestCase):
+    """D4: Portal data included in erasure workflow."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client_file = ClientFile.objects.create(
+            record_id="ERASE-001", status="active",
+        )
+        self.participant = ParticipantUser.objects.create_participant(
+            email="erase@example.com",
+            client_file=self.client_file,
+            display_name="Erase Test",
+            password="TestPass123!",
+        )
+        # Create portal content
+        entry = ParticipantJournalEntry(
+            participant_user=self.participant,
+            client_file=self.client_file,
+        )
+        entry.content = "Secret journal entry"
+        entry.save()
+
+        msg = ParticipantMessage(
+            participant_user=self.participant,
+            client_file=self.client_file,
+            message_type="general",
+        )
+        msg.content = "Secret message"
+        msg.save()
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_data_summary_includes_portal_counts(self):
+        """build_data_summary should count portal journal entries and messages."""
+        summary = build_data_summary(self.client_file)
+        self.assertEqual(summary["portal_journal_entries"], 1)
+        self.assertEqual(summary["portal_messages"], 1)
+
+    def test_purge_blanks_portal_content(self):
+        """_purge_narrative_content should blank portal encrypted content."""
+        _purge_narrative_content(self.client_file)
+        entry = ParticipantJournalEntry.objects.get(client_file=self.client_file)
+        self.assertEqual(entry._content_encrypted, b"")
+        msg = ParticipantMessage.objects.get(client_file=self.client_file)
+        self.assertEqual(msg._content_encrypted, b"")
+
+    def test_anonymise_deactivates_portal_account(self):
+        """_anonymise_client_pii should deactivate the portal account."""
+        _anonymise_client_pii(self.client_file, "ER-TEST-001")
+        self.participant.refresh_from_db()
+        self.assertFalse(self.participant.is_active)
