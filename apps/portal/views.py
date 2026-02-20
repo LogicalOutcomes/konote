@@ -12,7 +12,7 @@ import logging
 from functools import wraps
 
 from django.conf import settings
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -1421,6 +1421,57 @@ def portal_survey_fill(request, assignment_id):
         "posted": {},
         "errors": [],
     })
+
+
+@portal_login_required
+def portal_survey_autosave(request, assignment_id):
+    """HTMX auto-save: save a single answer to PartialAnswer."""
+    from apps.surveys.engine import is_surveys_enabled
+    from apps.surveys.models import PartialAnswer, SurveyAssignment, SurveyQuestion
+
+    if not is_surveys_enabled():
+        raise Http404
+
+    # Only accept HTMX requests
+    if not request.headers.get("HX-Request"):
+        return HttpResponseBadRequest("HTMX request required")
+
+    participant = request.participant_user
+    assignment = get_object_or_404(
+        SurveyAssignment,
+        pk=assignment_id,
+        participant_user=participant,
+        status="in_progress",
+    )
+
+    question_id = request.POST.get("question_id")
+    value = request.POST.get("value", "")
+
+    # Verify question belongs to this survey
+    question = get_object_or_404(
+        SurveyQuestion,
+        pk=question_id,
+        section__survey=assignment.survey,
+    )
+
+    if value:
+        pa, _ = PartialAnswer.objects.update_or_create(
+            assignment=assignment,
+            question=question,
+            defaults={},
+        )
+        pa.value = value
+        pa.save()
+    else:
+        # Empty value — delete partial answer if it exists
+        PartialAnswer.objects.filter(
+            assignment=assignment, question=question,
+        ).delete()
+
+    return HttpResponse(
+        '<span role="status" class="save-indicator">Saved</span>',
+        content_type="text/html",
+    )
 
 
 @portal_login_required
