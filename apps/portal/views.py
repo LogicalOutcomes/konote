@@ -1094,10 +1094,24 @@ def progress_view(request):
 
     # Convert to list format expected by the template JS
     # (sets are not JSON-serialisable, so convert to sorted list)
-    chart_data = [
-        {"metric_name": name, **{k: sorted(v) if isinstance(v, set) else v for k, v in data.items()}}
-        for name, data in metrics_data.items()
-    ]
+    chart_data = []
+    for name, data in metrics_data.items():
+        entry = {"metric_name": name}
+        for k, v in data.items():
+            entry[k] = sorted(v) if isinstance(v, set) else v
+        # Add start/current value summary for the template
+        vals = entry.get("values", [])
+        if vals:
+            entry["start_value"] = vals[0]
+            entry["current_value"] = vals[-1]
+            entry["start_label"] = str(_("Started at"))
+            entry["current_label"] = str(_("Now at"))
+        entry["begin_at_zero"] = (
+            entry.get("min_value") == 0
+            if entry.get("min_value") is not None
+            else False
+        )
+        chart_data.append(entry)
 
     return render(request, "portal/progress.html", {
         "chart_data": chart_data,
