@@ -60,7 +60,7 @@
                 <select name="target">
                     <option value="">{% trans "All targets" %}</option>
                     {% for tgt in client_targets %}
-                    <option value="{{ tgt.pk }}" {% if filter_target == tgt.pk|stringformat:"d" %}selected{% endif %}>{{ tgt.name|truncatechars:40 }}</option>
+                    <option value="{{ tgt.pk }}" title="{{ tgt.name }}" {% if filter_target == tgt.pk|stringformat:"d" %}selected{% endif %}>{{ tgt.name|truncatechars:40 }}</option>
                     {% endfor %}
                 </select>
             </label>

@@ -23,10 +23,10 @@
         <div class="filter-fields">
             <fieldset role="group" style="margin-bottom: 0.5rem;">
                 <legend class="sr-only">{% trans "Quick select" %}</legend>
-                <a href="?timeframe=30d" role="button" class="outline{% if filter_timeframe == '30d' %} contrast{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 30 days" %}</a>
-                <a href="?timeframe=3m" role="button" class="outline{% if filter_timeframe == '3m' %} contrast{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 3 months" %}</a>
-                <a href="?timeframe=6m" role="button" class="outline{% if filter_timeframe == '6m' %} contrast{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 6 months" %}</a>
-                <a href="?timeframe=all" role="button" class="outline{% if not filter_timeframe or filter_timeframe == 'all' %} contrast{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "All time" %}</a>
+                <a href="?timeframe=30d" class="outline{% if filter_timeframe == '30d' %} contrast{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 30 days" %}</a>
+                <a href="?timeframe=3m" class="outline{% if filter_timeframe == '3m' %} contrast{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 3 months" %}</a>
+                <a href="?timeframe=6m" class="outline{% if filter_timeframe == '6m' %} contrast{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "Last 6 months" %}</a>
+                <a href="?timeframe=all" class="outline{% if not filter_timeframe or filter_timeframe == 'all' %} contrast{% endif %}" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">{% trans "All time" %}</a>
             </fieldset>
             <label>
                 {% trans "From date" %}
