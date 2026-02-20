@@ -411,7 +411,13 @@ def mark_message_read(request, client_id, message_id):
         msg.save(update_fields=["status", "read_at"])
 
     if request.headers.get("HX-Request"):
-        return render(request, "communications/_message_card.html", {
+        # Use the correct card partial based on which page initiated the request
+        current_url = request.headers.get("HX-Current-URL", "")
+        if "my-messages" in current_url:
+            template = "communications/_my_message_card.html"
+        else:
+            template = "communications/_message_card.html"
+        return render(request, template, {
             "msg": msg,
             "client": client,
         })

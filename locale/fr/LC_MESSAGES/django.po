@@ -13745,7 +13745,8 @@ msgid "About"
 msgstr "Au sujet de"
 
 msgid "Flag this message as urgent — shown at top of inbox"
-msgstr "Marquer ce message comme urgent — affiché en haut de la boîte de réception"
+msgstr ""
+"Marquer ce message comme urgent — affiché en haut de la boîte de réception"
 
 msgid "Mark as urgent"
 msgstr "Marquer comme urgent"
@@ -13770,3 +13771,6 @@ msgstr "Vous avez %(count)s message(s) non lu(s)."
 #, python-format
 msgid "Mark message from %(name)s as read"
 msgstr "Marquer le message de %(name)s comme lu"
+
+msgid "Marked as read"
+msgstr "Marqué comme lu"
