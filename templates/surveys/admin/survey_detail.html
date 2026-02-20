@@ -69,6 +69,28 @@
 <p class="empty-state">{% trans "No sections yet." %} <a href="{% url 'survey_manage:survey_edit' survey_id=survey.pk %}">{% trans "Add sections" %}</a></p>
 {% endfor %}
 
+{# Trigger rules #}
+<h2>{% trans "Trigger Rules" %}</h2>
+{% if rules %}
+<ul>
+{% for rule in rules %}
+    <li>
+        {{ rule.get_trigger_type_display }}
+        {% if rule.program %} — {{ rule.program.name }}{% endif %}
+        {% if rule.event_type %} — {{ rule.event_type.name }}{% endif %}
+        {% if rule.is_active %}
+            <span class="badge badge-success">{% trans "Active" %}</span>
+        {% else %}
+            <span class="badge badge-neutral">{% trans "Inactive" %}</span>
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="empty-state">{% trans "No trigger rules configured." %}</p>
+{% endif %}
+<p><a href="{% url 'survey_manage:survey_rules' survey_id=survey.pk %}" role="button" class="outline">{% trans "Manage Rules" %}</a></p>
+
 {# Recent responses #}
 {% if responses %}
 <h2>{% trans "Recent Responses" %}</h2>
