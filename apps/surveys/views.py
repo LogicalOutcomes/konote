@@ -664,3 +664,52 @@ def client_response_detail(request, client_id, response_id):
         "answers": answers,
         "breadcrumbs": breadcrumbs,
     })
+
+
+# ---------------------------------------------------------------------------
+# Shareable link management — /manage/surveys/<id>/links/
+# ---------------------------------------------------------------------------
+
+
+@login_required
+@requires_permission("template.note.manage", allow_admin=True)
+def survey_links(request, survey_id):
+    """Manage shareable links for a survey."""
+    _surveys_or_404()
+    survey = get_object_or_404(Survey, pk=survey_id)
+
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+        if action == "create":
+            from .models import SurveyLink
+            expires_days = request.POST.get("expires_days", "")
+            expires_at = None
+            if expires_days:
+                try:
+                    expires_at = timezone.now() + timezone.timedelta(
+                        days=int(expires_days),
+                    )
+                except (ValueError, TypeError):
+                    pass
+            SurveyLink.objects.create(
+                survey=survey,
+                created_by=request.user,
+                collect_name=request.POST.get("collect_name") == "on",
+                expires_at=expires_at,
+            )
+            messages.success(request, _("Shareable link created."))
+        elif action == "deactivate":
+            link_id = request.POST.get("link_id")
+            from .models import SurveyLink
+            link = get_object_or_404(SurveyLink, pk=link_id, survey=survey)
+            link.is_active = False
+            link.save(update_fields=["is_active"])
+            messages.success(request, _("Link deactivated."))
+        return redirect("survey_manage:survey_links", survey_id=survey.pk)
+
+    from .models import SurveyLink
+    links = SurveyLink.objects.filter(survey=survey).order_by("-created_at")
+    return render(request, "surveys/admin/survey_links.html", {
+        "survey": survey,
+        "links": links,
+    })

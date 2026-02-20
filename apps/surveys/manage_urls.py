@@ -17,5 +17,6 @@ urlpatterns = [
         views.survey_response_detail,
         name="survey_response_detail",
     ),
+    path("<int:survey_id>/links/", views.survey_links, name="survey_links"),
     path("import/", views.csv_import, name="csv_import"),
 ]
