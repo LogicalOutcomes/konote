@@ -509,7 +509,7 @@ class GoalCreateTest(PlanCRUDBaseTest):
             program=self.program, sort_order=0,
         )
         self.metric = MetricDefinition.objects.create(
-            name="Confidence", definition="1-5 scale", category="general",
+            name="Self-Efficacy", definition="1-5 scale", category="general",
             is_universal=True, is_enabled=True, min_value=1, max_value=5,
         )
 
@@ -641,7 +641,7 @@ class GoalCreateTest(PlanCRUDBaseTest):
     def test_multiple_metrics_can_be_assigned(self):
         """Multiple metrics can be selected for a single goal."""
         metric_b = MetricDefinition.objects.create(
-            name="Progress", definition="1-5 progress scale", category="general",
+            name="Goal Progress", definition="1-5 progress scale", category="general",
             is_universal=True, is_enabled=True, min_value=1, max_value=5,
         )
         self.http.login(username="counsellor", password="pass")
@@ -663,7 +663,7 @@ class GoalCreateTest(PlanCRUDBaseTest):
         url = reverse("plans:goal_create", args=[self.client_file.pk])
         resp = self.http.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Confidence")
+        self.assertContains(resp, "Self-Efficacy")
 
 
 class TestGoalCreateView(PlanCRUDBaseTest):
