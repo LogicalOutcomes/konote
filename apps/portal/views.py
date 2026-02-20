@@ -972,20 +972,38 @@ def goal_detail(request, target_id):
         .order_by("-progress_note__created_at")
     )
 
+    # Build descriptors list for template: [{date, descriptor}, ...]
+    descriptors = []
+    client_words_list = []
+    for entry in progress_entries:
+        if entry.progress_descriptor:
+            descriptors.append({
+                "date": entry.progress_note.created_at,
+                "descriptor": entry.get_progress_descriptor_display(),
+            })
+        words = entry.client_words
+        if words:
+            client_words_list.append({
+                "date": entry.progress_note.created_at,
+                "text": words,
+            })
+
     # Metric data for charts — only portal-visible metrics
     assigned_metrics = PlanTargetMetric.objects.filter(
         plan_target=target,
     ).select_related("metric_def")
 
-    # Filter to portal-visible metrics
-    chart_data = {}
+    # Build chart_data as a list of chart objects for the template JS.
+    # Each chart has: metric_name, labels, values, unit, description,
+    # min_value, max_value, begin_at_zero.
+    chart_data = []
     for ptm in assigned_metrics:
         metric_def = ptm.metric_def
         if getattr(metric_def, "portal_visibility", "no") == "no":
             continue
 
         # Get metric values for this target + metric def
-        values = (
+        values = list(
             MetricValue.objects.filter(
                 progress_note_target__plan_target=target,
                 progress_note_target__progress_note__client_file=client_file,
@@ -996,8 +1014,9 @@ def goal_detail(request, target_id):
             .order_by("progress_note_target__progress_note__created_at")
         )
 
-        if values.exists():
-            chart_data[metric_def.translated_name] = {
+        if values:
+            chart_data.append({
+                "metric_name": metric_def.translated_name,
                 "labels": [
                     v.progress_note_target.progress_note.created_at.strftime("%Y-%m-%d")
                     for v in values
@@ -1007,11 +1026,13 @@ def goal_detail(request, target_id):
                 "min_value": metric_def.min_value,
                 "max_value": metric_def.max_value,
                 "description": metric_def.translated_portal_description or "",
-            }
+                "begin_at_zero": metric_def.min_value == 0 if metric_def.min_value is not None else False,
+            })
 
     return render(request, "portal/goal_detail.html", {
         "target": target,
-        "progress_entries": progress_entries,
+        "descriptors": descriptors,
+        "client_words": client_words_list,
         "chart_data": chart_data,
     })
 
