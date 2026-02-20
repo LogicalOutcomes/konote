@@ -7,8 +7,10 @@ Already tested elsewhere (skip here):
 import io
 import os
 import unittest
+from pathlib import Path
 
 from cryptography.fernet import Fernet
+from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 
@@ -429,6 +431,18 @@ class TranslateStringsTest(TestCase):
         self.assertIn("Templates:", output)
         self.assertIn("Python:", output)
         self.assertIn("Total unique:", output)
+
+    def test_full_run_compiles_mo(self):
+        """translate_strings without --dry-run compiles .mo successfully."""
+        out = io.StringIO()
+        # Non-dry-run is idempotent when no new strings exist — just recompiles .mo
+        call_command("translate_strings", stdout=out)
+        output = out.getvalue()
+        self.assertIn("Compiling django.mo", output)
+        self.assertIn("Compiled", output)
+        # Verify .mo file exists after compilation
+        mo_path = Path(settings.BASE_DIR) / "locale" / "fr" / "LC_MESSAGES" / "django.mo"
+        self.assertTrue(mo_path.exists(), ".mo file should exist after compilation")
 
 
 # =========================================================================
