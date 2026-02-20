@@ -902,6 +902,7 @@ def goals_list(request):
     Shows active PlanSections with their PlanTargets, using the
     participant-facing client_goal text.
     """
+    from apps.notes.models import ProgressNoteTarget
     from apps.plans.models import PlanSection
 
     client_file = _get_client_file(request)
@@ -921,6 +922,23 @@ def goals_list(request):
             t for t in section.targets.all() if t.status == "default"
         ]
         if active_targets:
+            # Attach latest progress descriptor to each target
+            for target in active_targets:
+                latest_entry = (
+                    ProgressNoteTarget.objects.filter(
+                        plan_target=target,
+                        progress_note__client_file=client_file,
+                        progress_note__status="default",
+                    )
+                    .exclude(progress_descriptor="")
+                    .order_by("-progress_note__created_at")
+                    .first()
+                )
+                target.latest_descriptor = (
+                    latest_entry.get_progress_descriptor_display()
+                    if latest_entry
+                    else ""
+                )
             section.active_targets = active_targets
             filtered_sections.append(section)
 
