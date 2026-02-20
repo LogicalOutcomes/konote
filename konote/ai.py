@@ -120,9 +120,18 @@ def improve_outcome(draft_text):
         str — improved outcome text, or None on failure
     """
     system = (
-        "You help nonprofit workers write clear, measurable outcome statements "
-        "using the SMART framework (Specific, Measurable, Achievable, Relevant, "
-        "Time-bound). Rewrite the draft into a professional outcome statement. "
+        "You help nonprofit workers write clear, measurable outcome statements. "
+        "Rewrite the draft to satisfy these eight criteria:\n"
+        "1. Observable behaviour: uses an action verb you can see or hear\n"
+        "2. Specific: two people would agree on whether achieved\n"
+        "3. Measurable indicator: has a scale, score, count, or threshold\n"
+        "4. Conditions stated: specifies circumstances — with or without support\n"
+        "5. Success threshold: defines what level counts as 'met'\n"
+        "6. Time-bound: specifies a deadline or review date\n"
+        "7. Causally linked: achieving this leads to a larger goal\n"
+        "8. Participant-meaningful: the participant would recognise this as their goal\n\n"
+        "Use Canadian English spelling (colour, centre). "
+        "Write in plain language. "
         "Return only the improved text, no explanation."
     )
     return _call_openrouter(system, f"Draft outcome: {draft_text}")
