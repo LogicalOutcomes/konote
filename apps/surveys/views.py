@@ -87,6 +87,10 @@ def survey_create(request):
     else:
         form = SurveyForm()
         formset = SectionFormSet()
+    for section_form in formset:
+        section_form.fields["condition_question"].queryset = (
+            SurveyQuestion.objects.none()
+        )
     return render(request, "surveys/admin/survey_form.html", {
         "form": form,
         "formset": formset,
@@ -111,6 +115,14 @@ def survey_edit(request, survey_id):
     else:
         form = SurveyForm(instance=survey)
         formset = SectionFormSet(instance=survey)
+    all_questions = SurveyQuestion.objects.filter(
+        section__survey=survey, section__is_active=True,
+    ).select_related("section").order_by("section__sort_order", "sort_order")
+    for section_form in formset:
+        section_form.fields["condition_question"].queryset = all_questions
+        section_form.fields["condition_question"].label_from_instance = (
+            lambda q: f"{q.section.title} \u2192 {q.question_text[:60]}"
+        )
     return render(request, "surveys/admin/survey_form.html", {
         "form": form,
         "formset": formset,

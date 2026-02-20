@@ -35,13 +35,31 @@
             {% endif %}
             {{ section_form.id }}
             {% for field in section_form %}
-                {% if field.name != "id" and field.name != "DELETE" %}
+                {% if field.name != "id" and field.name != "DELETE" and field.name != "condition_question" and field.name != "condition_value" %}
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                 {{ field }}
                 {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
                 {% if field.errors %}<small class="error" role="alert">{{ field.errors.0 }}</small>{% endif %}
                 {% endif %}
             {% endfor %}
+
+            {# Condition fields rendered as a sentence #}
+            <fieldset>
+                <legend><small>{% trans "Conditional visibility" %}</small></legend>
+                <p>
+                    <label for="{{ section_form.condition_question.id_for_label }}">
+                        {% trans "Show only when" %}
+                    </label>
+                    {{ section_form.condition_question }}
+                    <label for="{{ section_form.condition_value.id_for_label }}">
+                        {% trans "is answered" %}
+                    </label>
+                    <span id="condition-value-wrapper-{{ forloop.counter0 }}">
+                        {{ section_form.condition_value }}
+                    </span>
+                </p>
+                <small>{% trans "Leave blank to always show this section." %}</small>
+            </fieldset>
             {% if section_form.instance.pk %}
             <label>
                 {{ section_form.DELETE }} {% trans "Remove this section" %}
@@ -56,4 +74,28 @@
         <a href="{% url 'survey_manage:survey_list' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
+
+{% if editing %}
+<script>
+(function() {
+    var baseUrl = "{% url 'survey_manage:condition_values' survey_id=survey.pk question_id=0 %}".replace("/0/", "/");
+    document.querySelectorAll("select[name$='-condition_question']").forEach(function(sel) {
+        sel.addEventListener("change", function() {
+            var idx = sel.name.match(/sections-(\d+)/)[1];
+            var wrapper = document.getElementById("condition-value-wrapper-" + idx);
+            if (!sel.value) {
+                wrapper.innerHTML = '<input type="text" name="' + sel.name.replace("condition_question", "condition_value") + '">';
+                return;
+            }
+            fetch(baseUrl + sel.value + "/")
+                .then(function(r) { return r.text(); })
+                .then(function(html) {
+                    var name = sel.name.replace("condition_question", "condition_value");
+                    wrapper.innerHTML = '<select name="' + name + '">' + html + '</select>';
+                });
+        });
+    });
+})();
+</script>
+{% endif %}
 {% endblock %}
