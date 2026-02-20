@@ -7,9 +7,14 @@ from cryptography.fernet import Fernet
 from django.test import TestCase, override_settings
 
 from apps.auth_app.models import User
+from apps.clients.models import ClientFile
 from apps.events.models import EventType
+from apps.portal.models import ParticipantUser
 from apps.programs.models import Program
-from apps.surveys.models import Survey, SurveySection, SurveyQuestion, SurveyTriggerRule
+from apps.surveys.models import (
+    Survey, SurveySection, SurveyQuestion, SurveyTriggerRule,
+    SurveyAssignment, SurveyResponse, SurveyAnswer, PartialAnswer,
+)
 import konote.encryption as enc_module
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -208,3 +213,121 @@ class TriggerRuleModelTests(TestCase):
             created_by=self.staff,
         )
         self.assertEqual(rule.due_days, 7)
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-hash-key-for-surveys",
+)
+class AssignmentResponseModelTests(TestCase):
+    """Test SurveyAssignment, SurveyResponse, SurveyAnswer, PartialAnswer."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="assign_staff", password="testpass123",
+            display_name="Assign Staff",
+        )
+        self.survey = Survey.objects.create(name="Assignment Test", created_by=self.staff)
+        self.section = SurveySection.objects.create(
+            survey=self.survey, title="Section 1", sort_order=1,
+        )
+        self.question = SurveyQuestion.objects.create(
+            section=self.section, question_text="Rate this",
+            question_type="rating_scale", sort_order=1, min_value=1, max_value=5,
+        )
+        self.client_file = ClientFile.objects.create(
+            record_id="SURV-001", status="active",
+        )
+        self.client_file.first_name = "Survey"
+        self.client_file.last_name = "Participant"
+        self.client_file.save()
+        self.participant = ParticipantUser.objects.create_participant(
+            email="survey@example.com",
+            client_file=self.client_file,
+            display_name="Survey P",
+            password="testpass123",
+        )
+
+    def test_create_assignment(self):
+        assignment = SurveyAssignment.objects.create(
+            survey=self.survey,
+            participant_user=self.participant,
+            client_file=self.client_file,
+            status="pending",
+        )
+        self.assertEqual(assignment.status, "pending")
+        self.assertIsNone(assignment.triggered_by_rule)
+
+    def test_assignment_status_flow(self):
+        assignment = SurveyAssignment.objects.create(
+            survey=self.survey,
+            participant_user=self.participant,
+            client_file=self.client_file,
+            status="awaiting_approval",
+        )
+        assignment.status = "pending"
+        assignment.save()
+        assignment.status = "in_progress"
+        assignment.save()
+        assignment.status = "completed"
+        assignment.save()
+        self.assertEqual(assignment.status, "completed")
+
+    def test_create_response_and_answer(self):
+        assignment = SurveyAssignment.objects.create(
+            survey=self.survey,
+            participant_user=self.participant,
+            client_file=self.client_file,
+            status="completed",
+        )
+        response = SurveyResponse.objects.create(
+            survey=self.survey,
+            assignment=assignment,
+            client_file=self.client_file,
+            channel="portal",
+        )
+        answer = SurveyAnswer.objects.create(
+            response=response,
+            question=self.question,
+            value="4",
+            numeric_value=4,
+        )
+        self.assertEqual(response.answers.count(), 1)
+        self.assertEqual(answer.numeric_value, 4)
+
+    def test_partial_answer_upsert(self):
+        assignment = SurveyAssignment.objects.create(
+            survey=self.survey,
+            participant_user=self.participant,
+            client_file=self.client_file,
+            status="in_progress",
+        )
+        pa, created = PartialAnswer.objects.update_or_create(
+            assignment=assignment,
+            question=self.question,
+            defaults={"value_encrypted": b"test-encrypted-value"},
+        )
+        self.assertTrue(created)
+        pa2, created2 = PartialAnswer.objects.update_or_create(
+            assignment=assignment,
+            question=self.question,
+            defaults={"value_encrypted": b"updated-value"},
+        )
+        self.assertFalse(created2)
+        self.assertEqual(pa.pk, pa2.pk)
+
+    def test_anonymous_response(self):
+        """Anonymous survey responses have no client_file or assignment."""
+        anon_survey = Survey.objects.create(
+            name="Anon Survey", created_by=self.staff, is_anonymous=True,
+        )
+        response = SurveyResponse.objects.create(
+            survey=anon_survey,
+            channel="link",
+            respondent_name_display="Anonymous Person",
+        )
+        self.assertIsNone(response.client_file)
+        self.assertIsNone(response.assignment)

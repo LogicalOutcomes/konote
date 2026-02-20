@@ -224,3 +224,158 @@ class SurveyTriggerRule(models.Model):
 
     def __str__(self):
         return f"{self.get_trigger_type_display()} rule for {self.survey.name}"
+
+
+class SurveyAssignment(models.Model):
+    """Tracks which surveys are assigned to which participants."""
+
+    STATUS_CHOICES = [
+        ("awaiting_approval", _("Awaiting approval")),
+        ("pending", _("Pending")),
+        ("in_progress", _("In progress")),
+        ("completed", _("Completed")),
+        ("dismissed", _("Dismissed")),
+    ]
+
+    survey = models.ForeignKey(
+        Survey, on_delete=models.CASCADE, related_name="assignments",
+    )
+    participant_user = models.ForeignKey(
+        "portal.ParticipantUser",
+        on_delete=models.CASCADE,
+        related_name="survey_assignments",
+    )
+    client_file = models.ForeignKey(
+        "clients.ClientFile",
+        on_delete=models.CASCADE,
+        related_name="survey_assignments",
+    )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    triggered_by_rule = models.ForeignKey(
+        SurveyTriggerRule,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="assignments",
+    )
+    trigger_reason = models.CharField(max_length=255, blank=True, default="")
+    due_date = models.DateField(null=True, blank=True)
+    started_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="survey_assignments_created",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "surveys"
+        db_table = "survey_assignments"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.survey.name} → {self.participant_user}"
+
+
+class SurveyResponse(models.Model):
+    """A completed survey submission."""
+
+    CHANNEL_CHOICES = [
+        ("link", _("Shareable link")),
+        ("portal", _("Participant portal")),
+        ("staff_entered", _("Staff data entry")),
+    ]
+
+    survey = models.ForeignKey(
+        Survey, on_delete=models.CASCADE, related_name="responses",
+    )
+    assignment = models.ForeignKey(
+        SurveyAssignment,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="responses",
+    )
+    client_file = models.ForeignKey(
+        "clients.ClientFile",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="survey_responses",
+    )
+    channel = models.CharField(max_length=20, choices=CHANNEL_CHOICES)
+    respondent_name_display = models.CharField(
+        max_length=255, blank=True, default="",
+        help_text=_("Optional name for link responses. Not encrypted (non-PII)."),
+    )
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    token = models.CharField(max_length=64, blank=True, default="", unique=False)
+
+    class Meta:
+        app_label = "surveys"
+        db_table = "survey_responses"
+        ordering = ["-submitted_at"]
+
+    def __str__(self):
+        return f"Response to {self.survey.name} ({self.get_channel_display()})"
+
+
+class SurveyAnswer(models.Model):
+    """A single answer to a survey question."""
+
+    response = models.ForeignKey(
+        SurveyResponse, on_delete=models.CASCADE, related_name="answers",
+    )
+    question = models.ForeignKey(
+        SurveyQuestion, on_delete=models.CASCADE, related_name="answers",
+    )
+    _value_encrypted = models.BinaryField(default=b"", blank=True)
+    numeric_value = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text=_("For scales/scores. Stored as plain integer for aggregation."),
+    )
+
+    class Meta:
+        app_label = "surveys"
+        db_table = "survey_answers"
+
+    def __str__(self):
+        return f"Answer to Q{self.question.sort_order}"
+
+    @property
+    def value(self):
+        return decrypt_field(self._value_encrypted)
+
+    @value.setter
+    def value(self, val):
+        self._value_encrypted = encrypt_field(val)
+
+
+class PartialAnswer(models.Model):
+    """In-progress answer for auto-save. Moved to SurveyAnswer on submit."""
+
+    assignment = models.ForeignKey(
+        SurveyAssignment, on_delete=models.CASCADE, related_name="partial_answers",
+    )
+    question = models.ForeignKey(
+        SurveyQuestion, on_delete=models.CASCADE, related_name="partial_answers",
+    )
+    value_encrypted = models.BinaryField(default=b"")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "surveys"
+        db_table = "survey_partial_answers"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["assignment", "question"],
+                name="unique_partial_answer_per_question",
+            ),
+        ]
+
+    def __str__(self):
+        return f"Partial answer for Q{self.question.sort_order}"
