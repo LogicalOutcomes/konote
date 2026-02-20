@@ -57,6 +57,12 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] Permissions Phase 2 — remaining 10 items: discharge access transitions, consent model, DV-safe mode, GATED clinical access, group schedule vs roster, per-field front desk edit, SCOPED→PROGRAM rename, funder report key, alert escalation, dashboard split (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P3–12)
 
+### Phase: Documentation & Website Updates
+
+- [ ] Create deployment documentation for surveys and portal features (DOC-DEPLOY1)
+- [ ] Update technical documentation in GitHub for surveys and portal architecture (DOC-TECH1)
+- [ ] Update website feature list and marketing copy to include surveys and portal (WEB-FEAT1)
+
 ### Phase: QA Round 6 — Design Tasks
 
 - [x] Design /admin/ URL restructuring for PM self-service — move management pages to /manage/ so PMs can reach plan templates, note templates, event types (FG-2, PERMISSION-1/2/3, BUG-1 -> QA-W59)
