@@ -1277,6 +1277,13 @@ def correction_request_create(request):
             })
             success = True
     else:
+        # GET with ?form=1 means participant chose "Submit a request now"
+        if request.GET.get("form"):
+            form = CorrectionRequestForm()
+            return render(request, "portal/correction_request.html", {
+                "form": form,
+                "show_form": True,
+            })
         form = None
 
     return render(request, "portal/correction_request.html", {
