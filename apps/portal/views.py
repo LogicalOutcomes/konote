@@ -704,20 +704,65 @@ def password_reset_request(request):
     """Request a password reset code via email.
 
     Always shows success message regardless of whether the email exists,
-    to prevent account enumeration.
+    to prevent account enumeration. Rate limited to 3 requests per hour.
     """
     from apps.portal.forms import PortalPasswordResetRequestForm
+    from apps.portal.models import ParticipantUser
+    import secrets
+    from datetime import timedelta
+    from django.contrib.auth.hashers import make_password
+    from django.core.mail import send_mail
 
     submitted = False
 
     if request.method == "POST":
         form = PortalPasswordResetRequestForm(request.POST)
         if form.is_valid():
-            # In production, this would send an email with a 6-digit code.
-            # The code generation and email sending will be implemented
-            # in the email service module.
             submitted = True
-            _audit_portal_event(request, "portal_password_reset_requested")
+            email = form.cleaned_data["email"].strip().lower()
+            email_hash = ParticipantUser.compute_email_hash(email)
+
+            try:
+                participant = ParticipantUser.objects.get(
+                    email_hash=email_hash, is_active=True
+                )
+            except ParticipantUser.DoesNotExist:
+                # Don't reveal — show success anyway
+                _audit_portal_event(request, "portal_password_reset_requested", metadata={
+                    "found": False,
+                })
+            else:
+                if participant.can_request_password_reset():
+                    # Generate 6-digit code
+                    code = f"{secrets.randbelow(1000000):06d}"
+                    participant.password_reset_token_hash = make_password(code)
+                    participant.password_reset_expires = timezone.now() + timedelta(minutes=10)
+                    participant.password_reset_request_count += 1
+                    participant.password_reset_last_request = timezone.now()
+                    participant.save(update_fields=[
+                        "password_reset_token_hash", "password_reset_expires",
+                        "password_reset_request_count", "password_reset_last_request",
+                    ])
+
+                    # Send email with the code
+                    try:
+                        send_mail(
+                            subject=_("Your password reset code"),
+                            message=_(
+                                "Your password reset code is: %(code)s\n\n"
+                                "This code expires in 10 minutes.\n"
+                                "If you did not request this, you can ignore this email."
+                            ) % {"code": code},
+                            from_email=None,  # Uses DEFAULT_FROM_EMAIL
+                            recipient_list=[participant.email],
+                            fail_silently=True,
+                        )
+                    except Exception:
+                        logger.exception("Failed to send portal password reset email")
+
+                _audit_portal_event(request, "portal_password_reset_requested", metadata={
+                    "found": True,
+                })
     else:
         form = PortalPasswordResetRequestForm()
 
@@ -731,6 +776,8 @@ def password_reset_request(request):
 def password_reset_confirm(request):
     """Enter the emailed reset code and set a new password."""
     from apps.portal.forms import PortalPasswordResetConfirmForm
+    from apps.portal.models import ParticipantUser
+    from django.contrib.auth.hashers import check_password
 
     error = None
     success = False
@@ -738,17 +785,39 @@ def password_reset_confirm(request):
     if request.method == "POST":
         form = PortalPasswordResetConfirmForm(request.POST)
         if form.is_valid():
-            # TODO: verify code against stored reset token, then set password.
-            # Token verification requires a password_reset_token field on
-            # ParticipantUser, which will be added with the email service.
-            error = _(
-                "Password reset is not available yet. "
-                "Please contact your worker for help with your password."
-            )
-            logger.info(
-                "password_reset_confirm submitted but token verification "
-                "not yet implemented"
-            )
+            email = form.cleaned_data["email"].strip().lower()
+            code = form.cleaned_data["code"].strip()
+            new_password = form.cleaned_data["new_password"]
+
+            email_hash = ParticipantUser.compute_email_hash(email)
+            try:
+                participant = ParticipantUser.objects.get(
+                    email_hash=email_hash, is_active=True
+                )
+            except ParticipantUser.DoesNotExist:
+                error = _("Invalid code or email address.")
+            else:
+                # Check expiry
+                if not participant.password_reset_expires or participant.password_reset_expires < timezone.now():
+                    error = _("This code has expired. Please request a new one.")
+                elif not participant.password_reset_token_hash:
+                    error = _("No reset code has been requested.")
+                elif not check_password(code, participant.password_reset_token_hash):
+                    error = _("Invalid code or email address.")
+                else:
+                    # Code valid — set new password and clear reset fields
+                    participant.set_password(new_password)
+                    participant.password_reset_token_hash = ""
+                    participant.password_reset_expires = None
+                    participant.password_reset_request_count = 0
+                    participant.save(update_fields=[
+                        "password", "password_reset_token_hash",
+                        "password_reset_expires", "password_reset_request_count",
+                    ])
+                    _audit_portal_event(request, "portal_password_reset_completed", metadata={
+                        "participant_id": str(participant.pk),
+                    })
+                    success = True
     else:
         form = PortalPasswordResetConfirmForm()
 
@@ -757,6 +826,47 @@ def password_reset_confirm(request):
         "error": error,
         "success": success,
     })
+
+
+@portal_feature_required
+def staff_assisted_login(request, token):
+    """Log a participant in via a staff-generated one-time token."""
+    from apps.portal.models import StaffAssistedLoginToken
+
+    try:
+        token_obj = StaffAssistedLoginToken.objects.select_related(
+            "participant_user"
+        ).get(token=token)
+    except StaffAssistedLoginToken.DoesNotExist:
+        raise Http404
+
+    if not token_obj.is_valid:
+        token_obj.delete()
+        raise Http404
+
+    participant = token_obj.participant_user
+    if not participant.is_active:
+        token_obj.delete()
+        raise Http404
+
+    # Consume the token
+    token_obj.delete()
+
+    # Create session
+    request.session.cycle_key()
+    request.session["_portal_participant_id"] = str(participant.pk)
+    # Mark this as a staff-assisted session (shorter max age)
+    request.session["_portal_staff_assisted"] = True
+    request.session.set_expiry(30 * 60)  # 30 minutes max
+
+    participant.last_login = timezone.now()
+    participant.save(update_fields=["last_login"])
+
+    _audit_portal_event(request, "portal_staff_assisted_login", metadata={
+        "participant_id": str(participant.pk),
+    })
+
+    return redirect("portal:dashboard")
 
 
 @portal_feature_required
