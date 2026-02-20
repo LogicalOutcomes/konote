@@ -140,6 +140,63 @@ class SurveyModelTests(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class SurveySectionFormTests(TestCase):
+    """Test SurveySectionForm includes condition fields."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="form_staff", password="testpass123",
+            display_name="Form Staff",
+        )
+        self.survey = Survey.objects.create(name="Form Test", created_by=self.staff)
+        self.s1 = SurveySection.objects.create(
+            survey=self.survey, title="Section 1", sort_order=1,
+        )
+        self.trigger_q = SurveyQuestion.objects.create(
+            section=self.s1, question_text="Has children?",
+            question_type="yes_no", sort_order=1,
+        )
+
+    def test_form_includes_condition_fields(self):
+        from apps.surveys.forms import SurveySectionForm
+        form = SurveySectionForm()
+        self.assertIn("condition_question", form.fields)
+        self.assertIn("condition_value", form.fields)
+
+    def test_form_saves_condition(self):
+        from apps.surveys.forms import SurveySectionForm
+        form = SurveySectionForm(data={
+            "title": "Childcare",
+            "sort_order": "2",
+            "page_break": "",
+            "scoring_method": "none",
+            "condition_question": str(self.trigger_q.pk),
+            "condition_value": "1",
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+        section = form.save(commit=False)
+        section.survey = self.survey
+        section.save()
+        self.assertEqual(section.condition_question_id, self.trigger_q.pk)
+        self.assertEqual(section.condition_value, "1")
+
+    def test_form_valid_without_condition(self):
+        from apps.surveys.forms import SurveySectionForm
+        form = SurveySectionForm(data={
+            "title": "No Condition",
+            "sort_order": "1",
+            "page_break": "",
+            "scoring_method": "none",
+            "condition_question": "",
+            "condition_value": "",
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class TriggerRuleModelTests(TestCase):
     """Test SurveyTriggerRule creation and constraints."""
 
