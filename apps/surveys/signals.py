@@ -27,7 +27,10 @@ def evaluate_event_survey_rules(sender, instance, created, **kwargs):
         return
 
     def _evaluate():
-        from apps.surveys.engine import evaluate_event_rules
+        from apps.surveys.engine import evaluate_event_rules, is_surveys_enabled
+
+        if not is_surveys_enabled():
+            return
 
         client_file = instance.client_file
         participant_user = getattr(client_file, "portal_account", None)
@@ -60,7 +63,10 @@ def evaluate_enrolment_survey_rules(sender, instance, created, **kwargs):
         return
 
     def _evaluate():
-        from apps.surveys.engine import evaluate_enrolment_rules
+        from apps.surveys.engine import evaluate_enrolment_rules, is_surveys_enabled
+
+        if not is_surveys_enabled():
+            return
 
         client_file = instance.client_file
         participant_user = getattr(client_file, "portal_account", None)

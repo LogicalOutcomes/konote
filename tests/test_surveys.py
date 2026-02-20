@@ -9,6 +9,7 @@ from cryptography.fernet import Fernet
 from django.test import TestCase, TransactionTestCase, override_settings
 from django.utils import timezone
 
+from apps.admin_settings.models import FeatureToggle
 from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.events.models import Event, EventType
@@ -531,6 +532,13 @@ class SignalTriggerTests(TransactionTestCase):
 
     def setUp(self):
         enc_module._fernet = None
+        # Enable the surveys feature toggle
+        from django.core.cache import cache
+        cache.delete("feature_toggles")
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys",
+            defaults={"is_enabled": True},
+        )
         self.staff = User.objects.create_user(
             username="signal_staff", password="testpass123",
             display_name="Signal Staff",
@@ -600,3 +608,166 @@ class SignalTriggerTests(TransactionTestCase):
             ).count(),
             1,
         )
+
+    def test_signal_skips_when_feature_disabled(self):
+        """Signals should not create assignments when surveys feature is off."""
+        from django.core.cache import cache
+        cache.delete("feature_toggles")
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys",
+            defaults={"is_enabled": False},
+        )
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="event",
+            event_type=self.event_type,
+            repeat_policy="once_per_participant",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        Event.objects.create(
+            client_file=self.client_file,
+            event_type=self.event_type,
+            start_timestamp=timezone.now(),
+        )
+        self.assertEqual(
+            SurveyAssignment.objects.filter(
+                survey=self.survey,
+                participant_user=self.participant,
+            ).count(),
+            0,
+        )
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-hash-key-for-engine-direct",
+)
+class EventEnrolmentEngineTests(TestCase):
+    """Direct unit tests for evaluate_event_rules and evaluate_enrolment_rules."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="direct_staff", password="testpass123",
+            display_name="Direct Staff",
+        )
+        self.program = Program.objects.create(name="Direct Program")
+        self.event_type = EventType.objects.create(name="Session")
+        self.survey = Survey.objects.create(
+            name="Direct Survey", status="active", created_by=self.staff,
+        )
+        SurveySection.objects.create(
+            survey=self.survey, title="S1", sort_order=1,
+        )
+        self.client_file = ClientFile.objects.create(
+            record_id="DIR-001", status="active",
+        )
+        self.client_file.first_name = "Direct"
+        self.client_file.last_name = "Test"
+        self.client_file.save()
+        self.participant = ParticipantUser.objects.create_participant(
+            email="direct@example.com",
+            client_file=self.client_file,
+            display_name="Direct P",
+            password="testpass123",
+        )
+
+    def test_evaluate_event_rules_creates_assignment(self):
+        from apps.surveys.engine import evaluate_event_rules
+
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="event",
+            event_type=self.event_type,
+            repeat_policy="once_per_participant",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        event = Event.objects.create(
+            client_file=self.client_file,
+            event_type=self.event_type,
+            start_timestamp=timezone.now(),
+        )
+        assignments = evaluate_event_rules(
+            self.client_file, self.participant, event,
+        )
+        self.assertEqual(len(assignments), 1)
+        self.assertEqual(assignments[0].survey, self.survey)
+
+    def test_evaluate_event_rules_no_match(self):
+        from apps.surveys.engine import evaluate_event_rules
+
+        other_type = EventType.objects.create(name="Other")
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="event",
+            event_type=other_type,
+            repeat_policy="once_per_participant",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        event = Event.objects.create(
+            client_file=self.client_file,
+            event_type=self.event_type,
+            start_timestamp=timezone.now(),
+        )
+        assignments = evaluate_event_rules(
+            self.client_file, self.participant, event,
+        )
+        self.assertEqual(len(assignments), 0)
+
+    def test_evaluate_enrolment_rules_creates_assignment(self):
+        from apps.surveys.engine import evaluate_enrolment_rules
+
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="enrolment",
+            program=self.program,
+            repeat_policy="once_per_enrolment",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        enrolment = ClientProgramEnrolment.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+        )
+        assignments = evaluate_enrolment_rules(
+            self.client_file, self.participant, enrolment,
+        )
+        self.assertEqual(len(assignments), 1)
+        self.assertEqual(assignments[0].survey, self.survey)
+
+    def test_evaluate_event_rules_overload_protection(self):
+        """Event rules should respect overload limit."""
+        from apps.surveys.engine import evaluate_event_rules
+
+        for i in range(5):
+            s = Survey.objects.create(
+                name=f"Overload {i}", status="active", created_by=self.staff,
+            )
+            SurveyAssignment.objects.create(
+                survey=s,
+                participant_user=self.participant,
+                client_file=self.client_file,
+                status="pending",
+            )
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="event",
+            event_type=self.event_type,
+            repeat_policy="once_per_participant",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        event = Event.objects.create(
+            client_file=self.client_file,
+            event_type=self.event_type,
+            start_timestamp=timezone.now(),
+        )
+        assignments = evaluate_event_rules(
+            self.client_file, self.participant, event,
+        )
+        self.assertEqual(len(assignments), 0)

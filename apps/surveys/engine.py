@@ -10,7 +10,6 @@ creates SurveyAssignment records when rules match. Called on:
 import logging
 from datetime import timedelta
 
-from django.db import IntegrityError
 from django.utils import timezone
 
 from apps.surveys.models import (
@@ -21,6 +20,52 @@ from apps.surveys.models import (
 logger = logging.getLogger(__name__)
 
 MAX_PENDING_SURVEYS = 5
+
+
+def is_surveys_enabled():
+    """Check if the surveys feature toggle is enabled."""
+    from django.core.cache import cache
+
+    flags = cache.get("feature_toggles")
+    if flags is not None:
+        return flags.get("surveys", False)
+
+    from apps.admin_settings.models import FeatureToggle
+
+    try:
+        toggle = FeatureToggle.objects.filter(feature_key="surveys").first()
+        return toggle.is_enabled if toggle else False
+    except Exception:
+        return False
+
+
+def _check_preconditions(client_file, participant_user):
+    """Common precondition checks for all evaluation functions.
+
+    Returns True if evaluation should proceed, False to skip.
+    """
+    if client_file.status == "discharged":
+        return False
+    if participant_user is None:
+        return False
+    if not participant_user.is_active:
+        return False
+    return True
+
+
+def _is_overloaded(participant_user):
+    """Check if participant has too many pending surveys."""
+    pending_count = SurveyAssignment.objects.filter(
+        participant_user=participant_user,
+        status__in=["pending", "in_progress", "awaiting_approval"],
+    ).count()
+    if pending_count >= MAX_PENDING_SURVEYS:
+        logger.info(
+            "Skipping rule evaluation for %s — %d pending surveys (limit: %d)",
+            participant_user, pending_count, MAX_PENDING_SURVEYS,
+        )
+        return True
+    return False
 
 
 def evaluate_survey_rules(client_file, participant_user=None):
@@ -34,25 +79,10 @@ def evaluate_survey_rules(client_file, participant_user=None):
     Returns:
         List of newly created SurveyAssignment instances.
     """
-    if client_file.status == "discharged":
+    if not _check_preconditions(client_file, participant_user):
         return []
 
-    if participant_user is None:
-        return []
-
-    if not participant_user.is_active:
-        return []
-
-    # Check overload
-    pending_count = SurveyAssignment.objects.filter(
-        participant_user=participant_user,
-        status__in=["pending", "in_progress", "awaiting_approval"],
-    ).count()
-    if pending_count >= MAX_PENDING_SURVEYS:
-        logger.info(
-            "Skipping rule evaluation for %s — %d pending surveys (limit: %d)",
-            participant_user, pending_count, MAX_PENDING_SURVEYS,
-        )
+    if _is_overloaded(participant_user):
         return []
 
     # Get active rules for active surveys only
@@ -62,6 +92,11 @@ def evaluate_survey_rules(client_file, participant_user=None):
         survey__status="active",
         trigger_type__in=["time", "characteristic"],
     ).select_related("survey", "program", "event_type")
+
+    pending_count = SurveyAssignment.objects.filter(
+        participant_user=participant_user,
+        status__in=["pending", "in_progress", "awaiting_approval"],
+    ).count()
 
     new_assignments = []
     for rule in rules:
@@ -86,13 +121,11 @@ def evaluate_event_rules(client_file, participant_user, event):
     Returns:
         List of newly created SurveyAssignment instances.
     """
-    if client_file.status == "discharged":
-        return []
-    if participant_user is None:
-        return []
-    if not participant_user.is_active:
+    if not _check_preconditions(client_file, participant_user):
         return []
     if not event.event_type:
+        return []
+    if _is_overloaded(participant_user):
         return []
 
     rules = SurveyTriggerRule.objects.filter(
@@ -122,11 +155,9 @@ def evaluate_enrolment_rules(client_file, participant_user, enrolment):
     Returns:
         List of newly created SurveyAssignment instances.
     """
-    if client_file.status == "discharged":
+    if not _check_preconditions(client_file, participant_user):
         return []
-    if participant_user is None:
-        return []
-    if not participant_user.is_active:
+    if _is_overloaded(participant_user):
         return []
 
     rules = SurveyTriggerRule.objects.filter(
@@ -172,31 +203,29 @@ def _evaluate_single_rule(rule, client_file, participant_user):
         if not _time_elapsed(rule, client_file, participant_user):
             return None
 
-    # Create assignment
+    # Create assignment — repeat policy check above is the authoritative guard.
+    # Using create() instead of get_or_create() because get_or_create's broad
+    # status__in lookup could find stale assignments from previous enrolment
+    # cycles and incorrectly skip creation.
     status = "pending" if rule.auto_assign else "awaiting_approval"
     due_date = None
     if rule.due_days:
         due_date = (timezone.now() + timedelta(days=rule.due_days)).date()
 
     try:
-        assignment, created = SurveyAssignment.objects.get_or_create(
+        assignment = SurveyAssignment.objects.create(
             survey=rule.survey,
             participant_user=participant_user,
-            status__in=["pending", "in_progress", "awaiting_approval"],
-            defaults={
-                "client_file": client_file,
-                "status": status,
-                "triggered_by_rule": rule,
-                "trigger_reason": str(rule),
-                "due_date": due_date,
-            },
+            client_file=client_file,
+            status=status,
+            triggered_by_rule=rule,
+            trigger_reason=str(rule),
+            due_date=due_date,
         )
-        if created:
-            return assignment
-    except (IntegrityError, SurveyAssignment.MultipleObjectsReturned):
-        pass
-
-    return None
+        return assignment
+    except Exception:
+        logger.exception("Error creating survey assignment for rule %s", rule)
+        return None
 
 
 def _repeat_policy_allows(rule, participant_user, client_file):
@@ -238,18 +267,19 @@ def _time_elapsed(rule, client_file, participant_user):
     if not rule.recurrence_days:
         return False
 
-    anchor_date = None
+    anchor_date = _get_anchor_date(rule, client_file, participant_user)
 
+    if anchor_date is None:
+        return False
+
+    elapsed = timezone.now() - anchor_date
+    return elapsed >= timedelta(days=rule.recurrence_days)
+
+
+def _get_anchor_date(rule, client_file, participant_user):
+    """Get the anchor date for a time-based trigger rule."""
     if rule.anchor == "enrolment_date" and rule.program:
-        from apps.clients.models import ClientProgramEnrolment
-
-        enrolment = ClientProgramEnrolment.objects.filter(
-            client_file=client_file,
-            program=rule.program,
-            status="enrolled",
-        ).order_by("-enrolled_at").first()
-        if enrolment:
-            anchor_date = enrolment.enrolled_at
+        return _get_enrolment_date(client_file, rule.program)
 
     elif rule.anchor == "last_completed":
         last_completed = SurveyAssignment.objects.filter(
@@ -258,22 +288,23 @@ def _time_elapsed(rule, client_file, participant_user):
             status="completed",
         ).order_by("-completed_at").first()
         if last_completed and last_completed.completed_at:
-            anchor_date = last_completed.completed_at
-        else:
-            # No previous completion — fall back to enrolment date
-            if rule.program:
-                from apps.clients.models import ClientProgramEnrolment
+            return last_completed.completed_at
+        # No previous completion — fall back to enrolment date
+        if rule.program:
+            return _get_enrolment_date(client_file, rule.program)
 
-                enrolment = ClientProgramEnrolment.objects.filter(
-                    client_file=client_file,
-                    program=rule.program,
-                    status="enrolled",
-                ).order_by("-enrolled_at").first()
-                if enrolment:
-                    anchor_date = enrolment.enrolled_at
+    return None
 
-    if anchor_date is None:
-        return False
 
-    elapsed = timezone.now() - anchor_date
-    return elapsed >= timedelta(days=rule.recurrence_days)
+def _get_enrolment_date(client_file, program):
+    """Get the most recent enrolment date for a client in a program."""
+    from apps.clients.models import ClientProgramEnrolment
+
+    enrolment = ClientProgramEnrolment.objects.filter(
+        client_file=client_file,
+        program=program,
+        status="enrolled",
+    ).order_by("-enrolled_at").first()
+    if enrolment:
+        return enrolment.enrolled_at
+    return None
