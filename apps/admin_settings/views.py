@@ -322,6 +322,74 @@ def features(request):
     })
 
 
+@login_required
+@admin_required
+def feature_toggle_confirm(request, feature_key):
+    """Return an HTMX partial showing impact info and confirm/cancel buttons."""
+    info = DEFAULT_FEATURES.get(feature_key)
+    if not info:
+        return render(request, "admin_settings/_feature_toggle_confirm.html", {
+            "error": _("Unknown feature: %(key)s") % {"key": feature_key},
+        })
+
+    current_flags = FeatureToggle.get_all_flags()
+    default_state = feature_key in FEATURES_DEFAULT_ENABLED
+    is_enabled = current_flags.get(feature_key, default_state)
+    action = "disable" if is_enabled else "enable"
+
+    # Resolve dependency labels for display
+    dep_labels = [
+        str(DEFAULT_FEATURES[k]["label"])
+        for k in info.get("depends_on", [])
+        if k in DEFAULT_FEATURES
+    ]
+    used_by_labels = [
+        str(DEFAULT_FEATURES[k]["label"])
+        for k in info.get("used_by", [])
+        if k in DEFAULT_FEATURES
+    ]
+
+    return render(request, "admin_settings/_feature_toggle_confirm.html", {
+        "feature_key": feature_key,
+        "label": info["label"],
+        "action": action,
+        "impact_items": info["when_off"] if is_enabled else info["when_on"],
+        "depends_on": dep_labels,
+        "used_by": used_by_labels,
+        "requires_config": info.get("requires_config", []),
+        "is_enabled": is_enabled,
+    })
+
+
+@login_required
+@admin_required
+def feature_toggle_action(request, feature_key):
+    """Perform the toggle and return an HTMX success partial."""
+    if request.method != "POST":
+        return redirect("admin_settings:features")
+
+    info = DEFAULT_FEATURES.get(feature_key)
+    if not info:
+        return redirect("admin_settings:features")
+
+    current_flags = FeatureToggle.get_all_flags()
+    default_state = feature_key in FEATURES_DEFAULT_ENABLED
+    was_enabled = current_flags.get(feature_key, default_state)
+    new_state = not was_enabled
+
+    FeatureToggle.objects.update_or_create(
+        feature_key=feature_key,
+        defaults={"is_enabled": new_state},
+    )
+
+    return render(request, "admin_settings/_feature_toggle_success.html", {
+        "feature_key": feature_key,
+        "label": info["label"],
+        "is_enabled": new_state,
+        "action_taken": "enabled" if new_state else "disabled",
+    })
+
+
 # --- Instance Settings ---
 
 @login_required

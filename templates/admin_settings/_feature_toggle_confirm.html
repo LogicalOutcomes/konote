@@ -1,0 +1,65 @@
+{% load i18n %}
+<div class="feature-toggle-confirm" aria-live="polite" style="border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius); padding: 0.75rem; margin-top: 0.5rem; font-size: 0.875rem;">
+{% if error %}
+    <p><strong>{{ error }}</strong></p>
+{% else %}
+    <p style="margin-bottom: 0.5rem;">
+        <strong>
+            {% if action == "disable" %}
+                {% blocktrans with label=label %}Disable {{ label }}?{% endblocktrans %}
+            {% else %}
+                {% blocktrans with label=label %}Enable {{ label }}?{% endblocktrans %}
+            {% endif %}
+        </strong>
+    </p>
+
+    {% if impact_items %}
+    <p style="margin-bottom: 0.25rem;"><small>{% trans "What will happen:" %}</small></p>
+    <ul style="margin-top: 0; margin-bottom: 0.5rem; font-size: 0.875rem;">
+        {% for item in impact_items %}
+        <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if depends_on and action == "enable" %}
+    <p style="margin-bottom: 0.5rem;">
+        <small class="secondary">{% trans "Requires:" %} {{ depends_on|join:", " }}</small>
+    </p>
+    {% endif %}
+
+    {% if used_by and action == "disable" %}
+    <p style="margin-bottom: 0.5rem;">
+        <small class="secondary">{% trans "Also affects:" %} {{ used_by|join:", " }}</small>
+    </p>
+    {% endif %}
+
+    {% if requires_config and action == "enable" %}
+    <p style="margin-bottom: 0.5rem;">
+        <small class="secondary">{% trans "Needs configuration:" %} {{ requires_config|join:", " }}</small>
+    </p>
+    {% endif %}
+
+    <div class="grid" style="margin-top: 0.5rem; grid-template-columns: auto auto 1fr;">
+        <button type="button"
+                hx-post="{% url 'admin_settings:feature_toggle_action' feature_key=feature_key %}"
+                hx-target="#feature-action-{{ feature_key }}"
+                hx-swap="innerHTML"
+                hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+                style="padding: 0.25rem 0.5rem; margin: 0;"
+                {% if action == "disable" %}class="outline secondary"{% endif %}>
+            {% if action == "disable" %}
+                {% trans "Yes, disable" %}
+            {% else %}
+                {% trans "Yes, enable" %}
+            {% endif %}
+        </button>
+        <button type="button" class="outline secondary"
+                style="padding: 0.25rem 0.5rem; margin: 0;"
+                onclick="this.closest('.feature-toggle-confirm').remove();">
+            {% trans "Cancel" %}
+        </button>
+        <span></span>
+    </div>
+{% endif %}
+</div>
