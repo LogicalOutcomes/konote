@@ -1,13 +1,18 @@
-"""Tests for report export CSV generation — suppressed value handling.
+"""Tests for report export CSV generation and insights data.
 
 Covers BUG-EXP1: format_number() and generate_funder_report_csv_rows()
 must handle string values produced by small-cell suppression for
 confidential programs (e.g. "< 10", "suppressed").
+
+Covers BUG-AI2: get_structured_insights() must return JSON-serializable
+dicts (no gettext_lazy proxies as keys).
 """
+import json
 from datetime import date
 from unittest.mock import patch
 
-from django.test import SimpleTestCase
+from cryptography.fernet import Fernet
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
 
 from apps.reports.funder_report import format_number, generate_funder_report_csv_rows
@@ -184,3 +189,57 @@ class FunderReportCSVSuppressedCustomDemoTests(SimpleTestCase):
         # Non-suppressed count should have normal percentage
         self.assertEqual(section_rows[1][1], "30")
         self.assertIn("%", section_rows[1][2])
+
+
+TEST_KEY = Fernet.generate_key().decode()
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class StructuredInsightsJSONTest(TestCase):
+    """Regression for BUG-AI2: get_structured_insights() must be JSON-serializable."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+        from apps.auth_app.models import User
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.notes.models import ProgressNote
+        from apps.programs.models import Program, UserProgramRole
+
+        self.user = User.objects.create_user(
+            username="reporter", password="pass", display_name="Reporter"
+        )
+        self.program = Program.objects.create(name="Housing")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role="staff", status="active"
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program, status="enrolled"
+        )
+        # Create a note with an engagement observation to trigger label lookup
+        ProgressNote.objects.create(
+            client_file=self.client_file,
+            author=self.user,
+            engagement_observation="engaged",
+        )
+
+    def tearDown(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+    def test_insights_dict_is_json_serializable(self):
+        """All dict keys must be plain str, not gettext_lazy proxies."""
+        from apps.reports.insights import get_structured_insights
+
+        result = get_structured_insights(program=self.program)
+        # This will raise TypeError if any keys are lazy proxies
+        serialized = json.dumps(result)
+        self.assertIsInstance(serialized, str)
+        self.assertGreater(result["note_count"], 0)

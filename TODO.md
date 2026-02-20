@@ -67,6 +67,14 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Research/Implement including data visuals (charts/graphs) in PDF reports (REP-PDF1)
 - [ ] Redesign PDF report layout: merge title page with page 2 to eliminate redundant empty space (REP-PDF2)
 
+### Phase: Surveys QA Scenarios
+
+- [ ] Add survey demo data to seed_demo_data — 2 active surveys, 1 draft, 1 response, 1 assignment, 1 trigger rule (see tasks/qa-survey-scenarios.md) (QA-SURV1)
+- [ ] Create CSV test fixture for survey import at tests/fixtures/sample-survey-import.csv (QA-SURV2)
+- [ ] Write 8 scenario YAML files (SCN-110 through SCN-117) in konote-qa-scenarios repo (see tasks/qa-survey-scenarios.md) (QA-SURV3)
+- [ ] Add test methods for survey scenarios to tests/scenario_eval/test_scenario_eval.py (QA-SURV4)
+- [ ] Update page-inventory.yaml in qa-scenarios repo with survey pages (QA-SURV5)
+
 ### Phase: Surveys Future Work
 
 - [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
@@ -98,10 +106,10 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 **Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
 
 - [x] Fix Add Target form UX: auto-select or clarify "area of the plan", remove "Attendance & Wellbeing" placeholder, and change metric text from "how much progress have they made" to "how much progress have I made" — 2026-02-20 (UX-TARGET1)
-- [ ] Change "Add section only" link text to "Add Section" on plan view — (UX-SECTION1)
-- [ ] Remove "+ Add note" link in Notes tab, hide Quick Note from Actions if needed, and update wayfinding text (UX-NOTES3)
-- [ ] Fix "server error occurred" when clicking "Shape this target" (AI Suggestion) — (BUG-AI1)
-- [ ] Investigate/Fix "error message" when clicking "Draft Report summary" on Insights page (BUG-AI2)
+- [x] Change "Add section only" link text to "Add Section" on plan view — 2026-02-20 (UX-SECTION1)
+- [x] Remove "+ Add note" link in Notes tab, update wayfinding text to reference Actions menu — 2026-02-20 (UX-NOTES3)
+- [x] Fix "server error occurred" when clicking "Shape this target" — metric catalogue key mismatch — 2026-02-20 (BUG-AI1)
+- [x] Fix "error message" when clicking "Draft Report summary" — gettext_lazy proxies as JSON keys — 2026-02-20 (BUG-AI2)
 ## Recently Done
 
 - [x] Build "Questions for You" portal feature — auto-save, multi-page, conditional sections, review page, dashboard badge — 2026-02-20 (PORTAL-Q1)

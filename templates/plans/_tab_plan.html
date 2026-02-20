@@ -13,7 +13,7 @@
     {% if active_sections or inactive_sections %}
     <span class="action-bar-secondary">
         <a href="{% url 'plans:section_create' client_id=client.pk %}" class="secondary">
-            {% blocktrans with section=term.section|default:"section" %}Add {{ section }} only{% endblocktrans %}
+            {% blocktrans with section=term.section|default:"Section" %}Add {{ section }}{% endblocktrans %}
         </a>
         {% if can_apply_template %}
         <span aria-hidden="true">&middot;</span>

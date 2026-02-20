@@ -92,7 +92,7 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
     engagement_raw = {}  # Raw DB keys for interpretation functions
     for row in engagement_counts:
         raw_key = row["engagement_observation"]
-        label = engagement_labels.get(raw_key, raw_key)
+        label = str(engagement_labels.get(raw_key, raw_key))
         if label == "---------":
             continue
         pct = round(row["count"] / engagement_total * 100, 1) if engagement_total else 0
@@ -112,7 +112,7 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
     descriptor_labels = dict(ProgressNoteTarget.PROGRESS_DESCRIPTOR_CHOICES)
     descriptor_distribution = {}
     for row in descriptor_counts:
-        label = descriptor_labels.get(row["progress_descriptor"], row["progress_descriptor"])
+        label = str(descriptor_labels.get(row["progress_descriptor"], row["progress_descriptor"]))
         if label == "---------":
             continue
         pct = round(row["count"] / descriptor_total * 100, 1) if descriptor_total else 0
@@ -131,7 +131,7 @@ def get_structured_insights(program=None, client_file=None, date_from=None, date
     for row in suggestion_counts:
         if not row["suggestion_priority"]:
             continue
-        label = suggestion_labels.get(row["suggestion_priority"], row["suggestion_priority"])
+        label = str(suggestion_labels.get(row["suggestion_priority"], row["suggestion_priority"]))
         suggestion_distribution[label] = row["count"]
         suggestion_total += row["count"]
         if row["suggestion_priority"] in ("important", "urgent"):
