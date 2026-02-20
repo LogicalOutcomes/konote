@@ -7797,6 +7797,55 @@ msgstr ""
 "Remarque : Le filtrage des notes entre programmes sera appliqué dans une "
 "mise à jour future. Ce paramètre est enregistré dès maintenant."
 
+#. PHIPA consent indicator on notes timeline
+#: templates/notes/_tab_notes.html
+msgid ""
+"Showing notes from %(program)s only. Cross-program sharing is not enabled "
+"for this participant."
+msgstr ""
+"Affichage des notes de %(program)s uniquement. Le partage entre programmes "
+"n\u2019est pas activé pour ce participant."
+
+#. Tri-state sharing display on client info tab
+msgid "Share across programs"
+msgstr "Partager entre les programmes"
+
+msgid "Restricted"
+msgstr "Restreint"
+
+msgid "Follow agency setting"
+msgstr "Suivre le paramètre de l\u2019agence"
+
+msgid "Clinical notes are restricted to the program where they were recorded."
+msgstr ""
+"Les notes cliniques sont restreintes au programme où elles ont été "
+"enregistrées."
+
+msgid "Uses the agency-wide default for cross-program note sharing."
+msgstr ""
+"Utilise le paramètre par défaut de l\u2019agence pour le partage des notes "
+"entre programmes."
+
+msgid "Cross-program note sharing"
+msgstr "Partage des notes entre programmes"
+
+msgid ""
+"Controls whether clinical notes from other programs are visible for this "
+"participant. Most participants should use the agency default."
+msgstr ""
+"Contrôle si les notes cliniques d\u2019autres programmes sont visibles pour "
+"ce participant. La plupart des participants devraient utiliser le paramètre "
+"par défaut de l\u2019agence."
+
+msgid "Restrict to one program"
+msgstr "Restreindre à un seul programme"
+
+msgid ""
+"Share clinical notes across programs for shared participants"
+msgstr ""
+"Partager les notes cliniques entre les programmes pour les participants "
+"partagés"
+
 msgid ""
 "Once all program managers approve, participant data will be permanently "
 "anonymised or erased depending on the level selected below."

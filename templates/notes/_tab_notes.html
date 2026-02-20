@@ -7,6 +7,15 @@
     <small>{% blocktrans with program=term.program|default:"program" %}You are an administrator without {{ program }} assignments. To see data, ask another admin to assign you a {{ program }} role.{% endblocktrans %}</small>
 </p>
 {% endif %}
+{% if consent_viewing_program %}
+<div class="notice" role="status">
+    <p>
+        {% blocktrans with program=consent_viewing_program %}
+        Showing notes from {{ program }} only. Cross-program sharing is not enabled for this participant.
+        {% endblocktrans %}
+    </p>
+</div>
+{% endif %}
 <!-- Search and filters -->
 <form method="get" action="{% url 'notes:note_list' client_id=client.pk %}">
     <div class="note-search-field">
