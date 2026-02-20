@@ -57,11 +57,21 @@ def public_survey_form(request, token):
                     answers_data.append((question, raw_value))
 
         if errors:
+            # Build repopulation dict keyed by question PK
+            repopulate = {}
+            for section in sections:
+                for q in section.questions.all():
+                    field_name = f"q_{q.pk}"
+                    if q.question_type == "multiple_choice":
+                        repopulate[q.pk] = ";".join(request.POST.getlist(field_name))
+                    else:
+                        repopulate[q.pk] = request.POST.get(field_name, "")
             return render(request, "surveys/public_form.html", {
                 "survey": survey,
                 "sections": sections,
                 "link": link,
                 "posted": request.POST,
+                "repopulate": repopulate,
                 "errors": errors,
             })
 
@@ -102,6 +112,7 @@ def public_survey_form(request, token):
         "sections": sections,
         "link": link,
         "posted": {},
+        "repopulate": {},
         "errors": [],
     })
 

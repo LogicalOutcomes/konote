@@ -36,6 +36,7 @@ from .models import (
     SurveyQuestion,
     SurveyResponse,
     SurveySection,
+    SurveyTriggerRule,
 )
 
 logger = logging.getLogger(__name__)
@@ -829,7 +830,6 @@ def survey_rule_deactivate(request, survey_id, rule_id):
     """Deactivate a trigger rule."""
     _surveys_or_404()
     survey = get_object_or_404(Survey, pk=survey_id)
-    from .models import SurveyTriggerRule
     rule = get_object_or_404(SurveyTriggerRule, pk=rule_id, survey=survey)
     rule.is_active = False
     rule.save(update_fields=["is_active"])
