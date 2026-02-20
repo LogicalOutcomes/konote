@@ -81,8 +81,9 @@ The same logic applies to constructs like confidence, satisfaction, and perceive
 A generic "Confidence" metric (1--5, "How confident do you feel about this?") violates this principle directly. A domain-specific self-efficacy question ("How confident are you that you can [specific target behaviour]?") follows it.
 
 - Bandura, A. (1977). Self-efficacy: Toward a unifying theory of behavioral change. *Psychological Review, 84*(2), 191--215.
-- Bandura, A. (2006). Guide for constructing self-efficacy scales. In F. Pajares & T. Urdan (Eds.), *Self-efficacy beliefs of adolescents* (pp. 307--337). Information Age Publishing.
-- Schwarzer, R. & Jerusalem, M. (1995). Generalized Self-Efficacy Scale. Validated across 25 countries with ~20,000 participants.
+- Bandura, A. (2006). Guide for constructing self-efficacy scales. In T. Urdan & F. Pajares (Eds.), *Self-efficacy beliefs of adolescents* (pp. 307--337). Information Age Publishing.
+- Schwarzer, R. & Jerusalem, M. (1995). Generalized Self-Efficacy Scale. In J. Weinman, S. Wright, & M. Johnston (Eds.), *Measures in health psychology: A user's portfolio. Causal and control beliefs* (pp. 35--37). NFER-Nelson.
+- Scholz, U., Gutierrez-Doña, B., Sud, S., & Schwarzer, R. (2002). Is general self-efficacy a universal construct? Psychometric findings from 25 countries. *European Journal of Psychological Assessment, 18*(3), 242--251.
 
 ---
 
@@ -120,7 +121,7 @@ Multiple validated frameworks converge on these three dimensions:
 | Dimension | Framework evidence | What it captures |
 |-----------|-------------------|-----------------|
 | **Functional status** (what the person is *doing*) | Wilson & Cleary model level 3; Recovery Star two-factor solution (48% variance); Prochaska's Transtheoretical Model stages of change | Observable behaviour, stage of change, action taken |
-| **Self-efficacy** (what the person *believes they can do*) | Bandura (1977, 2006); PROMIS Self-Efficacy banks (5 domains, Cronbach's alpha .85--.97); Schwarzer GSE (25 countries) | Domain-specific perceived capability |
+| **Self-efficacy** (what the person *believes they can do*) | Bandura (1977, 2006); PROMIS Self-Efficacy banks (5 domains, Cronbach's alpha .85--.97); Scholz et al. GSE validation (25 countries) | Domain-specific perceived capability |
 | **General perception** (how the person *feels about* their situation) | WHOQOL-BREF bifactor model (general QoL factor + domain factors); Wilson & Cleary model level 4; GAS client-meaningful criterion | Subjective appraisal, satisfaction |
 
 **Are these three actually independent?** The literature shows they are moderately correlated (.3--.5) but factorially distinct. This is exactly what you want --- they should move together broadly, but they can diverge in clinically meaningful ways:
@@ -136,7 +137,7 @@ Each divergence pattern tells the coach something different. That is the diagnos
 - Wilson, I.B. & Cleary, P.D. (1995). [Linking clinical variables with health-related quality of life: A conceptual model of patient outcomes.](https://pubmed.ncbi.nlm.nih.gov/7996652/) *JAMA, 273*(1), 59--65.
 - [Recovery Star: Validating user recovery](https://www.cambridge.org/core/journals/the-psychiatrist/article/recovery-star-validating-user-recovery/1D1F193ED6EF820A778AA04972A17B1B) --- Two-factor structure, 48% variance.
 - Prochaska, J.O. & Velicer, W.F. (1997). [The transtheoretical model of health behavior change.](https://pubmed.ncbi.nlm.nih.gov/10170434/) *American Journal of Health Promotion, 12*(1), 38--48.
-- [WHOQOL-BREF: Bifactor model analysis](https://pmc.ncbi.nlm.nih.gov/articles/PMC3395923/)
+- Perera, H.N., Izadikhah, Z., O'Connor, P., & McIlveen, P. (2018). [Resolving dimensionality problems with WHOQOL-BREF item responses.](https://pubmed.ncbi.nlm.nih.gov/27872348/) *Assessment, 25*(8), 1014--1025.
 
 ---
 
@@ -180,7 +181,7 @@ Prompt: "How sure do you feel about being able to [target-specific behaviour]?"
 | 4 | Quite sure --- I can usually do this | Plut&ocirc;t s&ucirc;r(e) --- j'y arrive d'habitude |
 | 5 | Very sure --- I know I can do this | Tr&egrave;s s&ucirc;r(e) --- je sais que je peux |
 
-**Construct basis:** Bandura's self-efficacy theory (1977, 2006); PROMIS Self-Efficacy item banks (validated, alpha .85--.97); Schwarzer & Jerusalem GSE (25 countries, ~20,000 participants).
+**Construct basis:** Bandura's self-efficacy theory (1977, 2006); PROMIS Self-Efficacy item banks (validated, alpha .85--.97); Schwarzer & Jerusalem GSE, validated across 25 countries with ~19,000 participants (Scholz et al., 2002).
 
 **Why domain-specific matters:** Bandura's 2006 guide explicitly states that self-efficacy scales must reference specific behaviours, not general confidence. "How confident do you feel about this?" is too vague. "How sure do you feel about being able to [cook a healthy meal / complete a job application / manage your anxiety when it arises]?" produces valid, reliable data.
 
@@ -269,14 +270,14 @@ Developed by Triangle Consulting Social Enterprise. Embeds outcome measurement w
 
 Published by the UK Institute for Employment Studies for the European Social Fund. Defines "distance travelled" as the measurable progress a participant makes toward a hard outcome, even when they haven't achieved it yet. This concept underpins KoNote's Goal Progress metric --- it captures forward movement through stages, not just final achievement.
 
-- Dewson, S., Eccles, J., Tackey, N.D., & Aston, J. (2000). *Guide to Measuring Soft Outcomes and Distance Travelled.* Institute for Employment Studies.
-- Barnes, S.A. & Wright, S. (2019). *Measuring Distance Travelled and Soft Outcomes for Long-Term Unemployed People.* Warwick Institute for Employment Research / European Commission.
+- Dewson, S., Eccles, J., Tackey, N.D., & Jackson, A. (2000). *Guide to Measuring Soft Outcomes and Distance Travelled.* Institute for Employment Studies.
+- Barnes, S.A. & Wright, S. (2019). *The Feasibility of Developing a Methodology for Measuring the Distance Travelled and Soft Outcomes for Long-Term Unemployed People Participating in Active Labour Market Programmes: Final Report.* Warwick Institute for Employment Research / European Commission.
 
 ### Results-Based Accountability (Friedman, 2005)
 
 Distinguishes population accountability (community-level results) from performance accountability (did this program work?). For program-level targets, asks three questions: How much did we do? How well did we do it? Is anyone better off? KoNote's three universal metrics map to these questions: Goal Progress (is anyone better off?), Self-Efficacy (how well --- are participants gaining capability?), Satisfaction (does it matter to them?).
 
-- Friedman, M. (2005). *Trying Hard Is Not Good Enough: How to Produce Measurable Improvements for Customers and Communities.* FPSI Publishing.
+- Friedman, M. (2005). *Trying Hard Is Not Good Enough: How to Produce Measurable Improvements for Customers and Communities.* Trafford Publishing.
 
 ### Theory of Change (Weiss, 1995)
 
