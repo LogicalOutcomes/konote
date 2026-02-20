@@ -7,7 +7,7 @@ from django.urls import path
 from django.utils import timezone
 
 from apps.auth_app.constants import ROLE_RANK
-from apps.auth_app.decorators import _get_user_highest_role
+from apps.auth_app.decorators import _get_user_highest_role, _get_user_highest_role_any
 
 
 @login_required
@@ -46,6 +46,11 @@ def home(request):
     # BUG-12: Get user's highest role across all programs
     user_role = _get_user_highest_role(request.user)
     is_receptionist = user_role == "receptionist"
+
+    # DASH-ROLES1: Detect PM and executive using the inclusive helper
+    highest_role_any = _get_user_highest_role_any(request.user)
+    is_executive = highest_role_any == "executive"
+    is_pm = highest_role_any == "program_manager" and not is_executive
 
     # CONF9: Use active program context from middleware if available
     active_ids = getattr(request, "active_program_ids", None)
@@ -124,6 +129,35 @@ def home(request):
     # (user_role already calculated above for is_receptionist check)
     can_create = ROLE_RANK.get(user_role, 0) >= ROLE_RANK["staff"]
 
+    # --- DASH-ROLES1: Fetch role-specific dashboard data ---
+    pm_program_stats = None
+    executive_data = None
+
+    if is_pm or is_executive:
+        from apps.clients.dashboard_views import (
+            _get_executive_inline_data,
+            _get_pm_summary_data,
+        )
+        from apps.clients.views import get_client_queryset
+
+        user_program_ids = list(
+            UserProgramRole.objects.filter(
+                user=request.user, status="active"
+            ).values_list("program_id", flat=True)
+        )
+        base_client_ids = set(
+            get_client_queryset(request.user).values_list("pk", flat=True)
+        )
+
+        if is_executive:
+            executive_data = _get_executive_inline_data(
+                request.user, user_program_ids, base_client_ids,
+            )
+        elif is_pm:
+            pm_program_stats = _get_pm_summary_data(
+                request.user, user_program_ids, base_client_ids,
+            )
+
     return render(request, "clients/home.html", {
         "results": [],
         "query": "",
@@ -142,6 +176,10 @@ def home(request):
         "accessible_programs": accessible_programs,
         "can_create": can_create,
         "is_receptionist": is_receptionist,
+        "is_pm": is_pm,
+        "is_executive": is_executive,
+        "pm_program_stats": pm_program_stats,
+        "executive_data": executive_data,
     })
 
 
