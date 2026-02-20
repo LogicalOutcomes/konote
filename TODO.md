@@ -36,7 +36,8 @@
 
 ### Phase: Post-Housekeeping Verification
 
-- [ ] Run full test suite (`pytest -m "not browser and not scenario_eval"`) to verify PR #143 test fixes pass against current main (VERIFY1)
+- [x] Run full test suite (`pytest -m "not browser and not scenario_eval"`) to verify PR #143 test fixes pass against current main — 2026-02-20 (VERIFY1)
+- [ ] Fix 12 pre-existing test failures — 5 SQLite isolation ("no such table: users"), 2 SQLite/PG behavioural differences, 1 AI fixture mismatch, 1 stale .mo, 2 missing staticfiles dir, 1 missing QA file (TEST-PREEXIST1)
 
 ## Do Occasionally
 
@@ -142,11 +143,11 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
 - [ ] Add bulk operations for discharge and assignment workflows (UX17)
 - [ ] Re-add API-based auto-translation to translate_strings for production use (I18N-API1)
-- [ ] Document local PostgreSQL setup for security_audit and pytest workflows (DEV-PG1)
+- [x] Document local PostgreSQL setup for security_audit and pytest workflows — 2026-02-20 (DEV-PG1)
 - [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
 - [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
-- [ ] Add basic smoke test for `translate_strings` command — removed dead test class but no replacement exists (TEST-TRANS2)
+- [x] Add basic smoke test for `translate_strings` command — removed dead test class but no replacement exists — 2026-02-20 (TEST-TRANS2)
 
 ## Recently Done
 

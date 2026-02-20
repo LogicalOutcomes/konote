@@ -7,8 +7,10 @@ Already tested elsewhere (skip here):
 import io
 import os
 import unittest
+from pathlib import Path
 
 from cryptography.fernet import Fernet
+from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 
@@ -398,6 +400,49 @@ class CheckTranslationsTest(TestCase):
         self.assertIn(ctx.exception.code, (0, 1))
         self.assertIn("Translation Check", out.getvalue())
 
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class TranslateStringsTest(TestCase):
+    """Smoke tests for the translate_strings command."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_dry_run_completes(self):
+        """translate_strings --dry-run extracts strings without modifying files."""
+        out = io.StringIO()
+        call_command("translate_strings", dry_run=True, stdout=out)
+        output = out.getvalue()
+        self.assertIn("Translation Sync", output)
+        self.assertIn("Extracting strings", output)
+        self.assertIn("dry-run", output.lower())
+
+    def test_reports_template_and_python_counts(self):
+        """translate_strings reports how many strings it found."""
+        out = io.StringIO()
+        call_command("translate_strings", dry_run=True, stdout=out)
+        output = out.getvalue()
+        # Should report template and Python extraction counts
+        self.assertIn("Templates:", output)
+        self.assertIn("Python:", output)
+        self.assertIn("Total unique:", output)
+
+    def test_full_run_compiles_mo(self):
+        """translate_strings without --dry-run compiles .mo successfully."""
+        out = io.StringIO()
+        # Non-dry-run is idempotent when no new strings exist — just recompiles .mo
+        call_command("translate_strings", stdout=out)
+        output = out.getvalue()
+        self.assertIn("Compiling django.mo", output)
+        self.assertIn("Compiled", output)
+        # Verify .mo file exists after compilation
+        mo_path = Path(settings.BASE_DIR) / "locale" / "fr" / "LC_MESSAGES" / "django.mo"
+        self.assertTrue(mo_path.exists(), ".mo file should exist after compilation")
 
 
 # =========================================================================
