@@ -1125,13 +1125,17 @@ def my_words(request):
 
     Collects participant_reflection from ProgressNote and client_words
     from ProgressNoteTarget, displayed in reverse date order.
+
+    Template uses {% regroup reflections by session_date %}, so each
+    entry needs: session_date, participant_reflection, client_words,
+    goal_name.
     """
     from apps.notes.models import ProgressNote, ProgressNoteTarget
 
     client_file = _get_client_file(request)
 
-    # Get progress notes with participant reflections
-    notes_with_reflections = (
+    # Get progress notes ordered by date (newest first)
+    notes = (
         ProgressNote.objects.filter(
             client_file=client_file,
             status="default",
@@ -1139,36 +1143,41 @@ def my_words(request):
         .order_by("-created_at")
     )
 
-    # Build a combined list of reflections and client words
-    entries = []
-    for note in notes_with_reflections:
-        # Add participant reflection if present
+    # Build entries in the format the template expects.
+    # Each entry has: session_date, participant_reflection, client_words,
+    # goal_name. One entry per note-target pair (or per note if only
+    # a general reflection).
+    reflections = []
+    for note in notes:
         reflection = note.participant_reflection
-        if reflection:
-            entries.append({
-                "type": "reflection",
-                "text": reflection,
-                "date": note.created_at,
-            })
+        target_entries = (
+            ProgressNoteTarget.objects.filter(progress_note=note)
+            .select_related("plan_target")
+        )
 
-        # Add client_words from each target entry
-        target_entries = ProgressNoteTarget.objects.filter(
-            progress_note=note,
-        ).select_related("plan_target")
-
+        has_words = False
         for te in target_entries:
-            client_words = te.client_words
-            if client_words:
-                entries.append({
-                    "type": "client_words",
-                    "text": client_words,
-                    "date": note.created_at,
-                    "target_name": te.plan_target.name if te.plan_target else "",
+            words = te.client_words
+            if words:
+                has_words = True
+                reflections.append({
+                    "session_date": note.created_at.date(),
+                    "participant_reflection": "",
+                    "client_words": words,
+                    "goal_name": te.plan_target.name if te.plan_target else "",
                 })
 
-    # Already ordered by note date (descending) due to outer query order
+        # Add the general reflection once per note (not per target)
+        if reflection:
+            reflections.append({
+                "session_date": note.created_at.date(),
+                "participant_reflection": reflection,
+                "client_words": "",
+                "goal_name": "",
+            })
+
     return render(request, "portal/my_words.html", {
-        "entries": entries,
+        "reflections": reflections,
     })
 
 
