@@ -1638,6 +1638,79 @@ label {
     margin-bottom: var(--kn-space-xs);
 }
 
+/* Notes form — Zone 1: Session Setup grid */
+.session-setup {
+    border: none;
+    padding: 0;
+    margin-bottom: var(--kn-space-lg);
+}
+.session-setup-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: var(--kn-space-base);
+    align-items: start;
+}
+.field-template { max-width: 24rem; }
+.field-interaction { max-width: 20rem; }
+.field-date { max-width: 12rem; }
+
+/* Constrain select/input widths inside grid cells */
+.session-setup-grid select,
+.session-setup-grid input[type="date"] {
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .session-setup-grid {
+        grid-template-columns: 1fr;
+    }
+    .field-template,
+    .field-interaction,
+    .field-date {
+        max-width: 100%;
+    }
+}
+
+/* Notes form — Zone 3: Wrap-up grid */
+.wrapup-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--kn-space-base);
+    align-items: start;
+}
+.field-engagement { max-width: 20rem; }
+.field-followup { max-width: 12rem; }
+
+@media (max-width: 768px) {
+    .wrapup-grid {
+        grid-template-columns: 1fr;
+    }
+    .field-engagement,
+    .field-followup {
+        max-width: 100%;
+    }
+}
+
+/* Notes form — collapsible zones */
+.zone-wrapup,
+.zone-voice {
+    border: 1px solid var(--kn-border-light);
+    border-radius: var(--pico-border-radius);
+    padding: var(--kn-space-base) var(--kn-space-lg);
+    margin-bottom: var(--kn-space-lg);
+}
+.zone-wrapup > summary,
+.zone-voice > summary {
+    font-weight: 600;
+    cursor: pointer;
+    padding: var(--kn-space-sm) 0;
+}
+.zone-wrapup > summary .secondary,
+.zone-voice > summary .secondary {
+    font-weight: 400;
+    color: var(--kn-text-muted);
+}
+
 /* ---- Checkbox list items (target selection) ---- */
 label.checkbox-item {
     display: flex;
