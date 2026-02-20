@@ -790,8 +790,8 @@ msgstr "Menu nouvel élément"
 msgid "Add note"
 msgstr "Ajouter une note"
 
-msgid "Use the + New menu above to add a note."
-msgstr "Utilisez le menu + Nouveau ci-dessus pour ajouter une note."
+msgid "Use the Actions menu to add a Quick Note or Detailed Note."
+msgstr "Utilisez le menu Actions pour ajouter une note rapide ou une note détaillée."
 
 #: templates/plans/_target.html
 msgid "None"
