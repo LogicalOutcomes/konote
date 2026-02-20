@@ -1424,6 +1424,59 @@ def portal_survey_fill(request, assignment_id):
 
 
 @portal_login_required
+@require_POST
+def portal_survey_autosave(request, assignment_id):
+    """Auto-save a single answer via HTMX on field blur."""
+    from apps.surveys.engine import is_surveys_enabled
+    from apps.surveys.models import PartialAnswer, SurveyAssignment, SurveyQuestion
+    from konote.encryption import encrypt_field
+
+    if not is_surveys_enabled():
+        raise Http404
+
+    # Only accept HTMX requests
+    if not request.headers.get("HX-Request"):
+        return HttpResponse(status=400)
+
+    participant = request.participant_user
+    assignment = get_object_or_404(
+        SurveyAssignment,
+        pk=assignment_id,
+        participant_user=participant,
+        status__in=("pending", "in_progress"),
+    )
+
+    question_id = request.POST.get("question_id")
+    value = request.POST.get("value", "")
+
+    question = get_object_or_404(
+        SurveyQuestion,
+        pk=question_id,
+        section__survey=assignment.survey,
+    )
+
+    if value:
+        PartialAnswer.objects.update_or_create(
+            assignment=assignment,
+            question=question,
+            defaults={"value_encrypted": encrypt_field(value)},
+        )
+    else:
+        # Clear partial if value is empty
+        PartialAnswer.objects.filter(
+            assignment=assignment, question=question,
+        ).delete()
+
+    # Mark as in_progress if still pending
+    if assignment.status == "pending":
+        assignment.status = "in_progress"
+        assignment.started_at = timezone.now()
+        assignment.save(update_fields=["status", "started_at"])
+
+    return HttpResponse(status=200)
+
+
+@portal_login_required
 def portal_survey_thank_you(request, assignment_id):
     """Thank-you page after completing a survey."""
     from apps.surveys.engine import is_surveys_enabled
