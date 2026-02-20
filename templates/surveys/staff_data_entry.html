@@ -19,8 +19,24 @@
     {% csrf_token %}
 
     {% for section in sections %}
-    <fieldset>
+    <fieldset
+        {% if section.condition_question_id %}
+        data-condition-question="q_{{ section.condition_question_id }}"
+        data-condition-value="{{ section.condition_value }}"
+        style="display:none"
+        aria-live="polite"
+        {% endif %}
+    >
         <legend>{{ section.title }}</legend>
+        {% if section.condition_question %}
+        <p class="condition-note" style="display:none">
+            <small class="secondary">
+                {% blocktrans with question=section.condition_question.question_text value=section.condition_value %}
+                This section appears because "{{ question }}" was answered "{{ value }}".
+                {% endblocktrans %}
+            </small>
+        </p>
+        {% endif %}
         {% if section.instructions %}<p><small>{{ section.instructions }}</small></p>{% endif %}
 
         {% for question in section.questions.all %}
@@ -88,4 +104,34 @@
         <a href="{% url 'surveys:client_surveys' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
+
+<script>
+(function() {
+    function evaluateConditions() {
+        document.querySelectorAll("fieldset[data-condition-question]").forEach(function(fs) {
+            var qName = fs.dataset.conditionQuestion;
+            var expected = fs.dataset.conditionValue;
+            var inputs = document.querySelectorAll("[name='" + qName + "']");
+            var actual = "";
+            inputs.forEach(function(el) {
+                if (el.type === "radio" || el.type === "checkbox") {
+                    if (el.checked) actual = el.value;
+                } else {
+                    actual = el.value;
+                }
+            });
+            var visible = (actual === expected);
+            fs.style.display = visible ? "" : "none";
+            var note = fs.querySelector(".condition-note");
+            if (note) note.style.display = visible ? "" : "none";
+            fs.querySelectorAll("input, select, textarea").forEach(function(el) {
+                if (!el.name.startsWith("q_")) return;
+                el.disabled = !visible;
+            });
+        });
+    }
+    evaluateConditions();
+    document.querySelector("form").addEventListener("change", evaluateConditions);
+})();
+</script>
 {% endblock %}

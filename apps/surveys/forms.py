@@ -48,6 +48,7 @@ class SurveySectionForm(forms.ModelForm):
         fields = [
             "title", "title_fr", "instructions", "instructions_fr",
             "sort_order", "page_break", "scoring_method", "max_score",
+            "condition_question", "condition_value",
         ]
         widgets = {
             "instructions": forms.Textarea(attrs={"rows": 2}),
@@ -62,6 +63,12 @@ class SurveySectionForm(forms.ModelForm):
             "page_break": _("Start new page"),
             "scoring_method": _("Scoring method"),
             "max_score": _("Maximum score"),
+            "condition_question": _("Show only when"),
+            "condition_value": _("is answered"),
+        }
+        help_texts = {
+            "condition_question": _("Leave blank to always show this section."),
+            "condition_value": _("The answer value that makes this section visible."),
         }
 
 

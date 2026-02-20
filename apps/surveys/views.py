@@ -8,10 +8,11 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.forms import inlineformset_factory
-from django.http import Http404, HttpResponseForbidden
+from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import escape
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
@@ -87,6 +88,10 @@ def survey_create(request):
     else:
         form = SurveyForm()
         formset = SectionFormSet()
+    for section_form in formset:
+        section_form.fields["condition_question"].queryset = (
+            SurveyQuestion.objects.none()
+        )
     return render(request, "surveys/admin/survey_form.html", {
         "form": form,
         "formset": formset,
@@ -111,6 +116,14 @@ def survey_edit(request, survey_id):
     else:
         form = SurveyForm(instance=survey)
         formset = SectionFormSet(instance=survey)
+    all_questions = SurveyQuestion.objects.filter(
+        section__survey=survey, section__is_active=True,
+    ).select_related("section").order_by("section__sort_order", "sort_order")
+    for section_form in formset:
+        section_form.fields["condition_question"].queryset = all_questions
+        section_form.fields["condition_question"].label_from_instance = (
+            lambda q: f"{q.section.title} \u2192 {q.question_text[:60]}"
+        )
     return render(request, "surveys/admin/survey_form.html", {
         "form": form,
         "formset": formset,
@@ -125,7 +138,7 @@ def survey_detail(request, survey_id):
     """View survey details — questions, responses, rules."""
     _surveys_or_404()
     survey = get_object_or_404(Survey, pk=survey_id)
-    sections = survey.sections.filter(is_active=True).prefetch_related("questions")
+    sections = survey.sections.filter(is_active=True).prefetch_related("questions").select_related("condition_question")
     responses = survey.responses.order_by("-submitted_at")[:20]
     rules = survey.trigger_rules.all()
     response_count = survey.responses.count()
@@ -144,7 +157,7 @@ def survey_questions(request, survey_id):
     """Add or edit questions for a survey."""
     _surveys_or_404()
     survey = get_object_or_404(Survey, pk=survey_id)
-    sections = survey.sections.filter(is_active=True).order_by("sort_order")
+    sections = survey.sections.filter(is_active=True).order_by("sort_order").select_related("condition_question")
 
     if request.method == "POST":
         # Process question additions/edits from form
@@ -233,6 +246,37 @@ def survey_status(request, survey_id):
                 % {"old": old_status, "new": new_status},
             )
     return redirect("survey_manage:survey_detail", survey_id=survey.pk)
+
+
+@login_required
+@requires_permission("template.note.manage", allow_admin=True)
+def condition_values(request, survey_id, question_id):
+    """Return HTML options for the condition_value dropdown (HTMX)."""
+    _surveys_or_404()
+    survey = get_object_or_404(Survey, pk=survey_id)
+    question = get_object_or_404(
+        SurveyQuestion, pk=question_id, section__survey=survey,
+    )
+
+    if question.question_type == "yes_no":
+        options = [("1", _("Yes")), ("0", _("No"))]
+    elif question.question_type in ("single_choice", "multiple_choice", "rating_scale"):
+        options = [
+            (opt["value"], opt.get("label", opt["value"]))
+            for opt in (question.options_json or [])
+        ]
+    else:
+        # short_text / long_text — return a text input instead of a select
+        html = (
+            '<input type="text" name="condition_value" '
+            f'placeholder="{_("Type the exact answer value")}">'
+        )
+        return HttpResponse(html)
+
+    html_parts = [f'<option value="">— {_("Select a value")} —</option>']
+    for value, label in options:
+        html_parts.append(f'<option value="{escape(value)}">{escape(label)}</option>')
+    return HttpResponse("\n".join(html_parts))
 
 
 @login_required
@@ -507,12 +551,17 @@ def staff_data_entry(request, client_id, survey_id):
     survey = get_object_or_404(Survey, pk=survey_id, status="active")
     sections = survey.sections.filter(
         is_active=True,
-    ).prefetch_related("questions").order_by("sort_order")
+    ).prefetch_related("questions").select_related("condition_question").order_by("sort_order")
 
     if request.method == "POST":
-        errors = []
-        answers_data = []
-        for section in sections:
+        from apps.portal.survey_helpers import filter_visible_sections
+
+        # Materialise queryset once to avoid duplicate DB hits
+        sections_list = list(sections)
+
+        # 1. Collect all submitted answers
+        all_answers = {}
+        for section in sections_list:
             for question in section.questions.all().order_by("sort_order"):
                 field_name = f"q_{question.pk}"
                 if question.question_type == "multiple_choice":
@@ -520,8 +569,22 @@ def staff_data_entry(request, client_id, survey_id):
                     raw_value = ";".join(raw_values) if raw_values else ""
                 else:
                     raw_value = request.POST.get(field_name, "").strip()
+                if raw_value:
+                    all_answers[question.pk] = raw_value
 
-                if question.required and not raw_value:
+        # 2. Determine which sections are visible based on answers
+        visible_sections = filter_visible_sections(sections_list, all_answers)
+        visible_section_pks = {s.pk for s in visible_sections}
+
+        # 3. Validate required fields only in visible sections
+        errors = []
+        answers_data = []
+        for section in sections_list:
+            for question in section.questions.all().order_by("sort_order"):
+                raw_value = all_answers.get(question.pk, "")
+                if (question.required
+                        and not raw_value
+                        and section.pk in visible_section_pks):
                     errors.append(question.question_text)
                 if raw_value:
                     answers_data.append((question, raw_value))
@@ -539,6 +602,7 @@ def staff_data_entry(request, client_id, survey_id):
                 "breadcrumbs": _staff_entry_breadcrumbs(request, client, survey),
             })
 
+        # 4. Save all submitted answers (even from hidden sections)
         with transaction.atomic():
             response = SurveyResponse.objects.create(
                 survey=survey,
@@ -551,7 +615,6 @@ def staff_data_entry(request, client_id, survey_id):
                     question=question,
                 )
                 answer.value = raw_value
-                # Numeric value for scored questions
                 if question.question_type in ("rating_scale", "yes_no"):
                     try:
                         answer.numeric_value = int(raw_value)

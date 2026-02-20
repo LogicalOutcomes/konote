@@ -1,0 +1,65 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+{% load survey_tags %}
+
+{% block title %}{{ survey.name }}{% endblock %}
+
+{% block content %}
+<h1>{{ survey.name }}</h1>
+<p><small>{% blocktrans with date=response_obj.submitted_at|date:"N j, Y" %}Submitted on {{ date }}{% endblocktrans %}</small></p>
+
+{% for section in sections %}
+<section>
+    <h2>{{ section.title }}</h2>
+
+    {% for question in section.questions.all %}
+    <div style="margin-bottom:1rem">
+        <strong>{{ question.question_text }}</strong>
+        {% with answer=question.pk|partial_value:answers %}
+        {% if answer %}
+        <p style="margin-top:0.25rem; padding-left:1rem; border-left:3px solid var(--pico-muted-border-color)">
+            {% if question.question_type == "yes_no" %}
+                {% if answer == "1" %}{% trans "Yes" %}{% elif answer == "0" %}{% trans "No" %}{% else %}{{ answer }}{% endif %}
+            {% elif question.question_type == "single_choice" or question.question_type == "rating_scale" %}
+                {% for opt in question.options_json %}
+                    {% if opt.value == answer %}{{ opt.label }}{% endif %}
+                {% endfor %}
+            {% elif question.question_type == "multiple_choice" %}
+                {{ answer }}
+            {% else %}
+                {{ answer }}
+            {% endif %}
+        </p>
+        {% else %}
+        <p style="margin-top:0.25rem; color:var(--pico-muted-color)"><em>{% trans "No answer" %}</em></p>
+        {% endif %}
+        {% endwith %}
+    </div>
+    {% endfor %}
+</section>
+{% endfor %}
+
+{% if scores %}
+<section>
+    <h2>{% trans "Your Scores" %}</h2>
+    <table aria-label="{% trans 'Survey scores' %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Section" %}</th>
+                <th scope="col">{% trans "Score" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for s in scores %}
+            <tr>
+                <td>{{ s.title }}</td>
+                <td>{{ s.score }} / {{ s.max_score }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endif %}
+
+<p><a href="{% url 'portal:surveys' %}">&larr; {% trans "Back to surveys" %}</a></p>
+{% endblock %}

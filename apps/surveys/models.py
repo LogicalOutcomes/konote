@@ -410,6 +410,14 @@ class PartialAnswer(models.Model):
     value_encrypted = models.BinaryField(default=b"")
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def value(self):
+        return decrypt_field(self.value_encrypted)
+
+    @value.setter
+    def value(self, val):
+        self.value_encrypted = encrypt_field(val)
+
     class Meta:
         app_label = "surveys"
         db_table = "survey_partial_answers"

@@ -12572,6 +12572,15 @@ msgstr ""
 msgid "Auto-assign"
 msgstr "Attribution automatique"
 
+msgid "Condition value"
+msgstr "Valeur de la condition"
+
+msgid "Conditional"
+msgstr "Conditionnelle"
+
+msgid "Conditional visibility"
+msgstr "Visibilité conditionnelle"
+
 msgid ""
 "Configure when this survey should be automatically assigned to participants."
 msgstr ""
@@ -12602,6 +12611,9 @@ msgstr "Type d'évènement"
 msgid "Expires after (days)"
 msgstr "Expire après (jours)"
 
+msgid "Failed to load options. Please try again."
+msgstr "Impossible de charger les options. Veuillez réessayer."
+
 msgid "How often per participant?"
 msgstr "À quelle fréquence par participant?"
 
@@ -12614,6 +12626,9 @@ msgstr "Laisser vide pour aucune date d'échéance."
 
 msgid "Leave blank for no expiry"
 msgstr "Laisser vide pour aucune expiration"
+
+msgid "Leave blank to always show this section."
+msgstr "Laisser vide pour toujours afficher cette section."
 
 msgid "Link URL"
 msgstr "URL du lien"
@@ -12629,6 +12644,9 @@ msgstr "Nouvelle règle"
 
 msgid "New Trigger Rule"
 msgstr "Nouvelle règle de déclenchement"
+
+msgid "No answer"
+msgstr "Aucune réponse"
 
 msgid "No shareable links yet. Create one below."
 msgstr "Aucun lien partageable pour le moment. Créez-en un ci-dessous."
@@ -12647,6 +12665,9 @@ msgstr "Facultatif. Le lien cessera de fonctionner après ce nombre de jours."
 msgid "Program / Event Type"
 msgstr "Programme / Type d'évènement"
 
+msgid "Questions for You"
+msgstr "Questions pour vous"
+
 msgid "Repeat Policy"
 msgstr "Politique de répétition"
 
@@ -12655,6 +12676,9 @@ msgstr "Répéter tous les N jours"
 
 msgid "Rules that automatically assign this survey to participants."
 msgstr "Règles qui attribuent automatiquement ce sondage aux participants."
+
+msgid "Select a value"
+msgstr "Sélectionner une valeur"
 
 msgid "Shareable Links"
 msgstr "Liens partageables"
@@ -12665,11 +12689,23 @@ msgstr "Lien partageable créé."
 msgid "Shareable links"
 msgstr "Liens partageables"
 
+msgid "Show only when"
+msgstr "Afficher seulement quand"
+
 msgid "Survey Unavailable"
 msgstr "Sondage non disponible"
 
 msgid "Survey link URL"
 msgstr "URL du lien de sondage"
+
+msgid "Survey progress"
+msgstr "Progression du sondage"
+
+msgid "Survey scores"
+msgstr "Scores du sondage"
+
+msgid "The answer value that makes this section visible."
+msgstr "La valeur de réponse qui rend cette section visible."
 
 msgid "This survey is no longer available."
 msgstr "Ce sondage n'est plus disponible."
@@ -12692,8 +12728,14 @@ msgstr "Règle de déclenchement désactivée."
 msgid "Trigger rules"
 msgstr "Règles de déclenchement"
 
+msgid "Type the exact answer value"
+msgstr "Saisissez la valeur exacte de la réponse"
+
 msgid "When should this survey be assigned?"
 msgstr "Quand ce sondage devrait-il être attribué?"
+
+msgid "Your Scores"
+msgstr "Vos scores"
 
 msgid "Your answers are being saved automatically."
 msgstr "Vos réponses sont sauvegardées automatiquement."
@@ -12701,10 +12743,20 @@ msgstr "Vos réponses sont sauvegardées automatiquement."
 msgid "Your name (optional)"
 msgstr "Votre nom (facultatif)"
 
+msgid "is answered"
+msgstr "a reçu une réponse"
+
+msgid "— Custom date range —"
+msgstr "— Plage de dates personnalisée —"
+
 #. blocktrans strings from survey templates
 #, python-format
 msgid "Entering survey response on behalf of %(name)s."
 msgstr "Saisie de la réponse au sondage au nom de %(name)s."
+
+#, python-format
+msgid "FY %(start)s-%(end)s"
+msgstr "AF %(start)s-%(end)s"
 
 #, python-format
 msgid "Scale: %(min)s to %(max)s"
@@ -12713,6 +12765,22 @@ msgstr "Échelle : %(min)s à %(max)s"
 #, python-format
 msgid "Your response to \"%(name)s\" has been submitted."
 msgstr "Votre réponse à « %(name)s » a été soumise."
+
+#: apps/portal/templates/portal/survey_thank_you.html
+#, python-format
+msgid "Submitted on %(date)s"
+msgstr "Soumis le %(date)s"
+
+#: apps/portal/templates/portal/dashboard.html
+#, python-format
+msgid "Forms and check-ins from your %(worker_term)s."
+msgstr "Formulaires et suivis de votre %(worker_term)s."
+
+#: apps/portal/templates/portal/dashboard.html
+msgid "%(counter)s survey pending"
+msgid_plural "%(counter)s surveys pending"
+msgstr[0] "%(counter)s sondage en attente"
+msgstr[1] "%(counter)s sondages en attente"
 
 #, python-format
 msgid "Add question to %(title)s"

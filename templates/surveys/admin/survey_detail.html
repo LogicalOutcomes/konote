@@ -48,6 +48,14 @@
 {% for section in sections %}
 <article>
     <header>{{ section.title }}</header>
+    {% if section.condition_question %}
+    <p><small>
+        <strong>{% trans "Conditional" %}</strong> —
+        {% blocktrans with question=section.condition_question.question_text value=section.condition_value %}
+        shown when "{{ question }}" is answered "{{ value }}"
+        {% endblocktrans %}
+    </small></p>
+    {% endif %}
     {% if section.instructions %}<p><small>{{ section.instructions }}</small></p>{% endif %}
     <ol>
     {% for q in section.questions.all %}

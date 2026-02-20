@@ -14,7 +14,7 @@ from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.events.models import Event, EventType
 from apps.portal.models import ParticipantUser
-from apps.programs.models import Program
+from apps.programs.models import Program, UserProgramRole
 from apps.surveys.models import (
     Survey, SurveySection, SurveyQuestion, SurveyTriggerRule,
     SurveyAssignment, SurveyResponse, SurveyAnswer, PartialAnswer,
@@ -138,6 +138,212 @@ class SurveyModelTests(TestCase):
                 sort_order=1,
             )
             self.assertEqual(q.question_type, qt)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class SurveySectionFormTests(TestCase):
+    """Test SurveySectionForm includes condition fields."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="form_staff", password="testpass123",
+            display_name="Form Staff",
+        )
+        self.survey = Survey.objects.create(name="Form Test", created_by=self.staff)
+        self.s1 = SurveySection.objects.create(
+            survey=self.survey, title="Section 1", sort_order=1,
+        )
+        self.trigger_q = SurveyQuestion.objects.create(
+            section=self.s1, question_text="Has children?",
+            question_type="yes_no", sort_order=1,
+        )
+
+    def test_form_includes_condition_fields(self):
+        from apps.surveys.forms import SurveySectionForm
+        form = SurveySectionForm()
+        self.assertIn("condition_question", form.fields)
+        self.assertIn("condition_value", form.fields)
+
+    def test_form_saves_condition(self):
+        from apps.surveys.forms import SurveySectionForm
+        form = SurveySectionForm(data={
+            "title": "Childcare",
+            "sort_order": "2",
+            "page_break": "",
+            "scoring_method": "none",
+            "condition_question": str(self.trigger_q.pk),
+            "condition_value": "1",
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+        section = form.save(commit=False)
+        section.survey = self.survey
+        section.save()
+        self.assertEqual(section.condition_question_id, self.trigger_q.pk)
+        self.assertEqual(section.condition_value, "1")
+
+    def test_form_valid_without_condition(self):
+        from apps.surveys.forms import SurveySectionForm
+        form = SurveySectionForm(data={
+            "title": "No Condition",
+            "sort_order": "1",
+            "page_break": "",
+            "scoring_method": "none",
+            "condition_question": "",
+            "condition_value": "",
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ConditionValuesEndpointTests(TestCase):
+    """Test the HTMX endpoint that returns condition value options."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="cv_staff", password="testpass123",
+            display_name="CV Staff", is_admin=True,
+        )
+        self.client.login(username="cv_staff", password="testpass123")
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys", defaults={"is_enabled": True},
+        )
+        self.survey = Survey.objects.create(name="CV Test", created_by=self.staff)
+        self.section = SurveySection.objects.create(
+            survey=self.survey, title="S1", sort_order=1,
+        )
+
+    def test_yes_no_returns_two_options(self):
+        q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Yes or no?",
+            question_type="yes_no", sort_order=1,
+        )
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('value="1"', content)
+        self.assertIn('value="0"', content)
+
+    def test_single_choice_returns_option_values(self):
+        q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Pick one",
+            question_type="single_choice", sort_order=1,
+            options_json=[
+                {"value": "a", "label": "Alpha"},
+                {"value": "b", "label": "Beta"},
+            ],
+        )
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('value="a"', content)
+        self.assertIn("Alpha", content)
+        self.assertIn('value="b"', content)
+
+    def test_text_question_returns_text_input(self):
+        q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Name?",
+            question_type="short_text", sort_order=1,
+        )
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('type="text"', content)
+
+    def test_rating_scale_returns_option_values(self):
+        q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Rate 1-3",
+            question_type="rating_scale", sort_order=1,
+            options_json=[
+                {"value": "1", "label": "Low"},
+                {"value": "2", "label": "Medium"},
+                {"value": "3", "label": "High"},
+            ],
+        )
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('value="1"', content)
+        self.assertIn("Low", content)
+        self.assertIn('value="3"', content)
+
+    def test_cross_survey_question_returns_404(self):
+        """Question from a different survey should return 404."""
+        other_survey = Survey.objects.create(name="Other", created_by=self.staff)
+        other_section = SurveySection.objects.create(
+            survey=other_survey, title="Other S1", sort_order=1,
+        )
+        other_q = SurveyQuestion.objects.create(
+            section=other_section, question_text="Other Q",
+            question_type="yes_no", sort_order=1,
+        )
+        # Request other_q via self.survey's URL — should 404
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{other_q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 404)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ConditionalBadgeRenderTests(TestCase):
+    """Test conditional badge appears in admin detail and questions views."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="badge_staff", password="testpass123",
+            display_name="Badge Staff", is_admin=True,
+        )
+        self.client.login(username="badge_staff", password="testpass123")
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys", defaults={"is_enabled": True},
+        )
+        self.survey = Survey.objects.create(
+            name="Badge Test", created_by=self.staff,
+        )
+        self.s1 = SurveySection.objects.create(
+            survey=self.survey, title="Main", sort_order=1,
+        )
+        self.trigger_q = SurveyQuestion.objects.create(
+            section=self.s1, question_text="Has children?",
+            question_type="yes_no", sort_order=1,
+        )
+        self.s2 = SurveySection.objects.create(
+            survey=self.survey, title="Childcare", sort_order=2,
+            condition_question=self.trigger_q, condition_value="1",
+        )
+
+    def test_detail_shows_conditional_badge(self):
+        url = f"/manage/surveys/{self.survey.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Conditional")
+        self.assertContains(resp, "Has children?")
+
+    def test_questions_shows_conditional_badge(self):
+        url = f"/manage/surveys/{self.survey.pk}/questions/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Conditional")
+        self.assertContains(resp, "Has children?")
+
+    def test_detail_no_badge_for_unconditional(self):
+        url = f"/manage/surveys/{self.survey.pk}/"
+        resp = self.client.get(url)
+        # "Main" section should NOT have a Conditional badge
+        content = resp.content.decode()
+        # The badge appears once (for Childcare only), not for Main
+        self.assertEqual(content.count("Conditional"), 1)
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
@@ -323,6 +529,38 @@ class AssignmentResponseModelTests(TestCase):
         )
         self.assertFalse(created2)
         self.assertEqual(pa.pk, pa2.pk)
+
+    def test_partial_answer_value_property(self):
+        """PartialAnswer.value encrypts on set, decrypts on get."""
+        assignment = SurveyAssignment.objects.create(
+            survey=self.survey,
+            participant_user=self.participant,
+            client_file=self.client_file,
+            status="in_progress",
+        )
+        pa = PartialAnswer(assignment=assignment, question=self.question)
+        pa.value = "test answer"
+        pa.save()
+        # Load fresh instance to verify roundtrip through DB
+        pa_fresh = PartialAnswer.objects.get(pk=pa.pk)
+        self.assertEqual(pa_fresh.value, "test answer")
+        # Encrypted field should not be plain text or empty
+        self.assertNotEqual(pa_fresh.value_encrypted, b"test answer")
+        self.assertNotEqual(pa_fresh.value_encrypted, b"")
+
+    def test_partial_answer_value_empty(self):
+        """PartialAnswer.value handles empty string."""
+        assignment = SurveyAssignment.objects.create(
+            survey=self.survey,
+            participant_user=self.participant,
+            client_file=self.client_file,
+            status="in_progress",
+        )
+        pa = PartialAnswer(assignment=assignment, question=self.question)
+        pa.value = ""
+        pa.save()
+        pa_fresh = PartialAnswer.objects.get(pk=pa.pk)
+        self.assertEqual(pa_fresh.value, "")
 
     def test_anonymous_response(self):
         """Anonymous survey responses have no client_file or assignment."""
@@ -1171,3 +1409,91 @@ class TriggerRuleManagementTests(TestCase):
         )
         rule.refresh_from_db()
         self.assertFalse(rule.is_active)
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-hash-key-staff",
+)
+class StaffDataEntryConditionTests(TestCase):
+    """Test staff data entry respects conditional sections."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="sde_staff", password="testpass123",
+            display_name="SDE Staff", is_admin=True,
+        )
+        self.client_obj = ClientFile.objects.create(
+            record_id="SDE-001", status="active",
+        )
+        self.client_obj.first_name = "Test"
+        self.client_obj.last_name = "Client"
+        self.client_obj.save()
+        # Ensure staff can access this client via program role
+        self.program = Program.objects.create(name="SDE Program")
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_obj, program=self.program, status="enrolled",
+        )
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.program, role="staff", status="active",
+        )
+
+        self.survey = Survey.objects.create(
+            name="Condition Entry", created_by=self.staff, status="active",
+        )
+        self.s1 = SurveySection.objects.create(
+            survey=self.survey, title="Main", sort_order=1,
+        )
+        self.trigger_q = SurveyQuestion.objects.create(
+            section=self.s1, question_text="Has children?",
+            question_type="yes_no", sort_order=1, required=True,
+        )
+        self.s2 = SurveySection.objects.create(
+            survey=self.survey, title="Childcare", sort_order=2,
+            condition_question=self.trigger_q, condition_value="1",
+        )
+        self.cond_q = SurveyQuestion.objects.create(
+            section=self.s2, question_text="Childcare needed?",
+            question_type="yes_no", sort_order=1, required=True,
+        )
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys", defaults={"is_enabled": True},
+        )
+        self.client.login(username="sde_staff", password="testpass123")
+
+    def test_hidden_section_required_field_not_enforced(self):
+        """When trigger answer hides a section, its required fields don't cause errors."""
+        url = f"/surveys/participant/{self.client_obj.pk}/enter/{self.survey.pk}/"
+        resp = self.client.post(url, {
+            f"q_{self.trigger_q.pk}": "0",  # No — hides childcare section
+            # cond_q not submitted (section hidden by JS)
+        })
+        # Should succeed — childcare section is hidden, required not enforced
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(SurveyResponse.objects.count(), 1)
+
+    def test_visible_section_required_field_enforced(self):
+        """When trigger answer shows a section, its required fields are enforced."""
+        url = f"/surveys/participant/{self.client_obj.pk}/enter/{self.survey.pk}/"
+        resp = self.client.post(url, {
+            f"q_{self.trigger_q.pk}": "1",  # Yes — shows childcare section
+            # cond_q not submitted — should cause error
+        })
+        # Should fail — childcare section visible, required field missing
+        self.assertEqual(resp.status_code, 200)  # re-renders form with error
+        self.assertEqual(SurveyResponse.objects.count(), 0)
+
+    def test_extra_answers_from_hidden_section_saved(self):
+        """If JS didn't hide section and staff filled it in, answers are still saved."""
+        url = f"/surveys/participant/{self.client_obj.pk}/enter/{self.survey.pk}/"
+        resp = self.client.post(url, {
+            f"q_{self.trigger_q.pk}": "0",  # No — hides childcare
+            f"q_{self.cond_q.pk}": "1",     # But staff submitted anyway (JS failed)
+        })
+        self.assertEqual(resp.status_code, 302)
+        response = SurveyResponse.objects.first()
+        # Both answers saved — extra data preserved
+        self.assertEqual(response.answers.count(), 2)

@@ -5,16 +5,22 @@
 - [ ] Review requirements analysis doc with Sara before sending to client (docs/konote-requirements-analysis-draft.md) — GG (DOC-REQ1)
 - [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — GG (ONBOARD-APPROVE)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GG (SEC3-Q1)
+- [ ] Confirm standard report schema and configuration template with Claire (Prosper Canada) before building — SG (RPT-SCHEMA1)
 
 ## Active Work
 
 ### Phase: Launch Readiness
 
 - [ ] Complete Agency Deployment Protocol with Prosper Canada — Phase 0 Discovery Call first (see tasks/prosper-canada/deployment-protocol.md) — SG (DEPLOY-PC1)
+- [x] Define Prosper Canada configuration template — standard roles, metrics, terminology, plan templates for financial coaching agencies (see config_templates/prosper-canada/) — 2026-02-20 — GG (DEPLOY-TEMPLATE1)
+- [ ] Follow up with Claire (Prosper Canada) for additional must-haves on feature comparison — SG (DEPLOY-PC2)
 - [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — GG (ONBOARD-GATE)
 - [ ] Verify production email configuration for exports, erasure alerts, and password resets — GG (OPS3)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — GG (OPS4)
 - [ ] Document scheduled task setup for export monitoring in the runbook — GG (EXP2w)
+- [ ] Enforce cross-program sharing consent (PHIPA) in views — consent flag already captured, need view-level enforcement (PHIPA-ENFORCE1)
+- [ ] Build cross-agency data rollup for funders — waiting on requirements from Prosper Canada re: which metrics to aggregate (see tasks/prosper-canada/) — GG (SCALE-ROLLUP1)
+- [ ] Build role-based dashboard views — coach, PM, and executive landing pages with role-specific data (see tasks/dashboard-roles-plan.md) — GG (DASH-ROLES1)
 
 ### Phase: Communication Modules — complete!
 
@@ -50,8 +56,19 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Data Quality
 
-- [ ] Entry-time plausibility warnings — soft-flag unlikely values during data entry for staff confirmation (see tasks/data-validation-design.md) (DQ1)
+- [ ] Entry-time plausibility warnings — soft-flag unlikely values during data entry, prioritise financial metrics (see tasks/data-validation-design.md, financial subsection added 2026-02-20) (DQ1)
+- [ ] Add second-tier "very unlikely" plausibility thresholds for financial metrics — tighter bounds beyond warn_max for edge case detection (DQ1-TIER2)
 - [ ] Pre-report data quality checks — validate data quality before funder report export (see tasks/data-validation-design.md) (DQ2)
+- [ ] Add funder report approval workflow — quality review, agency annotations, explicit publish step before sharing with funders (see tasks/funder-report-approval.md, plan: docs/plans/2026-02-20-funder-report-approval-design.md) (RPT-APPROVE1)
+
+### Phase: Multi-Agency Scaling
+
+- [ ] Build deploy script to automate Phase 2 infrastructure provisioning — Azure resources, env vars, migrations, output a URL (plan: docs/plans/2026-02-20-deploy-script-design.md) (DEPLOY-SCRIPT1)
+- [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/prosper-canada/managed-service-model.md) (OPS-MANAGED1)
+- [ ] Build cross-agency reporting API — standardised endpoint per instance for Prosper Canada to consume published reports (plan: docs/plans/2026-02-20-cross-agency-reporting-api-design.md) (SCALE-API1)
+- [ ] Build umbrella admin dashboard — central view for Prosper Canada to see instance health, published reports, and aggregate metrics across agencies (SCALE-DASH1)
+- [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
+- [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
 
 ### Phase: Other Upcoming
 
@@ -66,6 +83,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Implement report preview on-screen before downloading PDF/CSV (REP-PREVIEW1)
 - [ ] Research/Implement including data visuals (charts/graphs) in PDF reports (REP-PDF1)
 - [ ] Redesign PDF report layout: merge title page with page 2 to eliminate redundant empty space (REP-PDF2)
+- [ ] Define standardised report schema for Prosper Canada — 10-15 key metrics and demographic breakdowns shared across all partner agencies (RPT-SCHEMA1)
 
 ### Phase: Surveys QA Scenarios
 
@@ -110,11 +128,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Remove "+ Add note" link in Notes tab, update wayfinding text to reference Actions menu — 2026-02-20 (UX-NOTES3)
 - [x] Fix "server error occurred" when clicking "Shape this target" — metric catalogue key mismatch — 2026-02-20 (BUG-AI1)
 - [x] Fix "error message" when clicking "Draft Report summary" — gettext_lazy proxies as JSON keys — 2026-02-20 (BUG-AI2)
-- [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
-
-## Recently Done
-
-- [x] Redesign detailed notes form (Round 2) — auto-calc metrics, scale pills, two-lens layout (see docs/plans/2026-02-19-notes-form-redesign-v2.md) — 2026-02-19 (UX-NOTES2)
+## Parking Lot
 
 - [ ] Rename original KoNote GitHub repo to KoNote Classic and add redirect/link to this repo (REPO1)
 - [ ] Add stress testing for 50+ concurrent users (QA-T15)
@@ -137,6 +151,12 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Fix fiscal year dropdown showing English strings in French UI — wrapped with gettext, added 12 French translations — 2026-02-20 (BUG-FY1)
+- [x] Define Prosper Canada configuration template — 8 fixture files covering terminology, metrics, plans, roles, report schema — 2026-02-20 (DEPLOY-TEMPLATE1)
+- [x] Add financial metric plausibility subsection to data validation design — warn_min/warn_max for debt, income, savings, credit score — 2026-02-20 (DQ1-FIN)
+- [x] Write implementation plans for RPT-APPROVE1, DEPLOY-SCRIPT1, SCALE-API1 — 2026-02-20
+- [x] Build "Questions for You" portal feature — auto-save, multi-page, conditional sections, review page, dashboard badge — 2026-02-20 (PORTAL-Q1)
+- [x] Redesign detailed notes form (Round 2) — auto-calc metrics, scale pills, two-lens layout (see docs/plans/2026-02-19-notes-form-redesign-v2.md) — 2026-02-19 (UX-NOTES2)
 - [x] Improve Messages page clarity — sender-first cards, urgent flag, relative timestamps, focus management, French translations — 2026-02-19 (UX-MSG1)
 - [x] Active batch — theme fixes (FIX1–6), near-term improvements (BUG-SW1, URL-CLEAN1/2, QA-W60/W61), dashboard text (UX-DASH1), PERF2 already done, VERIFY2 confirmed — 2026-02-18 (THEME-FIX1–6, BUG-SW1, URL-CLEAN1, URL-CLEAN2, QA-W60, QA-W61, PERF2, UX-DASH1, VERIFY2)
 - [x] Use CSS custom property for error colour in `.ai-suggest-error` and `.gb-error` — replaced hardcoded `#dc3545` with theme tokens — 2026-02-18 (AI-CSS1)

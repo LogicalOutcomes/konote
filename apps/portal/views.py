@@ -12,7 +12,7 @@ import logging
 from functools import wraps
 
 from django.conf import settings
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -587,17 +587,25 @@ def dashboard(request):
     participant = request.participant_user
     client_file = _get_client_file(request)
 
-    # Pending surveys count
+    # Pending surveys count + smart single-survey link
     pending_surveys = 0
+    single_survey_url = None
     try:
+        from django.urls import reverse
         from apps.surveys.engine import is_surveys_enabled
         from apps.surveys.models import SurveyAssignment
         if is_surveys_enabled():
-            pending_surveys = SurveyAssignment.objects.filter(
+            survey_assignments = SurveyAssignment.objects.filter(
                 participant_user=participant,
                 status__in=("pending", "in_progress"),
                 survey__portal_visible=True,
-            ).count()
+            )
+            pending_surveys = survey_assignments.count()
+            if pending_surveys == 1:
+                single_survey_url = reverse(
+                    "portal:survey_fill",
+                    args=[survey_assignments.first().pk],
+                )
     except Exception:
         pass
 
@@ -641,6 +649,7 @@ def dashboard(request):
         "new_details": new_details,
         "staff_notes": staff_notes,
         "pending_surveys": pending_surveys,
+        "single_survey_url": single_survey_url,
     })
 
 
@@ -1317,13 +1326,17 @@ def portal_surveys_list(request):
 
 @portal_login_required
 def portal_survey_fill(request, assignment_id):
-    """Fill in a survey through the portal — renders all questions."""
+    """Fill in a survey — supports multi-page and auto-save."""
     from apps.surveys.engine import is_surveys_enabled
     from apps.surveys.models import (
         PartialAnswer,
         SurveyAnswer,
         SurveyAssignment,
         SurveyResponse,
+    )
+    from apps.portal.survey_helpers import (
+        group_sections_into_pages, filter_visible_sections,
+        get_partial_answers_dict, calculate_section_scores,
     )
     from konote.encryption import decrypt_field
 
@@ -1340,9 +1353,32 @@ def portal_survey_fill(request, assignment_id):
         status__in=("pending", "in_progress"),
     )
     survey = assignment.survey
-    sections = survey.sections.filter(
-        is_active=True,
-    ).prefetch_related("questions").order_by("sort_order")
+
+    # Mark as in_progress on first visit
+    if assignment.status == "pending":
+        assignment.status = "in_progress"
+        assignment.started_at = timezone.now()
+        assignment.save(update_fields=["status", "started_at"])
+
+    # Load all sections and partial answers
+    all_sections = list(
+        survey.sections.filter(is_active=True)
+        .prefetch_related("questions")
+        .order_by("sort_order")
+    )
+    partial_answers = get_partial_answers_dict(assignment)
+    visible_sections = filter_visible_sections(all_sections, partial_answers)
+    pages = group_sections_into_pages(visible_sections)
+    is_multi_page = len(pages) > 1
+
+    # Determine current page
+    page_num = 1
+    if is_multi_page:
+        try:
+            page_num = int(request.GET.get("page", 1))
+        except (ValueError, TypeError):
+            page_num = 1
+        page_num = max(1, min(page_num, len(pages)))
 
     # Load existing partial answers for pre-fill
     partials = {}
@@ -1350,57 +1386,114 @@ def portal_survey_fill(request, assignment_id):
         partials[pa.question_id] = decrypt_field(pa.value_encrypted)
 
     if request.method == "POST":
-        errors = []
-        answers_data = []
+        action = request.POST.get("action", "submit")
 
-        for section in sections:
-            for question in section.questions.all().order_by("sort_order"):
-                field_name = f"q_{question.pk}"
-                if question.question_type == "multiple_choice":
-                    raw_values = request.POST.getlist(field_name)
-                    raw_value = ";".join(raw_values) if raw_values else ""
-                else:
-                    raw_value = request.POST.get(field_name, "").strip()
+        if is_multi_page and action == "next":
+            # Save current page answers and go to next page
+            current_sections = pages[page_num - 1]
+            errors = _save_page_answers(
+                request, assignment, current_sections, partial_answers,
+            )
+            if errors:
+                return render(request, "portal/survey_fill.html", {
+                    "participant": participant,
+                    "assignment": assignment,
+                    "survey": survey,
+                    "sections": current_sections,
+                    "page_num": page_num,
+                    "total_pages": len(pages),
+                    "is_multi_page": is_multi_page,
+                    "is_last_page": page_num == len(pages),
+                    "partial_answers": partial_answers,
+                    "errors": errors,
+                })
+            # Refresh partial answers and page structure after save
+            partial_answers = get_partial_answers_dict(assignment)
+            visible_sections = filter_visible_sections(all_sections, partial_answers)
+            pages = group_sections_into_pages(visible_sections)
+            next_page = min(page_num + 1, len(pages))
+            return redirect(f"{request.path}?page={next_page}")
 
-                if question.required and not raw_value:
-                    errors.append(question.question_text)
-                if raw_value:
-                    answers_data.append((question, raw_value))
-
-        if errors:
+        # Final submit
+        # For scrolling form or last page, also save current page
+        if is_multi_page:
+            current_sections = pages[page_num - 1]
+        else:
+            current_sections = visible_sections
+        page_errors = _save_page_answers(
+            request, assignment, current_sections, partial_answers,
+        )
+        if page_errors:
             return render(request, "portal/survey_fill.html", {
                 "participant": participant,
                 "assignment": assignment,
                 "survey": survey,
-                "sections": sections,
-                "posted": request.POST,
-                "errors": errors,
-                "partials": partials,
+                "sections": current_sections,
+                "page_num": page_num,
+                "total_pages": len(pages),
+                "is_multi_page": is_multi_page,
+                "is_last_page": True,
+                "partial_answers": partial_answers,
+                "errors": page_errors,
             })
 
+        # Refresh and validate ALL required questions across all pages
+        partial_answers = get_partial_answers_dict(assignment)
+        visible_sections = filter_visible_sections(all_sections, partial_answers)
+        all_errors = []
+        for section in visible_sections:
+            for question in section.questions.all().order_by("sort_order"):
+                if question.required and not partial_answers.get(question.pk):
+                    all_errors.append(question.question_text)
+
+        if all_errors:
+            pages = group_sections_into_pages(visible_sections)
+            if is_multi_page:
+                current_sections = pages[page_num - 1]
+            return render(request, "portal/survey_fill.html", {
+                "participant": participant,
+                "assignment": assignment,
+                "survey": survey,
+                "sections": current_sections,
+                "page_num": page_num,
+                "total_pages": len(pages),
+                "is_multi_page": is_multi_page,
+                "is_last_page": True,
+                "partial_answers": partial_answers,
+                "errors": all_errors,
+            })
+
+        # Create final response from PartialAnswer data
         from django.db import transaction
 
         with transaction.atomic():
-            response = SurveyResponse.objects.create(
+            response_obj = SurveyResponse.objects.create(
                 survey=survey,
                 assignment=assignment,
                 client_file=client_file,
                 channel="portal",
             )
-            for question, raw_value in answers_data:
+            for question_pk, answer_value in partial_answers.items():
+                from apps.surveys.models import SurveyQuestion
+                try:
+                    question = SurveyQuestion.objects.get(pk=question_pk)
+                except SurveyQuestion.DoesNotExist:
+                    continue
+
                 answer = SurveyAnswer(
-                    response=response,
+                    response=response_obj,
                     question=question,
                 )
-                answer.value = raw_value
+                answer.value = answer_value
+
                 if question.question_type in ("rating_scale", "yes_no"):
                     try:
-                        answer.numeric_value = int(raw_value)
+                        answer.numeric_value = int(answer_value)
                     except (ValueError, TypeError):
                         pass
                 elif question.question_type == "single_choice":
                     for opt in (question.options_json or []):
-                        if opt.get("value") == raw_value:
+                        if opt.get("value") == answer_value:
                             answer.numeric_value = opt.get("score")
                             break
                 answer.save()
@@ -1418,49 +1511,92 @@ def portal_survey_fill(request, assignment_id):
         })
         return redirect("portal:survey_thank_you", assignment_id=assignment.pk)
 
-    # Mark as in_progress on first view
-    if assignment.status == "pending":
-        assignment.status = "in_progress"
-        assignment.started_at = timezone.now()
-        assignment.save(update_fields=["status", "started_at"])
+    # GET — render form
+    if is_multi_page:
+        current_sections = pages[page_num - 1]
+    else:
+        current_sections = visible_sections
 
     return render(request, "portal/survey_fill.html", {
         "participant": participant,
         "assignment": assignment,
         "survey": survey,
-        "sections": sections,
-        "posted": {},
+        "sections": current_sections,
+        "page_num": page_num,
+        "total_pages": len(pages),
+        "is_multi_page": is_multi_page,
+        "is_last_page": page_num == len(pages),
+        "partial_answers": partial_answers,
         "errors": [],
         "partials": partials,
     })
 
 
+def _save_page_answers(request, assignment, sections, partial_answers):
+    """Save answers from POST data for sections on the current page.
+
+    Returns list of error messages for missing required fields.
+    Updates partial_answers dict in place.
+    """
+    from apps.surveys.models import PartialAnswer
+
+    errors = []
+    for section in sections:
+        for question in section.questions.all().order_by("sort_order"):
+            field_name = f"q_{question.pk}"
+            if question.question_type == "multiple_choice":
+                raw_values = request.POST.getlist(field_name)
+                raw_value = ";".join(raw_values) if raw_values else ""
+            else:
+                raw_value = request.POST.get(field_name, "").strip()
+
+            if question.required and not raw_value:
+                errors.append(question.question_text)
+
+            if raw_value:
+                pa, _ = PartialAnswer.objects.update_or_create(
+                    assignment=assignment,
+                    question=question,
+                    defaults={},
+                )
+                pa.value = raw_value
+                pa.save()
+                partial_answers[question.pk] = raw_value
+            else:
+                PartialAnswer.objects.filter(
+                    assignment=assignment, question=question,
+                ).delete()
+                partial_answers.pop(question.pk, None)
+
+    return errors
+
+
 @portal_login_required
 @require_POST
 def portal_survey_autosave(request, assignment_id):
-    """Auto-save a single answer via HTMX on field blur."""
+    """HTMX auto-save: save a single answer to PartialAnswer."""
     from apps.surveys.engine import is_surveys_enabled
     from apps.surveys.models import PartialAnswer, SurveyAssignment, SurveyQuestion
-    from konote.encryption import encrypt_field
 
     if not is_surveys_enabled():
         raise Http404
 
     # Only accept HTMX requests
     if not request.headers.get("HX-Request"):
-        return HttpResponse(status=400)
+        return HttpResponseBadRequest("HTMX request required")
 
     participant = request.participant_user
     assignment = get_object_or_404(
         SurveyAssignment,
         pk=assignment_id,
         participant_user=participant,
-        status__in=("pending", "in_progress"),
+        status="in_progress",
     )
 
     question_id = request.POST.get("question_id")
     value = request.POST.get("value", "")
 
+    # Verify question belongs to this survey
     question = get_object_or_404(
         SurveyQuestion,
         pk=question_id,
@@ -1468,42 +1604,121 @@ def portal_survey_autosave(request, assignment_id):
     )
 
     if value:
-        PartialAnswer.objects.update_or_create(
+        pa, _ = PartialAnswer.objects.update_or_create(
             assignment=assignment,
             question=question,
-            defaults={"value_encrypted": encrypt_field(value)},
+            defaults={},
         )
+        pa.value = value
+        pa.save()
     else:
-        # Clear partial if value is empty
+        # Empty value — delete partial answer if it exists
         PartialAnswer.objects.filter(
             assignment=assignment, question=question,
         ).delete()
 
-    # Mark as in_progress if still pending
-    if assignment.status == "pending":
-        assignment.status = "in_progress"
-        assignment.started_at = timezone.now()
-        assignment.save(update_fields=["status", "started_at"])
-
-    return HttpResponse(status=200)
+    return HttpResponse(
+        '<span role="status" class="save-indicator">Saved</span>',
+        content_type="text/html",
+    )
 
 
 @portal_login_required
-def portal_survey_thank_you(request, assignment_id):
-    """Thank-you page after completing a survey."""
+def portal_survey_review(request, assignment_id):
+    """Read-only view of a completed survey response."""
     from apps.surveys.engine import is_surveys_enabled
-    from apps.surveys.models import SurveyAssignment
+    from apps.surveys.models import SurveyAssignment, SurveyResponse, SurveyAnswer
+    from apps.portal.survey_helpers import (
+        filter_visible_sections, calculate_section_scores,
+    )
 
     if not is_surveys_enabled():
         raise Http404
 
     participant = request.participant_user
+    client_file = _get_client_file(request)
+
+    assignment = get_object_or_404(
+        SurveyAssignment,
+        pk=assignment_id,
+        participant_user=participant,
+        status="completed",
+    )
+    survey = assignment.survey
+
+    response_obj = SurveyResponse.objects.filter(
+        assignment=assignment, client_file=client_file,
+    ).first()
+    if not response_obj:
+        raise Http404
+
+    # Build answers dict {question_pk: value}
+    answers = SurveyAnswer.objects.filter(response=response_obj)
+    answers_dict = {a.question_id: a.value for a in answers}
+
+    all_sections = list(
+        survey.sections.filter(is_active=True)
+        .prefetch_related("questions")
+        .order_by("sort_order")
+    )
+    visible_sections = filter_visible_sections(all_sections, answers_dict)
+
+    # Calculate scores if configured
+    scores = []
+    if survey.show_scores_to_participant:
+        scores = calculate_section_scores(visible_sections, answers_dict)
+
+    return render(request, "portal/survey_review.html", {
+        "participant": participant,
+        "survey": survey,
+        "assignment": assignment,
+        "response_obj": response_obj,
+        "sections": visible_sections,
+        "answers": answers_dict,
+        "scores": scores,
+    })
+
+
+@portal_login_required
+def portal_survey_thank_you(request, assignment_id):
+    """Thank-you page after completing a survey — with optional scores."""
+    from apps.surveys.engine import is_surveys_enabled
+    from apps.surveys.models import SurveyAssignment, SurveyResponse, SurveyAnswer
+    from apps.portal.survey_helpers import (
+        filter_visible_sections, calculate_section_scores,
+    )
+
+    if not is_surveys_enabled():
+        raise Http404
+
+    participant = request.participant_user
+    client_file = _get_client_file(request)
+
     assignment = get_object_or_404(
         SurveyAssignment,
         pk=assignment_id,
         participant_user=participant,
     )
+    survey = assignment.survey
+
+    scores = []
+    if survey.show_scores_to_participant:
+        response_obj = SurveyResponse.objects.filter(
+            assignment=assignment, client_file=client_file,
+        ).first()
+        if response_obj:
+            answers = SurveyAnswer.objects.filter(response=response_obj)
+            answers_dict = {a.question_id: a.value for a in answers}
+            all_sections = list(
+                survey.sections.filter(is_active=True)
+                .prefetch_related("questions")
+                .order_by("sort_order")
+            )
+            visible = filter_visible_sections(all_sections, answers_dict)
+            scores = calculate_section_scores(visible, answers_dict)
+
     return render(request, "portal/survey_thank_you.html", {
         "participant": participant,
-        "survey": assignment.survey,
+        "survey": survey,
+        "scores": scores,
     })
