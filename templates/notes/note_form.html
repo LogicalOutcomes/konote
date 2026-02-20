@@ -99,7 +99,13 @@
             <div class="target-metrics">
             {% for mf in tf.metric_forms %}
                 {{ mf.metric_def_id }}
-                {% if mf.is_scale %}
+                {% if mf.auto_calc_value != None %}
+                <div class="auto-calc-metric">
+                    <span class="metric-label">{{ mf.value.label }}</span>
+                    <span class="metric-value" aria-readonly="true">{{ mf.auto_calc_value }}</span>
+                    <small>{% trans "(auto-calculated)" %}</small>
+                </div>
+                {% elif mf.is_scale %}
                 <div class="scale-metric">
                     <label>{{ mf.value.label }}</label>
                     <div class="scale-pills">

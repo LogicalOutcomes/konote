@@ -83,7 +83,24 @@ def _check_client_consent(client):
     return client.consent_given_at is not None
 
 
-def _build_target_forms(client, post_data=None):
+def _compute_auto_calc_values(client):
+    """Compute auto-calculated metric values for a client.
+
+    Returns dict: {computation_type: computed_value}
+    """
+    computed = {}
+    now = timezone.now()
+    count = ProgressNote.objects.filter(
+        client_file=client,
+        status="default",
+        created_at__year=now.year,
+        created_at__month=now.month,
+    ).count()
+    computed["session_count"] = count
+    return computed
+
+
+def _build_target_forms(client, post_data=None, auto_calc=None):
     """Build TargetNoteForm + MetricValueForms for each active plan target.
 
     Returns a list of dicts:
@@ -113,6 +130,11 @@ def _build_target_forms(client, post_data=None):
                 metric_def=ptm.metric_def,
                 initial={"metric_def_id": ptm.metric_def.pk},
             )
+            # Annotate auto-calc metrics with their computed value
+            if auto_calc and ptm.metric_def.computation_type:
+                mf.auto_calc_value = auto_calc.get(ptm.metric_def.computation_type)
+            else:
+                mf.auto_calc_value = None
             metric_forms.append(mf)
         target_forms.append({
             "target": target,
@@ -407,9 +429,11 @@ def note_create(request, client_id):
     if not _check_client_consent(client):
         return render(request, "notes/consent_required.html", {"client": client})
 
+    auto_calc = _compute_auto_calc_values(client)
+
     if request.method == "POST":
         form = FullNoteForm(request.POST)
-        target_forms = _build_target_forms(client, request.POST)
+        target_forms = _build_target_forms(client, request.POST, auto_calc=auto_calc)
 
         # Validate all forms
         all_valid = form.is_valid()
@@ -457,7 +481,11 @@ def note_create(request, client_id):
                     has_metrics = any(
                         mf.cleaned_data.get("value", "") for mf in tf["metric_forms"]
                     )
-                    if not notes_text and not has_metrics and not client_words and not progress_descriptor:
+                    has_auto_calc = any(
+                        hasattr(mf, "metric_def") and mf.metric_def.computation_type
+                        for mf in tf["metric_forms"]
+                    )
+                    if not notes_text and not has_metrics and not has_auto_calc and not client_words and not progress_descriptor:
                         continue  # Skip targets with no data entered
 
                     pnt = ProgressNoteTarget(
@@ -469,13 +497,25 @@ def note_create(request, client_id):
                     )
                     pnt.save()
                     for mf in tf["metric_forms"]:
-                        val = mf.cleaned_data.get("value", "")
-                        if val:
-                            MetricValue.objects.create(
-                                progress_note_target=pnt,
-                                metric_def_id=mf.cleaned_data["metric_def_id"],
-                                value=val,
-                            )
+                        # Auto-calc metrics: save computed value server-side
+                        if hasattr(mf, "metric_def") and mf.metric_def.computation_type:
+                            # Recompute with the new note included
+                            fresh_calc = _compute_auto_calc_values(client)
+                            computed_val = fresh_calc.get(mf.metric_def.computation_type)
+                            if computed_val is not None:
+                                MetricValue.objects.create(
+                                    progress_note_target=pnt,
+                                    metric_def_id=mf.metric_def.pk,
+                                    value=str(computed_val),
+                                )
+                        else:
+                            val = mf.cleaned_data.get("value", "")
+                            if val:
+                                MetricValue.objects.create(
+                                    progress_note_target=pnt,
+                                    metric_def_id=mf.cleaned_data["metric_def_id"],
+                                    value=val,
+                                )
 
                 # Auto-complete any pending follow-ups from this author for this client
                 ProgressNote.objects.filter(
@@ -521,7 +561,7 @@ def note_create(request, client_id):
             return redirect("notes:note_list", client_id=client.pk)
     else:
         form = FullNoteForm(initial={"session_date": timezone.localdate()})
-        target_forms = _build_target_forms(client)
+        target_forms = _build_target_forms(client, auto_calc=auto_calc)
 
     # Build template → default_interaction_type mapping for JS auto-fill
     template_defaults = {}

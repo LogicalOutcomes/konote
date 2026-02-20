@@ -382,6 +382,72 @@ class NoteViewsTest(TestCase):
         form = MetricValueForm(metric_def=metric)
         self.assertEqual(form.fields["value"].widget.__class__.__name__, "NumberInput")
 
+    def test_auto_calc_session_count(self):
+        """Auto-calc metric shows session count for current month."""
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Attendance", program=self.prog,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Attendance",
+        )
+        metric = MetricDefinition.objects.create(
+            name="Sessions this month", min_value=0, max_value=20,
+            unit="sessions", definition="Sessions attended",
+            category="general", computation_type="session_count",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+
+        # Create 3 notes this month
+        for i in range(3):
+            ProgressNote.objects.create(
+                client_file=self.client_file, note_type="quick",
+                notes_text=f"Note {i}", author=self.staff,
+            )
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/new/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "auto-calculated")
+
+    def test_auto_calc_saves_on_post(self):
+        """Auto-calc metric values are saved server-side on POST."""
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Attendance", program=self.prog,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Attendance",
+        )
+        metric = MetricDefinition.objects.create(
+            name="Sessions this month", min_value=0, max_value=20,
+            unit="sessions", definition="Sessions attended",
+            category="general", computation_type="session_count",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+
+        # Create 2 existing notes
+        for i in range(2):
+            ProgressNote.objects.create(
+                client_file=self.client_file, note_type="quick",
+                notes_text=f"Note {i}", author=self.staff,
+            )
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/new/",
+            {
+                "interaction_type": "session",
+                "consent_confirmed": True,
+                f"target_{target.pk}-target_id": str(target.pk),
+                f"target_{target.pk}-progress_descriptor": "shifting",
+                f"metric_{target.pk}_{metric.pk}-metric_def_id": str(metric.pk),
+                # value intentionally omitted — auto-calc fills it server-side
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        # The auto-calc should have saved the count (2 existing + 1 new = 3)
+        mv = MetricValue.objects.get(metric_def=metric)
+        self.assertEqual(mv.value, "3")
+
     def test_metric_computation_type_defaults_to_empty(self):
         """New metrics default to manual entry (empty computation_type)."""
         metric = MetricDefinition.objects.create(
