@@ -244,7 +244,7 @@ def _validate_suggest_target_response(response, metric_catalogue):
         response["suggested_section"] = ""
 
     # Validate metrics array
-    catalogue_ids = {m["id"] for m in metric_catalogue} if metric_catalogue else set()
+    catalogue_ids = {m["metric_id"] for m in metric_catalogue} if metric_catalogue else set()
     if isinstance(response.get("metrics"), list):
         valid_metrics = []
         for m in response["metrics"]:
@@ -710,7 +710,7 @@ def _validate_goal_chat_response(response, metric_catalogue):
                 # Validate existing_metric_id against catalogue
                 eid = metric.get("existing_metric_id")
                 if eid is not None:
-                    catalogue_ids = {m["id"] for m in metric_catalogue} if metric_catalogue else set()
+                    catalogue_ids = {m["metric_id"] for m in metric_catalogue} if metric_catalogue else set()
                     if eid not in catalogue_ids:
                         metric["existing_metric_id"] = None
                 # Ensure required metric fields
