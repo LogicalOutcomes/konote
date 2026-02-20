@@ -21,4 +21,9 @@ Summary of completed work across all phases. For detailed history, see `ARCHIVE.
 | **Deployment** | Railway (auto-deploy), FullHost (HTTPS verified), Docker Compose for Azure/Elest.io |
 | **QA** | Scenario runner (22 scenarios, 7 action types), CI/CD gate, satisfaction tracking, inter-rater reliability, objective scoring |
 | **Permissions** | Program-scoped access, field-level visibility, ClientAccessBlock, cross-program consent, expanded permissions matrix, privacy-by-design checklist |
+| **Surveys** | Survey builder (6 question types), conditional sections, section scoring, trigger rules (event/enrolment/time/characteristic), shareable links, auto-save, CSV import, portal + staff + link delivery, bilingual |
+| **Portal completion** | Password reset (email code), staff-assisted login (one-time token), PWA manifest, usage analytics dashboard, auto-deactivation on discharge, data in erasure/merge workflows, WCAG 2.2 AA fixes |
+| **SMS/email sending** | Twilio SMS, SMTP email, compose email, appointment reminders with preview, CASL unsubscribe links, safety-first mode, system health monitoring |
+| **Dashboard roles** | Coach, PM, and executive landing pages with role-specific data, stats, and summaries |
+| **AI Goal Builder** | Multi-turn conversational goal builder on plan page, session-based conversation storage |
 | **Code review** | 74 tests added, CRITICAL/HIGH/MEDIUM fixes, admin_required, demo isolation, focus trap, i18n |

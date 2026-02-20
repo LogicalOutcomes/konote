@@ -15,14 +15,18 @@ How to create, manage, and use surveys to gather structured feedback from partic
 3. [Creating a Survey](#creating-a-survey)
 4. [Adding Questions](#adding-questions)
 5. [Question Types](#question-types)
-6. [Activating a Survey](#activating-a-survey)
-7. [Importing a Survey from CSV](#importing-a-survey-from-csv)
-8. [Assigning a Survey to a Participant](#assigning-a-survey-to-a-participant)
-9. [Entering a Response on Behalf of a Participant](#entering-a-response-on-behalf-of-a-participant)
-10. [Viewing Responses](#viewing-responses)
-11. [How Participants See Surveys (Portal)](#how-participants-see-surveys-portal)
-12. [Closing or Archiving a Survey](#closing-or-archiving-a-survey)
-13. [Tips & Common Questions](#tips--common-questions)
+6. [Conditional Sections](#conditional-sections)
+7. [Section Scoring](#section-scoring)
+8. [Activating a Survey](#activating-a-survey)
+9. [Importing a Survey from CSV](#importing-a-survey-from-csv)
+10. [Trigger Rules (Automatic Assignment)](#trigger-rules-automatic-assignment)
+11. [Shareable Survey Links](#shareable-survey-links)
+12. [Assigning a Survey to a Participant](#assigning-a-survey-to-a-participant)
+13. [Entering a Response on Behalf of a Participant](#entering-a-response-on-behalf-of-a-participant)
+14. [Viewing Responses](#viewing-responses)
+15. [How Participants See Surveys (Portal)](#how-participants-see-surveys-portal)
+16. [Closing or Archiving a Survey](#closing-or-archiving-a-survey)
+17. [Tips & Common Questions](#tips--common-questions)
 
 ---
 
@@ -37,7 +41,7 @@ Surveys let you ask participants structured questions — like satisfaction form
 Surveys can be filled in three ways:
 - **By the participant** through the portal (if they have a portal account)
 - **By staff** on behalf of a participant (data entry on the participant's file)
-- **Through a shareable link** (planned for a future release)
+- **Through a shareable link** — generate a public URL anyone can use without logging in
 
 ---
 
@@ -129,6 +133,58 @@ The system will automatically assign numeric scores (0, 1, 2, 3, 4) to the optio
 
 ---
 
+## Conditional Sections
+
+Conditional sections let you show or hide parts of a survey based on how a participant answers a specific question. This is useful when some questions only apply to certain people.
+
+### How it works
+
+1. When creating or editing a section, you can mark it as **conditional**
+2. Set a **trigger question** — a single-choice or yes/no question in a previous section
+3. Set the **trigger answer** — the specific answer that makes this section visible
+4. If the participant chooses that answer, the section appears; otherwise, it's skipped
+
+### Example
+
+You have a section called "Employment Details" that should only appear if the participant answers "Yes" to "Are you currently employed?" in the General section. Set the Employment Details section's trigger question to "Are you currently employed?" and the trigger answer to "Yes."
+
+### Staff data entry
+
+When staff enter survey responses on behalf of a participant, conditional sections work the same way — the form dynamically shows or hides sections based on the answers entered. Required fields in hidden sections are not enforced.
+
+### Tips
+
+- Trigger questions must come **before** the conditional section in the display order
+- Only **single-choice** and **yes/no** questions can be used as triggers
+- A section can only have one trigger question (not multiple conditions)
+
+---
+
+## Section Scoring
+
+Sections can calculate scores from the numeric values of answers. This is useful for standardised assessment tools (e.g., PHQ-9, satisfaction scales).
+
+### Setting up scoring
+
+1. When creating or editing a section, turn on **Enable scoring**
+2. Choose the **scoring method**:
+   - **Sum** — adds up the numeric values of all answers in the section
+   - **Average** — calculates the mean of all numeric answers
+3. Answer options are automatically assigned numeric values based on their order (first option = 0, second = 1, etc.) unless you specify custom `score_values` during CSV import
+
+### Showing scores to participants
+
+If the survey's **Show scores to participant** setting is checked, participants see their section scores on the thank-you page after submitting. If unchecked, scores are calculated but only visible to staff.
+
+### Viewing scores
+
+Scores appear:
+- On the response detail page (staff view)
+- On the survey review page (portal, if scores are visible to participants)
+- On the thank-you page after submission (portal, if scores are visible)
+
+---
+
 ## Activating a Survey
 
 A new survey starts as a **Draft**. While it's a draft, you can edit sections, add/remove questions, and make changes freely.
@@ -190,6 +246,79 @@ Suggestions,Any suggestions for improvement?,long_text,no,,
 ```
 
 The imported survey will be created as a **Draft** so you can review the questions before activating it.
+
+---
+
+## Trigger Rules (Automatic Assignment)
+
+Trigger rules let you automatically assign surveys to participants when certain conditions are met, instead of assigning them manually one at a time.
+
+### Types of trigger rules
+
+| Type | When it fires | Example |
+|------|---------------|---------|
+| **Event** | When a specific event type is created on a participant's file | Assign intake survey when an "Intake" event is recorded |
+| **Enrolment** | When a participant is enrolled in a specific program | Assign welcome survey when someone joins "Youth Housing" |
+| **Time-based** | After N days from enrolment or last survey completion | Assign follow-up survey 90 days after enrolment |
+| **Characteristic** | When a participant matches certain criteria (e.g., program membership) | Assign program-specific survey to all members of a program |
+
+### Setting up a trigger rule
+
+1. Go to **Admin → Surveys** (or **Manage → Surveys**)
+2. Click on the survey name to open its detail page
+3. Scroll down to **Trigger Rules**
+4. Click **Add Rule**
+5. Choose the trigger type and configure the conditions
+6. Click **Save**
+
+### Repeat policies
+
+Each trigger rule has a repeat policy that controls how often the survey is assigned:
+
+| Policy | Behaviour |
+|--------|-----------|
+| **Once per participant** | The survey is assigned only once, regardless of how many times the trigger fires |
+| **Once per enrolment** | The survey is assigned once per program enrolment (if they leave and re-enrol, they get it again) |
+| **Recurring** | The survey is re-assigned each time the trigger fires (useful for periodic check-ins) |
+
+### Managing trigger rules
+
+- Rules are **automatically deactivated** when a survey is closed
+- You can disable individual rules without closing the survey
+- Rules only fire for **active** surveys — draft and archived surveys don't trigger assignments
+
+---
+
+## Shareable Survey Links
+
+Shareable links let anyone complete a survey through a public URL — no portal account or login required. This is useful for collecting feedback from people who aren't enrolled as participants.
+
+### Creating a shareable link
+
+1. Go to **Admin → Surveys** (or **Manage → Surveys**)
+2. Click on the survey name
+3. Click **Manage Links** (or find the Links section on the survey detail page)
+4. Click **Create Link**
+5. Configure:
+   - **Identified or anonymous** — whether responses are linked to a participant record
+   - **Expiry date** — optional deadline after which the link stops accepting responses
+6. Click **Create**
+7. Copy the generated URL and share it
+
+### How it works
+
+- Each link has a unique token in the URL
+- The survey form works the same as the portal version (multi-page, auto-save, conditional sections)
+- Responses are marked as "Link" in the submission channel so you can distinguish them from portal and staff-entered responses
+- Links can be deactivated without deleting them
+
+### When to use shareable links vs. portal vs. staff entry
+
+| Method | Best for |
+|--------|----------|
+| **Portal** | Active participants who have portal accounts and should see the survey in their dashboard |
+| **Shareable link** | Community feedback, pre-intake screening, people without portal accounts |
+| **Staff entry** | Participants who prefer to answer verbally while staff records their responses |
 
 ---
 
@@ -255,9 +384,11 @@ When a survey is assigned to a participant:
 1. They see a **"Surveys"** card on their portal dashboard with a count of pending surveys
 2. They can click it to see all assigned surveys
 3. They click **Start** to begin filling in a survey
-4. They answer each question section by section
-5. They click **Submit** when finished
-6. They see a thank-you confirmation page
+4. They answer each question section by section (multi-page if the survey uses page breaks)
+5. **Answers are auto-saved** as they go — if they close the browser or lose connection, they can come back and pick up where they left off
+6. They review their answers on a summary page before submitting
+7. They click **Submit** when finished
+8. They see a thank-you confirmation page (with section scores if the survey shows scores to participants)
 
 Participants can also see a list of their completed surveys.
 
@@ -294,11 +425,15 @@ Yes, but be cautious. If you change question text or options, it may be harder t
 
 ### Can a participant fill in the same survey more than once?
 
-Staff can enter multiple responses on a participant's file. Through the portal, each assignment can only be completed once — but you can assign the same survey again.
+Staff can enter multiple responses on a participant's file. Through the portal, each assignment can only be completed once — but you can assign the same survey again. If you want surveys to be re-assigned automatically, use a trigger rule with the **Recurring** repeat policy.
 
 ### Can I see scores or totals?
 
-If a section uses scoring (set during section creation), numeric values are recorded for each answer. You can view these in the response detail view. A scored summary per section is planned for a future release.
+Yes. If a section has scoring enabled, numeric values are calculated for each response. You can view section scores on the response detail page. If "Show scores to participant" is turned on for the survey, participants also see their scores on the thank-you page after submitting.
+
+### What happens if a participant closes the browser mid-survey?
+
+Their answers are **auto-saved** as they go. When they return to the portal, they can pick up where they left off — their partial answers will be pre-filled. Auto-save happens question by question, so even partially completed pages are preserved.
 
 ### What happens to responses if I delete a survey?
 
