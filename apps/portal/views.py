@@ -1317,12 +1317,14 @@ def portal_surveys_list(request):
 
 @portal_login_required
 def portal_survey_fill(request, assignment_id):
-    """Fill in a survey through the portal — renders all questions."""
+    """Fill in a survey — supports multi-page and auto-save."""
     from apps.surveys.engine import is_surveys_enabled
     from apps.surveys.models import (
-        SurveyAnswer,
-        SurveyAssignment,
-        SurveyResponse,
+        SurveyAnswer, SurveyAssignment, SurveyResponse, PartialAnswer,
+    )
+    from apps.portal.survey_helpers import (
+        group_sections_into_pages, filter_visible_sections,
+        get_partial_answers_dict, calculate_section_scores,
     )
 
     if not is_surveys_enabled():
@@ -1338,61 +1340,142 @@ def portal_survey_fill(request, assignment_id):
         status__in=("pending", "in_progress"),
     )
     survey = assignment.survey
-    sections = survey.sections.filter(
-        is_active=True,
-    ).prefetch_related("questions").order_by("sort_order")
+
+    # Mark as in_progress on first visit
+    if assignment.status == "pending":
+        assignment.status = "in_progress"
+        assignment.started_at = timezone.now()
+        assignment.save(update_fields=["status", "started_at"])
+
+    # Load all sections and partial answers
+    all_sections = list(
+        survey.sections.filter(is_active=True)
+        .prefetch_related("questions")
+        .order_by("sort_order")
+    )
+    partial_answers = get_partial_answers_dict(assignment)
+    visible_sections = filter_visible_sections(all_sections, partial_answers)
+    pages = group_sections_into_pages(visible_sections)
+    is_multi_page = len(pages) > 1
+
+    # Determine current page
+    page_num = 1
+    if is_multi_page:
+        try:
+            page_num = int(request.GET.get("page", 1))
+        except (ValueError, TypeError):
+            page_num = 1
+        page_num = max(1, min(page_num, len(pages)))
 
     if request.method == "POST":
-        errors = []
-        answers_data = []
+        action = request.POST.get("action", "submit")
 
-        for section in sections:
-            for question in section.questions.all().order_by("sort_order"):
-                field_name = f"q_{question.pk}"
-                if question.question_type == "multiple_choice":
-                    raw_values = request.POST.getlist(field_name)
-                    raw_value = ";".join(raw_values) if raw_values else ""
-                else:
-                    raw_value = request.POST.get(field_name, "").strip()
+        if is_multi_page and action == "next":
+            # Save current page answers and go to next page
+            current_sections = pages[page_num - 1]
+            errors = _save_page_answers(
+                request, assignment, current_sections, partial_answers,
+            )
+            if errors:
+                return render(request, "portal/survey_fill.html", {
+                    "participant": participant,
+                    "assignment": assignment,
+                    "survey": survey,
+                    "sections": current_sections,
+                    "page_num": page_num,
+                    "total_pages": len(pages),
+                    "is_multi_page": is_multi_page,
+                    "is_last_page": page_num == len(pages),
+                    "partial_answers": partial_answers,
+                    "errors": errors,
+                })
+            # Refresh partial answers and page structure after save
+            partial_answers = get_partial_answers_dict(assignment)
+            visible_sections = filter_visible_sections(all_sections, partial_answers)
+            pages = group_sections_into_pages(visible_sections)
+            next_page = min(page_num + 1, len(pages))
+            return redirect(f"{request.path}?page={next_page}")
 
-                if question.required and not raw_value:
-                    errors.append(question.question_text)
-                if raw_value:
-                    answers_data.append((question, raw_value))
-
-        if errors:
+        # Final submit
+        # For scrolling form or last page, also save current page
+        if is_multi_page:
+            current_sections = pages[page_num - 1]
+        else:
+            current_sections = visible_sections
+        page_errors = _save_page_answers(
+            request, assignment, current_sections, partial_answers,
+        )
+        if page_errors:
             return render(request, "portal/survey_fill.html", {
                 "participant": participant,
                 "assignment": assignment,
                 "survey": survey,
-                "sections": sections,
-                "posted": request.POST,
-                "errors": errors,
+                "sections": current_sections,
+                "page_num": page_num,
+                "total_pages": len(pages),
+                "is_multi_page": is_multi_page,
+                "is_last_page": True,
+                "partial_answers": partial_answers,
+                "errors": page_errors,
             })
 
+        # Refresh and validate ALL required questions across all pages
+        partial_answers = get_partial_answers_dict(assignment)
+        visible_sections = filter_visible_sections(all_sections, partial_answers)
+        all_errors = []
+        for section in visible_sections:
+            for question in section.questions.all().order_by("sort_order"):
+                if question.required and not partial_answers.get(question.pk):
+                    all_errors.append(question.question_text)
+
+        if all_errors:
+            pages = group_sections_into_pages(visible_sections)
+            if is_multi_page:
+                current_sections = pages[page_num - 1]
+            return render(request, "portal/survey_fill.html", {
+                "participant": participant,
+                "assignment": assignment,
+                "survey": survey,
+                "sections": current_sections,
+                "page_num": page_num,
+                "total_pages": len(pages),
+                "is_multi_page": is_multi_page,
+                "is_last_page": True,
+                "partial_answers": partial_answers,
+                "errors": all_errors,
+            })
+
+        # Create final response from PartialAnswer data
         from django.db import transaction
 
         with transaction.atomic():
-            response = SurveyResponse.objects.create(
+            response_obj = SurveyResponse.objects.create(
                 survey=survey,
                 assignment=assignment,
                 client_file=client_file,
                 channel="portal",
             )
-            for question, raw_value in answers_data:
+            for question_pk, answer_value in partial_answers.items():
+                from apps.surveys.models import SurveyQuestion
+                try:
+                    question = SurveyQuestion.objects.get(pk=question_pk)
+                except SurveyQuestion.DoesNotExist:
+                    continue
+
                 answer = SurveyAnswer(
-                    response=response,
+                    response=response_obj,
                     question=question,
                 )
-                answer.value = raw_value
+                answer.value = answer_value
+
                 if question.question_type in ("rating_scale", "yes_no"):
                     try:
-                        answer.numeric_value = int(raw_value)
+                        answer.numeric_value = int(answer_value)
                     except (ValueError, TypeError):
                         pass
                 elif question.question_type == "single_choice":
                     for opt in (question.options_json or []):
-                        if opt.get("value") == raw_value:
+                        if opt.get("value") == answer_value:
                             answer.numeric_value = opt.get("score")
                             break
                 answer.save()
@@ -1401,26 +1484,72 @@ def portal_survey_fill(request, assignment_id):
             assignment.completed_at = timezone.now()
             assignment.save(update_fields=["status", "completed_at"])
 
+            # Clean up partial answers
+            PartialAnswer.objects.filter(assignment=assignment).delete()
+
         _audit_portal_event(request, "portal_survey_submitted", metadata={
             "survey_id": str(survey.pk),
             "assignment_id": str(assignment.pk),
         })
         return redirect("portal:survey_thank_you", assignment_id=assignment.pk)
 
-    # Mark as in_progress on first view
-    if assignment.status == "pending":
-        assignment.status = "in_progress"
-        assignment.started_at = timezone.now()
-        assignment.save(update_fields=["status", "started_at"])
+    # GET — render form
+    if is_multi_page:
+        current_sections = pages[page_num - 1]
+    else:
+        current_sections = visible_sections
 
     return render(request, "portal/survey_fill.html", {
         "participant": participant,
         "assignment": assignment,
         "survey": survey,
-        "sections": sections,
-        "posted": {},
+        "sections": current_sections,
+        "page_num": page_num,
+        "total_pages": len(pages),
+        "is_multi_page": is_multi_page,
+        "is_last_page": page_num == len(pages),
+        "partial_answers": partial_answers,
         "errors": [],
     })
+
+
+def _save_page_answers(request, assignment, sections, partial_answers):
+    """Save answers from POST data for sections on the current page.
+
+    Returns list of error messages for missing required fields.
+    Updates partial_answers dict in place.
+    """
+    from apps.surveys.models import PartialAnswer
+
+    errors = []
+    for section in sections:
+        for question in section.questions.all().order_by("sort_order"):
+            field_name = f"q_{question.pk}"
+            if question.question_type == "multiple_choice":
+                raw_values = request.POST.getlist(field_name)
+                raw_value = ";".join(raw_values) if raw_values else ""
+            else:
+                raw_value = request.POST.get(field_name, "").strip()
+
+            if question.required and not raw_value:
+                errors.append(question.question_text)
+
+            if raw_value:
+                pa, _ = PartialAnswer.objects.update_or_create(
+                    assignment=assignment,
+                    question=question,
+                    defaults={},
+                )
+                pa.value = raw_value
+                pa.save()
+                partial_answers[question.pk] = raw_value
+            else:
+                PartialAnswer.objects.filter(
+                    assignment=assignment, question=question,
+                ).delete()
+                partial_answers.pop(question.pk, None)
+
+    return errors
 
 
 @portal_login_required

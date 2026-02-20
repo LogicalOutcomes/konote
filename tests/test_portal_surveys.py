@@ -261,3 +261,138 @@ class AutoSaveViewTests(TestCase):
             HTTP_HX_REQUEST="true",
         )
         self.assertEqual(response.status_code, 404)
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-hash-key-fill",
+)
+class SurveyFillViewTests(TestCase):
+    """Test the survey fill view GET handling."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="fill_staff", password="testpass123",
+            display_name="Fill Staff",
+        )
+        self.survey = Survey.objects.create(
+            name="Fill Survey", status="active", created_by=self.staff,
+        )
+        self.s1 = SurveySection.objects.create(
+            survey=self.survey, title="Page One", sort_order=1,
+        )
+        self.q1 = SurveyQuestion.objects.create(
+            section=self.s1, question_text="Name?",
+            question_type="short_text", sort_order=1, required=True,
+        )
+        self.s2 = SurveySection.objects.create(
+            survey=self.survey, title="Page Two", sort_order=2, page_break=True,
+        )
+        self.q2 = SurveyQuestion.objects.create(
+            section=self.s2, question_text="How?",
+            question_type="rating_scale", sort_order=1,
+            options_json=[
+                {"value": "1", "label": "Bad", "score": 1},
+                {"value": "3", "label": "Good", "score": 3},
+            ],
+        )
+        self.client_file = ClientFile.objects.create(
+            record_id="FILL-001", status="active",
+        )
+        self.client_file.first_name = "Fill"
+        self.client_file.last_name = "Test"
+        self.client_file.save()
+        self.participant = ParticipantUser.objects.create_participant(
+            email="fill@example.com",
+            client_file=self.client_file,
+            display_name="Fill P",
+            password="testpass123",
+        )
+        from apps.admin_settings.models import FeatureToggle
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys",
+            defaults={"is_enabled": True},
+        )
+        FeatureToggle.objects.update_or_create(
+            feature_key="participant_portal",
+            defaults={"is_enabled": True},
+        )
+        self.assignment = SurveyAssignment.objects.create(
+            survey=self.survey,
+            participant_user=self.participant,
+            client_file=self.client_file,
+            status="pending",
+        )
+
+    def _portal_login(self):
+        self.client.get("/my/login/")
+        session = self.client.session
+        session["_portal_participant_id"] = str(self.participant.pk)
+        session.save()
+
+    def test_get_renders_page_1(self):
+        self._portal_login()
+        response = self.client.get(
+            f"/my/surveys/{self.assignment.pk}/fill/",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Page One")
+        self.assertNotContains(response, "Page Two")
+        self.assertContains(response, "Page 1 of 2")
+
+    def test_get_page_2(self):
+        self._portal_login()
+        self.assignment.status = "in_progress"
+        self.assignment.save()
+        response = self.client.get(
+            f"/my/surveys/{self.assignment.pk}/fill/?page=2",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Page Two")
+        self.assertNotContains(response, "Page One")
+
+    def test_get_pre_populates_from_partial(self):
+        self._portal_login()
+        self.assignment.status = "in_progress"
+        self.assignment.save()
+        pa = PartialAnswer(
+            assignment=self.assignment, question=self.q1,
+        )
+        pa.value = "Pre-filled Name"
+        pa.save()
+        response = self.client.get(
+            f"/my/surveys/{self.assignment.pk}/fill/",
+        )
+        self.assertContains(response, "Pre-filled Name")
+
+    def test_marks_pending_as_in_progress(self):
+        self._portal_login()
+        self.assertEqual(self.assignment.status, "pending")
+        self.client.get(f"/my/surveys/{self.assignment.pk}/fill/")
+        self.assignment.refresh_from_db()
+        self.assertEqual(self.assignment.status, "in_progress")
+
+    def test_scrolling_form_no_page_breaks(self):
+        """Survey with no page breaks renders all sections on one page."""
+        survey2 = Survey.objects.create(
+            name="Scroll Survey", status="active", created_by=self.staff,
+        )
+        SurveySection.objects.create(
+            survey=survey2, title="A", sort_order=1, page_break=False,
+        )
+        SurveySection.objects.create(
+            survey=survey2, title="B", sort_order=2, page_break=False,
+        )
+        assignment2 = SurveyAssignment.objects.create(
+            survey=survey2,
+            participant_user=self.participant,
+            client_file=self.client_file,
+            status="pending",
+        )
+        self._portal_login()
+        response = self.client.get(f"/my/surveys/{assignment2.pk}/fill/")
+        self.assertContains(response, "A")
+        self.assertContains(response, "B")
