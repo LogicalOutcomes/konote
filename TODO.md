@@ -71,6 +71,11 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 - [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
 
+### Phase: Participant View Improvements
+
+- [ ] Add adjustable timeframe and date range controls to Participant analysis charts (see tasks/participant-view-improvements.md) — GG (CHART-TIME1)
+- [ ] Add target filter to Notes section so staff can follow progress on a single target without reading every note (see tasks/participant-view-improvements.md) — GG (UX-NOTES-BY-TARGET1)
+
 ### Phase: Other Upcoming
 
 - [ ] Permissions Phase 2 — remaining 10 items: discharge access transitions, consent model, DV-safe mode, GATED clinical access, group schedule vs roster, per-field front desk edit, SCOPED→PROGRAM rename, funder report key, alert escalation, dashboard split (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P3–12)

@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _, gettext_lazy as _lazy
 from apps.auth_app.decorators import admin_required
 
 from .forms import FeatureToggleForm, InstanceSettingsForm, MessagingSettingsForm, TerminologyForm
-from .models import DEFAULT_TERMS, FeatureToggle, InstanceSetting, TerminologyOverride
+from .models import DEFAULT_TERMS, TERM_HELP_TEXT, FeatureToggle, InstanceSetting, TerminologyOverride
 
 
 # --- Dashboard ---
@@ -101,6 +101,7 @@ def terminology(request):
             "current_en": override.display_value if override else default_en,
             "current_fr": override.display_value_fr if override else "",
             "is_overridden": key in overrides,
+            "help_text": TERM_HELP_TEXT.get(key, ""),
         })
 
     return render(request, "admin_settings/terminology.html", {
@@ -121,18 +122,168 @@ def terminology_reset(request, term_key):
 # --- Feature Toggles ---
 
 DEFAULT_FEATURES = {
-    "programs": _lazy("Programs module"),
-    "custom_fields": _lazy("Custom participant fields"),
-    "alerts": _lazy("Metric alerts"),
-    "events": _lazy("Event tracking"),
-    "program_reports": _lazy("Program outcome report exports"),
-    "require_client_consent": _lazy("Require participant consent before notes (PIPEDA/PHIPA)"),
-    "messaging_email": _lazy("Send email reminders and messages to clients"),
-    "messaging_sms": _lazy("Send text message reminders to clients"),
-    "portal_journal": _lazy("Participant portal — private journal"),
-    "portal_messaging": _lazy("Participant portal — messages to worker"),
-    "surveys": _lazy("Surveys — structured feedback from participants"),
-    "cross_program_note_sharing": _lazy("Share clinical notes across programs for shared participants"),
+    "programs": {
+        "label": _lazy("Programs"),
+        "description": _lazy("Organise services into separate programs with their own staff, templates, and metrics."),
+        "when_on": [_lazy("Staff see a program selector when viewing participants"), _lazy("Participants can be enrolled in multiple programs"), _lazy("Templates and metrics can be scoped per program")],
+        "when_off": [_lazy("All participants appear in a single list"), _lazy("Program enrolments are hidden but data is preserved")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "custom_fields": {
+        "label": _lazy("Custom Participant Fields"),
+        "description": _lazy("Add extra data fields to participant files (funding source, referral date, etc.)."),
+        "when_on": [_lazy("Staff see custom field groups on participant files"), _lazy("Custom fields appear in registration forms")],
+        "when_off": [_lazy("Custom field sections are hidden"), _lazy("Existing field data is preserved")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "alerts": {
+        "label": _lazy("Metric Alerts"),
+        "description": _lazy("Notify staff when outcome metrics hit configurable thresholds."),
+        "when_on": [_lazy("Alert badges appear on participant files when metrics cross thresholds"), _lazy("Staff see alert counts on the dashboard")],
+        "when_off": [_lazy("Alert badges and notifications are hidden"), _lazy("Threshold configurations are preserved")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "events": {
+        "label": _lazy("Event Tracking"),
+        "description": _lazy("Record significant events like intake, discharge, crisis, and milestones on participant timelines."),
+        "when_on": [_lazy("Staff can record events on participant files"), _lazy("Events appear on the participant timeline")],
+        "when_off": [_lazy("Event recording is hidden"), _lazy("Existing events are preserved on timelines")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "program_reports": {
+        "label": _lazy("Program Reports"),
+        "description": _lazy("Generate formatted outcome reports for funders with demographic breakdowns."),
+        "when_on": [_lazy("Executives and PMs can generate and export program reports"), _lazy("Report template management is available")],
+        "when_off": [_lazy("Report generation menu is hidden"), _lazy("Existing reports remain downloadable")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "require_client_consent": {
+        "label": _lazy("Consent Requirement"),
+        "description": _lazy("Require documented participant consent before creating progress notes (PIPEDA/PHIPA compliance)."),
+        "when_on": [_lazy("Staff see a consent checkbox on every progress note"), _lazy("Notes cannot be saved without confirming consent")],
+        "when_off": [_lazy("Consent checkbox is hidden"), _lazy("Notes can be saved without consent confirmation")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "messaging_email": {
+        "label": _lazy("Email Messaging"),
+        "description": _lazy("Send email reminders and messages to participants who have consented."),
+        "when_on": [_lazy("Staff can send email reminders from the meetings page"), _lazy("Automated email reminders can be scheduled")],
+        "when_off": [_lazy("Email sending is disabled"), _lazy("Communication logs are still available for record-keeping")],
+        "depends_on": [],
+        "used_by": [],
+        "requires_config": ["EMAIL_HOST", "EMAIL_HOST_USER", "EMAIL_HOST_PASSWORD"],
+    },
+    "messaging_sms": {
+        "label": _lazy("SMS Messaging"),
+        "description": _lazy("Send text message reminders to participants who have consented (requires Twilio)."),
+        "when_on": [_lazy("Staff can send SMS reminders from the meetings page"), _lazy("Automated SMS reminders can be scheduled")],
+        "when_off": [_lazy("SMS sending is disabled"), _lazy("Communication logs are still available for record-keeping")],
+        "depends_on": [],
+        "used_by": [],
+        "requires_config": ["TWILIO_ACCOUNT_SID", "TWILIO_AUTH_TOKEN", "TWILIO_FROM_NUMBER"],
+    },
+    "participant_portal": {
+        "label": _lazy("Participant Portal"),
+        "description": _lazy("Secure portal where participants view their goals, progress, and journal entries."),
+        "when_on": [_lazy("Staff can invite participants to the portal"), _lazy("Portal features (journal, messaging, surveys) become available")],
+        "when_off": [_lazy("Portal invitation and access is disabled"), _lazy("Existing portal accounts are deactivated")],
+        "depends_on": [],
+        "used_by": ["portal_journal", "portal_messaging"],
+    },
+    "portal_journal": {
+        "label": _lazy("Portal Journal"),
+        "description": _lazy("Private journal feature in the participant portal."),
+        "when_on": [_lazy("Participants see a Journal section in their portal")],
+        "when_off": [_lazy("Journal section is hidden from the portal"), _lazy("Existing journal entries are preserved")],
+        "depends_on": ["participant_portal"],
+        "used_by": [],
+    },
+    "portal_messaging": {
+        "label": _lazy("Portal Messaging"),
+        "description": _lazy("Secure messaging between participants and their workers through the portal."),
+        "when_on": [_lazy("Participants can send messages to their worker from the portal"), _lazy("Workers see portal messages in the staff messaging view")],
+        "when_off": [_lazy("Messaging section is hidden from the portal"), _lazy("Existing messages are preserved")],
+        "depends_on": ["participant_portal"],
+        "used_by": [],
+    },
+    "surveys": {
+        "label": _lazy("Surveys"),
+        "description": _lazy("Structured feedback forms with trigger rules, shareable links, and scoring."),
+        "when_on": [_lazy("Surveys menu appears in the navigation bar"), _lazy("Staff can assign and enter surveys on participant files"), _lazy("Surveys appear in the participant portal")],
+        "when_off": [_lazy("Surveys menu and tab are hidden"), _lazy("Existing survey data is preserved")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "ai_assist": {
+        "label": _lazy("AI Assist"),
+        "description": _lazy("AI-powered features including goal builder and narrative generation."),
+        "when_on": [_lazy("AI Goal Builder appears on the plan page"), _lazy("AI narrative generation is available in reports")],
+        "when_off": [_lazy("AI features are hidden"), _lazy("No data is sent to AI services")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "groups": {
+        "label": _lazy("Groups"),
+        "description": _lazy("Group sessions and attendance tracking."),
+        "when_on": [_lazy("Groups menu appears in the navigation bar"), _lazy("Staff can create groups, record sessions, and track attendance")],
+        "when_off": [_lazy("Groups menu is hidden"), _lazy("Existing group data is preserved")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "quick_notes": {
+        "label": _lazy("Quick Notes"),
+        "description": _lazy("Lightweight contact logging for phone calls, texts, emails, and brief interactions."),
+        "when_on": [_lazy("Quick note buttons appear on participant files"), _lazy("Staff can log brief contacts without a full note form")],
+        "when_off": [_lazy("Quick note buttons are hidden"), _lazy("Existing quick notes are preserved")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "analysis_charts": {
+        "label": _lazy("Analysis Charts"),
+        "description": _lazy("Progress visualisation charts on participant files showing metric trends over time."),
+        "when_on": [_lazy("Analysis tab with charts appears on participant files")],
+        "when_off": [_lazy("Analysis tab is hidden"), _lazy("Metric data is still recorded in notes")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "shift_summaries": {
+        "label": _lazy("Shift Summaries"),
+        "description": _lazy("End-of-shift summary generation for team handoffs."),
+        "when_on": [_lazy("Shift summary feature is available")],
+        "when_off": [_lazy("Shift summary feature is hidden")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "client_avatar": {
+        "label": _lazy("Participant Avatars"),
+        "description": _lazy("Display participant initials or photos as avatars in lists and file headers."),
+        "when_on": [_lazy("Avatar circles appear next to participant names")],
+        "when_off": [_lazy("Avatars are hidden")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "plan_export_to_word": {
+        "label": _lazy("Plan Export to Word"),
+        "description": _lazy("Export participant outcome plans as formatted Word documents."),
+        "when_on": [_lazy("Export to Word button appears on plan pages")],
+        "when_off": [_lazy("Export button is hidden")],
+        "depends_on": [],
+        "used_by": [],
+    },
+    "cross_program_note_sharing": {
+        "label": _lazy("Cross-Program Note Sharing"),
+        "description": _lazy("Share clinical notes across programs for shared participants."),
+        "when_on": [_lazy("Staff can see notes from other programs for participants enrolled in multiple programs")],
+        "when_off": [_lazy("Notes are only visible within the program they were created in")],
+        "depends_on": ["programs"],
+        "used_by": [],
+    },
 }
 
 # Features that default to enabled (most default to disabled)
@@ -160,17 +311,91 @@ def features(request):
     # Build feature list with current state
     current_flags = FeatureToggle.get_all_flags()
     feature_rows = []
-    for key, description in DEFAULT_FEATURES.items():
+    for key, info in DEFAULT_FEATURES.items():
         # Some features default to enabled (e.g., consent requirement for PIPEDA)
         default_state = key in FEATURES_DEFAULT_ENABLED
         feature_rows.append({
             "key": key,
-            "description": description,
+            "label": info["label"],
+            "description": info["description"],
+            "when_on": info["when_on"],
+            "when_off": info["when_off"],
+            "depends_on": info.get("depends_on", []),
+            "used_by": info.get("used_by", []),
+            "requires_config": info.get("requires_config", []),
             "is_enabled": current_flags.get(key, default_state),
         })
 
     return render(request, "admin_settings/features.html", {
         "feature_rows": feature_rows,
+    })
+
+
+@login_required
+@admin_required
+def feature_toggle_confirm(request, feature_key):
+    """Return an HTMX partial showing impact info and confirm/cancel buttons."""
+    info = DEFAULT_FEATURES.get(feature_key)
+    if not info:
+        return render(request, "admin_settings/_feature_toggle_confirm.html", {
+            "error": _("Unknown feature: %(key)s") % {"key": feature_key},
+        })
+
+    current_flags = FeatureToggle.get_all_flags()
+    default_state = feature_key in FEATURES_DEFAULT_ENABLED
+    is_enabled = current_flags.get(feature_key, default_state)
+    action = "disable" if is_enabled else "enable"
+
+    # Resolve dependency labels for display
+    dep_labels = [
+        str(DEFAULT_FEATURES[k]["label"])
+        for k in info.get("depends_on", [])
+        if k in DEFAULT_FEATURES
+    ]
+    used_by_labels = [
+        str(DEFAULT_FEATURES[k]["label"])
+        for k in info.get("used_by", [])
+        if k in DEFAULT_FEATURES
+    ]
+
+    return render(request, "admin_settings/_feature_toggle_confirm.html", {
+        "feature_key": feature_key,
+        "label": info["label"],
+        "action": action,
+        "impact_items": info["when_off"] if is_enabled else info["when_on"],
+        "depends_on": dep_labels,
+        "used_by": used_by_labels,
+        "requires_config": info.get("requires_config", []),
+        "is_enabled": is_enabled,
+    })
+
+
+@login_required
+@admin_required
+def feature_toggle_action(request, feature_key):
+    """Perform the toggle and return an HTMX success partial."""
+    if request.method != "POST":
+        return redirect("admin_settings:features")
+
+    info = DEFAULT_FEATURES.get(feature_key)
+    if not info:
+        return redirect("admin_settings:features")
+
+    current_flags = FeatureToggle.get_all_flags()
+    default_state = feature_key in FEATURES_DEFAULT_ENABLED
+    was_enabled = current_flags.get(feature_key, default_state)
+    new_state = not was_enabled
+
+    FeatureToggle.objects.update_or_create(
+        feature_key=feature_key,
+        defaults={"is_enabled": new_state},
+    )
+
+    return render(request, "admin_settings/_feature_toggle_success.html", {
+        "feature_key": feature_key,
+        "label": info["label"],
+        "is_enabled": new_state,
+        "action_taken": _("enabled") if new_state else _("disabled"),
     })
 
 
