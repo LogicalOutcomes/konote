@@ -207,16 +207,42 @@ class MetricValueForm(forms.Form):
                     range_str += str(metric_def.max_value)
                 help_parts.append(range_str)
             self.fields["value"].help_text = " | ".join(help_parts)
-            # Set input type and constraints for numeric metrics
-            attrs = {}
-            if metric_def.min_value is not None:
-                attrs["min"] = metric_def.min_value
-            if metric_def.max_value is not None:
-                attrs["max"] = metric_def.max_value
-            if attrs:
-                attrs["type"] = "number"
-                attrs["step"] = "any"
-                self.fields["value"].widget = forms.NumberInput(attrs=attrs)
+
+            # Detect scale metrics: both min/max set, both integers, small range
+            is_scale = (
+                metric_def.min_value is not None
+                and metric_def.max_value is not None
+                and metric_def.min_value == int(metric_def.min_value)
+                and metric_def.max_value == int(metric_def.max_value)
+                and (metric_def.max_value - metric_def.min_value) <= 9
+            )
+
+            if is_scale:
+                low = int(metric_def.min_value)
+                high = int(metric_def.max_value)
+                choices = [("", "---------")] + [
+                    (str(i), str(i)) for i in range(low, high + 1)
+                ]
+                self.fields["value"].widget = forms.RadioSelect(
+                    choices=choices,
+                    attrs={
+                        "class": "scale-pills-input",
+                        "aria-label": f"{metric_def.translated_name}: {metric_def.translated_definition}",
+                    },
+                )
+                self.is_scale = True
+            else:
+                # Standard number input for wide-range metrics
+                attrs = {}
+                if metric_def.min_value is not None:
+                    attrs["min"] = metric_def.min_value
+                if metric_def.max_value is not None:
+                    attrs["max"] = metric_def.max_value
+                if attrs:
+                    attrs["type"] = "number"
+                    attrs["step"] = "any"
+                    self.fields["value"].widget = forms.NumberInput(attrs=attrs)
+                self.is_scale = False
 
     def clean_value(self):
         val = self.cleaned_data.get("value", "").strip()
