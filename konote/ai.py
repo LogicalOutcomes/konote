@@ -644,18 +644,27 @@ def build_goal_chat(messages, program_name, metric_catalogue, existing_sections)
         "- Use Canadian English spelling (colour, centre, programme is NOT used)\n\n"
         "LANGUAGE PRINCIPLES:\n"
         "- Use strengths-based, positive language: 'Build social connections' not 'Reduce isolation'\n"
-        "- The participant will see this goal on their portal. Write the SMART description "
+        "- The participant will see this goal on their portal. Write the description "
         "in plain language they would recognise as their own goal.\n"
         "- Honour the participant's intent — if they say 'make a friend outside this group', "
         "don't reframe it as a clinical program outcome. Keep their voice.\n"
         "- The client_goal field should preserve their actual words as closely as possible.\n\n"
+        "VALIDATION CRITERIA — the description must satisfy ALL EIGHT:\n"
+        "1. Observable behaviour (Mager): uses an action verb you can see or hear\n"
+        "2. Specific (Locke & Latham): two people would agree on whether achieved\n"
+        "3. Measurable indicator (Bandura, GAS): has a scale, score, count, or threshold\n"
+        "4. Conditions stated (Mager): specifies circumstances — with or without support\n"
+        "5. Success threshold (Mager, SMART): defines what level counts as 'met'\n"
+        "6. Time-bound (Doran): specifies a deadline or review date\n"
+        "7. Causally linked (Weiss): achieving this plausibly leads to the participant's larger goal\n"
+        "8. Participant-meaningful (GAS, Outcome Star): defined with the participant, matters to them\n"
+        "If any criteria are missing, ask the caseworker about them during the conversation.\n\n"
         "TECHNICAL REQUIREMENTS — every goal must have:\n"
         "- A concise target name (under 80 characters)\n"
-        "- A SMART description (Specific, Measurable, Achievable, Relevant, Time-bound) "
-        "written in plain language the participant would understand\n"
+        "- A description satisfying all 8 validation criteria, in plain language\n"
         "- The participant's own words — how they would describe this goal themselves\n"
         "- A measurable metric on a 1–5 scale with clear descriptors for each level\n"
-        "- A suggested plan section (from the existing sections, or a new one)\n\n"
+        "- A suggested plan section (from existing sections, or a new one)\n\n"
         "METRIC RULES:\n"
         "- Check the provided metric catalogue FIRST. If an existing metric fits well, "
         "use it (set existing_metric_id to its id).\n"
@@ -677,7 +686,7 @@ def build_goal_chat(messages, program_name, metric_catalogue, existing_sections)
         '  "questions": ["Optional clarifying questions — omit if presenting a draft"],\n'
         '  "draft": null or {\n'
         '    "name": "Concise target name",\n'
-        '    "description": "SMART outcome statement",\n'
+        '    "description": "Outcome statement satisfying all 8 criteria",\n'
         '    "client_goal": "How the participant would say it in their own words",\n'
         '    "metric": {\n'
         '      "existing_metric_id": null or integer,\n'
