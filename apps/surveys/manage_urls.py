@@ -13,6 +13,11 @@ urlpatterns = [
     path("<int:survey_id>/questions/", views.survey_questions, name="survey_questions"),
     path("<int:survey_id>/status/", views.survey_status, name="survey_status"),
     path(
+        "<int:survey_id>/condition-values/<int:question_id>/",
+        views.condition_values,
+        name="condition_values",
+    ),
+    path(
         "<int:survey_id>/responses/<int:response_id>/",
         views.survey_response_detail,
         name="survey_response_detail",

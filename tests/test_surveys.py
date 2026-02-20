@@ -197,6 +197,68 @@ class SurveySectionFormTests(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ConditionValuesEndpointTests(TestCase):
+    """Test the HTMX endpoint that returns condition value options."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="cv_staff", password="testpass123",
+            display_name="CV Staff", is_admin=True,
+        )
+        self.client.login(username="cv_staff", password="testpass123")
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys", defaults={"is_enabled": True},
+        )
+        self.survey = Survey.objects.create(name="CV Test", created_by=self.staff)
+        self.section = SurveySection.objects.create(
+            survey=self.survey, title="S1", sort_order=1,
+        )
+
+    def test_yes_no_returns_two_options(self):
+        q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Yes or no?",
+            question_type="yes_no", sort_order=1,
+        )
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('value="1"', content)
+        self.assertIn('value="0"', content)
+
+    def test_single_choice_returns_option_values(self):
+        q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Pick one",
+            question_type="single_choice", sort_order=1,
+            options_json=[
+                {"value": "a", "label": "Alpha"},
+                {"value": "b", "label": "Beta"},
+            ],
+        )
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('value="a"', content)
+        self.assertIn("Alpha", content)
+        self.assertIn('value="b"', content)
+
+    def test_text_question_returns_text_input(self):
+        q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Name?",
+            question_type="short_text", sort_order=1,
+        )
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('type="text"', content)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class TriggerRuleModelTests(TestCase):
     """Test SurveyTriggerRule creation and constraints."""
 

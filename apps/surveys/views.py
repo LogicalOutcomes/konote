@@ -8,7 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.forms import inlineformset_factory
-from django.http import Http404, HttpResponseForbidden
+from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -233,6 +233,37 @@ def survey_status(request, survey_id):
                 % {"old": old_status, "new": new_status},
             )
     return redirect("survey_manage:survey_detail", survey_id=survey.pk)
+
+
+@login_required
+@requires_permission("template.note.manage", allow_admin=True)
+def condition_values(request, survey_id, question_id):
+    """Return HTML options for the condition_value dropdown (HTMX)."""
+    _surveys_or_404()
+    survey = get_object_or_404(Survey, pk=survey_id)
+    question = get_object_or_404(
+        SurveyQuestion, pk=question_id, section__survey=survey,
+    )
+
+    if question.question_type == "yes_no":
+        options = [("1", _("Yes")), ("0", _("No"))]
+    elif question.question_type in ("single_choice", "multiple_choice", "rating_scale"):
+        options = [
+            (opt["value"], opt.get("label", opt["value"]))
+            for opt in (question.options_json or [])
+        ]
+    else:
+        # short_text / long_text — return a text input instead of a select
+        html = (
+            '<input type="text" name="condition_value" '
+            f'placeholder="{_("Type the exact answer value")}">'
+        )
+        return HttpResponse(html)
+
+    html_parts = [f'<option value="">— {_("Select a value")} —</option>']
+    for value, label in options:
+        html_parts.append(f'<option value="{value}">{label}</option>')
+    return HttpResponse("\n".join(html_parts))
 
 
 @login_required
