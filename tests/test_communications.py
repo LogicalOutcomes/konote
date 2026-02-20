@@ -584,3 +584,37 @@ class StaffMessageModelTest(TestCase):
         msg.save()
         msg.refresh_from_db()
         self.assertTrue(msg.is_urgent)
+
+
+# -----------------------------------------------------------------------
+# StaffMessageForm tests (UX-MSG1)
+# -----------------------------------------------------------------------
+
+class StaffMessageFormTest(TestCase):
+    """Test StaffMessageForm validation."""
+
+    def test_valid_with_urgent_flag(self):
+        from apps.communications.forms import StaffMessageForm
+        form = StaffMessageForm(
+            data={"message": "Please call back ASAP", "is_urgent": True},
+            staff_choices=[], worker_term="worker",
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertTrue(form.cleaned_data["is_urgent"])
+
+    def test_urgent_defaults_to_false(self):
+        from apps.communications.forms import StaffMessageForm
+        form = StaffMessageForm(
+            data={"message": "Regular message"},
+            staff_choices=[], worker_term="worker",
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertFalse(form.cleaned_data["is_urgent"])
+
+    def test_valid_without_urgent(self):
+        from apps.communications.forms import StaffMessageForm
+        form = StaffMessageForm(
+            data={"message": "No rush"},
+            staff_choices=[], worker_term="worker",
+        )
+        self.assertTrue(form.is_valid(), form.errors)
