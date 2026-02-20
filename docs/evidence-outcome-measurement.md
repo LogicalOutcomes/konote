@@ -150,37 +150,43 @@ Based on the evidence above, KoNote uses three universal metrics for every targe
 
 Measures the participant's stage of behaviour change using generic action stages that apply consistently across all target types.
 
-| Level | Description |
-|-------|-------------|
-| 1 | Haven't started working on this yet |
-| 2 | Exploring or learning about this |
-| 3 | Practising or trying this out |
-| 4 | Doing this regularly or consistently |
-| 5 | Doing this independently --- it's part of my life now |
+| Level | Description (EN) | Description (FR) |
+|-------|------------------|-------------------|
+| 1 | Haven't started working on this yet | Je n'ai pas encore commenc&eacute; |
+| 2 | Exploring or learning about this | J'explore ou j'apprends |
+| 3 | Practising or trying this out | Je pratique ou j'essaie |
+| 4 | Doing this regularly or consistently | Je fais cela r&eacute;guli&egrave;rement |
+| 5 | This is a regular part of my life now | Cela fait partie de ma vie maintenant |
 
 **Construct basis:** Prochaska's Transtheoretical Model (stages of change); Wilson & Cleary functional status level; Mager's observable performance criterion.
 
-**Why these stages work across targets:** Whether the goal is cooking, job searching, managing anxiety, or learning English, the progression from "haven't started" through "exploring" to "doing it independently" describes the same underlying dimension of behaviour change. This makes the metric aggregatable across participants and targets for program-level reporting.
+**Why these stages work across targets:** Whether the goal is cooking, job searching, managing anxiety, or learning English, the progression from "haven't started" through "exploring" to "this is part of my life" describes the same underlying dimension of behaviour change. This makes the metric aggregatable across participants and targets for program-level reporting.
+
+**Design note:** Level 5 uses "this is a regular part of my life now" rather than "doing this independently." Independence is a Western individualist value that doesn't apply universally --- participants from collectivist cultures may be doing something consistently *within community* rather than alone, and that's equally valid. The framing captures sustained behaviour change without privileging independence as the goal.
 
 ### 2. Self-Efficacy
 
 *What the participant believes they can do.*
 
-Domain-specific confidence, referenced to the specific target behaviour.
+Domain-specific perceived capability, referenced to the specific target behaviour.
 
-Prompt: "How confident are you that you can [target-specific behaviour]?"
+Prompt: "How sure do you feel about being able to [target-specific behaviour]?"
 
-| Level | Description |
-|-------|-------------|
-| 1 | Not at all --- I don't think I can do this |
-| 2 | A little --- I might be able to with a lot of help |
-| 3 | Somewhat --- I can do this with support |
-| 4 | Quite --- I can usually do this on my own |
-| 5 | Very --- I'm sure I can do this |
+| Level | Description (EN) | Description (FR) |
+|-------|------------------|-------------------|
+| 1 | Not at all sure I can do this | Pas du tout s&ucirc;r(e) de pouvoir le faire |
+| 2 | A little sure --- it feels hard | Un peu s&ucirc;r(e) --- c'est difficile |
+| 3 | Somewhat sure --- I'm getting there | Assez s&ucirc;r(e) --- j'y arrive |
+| 4 | Quite sure --- I can usually do this | Plut&ocirc;t s&ucirc;r(e) --- j'y arrive d'habitude |
+| 5 | Very sure --- I know I can do this | Tr&egrave;s s&ucirc;r(e) --- je sais que je peux |
 
 **Construct basis:** Bandura's self-efficacy theory (1977, 2006); PROMIS Self-Efficacy item banks (validated, alpha .85--.97); Schwarzer & Jerusalem GSE (25 countries, ~20,000 participants).
 
-**Why domain-specific matters:** Bandura's 2006 guide explicitly states that self-efficacy scales must reference specific behaviours, not general confidence. "How confident do you feel about this?" is too vague. "How confident are you that you can [cook a healthy meal / complete a job application / manage your anxiety when it arises]?" produces valid, reliable data.
+**Why domain-specific matters:** Bandura's 2006 guide explicitly states that self-efficacy scales must reference specific behaviours, not general confidence. "How confident do you feel about this?" is too vague. "How sure do you feel about being able to [cook a healthy meal / complete a job application / manage your anxiety when it arises]?" produces valid, reliable data.
+
+**Design notes:**
+- The prompt uses "how sure do you feel" rather than "how confident are you" --- a softer, less loaded framing that normalises fluctuation and works better in trauma-informed practice.
+- The scale anchors describe certainty only, without referencing support levels (e.g., "with help" or "on my own"). Support/independence is a separate construct from self-efficacy and is captured in Goal Progress or in target-specific metrics where relevant. Confounding the two would produce unreliable data on both.
 
 ### 3. Satisfaction
 
@@ -190,17 +196,19 @@ Captures the participant's subjective appraisal --- whether the change matters t
 
 Prompt: "How satisfied are you with how things are going in this area?"
 
-| Level | Description |
-|-------|-------------|
-| 1 | Very unsatisfied |
-| 2 | Unsatisfied |
-| 3 | Neutral --- it's okay |
-| 4 | Satisfied |
-| 5 | Very satisfied |
+| Level | Description (EN) | Description (FR) |
+|-------|------------------|-------------------|
+| 1 | Very unsatisfied | Tr&egrave;s insatisfait(e) |
+| 2 | Unsatisfied | Insatisfait(e) |
+| 3 | Neutral --- it's okay | Neutre --- &ccedil;a va |
+| 4 | Satisfied | Satisfait(e) |
+| 5 | Very satisfied | Tr&egrave;s satisfait(e) |
 
 **Construct basis:** Wilson & Cleary general health perceptions level; WHOQOL-BREF general quality-of-life factor; GAS client-meaningful criterion; Outcome Star's emphasis on participant-defined outcomes.
 
 **Why satisfaction is distinct from progress and self-efficacy:** A participant can be making progress (doing the behaviour) and feel confident (believe they can do it) but still be unsatisfied --- because the goal wasn't what they actually wanted, or because external circumstances overshadow their progress. Satisfaction captures the participant's voice about whether the change is meaningful to them. This is essential for person-centred practice and for identifying misaligned goals early.
+
+**Design note on ceiling effects:** Satisfaction metrics are susceptible to social desirability bias --- participants tend to rate high. This is a known limitation. However, low satisfaction scores (1--2) are extremely high-signal: they indicate a misaligned goal or unmet need. In program reports, Satisfaction is positioned as a quality-assurance indicator rather than a headline outcome metric. The outliers matter more than the average.
 
 ### Target-Specific Metrics (Optional)
 
@@ -281,6 +289,23 @@ Each target should connect to a clear causal chain: activities leads to outputs 
 For Ontario settlement agencies, the Canadian Language Benchmarks provide a 12-level descriptive scale with "can-do" performance descriptors across listening, speaking, reading, and writing. Instead of "build confidence with English," a proper target would reference CLB levels:
 
 > *"Participant will advance from CLB Level 3 to CLB Level 4 in speaking, as assessed by PBLA portfolio tasks, within 6 months."*
+
+---
+
+## Design Decisions
+
+These decisions were made through expert consultation across psychometrics, settlement sector program management, participatory research, and nonprofit data strategy.
+
+| Decision | Rationale |
+|----------|-----------|
+| Level 5 of Goal Progress says "part of my life" not "independently" | Independence is a Western individualist value. Participants from collectivist cultures may sustain behaviour within community, not alone. The framing captures sustained change without privileging independence. |
+| Self-Efficacy uses "How sure do you feel" not "How confident are you" | Less loaded phrasing. Normalises fluctuation. Works better in trauma-informed practice where participants may feel judged for rating confidence low. |
+| Self-Efficacy anchors don't reference support levels | Avoids confounding efficacy with independence --- they are distinct constructs. "With/without support" belongs in Goal Progress or target-specific metrics. |
+| Satisfaction kept despite ceiling effects | Low-satisfaction outliers (1--2) are extremely high-signal quality indicators. Positioned as quality-assurance metric in reports, not headline outcome. |
+| `client_goal` field used as participant's vision of success | Already exists in the target model. Made more prominent in the AI goal builder flow. Not a fourth metric --- captured once at target creation, not scored repeatedly. |
+| For stable metrics, prompt "Anything different?" not "Quick confirm" | Preserves the therapeutic moment of reflection while reducing cognitive load. The act of asking is itself valuable (per Feedback-Informed Treatment research). |
+| All three metrics are participant self-report | For subjective constructs, the participant's assessment *is* the valid measure (PROMIS, pain measurement literature). Validity comes from domain-specific anchoring, not external observation. |
+| Three metrics per target, target-specific metric optional | Three universals provide consistent baseline for reporting. AI-generated target-specific metric adds granularity but is opt-in to manage coach time burden. |
 
 ---
 
