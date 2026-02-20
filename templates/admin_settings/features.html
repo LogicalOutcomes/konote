@@ -35,23 +35,29 @@
                 {% endif %}
             </td>
             <td>
-                {% if row.is_enabled %}
-                <button type="button" class="outline secondary"
-                        style="padding: 0.25rem 0.5rem; margin: 0;"
-                        hx-get="{% url 'admin_settings:feature_toggle_confirm' feature_key=row.key %}"
-                        hx-target="#feature-action-{{ row.key }}"
-                        hx-swap="innerHTML">
-                    {% trans "Disable" %}
-                </button>
-                {% else %}
-                <button type="button" class="outline"
-                        style="padding: 0.25rem 0.5rem; margin: 0;"
-                        hx-get="{% url 'admin_settings:feature_toggle_confirm' feature_key=row.key %}"
-                        hx-target="#feature-action-{{ row.key }}"
-                        hx-swap="innerHTML">
-                    {% trans "Enable" %}
-                </button>
-                {% endif %}
+                <form method="post" style="display:inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="feature_key" value="{{ row.key }}">
+                    {% if row.is_enabled %}
+                    <input type="hidden" name="action" value="disable">
+                    <button type="submit" class="outline secondary"
+                            style="padding: 0.25rem 0.5rem; margin: 0;"
+                            hx-get="{% url 'admin_settings:feature_toggle_confirm' feature_key=row.key %}"
+                            hx-target="#feature-action-{{ row.key }}"
+                            hx-swap="innerHTML">
+                        {% trans "Disable" %}
+                    </button>
+                    {% else %}
+                    <input type="hidden" name="action" value="enable">
+                    <button type="submit" class="outline"
+                            style="padding: 0.25rem 0.5rem; margin: 0;"
+                            hx-get="{% url 'admin_settings:feature_toggle_confirm' feature_key=row.key %}"
+                            hx-target="#feature-action-{{ row.key }}"
+                            hx-swap="innerHTML">
+                        {% trans "Enable" %}
+                    </button>
+                    {% endif %}
+                </form>
             </td>
         </tr>
         <tr id="feature-action-{{ row.key }}">
