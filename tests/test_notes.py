@@ -330,6 +330,28 @@ class NoteViewsTest(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(ProgressNote.objects.filter(note_type="full").exists())
 
+    def test_scale_metric_renders_as_radio(self):
+        """Metrics with small integer ranges (1-5) should use RadioSelect widget."""
+        from apps.notes.forms import MetricValueForm
+        metric = MetricDefinition.objects.create(
+            name="Confidence", min_value=1, max_value=5, unit="",
+            definition="Rate your confidence", category="general",
+        )
+        form = MetricValueForm(metric_def=metric)
+        self.assertEqual(form.fields["value"].widget.__class__.__name__, "RadioSelect")
+        choices = form.fields["value"].widget.choices
+        self.assertEqual(len(choices), 6)  # empty + 1,2,3,4,5
+
+    def test_wide_range_metric_stays_number_input(self):
+        """Metrics with wide ranges (0-100) should stay as NumberInput."""
+        from apps.notes.forms import MetricValueForm
+        metric = MetricDefinition.objects.create(
+            name="Score", min_value=0, max_value=100, unit="score",
+            definition="Overall score", category="general",
+        )
+        form = MetricValueForm(metric_def=metric)
+        self.assertEqual(form.fields["value"].widget.__class__.__name__, "NumberInput")
+
     def test_metric_value_out_of_range_rejected(self):
         section = PlanSection.objects.create(
             client_file=self.client_file, name="Goals", program=self.prog,
