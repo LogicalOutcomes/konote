@@ -102,10 +102,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Remove "+ Add note" link in Notes tab, hide Quick Note from Actions if needed, and update wayfinding text (UX-NOTES3)
 - [ ] Fix "server error occurred" when clicking "Shape this target" (AI Suggestion) — (BUG-AI1)
 - [ ] Investigate/Fix "error message" when clicking "Draft Report summary" on Insights page (BUG-AI2)
-- [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
-
 ## Recently Done
 
+- [x] Build "Questions for You" portal feature — auto-save, multi-page, conditional sections, review page, dashboard badge — 2026-02-20 (PORTAL-Q1)
 - [x] Redesign detailed notes form (Round 2) — auto-calc metrics, scale pills, two-lens layout (see docs/plans/2026-02-19-notes-form-redesign-v2.md) — 2026-02-19 (UX-NOTES2)
 
 - [ ] Rename original KoNote GitHub repo to KoNote Classic and add redirect/link to this repo (REPO1)
