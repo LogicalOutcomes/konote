@@ -4346,6 +4346,9 @@ msgstr ""
 msgid "An unexpected error occurred. Our team has been notified."
 msgstr "Une erreur inattendue s'est produite. Notre équipe a été avisée."
 
+msgid "An unexpected error occurred. Please try again or contact support."
+msgstr "Une erreur inattendue s'est produite. Veuillez réessayer ou contacter le support."
+
 msgid "Anonymise"
 msgstr "Anonymiser"
 
