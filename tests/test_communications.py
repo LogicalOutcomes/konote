@@ -669,3 +669,60 @@ class LeaveMessageViewTest(TestCase):
         self.assertEqual(response.status_code, 302)
         msg = StaffMessage.objects.first()
         self.assertTrue(msg.is_urgent)
+
+
+# -----------------------------------------------------------------------
+# my_messages view tests (UX-MSG1)
+# -----------------------------------------------------------------------
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MyMessagesViewTest(TestCase):
+    """Test the my_messages dashboard view."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        self.staff = User.objects.create_user(
+            username="test_staff_mm", password="testpass123", display_name="Test Staff",
+        )
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.program, role="staff", status="active",
+        )
+        self.sender = User.objects.create_user(
+            username="test_sender", password="testpass123", display_name="Sender",
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program,
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_urgent_messages_sorted_first(self):
+        from apps.communications.models import StaffMessage
+        # Create urgent message first (older)
+        urgent = StaffMessage(client_file=self.client_file, left_by=self.sender, for_user=self.staff, is_urgent=True)
+        urgent.content = "Urgent message"
+        urgent.save()
+        # Create regular message second (newer — without urgent-first sort, this would appear first)
+        regular = StaffMessage(client_file=self.client_file, left_by=self.sender, for_user=self.staff)
+        regular.content = "Regular message"
+        regular.save()
+
+        self.client.login(username="test_staff_mm", password="testpass123")
+        response = self.client.get("/communications/my-messages/")
+        self.assertEqual(response.status_code, 200)
+        msgs = list(response.context["staff_messages"])
+        self.assertTrue(msgs[0].is_urgent)
+        self.assertFalse(msgs[1].is_urgent)
+
+    def test_my_messages_returns_200(self):
+        self.client.login(username="test_staff_mm", password="testpass123")
+        response = self.client.get("/communications/my-messages/")
+        self.assertEqual(response.status_code, 200)

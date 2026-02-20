@@ -440,7 +440,7 @@ def my_messages(request):
         status="unread",
     ).filter(
         db_models.Q(for_user=request.user) | db_models.Q(for_user__isnull=True)
-    ).select_related("left_by", "for_user", "client_file")
+    ).select_related("left_by", "for_user", "client_file").order_by("-is_urgent", "-created_at")
 
     return render(request, "communications/my_messages.html", {
         "staff_messages": staff_messages,
