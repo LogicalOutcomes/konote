@@ -381,7 +381,7 @@ If your role allows you to review submissions:
 4. Optionally: add custom field groups, set a capacity limit, or set a deadline
 5. Save — you'll get a shareable URL and an embed code for your website
 
-For full setup details, see [Administering KoNote — Registration Forms](administering-KoNote.md#set-up-registration-forms).
+For full setup details, see [Features & Modules — Registration Forms](admin/features-and-modules.md#set-up-registration-forms).
 
 ---
 
@@ -587,7 +587,7 @@ Every significant action is logged for compliance.
 2. Filter by date, user, or action type
 3. Export if needed for reporting
 
-For detailed administrator documentation, see [Administering KoNote](administering-KoNote.md).
+For detailed administrator documentation, see the [Admin Guide](admin/index.md).
 
 ---
 
@@ -660,7 +660,7 @@ For security, KoNote logs you out after inactivity. Log in again to continue. Yo
 ### Documentation
 
 - [Staff Training Guide](using-KoNote.md) — Daily tasks in detail
-- [Administrator Guide](administering-KoNote.md) — Configuration and maintenance
+- [Admin Guide](admin/index.md) — Configuration and maintenance
 - [Technical Documentation](technical-documentation.md) — For developers
 
 ### Contact Support

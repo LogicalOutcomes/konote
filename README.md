@@ -361,7 +361,7 @@ After deployment, configure your instance through the web interface:
 5. **Templates** — build reusable plan and note structures
 6. **Custom Fields** — add agency-specific intake fields
 
-See [Administering KoNote](docs/administering-KoNote.md) for detailed instructions.
+See the [Admin Guide](docs/admin/index.md) for detailed instructions.
 
 ---
 
@@ -372,7 +372,7 @@ Start with the [Documentation Index](docs/index.md) to find what you need.
 | Document | Audience | Description |
 |----------|----------|-------------|
 | [Deploying KoNote](docs/deploying-KoNote.md) | IT / Technical lead | Local setup, cloud deployments, PDF setup |
-| [Administering KoNote](docs/administering-KoNote.md) | Program managers / Admins | Configuration, users, backups, security |
+| [Admin Guide](docs/admin/index.md) | Program managers / Admins | Configuration, users, backups, security |
 | [Using KoNote](docs/using-KoNote.md) | Front-line staff | Day-to-day usage guide |
 | [Technical Reference](docs/technical-documentation.md) | Developers | Architecture, security, data models |
 
@@ -388,7 +388,7 @@ KoNote is designed for sensitive client data:
 - **Session security** — Database-backed sessions, configurable timeout
 - **HTTP security** — HSTS, CSP, X-Frame-Options, secure cookies
 
-See [Administering KoNote](docs/administering-KoNote.md#security-operations) for security operations and [Technical Reference](docs/technical-documentation.md) for architecture details.
+See [Security](docs/admin/security.md) for security operations and [Technical Reference](docs/technical-documentation.md) for architecture details.
 
 ### Trust, But Verify
 
@@ -445,4 +445,4 @@ This project is open source. See [LICENSE](LICENSE) for details.
 
 - **Documentation issues**: Open an issue in this repository
 - **Security vulnerabilities**: Please report privately (see SECURITY.md)
-- **General questions**: See [Administering KoNote](docs/administering-KoNote.md)
+- **General questions**: See the [Admin Guide](docs/admin/index.md)

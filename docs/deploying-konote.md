@@ -405,7 +405,7 @@ You'll be prompted for:
 - **Username** — your login name (e.g., `admin` or your name)
 - **Password** — minimum 8 characters (you'll be asked to confirm it)
 
-This creates a user with full admin access. Once logged in, you can create additional users through the web interface using **invite links** (recommended) or direct user creation. See [User Management](administering-konote.md#user-management) for details.
+This creates a user with full admin access. Once logged in, you can create additional users through the web interface using **invite links** (recommended) or direct user creation. See [Users & Roles](admin/users-and-roles.md) for details.
 
 > **Demo mode shortcut:** If you set `DEMO_MODE=true` in your `.env`, the `seed` command (Step 7.5) automatically creates a `demo-admin` user with password `demo1234` — so you can skip this step and log in with that instead.
 
@@ -981,5 +981,5 @@ Usually caused by missing environment variables.
 
 Once your deployment is running:
 
-1. **[Administering KoNote](administering-KoNote.md)** — Configure your agency's settings
+1. **[Admin Guide](admin/index.md)** — Configure your agency's settings
 2. **[Using KoNote](using-KoNote.md)** — Train your staff
