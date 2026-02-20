@@ -551,7 +551,7 @@ def staff_data_entry(request, client_id, survey_id):
     survey = get_object_or_404(Survey, pk=survey_id, status="active")
     sections = survey.sections.filter(
         is_active=True,
-    ).prefetch_related("questions").order_by("sort_order")
+    ).prefetch_related("questions").select_related("condition_question").order_by("sort_order")
 
     if request.method == "POST":
         from apps.portal.survey_helpers import filter_visible_sections
