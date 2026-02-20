@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load static %}
+{% load survey_tags %}
 <!DOCTYPE html>
 <html lang="{{ LANGUAGE_CODE|default:'en' }}">
 <head>
@@ -57,46 +58,57 @@
 
             {% if question.question_type == "short_text" %}
             <input type="text" id="q_{{ question.pk }}" name="q_{{ question.pk }}"
-                   value="{{ posted|default_if_none:'' }}"
+                   value="{{ question.pk|partial_value:repopulate }}"
                    {% if question.required %}required{% endif %}>
 
             {% elif question.question_type == "long_text" %}
             <textarea id="q_{{ question.pk }}" name="q_{{ question.pk }}" rows="4"
-                      {% if question.required %}required{% endif %}>{{ posted|default_if_none:"" }}</textarea>
+                      {% if question.required %}required{% endif %}>{{ question.pk|partial_value:repopulate }}</textarea>
 
             {% elif question.question_type == "yes_no" %}
+            {% with saved=question.pk|partial_value:repopulate %}
             <select id="q_{{ question.pk }}" name="q_{{ question.pk }}"
                     {% if question.required %}required{% endif %}>
                 <option value="">—</option>
-                <option value="1">{% trans "Yes" %}</option>
-                <option value="0">{% trans "No" %}</option>
+                <option value="1" {% if saved == "1" %}selected{% endif %}>{% trans "Yes" %}</option>
+                <option value="0" {% if saved == "0" %}selected{% endif %}>{% trans "No" %}</option>
             </select>
+            {% endwith %}
 
             {% elif question.question_type == "single_choice" %}
+            {% with saved=question.pk|partial_value:repopulate %}
             {% for opt in question.options_json %}
             <label>
-                <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}">
+                <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}"
+                       {% if saved == opt.value %}checked{% endif %}>
                 {{ opt.label }}
             </label>
             {% endfor %}
+            {% endwith %}
 
             {% elif question.question_type == "multiple_choice" %}
+            {% with saved=question.pk|partial_value:repopulate %}
             {% for opt in question.options_json %}
             <label>
-                <input type="checkbox" name="q_{{ question.pk }}" value="{{ opt.value }}">
+                <input type="checkbox" name="q_{{ question.pk }}" value="{{ opt.value }}"
+                       {% if opt.value|in_multi_value:saved %}checked{% endif %}>
                 {{ opt.label }}
             </label>
             {% endfor %}
+            {% endwith %}
 
             {% elif question.question_type == "rating_scale" %}
+            {% with saved=question.pk|partial_value:repopulate %}
             <div role="group">
             {% for opt in question.options_json %}
                 <label style="text-align:center">
-                    <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}">
+                    <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}"
+                           {% if saved == opt.value %}checked{% endif %}>
                     {{ opt.label }}
                 </label>
             {% endfor %}
             </div>
+            {% endwith %}
             {% if question.min_value is not None and question.max_value is not None %}
             <small class="secondary">{% blocktrans with min=question.min_value max=question.max_value %}Scale: {{ min }} to {{ max }}{% endblocktrans %}</small>
             {% endif %}

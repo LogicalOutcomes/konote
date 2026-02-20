@@ -1446,6 +1446,10 @@ class PublicSurveySubmissionTests(TestCase):
             section=self.section, question_text="How was it?",
             question_type="short_text", sort_order=1, required=True,
         )
+        self.q_optional = SurveyQuestion.objects.create(
+            section=self.section, question_text="Any comments?",
+            question_type="short_text", sort_order=2, required=False,
+        )
         self.link = SurveyLink.objects.create(
             survey=self.survey, created_by=self.staff,
         )
@@ -1461,6 +1465,15 @@ class PublicSurveySubmissionTests(TestCase):
         self.assertEqual(response.token, self.link.token)
         answer = response.answers.first()
         self.assertEqual(answer.value, "Excellent!")
+
+    def test_public_form_repopulates_on_error(self):
+        """Previously entered values are preserved when validation fails."""
+        resp = self.client.post(f"/s/{self.link.token}/", {
+            f"q_{self.q_optional.pk}": "Keep this value",
+            # Missing required field q1
+        })
+        self.assertEqual(resp.status_code, 200)  # Re-renders, not redirect
+        self.assertContains(resp, "Keep this value")
 
     def test_honeypot_blocks_bots(self):
         """Submissions with honeypot field filled are silently discarded."""

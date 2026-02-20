@@ -169,6 +169,19 @@ class TriggerRuleForm(forms.ModelForm):
             "due_days": forms.NumberInput(attrs={"min": 1}),
         }
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            describedby = []
+            if field.help_text:
+                describedby.append(f"id_{name}_help")
+            # Errors are announced via role="alert" on the element itself,
+            # but linking via aria-describedby ensures they're read on focus.
+            describedby.append(f"id_{name}_error")
+            field.widget.attrs.setdefault(
+                "aria-describedby", " ".join(describedby),
+            )
+
     def clean_anchor(self):
         """Default anchor to enrolment_date when not provided."""
         value = self.cleaned_data.get("anchor")
