@@ -234,45 +234,52 @@ def suggest_target_view(request):
     if not _can_edit_plan(request.user, client_file):
         return HttpResponseForbidden("You don't have permission to edit this plan.")
 
-    # PII-scrub before sending to AI
-    known_names = _get_known_names_for_client(client_file)
-    scrubbed_words = scrub_pii(participant_words, known_names)
+    try:
+        # PII-scrub before sending to AI
+        known_names = _get_known_names_for_client(client_file)
+        scrubbed_words = scrub_pii(participant_words, known_names)
 
-    # Build AI context
-    program, metric_catalogue, existing_sections = _get_goal_builder_context(client_file)
-    program_name = program.name if program else "General"
+        # Build AI context
+        program, metric_catalogue, existing_sections = _get_goal_builder_context(client_file)
+        program_name = program.name if program else "General"
 
-    # Call AI
-    result = ai.suggest_target(scrubbed_words, program_name, metric_catalogue, existing_sections)
+        # Call AI
+        result = ai.suggest_target(scrubbed_words, program_name, metric_catalogue, existing_sections)
 
-    if result is None:
+        if result is None:
+            return render(request, "plans/_ai_suggest_error.html", {
+                "client": client_file,
+                "participant_words": participant_words,
+            })
+
+        # Resolve suggested section name to a PK if it matches an existing section
+        section_choices = list(
+            PlanSection.objects.filter(client_file=client_file, status="default")
+            .values("pk", "name")
+        )
+        matched_section_pk = None
+        for sc in section_choices:
+            if sc["name"].lower().strip() == result.get("suggested_section", "").lower().strip():
+                matched_section_pk = sc["pk"]
+                break
+
+        # Serialise suggestion for embedding as data attribute
+        suggestion_json = json.dumps(result)
+
+        return render(request, "plans/_ai_suggestion.html", {
+            "suggestion": result,
+            "suggestion_json": suggestion_json,
+            "client": client_file,
+            "participant_words": participant_words,
+            "sections": section_choices,
+            "matched_section_pk": matched_section_pk,
+        })
+    except Exception:
+        logger.exception("Unhandled error in suggest_target_view for client %s", client_id)
         return render(request, "plans/_ai_suggest_error.html", {
             "client": client_file,
             "participant_words": participant_words,
         })
-
-    # Resolve suggested section name to a PK if it matches an existing section
-    section_choices = list(
-        PlanSection.objects.filter(client_file=client_file, status="default")
-        .values("pk", "name")
-    )
-    matched_section_pk = None
-    for sc in section_choices:
-        if sc["name"].lower().strip() == result.get("suggested_section", "").lower().strip():
-            matched_section_pk = sc["pk"]
-            break
-
-    # Serialise suggestion for embedding as data attribute
-    suggestion_json = json.dumps(result)
-
-    return render(request, "plans/_ai_suggestion.html", {
-        "suggestion": result,
-        "suggestion_json": suggestion_json,
-        "client": client_file,
-        "participant_words": participant_words,
-        "sections": section_choices,
-        "matched_section_pk": matched_section_pk,
-    })
 
 
 @login_required
