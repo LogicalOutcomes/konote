@@ -86,9 +86,17 @@ class Command(BaseCommand):
                 if changed:
                     obj.save()
                     updated_fr += 1
+        # ── Retire old universal metrics replaced by research-grounded versions ──
+        old_universals = ["Confidence", "Progress", "Wellbeing"]
+        retired = MetricDefinition.objects.filter(
+            name__in=old_universals, is_universal=True
+        ).update(is_universal=False)
+
         msg = f"  Metrics: {created} created, {len(metrics) - created} already existed."
         if updated_fr:
             msg += f" {updated_fr} backfilled with French translations."
+        if retired:
+            msg += f" {retired} old universal metric(s) retired."
         self.stdout.write(msg)
 
     def _seed_feature_toggles(self):
