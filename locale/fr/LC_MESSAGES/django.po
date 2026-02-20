@@ -13755,3 +13755,21 @@ msgstr "Détails de conclusion"
 
 msgid "Your observation — not a score."
 msgstr "Votre observation — pas un pointage."
+
+msgid "(auto-calculated)"
+msgstr "(calculé automatiquement)"
+
+msgid "Manual entry"
+msgstr "Saisie manuelle"
+
+msgid "Mark as no change"
+msgstr "Marquer sans changement"
+
+msgid "No change"
+msgstr "Aucun changement"
+
+msgid "No change noted"
+msgstr "Aucun changement noté"
+
+msgid "Sessions attended this month"
+msgstr "Séances suivies ce mois-ci"
