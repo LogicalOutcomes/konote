@@ -6,12 +6,14 @@ import logging
 import os
 import uuid
 from collections import defaultdict
+import datetime as dt
 from datetime import datetime, time, timedelta
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
-from django.db.models import F, Q
+from django.db.models import DateTimeField, F, Q
+from django.db.models.functions import Coalesce
 from django.http import FileResponse, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
@@ -900,6 +902,35 @@ def client_analysis(request, client_id):
     user_program_ids = get_user_program_ids(request.user, active_ids)
     program_ctx = build_program_display_context(request.user, active_ids)
 
+    # Date range filter — parse query parameters
+    date_from = request.GET.get("date_from", "")
+    date_to = request.GET.get("date_to", "")
+    timeframe = request.GET.get("timeframe", "")
+    date_from_obj = None
+    date_to_obj = None
+
+    # Quick-select timeframes override manual date inputs
+    if timeframe == "30d":
+        date_from_obj = timezone.now().date() - timedelta(days=30)
+    elif timeframe == "3m":
+        date_from_obj = timezone.now().date() - timedelta(days=90)
+    elif timeframe == "6m":
+        date_from_obj = timezone.now().date() - timedelta(days=180)
+    elif timeframe == "all":
+        pass  # No filtering — show all data
+    else:
+        # Manual date inputs
+        if date_from:
+            try:
+                date_from_obj = dt.date.fromisoformat(date_from)
+            except ValueError:
+                pass
+        if date_to:
+            try:
+                date_to_obj = dt.date.fromisoformat(date_to)
+            except ValueError:
+                pass
+
     # Get targets with metrics — filtered by user's accessible programs
     # PlanTarget doesn't have a direct program FK, so filter through plan_section.program
     targets = PlanTarget.objects.filter(
@@ -921,13 +952,30 @@ def client_analysis(request, client_id):
 
         for ptm in ptm_links:
             metric_def = ptm.metric_def
-            # Get all recorded values for this metric on this target
-            values = MetricValue.objects.filter(
+            # Get recorded values for this metric on this target
+            values_qs = MetricValue.objects.filter(
                 metric_def=metric_def,
                 progress_note_target__plan_target=target,
                 progress_note_target__progress_note__client_file=client,
                 progress_note_target__progress_note__status="default",
-            ).select_related(
+            )
+
+            # Apply date range filter using the note's effective date
+            # (Coalesce of backdate and created_at)
+            if date_from_obj or date_to_obj:
+                values_qs = values_qs.annotate(
+                    _note_effective=Coalesce(
+                        "progress_note_target__progress_note__backdate",
+                        "progress_note_target__progress_note__created_at",
+                        output_field=DateTimeField(),
+                    )
+                )
+            if date_from_obj:
+                values_qs = values_qs.filter(_note_effective__date__gte=date_from_obj)
+            if date_to_obj:
+                values_qs = values_qs.filter(_note_effective__date__lte=date_to_obj)
+
+            values = values_qs.select_related(
                 "progress_note_target__progress_note"
             ).order_by(
                 "progress_note_target__progress_note__created_at"
@@ -961,6 +1009,13 @@ def client_analysis(request, client_id):
     # Sort by program_name for template {% regroup %} tag
     chart_data.sort(key=lambda c: (c["program_name"] or "", c["target_name"]))
 
+    # Compute active date filter values for the template
+    if timeframe in ("30d", "3m", "6m"):
+        filter_date_from = date_from_obj.isoformat() if date_from_obj else ""
+    else:
+        filter_date_from = date_from
+    filter_date_to = date_to
+
     context = {
         "client": client,
         "chart_data": chart_data,
@@ -968,6 +1023,9 @@ def client_analysis(request, client_id):
         "user_role": getattr(request, "user_program_role", None),
         "show_grouping": program_ctx["show_grouping"],
         "show_program_ui": program_ctx["show_program_ui"],
+        "filter_date_from": filter_date_from,
+        "filter_date_to": filter_date_to,
+        "filter_timeframe": timeframe,
     }
     if request.headers.get("HX-Request"):
         return render(request, "reports/_tab_analysis.html", context)
