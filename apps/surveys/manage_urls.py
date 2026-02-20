@@ -18,5 +18,12 @@ urlpatterns = [
         name="survey_response_detail",
     ),
     path("<int:survey_id>/links/", views.survey_links, name="survey_links"),
+    path("<int:survey_id>/rules/", views.survey_rules_list, name="survey_rules"),
+    path("<int:survey_id>/rules/new/", views.survey_rule_create, name="survey_rule_create"),
+    path(
+        "<int:survey_id>/rules/<int:rule_id>/deactivate/",
+        views.survey_rule_deactivate,
+        name="survey_rule_deactivate",
+    ),
     path("import/", views.csv_import, name="csv_import"),
 ]

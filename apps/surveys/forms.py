@@ -121,6 +121,13 @@ class ManualAssignmentForm(forms.Form):
 class TriggerRuleForm(forms.ModelForm):
     """Form for creating/editing a survey trigger rule."""
 
+    # Anchor is only relevant for time-based rules; default to enrolment_date.
+    anchor = forms.ChoiceField(
+        choices=SurveyTriggerRule.ANCHOR_CHOICES,
+        required=False,
+        label=_("Count days from"),
+    )
+
     class Meta:
         model = SurveyTriggerRule
         fields = [
@@ -154,6 +161,13 @@ class TriggerRuleForm(forms.ModelForm):
             "recurrence_days": forms.NumberInput(attrs={"min": 1}),
             "due_days": forms.NumberInput(attrs={"min": 1}),
         }
+
+    def clean_anchor(self):
+        """Default anchor to enrolment_date when not provided."""
+        value = self.cleaned_data.get("anchor")
+        if not value:
+            return "enrolment_date"
+        return value
 
 
 class CSVImportForm(forms.Form):

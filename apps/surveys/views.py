@@ -713,3 +713,65 @@ def survey_links(request, survey_id):
         "survey": survey,
         "links": links,
     })
+
+
+# ---------------------------------------------------------------------------
+# Trigger rule management — /manage/surveys/<id>/rules/
+# ---------------------------------------------------------------------------
+
+
+@login_required
+@requires_permission("template.note.manage", allow_admin=True)
+def survey_rules_list(request, survey_id):
+    """List trigger rules for a survey."""
+    _surveys_or_404()
+    survey = get_object_or_404(Survey, pk=survey_id)
+    rules = survey.trigger_rules.select_related(
+        "program", "event_type",
+    ).order_by("-created_at")
+    return render(request, "surveys/admin/rule_list.html", {
+        "survey": survey,
+        "rules": rules,
+    })
+
+
+@login_required
+@requires_permission("template.note.manage", allow_admin=True)
+def survey_rule_create(request, survey_id):
+    """Create a new trigger rule for a survey."""
+    _surveys_or_404()
+    survey = get_object_or_404(Survey, pk=survey_id)
+
+    if request.method == "POST":
+        from .forms import TriggerRuleForm
+        form = TriggerRuleForm(request.POST)
+        if form.is_valid():
+            rule = form.save(commit=False)
+            rule.survey = survey
+            rule.created_by = request.user
+            rule.save()
+            messages.success(request, _("Trigger rule created."))
+            return redirect("survey_manage:survey_rules", survey_id=survey.pk)
+    else:
+        from .forms import TriggerRuleForm
+        form = TriggerRuleForm()
+
+    return render(request, "surveys/admin/rule_form.html", {
+        "survey": survey,
+        "form": form,
+    })
+
+
+@login_required
+@requires_permission("template.note.manage", allow_admin=True)
+@require_POST
+def survey_rule_deactivate(request, survey_id, rule_id):
+    """Deactivate a trigger rule."""
+    _surveys_or_404()
+    survey = get_object_or_404(Survey, pk=survey_id)
+    from .models import SurveyTriggerRule
+    rule = get_object_or_404(SurveyTriggerRule, pk=rule_id, survey=survey)
+    rule.is_active = False
+    rule.save(update_fields=["is_active"])
+    messages.success(request, _("Trigger rule deactivated."))
+    return redirect("survey_manage:survey_rules", survey_id=survey.pk)
