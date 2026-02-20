@@ -316,6 +316,20 @@ class NoteViewsTest(TestCase):
         mv = MetricValue.objects.get(progress_note_target=pnt)
         self.assertEqual(mv.value, "7")
 
+    def test_full_note_saves_without_consent(self):
+        """Consent checkbox is recommended, not required."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/new/",
+            {
+                "interaction_type": "session",
+                "summary": "Session notes",
+                # consent_confirmed omitted
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(ProgressNote.objects.filter(note_type="full").exists())
+
     def test_metric_value_out_of_range_rejected(self):
         section = PlanSection.objects.create(
             client_file=self.client_file, name="Goals", program=self.prog,

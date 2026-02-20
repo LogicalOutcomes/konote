@@ -152,12 +152,8 @@ class FullNoteForm(forms.Form):
         label=_("Priority"),
     )
     consent_confirmed = forms.BooleanField(
-        required=True,
-        label=_("We created this note together"),
-        help_text=_("Confirm you reviewed this note with the participant."),
-        error_messages={
-            "required": _("Please confirm you reviewed this note together."),
-        },
+        required=False,
+        label=_("I have reviewed this note for accuracy"),
     )
 
 
