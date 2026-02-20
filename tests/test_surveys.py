@@ -1022,3 +1022,57 @@ class PublicSurveyViewTests(TestCase):
         self.survey.save()
         resp = self.client.get(f"/s/{self.link.token}/")
         self.assertEqual(resp.status_code, 410)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class StaffLinkGenerationTests(TestCase):
+    """Test staff UI for generating shareable survey links."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="linkgen_staff", password="testpass123",
+            display_name="LinkGen Staff", is_admin=True,
+        )
+        self.client.login(username="linkgen_staff", password="testpass123")
+        from django.core.cache import cache
+        cache.delete("feature_toggles")
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys",
+            defaults={"is_enabled": True},
+        )
+        self.survey = Survey.objects.create(
+            name="LinkGen Survey", status="active", created_by=self.staff,
+        )
+        SurveySection.objects.create(
+            survey=self.survey, title="S1", sort_order=1,
+        )
+
+    def test_generate_link_page_renders(self):
+        resp = self.client.get(
+            f"/manage/surveys/{self.survey.pk}/links/",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_create_link(self):
+        from apps.surveys.models import SurveyLink
+        resp = self.client.post(
+            f"/manage/surveys/{self.survey.pk}/links/",
+            {"action": "create"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(SurveyLink.objects.filter(survey=self.survey).count(), 1)
+
+    def test_deactivate_link(self):
+        from apps.surveys.models import SurveyLink
+        link = SurveyLink.objects.create(
+            survey=self.survey, created_by=self.staff,
+        )
+        resp = self.client.post(
+            f"/manage/surveys/{self.survey.pk}/links/",
+            {"action": "deactivate", "link_id": link.pk},
+        )
+        link.refresh_from_db()
+        self.assertFalse(link.is_active)
