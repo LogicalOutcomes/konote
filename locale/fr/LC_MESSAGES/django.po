@@ -4347,7 +4347,9 @@ msgid "An unexpected error occurred. Our team has been notified."
 msgstr "Une erreur inattendue s'est produite. Notre équipe a été avisée."
 
 msgid "An unexpected error occurred. Please try again or contact support."
-msgstr "Une erreur inattendue s'est produite. Veuillez réessayer ou contacter le support."
+msgstr ""
+"Une erreur inattendue s'est produite. Veuillez réessayer ou contacter le "
+"support."
 
 msgid "Anonymise"
 msgstr "Anonymiser"
@@ -13976,4 +13978,360 @@ msgid "Edit target:"
 msgstr "Modifier la cible :"
 
 msgid "Area of the plan"
+msgstr ""
+
+msgid "Activate"
+msgstr ""
+
+msgid "Activate this survey"
+msgstr ""
+
+msgid "Add Question"
+msgstr ""
+
+msgid "Add or remove questions for each section."
+msgstr ""
+
+msgid "Add sections"
+msgstr ""
+
+msgid "Add sections first"
+msgstr ""
+
+msgid "Anonymous survey"
+msgstr ""
+
+msgid "Assign"
+msgstr ""
+
+msgid "Assign Survey"
+msgstr ""
+
+msgid "Assigned"
+msgstr ""
+
+msgid "Assigned Surveys"
+msgstr ""
+
+msgid "Awaiting Approval"
+msgstr ""
+
+msgid "Back to survey"
+msgstr ""
+
+msgid "Back to surveys"
+msgstr ""
+
+msgid "CSV columns"
+msgstr ""
+
+msgid "CSV format guide"
+msgstr ""
+
+msgid "CSV import failed: %(error)s"
+msgstr ""
+
+msgid "Completed Responses"
+msgstr ""
+
+msgid "Completed Surveys"
+msgstr ""
+
+msgid "Completed surveys"
+msgstr ""
+
+msgid "Create Survey"
+msgstr ""
+
+msgid "Create and manage surveys for participant feedback."
+msgstr ""
+
+msgid "Description (French)"
+msgstr ""
+
+msgid "Display order"
+msgstr ""
+
+msgid "Due"
+msgstr ""
+
+msgid "Due date (optional)"
+msgstr ""
+
+msgid "Edit Survey"
+msgstr ""
+
+msgid "Enter Survey on Behalf"
+msgstr ""
+
+msgid "Enter on behalf"
+msgstr ""
+
+msgid ""
+"Every survey needs at least one section. Sections group questions together."
+msgstr ""
+
+msgid ""
+"For choice questions — separate options with semicolons: "
+"Agree;Neutral;Disagree"
+msgstr ""
+
+msgid "For rating scales only."
+msgstr ""
+
+msgid "French option labels, semicolon-separated."
+msgstr ""
+
+msgid "French question text."
+msgstr ""
+
+msgid "French section name."
+msgstr ""
+
+msgid "If checked, participants will see section scores after submitting."
+msgstr ""
+
+msgid "If checked, responses are never linked to a participant file."
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Import Survey from CSV"
+msgstr ""
+
+msgid "Instructions (French)"
+msgstr ""
+
+msgid "Instructions shown at the top of a section."
+msgstr ""
+
+msgid "Label (French)"
+msgstr ""
+
+msgid "Manually assigned by staff"
+msgstr ""
+
+msgid "Maximum score"
+msgstr ""
+
+msgid "Maximum value"
+msgstr ""
+
+msgid "Minimum value"
+msgstr ""
+
+msgid "New Survey"
+msgstr ""
+
+msgid "No questions in this section yet."
+msgstr ""
+
+msgid "No sections yet."
+msgstr ""
+
+msgid "No surveys assigned or completed yet."
+msgstr ""
+
+msgid "No surveys yet. Create one to get started."
+msgstr ""
+
+msgid "Numeric scores matching options: 3;2;1"
+msgstr ""
+
+msgid ""
+"Only needed for single choice, multiple choice, or rating scale questions."
+msgstr ""
+
+msgid "Options (one per line)"
+msgstr ""
+
+msgid "Please answer all required questions."
+msgstr ""
+
+msgid "Please answer all required questions:"
+msgstr ""
+
+msgid "Please complete these surveys when you're ready."
+msgstr ""
+
+msgid "Question"
+msgstr ""
+
+msgid "Question (French)"
+msgstr ""
+
+msgid "Question added."
+msgstr ""
+
+msgid "Question removed."
+msgstr ""
+
+msgid "Question text"
+msgstr ""
+
+msgid "Question text (French)"
+msgstr ""
+
+msgid "Question type"
+msgstr ""
+
+msgid ""
+"Question type: short_text, long_text, single_choice, multiple_choice, "
+"rating_scale, yes_no."
+msgstr ""
+
+msgid "Questions"
+msgstr ""
+
+msgid "Recent Responses"
+msgstr ""
+
+msgid "Recent responses"
+msgstr ""
+
+msgid "Remove question"
+msgstr ""
+
+msgid "Response"
+msgstr ""
+
+msgid "Responses"
+msgstr ""
+
+msgid "Row %(num)d: missing section title."
+msgstr ""
+
+msgid "Score"
+msgstr ""
+
+msgid "Scoring method"
+msgstr ""
+
+msgid ""
+"Section name — questions with the same section name are grouped together."
+msgstr ""
+
+msgid "Section title"
+msgstr ""
+
+msgid "Section title (French)"
+msgstr ""
+
+msgid "Select an active survey to fill in on this participant's behalf."
+msgstr ""
+
+msgid "Set up the survey name, description, and sections."
+msgstr ""
+
+msgid "Show scores to participant"
+msgstr ""
+
+msgid "Staff Data Entry"
+msgstr ""
+
+msgid "Start"
+msgstr ""
+
+msgid "Start new page"
+msgstr ""
+
+msgid "Submit"
+msgstr ""
+
+msgid "Submit Response"
+msgstr ""
+
+msgid "Survey"
+msgstr ""
+
+msgid "Survey '%(name)s' imported with %(count)d questions."
+msgstr ""
+
+msgid "Survey Details"
+msgstr ""
+
+msgid "Survey assigned."
+msgstr ""
+
+msgid "Survey assignment approved."
+msgstr ""
+
+msgid "Survey assignment dismissed."
+msgstr ""
+
+msgid "Survey assignments"
+msgstr ""
+
+msgid "Survey created."
+msgstr ""
+
+msgid "Survey is now active."
+msgstr ""
+
+msgid "Survey name"
+msgstr ""
+
+msgid "Survey name (French)"
+msgstr ""
+
+msgid "Survey response saved."
+msgstr ""
+
+msgid "Survey responses"
+msgstr ""
+
+msgid "Survey status changed from %(old)s to %(new)s."
+msgstr ""
+
+msgid "Survey updated."
+msgstr ""
+
+msgid "Surveys"
+msgstr ""
+
+msgid "Surveys for You"
+msgstr ""
+
+msgid "Thank You"
+msgstr ""
+
+msgid "Thank you!"
+msgstr ""
+
+msgid "The question text."
+msgstr ""
+
+msgid "This survey has no sections."
+msgstr ""
+
+msgid "Uncheck to hide this survey from the participant portal."
+msgstr ""
+
+msgid ""
+"Upload a CSV file to create a complete survey with sections and questions."
+msgstr ""
+
+msgid "You have no surveys to complete right now."
+msgstr ""
+
+msgid "Your CSV file should have the following columns:"
+msgstr ""
+
+msgid "responses"
+msgstr ""
+
+msgid "score"
+msgstr ""
+
+msgid "sections"
+msgstr ""
+
+msgid "yes or no — whether the question must be answered."
+msgstr ""
+
+msgid "yes — to start a new page at this section."
+msgstr ""
+
+msgid "— Select a survey —"
 msgstr ""
