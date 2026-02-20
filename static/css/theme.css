@@ -27,6 +27,8 @@
     --kn-warning-fg: #856404;
     --kn-danger-bg: #f8d7da;
     --kn-danger-fg: #842029;
+    --kn-urgent: #c0392b;
+    --kn-urgent-bg: rgba(192, 57, 43, 0.06);
     --kn-neutral-bg: #e9ecef;
     --kn-neutral-fg: #495057;
     --kn-success-subtle: rgba(26, 90, 50, 0.10);
@@ -100,6 +102,8 @@
         --kn-warning-fg: #f6e05e;
         --kn-danger-bg: #3b1a1a;
         --kn-danger-fg: #feb2b2;
+        --kn-urgent: #e74c3c;
+        --kn-urgent-bg: rgba(231, 76, 60, 0.12);
         --kn-neutral-bg: #2d3748;
         --kn-neutral-fg: #cbd5e0;
         --kn-success-subtle: rgba(39, 174, 96, 0.15);
