@@ -13,6 +13,7 @@
 
 - [ ] Complete Agency Deployment Protocol with Prosper Canada — Phase 0 Discovery Call first (see tasks/prosper-canada/deployment-protocol.md) — SG (DEPLOY-PC1)
 - [ ] Define Prosper Canada configuration template — standard roles, metrics, terminology, plan templates for financial coaching agencies (see tasks/prosper-canada/config-template-design.md) — GG (DEPLOY-TEMPLATE1)
+- [ ] Follow up with Claire (Prosper Canada) for additional must-haves on feature comparison — SG (DEPLOY-PC2)
 - [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — GG (ONBOARD-GATE)
 - [ ] Verify production email configuration for exports, erasure alerts, and password resets — GG (OPS3)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — GG (OPS4)
@@ -60,6 +61,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] Build deploy script to automate Phase 2 infrastructure provisioning — Azure resources, env vars, migrations, output a URL (DEPLOY-SCRIPT1)
 - [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/prosper-canada/managed-service-model.md) (OPS-MANAGED1)
+- [ ] Build cross-agency reporting API — standardised endpoint per instance for Prosper Canada to consume published reports (SCALE-API1)
+- [ ] Build umbrella admin dashboard — central view for Prosper Canada to see instance health, published reports, and aggregate metrics across agencies (SCALE-DASH1)
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 
 ### Phase: Other Upcoming
