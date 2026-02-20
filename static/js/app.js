@@ -1264,6 +1264,21 @@ document.addEventListener("click", function (event) {
     });
 })();
 
+// --- Focus management: after marking a message read, focus next unread ---
+document.body.addEventListener("htmx:afterSwap", function (event) {
+    var swapped = event.detail.target;
+    if (!swapped || !swapped.classList || !swapped.classList.contains("message-card")) return;
+    // Find the next unread message card
+    var next = swapped.nextElementSibling;
+    while (next && !next.querySelector("button[type='submit']")) {
+        next = next.nextElementSibling;
+    }
+    if (next) {
+        next.setAttribute("tabindex", "-1");
+        next.focus();
+    }
+});
+
 // --- Relative timestamps for <time> elements ---
 // Updates elements with data-relative attribute to show "2 hours ago" etc.
 // Falls back to absolute date if JS disabled (server renders it).
