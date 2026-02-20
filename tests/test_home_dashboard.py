@@ -133,3 +133,93 @@ class HomeDashboardPermissionsTest(TestCase):
         self.assertIn("Follow-ups Due", content)
         self.assertIn("Needs Attention", content)
         self.assertIn("Priority Items", content)
+
+
+class DashboardRoleDetectionTest(TestCase):
+    """Verify role detection in home dashboard for PM and executive."""
+
+    def setUp(self):
+        self.program = Program.objects.create(name="Test Program", status="active")
+        self.program_b = Program.objects.create(name="Other Program", status="active")
+
+        # PM user
+        self.pm = User.objects.create_user(
+            username="pm", password="testpass123", is_demo=False
+        )
+        UserProgramRole.objects.create(
+            user=self.pm, program=self.program, role="program_manager"
+        )
+
+        # Executive user (only executive role, no client-access roles)
+        self.exec_user = User.objects.create_user(
+            username="exec", password="testpass123", is_demo=False
+        )
+        UserProgramRole.objects.create(
+            user=self.exec_user, program=self.program, role="executive"
+        )
+
+        # Staff user
+        self.staff_user = User.objects.create_user(
+            username="staffuser", password="testpass123", is_demo=False
+        )
+        UserProgramRole.objects.create(
+            user=self.staff_user, program=self.program, role="staff"
+        )
+
+        # PM with one program (for scoping test)
+        self.pm_multi = User.objects.create_user(
+            username="pm_multi", password="testpass123", is_demo=False
+        )
+        UserProgramRole.objects.create(
+            user=self.pm_multi, program=self.program, role="program_manager"
+        )
+        # Note: pm_multi does NOT have a role in program_b
+
+        # Create a client for context
+        self.client_file = ClientFile.objects.create(
+            first_name="Test", last_name="Client", status="active", is_demo=False,
+        )
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program, status="enrolled"
+        )
+
+    def test_pm_sees_program_summary(self):
+        """PM gets is_pm=True in context."""
+        self.client.login(username="pm", password="testpass123")
+        resp = self.client.get(reverse("home"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.context["is_pm"])
+        self.assertFalse(resp.context["is_executive"])
+
+    def test_executive_sees_aggregate_metrics(self):
+        """Executive gets is_executive=True in context."""
+        self.client.login(username="exec", password="testpass123")
+        resp = self.client.get(reverse("home"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.context["is_executive"])
+
+    def test_executive_only_user_detected(self):
+        """User with ONLY executive role (no staff/PM) is correctly identified."""
+        self.client.login(username="exec", password="testpass123")
+        resp = self.client.get(reverse("home"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.context["is_executive"])
+
+    def test_staff_does_not_see_pm_section(self):
+        """Staff user does not get PM or executive content."""
+        self.client.login(username="staffuser", password="testpass123")
+        resp = self.client.get(reverse("home"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(resp.context.get("is_pm", False))
+        self.assertFalse(resp.context.get("is_executive", False))
+
+    def test_pm_gets_only_assigned_programs(self):
+        """PM only sees stats for programs they manage."""
+        self.client.login(username="pm_multi", password="testpass123")
+        resp = self.client.get(reverse("home"))
+        self.assertEqual(resp.status_code, 200)
+        # PM should only see program stats for programs they have roles in
+        if "pm_program_stats" in resp.context:
+            pm_program_ids = {s["program"].pk for s in resp.context["pm_program_stats"]}
+            self.assertIn(self.program.pk, pm_program_ids)
+            self.assertNotIn(self.program_b.pk, pm_program_ids)

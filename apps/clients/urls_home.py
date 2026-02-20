@@ -7,7 +7,7 @@ from django.urls import path
 from django.utils import timezone
 
 from apps.auth_app.constants import ROLE_RANK
-from apps.auth_app.decorators import _get_user_highest_role
+from apps.auth_app.decorators import _get_user_highest_role, _get_user_highest_role_any
 
 
 @login_required
@@ -47,13 +47,21 @@ def home(request):
     user_role = _get_user_highest_role(request.user)
     is_receptionist = user_role == "receptionist"
 
+    # Role detection for dashboard view selection
+    # IMPORTANT: use _get_user_highest_role_any() — the original helper
+    # excludes executives (returns None for executive-only users)
+    highest_role_any = _get_user_highest_role_any(request.user)
+    is_executive = highest_role_any == "executive"
+    is_pm = highest_role_any == "program_manager" and not is_executive
+
     # CONF9: Use active program context from middleware if available
     active_ids = getattr(request, "active_program_ids", None)
     accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
 
-    # --- Clinical data (hidden from Front Desk) ---
-    # Security: Front Desk should not see stats, alerts, notes, or follow-ups
-    if is_receptionist:
+    # --- Clinical data (hidden from Front Desk and executive-only users) ---
+    # Security: Front Desk should not see stats, alerts, notes, or follow-ups.
+    # Executive-only users see de-identified aggregates instead (added in B3).
+    if is_receptionist or is_executive:
         active_count = 0
         total_count = 0
         active_alerts = []
@@ -142,6 +150,9 @@ def home(request):
         "accessible_programs": accessible_programs,
         "can_create": can_create,
         "is_receptionist": is_receptionist,
+        "is_pm": is_pm,
+        "is_executive": is_executive,
+        "highest_role": highest_role_any,
     })
 
 
