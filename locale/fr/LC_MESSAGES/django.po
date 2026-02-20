@@ -12824,7 +12824,9 @@ msgid "Activity"
 msgstr "Activité"
 
 msgid "Aggregate usage statistics. No per-participant data is shown."
-msgstr "Statistiques d'utilisation agrégées. Aucune donnée individuelle n'est affichée."
+msgstr ""
+"Statistiques d'utilisation agrégées. Aucune donnée individuelle n'est "
+"affichée."
 
 msgid "Corrections"
 msgstr "Corrections"
@@ -12887,10 +12889,8 @@ msgstr "Gérer l'accès au portail pour %(name)s."
 
 #: apps/portal/templates/portal/staff_manage_portal.html
 #, python-format
-msgid ""
-"This link expires at %(time)s. It can only be used once."
-msgstr ""
-"Ce lien expire à %(time)s. Il ne peut être utilisé qu'une seule fois."
+msgid "This link expires at %(time)s. It can only be used once."
+msgstr "Ce lien expire à %(time)s. Il ne peut être utilisé qu'une seule fois."
 
 #: apps/portal/templates/portal/staff_manage_portal.html
 #, python-format
@@ -12902,7 +12902,8 @@ msgstr[1] "%(counter)s demandes de correction sont en attente de révision."
 #: apps/portal/templates/portal/analytics.html
 #, python-format
 msgid "%(count)s survey assignments are currently pending or in progress."
-msgstr "%(count)s attributions de sondage sont actuellement en attente ou en cours."
+msgstr ""
+"%(count)s attributions de sondage sont actuellement en attente ou en cours."
 
 # NOTE: Manually added — translate_strings cannot auto-extract this multiline
 # _() call from views.py (~line 751). Update here if the English text changes.
@@ -12918,3 +12919,15 @@ msgstr ""
 "\n"
 "Ce code expire dans 10 minutes.\n"
 "Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer ce courriel."
+
+msgid "How sure do you feel about being able to %(target)s?"
+msgstr "À quel point êtes-vous sûr(e) de pouvoir %(target)s?"
+
+msgid "Include this metric"
+msgstr "Inclure cette métrique"
+
+msgid "Skip"
+msgstr "Ignorer"
+
+msgid "Suggested target-specific metric"
+msgstr "Métrique suggérée pour cet objectif"
