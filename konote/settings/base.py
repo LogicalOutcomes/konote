@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "apps.groups",
     "apps.portal",
     "apps.communications",
+    "apps.surveys",
 ]
 
 MIDDLEWARE = [
