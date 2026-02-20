@@ -642,9 +642,19 @@ def dashboard(request):
         client_file=client_file, is_active=True,
     )[:5]
 
+    # Build a highlight message from the latest progress note date
+    highlight_message = ""
+    if latest_note:
+        from django.utils.formats import date_format
+        formatted = date_format(latest_note, "N j, Y")
+        highlight_message = _("Your last session was recorded on %(date)s.") % {
+            "date": formatted,
+        }
+
     return render(request, "portal/dashboard.html", {
         "participant": participant,
         "latest_note_date": latest_note,
+        "highlight_message": highlight_message,
         "new_count": new_count,
         "new_details": new_details,
         "staff_notes": staff_notes,
