@@ -2,8 +2,13 @@
 
 Verifies automatic deactivation on discharge and other lifecycle events.
 """
+from datetime import timedelta
+from io import StringIO
+
 from cryptography.fernet import Fernet
+from django.core.management import call_command
 from django.test import TestCase, override_settings
+from django.utils import timezone
 
 from apps.admin_settings.models import FeatureToggle
 from apps.auth_app.models import User
@@ -242,3 +247,72 @@ class ErasurePortalTests(TestCase):
         _anonymise_client_pii(self.client_file, "ER-TEST-001")
         self.participant.refresh_from_db()
         self.assertFalse(self.participant.is_active)
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-hash-key-for-lifecycle",
+    PORTAL_DOMAIN="",
+    STAFF_DOMAIN="",
+)
+class InactivityDeactivationTests(TestCase):
+    """D1: Deactivate portal accounts inactive for 90+ days."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client_file = ClientFile.objects.create(
+            record_id="INACT-001", status="active",
+        )
+        self.participant = ParticipantUser.objects.create_participant(
+            email="inactive@example.com",
+            client_file=self.client_file,
+            display_name="Inactive User",
+            password="TestPass123!",
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_deactivates_inactive_accounts(self):
+        """Accounts with last_login > 90 days ago should be deactivated."""
+        self.participant.last_login = timezone.now() - timedelta(days=91)
+        self.participant.save(update_fields=["last_login"])
+
+        out = StringIO()
+        call_command("deactivate_inactive_portal_accounts", stdout=out)
+        self.participant.refresh_from_db()
+        self.assertFalse(self.participant.is_active)
+        self.assertIn("1", out.getvalue())
+
+    def test_leaves_active_accounts(self):
+        """Accounts with recent login should not be deactivated."""
+        self.participant.last_login = timezone.now() - timedelta(days=30)
+        self.participant.save(update_fields=["last_login"])
+
+        call_command("deactivate_inactive_portal_accounts", stdout=StringIO())
+        self.participant.refresh_from_db()
+        self.assertTrue(self.participant.is_active)
+
+    def test_deactivates_never_logged_in_old_accounts(self):
+        """Accounts created > 90 days ago that never logged in should be deactivated."""
+        self.participant.last_login = None
+        self.participant.save(update_fields=["last_login"])
+        # Backdate created_at
+        ParticipantUser.objects.filter(pk=self.participant.pk).update(
+            created_at=timezone.now() - timedelta(days=91),
+        )
+
+        call_command("deactivate_inactive_portal_accounts", stdout=StringIO())
+        self.participant.refresh_from_db()
+        self.assertFalse(self.participant.is_active)
+
+    def test_dry_run_does_not_deactivate(self):
+        """--dry-run should report but not deactivate."""
+        self.participant.last_login = timezone.now() - timedelta(days=91)
+        self.participant.save(update_fields=["last_login"])
+
+        call_command("deactivate_inactive_portal_accounts", "--dry-run", stdout=StringIO())
+        self.participant.refresh_from_db()
+        self.assertTrue(self.participant.is_active)
