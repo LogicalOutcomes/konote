@@ -108,6 +108,7 @@ class Command(BaseCommand):
             ("participant_portal", False),
             ("messaging_sms", False),
             ("messaging_email", True),
+            ("surveys", False),
         ]
         created = 0
         for key, enabled in defaults:

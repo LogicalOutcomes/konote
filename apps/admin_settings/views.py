@@ -131,6 +131,7 @@ DEFAULT_FEATURES = {
     "messaging_sms": _lazy("Send text message reminders to clients"),
     "portal_journal": _lazy("Participant portal — private journal"),
     "portal_messaging": _lazy("Participant portal — messages to worker"),
+    "surveys": _lazy("Surveys — structured feedback from participants"),
 }
 
 # Features that default to enabled (most default to disabled)

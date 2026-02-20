@@ -1,0 +1,1 @@
+"""Survey URL configuration."""
