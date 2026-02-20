@@ -1265,11 +1265,12 @@ document.addEventListener("click", function (event) {
 })();
 
 // --- Focus management: after marking a message read, focus next unread ---
-document.body.addEventListener("htmx:afterSwap", function (event) {
-    var swapped = event.detail.target;
-    if (!swapped || !swapped.classList || !swapped.classList.contains("message-card")) return;
-    // Find the next unread message card
-    var next = swapped.nextElementSibling;
+// Uses htmx:afterSettle (not afterSwap) so the DOM is stable after outerHTML replacement
+document.body.addEventListener("htmx:afterSettle", function (event) {
+    var settled = event.detail.target;
+    if (!settled || !settled.classList || !settled.classList.contains("message-card")) return;
+    // Find the next unread message card (one with a Mark as Read button)
+    var next = settled.nextElementSibling;
     while (next && !next.querySelector("button[type='submit']")) {
         next = next.nextElementSibling;
     }
