@@ -40,7 +40,7 @@ Two situations where you'd want PostgreSQL running locally:
 
 1. **Install PostgreSQL 16** from https://www.postgresql.org/download/
 
-2. **Create the databases and users:**
+2. **Create the databases and users** (open pgAdmin → Query Tool, or run `psql -U postgres` in a terminal):
 
    ```sql
    -- Main application database
@@ -56,13 +56,13 @@ Two situations where you'd want PostgreSQL running locally:
 
    ```bash
    export DATABASE_URL="postgresql://konote:konote@localhost:5432/konote"
-   export AUDIT_DATABASE_URL="postgresql://audit_writer:audit_pass@localhost:5432/konote_audit"
+   export AUDIT_DATABASE_URL="postgresql://audit_writer:audit_pass@localhost:5433/konote_audit"
    ```
 
    On Windows (PowerShell):
    ```powershell
    $env:DATABASE_URL = "postgresql://konote:konote@localhost:5432/konote"
-   $env:AUDIT_DATABASE_URL = "postgresql://audit_writer:audit_pass@localhost:5432/konote_audit"
+   $env:AUDIT_DATABASE_URL = "postgresql://audit_writer:audit_pass@localhost:5433/konote_audit"
    ```
 
 4. **Run migrations:**
@@ -76,6 +76,12 @@ Two situations where you'd want PostgreSQL running locally:
 
    ```bash
    DJANGO_SETTINGS_MODULE=konote.settings.development pytest -m "not browser and not scenario_eval"
+   ```
+
+   On Windows (PowerShell):
+   ```powershell
+   $env:DJANGO_SETTINGS_MODULE = "konote.settings.development"
+   pytest -m "not browser and not scenario_eval"
    ```
 
 ## Alternative: use Docker Compose
