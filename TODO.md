@@ -6,6 +6,7 @@
 - [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — GG (ONBOARD-APPROVE)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GG (SEC3-Q1)
 - [ ] Confirm standard report schema and configuration template with Claire (Prosper Canada) before building — SG (RPT-SCHEMA1)
+- [ ] Review and approve multi-tenancy implementation plan with Sara and Prince before building — covers django-tenants integration, per-tenant encryption, consortium data model, and hybrid federation architecture (see tasks/prosper-canada/multi-tenancy-implementation-plan.md) — SG/PD (MT-APPROVE1)
 
 ## Active Work
 
