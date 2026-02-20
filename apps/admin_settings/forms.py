@@ -99,6 +99,7 @@ class InstanceSettingsForm(forms.Form):
             ("m/d/Y", "02/02/2026 (US)"),
         ],
         label=_("Date Format"),
+        help_text=_("How dates appear in reports, notes, and file headers."),
     )
     session_timeout_minutes = forms.IntegerField(
         min_value=5, max_value=480, initial=30,
