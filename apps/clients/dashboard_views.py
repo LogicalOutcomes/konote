@@ -508,6 +508,186 @@ def _get_feature_flags():
 
 
 # ---------------------------------------------------------------------------
+# Inline data helpers (for role-based home dashboard)
+# ---------------------------------------------------------------------------
+
+def _get_pm_summary_data(user, program_ids, base_client_ids):
+    """Fetch PM program health metrics for inline display on home page.
+
+    Returns a list of per-program dicts with: program, active count,
+    notes this week, overdue follow-ups, and clients without recent notes.
+    """
+    from apps.notes.models import ProgressNote
+    from apps.programs.models import Program
+
+    now = timezone.now()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    week_start = now - timedelta(days=now.weekday())
+    today = now.date()
+
+    programs = Program.objects.filter(pk__in=program_ids, status="active")
+    filtered_program_ids = list(programs.values_list("pk", flat=True))
+
+    if not filtered_program_ids:
+        return []
+
+    enrolment_stats = _batch_enrolment_stats(
+        filtered_program_ids, base_client_ids, month_start,
+    )
+    notes_week_map = _batch_notes_this_week(filtered_program_ids, week_start)
+
+    # Overdue follow-ups per program (batch)
+    overdue_rows = (
+        ProgressNote.objects.filter(
+            author_program_id__in=filtered_program_ids,
+            follow_up_date__lt=today,
+            follow_up_completed_at__isnull=True,
+            status="default",
+        )
+        .values("author_program_id")
+        .annotate(cnt=Count("id"))
+    )
+    overdue_map = {r["author_program_id"]: r["cnt"] for r in overdue_rows}
+
+    # Clients without notes this month per program (batch)
+    thirty_days_ago = now - timedelta(days=30)
+    clients_with_recent = set(
+        ProgressNote.objects.filter(
+            author_program_id__in=filtered_program_ids,
+            created_at__gte=thirty_days_ago,
+            status="default",
+        ).values_list("client_file_id", flat=True)
+    )
+
+    program_stats = []
+    for program in programs:
+        pid = program.pk
+        es = enrolment_stats.get(pid, {})
+        active_ids = es.get("active_ids", set())
+        without_recent = len(active_ids - clients_with_recent)
+
+        program_stats.append({
+            "program": program,
+            "active": es.get("active", 0),
+            "total": es.get("total", 0),
+            "notes_this_week": notes_week_map.get(pid, 0),
+            "overdue_followups": overdue_map.get(pid, 0),
+            "without_recent_notes": without_recent,
+        })
+
+    return program_stats
+
+
+def _get_executive_inline_data(user, program_ids, base_client_ids):
+    """Fetch executive summary metrics for inline display on home page.
+
+    Returns a dict with top-line cards, per-program stats, and feature flags.
+    Reuses the same batch queries as executive_dashboard().
+    """
+    from apps.clients.models import ClientProgramEnrolment
+    from apps.programs.models import Program
+
+    flags = _get_feature_flags()
+
+    now = timezone.now()
+    today = now.date()
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    week_start = now - timedelta(days=now.weekday())
+
+    programs = Program.objects.filter(pk__in=program_ids, status="active")
+    filtered_program_ids = list(programs.values_list("pk", flat=True))
+
+    if not filtered_program_ids:
+        return {
+            "total_active": 0,
+            "program_stats": [],
+            "flags": flags,
+            "without_notes": 0,
+            "overdue_followups": 0,
+            "active_alerts": None,
+            "show_alerts": flags.get("alerts", False),
+            "show_events": flags.get("events", False),
+            "show_portal": flags.get("portal_journal", False) or flags.get("portal_messaging", False),
+            "total_suggestions_important": 0,
+        }
+
+    # Collect all enrolled/active client IDs
+    from apps.clients.models import ClientFile
+    all_enrolled_ids = set(
+        ClientProgramEnrolment.objects.filter(
+            program_id__in=filtered_program_ids, status="enrolled",
+            client_file_id__in=base_client_ids,
+        ).values_list("client_file_id", flat=True)
+    )
+    all_active_ids = set(
+        ClientFile.objects.filter(
+            pk__in=all_enrolled_ids, status="active",
+        ).values_list("pk", flat=True)
+    )
+    all_client_ids = set(
+        ClientFile.objects.filter(
+            pk__in=all_enrolled_ids,
+        ).values_list("pk", flat=True)
+    )
+
+    # Top-line cards
+    total_active = len(all_active_ids)
+    without_notes = _count_without_notes(all_active_ids, filtered_program_ids, month_start)
+    overdue_followups = _count_overdue_followups(all_client_ids, today)
+
+    show_alerts = flags.get("alerts", False)
+    active_alerts = _count_active_alerts(all_client_ids) if show_alerts else None
+
+    show_events = flags.get("events", False)
+    show_portal = flags.get("portal_journal", False) or flags.get("portal_messaging", False)
+
+    # Batch per-program metrics
+    enrolment_stats = _batch_enrolment_stats(filtered_program_ids, base_client_ids, month_start)
+    notes_week_map = _batch_notes_this_week(filtered_program_ids, week_start)
+    engagement_map = _batch_engagement_quality(filtered_program_ids, month_start)
+    goal_map = _batch_goal_completion(filtered_program_ids)
+    intake_map = _batch_intake_pending(filtered_program_ids)
+    suggestion_map = _batch_suggestion_counts(filtered_program_ids)
+
+    program_stats = []
+    for program in programs:
+        pid = program.pk
+        es = enrolment_stats.get(pid, {})
+        stat = {
+            "program": program,
+            "total": es.get("total", 0),
+            "active": es.get("active", 0),
+            "new_this_month": es.get("new_this_month", 0),
+            "notes_this_week": notes_week_map.get(pid, 0),
+            "engagement_quality": engagement_map.get(pid),
+            "goal_completion": goal_map.get(pid),
+            "intake_pending": intake_map.get(pid, 0),
+        }
+        sugg = suggestion_map.get(pid, {})
+        stat["suggestion_total"] = sugg.get("total", 0)
+        stat["suggestion_important"] = sugg.get("important", 0) + sugg.get("urgent", 0)
+        program_stats.append(stat)
+
+    total_suggestions_important = sum(
+        s.get("important", 0) + s.get("urgent", 0)
+        for s in suggestion_map.values()
+    )
+
+    return {
+        "total_active": total_active,
+        "program_stats": program_stats,
+        "flags": flags,
+        "without_notes": without_notes,
+        "overdue_followups": overdue_followups,
+        "active_alerts": active_alerts,
+        "show_alerts": show_alerts,
+        "show_events": show_events,
+        "show_portal": show_portal,
+        "total_suggestions_important": total_suggestions_important,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Main view
 # ---------------------------------------------------------------------------
 
