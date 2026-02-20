@@ -132,10 +132,11 @@ DEFAULT_FEATURES = {
     "portal_journal": _lazy("Participant portal — private journal"),
     "portal_messaging": _lazy("Participant portal — messages to worker"),
     "surveys": _lazy("Surveys — structured feedback from participants"),
+    "cross_program_note_sharing": _lazy("Share clinical notes across programs for shared participants"),
 }
 
 # Features that default to enabled (most default to disabled)
-FEATURES_DEFAULT_ENABLED = {"require_client_consent", "portal_journal", "portal_messaging"}
+FEATURES_DEFAULT_ENABLED = {"require_client_consent", "portal_journal", "portal_messaging", "cross_program_note_sharing"}
 
 
 @login_required
