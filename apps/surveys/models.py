@@ -141,3 +141,86 @@ class SurveyQuestion(models.Model):
 
     def __str__(self):
         return f"Q{self.sort_order}: {self.question_text[:50]}"
+
+
+class SurveyTriggerRule(models.Model):
+    """Defines when a survey should be automatically assigned.
+
+    Supports four trigger types:
+    - event: fires when a specific event type is created for a participant
+    - enrolment: fires when a participant is enrolled in a program
+    - time: fires after N days from an anchor date (enrolment or last completion)
+    - characteristic: fires based on program membership (evaluated on access)
+    """
+
+    TRIGGER_TYPE_CHOICES = [
+        ("event", _("Event")),
+        ("enrolment", _("Enrolment")),
+        ("time", _("Time-based")),
+        ("characteristic", _("Characteristic")),
+    ]
+
+    REPEAT_POLICY_CHOICES = [
+        ("once_per_participant", _("Once per participant")),
+        ("once_per_enrolment", _("Once per enrolment")),
+        ("recurring", _("Recurring")),
+    ]
+
+    ANCHOR_CHOICES = [
+        ("enrolment_date", _("Enrolment date")),
+        ("last_completed", _("Last completion")),
+    ]
+
+    survey = models.ForeignKey(
+        Survey, on_delete=models.CASCADE, related_name="trigger_rules",
+    )
+    trigger_type = models.CharField(max_length=20, choices=TRIGGER_TYPE_CHOICES)
+    event_type = models.ForeignKey(
+        "events.EventType",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="survey_trigger_rules",
+    )
+    program = models.ForeignKey(
+        "programs.Program",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="survey_trigger_rules",
+    )
+    recurrence_days = models.PositiveIntegerField(null=True, blank=True)
+    anchor = models.CharField(
+        max_length=20, choices=ANCHOR_CHOICES, default="enrolment_date",
+    )
+    repeat_policy = models.CharField(
+        max_length=25, choices=REPEAT_POLICY_CHOICES, default="once_per_participant",
+    )
+    auto_assign = models.BooleanField(
+        default=True,
+        help_text=_("If true, assignment is automatic. If false, staff must approve."),
+    )
+    include_existing = models.BooleanField(
+        default=False,
+        help_text=_("When activated, also assign to participants who already match."),
+    )
+    is_active = models.BooleanField(default=True)
+    due_days = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text=_("Set a due date this many days after assignment."),
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="survey_rules_created",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "surveys"
+        db_table = "survey_trigger_rules"
+
+    def __str__(self):
+        return f"{self.get_trigger_type_display()} rule for {self.survey.name}"

@@ -7,7 +7,9 @@ from cryptography.fernet import Fernet
 from django.test import TestCase, override_settings
 
 from apps.auth_app.models import User
-from apps.surveys.models import Survey, SurveySection, SurveyQuestion
+from apps.events.models import EventType
+from apps.programs.models import Program
+from apps.surveys.models import Survey, SurveySection, SurveyQuestion, SurveyTriggerRule
 import konote.encryption as enc_module
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -126,3 +128,83 @@ class SurveyModelTests(TestCase):
                 sort_order=1,
             )
             self.assertEqual(q.question_type, qt)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class TriggerRuleModelTests(TestCase):
+    """Test SurveyTriggerRule creation and constraints."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="trigger_staff", password="testpass123",
+            display_name="Trigger Staff",
+        )
+        self.survey = Survey.objects.create(name="Trigger Test", created_by=self.staff)
+        self.program = Program.objects.create(name="Youth Program")
+
+    def test_create_enrolment_trigger(self):
+        rule = SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="enrolment",
+            program=self.program,
+            repeat_policy="once_per_enrolment",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        self.assertEqual(rule.trigger_type, "enrolment")
+        self.assertTrue(rule.auto_assign)
+        self.assertTrue(rule.is_active)
+
+    def test_create_time_trigger(self):
+        rule = SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="time",
+            program=self.program,
+            recurrence_days=30,
+            anchor="enrolment_date",
+            repeat_policy="recurring",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        self.assertEqual(rule.recurrence_days, 30)
+        self.assertEqual(rule.anchor, "enrolment_date")
+
+    def test_create_event_trigger(self):
+        et = EventType.objects.create(name="Crisis")
+        rule = SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="event",
+            event_type=et,
+            repeat_policy="once_per_participant",
+            auto_assign=False,
+            created_by=self.staff,
+        )
+        self.assertEqual(rule.event_type, et)
+        self.assertFalse(rule.auto_assign)
+
+    def test_create_characteristic_trigger(self):
+        rule = SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="characteristic",
+            program=self.program,
+            repeat_policy="once_per_participant",
+            auto_assign=True,
+            include_existing=True,
+            created_by=self.staff,
+        )
+        self.assertTrue(rule.include_existing)
+
+    def test_trigger_with_due_days(self):
+        rule = SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="enrolment",
+            program=self.program,
+            repeat_policy="once_per_enrolment",
+            auto_assign=True,
+            due_days=7,
+            created_by=self.staff,
+        )
+        self.assertEqual(rule.due_days, 7)
