@@ -330,6 +330,36 @@ class NoteViewsTest(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertTrue(ProgressNote.objects.filter(note_type="full").exists())
 
+    def test_full_note_with_scale_metric_saves(self):
+        """Scale metrics (RadioSelect) save correctly via form POST."""
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Wellbeing", program=self.prog,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Confidence",
+        )
+        metric = MetricDefinition.objects.create(
+            name="Confidence Level", min_value=1, max_value=5, unit="",
+            definition="Self-rated confidence", category="general",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/new/",
+            {
+                "interaction_type": "session",
+                "consent_confirmed": True,
+                f"target_{target.pk}-target_id": str(target.pk),
+                f"target_{target.pk}-notes": "Feeling better",
+                f"metric_{target.pk}_{metric.pk}-metric_def_id": str(metric.pk),
+                f"metric_{target.pk}_{metric.pk}-value": "4",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        mv = MetricValue.objects.get(metric_def=metric)
+        self.assertEqual(mv.value, "4")
+
     def test_scale_metric_renders_as_radio(self):
         """Metrics with small integer ranges (1-5) should use RadioSelect widget."""
         from apps.notes.forms import MetricValueForm
