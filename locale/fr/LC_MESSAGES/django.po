@@ -12918,3 +12918,19 @@ msgstr ""
 "\n"
 "Ce code expire dans 10 minutes.\n"
 "Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer ce courriel."
+
+#: templates/reports/_tab_analysis.html
+msgid "Timeframe"
+msgstr "Période"
+
+#: templates/reports/_tab_analysis.html
+msgid "Quick select"
+msgstr "Sélection rapide"
+
+#: templates/reports/_tab_analysis.html
+msgid "All time"
+msgstr "Toutes les dates"
+
+#: templates/notes/_tab_notes.html
+msgid "All targets"
+msgstr "Toutes les cibles"
