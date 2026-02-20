@@ -78,20 +78,26 @@
 {% if editing %}
 <script>
 (function() {
+    // Build base URL using Django's url tag with a dummy question_id=0, then strip
+    // the trailing "/0/" so we can append the real question PK at runtime.
+    // Safe because Django integer PKs start at 1, so "/0/" is unambiguous.
     var baseUrl = "{% url 'survey_manage:condition_values' survey_id=survey.pk question_id=0 %}".replace("/0/", "/");
     document.querySelectorAll("select[name$='-condition_question']").forEach(function(sel) {
         sel.addEventListener("change", function() {
             var idx = sel.name.match(/sections-(\d+)/)[1];
             var wrapper = document.getElementById("condition-value-wrapper-" + idx);
+            var valueName = sel.name.replace("condition_question", "condition_value");
             if (!sel.value) {
-                wrapper.innerHTML = '<input type="text" name="' + sel.name.replace("condition_question", "condition_value") + '">';
+                wrapper.innerHTML = '<select name="' + valueName + '" aria-label="{% trans "Condition value" %}"><option value="">—</option></select>';
                 return;
             }
             fetch(baseUrl + sel.value + "/")
                 .then(function(r) { return r.text(); })
                 .then(function(html) {
-                    var name = sel.name.replace("condition_question", "condition_value");
-                    wrapper.innerHTML = '<select name="' + name + '">' + html + '</select>';
+                    wrapper.innerHTML = '<select name="' + valueName + '">' + html + '</select>';
+                })
+                .catch(function() {
+                    wrapper.innerHTML = '<small class="error">{% trans "Failed to load options. Please try again." %}</small>';
                 });
         });
     });

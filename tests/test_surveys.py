@@ -257,6 +257,39 @@ class ConditionValuesEndpointTests(TestCase):
         content = resp.content.decode()
         self.assertIn('type="text"', content)
 
+    def test_rating_scale_returns_option_values(self):
+        q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Rate 1-3",
+            question_type="rating_scale", sort_order=1,
+            options_json=[
+                {"value": "1", "label": "Low"},
+                {"value": "2", "label": "Medium"},
+                {"value": "3", "label": "High"},
+            ],
+        )
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('value="1"', content)
+        self.assertIn("Low", content)
+        self.assertIn('value="3"', content)
+
+    def test_cross_survey_question_returns_404(self):
+        """Question from a different survey should return 404."""
+        other_survey = Survey.objects.create(name="Other", created_by=self.staff)
+        other_section = SurveySection.objects.create(
+            survey=other_survey, title="Other S1", sort_order=1,
+        )
+        other_q = SurveyQuestion.objects.create(
+            section=other_section, question_text="Other Q",
+            question_type="yes_no", sort_order=1,
+        )
+        # Request other_q via self.survey's URL — should 404
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{other_q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 404)
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class TriggerRuleModelTests(TestCase):

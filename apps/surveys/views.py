@@ -12,6 +12,7 @@ from django.http import Http404, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.html import escape
 from django.utils.translation import gettext as _
 from django.views.decorators.http import require_POST
 
@@ -274,7 +275,7 @@ def condition_values(request, survey_id, question_id):
 
     html_parts = [f'<option value="">— {_("Select a value")} —</option>']
     for value, label in options:
-        html_parts.append(f'<option value="{value}">{label}</option>')
+        html_parts.append(f'<option value="{escape(value)}">{escape(label)}</option>')
     return HttpResponse("\n".join(html_parts))
 
 
