@@ -587,17 +587,21 @@ def dashboard(request):
     participant = request.participant_user
     client_file = _get_client_file(request)
 
-    # Pending surveys count
+    # Pending surveys count + smart single-survey link
     pending_surveys = 0
+    single_survey_url = None
     try:
         from apps.surveys.engine import is_surveys_enabled
         from apps.surveys.models import SurveyAssignment
         if is_surveys_enabled():
-            pending_surveys = SurveyAssignment.objects.filter(
+            survey_assignments = SurveyAssignment.objects.filter(
                 participant_user=participant,
                 status__in=("pending", "in_progress"),
                 survey__portal_visible=True,
-            ).count()
+            )
+            pending_surveys = survey_assignments.count()
+            if pending_surveys == 1:
+                single_survey_url = f"/my/surveys/{survey_assignments.first().pk}/fill/"
     except Exception:
         pass
 
@@ -641,6 +645,7 @@ def dashboard(request):
         "new_details": new_details,
         "staff_notes": staff_notes,
         "pending_surveys": pending_surveys,
+        "single_survey_url": single_survey_url,
     })
 
 
