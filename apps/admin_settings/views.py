@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _, gettext_lazy as _lazy
 from apps.auth_app.decorators import admin_required
 
 from .forms import FeatureToggleForm, InstanceSettingsForm, MessagingSettingsForm, TerminologyForm
-from .models import DEFAULT_TERMS, FeatureToggle, InstanceSetting, TerminologyOverride
+from .models import DEFAULT_TERMS, TERM_HELP_TEXT, FeatureToggle, InstanceSetting, TerminologyOverride
 
 
 # --- Dashboard ---
@@ -101,6 +101,7 @@ def terminology(request):
             "current_en": override.display_value if override else default_en,
             "current_fr": override.display_value_fr if override else "",
             "is_overridden": key in overrides,
+            "help_text": TERM_HELP_TEXT.get(key, ""),
         })
 
     return render(request, "admin_settings/terminology.html", {
