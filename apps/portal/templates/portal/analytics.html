@@ -8,8 +8,8 @@
 <p class="secondary">{% trans "Aggregate usage statistics. No per-participant data is shown." %}</p>
 
 <div class="grid">
-    <article>
-        <header>{% trans "Accounts" %}</header>
+    <article aria-labelledby="analytics-accounts">
+        <header><h2 id="analytics-accounts">{% trans "Accounts" %}</h2></header>
         <dl class="info-grid-compact">
             <div class="info-field">
                 <dt>{% trans "Active accounts" %}</dt>
@@ -26,8 +26,8 @@
         </dl>
     </article>
 
-    <article>
-        <header>{% trans "Activity" %}</header>
+    <article aria-labelledby="analytics-activity">
+        <header><h2 id="analytics-activity">{% trans "Activity" %}</h2></header>
         <dl class="info-grid-compact">
             <div class="info-field">
                 <dt>{% trans "Journal entries" %}</dt>
@@ -46,8 +46,8 @@
         </dl>
     </article>
 
-    <article>
-        <header>{% trans "Corrections" %}</header>
+    <article aria-labelledby="analytics-corrections">
+        <header><h2 id="analytics-corrections">{% trans "Corrections" %}</h2></header>
         <dl class="info-grid-compact">
             <div class="info-field">
                 <dt>{% trans "Pending" %}</dt>
