@@ -229,6 +229,57 @@ document.querySelectorAll(".target-selector").forEach(function (cb) {
     });
 });
 
+// Target card expand/collapse
+document.querySelectorAll(".target-card-header").forEach(function (header) {
+    function toggle() {
+        var card = header.closest(".target-card");
+        var body = card.querySelector(".target-card-body");
+        var isExpanded = !body.hidden;
+        body.hidden = isExpanded;
+        header.setAttribute("aria-expanded", !isExpanded);
+        card.classList.toggle("compact", isExpanded);
+        card.classList.toggle("expanded", !isExpanded);
+        if (!isExpanded) {
+            var firstInput = body.querySelector("input, textarea, select, [tabindex]");
+            if (firstInput) firstInput.focus();
+        }
+    }
+    header.addEventListener("click", function (e) {
+        if (!e.target.closest(".no-change-btn")) toggle();
+    });
+    header.addEventListener("keydown", function (e) {
+        if ((e.key === "Enter" || e.key === " ") && !e.target.closest(".no-change-btn")) {
+            e.preventDefault();
+            toggle();
+        }
+    });
+});
+
+// "No change" shortcut
+document.querySelectorAll(".no-change-btn").forEach(function (btn) {
+    btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var card = btn.closest(".target-card");
+        var targetId = btn.getAttribute("data-target-id");
+        // Set descriptor to "holding" (Holding steady)
+        var holdingRadio = card.querySelector(
+            'input[name="target_' + targetId + '-progress_descriptor"][value="holding"]'
+        );
+        if (holdingRadio) holdingRadio.checked = true;
+        // Show done indicator, hide the card body
+        card.classList.add("done");
+        var indicator = card.querySelector(".target-done-indicator");
+        if (indicator) indicator.hidden = false;
+        // Collapse if expanded
+        var body = card.querySelector(".target-card-body");
+        if (body) body.hidden = true;
+        card.classList.remove("expanded");
+        card.classList.add("compact");
+        var header = card.querySelector(".target-card-header");
+        if (header) header.setAttribute("aria-expanded", "false");
+    });
+});
+
 // Show priority dropdown only when suggestion has content
 var suggestionField = document.querySelector('[name="participant_suggestion"]');
 var priorityRow = document.getElementById('suggestion-priority-row');
