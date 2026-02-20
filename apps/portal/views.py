@@ -1604,6 +1604,62 @@ def portal_survey_autosave(request, assignment_id):
 
 
 @portal_login_required
+def portal_survey_review(request, assignment_id):
+    """Read-only view of a completed survey response."""
+    from apps.surveys.engine import is_surveys_enabled
+    from apps.surveys.models import SurveyAssignment, SurveyResponse, SurveyAnswer
+    from apps.portal.survey_helpers import (
+        filter_visible_sections, calculate_section_scores,
+    )
+
+    if not is_surveys_enabled():
+        raise Http404
+
+    participant = request.participant_user
+    client_file = _get_client_file(request)
+
+    assignment = get_object_or_404(
+        SurveyAssignment,
+        pk=assignment_id,
+        participant_user=participant,
+        status="completed",
+    )
+    survey = assignment.survey
+
+    response_obj = SurveyResponse.objects.filter(
+        assignment=assignment, client_file=client_file,
+    ).first()
+    if not response_obj:
+        raise Http404
+
+    # Build answers dict {question_pk: value}
+    answers = SurveyAnswer.objects.filter(response=response_obj)
+    answers_dict = {a.question_id: a.value for a in answers}
+
+    all_sections = list(
+        survey.sections.filter(is_active=True)
+        .prefetch_related("questions")
+        .order_by("sort_order")
+    )
+    visible_sections = filter_visible_sections(all_sections, answers_dict)
+
+    # Calculate scores if configured
+    scores = []
+    if survey.show_scores_to_participant:
+        scores = calculate_section_scores(visible_sections, answers_dict)
+
+    return render(request, "portal/survey_review.html", {
+        "participant": participant,
+        "survey": survey,
+        "assignment": assignment,
+        "response_obj": response_obj,
+        "sections": visible_sections,
+        "answers": answers_dict,
+        "scores": scores,
+    })
+
+
+@portal_login_required
 def portal_survey_thank_you(request, assignment_id):
     """Thank-you page after completing a survey."""
     from apps.surveys.engine import is_surveys_enabled

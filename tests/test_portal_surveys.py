@@ -396,3 +396,109 @@ class SurveyFillViewTests(TestCase):
         response = self.client.get(f"/my/surveys/{assignment2.pk}/fill/")
         self.assertContains(response, "A")
         self.assertContains(response, "B")
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-hash-key-review",
+)
+class SurveyReviewViewTests(TestCase):
+    """Test the read-only review page for completed surveys."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="review_staff", password="testpass123",
+            display_name="Review Staff",
+        )
+        self.survey = Survey.objects.create(
+            name="Review Survey", status="active", created_by=self.staff,
+            show_scores_to_participant=True,
+        )
+        self.section = SurveySection.objects.create(
+            survey=self.survey, title="Health", sort_order=1,
+            scoring_method="sum", max_score=10,
+        )
+        self.q1 = SurveyQuestion.objects.create(
+            section=self.section, question_text="How are you?",
+            question_type="rating_scale", sort_order=1,
+            options_json=[
+                {"value": "1", "label": "Bad", "score": 1},
+                {"value": "5", "label": "Good", "score": 5},
+            ],
+        )
+        self.client_file = ClientFile.objects.create(
+            record_id="REV-001", status="active",
+        )
+        self.client_file.first_name = "Review"
+        self.client_file.last_name = "Test"
+        self.client_file.save()
+        self.participant = ParticipantUser.objects.create_participant(
+            email="review@example.com",
+            client_file=self.client_file,
+            display_name="Review P",
+            password="testpass123",
+        )
+        from apps.admin_settings.models import FeatureToggle
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys",
+            defaults={"is_enabled": True},
+        )
+        FeatureToggle.objects.update_or_create(
+            feature_key="participant_portal",
+            defaults={"is_enabled": True},
+        )
+        from apps.surveys.models import SurveyResponse, SurveyAnswer
+        self.assignment = SurveyAssignment.objects.create(
+            survey=self.survey,
+            participant_user=self.participant,
+            client_file=self.client_file,
+            status="completed",
+        )
+        self.response_obj = SurveyResponse.objects.create(
+            survey=self.survey,
+            assignment=self.assignment,
+            client_file=self.client_file,
+            channel="portal",
+        )
+        answer = SurveyAnswer(
+            response=self.response_obj, question=self.q1,
+        )
+        answer.value = "5"
+        answer.numeric_value = 5
+        answer.save()
+
+    def _portal_login(self):
+        self.client.get("/my/login/")
+        session = self.client.session
+        session["_portal_participant_id"] = str(self.participant.pk)
+        session.save()
+
+    def test_review_page_renders(self):
+        self._portal_login()
+        response = self.client.get(
+            f"/my/surveys/{self.assignment.pk}/review/",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Review Survey")
+        self.assertContains(response, "How are you?")
+
+    def test_review_shows_scores(self):
+        self._portal_login()
+        response = self.client.get(
+            f"/my/surveys/{self.assignment.pk}/review/",
+        )
+        self.assertContains(response, "5")
+        self.assertContains(response, "10")
+
+    def test_review_404_for_pending(self):
+        """Cannot review a survey that isn't completed."""
+        self.assignment.status = "pending"
+        self.assignment.save()
+        self._portal_login()
+        response = self.client.get(
+            f"/my/surveys/{self.assignment.pk}/review/",
+        )
+        self.assertEqual(response.status_code, 404)
