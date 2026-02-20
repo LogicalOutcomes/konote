@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Portal Analytics" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Portal Analytics" %}</h1>
+<p class="secondary">{% trans "Aggregate usage statistics. No per-participant data is shown." %}</p>
+
+<div class="grid">
+    <article>
+        <header>{% trans "Accounts" %}</header>
+        <dl class="info-grid-compact">
+            <div class="info-field">
+                <dt>{% trans "Active accounts" %}</dt>
+                <dd>{{ stats.total_accounts }}</dd>
+            </div>
+            <div class="info-field">
+                <dt>{% trans "Created this month" %}</dt>
+                <dd>{{ stats.accounts_created_this_month }}</dd>
+            </div>
+            <div class="info-field">
+                <dt>{% trans "Logins this month" %}</dt>
+                <dd>{{ stats.logins_this_month }}</dd>
+            </div>
+        </dl>
+    </article>
+
+    <article>
+        <header>{% trans "Activity" %}</header>
+        <dl class="info-grid-compact">
+            <div class="info-field">
+                <dt>{% trans "Journal entries" %}</dt>
+                <dd>{{ stats.total_journal_entries }} {% trans "total" %} / {{ stats.journal_entries_this_month }} {% trans "this month" %}</dd>
+            </div>
+            <div class="info-field">
+                <dt>{% trans "Messages sent" %}</dt>
+                <dd>{{ stats.total_messages }} {% trans "total" %} / {{ stats.messages_this_month }} {% trans "this month" %}</dd>
+            </div>
+            {% if stats.surveys_completed_this_month is not None %}
+            <div class="info-field">
+                <dt>{% trans "Surveys completed" %}</dt>
+                <dd>{{ stats.surveys_completed_this_month }} {% trans "this month" %}</dd>
+            </div>
+            {% endif %}
+        </dl>
+    </article>
+
+    <article>
+        <header>{% trans "Corrections" %}</header>
+        <dl class="info-grid-compact">
+            <div class="info-field">
+                <dt>{% trans "Pending" %}</dt>
+                <dd>{{ stats.corrections_pending }}</dd>
+            </div>
+            <div class="info-field">
+                <dt>{% trans "Total" %}</dt>
+                <dd>{{ stats.corrections_total }}</dd>
+            </div>
+        </dl>
+    </article>
+</div>
+
+{% if stats.surveys_pending %}
+<p class="secondary">{% blocktrans with count=stats.surveys_pending %}{{ count }} survey assignments are currently pending or in progress.{% endblocktrans %}</p>
+{% endif %}
+{% endblock %}

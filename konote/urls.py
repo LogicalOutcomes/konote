@@ -11,6 +11,7 @@ from django.views.static import serve
 from apps.audit.views import program_audit_log
 from apps.auth_app.views import switch_language
 from apps.events.views import calendar_feed
+from apps.portal.analytics_views import portal_analytics
 from konote.error_views import permission_denied_view
 from konote.page_views import help_view, privacy_view
 
@@ -52,6 +53,7 @@ urlpatterns = [
     path("manage/audit/", include("apps.audit.urls")),
     path("manage/suggestions/", include("apps.notes.suggestion_urls")),
     path("manage/surveys/", include("apps.surveys.manage_urls")),
+    path("manage/portal-analytics/", portal_analytics, name="portal_analytics"),
 
     # ── /admin/ routes (Admin only) ──
     path("admin/settings/", include("apps.admin_settings.urls")),
