@@ -2,7 +2,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from .models import Survey, SurveyQuestion, SurveySection
+from .models import Survey, SurveyQuestion, SurveySection, SurveyTriggerRule
 
 
 class SurveyForm(forms.ModelForm):
@@ -123,6 +123,58 @@ class ManualAssignmentForm(forms.Form):
         widget=forms.DateInput(attrs={"type": "date"}),
         label=_("Due date (optional)"),
     )
+
+
+class TriggerRuleForm(forms.ModelForm):
+    """Form for creating/editing a survey trigger rule."""
+
+    # Anchor is only relevant for time-based rules; default to enrolment_date.
+    anchor = forms.ChoiceField(
+        choices=SurveyTriggerRule.ANCHOR_CHOICES,
+        required=False,
+        label=_("Count days from"),
+    )
+
+    class Meta:
+        model = SurveyTriggerRule
+        fields = [
+            "trigger_type", "event_type", "program",
+            "recurrence_days", "anchor", "repeat_policy",
+            "auto_assign", "include_existing", "due_days",
+        ]
+        labels = {
+            "trigger_type": _("When should this survey be assigned?"),
+            "event_type": _("Event type"),
+            "program": _("Program"),
+            "recurrence_days": _("Repeat every N days"),
+            "anchor": _("Count days from"),
+            "repeat_policy": _("How often per participant?"),
+            "auto_assign": _("Assign automatically"),
+            "include_existing": _("Also assign to existing participants"),
+            "due_days": _("Due date (days after assignment)"),
+        }
+        help_texts = {
+            "auto_assign": _(
+                "If unchecked, staff must approve each assignment before "
+                "the participant sees it."
+            ),
+            "include_existing": _(
+                "When first activated, also assign to participants who "
+                "already match the criteria."
+            ),
+            "due_days": _("Leave blank for no due date."),
+        }
+        widgets = {
+            "recurrence_days": forms.NumberInput(attrs={"min": 1}),
+            "due_days": forms.NumberInput(attrs={"min": 1}),
+        }
+
+    def clean_anchor(self):
+        """Default anchor to enrolment_date when not provided."""
+        value = self.cleaned_data.get("anchor")
+        if not value:
+            return "enrolment_date"
+        return value
 
 
 class CSVImportForm(forms.Form):

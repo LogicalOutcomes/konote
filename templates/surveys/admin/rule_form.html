@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "New Trigger Rule" %} — {{ survey.name }}{% endblock %}
+
+{% block content %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul>
+        <li><a href="{% url 'survey_manage:survey_list' %}">{% trans "Surveys" %}</a></li>
+        <li><a href="{% url 'survey_manage:survey_detail' survey_id=survey.pk %}">{{ survey.name }}</a></li>
+        <li><a href="{% url 'survey_manage:survey_rules' survey_id=survey.pk %}">{% trans "Trigger Rules" %}</a></li>
+        <li>{% trans "New Rule" %}</li>
+    </ul>
+</nav>
+
+<h1>{% trans "New Trigger Rule" %}</h1>
+
+<article>
+    <header>
+        <p>{% trans "Configure when this survey should be automatically assigned to participants." %}</p>
+    </header>
+
+    <details>
+        <summary>{% trans "About trigger types" %}</summary>
+        <dl>
+            <dt>{% trans "Characteristic" %}</dt>
+            <dd>{% trans "Assign when a participant is enrolled in a specific program." %}</dd>
+            <dt>{% trans "Event" %}</dt>
+            <dd>{% trans "Assign when a specific event type is recorded for a participant." %}</dd>
+            <dt>{% trans "Time-based" %}</dt>
+            <dd>{% trans "Assign on a recurring schedule (e.g., every 30 days after enrolment)." %}</dd>
+            <dt>{% trans "Enrolment" %}</dt>
+            <dd>{% trans "Assign immediately when a participant is enrolled in a program." %}</dd>
+        </dl>
+    </details>
+
+    <form method="post" action="{% url 'survey_manage:survey_rule_create' survey_id=survey.pk %}">
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div>
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.help_text %}
+                <small id="{{ field.id_for_label }}_help">{{ field.help_text }}</small>
+            {% endif %}
+            {% if field.errors %}
+                {% for error in field.errors %}
+                    <small class="error" id="{{ field.id_for_label }}_error" role="alert">{{ error }}</small>
+                {% endfor %}
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div role="group">
+            <button type="submit">{% trans "Create Rule" %}</button>
+            <a href="{% url 'survey_manage:survey_rules' survey_id=survey.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+</article>
+{% endblock %}

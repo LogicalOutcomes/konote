@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Trigger Rules" %} — {{ survey.name }}{% endblock %}
+
+{% block content %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul>
+        <li><a href="{% url 'survey_manage:survey_list' %}">{% trans "Surveys" %}</a></li>
+        <li><a href="{% url 'survey_manage:survey_detail' survey_id=survey.pk %}">{{ survey.name }}</a></li>
+        <li>{% trans "Trigger Rules" %}</li>
+    </ul>
+</nav>
+
+<hgroup>
+    <h1>{% trans "Trigger Rules" %}</h1>
+    <p>{% trans "Rules that automatically assign this survey to participants." %}</p>
+</hgroup>
+
+<p>
+    <a href="{% url 'survey_manage:survey_rule_create' survey_id=survey.pk %}" role="button">{% trans "New Rule" %}</a>
+</p>
+
+{% if rules %}
+<table aria-label="{% trans 'Trigger rules' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Trigger Type" %}</th>
+            <th scope="col">{% trans "Program / Event Type" %}</th>
+            <th scope="col">{% trans "Repeat Policy" %}</th>
+            <th scope="col">{% trans "Auto-assign" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Created" %}</th>
+            <th scope="col">{% trans "Actions" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for rule in rules %}
+        <tr>
+            <td>{{ rule.get_trigger_type_display }}</td>
+            <td>
+                {% if rule.program %}
+                    {{ rule.program.name }}
+                {% elif rule.event_type %}
+                    {{ rule.event_type.name }}
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+            <td>{{ rule.get_repeat_policy_display }}</td>
+            <td>
+                {% if rule.auto_assign %}
+                    {% trans "Yes" %}
+                {% else %}
+                    {% trans "No" %}
+                {% endif %}
+            </td>
+            <td>
+                {% if rule.is_active %}
+                    <span class="badge badge-success">{% trans "Active" %}</span>
+                {% else %}
+                    <span class="badge badge-neutral">{% trans "Inactive" %}</span>
+                {% endif %}
+            </td>
+            <td>{{ rule.created_at|date:"N j, Y" }}</td>
+            <td>
+                {% if rule.is_active %}
+                <form method="post" action="{% url 'survey_manage:survey_rule_deactivate' survey_id=survey.pk rule_id=rule.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="outline secondary" style="margin-bottom:0">{% trans "Deactivate" %}</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty-state">{% trans "No trigger rules yet. Create one to automatically assign this survey." %}</p>
+{% endif %}
+
+<p><a href="{% url 'survey_manage:survey_detail' survey_id=survey.pk %}">&#8592; {% trans "Back to survey" %}</a></p>
+{% endblock %}

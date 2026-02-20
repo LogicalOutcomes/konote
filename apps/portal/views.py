@@ -1439,12 +1439,16 @@ def portal_survey_fill(request, assignment_id):
     """Fill in a survey — supports multi-page and auto-save."""
     from apps.surveys.engine import is_surveys_enabled
     from apps.surveys.models import (
-        SurveyAnswer, SurveyAssignment, SurveyResponse, PartialAnswer,
+        PartialAnswer,
+        SurveyAnswer,
+        SurveyAssignment,
+        SurveyResponse,
     )
     from apps.portal.survey_helpers import (
         group_sections_into_pages, filter_visible_sections,
         get_partial_answers_dict, calculate_section_scores,
     )
+    from konote.encryption import decrypt_field
 
     if not is_surveys_enabled():
         raise Http404
@@ -1485,6 +1489,11 @@ def portal_survey_fill(request, assignment_id):
         except (ValueError, TypeError):
             page_num = 1
         page_num = max(1, min(page_num, len(pages)))
+
+    # Load existing partial answers for pre-fill
+    partials = {}
+    for pa in PartialAnswer.objects.filter(assignment=assignment):
+        partials[pa.question_id] = decrypt_field(pa.value_encrypted)
 
     if request.method == "POST":
         action = request.POST.get("action", "submit")
@@ -1603,7 +1612,7 @@ def portal_survey_fill(request, assignment_id):
             assignment.completed_at = timezone.now()
             assignment.save(update_fields=["status", "completed_at"])
 
-            # Clean up partial answers
+            # Clean up partial answers after successful submit
             PartialAnswer.objects.filter(assignment=assignment).delete()
 
         _audit_portal_event(request, "portal_survey_submitted", metadata={
@@ -1629,6 +1638,7 @@ def portal_survey_fill(request, assignment_id):
         "is_last_page": page_num == len(pages),
         "partial_answers": partial_answers,
         "errors": [],
+        "partials": partials,
     })
 
 
