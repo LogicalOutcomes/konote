@@ -276,10 +276,18 @@ DEFAULT_FEATURES = {
         "depends_on": [],
         "used_by": [],
     },
+    "cross_program_note_sharing": {
+        "label": _lazy("Cross-Program Note Sharing"),
+        "description": _lazy("Share clinical notes across programs for shared participants."),
+        "when_on": [_lazy("Staff can see notes from other programs for participants enrolled in multiple programs")],
+        "when_off": [_lazy("Notes are only visible within the program they were created in")],
+        "depends_on": ["programs"],
+        "used_by": [],
+    },
 }
 
 # Features that default to enabled (most default to disabled)
-FEATURES_DEFAULT_ENABLED = {"require_client_consent", "portal_journal", "portal_messaging"}
+FEATURES_DEFAULT_ENABLED = {"require_client_consent", "portal_journal", "portal_messaging", "cross_program_note_sharing"}
 
 
 @login_required

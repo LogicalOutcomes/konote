@@ -6,13 +6,15 @@ confidential programs (e.g. "< 10", "suppressed").
 
 Covers BUG-AI2: get_structured_insights() must return JSON-serializable
 dicts (no gettext_lazy proxies as keys).
+
+Covers CHART-TIME1: client_analysis timeframe filter.
 """
 import json
-from datetime import date
+from datetime import date, timedelta
 from unittest.mock import patch
 
 from cryptography.fernet import Fernet
-from django.test import SimpleTestCase, TestCase, override_settings
+from django.test import Client as HttpClient, SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
 
 from apps.reports.funder_report import format_number, generate_funder_report_csv_rows
@@ -243,3 +245,124 @@ class StructuredInsightsJSONTest(TestCase):
         serialized = json.dumps(result)
         self.assertIsInstance(serialized, str)
         self.assertGreater(result["note_count"], 0)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AnalysisChartTimeframeTest(TestCase):
+    """CHART-TIME1: Analysis chart timeframe filter tests."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+        from apps.auth_app.models import User
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+        from apps.plans.models import MetricDefinition, PlanSection, PlanTarget, PlanTargetMetric
+        from apps.programs.models import Program, UserProgramRole
+
+        self.http = HttpClient()
+        self.user = User.objects.create_user(
+            username="analyst", password="pass", display_name="Analyst"
+        )
+        self.program = Program.objects.create(name="Coaching")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role="staff", status="active"
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Chart"
+        self.client_file.last_name = "Test"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program, status="enrolled"
+        )
+
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Goals", program=self.program,
+        )
+        self.target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Confidence",
+        )
+        self.metric = MetricDefinition.objects.create(
+            name="Score", min_value=0, max_value=10, unit="pts",
+            definition="Test metric", category="general",
+        )
+        PlanTargetMetric.objects.create(plan_target=self.target, metric_def=self.metric)
+
+        # Create an old note (90 days ago) and a recent note (5 days ago).
+        # Use backdate since created_at is auto_now_add and can't be overridden.
+        old_note = ProgressNote.objects.create(
+            client_file=self.client_file, author=self.user,
+            backdate=timezone.now() - timedelta(days=90),
+        )
+        old_pnt = ProgressNoteTarget.objects.create(
+            progress_note=old_note, plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            metric_def=self.metric, progress_note_target=old_pnt, value="3",
+        )
+
+        recent_note = ProgressNote.objects.create(
+            client_file=self.client_file, author=self.user,
+            backdate=timezone.now() - timedelta(days=5),
+        )
+        recent_pnt = ProgressNoteTarget.objects.create(
+            progress_note=recent_note, plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            metric_def=self.metric, progress_note_target=recent_pnt, value="7",
+        )
+
+    def tearDown(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+    def test_analysis_no_filter_returns_all_data(self):
+        """Default (no filter) returns both old and recent data points."""
+        self.http.login(username="analyst", password="pass")
+        resp = self.http.get(
+            f"/reports/participant/{self.client_file.pk}/analysis/"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "chart-data")
+        # Both data points should be in the chart data
+        content = resp.content.decode()
+        self.assertIn('"value": 3.0', content)
+        self.assertIn('"value": 7.0', content)
+
+    def test_analysis_30d_filter_excludes_old_data(self):
+        """30-day filter only shows recent data, not old."""
+        self.http.login(username="analyst", password="pass")
+        resp = self.http.get(
+            f"/reports/participant/{self.client_file.pk}/analysis/?timeframe=30d"
+        )
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('"value": 7.0', content)
+        self.assertNotIn('"value": 3.0', content)
+
+    def test_analysis_all_time_returns_everything(self):
+        """Explicit 'all' timeframe returns all data."""
+        self.http.login(username="analyst", password="pass")
+        resp = self.http.get(
+            f"/reports/participant/{self.client_file.pk}/analysis/?timeframe=all"
+        )
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('"value": 3.0', content)
+        self.assertIn('"value": 7.0', content)
+
+    def test_analysis_manual_date_range(self):
+        """Manual date_from/date_to filters data by date range."""
+        self.http.login(username="analyst", password="pass")
+        # Only include the last 10 days
+        date_from = (timezone.now() - timedelta(days=10)).date().isoformat()
+        resp = self.http.get(
+            f"/reports/participant/{self.client_file.pk}/analysis/?date_from={date_from}"
+        )
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('"value": 7.0', content)
+        self.assertNotIn('"value": 3.0', content)

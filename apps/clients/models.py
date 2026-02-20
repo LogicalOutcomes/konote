@@ -169,16 +169,22 @@ class ClientFile(models.Model):
         last = self.last_name
         return f"{first[0]}{last[0]}" if first and last else "??"
 
-    # Cross-program sharing consent (PHIPA compliance)
-    # NOTE: This field is captured but NOT YET ENFORCED in views.
-    # Phase 2 (PERM-P2) will add enforcement: notes will be filtered by
-    # authoring program unless this flag is True or the note is a safety alert.
-    # Until then, notes remain visible across all shared programs.
-    cross_program_sharing_consent = models.BooleanField(
-        default=False,
-        help_text=(
-            "Client has given express consent for clinical information to be "
-            "shared across programs. Required under PHIPA for multi-program agencies."
+    # Cross-program sharing (PHIPA compliance)
+    # Controls whether clinical notes from other programs are visible for this
+    # client. "default" follows the agency-level feature toggle. "consent"
+    # always shares. "restrict" never shares across programs.
+    SHARING_CHOICES = [
+        ("default", _("Follow agency setting")),
+        ("consent", _("Share across programs")),
+        ("restrict", _("Restrict to one program")),
+    ]
+    cross_program_sharing = models.CharField(
+        max_length=20,
+        choices=SHARING_CHOICES,
+        default="default",
+        help_text=_(
+            "Controls whether clinical notes are visible across programs "
+            "for this participant. Most participants use the agency default."
         ),
     )
 

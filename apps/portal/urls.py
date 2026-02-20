@@ -34,6 +34,7 @@ urlpatterns = [
     path("goals/<int:target_id>/", views.goal_detail, name="goal_detail"),
     path("progress/", views.progress_view, name="progress"),
     path("milestones/", views.milestones, name="milestones"),
+    path("my-words/", views.my_words, name="my_words"),
     path("correction/new/", views.correction_request_create, name="correction_request"),
     # Journal + Messages (Phase C)
     path("journal/", views.journal_list, name="journal"),
