@@ -1076,3 +1076,98 @@ class StaffLinkGenerationTests(TestCase):
         )
         link.refresh_from_db()
         self.assertFalse(link.is_active)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class TriggerRuleManagementTests(TestCase):
+    """Test staff UI for managing trigger rules."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="ruleui_staff", password="testpass123",
+            display_name="RuleUI Staff", is_admin=True,
+        )
+        self.client.login(username="ruleui_staff", password="testpass123")
+        from django.core.cache import cache
+        cache.delete("feature_toggles")
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys",
+            defaults={"is_enabled": True},
+        )
+        self.program = Program.objects.create(name="RuleUI Program")
+        self.event_type = EventType.objects.create(name="RuleUI Event")
+        self.survey = Survey.objects.create(
+            name="RuleUI Survey", status="active", created_by=self.staff,
+        )
+        SurveySection.objects.create(
+            survey=self.survey, title="S1", sort_order=1,
+        )
+
+    def test_rule_list_page_renders(self):
+        resp = self.client.get(
+            f"/manage/surveys/{self.survey.pk}/rules/",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+    def test_create_characteristic_rule(self):
+        resp = self.client.post(
+            f"/manage/surveys/{self.survey.pk}/rules/new/",
+            {
+                "trigger_type": "characteristic",
+                "program": self.program.pk,
+                "repeat_policy": "once_per_participant",
+                "auto_assign": "on",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(
+            SurveyTriggerRule.objects.filter(survey=self.survey).count(), 1,
+        )
+
+    def test_create_event_rule(self):
+        resp = self.client.post(
+            f"/manage/surveys/{self.survey.pk}/rules/new/",
+            {
+                "trigger_type": "event",
+                "event_type": self.event_type.pk,
+                "repeat_policy": "once_per_participant",
+                "auto_assign": "on",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        rule = SurveyTriggerRule.objects.get(survey=self.survey)
+        self.assertEqual(rule.event_type, self.event_type)
+
+    def test_create_time_rule(self):
+        resp = self.client.post(
+            f"/manage/surveys/{self.survey.pk}/rules/new/",
+            {
+                "trigger_type": "time",
+                "program": self.program.pk,
+                "recurrence_days": 30,
+                "anchor": "enrolment_date",
+                "repeat_policy": "recurring",
+                "auto_assign": "on",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        rule = SurveyTriggerRule.objects.get(survey=self.survey)
+        self.assertEqual(rule.recurrence_days, 30)
+
+    def test_deactivate_rule(self):
+        rule = SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="characteristic",
+            program=self.program,
+            repeat_policy="once_per_participant",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        resp = self.client.post(
+            f"/manage/surveys/{self.survey.pk}/rules/{rule.pk}/deactivate/",
+        )
+        rule.refresh_from_db()
+        self.assertFalse(rule.is_active)
