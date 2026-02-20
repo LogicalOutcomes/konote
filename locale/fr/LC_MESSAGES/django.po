@@ -12968,6 +12968,32 @@ msgstr ""
 "Ce code expire dans 10 minutes.\n"
 "Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer ce courriel."
 
+msgid "How sure do you feel about being able to %(target)s?"
+msgstr "À quel point êtes-vous sûr(e) de pouvoir %(target)s?"
+
+msgid "Include this metric"
+msgstr "Inclure cette métrique"
+
+msgid "Skip"
+msgstr "Ignorer"
+
+msgid "Suggested target-specific metric"
+msgstr "Métrique suggérée pour cet objectif"
+
+msgid "Included"
+msgstr "Inclus"
+
+msgid "Skipped"
+msgstr "Ignoré"
+
+#, python-format
+msgid "Include %(name)s"
+msgstr "Inclure %(name)s"
+
+#, python-format
+msgid "Skip %(name)s"
+msgstr "Ignorer %(name)s"
+
 msgid "Admin guide"
 msgstr "Guide d'administration"
 

@@ -397,10 +397,10 @@
     "unit_fr": "liens"
   },
   {
-    "name": "Confidence",
-    "name_fr": "Confiance",
-    "definition": "How confident do you feel about this? 1 = not at all confident, 2 = a little confident, 3 = somewhat confident, 4 = quite confident, 5 = very confident.",
-    "definition_fr": "À quel point avez-vous confiance? 1 = pas du tout confiant(e), 2 = un peu confiant(e), 3 = assez confiant(e), 4 = plutôt confiant(e), 5 = très confiant(e).",
+    "name": "Goal Progress",
+    "name_fr": "Progrès vers l'objectif",
+    "definition": "What are you doing toward this goal? 1 = Haven't started working on this yet, 2 = Exploring or learning about this, 3 = Practising or trying this out, 4 = Doing this regularly or consistently, 5 = This is a regular part of my life now.",
+    "definition_fr": "Que faites-vous pour atteindre cet objectif? 1 = Je n'ai pas encore commencé, 2 = J'explore ou j'apprends, 3 = Je pratique ou j'essaie, 4 = Je fais cela régulièrement, 5 = Cela fait partie de ma vie maintenant.",
     "category": "general",
     "min_value": 1,
     "max_value": 5,
@@ -409,10 +409,10 @@
     "is_universal": true
   },
   {
-    "name": "Progress",
-    "name_fr": "Progrès",
-    "definition": "How much progress have I made toward this goal? 1 = no progress yet, 2 = early steps, 3 = making headway, 4 = well on track, 5 = goal achieved.",
-    "definition_fr": "Combien de progrès ai-je fait vers cet objectif? 1 = aucun progrès, 2 = premiers pas, 3 = en bonne voie, 4 = bien avancé, 5 = objectif atteint.",
+    "name": "Self-Efficacy",
+    "name_fr": "Auto-efficacité",
+    "definition": "How sure do you feel about being able to do this? 1 = Not at all sure I can do this, 2 = A little sure — it feels hard, 3 = Somewhat sure — I'm getting there, 4 = Quite sure — I can usually do this, 5 = Very sure — I know I can do this.",
+    "definition_fr": "À quel point êtes-vous sûr(e) de pouvoir le faire? 1 = Pas du tout sûr(e), 2 = Un peu sûr(e) — c'est difficile, 3 = Assez sûr(e) — j'y arrive, 4 = Plutôt sûr(e) — j'y arrive d'habitude, 5 = Très sûr(e) — je sais que je peux.",
     "category": "general",
     "min_value": 1,
     "max_value": 5,
@@ -421,10 +421,10 @@
     "is_universal": true
   },
   {
-    "name": "Wellbeing",
-    "name_fr": "Bien-être",
-    "definition": "How are things going in this area of your life? 1 = really struggling, 2 = having a hard time, 3 = getting by, 4 = doing well, 5 = going great.",
-    "definition_fr": "Comment ça va dans ce domaine de votre vie? 1 = très difficile, 2 = assez difficile, 3 = ça va, 4 = ça va bien, 5 = très bien.",
+    "name": "Satisfaction",
+    "name_fr": "Satisfaction",
+    "definition": "How satisfied are you with how things are going in this area? 1 = Very unsatisfied, 2 = Unsatisfied, 3 = Neutral — it's okay, 4 = Satisfied, 5 = Very satisfied.",
+    "definition_fr": "À quel point êtes-vous satisfait(e) de la façon dont les choses se passent dans ce domaine? 1 = Très insatisfait(e), 2 = Insatisfait(e), 3 = Neutre — ça va, 4 = Satisfait(e), 5 = Très satisfait(e).",
     "category": "general",
     "min_value": 1,
     "max_value": 5,

@@ -509,7 +509,7 @@ class GoalCreateTest(PlanCRUDBaseTest):
             program=self.program, sort_order=0,
         )
         self.metric = MetricDefinition.objects.create(
-            name="Confidence", definition="1-5 scale", category="general",
+            name="Self-Efficacy", definition="1-5 scale", category="general",
             is_universal=True, is_enabled=True, min_value=1, max_value=5,
         )
 
@@ -641,7 +641,7 @@ class GoalCreateTest(PlanCRUDBaseTest):
     def test_multiple_metrics_can_be_assigned(self):
         """Multiple metrics can be selected for a single goal."""
         metric_b = MetricDefinition.objects.create(
-            name="Progress", definition="1-5 progress scale", category="general",
+            name="Goal Progress", definition="1-5 progress scale", category="general",
             is_universal=True, is_enabled=True, min_value=1, max_value=5,
         )
         self.http.login(username="counsellor", password="pass")
@@ -663,7 +663,63 @@ class GoalCreateTest(PlanCRUDBaseTest):
         url = reverse("plans:goal_create", args=[self.client_file.pk])
         resp = self.http.get(url)
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Confidence")
+        self.assertContains(resp, "Self-Efficacy")
+
+    def test_custom_metric_created_when_accepted(self):
+        """AI-suggested custom metric is created and attached when accepted."""
+        self.http.login(username="counsellor", password="pass")
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        resp = self.http.post(url, {
+            "name": "Goal with custom metric",
+            "section_choice": str(self.section.pk),
+            "custom_metric_name": "Housing Stability",
+            "custom_metric_definition": "1 = Homeless\n2 = Unstable\n3 = Temporary\n4 = Stable\n5 = Secure",
+            "custom_metric_accepted": "true",
+        })
+        self.assertEqual(resp.status_code, 302)
+        target = PlanTarget.objects.get(plan_section=self.section)
+        # Custom metric created with correct attributes
+        custom = MetricDefinition.objects.get(name="Housing Stability", is_library=False)
+        self.assertEqual(custom.category, "custom")
+        self.assertEqual(custom.owning_program, self.program)
+        self.assertEqual(custom.min_value, 1)
+        self.assertEqual(custom.max_value, 5)
+        # Custom metric attached to the target
+        self.assertTrue(
+            PlanTargetMetric.objects.filter(
+                plan_target=target, metric_def=custom
+            ).exists()
+        )
+
+    def test_custom_metric_not_created_when_skipped(self):
+        """Custom metric fields are ignored when not accepted."""
+        self.http.login(username="counsellor", password="pass")
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        before_count = MetricDefinition.objects.count()
+        resp = self.http.post(url, {
+            "name": "Goal without custom metric",
+            "section_choice": str(self.section.pk),
+            "custom_metric_name": "Should Not Exist",
+            "custom_metric_definition": "1 = Low\n5 = High",
+            "custom_metric_accepted": "",
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(MetricDefinition.objects.count(), before_count)
+
+    def test_custom_metric_not_created_when_definition_empty(self):
+        """Custom metric requires both name and definition."""
+        self.http.login(username="counsellor", password="pass")
+        url = reverse("plans:goal_create", args=[self.client_file.pk])
+        before_count = MetricDefinition.objects.count()
+        resp = self.http.post(url, {
+            "name": "Goal with empty definition",
+            "section_choice": str(self.section.pk),
+            "custom_metric_name": "Incomplete Metric",
+            "custom_metric_definition": "",
+            "custom_metric_accepted": "true",
+        })
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(MetricDefinition.objects.count(), before_count)
 
 
 class TestGoalCreateView(PlanCRUDBaseTest):

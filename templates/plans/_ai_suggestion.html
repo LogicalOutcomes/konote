@@ -36,6 +36,26 @@
             </ul>
         </dd>
         {% endif %}
+
+        {% if custom_metric %}
+        <dt>{% trans "Suggested target-specific metric" %}</dt>
+        <dd>
+            <div class="custom-metric-preview">
+                <strong>{{ custom_metric.name }}</strong>
+                <pre class="metric-levels">{{ custom_metric.definition }}</pre>
+                <div role="group" class="custom-metric-actions">
+                    <button type="button" class="btn-accept-metric outline"
+                            aria-label="{% blocktrans with name=custom_metric.name %}Include {{ name }}{% endblocktrans %}">
+                        {% trans "Include this metric" %}
+                    </button>
+                    <button type="button" class="btn-skip-metric outline secondary"
+                            aria-label="{% blocktrans with name=custom_metric.name %}Skip {{ name }}{% endblocktrans %}">
+                        {% trans "Skip" %}
+                    </button>
+                </div>
+            </div>
+        </dd>
+        {% endif %}
     </dl>
 
     <div role="group" class="suggestion-actions">

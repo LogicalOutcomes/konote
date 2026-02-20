@@ -120,9 +120,18 @@ def improve_outcome(draft_text):
         str — improved outcome text, or None on failure
     """
     system = (
-        "You help nonprofit workers write clear, measurable outcome statements "
-        "using the SMART framework (Specific, Measurable, Achievable, Relevant, "
-        "Time-bound). Rewrite the draft into a professional outcome statement. "
+        "You help nonprofit workers write clear, measurable outcome statements. "
+        "Rewrite the draft to satisfy these eight criteria:\n"
+        "1. Observable behaviour: uses an action verb you can see or hear\n"
+        "2. Specific: two people would agree on whether achieved\n"
+        "3. Measurable indicator: has a scale, score, count, or threshold\n"
+        "4. Conditions stated: specifies circumstances — with or without support\n"
+        "5. Success threshold: defines what level counts as 'met'\n"
+        "6. Time-bound: specifies a deadline or review date\n"
+        "7. Causally linked: achieving this leads to a larger goal\n"
+        "8. Participant-meaningful: the participant would recognise this as their goal\n\n"
+        "Use Canadian English spelling (colour, centre). "
+        "Write in plain language. "
         "Return only the improved text, no explanation."
     )
     return _call_openrouter(system, f"Draft outcome: {draft_text}")
@@ -157,6 +166,15 @@ def suggest_target(participant_words, program_name, metric_catalogue, existing_s
         "outside this group', don't reframe it as a program engagement goal. "
         "Keep their voice and direction.\n"
         "- Use Canadian English spelling (colour, centre, behaviour).\n\n"
+        "VALIDATION CRITERIA — every target must satisfy ALL EIGHT:\n"
+        "1. Observable behaviour (Mager): uses an action verb you can see or hear\n"
+        "2. Specific (Locke & Latham): two people would agree on whether achieved\n"
+        "3. Measurable indicator (Bandura, GAS): has a scale, score, count, or threshold\n"
+        "4. Conditions stated (Mager): specifies circumstances — with or without support\n"
+        "5. Success threshold (Mager, SMART): defines what level counts as 'met'\n"
+        "6. Time-bound (Doran): specifies a deadline or review date\n"
+        "7. Causally linked (Weiss): achieving this plausibly leads to the participant's larger goal\n"
+        "8. Participant-meaningful (GAS, Outcome Star): defined with the participant, matters to them\n\n"
         "METRIC SELECTION — this is critical:\n"
         "- Do NOT keyword-match. A metric about 'the group' does NOT fit a "
         "goal about life OUTSIDE the group.\n"
@@ -167,24 +185,30 @@ def suggest_target(participant_words, program_name, metric_catalogue, existing_s
         "An empty metrics array is a valid response.\n"
         "- Prefer metrics that measure the participant's own actions or "
         "experiences, not program attendance or generic wellbeing.\n\n"
+        "TARGET-SPECIFIC METRIC:\n"
+        "In addition to suggesting existing metrics from the catalogue, generate ONE "
+        "custom metric specific to this target. This metric should:\n"
+        "- Use a 1–5 scale with behaviourally anchored levels\n"
+        "- Each level describes an observable state or action, not a feeling\n"
+        "- Level 1 = not started or lowest level, Level 5 = sustained mastery or highest level\n"
+        "- Be specific to THIS target (not generic)\n"
+        "- Use plain language the participant would understand\n"
+        "- Format the definition as: '1 = descriptor\\n2 = descriptor\\n...\\n5 = descriptor'\n\n"
         "SECTION SELECTION:\n"
         "- Match the section to the participant's life goal, not just the "
-        "program structure. If they want to build friendships outside the "
-        "program, a section like 'Social Connections' or 'Community' fits "
-        "better than generic program terms.\n"
+        "program structure.\n"
         "- You MUST provide a section. Only pick an existing section if it genuinely fits. Otherwise "
         "suggest a new section name that reflects the participant's goal.\n\n"
         "REQUIREMENTS:\n"
         "- name: A concise target name (under 80 characters)\n"
-        "- description: A SMART outcome statement (Specific, Measurable, "
-        "Achievable, Relevant, Time-bound) written in plain language\n"
+        "- description: An outcome statement satisfying all 8 validation criteria above, "
+        "written in plain language the participant would understand\n"
         "- client_goal: The participant's own words, preserved closely\n"
-        "- suggested_section: You MUST provide a section. Pick from the existing sections if one fits, "
-        "or suggest a new section name\n"
+        "- suggested_section: You MUST provide a section. Pick from existing or suggest new.\n"
         "- metrics: 0–3 existing metrics from the catalogue that truly "
         "measure progress toward the participant's stated goal. Each with "
-        "metric_id, name, and a one-sentence reason. Empty array is fine "
-        "if no metric is a good fit.\n\n"
+        "metric_id, name, and a one-sentence reason. Empty array is fine.\n"
+        "- custom_metric: ONE target-specific metric as described above.\n\n"
         f"PROGRAM: {program_name}\n\n"
         f"EXISTING PLAN SECTIONS: "
         f"{json.dumps(existing_sections) if existing_sections else 'None yet — suggest a new section name.'}\n\n"
@@ -193,13 +217,20 @@ def suggest_target(participant_words, program_name, metric_catalogue, existing_s
         "RESPONSE FORMAT — return ONLY a JSON object:\n"
         "{\n"
         '  "name": "Concise target name",\n'
-        '  "description": "SMART outcome statement in plain language",\n'
+        '  "description": "Outcome statement satisfying all 8 criteria",\n'
         '  "client_goal": "Participant\'s own words, preserved closely",\n'
         '  "suggested_section": "Section name",\n'
         '  "metrics": [\n'
         '    {"metric_id": <int>, "name": "Metric name", '
         '"reason": "Why this metric fits"}\n'
-        "  ]\n"
+        "  ],\n"
+        '  "custom_metric": {\n'
+        '    "name": "Target-specific metric name",\n'
+        '    "definition": "1 = Level 1\\n2 = Level 2\\n3 = Level 3\\n4 = Level 4\\n5 = Level 5",\n'
+        '    "min_value": 1,\n'
+        '    "max_value": 5,\n'
+        '    "unit": "score"\n'
+        "  }\n"
         "}\n\n"
         "Return ONLY the JSON object, no other text."
     )
@@ -261,6 +292,23 @@ def _validate_suggest_target_response(response, metric_catalogue):
         response["metrics"] = valid_metrics
     else:
         response["metrics"] = []
+
+    # Validate custom_metric if present
+    cm = response.get("custom_metric")
+    if isinstance(cm, dict):
+        if not isinstance(cm.get("name"), str) or not cm["name"].strip():
+            response["custom_metric"] = None
+        elif not isinstance(cm.get("definition"), str) or not cm["definition"].strip():
+            response["custom_metric"] = None
+        else:
+            if not isinstance(cm.get("min_value"), (int, float)):
+                cm["min_value"] = 1
+            if not isinstance(cm.get("max_value"), (int, float)):
+                cm["max_value"] = 5
+            if not isinstance(cm.get("unit"), str):
+                cm["unit"] = "score"
+    else:
+        response["custom_metric"] = None
 
     return response
 
@@ -605,18 +653,27 @@ def build_goal_chat(messages, program_name, metric_catalogue, existing_sections)
         "- Use Canadian English spelling (colour, centre, programme is NOT used)\n\n"
         "LANGUAGE PRINCIPLES:\n"
         "- Use strengths-based, positive language: 'Build social connections' not 'Reduce isolation'\n"
-        "- The participant will see this goal on their portal. Write the SMART description "
+        "- The participant will see this goal on their portal. Write the description "
         "in plain language they would recognise as their own goal.\n"
         "- Honour the participant's intent — if they say 'make a friend outside this group', "
         "don't reframe it as a clinical program outcome. Keep their voice.\n"
         "- The client_goal field should preserve their actual words as closely as possible.\n\n"
+        "VALIDATION CRITERIA — the description must satisfy ALL EIGHT:\n"
+        "1. Observable behaviour (Mager): uses an action verb you can see or hear\n"
+        "2. Specific (Locke & Latham): two people would agree on whether achieved\n"
+        "3. Measurable indicator (Bandura, GAS): has a scale, score, count, or threshold\n"
+        "4. Conditions stated (Mager): specifies circumstances — with or without support\n"
+        "5. Success threshold (Mager, SMART): defines what level counts as 'met'\n"
+        "6. Time-bound (Doran): specifies a deadline or review date\n"
+        "7. Causally linked (Weiss): achieving this plausibly leads to the participant's larger goal\n"
+        "8. Participant-meaningful (GAS, Outcome Star): defined with the participant, matters to them\n"
+        "If any criteria are missing, ask the caseworker about them during the conversation.\n\n"
         "TECHNICAL REQUIREMENTS — every goal must have:\n"
         "- A concise target name (under 80 characters)\n"
-        "- A SMART description (Specific, Measurable, Achievable, Relevant, Time-bound) "
-        "written in plain language the participant would understand\n"
+        "- A description satisfying all 8 validation criteria, in plain language\n"
         "- The participant's own words — how they would describe this goal themselves\n"
         "- A measurable metric on a 1–5 scale with clear descriptors for each level\n"
-        "- A suggested plan section (from the existing sections, or a new one)\n\n"
+        "- A suggested plan section (from existing sections, or a new one)\n\n"
         "METRIC RULES:\n"
         "- Check the provided metric catalogue FIRST. If an existing metric fits well, "
         "use it (set existing_metric_id to its id).\n"
@@ -638,7 +695,7 @@ def build_goal_chat(messages, program_name, metric_catalogue, existing_sections)
         '  "questions": ["Optional clarifying questions — omit if presenting a draft"],\n'
         '  "draft": null or {\n'
         '    "name": "Concise target name",\n'
-        '    "description": "SMART outcome statement",\n'
+        '    "description": "Outcome statement satisfying all 8 criteria",\n'
         '    "client_goal": "How the participant would say it in their own words",\n'
         '    "metric": {\n'
         '      "existing_metric_id": null or integer,\n'

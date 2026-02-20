@@ -128,6 +128,7 @@ def _build_target_forms(client, post_data=None, auto_calc=None):
                 post_data,
                 prefix=m_prefix,
                 metric_def=ptm.metric_def,
+                target_name=target.name,
                 initial={"metric_def_id": ptm.metric_def.pk},
             )
             # Annotate auto-calc metrics with their computed value
