@@ -382,7 +382,8 @@
     "min_value": 0,
     "max_value": 20,
     "unit": "sessions",
-    "unit_fr": "séances"
+    "unit_fr": "séances",
+    "computation_type": "session_count"
   },
   {
     "name": "Community connections this month",

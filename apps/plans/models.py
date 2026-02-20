@@ -43,6 +43,15 @@ class MetricDefinition(models.Model):
         max_length=50, blank=True, default="",
         help_text=_("French unit label (e.g., 'pointage', 'jours', '%')"),
     )
+    COMPUTATION_TYPE_CHOICES = [
+        ("", _("Manual entry")),
+        ("session_count", _("Sessions attended this month")),
+    ]
+    computation_type = models.CharField(
+        max_length=30, blank=True, default="",
+        choices=COMPUTATION_TYPE_CHOICES,
+        help_text="If set, value is computed automatically instead of manual entry.",
+    )
     portal_description = models.TextField(
         blank=True, default="",
         help_text=_(
