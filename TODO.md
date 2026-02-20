@@ -151,6 +151,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Fix fiscal year dropdown showing English strings in French UI — wrapped with gettext, added 12 French translations — 2026-02-20 (BUG-FY1)
 - [x] Define Prosper Canada configuration template — 8 fixture files covering terminology, metrics, plans, roles, report schema — 2026-02-20 (DEPLOY-TEMPLATE1)
 - [x] Add financial metric plausibility subsection to data validation design — warn_min/warn_max for debt, income, savings, credit score — 2026-02-20 (DQ1-FIN)
 - [x] Write implementation plans for RPT-APPROVE1, DEPLOY-SCRIPT1, SCALE-API1 — 2026-02-20
