@@ -1,0 +1,20 @@
+{% load i18n %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE|default:'en' }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% trans "Thank You" %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+</head>
+<body>
+<main class="container" style="max-width:720px; padding-top:2rem; text-align:center">
+
+<h1>{% trans "Thank you!" %}</h1>
+<p>{% blocktrans with name=survey.name %}Your response to "{{ name }}" has been submitted.{% endblocktrans %}</p>
+
+</main>
+</body>
+</html>

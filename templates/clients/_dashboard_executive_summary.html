@@ -1,0 +1,129 @@
+{% load i18n %}
+{# Executive Inline Summary — aggregate metrics on home dashboard for executives #}
+<section class="exec-summary" aria-label="{% trans 'Executive Overview' %}">
+    <h2>{% trans "Executive Overview" %}</h2>
+    <p class="exec-subtitle">{% trans "High-level program metrics. Individual participant records are kept private." %}</p>
+
+    {# Top-line summary cards #}
+    <div class="exec-stats-grid">
+        <article class="stat-card">
+            <div class="stat-value">{{ executive_data.total_active }}</div>
+            <div class="stat-label">{% trans "Active" %} {{ term.client_plural|default:"Participants" }}</div>
+        </article>
+        <article class="stat-card {% if executive_data.without_notes > 0 %}stat-warning{% endif %}">
+            <div class="stat-value">{{ executive_data.without_notes }}</div>
+            <div class="stat-label">{% trans "Without Notes This Month" %}</div>
+        </article>
+        <article class="stat-card {% if executive_data.overdue_followups > 0 %}stat-warning{% endif %}">
+            <div class="stat-value">{{ executive_data.overdue_followups }}</div>
+            <div class="stat-label">{% trans "Overdue Follow-ups" %}</div>
+        </article>
+        {% if executive_data.show_alerts and executive_data.active_alerts is not None %}
+        <article class="stat-card {% if executive_data.active_alerts > 0 %}stat-alert{% endif %}">
+            <div class="stat-value">{{ executive_data.active_alerts }}</div>
+            <div class="stat-label">{% trans "Active Safety Alerts" %}</div>
+        </article>
+        {% endif %}
+        {% if executive_data.total_suggestions_important > 0 %}
+        <article class="stat-card stat-warning">
+            <div class="stat-value">{{ executive_data.total_suggestions_important }}</div>
+            <div class="stat-label">{% trans "Important Suggestions" %}</div>
+        </article>
+        {% endif %}
+    </div>
+
+    {# Per-program cards #}
+    {% if executive_data.program_stats %}
+    <h3>{{ term.program_plural|default:"Programs" }}</h3>
+    <div class="exec-program-cards">
+        {% for stat in executive_data.program_stats %}
+        <article class="exec-program-card">
+            <header>
+                <span class="program-dot" style="background-color: {{ stat.program.colour_hex }}" aria-hidden="true"></span>
+                <h4>{{ stat.program.translated_name }}</h4>
+            </header>
+            <div class="exec-metrics">
+                <div class="metric-row">
+                    <span class="metric-label">{% trans "Active" %} {{ term.client_plural|default:"Participants" }}</span>
+                    <span class="metric-value">{{ stat.active }}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">{% trans "New this month" %}</span>
+                    <span class="metric-value">{{ stat.new_this_month }}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">{% trans "Notes this week" %}</span>
+                    <span class="metric-value">{{ stat.notes_this_week }}</span>
+                </div>
+                {% if stat.engagement_quality is not None %}
+                <div class="metric-row {% if stat.engagement_quality >= 70 %}metric-success{% elif stat.engagement_quality >= 40 %}metric-neutral{% else %}metric-warning{% endif %}">
+                    <span class="metric-label">{% trans "Engagement Quality" %}</span>
+                    <span class="metric-value">{{ stat.engagement_quality }}%</span>
+                </div>
+                {% endif %}
+                {% if stat.goal_completion is not None %}
+                <div class="metric-row">
+                    <span class="metric-label">{% trans "Goal Completion Rate" %}</span>
+                    <span class="metric-value">{{ stat.goal_completion }}%</span>
+                </div>
+                {% endif %}
+                <div class="metric-row">
+                    <span class="metric-label">{% trans "Intake Pipeline" %}</span>
+                    <span class="metric-value">{{ stat.intake_pending }}</span>
+                </div>
+                {% if stat.suggestion_total > 0 %}
+                <div class="metric-row {% if stat.suggestion_important > 0 %}metric-warning{% endif %}">
+                    <span class="metric-label">{% trans "Suggestions" %}</span>
+                    <span class="metric-value">{{ stat.suggestion_total }}{% if stat.suggestion_important > 0 %} <small>({{ stat.suggestion_important }} {% trans "important" %})</small>{% endif %}</span>
+                </div>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <p class="exec-detail-link">
+        <a href="{% url 'clients:executive_dashboard' %}">{% trans "View full executive dashboard" %} &rarr;</a>
+    </p>
+</section>
+
+<style>
+.exec-summary { margin-bottom: var(--kn-space-lg, 2rem); }
+.exec-summary h2 { font-size: 1.25rem; margin-bottom: 0.25rem; }
+.exec-subtitle { color: var(--pico-muted-color); font-size: 0.9rem; margin-bottom: var(--kn-space-base, 1rem); }
+.exec-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: var(--kn-space-base, 1rem);
+    margin-bottom: var(--kn-space-lg, 2rem);
+}
+.exec-summary .stat-card { text-align: center; padding: var(--kn-space-base, 1rem); margin: 0; }
+.exec-summary .stat-value { font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 0.25rem; }
+.exec-summary .stat-label { color: var(--pico-muted-color); font-size: 0.85rem; }
+.exec-summary .stat-warning .stat-value { color: var(--kn-warning-fg); }
+.exec-summary .stat-alert .stat-value { color: var(--kn-danger-fg); }
+.exec-summary h3 { font-size: 1.1rem; margin-bottom: var(--kn-space-sm, 0.5rem); }
+.exec-program-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--kn-space-base, 1rem);
+    margin-bottom: var(--kn-space-base, 1rem);
+}
+.exec-program-card { margin: 0; }
+.exec-program-card header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: var(--kn-space-sm, 0.5rem);
+}
+.exec-program-card h4 { margin: 0; font-size: 1rem; }
+.exec-metrics { font-size: 0.9rem; }
+.exec-metrics .metric-row { display: flex; justify-content: space-between; padding: 0.25rem 0; }
+.exec-metrics .metric-label { color: var(--pico-muted-color); }
+.exec-metrics .metric-value { font-weight: 600; }
+.exec-metrics .metric-success .metric-value { color: var(--kn-success-fg); }
+.exec-metrics .metric-neutral .metric-value { color: var(--pico-muted-color); }
+.exec-metrics .metric-warning .metric-value { color: var(--kn-warning-fg); }
+.exec-detail-link { font-size: 0.9rem; }
+</style>

@@ -26,14 +26,17 @@ from .forms import (
     SurveyForm,
     SurveyQuestionForm,
     SurveySectionForm,
+    TriggerRuleForm,
 )
 from .models import (
     Survey,
     SurveyAnswer,
     SurveyAssignment,
+    SurveyLink,
     SurveyQuestion,
     SurveyResponse,
     SurveySection,
+    SurveyTriggerRule,
 )
 
 logger = logging.getLogger(__name__)
@@ -727,3 +730,108 @@ def client_response_detail(request, client_id, response_id):
         "answers": answers,
         "breadcrumbs": breadcrumbs,
     })
+
+
+# ---------------------------------------------------------------------------
+# Shareable link management — /manage/surveys/<id>/links/
+# ---------------------------------------------------------------------------
+
+
+@login_required
+@requires_permission("template.note.manage", allow_admin=True)
+def survey_links(request, survey_id):
+    """Manage shareable links for a survey."""
+    _surveys_or_404()
+    survey = get_object_or_404(Survey, pk=survey_id)
+
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+        if action == "create":
+            expires_days = request.POST.get("expires_days", "")
+            expires_at = None
+            if expires_days:
+                try:
+                    expires_at = timezone.now() + timezone.timedelta(
+                        days=int(expires_days),
+                    )
+                except (ValueError, TypeError):
+                    pass
+            SurveyLink.objects.create(
+                survey=survey,
+                created_by=request.user,
+                collect_name=request.POST.get("collect_name") == "on",
+                expires_at=expires_at,
+            )
+            messages.success(request, _("Shareable link created."))
+        elif action == "deactivate":
+            link_id = request.POST.get("link_id")
+            link = get_object_or_404(SurveyLink, pk=link_id, survey=survey)
+            link.is_active = False
+            link.save(update_fields=["is_active"])
+            messages.success(request, _("Link deactivated."))
+        return redirect("survey_manage:survey_links", survey_id=survey.pk)
+
+    links = SurveyLink.objects.filter(survey=survey).order_by("-created_at")
+    return render(request, "surveys/admin/survey_links.html", {
+        "survey": survey,
+        "links": links,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Trigger rule management — /manage/surveys/<id>/rules/
+# ---------------------------------------------------------------------------
+
+
+@login_required
+@requires_permission("template.note.manage", allow_admin=True)
+def survey_rules_list(request, survey_id):
+    """List trigger rules for a survey."""
+    _surveys_or_404()
+    survey = get_object_or_404(Survey, pk=survey_id)
+    rules = survey.trigger_rules.select_related(
+        "program", "event_type",
+    ).order_by("-created_at")
+    return render(request, "surveys/admin/rule_list.html", {
+        "survey": survey,
+        "rules": rules,
+    })
+
+
+@login_required
+@requires_permission("template.note.manage", allow_admin=True)
+def survey_rule_create(request, survey_id):
+    """Create a new trigger rule for a survey."""
+    _surveys_or_404()
+    survey = get_object_or_404(Survey, pk=survey_id)
+
+    if request.method == "POST":
+        form = TriggerRuleForm(request.POST)
+        if form.is_valid():
+            rule = form.save(commit=False)
+            rule.survey = survey
+            rule.created_by = request.user
+            rule.save()
+            messages.success(request, _("Trigger rule created."))
+            return redirect("survey_manage:survey_rules", survey_id=survey.pk)
+    else:
+        form = TriggerRuleForm()
+
+    return render(request, "surveys/admin/rule_form.html", {
+        "survey": survey,
+        "form": form,
+    })
+
+
+@login_required
+@requires_permission("template.note.manage", allow_admin=True)
+@require_POST
+def survey_rule_deactivate(request, survey_id, rule_id):
+    """Deactivate a trigger rule."""
+    _surveys_or_404()
+    survey = get_object_or_404(Survey, pk=survey_id)
+    rule = get_object_or_404(SurveyTriggerRule, pk=rule_id, survey=survey)
+    rule.is_active = False
+    rule.save(update_fields=["is_active"])
+    messages.success(request, _("Trigger rule deactivated."))
+    return redirect("survey_manage:survey_rules", survey_id=survey.pk)

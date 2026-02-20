@@ -5,6 +5,7 @@ from .models import (
     Survey,
     SurveyAnswer,
     SurveyAssignment,
+    SurveyLink,
     SurveyQuestion,
     SurveyResponse,
     SurveySection,
@@ -69,3 +70,10 @@ class SurveyResponseAdmin(admin.ModelAdmin):
 class SurveyAnswerAdmin(admin.ModelAdmin):
     list_display = ("response", "question", "numeric_value")
     raw_id_fields = ("response", "question")
+
+
+@admin.register(SurveyLink)
+class SurveyLinkAdmin(admin.ModelAdmin):
+    list_display = ("survey", "token", "is_active", "expires_at", "created_at")
+    list_filter = ("is_active",)
+    readonly_fields = ("token",)

@@ -18,15 +18,23 @@ Welcome! Find what you need based on what you're trying to do.
 
 ---
 
-## What's New (v2.2)
+## What's New (v2.3)
 
-- **Suggestion tracking & Outcome Insights** — automated theme identification from participant feedback, responsiveness tracking, and executive dashboard integration
-- **PM self-service administration** — program managers manage their own templates, metrics, event types, and registration links at /manage/
-- **Staff messaging** — leave messages for case workers about participants, with My Messages dashboard and unread badges
-- **Client transfers** — move participants between programs with a dedicated transfer form, audit trail, and cross-program consent
-- **Portal staff management** — invite participants to the portal, manage and revoke access, reset MFA from the client detail page
-- **UX accessibility improvements** — 44px mobile touch targets, dark mode contrast fixes, WCAG 2.2 AA compliance
-- **Automated scheduling** — meeting reminders via SMS/email, weekly export summary emails for privacy oversight
+- **Surveys** — structured feedback forms with trigger rules (auto-assign based on events, enrolment, or time), shareable public links, auto-save, conditional sections, section scoring, and CSV import
+- **SMS and email sending** — compose and send messages to participants with consent tracking, appointment reminder previews, CASL-compliant unsubscribe links, and safety-first mode
+- **Participant portal completion** — password reset via email code, staff-assisted login with one-time tokens, PWA "Add to Home Screen", portal usage analytics dashboard, auto-deactivation on discharge
+- **Dashboard roles** — coach, program manager, and executive landing pages with role-specific data and summaries
+- **AI Goal Builder** — conversational goal-setting tool on the plan page for defining measurable targets collaboratively
+- **Portal survey completion** — participants fill in assigned surveys with multi-page forms, auto-save, and conditional section visibility
+
+### Previous (v2.2)
+
+- Suggestion tracking & Outcome Insights — automated theme identification, responsiveness tracking, executive dashboard
+- PM self-service administration — manage templates, metrics, event types, and registration links at /manage/
+- Staff messaging — internal messages about participants with unread badges
+- Client transfers — move participants between programs with audit trail
+- Portal staff management — invite, revoke, and reset MFA from client detail page
+- Automated scheduling — meeting reminders via SMS/email, weekly export summary emails
 
 For a full history of changes, see the [Changelog](../CHANGELOG.md).
 
@@ -37,6 +45,7 @@ For a full history of changes, see the [Changelog](../CHANGELOG.md).
 ### For Everyone
 
 - [Help & Quick Reference](help.md) — find answers fast
+- [Surveys Guide](surveys.md) — creating, assigning, and completing surveys
 - [Keyboard Shortcuts](help.md#keyboard-shortcuts)
 - [Troubleshooting](help.md#troubleshooting)
 
@@ -64,6 +73,7 @@ For a full history of changes, see the [Changelog](../CHANGELOG.md).
 - [Recording Events](using-KoNote.md#recording-events)
 - [Logging Communications](using-KoNote.md#logging-communications)
 - [Staff Messaging](using-KoNote.md#staff-messaging) — leave and read messages about participants
+- [Surveys](using-KoNote.md#surveys) — assigning and entering survey responses
 - [Client Transfer](using-KoNote.md#transferring-a-client) — move participants between programs
 - [Scheduling Meetings](using-KoNote.md#scheduling-meetings)
 - [Using the Calendar Feed](using-KoNote.md#using-the-calendar-feed)
@@ -84,6 +94,7 @@ For a full history of changes, see the [Changelog](../CHANGELOG.md).
 | Document | Audience | Purpose |
 |----------|----------|---------|
 | [Help](help.md) | All users | Quick reference and in-app help |
+| [Surveys](surveys.md) | All users | Creating, assigning, and completing surveys |
 | [Design Principles](design-principles.md) | All users | Research-based approach to participant-centred practice |
 | [Deploying KoNote](deploying-KoNote.md) | IT / Technical lead | Get KoNote running (local or cloud) |
 | [Privacy Policy Template](privacy-policy-template.md) | Admins / Legal | Customise for your organisation before going live |

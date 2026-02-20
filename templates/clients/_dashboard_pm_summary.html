@@ -1,0 +1,68 @@
+{% load i18n %}
+{# PM Program Health Summary — inline on home dashboard for program managers #}
+<section class="pm-summary" aria-label="{% trans 'Program Health Summary' %}">
+    <h2>{% trans "Program Health" %}</h2>
+    {% if pm_program_stats %}
+    <div class="pm-program-cards">
+        {% for stat in pm_program_stats %}
+        <article class="pm-program-card">
+            <header>
+                <span class="program-dot" style="background-color: {{ stat.program.colour_hex }}" aria-hidden="true"></span>
+                <h3>{{ stat.program.translated_name }}</h3>
+            </header>
+            <div class="pm-metrics">
+                <div class="metric-row">
+                    <span class="metric-label">{% trans "Active" %} {{ term.client_plural|default:"Participants" }}</span>
+                    <span class="metric-value">{{ stat.active }}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">{% trans "Total enrolled" %}</span>
+                    <span class="metric-value">{{ stat.total }}</span>
+                </div>
+                <div class="metric-row">
+                    <span class="metric-label">{% trans "Notes this week" %}</span>
+                    <span class="metric-value">{{ stat.notes_this_week }}</span>
+                </div>
+                <div class="metric-row{% if stat.overdue_followups > 0 %} metric-warning{% endif %}">
+                    <span class="metric-label">{% trans "Overdue follow-ups" %}</span>
+                    <span class="metric-value">{{ stat.overdue_followups }}</span>
+                </div>
+                <div class="metric-row{% if stat.without_recent_notes > 0 %} metric-warning{% endif %}">
+                    <span class="metric-label">{% trans "No notes in 30 days" %}</span>
+                    <span class="metric-value">{{ stat.without_recent_notes }}</span>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-message"><em>{% trans "No programs assigned." %}</em></p>
+    {% endif %}
+</section>
+
+<style>
+.pm-summary { margin-bottom: var(--kn-space-lg, 2rem); }
+.pm-summary h2 { font-size: 1.25rem; margin-bottom: var(--kn-space-base, 1rem); }
+.pm-program-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--kn-space-base, 1rem);
+}
+.pm-program-card { margin: 0; }
+.pm-program-card header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: var(--kn-space-sm, 0.5rem);
+}
+.pm-program-card h3 { margin: 0; font-size: 1.1rem; }
+.pm-metrics { font-size: 0.9rem; }
+.pm-metrics .metric-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+}
+.pm-metrics .metric-label { color: var(--pico-muted-color); }
+.pm-metrics .metric-value { font-weight: 600; }
+.pm-metrics .metric-warning .metric-value { color: var(--kn-warning-fg); }
+</style>

@@ -108,8 +108,7 @@ class ProgramAccessMiddleware:
             # Block access to group views (contain individual member names)
             if path.startswith("/groups/"):
                 return redirect("clients:executive_dashboard")
-            # Redirect from client list (but NOT root — home view handles
-            # executive content inline via role-based dashboard)
+            # Redirect from client list (home page handles executives inline)
             if path in ("/participants/", "/participants"):
                 return redirect("clients:executive_dashboard")
 
