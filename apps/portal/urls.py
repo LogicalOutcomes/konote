@@ -39,4 +39,8 @@ urlpatterns = [
     path("journal/disclosure/", views.journal_disclosure, name="journal_disclosure"),
     path("message/", views.message_create, name="message_to_worker"),
     path("discuss-next/", views.discuss_next, name="discuss_next"),
+    # Surveys (portal)
+    path("surveys/", views.portal_surveys_list, name="surveys"),
+    path("surveys/<int:assignment_id>/fill/", views.portal_survey_fill, name="survey_fill"),
+    path("surveys/<int:assignment_id>/thanks/", views.portal_survey_thank_you, name="survey_thank_you"),
 ]

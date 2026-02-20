@@ -80,6 +80,16 @@
         </a>
         {% endif %}
 
+        {% if features.surveys and pending_surveys %}
+        <a href="{% url 'portal:surveys' %}" class="portal-card">
+            <article>
+                <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                <h2>{% trans "Surveys" %}</h2>
+                <p>{% blocktrans count counter=pending_surveys %}You have {{ counter }} survey to complete.{% plural %}You have {{ counter }} surveys to complete.{% endblocktrans %}</p>
+            </article>
+        </a>
+        {% endif %}
+
     </div>
 </section>
 {% endblock %}

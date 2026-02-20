@@ -78,6 +78,9 @@
             {% if features.portal_messaging %}
             <li><a href="{% url 'portal:message_to_worker' %}" {% if portal_page == 'message' %}aria-current="page"{% endif %}>{% trans "Messages" %}</a></li>
             {% endif %}
+            {% if features.surveys %}
+            <li><a href="{% url 'portal:surveys' %}" {% if portal_page == 'surveys' %}aria-current="page"{% endif %}>{% trans "Surveys" %}</a></li>
+            {% endif %}
             <li><a href="{% url 'portal:settings' %}" {% if portal_page == 'settings' %}aria-current="page"{% endif %}>{% trans "Settings" %}</a></li>
         </ul>
         <ul>

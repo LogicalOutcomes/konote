@@ -1,0 +1,52 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Surveys" %}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Surveys" %}</h1>
+
+{% if assignments %}
+<h2>{% trans "Surveys for You" %}</h2>
+<p>{% trans "Please complete these surveys when you're ready." %}</p>
+
+{% for a in assignments %}
+<article>
+    <header>
+        <strong>{{ a.survey.name }}</strong>
+        {% if a.due_date %}
+        <br><small>{% trans "Due" %}: {{ a.due_date|date:"N j, Y" }}</small>
+        {% endif %}
+    </header>
+    {% if a.survey.description %}
+    <p>{{ a.survey.description }}</p>
+    {% endif %}
+    <a href="{% url 'portal:survey_fill' assignment_id=a.pk %}" role="button">
+        {% if a.status == "in_progress" %}{% trans "Continue" %}{% else %}{% trans "Start" %}{% endif %}
+    </a>
+</article>
+{% endfor %}
+{% else %}
+<p>{% trans "You have no surveys to complete right now." %}</p>
+{% endif %}
+
+{% if responses %}
+<h2>{% trans "Completed Surveys" %}</h2>
+<table aria-label="{% trans 'Completed surveys' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Survey" %}</th>
+            <th scope="col">{% trans "Submitted" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in responses %}
+        <tr>
+            <td>{{ r.survey.name }}</td>
+            <td>{{ r.submitted_at|date:"N j, Y" }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endblock %}

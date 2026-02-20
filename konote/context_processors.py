@@ -21,6 +21,8 @@ def nav_active(request):
         section = "programs"
     elif path.startswith("/groups/"):
         section = "groups"
+    elif path.startswith(("/manage/surveys/", "/surveys/")):
+        section = "surveys"
     elif path.startswith(("/admin/", "/erasure/", "/merge/")):
         section = "admin"
     elif path.startswith("/communications/my-messages"):

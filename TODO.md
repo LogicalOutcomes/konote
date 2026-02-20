@@ -57,6 +57,23 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] Permissions Phase 2 — remaining 10 items: discharge access transitions, consent model, DV-safe mode, GATED clinical access, group schedule vs roster, per-field front desk edit, SCOPED→PROGRAM rename, funder report key, alert escalation, dashboard split (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P3–12)
 
+### Phase: Advanced Reporting
+
+- [ ] Research typical nonprofit session reporting requirements (UNHCR, IRCC, CCIS, etc.) to design "Sessions by Participant" report (REP-REQ1)
+- [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (REP-SESS1)
+- [ ] Expand report template system to support more flexible data exports across various modules (REP-FLEX1)
+- [ ] Add "All Programs" option to report filters for organization-wide summaries (REP-ALL-PROGS1)
+- [ ] Implement report preview on-screen before downloading PDF/CSV (REP-PREVIEW1)
+- [ ] Research/Implement including data visuals (charts/graphs) in PDF reports (REP-PDF1)
+- [ ] Redesign PDF report layout: merge title page with page 2 to eliminate redundant empty space (REP-PDF2)
+
+### Phase: Surveys Future Work
+
+- [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
+- [ ] Build trigger rule management UI (rules currently created via Django admin) (SURVEY-RULES1)
+- [ ] Implement auto-save / partial answers in the portal (SURVEY-AUTOSAVE1)
+- [ ] Run `translate_strings` to extract and compile French translations for the new survey templates (SURVEY-I18N1)
+
 ### Phase: Documentation & Website Updates
 
 - [ ] Create deployment documentation for surveys and portal features (DOC-DEPLOY1)
@@ -81,6 +98,10 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 **Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
 
 - [x] Fix Add Target form UX: auto-select or clarify "area of the plan", remove "Attendance & Wellbeing" placeholder, and change metric text from "how much progress have they made" to "how much progress have I made" — 2026-02-20 (UX-TARGET1)
+- [ ] Change "Add section only" link text to "Add Section" on plan view — (UX-SECTION1)
+- [ ] Remove "+ Add note" link in Notes tab, hide Quick Note from Actions if needed, and update wayfinding text (UX-NOTES3)
+- [ ] Fix "server error occurred" when clicking "Shape this target" (AI Suggestion) — (BUG-AI1)
+- [ ] Investigate/Fix "error message" when clicking "Draft Report summary" on Insights page (BUG-AI2)
 - [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
 
 ## Recently Done

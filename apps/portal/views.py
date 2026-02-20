@@ -587,6 +587,20 @@ def dashboard(request):
     participant = request.participant_user
     client_file = _get_client_file(request)
 
+    # Pending surveys count
+    pending_surveys = 0
+    try:
+        from apps.surveys.engine import is_surveys_enabled
+        from apps.surveys.models import SurveyAssignment
+        if is_surveys_enabled():
+            pending_surveys = SurveyAssignment.objects.filter(
+                participant_user=participant,
+                status__in=("pending", "in_progress"),
+                survey__portal_visible=True,
+            ).count()
+    except Exception:
+        pass
+
     # Latest progress note date for this client
     latest_note = (
         ProgressNote.objects.filter(client_file=client_file, status="default")
@@ -626,6 +640,7 @@ def dashboard(request):
         "new_count": new_count,
         "new_details": new_details,
         "staff_notes": staff_notes,
+        "pending_surveys": pending_surveys,
     })
 
 
@@ -1260,4 +1275,170 @@ def discuss_next(request):
         "form": form,
         "existing": existing,
         "success": success,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Surveys — participant-facing survey views
+# ---------------------------------------------------------------------------
+
+
+@portal_login_required
+def portal_surveys_list(request):
+    """Show pending survey assignments for the logged-in participant."""
+    from apps.surveys.engine import is_surveys_enabled
+    from apps.surveys.models import SurveyAssignment, SurveyResponse
+
+    if not is_surveys_enabled():
+        raise Http404
+
+    participant = request.participant_user
+    client_file = _get_client_file(request)
+
+    # Pending / in-progress assignments
+    assignments = SurveyAssignment.objects.filter(
+        participant_user=participant,
+        status__in=("pending", "in_progress"),
+        survey__portal_visible=True,
+    ).select_related("survey").order_by("-created_at")
+
+    # Completed responses
+    responses = SurveyResponse.objects.filter(
+        client_file=client_file,
+        channel__in=("portal", "staff_entered"),
+    ).select_related("survey").order_by("-submitted_at")[:20]
+
+    return render(request, "portal/surveys_list.html", {
+        "participant": participant,
+        "assignments": assignments,
+        "responses": responses,
+    })
+
+
+@portal_login_required
+def portal_survey_fill(request, assignment_id):
+    """Fill in a survey through the portal — renders all questions."""
+    from apps.surveys.engine import is_surveys_enabled
+    from apps.surveys.models import (
+        SurveyAnswer,
+        SurveyAssignment,
+        SurveyResponse,
+    )
+
+    if not is_surveys_enabled():
+        raise Http404
+
+    participant = request.participant_user
+    client_file = _get_client_file(request)
+
+    assignment = get_object_or_404(
+        SurveyAssignment,
+        pk=assignment_id,
+        participant_user=participant,
+        status__in=("pending", "in_progress"),
+    )
+    survey = assignment.survey
+    sections = survey.sections.filter(
+        is_active=True,
+    ).prefetch_related("questions").order_by("sort_order")
+
+    if request.method == "POST":
+        errors = []
+        answers_data = []
+
+        for section in sections:
+            for question in section.questions.all().order_by("sort_order"):
+                field_name = f"q_{question.pk}"
+                if question.question_type == "multiple_choice":
+                    raw_values = request.POST.getlist(field_name)
+                    raw_value = ";".join(raw_values) if raw_values else ""
+                else:
+                    raw_value = request.POST.get(field_name, "").strip()
+
+                if question.required and not raw_value:
+                    errors.append(question.question_text)
+                if raw_value:
+                    answers_data.append((question, raw_value))
+
+        if errors:
+            return render(request, "portal/survey_fill.html", {
+                "participant": participant,
+                "assignment": assignment,
+                "survey": survey,
+                "sections": sections,
+                "posted": request.POST,
+                "errors": errors,
+            })
+
+        from django.db import transaction
+
+        with transaction.atomic():
+            response = SurveyResponse.objects.create(
+                survey=survey,
+                assignment=assignment,
+                client_file=client_file,
+                channel="portal",
+            )
+            for question, raw_value in answers_data:
+                answer = SurveyAnswer(
+                    response=response,
+                    question=question,
+                )
+                answer.value = raw_value
+                if question.question_type in ("rating_scale", "yes_no"):
+                    try:
+                        answer.numeric_value = int(raw_value)
+                    except (ValueError, TypeError):
+                        pass
+                elif question.question_type == "single_choice":
+                    for opt in (question.options_json or []):
+                        if opt.get("value") == raw_value:
+                            answer.numeric_value = opt.get("score")
+                            break
+                answer.save()
+
+            assignment.status = "completed"
+            assignment.completed_at = timezone.now()
+            assignment.save(update_fields=["status", "completed_at"])
+
+        _audit_portal_event(request, "portal_survey_submitted", metadata={
+            "survey_id": str(survey.pk),
+            "assignment_id": str(assignment.pk),
+        })
+        return redirect("portal:survey_thank_you", assignment_id=assignment.pk)
+
+    # Mark as in_progress on first view
+    if assignment.status == "pending":
+        assignment.status = "in_progress"
+        assignment.started_at = timezone.now()
+        assignment.save(update_fields=["status", "started_at"])
+
+    return render(request, "portal/survey_fill.html", {
+        "participant": participant,
+        "assignment": assignment,
+        "survey": survey,
+        "sections": sections,
+        "posted": {},
+        "errors": [],
+    })
+
+
+@portal_login_required
+def portal_survey_thank_you(request, assignment_id):
+    """Thank-you page after completing a survey."""
+    from apps.surveys.engine import is_surveys_enabled
+    from apps.surveys.models import SurveyAssignment
+
+    if not is_surveys_enabled():
+        raise Http404
+
+    participant = request.participant_user
+    assignment = get_object_or_404(
+        SurveyAssignment,
+        pk=assignment_id,
+        participant_user=participant,
+    )
+    return render(request, "portal/survey_thank_you.html", {
+        "participant": participant,
+        "survey": assignment.survey,
     })

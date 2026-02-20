@@ -111,6 +111,9 @@
                         <li><a href="{% url 'plan_templates:template_list' %}">{% trans "Plan Templates" %}</a></li>
                         <li><a href="{% url 'note_templates:template_list' %}">{% trans "Note Templates" %}</a></li>
                         <li><a href="{% url 'event_types:event_type_list' %}">{% trans "Event Types" %}</a></li>
+                        {% if features.surveys %}
+                        <li><a href="{% url 'survey_manage:survey_list' %}"{% if nav_active == "surveys" %} class="nav-active"{% endif %}>{% trans "Surveys" %}</a></li>
+                        {% endif %}
                         <li><a href="{% url 'registration:registration_link_list' %}">{% trans "Registration Links" %}</a></li>
                         <li><a href="{% url 'registration:submission_list' %}">{% trans "Pending Submissions" %}{% if pending_submissions_count %} <span class="badge badge-warning">{{ pending_submissions_count }}</span>{% endif %}</a></li>
                         <li><a href="{% url 'admin_settings:dashboard' %}">{% trans "Settings" %}</a></li>
@@ -148,6 +151,9 @@
                         {% endif %}
                         {% if can_manage_note_templates %}
                         <li><a href="{% url 'note_templates:template_list' %}">{% trans "Note Templates" %}</a></li>
+                        {% endif %}
+                        {% if can_manage_note_templates and features.surveys %}
+                        <li><a href="{% url 'survey_manage:survey_list' %}"{% if nav_active == "surveys" %} class="nav-active"{% endif %}>{% trans "Surveys" %}</a></li>
                         {% endif %}
                         {% if can_manage_event_types %}
                         <li><a href="{% url 'event_types:event_type_list' %}">{% trans "Event Types" %}</a></li>

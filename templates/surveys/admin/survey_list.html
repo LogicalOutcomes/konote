@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Surveys" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Surveys" %}</h1>
+    <p>{% trans "Create and manage surveys for participant feedback." %}</p>
+</hgroup>
+
+<div role="group">
+    <a href="{% url 'survey_manage:survey_create' %}" role="button">{% trans "New Survey" %}</a>
+    <a href="{% url 'survey_manage:csv_import' %}" role="button" class="outline">{% trans "Import from CSV" %}</a>
+</div>
+
+{% if surveys %}
+<table aria-label="{% trans 'Surveys' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Name" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Questions" %}</th>
+            <th scope="col">{% trans "Responses" %}</th>
+            <th scope="col">{% trans "Created" %}</th>
+            <th scope="col">{% trans "Actions" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for survey in surveys %}
+        <tr>
+            <td><a href="{% url 'survey_manage:survey_detail' survey_id=survey.pk %}">{{ survey.name }}</a></td>
+            <td>
+                {% if survey.status == "active" %}
+                    <span class="badge badge-success">{% trans "Active" %}</span>
+                {% elif survey.status == "draft" %}
+                    <span class="badge badge-neutral">{% trans "Draft" %}</span>
+                {% elif survey.status == "closed" %}
+                    <span class="badge badge-warning">{% trans "Closed" %}</span>
+                {% else %}
+                    <span class="badge badge-neutral">{% trans "Archived" %}</span>
+                {% endif %}
+            </td>
+            <td>{{ survey.sections.count }} {% trans "sections" %}</td>
+            <td>{{ survey.responses.count }}</td>
+            <td>{{ survey.created_at|date:"N j, Y" }}</td>
+            <td>
+                <a href="{% url 'survey_manage:survey_edit' survey_id=survey.pk %}">{% trans "Edit" %}</a>
+                ·
+                <a href="{% url 'survey_manage:survey_questions' survey_id=survey.pk %}">{% trans "Questions" %}</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty-state">{% trans "No surveys yet. Create one to get started." %}</p>
+{% endif %}
+{% endblock %}

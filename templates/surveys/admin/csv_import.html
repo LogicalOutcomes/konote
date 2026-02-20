@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Import Survey from CSV" %}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Import Survey from CSV" %}</h1>
+    <p>{% trans "Upload a CSV file to create a complete survey with sections and questions." %}</p>
+</hgroup>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}</label>
+    {{ field }}
+    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+    {% if field.errors %}<small class="error" role="alert">{{ field.errors.0 }}</small>{% endif %}
+    {% endfor %}
+
+    <details>
+        <summary>{% trans "CSV format guide" %}</summary>
+        <p>{% trans "Your CSV file should have the following columns:" %}</p>
+        <table aria-label="{% trans 'CSV columns' %}">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Column" %}</th>
+                    <th scope="col">{% trans "Required" %}</th>
+                    <th scope="col">{% trans "Description" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>section</td><td>{% trans "Yes" %}</td><td>{% trans "Section name — questions with the same section name are grouped together." %}</td></tr>
+                <tr><td>question</td><td>{% trans "Yes" %}</td><td>{% trans "The question text." %}</td></tr>
+                <tr><td>type</td><td>{% trans "No" %}</td><td>{% trans "Question type: short_text, long_text, single_choice, multiple_choice, rating_scale, yes_no." %}</td></tr>
+                <tr><td>required</td><td>{% trans "No" %}</td><td>{% trans "yes or no — whether the question must be answered." %}</td></tr>
+                <tr><td>options</td><td>{% trans "No" %}</td><td>{% trans "For choice questions — separate options with semicolons: Agree;Neutral;Disagree" %}</td></tr>
+                <tr><td>score_values</td><td>{% trans "No" %}</td><td>{% trans "Numeric scores matching options: 3;2;1" %}</td></tr>
+                <tr><td>instructions</td><td>{% trans "No" %}</td><td>{% trans "Instructions shown at the top of a section." %}</td></tr>
+                <tr><td>page_break</td><td>{% trans "No" %}</td><td>{% trans "yes — to start a new page at this section." %}</td></tr>
+                <tr><td>section_fr</td><td>{% trans "No" %}</td><td>{% trans "French section name." %}</td></tr>
+                <tr><td>question_fr</td><td>{% trans "No" %}</td><td>{% trans "French question text." %}</td></tr>
+                <tr><td>options_fr</td><td>{% trans "No" %}</td><td>{% trans "French option labels, semicolon-separated." %}</td></tr>
+            </tbody>
+        </table>
+    </details>
+
+    <div role="group">
+        <button type="submit">{% trans "Import" %}</button>
+        <a href="{% url 'survey_manage:survey_list' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

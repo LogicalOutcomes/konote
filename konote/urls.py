@@ -41,6 +41,7 @@ urlpatterns = [
     path("reports/client/<path:rest>", RedirectView.as_view(url="/reports/participant/%(rest)s", permanent=True)),
     path("reports/", include("apps.reports.urls")),
     path("groups/", include("apps.groups.urls")),
+    path("surveys/", include("apps.surveys.urls")),
 
     # ── /manage/ routes (PM + Admin accessible) ──
     path("manage/templates/", include("apps.plans.admin_urls")),
@@ -50,6 +51,7 @@ urlpatterns = [
     path("manage/users/", include("apps.auth_app.admin_urls")),
     path("manage/audit/", include("apps.audit.urls")),
     path("manage/suggestions/", include("apps.notes.suggestion_urls")),
+    path("manage/surveys/", include("apps.surveys.manage_urls")),
 
     # ── /admin/ routes (Admin only) ──
     path("admin/settings/", include("apps.admin_settings.urls")),
