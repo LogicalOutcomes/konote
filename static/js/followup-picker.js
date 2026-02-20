@@ -28,7 +28,7 @@
         en: {
             tomorrow: "Tomorrow",
             days: "{n} days",
-            nextWeek: "Next week",
+            week: "1 week",
             weeks: "{n} weeks",
             pickDate: "Pick date",
             followUp: "Follow-up date"
@@ -36,7 +36,7 @@
         fr: {
             tomorrow: "Demain",
             days: "{n} jours",
-            nextWeek: "Semaine prochaine",
+            week: "1 semaine",
             weeks: "{n} semaines",
             pickDate: "Choisir une date",
             followUp: "Date de suivi"
@@ -48,7 +48,7 @@
     var options = [
         { label: t.tomorrow, offset: 1 },
         { label: t.days.replace("{n}", "3"), offset: 3 },
-        { label: t.nextWeek, offset: 7 },
+        { label: t.week, offset: 7 },
         { label: t.weeks.replace("{n}", "2"), offset: 14 }
     ];
 
