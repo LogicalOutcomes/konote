@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ survey.name }} — {% trans "Response" %}{% endblock %}
+
+{% block content %}
+{% include "components/_breadcrumbs.html" %}
+
+<hgroup>
+    <h1>{{ survey.name }}</h1>
+    <p>{% trans "Submitted" %} {{ response.submitted_at|date:"N j, Y g:i A" }} · {{ response.get_channel_display }}</p>
+</hgroup>
+
+{% regroup answers by question.section as section_groups %}
+{% for group in section_groups %}
+<article>
+    <header><strong>{{ group.grouper.title }}</strong></header>
+    <dl>
+    {% for answer in group.list %}
+        <dt>{{ answer.question.question_text }}{% if answer.question.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}</dt>
+        <dd>
+            {{ answer.value|default:"—" }}
+            {% if answer.numeric_value is not None %}
+            <small class="secondary">({% trans "score" %}: {{ answer.numeric_value }})</small>
+            {% endif %}
+        </dd>
+    {% endfor %}
+    </dl>
+</article>
+{% endfor %}
+
+<a href="{% url 'surveys:client_surveys' client_id=client.pk %}">← {% trans "Back to surveys" %}</a>
+{% endblock %}

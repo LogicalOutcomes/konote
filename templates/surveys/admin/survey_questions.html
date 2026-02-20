@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Questions" %} — {{ survey.name }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{{ survey.name }} — {% trans "Questions" %}</h1>
+    <p>{% trans "Add or remove questions for each section." %}</p>
+</hgroup>
+
+<div role="group">
+    <a href="{% url 'survey_manage:survey_detail' survey_id=survey.pk %}" role="button" class="outline secondary">← {% trans "Back to survey" %}</a>
+    {% if survey.status == "draft" %}
+    <form method="post" style="display:inline">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="activate">
+        <button type="submit">{% trans "Activate this survey" %}</button>
+    </form>
+    {% endif %}
+</div>
+
+{% for section in sections %}
+<article>
+    <header>
+        <strong>{{ section.title }}</strong>
+        {% if section.instructions %}
+        <br><small>{{ section.instructions }}</small>
+        {% endif %}
+    </header>
+
+    {# Existing questions in this section #}
+    {% if section.questions.all %}
+    <ol>
+    {% for q in section.questions.all %}
+        <li>
+            <div style="display:flex; justify-content:space-between; align-items:start;">
+                <div>
+                    {{ q.question_text }}
+                    <br>
+                    <small class="secondary">
+                        {{ q.get_question_type_display }}{% if q.required %} · {% trans "Required" %}{% endif %}
+                    </small>
+                    {% if q.options_json %}
+                    <ul>
+                    {% for opt in q.options_json %}
+                        <li>{{ opt.label }}{% if opt.score is not None %} <small>[{{ opt.score }}]</small>{% endif %}</li>
+                    {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                <form method="post" style="margin-left:1rem">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete_question">
+                    <input type="hidden" name="question_id" value="{{ q.pk }}">
+                    <button type="submit" class="outline secondary" aria-label="{% trans 'Remove question' %}">✕</button>
+                </form>
+            </div>
+        </li>
+    {% endfor %}
+    </ol>
+    {% else %}
+    <p class="empty-state">{% trans "No questions in this section yet." %}</p>
+    {% endif %}
+
+    {# Add a question to this section #}
+    <details>
+        <summary>{% blocktrans with title=section.title %}Add question to {{ title }}{% endblocktrans %}</summary>
+        <form method="post">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="add_question">
+            <input type="hidden" name="section_id" value="{{ section.pk }}">
+
+            <label for="id_question_text_{{ section.pk }}">{% trans "Question text" %} <abbr title="{% trans 'required' %}">*</abbr></label>
+            <input type="text" id="id_question_text_{{ section.pk }}" name="question_text" required>
+
+            <label for="id_question_text_fr_{{ section.pk }}">{% trans "Question text (French)" %}</label>
+            <input type="text" id="id_question_text_fr_{{ section.pk }}" name="question_text_fr">
+
+            <label for="id_question_type_{{ section.pk }}">{% trans "Question type" %}</label>
+            <select id="id_question_type_{{ section.pk }}" name="question_type">
+                <option value="short_text">{% trans "Short text" %}</option>
+                <option value="long_text">{% trans "Long text" %}</option>
+                <option value="single_choice">{% trans "Single choice" %}</option>
+                <option value="multiple_choice">{% trans "Multiple choice" %}</option>
+                <option value="rating_scale">{% trans "Rating scale" %}</option>
+                <option value="yes_no">{% trans "Yes / No" %}</option>
+            </select>
+
+            <label for="id_sort_order_{{ section.pk }}">{% trans "Display order" %}</label>
+            <input type="number" id="id_sort_order_{{ section.pk }}" name="sort_order" value="0" min="0">
+
+            <label>
+                <input type="checkbox" name="required"> {% trans "Required" %}
+            </label>
+
+            <label for="id_options_text_{{ section.pk }}">{% trans "Options (one per line)" %}</label>
+            <textarea id="id_options_text_{{ section.pk }}" name="options_text" rows="4" placeholder="{% trans 'Strongly agree
+Agree
+Neutral
+Disagree
+Strongly disagree' %}"></textarea>
+            <small>{% trans "Only needed for single choice, multiple choice, or rating scale questions." %}</small>
+
+            <button type="submit">{% trans "Add Question" %}</button>
+        </form>
+    </details>
+</article>
+{% empty %}
+<p class="empty-state">{% trans "This survey has no sections." %} <a href="{% url 'survey_manage:survey_edit' survey_id=survey.pk %}">{% trans "Add sections first" %}</a>.</p>
+{% endfor %}
+{% endblock %}
