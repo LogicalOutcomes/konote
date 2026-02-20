@@ -554,8 +554,10 @@ def staff_data_entry(request, client_id, survey_id):
     ).prefetch_related("questions").order_by("sort_order")
 
     if request.method == "POST":
-        errors = []
-        answers_data = []
+        from apps.portal.survey_helpers import filter_visible_sections
+
+        # 1. Collect all submitted answers
+        all_answers = {}
         for section in sections:
             for question in section.questions.all().order_by("sort_order"):
                 field_name = f"q_{question.pk}"
@@ -564,8 +566,23 @@ def staff_data_entry(request, client_id, survey_id):
                     raw_value = ";".join(raw_values) if raw_values else ""
                 else:
                     raw_value = request.POST.get(field_name, "").strip()
+                if raw_value:
+                    all_answers[question.pk] = raw_value
 
-                if question.required and not raw_value:
+        # 2. Determine which sections are visible based on answers
+        all_sections_list = list(sections)
+        visible_sections = filter_visible_sections(all_sections_list, all_answers)
+        visible_section_pks = {s.pk for s in visible_sections}
+
+        # 3. Validate required fields only in visible sections
+        errors = []
+        answers_data = []
+        for section in sections:
+            for question in section.questions.all().order_by("sort_order"):
+                raw_value = all_answers.get(question.pk, "")
+                if (question.required
+                        and not raw_value
+                        and section.pk in visible_section_pks):
                     errors.append(question.question_text)
                 if raw_value:
                     answers_data.append((question, raw_value))
@@ -583,6 +600,7 @@ def staff_data_entry(request, client_id, survey_id):
                 "breadcrumbs": _staff_entry_breadcrumbs(request, client, survey),
             })
 
+        # 4. Save all submitted answers (even from hidden sections)
         with transaction.atomic():
             response = SurveyResponse.objects.create(
                 survey=survey,
@@ -595,7 +613,6 @@ def staff_data_entry(request, client_id, survey_id):
                     question=question,
                 )
                 answer.value = raw_value
-                # Numeric value for scored questions
                 if question.question_type in ("rating_scale", "yes_no"):
                     try:
                         answer.numeric_value = int(raw_value)

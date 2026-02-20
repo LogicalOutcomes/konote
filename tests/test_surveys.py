@@ -14,7 +14,7 @@ from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.events.models import Event, EventType
 from apps.portal.models import ParticipantUser
-from apps.programs.models import Program
+from apps.programs.models import Program, UserProgramRole
 from apps.surveys.models import (
     Survey, SurveySection, SurveyQuestion, SurveyTriggerRule,
     SurveyAssignment, SurveyResponse, SurveyAnswer, PartialAnswer,
@@ -955,3 +955,91 @@ class EventEnrolmentEngineTests(TestCase):
             self.client_file, self.participant, event,
         )
         self.assertEqual(len(assignments), 0)
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-hash-key-staff",
+)
+class StaffDataEntryConditionTests(TestCase):
+    """Test staff data entry respects conditional sections."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="sde_staff", password="testpass123",
+            display_name="SDE Staff", is_admin=True,
+        )
+        self.client_obj = ClientFile.objects.create(
+            record_id="SDE-001", status="active",
+        )
+        self.client_obj.first_name = "Test"
+        self.client_obj.last_name = "Client"
+        self.client_obj.save()
+        # Ensure staff can access this client via program role
+        self.program = Program.objects.create(name="SDE Program")
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_obj, program=self.program, status="enrolled",
+        )
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.program, role="staff", status="active",
+        )
+
+        self.survey = Survey.objects.create(
+            name="Condition Entry", created_by=self.staff, status="active",
+        )
+        self.s1 = SurveySection.objects.create(
+            survey=self.survey, title="Main", sort_order=1,
+        )
+        self.trigger_q = SurveyQuestion.objects.create(
+            section=self.s1, question_text="Has children?",
+            question_type="yes_no", sort_order=1, required=True,
+        )
+        self.s2 = SurveySection.objects.create(
+            survey=self.survey, title="Childcare", sort_order=2,
+            condition_question=self.trigger_q, condition_value="1",
+        )
+        self.cond_q = SurveyQuestion.objects.create(
+            section=self.s2, question_text="Childcare needed?",
+            question_type="yes_no", sort_order=1, required=True,
+        )
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys", defaults={"is_enabled": True},
+        )
+        self.client.login(username="sde_staff", password="testpass123")
+
+    def test_hidden_section_required_field_not_enforced(self):
+        """When trigger answer hides a section, its required fields don't cause errors."""
+        url = f"/surveys/participant/{self.client_obj.pk}/enter/{self.survey.pk}/"
+        resp = self.client.post(url, {
+            f"q_{self.trigger_q.pk}": "0",  # No — hides childcare section
+            # cond_q not submitted (section hidden by JS)
+        })
+        # Should succeed — childcare section is hidden, required not enforced
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(SurveyResponse.objects.count(), 1)
+
+    def test_visible_section_required_field_enforced(self):
+        """When trigger answer shows a section, its required fields are enforced."""
+        url = f"/surveys/participant/{self.client_obj.pk}/enter/{self.survey.pk}/"
+        resp = self.client.post(url, {
+            f"q_{self.trigger_q.pk}": "1",  # Yes — shows childcare section
+            # cond_q not submitted — should cause error
+        })
+        # Should fail — childcare section visible, required field missing
+        self.assertEqual(resp.status_code, 200)  # re-renders form with error
+        self.assertEqual(SurveyResponse.objects.count(), 0)
+
+    def test_extra_answers_from_hidden_section_saved(self):
+        """If JS didn't hide section and staff filled it in, answers are still saved."""
+        url = f"/surveys/participant/{self.client_obj.pk}/enter/{self.survey.pk}/"
+        resp = self.client.post(url, {
+            f"q_{self.trigger_q.pk}": "0",  # No — hides childcare
+            f"q_{self.cond_q.pk}": "1",     # But staff submitted anyway (JS failed)
+        })
+        self.assertEqual(resp.status_code, 302)
+        response = SurveyResponse.objects.first()
+        # Both answers saved — extra data preserved
+        self.assertEqual(response.answers.count(), 2)
