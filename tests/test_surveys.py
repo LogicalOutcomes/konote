@@ -18,6 +18,7 @@ from apps.programs.models import Program
 from apps.surveys.models import (
     Survey, SurveySection, SurveyQuestion, SurveyTriggerRule,
     SurveyAssignment, SurveyResponse, SurveyAnswer, PartialAnswer,
+    SurveyLink,
 )
 import konote.encryption as enc_module
 
@@ -957,3 +958,67 @@ class SurveyLinkModelTests(TestCase):
             expires_at=timezone.now() - timedelta(hours=1),
         )
         self.assertTrue(link.is_expired)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class PublicSurveyViewTests(TestCase):
+    """Test public survey form accessible via shareable link."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="pub_staff", password="testpass123",
+            display_name="Public Staff",
+        )
+        self.survey = Survey.objects.create(
+            name="Public Survey", status="active", created_by=self.staff,
+        )
+        self.section = SurveySection.objects.create(
+            survey=self.survey, title="Feedback", sort_order=1,
+        )
+        self.q1 = SurveyQuestion.objects.create(
+            section=self.section, question_text="How was your experience?",
+            question_type="short_text", sort_order=1, required=True,
+        )
+        self.link = SurveyLink.objects.create(
+            survey=self.survey, created_by=self.staff,
+        )
+
+    def test_public_form_renders(self):
+        resp = self.client.get(f"/s/{self.link.token}/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Public Survey")
+
+    def test_public_form_submit_creates_response(self):
+        resp = self.client.post(
+            f"/s/{self.link.token}/",
+            {f"q_{self.q1.pk}": "Great!"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(SurveyResponse.objects.filter(channel="link").count(), 1)
+
+    def test_expired_link_returns_gone(self):
+        expired = SurveyLink.objects.create(
+            survey=self.survey, created_by=self.staff,
+            expires_at=timezone.now() - timedelta(hours=1),
+        )
+        resp = self.client.get(f"/s/{expired.token}/")
+        self.assertEqual(resp.status_code, 410)
+
+    def test_inactive_link_returns_gone(self):
+        self.link.is_active = False
+        self.link.save()
+        resp = self.client.get(f"/s/{self.link.token}/")
+        self.assertEqual(resp.status_code, 410)
+
+    def test_invalid_token_returns_404(self):
+        resp = self.client.get("/s/nonexistent-token/")
+        self.assertEqual(resp.status_code, 404)
+
+    def test_closed_survey_returns_gone(self):
+        self.survey.status = "closed"
+        self.survey.save()
+        resp = self.client.get(f"/s/{self.link.token}/")
+        self.assertEqual(resp.status_code, 410)
