@@ -3,12 +3,15 @@
 Run with:
     pytest tests/test_surveys.py -v
 """
+from datetime import timedelta
+
 from cryptography.fernet import Fernet
 from django.test import TestCase, override_settings
+from django.utils import timezone
 
 from apps.auth_app.models import User
-from apps.clients.models import ClientFile
-from apps.events.models import EventType
+from apps.clients.models import ClientFile, ClientProgramEnrolment
+from apps.events.models import Event, EventType
 from apps.portal.models import ParticipantUser
 from apps.programs.models import Program
 from apps.surveys.models import (
@@ -331,3 +334,184 @@ class AssignmentResponseModelTests(TestCase):
         )
         self.assertIsNone(response.client_file)
         self.assertIsNone(response.assignment)
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-hash-key-for-engine",
+)
+class EvaluationEngineTests(TestCase):
+    """Test the survey trigger evaluation engine."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="engine_staff", password="testpass123",
+            display_name="Engine Staff",
+        )
+        self.program = Program.objects.create(name="Engine Program")
+        self.survey = Survey.objects.create(
+            name="Engine Survey", status="active", created_by=self.staff,
+        )
+        SurveySection.objects.create(
+            survey=self.survey, title="S1", sort_order=1,
+        )
+        self.client_file = ClientFile.objects.create(
+            record_id="ENG-001", status="active",
+        )
+        self.client_file.first_name = "Engine"
+        self.client_file.last_name = "Test"
+        self.client_file.save()
+        self.participant = ParticipantUser.objects.create_participant(
+            email="engine@example.com",
+            client_file=self.client_file,
+            display_name="Engine P",
+            password="testpass123",
+        )
+        self.enrolment = ClientProgramEnrolment.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+        )
+
+    def test_characteristic_rule_creates_assignment(self):
+        from apps.surveys.engine import evaluate_survey_rules
+
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="characteristic",
+            program=self.program,
+            repeat_policy="once_per_participant",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        new_assignments = evaluate_survey_rules(self.client_file, self.participant)
+        self.assertEqual(len(new_assignments), 1)
+        self.assertEqual(new_assignments[0].status, "pending")
+
+    def test_characteristic_rule_no_duplicate(self):
+        from apps.surveys.engine import evaluate_survey_rules
+
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="characteristic",
+            program=self.program,
+            repeat_policy="once_per_participant",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        evaluate_survey_rules(self.client_file, self.participant)
+        # Run again — should not create duplicate
+        new_assignments = evaluate_survey_rules(self.client_file, self.participant)
+        self.assertEqual(len(new_assignments), 0)
+        self.assertEqual(SurveyAssignment.objects.count(), 1)
+
+    def test_time_rule_not_due_yet(self):
+        from apps.surveys.engine import evaluate_survey_rules
+
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="time",
+            program=self.program,
+            recurrence_days=30,
+            anchor="enrolment_date",
+            repeat_policy="recurring",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        # Enrolment was just now — 30 days haven't passed
+        new_assignments = evaluate_survey_rules(self.client_file, self.participant)
+        self.assertEqual(len(new_assignments), 0)
+
+    def test_time_rule_due(self):
+        from apps.surveys.engine import evaluate_survey_rules
+
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="time",
+            program=self.program,
+            recurrence_days=30,
+            anchor="enrolment_date",
+            repeat_policy="recurring",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        # Backdate enrolment to 31 days ago
+        ClientProgramEnrolment.objects.filter(pk=self.enrolment.pk).update(
+            enrolled_at=timezone.now() - timedelta(days=31),
+        )
+        new_assignments = evaluate_survey_rules(self.client_file, self.participant)
+        self.assertEqual(len(new_assignments), 1)
+
+    def test_staff_confirms_creates_awaiting_approval(self):
+        from apps.surveys.engine import evaluate_survey_rules
+
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="characteristic",
+            program=self.program,
+            repeat_policy="once_per_participant",
+            auto_assign=False,
+            created_by=self.staff,
+        )
+        new_assignments = evaluate_survey_rules(self.client_file, self.participant)
+        self.assertEqual(new_assignments[0].status, "awaiting_approval")
+
+    def test_skips_discharged_client(self):
+        from apps.surveys.engine import evaluate_survey_rules
+
+        self.client_file.status = "discharged"
+        self.client_file.save()
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="characteristic",
+            program=self.program,
+            repeat_policy="once_per_participant",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        new_assignments = evaluate_survey_rules(self.client_file, self.participant)
+        self.assertEqual(len(new_assignments), 0)
+
+    def test_skips_inactive_survey(self):
+        from apps.surveys.engine import evaluate_survey_rules
+
+        self.survey.status = "draft"
+        self.survey.save()
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="characteristic",
+            program=self.program,
+            repeat_policy="once_per_participant",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        new_assignments = evaluate_survey_rules(self.client_file, self.participant)
+        self.assertEqual(len(new_assignments), 0)
+
+    def test_overload_protection(self):
+        """Don't assign if participant has 5+ pending surveys."""
+        from apps.surveys.engine import evaluate_survey_rules
+
+        for i in range(5):
+            s = Survey.objects.create(
+                name=f"Overload {i}", status="active", created_by=self.staff,
+            )
+            SurveySection.objects.create(survey=s, title="S", sort_order=1)
+            SurveyAssignment.objects.create(
+                survey=s,
+                participant_user=self.participant,
+                client_file=self.client_file,
+                status="pending",
+            )
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="characteristic",
+            program=self.program,
+            repeat_policy="once_per_participant",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        new_assignments = evaluate_survey_rules(self.client_file, self.participant)
+        self.assertEqual(len(new_assignments), 0)
