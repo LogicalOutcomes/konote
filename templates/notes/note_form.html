@@ -84,10 +84,25 @@
         <h3>{{ term.metric_plural|default:"Metrics" }}</h3>
         {% for mf in tf.metric_forms %}
         {{ mf.metric_def_id }}
+        {% if mf.is_scale %}
+        <div class="scale-metric">
+            <label>{{ mf.value.label }}</label>
+            <div class="scale-pills">
+            {% for radio in mf.value %}
+                {% if radio.choice_value %}
+                <label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                {% endif %}
+            {% endfor %}
+            </div>
+            {% if mf.value.help_text %}<small>{{ mf.value.help_text }}</small>{% endif %}
+            {% if mf.value.errors %}<small class="error" role="alert">{{ mf.value.errors.0 }}</small>{% endif %}
+        </div>
+        {% else %}
         <label for="{{ mf.value.id_for_label }}">{{ mf.value.label }}</label>
         {{ mf.value }}
         {% if mf.value.help_text %}<small>{{ mf.value.help_text }}</small>{% endif %}
         {% if mf.value.errors %}<small class="error" id="metric-error-{{ forloop.counter }}-{{ tf.target.pk }}" role="alert">{{ mf.value.errors.0 }}</small>{% endif %}
+        {% endif %}
         {% endfor %}
         {% endif %}
 
