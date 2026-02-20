@@ -18,7 +18,7 @@
 {% endif %}
 {% endblock %}
 
-{% block extra_js %}
+{% block extra_scripts %}
 {% if chart_data %}
 {{ chart_data|json_script:"chart-data" }}
 <script>

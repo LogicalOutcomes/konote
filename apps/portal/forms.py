@@ -146,16 +146,18 @@ class PortalPasswordResetRequestForm(forms.Form):
 class PortalPasswordResetConfirmForm(forms.Form):
     """Enter the reset code + new password."""
 
+    email = forms.EmailField(
+        label=_("Email"),
+        widget=forms.EmailInput(attrs={
+            "autocomplete": "email",
+        }),
+    )
     code = forms.CharField(
         label=_("Reset code"),
-        min_length=6,
         max_length=6,
         widget=forms.TextInput(attrs={
             "inputmode": "numeric",
-            "pattern": "[0-9]{6}",
             "autocomplete": "one-time-code",
-            "autofocus": True,
-            "placeholder": "000000",
         }),
     )
     new_password = forms.CharField(

@@ -226,6 +226,10 @@ class StaffMessage(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(null=True, blank=True)
+    is_urgent = models.BooleanField(
+        default=False,
+        help_text=_("Flag this message as urgent — shown at top of inbox"),
+    )
 
     class Meta:
         app_label = "communications"

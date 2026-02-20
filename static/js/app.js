@@ -1263,3 +1263,52 @@ document.addEventListener("click", function (event) {
         }
     });
 })();
+
+// --- Focus management: after marking a message read, focus next unread ---
+// Uses htmx:afterSettle (not afterSwap) so the DOM is stable after outerHTML replacement
+document.body.addEventListener("htmx:afterSettle", function (event) {
+    var settled = event.detail.target;
+    if (!settled || !settled.classList || !settled.classList.contains("message-card")) return;
+    // Find the next unread message card (one with a Mark as Read button)
+    var next = settled.nextElementSibling;
+    while (next && !next.querySelector("button[type='submit']")) {
+        next = next.nextElementSibling;
+    }
+    if (next) {
+        next.setAttribute("tabindex", "-1");
+        next.focus();
+    }
+});
+
+// --- Relative timestamps for <time> elements ---
+// Updates elements with data-relative attribute to show "2 hours ago" etc.
+// Falls back to absolute date if JS disabled (server renders it).
+(function () {
+    function updateRelativeTimes() {
+        var times = document.querySelectorAll("time[data-relative]");
+        var now = Date.now();
+        times.forEach(function (el) {
+            var dt = new Date(el.getAttribute("datetime"));
+            if (isNaN(dt)) return;
+            var diff = Math.floor((now - dt) / 1000);
+            var text;
+            if (diff < 60) text = t("just_now", "just now");
+            else if (diff < 3600) {
+                var m = Math.floor(diff / 60);
+                text = m === 1 ? t("one_min_ago", "1 minute ago") : m + " " + t("mins_ago", "minutes ago");
+            } else if (diff < 86400) {
+                var h = Math.floor(diff / 3600);
+                text = h === 1 ? t("one_hour_ago", "1 hour ago") : h + " " + t("hours_ago", "hours ago");
+            } else if (diff < 604800) {
+                var d = Math.floor(diff / 86400);
+                text = d === 1 ? t("one_day_ago", "1 day ago") : d + " " + t("days_ago", "days ago");
+            } else {
+                return; // older than 7 days — keep absolute date
+            }
+            el.textContent = text;
+        });
+    }
+    updateRelativeTimes();
+    setInterval(updateRelativeTimes, 60000);
+    document.body.addEventListener("htmx:afterSwap", updateRelativeTimes);
+})();

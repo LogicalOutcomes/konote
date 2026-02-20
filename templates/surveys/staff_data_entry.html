@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ survey.name }} — {% trans "Staff Data Entry" %}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+
+<hgroup>
+    <h1>{{ survey.name }}</h1>
+    <p>{% blocktrans with name=client.display_name %}Entering survey response on behalf of {{ name }}.{% endblocktrans %}</p>
+</hgroup>
+
+{% if survey.description %}
+<p>{{ survey.description }}</p>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for section in sections %}
+    <fieldset
+        {% if section.condition_question_id %}
+        data-condition-question="q_{{ section.condition_question_id }}"
+        data-condition-value="{{ section.condition_value }}"
+        style="display:none"
+        aria-live="polite"
+        {% endif %}
+    >
+        <legend>{{ section.title }}</legend>
+        {% if section.condition_question %}
+        <p class="condition-note" style="display:none">
+            <small class="secondary">
+                {% blocktrans with question=section.condition_question.question_text value=section.condition_value %}
+                This section appears because "{{ question }}" was answered "{{ value }}".
+                {% endblocktrans %}
+            </small>
+        </p>
+        {% endif %}
+        {% if section.instructions %}<p><small>{{ section.instructions }}</small></p>{% endif %}
+
+        {% for question in section.questions.all %}
+        <div class="form-group" style="margin-bottom:1.5rem">
+
+            <label for="q_{{ question.pk }}">
+                {{ question.question_text }}{% if question.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+            </label>
+
+            {% if question.question_type == "short_text" %}
+            <input type="text" id="q_{{ question.pk }}" name="q_{{ question.pk }}"
+                   value="{{ posted|default_if_none:'' }}"
+                   {% if question.required %}required{% endif %}>
+
+            {% elif question.question_type == "long_text" %}
+            <textarea id="q_{{ question.pk }}" name="q_{{ question.pk }}" rows="4"
+                      {% if question.required %}required{% endif %}>{{ posted|default_if_none:"" }}</textarea>
+
+            {% elif question.question_type == "yes_no" %}
+            <select id="q_{{ question.pk }}" name="q_{{ question.pk }}"
+                    {% if question.required %}required{% endif %}>
+                <option value="">—</option>
+                <option value="1">{% trans "Yes" %}</option>
+                <option value="0">{% trans "No" %}</option>
+            </select>
+
+            {% elif question.question_type == "single_choice" %}
+            {% for opt in question.options_json %}
+            <label>
+                <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}">
+                {{ opt.label }}
+            </label>
+            {% endfor %}
+
+            {% elif question.question_type == "multiple_choice" %}
+            {% for opt in question.options_json %}
+            <label>
+                <input type="checkbox" name="q_{{ question.pk }}" value="{{ opt.value }}">
+                {{ opt.label }}
+            </label>
+            {% endfor %}
+
+            {% elif question.question_type == "rating_scale" %}
+            <div role="group">
+            {% for opt in question.options_json %}
+                <label style="text-align:center">
+                    <input type="radio" name="q_{{ question.pk }}" value="{{ opt.value }}">
+                    {{ opt.label }}
+                </label>
+            {% endfor %}
+            </div>
+            {% if question.min_value is not None and question.max_value is not None %}
+            <small class="secondary">{% blocktrans with min=question.min_value max=question.max_value %}Scale: {{ min }} to {{ max }}{% endblocktrans %}</small>
+            {% endif %}
+
+            {% endif %}
+
+        </div>
+        {% endfor %}
+    </fieldset>
+    {% endfor %}
+
+    <div role="group">
+        <button type="submit">{% trans "Submit Response" %}</button>
+        <a href="{% url 'surveys:client_surveys' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+
+<script>
+(function() {
+    function evaluateConditions() {
+        document.querySelectorAll("fieldset[data-condition-question]").forEach(function(fs) {
+            var qName = fs.dataset.conditionQuestion;
+            var expected = fs.dataset.conditionValue;
+            var inputs = document.querySelectorAll("[name='" + qName + "']");
+            var actual = "";
+            inputs.forEach(function(el) {
+                if (el.type === "radio" || el.type === "checkbox") {
+                    if (el.checked) actual = el.value;
+                } else {
+                    actual = el.value;
+                }
+            });
+            var visible = (actual === expected);
+            fs.style.display = visible ? "" : "none";
+            var note = fs.querySelector(".condition-note");
+            if (note) note.style.display = visible ? "" : "none";
+            fs.querySelectorAll("input, select, textarea").forEach(function(el) {
+                if (!el.name.startsWith("q_")) return;
+                el.disabled = !visible;
+            });
+        });
+    }
+    evaluateConditions();
+    document.querySelector("form").addEventListener("change", evaluateConditions);
+})();
+</script>
+{% endblock %}

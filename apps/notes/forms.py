@@ -2,6 +2,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from apps.plans.models import SELF_EFFICACY_METRIC_NAME
 from apps.programs.models import Program, UserProgramRole
 
 from .models import (
@@ -63,11 +64,6 @@ class QuickNoteForm(forms.Form):
         label=_("Follow up by"),
         help_text=_("(optional — adds to your home page reminders)"),
     )
-    consent_confirmed = forms.BooleanField(
-        required=False,
-        label=_("We created this note together"),
-        help_text=_("Confirm you reviewed this note with the participant."),
-    )
 
     def clean(self):
         cleaned = super().clean()
@@ -126,8 +122,9 @@ class FullNoteForm(forms.Form):
     engagement_observation = forms.ChoiceField(
         choices=ProgressNote.ENGAGEMENT_CHOICES,
         required=False,
-        label=_("How engaged was the participant?"),
-        help_text=_("Your observation — not a score. This is a practice tool, not a performance evaluation."),
+        label=_("Engagement"),
+        widget=forms.RadioSelect,
+        help_text=_("Your observation, not a score."),
     )
     participant_reflection = forms.CharField(
         widget=forms.Textarea(attrs={
@@ -135,7 +132,7 @@ class FullNoteForm(forms.Form):
             "placeholder": _("Their words..."),
         }),
         required=False,
-        label=_("Participant's reflection"),
+        label=_("How did they feel about today's session?"),
         help_text=_("Record their words, not your interpretation."),
     )
     participant_suggestion = forms.CharField(
@@ -144,20 +141,12 @@ class FullNoteForm(forms.Form):
             "placeholder": _('e.g. "Tea is always cold" or "Loves the Friday group" or "Wishes sessions were longer"'),
         }),
         required=False,
-        label=_("What they'd change"),
+        label=_("Anything they'd change about the program?"),
     )
     suggestion_priority = forms.ChoiceField(
         choices=ProgressNote.SUGGESTION_PRIORITY_CHOICES,
         required=False,
         label=_("Priority"),
-    )
-    consent_confirmed = forms.BooleanField(
-        required=True,
-        label=_("We created this note together"),
-        help_text=_("Confirm you reviewed this note with the participant."),
-        error_messages={
-            "required": _("Please confirm you reviewed this note together."),
-        },
     )
 
 
@@ -168,7 +157,7 @@ class TargetNoteForm(forms.Form):
     client_words = forms.CharField(
         widget=forms.TextInput(attrs={"placeholder": _("What did they say about this goal?")}),
         required=False,
-        label=_("In their words"),
+        label=_("What did they say about this?"),
         help_text=_("What did they say about this goal?"),
     )
     progress_descriptor = forms.ChoiceField(
@@ -189,15 +178,24 @@ class MetricValueForm(forms.Form):
 
     metric_def_id = forms.IntegerField(widget=forms.HiddenInput())
     value = forms.CharField(required=False, max_length=100)
+    is_scale = False
+    auto_calc_value = None
 
-    def __init__(self, *args, metric_def=None, **kwargs):
+    def __init__(self, *args, metric_def=None, target_name="", **kwargs):
         super().__init__(*args, **kwargs)
+        self.target_name = target_name
         if metric_def:
             self.metric_def = metric_def
             label = metric_def.translated_name
             if metric_def.translated_unit:
                 label += f" ({metric_def.translated_unit})"
             self.fields["value"].label = label
+            # Domain-specific prompt for Self-Efficacy
+            if metric_def.name == SELF_EFFICACY_METRIC_NAME and target_name:
+                from django.utils.translation import gettext
+                self.fields["value"].label = gettext(
+                    "How sure do you feel about being able to %(target)s?"
+                ) % {"target": target_name.lower()}
             # Set help text from definition
             help_parts = []
             if metric_def.translated_definition:
@@ -211,16 +209,42 @@ class MetricValueForm(forms.Form):
                     range_str += str(metric_def.max_value)
                 help_parts.append(range_str)
             self.fields["value"].help_text = " | ".join(help_parts)
-            # Set input type and constraints for numeric metrics
-            attrs = {}
-            if metric_def.min_value is not None:
-                attrs["min"] = metric_def.min_value
-            if metric_def.max_value is not None:
-                attrs["max"] = metric_def.max_value
-            if attrs:
-                attrs["type"] = "number"
-                attrs["step"] = "any"
-                self.fields["value"].widget = forms.NumberInput(attrs=attrs)
+
+            # Detect scale metrics: both min/max set, both integers, small range
+            is_scale = (
+                metric_def.min_value is not None
+                and metric_def.max_value is not None
+                and metric_def.min_value == int(metric_def.min_value)
+                and metric_def.max_value == int(metric_def.max_value)
+                and (metric_def.max_value - metric_def.min_value) <= 10
+            )
+
+            if is_scale:
+                low = int(metric_def.min_value)
+                high = int(metric_def.max_value)
+                choices = [("", "---------")] + [
+                    (str(i), str(i)) for i in range(low, high + 1)
+                ]
+                self.fields["value"].widget = forms.RadioSelect(
+                    choices=choices,
+                    attrs={
+                        "class": "scale-pills-input",
+                        "aria-label": f"{metric_def.translated_name}: {metric_def.translated_definition}",
+                    },
+                )
+                self.is_scale = True
+            else:
+                # Standard number input for wide-range metrics
+                attrs = {}
+                if metric_def.min_value is not None:
+                    attrs["min"] = metric_def.min_value
+                if metric_def.max_value is not None:
+                    attrs["max"] = metric_def.max_value
+                if attrs:
+                    attrs["type"] = "number"
+                    attrs["step"] = "any"
+                    self.fields["value"].widget = forms.NumberInput(attrs=attrs)
+                self.is_scale = False
 
     def clean_value(self):
         val = self.cleaned_data.get("value", "").strip()

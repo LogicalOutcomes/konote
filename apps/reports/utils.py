@@ -2,6 +2,8 @@
 from datetime import date
 from typing import List, Tuple
 
+from django.utils.translation import gettext_lazy as _
+
 
 def is_aggregate_only_user(user):
     """Check if this user should only receive aggregate (non-individual) export data.
@@ -162,6 +164,7 @@ def get_fiscal_year_choices(num_years: int = 5) -> List[Tuple[str, str]]:
     for i in range(num_years):
         fy_start = current_fy - i
         fy_end_short = str(fy_start + 1)[-2:]  # Last two digits of end year
-        label = f"FY {fy_start}-{fy_end_short}"
+        # Translators: FY = Fiscal Year, e.g. "FY 2025-26" / "AF 2025-26"
+        label = _("FY %(start)s-%(end)s") % {"start": fy_start, "end": fy_end_short}
         choices.append((str(fy_start), label))
     return choices

@@ -9,37 +9,7 @@
 {% if staff_messages %}
     <p>{% blocktrans with count=staff_messages|length %}You have {{ count }} unread message(s).{% endblocktrans %}</p>
     {% for msg in staff_messages %}
-    <article id="message-{{ msg.pk }}">
-        <header>
-            <div>
-                <strong>
-                    <a href="{% url 'clients:client_detail' client_id=msg.client_file.pk %}">{{ msg.client_file.display_name }} {{ msg.client_file.last_name }}</a>
-                </strong>
-                {% if msg.for_user %}
-                    — {% blocktrans with name=msg.for_user.display_name %}For: {{ name }}{% endblocktrans %}
-                {% endif %}
-                <br>
-                <small>
-                    {% if msg.left_by %}
-                    {% blocktrans with name=msg.left_by.display_name date=msg.created_at|date:"SHORT_DATETIME_FORMAT" %}From {{ name }} on {{ date }}{% endblocktrans %}
-                    {% else %}
-                    {{ msg.created_at|date:"SHORT_DATETIME_FORMAT" }}
-                    {% endif %}
-                </small>
-            </div>
-        </header>
-        <p>{{ msg.content|truncatewords:50 }}</p>
-        <footer>
-            <form method="post"
-                  action="{% url 'communications:mark_message_read' client_id=msg.client_file.pk message_id=msg.pk %}"
-                  hx-post="{% url 'communications:mark_message_read' client_id=msg.client_file.pk message_id=msg.pk %}"
-                  hx-target="#message-{{ msg.pk }}"
-                  hx-swap="outerHTML">
-                {% csrf_token %}
-                <button type="submit" class="secondary outline">{% trans "Mark as Read" %}</button>
-            </form>
-        </footer>
-    </article>
+        {% include "communications/_my_message_card.html" %}
     {% endfor %}
 {% else %}
     <p>{% trans "No unread messages." %}</p>

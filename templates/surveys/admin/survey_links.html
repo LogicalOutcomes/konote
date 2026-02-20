@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Shareable Links" %} — {{ survey.name }}{% endblock %}
+
+{% block content %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul>
+        <li><a href="{% url 'survey_manage:survey_list' %}">{% trans "Surveys" %}</a></li>
+        <li><a href="{% url 'survey_manage:survey_detail' survey_id=survey.pk %}">{{ survey.name }}</a></li>
+        <li>{% trans "Shareable Links" %}</li>
+    </ul>
+</nav>
+
+<hgroup>
+    <h1>{% trans "Shareable Links" %}</h1>
+    <p>{% trans "Create links that anyone can use to fill out this survey without logging in." %}</p>
+</hgroup>
+
+{# Existing links #}
+{% if links %}
+<table aria-label="{% trans 'Shareable links' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Token" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Expires" %}</th>
+            <th scope="col">{% trans "Created" %}</th>
+            <th scope="col">{% trans "Link URL" %}</th>
+            <th scope="col">{% trans "Actions" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for link in links %}
+        <tr>
+            <td><code>{{ link.token|truncatechars:12 }}</code></td>
+            <td>
+                {% if not link.is_active %}
+                    <span class="badge badge-neutral">{% trans "Inactive" %}</span>
+                {% elif link.is_expired %}
+                    <span class="badge badge-warning">{% trans "Expired" %}</span>
+                {% else %}
+                    <span class="badge badge-success">{% trans "Active" %}</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if link.expires_at %}
+                    {{ link.expires_at|date:"N j, Y" }}
+                {% else %}
+                    {% trans "Never" %}
+                {% endif %}
+            </td>
+            <td>{{ link.created_at|date:"N j, Y" }}</td>
+            <td>
+                {% if link.is_active and not link.is_expired %}
+                    <input type="text"
+                           readonly
+                           value="{{ request.scheme }}://{{ request.get_host }}/s/{{ link.token }}/"
+                           aria-label="{% trans 'Survey link URL' %}"
+                           style="margin-bottom:0">
+                {% else %}
+                    <small class="secondary">—</small>
+                {% endif %}
+            </td>
+            <td>
+                {% if link.is_active %}
+                <form method="post" action="{% url 'survey_manage:survey_links' survey_id=survey.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="deactivate">
+                    <input type="hidden" name="link_id" value="{{ link.pk }}">
+                    <button type="submit" class="outline secondary" style="margin-bottom:0">{% trans "Deactivate" %}</button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="empty-state">{% trans "No shareable links yet. Create one below." %}</p>
+{% endif %}
+
+{# Create new link form #}
+<article>
+    <header><h2>{% trans "Create New Link" %}</h2></header>
+    <form method="post" action="{% url 'survey_manage:survey_links' survey_id=survey.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create">
+
+        <label for="expires_days">{% trans "Expires after (days)" %}</label>
+        <input type="number"
+               id="expires_days"
+               name="expires_days"
+               min="1"
+               placeholder="{% trans 'Leave blank for no expiry' %}"
+               aria-describedby="expires_help">
+        <small id="expires_help">{% trans "Optional. The link will stop working after this many days." %}</small>
+
+        <fieldset>
+            <label>
+                <input type="checkbox" name="collect_name" id="collect_name">
+                {% trans "Ask respondents for their name (optional, not encrypted)" %}
+            </label>
+        </fieldset>
+
+        <button type="submit">{% trans "Create Link" %}</button>
+    </form>
+</article>
+
+<p><a href="{% url 'survey_manage:survey_detail' survey_id=survey.pk %}">&#8592; {% trans "Back to survey" %}</a></p>
+{% endblock %}

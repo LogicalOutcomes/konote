@@ -12,6 +12,7 @@
     <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
     <link rel="icon" href="{% static 'img/favicon.ico' %}" sizes="any">
     <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
+    <link rel="manifest" href="{% static 'portal/manifest.json' %}">
     <meta name="theme-color" content="#0d7377">
 
     <!-- CSRF token for HTMX -->
@@ -78,6 +79,9 @@
             {% if features.portal_messaging %}
             <li><a href="{% url 'portal:message_to_worker' %}" {% if portal_page == 'message' %}aria-current="page"{% endif %}>{% trans "Messages" %}</a></li>
             {% endif %}
+            {% if features.surveys %}
+            <li><a href="{% url 'portal:surveys' %}" {% if portal_page == 'surveys' %}aria-current="page"{% endif %}>{% trans "Surveys" %}</a></li>
+            {% endif %}
             <li><a href="{% url 'portal:settings' %}" {% if portal_page == 'settings' %}aria-current="page"{% endif %}>{% trans "Settings" %}</a></li>
         </ul>
         <ul>
@@ -123,6 +127,6 @@
     <!-- Portal JavaScript -->
     <script src="{% static 'js/portal.js' %}"></script>
 
-    {% block extra_js %}{% endblock %}
+    {% block extra_scripts %}{% endblock %}
 </body>
 </html>

@@ -3,6 +3,7 @@ from django.urls import path
 from apps.portal.staff_views import (
     create_portal_invite,
     create_staff_portal_note,
+    generate_staff_login_token,
     portal_manage,
     portal_reset_mfa,
     portal_revoke_access,
@@ -47,4 +48,5 @@ urlpatterns = [
     path("<int:client_id>/portal/", portal_manage, name="portal_manage"),
     path("<int:client_id>/portal/revoke/", portal_revoke_access, name="portal_revoke"),
     path("<int:client_id>/portal/reset-mfa/", portal_reset_mfa, name="portal_reset_mfa"),
+    path("<int:client_id>/portal/staff-login/", generate_staff_login_token, name="portal_staff_login"),
 ]

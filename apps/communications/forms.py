@@ -196,6 +196,12 @@ class StaffMessageForm(forms.Form):
         max_length=500,
     )
 
+    is_urgent = forms.BooleanField(
+        required=False,
+        label=_("Mark as urgent"),
+        help_text=_("Urgent messages appear at the top of the inbox."),
+    )
+
     for_user = forms.IntegerField(
         required=False,
         widget=forms.Select(),

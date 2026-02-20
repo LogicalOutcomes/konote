@@ -1,0 +1,36 @@
+{% extends "portal/base_portal.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Thank You" %}{% endblock %}
+
+{% block content %}
+<article style="text-align:center; padding:2rem">
+    <h1>{% trans "Thank you!" %}</h1>
+    <p>{% blocktrans with name=survey.name %}Your response to "{{ name }}" has been submitted.{% endblocktrans %}</p>
+
+    {% if scores %}
+    <section style="text-align:left; margin:1.5rem auto; max-width:400px">
+        <h2>{% trans "Your Scores" %}</h2>
+        <table aria-label="{% trans 'Survey scores' %}">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Section" %}</th>
+                    <th scope="col">{% trans "Score" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for s in scores %}
+                <tr>
+                    <td>{{ s.title }}</td>
+                    <td><strong>{{ s.score }}</strong> / {{ s.max_score }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    {% endif %}
+
+    <a href="{% url 'portal:surveys' %}" role="button" class="outline">{% trans "Back to surveys" %}</a>
+    <a href="{% url 'portal:dashboard' %}" role="button">{% trans "Go to Home" %}</a>
+</article>
+{% endblock %}

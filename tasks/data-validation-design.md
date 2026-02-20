@@ -12,16 +12,46 @@ Staff enter numeric data (metric values, financial fields) with no plausibility 
 
 **What's needed:** A soft warning layer. Values within the valid range but unlikely get flagged for confirmation — staff can override but must acknowledge.
 
+### Priority: Financial Metric Plausibility
+
+Financial coaching metrics are the highest priority for plausibility warnings. The motivating example: a $700M debt entry (typo — actual value was $700) at a West Neighbourhood House financial coaching session. Without plausibility checks, this kind of error flows straight into funder reports and distorts aggregate outcomes.
+
+**Why financial metrics first:**
+- Financial values span a wide valid range (debt can genuinely be $0 to $200,000+), so hard min/max alone won't catch typos
+- Typos in financial data often involve extra digits ($700 → $700,000) or misplaced decimals ($7.00 → $700)
+- Funders like Prosper Canada aggregate financial outcomes across agencies — one outlier distorts the whole picture
+- Clinical scales (PHQ-9, GAD-7) already have narrow ranges that catch most typos via hard min/max
+
+#### Suggested `warn_min` / `warn_max` for Financial Coaching Metrics
+
+These are soft thresholds — the form shows a warning but still allows submission after confirmation.
+
+| Metric | Hard Min | Hard Max | warn_min | warn_max | Rationale |
+|--------|----------|----------|----------|----------|-----------|
+| Total Debt | $0 | $10,000,000 | $0 | $200,000 | Most individual consumer debt under $200K; above that warrants a second look |
+| Monthly Income | $0 | $1,000,000 | $0 | $15,000 | ~$180K/year; high but plausible for dual-income households |
+| Monthly Savings | -$10,000 | $1,000,000 | -$500 | $5,000 | Negative = drawing down savings; >$5K/month is unusual for coaching clients |
+| Credit Score | 300 | 900 | 300 | 900 | Canadian credit scores are 300-900; hard limits suffice here |
+| Credit Score Change | -600 | 600 | -100 | 150 | Most changes are <100 points per reporting period |
+| Debt-to-Income Ratio | 0 | 100 | 0 | 50 | Ratios above 50% are rare and should be double-checked |
+| Savings Rate (%) | -100 | 100 | -20 | 60 | Negative = spending more than earning; >60% is exceptional |
+| Income Change ($) | -$100,000 | $100,000 | -$5,000 | $10,000 | Large swings warrant verification |
+
+**Notes:**
+- `_confirm: true` — these ranges need validation with Prosper Canada / Claire before setting as defaults
+- Agencies can adjust warn_min/warn_max per metric in Admin Settings
+- The warning message should say something like: "This value ($700,000) is unusually high for Total Debt. Please double-check. If correct, click Confirm."
+
 ### Two plausibility signals
 
 1. **Statistical outlier** — value is far from the client's recent history for that metric. Example: PHQ-9 scores have been 5-8 for months, suddenly entered as 25.
-2. **Absolute plausibility** — value seems implausible regardless of history. Example: $1,000,000 debt on a financial metric where typical range is $0-$50,000.
+2. **Absolute plausibility** — value seems implausible regardless of history. Example: $700,000,000 debt on a financial metric where the actual value was $700 (the typo that motivated this feature — flagged by Rebekah at West Neighbourhood House).
 
 ### Possible approaches
 
-- Add `warn_min` / `warn_max` fields to `MetricDefinition` (separate from hard `min_value` / `max_value`) — admin-configurable soft thresholds
-- Or: compute a warning dynamically based on historical standard deviation (e.g., flag if > 2 SD from client's mean)
-- Or: both — admin-set soft thresholds AND dynamic historical comparison
+- **Recommended:** Add `warn_min` / `warn_max` fields to `MetricDefinition` (separate from hard `min_value` / `max_value`) — admin-configurable soft thresholds. Start with the financial metric defaults above, expand to other categories later.
+- Or: compute a warning dynamically based on historical standard deviation (e.g., flag if > 2 SD from client's mean) — better for clinical scales with enough history, but requires data
+- Or: both — admin-set soft thresholds AND dynamic historical comparison (ideal long-term, but start with static thresholds)
 
 ### UX concept
 

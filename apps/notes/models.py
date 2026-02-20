@@ -206,13 +206,12 @@ class ProgressNote(models.Model):
         self._participant_suggestion_encrypted = encrypt_field(value)
 
     ENGAGEMENT_CHOICES = [
-        ("", "---------"),
-        ("disengaged", _("Disengaged")),
-        ("motions", _("Going through the motions")),
-        ("guarded", _("Guarded but present")),
+        ("disengaged", _("Not participating")),
+        ("motions", _("Going through motions")),
+        ("guarded", _("Guarded")),
         ("engaged", _("Engaged")),
-        ("valuing", _("Valuing the process")),
-        ("no_interaction", _("No individual interaction")),
+        ("valuing", _("Fully invested")),
+        ("no_interaction", _("No 1-on-1")),
     ]
 
     engagement_observation = models.CharField(

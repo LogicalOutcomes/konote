@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ survey.name }} — {% trans "Survey" %}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{{ survey.name }}</h1>
+    <p>
+        {% if survey.status == "active" %}
+            <span class="badge badge-success">{% trans "Active" %}</span>
+        {% elif survey.status == "draft" %}
+            <span class="badge badge-neutral">{% trans "Draft" %}</span>
+        {% elif survey.status == "closed" %}
+            <span class="badge badge-warning">{% trans "Closed" %}</span>
+        {% else %}
+            <span class="badge badge-neutral">{% trans "Archived" %}</span>
+        {% endif %}
+        · {{ response_count }} {% trans "responses" %}
+    </p>
+</hgroup>
+
+{% if survey.description %}
+<p>{{ survey.description }}</p>
+{% endif %}
+
+{# Status actions #}
+<div role="group">
+    <a href="{% url 'survey_manage:survey_edit' survey_id=survey.pk %}" role="button" class="outline">{% trans "Edit" %}</a>
+    <a href="{% url 'survey_manage:survey_questions' survey_id=survey.pk %}" role="button" class="outline">{% trans "Questions" %}</a>
+    {% if survey.status == "draft" %}
+    <form method="post" action="{% url 'survey_manage:survey_status' survey_id=survey.pk %}" style="display:inline">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="active">
+        <button type="submit" class="outline">{% trans "Activate" %}</button>
+    </form>
+    {% elif survey.status == "active" %}
+    <form method="post" action="{% url 'survey_manage:survey_status' survey_id=survey.pk %}" style="display:inline">
+        {% csrf_token %}
+        <input type="hidden" name="status" value="closed">
+        <button type="submit" class="outline secondary">{% trans "Close" %}</button>
+    </form>
+    {% endif %}
+</div>
+
+{# Questions preview #}
+<h2>{% trans "Questions" %}</h2>
+{% for section in sections %}
+<article>
+    <header>{{ section.title }}</header>
+    {% if section.condition_question %}
+    <p><small>
+        <strong>{% trans "Conditional" %}</strong> —
+        {% blocktrans with question=section.condition_question.question_text value=section.condition_value %}
+        shown when "{{ question }}" is answered "{{ value }}"
+        {% endblocktrans %}
+    </small></p>
+    {% endif %}
+    {% if section.instructions %}<p><small>{{ section.instructions }}</small></p>{% endif %}
+    <ol>
+    {% for q in section.questions.all %}
+        <li>
+            {{ q.question_text }}
+            <small class="secondary">({{ q.get_question_type_display }}{% if q.required %}, {% trans "required" %}{% endif %})</small>
+            {% if q.options_json %}
+            <ul>
+            {% for opt in q.options_json %}
+                <li>{{ opt.label }}{% if opt.score is not None %} <small>[{{ opt.score }}]</small>{% endif %}</li>
+            {% endfor %}
+            </ul>
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ol>
+</article>
+{% empty %}
+<p class="empty-state">{% trans "No sections yet." %} <a href="{% url 'survey_manage:survey_edit' survey_id=survey.pk %}">{% trans "Add sections" %}</a></p>
+{% endfor %}
+
+{# Trigger rules #}
+<h2>{% trans "Trigger Rules" %}</h2>
+{% if rules %}
+<ul>
+{% for rule in rules %}
+    <li>
+        {{ rule.get_trigger_type_display }}
+        {% if rule.program %} — {{ rule.program.name }}{% endif %}
+        {% if rule.event_type %} — {{ rule.event_type.name }}{% endif %}
+        {% if rule.is_active %}
+            <span class="badge badge-success">{% trans "Active" %}</span>
+        {% else %}
+            <span class="badge badge-neutral">{% trans "Inactive" %}</span>
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>
+{% else %}
+<p class="empty-state">{% trans "No trigger rules configured." %}</p>
+{% endif %}
+<p><a href="{% url 'survey_manage:survey_rules' survey_id=survey.pk %}" role="button" class="outline">{% trans "Manage Rules" %}</a></p>
+
+{# Recent responses #}
+{% if responses %}
+<h2>{% trans "Recent Responses" %}</h2>
+<table aria-label="{% trans 'Recent responses' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Submitted" %}</th>
+            <th scope="col">{% trans "Channel" %}</th>
+            <th scope="col">{% trans "Actions" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for r in responses %}
+        <tr>
+            <td>{{ r.submitted_at|date:"N j, Y g:i A" }}</td>
+            <td>{{ r.get_channel_display }}</td>
+            <td><a href="{% url 'survey_manage:survey_response_detail' survey_id=survey.pk response_id=r.pk %}">{% trans "View" %}</a></td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<p><a href="{% url 'survey_manage:survey_list' %}">← {% trans "Back to surveys" %}</a></p>
+{% endblock %}

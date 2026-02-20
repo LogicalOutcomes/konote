@@ -234,45 +234,54 @@ def suggest_target_view(request):
     if not _can_edit_plan(request.user, client_file):
         return HttpResponseForbidden("You don't have permission to edit this plan.")
 
-    # PII-scrub before sending to AI
-    known_names = _get_known_names_for_client(client_file)
-    scrubbed_words = scrub_pii(participant_words, known_names)
+    try:
+        # PII-scrub before sending to AI
+        known_names = _get_known_names_for_client(client_file)
+        scrubbed_words = scrub_pii(participant_words, known_names)
 
-    # Build AI context
-    program, metric_catalogue, existing_sections = _get_goal_builder_context(client_file)
-    program_name = program.name if program else "General"
+        # Build AI context
+        program, metric_catalogue, existing_sections = _get_goal_builder_context(client_file)
+        program_name = program.name if program else "General"
 
-    # Call AI
-    result = ai.suggest_target(scrubbed_words, program_name, metric_catalogue, existing_sections)
+        # Call AI
+        result = ai.suggest_target(scrubbed_words, program_name, metric_catalogue, existing_sections)
 
-    if result is None:
+        if result is None:
+            return render(request, "plans/_ai_suggest_error.html", {
+                "client": client_file,
+                "participant_words": participant_words,
+            })
+
+        # Resolve suggested section name to a PK if it matches an existing section
+        section_choices = list(
+            PlanSection.objects.filter(client_file=client_file, status="default")
+            .values("pk", "name")
+        )
+        matched_section_pk = None
+        for sc in section_choices:
+            if sc["name"].lower().strip() == result.get("suggested_section", "").lower().strip():
+                matched_section_pk = sc["pk"]
+                break
+
+        # Serialise suggestion for embedding as data attribute
+        suggestion_json = json.dumps(result)
+
+        return render(request, "plans/_ai_suggestion.html", {
+            "suggestion": result,
+            "suggestion_json": suggestion_json,
+            "client": client_file,
+            "participant_words": participant_words,
+            "sections": section_choices,
+            "matched_section_pk": matched_section_pk,
+            "custom_metric": result.get("custom_metric"),
+            "custom_metric_json": json.dumps(result.get("custom_metric")) if result.get("custom_metric") else "",
+        })
+    except Exception:
+        logger.exception("Unhandled error in suggest_target_view for client %s", client_id)
         return render(request, "plans/_ai_suggest_error.html", {
             "client": client_file,
             "participant_words": participant_words,
         })
-
-    # Resolve suggested section name to a PK if it matches an existing section
-    section_choices = list(
-        PlanSection.objects.filter(client_file=client_file, status="default")
-        .values("pk", "name")
-    )
-    matched_section_pk = None
-    for sc in section_choices:
-        if sc["name"].lower().strip() == result.get("suggested_section", "").lower().strip():
-            matched_section_pk = sc["pk"]
-            break
-
-    # Serialise suggestion for embedding as data attribute
-    suggestion_json = json.dumps(result)
-
-    return render(request, "plans/_ai_suggestion.html", {
-        "suggestion": result,
-        "suggestion_json": suggestion_json,
-        "client": client_file,
-        "participant_words": participant_words,
-        "sections": section_choices,
-        "matched_section_pk": matched_section_pk,
-    })
 
 
 @login_required
@@ -322,113 +331,119 @@ def outcome_insights_view(request):
     except ValueError:
         return HttpResponseBadRequest("Invalid date format.")
 
-    # Check cache first (unless regenerating)
-    cache_key = f"insights:{program_id}:{dt_from}:{dt_to}"
-    if not regenerate:
-        try:
-            cached = InsightSummary.objects.get(cache_key=cache_key)
+    try:
+        # Check cache first (unless regenerating)
+        cache_key = f"insights:{program_id}:{dt_from}:{dt_to}"
+        if not regenerate:
+            try:
+                cached = InsightSummary.objects.get(cache_key=cache_key)
+                return render(request, "reports/_insights_ai.html", {
+                    "summary": cached.summary_json,
+                    "program_id": program_id,
+                    "date_from": date_from_str,
+                    "date_to": date_to_str,
+                    "generated_at": cached.generated_at,
+                })
+            except InsightSummary.DoesNotExist:
+                pass
+
+        # Collect data
+        structured = get_structured_insights(program=program, date_from=dt_from, date_to=dt_to)
+        quotes = collect_quotes(
+            program=program, date_from=dt_from, date_to=dt_to,
+            max_quotes=30, include_dates=False,
+        )
+
+        if not quotes and structured["note_count"] < 20:
             return render(request, "reports/_insights_ai.html", {
-                "summary": cached.summary_json,
-                "program_id": program_id,
-                "date_from": date_from_str,
-                "date_to": date_to_str,
-                "generated_at": cached.generated_at,
+                "error": "Not enough data to generate a meaningful summary.",
             })
-        except InsightSummary.DoesNotExist:
-            pass
 
-    # Collect data
-    structured = get_structured_insights(program=program, date_from=dt_from, date_to=dt_to)
-    quotes = collect_quotes(
-        program=program, date_from=dt_from, date_to=dt_to,
-        max_quotes=30, include_dates=False,
-    )
+        # PII-scrub quotes before sending to AI
+        # Collect known names from clients in this program
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        client_ids = (
+            ClientProgramEnrolment.objects.filter(program=program, status="enrolled")
+            .values_list("client_file_id", flat=True)
+        )
+        known_names = set()
+        for client in ClientFile.objects.filter(pk__in=client_ids):
+            for name in [client.first_name, client.last_name, client.preferred_name]:
+                if name and len(name) >= 2:
+                    known_names.add(name)
 
-    if not quotes and structured["note_count"] < 20:
+        # Also scrub staff names
+        from apps.auth_app.models import User
+        for user in User.objects.filter(is_active=True):
+            display = getattr(user, "display_name", "")
+            if display and len(display) >= 2:
+                known_names.add(display)
+
+        scrubbed_quotes = []
+        # Build ephemeral quote_source_map: scrubbed_text → note_id.
+        # This map is NEVER persisted and NEVER sent to the AI.
+        # It exists only to reconnect AI-identified themes back to source notes.
+        quote_source_map = {}
+        for q in quotes:
+            # Data minimization: only send scrubbed text and target name to AI.
+            # note_id is deliberately excluded — internal IDs should not reach
+            # external services (prevents correlation if AI provider is breached).
+            scrubbed_text = scrub_pii(q["text"], known_names)
+            scrubbed_quotes.append({
+                "text": scrubbed_text,
+                "target_name": q.get("target_name", ""),
+            })
+            if q.get("note_id"):
+                quote_source_map[scrubbed_text] = q["note_id"]
+
+        # Pass existing active theme names so the AI reuses them.
+        from apps.notes.models import SuggestionTheme
+        existing_theme_names = list(
+            SuggestionTheme.objects.active()
+            .filter(program=program)
+            .values_list("name", flat=True)
+        )
+
+        date_range = f"{dt_from} to {dt_to}"
+        result = ai.generate_outcome_insights(
+            program.name, date_range, structured, scrubbed_quotes,
+            existing_theme_names=existing_theme_names,
+        )
+
+        if result is None:
+            return render(request, "reports/_insights_ai.html", {
+                "error": "AI summary could not be verified. Showing data analysis only.",
+            })
+
+        # Cache the validated result
+        InsightSummary.objects.update_or_create(
+            cache_key=cache_key,
+            defaults={
+                "summary_json": result,
+                "generated_by": request.user,
+            },
+        )
+
+        # Persist AI-identified suggestion themes as database records.
+        if result.get("suggestion_themes"):
+            try:
+                from apps.notes.theme_engine import process_ai_themes
+                process_ai_themes(result["suggestion_themes"], quote_source_map, program)
+            except Exception:
+                logger.exception("Failed to process AI suggestion themes")
+
         return render(request, "reports/_insights_ai.html", {
-            "error": "Not enough data to generate a meaningful summary.",
+            "summary": result,
+            "program_id": program_id,
+            "date_from": date_from_str,
+            "date_to": date_to_str,
+            "generated_at": timezone.now(),
         })
-
-    # PII-scrub quotes before sending to AI
-    # Collect known names from clients in this program
-    from apps.clients.models import ClientFile, ClientProgramEnrolment
-    client_ids = (
-        ClientProgramEnrolment.objects.filter(program=program, status="enrolled")
-        .values_list("client_file_id", flat=True)
-    )
-    known_names = set()
-    for client in ClientFile.objects.filter(pk__in=client_ids):
-        for name in [client.first_name, client.last_name, client.preferred_name]:
-            if name and len(name) >= 2:
-                known_names.add(name)
-
-    # Also scrub staff names
-    from apps.auth_app.models import User
-    for user in User.objects.filter(is_active=True):
-        display = getattr(user, "display_name", "")
-        if display and len(display) >= 2:
-            known_names.add(display)
-
-    scrubbed_quotes = []
-    # Build ephemeral quote_source_map: scrubbed_text → note_id.
-    # This map is NEVER persisted and NEVER sent to the AI.
-    # It exists only to reconnect AI-identified themes back to source notes.
-    quote_source_map = {}
-    for q in quotes:
-        # Data minimization: only send scrubbed text and target name to AI.
-        # note_id is deliberately excluded — internal IDs should not reach
-        # external services (prevents correlation if AI provider is breached).
-        scrubbed_text = scrub_pii(q["text"], known_names)
-        scrubbed_quotes.append({
-            "text": scrubbed_text,
-            "target_name": q.get("target_name", ""),
-        })
-        if q.get("note_id"):
-            quote_source_map[scrubbed_text] = q["note_id"]
-
-    # Pass existing active theme names so the AI reuses them.
-    from apps.notes.models import SuggestionTheme
-    existing_theme_names = list(
-        SuggestionTheme.objects.active()
-        .filter(program=program)
-        .values_list("name", flat=True)
-    )
-
-    date_range = f"{dt_from} to {dt_to}"
-    result = ai.generate_outcome_insights(
-        program.name, date_range, structured, scrubbed_quotes,
-        existing_theme_names=existing_theme_names,
-    )
-
-    if result is None:
+    except Exception:
+        logger.exception("Unhandled error in outcome_insights_view for program %s", program_id)
         return render(request, "reports/_insights_ai.html", {
-            "error": "AI summary could not be verified. Showing data analysis only.",
+            "error": _("An unexpected error occurred. Please try again or contact support."),
         })
-
-    # Cache the validated result
-    InsightSummary.objects.update_or_create(
-        cache_key=cache_key,
-        defaults={
-            "summary_json": result,
-            "generated_by": request.user,
-        },
-    )
-
-    # Persist AI-identified suggestion themes as database records.
-    if result.get("suggestion_themes"):
-        try:
-            from apps.notes.theme_engine import process_ai_themes
-            process_ai_themes(result["suggestion_themes"], quote_source_map, program)
-        except Exception:
-            logger.exception("Failed to process AI suggestion themes")
-
-    return render(request, "reports/_insights_ai.html", {
-        "summary": result,
-        "program_id": program_id,
-        "date_from": date_from_str,
-        "date_to": date_to_str,
-        "generated_at": timezone.now(),
-    })
 
 
 # ── Goal Builder ───────────────────────────────────────────────────
@@ -473,7 +488,15 @@ def _get_goal_builder_context(client_file):
         metrics_qs = metrics_qs.filter(
             models_Q(owning_program__isnull=True) | models_Q(owning_program=program)
         )
-    metric_catalogue = list(metrics_qs.values("id", "name", "definition", "category"))
+    metric_catalogue = [
+        {
+            "metric_id": m["id"],
+            "name": m["name"],
+            "definition": m["definition"],
+            "category": m["category"],
+        }
+        for m in metrics_qs.values("id", "name", "definition", "category")
+    ]
 
     # Existing plan sections for this client
     existing_sections = list(

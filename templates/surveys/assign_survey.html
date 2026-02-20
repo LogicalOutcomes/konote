@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Assign Survey" %} — {{ client.display_name }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+
+<hgroup>
+    <h1>{% trans "Assign Survey" %}</h1>
+    <p>{{ client.display_name }} {{ client.last_name }}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} <abbr title="{% trans 'required' %}">*</abbr>{% endif %}</label>
+    {{ field }}
+    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+    {% if field.errors %}<small class="error" role="alert">{{ field.errors.0 }}</small>{% endif %}
+    {% endfor %}
+
+    <div role="group">
+        <button type="submit">{% trans "Assign" %}</button>
+        <a href="{% url 'surveys:client_surveys' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

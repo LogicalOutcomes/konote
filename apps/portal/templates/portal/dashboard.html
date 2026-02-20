@@ -80,6 +80,17 @@
         </a>
         {% endif %}
 
+        {% if features.surveys and pending_surveys %}
+        <a href="{% if single_survey_url %}{{ single_survey_url }}{% else %}{% url 'portal:surveys' %}{% endif %}" class="portal-card">
+            <article>
+                <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                <h2>{% trans "Questions for You" %}</h2>
+                <p>{% blocktrans with worker_term=term.worker %}Forms and check-ins from your {{ worker_term }}.{% endblocktrans %}</p>
+                <span class="badge" aria-label="{% blocktrans count counter=pending_surveys %}{{ counter }} survey pending{% plural %}{{ counter }} surveys pending{% endblocktrans %}">{{ pending_surveys }}</span>
+            </article>
+        </a>
+        {% endif %}
+
     </div>
 </section>
 {% endblock %}

@@ -179,3 +179,52 @@ def build_program_display_context(user, active_program_ids=None):
     }
 
 
+def should_share_across_programs(client, agency_shares_by_default):
+    """Determine if cross-program notes should be visible for this client.
+
+    Combines the agency-level feature toggle with the per-client override.
+    Returns True if notes from all shared programs should be visible.
+
+    Logic:
+    - client.cross_program_sharing == "consent" -> always share
+    - client.cross_program_sharing == "restrict" -> never share
+    - client.cross_program_sharing == "default" -> follow agency toggle
+    """
+    sharing = getattr(client, "cross_program_sharing", "default")
+    if sharing == "consent":
+        return True
+    if sharing == "restrict":
+        return False
+    return agency_shares_by_default
+
+
+def apply_consent_filter(notes_qs, client, user, user_program_ids):
+    """Apply PHIPA cross-program consent filtering to a notes queryset.
+
+    PHIPA: Clinical notes should only be visible across programs when
+    the agency or client has enabled sharing. This is the ONLY function
+    that should apply consent-based filtering to note querysets.
+
+    Returns (filtered_queryset, viewing_program_name_or_None).
+    viewing_program_name is set when filtering is active (for template indicator).
+    """
+    from apps.clients.dashboard_views import _get_feature_flags
+
+    flags = _get_feature_flags()
+    agency_shares = flags.get("cross_program_note_sharing", True)
+
+    if should_share_across_programs(client, agency_shares):
+        return notes_qs, None  # No additional filtering needed
+
+    # Determine the viewing program for this user+client pair
+    viewing_program = get_author_program(user, client)
+    if viewing_program:
+        filtered = notes_qs.filter(
+            Q(author_program=viewing_program) | Q(author_program__isnull=True)
+        )
+        return filtered, viewing_program.name
+
+    # No shared program found — shouldn't happen (user passed access check)
+    return notes_qs, None
+
+

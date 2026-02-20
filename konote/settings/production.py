@@ -95,7 +95,7 @@ ALLOWED_HOSTS = [h for h in ALLOWED_HOSTS if h]
 
 # Railway
 if os.environ.get("RAILWAY_ENVIRONMENT"):
-    ALLOWED_HOSTS.extend([".railway.app", ".up.railway.app"])
+    ALLOWED_HOSTS.extend([".railway.app", ".up.railway.app", ".railway.internal"])
 
 # Azure App Service
 if os.environ.get("WEBSITE_SITE_NAME"):

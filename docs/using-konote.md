@@ -18,14 +18,15 @@ Welcome to KoNote! This guide covers the everyday tasks you'll do as a staff mem
 6. [Recording Events](#recording-events)
 7. [Logging Communications](#logging-communications)
 8. [Staff Messaging](#staff-messaging)
-9. [Scheduling Meetings](#scheduling-meetings)
-10. [Using the Calendar Feed](#using-the-calendar-feed)
-11. [Viewing the Outcome Plan](#viewing-the-outcome-plan)
-12. [Outcome Insights](#outcome-insights)
-13. [Transferring a Client Between Programs](#transferring-a-client-between-programs)
-14. [The Participant List](#the-participant-list)
-15. [The Actions Menu](#the-actions-menu)
-16. [Tips & Shortcuts](#tips--shortcuts)
+9. [Surveys](#surveys)
+10. [Scheduling Meetings](#scheduling-meetings)
+11. [Using the Calendar Feed](#using-the-calendar-feed)
+12. [Viewing the Outcome Plan](#viewing-the-outcome-plan)
+13. [Outcome Insights](#outcome-insights)
+14. [Transferring a Client Between Programs](#transferring-a-client-between-programs)
+15. [The Participant List](#the-participant-list)
+16. [The Actions Menu](#the-actions-menu)
+17. [Tips & Shortcuts](#tips--shortcuts)
 
 ---
 
@@ -65,6 +66,18 @@ After logging in, you'll see your **home page**. Here's what's there:
 - **Active Alerts** — Clients with safety concerns or crisis flags that need your attention
 - **Needs Attention** — Clients who haven't had a progress note in 30 or more days
 - **Notes Today** — How many notes have been recorded today across your programs
+
+### Role-based dashboards
+
+Your home page adapts to your role:
+
+| Role | What you see |
+|------|-------------|
+| **Staff / Coach** | Your active clients, priority items, recent notes, and upcoming meetings |
+| **Program Manager** | Program summary with note volume, alert counts, staff activity, and suggestion themes for your programs |
+| **Executive** | Cross-program overview with outcome trends, suggestion themes, and portal adoption metrics |
+
+All roles see the search bar and stats row. The additional sections appear below based on your highest role.
 
 ---
 
@@ -324,6 +337,47 @@ When you have unread messages, a **badge** appears next to **Messages** in the n
 
 ---
 
+## Surveys
+
+If your admin has enabled surveys, you can assign structured feedback forms to participants and enter responses on their behalf.
+
+### Assigning a survey
+
+1. Open the participant's file
+2. Go to the **Surveys** tab
+3. Click **Assign Survey**
+4. Choose the survey from the dropdown and optionally set a due date
+5. Click **Assign**
+
+The participant will see the survey on their portal dashboard (if they have a portal account). You can also enter responses on their behalf.
+
+**Note:** Some surveys are assigned automatically through trigger rules — you don't need to assign those manually.
+
+### Entering a response on behalf of a participant
+
+If a participant can't or doesn't want to use the portal, you can fill in the survey for them:
+
+1. Open the participant's file
+2. Go to the **Surveys** tab
+3. Under **Enter Survey on Behalf**, click the survey name
+4. Answer each question based on the participant's input
+5. If the survey has conditional sections, questions will appear or hide based on answers
+6. Click **Submit Response**
+
+The response is recorded as "Staff data entry" so you can tell it apart from portal or link responses.
+
+### Viewing responses
+
+1. Open the participant's file
+2. Go to the **Surveys** tab
+3. Under **Completed Responses**, click **View** next to the response you want to see
+
+Each response shows when it was submitted, how it was submitted (portal, staff entry, or link), all answers grouped by section, and section scores if the survey uses scoring.
+
+For the full survey guide (including creating surveys, trigger rules, and shareable links), see the [Surveys Guide](surveys.md).
+
+---
+
 ## Scheduling Meetings
 
 Meetings let you schedule and track appointments with clients.
@@ -547,7 +601,10 @@ Not all items appear for all users — what you see depends on your role and per
 | Transfer clients between programs | Staff with transfer permission (typically program managers) |
 | Review alert cancellations | Program managers |
 | Edit plan targets | Coordinators and admins |
+| Assign surveys | Staff and above (if surveys enabled) |
+| Enter survey responses on behalf of participants | Staff and above (if surveys enabled) |
 | Invite participants to the portal | Staff and above (if portal enabled) |
+| Create surveys and trigger rules | Program managers and admins |
 | Create plan templates | Admins only |
 | Manage users | Admins only |
 | Change system settings | Admins only |
@@ -574,6 +631,8 @@ Not all items appear for all users — what you see depends on your role and per
 | Schedule a meeting | Actions menu → Schedule Meeting |
 | Leave a message for a case worker | Info tab → Leave Message |
 | See my unread messages | Messages (main navigation) |
+| Assign a survey | Client file → Surveys tab → Assign Survey |
+| Enter a survey response | Client file → Surveys tab → Enter Survey on Behalf |
 | Transfer a client between programs | Actions menu → Transfer |
 | See your calendar | Meetings (main navigation) |
 | See who needs attention | Check Priority Items on home page |
@@ -583,5 +642,5 @@ Not all items appear for all users — what you see depends on your role and per
 
 ---
 
-**Version 2.2** — KoNote
-Last updated: 2026-02-16
+**Version 2.3** — KoNote
+Last updated: 2026-02-20

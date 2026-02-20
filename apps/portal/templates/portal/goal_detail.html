@@ -87,61 +87,86 @@
 </p>
 {% endblock %}
 
-{% block extra_js %}
+{% block extra_scripts %}
 {% if chart_data %}
 {{ chart_data|json_script:"chart-data" }}
 <script>
 (function() {
-    var rawData = JSON.parse(document.getElementById('chart-data').textContent);
-
-    // Show metric description if available (rawData is a dict keyed by metric name)
+    var allData = JSON.parse(document.getElementById('chart-data').textContent);
     var descContainer = document.getElementById('chart-descriptions');
-    for (var metricName in rawData) {
-        if (rawData[metricName].description) {
-            var p = document.createElement('p');
-            p.className = 'portal-metric-description';
-            p.textContent = rawData[metricName].description;
-            descContainer.appendChild(p);
-        }
+    var chartContainer = document.querySelector('.portal-chart-container');
+
+    if (!Array.isArray(allData)) {
+        allData = [allData];
     }
 
-    var ctx = document.getElementById('goal-chart').getContext('2d');
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: rawData.labels,
-            datasets: [{
-                label: rawData.metric_name || '',
-                data: rawData.values,
-                borderColor: '#0d7377',
-                backgroundColor: 'rgba(13, 115, 119, 0.1)',
-                fill: true,
-                tension: 0.3,
-                pointRadius: 6,
-                pointHoverRadius: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    callbacks: {
-                        title: function(items) { return items[0].label; }
+    var colours = ['#0d7377', '#e07b39', '#6b5b95', '#88b04b'];
+
+    allData.forEach(function(chartInfo, index) {
+        if (chartInfo.description) {
+            var p = document.createElement('p');
+            p.className = 'portal-metric-description';
+            p.textContent = chartInfo.description;
+            descContainer.appendChild(p);
+        }
+
+        // For multiple metrics, create additional canvases
+        var canvas;
+        if (index === 0) {
+            canvas = document.getElementById('goal-chart');
+        } else {
+            canvas = document.createElement('canvas');
+            canvas.id = 'goal-chart-' + index;
+            canvas.setAttribute('aria-label', chartInfo.metric_name || 'Progress chart');
+            canvas.setAttribute('role', 'img');
+            var wrapper = document.createElement('div');
+            wrapper.className = 'portal-chart-container';
+            wrapper.appendChild(canvas);
+            chartContainer.parentNode.insertBefore(wrapper, chartContainer.nextSibling);
+        }
+
+        var colour = colours[index % colours.length];
+        var ctx = canvas.getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartInfo.labels,
+                datasets: [{
+                    label: chartInfo.metric_name || '',
+                    data: chartInfo.values,
+                    borderColor: colour,
+                    backgroundColor: colour + '1a',
+                    fill: true,
+                    tension: 0.3,
+                    pointRadius: 6,
+                    pointHoverRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: allData.length > 1 },
+                    tooltip: {
+                        callbacks: {
+                            title: function(items) { return items[0].label; }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: { display: false }
+                    },
+                    y: {
+                        title: {
+                            display: !!(chartInfo.unit),
+                            text: chartInfo.unit || ''
+                        },
+                        beginAtZero: chartInfo.begin_at_zero || false
                     }
                 }
-            },
-            scales: {
-                x: {
-                    title: { display: true, text: rawData.x_label || '' }
-                },
-                y: {
-                    title: { display: true, text: rawData.y_label || '' },
-                    beginAtZero: rawData.begin_at_zero || false
-                }
             }
-        }
+        });
     });
 })();
 </script>

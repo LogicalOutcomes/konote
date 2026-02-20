@@ -16,7 +16,9 @@ from cryptography.fernet import Fernet
 from django.test import TestCase, override_settings
 
 from apps.admin_settings.models import FeatureToggle
+from apps.auth_app.models import User
 from apps.clients.models import ClientFile
+from apps.notes.models import ProgressNote, ProgressNoteTarget
 from apps.plans.models import MetricDefinition, PlanSection, PlanTarget
 from apps.portal.models import (
     CorrectionRequest,
@@ -207,10 +209,48 @@ class PortalIDORTests(TestCase):
     # My Words (reflections)
     # ------------------------------------------------------------------
 
-    def test_my_words_removed(self):
-        """My Words page has been removed — URL should 404."""
+    def test_idor_my_words_only_own(self):
+        """My Words page should only show Participant A's reflections."""
+        staff_user = User.objects.create_user(
+            username="idor_staff", password="pass123", display_name="Staff",
+        )
+        # Note for Alice
+        note_a = ProgressNote.objects.create(
+            client_file=self.client_a, note_type="full",
+            status="default", author=staff_user,
+        )
+        note_a.participant_reflection = "Alice reflection IDOR"
+        note_a.save()
+        pnt_a = ProgressNoteTarget(
+            progress_note=note_a, plan_target=self.target_a,
+        )
+        pnt_a.client_words = "Alice words IDOR"
+        pnt_a.save()
+
+        # Note for Bob
+        note_b = ProgressNote.objects.create(
+            client_file=self.client_b, note_type="full",
+            status="default", author=staff_user,
+        )
+        note_b.participant_reflection = "Bob secret reflection IDOR"
+        note_b.save()
+        pnt_b = ProgressNoteTarget(
+            progress_note=note_b, plan_target=self.target_b,
+        )
+        pnt_b.client_words = "Bob secret words IDOR"
+        pnt_b.save()
+
         response = self.client.get("/my/my-words/")
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode()
+
+        # Alice data should be visible
+        self.assertIn("Alice reflection IDOR", content)
+        self.assertIn("Alice words IDOR", content)
+
+        # Bob data must NOT be visible
+        self.assertNotIn("Bob secret reflection IDOR", content)
+        self.assertNotIn("Bob secret words IDOR", content)
 
     # ------------------------------------------------------------------
     # Correction requests

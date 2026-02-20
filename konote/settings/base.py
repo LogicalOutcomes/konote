@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "apps.groups",
     "apps.portal",
     "apps.communications",
+    "apps.surveys",
 ]
 
 MIDDLEWARE = [
@@ -243,6 +244,7 @@ STORAGES = {
 }
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+FORMS_URLFIELD_ASSUME_HTTPS = True
 
 # Login URLs
 LOGIN_URL = "/auth/login/"

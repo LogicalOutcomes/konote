@@ -83,7 +83,24 @@ def _check_client_consent(client):
     return client.consent_given_at is not None
 
 
-def _build_target_forms(client, post_data=None):
+def _compute_auto_calc_values(client):
+    """Compute auto-calculated metric values for a client.
+
+    Returns dict: {computation_type: computed_value}
+    """
+    computed = {}
+    now = timezone.now()
+    count = ProgressNote.objects.filter(
+        client_file=client,
+        status="default",
+        created_at__year=now.year,
+        created_at__month=now.month,
+    ).count()
+    computed["session_count"] = count
+    return computed
+
+
+def _build_target_forms(client, post_data=None, auto_calc=None):
     """Build TargetNoteForm + MetricValueForms for each active plan target.
 
     Returns a list of dicts:
@@ -111,8 +128,14 @@ def _build_target_forms(client, post_data=None):
                 post_data,
                 prefix=m_prefix,
                 metric_def=ptm.metric_def,
+                target_name=target.name,
                 initial={"metric_def_id": ptm.metric_def.pk},
             )
+            # Annotate auto-calc metrics with their computed value
+            if auto_calc and ptm.metric_def.computation_type:
+                mf.auto_calc_value = auto_calc.get(ptm.metric_def.computation_type)
+            else:
+                mf.auto_calc_value = None
             metric_forms.append(mf)
         target_forms.append({
             "target": target,
@@ -196,6 +219,12 @@ def note_list(request, client_id):
         )
     )
 
+    # PHIPA: consent filter narrows to viewing program if sharing is off
+    from apps.programs.access import apply_consent_filter
+    notes, consent_viewing_program = apply_consent_filter(
+        notes, client, request.user, user_program_ids,
+    )
+
     # Filters — interaction type replaces the old quick/full type filter
     interaction_filter = request.GET.get("interaction", "")
     date_from = request.GET.get("date_from", "")
@@ -203,6 +232,7 @@ def note_list(request, client_id):
     author_filter = request.GET.get("author", "")
     search_query = request.GET.get("q", "").strip()
     program_filter = request.GET.get("program", "")
+    target_filter = request.GET.get("target", "")
 
     valid_interactions = [c[0] for c in ProgressNote.INTERACTION_TYPE_CHOICES]
     if interaction_filter in valid_interactions:
@@ -224,6 +254,19 @@ def note_list(request, client_id):
             notes = notes.filter(author_program_id=int(program_filter))
         except (ValueError, TypeError):
             pass
+    if target_filter:
+        try:
+            notes = notes.filter(target_entries__plan_target_id=int(target_filter)).distinct()
+        except (ValueError, TypeError):
+            pass
+
+    # Get participant's active plan targets for the filter dropdown
+    # Scoped by user's accessible programs so workers only see their targets
+    client_targets = PlanTarget.objects.filter(
+        client_file=client, status="default"
+    ).filter(
+        Q(plan_section__program_id__in=user_program_ids) | Q(plan_section__program__isnull=True)
+    ).select_related("plan_section").order_by("plan_section__sort_order", "sort_order")
 
     notes = notes.order_by("-_effective_date", "-created_at")
 
@@ -246,6 +289,7 @@ def note_list(request, client_id):
         bool(date_to),
         bool(author_filter),
         bool(program_filter),
+        bool(target_filter),
     ])
 
     # Breadcrumbs: Clients > [Client Name] > Notes
@@ -263,6 +307,8 @@ def note_list(request, client_id):
         "filter_date_to": date_to,
         "filter_author": author_filter,
         "filter_program": program_filter,
+        "filter_target": target_filter,
+        "client_targets": client_targets,
         "search_query": search_query,
         "active_filter_count": active_filter_count,
         "active_tab": "notes",
@@ -270,6 +316,7 @@ def note_list(request, client_id):
         "breadcrumbs": breadcrumbs,
         "show_program_ui": program_ctx["show_program_ui"],
         "accessible_programs": program_ctx["accessible_programs"],
+        "consent_viewing_program": consent_viewing_program,
     }
     if request.headers.get("HX-Request"):
         return render(request, "notes/_tab_notes.html", context)
@@ -407,9 +454,11 @@ def note_create(request, client_id):
     if not _check_client_consent(client):
         return render(request, "notes/consent_required.html", {"client": client})
 
+    auto_calc = _compute_auto_calc_values(client)
+
     if request.method == "POST":
         form = FullNoteForm(request.POST)
-        target_forms = _build_target_forms(client, request.POST)
+        target_forms = _build_target_forms(client, request.POST, auto_calc=auto_calc)
 
         # Validate all forms
         all_valid = form.is_valid()
@@ -448,6 +497,9 @@ def note_create(request, client_id):
                 note.save()
 
                 # Create target entries and metric values
+                # Recompute auto-calc values once (includes the just-saved note)
+                fresh_calc = _compute_auto_calc_values(client)
+
                 for tf in target_forms:
                     nf = tf["note_form"]
                     notes_text = nf.cleaned_data.get("notes", "")
@@ -457,7 +509,11 @@ def note_create(request, client_id):
                     has_metrics = any(
                         mf.cleaned_data.get("value", "") for mf in tf["metric_forms"]
                     )
-                    if not notes_text and not has_metrics and not client_words and not progress_descriptor:
+                    has_auto_calc = any(
+                        hasattr(mf, "metric_def") and mf.metric_def.computation_type
+                        for mf in tf["metric_forms"]
+                    )
+                    if not notes_text and not has_metrics and not has_auto_calc and not client_words and not progress_descriptor:
                         continue  # Skip targets with no data entered
 
                     pnt = ProgressNoteTarget(
@@ -469,13 +525,23 @@ def note_create(request, client_id):
                     )
                     pnt.save()
                     for mf in tf["metric_forms"]:
-                        val = mf.cleaned_data.get("value", "")
-                        if val:
-                            MetricValue.objects.create(
-                                progress_note_target=pnt,
-                                metric_def_id=mf.cleaned_data["metric_def_id"],
-                                value=val,
-                            )
+                        # Auto-calc metrics: save computed value server-side
+                        if hasattr(mf, "metric_def") and mf.metric_def.computation_type:
+                            computed_val = fresh_calc.get(mf.metric_def.computation_type)
+                            if computed_val is not None:
+                                MetricValue.objects.create(
+                                    progress_note_target=pnt,
+                                    metric_def_id=mf.metric_def.pk,
+                                    value=str(computed_val),
+                                )
+                        else:
+                            val = mf.cleaned_data.get("value", "")
+                            if val:
+                                MetricValue.objects.create(
+                                    progress_note_target=pnt,
+                                    metric_def_id=mf.cleaned_data["metric_def_id"],
+                                    value=val,
+                                )
 
                 # Auto-complete any pending follow-ups from this author for this client
                 ProgressNote.objects.filter(
@@ -521,7 +587,7 @@ def note_create(request, client_id):
             return redirect("notes:note_list", client_id=client.pk)
     else:
         form = FullNoteForm(initial={"session_date": timezone.localdate()})
-        target_forms = _build_target_forms(client)
+        target_forms = _build_target_forms(client, auto_calc=auto_calc)
 
     # Build template → default_interaction_type mapping for JS auto-fill
     template_defaults = {}

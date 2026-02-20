@@ -405,7 +405,7 @@ You'll be prompted for:
 - **Username** — your login name (e.g., `admin` or your name)
 - **Password** — minimum 8 characters (you'll be asked to confirm it)
 
-This creates a user with full admin access. Once logged in, you can create additional users through the web interface using **invite links** (recommended) or direct user creation. See [User Management](administering-konote.md#user-management) for details.
+This creates a user with full admin access. Once logged in, you can create additional users through the web interface using **invite links** (recommended) or direct user creation. See [Users & Roles](admin/users-and-roles.md) for details.
 
 > **Demo mode shortcut:** If you set `DEMO_MODE=true` in your `.env`, the `seed` command (Step 7.5) automatically creates a `demo-admin` user with password `demo1234` — so you can skip this step and log in with that instead.
 
@@ -493,7 +493,7 @@ The container automatically runs migrations and seed data, but you still need an
 railway run python manage.py createsuperuser
 ```
 
-You'll be prompted for a username and password. This creates a user with full admin access. Once logged in, you can invite additional staff through the web interface. See [User Management](administering-konote.md#user-management).
+You'll be prompted for a username and password. This creates a user with full admin access. Once logged in, you can invite additional staff through the web interface. See [User Management](admin/users-and-roles.md).
 
 ### Step 6: Verify
 
@@ -688,7 +688,7 @@ az container create \
 
 You'll be prompted for a password. Delete the container after it completes.
 
-Once logged in, you can invite additional staff through the web interface using invite links. See [User Management](administering-konote.md#user-management).
+Once logged in, you can invite additional staff through the web interface using invite links. See [User Management](admin/users-and-roles.md).
 
 ### Step 9: Configure Custom Domain
 
@@ -752,7 +752,7 @@ In the Elestio console, run:
 python manage.py createsuperuser
 ```
 
-Enter a username and password when prompted. This creates the initial admin account. Once logged in, you can invite additional staff through the web interface. See [User Management](administering-konote.md#user-management).
+Enter a username and password when prompted. This creates the initial admin account. Once logged in, you can invite additional staff through the web interface. See [User Management](admin/users-and-roles.md).
 
 ### Step 6: Configure Domain and TLS
 
@@ -981,5 +981,5 @@ Usually caused by missing environment variables.
 
 Once your deployment is running:
 
-1. **[Administering KoNote](administering-KoNote.md)** — Configure your agency's settings
+1. **[Admin Guide](admin/index.md)** — Configure your agency's settings
 2. **[Using KoNote](using-KoNote.md)** — Train your staff

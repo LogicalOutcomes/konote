@@ -6,6 +6,9 @@ from django.utils.translation import gettext_lazy as _
 from konote.encryption import decrypt_field, encrypt_field
 
 
+SELF_EFFICACY_METRIC_NAME = "Self-Efficacy"
+
+
 class MetricDefinition(models.Model):
     """
     A reusable metric type (e.g., 'PHQ-9 Score', 'Housing Stability').
@@ -34,7 +37,7 @@ class MetricDefinition(models.Model):
     )
     category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default="custom")
     is_library = models.BooleanField(default=False, help_text="Part of the built-in metric library.")
-    is_universal = models.BooleanField(default=False, help_text="Universal scale (Confidence, Progress, Wellbeing) shown prominently during goal creation.")
+    is_universal = models.BooleanField(default=False, help_text="Universal scale (Goal Progress, Self-Efficacy, Satisfaction) shown prominently during goal creation.")
     is_enabled = models.BooleanField(default=True, help_text="Available for use in this instance.")
     min_value = models.FloatField(null=True, blank=True, help_text="Minimum valid value.")
     max_value = models.FloatField(null=True, blank=True, help_text="Maximum valid value.")
@@ -42,6 +45,15 @@ class MetricDefinition(models.Model):
     unit_fr = models.CharField(
         max_length=50, blank=True, default="",
         help_text=_("French unit label (e.g., 'pointage', 'jours', '%')"),
+    )
+    COMPUTATION_TYPE_CHOICES = [
+        ("", _("Manual entry")),
+        ("session_count", _("Sessions attended this month")),
+    ]
+    computation_type = models.CharField(
+        max_length=30, blank=True, default="",
+        choices=COMPUTATION_TYPE_CHOICES,
+        help_text="If set, value is computed automatically instead of manual entry.",
     )
     portal_description = models.TextField(
         blank=True, default="",

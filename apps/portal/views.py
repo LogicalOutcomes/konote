@@ -12,7 +12,7 @@ import logging
 from functools import wraps
 
 from django.conf import settings
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -587,6 +587,28 @@ def dashboard(request):
     participant = request.participant_user
     client_file = _get_client_file(request)
 
+    # Pending surveys count + smart single-survey link
+    pending_surveys = 0
+    single_survey_url = None
+    try:
+        from django.urls import reverse
+        from apps.surveys.engine import is_surveys_enabled
+        from apps.surveys.models import SurveyAssignment
+        if is_surveys_enabled():
+            survey_assignments = SurveyAssignment.objects.filter(
+                participant_user=participant,
+                status__in=("pending", "in_progress"),
+                survey__portal_visible=True,
+            )
+            pending_surveys = survey_assignments.count()
+            if pending_surveys == 1:
+                single_survey_url = reverse(
+                    "portal:survey_fill",
+                    args=[survey_assignments.first().pk],
+                )
+    except Exception:
+        pass
+
     # Latest progress note date for this client
     latest_note = (
         ProgressNote.objects.filter(client_file=client_file, status="default")
@@ -620,12 +642,24 @@ def dashboard(request):
         client_file=client_file, is_active=True,
     )[:5]
 
+    # Build a highlight message from the latest progress note date
+    highlight_message = ""
+    if latest_note:
+        from django.utils.formats import date_format
+        formatted = date_format(latest_note, "N j, Y")
+        highlight_message = _("Your last session was recorded on %(date)s.") % {
+            "date": formatted,
+        }
+
     return render(request, "portal/dashboard.html", {
         "participant": participant,
         "latest_note_date": latest_note,
+        "highlight_message": highlight_message,
         "new_count": new_count,
         "new_details": new_details,
         "staff_notes": staff_notes,
+        "pending_surveys": pending_surveys,
+        "single_survey_url": single_survey_url,
     })
 
 
@@ -680,20 +714,65 @@ def password_reset_request(request):
     """Request a password reset code via email.
 
     Always shows success message regardless of whether the email exists,
-    to prevent account enumeration.
+    to prevent account enumeration. Rate limited to 3 requests per hour.
     """
     from apps.portal.forms import PortalPasswordResetRequestForm
+    from apps.portal.models import ParticipantUser
+    import secrets
+    from datetime import timedelta
+    from django.contrib.auth.hashers import make_password
+    from django.core.mail import send_mail
 
     submitted = False
 
     if request.method == "POST":
         form = PortalPasswordResetRequestForm(request.POST)
         if form.is_valid():
-            # In production, this would send an email with a 6-digit code.
-            # The code generation and email sending will be implemented
-            # in the email service module.
             submitted = True
-            _audit_portal_event(request, "portal_password_reset_requested")
+            email = form.cleaned_data["email"].strip().lower()
+            email_hash = ParticipantUser.compute_email_hash(email)
+
+            try:
+                participant = ParticipantUser.objects.get(
+                    email_hash=email_hash, is_active=True
+                )
+            except ParticipantUser.DoesNotExist:
+                # Don't reveal — show success anyway
+                _audit_portal_event(request, "portal_password_reset_requested", metadata={
+                    "found": False,
+                })
+            else:
+                if participant.can_request_password_reset():
+                    # Generate 6-digit code
+                    code = f"{secrets.randbelow(1000000):06d}"
+                    participant.password_reset_token_hash = make_password(code)
+                    participant.password_reset_expires = timezone.now() + timedelta(minutes=10)
+                    participant.password_reset_request_count += 1
+                    participant.password_reset_last_request = timezone.now()
+                    participant.save(update_fields=[
+                        "password_reset_token_hash", "password_reset_expires",
+                        "password_reset_request_count", "password_reset_last_request",
+                    ])
+
+                    # Send email with the code
+                    try:
+                        send_mail(
+                            subject=_("Your password reset code"),
+                            message=_(
+                                "Your password reset code is: %(code)s\n\n"
+                                "This code expires in 10 minutes.\n"
+                                "If you did not request this, you can ignore this email."
+                            ) % {"code": code},
+                            from_email=None,  # Uses DEFAULT_FROM_EMAIL
+                            recipient_list=[participant.email],
+                            fail_silently=True,
+                        )
+                    except Exception:
+                        logger.exception("Failed to send portal password reset email")
+
+                _audit_portal_event(request, "portal_password_reset_requested", metadata={
+                    "found": True,
+                })
     else:
         form = PortalPasswordResetRequestForm()
 
@@ -707,6 +786,8 @@ def password_reset_request(request):
 def password_reset_confirm(request):
     """Enter the emailed reset code and set a new password."""
     from apps.portal.forms import PortalPasswordResetConfirmForm
+    from apps.portal.models import ParticipantUser
+    from django.contrib.auth.hashers import check_password
 
     error = None
     success = False
@@ -714,17 +795,39 @@ def password_reset_confirm(request):
     if request.method == "POST":
         form = PortalPasswordResetConfirmForm(request.POST)
         if form.is_valid():
-            # TODO: verify code against stored reset token, then set password.
-            # Token verification requires a password_reset_token field on
-            # ParticipantUser, which will be added with the email service.
-            error = _(
-                "Password reset is not available yet. "
-                "Please contact your worker for help with your password."
-            )
-            logger.info(
-                "password_reset_confirm submitted but token verification "
-                "not yet implemented"
-            )
+            email = form.cleaned_data["email"].strip().lower()
+            code = form.cleaned_data["code"].strip()
+            new_password = form.cleaned_data["new_password"]
+
+            email_hash = ParticipantUser.compute_email_hash(email)
+            try:
+                participant = ParticipantUser.objects.get(
+                    email_hash=email_hash, is_active=True
+                )
+            except ParticipantUser.DoesNotExist:
+                error = _("Invalid code or email address.")
+            else:
+                # Check expiry
+                if not participant.password_reset_expires or participant.password_reset_expires < timezone.now():
+                    error = _("This code has expired. Please request a new one.")
+                elif not participant.password_reset_token_hash:
+                    error = _("No reset code has been requested.")
+                elif not check_password(code, participant.password_reset_token_hash):
+                    error = _("Invalid code or email address.")
+                else:
+                    # Code valid — set new password and clear reset fields
+                    participant.set_password(new_password)
+                    participant.password_reset_token_hash = ""
+                    participant.password_reset_expires = None
+                    participant.password_reset_request_count = 0
+                    participant.save(update_fields=[
+                        "password", "password_reset_token_hash",
+                        "password_reset_expires", "password_reset_request_count",
+                    ])
+                    _audit_portal_event(request, "portal_password_reset_completed", metadata={
+                        "participant_id": str(participant.pk),
+                    })
+                    success = True
     else:
         form = PortalPasswordResetConfirmForm()
 
@@ -733,6 +836,47 @@ def password_reset_confirm(request):
         "error": error,
         "success": success,
     })
+
+
+@portal_feature_required
+def staff_assisted_login(request, token):
+    """Log a participant in via a staff-generated one-time token."""
+    from apps.portal.models import StaffAssistedLoginToken
+
+    try:
+        token_obj = StaffAssistedLoginToken.objects.select_related(
+            "participant_user"
+        ).get(token=token)
+    except StaffAssistedLoginToken.DoesNotExist:
+        raise Http404
+
+    if not token_obj.is_valid:
+        token_obj.delete()
+        raise Http404
+
+    participant = token_obj.participant_user
+    if not participant.is_active:
+        token_obj.delete()
+        raise Http404
+
+    # Consume the token
+    token_obj.delete()
+
+    # Create session
+    request.session.cycle_key()
+    request.session["_portal_participant_id"] = str(participant.pk)
+    # Mark this as a staff-assisted session (shorter max age)
+    request.session["_portal_staff_assisted"] = True
+    request.session.set_expiry(30 * 60)  # 30 minutes max
+
+    participant.last_login = timezone.now()
+    participant.save(update_fields=["last_login"])
+
+    _audit_portal_event(request, "portal_staff_assisted_login", metadata={
+        "participant_id": str(participant.pk),
+    })
+
+    return redirect("portal:dashboard")
 
 
 @portal_feature_required
@@ -758,6 +902,7 @@ def goals_list(request):
     Shows active PlanSections with their PlanTargets, using the
     participant-facing client_goal text.
     """
+    from apps.notes.models import ProgressNoteTarget
     from apps.plans.models import PlanSection
 
     client_file = _get_client_file(request)
@@ -777,6 +922,23 @@ def goals_list(request):
             t for t in section.targets.all() if t.status == "default"
         ]
         if active_targets:
+            # Attach latest progress descriptor to each target
+            for target in active_targets:
+                latest_entry = (
+                    ProgressNoteTarget.objects.filter(
+                        plan_target=target,
+                        progress_note__client_file=client_file,
+                        progress_note__status="default",
+                    )
+                    .exclude(progress_descriptor="")
+                    .order_by("-progress_note__created_at")
+                    .first()
+                )
+                target.latest_descriptor = (
+                    latest_entry.get_progress_descriptor_display()
+                    if latest_entry
+                    else ""
+                )
             section.active_targets = active_targets
             filtered_sections.append(section)
 
@@ -810,20 +972,38 @@ def goal_detail(request, target_id):
         .order_by("-progress_note__created_at")
     )
 
+    # Build descriptors list for template: [{date, descriptor}, ...]
+    descriptors = []
+    client_words_list = []
+    for entry in progress_entries:
+        if entry.progress_descriptor:
+            descriptors.append({
+                "date": entry.progress_note.created_at,
+                "descriptor": entry.get_progress_descriptor_display(),
+            })
+        words = entry.client_words
+        if words:
+            client_words_list.append({
+                "date": entry.progress_note.created_at,
+                "text": words,
+            })
+
     # Metric data for charts — only portal-visible metrics
     assigned_metrics = PlanTargetMetric.objects.filter(
         plan_target=target,
     ).select_related("metric_def")
 
-    # Filter to portal-visible metrics
-    chart_data = {}
+    # Build chart_data as a list of chart objects for the template JS.
+    # Each chart has: metric_name, labels, values, unit, description,
+    # min_value, max_value, begin_at_zero.
+    chart_data = []
     for ptm in assigned_metrics:
         metric_def = ptm.metric_def
         if getattr(metric_def, "portal_visibility", "no") == "no":
             continue
 
         # Get metric values for this target + metric def
-        values = (
+        values = list(
             MetricValue.objects.filter(
                 progress_note_target__plan_target=target,
                 progress_note_target__progress_note__client_file=client_file,
@@ -834,8 +1014,9 @@ def goal_detail(request, target_id):
             .order_by("progress_note_target__progress_note__created_at")
         )
 
-        if values.exists():
-            chart_data[metric_def.translated_name] = {
+        if values:
+            chart_data.append({
+                "metric_name": metric_def.translated_name,
                 "labels": [
                     v.progress_note_target.progress_note.created_at.strftime("%Y-%m-%d")
                     for v in values
@@ -845,11 +1026,13 @@ def goal_detail(request, target_id):
                 "min_value": metric_def.min_value,
                 "max_value": metric_def.max_value,
                 "description": metric_def.translated_portal_description or "",
-            }
+                "begin_at_zero": metric_def.min_value == 0 if metric_def.min_value is not None else False,
+            })
 
     return render(request, "portal/goal_detail.html", {
         "target": target,
-        "progress_entries": progress_entries,
+        "descriptors": descriptors,
+        "client_words": client_words_list,
         "chart_data": chart_data,
     })
 
@@ -911,10 +1094,24 @@ def progress_view(request):
 
     # Convert to list format expected by the template JS
     # (sets are not JSON-serialisable, so convert to sorted list)
-    chart_data = [
-        {"metric_name": name, **{k: sorted(v) if isinstance(v, set) else v for k, v in data.items()}}
-        for name, data in metrics_data.items()
-    ]
+    chart_data = []
+    for name, data in metrics_data.items():
+        entry = {"metric_name": name}
+        for k, v in data.items():
+            entry[k] = sorted(v) if isinstance(v, set) else v
+        # Add start/current value summary for the template
+        vals = entry.get("values", [])
+        if vals:
+            entry["start_value"] = vals[0]
+            entry["current_value"] = vals[-1]
+            entry["start_label"] = str(_("Started at"))
+            entry["current_label"] = str(_("Now at"))
+        entry["begin_at_zero"] = (
+            entry.get("min_value") == 0
+            if entry.get("min_value") is not None
+            else False
+        )
+        chart_data.append(entry)
 
     return render(request, "portal/progress.html", {
         "chart_data": chart_data,
@@ -928,13 +1125,17 @@ def my_words(request):
 
     Collects participant_reflection from ProgressNote and client_words
     from ProgressNoteTarget, displayed in reverse date order.
+
+    Template uses {% regroup reflections by session_date %}, so each
+    entry needs: session_date, participant_reflection, client_words,
+    goal_name.
     """
     from apps.notes.models import ProgressNote, ProgressNoteTarget
 
     client_file = _get_client_file(request)
 
-    # Get progress notes with participant reflections
-    notes_with_reflections = (
+    # Get progress notes ordered by date (newest first)
+    notes = (
         ProgressNote.objects.filter(
             client_file=client_file,
             status="default",
@@ -942,42 +1143,51 @@ def my_words(request):
         .order_by("-created_at")
     )
 
-    # Build a combined list of reflections and client words
-    entries = []
-    for note in notes_with_reflections:
-        # Add participant reflection if present
+    # Build entries in the format the template expects.
+    # Each entry has: session_date, participant_reflection, client_words,
+    # goal_name. One entry per note-target pair (or per note if only
+    # a general reflection).
+    reflections = []
+    for note in notes:
         reflection = note.participant_reflection
-        if reflection:
-            entries.append({
-                "type": "reflection",
-                "text": reflection,
-                "date": note.created_at,
-            })
+        target_entries = (
+            ProgressNoteTarget.objects.filter(progress_note=note)
+            .select_related("plan_target")
+        )
 
-        # Add client_words from each target entry
-        target_entries = ProgressNoteTarget.objects.filter(
-            progress_note=note,
-        ).select_related("plan_target")
-
+        has_words = False
         for te in target_entries:
-            client_words = te.client_words
-            if client_words:
-                entries.append({
-                    "type": "client_words",
-                    "text": client_words,
-                    "date": note.created_at,
-                    "target_name": te.plan_target.name if te.plan_target else "",
+            words = te.client_words
+            if words:
+                has_words = True
+                reflections.append({
+                    "session_date": note.created_at.date(),
+                    "participant_reflection": "",
+                    "client_words": words,
+                    "goal_name": te.plan_target.name if te.plan_target else "",
                 })
 
-    # Already ordered by note date (descending) due to outer query order
+        # Add the general reflection once per note (not per target)
+        if reflection:
+            reflections.append({
+                "session_date": note.created_at.date(),
+                "participant_reflection": reflection,
+                "client_words": "",
+                "goal_name": "",
+            })
+
     return render(request, "portal/my_words.html", {
-        "entries": entries,
+        "reflections": reflections,
     })
 
 
 @portal_login_required
 def milestones(request):
-    """Completed goals — plan targets with status='completed'."""
+    """Completed goals — plan targets with status='completed'.
+
+    Template expects 'milestones' variable where each item has
+    .name, .client_goal, and .completion_date.
+    """
     from apps.plans.models import PlanTarget
 
     client_file = _get_client_file(request)
@@ -991,8 +1201,13 @@ def milestones(request):
         .order_by("-updated_at")
     )
 
+    # Attach completion_date (alias for updated_at) for template
+    milestone_list = list(completed_targets)
+    for target in milestone_list:
+        target.completion_date = target.updated_at
+
     return render(request, "portal/milestones.html", {
-        "completed_targets": completed_targets,
+        "milestones": milestone_list,
     })
 
 
@@ -1062,6 +1277,13 @@ def correction_request_create(request):
             })
             success = True
     else:
+        # GET with ?form=1 means participant chose "Submit a request now"
+        if request.GET.get("form"):
+            form = CorrectionRequestForm()
+            return render(request, "portal/correction_request.html", {
+                "form": form,
+                "show_form": True,
+            })
         form = None
 
     return render(request, "portal/correction_request.html", {
@@ -1260,4 +1482,441 @@ def discuss_next(request):
         "form": form,
         "existing": existing,
         "success": success,
+    })
+
+
+# ---------------------------------------------------------------------------
+# Surveys — participant-facing survey views
+# ---------------------------------------------------------------------------
+
+
+@portal_login_required
+def portal_surveys_list(request):
+    """Show pending survey assignments for the logged-in participant."""
+    from apps.surveys.engine import is_surveys_enabled
+    from apps.surveys.models import SurveyAssignment, SurveyResponse
+
+    if not is_surveys_enabled():
+        raise Http404
+
+    participant = request.participant_user
+    client_file = _get_client_file(request)
+
+    # Pending / in-progress assignments
+    assignments = SurveyAssignment.objects.filter(
+        participant_user=participant,
+        status__in=("pending", "in_progress"),
+        survey__portal_visible=True,
+    ).select_related("survey").order_by("-created_at")
+
+    # Completed responses
+    responses = SurveyResponse.objects.filter(
+        client_file=client_file,
+        channel__in=("portal", "staff_entered"),
+    ).select_related("survey").order_by("-submitted_at")[:20]
+
+    return render(request, "portal/surveys_list.html", {
+        "participant": participant,
+        "assignments": assignments,
+        "responses": responses,
+    })
+
+
+@portal_login_required
+def portal_survey_fill(request, assignment_id):
+    """Fill in a survey — supports multi-page and auto-save."""
+    from apps.surveys.engine import is_surveys_enabled
+    from apps.surveys.models import (
+        PartialAnswer,
+        SurveyAnswer,
+        SurveyAssignment,
+        SurveyResponse,
+    )
+    from apps.portal.survey_helpers import (
+        group_sections_into_pages, filter_visible_sections,
+        get_partial_answers_dict, calculate_section_scores,
+    )
+    from konote.encryption import decrypt_field
+
+    if not is_surveys_enabled():
+        raise Http404
+
+    participant = request.participant_user
+    client_file = _get_client_file(request)
+
+    assignment = get_object_or_404(
+        SurveyAssignment,
+        pk=assignment_id,
+        participant_user=participant,
+        status__in=("pending", "in_progress"),
+    )
+    survey = assignment.survey
+
+    # Mark as in_progress on first visit
+    if assignment.status == "pending":
+        assignment.status = "in_progress"
+        assignment.started_at = timezone.now()
+        assignment.save(update_fields=["status", "started_at"])
+
+    # Load all sections and partial answers
+    all_sections = list(
+        survey.sections.filter(is_active=True)
+        .prefetch_related("questions")
+        .order_by("sort_order")
+    )
+    partial_answers = get_partial_answers_dict(assignment)
+    visible_sections = filter_visible_sections(all_sections, partial_answers)
+    pages = group_sections_into_pages(visible_sections)
+    is_multi_page = len(pages) > 1
+
+    # Determine current page
+    page_num = 1
+    if is_multi_page:
+        try:
+            page_num = int(request.GET.get("page", 1))
+        except (ValueError, TypeError):
+            page_num = 1
+        page_num = max(1, min(page_num, len(pages)))
+
+    # Load existing partial answers for pre-fill
+    partials = {}
+    for pa in PartialAnswer.objects.filter(assignment=assignment):
+        partials[pa.question_id] = decrypt_field(pa.value_encrypted)
+
+    if request.method == "POST":
+        action = request.POST.get("action", "submit")
+
+        if is_multi_page and action == "next":
+            # Save current page answers and go to next page
+            current_sections = pages[page_num - 1]
+            errors = _save_page_answers(
+                request, assignment, current_sections, partial_answers,
+            )
+            if errors:
+                return render(request, "portal/survey_fill.html", {
+                    "participant": participant,
+                    "assignment": assignment,
+                    "survey": survey,
+                    "sections": current_sections,
+                    "page_num": page_num,
+                    "total_pages": len(pages),
+                    "is_multi_page": is_multi_page,
+                    "is_last_page": page_num == len(pages),
+                    "partial_answers": partial_answers,
+                    "errors": errors,
+                })
+            # Refresh partial answers and page structure after save
+            partial_answers = get_partial_answers_dict(assignment)
+            visible_sections = filter_visible_sections(all_sections, partial_answers)
+            pages = group_sections_into_pages(visible_sections)
+            next_page = min(page_num + 1, len(pages))
+            return redirect(f"{request.path}?page={next_page}")
+
+        # Final submit
+        # For scrolling form or last page, also save current page
+        if is_multi_page:
+            current_sections = pages[page_num - 1]
+        else:
+            current_sections = visible_sections
+        page_errors = _save_page_answers(
+            request, assignment, current_sections, partial_answers,
+        )
+        if page_errors:
+            return render(request, "portal/survey_fill.html", {
+                "participant": participant,
+                "assignment": assignment,
+                "survey": survey,
+                "sections": current_sections,
+                "page_num": page_num,
+                "total_pages": len(pages),
+                "is_multi_page": is_multi_page,
+                "is_last_page": True,
+                "partial_answers": partial_answers,
+                "errors": page_errors,
+            })
+
+        # Refresh and validate ALL required questions across all pages
+        partial_answers = get_partial_answers_dict(assignment)
+        visible_sections = filter_visible_sections(all_sections, partial_answers)
+        all_errors = []
+        for section in visible_sections:
+            for question in section.questions.all().order_by("sort_order"):
+                if question.required and not partial_answers.get(question.pk):
+                    all_errors.append(question.question_text)
+
+        if all_errors:
+            pages = group_sections_into_pages(visible_sections)
+            if is_multi_page:
+                current_sections = pages[page_num - 1]
+            return render(request, "portal/survey_fill.html", {
+                "participant": participant,
+                "assignment": assignment,
+                "survey": survey,
+                "sections": current_sections,
+                "page_num": page_num,
+                "total_pages": len(pages),
+                "is_multi_page": is_multi_page,
+                "is_last_page": True,
+                "partial_answers": partial_answers,
+                "errors": all_errors,
+            })
+
+        # Create final response from PartialAnswer data
+        from django.db import transaction
+
+        with transaction.atomic():
+            response_obj = SurveyResponse.objects.create(
+                survey=survey,
+                assignment=assignment,
+                client_file=client_file,
+                channel="portal",
+            )
+            for question_pk, answer_value in partial_answers.items():
+                from apps.surveys.models import SurveyQuestion
+                try:
+                    question = SurveyQuestion.objects.get(pk=question_pk)
+                except SurveyQuestion.DoesNotExist:
+                    continue
+
+                answer = SurveyAnswer(
+                    response=response_obj,
+                    question=question,
+                )
+                answer.value = answer_value
+
+                if question.question_type in ("rating_scale", "yes_no"):
+                    try:
+                        answer.numeric_value = int(answer_value)
+                    except (ValueError, TypeError):
+                        pass
+                elif question.question_type == "single_choice":
+                    for opt in (question.options_json or []):
+                        if opt.get("value") == answer_value:
+                            answer.numeric_value = opt.get("score")
+                            break
+                answer.save()
+
+            assignment.status = "completed"
+            assignment.completed_at = timezone.now()
+            assignment.save(update_fields=["status", "completed_at"])
+
+            # Clean up partial answers after successful submit
+            PartialAnswer.objects.filter(assignment=assignment).delete()
+
+        _audit_portal_event(request, "portal_survey_submitted", metadata={
+            "survey_id": str(survey.pk),
+            "assignment_id": str(assignment.pk),
+        })
+        return redirect("portal:survey_thank_you", assignment_id=assignment.pk)
+
+    # GET — render form
+    if is_multi_page:
+        current_sections = pages[page_num - 1]
+    else:
+        current_sections = visible_sections
+
+    return render(request, "portal/survey_fill.html", {
+        "participant": participant,
+        "assignment": assignment,
+        "survey": survey,
+        "sections": current_sections,
+        "page_num": page_num,
+        "total_pages": len(pages),
+        "is_multi_page": is_multi_page,
+        "is_last_page": page_num == len(pages),
+        "partial_answers": partial_answers,
+        "errors": [],
+        "partials": partials,
+    })
+
+
+def _save_page_answers(request, assignment, sections, partial_answers):
+    """Save answers from POST data for sections on the current page.
+
+    Returns list of error messages for missing required fields.
+    Updates partial_answers dict in place.
+    """
+    from apps.surveys.models import PartialAnswer
+
+    errors = []
+    for section in sections:
+        for question in section.questions.all().order_by("sort_order"):
+            field_name = f"q_{question.pk}"
+            if question.question_type == "multiple_choice":
+                raw_values = request.POST.getlist(field_name)
+                raw_value = ";".join(raw_values) if raw_values else ""
+            else:
+                raw_value = request.POST.get(field_name, "").strip()
+
+            if question.required and not raw_value:
+                errors.append(question.question_text)
+
+            if raw_value:
+                pa, _ = PartialAnswer.objects.update_or_create(
+                    assignment=assignment,
+                    question=question,
+                    defaults={},
+                )
+                pa.value = raw_value
+                pa.save()
+                partial_answers[question.pk] = raw_value
+            else:
+                PartialAnswer.objects.filter(
+                    assignment=assignment, question=question,
+                ).delete()
+                partial_answers.pop(question.pk, None)
+
+    return errors
+
+
+@portal_login_required
+@require_POST
+def portal_survey_autosave(request, assignment_id):
+    """HTMX auto-save: save a single answer to PartialAnswer."""
+    from apps.surveys.engine import is_surveys_enabled
+    from apps.surveys.models import PartialAnswer, SurveyAssignment, SurveyQuestion
+
+    if not is_surveys_enabled():
+        raise Http404
+
+    # Only accept HTMX requests
+    if not request.headers.get("HX-Request"):
+        return HttpResponseBadRequest("HTMX request required")
+
+    participant = request.participant_user
+    assignment = get_object_or_404(
+        SurveyAssignment,
+        pk=assignment_id,
+        participant_user=participant,
+        status="in_progress",
+    )
+
+    question_id = request.POST.get("question_id")
+    value = request.POST.get("value", "")
+
+    # Verify question belongs to this survey
+    question = get_object_or_404(
+        SurveyQuestion,
+        pk=question_id,
+        section__survey=assignment.survey,
+    )
+
+    if value:
+        pa, _ = PartialAnswer.objects.update_or_create(
+            assignment=assignment,
+            question=question,
+            defaults={},
+        )
+        pa.value = value
+        pa.save()
+    else:
+        # Empty value — delete partial answer if it exists
+        PartialAnswer.objects.filter(
+            assignment=assignment, question=question,
+        ).delete()
+
+    return HttpResponse(
+        '<span role="status" class="save-indicator">Saved</span>',
+        content_type="text/html",
+    )
+
+
+@portal_login_required
+def portal_survey_review(request, assignment_id):
+    """Read-only view of a completed survey response."""
+    from apps.surveys.engine import is_surveys_enabled
+    from apps.surveys.models import SurveyAssignment, SurveyResponse, SurveyAnswer
+    from apps.portal.survey_helpers import (
+        filter_visible_sections, calculate_section_scores,
+    )
+
+    if not is_surveys_enabled():
+        raise Http404
+
+    participant = request.participant_user
+    client_file = _get_client_file(request)
+
+    assignment = get_object_or_404(
+        SurveyAssignment,
+        pk=assignment_id,
+        participant_user=participant,
+        status="completed",
+    )
+    survey = assignment.survey
+
+    response_obj = SurveyResponse.objects.filter(
+        assignment=assignment, client_file=client_file,
+    ).first()
+    if not response_obj:
+        raise Http404
+
+    # Build answers dict {question_pk: value}
+    answers = SurveyAnswer.objects.filter(response=response_obj)
+    answers_dict = {a.question_id: a.value for a in answers}
+
+    all_sections = list(
+        survey.sections.filter(is_active=True)
+        .prefetch_related("questions")
+        .order_by("sort_order")
+    )
+    visible_sections = filter_visible_sections(all_sections, answers_dict)
+
+    # Calculate scores if configured
+    scores = []
+    if survey.show_scores_to_participant:
+        scores = calculate_section_scores(visible_sections, answers_dict)
+
+    return render(request, "portal/survey_review.html", {
+        "participant": participant,
+        "survey": survey,
+        "assignment": assignment,
+        "response_obj": response_obj,
+        "sections": visible_sections,
+        "answers": answers_dict,
+        "scores": scores,
+    })
+
+
+@portal_login_required
+def portal_survey_thank_you(request, assignment_id):
+    """Thank-you page after completing a survey — with optional scores."""
+    from apps.surveys.engine import is_surveys_enabled
+    from apps.surveys.models import SurveyAssignment, SurveyResponse, SurveyAnswer
+    from apps.portal.survey_helpers import (
+        filter_visible_sections, calculate_section_scores,
+    )
+
+    if not is_surveys_enabled():
+        raise Http404
+
+    participant = request.participant_user
+    client_file = _get_client_file(request)
+
+    assignment = get_object_or_404(
+        SurveyAssignment,
+        pk=assignment_id,
+        participant_user=participant,
+    )
+    survey = assignment.survey
+
+    scores = []
+    if survey.show_scores_to_participant:
+        response_obj = SurveyResponse.objects.filter(
+            assignment=assignment, client_file=client_file,
+        ).first()
+        if response_obj:
+            answers = SurveyAnswer.objects.filter(response=response_obj)
+            answers_dict = {a.question_id: a.value for a in answers}
+            all_sections = list(
+                survey.sections.filter(is_active=True)
+                .prefetch_related("questions")
+                .order_by("sort_order")
+            )
+            visible = filter_visible_sections(all_sections, answers_dict)
+            scores = calculate_section_scores(visible, answers_dict)
+
+    return render(request, "portal/survey_thank_you.html", {
+        "participant": participant,
+        "survey": survey,
+        "scores": scores,
     })

@@ -491,6 +491,45 @@ def execute_merge(kept, archived, pii_choices, field_resolutions, user, ip_addre
     summary["group_memberships_transferred"] = memberships_transferred
     summary["group_memberships_deactivated"] = memberships_deactivated
 
+    # 7b. Transfer portal data (journal, messages, corrections, staff notes)
+    try:
+        from apps.portal.models import (
+            CorrectionRequest, ParticipantJournalEntry,
+            ParticipantMessage, ParticipantUser, StaffPortalNote,
+        )
+
+        summary["portal_journal_entries"] = ParticipantJournalEntry.objects.filter(
+            client_file=archived
+        ).update(client_file=kept)
+        summary["portal_messages"] = ParticipantMessage.objects.filter(
+            client_file=archived
+        ).update(client_file=kept)
+        summary["portal_correction_requests"] = CorrectionRequest.objects.filter(
+            client_file=archived
+        ).update(client_file=kept)
+        summary["portal_staff_notes"] = StaffPortalNote.objects.filter(
+            client_file=archived
+        ).update(client_file=kept)
+
+        # 7c. Handle portal account transfer
+        kept_portal = ParticipantUser.objects.filter(client_file=kept).first()
+        archived_portal = ParticipantUser.objects.filter(client_file=archived).first()
+
+        if archived_portal and not kept_portal:
+            # Transfer the account
+            archived_portal.client_file = kept
+            archived_portal.save(update_fields=["client_file"])
+            summary["portal_account"] = "transferred"
+        elif archived_portal and kept_portal:
+            # Can't have two — deactivate archived's
+            archived_portal.is_active = False
+            archived_portal.save(update_fields=["is_active"])
+            summary["portal_account"] = "archived_deactivated"
+        else:
+            summary["portal_account"] = "none"
+    except ImportError:
+        pass  # Portal app not installed
+
     # 8. Anonymise archived client
     archived._first_name_encrypted = b""
     archived._preferred_name_encrypted = b""

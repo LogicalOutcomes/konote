@@ -20,6 +20,8 @@ urlpatterns = [
     path("mfa/setup/", views.mfa_setup, name="mfa_setup"),
     path("mfa/verify/", views.mfa_verify, name="mfa_verify"),
     path("safety/", views.safety_help, name="safety_help"),
+    # Staff-assisted login
+    path("staff-login/<str:token>/", views.staff_assisted_login, name="staff_assisted_login"),
     # Password
     path("password/change/", views.password_change, name="change_password"),
     path("password/reset/", views.password_reset_request, name="forgot_password"),
@@ -32,6 +34,7 @@ urlpatterns = [
     path("goals/<int:target_id>/", views.goal_detail, name="goal_detail"),
     path("progress/", views.progress_view, name="progress"),
     path("milestones/", views.milestones, name="milestones"),
+    path("my-words/", views.my_words, name="my_words"),
     path("correction/new/", views.correction_request_create, name="correction_request"),
     # Journal + Messages (Phase C)
     path("journal/", views.journal_list, name="journal"),
@@ -39,4 +42,10 @@ urlpatterns = [
     path("journal/disclosure/", views.journal_disclosure, name="journal_disclosure"),
     path("message/", views.message_create, name="message_to_worker"),
     path("discuss-next/", views.discuss_next, name="discuss_next"),
+    # Surveys (portal)
+    path("surveys/", views.portal_surveys_list, name="surveys"),
+    path("surveys/<int:assignment_id>/fill/", views.portal_survey_fill, name="survey_fill"),
+    path("surveys/<int:assignment_id>/save/", views.portal_survey_autosave, name="survey_autosave"),
+    path("surveys/<int:assignment_id>/review/", views.portal_survey_review, name="survey_review"),
+    path("surveys/<int:assignment_id>/thanks/", views.portal_survey_thank_you, name="survey_thank_you"),
 ]

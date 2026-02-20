@@ -29,6 +29,9 @@
                     <strong>{{ row.key }}</strong>
                     <br>
                     <small class="secondary">{% trans "Default:" %} {{ row.default_en }} / {{ row.default_fr }}</small>
+                    {% if row.help_text %}
+                    <br><small class="secondary">{{ row.help_text }}</small>
+                    {% endif %}
                 </td>
                 <td>
                     <input type="text"
