@@ -1769,6 +1769,86 @@ label {
     }
 }
 
+/* Notes form — Target cards */
+.target-card {
+    border: 1px solid var(--kn-border-light);
+    border-radius: var(--pico-border-radius);
+    padding: var(--kn-space-base) var(--kn-space-lg);
+    margin-bottom: var(--kn-space-base);
+    transition: border-color 0.15s;
+}
+.target-card:hover {
+    border-color: var(--kn-primary);
+}
+.target-card.done {
+    border-color: var(--kn-success, #10B981);
+    background: var(--kn-success-subtle, #ecfdf5);
+}
+
+.target-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    gap: var(--kn-space-base);
+}
+.target-card-header:focus-visible {
+    outline: 2px solid var(--kn-primary);
+    outline-offset: 2px;
+    border-radius: var(--pico-border-radius);
+}
+.target-card-title {
+    flex: 1;
+    min-width: 0;
+}
+.target-card-title strong {
+    display: block;
+}
+.target-card-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--kn-space-sm);
+    flex-shrink: 0;
+}
+.no-change-btn {
+    font-size: 0.8125rem;
+    padding: 0.25rem 0.75rem;
+    margin-bottom: 0;
+    min-height: auto;
+    color: var(--kn-text);
+    background: transparent;
+}
+.expand-indicator {
+    transition: transform 0.15s;
+    font-size: 0.875rem;
+    color: var(--kn-text-muted);
+}
+.target-card.expanded .expand-indicator {
+    transform: rotate(180deg);
+}
+
+.target-card-compact {
+    margin-top: var(--kn-space-sm);
+}
+.target-card-body {
+    margin-top: var(--kn-space-base);
+    padding-top: var(--kn-space-base);
+    border-top: 1px solid var(--kn-border-light);
+}
+
+.target-done-indicator {
+    margin-top: var(--kn-space-sm);
+    color: var(--kn-success, #10B981);
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+/* Hide expand indicator + no-change button when card is done */
+.target-card.done .no-change-btn,
+.target-card.done .expand-indicator {
+    display: none;
+}
+
 /* ---- Checkbox list items (target selection) ---- */
 label.checkbox-item {
     display: flex;
