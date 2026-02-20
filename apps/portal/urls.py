@@ -20,6 +20,8 @@ urlpatterns = [
     path("mfa/setup/", views.mfa_setup, name="mfa_setup"),
     path("mfa/verify/", views.mfa_verify, name="mfa_verify"),
     path("safety/", views.safety_help, name="safety_help"),
+    # Staff-assisted login
+    path("staff-login/<str:token>/", views.staff_assisted_login, name="staff_assisted_login"),
     # Password
     path("password/change/", views.password_change, name="change_password"),
     path("password/reset/", views.password_reset_request, name="forgot_password"),

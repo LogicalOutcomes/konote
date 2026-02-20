@@ -334,3 +334,85 @@ class InactivityDeactivationTests(TestCase):
         call_command("deactivate_inactive_portal_accounts", "--dry-run", stdout=StringIO())
         self.participant.refresh_from_db()
         self.assertTrue(self.participant.is_active)
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-hash-key-for-lifecycle",
+    PORTAL_DOMAIN="",
+    STAFF_DOMAIN="",
+)
+class StaffAssistedLoginTests(TestCase):
+    """D6: Staff-assisted portal login with one-time token."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client_file = ClientFile.objects.create(
+            record_id="STAFF-001", status="active",
+        )
+        self.participant = ParticipantUser.objects.create_participant(
+            email="assisted@example.com",
+            client_file=self.client_file,
+            display_name="Assisted User",
+            password="TestPass123!",
+        )
+        FeatureToggle.objects.get_or_create(
+            feature_key="participant_portal",
+            defaults={"is_enabled": True},
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_valid_token_creates_session(self):
+        """Valid staff-assisted login token should create a portal session."""
+        from apps.portal.models import StaffAssistedLoginToken
+        token_obj = StaffAssistedLoginToken.objects.create(
+            participant_user=self.participant,
+            expires_at=timezone.now() + timedelta(minutes=15),
+        )
+        response = self.client.get(f"/my/staff-login/{token_obj.token}/")
+        self.assertIn(response.status_code, [302, 303])
+        self.assertIn("/my/", response.url)
+        # Token should be consumed (deleted)
+        self.assertFalse(
+            StaffAssistedLoginToken.objects.filter(pk=token_obj.pk).exists()
+        )
+
+    def test_expired_token_rejected(self):
+        """Expired token should show error."""
+        from apps.portal.models import StaffAssistedLoginToken
+        token_obj = StaffAssistedLoginToken.objects.create(
+            participant_user=self.participant,
+            expires_at=timezone.now() - timedelta(minutes=1),
+        )
+        response = self.client.get(f"/my/staff-login/{token_obj.token}/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_used_token_rejected(self):
+        """Token can only be used once."""
+        from apps.portal.models import StaffAssistedLoginToken
+        token_obj = StaffAssistedLoginToken.objects.create(
+            participant_user=self.participant,
+            expires_at=timezone.now() + timedelta(minutes=15),
+        )
+        token_str = token_obj.token
+        # Use it once
+        self.client.get(f"/my/staff-login/{token_str}/")
+        # Try again
+        response = self.client.get(f"/my/staff-login/{token_str}/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_inactive_account_rejected(self):
+        """Deactivated account should not be able to use token."""
+        from apps.portal.models import StaffAssistedLoginToken
+        self.participant.is_active = False
+        self.participant.save(update_fields=["is_active"])
+        token_obj = StaffAssistedLoginToken.objects.create(
+            participant_user=self.participant,
+            expires_at=timezone.now() + timedelta(minutes=15),
+        )
+        response = self.client.get(f"/my/staff-login/{token_obj.token}/")
+        self.assertEqual(response.status_code, 404)

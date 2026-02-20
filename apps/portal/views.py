@@ -829,6 +829,47 @@ def password_reset_confirm(request):
 
 
 @portal_feature_required
+def staff_assisted_login(request, token):
+    """Log a participant in via a staff-generated one-time token."""
+    from apps.portal.models import StaffAssistedLoginToken
+
+    try:
+        token_obj = StaffAssistedLoginToken.objects.select_related(
+            "participant_user"
+        ).get(token=token)
+    except StaffAssistedLoginToken.DoesNotExist:
+        raise Http404
+
+    if not token_obj.is_valid:
+        token_obj.delete()
+        raise Http404
+
+    participant = token_obj.participant_user
+    if not participant.is_active:
+        token_obj.delete()
+        raise Http404
+
+    # Consume the token
+    token_obj.delete()
+
+    # Create session
+    request.session.cycle_key()
+    request.session["_portal_participant_id"] = str(participant.pk)
+    # Mark this as a staff-assisted session (shorter max age)
+    request.session["_portal_staff_assisted"] = True
+    request.session.set_expiry(30 * 60)  # 30 minutes max
+
+    participant.last_login = timezone.now()
+    participant.save(update_fields=["last_login"])
+
+    _audit_portal_event(request, "portal_staff_assisted_login", metadata={
+        "participant_id": str(participant.pk),
+    })
+
+    return redirect("portal:dashboard")
+
+
+@portal_feature_required
 def safety_help(request):
     """Pre-auth safety page — no login required.
 

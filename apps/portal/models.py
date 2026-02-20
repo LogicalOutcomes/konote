@@ -540,3 +540,50 @@ class CorrectionRequest(models.Model):
     @description.setter
     def description(self, value):
         self._description_encrypted = encrypt_field(value)
+
+
+# ---------------------------------------------------------------------------
+# G) StaffAssistedLoginToken — one-time token for in-person portal login
+# ---------------------------------------------------------------------------
+
+
+class StaffAssistedLoginToken(models.Model):
+    """One-time token for staff-assisted participant login.
+
+    Staff generates this from the portal management page. The participant
+    uses it in-person at the agency. Token expires in 15 minutes and is
+    deleted after use.
+    """
+
+    token = models.CharField(
+        max_length=64,
+        unique=True,
+        default="",
+        help_text="URL-safe token, single use.",
+    )
+    participant_user = models.ForeignKey(
+        ParticipantUser,
+        on_delete=models.CASCADE,
+        related_name="staff_login_tokens",
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+    )
+    expires_at = models.DateTimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "portal"
+        db_table = "portal_staff_assisted_login_tokens"
+
+    def save(self, *args, **kwargs):
+        if not self.token:
+            self.token = secrets.token_urlsafe(48)
+        super().save(*args, **kwargs)
+
+    @property
+    def is_valid(self):
+        return timezone.now() < self.expires_at
