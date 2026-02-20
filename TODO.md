@@ -2,6 +2,7 @@
 
 ## Flagged
 
+- [ ] Fix fiscal year dropdown showing "Custom date range" instead of fiscal year options (BUG-FY1)
 - [ ] Review requirements analysis doc with Sara before sending to client (docs/konote-requirements-analysis-draft.md) — GG (DOC-REQ1)
 - [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — GG (ONBOARD-APPROVE)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GG (SEC3-Q1)
