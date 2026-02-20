@@ -273,6 +273,8 @@ def suggest_target_view(request):
             "participant_words": participant_words,
             "sections": section_choices,
             "matched_section_pk": matched_section_pk,
+            "custom_metric": result.get("custom_metric"),
+            "custom_metric_json": json.dumps(result.get("custom_metric")) if result.get("custom_metric") else "",
         })
     except Exception:
         logger.exception("Unhandled error in suggest_target_view for client %s", client_id)

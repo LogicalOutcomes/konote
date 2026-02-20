@@ -491,6 +491,26 @@ def goal_create(request, client_id):
                 ).first()
 
             try:
+                metric_ids = [m.pk for m in cleaned.get("metrics", [])]
+
+                # Handle AI-suggested custom metric
+                custom_metric_name = request.POST.get("custom_metric_name", "").strip()
+                custom_metric_def = request.POST.get("custom_metric_definition", "").strip()
+                custom_metric_accepted = request.POST.get("custom_metric_accepted") == "true"
+
+                if custom_metric_accepted and custom_metric_name:
+                    custom_metric = MetricDefinition.objects.create(
+                        name=custom_metric_name,
+                        definition=custom_metric_def,
+                        min_value=1,
+                        max_value=5,
+                        unit="score",
+                        is_library=False,
+                        owning_program=program,
+                        category="custom",
+                    )
+                    metric_ids.append(custom_metric.pk)
+
                 _create_goal(
                     client_file=client,
                     user=request.user,
@@ -500,7 +520,7 @@ def goal_create(request, client_id):
                     section=section,
                     new_section_name=cleaned.get("new_section_name", "").strip(),
                     program=program,
-                    metric_ids=[m.pk for m in cleaned.get("metrics", [])],
+                    metric_ids=metric_ids,
                 )
                 messages.success(request, _("Goal added."))
                 return redirect("plans:plan_view", client_id=client.pk)

@@ -541,6 +541,11 @@
         {% endif %}
     </fieldset>
 
+    {# ── Hidden fields for AI-suggested custom metric ── #}
+    <input type="hidden" name="custom_metric_name" id="custom-metric-name" value="">
+    <input type="hidden" name="custom_metric_definition" id="custom-metric-definition" value="">
+    <input type="hidden" name="custom_metric_accepted" id="custom-metric-accepted" value="">
+
     {# ── Submit ── #}
     <div role="group">
         <button type="submit">{% blocktrans with target=term.target|default:"Goal" %}Add {{ target }}{% endblocktrans %}</button>
@@ -699,6 +704,13 @@
                 if (cb) cb.checked = true;
             });
         }
+
+        // Handle custom metric
+        if (suggestion.custom_metric) {
+            document.getElementById('custom-metric-name').value = suggestion.custom_metric.name || '';
+            document.getElementById('custom-metric-definition').value = suggestion.custom_metric.definition || '';
+            document.getElementById('custom-metric-accepted').value = 'true';
+        }
     }
 
     // ────────────────────────────────────────
@@ -797,6 +809,21 @@
             }
         });
     }
+
+    // ────────────────────────────────────────
+    // Custom metric accept/skip buttons
+    // ────────────────────────────────────────
+
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-accept-metric')) {
+            document.getElementById('custom-metric-accepted').value = 'true';
+            e.target.closest('.custom-metric-actions').innerHTML = '<small class="secondary">\u2713 Included</small>';
+        }
+        if (e.target.closest('.btn-skip-metric')) {
+            document.getElementById('custom-metric-accepted').value = '';
+            e.target.closest('.custom-metric-actions').innerHTML = '<small class="secondary">Skipped</small>';
+        }
+    });
 
     // ────────────────────────────────────────
     // Entry point: "Or fill in the form manually"
