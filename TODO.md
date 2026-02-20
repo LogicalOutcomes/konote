@@ -6,6 +6,7 @@
 - [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — GG (ONBOARD-APPROVE)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GG (SEC3-Q1)
 - [ ] Confirm standard report schema and configuration template with Claire (Prosper Canada) before building — SG (RPT-SCHEMA1)
+- [ ] Review and approve multi-tenancy implementation plan with Sara and Prince before building — covers django-tenants integration, per-tenant encryption, consortium data model, and hybrid federation architecture (see tasks/prosper-canada/multi-tenancy-implementation-plan.md) — SG/PD (MT-APPROVE1)
 
 ## Active Work
 
@@ -36,7 +37,8 @@
 
 ### Phase: Post-Housekeeping Verification
 
-- [ ] Run full test suite (`pytest -m "not browser and not scenario_eval"`) to verify PR #143 test fixes pass against current main (VERIFY1)
+- [x] Run full test suite (`pytest -m "not browser and not scenario_eval"`) to verify PR #143 test fixes pass against current main — 2026-02-20 (VERIFY1)
+- [ ] Fix 12 pre-existing test failures — 5 SQLite isolation ("no such table: users"), 2 SQLite/PG behavioural differences, 1 AI fixture mismatch, 1 stale .mo, 2 missing staticfiles dir, 1 missing QA file (TEST-PREEXIST1)
 
 ## Do Occasionally
 
@@ -63,12 +65,22 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Multi-Agency Scaling
 
+- [ ] Integrate django-tenants for schema-per-tenant multi-tenancy — PostgreSQL backend, shared/tenant app split, tenant model, domain model (see tasks/prosper-canada/multi-tenancy-implementation-plan.md, Tasks 0-2) — GG (MT-CORE1)
+- [ ] Implement per-tenant encryption keys — key table in shared schema, encrypted by master key, update encryption.py (see plan Task 3) — GG (MT-ENCRYPT1)
+- [ ] Create consortium data model — Consortium, ConsortiumMembership, ProgramSharing, PublishedReport with program-level sharing granularity (see plan Task 4) — GG (MT-CONSORT1)
+- [ ] Add consent_to_aggregate_reporting field and audit tenant_schema column (see plan Tasks 5-6) — GG (MT-CONSENT1)
+- [ ] Validate existing features across tenant schemas — update test infrastructure, fix tenant-related test failures (see plan Tasks 7-8) — GG (MT-VALIDATE1)
 - [ ] Build deploy script to automate Phase 2 infrastructure provisioning — Azure resources, env vars, migrations, output a URL (plan: docs/plans/2026-02-20-deploy-script-design.md) (DEPLOY-SCRIPT1)
 - [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/prosper-canada/managed-service-model.md) (OPS-MANAGED1)
 - [ ] Build cross-agency reporting API — standardised endpoint per instance for Prosper Canada to consume published reports (plan: docs/plans/2026-02-20-cross-agency-reporting-api-design.md) (SCALE-API1)
 - [ ] Build umbrella admin dashboard — central view for Prosper Canada to see instance health, published reports, and aggregate metrics across agencies (SCALE-DASH1)
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 - [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
+
+### Phase: Participant View Improvements
+
+- [ ] Add adjustable timeframe and date range controls to Participant analysis charts (see tasks/participant-view-improvements.md) — GG (CHART-TIME1)
+- [ ] Add target filter to Notes section so staff can follow progress on a single target without reading every note (see tasks/participant-view-improvements.md) — GG (UX-NOTES-BY-TARGET1)
 
 ### Phase: Other Upcoming
 
@@ -142,11 +154,14 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
 - [ ] Add bulk operations for discharge and assignment workflows (UX17)
 - [ ] Re-add API-based auto-translation to translate_strings for production use (I18N-API1)
-- [ ] Document local PostgreSQL setup for security_audit and pytest workflows (DEV-PG1)
+- [x] Document local PostgreSQL setup for security_audit and pytest workflows — 2026-02-20 (DEV-PG1)
 - [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
 - [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
-- [ ] Add basic smoke test for `translate_strings` command — removed dead test class but no replacement exists (TEST-TRANS2)
+- [x] Add basic smoke test for `translate_strings` command — removed dead test class but no replacement exists — 2026-02-20 (TEST-TRANS2)
+- [ ] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering (CODE-TIDY1)
+- [ ] Unify analysis chart quick-select links and date picker form into a single input mechanism (UX-CHART1)
+- [ ] Add edge-case tests for invalid/inaccessible target IDs and 3m/6m timeframe paths (TEST-FILTER1)
 
 ## Recently Done
 

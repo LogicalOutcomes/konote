@@ -219,6 +219,12 @@ def note_list(request, client_id):
         )
     )
 
+    # PHIPA: consent filter narrows to viewing program if sharing is off
+    from apps.programs.access import apply_consent_filter
+    notes, consent_viewing_program = apply_consent_filter(
+        notes, client, request.user, user_program_ids,
+    )
+
     # Filters — interaction type replaces the old quick/full type filter
     interaction_filter = request.GET.get("interaction", "")
     date_from = request.GET.get("date_from", "")
@@ -226,6 +232,7 @@ def note_list(request, client_id):
     author_filter = request.GET.get("author", "")
     search_query = request.GET.get("q", "").strip()
     program_filter = request.GET.get("program", "")
+    target_filter = request.GET.get("target", "")
 
     valid_interactions = [c[0] for c in ProgressNote.INTERACTION_TYPE_CHOICES]
     if interaction_filter in valid_interactions:
@@ -247,6 +254,19 @@ def note_list(request, client_id):
             notes = notes.filter(author_program_id=int(program_filter))
         except (ValueError, TypeError):
             pass
+    if target_filter:
+        try:
+            notes = notes.filter(target_entries__plan_target_id=int(target_filter)).distinct()
+        except (ValueError, TypeError):
+            pass
+
+    # Get participant's active plan targets for the filter dropdown
+    # Scoped by user's accessible programs so workers only see their targets
+    client_targets = PlanTarget.objects.filter(
+        client_file=client, status="default"
+    ).filter(
+        Q(plan_section__program_id__in=user_program_ids) | Q(plan_section__program__isnull=True)
+    ).select_related("plan_section").order_by("plan_section__sort_order", "sort_order")
 
     notes = notes.order_by("-_effective_date", "-created_at")
 
@@ -269,6 +289,7 @@ def note_list(request, client_id):
         bool(date_to),
         bool(author_filter),
         bool(program_filter),
+        bool(target_filter),
     ])
 
     # Breadcrumbs: Clients > [Client Name] > Notes
@@ -286,6 +307,8 @@ def note_list(request, client_id):
         "filter_date_to": date_to,
         "filter_author": author_filter,
         "filter_program": program_filter,
+        "filter_target": target_filter,
+        "client_targets": client_targets,
         "search_query": search_query,
         "active_filter_count": active_filter_count,
         "active_tab": "notes",
@@ -293,6 +316,7 @@ def note_list(request, client_id):
         "breadcrumbs": breadcrumbs,
         "show_program_ui": program_ctx["show_program_ui"],
         "accessible_programs": program_ctx["accessible_programs"],
+        "consent_viewing_program": consent_viewing_program,
     }
     if request.headers.get("HX-Request"):
         return render(request, "notes/_tab_notes.html", context)

@@ -1,0 +1,14 @@
+{% load i18n %}
+<div role="status" style="margin-top: 0.5rem; font-size: 0.875rem;">
+    <p style="margin-bottom: 0.25rem;">
+        {% if is_enabled %}
+            <span class="badge badge-success">{% trans "Enabled" %}</span>
+        {% else %}
+            <span class="badge badge-neutral">{% trans "Disabled" %}</span>
+        {% endif %}
+        {% blocktrans with label=label action=action_taken %}{{ label }} {{ action_taken }}.{% endblocktrans %}
+    </p>
+    <small>
+        <a href="{% url 'admin_settings:features' %}">{% trans "Reload page" %}</a>
+    </small>
+</div>

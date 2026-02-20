@@ -1,5 +1,6 @@
 """Instance customisation: terminology, features, and settings."""
 from django.db import models
+from django.utils.translation import gettext_lazy as _lazy
 
 
 # Default terminology — keys must match template usage
@@ -44,6 +45,43 @@ DEFAULT_TERMS = {
     "member_plural": ("Members", "Membres"),
     "session": ("Session", "Séance"),
     "session_plural": ("Sessions", "Séances"),
+}
+
+# Help text showing where each term appears in the interface.
+# Separate dict to avoid changing the (EN, FR) tuple structure above.
+TERM_HELP_TEXT = {
+    "client": _lazy("Used in: search bar, navigation, file headers, plan labels, notes, exports, registration forms"),
+    "client_plural": _lazy("Used in: navigation menu, dashboard counts, search results, reports"),
+    "worker": _lazy("Used in: staff assignment dropdowns, file headers, message labels"),
+    "worker_plural": _lazy("Used in: admin user list, program role assignments, reports"),
+    "file": _lazy("Used in: participant detail page header, breadcrumbs, note headers"),
+    "file_plural": _lazy("Used in: navigation menu, search results heading"),
+    "plan": _lazy("Used in: participant file tabs, plan page header, goal builder"),
+    "plan_plural": _lazy("Used in: navigation menu, dashboard summaries"),
+    "section": _lazy("Used in: plan structure, template builder, report grouping"),
+    "section_plural": _lazy("Used in: plan editor sidebar, template management"),
+    "target": _lazy("Used in: plan goals, progress note forms, analysis charts"),
+    "target_plural": _lazy("Used in: plan summary, dashboard counts, reports"),
+    "metric": _lazy("Used in: progress note value entry, analysis charts, alert thresholds"),
+    "metric_plural": _lazy("Used in: plan template builder, metric library, reports"),
+    "progress_note": _lazy("Used in: participant timeline, note detail page, exports"),
+    "progress_note_plural": _lazy("Used in: navigation menu, dashboard counts, search results"),
+    "quick_note": _lazy("Used in: quick note buttons on participant file, timeline"),
+    "quick_note_plural": _lazy("Used in: dashboard counts, communication logs"),
+    "event": _lazy("Used in: participant timeline, event recording form, calendar feed"),
+    "event_plural": _lazy("Used in: navigation menu, dashboard counts, reports"),
+    "alert": _lazy("Used in: dashboard badges, participant file warnings"),
+    "alert_plural": _lazy("Used in: dashboard summary, notification counts"),
+    "program": _lazy("Used in: program selector, enrolment forms, reports, file headers"),
+    "program_plural": _lazy("Used in: navigation menu, dashboard cards, admin management"),
+    "enrolment": _lazy("Used in: participant file program tab, intake forms"),
+    "enrolment_plural": _lazy("Used in: program reports, dashboard counts"),
+    "group": _lazy("Used in: group detail page, session recording, attendance"),
+    "group_plural": _lazy("Used in: navigation menu, dashboard counts"),
+    "member": _lazy("Used in: group roster, attendance marking, session records"),
+    "member_plural": _lazy("Used in: group detail page, attendance summary"),
+    "session": _lazy("Used in: group session recording form, attendance page"),
+    "session_plural": _lazy("Used in: group detail page, session history"),
 }
 
 

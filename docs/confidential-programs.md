@@ -241,7 +241,7 @@ No Ontario statute requires a physically separate database for DV programs. The 
 
 ## Related Documentation
 
-- [Administering KoNote](administering-KoNote.md) — general admin setup
+- [Admin Guide](admin/index.md) — general admin setup
 - [Security Operations](security-operations.md) — encryption, audit logging, incident response
 - [Privacy Policy Template](privacy-policy-template.md) — customise for your organisation
 - [Privacy Impact Assessment Template](pia-template-answers.md) — pre-filled PIA for your agency

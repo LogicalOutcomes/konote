@@ -56,9 +56,10 @@ def home(request):
     active_ids = getattr(request, "active_program_ids", None)
     accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
 
-    # --- Clinical data (hidden from Front Desk) ---
-    # Security: Front Desk should not see stats, alerts, notes, or follow-ups
-    if is_receptionist:
+    # --- Clinical data (hidden from Front Desk and executive-only users) ---
+    # Security: Front Desk should not see stats, alerts, notes, or follow-ups.
+    # Executive-only users see de-identified aggregates instead (added in B3).
+    if is_receptionist or is_executive:
         active_count = 0
         total_count = 0
         active_alerts = []

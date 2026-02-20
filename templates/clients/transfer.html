@@ -46,12 +46,13 @@
 
     <fieldset>
         <legend>{% trans "Cross-Program Sharing" %}</legend>
-        <label>
-            <input type="checkbox" name="cross_program_sharing_consent" id="id_cross_program_sharing_consent"
-                   {% if form.cross_program_sharing_consent.value %}checked{% endif %}>
-            {% trans "Participant consents to sharing clinical information across programs" %}
-        </label>
-        <small class="secondary">{% trans "Required under Ontario privacy law (PHIPA) before clinical notes from one program can be viewed by staff in another program." %}</small>
+        <label for="id_cross_program_sharing">{% trans "Cross-program note sharing" %}</label>
+        <select name="cross_program_sharing" id="id_cross_program_sharing">
+            {% for value, label in form.cross_program_sharing.field.choices %}
+            <option value="{{ value }}" {% if form.cross_program_sharing.value == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <small class="secondary">{% trans "Controls whether clinical notes from other programs are visible for this participant. Most participants should use the agency default." %}</small>
     </fieldset>
 
     <div>

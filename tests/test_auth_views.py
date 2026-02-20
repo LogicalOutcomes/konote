@@ -170,10 +170,15 @@ class InviteAcceptViewTest(TestCase):
         })
         self.assertEqual(resp.status_code, 302)
         user = User.objects.get(username="newuser")
+        self.assertEqual(user.display_name, "New User")
         self.assertFalse(user.is_admin)
         role = UserProgramRole.objects.get(user=user)
         self.assertEqual(role.role, "staff")
         self.assertEqual(role.program, self.program)
+        # Verify invite is marked as used
+        self.invite.refresh_from_db()
+        self.assertEqual(self.invite.used_by, user)
+        self.assertIsNotNone(self.invite.used_at)
 
     def test_expired_invite_shows_error(self):
         self.invite.expires_at = timezone.now() - timedelta(days=1)

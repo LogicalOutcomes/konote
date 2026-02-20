@@ -145,13 +145,20 @@ class ClientTransferForm(forms.Form):
         error_messages={"required": _("Please select at least one program.")},
     )
 
-    cross_program_sharing_consent = forms.BooleanField(
+    cross_program_sharing = forms.ChoiceField(
         required=False,
-        label=_("Participant consents to sharing clinical information across programs"),
+        choices=[
+            ("default", _("Follow agency setting")),
+            ("consent", _("Share across programs")),
+            ("restrict", _("Restrict to one program")),
+        ],
+        initial="default",
+        label=_("Cross-program note sharing"),
         help_text=_(
-            "Required under Ontario privacy law (PHIPA) before clinical notes "
-            "from one program can be viewed by staff in another program."
+            "Controls whether clinical notes from other programs are visible "
+            "for this participant. Most participants should use the agency default."
         ),
+        widget=forms.Select,
     )
 
     transfer_reason = forms.CharField(

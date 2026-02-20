@@ -12,7 +12,7 @@ Welcome! Find what you need based on what you're trying to do.
 | **Understand what KoNote is** | [README](../README.md) — overview, features, tech stack |
 | **Understand the design philosophy** | [Design Principles](design-principles.md) — research-based approach to participant engagement |
 | **Set up KoNote for the first time** | [Deploying KoNote](deploying-KoNote.md) — local setup, cloud hosting |
-| **Configure my agency's settings** | [Administering KoNote](administering-KoNote.md) — terminology, programs, users, backups |
+| **Configure my agency's settings** | [Admin Guide](admin/index.md) — terminology, programs, users, backups |
 | **Learn how to use KoNote daily** | [Using KoNote](using-KoNote.md) — staff training guide |
 | **Understand the technical architecture** | [Technical Reference](technical-documentation.md) — data models, security, APIs |
 
@@ -45,25 +45,26 @@ For a full history of changes, see the [Changelog](../CHANGELOG.md).
 ### For Everyone
 
 - [Help & Quick Reference](help.md) — find answers fast
-- [Surveys Guide](surveys.md) — creating, assigning, and completing surveys
+- [Surveys (Staff)](surveys.md) — assigning surveys and entering responses
+- [Surveys (Admin)](admin/surveys.md) — creating surveys, trigger rules, shareable links
 - [Keyboard Shortcuts](help.md#keyboard-shortcuts)
 - [Troubleshooting](help.md#troubleshooting)
 
 ### For Administrators
 
 - [Privacy Policy Template](privacy-policy-template.md) — customise before going live
-- [Agency Setup](administering-KoNote.md#agency-configuration) — terminology, features, programs
-- [PM Admin Access](administering-KoNote.md#program-manager-administration) — let PMs manage their own program config
-- [Registration Forms](administering-KoNote.md#set-up-registration-forms) — public signup forms, reviewing submissions
-- [User Management](administering-KoNote.md#user-management) — creating accounts, assigning roles
-- [Automated Reminders](administering-KoNote.md#automated-reminders) — set up scheduled SMS/email meeting reminders
-- [Weekly Export Summary](administering-KoNote.md#weekly-export-summary-email) — privacy oversight digest for admins
-- [System Health Monitoring](administering-KoNote.md#system-health-monitoring) — SMS/email channel health banners
-- [Backup & Restore](administering-KoNote.md#backup-and-restore) — protecting your data
-- [Security Operations](administering-KoNote.md#security-operations) — audit logs, encryption keys
+- [Admin Guide Index](admin/index.md) — all admin topics in one place
+- [Getting Started](admin/getting-started.md) — first admin account, instance settings, setup wizard
+- [Features & Modules](admin/features-and-modules.md) — feature toggles, programs, templates, metrics
+- [Surveys (Admin)](admin/surveys.md) — creating surveys, trigger rules, shareable links
+- [Terminology](admin/terminology.md) — customise the words used throughout the system
+- [Users & Roles](admin/users-and-roles.md) — creating accounts, assigning roles, PM admin
+- [Portal](admin/portal.md) — participant portal setup, invitations, MFA
+- [Messaging](admin/messaging.md) — SMS/email config, reminders, health monitoring
+- [Reporting](admin/reporting.md) — report templates, weekly export summary
+- [Security](admin/security.md) — encryption, audit logs, backup & restore
 - [Export Operations](export-runbook.md) — managing exports and download links
 - [Confidential Programs & Matching](confidential-programs.md) — sensitive program isolation and duplicate detection
-- [Suggestion Themes](administering-KoNote.md#suggestion-themes) — tracking and responding to participant feedback
 - [Security Operations (detailed)](security-operations.md) — encryption, audit logging, erasure, export controls
 
 ### For Staff
@@ -94,11 +95,12 @@ For a full history of changes, see the [Changelog](../CHANGELOG.md).
 | Document | Audience | Purpose |
 |----------|----------|---------|
 | [Help](help.md) | All users | Quick reference and in-app help |
-| [Surveys](surveys.md) | All users | Creating, assigning, and completing surveys |
+| [Surveys (Staff)](surveys.md) | Staff | Assigning surveys and entering responses |
+| [Surveys (Admin)](admin/surveys.md) | Admins / PMs | Creating surveys, trigger rules, shareable links |
 | [Design Principles](design-principles.md) | All users | Research-based approach to participant-centred practice |
 | [Deploying KoNote](deploying-KoNote.md) | IT / Technical lead | Get KoNote running (local or cloud) |
 | [Privacy Policy Template](privacy-policy-template.md) | Admins / Legal | Customise for your organisation before going live |
-| [Administering KoNote](administering-KoNote.md) | Program managers / Admins | Configure and maintain your instance |
+| [Admin Guide](admin/index.md) | Program managers / Admins | Configure and maintain your instance |
 | [Confidential Programs](confidential-programs.md) | Program managers / Admins | Sensitive program isolation and duplicate matching |
 | [Using KoNote](using-KoNote.md) | Front-line staff | Day-to-day usage guide |
 | [Technical Reference](technical-documentation.md) | Developers | Architecture, data models, customisation |

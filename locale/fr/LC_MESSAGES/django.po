@@ -7797,6 +7797,54 @@ msgstr ""
 "Remarque : Le filtrage des notes entre programmes sera appliqué dans une "
 "mise à jour future. Ce paramètre est enregistré dès maintenant."
 
+#. PHIPA consent indicator on notes timeline
+#: templates/notes/_tab_notes.html
+msgid ""
+"Showing notes from %(program)s only. Cross-program sharing is not enabled "
+"for this participant."
+msgstr ""
+"Affichage des notes de %(program)s uniquement. Le partage entre programmes "
+"n\\u2019est pas activé pour ce participant."
+
+#. Tri-state sharing display on client info tab
+msgid "Share across programs"
+msgstr "Partager entre les programmes"
+
+msgid "Restricted"
+msgstr "Restreint"
+
+msgid "Follow agency setting"
+msgstr "Suivre le paramètre de l\\u2019agence"
+
+msgid "Clinical notes are restricted to the program where they were recorded."
+msgstr ""
+"Les notes cliniques sont restreintes au programme où elles ont été "
+"enregistrées."
+
+msgid "Uses the agency-wide default for cross-program note sharing."
+msgstr ""
+"Utilise le paramètre par défaut de l\\u2019agence pour le partage des notes "
+"entre programmes."
+
+msgid "Cross-program note sharing"
+msgstr "Partage des notes entre programmes"
+
+msgid ""
+"Controls whether clinical notes from other programs are visible for this "
+"participant. Most participants should use the agency default."
+msgstr ""
+"Contrôle si les notes cliniques d\\u2019autres programmes sont visibles pour"
+" ce participant. La plupart des participants devraient utiliser le paramètre"
+" par défaut de l\\u2019agence."
+
+msgid "Restrict to one program"
+msgstr "Restreindre à un seul programme"
+
+msgid "Share clinical notes across programs for shared participants"
+msgstr ""
+"Partager les notes cliniques entre les programmes pour les participants "
+"partagés"
+
 msgid ""
 "Once all program managers approve, participant data will be permanently "
 "anonymised or erased depending on the level selected below."
@@ -12945,3 +12993,625 @@ msgstr "Inclure %(name)s"
 #, python-format
 msgid "Skip %(name)s"
 msgstr "Ignorer %(name)s"
+
+msgid "Admin guide"
+msgstr "Guide d'administration"
+
+msgid "Also affects:"
+msgstr "Affecte également :"
+
+msgid "How dates appear in reports, notes, and file headers."
+msgstr ""
+"Comment les dates apparaissent dans les rapports, les notes et les en-têtes "
+"de dossier."
+
+msgid "Needs configuration:"
+msgstr "Configuration requise :"
+
+msgid "Reload page"
+msgstr "Recharger la page"
+
+msgid "Requires:"
+msgstr "Nécessite :"
+
+#, python-format
+msgid "Unknown feature: %(key)s"
+msgstr "Fonctionnalité inconnue : %(key)s"
+
+msgid "What will happen:"
+msgstr "Ce qui se passera :"
+
+msgid "Yes, disable"
+msgstr "Oui, désactiver"
+
+msgid "Yes, enable"
+msgstr "Oui, activer"
+
+#. Feature toggle and terminology help text translations
+msgid "Disable %(label)s?"
+msgstr "Désactiver %(label)s?"
+
+msgid "Enable %(label)s?"
+msgstr "Activer %(label)s?"
+
+msgid "%(label)s %(action_taken)s."
+msgstr "%(label)s %(action_taken)s."
+
+msgid "Custom Participant Fields"
+msgstr "Champs personnalisés des participants"
+
+msgid "Metric Alerts"
+msgstr "Alertes sur les indicateurs"
+
+msgid "Event Tracking"
+msgstr "Suivi des évènements"
+
+msgid "Program Reports"
+msgstr "Rapports de programme"
+
+msgid "Consent Requirement"
+msgstr "Exigence de consentement"
+
+msgid "Email Messaging"
+msgstr "Messagerie courriel"
+
+msgid "SMS Messaging"
+msgstr "Messagerie SMS"
+
+msgid "Portal Journal"
+msgstr "Journal du portail"
+
+msgid "Portal Messaging"
+msgstr "Messagerie du portail"
+
+msgid "AI Assist"
+msgstr "Assistance IA"
+
+msgid "Quick Notes"
+msgstr "Notes rapides"
+
+msgid "Analysis Charts"
+msgstr "Graphiques d'analyse"
+
+msgid "Shift Summaries"
+msgstr "Résumés de quart"
+
+msgid "Participant Avatars"
+msgstr "Avatars des participants"
+
+msgid "Plan Export to Word"
+msgstr "Exportation du plan vers Word"
+
+msgid ""
+"Organise services into separate programs with their own staff, templates, "
+"and metrics."
+msgstr ""
+"Organiser les services en programmes distincts avec leur propre personnel, "
+"modèles et indicateurs."
+
+msgid ""
+"Add extra data fields to participant files (funding source, referral date, "
+"etc.)."
+msgstr ""
+"Ajouter des champs de données supplémentaires aux dossiers des participants "
+"(source de financement, date de référence, etc.)."
+
+msgid "Notify staff when outcome metrics hit configurable thresholds."
+msgstr ""
+"Aviser le personnel lorsque les indicateurs de résultats atteignent des "
+"seuils configurables."
+
+msgid ""
+"Record significant events like intake, discharge, crisis, and milestones on "
+"participant timelines."
+msgstr ""
+"Enregistrer les évènements importants comme l'admission, le congé, les "
+"crises et les jalons sur les chronologies des participants."
+
+msgid ""
+"Generate formatted outcome reports for funders with demographic breakdowns."
+msgstr ""
+"Générer des rapports de résultats formatés pour les bailleurs de fonds avec "
+"des ventilations démographiques."
+
+msgid ""
+"Require documented participant consent before creating progress notes "
+"(PIPEDA/PHIPA compliance)."
+msgstr ""
+"Exiger le consentement documenté du participant avant de créer des notes de "
+"suivi (conformité LPRPDE/LPRPS)."
+
+msgid "Send email reminders and messages to participants who have consented."
+msgstr ""
+"Envoyer des rappels et des messages par courriel aux participants ayant "
+"donné leur consentement."
+
+msgid ""
+"Send text message reminders to participants who have consented (requires "
+"Twilio)."
+msgstr ""
+"Envoyer des rappels par message texte aux participants ayant donné leur "
+"consentement (nécessite Twilio)."
+
+msgid ""
+"Secure portal where participants view their goals, progress, and journal "
+"entries."
+msgstr ""
+"Portail sécurisé où les participants consultent leurs objectifs, leur "
+"progression et leurs entrées de journal."
+
+msgid "Private journal feature in the participant portal."
+msgstr "Fonctionnalité de journal privé dans le portail des participants."
+
+msgid ""
+"Secure messaging between participants and their workers through the portal."
+msgstr ""
+"Messagerie sécurisée entre les participants et leurs intervenants via le "
+"portail."
+
+msgid ""
+"Structured feedback forms with trigger rules, shareable links, and scoring."
+msgstr ""
+"Formulaires de rétroaction structurés avec des règles de déclenchement, des "
+"liens partageables et une notation."
+
+msgid "AI-powered features including goal builder and narrative generation."
+msgstr ""
+"Fonctionnalités alimentées par l'IA, y compris le constructeur d'objectifs "
+"et la génération narrative."
+
+msgid "Group sessions and attendance tracking."
+msgstr "Sessions de groupe et suivi des présences."
+
+msgid ""
+"Lightweight contact logging for phone calls, texts, emails, and brief "
+"interactions."
+msgstr ""
+"Journalisation légère des contacts pour les appels téléphoniques, les "
+"textos, les courriels et les interactions brèves."
+
+msgid ""
+"Progress visualisation charts on participant files showing metric trends "
+"over time."
+msgstr ""
+"Graphiques de visualisation des progrès sur les dossiers des participants "
+"montrant les tendances des indicateurs au fil du temps."
+
+msgid "End-of-shift summary generation for team handoffs."
+msgstr "Génération de résumés de fin de quart pour les transferts d'équipe."
+
+msgid ""
+"Display participant initials or photos as avatars in lists and file headers."
+msgstr ""
+"Afficher les initiales ou les photos des participants comme avatars dans les"
+" listes et les en-têtes de dossier."
+
+msgid "Export participant outcome plans as formatted Word documents."
+msgstr ""
+"Exporter les plans de résultats des participants sous forme de documents "
+"Word formatés."
+
+msgid "Staff see a program selector when viewing participants"
+msgstr ""
+"Le personnel voit un sélecteur de programme lors de la consultation des "
+"participants"
+
+msgid "Participants can be enrolled in multiple programs"
+msgstr "Les participants peuvent être inscrits à plusieurs programmes"
+
+msgid "Templates and metrics can be scoped per program"
+msgstr "Les modèles et les indicateurs peuvent être définis par programme"
+
+msgid "Staff see custom field groups on participant files"
+msgstr ""
+"Le personnel voit les groupes de champs personnalisés sur les dossiers des "
+"participants"
+
+msgid "Custom fields appear in registration forms"
+msgstr ""
+"Les champs personnalisés apparaissent dans les formulaires d'inscription"
+
+msgid "Alert badges appear on participant files when metrics cross thresholds"
+msgstr ""
+"Des badges d'alerte apparaissent sur les dossiers des participants lorsque "
+"les indicateurs franchissent les seuils"
+
+msgid "Staff see alert counts on the dashboard"
+msgstr "Le personnel voit le nombre d'alertes sur le tableau de bord"
+
+msgid "Staff can record events on participant files"
+msgstr ""
+"Le personnel peut enregistrer des évènements sur les dossiers des "
+"participants"
+
+msgid "Events appear on the participant timeline"
+msgstr "Les évènements apparaissent sur la chronologie du participant"
+
+msgid "Executives and PMs can generate and export program reports"
+msgstr ""
+"Les cadres et les GPs peuvent générer et exporter des rapports de programme"
+
+msgid "Report template management is available"
+msgstr "La gestion des modèles de rapport est disponible"
+
+msgid "Staff see a consent checkbox on every progress note"
+msgstr ""
+"Le personnel voit une case à cocher de consentement sur chaque note de suivi"
+
+msgid "Notes cannot be saved without confirming consent"
+msgstr ""
+"Les notes ne peuvent pas être sauvegardées sans confirmation du consentement"
+
+msgid "Staff can send email reminders from the meetings page"
+msgstr ""
+"Le personnel peut envoyer des rappels par courriel depuis la page des "
+"rencontres"
+
+msgid "Automated email reminders can be scheduled"
+msgstr "Les rappels automatisés par courriel peuvent être programmés"
+
+msgid "Staff can send SMS reminders from the meetings page"
+msgstr ""
+"Le personnel peut envoyer des rappels par SMS depuis la page des rencontres"
+
+msgid "Automated SMS reminders can be scheduled"
+msgstr "Les rappels automatisés par SMS peuvent être programmés"
+
+msgid "Staff can invite participants to the portal"
+msgstr "Le personnel peut inviter des participants au portail"
+
+msgid "Portal features (journal, messaging, surveys) become available"
+msgstr ""
+"Les fonctionnalités du portail (journal, messagerie, sondages) deviennent "
+"disponibles"
+
+msgid "Participants see a Journal section in their portal"
+msgstr "Les participants voient une section Journal dans leur portail"
+
+msgid "Participants can send messages to their worker from the portal"
+msgstr ""
+"Les participants peuvent envoyer des messages à leur intervenant depuis le "
+"portail"
+
+msgid "Workers see portal messages in the staff messaging view"
+msgstr ""
+"Les intervenants voient les messages du portail dans la vue de messagerie du"
+" personnel"
+
+msgid "Surveys menu appears in the navigation bar"
+msgstr "Le menu Sondages apparaît dans la barre de navigation"
+
+msgid "Staff can assign and enter surveys on participant files"
+msgstr ""
+"Le personnel peut attribuer et saisir des sondages sur les dossiers des "
+"participants"
+
+msgid "Surveys appear in the participant portal"
+msgstr "Les sondages apparaissent dans le portail des participants"
+
+msgid "AI Goal Builder appears on the plan page"
+msgstr "Le constructeur d'objectifs IA apparaît sur la page du plan"
+
+msgid "AI narrative generation is available in reports"
+msgstr "La génération narrative IA est disponible dans les rapports"
+
+msgid "Groups menu appears in the navigation bar"
+msgstr "Le menu Groupes apparaît dans la barre de navigation"
+
+msgid "Staff can create groups, record sessions, and track attendance"
+msgstr ""
+"Le personnel peut créer des groupes, enregistrer des séances et suivre les "
+"présences"
+
+msgid "Quick note buttons appear on participant files"
+msgstr ""
+"Les boutons de note rapide apparaissent sur les dossiers des participants"
+
+msgid "Staff can log brief contacts without a full note form"
+msgstr ""
+"Le personnel peut consigner de brefs contacts sans formulaire de note "
+"complet"
+
+msgid "Analysis tab with charts appears on participant files"
+msgstr ""
+"L'onglet d'analyse avec graphiques apparaît sur les dossiers des "
+"participants"
+
+msgid "Shift summary feature is available"
+msgstr "La fonctionnalité de résumé de quart est disponible"
+
+msgid "Avatar circles appear next to participant names"
+msgstr "Des cercles d'avatar apparaissent à côté des noms des participants"
+
+msgid "Export to Word button appears on plan pages"
+msgstr "Le bouton d'exportation vers Word apparaît sur les pages du plan"
+
+msgid "All participants appear in a single list"
+msgstr "Tous les participants apparaissent dans une seule liste"
+
+msgid "Program enrolments are hidden but data is preserved"
+msgstr ""
+"Les inscriptions aux programmes sont masquées mais les données sont "
+"préservées"
+
+msgid "Custom field sections are hidden"
+msgstr "Les sections de champs personnalisés sont masquées"
+
+msgid "Existing field data is preserved"
+msgstr "Les données de champs existantes sont préservées"
+
+msgid "Alert badges and notifications are hidden"
+msgstr "Les badges d'alerte et les notifications sont masqués"
+
+msgid "Threshold configurations are preserved"
+msgstr "Les configurations de seuils sont préservées"
+
+msgid "Event recording is hidden"
+msgstr "L'enregistrement des évènements est masqué"
+
+msgid "Existing events are preserved on timelines"
+msgstr "Les évènements existants sont préservés sur les chronologies"
+
+msgid "Report generation menu is hidden"
+msgstr "Le menu de génération de rapports est masqué"
+
+msgid "Existing reports remain downloadable"
+msgstr "Les rapports existants restent téléchargeables"
+
+msgid "Consent checkbox is hidden"
+msgstr "La case à cocher de consentement est masquée"
+
+msgid "Notes can be saved without consent confirmation"
+msgstr "Les notes peuvent être sauvegardées sans confirmation du consentement"
+
+msgid "Email sending is disabled"
+msgstr "L'envoi de courriels est désactivé"
+
+msgid "Communication logs are still available for record-keeping"
+msgstr ""
+"Les journaux de communication sont toujours disponibles pour la tenue de "
+"dossiers"
+
+msgid "SMS sending is disabled"
+msgstr "L'envoi de SMS est désactivé"
+
+msgid "Portal invitation and access is disabled"
+msgstr "L'invitation et l'accès au portail sont désactivés"
+
+msgid "Existing portal accounts are deactivated"
+msgstr "Les comptes de portail existants sont désactivés"
+
+msgid "Journal section is hidden from the portal"
+msgstr "La section Journal est masquée du portail"
+
+msgid "Existing journal entries are preserved"
+msgstr "Les entrées de journal existantes sont préservées"
+
+msgid "Messaging section is hidden from the portal"
+msgstr "La section Messagerie est masquée du portail"
+
+msgid "Existing messages are preserved"
+msgstr "Les messages existants sont préservés"
+
+msgid "Surveys menu and tab are hidden"
+msgstr "Le menu et l'onglet Sondages sont masqués"
+
+msgid "Existing survey data is preserved"
+msgstr "Les données de sondage existantes sont préservées"
+
+msgid "AI features are hidden"
+msgstr "Les fonctionnalités IA sont masquées"
+
+msgid "No data is sent to AI services"
+msgstr "Aucune donnée n'est envoyée aux services IA"
+
+msgid "Groups menu is hidden"
+msgstr "Le menu Groupes est masqué"
+
+msgid "Existing group data is preserved"
+msgstr "Les données de groupe existantes sont préservées"
+
+msgid "Quick note buttons are hidden"
+msgstr "Les boutons de note rapide sont masqués"
+
+msgid "Existing quick notes are preserved"
+msgstr "Les notes rapides existantes sont préservées"
+
+msgid "Analysis tab is hidden"
+msgstr "L'onglet d'analyse est masqué"
+
+msgid "Metric data is still recorded in notes"
+msgstr "Les données des indicateurs sont toujours enregistrées dans les notes"
+
+msgid "Shift summary feature is hidden"
+msgstr "La fonctionnalité de résumé de quart est masquée"
+
+msgid "Avatars are hidden"
+msgstr "Les avatars sont masqués"
+
+msgid "Export button is hidden"
+msgstr "Le bouton d'exportation est masqué"
+
+msgid ""
+"Used in: search bar, navigation, file headers, plan labels, notes, exports, "
+"registration forms"
+msgstr ""
+"Utilisé dans : barre de recherche, navigation, en-têtes de dossier, "
+"étiquettes de plan, notes, exportations, formulaires d'inscription"
+
+msgid "Used in: navigation menu, dashboard counts, search results, reports"
+msgstr ""
+"Utilisé dans : menu de navigation, compteurs du tableau de bord, résultats "
+"de recherche, rapports"
+
+msgid "Used in: staff assignment dropdowns, file headers, message labels"
+msgstr ""
+"Utilisé dans : menus déroulants d'attribution du personnel, en-têtes de "
+"dossier, étiquettes de message"
+
+msgid "Used in: admin user list, program role assignments, reports"
+msgstr ""
+"Utilisé dans : liste des utilisateurs administrateurs, attributions de rôles"
+" de programme, rapports"
+
+msgid "Used in: participant detail page header, breadcrumbs, note headers"
+msgstr ""
+"Utilisé dans : en-tête de la page de détail du participant, fil d'Ariane, "
+"en-têtes de note"
+
+msgid "Used in: navigation menu, search results heading"
+msgstr "Utilisé dans : menu de navigation, titre des résultats de recherche"
+
+msgid "Used in: participant file tabs, plan page header, goal builder"
+msgstr ""
+"Utilisé dans : onglets du dossier du participant, en-tête de la page du "
+"plan, constructeur d'objectifs"
+
+msgid "Used in: navigation menu, dashboard summaries"
+msgstr "Utilisé dans : menu de navigation, résumés du tableau de bord"
+
+msgid "Used in: plan structure, template builder, report grouping"
+msgstr ""
+"Utilisé dans : structure du plan, constructeur de modèles, regroupement de "
+"rapports"
+
+msgid "Used in: plan editor sidebar, template management"
+msgstr ""
+"Utilisé dans : barre latérale de l'éditeur de plan, gestion des modèles"
+
+msgid "Used in: plan goals, progress note forms, analysis charts"
+msgstr ""
+"Utilisé dans : objectifs du plan, formulaires de notes de suivi, graphiques "
+"d'analyse"
+
+msgid "Used in: plan template builder, metric library, reports"
+msgstr ""
+"Utilisé dans : constructeur de modèles de plan, bibliothèque d'indicateurs, "
+"rapports"
+
+msgid "Used in: participant timeline, note detail page, exports"
+msgstr ""
+"Utilisé dans : chronologie du participant, page de détail de la note, "
+"exportations"
+
+msgid "Used in: navigation menu, dashboard counts, search results"
+msgstr ""
+"Utilisé dans : menu de navigation, compteurs du tableau de bord, résultats "
+"de recherche"
+
+msgid "Used in: quick note buttons on participant file, timeline"
+msgstr ""
+"Utilisé dans : boutons de note rapide sur le dossier du participant, "
+"chronologie"
+
+msgid "Used in: dashboard counts, communication logs"
+msgstr ""
+"Utilisé dans : compteurs du tableau de bord, journaux de communication"
+
+msgid "Used in: participant timeline, event recording form, calendar feed"
+msgstr ""
+"Utilisé dans : chronologie du participant, formulaire d'enregistrement "
+"d'évènement, flux de calendrier"
+
+msgid "Used in: navigation menu, dashboard counts, reports"
+msgstr ""
+"Utilisé dans : menu de navigation, compteurs du tableau de bord, rapports"
+
+msgid "Used in: dashboard badges, participant file warnings"
+msgstr ""
+"Utilisé dans : badges du tableau de bord, avertissements du dossier du "
+"participant"
+
+msgid "Used in: dashboard summary, notification counts"
+msgstr "Utilisé dans : résumé du tableau de bord, compteurs de notifications"
+
+msgid "Used in: program selector, enrolment forms, reports, file headers"
+msgstr ""
+"Utilisé dans : sélecteur de programme, formulaires d'inscription, rapports, "
+"en-têtes de dossier"
+
+msgid "Used in: navigation menu, dashboard cards, admin management"
+msgstr ""
+"Utilisé dans : menu de navigation, cartes du tableau de bord, gestion "
+"administrative"
+
+msgid "Used in: participant file program tab, intake forms"
+msgstr ""
+"Utilisé dans : onglet de programme du dossier du participant, formulaires "
+"d'admission"
+
+msgid "Used in: program reports, dashboard counts"
+msgstr "Utilisé dans : rapports de programme, compteurs du tableau de bord"
+
+msgid "Used in: group detail page, session recording, attendance"
+msgstr ""
+"Utilisé dans : page de détail du groupe, enregistrement de séance, présences"
+
+msgid "Used in: navigation menu, dashboard counts"
+msgstr "Utilisé dans : menu de navigation, compteurs du tableau de bord"
+
+msgid "Used in: group roster, attendance marking, session records"
+msgstr ""
+"Utilisé dans : liste du groupe, marquage de présences, registres de séance"
+
+msgid "Used in: group detail page, attendance summary"
+msgstr "Utilisé dans : page de détail du groupe, résumé des présences"
+
+msgid "Used in: group session recording form, attendance page"
+msgstr ""
+"Utilisé dans : formulaire d'enregistrement de séance de groupe, page de "
+"présences"
+
+msgid "Used in: group detail page, session history"
+msgstr "Utilisé dans : page de détail du groupe, historique des séances"
+
+msgid "enabled"
+msgstr "activé"
+
+msgid "disabled"
+msgstr "désactivé"
+
+#: templates/reports/_tab_analysis.html
+msgid "Timeframe"
+msgstr "Période"
+
+#: templates/reports/_tab_analysis.html
+msgid "Quick select"
+msgstr "Sélection rapide"
+
+#: templates/reports/_tab_analysis.html
+msgid "All time"
+msgstr "Toutes les dates"
+
+#: templates/notes/_tab_notes.html
+msgid "All targets"
+msgstr "Toutes les cibles"
+
+msgid "Cross-Program Note Sharing"
+msgstr "Partage de notes entre programmes"
+
+msgid "Share clinical notes across programs for shared participants."
+msgstr ""
+"Partager les notes cliniques entre les programmes pour les participants "
+"partagés."
+
+msgid ""
+"Staff can see notes from other programs for participants enrolled in "
+"multiple programs"
+msgstr ""
+"Le personnel peut voir les notes d'autres programmes pour les participants "
+"inscrits à plusieurs programmes"
+
+msgid "Notes are only visible within the program they were created in"
+msgstr ""
+"Les notes ne sont visibles que dans le programme où elles ont été créées"
+
+msgid "Now at"
+msgstr "Maintenant à"
+
+msgid "Started at"
+msgstr "Commencé à"
+
+#, python-format
+msgid "Your last session was recorded on %(date)s."
+msgstr "Votre dernière séance a été enregistrée le %(date)s."

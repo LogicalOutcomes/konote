@@ -469,9 +469,9 @@ def client_transfer(request, client_id):
                         defaults={"status": "enrolled", "unenrolled_at": None},
                     )
                     added.append(program_id)
-            # Update cross-program sharing consent
-            client.cross_program_sharing_consent = form.cleaned_data.get(
-                "cross_program_sharing_consent", False
+            # Update cross-program sharing preference
+            client.cross_program_sharing = form.cleaned_data.get(
+                "cross_program_sharing", "default"
             )
             client.save()
             # Audit log for transfer (always log, even if no changes)
@@ -506,7 +506,7 @@ def client_transfer(request, client_id):
         form = ClientTransferForm(
             initial={
                 "programs": list(current_program_ids),
-                "cross_program_sharing_consent": client.cross_program_sharing_consent,
+                "cross_program_sharing": client.cross_program_sharing,
             },
             available_programs=available_programs,
         )

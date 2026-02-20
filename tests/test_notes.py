@@ -280,6 +280,78 @@ class NoteViewsTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Test note")
 
+    def test_note_list_filter_by_target(self):
+        """Target filter shows only notes linked to the selected target."""
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Goals", program=self.prog,
+        )
+        target_a = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Housing",
+        )
+        target_b = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Employment",
+        )
+
+        note_a = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.staff, interaction_type="session",
+        )
+        ProgressNoteTarget.objects.create(progress_note=note_a, plan_target=target_a)
+
+        note_b = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.staff, interaction_type="session",
+        )
+        ProgressNoteTarget.objects.create(progress_note=note_b, plan_target=target_b)
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(
+            f"/notes/participant/{self.client_file.pk}/?target={target_a.pk}"
+        )
+        self.assertEqual(resp.status_code, 200)
+        # note_a is linked to target_a, note_b is not
+        self.assertContains(resp, f'id="note-{note_a.pk}"')
+        self.assertNotContains(resp, f'id="note-{note_b.pk}"')
+
+    def test_note_list_no_target_filter_shows_all(self):
+        """No target filter shows all notes regardless of targets."""
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Goals", program=self.prog,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Housing",
+        )
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="full",
+            author=self.staff, interaction_type="session",
+        )
+        ProgressNoteTarget.objects.create(progress_note=note, plan_target=target)
+
+        note_no_target = ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Quick note", author=self.staff,
+        )
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, f'id="note-{note.pk}"')
+        self.assertContains(resp, f'id="note-{note_no_target.pk}"')
+
+    def test_note_list_target_dropdown_shows_active_targets(self):
+        """Target filter dropdown appears when participant has active targets."""
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Goals", program=self.prog,
+        )
+        PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Housing stability",
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "All targets")
+        self.assertContains(resp, "Housing stability")
+
     # -- Full Notes --
 
     def test_full_note_create_with_targets_and_metrics(self):
