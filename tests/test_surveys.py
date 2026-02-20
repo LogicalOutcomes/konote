@@ -771,3 +771,132 @@ class EventEnrolmentEngineTests(TestCase):
             self.client_file, self.participant, event,
         )
         self.assertEqual(len(assignments), 0)
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-hash-key-for-autosave",
+)
+class PortalAutoSaveTests(TestCase):
+    """Test auto-save of partial answers in the portal."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        from django.core.cache import cache
+        cache.delete("feature_toggles")
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys",
+            defaults={"is_enabled": True},
+        )
+        FeatureToggle.objects.update_or_create(
+            feature_key="participant_portal",
+            defaults={"is_enabled": True},
+        )
+        self.staff = User.objects.create_user(
+            username="autosave_staff", password="testpass123",
+            display_name="Autosave Staff",
+        )
+        self.survey = Survey.objects.create(
+            name="Autosave Survey", status="active", created_by=self.staff,
+        )
+        self.section = SurveySection.objects.create(
+            survey=self.survey, title="Section 1", sort_order=1,
+        )
+        self.q1 = SurveyQuestion.objects.create(
+            section=self.section, question_text="Your name?",
+            question_type="short_text", sort_order=1,
+        )
+        self.q2 = SurveyQuestion.objects.create(
+            section=self.section, question_text="Rate us",
+            question_type="rating_scale", sort_order=2,
+            min_value=1, max_value=5,
+        )
+        self.client_file = ClientFile.objects.create(
+            record_id="AUTO-001", status="active",
+        )
+        self.client_file.first_name = "Auto"
+        self.client_file.last_name = "Save"
+        self.client_file.save()
+        self.participant = ParticipantUser.objects.create_participant(
+            email="autosave@example.com",
+            client_file=self.client_file,
+            display_name="Auto S",
+            password="testpass123",
+        )
+        self.assignment = SurveyAssignment.objects.create(
+            survey=self.survey,
+            participant_user=self.participant,
+            client_file=self.client_file,
+            status="in_progress",
+        )
+
+    def _portal_session(self):
+        """Set up a portal session for the participant."""
+        session = self.client.session
+        session["_portal_participant_id"] = str(self.participant.pk)
+        session.save()
+
+    def test_autosave_creates_partial_answer(self):
+        self._portal_session()
+        resp = self.client.post(
+            f"/my/surveys/{self.assignment.pk}/save/",
+            {"question_id": self.q1.pk, "value": "Alice"},
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(PartialAnswer.objects.count(), 1)
+        pa = PartialAnswer.objects.first()
+        self.assertEqual(pa.question, self.q1)
+
+    def test_autosave_updates_existing_partial(self):
+        self._portal_session()
+        self.client.post(
+            f"/my/surveys/{self.assignment.pk}/save/",
+            {"question_id": self.q1.pk, "value": "Alice"},
+            HTTP_HX_REQUEST="true",
+        )
+        self.client.post(
+            f"/my/surveys/{self.assignment.pk}/save/",
+            {"question_id": self.q1.pk, "value": "Bob"},
+            HTTP_HX_REQUEST="true",
+        )
+        self.assertEqual(PartialAnswer.objects.count(), 1)
+
+    def test_autosave_requires_htmx(self):
+        self._portal_session()
+        resp = self.client.post(
+            f"/my/surveys/{self.assignment.pk}/save/",
+            {"question_id": self.q1.pk, "value": "Alice"},
+        )
+        self.assertEqual(resp.status_code, 400)
+
+    def test_form_loads_partial_answers(self):
+        """When opening a form with partial answers, values are pre-filled."""
+        from konote.encryption import encrypt_field
+        PartialAnswer.objects.create(
+            assignment=self.assignment,
+            question=self.q1,
+            value_encrypted=encrypt_field("Alice"),
+        )
+        self._portal_session()
+        resp = self.client.get(
+            f"/my/surveys/{self.assignment.pk}/fill/",
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("Alice", resp.content.decode())
+
+    def test_submit_cleans_up_partial_answers(self):
+        """After submit, partial answers are deleted."""
+        PartialAnswer.objects.create(
+            assignment=self.assignment,
+            question=self.q1,
+            value_encrypted=b"dummy",
+        )
+        self._portal_session()
+        self.client.post(
+            f"/my/surveys/{self.assignment.pk}/fill/",
+            {f"q_{self.q1.pk}": "Final Answer", f"q_{self.q2.pk}": "3"},
+        )
+        self.assertEqual(PartialAnswer.objects.count(), 0)
