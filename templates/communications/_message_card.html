@@ -1,22 +1,21 @@
 {% load i18n %}
-<article id="message-{{ msg.pk }}">
+<article id="message-{{ msg.pk }}" class="message-card{% if msg.is_urgent %} message-urgent{% endif %}{% if not msg.for_user %} message-team{% endif %}">
     <header>
-        <div>
-            <strong>
-                {% if msg.for_user %}
-                    {% blocktrans with name=msg.for_user.display_name %}For: {{ name }}{% endblocktrans %}
-                {% else %}
-                    {% blocktrans with worker=term.worker|default:"worker" %}For: Any {{ worker }}{% endblocktrans %}
-                {% endif %}
-            </strong>
-            <br>
-            <small>
-                {% if msg.left_by %}
-                {% blocktrans with name=msg.left_by.display_name date=msg.created_at|date:"SHORT_DATETIME_FORMAT" %}From {{ name }} on {{ date }}{% endblocktrans %}
-                {% else %}
+        <h3>
+            {% if msg.left_by %}{{ msg.left_by.display_name }}{% else %}{% trans "Unknown" %}{% endif %}
+            {% if msg.is_urgent %}<span class="urgent-label" aria-hidden="true">{% trans "Urgent" %}</span>{% endif %}
+        </h3>
+        {% if msg.is_urgent %}<span class="sr-only">{% trans "Urgent" %}</span>{% endif %}
+        <div class="message-meta">
+            {% if msg.for_user %}
+                {% blocktrans with name=msg.for_user.display_name %}For: {{ name }}{% endblocktrans %}
+            {% else %}
+                {% blocktrans with worker=term.worker|default:"worker" %}For: Any {{ worker }}{% endblocktrans %}
+            {% endif %}
+            &middot;
+            <time datetime="{{ msg.created_at|date:'c' }}" title="{{ msg.created_at|date:'SHORT_DATETIME_FORMAT' }}" data-relative>
                 {{ msg.created_at|date:"SHORT_DATETIME_FORMAT" }}
-                {% endif %}
-            </small>
+            </time>
         </div>
     </header>
 
@@ -35,7 +34,11 @@
         </footer>
     {% elif msg.read_at %}
         <footer>
-            <small>{% trans "Read" %} {{ msg.read_at|date:"SHORT_DATETIME_FORMAT" }}</small>
+            <small>{% trans "Read" %}
+                <time datetime="{{ msg.read_at|date:'c' }}" title="{{ msg.read_at|date:'SHORT_DATETIME_FORMAT' }}" data-relative>
+                    {{ msg.read_at|date:"SHORT_DATETIME_FORMAT" }}
+                </time>
+            </small>
         </footer>
     {% endif %}
 </article>
