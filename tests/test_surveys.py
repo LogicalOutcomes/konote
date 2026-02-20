@@ -6,7 +6,7 @@ Run with:
 from datetime import timedelta
 
 from cryptography.fernet import Fernet
-from django.test import TestCase, override_settings
+from django.test import TestCase, TransactionTestCase, override_settings
 from django.utils import timezone
 
 from apps.auth_app.models import User
@@ -515,3 +515,88 @@ class EvaluationEngineTests(TestCase):
         )
         new_assignments = evaluate_survey_rules(self.client_file, self.participant)
         self.assertEqual(len(new_assignments), 0)
+
+
+@override_settings(
+    FIELD_ENCRYPTION_KEY=TEST_KEY,
+    EMAIL_HASH_KEY="test-hash-key-for-signals",
+)
+class SignalTriggerTests(TransactionTestCase):
+    """Test that event/enrolment creation triggers survey assignment.
+
+    Uses TransactionTestCase so transaction.on_commit() fires.
+    """
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="signal_staff", password="testpass123",
+            display_name="Signal Staff",
+        )
+        self.program = Program.objects.create(name="Signal Program")
+        self.event_type = EventType.objects.create(name="Intake")
+        self.survey = Survey.objects.create(
+            name="Signal Survey", status="active", created_by=self.staff,
+        )
+        SurveySection.objects.create(
+            survey=self.survey, title="S1", sort_order=1,
+        )
+        self.client_file = ClientFile.objects.create(
+            record_id="SIG-001", status="active",
+        )
+        self.client_file.first_name = "Signal"
+        self.client_file.last_name = "Test"
+        self.client_file.save()
+        self.participant = ParticipantUser.objects.create_participant(
+            email="signal@example.com",
+            client_file=self.client_file,
+            display_name="Signal P",
+            password="testpass123",
+        )
+
+    def test_event_signal_creates_assignment(self):
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="event",
+            event_type=self.event_type,
+            repeat_policy="once_per_participant",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        # Creating an event with matching type should trigger assignment
+        Event.objects.create(
+            client_file=self.client_file,
+            event_type=self.event_type,
+            start_timestamp=timezone.now(),
+        )
+        self.assertEqual(
+            SurveyAssignment.objects.filter(
+                survey=self.survey,
+                participant_user=self.participant,
+            ).count(),
+            1,
+        )
+
+    def test_enrolment_signal_creates_assignment(self):
+        SurveyTriggerRule.objects.create(
+            survey=self.survey,
+            trigger_type="enrolment",
+            program=self.program,
+            repeat_policy="once_per_enrolment",
+            auto_assign=True,
+            created_by=self.staff,
+        )
+        # Creating an enrolment should trigger assignment
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+        )
+        self.assertEqual(
+            SurveyAssignment.objects.filter(
+                survey=self.survey,
+                participant_user=self.participant,
+            ).count(),
+            1,
+        )
