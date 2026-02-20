@@ -14,7 +14,7 @@
 
 <!-- Timeframe filter -->
 <form method="get" action="{% url 'reports:client_analysis' client_id=client.pk %}">
-    <details class="filter-bar"{% if filter_date_from or filter_date_to or filter_timeframe %} open{% endif %}>
+    <details class="filter-bar"{% if filter_date_from or filter_date_to or filter_timeframe and filter_timeframe != "all" %} open{% endif %}>
         <summary>
             {% trans "Timeframe" %}{% if filter_date_from or filter_date_to or filter_timeframe and filter_timeframe != "all" %}
                 <span class="badge badge-info">1</span>

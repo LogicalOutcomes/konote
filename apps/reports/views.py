@@ -12,7 +12,8 @@ from datetime import datetime, time, timedelta
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail
-from django.db.models import F, Q
+from django.db.models import DateTimeField, F, Q
+from django.db.models.functions import Coalesce
 from django.http import FileResponse, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
@@ -961,25 +962,17 @@ def client_analysis(request, client_id):
 
             # Apply date range filter using the note's effective date
             # (Coalesce of backdate and created_at)
-            from django.db.models.functions import Coalesce
-            from django.db.models import DateTimeField
-            if date_from_obj:
+            if date_from_obj or date_to_obj:
                 values_qs = values_qs.annotate(
                     _note_effective=Coalesce(
                         "progress_note_target__progress_note__backdate",
                         "progress_note_target__progress_note__created_at",
                         output_field=DateTimeField(),
                     )
-                ).filter(_note_effective__date__gte=date_from_obj)
+                )
+            if date_from_obj:
+                values_qs = values_qs.filter(_note_effective__date__gte=date_from_obj)
             if date_to_obj:
-                if not date_from_obj:
-                    values_qs = values_qs.annotate(
-                        _note_effective=Coalesce(
-                            "progress_note_target__progress_note__backdate",
-                            "progress_note_target__progress_note__created_at",
-                            output_field=DateTimeField(),
-                        )
-                    )
                 values_qs = values_qs.filter(_note_effective__date__lte=date_to_obj)
 
             values = values_qs.select_related(
