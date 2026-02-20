@@ -218,6 +218,12 @@ def note_list(request, client_id):
         )
     )
 
+    # PHIPA: consent filter narrows to viewing program if sharing is off
+    from apps.programs.access import apply_consent_filter
+    notes, consent_viewing_program = apply_consent_filter(
+        notes, client, request.user, user_program_ids,
+    )
+
     # Filters — interaction type replaces the old quick/full type filter
     interaction_filter = request.GET.get("interaction", "")
     date_from = request.GET.get("date_from", "")
@@ -292,6 +298,7 @@ def note_list(request, client_id):
         "breadcrumbs": breadcrumbs,
         "show_program_ui": program_ctx["show_program_ui"],
         "accessible_programs": program_ctx["accessible_programs"],
+        "consent_viewing_program": consent_viewing_program,
     }
     if request.headers.get("HX-Request"):
         return render(request, "notes/_tab_notes.html", context)
