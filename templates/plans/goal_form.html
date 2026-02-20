@@ -734,8 +734,22 @@
             if (btn.id === "btn-use-suggestion") {
                 var suggestion = JSON.parse(btn.dataset.suggestion);
                 populateForm(suggestion, btn.dataset.sectionPk, btn.dataset.newSection);
-                // Submit the form directly
+                suggestionContainer.innerHTML = "";
                 revealForm();
+
+                // Verify required fields before auto-submitting.
+                // If section is "new" with no name, show form for review.
+                var sc = goalForm.querySelector("[name=section_choice]");
+                var nsn = goalForm.querySelector("[name=new_section_name]");
+                if (sc && sc.value === "new" && (!nsn || !nsn.value.trim())) {
+                    if (nsn) nsn.focus();
+                    return;
+                }
+                if (!nameInput || !nameInput.value.trim()) {
+                    if (nameInput) nameInput.focus();
+                    return;
+                }
+
                 goalForm.submit();
                 return;
             }
