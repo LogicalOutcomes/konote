@@ -316,6 +316,154 @@ class NoteViewsTest(TestCase):
         mv = MetricValue.objects.get(progress_note_target=pnt)
         self.assertEqual(mv.value, "7")
 
+    def test_full_note_saves_without_consent(self):
+        """Consent checkbox is recommended, not required."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/new/",
+            {
+                "interaction_type": "session",
+                "summary": "Session notes",
+                # consent_confirmed omitted
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertTrue(ProgressNote.objects.filter(note_type="full").exists())
+
+    def test_full_note_with_scale_metric_saves(self):
+        """Scale metrics (RadioSelect) save correctly via form POST."""
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Wellbeing", program=self.prog,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Confidence",
+        )
+        metric = MetricDefinition.objects.create(
+            name="Confidence Level", min_value=1, max_value=5, unit="",
+            definition="Self-rated confidence", category="general",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/new/",
+            {
+                "interaction_type": "session",
+                "consent_confirmed": True,
+                f"target_{target.pk}-target_id": str(target.pk),
+                f"target_{target.pk}-notes": "Feeling better",
+                f"metric_{target.pk}_{metric.pk}-metric_def_id": str(metric.pk),
+                f"metric_{target.pk}_{metric.pk}-value": "4",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        mv = MetricValue.objects.get(metric_def=metric)
+        self.assertEqual(mv.value, "4")
+
+    def test_scale_metric_renders_as_radio(self):
+        """Metrics with small integer ranges (1-5) should use RadioSelect widget."""
+        from apps.notes.forms import MetricValueForm
+        metric = MetricDefinition.objects.create(
+            name="Confidence", min_value=1, max_value=5, unit="",
+            definition="Rate your confidence", category="general",
+        )
+        form = MetricValueForm(metric_def=metric)
+        self.assertEqual(form.fields["value"].widget.__class__.__name__, "RadioSelect")
+        choices = form.fields["value"].widget.choices
+        self.assertEqual(len(choices), 6)  # empty + 1,2,3,4,5
+
+    def test_wide_range_metric_stays_number_input(self):
+        """Metrics with wide ranges (0-100) should stay as NumberInput."""
+        from apps.notes.forms import MetricValueForm
+        metric = MetricDefinition.objects.create(
+            name="Score", min_value=0, max_value=100, unit="score",
+            definition="Overall score", category="general",
+        )
+        form = MetricValueForm(metric_def=metric)
+        self.assertEqual(form.fields["value"].widget.__class__.__name__, "NumberInput")
+
+    def test_auto_calc_session_count(self):
+        """Auto-calc metric shows session count for current month."""
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Attendance", program=self.prog,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Attendance",
+        )
+        metric = MetricDefinition.objects.create(
+            name="Sessions this month", min_value=0, max_value=20,
+            unit="sessions", definition="Sessions attended",
+            category="general", computation_type="session_count",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+
+        # Create 3 notes this month
+        for i in range(3):
+            ProgressNote.objects.create(
+                client_file=self.client_file, note_type="quick",
+                notes_text=f"Note {i}", author=self.staff,
+            )
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/new/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "auto-calculated")
+
+    def test_auto_calc_saves_on_post(self):
+        """Auto-calc metric values are saved server-side on POST."""
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Attendance", program=self.prog,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Attendance",
+        )
+        metric = MetricDefinition.objects.create(
+            name="Sessions this month", min_value=0, max_value=20,
+            unit="sessions", definition="Sessions attended",
+            category="general", computation_type="session_count",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+
+        # Create 2 existing notes
+        for i in range(2):
+            ProgressNote.objects.create(
+                client_file=self.client_file, note_type="quick",
+                notes_text=f"Note {i}", author=self.staff,
+            )
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/new/",
+            {
+                "interaction_type": "session",
+                "consent_confirmed": True,
+                f"target_{target.pk}-target_id": str(target.pk),
+                f"target_{target.pk}-progress_descriptor": "shifting",
+                f"metric_{target.pk}_{metric.pk}-metric_def_id": str(metric.pk),
+                # value intentionally omitted — auto-calc fills it server-side
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        # The auto-calc should have saved the count (2 existing + 1 new = 3)
+        mv = MetricValue.objects.get(metric_def=metric)
+        self.assertEqual(mv.value, "3")
+
+    def test_metric_computation_type_defaults_to_empty(self):
+        """New metrics default to manual entry (empty computation_type)."""
+        metric = MetricDefinition.objects.create(
+            name="Test", definition="Test", category="general",
+        )
+        self.assertEqual(metric.computation_type, "")
+
+    def test_metric_computation_type_session_count(self):
+        """Metrics can have computation_type='session_count'."""
+        metric = MetricDefinition.objects.create(
+            name="Sessions", definition="Count", category="general",
+            computation_type="session_count",
+        )
+        metric.refresh_from_db()
+        self.assertEqual(metric.computation_type, "session_count")
+
     def test_metric_value_out_of_range_rejected(self):
         section = PlanSection.objects.create(
             client_file=self.client_file, name="Goals", program=self.prog,

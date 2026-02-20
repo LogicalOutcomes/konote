@@ -13774,3 +13774,37 @@ msgstr "Marquer le message de %(name)s comme lu"
 
 msgid "Marked as read"
 msgstr "Marqué comme lu"
+
+msgid "I have reviewed this note for accuracy"
+msgstr "J'ai vérifié l'exactitude de cette note"
+
+msgid "Participant voice"
+msgstr "Voix du participant"
+
+msgid "Session setup"
+msgstr "Configuration de la séance"
+
+msgid "Wrap-up details"
+msgstr "Détails de conclusion"
+
+msgid "Your observation — not a score."
+msgstr "Votre observation — pas un pointage."
+
+msgid "(auto-calculated)"
+msgstr "(calculé automatiquement)"
+
+msgid "Manual entry"
+msgstr "Saisie manuelle"
+
+msgid "Mark as no change"
+msgstr "Marquer sans changement"
+
+msgid "No change"
+msgstr "Aucun changement"
+
+msgid "No change noted"
+msgstr "Aucun changement noté"
+
+msgid "Sessions attended this month"
+msgstr "Séances suivies ce mois-ci"
+
