@@ -667,10 +667,8 @@ msgstr ""
 msgid "No activity recorded yet."
 msgstr "Aucune activité enregistrée pour le moment."
 
-msgid "To add a note, use the + New menu above or the Notes tab."
-msgstr ""
-"Pour ajouter une note, utilisez le menu + Nouveau ci-dessus ou l'onglet "
-"Notes."
+msgid "To add a note, use the Actions menu or the Notes tab."
+msgstr "Pour ajouter une note, utilisez le menu Actions ou l'onglet Notes."
 
 msgid "Filter history"
 msgstr "Filtrer l'historique"
@@ -786,9 +784,6 @@ msgstr "Transférer entre les programmes"
 
 msgid "New item menu"
 msgstr "Menu nouvel élément"
-
-msgid "Add note"
-msgstr "Ajouter une note"
 
 msgid "Use the Actions menu to add a Quick Note or Detailed Note."
 msgstr "Utilisez le menu Actions pour ajouter une note rapide ou une note détaillée."
