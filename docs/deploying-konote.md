@@ -493,7 +493,7 @@ The container automatically runs migrations and seed data, but you still need an
 railway run python manage.py createsuperuser
 ```
 
-You'll be prompted for a username and password. This creates a user with full admin access. Once logged in, you can invite additional staff through the web interface. See [User Management](administering-konote.md#user-management).
+You'll be prompted for a username and password. This creates a user with full admin access. Once logged in, you can invite additional staff through the web interface. See [User Management](admin/users-and-roles.md).
 
 ### Step 6: Verify
 
@@ -688,7 +688,7 @@ az container create \
 
 You'll be prompted for a password. Delete the container after it completes.
 
-Once logged in, you can invite additional staff through the web interface using invite links. See [User Management](administering-konote.md#user-management).
+Once logged in, you can invite additional staff through the web interface using invite links. See [User Management](admin/users-and-roles.md).
 
 ### Step 9: Configure Custom Domain
 
@@ -752,7 +752,7 @@ In the Elestio console, run:
 python manage.py createsuperuser
 ```
 
-Enter a username and password when prompted. This creates the initial admin account. Once logged in, you can invite additional staff through the web interface. See [User Management](administering-konote.md#user-management).
+Enter a username and password when prompted. This creates the initial admin account. Once logged in, you can invite additional staff through the web interface. See [User Management](admin/users-and-roles.md).
 
 ### Step 6: Configure Domain and TLS
 
