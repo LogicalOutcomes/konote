@@ -94,6 +94,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Change "Add section only" link text to "Add Section" on plan view — (UX-SECTION1)
 - [ ] Remove "+ Add note" link in Notes tab, hide Quick Note from Actions if needed, and update wayfinding text (UX-NOTES3)
 - [ ] Fix "server error occurred" when clicking "Shape this target" (AI Suggestion) — (BUG-AI1)
+- [ ] Investigate/Fix "error message" when clicking "Draft Report summary" on Insights page (BUG-AI2)
 - [ ] Build "Questions for You" portal feature — depends on SURVEY1, adds SurveyAssignment + PartialAnswer models, auto-save, dashboard card (see tasks/portal-questions-design.md) (PORTAL-Q1)
 
 ## Recently Done
