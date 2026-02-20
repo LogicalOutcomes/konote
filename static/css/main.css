@@ -4163,6 +4163,45 @@ article[aria-label="notification"].fading-out {
     margin-bottom: var(--kn-space-base);
 }
 
+/* Metric tiers — collapsible sections (Tier 2 & 3) */
+.metric-tier {
+    margin-top: var(--kn-space-sm);
+}
+
+/* Tier 2: "Used in this program" vertical list */
+.metric-tier-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kn-space-xs);
+}
+.metric-tier-list label {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--kn-space-sm);
+    padding: var(--kn-space-xs) 0;
+}
+.metric-tier-list label input[type="checkbox"] {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+
+/* Tier 3: category fieldsets and search items */
+.metric-category {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kn-space-xs);
+}
+.metric-search-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--kn-space-sm);
+    padding: var(--kn-space-xs) 0;
+}
+.metric-search-item input[type="checkbox"] {
+    margin-top: 0.2rem;
+    flex-shrink: 0;
+}
+
 /* Metric search in Tier 3 */
 .metric-search-wrapper {
     margin-bottom: var(--kn-space-sm);
