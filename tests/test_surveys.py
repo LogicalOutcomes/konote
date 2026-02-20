@@ -140,6 +140,158 @@ class SurveyModelTests(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class SurveySectionFormTests(TestCase):
+    """Test SurveySectionForm includes condition fields."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="form_staff", password="testpass123",
+            display_name="Form Staff",
+        )
+        self.survey = Survey.objects.create(name="Form Test", created_by=self.staff)
+        self.s1 = SurveySection.objects.create(
+            survey=self.survey, title="Section 1", sort_order=1,
+        )
+        self.trigger_q = SurveyQuestion.objects.create(
+            section=self.s1, question_text="Has children?",
+            question_type="yes_no", sort_order=1,
+        )
+
+    def test_form_includes_condition_fields(self):
+        from apps.surveys.forms import SurveySectionForm
+        form = SurveySectionForm()
+        self.assertIn("condition_question", form.fields)
+        self.assertIn("condition_value", form.fields)
+
+    def test_form_saves_condition(self):
+        from apps.surveys.forms import SurveySectionForm
+        form = SurveySectionForm(data={
+            "title": "Childcare",
+            "sort_order": "2",
+            "page_break": "",
+            "scoring_method": "none",
+            "condition_question": str(self.trigger_q.pk),
+            "condition_value": "1",
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+        section = form.save(commit=False)
+        section.survey = self.survey
+        section.save()
+        self.assertEqual(section.condition_question_id, self.trigger_q.pk)
+        self.assertEqual(section.condition_value, "1")
+
+    def test_form_valid_without_condition(self):
+        from apps.surveys.forms import SurveySectionForm
+        form = SurveySectionForm(data={
+            "title": "No Condition",
+            "sort_order": "1",
+            "page_break": "",
+            "scoring_method": "none",
+            "condition_question": "",
+            "condition_value": "",
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ConditionValuesEndpointTests(TestCase):
+    """Test the HTMX endpoint that returns condition value options."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.staff = User.objects.create_user(
+            username="cv_staff", password="testpass123",
+            display_name="CV Staff", is_admin=True,
+        )
+        self.client.login(username="cv_staff", password="testpass123")
+        FeatureToggle.objects.update_or_create(
+            feature_key="surveys", defaults={"is_enabled": True},
+        )
+        self.survey = Survey.objects.create(name="CV Test", created_by=self.staff)
+        self.section = SurveySection.objects.create(
+            survey=self.survey, title="S1", sort_order=1,
+        )
+
+    def test_yes_no_returns_two_options(self):
+        q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Yes or no?",
+            question_type="yes_no", sort_order=1,
+        )
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('value="1"', content)
+        self.assertIn('value="0"', content)
+
+    def test_single_choice_returns_option_values(self):
+        q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Pick one",
+            question_type="single_choice", sort_order=1,
+            options_json=[
+                {"value": "a", "label": "Alpha"},
+                {"value": "b", "label": "Beta"},
+            ],
+        )
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('value="a"', content)
+        self.assertIn("Alpha", content)
+        self.assertIn('value="b"', content)
+
+    def test_text_question_returns_text_input(self):
+        q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Name?",
+            question_type="short_text", sort_order=1,
+        )
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('type="text"', content)
+
+    def test_rating_scale_returns_option_values(self):
+        q = SurveyQuestion.objects.create(
+            section=self.section, question_text="Rate 1-3",
+            question_type="rating_scale", sort_order=1,
+            options_json=[
+                {"value": "1", "label": "Low"},
+                {"value": "2", "label": "Medium"},
+                {"value": "3", "label": "High"},
+            ],
+        )
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn('value="1"', content)
+        self.assertIn("Low", content)
+        self.assertIn('value="3"', content)
+
+    def test_cross_survey_question_returns_404(self):
+        """Question from a different survey should return 404."""
+        other_survey = Survey.objects.create(name="Other", created_by=self.staff)
+        other_section = SurveySection.objects.create(
+            survey=other_survey, title="Other S1", sort_order=1,
+        )
+        other_q = SurveyQuestion.objects.create(
+            section=other_section, question_text="Other Q",
+            question_type="yes_no", sort_order=1,
+        )
+        # Request other_q via self.survey's URL — should 404
+        url = f"/manage/surveys/{self.survey.pk}/condition-values/{other_q.pk}/"
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 404)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class TriggerRuleModelTests(TestCase):
     """Test SurveyTriggerRule creation and constraints."""
 
