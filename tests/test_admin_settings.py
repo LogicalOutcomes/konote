@@ -215,6 +215,64 @@ class FeatureToggleTest(TestCase):
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class FeatureToggleConfirmTest(TestCase):
+    """Tests for the HTMX feature toggle confirm and action views."""
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client = Client()
+        self.admin = User.objects.create_user(username="admin", password="testpass123", is_admin=True)
+        self.staff = User.objects.create_user(username="staff", password="testpass123", is_admin=False)
+
+    def test_confirm_returns_panel_for_valid_key(self):
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.get("/admin/settings/features/programs/confirm/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Programs")
+        self.assertContains(resp, "Yes,")
+
+    def test_confirm_returns_error_for_invalid_key(self):
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.get("/admin/settings/features/nonexistent/confirm/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Unknown feature")
+
+    def test_confirm_requires_admin(self):
+        self.client.login(username="staff", password="testpass123")
+        resp = self.client.get("/admin/settings/features/programs/confirm/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_toggle_action_enables_feature(self):
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.post("/admin/settings/features/programs/toggle/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(FeatureToggle.objects.get(feature_key="programs").is_enabled)
+
+    def test_toggle_action_disables_feature(self):
+        self.client.login(username="admin", password="testpass123")
+        FeatureToggle.objects.create(feature_key="programs", is_enabled=True)
+        resp = self.client.post("/admin/settings/features/programs/toggle/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(FeatureToggle.objects.get(feature_key="programs").is_enabled)
+
+    def test_toggle_action_rejects_get(self):
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.get("/admin/settings/features/programs/toggle/")
+        self.assertEqual(resp.status_code, 302)
+
+    def test_toggle_action_invalid_key_redirects(self):
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.post("/admin/settings/features/nonexistent/toggle/")
+        self.assertEqual(resp.status_code, 302)
+
+    def test_toggle_action_requires_admin(self):
+        self.client.login(username="staff", password="testpass123")
+        resp = self.client.post("/admin/settings/features/programs/toggle/")
+        self.assertEqual(resp.status_code, 403)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class InstanceSettingsTest(TestCase):
     databases = {"default", "audit"}
 
