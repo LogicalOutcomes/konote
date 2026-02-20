@@ -51,70 +51,92 @@
         {% endfor %}
     </fieldset>
 
-    <!-- Target entries — one accordion per active target, hidden until selected -->
+    <!-- Zone 2: Target cards — compact by default, expandable -->
     <h2>{{ term.target_plural|default:"Targets" }}</h2>
     {% for tf in target_forms %}
-    <details id="target-detail-{{ tf.target.pk }}" class="target-entry" hidden>
-        <summary>
-            {{ tf.target.name }}
-            <small>— {{ tf.target.plan_section.name }}</small>
-        </summary>
-
-        <!-- Hidden target ID -->
+    <div id="target-card-{{ tf.target.pk }}" class="target-card compact" hidden data-target-id="{{ tf.target.pk }}">
         {{ tf.note_form.target_id }}
 
-        {% if tf.target.client_goal %}
-        <div class="client-goal-callout" role="note">
-            <strong>{% trans "In their words:" %}</strong> "{{ tf.target.client_goal }}"
+        <div class="target-card-header" role="button" tabindex="0"
+             aria-expanded="false" aria-controls="target-card-body-{{ tf.target.pk }}">
+            <div class="target-card-title">
+                <strong>{{ tf.target.name }}</strong>
+                <small class="secondary">— {{ tf.target.plan_section.name }}</small>
+            </div>
+            <div class="target-card-actions">
+                <button type="button" class="no-change-btn outline secondary"
+                        data-target-id="{{ tf.target.pk }}"
+                        aria-label="{% trans 'Mark as no change' %}">
+                    {% trans "No change" %}
+                </button>
+                <span class="expand-indicator" aria-hidden="true">&#9662;</span>
+            </div>
         </div>
-        {% endif %}
 
-        <label>{% trans "How are things going?" %}</label>
-        <div class="descriptor-pills">
-        {% for radio in tf.note_form.progress_descriptor %}
-            {% if radio.choice_value %}
-            <label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+        <!-- Compact: always visible — descriptor pills -->
+        <div class="target-card-compact">
+            {% if tf.target.client_goal %}
+            <div class="client-goal-callout" role="note">
+                <strong>{% trans "In their words:" %}</strong> "{{ tf.target.client_goal }}"
+            </div>
             {% endif %}
-        {% endfor %}
-        </div>
-        {% if tf.note_form.progress_descriptor.help_text %}<small>{{ tf.note_form.progress_descriptor.help_text }}</small>{% endif %}
-        {% if tf.note_form.progress_descriptor.errors %}<small class="error" id="descriptor-error-{{ tf.target.pk }}" role="alert">{{ tf.note_form.progress_descriptor.errors.0 }}</small>{% endif %}
 
-        {% if tf.metric_forms %}
-        <h3>{{ term.metric_plural|default:"Metrics" }}</h3>
-        {% for mf in tf.metric_forms %}
-        {{ mf.metric_def_id }}
-        {% if mf.is_scale %}
-        <div class="scale-metric">
-            <label>{{ mf.value.label }}</label>
-            <div class="scale-pills">
-            {% for radio in mf.value %}
+            <label>{% trans "How are things going?" %}</label>
+            <div class="descriptor-pills">
+            {% for radio in tf.note_form.progress_descriptor %}
                 {% if radio.choice_value %}
                 <label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
                 {% endif %}
             {% endfor %}
             </div>
-            {% if mf.value.help_text %}<small>{{ mf.value.help_text }}</small>{% endif %}
-            {% if mf.value.errors %}<small class="error" role="alert">{{ mf.value.errors.0 }}</small>{% endif %}
+            {% if tf.note_form.progress_descriptor.help_text %}<small>{{ tf.note_form.progress_descriptor.help_text }}</small>{% endif %}
+            {% if tf.note_form.progress_descriptor.errors %}<small class="error" id="descriptor-error-{{ tf.target.pk }}" role="alert">{{ tf.note_form.progress_descriptor.errors.0 }}</small>{% endif %}
         </div>
-        {% else %}
-        <label for="{{ mf.value.id_for_label }}">{{ mf.value.label }}</label>
-        {{ mf.value }}
-        {% if mf.value.help_text %}<small>{{ mf.value.help_text }}</small>{% endif %}
-        {% if mf.value.errors %}<small class="error" id="metric-error-{{ forloop.counter }}-{{ tf.target.pk }}" role="alert">{{ mf.value.errors.0 }}</small>{% endif %}
-        {% endif %}
-        {% endfor %}
-        {% endif %}
 
-        <label for="{{ tf.note_form.client_words.id_for_label }}">{% trans "In their words" %}</label>
-        {{ tf.note_form.client_words }}
-        {% if tf.note_form.client_words.help_text %}<small>{{ tf.note_form.client_words.help_text }}</small>{% endif %}
-        {% if tf.note_form.client_words.errors %}<small class="error" id="client-words-error-{{ tf.target.pk }}" role="alert">{{ tf.note_form.client_words.errors.0 }}</small>{% endif %}
+        <!-- Expanded: hidden until card is expanded -->
+        <div id="target-card-body-{{ tf.target.pk }}" class="target-card-body" hidden>
+            {% if tf.metric_forms %}
+            <div class="target-metrics">
+            {% for mf in tf.metric_forms %}
+                {{ mf.metric_def_id }}
+                {% if mf.is_scale %}
+                <div class="scale-metric">
+                    <label>{{ mf.value.label }}</label>
+                    <div class="scale-pills">
+                    {% for radio in mf.value %}
+                        {% if radio.choice_value %}
+                        <label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+                    {% if mf.value.help_text %}<small>{{ mf.value.help_text }}</small>{% endif %}
+                    {% if mf.value.errors %}<small class="error" role="alert">{{ mf.value.errors.0 }}</small>{% endif %}
+                </div>
+                {% else %}
+                <label for="{{ mf.value.id_for_label }}">{{ mf.value.label }}</label>
+                {{ mf.value }}
+                {% if mf.value.help_text %}<small>{{ mf.value.help_text }}</small>{% endif %}
+                {% if mf.value.errors %}<small class="error" id="metric-error-{{ forloop.counter }}-{{ tf.target.pk }}" role="alert">{{ mf.value.errors.0 }}</small>{% endif %}
+                {% endif %}
+            {% endfor %}
+            </div>
+            {% endif %}
 
-        <label for="{{ tf.note_form.notes.id_for_label }}">{% blocktrans with target=term.target|default:"target" %}Your notes for this {{ target }}{% endblocktrans %}</label>
-        {{ tf.note_form.notes }}
-        {% if tf.note_form.notes.errors %}<small class="error" id="notes-error-{{ tf.target.pk }}" role="alert">{{ tf.note_form.notes.errors.0 }}</small>{% endif %}
-    </details>
+            <label for="{{ tf.note_form.client_words.id_for_label }}">{% trans "In their words" %}</label>
+            {{ tf.note_form.client_words }}
+            {% if tf.note_form.client_words.help_text %}<small>{{ tf.note_form.client_words.help_text }}</small>{% endif %}
+            {% if tf.note_form.client_words.errors %}<small class="error" id="client-words-error-{{ tf.target.pk }}" role="alert">{{ tf.note_form.client_words.errors.0 }}</small>{% endif %}
+
+            <label for="{{ tf.note_form.notes.id_for_label }}">{% blocktrans with target=term.target|default:"target" %}Your notes for this {{ target }}{% endblocktrans %}</label>
+            {{ tf.note_form.notes }}
+            {% if tf.note_form.notes.errors %}<small class="error" id="notes-error-{{ tf.target.pk }}" role="alert">{{ tf.note_form.notes.errors.0 }}</small>{% endif %}
+        </div>
+
+        <!-- Done indicator (hidden until "No change" is clicked) -->
+        <div class="target-done-indicator" hidden aria-live="polite">
+            <span aria-hidden="true">&#10003;</span> {% trans "No change noted" %}
+        </div>
+    </div>
     {% endfor %}
     {% else %}
     <p class="empty-state">{% blocktrans with targets=term.target_plural|default:"targets" %}No active {{ targets }} found.{% endblocktrans %} <a href="{% url 'plans:plan_view' client_id=client.pk %}">{% trans "Create a plan" %}</a> {% trans "first." %}</p>
@@ -196,14 +218,13 @@
 {% block extra_scripts %}
 {{ template_defaults|json_script:"template-defaults" }}
 <script>
-// Show/hide target accordions based on checkbox selection
+// Show/hide target cards based on checkbox selection
 document.querySelectorAll(".target-selector").forEach(function (cb) {
     cb.addEventListener("change", function () {
         var targetId = this.getAttribute("data-target-id");
-        var detail = document.getElementById("target-detail-" + targetId);
-        if (detail) {
-            detail.hidden = !this.checked;
-            if (this.checked) { detail.open = true; }
+        var card = document.getElementById("target-card-" + targetId);
+        if (card) {
+            card.hidden = !this.checked;
         }
     });
 });
