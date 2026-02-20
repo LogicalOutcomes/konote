@@ -2,7 +2,6 @@
 
 ## Flagged
 
-- [ ] Fix fiscal year dropdown showing "Custom date range" instead of fiscal year options (BUG-FY1)
 - [ ] Review requirements analysis doc with Sara before sending to client (docs/konote-requirements-analysis-draft.md) — GG (DOC-REQ1)
 - [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — GG (ONBOARD-APPROVE)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GG (SEC3-Q1)
@@ -113,6 +112,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Fix "error message" when clicking "Draft Report summary" — gettext_lazy proxies as JSON keys — 2026-02-20 (BUG-AI2)
 ## Recently Done
 
+- [x] Fix fiscal year dropdown showing English strings in French UI — wrapped with gettext, added 12 French translations — 2026-02-20 (BUG-FY1)
 - [x] Build "Questions for You" portal feature — auto-save, multi-page, conditional sections, review page, dashboard badge — 2026-02-20 (PORTAL-Q1)
 - [x] Redesign detailed notes form (Round 2) — auto-calc metrics, scale pills, two-lens layout (see docs/plans/2026-02-19-notes-form-redesign-v2.md) — 2026-02-19 (UX-NOTES2)
 
