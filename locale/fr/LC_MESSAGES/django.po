@@ -13545,8 +13545,8 @@ msgid "suggestions available"
 msgstr "suggestions disponibles"
 
 #. blocktrans strings from goal creation templates
-msgid "Add %(section)s only"
-msgstr "Ajouter %(section)s seulement"
+msgid "Add %(section)s"
+msgstr "Ajouter %(section)s"
 
 msgid "Add a %(target)s"
 msgstr "Ajouter un(e) %(target)s"
