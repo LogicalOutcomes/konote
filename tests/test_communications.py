@@ -543,3 +543,44 @@ class ComposeEmailViewTest(TestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, 302)
         self.assertIn("login", response.url)
+
+
+# -----------------------------------------------------------------------
+# StaffMessage model tests (UX-MSG1)
+# -----------------------------------------------------------------------
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class StaffMessageModelTest(TestCase):
+    """Test StaffMessage model fields and behaviour."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        self.staff = User.objects.create_user(
+            username="test_staff_msg", password="testpass123", display_name="Test Staff",
+        )
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_is_urgent_defaults_to_false(self):
+        from apps.communications.models import StaffMessage
+        msg = StaffMessage(client_file=self.client_file, left_by=self.staff)
+        msg.content = "Test message"
+        msg.save()
+        msg.refresh_from_db()
+        self.assertFalse(msg.is_urgent)
+
+    def test_is_urgent_can_be_set_true(self):
+        from apps.communications.models import StaffMessage
+        msg = StaffMessage(client_file=self.client_file, left_by=self.staff, is_urgent=True)
+        msg.content = "Urgent test"
+        msg.save()
+        msg.refresh_from_db()
+        self.assertTrue(msg.is_urgent)
