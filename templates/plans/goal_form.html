@@ -9,7 +9,7 @@
     <p>{{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
 
-{% if form.non_field_errors %}
+{% if form.errors %}
 <div class="error-summary" role="alert" id="error-summary" tabindex="-1">
     <strong>{% trans "Please fix the following:" %}</strong>
     <ul>
