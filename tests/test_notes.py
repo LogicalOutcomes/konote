@@ -382,6 +382,22 @@ class NoteViewsTest(TestCase):
         form = MetricValueForm(metric_def=metric)
         self.assertEqual(form.fields["value"].widget.__class__.__name__, "NumberInput")
 
+    def test_metric_computation_type_defaults_to_empty(self):
+        """New metrics default to manual entry (empty computation_type)."""
+        metric = MetricDefinition.objects.create(
+            name="Test", definition="Test", category="general",
+        )
+        self.assertEqual(metric.computation_type, "")
+
+    def test_metric_computation_type_session_count(self):
+        """Metrics can have computation_type='session_count'."""
+        metric = MetricDefinition.objects.create(
+            name="Sessions", definition="Count", category="general",
+            computation_type="session_count",
+        )
+        metric.refresh_from_db()
+        self.assertEqual(metric.computation_type, "session_count")
+
     def test_metric_value_out_of_range_rejected(self):
         section = PlanSection.objects.create(
             client_file=self.client_file, name="Goals", program=self.prog,
