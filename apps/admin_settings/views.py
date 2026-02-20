@@ -387,7 +387,7 @@ def feature_toggle_action(request, feature_key):
         "feature_key": feature_key,
         "label": info["label"],
         "is_enabled": new_state,
-        "action_taken": "enabled" if new_state else "disabled",
+        "action_taken": _("enabled") if new_state else _("disabled"),
     })
 
 
