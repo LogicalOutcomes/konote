@@ -130,7 +130,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Fix "error message" when clicking "Draft Report summary" — gettext_lazy proxies as JSON keys — 2026-02-20 (BUG-AI2)
 ## Parking Lot
 
-- [ ] Rename original KoNote GitHub repo to KoNote Classic and add redirect/link to this repo (REPO1)
 - [ ] Add stress testing for 50+ concurrent users (QA-T15)
 - [ ] Add legacy system import migration scenario test (QA-T16)
 - [ ] Add onboarding guidance for new users (help link or first-run banner) (QA-W19)
@@ -151,6 +150,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Rename original KoNote GitHub repo to KoNote Classic and add redirect — 2026-02-20 (REPO1)
 - [x] Fix fiscal year dropdown showing English strings in French UI — wrapped with gettext, added 12 French translations — 2026-02-20 (BUG-FY1)
 - [x] Define Prosper Canada configuration template — 8 fixture files covering terminology, metrics, plans, roles, report schema — 2026-02-20 (DEPLOY-TEMPLATE1)
 - [x] Add financial metric plausibility subsection to data validation design — warn_min/warn_max for debt, income, savings, credit score — 2026-02-20 (DQ1-FIN)

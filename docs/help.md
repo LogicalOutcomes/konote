@@ -12,6 +12,7 @@ Welcome to KoNote! This guide helps you find what you need quickly.
 | Write a progress note | [Progress Notes](#progress-notes) |
 | Record an event or alert | [Events and Alerts](#events-and-alerts) |
 | Leave a message for a case worker | [Staff Messaging](#staff-messaging) |
+| Assign or fill in a survey | [Surveys](#surveys) |
 | Transfer a client between programs | [Client Transfer](#client-transfer) |
 | View or edit a client's plan | [Outcome Plans](#outcome-plans) |
 | See progress charts | [Analysis and Reports](#analysis-and-reports) |
@@ -261,6 +262,34 @@ Only staff with the **client.transfer** permission (typically program managers a
 - Set cross-program sharing consent if needed
 - Add an optional reason (recorded in the audit log)
 - You can only change programs you have access to — other enrolments remain untouched
+
+---
+
+## Surveys
+
+If surveys are enabled for your agency, you can assign structured feedback forms to participants and enter responses on their behalf.
+
+### Assigning a Survey
+
+1. Open the participant's file → **Surveys** tab
+2. Click **Assign Survey**
+3. Choose a survey and optionally set a due date
+4. Click **Assign**
+
+Some surveys are assigned automatically through trigger rules — you don't need to assign those manually.
+
+### Entering a Response
+
+1. Open the participant's file → **Surveys** tab
+2. Click the survey name under **Enter Survey on Behalf**
+3. Fill in the answers (conditional sections show/hide based on your answers)
+4. Click **Submit Response**
+
+### Viewing Responses
+
+Go to the participant's **Surveys** tab → **Completed Responses** → click **View**.
+
+For the complete survey guide, see [Surveys](surveys.md).
 
 ---
 
@@ -656,6 +685,8 @@ For security, KoNote logs you out after inactivity. Log in again to continue. Yo
 | Schedule a meeting | Actions menu → Schedule Meeting |
 | Leave a message for a case worker | Info tab → Leave Message |
 | See my unread messages | Messages (main navigation) |
+| Assign a survey | Client file → Surveys tab → Assign Survey |
+| Enter a survey response | Client file → Surveys tab → Enter Survey on Behalf |
 | Transfer a client | Actions menu → Transfer |
 | Invite to the participant portal | Info tab → Participant Portal → Invite to Portal |
 | See who needs attention | Check Priority Items on home page |
@@ -663,6 +694,7 @@ For security, KoNote logs you out after inactivity. Log in again to continue. Yo
 | See program patterns | Insights (main navigation) |
 | Review registrations | Admin → Submissions |
 | Create a registration form | Admin → Registration |
+| Create or manage surveys | Admin → Surveys |
 | Change terminology | Admin → Settings → Terminology |
 | Add a user | Admin → Invites |
 
@@ -684,4 +716,4 @@ For security, KoNote logs you out after inactivity. Log in again to continue. Yo
 
 **KoNote** — Participant Outcome Management
 
-Last updated: 2026-02-16
+Last updated: 2026-02-20

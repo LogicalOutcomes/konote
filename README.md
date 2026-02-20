@@ -97,7 +97,10 @@ For the research basis behind these design choices, see [Design Principles](docs
 ### Communications & Messaging
 - Log phone calls, emails, SMS, and in-person contacts on the client timeline
 - Quick-log buttons for common interactions
+- **Send SMS and email** — compose and send messages to participants with consent tracking (Twilio for SMS, SMTP for email)
+- Appointment reminder previews before sending, with CASL-required unsubscribe links
 - Staff-to-staff messaging about participants with unread badges and My Messages dashboard
+- Safety-first mode — block all outbound messages when clients may be in unsafe situations
 - System health monitoring banners when SMS or email delivery is failing
 
 ### Meetings & Calendar
@@ -116,10 +119,28 @@ For the research basis behind these design choices, see [Design Principles](docs
 - Member highlights, milestones, and group-level outcomes
 - Two modes: drop-in groups (attendance) and goal-oriented projects (milestones)
 
+### Surveys
+- Create structured feedback forms with sections, questions, and scoring
+- Six question types: short text, long text, single choice, multiple choice, rating scale, yes/no
+- **Trigger rules** — automatically assign surveys based on events, enrolment, time intervals, or participant characteristics
+- **Shareable links** — generate public URLs for anonymous or identified survey completion without a portal account
+- **Auto-save** — partial answers saved question-by-question so participants can resume later
+- **Conditional sections** — show or hide sections based on answers to trigger questions
+- **Section scoring** — sum or average scoring with optional display to participants
+- CSV import for bulk survey creation from spreadsheets
+- Bilingual support (EN/FR) for all survey content
+- Three submission channels: participant portal, staff data entry, or shareable link
+
 ### Participant Portal
 - Separate participant-facing interface for viewing goals, progress, and milestones
 - Journal entries with optional disclosure to staff
 - Messaging between participants and their workers
+- **Survey completion** — fill in assigned surveys with multi-page forms and auto-save
+- **Password reset** — self-service via 6-digit email code with rate limiting
+- **Staff-assisted login** — one-time token for helping participants who can't self-register
+- **PWA support** — "Add to Home Screen" for a native app experience on mobile
+- **Usage analytics** — aggregate dashboard showing portal adoption, engagement, and feature usage
+- Auto-deactivation on client discharge, with data preserved
 - Staff manage portal access, invitations, and MFA resets from the client detail page
 
 ### Suggestion Tracking & Outcome Insights
@@ -141,12 +162,24 @@ For the research basis behind these design choices, see [Design Principles](docs
 - Audit log viewer for compliance (program-scoped for managers)
 - Weekly export summary emails for privacy oversight
 
+### AI Assist (Optional)
+- **AI Goal Builder** — conversational goal-setting on the plan page; multi-turn dialogue helps staff and participants define measurable targets
+- AI-suggested metrics, outcome statement improvements, and note structure
+- Outcome Insights narrative generation from qualitative data
+- PII scrubbed before any data leaves the server; all AI features gated by feature toggle and API key
+
+### Dashboard Roles
+- **Coach view** — active clients, priority items, recent notes, upcoming meetings
+- **Program Manager view** — program summary with note volume, alert counts, and staff activity
+- **Executive view** — cross-program overview with outcome trends, suggestion themes, and portal adoption
+
 ### Customisation
 - **Terminology overrides** — call clients "Participants", programs "Services", etc.
 - **Feature toggles** — enable/disable features to match your workflow
 - **Custom fields** — capture agency-specific data with validation (postal code, phone, email)
 - **Templates** — standardise plans and notes across your team
 - **PM self-service** — program managers manage their own templates, metrics, event types, and registration links
+- **Setup wizard** — guided first-run configuration for new instances (branding, terminology, features, programs, metrics, templates)
 
 ### Security & Compliance
 - Field-level encryption for all PII (Fernet/AES)
@@ -164,7 +197,7 @@ For the research basis behind these design choices, see [Design Principles](docs
 - **Demo/real separation** — Immutable `is_demo` flags prevent cross-contamination between evaluation and production data
 
 ### Localisation
-- **French (Français)** — 748+ translated strings, header language switcher (Canada.ca convention), cookie-based persistence
+- **French (Français)** — 2,146+ translated strings, header language switcher (Canada.ca convention), cookie-based persistence
 - **Canadian formats** — Postal code validation (A1A 1A1), phone normalisation ((613) 555-1234), auto-detection from field names
 
 ---
