@@ -1661,20 +1661,44 @@ def portal_survey_review(request, assignment_id):
 
 @portal_login_required
 def portal_survey_thank_you(request, assignment_id):
-    """Thank-you page after completing a survey."""
+    """Thank-you page after completing a survey — with optional scores."""
     from apps.surveys.engine import is_surveys_enabled
-    from apps.surveys.models import SurveyAssignment
+    from apps.surveys.models import SurveyAssignment, SurveyResponse, SurveyAnswer
+    from apps.portal.survey_helpers import (
+        filter_visible_sections, calculate_section_scores,
+    )
 
     if not is_surveys_enabled():
         raise Http404
 
     participant = request.participant_user
+    client_file = _get_client_file(request)
+
     assignment = get_object_or_404(
         SurveyAssignment,
         pk=assignment_id,
         participant_user=participant,
     )
+    survey = assignment.survey
+
+    scores = []
+    if survey.show_scores_to_participant:
+        response_obj = SurveyResponse.objects.filter(
+            assignment=assignment, client_file=client_file,
+        ).first()
+        if response_obj:
+            answers = SurveyAnswer.objects.filter(response=response_obj)
+            answers_dict = {a.question_id: a.value for a in answers}
+            all_sections = list(
+                survey.sections.filter(is_active=True)
+                .prefetch_related("questions")
+                .order_by("sort_order")
+            )
+            visible = filter_visible_sections(all_sections, answers_dict)
+            scores = calculate_section_scores(visible, answers_dict)
+
     return render(request, "portal/survey_thank_you.html", {
         "participant": participant,
-        "survey": assignment.survey,
+        "survey": survey,
+        "scores": scores,
     })
