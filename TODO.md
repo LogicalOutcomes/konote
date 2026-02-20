@@ -67,6 +67,14 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Research/Implement including data visuals (charts/graphs) in PDF reports (REP-PDF1)
 - [ ] Redesign PDF report layout: merge title page with page 2 to eliminate redundant empty space (REP-PDF2)
 
+### Phase: Surveys QA Scenarios
+
+- [ ] Add survey demo data to seed_demo_data — 2 active surveys, 1 draft, 1 response, 1 assignment, 1 trigger rule (see tasks/qa-survey-scenarios.md) (QA-SURV1)
+- [ ] Create CSV test fixture for survey import at tests/fixtures/sample-survey-import.csv (QA-SURV2)
+- [ ] Write 8 scenario YAML files (SCN-110 through SCN-117) in konote-qa-scenarios repo (see tasks/qa-survey-scenarios.md) (QA-SURV3)
+- [ ] Add test methods for survey scenarios to tests/scenario_eval/test_scenario_eval.py (QA-SURV4)
+- [ ] Update page-inventory.yaml in qa-scenarios repo with survey pages (QA-SURV5)
+
 ### Phase: Surveys Future Work
 
 - [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
