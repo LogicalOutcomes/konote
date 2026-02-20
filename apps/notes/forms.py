@@ -185,6 +185,8 @@ class MetricValueForm(forms.Form):
 
     metric_def_id = forms.IntegerField(widget=forms.HiddenInput())
     value = forms.CharField(required=False, max_length=100)
+    is_scale = False
+    auto_calc_value = None
 
     def __init__(self, *args, metric_def=None, **kwargs):
         super().__init__(*args, **kwargs)

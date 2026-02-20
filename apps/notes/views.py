@@ -472,6 +472,9 @@ def note_create(request, client_id):
                 note.save()
 
                 # Create target entries and metric values
+                # Recompute auto-calc values once (includes the just-saved note)
+                fresh_calc = _compute_auto_calc_values(client)
+
                 for tf in target_forms:
                     nf = tf["note_form"]
                     notes_text = nf.cleaned_data.get("notes", "")
@@ -499,8 +502,6 @@ def note_create(request, client_id):
                     for mf in tf["metric_forms"]:
                         # Auto-calc metrics: save computed value server-side
                         if hasattr(mf, "metric_def") and mf.metric_def.computation_type:
-                            # Recompute with the new note included
-                            fresh_calc = _compute_auto_calc_values(client)
                             computed_val = fresh_calc.get(mf.metric_def.computation_type)
                             if computed_val is not None:
                                 MetricValue.objects.create(
