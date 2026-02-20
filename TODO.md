@@ -148,6 +148,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
 - [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
 - [x] Add basic smoke test for `translate_strings` command — removed dead test class but no replacement exists — 2026-02-20 (TEST-TRANS2)
+- [ ] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering (CODE-TIDY1)
+- [ ] Unify analysis chart quick-select links and date picker form into a single input mechanism (UX-CHART1)
+- [ ] Add edge-case tests for invalid/inaccessible target IDs and 3m/6m timeframe paths (TEST-FILTER1)
 
 ## Recently Done
 
