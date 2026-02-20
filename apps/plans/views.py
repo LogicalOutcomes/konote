@@ -498,9 +498,9 @@ def goal_create(request, client_id):
                 custom_metric_def = request.POST.get("custom_metric_definition", "").strip()
                 custom_metric_accepted = request.POST.get("custom_metric_accepted") == "true"
 
-                if custom_metric_accepted and custom_metric_name:
+                if custom_metric_accepted and custom_metric_name and custom_metric_def:
                     custom_metric = MetricDefinition.objects.create(
-                        name=custom_metric_name,
+                        name=custom_metric_name[:255],
                         definition=custom_metric_def,
                         min_value=1,
                         max_value=5,

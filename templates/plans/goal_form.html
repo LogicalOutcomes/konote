@@ -705,11 +705,11 @@
             });
         }
 
-        // Handle custom metric
+        // Populate custom metric fields but do NOT auto-accept — let the
+        // caseworker decide via the accept/skip buttons on the suggestion card.
         if (suggestion.custom_metric) {
             document.getElementById('custom-metric-name').value = suggestion.custom_metric.name || '';
             document.getElementById('custom-metric-definition').value = suggestion.custom_metric.definition || '';
-            document.getElementById('custom-metric-accepted').value = 'true';
         }
     }
 
@@ -817,11 +817,13 @@
     document.addEventListener('click', function(e) {
         if (e.target.closest('.btn-accept-metric')) {
             document.getElementById('custom-metric-accepted').value = 'true';
-            e.target.closest('.custom-metric-actions').innerHTML = '<small class="secondary">\u2713 Included</small>';
+            e.target.closest('.custom-metric-actions').innerHTML = '<small class="secondary">\u2713 {% trans "Included" %}</small>';
         }
         if (e.target.closest('.btn-skip-metric')) {
             document.getElementById('custom-metric-accepted').value = '';
-            e.target.closest('.custom-metric-actions').innerHTML = '<small class="secondary">Skipped</small>';
+            document.getElementById('custom-metric-name').value = '';
+            document.getElementById('custom-metric-definition').value = '';
+            e.target.closest('.custom-metric-actions').innerHTML = '<small class="secondary">{% trans "Skipped" %}</small>';
         }
     });
 

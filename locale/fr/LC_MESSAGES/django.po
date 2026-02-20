@@ -12931,3 +12931,17 @@ msgstr "Ignorer"
 
 msgid "Suggested target-specific metric"
 msgstr "Métrique suggérée pour cet objectif"
+
+msgid "Included"
+msgstr "Inclus"
+
+msgid "Skipped"
+msgstr "Ignoré"
+
+#, python-format
+msgid "Include %(name)s"
+msgstr "Inclure %(name)s"
+
+#, python-format
+msgid "Skip %(name)s"
+msgstr "Ignorer %(name)s"

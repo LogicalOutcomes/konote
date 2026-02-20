@@ -2,6 +2,7 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
+from apps.plans.models import SELF_EFFICACY_METRIC_NAME
 from apps.programs.models import Program, UserProgramRole
 
 from .models import (
@@ -190,7 +191,7 @@ class MetricValueForm(forms.Form):
                 label += f" ({metric_def.translated_unit})"
             self.fields["value"].label = label
             # Domain-specific prompt for Self-Efficacy
-            if metric_def.name == "Self-Efficacy" and target_name:
+            if metric_def.name == SELF_EFFICACY_METRIC_NAME and target_name:
                 from django.utils.translation import gettext
                 self.fields["value"].label = gettext(
                     "How sure do you feel about being able to %(target)s?"
