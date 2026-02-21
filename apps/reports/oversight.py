@@ -274,9 +274,14 @@ def _previous_quarter(period_start, period_end):
 
 def quarter_dates(period_label):
     """Parse a period label like 'Q1 2026' into (start, end) dates."""
-    quarter, year_str = period_label.split()
-    year = int(year_str)
-    quarter_num = int(quarter[1])
+    try:
+        quarter, year_str = period_label.split()
+        year = int(year_str)
+        quarter_num = int(quarter[1])
+        if quarter_num < 1 or quarter_num > 4:
+            raise ValueError
+    except (ValueError, IndexError):
+        raise ValueError(f"Invalid period label: {period_label!r} (expected 'Q1 2026' format)")
 
     month_start = (quarter_num - 1) * 3 + 1
     start = date(year, month_start, 1)

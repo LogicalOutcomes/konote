@@ -31,20 +31,20 @@
     <fieldset>
         <label for="id_name">{{ form.name.label }}</label>
         {{ form.name }}
-        {% if form.name.errors %}<small class="text-danger">{{ form.name.errors.0 }}</small>{% endif %}
+        {% if form.name.errors %}<small id="id_name_error" class="text-danger">{{ form.name.errors.0 }}</small>{% endif %}
     </fieldset>
 
     <div class="grid">
         <fieldset>
             <label for="id_report_type">{{ form.report_type.label }}</label>
             {{ form.report_type }}
-            {% if form.report_type.errors %}<small class="text-danger">{{ form.report_type.errors.0 }}</small>{% endif %}
+            {% if form.report_type.errors %}<small id="id_report_type_error" class="text-danger">{{ form.report_type.errors.0 }}</small>{% endif %}
         </fieldset>
 
         <fieldset>
             <label for="id_frequency">{{ form.frequency.label }}</label>
             {{ form.frequency }}
-            {% if form.frequency.errors %}<small class="text-danger">{{ form.frequency.errors.0 }}</small>{% endif %}
+            {% if form.frequency.errors %}<small id="id_frequency_error" class="text-danger">{{ form.frequency.errors.0 }}</small>{% endif %}
         </fieldset>
     </div>
 
@@ -53,14 +53,14 @@
             <label for="id_due_date">{{ form.due_date.label }}</label>
             {{ form.due_date }}
             {% if form.due_date.help_text %}<small>{{ form.due_date.help_text }}</small>{% endif %}
-            {% if form.due_date.errors %}<small class="text-danger">{{ form.due_date.errors.0 }}</small>{% endif %}
+            {% if form.due_date.errors %}<small id="id_due_date_error" class="text-danger">{{ form.due_date.errors.0 }}</small>{% endif %}
         </fieldset>
 
         <fieldset>
             <label for="id_reminder_days_before">{{ form.reminder_days_before.label }}</label>
             {{ form.reminder_days_before }}
             {% if form.reminder_days_before.help_text %}<small>{{ form.reminder_days_before.help_text }}</small>{% endif %}
-            {% if form.reminder_days_before.errors %}<small class="text-danger">{{ form.reminder_days_before.errors.0 }}</small>{% endif %}
+            {% if form.reminder_days_before.errors %}<small id="id_reminder_days_before_error" class="text-danger">{{ form.reminder_days_before.errors.0 }}</small>{% endif %}
         </fieldset>
     </div>
 

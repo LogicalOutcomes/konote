@@ -441,3 +441,12 @@ class ReportScheduleForm(forms.ModelForm):
         widgets = {
             "due_date": forms.DateInput(attrs={"type": "date"}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Wire up aria-describedby for fields with errors (after validation)
+        for field_name in self.errors:
+            if field_name in self.fields:
+                widget = self.fields[field_name].widget
+                widget.attrs["aria-invalid"] = "true"
+                widget.attrs["aria-describedby"] = f"id_{field_name}_error"

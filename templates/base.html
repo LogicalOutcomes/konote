@@ -48,7 +48,7 @@
         — <a href="{% url 'reports:schedule_list' %}">{% trans "View schedules" %}</a>
     </div>
     {% elif upcoming_reports %}
-    <div class="report-deadline-banner report-deadline-upcoming" role="alert">
+    <div class="report-deadline-banner report-deadline-upcoming" role="status">
         <strong>{% trans "Upcoming:" %}</strong>
         {% for schedule in upcoming_reports %}
         {{ schedule.name }} ({% trans "due" %} {{ schedule.due_date|date:"M j" }}){% if not forloop.last %}, {% endif %}

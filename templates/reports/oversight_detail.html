@@ -105,8 +105,8 @@
 
 {# Internal / External toggle #}
 <div class="view-toggle">
-    <a href="{% url 'reports:oversight_detail' report_id=snapshot.pk %}" class="{% if not is_external %}active{% endif %}">{% trans "Internal" %}</a>
-    <a href="{% url 'reports:oversight_detail' report_id=snapshot.pk %}?external=1" class="{% if is_external %}active{% endif %}">{% trans "External" %}</a>
+    <a href="{% url 'reports:oversight_detail' report_id=snapshot.pk %}" class="{% if not is_external %}active{% endif %}" {% if not is_external %}aria-current="page"{% endif %}>{% trans "Internal" %}</a>
+    <a href="{% url 'reports:oversight_detail' report_id=snapshot.pk %}?external=1" class="{% if is_external %}active{% endif %}" {% if is_external %}aria-current="page"{% endif %}>{% trans "External" %}</a>
 </div>
 
 {% if is_external %}

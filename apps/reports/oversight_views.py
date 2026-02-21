@@ -81,6 +81,8 @@ def oversight_report_approve(request, report_id):
         # Advance only schedules whose due_date falls within or before
         # this report's period — prevents approving a Q1 report from
         # advancing an annual schedule due in Q4.
+        # TODO: If multiple report types are added, consider linking
+        # OversightReportSnapshot to ReportSchedule via FK for precise matching.
         schedules = ReportSchedule.objects.filter(
             report_type="oversight",
             is_active=True,
