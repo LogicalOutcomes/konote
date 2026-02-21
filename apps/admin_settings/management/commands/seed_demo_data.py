@@ -67,6 +67,15 @@ from apps.portal.models import (
 )
 from apps.programs.models import Program
 from apps.registration.models import RegistrationLink, RegistrationSubmission
+from apps.surveys.models import (
+    Survey,
+    SurveyAnswer,
+    SurveyAssignment,
+    SurveyQuestion,
+    SurveyResponse,
+    SurveySection,
+    SurveyTriggerRule,
+)
 from seeds.demo_client_fields import CLIENT_CUSTOM_FIELDS
 
 User = get_user_model()
@@ -1374,6 +1383,9 @@ class Command(BaseCommand):
 
         # --- Create staff-to-staff messages ---
         self._create_demo_staff_messages(workers, programs_by_name, now)
+
+        # --- Create demo surveys, responses, assignments, and trigger rules ---
+        self._create_demo_surveys(workers, programs_by_name)
 
         self.stdout.write(self.style.SUCCESS(
             "  Demo rich data seeded successfully (15 clients across 5 programs)."
@@ -3373,3 +3385,327 @@ class Command(BaseCommand):
             created += 1
 
         self.stdout.write(f"  Staff messages: {created} created.")
+
+    def _create_demo_surveys(self, workers, programs_by_name):
+        """Create demo surveys with sections, questions, a response, an assignment, and a trigger rule."""
+        created_by = workers.get("demo-worker-1")
+
+        # Skip if surveys already exist (idempotent)
+        if Survey.objects.filter(name="Program Satisfaction Survey").exists():
+            self.stdout.write("  Surveys: already exist. Skipping.")
+            return
+
+        # =====================================================================
+        # Survey 1: Program Satisfaction Survey (active)
+        # =====================================================================
+        satisfaction_survey, _ = Survey.objects.get_or_create(
+            name="Program Satisfaction Survey",
+            defaults={
+                "description": "A brief survey to understand your experience with our services.",
+                "status": "active",
+                "portal_visible": True,
+                "show_scores_to_participant": False,
+                "created_by": created_by,
+            },
+        )
+
+        # Section 1: General Feedback
+        sec1_general, _ = SurveySection.objects.get_or_create(
+            survey=satisfaction_survey,
+            title="General Feedback",
+            defaults={
+                "sort_order": 1,
+                "scoring_method": "none",
+            },
+        )
+
+        q1_satisfied, _ = SurveyQuestion.objects.get_or_create(
+            section=sec1_general,
+            question_text="Overall, how satisfied are you with the services you receive?",
+            defaults={
+                "question_type": "single_choice",
+                "sort_order": 1,
+                "required": True,
+                "options_json": [
+                    {"value": "very_satisfied", "label": "Very satisfied"},
+                    {"value": "satisfied", "label": "Satisfied"},
+                    {"value": "neutral", "label": "Neutral"},
+                    {"value": "dissatisfied", "label": "Dissatisfied"},
+                    {"value": "very_dissatisfied", "label": "Very dissatisfied"},
+                ],
+            },
+        )
+
+        q2_rating, _ = SurveyQuestion.objects.get_or_create(
+            section=sec1_general,
+            question_text="How would you rate the support from your worker?",
+            defaults={
+                "question_type": "rating_scale",
+                "sort_order": 2,
+                "required": True,
+                "min_value": 1,
+                "max_value": 5,
+            },
+        )
+
+        q3_helpful, _ = SurveyQuestion.objects.get_or_create(
+            section=sec1_general,
+            question_text="What has been most helpful?",
+            defaults={
+                "question_type": "short_text",
+                "sort_order": 3,
+                "required": False,
+            },
+        )
+
+        q4_recommend, _ = SurveyQuestion.objects.get_or_create(
+            section=sec1_general,
+            question_text="Would you recommend this program to others?",
+            defaults={
+                "question_type": "yes_no",
+                "sort_order": 4,
+                "required": True,
+            },
+        )
+
+        # Section 2: Program Experience
+        sec2_experience, _ = SurveySection.objects.get_or_create(
+            survey=satisfaction_survey,
+            title="Program Experience",
+            defaults={
+                "sort_order": 2,
+                "scoring_method": "none",
+            },
+        )
+
+        q5_services, _ = SurveyQuestion.objects.get_or_create(
+            section=sec2_experience,
+            question_text="Which services have you used?",
+            defaults={
+                "question_type": "single_choice",
+                "sort_order": 1,
+                "required": True,
+                "options_json": [
+                    {"value": "housing_support", "label": "Housing support"},
+                    {"value": "employment_coaching", "label": "Employment coaching"},
+                    {"value": "financial_literacy", "label": "Financial literacy"},
+                    {"value": "life_skills", "label": "Life skills"},
+                    {"value": "other", "label": "Other"},
+                ],
+            },
+        )
+
+        q6_comments, _ = SurveyQuestion.objects.get_or_create(
+            section=sec2_experience,
+            question_text="Please share any additional comments or suggestions",
+            defaults={
+                "question_type": "long_text",
+                "sort_order": 2,
+                "required": False,
+            },
+        )
+
+        # =====================================================================
+        # Survey 2: PHQ-2 Screen (active)
+        # =====================================================================
+        phq2_survey, _ = Survey.objects.get_or_create(
+            name="PHQ-2 Screen",
+            defaults={
+                "description": "A brief two-question screen for depression.",
+                "status": "active",
+                "portal_visible": True,
+                "show_scores_to_participant": True,
+                "created_by": created_by,
+            },
+        )
+
+        sec_phq2, _ = SurveySection.objects.get_or_create(
+            survey=phq2_survey,
+            title="Over the last 2 weeks",
+            defaults={
+                "sort_order": 1,
+                "scoring_method": "sum",
+            },
+        )
+
+        SurveyQuestion.objects.get_or_create(
+            section=sec_phq2,
+            question_text="Little interest or pleasure in doing things",
+            defaults={
+                "question_type": "rating_scale",
+                "sort_order": 1,
+                "required": True,
+                "min_value": 0,
+                "max_value": 3,
+                "options_json": [
+                    {"value": "0", "label": "Not at all"},
+                    {"value": "1", "label": "Several days"},
+                    {"value": "2", "label": "More than half the days"},
+                    {"value": "3", "label": "Nearly every day"},
+                ],
+            },
+        )
+
+        SurveyQuestion.objects.get_or_create(
+            section=sec_phq2,
+            question_text="Feeling down, depressed, or hopeless",
+            defaults={
+                "question_type": "rating_scale",
+                "sort_order": 2,
+                "required": True,
+                "min_value": 0,
+                "max_value": 3,
+                "options_json": [
+                    {"value": "0", "label": "Not at all"},
+                    {"value": "1", "label": "Several days"},
+                    {"value": "2", "label": "More than half the days"},
+                    {"value": "3", "label": "Nearly every day"},
+                ],
+            },
+        )
+
+        # =====================================================================
+        # Survey 3: Exit Interview (draft)
+        # =====================================================================
+        exit_survey, _ = Survey.objects.get_or_create(
+            name="Exit Interview",
+            defaults={
+                "description": "Reflections and feedback at the end of a program.",
+                "status": "draft",
+                "portal_visible": False,
+                "show_scores_to_participant": False,
+                "created_by": created_by,
+            },
+        )
+
+        sec_exit, _ = SurveySection.objects.get_or_create(
+            survey=exit_survey,
+            title="Closing Reflections",
+            defaults={
+                "sort_order": 1,
+                "scoring_method": "none",
+            },
+        )
+
+        SurveyQuestion.objects.get_or_create(
+            section=sec_exit,
+            question_text="What are your biggest takeaways from this program?",
+            defaults={
+                "question_type": "long_text",
+                "sort_order": 1,
+                "required": False,
+            },
+        )
+
+        SurveyQuestion.objects.get_or_create(
+            section=sec_exit,
+            question_text="What is your housing situation now?",
+            defaults={
+                "question_type": "single_choice",
+                "sort_order": 2,
+                "required": True,
+                "options_json": [
+                    {"value": "stable_housing", "label": "Stable housing"},
+                    {"value": "temporary_housing", "label": "Temporary housing"},
+                    {"value": "transitional", "label": "Transitional"},
+                    {"value": "seeking_housing", "label": "Seeking housing"},
+                    {"value": "other", "label": "Other"},
+                ],
+            },
+        )
+
+        SurveyQuestion.objects.get_or_create(
+            section=sec_exit,
+            question_text="How prepared do you feel for the future?",
+            defaults={
+                "question_type": "rating_scale",
+                "sort_order": 3,
+                "required": True,
+                "min_value": 1,
+                "max_value": 5,
+            },
+        )
+
+        self.stdout.write(
+            f"  Surveys: 3 created ({satisfaction_survey.name}, "
+            f"{phq2_survey.name}, {exit_survey.name})."
+        )
+
+        # =====================================================================
+        # SurveyResponse for Program Satisfaction Survey (DEMO-001)
+        # =====================================================================
+        client_001 = ClientFile.objects.filter(record_id="DEMO-001").first()
+        if client_001:
+            response, resp_created = SurveyResponse.objects.get_or_create(
+                survey=satisfaction_survey,
+                client_file=client_001,
+                channel="staff_entered",
+            )
+            if resp_created:
+                # Create answers using the encrypted .value property setter
+                answer_data = [
+                    (q1_satisfied, "Satisfied", None),
+                    (q2_rating, "4", 4),
+                    (q3_helpful, "The housing support", None),
+                    (q4_recommend, "True", None),
+                    (q5_services, "Housing support", None),
+                    (q6_comments, "Great program overall", None),
+                ]
+                for question, value_text, numeric in answer_data:
+                    answer = SurveyAnswer(
+                        response=response,
+                        question=question,
+                        numeric_value=numeric,
+                    )
+                    answer.value = value_text
+                    answer.save()
+                self.stdout.write("  Survey response: created for DEMO-001 (Program Satisfaction).")
+            else:
+                self.stdout.write("  Survey response: already exists for DEMO-001. Skipping.")
+        else:
+            self.stdout.write("  Survey response: DEMO-001 client file not found. Skipping.")
+
+        # =====================================================================
+        # SurveyAssignment for PHQ-2 Screen (DEMO-003)
+        # =====================================================================
+        client_003 = ClientFile.objects.filter(record_id="DEMO-003").first()
+        participant_003 = ParticipantUser.objects.filter(
+            client_file__record_id="DEMO-003"
+        ).first()
+
+        if client_003 and participant_003:
+            SurveyAssignment.objects.get_or_create(
+                survey=phq2_survey,
+                participant_user=participant_003,
+                client_file=client_003,
+                defaults={
+                    "status": "pending",
+                    "assigned_by": created_by,
+                },
+            )
+            self.stdout.write("  Survey assignment: created for DEMO-003 (PHQ-2 Screen).")
+        else:
+            if not client_003:
+                self.stdout.write("  Survey assignment: DEMO-003 client file not found. Skipping.")
+            else:
+                self.stdout.write("  Survey assignment: DEMO-003 has no portal account. Skipping.")
+
+        # =====================================================================
+        # SurveyTriggerRule on PHQ-2 Screen (linked to Housing Stability)
+        # =====================================================================
+        housing_program = programs_by_name.get("Housing Stability")
+        if housing_program:
+            SurveyTriggerRule.objects.get_or_create(
+                survey=phq2_survey,
+                trigger_type="enrolment",
+                program=housing_program,
+                defaults={
+                    "repeat_policy": "once_per_enrolment",
+                    "auto_assign": True,
+                    "is_active": True,
+                    "created_by": created_by,
+                },
+            )
+            self.stdout.write("  Survey trigger rule: created for PHQ-2 Screen (enrolment in Housing Stability).")
+        else:
+            self.stdout.write("  Survey trigger rule: Housing Stability program not found. Skipping.")
