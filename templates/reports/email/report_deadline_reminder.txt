@@ -1,0 +1,8 @@
+{% load i18n %}{% blocktrans with name=product_name %}{{ name }} — Report Deadline Reminder{% endblocktrans %}
+
+{% blocktrans with schedule_name=schedule.name due_date=schedule.due_date %}Your report "{{ schedule_name }}" is due on {{ due_date }}.{% endblocktrans %}
+
+{% trans "Please log in to generate and submit this report before the deadline." %}
+
+{% trans "This is an automated reminder. No participant data is included in this message." %}
+{% blocktrans with name=product_name %}This reminder was sent by {{ name }}.{% endblocktrans %}

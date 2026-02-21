@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Safety Oversight Report" %} — {{ period_label }}{% endblock %}
+
+{% block extra_head %}
+<style>
+    .oversight-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: var(--kn-space-sm);
+        margin-bottom: var(--kn-space-md);
+    }
+    .oversight-card {
+        background: var(--kn-card-bg);
+        border: 1px solid var(--kn-border-light);
+        border-radius: var(--kn-radius-card);
+        padding: var(--kn-space-sm);
+        text-align: center;
+    }
+    .oversight-card .card-value {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--kn-text);
+        line-height: 1.2;
+    }
+    .oversight-card .card-label {
+        font-size: 0.8rem;
+        color: var(--kn-text-muted);
+        margin-top: 0.25rem;
+    }
+    .health-check {
+        list-style: none;
+        padding: 0;
+        margin: var(--kn-space-sm) 0;
+    }
+    .health-check li {
+        padding: 0.35rem 0;
+        font-size: 0.9rem;
+    }
+    .check-pass { color: var(--kn-success-fg, #2e7d32); }
+    .check-fail { color: var(--kn-danger-fg, #c62828); }
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--kn-radius-card);
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+    .badge-success { background: var(--kn-success-bg, #e8f5e9); color: var(--kn-success-fg, #2e7d32); }
+    .badge-warning { background: var(--kn-warning-bg, #fff3e0); color: var(--kn-warning-fg, #e65100); }
+    .trigger-list {
+        background: var(--kn-warning-bg, #fff3e0);
+        border-left: 3px solid var(--kn-warning-fg, #e65100);
+        padding: var(--kn-space-sm) var(--kn-space-md);
+        margin: var(--kn-space-sm) 0;
+        border-radius: 0 var(--kn-radius-card) var(--kn-radius-card) 0;
+    }
+    .attestation-box {
+        background: var(--kn-card-bg);
+        border: 2px solid var(--kn-border-light);
+        border-radius: var(--kn-radius-card);
+        padding: var(--kn-space-md);
+        margin-top: var(--kn-space-md);
+    }
+    .view-toggle {
+        display: flex;
+        gap: var(--kn-space-xs);
+        margin-bottom: var(--kn-space-md);
+    }
+    .view-toggle a {
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--kn-radius-card);
+        text-decoration: none;
+        font-size: 0.85rem;
+    }
+    .view-toggle .active {
+        background: var(--kn-primary);
+        color: #fff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+        <li><a href="{% url 'reports:oversight_list' %}">{% trans "Safety Oversight" %}</a></li>
+        <li aria-current="page">{{ period_label }}</li>
+    </ul>
+</nav>
+
+<header class="page-header">
+    <h1>{% trans "Safety Oversight Report" %} — {{ period_label }}</h1>
+    <p class="page-subtitle">{{ period_start|date:"M j, Y" }} — {{ period_end|date:"M j, Y" }}</p>
+    <div>
+        <span class="status-badge badge-{{ status_class }}">{{ overall_status }}</span>
+        {% if approved_at %}
+        <small class="text-muted" style="margin-left: 0.5rem;">
+            {% blocktrans with name=approved_by.display_name date=approved_at|date:"M j, Y" %}Approved by {{ name }} on {{ date }}{% endblocktrans %}
+        </small>
+        {% endif %}
+    </div>
+</header>
+
+{# Internal / External toggle #}
+<div class="view-toggle">
+    <a href="{% url 'reports:oversight_detail' report_id=snapshot.pk %}" class="{% if not is_external %}active{% endif %}">{% trans "Internal" %}</a>
+    <a href="{% url 'reports:oversight_detail' report_id=snapshot.pk %}?external=1" class="{% if is_external %}active{% endif %}">{% trans "External" %}</a>
+</div>
+
+{% if is_external %}
+<p class="text-muted"><small>{% trans "External view: counts below 5 are suppressed for privacy." %}</small></p>
+{% endif %}
+
+{# Key Metrics #}
+<h2>{% trans "Key Metrics" %}</h2>
+<div class="oversight-grid">
+    <div class="oversight-card">
+        <div class="card-value">{{ alerts_raised }}</div>
+        <div class="card-label">{% trans "Alerts Raised" %}</div>
+    </div>
+    <div class="oversight-card">
+        <div class="card-value">{{ alerts_resolved }}</div>
+        <div class="card-label">{% trans "Alerts Resolved" %}</div>
+    </div>
+    <div class="oversight-card">
+        <div class="card-value">{{ median_resolution_days|default:"—" }}</div>
+        <div class="card-label">{% trans "Median Resolution (days)" %}</div>
+    </div>
+    <div class="oversight-card">
+        <div class="card-value">{{ active_at_quarter_end }}</div>
+        <div class="card-label">{% trans "Active at Quarter End" %}</div>
+    </div>
+</div>
+
+{# System Activity #}
+<h2>{% trans "System Activity" %}</h2>
+<div class="oversight-grid">
+    <div class="oversight-card">
+        <div class="card-value">{{ notes_recorded }}</div>
+        <div class="card-label">{% trans "Notes Recorded" %}</div>
+    </div>
+    <div class="oversight-card">
+        <div class="card-value">{{ active_participants }}</div>
+        <div class="card-label">{% trans "Active" %} {{ term.client_plural|default:"Participants" }}</div>
+    </div>
+    <div class="oversight-card">
+        <div class="card-value">{{ active_staff }}</div>
+        <div class="card-label">{% trans "Active Staff" %}</div>
+    </div>
+</div>
+
+{# Health Indicators #}
+<h2>{% trans "Health Indicators" %}</h2>
+<ul class="health-check">
+    <li class="{% if no_aging_alerts %}check-pass{% else %}check-fail{% endif %}">
+        {% if no_aging_alerts %}&#10003;{% else %}&#10007;{% endif %}
+        {% trans "No aging alerts (older than 14 days)" %}
+    </li>
+    <li class="{% if no_pending_reviews %}check-pass{% else %}check-fail{% endif %}">
+        {% if no_pending_reviews %}&#10003;{% else %}&#10007;{% endif %}
+        {% trans "No pending cancellation reviews" %}
+    </li>
+    <li class="{% if no_program_concentration %}check-pass{% else %}check-fail{% endif %}">
+        {% if no_program_concentration %}&#10003;{% else %}&#10007;{% endif %}
+        {% trans "No program concentration detected" %}
+    </li>
+</ul>
+
+{# Notable triggers (if any) #}
+{% if notable_triggers %}
+<h2>{% trans "Notable Items" %}</h2>
+<div class="trigger-list">
+    <ul>
+        {% for trigger in notable_triggers %}
+        <li>{{ trigger }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+{# Program Breakdown #}
+{% if program_breakdown %}
+<h2>{% trans "Program Breakdown" %}</h2>
+<div class="overflow-auto">
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">{{ term.program|default:"Program" }}</th>
+                <th scope="col" class="text-center">{% trans "Alerts Raised" %}</th>
+                <th scope="col" class="text-center">{% trans "Active at End" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prog in program_breakdown %}
+            <tr>
+                <td>{{ prog.program_name }}</td>
+                <td class="text-center">{{ prog.alerts_raised }}</td>
+                <td class="text-center">{{ prog.active_at_end }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+{# Narrative (shown if NOTABLE or if already written) #}
+{% if narrative %}
+<h2>{% trans "Management Observations" %}</h2>
+<div class="attestation-box">
+    <p>{{ narrative|linebreaksbr }}</p>
+</div>
+{% endif %}
+
+{# Attestation / Approve section #}
+{% if not approved_at %}
+<div class="attestation-box">
+    <h3>{% trans "Approve and File" %}</h3>
+    <p>{% trans "Review the report above, add any management observations, then approve to file this report." %}</p>
+    <form method="post" action="{% url 'reports:oversight_approve' report_id=snapshot.pk %}">
+        {% csrf_token %}
+        <label for="id_narrative">{{ approve_form.narrative.label }}</label>
+        {{ approve_form.narrative }}
+        <fieldset>
+            <label>
+                {{ approve_form.confirm }}
+                {{ approve_form.confirm.label }}
+            </label>
+            {% if approve_form.confirm.errors %}
+            <small class="text-danger">{{ approve_form.confirm.errors.0 }}</small>
+            {% endif %}
+        </fieldset>
+        <button type="submit">{% trans "Approve and File" %}</button>
+    </form>
+</div>
+{% endif %}
+
+{# Actions #}
+<div style="margin-top: var(--kn-space-md);">
+    <a href="{% url 'reports:oversight_pdf' report_id=snapshot.pk %}{% if is_external %}?external=1{% endif %}" role="button" class="outline">{% trans "Download PDF" %}</a>
+    <a href="{% url 'reports:oversight_list' %}" role="button" class="outline secondary">{% trans "Back to List" %}</a>
+</div>
+{% endblock %}

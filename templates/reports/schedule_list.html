@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Report Schedules" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+        <li><a href="{% url 'reports:oversight_list' %}">{% trans "Safety Oversight" %}</a></li>
+        <li aria-current="page">{% trans "Schedules" %}</li>
+    </ul>
+</nav>
+
+<header class="page-header">
+    <h1>{% trans "Report Schedules" %}</h1>
+    <p class="page-subtitle">{% trans "Set up recurring report deadlines with automatic reminders." %}</p>
+</header>
+
+<div class="action-bar">
+    <a href="{% url 'reports:schedule_create' %}" role="button">{% trans "Create Schedule" %}</a>
+</div>
+
+{% if schedules %}
+<div class="overflow-auto">
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Name" %}</th>
+                <th scope="col">{% trans "Type" %}</th>
+                <th scope="col">{% trans "Frequency" %}</th>
+                <th scope="col">{% trans "Next Due" %}</th>
+                <th scope="col">{% trans "Status" %}</th>
+                <th scope="col"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for schedule in schedules %}
+            <tr>
+                <td>{{ schedule.name }}</td>
+                <td>{{ schedule.get_report_type_display }}</td>
+                <td>{{ schedule.get_frequency_display }}</td>
+                <td>{{ schedule.due_date|date:"M j, Y" }}</td>
+                <td>
+                    {% if schedule.is_overdue %}
+                    <span class="badge badge-warning">{% trans "Overdue" %}</span>
+                    {% elif schedule.is_due_soon %}
+                    <span class="badge badge-info">{% trans "Due Soon" %}</span>
+                    {% elif not schedule.is_active %}
+                    <span class="text-muted">{% trans "Paused" %}</span>
+                    {% else %}
+                    <span class="text-muted">{% trans "Scheduled" %}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'reports:schedule_edit' schedule_id=schedule.pk %}">{% trans "Edit" %}</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>{% trans "No report schedules have been set up yet." %}</p>
+{% endif %}
+{% endblock %}
