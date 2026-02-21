@@ -58,6 +58,12 @@
         <p><strong>{% trans "Engagement:" %}</strong> {{ note.get_engagement_observation_display }}</p>
     {% endif %}
 
+    {% if note.alliance_rating %}
+        <p><strong>{% trans "Working relationship:" %}</strong> {{ note.get_alliance_rating_display }}
+            {% if note.alliance_rater %}<small class="secondary">({{ note.get_alliance_rater_display }})</small>{% endif %}
+        </p>
+    {% endif %}
+
     {% if note.participant_reflection %}
         <p><strong>{% trans "Reflection:" %}</strong> "{{ note.participant_reflection }}"</p>
     {% endif %}

@@ -51,12 +51,18 @@
             {% endif %}
         </article>
 
-        {% if show_alerts %}
-        <article class="stat-card {% if active_alerts > 0 %}stat-alert{% endif %}">
-            <div class="stat-value">{{ active_alerts }}</div>
+        {% if show_alerts and alert_oversight %}
+        <article class="stat-card {% if alert_oversight.active > 0 %}stat-alert{% endif %}">
+            <div class="stat-value">{{ alert_oversight.active }}</div>
             <div class="stat-label">{% trans "Active Safety Alerts" %}</div>
-            {% if active_alerts > 0 %}
-            <div class="stat-flag">{% trans "Needs attention" %}</div>
+            {% if alert_oversight.aging > 0 %}
+            <div class="stat-detail stat-warning-text">{{ alert_oversight.aging }} {% trans "older than 14 days" %}</div>
+            {% endif %}
+            {% if alert_oversight.pending_cancellation > 0 %}
+            <div class="stat-detail">{{ alert_oversight.pending_cancellation }} {% trans "pending review" %}</div>
+            {% endif %}
+            {% if alert_oversight.active > 0 %}
+            <a href="{% url 'clients:alert_overview' %}" class="stat-link">{% trans "View by program" %} &rarr;</a>
             {% endif %}
         </article>
         {% endif %}

@@ -175,6 +175,26 @@ class TestDailyScenarios(ScenarioRunner):
         """SCN-083: Calendar Feed Setup — staff generates iCal feed URL."""
         self._run_scenario_by_id("SCN-083")
 
+    def test_pm_creates_survey_manually(self):
+        """SCN-110: PM Creates Survey Manually — program manager builds a survey from scratch."""
+        self._run_scenario_by_id("SCN-110")
+
+    def test_pm_imports_survey_csv(self):
+        """SCN-111: PM Imports Survey CSV — program manager imports a survey from CSV file."""
+        self._run_scenario_by_id("SCN-111")
+
+    def test_staff_assigns_survey(self):
+        """SCN-112: Staff Assigns Survey — staff assigns a survey to a participant."""
+        self._run_scenario_by_id("SCN-112")
+
+    def test_staff_enters_survey_for_participant(self):
+        """SCN-113: Staff Enters Survey for Participant — staff completes survey on behalf of participant."""
+        self._run_scenario_by_id("SCN-113")
+
+    def test_participant_fills_portal_survey(self):
+        """SCN-114: Participant Fills Portal Survey — participant completes survey via portal."""
+        self._run_scenario_by_id("SCN-114")
+
 
 @pytest.mark.scenario_eval
 @pytest.mark.browser
@@ -206,6 +226,10 @@ class TestPeriodicScenarios(ScenarioRunner):
         """SCN-086: Funder Report Suppression — report template with small-cell suppression."""
         self._run_scenario_by_id("SCN-086")
 
+    def test_pm_reviews_survey_responses(self):
+        """SCN-115: PM Reviews Survey Responses — program manager reviews and analyses survey results."""
+        self._run_scenario_by_id("SCN-115")
+
 
 @pytest.mark.scenario_eval
 @pytest.mark.browser
@@ -235,6 +259,14 @@ class TestCrossRoleScenarios(ScenarioRunner):
     def test_front_desk_messaging_denied(self):
         """SCN-085: Front Desk Denied — permission enforcement on messaging/meeting/calendar pages."""
         self._run_scenario_by_id("SCN-085")
+
+    def test_trigger_rule_auto_assigns_on_enrolment(self):
+        """SCN-116: Trigger Rule Auto-Assigns on Enrolment — survey auto-assigned when participant enrols."""
+        self._run_scenario_by_id("SCN-116")
+
+    def test_front_desk_survey_access_denied(self):
+        """SCN-117: Front Desk Survey Access Denied — receptionist blocked from survey management."""
+        self._run_scenario_by_id("SCN-117")
 
 
 @pytest.mark.scenario_eval

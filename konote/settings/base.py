@@ -108,6 +108,7 @@ TEMPLATES = [
                 "konote.context_processors.pending_erasures",
                 "konote.context_processors.pending_recommendations",
                 "konote.context_processors.unread_messages",
+                "konote.context_processors.upcoming_reports",
                 "konote.context_processors.active_program_context",
                 "konote.context_processors.portal_context",
             ],

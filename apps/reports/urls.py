@@ -3,6 +3,7 @@ from django.urls import path
 from . import views
 from . import pdf_views
 from . import insights_views
+from . import oversight_views
 
 app_name = "reports"
 urlpatterns = [
@@ -21,4 +22,14 @@ urlpatterns = [
     path("download/<uuid:link_id>/", views.download_export, name="download_export"),
     path("export-links/", views.manage_export_links, name="manage_export_links"),
     path("export-links/<uuid:link_id>/revoke/", views.revoke_export_link, name="revoke_export_link"),
+    # Safety Oversight Reports
+    path("oversight/", oversight_views.oversight_report_list, name="oversight_list"),
+    path("oversight/generate/", oversight_views.oversight_report_generate, name="oversight_generate"),
+    path("oversight/<int:report_id>/", oversight_views.oversight_report_detail, name="oversight_detail"),
+    path("oversight/<int:report_id>/approve/", oversight_views.oversight_report_approve, name="oversight_approve"),
+    path("oversight/<int:report_id>/pdf/", oversight_views.oversight_report_pdf, name="oversight_pdf"),
+    # Report Schedules
+    path("schedules/", oversight_views.report_schedule_list, name="schedule_list"),
+    path("schedules/create/", oversight_views.report_schedule_create, name="schedule_create"),
+    path("schedules/<int:schedule_id>/edit/", oversight_views.report_schedule_edit, name="schedule_edit"),
 ]

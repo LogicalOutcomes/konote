@@ -568,6 +568,33 @@ class ReportsFrenchTest(FrenchJourneyBaseTest):
         # Empty state message
         self.assertContains(resp, "Aucune donn\u00e9e de mesure enregistr\u00e9e")
 
+    def test_export_grouping_dropdown_in_french(self):
+        """Grouping dropdown on /reports/export/ shows French choices."""
+        self._login_admin_fr()
+        resp = self.http.get("/reports/export/")
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        # French choices must be present
+        self.assertIn("Aucun regroupement", content)
+        # English choices must NOT appear as option text
+        self.assertNotIn(">No grouping<", content)
+
+    def test_unknown_group_sorts_last_in_french(self):
+        """'Unknown' demographic group should sort to the end in both languages."""
+        from django.utils.translation import gettext as gettext_
+
+        # In English
+        with translation_override("en"):
+            groups = [gettext_("Unknown"), "Female", "Male"]
+            sorted_en = sorted(groups, key=lambda x: (x == gettext_("Unknown"), str(x)))
+            self.assertEqual(str(sorted_en[-1]), "Unknown")
+
+        # In French
+        with translation_override("fr"):
+            groups = [gettext_("Unknown"), "Femme", "Homme"]
+            sorted_fr = sorted(groups, key=lambda x: (x == gettext_("Unknown"), str(x)))
+            self.assertEqual(str(sorted_fr[-1]), "Inconnu")
+
 
 # ─────────────────────────────────────────────────────────────────────────
 # 9. Admin Settings in French
@@ -929,3 +956,49 @@ class ProgramsFrenchTest(FrenchJourneyBaseTest):
         self.assertContains(resp, "Personnel assign\u00e9")  # "Assigned Staff"
         self.assertContains(resp, "Utilisateur")  # "User"
         self.assertContains(resp, "R\u00f4le")  # "Role"
+
+
+# ─────────────────────────────────────────────────────────────────────────
+# PO File Completeness
+# ─────────────────────────────────────────────────────────────────────────
+
+class POFileCompletenessTest(TestCase):
+    """French .po file translation coverage — catches regressions."""
+
+    # Baseline: known number of untranslated strings as of 2026-02-21.
+    # Lower this number as translations are added. Goal: 0.
+    KNOWN_MISSING_BASELINE = 257
+
+    def test_no_new_empty_msgstr_in_french_po(self):
+        """No new untranslated strings should be added without French translations."""
+        import os
+
+        import polib
+
+        po_path = os.path.join(
+            os.path.dirname(os.path.dirname(__file__)),
+            "locale", "fr", "LC_MESSAGES", "django.po",
+        )
+        self.assertTrue(os.path.exists(po_path), f".po file not found: {po_path}")
+
+        po = polib.pofile(po_path)
+        untranslated = po.untranslated_entries()
+        empty_ids = [entry.msgid for entry in untranslated]
+        count = len(empty_ids)
+
+        # Fail if translation coverage has gotten WORSE
+        if count > self.KNOWN_MISSING_BASELINE:
+            new_missing = count - self.KNOWN_MISSING_BASELINE
+            self.fail(
+                f"{new_missing} new untranslated French string(s) detected "
+                f"(was {self.KNOWN_MISSING_BASELINE}, now {count}):\n"
+                + "\n".join(f"  - {m!r}" for m in empty_ids[-new_missing:])
+            )
+
+        # Report progress if translations were added
+        if count < self.KNOWN_MISSING_BASELINE:
+            print(
+                f"\n  [i] Translation progress: {self.KNOWN_MISSING_BASELINE - count} "
+                f"strings translated since baseline. "
+                f"Update KNOWN_MISSING_BASELINE to {count}."
+            )

@@ -366,3 +366,69 @@ class AnalysisChartTimeframeTest(TestCase):
         content = resp.content.decode()
         self.assertIn('"value": 7.0', content)
         self.assertNotIn('"value": 3.0', content)
+
+    def test_analysis_3m_filter_excludes_old_data(self):
+        """3-month filter should exclude data older than 90 days."""
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+
+        # Create a metric value backdated > 90 days ago
+        old_note = ProgressNote.objects.create(
+            client_file=self.client_file, author=self.user,
+            backdate=timezone.now() - timedelta(days=120),
+        )
+        old_pnt = ProgressNoteTarget.objects.create(
+            progress_note=old_note, plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            metric_def=self.metric, progress_note_target=old_pnt, value="1",
+        )
+
+        self.http.login(username="analyst", password="pass")
+        resp = self.http.get(
+            f"/reports/participant/{self.client_file.pk}/analysis/?timeframe=3m"
+        )
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        # The 120-day-old value=1.0 should be excluded
+        self.assertNotIn('"value": 1.0', content)
+        # The 5-day-old value=7.0 should still be present
+        self.assertIn('"value": 7.0', content)
+
+    def test_analysis_6m_filter_excludes_old_data(self):
+        """6-month filter should exclude data older than 180 days."""
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+
+        # Create a metric value backdated > 180 days ago
+        old_note = ProgressNote.objects.create(
+            client_file=self.client_file, author=self.user,
+            backdate=timezone.now() - timedelta(days=200),
+        )
+        old_pnt = ProgressNoteTarget.objects.create(
+            progress_note=old_note, plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            metric_def=self.metric, progress_note_target=old_pnt, value="2",
+        )
+
+        self.http.login(username="analyst", password="pass")
+        resp = self.http.get(
+            f"/reports/participant/{self.client_file.pk}/analysis/?timeframe=6m"
+        )
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        # The 200-day-old value=2.0 should be excluded
+        self.assertNotIn('"value": 2.0', content)
+        # The 5-day-old value=7.0 should still be present
+        self.assertIn('"value": 7.0', content)
+
+    def test_analysis_invalid_timeframe_returns_all(self):
+        """Invalid timeframe value should return all data (no crash)."""
+        self.http.login(username="analyst", password="pass")
+        resp = self.http.get(
+            f"/reports/participant/{self.client_file.pk}/analysis/?timeframe=invalid"
+        )
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        # Both data points should still be present
+        self.assertIn('"value": 3.0', content)
+        self.assertIn('"value": 7.0', content)

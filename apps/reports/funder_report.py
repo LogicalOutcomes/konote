@@ -19,6 +19,7 @@ from typing import Any
 
 from django.db.models import Q
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from apps.admin_settings.models import InstanceSetting
 from apps.clients.models import ClientFile, ClientProgramEnrolment
@@ -54,14 +55,14 @@ def get_age_group_label(birth_date: date | str | None, as_of_date: date | None =
         Age group string (e.g., "Youth (13-17)") or "Unknown" if birth_date is missing.
     """
     if not birth_date:
-        return "Unknown"
+        return _("Unknown")
 
     # Handle string dates (from encrypted field)
     if isinstance(birth_date, str):
         try:
             birth_date = date.fromisoformat(birth_date)
         except (ValueError, TypeError):
-            return "Unknown"
+            return _("Unknown")
 
     if as_of_date is None:
         as_of_date = date.today()
@@ -77,7 +78,7 @@ def get_age_group_label(birth_date: date | str | None, as_of_date: date | None =
         if min_age <= age <= max_age:
             return label
 
-    return "Unknown"
+    return _("Unknown")
 
 
 def group_clients_by_age_buckets(
@@ -97,7 +98,7 @@ def group_clients_by_age_buckets(
     """
     # Initialize with all age groups
     counts = {label: 0 for _, _, label in DEFAULT_AGE_GROUPS}
-    counts["Unknown"] = 0
+    counts[_("Unknown")] = 0
 
     if not client_ids:
         return counts

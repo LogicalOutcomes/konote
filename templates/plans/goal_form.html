@@ -686,6 +686,7 @@
                 // Select existing section
                 sectionSelect.value = sectionPk;
                 if (newSectionRow) newSectionRow.hidden = true;
+                if (newSectionInput) newSectionInput.value = "";
             } else if (newSectionName) {
                 // Create new section
                 sectionSelect.value = "new";
@@ -694,6 +695,17 @@
                     newSectionRow.setAttribute("aria-expanded", "true");
                 }
                 if (newSectionInput) newSectionInput.value = newSectionName;
+            } else {
+                // Fallback: AI didn't provide a section — pick the first
+                // real section if one exists, otherwise leave "new" selected.
+                // TODO: Consider showing a notice when section was auto-selected
+                //       so the user can confirm it in the "Let me edit it" flow.
+                var firstReal = sectionSelect.querySelector("option:not([value='new'])");
+                if (firstReal) {
+                    sectionSelect.value = firstReal.value;
+                    if (newSectionRow) newSectionRow.hidden = true;
+                    if (newSectionInput) newSectionInput.value = "";
+                }
             }
         }
 

@@ -22,6 +22,19 @@ BANDS = {
     "red": (1.0, 1.99, "Blocker"),
 }
 
+# Task outcome levels (from QA enrichment design)
+TASK_OUTCOMES = ["independent", "assisted", "abandoned", "error_unnoticed"]
+
+
+def task_outcome_colour(outcome):
+    """Map a task outcome to a report colour."""
+    return {
+        "independent": "green",
+        "assisted": "yellow",
+        "abandoned": "orange",
+        "error_unnoticed": "red",
+    }.get(outcome, "grey")
+
 
 @dataclass
 class DimensionScore:
@@ -45,6 +58,13 @@ class StepEvaluation:
 
     # Objective scores override LLM scores for measurable dimensions
     objective_scores: dict = field(default_factory=dict)  # dimension -> DimensionScore
+
+    # Task outcome (QA enrichment) — set by LLM evaluator
+    task_outcome: str = None       # one of TASK_OUTCOMES or None
+    task_outcome_reasoning: str = ""
+
+    # Set by interaction test gate when a linked test is failing
+    is_blocked: bool = False
 
     @property
     def effective_dimension_scores(self):
@@ -110,6 +130,15 @@ class ScenarioResult:
                 by_persona[e.persona_id] = []
             by_persona[e.persona_id].append(e.avg_dimension_score)
         return {pid: mean(scores) for pid, scores in by_persona.items() if scores}
+
+    @property
+    def task_outcome_counts(self):
+        """Count task outcomes across all steps."""
+        counts = {}
+        for e in self.step_evaluations:
+            if e.task_outcome:
+                counts[e.task_outcome] = counts.get(e.task_outcome, 0) + 1
+        return counts
 
     @property
     def satisfaction_gap(self):

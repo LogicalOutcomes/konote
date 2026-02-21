@@ -352,6 +352,54 @@ class NoteViewsTest(TestCase):
         self.assertContains(resp, "All targets")
         self.assertContains(resp, "Housing stability")
 
+    def test_target_filter_invalid_id_returns_all_notes(self):
+        """Non-existent target ID should show all notes (no crash)."""
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Visible note", author=self.staff,
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/?target=99999")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_target_filter_non_numeric_ignored(self):
+        """Non-numeric target value should be ignored gracefully."""
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Still visible", author=self.staff,
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/?target=abc")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_target_filter_with_foreign_target_id(self):
+        """Passing a target ID from another client/programme should not crash or leak data."""
+        # Create a target in prog_b (staff has no role in prog_b)
+        section_b = PlanSection.objects.create(
+            client_file=self.other_client, name="Other Goals", program=self.prog_b,
+        )
+        target_b = PlanTarget.objects.create(
+            plan_section=section_b, client_file=self.other_client, name="Other Target",
+        )
+        note_b = ProgressNote.objects.create(
+            client_file=self.other_client, note_type="full",
+            author=self.admin, interaction_type="session",
+        )
+        ProgressNoteTarget.objects.create(progress_note=note_b, plan_target=target_b)
+
+        # Staff user filters their own client's notes with target from other programme
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Own note", author=self.staff,
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(
+            f"/notes/participant/{self.client_file.pk}/?target={target_b.pk}"
+        )
+        self.assertEqual(resp.status_code, 200)
+        # Should not expose notes from the other programme's client
+        self.assertNotContains(resp, f'id="note-{note_b.pk}"')
+
     # -- Full Notes --
 
     def test_full_note_create_with_targets_and_metrics(self):
@@ -698,6 +746,54 @@ class NoteViewsTest(TestCase):
         resp = self.http.get(f"/notes/participant/{client_no_consent.pk}/new/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Consent Required")
+
+    # -- Alliance Check-In --
+
+    def test_full_note_with_alliance_rating(self):
+        """Alliance rating and rater saved on a full note."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/new/",
+            {
+                "interaction_type": "session",
+                "alliance_rating": "4",
+                "alliance_rater": "client",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(note_type="full")
+        self.assertEqual(note.alliance_rating, 4)
+        self.assertEqual(note.alliance_rater, "client")
+
+    def test_full_note_alliance_skipped(self):
+        """Alliance rating can be skipped (null)."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/new/",
+            {
+                "interaction_type": "session",
+                "alliance_rating": "",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(note_type="full")
+        self.assertIsNone(note.alliance_rating)
+
+    def test_full_note_alliance_worker_observed(self):
+        """Worker-observed alliance rating saves correctly."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/new/",
+            {
+                "interaction_type": "session",
+                "alliance_rating": "2",
+                "alliance_rater": "worker_observed",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(note_type="full")
+        self.assertEqual(note.alliance_rating, 2)
+        self.assertEqual(note.alliance_rater, "worker_observed")
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)

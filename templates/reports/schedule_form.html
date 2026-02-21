@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if is_edit %}{% trans "Edit Schedule" %}{% else %}{% trans "Create Schedule" %}{% endif %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+        <li><a href="{% url 'reports:oversight_list' %}">{% trans "Safety Oversight" %}</a></li>
+        <li><a href="{% url 'reports:schedule_list' %}">{% trans "Schedules" %}</a></li>
+        <li aria-current="page">{% if is_edit %}{% trans "Edit" %}{% else %}{% trans "Create" %}{% endif %}</li>
+    </ul>
+</nav>
+
+<header class="page-header">
+    <h1>{% if is_edit %}{% trans "Edit Schedule" %}{% else %}{% trans "Create Schedule" %}{% endif %}</h1>
+</header>
+
+{% if form.non_field_errors %}
+<div class="alert alert-danger" role="alert">
+    {% for error in form.non_field_errors %}
+    <p>{{ error }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+
+    <fieldset>
+        <label for="id_name">{{ form.name.label }}</label>
+        {{ form.name }}
+        {% if form.name.errors %}<small id="id_name_error" class="text-danger">{{ form.name.errors.0 }}</small>{% endif %}
+    </fieldset>
+
+    <div class="grid">
+        <fieldset>
+            <label for="id_report_type">{{ form.report_type.label }}</label>
+            {{ form.report_type }}
+            {% if form.report_type.errors %}<small id="id_report_type_error" class="text-danger">{{ form.report_type.errors.0 }}</small>{% endif %}
+        </fieldset>
+
+        <fieldset>
+            <label for="id_frequency">{{ form.frequency.label }}</label>
+            {{ form.frequency }}
+            {% if form.frequency.errors %}<small id="id_frequency_error" class="text-danger">{{ form.frequency.errors.0 }}</small>{% endif %}
+        </fieldset>
+    </div>
+
+    <div class="grid">
+        <fieldset>
+            <label for="id_due_date">{{ form.due_date.label }}</label>
+            {{ form.due_date }}
+            {% if form.due_date.help_text %}<small>{{ form.due_date.help_text }}</small>{% endif %}
+            {% if form.due_date.errors %}<small id="id_due_date_error" class="text-danger">{{ form.due_date.errors.0 }}</small>{% endif %}
+        </fieldset>
+
+        <fieldset>
+            <label for="id_reminder_days_before">{{ form.reminder_days_before.label }}</label>
+            {{ form.reminder_days_before }}
+            {% if form.reminder_days_before.help_text %}<small>{{ form.reminder_days_before.help_text }}</small>{% endif %}
+            {% if form.reminder_days_before.errors %}<small id="id_reminder_days_before_error" class="text-danger">{{ form.reminder_days_before.errors.0 }}</small>{% endif %}
+        </fieldset>
+    </div>
+
+    <div class="action-bar">
+        <button type="submit">{% if is_edit %}{% trans "Save Changes" %}{% else %}{% trans "Create Schedule" %}{% endif %}</button>
+        <a href="{% url 'reports:schedule_list' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}
