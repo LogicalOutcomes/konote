@@ -19,7 +19,7 @@ from typing import Any
 
 from django.db.models import Q
 from django.utils import timezone
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 
 from apps.admin_settings.models import InstanceSetting
 from apps.clients.models import ClientFile, ClientProgramEnrolment
@@ -399,34 +399,34 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
     rows = []
 
     # Header section
-    rows.append(["PROGRAM OUTCOME REPORT TEMPLATE"])
-    rows.append(["DRAFT — Verify this format matches reporting requirements before submission"])
-    rows.append([f"Generated: {report_data['generated_at'].strftime('%Y-%m-%d %H:%M')}"])
+    rows.append([_("PROGRAM OUTCOME REPORT TEMPLATE")])
+    rows.append([_("DRAFT — Verify this format matches reporting requirements before submission")])
+    rows.append([_("Generated: %(date)s") % {"date": report_data['generated_at'].strftime('%Y-%m-%d %H:%M')}])
     rows.append([])
 
     # Organisation information
-    rows.append(["ORGANISATION INFORMATION"])
-    rows.append(["Organisation Name", report_data["organisation_name"]])
-    rows.append(["Program/Service Name", report_data["program_name"]])
+    rows.append([_("ORGANISATION INFORMATION")])
+    rows.append([_("Organisation Name"), report_data["organisation_name"]])
+    rows.append([_("Program/Service Name"), report_data["program_name"]])
     if report_data["program_description"]:
-        rows.append(["Program Description", report_data["program_description"]])
-    rows.append(["Reporting Period", report_data["reporting_period"]])
+        rows.append([_("Program Description"), report_data["program_description"]])
+    rows.append([_("Reporting Period"), report_data["reporting_period"]])
     rows.append([])
 
     # Service statistics
-    rows.append(["SERVICE STATISTICS"])
-    rows.append(["Total Individuals Served", format_number(report_data["total_individuals_served"])])
-    rows.append(["New Clients This Period", format_number(report_data["new_clients_this_period"])])
-    rows.append(["Total Service Contacts", format_number(report_data["total_contacts"])])
+    rows.append([_("SERVICE STATISTICS")])
+    rows.append([_("Total Individuals Served"), format_number(report_data["total_individuals_served"])])
+    rows.append([_("New Clients This Period"), format_number(report_data["new_clients_this_period"])])
+    rows.append([_("Total Service Contacts"), format_number(report_data["total_contacts"])])
     cb = report_data.get("contact_breakdown", {})
     if cb:
-        rows.append(["  Successful Contacts", format_number(cb.get("successful_contacts", 0))])
-        rows.append(["  Contact Attempts (no answer/left message)", format_number(cb.get("contact_attempts", 0))])
+        rows.append(["  " + str(_("Successful Contacts")), format_number(cb.get("successful_contacts", 0))])
+        rows.append(["  " + str(_("Contact Attempts (no answer/left message)")), format_number(cb.get("contact_attempts", 0))])
     rows.append([])
 
     # Age demographics
-    rows.append(["AGE DEMOGRAPHICS"])
-    rows.append(["Age Group", "Count", "Percentage"])
+    rows.append([_("AGE DEMOGRAPHICS")])
+    rows.append([_("Age Group"), _("Count"), _("Percentage")])
     total_demo = report_data["age_demographics_total"]
     for age_group, count in report_data["age_demographics"].items():
         if isinstance(count, str) or isinstance(total_demo, str):
@@ -434,16 +434,16 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
         elif total_demo > 0:
             pct = f"{(count / total_demo * 100):.1f}%"
         else:
-            pct = "N/A"
+            pct = _("N/A")
         rows.append([age_group, format_number(count), pct])
     total_pct = "*" if isinstance(total_demo, str) else "100%"
-    rows.append(["Total", format_number(total_demo), total_pct])
+    rows.append([_("Total"), format_number(total_demo), total_pct])
     rows.append([])
 
     # Custom demographic sections from report template
     for section in report_data.get("custom_demographic_sections", []):
         rows.append([section["label"].upper()])
-        rows.append(["Category", "Count", "Percentage"])
+        rows.append([_("Category"), _("Count"), _("Percentage")])
         section_total = section["total"]
         for cat_label, cat_count in section["data"].items():
             if isinstance(cat_count, str) or isinstance(section_total, str):
@@ -451,33 +451,33 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
             elif section_total > 0:
                 pct = f"{(cat_count / section_total * 100):.1f}%"
             else:
-                pct = "N/A"
+                pct = _("N/A")
             rows.append([cat_label, format_number(cat_count), pct])
         total_pct = "*" if isinstance(section_total, str) else "100%"
-        rows.append(["Total", format_number(section_total), total_pct])
+        rows.append([_("Total"), format_number(section_total), total_pct])
         rows.append([])
 
     # Report template note
     if report_data.get("report_template_name"):
-        rows.append([f"Demographic Profile: {report_data['report_template_name']}"])
+        rows.append([_("Demographic Profile: %(name)s") % {"name": report_data['report_template_name']}])
         rows.append([])
 
     # Outcome indicators
-    rows.append(["OUTCOME INDICATORS"])
+    rows.append([_("OUTCOME INDICATORS")])
 
     if report_data["primary_outcome"]:
-        rows.append(["PRIMARY OUTCOME"])
+        rows.append([_("PRIMARY OUTCOME")])
         po = report_data["primary_outcome"]
-        rows.append(["Indicator Name", po["name"]])
-        rows.append(["Target Value", format_number(po["target_value"])])
-        rows.append(["Clients Measured", format_number(po["clients_measured"])])
-        rows.append(["Clients Achieving Target", format_number(po["clients_achieved"])])
-        rows.append(["Achievement Rate", f"{po['achievement_rate']}%"])
+        rows.append([_("Indicator Name"), po["name"]])
+        rows.append([_("Target Value"), format_number(po["target_value"])])
+        rows.append([_("Clients Measured"), format_number(po["clients_measured"])])
+        rows.append([_("Clients Achieving Target"), format_number(po["clients_achieved"])])
+        rows.append([_("Achievement Rate"), f"{po['achievement_rate']}%"])
         rows.append([])
 
     if report_data["secondary_outcomes"]:
-        rows.append(["SECONDARY OUTCOMES"])
-        rows.append(["Indicator Name", "Target", "Measured", "Achieved", "Rate"])
+        rows.append([_("SECONDARY OUTCOMES")])
+        rows.append([_("Indicator Name"), _("Target"), _("Measured"), _("Achieved"), _("Rate")])
         for so in report_data["secondary_outcomes"]:
             rows.append([
                 so["name"],
@@ -489,15 +489,15 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
         rows.append([])
 
     if not report_data["primary_outcome"] and not report_data["secondary_outcomes"]:
-        rows.append(["No outcome indicators with targets defined for this program."])
+        rows.append([_("No outcome indicators with targets defined for this program.")])
         rows.append([])
 
     # Overall summary
     summary = report_data["achievement_summary"]
     if summary["total_clients"] > 0:
-        rows.append(["OVERALL SUMMARY"])
-        rows.append(["Total Clients with Outcome Data", format_number(summary["total_clients"])])
-        rows.append(["Clients Meeting Any Target", format_number(summary["clients_met_any_target"])])
-        rows.append(["Overall Achievement Rate", f"{summary['overall_rate']}%"])
+        rows.append([_("OVERALL SUMMARY")])
+        rows.append([_("Total Clients with Outcome Data"), format_number(summary["total_clients"])])
+        rows.append([_("Clients Meeting Any Target"), format_number(summary["clients_met_any_target"])])
+        rows.append([_("Overall Achievement Rate"), f"{summary['overall_rate']}%"])
 
     return rows

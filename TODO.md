@@ -172,6 +172,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
 - [ ] Add bulk operations for discharge and assignment workflows (UX17)
 - [ ] Re-add API-based auto-translation to translate_strings for production use (I18N-API1)
+- [ ] Translate CSV comment rows (# Program, # Date Range, etc.) — needs design decision on whether to use agency custom terminology or static translations (I18N-CSV1)
+- [ ] Clean up ~628 stale PO entries in django.po no longer referenced in code (I18N-STALE1)
 - [x] Document local PostgreSQL setup for security_audit and pytest workflows — 2026-02-20 (DEV-PG1)
 - [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)

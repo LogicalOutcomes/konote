@@ -16,6 +16,7 @@ from unittest.mock import patch
 from cryptography.fernet import Fernet
 from django.test import Client as HttpClient, SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.reports.funder_report import format_number, generate_funder_report_csv_rows
 
@@ -91,16 +92,16 @@ class FunderReportCSVSuppressedAgeTests(SimpleTestCase):
         )
         rows = generate_funder_report_csv_rows(report_data)
 
-        # Find the age demographics rows
+        # Find the age demographics rows (match translated section header)
         age_rows = []
         in_age_section = False
         for row in rows:
-            if row == ["AGE DEMOGRAPHICS"]:
+            if len(row) == 1 and "AGE" in str(row[0]).upper():
                 in_age_section = True
                 continue
-            if in_age_section and len(row) == 3 and row[0] != "Age Group":
+            if in_age_section and len(row) == 3 and row[0] not in ("Age Group", _("Age Group")):
                 age_rows.append(row)
-                if row[0] == "Total":
+                if row[0] in ("Total", _("Total")):
                     break
 
         # Suppressed counts should have '*' percentage
@@ -138,26 +139,26 @@ class FunderReportCSVSuppressedCustomDemoTests(SimpleTestCase):
         )
         rows = generate_funder_report_csv_rows(report_data)
 
-        # Find the custom section rows
+        # Find the custom section rows (match uppercased label)
         custom_rows = []
         in_section = False
         for row in rows:
-            if row == ["GENDER IDENTITY"]:
+            if len(row) == 1 and "GENDER" in str(row[0]).upper():
                 in_section = True
                 continue
-            if in_section and len(row) == 3 and row[0] != "Category":
+            if in_section and len(row) == 3 and row[0] not in ("Category", _("Category")):
                 custom_rows.append(row)
-                if row[0] == "Total":
+                if row[0] in ("Total", _("Total")):
                     break
 
         # All percentages should be '*' when total is suppressed
         for cr in custom_rows:
-            if cr[0] != "Total":
+            if cr[0] not in ("Total", _("Total")):
                 self.assertEqual(cr[2], "*", f"Expected '*' for {cr[0]}, got {cr[2]}")
 
         # Total row should show suppressed value with '*' percentage
         total_row = custom_rows[-1]
-        self.assertEqual(total_row[0], "Total")
+        self.assertIn(total_row[0], ("Total", _("Total")))
         self.assertEqual(total_row[1], "suppressed")
         self.assertEqual(total_row[2], "*")
 
@@ -172,16 +173,16 @@ class FunderReportCSVSuppressedCustomDemoTests(SimpleTestCase):
         )
         rows = generate_funder_report_csv_rows(report_data)
 
-        # Find the section rows
+        # Find the section rows (match uppercased label)
         section_rows = []
         in_section = False
         for row in rows:
-            if row == ["ETHNICITY"]:
+            if len(row) == 1 and "ETHNICITY" in str(row[0]).upper():
                 in_section = True
                 continue
-            if in_section and len(row) == 3 and row[0] != "Category":
+            if in_section and len(row) == 3 and row[0] not in ("Category", _("Category")):
                 section_rows.append(row)
-                if row[0] == "Total":
+                if row[0] in ("Total", _("Total")):
                     break
 
         # Suppressed count should have '*'
