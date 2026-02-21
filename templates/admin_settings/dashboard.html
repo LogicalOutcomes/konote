@@ -86,16 +86,17 @@
     </article>
 
     <article>
-        <header>{% trans "Report Templates" %}</header>
-        <p>{% trans "Define reporting templates for demographic and category breakdowns in reports." %}</p>
+        <header>{% trans "Partners & Reports" %}</header>
+        <p>{% trans "Manage reporting partners (funders, networks, boards) and their report templates." %}</p>
         <p class="settings-indicator">
-            {% if report_template_count %}
-                {% blocktrans count count=report_template_count %}{{ count }} template{% plural %}{{ count }} templates{% endblocktrans %}
+            {% if partner_count %}
+                {% blocktrans count count=partner_count %}{{ count }} partner{% plural %}{{ count }} partners{% endblocktrans %}
+                · {% blocktrans count count=report_template_count %}{{ count }} template{% plural %}{{ count }} templates{% endblocktrans %}
             {% else %}
-                {% trans "No templates configured" %}
+                {% trans "No partners configured" %}
             {% endif %}
         </p>
-        <footer><a href="{% url 'admin_settings:report_template_list' %}" role="button" class="outline">{% trans "Manage Templates" %}</a></footer>
+        <footer><a href="{% url 'admin_settings:partner_list' %}" role="button" class="outline">{% trans "Manage Partners" %}</a></footer>
     </article>
 </div>
 {% endblock %}

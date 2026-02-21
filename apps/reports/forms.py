@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.programs.models import Program
 from apps.plans.models import MetricDefinition
 from .demographics import get_demographic_field_choices
-from .models import ReportTemplate
+from .models import Partner, ReportTemplate
 from .utils import get_fiscal_year_choices, get_fiscal_year_range, get_current_fiscal_year, is_aggregate_only_user
 
 
@@ -375,3 +375,53 @@ class IndividualClientExportForm(ExportRecipientMixin, forms.Form):
         super().__init__(*args, **kwargs)
         self.contains_client_identifying_data = True
         self.add_recipient_fields()
+
+
+class PartnerForm(forms.ModelForm):
+    """Form for creating and editing reporting partners."""
+
+    class Meta:
+        model = Partner
+        fields = [
+            "name",
+            "name_fr",
+            "partner_type",
+            "contact_name",
+            "contact_email",
+            "grant_number",
+            "grant_period_start",
+            "grant_period_end",
+            "is_active",
+            "notes",
+        ]
+        labels = {
+            "name": _("Partner name"),
+            "name_fr": _("Partner name (French)"),
+            "partner_type": _("Type"),
+            "contact_name": _("Contact name"),
+            "contact_email": _("Contact email"),
+            "grant_number": _("Grant / agreement number"),
+            "grant_period_start": _("Grant period start"),
+            "grant_period_end": _("Grant period end"),
+            "is_active": _("Active"),
+            "notes": _("Notes"),
+        }
+        widgets = {
+            "grant_period_start": forms.DateInput(attrs={"type": "date"}),
+            "grant_period_end": forms.DateInput(attrs={"type": "date"}),
+            "notes": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["is_active"].initial = True
+
+    def clean(self):
+        cleaned = super().clean()
+        start = cleaned.get("grant_period_start")
+        end = cleaned.get("grant_period_end")
+        if start and end and start > end:
+            raise forms.ValidationError(
+                _("Grant period start must be before grant period end.")
+            )
+        return cleaned
