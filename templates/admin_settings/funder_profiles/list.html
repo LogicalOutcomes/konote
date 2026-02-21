@@ -21,7 +21,7 @@
             <tr>
                 <th>{% trans "Template Name" %}</th>
                 <th>{% trans "Breakdowns" %}</th>
-                <th>{% trans "Programs" %}</th>
+                <th>{% trans "Partner" %}</th>
                 <th>{% trans "Created" %}</th>
                 <th>{% trans "Actions" %}</th>
             </tr>
@@ -38,7 +38,7 @@
                     {% endif %}
                 </td>
                 <td>{{ profile.breakdowns.count }}</td>
-                <td>{{ profile.programs.count }}</td>
+                <td>{% if profile.partner %}{{ profile.partner.name }}{% else %}<em>—</em>{% endif %}</td>
                 <td>
                     <small>{{ profile.created_at|date:"Y-m-d" }}</small>
                     {% if profile.created_by %}
@@ -48,7 +48,7 @@
                 <td>
                     <a href="{% url 'admin_settings:report_template_detail' profile.pk %}" class="secondary">{% trans "View" %}</a>
                     &nbsp;|&nbsp;
-                    <a href="{% url 'admin_settings:report_template_edit_programs' profile.pk %}" class="secondary">{% trans "Programs" %}</a>
+                    {% if profile.partner %}<a href="{% url 'admin_settings:partner_detail' profile.partner.pk %}" class="secondary">{% trans "Partner" %}</a>{% endif %}
                     &nbsp;|&nbsp;
                     <a href="{% url 'admin_settings:report_template_delete' profile.pk %}" class="secondary" style="color: var(--kn-danger-fg);">{% trans "Delete" %}</a>
                 </td>

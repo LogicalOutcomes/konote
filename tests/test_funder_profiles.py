@@ -417,11 +417,13 @@ class ReportTemplateModelTest(TestCase):
         assert profile.breakdowns.count() == 1
         assert bd.bins_json[0]["label"] == "Youth"
 
-    def test_profile_program_link(self):
+    def test_profile_program_link_through_partner(self):
+        from apps.reports.models import Partner
         program = Program.objects.create(name="Test", status="active")
-        profile = ReportTemplate.objects.create(name="Linked Funder")
-        profile.programs.add(program)
-        assert program in profile.programs.all()
+        partner = Partner.objects.create(name="Test Partner", partner_type="funder")
+        partner.programs.add(program)
+        profile = ReportTemplate.objects.create(name="Linked Funder", partner=partner)
+        assert program in profile.partner.programs.all()
 
     def test_save_parsed_profile(self):
         admin = User.objects.create_user(

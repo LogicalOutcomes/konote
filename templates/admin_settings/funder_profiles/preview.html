@@ -60,20 +60,20 @@
     {% endfor %}
 </article>
 
-<h3>{% trans "Assign to Programs" %}</h3>
+<h3>{% trans "Assign to Partner" %}</h3>
 <form method="post" action="{% url 'admin_settings:report_template_confirm' %}">
     {% csrf_token %}
     <input type="hidden" name="csv_content" value="{{ csv_content }}">
 
     <fieldset>
-        <legend>{% trans "Programs" %}</legend>
-        <p><small>{% trans "Select which programs should use this report template. You can change this later." %}</small></p>
-        {% for program in programs %}
-        <label>
-            <input type="checkbox" name="programs" value="{{ program.pk }}">
-            {{ program.name }}
-        </label>
-        {% endfor %}
+        <legend>{% trans "Partner" %}</legend>
+        <p><small>{% trans "Select the partner (funder, network, etc.) this report template belongs to. Programs are managed on the partner." %}</small></p>
+        <select name="partner" required>
+            <option value="">{% trans "— Select a partner —" %}</option>
+            {% for partner in partners %}
+            <option value="{{ partner.pk }}">{{ partner.name }} ({{ partner.get_partner_type_display }})</option>
+            {% endfor %}
+        </select>
     </fieldset>
 
     <div style="margin-top: 1rem;">
