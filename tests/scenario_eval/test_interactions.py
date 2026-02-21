@@ -199,7 +199,11 @@ class TestInteractions(BrowserTestBase):
     # 8. Record metric value
     # ------------------------------------------------------------------
     def test_record_metric_value(self):
-        """Staff can record a metric value on a target."""
+        """Staff can record a metric value on a target.
+
+        TODO: strengthen once metric recording UI is stable — currently
+        only verifies the plans page loads without error.
+        """
         self.login_via_browser("staff")
         self.page.goto(
             self.live_url(f"/participants/{self.client_a.pk}/plans/")
@@ -216,7 +220,11 @@ class TestInteractions(BrowserTestBase):
     # 9. Submit survey (staff)
     # ------------------------------------------------------------------
     def test_submit_survey_staff(self):
-        """Staff survey submission saves responses with confirmation."""
+        """Staff survey submission saves responses with confirmation.
+
+        TODO: strengthen once survey feature is stable — currently
+        only verifies the surveys page loads without error.
+        """
         self.login_via_browser("staff")
         # Navigate to surveys section
         self.page.goto(self.live_url("/surveys/"))
@@ -229,7 +237,11 @@ class TestInteractions(BrowserTestBase):
     # 10. Submit survey (portal)
     # ------------------------------------------------------------------
     def test_submit_survey_portal(self):
-        """Portal survey submission works with auto-save."""
+        """Portal survey submission works with auto-save.
+
+        TODO: strengthen once portal survey feature is stable — currently
+        only verifies the surveys page loads without error.
+        """
         # Portal surveys may need different setup — verify page loads
         self.login_via_browser("staff")
         self.page.goto(self.live_url("/surveys/"))

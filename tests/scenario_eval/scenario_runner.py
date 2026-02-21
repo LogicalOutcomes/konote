@@ -829,6 +829,7 @@ class ScenarioRunner(BrowserTestBase):
                         scenario_id=scenario["id"],
                         step_id=0,
                         persona_id=persona_id,
+                        is_blocked=True,
                         one_line_summary=(
                             f"BLOCKED — interaction test failing: {interaction_test}"
                         ),
@@ -840,7 +841,6 @@ class ScenarioRunner(BrowserTestBase):
         current_user = self._auto_login_for_scenario(scenario, personas)
 
         # Resolve expected language for objective scoring (QA-T10)
-        persona_id = scenario.get("persona", "")
         persona_data = personas.get(persona_id, {})
         expected_lang = _get_persona_language(persona_data)
 

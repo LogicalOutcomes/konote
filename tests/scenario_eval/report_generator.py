@@ -34,7 +34,7 @@ def _generate_traffic_light_summary(results):
     from .score_models import TASK_OUTCOMES
 
     lines = []
-    now = __import__("datetime").datetime.now().strftime("%Y-%m-%d")
+    now = datetime.now().strftime("%Y-%m-%d")
     colour = _overall_traffic_light(results)
 
     lines.append(f"## EVALUATION SUMMARY — {now} — {colour}")
@@ -43,21 +43,19 @@ def _generate_traffic_light_summary(results):
     total = len(results)
     scored = [r for r in results if r.avg_score > 0]
     blocked = [r for r in results if any(
-        "BLOCKED" in e.one_line_summary for e in r.step_evaluations
+        e.is_blocked for e in r.step_evaluations
     )]
     lines.append(f"Scenarios scored: {len(scored)}/{total}")
     if blocked:
         lines.append(f"Blocked (skipped): {len(blocked)}")
     lines.append("")
 
-    # Task outcome counts
+    # Task outcome counts (using ScenarioResult.task_outcome_counts)
     outcome_counts = {}
-    total_outcomes = 0
     for r in results:
-        for e in r.step_evaluations:
-            if e.task_outcome:
-                outcome_counts[e.task_outcome] = outcome_counts.get(e.task_outcome, 0) + 1
-                total_outcomes += 1
+        for outcome, count in r.task_outcome_counts.items():
+            outcome_counts[outcome] = outcome_counts.get(outcome, 0) + count
+    total_outcomes = sum(outcome_counts.values())
 
     if outcome_counts:
         lines.append("TASK OUTCOMES:")
