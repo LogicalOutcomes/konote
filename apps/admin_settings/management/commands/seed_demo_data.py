@@ -3692,7 +3692,7 @@ class Command(BaseCommand):
                 SurveyResponse.objects.filter(pk=response.pk).update(
                     submitted_at=now - timedelta(days=3),
                 )
-                # Fill in answers for section 1 questions
+                # Only answer section 1 (section 2 is conditional, shown only when goals_q == "no")
                 questions = SurveyQuestion.objects.filter(
                     section__survey=satisfaction,
                 ).order_by("section__sort_order", "sort_order")
