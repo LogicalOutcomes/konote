@@ -13673,3 +13673,6 @@ msgstr "Bilan de la relation de travail"
 
 msgid "Working relationship rating"
 msgstr "Évaluation de la relation de travail"
+
+msgid "Working relationship:"
+msgstr "Relation de travail :"

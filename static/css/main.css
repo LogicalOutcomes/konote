@@ -2078,25 +2078,25 @@ label {
 }
 
 /* ---- Participant info accordion chevrons ---- */
-section > details > summary {
+#tab-content section > details > summary {
     cursor: pointer;
     padding: var(--kn-space-sm) 0;
     list-style: none;
 }
-section > details > summary::-webkit-details-marker {
+#tab-content section > details > summary::-webkit-details-marker {
     display: none;
 }
-section > details > summary::marker {
+#tab-content section > details > summary::marker {
     display: none;
 }
-section > details > summary::after {
+#tab-content section > details > summary::after {
     content: "▸";
     float: right;
     font-size: 1.2rem;
     color: var(--kn-text);
     transition: transform 0.2s ease;
 }
-section > details[open] > summary::after {
+#tab-content section > details[open] > summary::after {
     transform: rotate(90deg);
 }
 
