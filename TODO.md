@@ -23,7 +23,7 @@
 - [ ] Document scheduled task setup for export monitoring in the runbook — GG (EXP2w)
 - [ ] Enforce cross-program sharing consent (PHIPA) in views — consent flag already captured, need view-level enforcement (PHIPA-ENFORCE1)
 - [ ] Build cross-agency data rollup for funders — waiting on requirements from Prosper Canada re: which metrics to aggregate (see tasks/prosper-canada/) — GG (SCALE-ROLLUP1)
-- [ ] Build role-based dashboard views — coach, PM, and executive landing pages with role-specific data (see tasks/dashboard-roles-plan.md) — GG (DASH-ROLES1)
+- [x] Build role-based dashboard views — coach, PM, and executive landing pages with role-specific data (see tasks/dashboard-roles-plan.md) — 2026-02-20 — GG (DASH-ROLES1)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with Prosper Canada dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — GG (DEPLOY-TOOLKIT1)
 
 ### Phase: Communication Modules — complete!
@@ -114,14 +114,17 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Surveys QA Scenarios
 
-- [ ] Write 8 scenario YAML files (SCN-110 through SCN-117) in konote-qa-scenarios repo (see tasks/qa-survey-scenarios.md) (QA-SURV3)
+- [x] Add survey demo data to seed_demo_data — 3 surveys, trigger rule, shareable link, assignments, responses — 2026-02-21 (QA-SURV1)
+- [ ] Create CSV test fixture for survey import at tests/fixtures/sample-survey-import.csv (QA-SURV2)
+- [x] Write 8 scenario YAML files (SCN-110 through SCN-117) in konote-qa-scenarios repo — 2026-02-21 (QA-SURV3)
+- [ ] Add test methods for survey scenarios to tests/scenario_eval/test_scenario_eval.py (QA-SURV4)
 - [ ] Update page-inventory.yaml in qa-scenarios repo with survey pages (QA-SURV5)
 
 ### Phase: Surveys Future Work
 
 - [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
-- [ ] Build trigger rule management UI (rules currently created via Django admin) (SURVEY-RULES1)
-- [ ] Implement auto-save / partial answers in the portal (SURVEY-AUTOSAVE1)
+- [x] Build trigger rule management UI — /manage/surveys/<id>/rules/ and /manage/surveys/<id>/rules/new/ — 2026-02-20 (SURVEY-RULES1)
+- [x] Implement auto-save / partial answers in the portal — PartialAnswer model + portal_survey_autosave view — 2026-02-20 (SURVEY-AUTOSAVE1)
 - [ ] Run `translate_strings` to extract and compile French translations for the new survey templates (SURVEY-I18N1)
 
 ### Phase: Documentation & Website Updates
