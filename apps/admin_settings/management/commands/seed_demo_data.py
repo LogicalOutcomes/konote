@@ -17,8 +17,8 @@ Creates:
 
 This gives charts and reports meaningful data to display.
 
-Run with: python manage.py seed_demo_data
-Only runs when DEMO_MODE is enabled.
+Run with: python manage.py seed_demo_data --demo-mode
+Also runs when DEMO_MODE env var is set.
 """
 import random
 from datetime import timedelta
@@ -1131,6 +1131,11 @@ class Command(BaseCommand):
             action="store_true",
             help="Delete existing demo notes/plans/events and regenerate from scratch.",
         )
+        parser.add_argument(
+            "--demo-mode",
+            action="store_true",
+            help="Enable demo mode for this run (alternative to setting DEMO_MODE=1 env var).",
+        )
 
     def _populate_custom_fields(self):
         """Populate custom field values for demo clients (always runs, idempotent)."""
@@ -1174,8 +1179,10 @@ class Command(BaseCommand):
             ))
 
     def handle(self, *args, **options):
-        if not settings.DEMO_MODE:
-            self.stdout.write(self.style.WARNING("DEMO_MODE is not enabled. Skipping."))
+        if not settings.DEMO_MODE and not options["demo_mode"]:
+            self.stdout.write(self.style.WARNING(
+                "DEMO_MODE is not enabled. Use --demo-mode flag or set DEMO_MODE=1 env var."
+            ))
             return
 
         # Always populate custom fields (idempotent via get_or_create)

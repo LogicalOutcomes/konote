@@ -228,6 +228,14 @@ class SeedDemoDataTest(TestCase):
             call_command("seed_demo_data", stdout=out)
         self.assertIn("DEMO_MODE is not enabled", out.getvalue())
 
+    def test_demo_mode_flag_enables_seeding(self):
+        """--demo-mode flag works without DEMO_MODE env var."""
+        out = io.StringIO()
+        with self.settings(DEMO_MODE=False):
+            call_command("seed", stdout=out)
+            call_command("seed_demo_data", demo_mode=True, stdout=out)
+        self.assertNotIn("DEMO_MODE is not enabled", out.getvalue())
+
     def test_smoke_with_demo_mode(self):
         """seed_demo_data runs without crashing when DEMO_MODE is True.
 

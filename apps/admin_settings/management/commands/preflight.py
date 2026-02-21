@@ -152,7 +152,7 @@ class Command(BaseCommand):
             else:
                 self.stdout.write(self.style.WARNING(
                     "  [WARN] Demo user 'demo-worker-1' not found — "
-                    "run: python manage.py seed && python manage.py seed_demo_data"
+                    "run: python manage.py seed && python manage.py seed_demo_data --demo-mode --force"
                 ))
         except Exception as e:
             self.stdout.write(self.style.WARNING(

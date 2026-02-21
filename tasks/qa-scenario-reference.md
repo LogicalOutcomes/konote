@@ -76,4 +76,4 @@ python manage.py runserver
 Run `python manage.py preflight` to see exactly what's wrong. Common issues:
 - Database not reachable (check `.env` has correct `DATABASE_URL`)
 - Migrations pending (run `python manage.py migrate`)
-- Test data missing (run `python manage.py seed && python manage.py seed_demo_data`)
+- Test data missing (run `python manage.py seed && python manage.py seed_demo_data --demo-mode --force`)
