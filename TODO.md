@@ -117,8 +117,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Create deployment documentation for surveys and portal features (DOC-DEPLOY1)
 - [ ] Update technical documentation in GitHub for surveys and portal architecture (DOC-TECH1)
 - [ ] Update website feature list and marketing copy to include surveys and portal (WEB-FEAT1)
-- [ ] Add Evidence section to website — adapt docs/evidence-outcome-measurement.md into a public-facing page explaining the research behind KoNote's outcome measurement approach (WEB-EVIDENCE1)
-- [ ] Validate academic citations in docs/evidence-outcome-measurement.md — verify all ~20 references against Semantic Scholar/CrossRef/OpenAlex (DOC-REFCHECK1)
+- [ ] Add Evidence section to website — adapt docs/evidence-outcome-measurement.md into a public-facing page explaining the research behind KoNote's outcome measurement approach (see tasks/web-evidence-prompt.md) (WEB-EVIDENCE1)
+- [x] Validate academic citations in docs/evidence-outcome-measurement.md — verified 23 references, fixed 6 errors — 2026-02-20 (DOC-REFCHECK1)
 
 ### Phase: QA Round 6 — Design Tasks
 
