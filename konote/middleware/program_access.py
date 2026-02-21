@@ -127,7 +127,11 @@ class ProgramAccessMiddleware:
                         request.user, client_id,
                     )
                     break
-                if not self._user_can_access_client(request.user, client_id):
+                access = self._user_can_access_client(request.user, client_id)
+                if access is None:
+                    # Client doesn't exist — let the view's get_object_or_404 handle it
+                    break
+                if not access:
                     if request.user.is_admin:
                         return self._forbidden_response(
                             request,
@@ -151,7 +155,10 @@ class ProgramAccessMiddleware:
                 note_id = match.group("note_id")
                 client_id = self._get_client_id_from_note(note_id)
                 if client_id:
-                    if not self._user_can_access_client(request.user, client_id):
+                    access = self._user_can_access_client(request.user, client_id)
+                    if access is None:
+                        break  # Client doesn't exist — let the view handle 404
+                    if not access:
                         if request.user.is_admin:
                             return self._forbidden_response(
                                 request,
@@ -208,9 +215,21 @@ class ProgramAccessMiddleware:
         )
 
     def _user_can_access_client(self, user, client_id):
-        """Check if user shares at least one program with the client."""
-        from apps.clients.models import ClientProgramEnrolment
+        """Check if user shares at least one program with the client.
+
+        Returns:
+            True  — user has program overlap with the client
+            False — no overlap (user lacks access)
+            None  — client does not exist (caller should 404, not 403)
+        """
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
         from apps.programs.models import UserProgramRole
+
+        # Check client exists before checking program overlap.
+        # Without this, a non-existent client_id produces an empty
+        # enrollment set → no overlap → misleading 403 instead of 404.
+        if not ClientFile.objects.filter(pk=client_id).exists():
+            return None
 
         user_program_ids = set(
             UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True)

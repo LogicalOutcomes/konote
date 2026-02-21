@@ -1312,3 +1312,32 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
     setInterval(updateRelativeTimes, 60000);
     document.body.addEventListener("htmx:afterSwap", updateRelativeTimes);
 })();
+
+// --- Analysis chart: unify quick-select buttons with date picker form (UX-CHART1) ---
+// Quick-select buttons set a hidden timeframe input and submit the form;
+// manual date inputs clear the timeframe so the two controls don't conflict.
+(function () {
+    document.body.addEventListener("click", function (e) {
+        var btn = e.target.closest("[data-timeframe]");
+        if (!btn) return;
+        var form = btn.closest("form");
+        if (!form) return;
+        var hidden = form.querySelector("#id_timeframe");
+        if (hidden) hidden.value = btn.getAttribute("data-timeframe");
+        // Clear manual date inputs — quick-select overrides them
+        var dateFrom = form.querySelector("input[name='date_from']");
+        var dateTo = form.querySelector("input[name='date_to']");
+        if (dateFrom) dateFrom.value = "";
+        if (dateTo) dateTo.value = "";
+        form.submit();
+    });
+
+    // When a manual date is entered, clear the timeframe so dates take priority
+    document.body.addEventListener("change", function (e) {
+        if (e.target.name !== "date_from" && e.target.name !== "date_to") return;
+        var form = e.target.closest("form");
+        if (!form) return;
+        var hidden = form.querySelector("#id_timeframe");
+        if (hidden) hidden.value = "";
+    });
+})();

@@ -3981,8 +3981,8 @@ article[aria-label="notification"].fading-out {
 /* is unaffected. Uses !important to override Pico CSS defaults    */
 /* which apply competing padding/height via high-specificity rules. */
 
-/* Hamburger menu button — appears at ≤768px */
 @media (max-width: 768px) {
+    /* Hamburger menu button */
     .nav-toggle {
         display: flex !important;
         align-items: center;
@@ -3991,9 +3991,7 @@ article[aria-label="notification"].fading-out {
         min-width: 44px !important;
         padding: 10px !important;
     }
-}
 
-@media (max-width: 600px) {
     /* KoNote logo / brand link in top nav */
     body > nav a.contrast {
         display: flex !important;
@@ -4094,6 +4092,19 @@ article[aria-label="notification"].fading-out {
     .keyboard-shortcuts-btn {
         min-height: 44px !important;
         padding: 8px 12px !important;
+    }
+
+    /* Nav menu links (Participants, Programs, etc.) */
+    #nav-menu li a {
+        display: flex !important;
+        align-items: center;
+        min-height: 44px !important;
+        padding: 8px 12px !important;
+    }
+
+    /* Analysis chart timeframe quick-select buttons */
+    [data-timeframe] {
+        min-height: 44px !important;
     }
 }
 

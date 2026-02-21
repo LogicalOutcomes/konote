@@ -1,0 +1,5 @@
+section,question,type,required,options,score_values,instructions
+"About You","What is your age range?","single_choice","yes","Under 18;18-30;31-50;51-65;Over 65","",""
+"About You","How did you hear about us?","single_choice","no","Friend;Website;Community event;Other","",""
+"Program Feedback","Overall, how satisfied are you with the program?","rating_scale","yes","","","Rate from 1 (not at all) to 5 (very satisfied)"
+"Program Feedback","What could we do better?","long_text","no","","","Please share any suggestions"
