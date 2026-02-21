@@ -9,6 +9,7 @@ import logging
 
 import requests
 from django.conf import settings
+from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 
@@ -273,7 +274,7 @@ def _validate_suggest_target_response(response, metric_catalogue):
     # suggested_section — required non-empty string
     ss = response.get("suggested_section")
     if not isinstance(ss, str) or not ss.strip():
-        response["suggested_section"] = "General"
+        response["suggested_section"] = _("General")
         logger.info("suggest_target response missing suggested_section, defaulted to 'General'")
 
     # Validate metrics array
@@ -785,8 +786,10 @@ def _validate_goal_chat_response(response, metric_catalogue):
             else:
                 draft["metric"] = None
 
-            if not isinstance(draft.get("suggested_section"), str):
-                draft["suggested_section"] = ""
+            ss = draft.get("suggested_section")
+            if not isinstance(ss, str) or not ss.strip():
+                draft["suggested_section"] = _("General")
+                logger.info("goal_chat draft missing suggested_section, defaulted to 'General'")
 
     return response
 
