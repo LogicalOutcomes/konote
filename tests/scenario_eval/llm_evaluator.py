@@ -87,6 +87,14 @@ Score each dimension 1-5 where:
 Be honest and critical. A page that "works" but confuses the persona should score 2-3, not 4.
 Consider this persona's tech comfort, mental model, and behavioural modifiers.
 
+Also assess whether this persona could complete the task:
+- "independent" = completes without help
+- "assisted" = would need to ask a colleague
+- "abandoned" = gives up or works around the system
+- "error_unnoticed" = thinks they're done but entered incorrect data
+
+Include your task_outcome assessment in the JSON response.
+
 IMPORTANT: Respond ONLY with valid JSON. No markdown, no explanation outside the JSON."""
 
     user_message = f"""## Persona
@@ -135,7 +143,9 @@ IMPORTANT: Respond ONLY with valid JSON. No markdown, no explanation outside the
   "improvement_suggestions": [
     "<specific, actionable suggestion>",
     ...
-  ]
+  ],
+  "task_outcome": "<independent|assisted|abandoned|error_unnoticed>",
+  "task_outcome_reasoning": "<why this persona would reach this outcome>"
 }}"""
 
     return system_prompt, user_message
@@ -228,6 +238,10 @@ def _parse_evaluation_response(data, step):
     eval_result.one_line_summary = data.get("one_line_summary", "")
     eval_result.improvement_suggestions = data.get("improvement_suggestions", [])
 
+    # Task outcome (QA enrichment)
+    eval_result.task_outcome = data.get("task_outcome")
+    eval_result.task_outcome_reasoning = data.get("task_outcome_reasoning", "")
+
     return eval_result
 
 
@@ -257,5 +271,11 @@ def format_persona_for_prompt(persona_data):
         parts.append(f"\nUnder pressure: {persona_data['under_pressure']}")
     if persona_data.get("when_confused"):
         parts.append(f"\nWhen confused: {persona_data['when_confused']}")
+
+    if persona_data.get("scoring_instruction"):
+        parts.append(
+            f"\nPERSONA-SPECIFIC SCORING RULE (you MUST apply this):\n"
+            f"{persona_data['scoring_instruction']}"
+        )
 
     return "\n".join(parts)
