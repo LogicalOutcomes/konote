@@ -99,16 +99,17 @@ def report_template_confirm(request):
         messages.error(request, _("CSV validation failed. Please correct errors and re-upload."))
         return redirect("admin_settings:report_template_upload")
 
-    # Save to database
-    profile = save_parsed_profile(parsed, created_by=request.user)
-
-    # Link to selected partner
+    # Get selected partner
     partner_id = request.POST.get("partner")
+    partner = None
     if partner_id:
         partner = Partner.objects.filter(pk=partner_id, is_active=True).first()
-        if partner:
-            profile.partner = partner
-            profile.save(update_fields=["partner"])
+    if not partner:
+        messages.error(request, _("Please select a valid partner."))
+        return redirect("admin_settings:report_template_upload")
+
+    # Save to database with partner
+    profile = save_parsed_profile(parsed, created_by=request.user, partner=partner)
 
     messages.success(
         request,

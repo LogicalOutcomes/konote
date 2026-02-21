@@ -400,9 +400,12 @@ class ReportTemplateModelTest(TestCase):
         enc_module._fernet_instance = None
 
     def test_create_profile_with_breakdowns(self):
+        from apps.reports.models import Partner
+        partner = Partner.objects.create(name="Test Funder Partner", partner_type="funder")
         profile = ReportTemplate.objects.create(
             name="Test Funder",
             description="Testing",
+            partner=partner,
         )
         bd = DemographicBreakdown.objects.create(
             report_template=profile,
@@ -426,9 +429,11 @@ class ReportTemplateModelTest(TestCase):
         assert program in profile.partner.programs.all()
 
     def test_save_parsed_profile(self):
+        from apps.reports.models import Partner
         admin = User.objects.create_user(
             username="admin_save", password="testpass", is_admin=True,
         )
+        partner = Partner.objects.create(name="Saved Partner", partner_type="funder")
         csv_content = (
             "profile_name,Saved Funder\n"
             "profile_description,auto-created\n"
@@ -438,7 +443,7 @@ class ReportTemplateModelTest(TestCase):
         )
         parsed, errors = parse_report_template_csv(csv_content)
         assert not errors
-        profile = save_parsed_profile(parsed, created_by=admin)
+        profile = save_parsed_profile(parsed, created_by=admin, partner=partner)
         assert profile.pk is not None
         assert profile.name == "Saved Funder"
         assert profile.breakdowns.count() == 1
@@ -476,6 +481,8 @@ class FunderProfileAdminAccessTest(TestCase):
         assert response.status_code in (302, 403)
 
     def test_admin_can_access_upload(self):
+        from apps.reports.models import Partner
+        Partner.objects.create(name="Test Partner", partner_type="funder")
         self.client.login(username="admin_fp", password="pass123")
         response = self.client.get("/admin/settings/report-templates/upload/")
         assert response.status_code == 200
