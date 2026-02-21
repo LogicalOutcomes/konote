@@ -373,3 +373,71 @@ class IndividualClientExportForm(ExportRecipientMixin, forms.Form):
         super().__init__(*args, **kwargs)
         self.contains_client_identifying_data = True
         self.add_recipient_fields()
+
+
+# ---------------------------------------------------------------------------
+# Safety Oversight Report forms
+# ---------------------------------------------------------------------------
+
+class OversightReportForm(forms.Form):
+    """Form for generating a safety oversight report."""
+
+    period = forms.ChoiceField(
+        label=_("Reporting Period"),
+        choices=[],
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["period"].choices = self._build_quarter_choices()
+
+    @staticmethod
+    def _build_quarter_choices():
+        """Return (value, label) tuples for last 4 quarters."""
+        import datetime
+
+        today = datetime.date.today()
+        choices = []
+        # Start from the current quarter and go back 4
+        year = today.year
+        quarter = (today.month - 1) // 3 + 1
+
+        for _ in range(4):
+            label = f"Q{quarter} {year}"
+            choices.append((label, label))
+            quarter -= 1
+            if quarter < 1:
+                quarter = 4
+                year -= 1
+
+        return choices
+
+
+class OversightApproveForm(forms.Form):
+    """Attestation form for approving a safety oversight report."""
+
+    narrative = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 4, "placeholder": _("Add management observations if applicable...")}),
+        label=_("Management Observations"),
+    )
+    confirm = forms.BooleanField(
+        required=True,
+        label=_("I confirm this report has been reviewed and is ready to file."),
+    )
+
+
+class ReportScheduleForm(forms.ModelForm):
+    """Form for creating or editing a report schedule."""
+
+    class Meta:
+        from .models import ReportSchedule
+
+        model = ReportSchedule
+        fields = [
+            "name", "report_type", "frequency", "due_date",
+            "reminder_days_before",
+        ]
+        widgets = {
+            "due_date": forms.DateInput(attrs={"type": "date"}),
+        }
