@@ -318,13 +318,39 @@ def generate_funder_report_data(
                     "total": sum(cf_counts.values()),
                 })
 
-    # Get achievement summary for all metrics with data
+    # If a report template defines specific metrics, use only those;
+    # otherwise include all metrics with data (backwards-compatible default).
+    template_metric_defs = None
+    template_label_overrides = {}
+    if report_template:
+        from .models import ReportMetric
+        template_metrics = list(
+            ReportMetric.objects.filter(
+                report_template=report_template,
+            ).select_related("metric_definition").order_by("sort_order")
+        )
+        if template_metrics:
+            template_metric_defs = [rm.metric_definition for rm in template_metrics]
+            template_label_overrides = {
+                rm.metric_definition_id: rm.translated_label
+                for rm in template_metrics
+                if rm.display_label
+            }
+
     achievement_summary = get_achievement_summary(
         program,
         date_from=date_from,
         date_to=date_to,
+        metric_defs=template_metric_defs,
         use_latest=True,
     )
+
+    # Apply display_label overrides from template metrics
+    if template_label_overrides:
+        for metric_data in achievement_summary.get("by_metric", []):
+            override = template_label_overrides.get(metric_data["metric_id"])
+            if override:
+                metric_data["metric_name"] = override
 
     # Build primary outcome (first metric with a target, if any)
     primary_outcome = None

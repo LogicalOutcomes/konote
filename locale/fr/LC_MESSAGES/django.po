@@ -14229,7 +14229,9 @@ msgstr ""
 "cible de %(target)s"
 
 msgid "# %(name)s: %(met)s of %(total)s clients met target of %(target)s"
-msgstr "# %(name)s : %(met)s sur %(total)s clients ont atteint la cible de %(target)s"
+msgstr ""
+"# %(name)s : %(met)s sur %(total)s clients ont atteint la cible de "
+"%(target)s"
 
 msgid "# %(name)s: %(total)s clients (no target defined)"
 msgstr "# %(name)s : %(total)s clients (aucune cible définie)"
@@ -14250,7 +14252,8 @@ msgstr ""
 "une cible"
 
 msgid "# Overall: %(met)s of %(total)s clients met at least one target"
-msgstr "# Global : %(met)s sur %(total)s clients ont atteint au moins une cible"
+msgstr ""
+"# Global : %(met)s sur %(total)s clients ont atteint au moins une cible"
 
 msgid "AGE DEMOGRAPHICS"
 msgstr "DONNÉES DÉMOGRAPHIQUES PAR ÂGE"
@@ -14308,3 +14311,36 @@ msgstr "Total des clients avec données de résultats"
 
 msgid "Please select a valid partner."
 msgstr "Veuillez sélectionner un partenaire valide."
+
+msgid "No metrics configured"
+msgstr "Aucun indicateur configuré"
+
+msgid "No outcome metrics configured"
+msgstr "Aucun indicateur de résultats configuré"
+
+msgid ""
+"No specific metrics configured — all metrics with data will be included."
+msgstr ""
+"Aucun indicateur spécifique configuré — tous les indicateurs avec des "
+"données seront inclus."
+
+msgid "Outcome Metrics"
+msgstr "Indicateurs de résultats"
+
+msgid "Outcome metrics in this template:"
+msgstr "Indicateurs de résultats dans ce modèle :"
+
+msgid "Source metric"
+msgstr "Indicateur source"
+
+msgid ""
+"This template has no specific metrics defined. Reports using this template "
+"will include all metrics with data. To limit which metrics appear, add "
+"metrics via the Django admin."
+msgstr ""
+"Ce modèle n'a aucun indicateur spécifique défini. Les rapports utilisant ce "
+"modèle incluront tous les indicateurs avec des données. Pour limiter les "
+"indicateurs affichés, ajoutez-les via l'administration Django."
+
+msgid "Threshold"
+msgstr "Seuil"

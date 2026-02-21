@@ -1056,7 +1056,7 @@ def funder_report_form(request):
             return ReportTemplate.objects.none()
         return (
             bound_form.fields["report_template"].queryset
-            .prefetch_related("breakdowns__custom_field")
+            .prefetch_related("breakdowns__custom_field", "report_metrics__metric_definition")
             .order_by("name")
         )
 

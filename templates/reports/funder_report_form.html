@@ -123,6 +123,17 @@
         {% empty %}
         <p><small>{% trans "No demographic breakdowns configured." %}</small></p>
         {% endfor %}
+
+        {% if preview_template.report_metrics.all %}
+        <p style="margin-top: 0.5rem; margin-bottom: 0.25rem;"><strong>{% trans "Outcome metrics in this template:" %}</strong></p>
+        <ul style="margin-top: 0; margin-bottom: 0.5rem; padding-left: 2rem;">
+            {% for rm in preview_template.report_metrics.all %}
+            <li>{{ rm.display_label|default:rm.metric_definition.name }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="margin-top: 0.5rem; margin-bottom: 0;"><small>{% trans "No specific metrics configured — all metrics with data will be included." %}</small></p>
+        {% endif %}
     </article>
     {% endfor %}
     {% endif %}
