@@ -108,6 +108,10 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Redesign PDF report layout: merge title page with page 2 to eliminate redundant empty space (REP-PDF2)
 - [ ] Define standardised report schema for Prosper Canada — 10-15 key metrics and demographic breakdowns shared across all partner agencies (RPT-SCHEMA1)
 
+### Phase: Demo Data Quality
+
+- [ ] Fix suggestion theme linking in seed_demo_data — make suggestions program-specific and remove blind fallback that links irrelevant notes to themes (see tasks/demo-data-suggestion-fix.md) — GG (DEMO-FIX1)
+
 ### Phase: Surveys QA Scenarios
 
 - [ ] Write 8 scenario YAML files (SCN-110 through SCN-117) in konote-qa-scenarios repo (see tasks/qa-survey-scenarios.md) (QA-SURV3)

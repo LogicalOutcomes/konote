@@ -1,0 +1,102 @@
+{% extends "reports/pdf_base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Safety Oversight Report" %} — {{ period_label }}{% endblock %}
+
+{% block content %}
+<div class="pdf-cover">
+    <h1>{% trans "Safety Oversight Report" %}</h1>
+    <div class="subtitle">{{ period_label }}</div>
+    <div class="meta">
+        {{ period_start|date:"M j, Y" }} — {{ period_end|date:"M j, Y" }}<br>
+        {% blocktrans with date=generated_at|date:"Y-m-d" %}Generated {{ date }}{% endblocktrans %}
+    </div>
+    <div class="status-badge" style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 4px; font-weight: 600; {% if overall_status == 'ROUTINE' %}background: #e8f5e9; color: #2e7d32;{% else %}background: #fff3e0; color: #e65100;{% endif %}">
+        {{ overall_status }}
+    </div>
+</div>
+
+<h2>{% trans "Key Metrics" %}</h2>
+<table>
+    <tr>
+        <td><strong>{% trans "Alerts Raised" %}</strong></td>
+        <td>{{ alerts_raised }}</td>
+        <td><strong>{% trans "Alerts Resolved" %}</strong></td>
+        <td>{{ alerts_resolved }}</td>
+    </tr>
+    <tr>
+        <td><strong>{% trans "Median Resolution (days)" %}</strong></td>
+        <td>{{ median_resolution_days|default:"—" }}</td>
+        <td><strong>{% trans "Active at Quarter End" %}</strong></td>
+        <td>{{ active_at_quarter_end }}</td>
+    </tr>
+</table>
+
+<h2>{% trans "System Activity" %}</h2>
+<table>
+    <tr>
+        <td><strong>{% trans "Notes Recorded" %}</strong></td>
+        <td>{{ notes_recorded }}</td>
+    </tr>
+    <tr>
+        <td><strong>{% trans "Active Participants" %}</strong></td>
+        <td>{{ active_participants }}</td>
+    </tr>
+    <tr>
+        <td><strong>{% trans "Active Staff" %}</strong></td>
+        <td>{{ active_staff }}</td>
+    </tr>
+</table>
+
+<h2>{% trans "Health Indicators" %}</h2>
+<ul>
+    <li>{% if no_aging_alerts %}&#10003;{% else %}&#10007;{% endif %} {% trans "No aging alerts (older than 14 days)" %}</li>
+    <li>{% if no_pending_reviews %}&#10003;{% else %}&#10007;{% endif %} {% trans "No pending cancellation reviews" %}</li>
+    <li>{% if no_program_concentration %}&#10003;{% else %}&#10007;{% endif %} {% trans "No program concentration detected" %}</li>
+</ul>
+
+{% if notable_triggers %}
+<h2>{% trans "Notable Items" %}</h2>
+<ul>
+    {% for trigger in notable_triggers %}
+    <li>{{ trigger }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+{% if program_breakdown %}
+<h2>{% trans "Program Breakdown" %}</h2>
+<table>
+    <thead>
+        <tr>
+            <th>{% trans "Program" %}</th>
+            <th style="text-align: center;">{% trans "Alerts Raised" %}</th>
+            <th style="text-align: center;">{% trans "Active at End" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for prog in program_breakdown %}
+        <tr>
+            <td>{{ prog.program_name }}</td>
+            <td style="text-align: center;">{{ prog.alerts_raised }}</td>
+            <td style="text-align: center;">{{ prog.active_at_end }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if narrative %}
+<h2>{% trans "Management Observations" %}</h2>
+<p>{{ narrative|linebreaksbr }}</p>
+{% endif %}
+
+{% if approved_by %}
+<h2>{% trans "Attestation" %}</h2>
+<p>{% blocktrans with name=approved_by.display_name date=approved_at|date:"Y-m-d" %}Approved by {{ name }} on {{ date }}{% endblocktrans %}</p>
+{% endif %}
+
+{% if is_external %}
+<p style="font-size: 0.8rem; color: #666; margin-top: 2rem;">{% trans "Counts below 5 are suppressed for privacy." %}</p>
+{% endif %}
+{% endblock %}

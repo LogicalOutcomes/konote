@@ -287,3 +287,211 @@ class InsightSummary(models.Model):
 
     def __str__(self):
         return f"Insight {self.cache_key} ({self.generated_at:%Y-%m-%d})"
+
+
+class OversightReportSnapshot(models.Model):
+    """Stored snapshot of a quarterly safety oversight report.
+
+    Contains computed metrics frozen at generation time, plus
+    attestation fields for the "Approve and File" workflow.
+    """
+
+    STATUS_CHOICES = [
+        ("ROUTINE", _("Routine")),
+        ("NOTABLE", _("Notable")),
+    ]
+
+    # Period
+    period_label = models.CharField(
+        max_length=20,
+        help_text="Human-readable label, e.g. 'Q1 2026'.",
+    )
+    period_start = models.DateField()
+    period_end = models.DateField()
+
+    # Computed metrics (frozen at generation time)
+    metrics_json = models.JSONField(
+        help_text="All computed metrics: alerts_raised, alerts_resolved, "
+                  "median_resolution_days, active_at_quarter_end, "
+                  "notes_recorded, active_participants, active_staff, "
+                  "aging_alerts, pending_reviews, program_breakdown.",
+    )
+
+    # Status
+    overall_status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="ROUTINE",
+    )
+    notable_triggers = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of trigger descriptions that caused NOTABLE status.",
+    )
+    narrative = models.TextField(
+        blank=True,
+        default="",
+        help_text="Management narrative added when status is NOTABLE.",
+    )
+
+    # Health indicators
+    no_aging_alerts = models.BooleanField(default=True)
+    no_pending_reviews = models.BooleanField(default=True)
+    no_program_concentration = models.BooleanField(default=True)
+
+    # Attestation
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="approved_oversight_reports",
+    )
+    approved_at = models.DateTimeField(null=True, blank=True)
+
+    # Visibility
+    is_external = models.BooleanField(
+        default=False,
+        help_text="External version suppresses counts under 5.",
+    )
+
+    # Metadata
+    generated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="generated_oversight_reports",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "oversight_report_snapshots"
+        ordering = ["-period_start"]
+
+    def __str__(self):
+        return f"Oversight Report {self.period_label} ({self.overall_status})"
+
+
+class ReportSchedule(models.Model):
+    """Scheduled recurring report with deadline reminders.
+
+    The management command check_report_deadlines runs daily and:
+    - Sets banner_shown_at when within reminder window
+    - Sends email reminder when within email window
+    - After report generation, advance_due_date() moves to next period
+    """
+
+    FREQUENCY_CHOICES = [
+        ("quarterly", _("Quarterly")),
+        ("monthly", _("Monthly")),
+        ("annually", _("Annually")),
+    ]
+
+    REPORT_TYPE_CHOICES = [
+        ("oversight", _("Safety Oversight Report")),
+        ("funder_report", _("Funder Report")),
+    ]
+
+    name = models.CharField(max_length=255)
+    report_type = models.CharField(max_length=50, choices=REPORT_TYPE_CHOICES)
+    frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES)
+
+    # Current deadline
+    due_date = models.DateField(
+        help_text="Next due date for this report.",
+    )
+
+    # Reminder configuration
+    reminder_days_before = models.PositiveIntegerField(
+        default=14,
+        help_text="Days before due date to start showing dashboard banner.",
+    )
+
+    # State tracking
+    banner_shown_at = models.DateTimeField(null=True, blank=True)
+    email_sent_at = models.DateTimeField(null=True, blank=True)
+    last_generated_at = models.DateTimeField(null=True, blank=True)
+
+    # Who to notify
+    notify_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name="report_schedules",
+        help_text="Users who receive reminders. If empty, all admins are notified.",
+    )
+
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="created_report_schedules",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "report_schedules"
+        ordering = ["due_date"]
+
+    def __str__(self):
+        return f"{self.name} (due {self.due_date})"
+
+    def advance_due_date(self):
+        """Move due_date to the next period after generation."""
+        import calendar
+
+        month = self.due_date.month
+        year = self.due_date.year
+        day = self.due_date.day
+
+        if self.frequency == "quarterly":
+            month += 3
+        elif self.frequency == "monthly":
+            month += 1
+        elif self.frequency == "annually":
+            year += 1
+
+        # Handle month overflow
+        while month > 12:
+            month -= 12
+            year += 1
+
+        # Clamp day to last day of target month
+        max_day = calendar.monthrange(year, month)[1]
+        day = min(day, max_day)
+
+        self.due_date = self.due_date.replace(year=year, month=month, day=day)
+        self.email_sent_at = None
+        self.banner_shown_at = None
+        self.save(update_fields=[
+            "due_date", "email_sent_at", "banner_shown_at", "updated_at",
+        ])
+
+    @property
+    def is_due_soon(self):
+        """True if within the banner reminder window."""
+        from django.utils import timezone as tz
+
+        today = tz.now().date()
+        return (
+            self.is_active
+            and self.due_date is not None
+            and (self.due_date - today).days <= self.reminder_days_before
+        )
+
+    @property
+    def is_overdue(self):
+        """True if past due date and not yet generated this period."""
+        from django.utils import timezone as tz
+
+        today = tz.now().date()
+        return (
+            self.is_active
+            and self.due_date is not None
+            and today > self.due_date
+            and (
+                self.last_generated_at is None
+                or self.last_generated_at.date() < self.due_date
+            )
+        )
