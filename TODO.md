@@ -167,6 +167,13 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering (CODE-TIDY1)
 - [ ] Unify analysis chart quick-select links and date picker form into a single input mechanism (UX-CHART1)
 - [ ] Add edge-case tests for invalid/inaccessible target IDs and 3m/6m timeframe paths (TEST-FILTER1)
+- [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — funder reporting (ASSESS1)
+- [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
+- [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
+- [ ] Alliance Repair Guide — one-page printable guide for workers when participants rate low (ALLIANCE-GUIDE1)
+- [ ] Participant-facing progress view — show descriptor timeline to participant in portal (PORTAL-PROGRESS1)
+- [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
+- [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
 
 ## Recently Done
 
