@@ -7,6 +7,7 @@
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GG (SEC3-Q1)
 - [ ] Confirm standard report schema and configuration template with Claire (Prosper Canada) before building — SG (RPT-SCHEMA1)
 - [ ] Review and approve multi-tenancy implementation plan with Sara and Prince before building — covers django-tenants integration, per-tenant encryption, consortium data model, and hybrid federation architecture (see tasks/prosper-canada/multi-tenancy-implementation-plan.md) — SG/PD (MT-APPROVE1)
+- [ ] Approve CIDS implementation plan with Sara and/or Claire before building — covers metadata fields, code list integration, CIDS-enriched reports, and full JSON-LD export; confirm funder consumption pathway and whether to engage Common Approach as pilot implementer (see tasks/cids-json-ld-export.md) — SG/GG (CIDS-APPROVE1)
 
 ## Active Work
 
@@ -16,12 +17,14 @@
 - [x] Define Prosper Canada configuration template — standard roles, metrics, terminology, plan templates for financial coaching agencies (see config_templates/prosper-canada/) — 2026-02-20 — GG (DEPLOY-TEMPLATE1)
 - [ ] Follow up with Claire (Prosper Canada) for additional must-haves on feature comparison — SG (DEPLOY-PC2)
 - [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — GG (ONBOARD-GATE)
+- [ ] Store signed Configuration Summary with each deployment so new admins can see what was decided and why — GG (DEPLOY-CONFIG-DOC1)
 - [ ] Verify production email configuration for exports, erasure alerts, and password resets — GG (OPS3)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — GG (OPS4)
 - [ ] Document scheduled task setup for export monitoring in the runbook — GG (EXP2w)
 - [ ] Enforce cross-program sharing consent (PHIPA) in views — consent flag already captured, need view-level enforcement (PHIPA-ENFORCE1)
 - [ ] Build cross-agency data rollup for funders — waiting on requirements from Prosper Canada re: which metrics to aggregate (see tasks/prosper-canada/) — GG (SCALE-ROLLUP1)
 - [ ] Build role-based dashboard views — coach, PM, and executive landing pages with role-specific data (see tasks/dashboard-roles-plan.md) — GG (DASH-ROLES1)
+- [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with Prosper Canada dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — GG (DEPLOY-TOOLKIT1)
 
 ### Phase: Communication Modules — complete!
 
@@ -38,7 +41,7 @@
 ### Phase: Post-Housekeeping Verification
 
 - [x] Run full test suite (`pytest -m "not browser and not scenario_eval"`) to verify PR #143 test fixes pass against current main — 2026-02-20 (VERIFY1)
-- [ ] Fix 12 pre-existing test failures — 5 SQLite isolation ("no such table: users"), 2 SQLite/PG behavioural differences, 1 AI fixture mismatch, 1 stale .mo, 2 missing staticfiles dir, 1 missing QA file (TEST-PREEXIST1)
+- [x] Fix 6 pre-existing test failures — SQLite isolation, fixture mismatch, stale .mo, missing QA file — 2026-02-21 (TEST-PREEXIST1)
 
 ## Do Occasionally
 
@@ -77,10 +80,18 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 - [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
 
-### Phase: Participant View Improvements
+### Phase: CIDS Compliance (Common Approach Data Standard) — waiting on CIDS-APPROVE1
 
-- [ ] Add adjustable timeframe and date range controls to Participant analysis charts (see tasks/participant-view-improvements.md) — GG (CHART-TIME1)
-- [ ] Add target filter to Notes section so staff can follow progress on a single target without reading every note (see tasks/participant-view-improvements.md) — GG (UX-NOTES-BY-TARGET1)
+- [ ] Add CIDS metadata fields to MetricDefinition, Program, and PlanTarget — optional fields for IRIS+ codes, SDG goals, sector codes (see tasks/cids-json-ld-export.md Phase 1) — GG (CIDS-META1)
+- [ ] Create OrganizationProfile model for CIDS BasicTier org metadata — legal name, sector, province (Phase 1) — GG (CIDS-ORG1)
+- [ ] Import CIDS code lists (17 lists) via management command from codelist.commonapproach.org with version tracking (Phase 2) — GG (CIDS-CODES1)
+- [ ] Build admin UI for CIDS tagging — dropdowns on program and metric forms, integrate into config template system (Phase 2) — GG (CIDS-ADMIN1)
+- [ ] Add CIDS codes to existing CSV/PDF funder reports + "Standards Alignment" appendix page — quick win, no new format needed (Phase 2.5) — GG (CIDS-ENRICH1)
+- [ ] Build JSON-LD export with basic SHACL validation — new format option alongside CSV/PDF, aggregate only (Phase 3) — GG (CIDS-EXPORT1)
+- [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — GG (CIDS-IMPACT1)
+- [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — GG (CIDS-VALIDATE1)
+
+### Phase: Participant View Improvements — complete!
 
 ### Phase: Other Upcoming
 
@@ -103,10 +114,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Surveys QA Scenarios
 
-- [ ] Add survey demo data to seed_demo_data — 2 active surveys, 1 draft, 1 response, 1 assignment, 1 trigger rule (see tasks/qa-survey-scenarios.md) (QA-SURV1)
-- [ ] Create CSV test fixture for survey import at tests/fixtures/sample-survey-import.csv (QA-SURV2)
 - [ ] Write 8 scenario YAML files (SCN-110 through SCN-117) in konote-qa-scenarios repo (see tasks/qa-survey-scenarios.md) (QA-SURV3)
-- [ ] Add test methods for survey scenarios to tests/scenario_eval/test_scenario_eval.py (QA-SURV4)
 - [ ] Update page-inventory.yaml in qa-scenarios repo with survey pages (QA-SURV5)
 
 ### Phase: Surveys Future Work
@@ -158,6 +166,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Surveys — lightweight structured feedback collection from participants (see tasks/surveys-design.md) (SURVEY1)
 - [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
 - [ ] Build agency data offboarding command for secure departures and PIPEDA requests (SEC3)
+- [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
 - [ ] Add first-run setup wizard UI for guided initial configuration (SETUP1-UI)
 - [ ] Add TOTP multi-factor authentication (see tasks/mfa-implementation.md) (SEC2)
 - [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
@@ -169,11 +178,24 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
 - [x] Add basic smoke test for `translate_strings` command — removed dead test class but no replacement exists — 2026-02-20 (TEST-TRANS2)
 - [ ] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering (CODE-TIDY1)
-- [ ] Unify analysis chart quick-select links and date picker form into a single input mechanism (UX-CHART1)
-- [ ] Add edge-case tests for invalid/inaccessible target IDs and 3m/6m timeframe paths (TEST-FILTER1)
+- [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — funder reporting (ASSESS1)
+- [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
+- [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
+- [ ] Alliance Repair Guide — one-page printable guide for workers when participants rate low (ALLIANCE-GUIDE1)
+- [ ] Participant-facing progress view — show descriptor timeline to participant in portal (PORTAL-PROGRESS1)
+- [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
+- [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
 
 ## Recently Done
 
+- [x] Unify analysis chart quick-select and date picker into single form control — 2026-02-21 (UX-CHART1)
+- [x] Add adjustable timeframe and date range controls to analysis charts — already implemented, verified — 2026-02-21 (CHART-TIME1)
+- [x] Add target filter to Notes section — already implemented, verified — 2026-02-21 (UX-NOTES-BY-TARGET1)
+- [x] Accessibility fixes: aria-labels on audit table, notes error container, mobile touch targets — 2026-02-21 (A11Y-UX1)
+- [x] Add edge-case tests for target filter and analysis timeframe paths — 2026-02-21 (TEST-FILTER1)
+- [x] Add survey demo data to seed_demo_data — 3 surveys, 1 response, 1 assignment, 1 trigger rule — 2026-02-21 (QA-SURV1)
+- [x] Create CSV test fixture for survey import — 2026-02-21 (QA-SURV2)
+- [x] Add 8 scenario test stubs for SCN-110 through SCN-117 — 2026-02-21 (QA-SURV4)
 - [x] Rename original KoNote GitHub repo to KoNote Classic and add redirect — 2026-02-20 (REPO1)
 - [x] Fix fiscal year dropdown showing English strings in French UI — wrapped with gettext, added 12 French translations — 2026-02-20 (BUG-FY1)
 - [x] Define Prosper Canada configuration template — 8 fixture files covering terminology, metrics, plans, roles, report schema — 2026-02-20 (DEPLOY-TEMPLATE1)

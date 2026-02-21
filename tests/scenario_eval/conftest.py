@@ -32,6 +32,34 @@ def _resolve_holdout_dir():
     return None
 
 
+def pytest_sessionstart(session):
+    """Run health check before scenario evaluation tests.
+
+    If >20% of scenarios are stale, print a warning (but don't block —
+    individual tests handle their own skipping).
+    """
+    holdout = _resolve_holdout_dir()
+    if not holdout:
+        return
+
+    try:
+        from .health_check import check_scenario_health
+
+        result = check_scenario_health(holdout)
+        if not result.is_healthy:
+            print(
+                f"\n  WARNING: Scenario suite is stale — "
+                f"{result.passed}/{result.total} passed health check "
+                f"({result.pass_rate:.0%})"
+            )
+            for scn_id, reason in result.stale[:5]:
+                print(f"    - {scn_id}: {reason}")
+            if len(result.stale) > 5:
+                print(f"    ... and {len(result.stale) - 5} more")
+    except Exception as exc:
+        print(f"\n  Health check error (non-blocking): {exc}")
+
+
 def pytest_addoption(parser):
     """Add --no-llm flag to skip LLM evaluation (dry-run mode)."""
     parser.addoption(

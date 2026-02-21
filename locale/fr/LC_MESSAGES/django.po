@@ -3849,6 +3849,9 @@ msgstr "Suggestions de mesures par IA"
 msgid "Access Log"
 msgstr "Journal d'accès"
 
+msgid "Access log entries"
+msgstr "Entrées du journal d'accès"
+
 msgid "Add Member"
 msgstr "Ajouter un membre"
 
@@ -13675,7 +13678,9 @@ msgid "External"
 msgstr "Externe"
 
 msgid "External view: counts below 5 are suppressed for privacy."
-msgstr "Vue externe : les nombres inférieurs à 5 sont masqués pour protéger la vie privée."
+msgstr ""
+"Vue externe : les nombres inférieurs à 5 sont masqués pour protéger la vie "
+"privée."
 
 msgid "Frequency"
 msgstr "Fréquence"
@@ -13762,7 +13767,9 @@ msgid "Period"
 msgstr "Période"
 
 msgid "Please log in to generate and submit this report before the deadline."
-msgstr "Veuillez vous connecter pour générer et soumettre ce rapport avant la date limite."
+msgstr ""
+"Veuillez vous connecter pour générer et soumettre ce rapport avant la date "
+"limite."
 
 msgid "Program Breakdown"
 msgstr "Répartition par programme"
@@ -13771,7 +13778,9 @@ msgid "Quarterly"
 msgstr "Trimestriellement"
 
 msgid "Quarterly safety reports for board, funders, and accreditation."
-msgstr "Rapports de sécurité trimestriels pour le conseil, les bailleurs de fonds et l'accréditation."
+msgstr ""
+"Rapports de sécurité trimestriels pour le conseil, les bailleurs de fonds et"
+" l'accréditation."
 
 msgid "Report Deadline Reminder"
 msgstr "Rappel de la date limite du rapport"
@@ -13811,11 +13820,14 @@ msgid ""
 "Select the reporting period. The system will compute aggregate safety "
 "metrics and determine whether the quarter was routine or notable."
 msgstr ""
-"Sélectionnez la période de déclaration. Le système calculera les indicateurs "
-"de sécurité agrégés et déterminera si le trimestre était routine ou notable."
+"Sélectionnez la période de déclaration. Le système calculera les indicateurs"
+" de sécurité agrégés et déterminera si le trimestre était routine ou "
+"notable."
 
 msgid "Set up recurring report deadlines with automatic reminders."
-msgstr "Configurez des dates limites récurrentes pour les rapports avec des rappels automatiques."
+msgstr ""
+"Configurez des dates limites récurrentes pour les rapports avec des rappels "
+"automatiques."
 
 msgid "System Activity"
 msgstr "Activité du système"
@@ -13844,3 +13856,72 @@ msgstr "plus de 14 jours"
 
 msgid "pending review"
 msgstr "en attente de révision"
+
+msgid ""
+"Based on staff assessments across all goals. Each assessment reflects the "
+"worker's judgment of how a participant is progressing — regardless of which "
+"specific metrics are tracked. Rising green ('In a good place') and blue "
+"('Something's shifting') lines mean more people are moving forward."
+msgstr ""
+"Basé sur les évaluations du personnel pour tous les objectifs. Chaque "
+"évaluation reflète le jugement de l'intervenant·e sur la progression du "
+"participant — peu importe les indicateurs suivis. Les lignes vertes (« En "
+"bonne posture ») et bleues (« Quelque chose bouge ») montrent que plus de "
+"personnes progressent."
+
+msgid ""
+"Choose the one metric most meaningful to both of you. You can change it "
+"later."
+msgstr ""
+"Choisissez l'indicateur le plus significatif pour vous deux. Vous pourrez le"
+" modifier plus tard."
+
+msgid "I don't feel heard by my worker"
+msgstr "Je ne me sens pas écouté·e par mon intervenant·e"
+
+msgid "I really trust my worker"
+msgstr "J'ai vraiment confiance en mon intervenant·e"
+
+msgid "My worker and I aren't on the same page"
+msgstr "Mon intervenant·e et moi ne sommes pas sur la même longueur d'onde"
+
+msgid "My worker gets what I need"
+msgstr "Mon intervenant·e comprend ce dont j'ai besoin"
+
+msgid "Participant self-rated"
+msgstr "Auto-évaluation du participant"
+
+msgid "Ratings of 1–3 are normal and helpful — they tell you what to adjust."
+msgstr ""
+"Les évaluations de 1 à 3 sont normales et utiles — elles vous indiquent quoi"
+" ajuster."
+
+msgid "Skip today"
+msgstr "Passer aujourd'hui"
+
+msgid "We're working okay together"
+msgstr "On travaille bien ensemble"
+
+msgid "Which measurement will best help you both see progress?"
+msgstr "Quel indicateur vous aidera le mieux à voir les progrès?"
+
+msgid "Who rated?"
+msgstr "Qui a évalué?"
+
+msgid "Worker observed"
+msgstr "Observation de l'intervenant·e"
+
+msgid "Working relationship check-in"
+msgstr "Bilan de la relation de travail"
+
+msgid "Working relationship rating"
+msgstr "Évaluation de la relation de travail"
+
+msgid "Working relationship:"
+msgstr "Relation de travail :"
+
+msgid "Fail"
+msgstr "Échec"
+
+msgid "Pass"
+msgstr "Réussi"

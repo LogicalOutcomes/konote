@@ -126,6 +126,21 @@ class FullNoteForm(forms.Form):
         widget=forms.RadioSelect,
         help_text=_("Your observation, not a score."),
     )
+    alliance_rating = forms.TypedChoiceField(
+        choices=[("", "")] + list(ProgressNote.ALLIANCE_RATING_CHOICES),
+        required=False,
+        coerce=int,
+        empty_value=None,
+        label=_("Working relationship check-in"),
+        widget=forms.RadioSelect,
+    )
+    alliance_rater = forms.ChoiceField(
+        choices=[("", "")] + list(ProgressNote.ALLIANCE_RATER_CHOICES),
+        required=False,
+        label=_("Who rated?"),
+        widget=forms.RadioSelect,
+        initial="client",
+    )
     participant_reflection = forms.CharField(
         widget=forms.Textarea(attrs={
             "rows": 2,

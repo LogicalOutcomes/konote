@@ -6,6 +6,8 @@ Run with: python manage.py test tests.test_blocker_a11y -v2 --settings=konote.se
 """
 import json
 import os
+import shutil
+import tempfile
 
 # Required for LiveServerTestCase with synchronous DB operations
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
@@ -28,7 +30,12 @@ TEST_KEY = Fernet.generate_key().decode()
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class BlockerA11yTests(StaticLiveServerTestCase):
-    """Test BLOCKER-1 and BLOCKER-2 accessibility issues with real browser."""
+    """Test BLOCKER-1 and BLOCKER-2 accessibility issues with real browser.
+
+    Uses file-based SQLite instead of :memory: because LiveServerTestCase
+    runs the server in a separate thread, and SQLite :memory: databases
+    are per-connection (threads can't share them).
+    """
 
     databases = {"default", "audit"}
 
@@ -37,7 +44,30 @@ class BlockerA11yTests(StaticLiveServerTestCase):
         if not HAS_PLAYWRIGHT:
             raise Exception("Playwright not installed")
         enc_module._fernet = None
+
+        # Switch to file-based SQLite so the live server thread can
+        # share the database with the test thread.
+        cls._db_dir = tempfile.mkdtemp(prefix="konote_blocker_")
+        from django.conf import settings
+        from django import db
+
+        cls._orig_default = settings.DATABASES["default"]["NAME"]
+        cls._orig_audit = settings.DATABASES["audit"]["NAME"]
+        settings.DATABASES["default"]["NAME"] = os.path.join(
+            cls._db_dir, "default.sqlite3"
+        )
+        settings.DATABASES["audit"]["NAME"] = os.path.join(
+            cls._db_dir, "audit.sqlite3"
+        )
+        db.connections.close_all()
+
         super().setUpClass()
+
+        # Create tables in the file-based databases
+        from django.core.management import call_command
+        call_command("migrate", "--run-syncdb", verbosity=0)
+        call_command("migrate", "--database=audit", "--run-syncdb", verbosity=0)
+
         cls.pw = sync_playwright().start()
         cls.browser = cls.pw.chromium.launch(headless=True)
 
@@ -46,6 +76,17 @@ class BlockerA11yTests(StaticLiveServerTestCase):
         cls.browser.close()
         cls.pw.stop()
         super().tearDownClass()
+
+        # Restore original :memory: database settings
+        from django.conf import settings
+        from django import db
+        settings.DATABASES["default"]["NAME"] = cls._orig_default
+        settings.DATABASES["audit"]["NAME"] = cls._orig_audit
+        db.connections.close_all()
+
+        # Clean up temp database files
+        shutil.rmtree(cls._db_dir, ignore_errors=True)
+        enc_module._fernet = None
 
     def setUp(self):
         enc_module._fernet = None

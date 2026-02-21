@@ -2019,6 +2019,120 @@ label {
     }
 }
 
+/* ---- Alliance check-in pills (vertical, semantic anchors) ---- */
+.alliance-fieldset {
+    border: none;
+    padding: 0;
+    margin-bottom: var(--kn-space-base);
+}
+.alliance-fieldset legend {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    margin-bottom: var(--kn-space-xs);
+}
+.alliance-intro {
+    display: block;
+    color: var(--kn-text-secondary);
+    margin-bottom: var(--kn-space-sm);
+}
+.alliance-pills {
+    display: flex;
+    flex-direction: column;
+    gap: var(--kn-space-xs);
+    margin-bottom: var(--kn-space-sm);
+}
+.alliance-anchor {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--kn-border);
+    border-radius: var(--kn-radius-card);
+    background: var(--kn-card-bg);
+    color: var(--kn-text);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--kn-transition);
+    margin: 0;
+    min-height: 44px;
+}
+.alliance-anchor:hover {
+    background: var(--kn-card-hover-bg);
+    border-color: var(--kn-primary);
+}
+.alliance-anchor:has(input:checked) {
+    background: var(--kn-primary);
+    color: var(--kn-text-inverse);
+    border-color: var(--kn-primary);
+}
+.alliance-anchor:has(input:focus-visible) {
+    outline: 2px solid var(--kn-primary-focus);
+    outline-offset: 2px;
+}
+.alliance-anchor input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.alliance-skip {
+    border-style: dashed;
+    color: var(--kn-text-secondary);
+    font-weight: 400;
+}
+.alliance-rater-row {
+    display: flex;
+    align-items: center;
+    gap: var(--kn-space-sm);
+    margin-top: var(--kn-space-xs);
+}
+.alliance-rater-row label {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--kn-border);
+    border-radius: 999px;
+    background: var(--kn-card-bg);
+    color: var(--kn-text);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    margin: 0;
+    min-height: 36px;
+}
+.alliance-rater-row label:has(input:checked) {
+    background: var(--kn-primary-subtle);
+    border-color: var(--kn-primary);
+}
+.alliance-rater-row input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* ---- Participant info accordion chevrons ---- */
+#tab-content section > details > summary {
+    cursor: pointer;
+    padding: var(--kn-space-sm) 0;
+    list-style: none;
+}
+#tab-content section > details > summary::-webkit-details-marker {
+    display: none;
+}
+#tab-content section > details > summary::marker {
+    display: none;
+}
+#tab-content section > details > summary::after {
+    content: "▸";
+    float: right;
+    font-size: 1.2rem;
+    color: var(--kn-text);
+    transition: transform 0.2s ease;
+}
+#tab-content section > details[open] > summary::after {
+    transform: rotate(90deg);
+}
+
 /* Follow-up Chips */
 .session-followup {
     margin-top: var(--kn-space-xl);
@@ -3900,8 +4014,8 @@ article[aria-label="notification"].fading-out {
 /* is unaffected. Uses !important to override Pico CSS defaults    */
 /* which apply competing padding/height via high-specificity rules. */
 
-/* Hamburger menu button — appears at ≤768px */
 @media (max-width: 768px) {
+    /* Hamburger menu button */
     .nav-toggle {
         display: flex !important;
         align-items: center;
@@ -3910,9 +4024,7 @@ article[aria-label="notification"].fading-out {
         min-width: 44px !important;
         padding: 10px !important;
     }
-}
 
-@media (max-width: 600px) {
     /* KoNote logo / brand link in top nav */
     body > nav a.contrast {
         display: flex !important;
@@ -4013,6 +4125,19 @@ article[aria-label="notification"].fading-out {
     .keyboard-shortcuts-btn {
         min-height: 44px !important;
         padding: 8px 12px !important;
+    }
+
+    /* Nav menu links (Participants, Programs, etc.) */
+    #nav-menu li a {
+        display: flex !important;
+        align-items: center;
+        min-height: 44px !important;
+        padding: 8px 12px !important;
+    }
+
+    /* Analysis chart timeframe quick-select buttons */
+    [data-timeframe] {
+        min-height: 44px !important;
     }
 }
 
