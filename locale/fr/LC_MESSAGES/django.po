@@ -13934,3 +13934,88 @@ msgstr "Échec"
 
 msgid "Pass"
 msgstr "Réussi"
+
+msgid ""
+"# %(name)s: %(met)s of %(total)s clients (%(rate)s%%) met target of "
+"%(target)s"
+msgstr ""
+"# %(name)s : %(met)s sur %(total)s clients (%(rate)s %%) ont atteint la "
+"cible de %(target)s"
+
+msgid "# %(name)s: %(met)s of %(total)s clients met target of %(target)s"
+msgstr "# %(name)s : %(met)s sur %(total)s clients ont atteint la cible de %(target)s"
+
+msgid "# %(name)s: %(total)s clients (no target defined)"
+msgstr "# %(name)s : %(total)s clients (aucune cible définie)"
+
+msgid "# ===== ACHIEVEMENT RATE SUMMARY ====="
+msgstr "# ===== RÉSUMÉ DU TAUX D'ATTEINTE ====="
+
+msgid "# Export Mode: Aggregate Summary"
+msgstr "# Mode d'exportation : Résumé agrégé"
+
+msgid "# No client data available for achievement calculation"
+msgstr "# Aucune donnée client disponible pour le calcul d'atteinte"
+
+msgid ""
+"# Overall: %(met)s of %(total)s clients (%(rate)s%%) met at least one target"
+msgstr ""
+"# Global : %(met)s sur %(total)s clients (%(rate)s %%) ont atteint au moins "
+"une cible"
+
+msgid "# Overall: %(met)s of %(total)s clients met at least one target"
+msgstr "# Global : %(met)s sur %(total)s clients ont atteint au moins une cible"
+
+msgid "AGE DEMOGRAPHICS"
+msgstr "DONNÉES DÉMOGRAPHIQUES PAR ÂGE"
+
+msgid "Clients Achieving Target"
+msgstr "Clients ayant atteint la cible"
+
+msgid "Clients Measured"
+msgstr "Clients mesurés"
+
+msgid "Clients Meeting Any Target"
+msgstr "Clients ayant atteint au moins une cible"
+
+msgid "Contact Attempts (no answer/left message)"
+msgstr "Tentatives de contact (sans réponse/message laissé)"
+
+msgid ""
+"DRAFT — Verify this format matches reporting requirements before submission"
+msgstr ""
+"ÉBAUCHE — Vérifiez que ce format correspond aux exigences de rapport avant "
+"de soumettre"
+
+msgid "Demographic Profile: %(name)s"
+msgstr "Profil démographique : %(name)s"
+
+msgid "Generated: %(date)s"
+msgstr "Généré : %(date)s"
+
+msgid "ORGANISATION INFORMATION"
+msgstr "INFORMATIONS SUR L'ORGANISME"
+
+msgid "OUTCOME INDICATORS"
+msgstr "INDICATEURS DE RÉSULTATS"
+
+msgid "OVERALL SUMMARY"
+msgstr "RÉSUMÉ GLOBAL"
+
+msgid "PRIMARY OUTCOME"
+msgstr "RÉSULTAT PRINCIPAL"
+
+msgid "PROGRAM OUTCOME REPORT TEMPLATE"
+msgstr "MODÈLE DE RAPPORT DE RÉSULTATS DU PROGRAMME"
+
+msgid "SECONDARY OUTCOMES"
+msgstr "RÉSULTATS SECONDAIRES"
+
+msgid "SERVICE STATISTICS"
+msgstr "STATISTIQUES DE SERVICE"
+
+msgid "Successful Contacts"
+msgstr "Contacts réussis"
+
+msgid "Total Clients with Outcome Data"
+msgstr "Total des clients avec données de résultats"
