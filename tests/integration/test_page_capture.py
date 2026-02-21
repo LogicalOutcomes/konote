@@ -21,9 +21,12 @@ Filter to a single breakpoint:
 """
 import os
 
+import pytest
+
 from tests.ux_walkthrough.browser_base import BrowserTestBase, TEST_PASSWORD
 from tests.utils.page_capture import (
     MANIFEST_PATH,
+    PAGE_INVENTORY_PATH,
     PERSONA_MAP,
     PHASE1_STATES,
     SCREENSHOT_DIR,
@@ -36,6 +39,10 @@ from tests.utils.page_capture import (
 )
 
 
+@pytest.mark.skipif(
+    not PAGE_INVENTORY_PATH.exists(),
+    reason=f"QA scenarios repo not available: {PAGE_INVENTORY_PATH}",
+)
 class TestPageCapture(BrowserTestBase):
     """Capture screenshots of all pages for all authorized personas."""
 
