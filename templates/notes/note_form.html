@@ -162,7 +162,31 @@
             <!-- Left Lens: Their Perspective -->
             <div class="lens-participant">
                 <h3>{% trans "Their perspective" %}</h3>
-                
+
+                <fieldset class="alliance-fieldset">
+                    <legend>{% trans "Working relationship check-in" %}</legend>
+                    <small class="alliance-intro">{% trans "Ratings of 1–3 are normal and helpful — they tell you what to adjust." %}</small>
+                    <div class="alliance-pills" role="radiogroup" aria-label="{% trans 'Working relationship rating' %}">
+                    {% for radio in form.alliance_rating %}
+                        {% if radio.choice_value %}
+                        <label class="alliance-anchor">{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                        {% endif %}
+                    {% endfor %}
+                        <label class="alliance-anchor alliance-skip">
+                            <input type="radio" name="alliance_rating" value=""><span>{% trans "Skip today" %}</span>
+                        </label>
+                    </div>
+                    <div class="alliance-rater-row">
+                        <small>{% trans "Who rated?" %}</small>
+                        {% for radio in form.alliance_rater %}
+                            {% if radio.choice_value %}
+                            <label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    {% if form.alliance_rating.errors %}<small class="error" role="alert">{{ form.alliance_rating.errors.0 }}</small>{% endif %}
+                </fieldset>
+
                 <label for="{{ form.participant_reflection.id_for_label }}">
                     {% trans "How did they feel about today's session?" %}
                 </label>
