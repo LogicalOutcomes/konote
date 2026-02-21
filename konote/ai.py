@@ -270,9 +270,11 @@ def _validate_suggest_target_response(response, metric_catalogue):
             logger.warning("suggest_target response missing or empty '%s'", key)
             return None
 
-    # suggested_section — default to empty string if missing
-    if not isinstance(response.get("suggested_section"), str):
-        response["suggested_section"] = ""
+    # suggested_section — required non-empty string
+    ss = response.get("suggested_section")
+    if not isinstance(ss, str) or not ss.strip():
+        response["suggested_section"] = "General"
+        logger.info("suggest_target response missing suggested_section, defaulted to 'General'")
 
     # Validate metrics array
     catalogue_ids = {m["metric_id"] for m in metric_catalogue} if metric_catalogue else set()
