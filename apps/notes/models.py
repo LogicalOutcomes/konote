@@ -217,6 +217,26 @@ class ProgressNote(models.Model):
     engagement_observation = models.CharField(
         max_length=20, choices=ENGAGEMENT_CHOICES, default="", blank=True,
     )
+
+    ALLIANCE_RATING_CHOICES = [
+        (1, _("I don't feel heard by my worker")),
+        (2, _("My worker and I aren't on the same page")),
+        (3, _("We're working okay together")),
+        (4, _("My worker gets what I need")),
+        (5, _("I really trust my worker")),
+    ]
+    ALLIANCE_RATER_CHOICES = [
+        ("client", _("Participant self-rated")),
+        ("worker_observed", _("Worker observed")),
+    ]
+
+    alliance_rating = models.PositiveSmallIntegerField(
+        choices=ALLIANCE_RATING_CHOICES, null=True, blank=True,
+    )
+    alliance_rater = models.CharField(
+        max_length=20, choices=ALLIANCE_RATER_CHOICES, default="", blank=True,
+    )
+
     backdate = models.DateTimeField(null=True, blank=True, help_text="Override date if note is for a past session.")
     begin_timestamp = models.DateTimeField(null=True, blank=True)
     follow_up_date = models.DateField(

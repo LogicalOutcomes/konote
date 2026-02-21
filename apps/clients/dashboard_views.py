@@ -60,6 +60,84 @@ def _count_active_alerts(client_ids):
     ).count()
 
 
+def _get_alert_oversight_data(client_ids):
+    """Enhanced safety alert metrics for the executive oversight card.
+
+    Returns dict with:
+        active: total active alerts
+        aging: active alerts older than 14 days
+        pending_cancellation: alerts with pending cancellation review
+    """
+    from apps.events.models import Alert, AlertCancellationRecommendation
+
+    if not client_ids:
+        return {"active": 0, "aging": 0, "pending_cancellation": 0}
+
+    active_qs = Alert.objects.filter(
+        client_file_id__in=client_ids,
+        status="default",
+    )
+    active_count = active_qs.count()
+
+    cutoff = timezone.now() - timedelta(days=14)
+    aging_count = active_qs.filter(created_at__lt=cutoff).count()
+
+    pending_count = AlertCancellationRecommendation.objects.filter(
+        alert__client_file_id__in=client_ids,
+        alert__status="default",
+        status="pending",
+    ).count()
+
+    return {
+        "active": active_count,
+        "aging": aging_count,
+        "pending_cancellation": pending_count,
+    }
+
+
+def _batch_alerts_by_program(filtered_program_ids, base_client_ids):
+    """Alert counts grouped by program for the oversight breakdown page.
+
+    Returns dict of program_id -> {active, aging, pending_cancellation}.
+    """
+    from apps.clients.models import ClientProgramEnrolment
+    from apps.events.models import Alert, AlertCancellationRecommendation
+
+    enrolments = ClientProgramEnrolment.objects.filter(
+        program_id__in=filtered_program_ids,
+        status="enrolled",
+        client_file_id__in=base_client_ids,
+    ).values_list("program_id", "client_file_id")
+
+    program_client_map = {}
+    for pid, cid in enrolments:
+        program_client_map.setdefault(pid, set()).add(cid)
+
+    cutoff = timezone.now() - timedelta(days=14)
+    result = {}
+
+    for pid in filtered_program_ids:
+        cids = program_client_map.get(pid, set())
+        if not cids:
+            result[pid] = {"active": 0, "aging": 0, "pending_cancellation": 0}
+            continue
+
+        active_qs = Alert.objects.filter(
+            client_file_id__in=cids, status="default",
+        )
+        result[pid] = {
+            "active": active_qs.count(),
+            "aging": active_qs.filter(created_at__lt=cutoff).count(),
+            "pending_cancellation": AlertCancellationRecommendation.objects.filter(
+                alert__client_file_id__in=cids,
+                alert__status="default",
+                status="pending",
+            ).count(),
+        }
+
+    return result
+
+
 def _calc_no_show_rate(program, month_start):
     """No-show meetings as % of completed + no-show this month."""
     from apps.events.models import Meeting
@@ -637,6 +715,9 @@ def _get_executive_inline_data(user, program_ids, base_client_ids):
 
     show_alerts = flags.get("alerts", False)
     active_alerts = _count_active_alerts(all_client_ids) if show_alerts else None
+    alert_oversight = (
+        _get_alert_oversight_data(all_client_ids) if show_alerts else None
+    )
 
     show_events = flags.get("events", False)
     show_portal = flags.get("portal_journal", False) or flags.get("portal_messaging", False)
@@ -680,6 +761,7 @@ def _get_executive_inline_data(user, program_ids, base_client_ids):
         "without_notes": without_notes,
         "overdue_followups": overdue_followups,
         "active_alerts": active_alerts,
+        "alert_oversight": alert_oversight,
         "show_alerts": show_alerts,
         "show_events": show_events,
         "show_portal": show_portal,
@@ -776,6 +858,9 @@ def executive_dashboard(request):
 
     show_alerts = flags.get("alerts", False)
     active_alerts = _count_active_alerts(all_client_ids) if show_alerts else None
+    alert_oversight = (
+        _get_alert_oversight_data(all_client_ids) if show_alerts else None
+    )
 
     # -- Per-program cards (batch queries) -------------------------------
     show_events = flags.get("events", False)
@@ -880,11 +965,54 @@ def executive_dashboard(request):
         "without_notes": without_notes,
         "overdue_followups": overdue_followups,
         "active_alerts": active_alerts,
+        "alert_oversight": alert_oversight,
         "show_alerts": show_alerts,
         "show_events": show_events,
         "show_portal": show_portal,
         "total_suggestions_important": total_suggestions_important,
         "selected_program_id": selected_program_id,
         "data_refreshed_at": now,
+        "nav_active": "executive",
+    })
+
+
+# ---------------------------------------------------------------------------
+# Alert overview by program
+# ---------------------------------------------------------------------------
+
+@login_required
+def alert_overview_by_program(request):
+    """Safety alert breakdown by program for executive oversight."""
+    from apps.clients.views import get_client_queryset
+    from apps.programs.models import Program, UserProgramRole
+
+    user_program_ids = list(
+        UserProgramRole.objects.filter(
+            user=request.user, status="active",
+        ).values_list("program_id", flat=True)
+    )
+    if not user_program_ids:
+        return render(request, "403.html", status=403)
+
+    programs = Program.objects.filter(pk__in=user_program_ids).order_by("name")
+    base_client_ids = set(
+        get_client_queryset(request.user).values_list("pk", flat=True)
+    )
+    filtered_program_ids = list(programs.values_list("pk", flat=True))
+
+    alert_map = _batch_alerts_by_program(filtered_program_ids, base_client_ids)
+
+    program_alerts = []
+    for program in programs:
+        data = alert_map.get(program.pk, {})
+        program_alerts.append({
+            "program": program,
+            "active": data.get("active", 0),
+            "aging": data.get("aging", 0),
+            "pending_cancellation": data.get("pending_cancellation", 0),
+        })
+
+    return render(request, "clients/alert_overview.html", {
+        "program_alerts": program_alerts,
         "nav_active": "executive",
     })

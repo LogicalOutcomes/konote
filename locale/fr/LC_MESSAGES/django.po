@@ -3858,6 +3858,9 @@ msgstr "Suggestions de mesures par IA"
 msgid "Access Log"
 msgstr "Journal d'accès"
 
+msgid "Access log entries"
+msgstr "Entrées du journal d'accès"
+
 msgid "Add Member"
 msgstr "Ajouter un membre"
 
@@ -13624,3 +13627,310 @@ msgstr "Commencé à"
 #, python-format
 msgid "Your last session was recorded on %(date)s."
 msgstr "Votre dernière séance a été enregistrée le %(date)s."
+
+msgid "Active Participants"
+msgstr "Participants actifs"
+
+msgid "Active Staff"
+msgstr "Personnel actif"
+
+msgid "Active at End"
+msgstr "Actives en fin de période"
+
+msgid "Active at Quarter End"
+msgstr "Actives en fin de trimestre"
+
+msgid "Add management observations if applicable..."
+msgstr "Ajoutez des observations de la direction, le cas échéant…"
+
+msgid ""
+"Aggregate alert counts per program. No individual participant details are "
+"shown."
+msgstr ""
+"Nombre total d'alertes par programme. Aucun détail individuel sur les "
+"participants n'est affiché."
+
+msgid "Alerts Raised"
+msgstr "Alertes signalées"
+
+msgid "Alerts Resolved"
+msgstr "Alertes résolues"
+
+msgid "Annually"
+msgstr "Annuellement"
+
+msgid "Approve and File"
+msgstr "Approuver et classer"
+
+msgid "Attestation"
+msgstr "Attestation"
+
+msgid "Back to Executive Dashboard"
+msgstr "Retour au tableau de bord de la direction"
+
+msgid "Counts below 5 are suppressed for privacy."
+msgstr "Les nombres inférieurs à 5 sont masqués pour protéger la vie privée."
+
+msgid "Create Schedule"
+msgstr "Créer un calendrier"
+
+msgid "Download PDF"
+msgstr "Télécharger le PDF"
+
+msgid "Due Soon"
+msgstr "Échéance proche"
+
+msgid "Edit Schedule"
+msgstr "Modifier le calendrier"
+
+msgid "External"
+msgstr "Externe"
+
+msgid "External view: counts below 5 are suppressed for privacy."
+msgstr ""
+"Vue externe : les nombres inférieurs à 5 sont masqués pour protéger la vie "
+"privée."
+
+msgid "Frequency"
+msgstr "Fréquence"
+
+msgid "Generate"
+msgstr "Générer"
+
+msgid "Generate New Report"
+msgstr "Générer un nouveau rapport"
+
+msgid "Generate Safety Oversight Report"
+msgstr "Générer le rapport de surveillance de la sécurité"
+
+msgid "Generated"
+msgstr "Généré"
+
+msgid "Health Indicators"
+msgstr "Indicateurs de santé"
+
+msgid "I confirm this report has been reviewed and is ready to file."
+msgstr "Je confirme que ce rapport a été révisé et est prêt à être classé."
+
+msgid "Internal"
+msgstr "Interne"
+
+msgid "Key Metrics"
+msgstr "Indicateurs clés"
+
+msgid "Manage Schedules"
+msgstr "Gérer les calendriers"
+
+msgid "Management Observations"
+msgstr "Observations de la direction"
+
+msgid "Median Resolution (days)"
+msgstr "Résolution médiane (jours)"
+
+msgid "Monthly"
+msgstr "Mensuellement"
+
+msgid "Next Due"
+msgstr "Prochaine échéance"
+
+msgid "No aging alerts (older than 14 days)"
+msgstr "Aucune alerte ancienne (plus de 14 jours)"
+
+msgid "No oversight reports have been generated yet."
+msgstr "Aucun rapport de surveillance n'a encore été généré."
+
+msgid "No pending cancellation reviews"
+msgstr "Aucune révision d'annulation en attente"
+
+msgid "No program concentration detected"
+msgstr "Aucune concentration de programme détectée"
+
+msgid "No programs found."
+msgstr "Aucun programme trouvé."
+
+msgid "No report schedules have been set up yet."
+msgstr "Aucun calendrier de rapport n'a encore été configuré."
+
+msgid "Notable"
+msgstr "Notable"
+
+msgid "Notable Items"
+msgstr "Éléments notables"
+
+msgid "Notes Recorded"
+msgstr "Notes enregistrées"
+
+msgid "Older than 14 days"
+msgstr "Plus de 14 jours"
+
+msgid "Overdue"
+msgstr "En retard"
+
+msgid "Overdue:"
+msgstr "En retard :"
+
+msgid "Paused"
+msgstr "En pause"
+
+msgid "Period"
+msgstr "Période"
+
+msgid "Please log in to generate and submit this report before the deadline."
+msgstr ""
+"Veuillez vous connecter pour générer et soumettre ce rapport avant la date "
+"limite."
+
+msgid "Program Breakdown"
+msgstr "Répartition par programme"
+
+msgid "Quarterly"
+msgstr "Trimestriellement"
+
+msgid "Quarterly safety reports for board, funders, and accreditation."
+msgstr ""
+"Rapports de sécurité trimestriels pour le conseil, les bailleurs de fonds et"
+" l'accréditation."
+
+msgid "Report Deadline Reminder"
+msgstr "Rappel de la date limite du rapport"
+
+msgid "Report Schedules"
+msgstr "Calendriers des rapports"
+
+msgid ""
+"Review the report above, add any management observations, then approve to "
+"file this report."
+msgstr ""
+"Révisez le rapport ci-dessus, ajoutez des observations de la direction si "
+"nécessaire, puis approuvez pour classer ce rapport."
+
+msgid "Routine"
+msgstr "Routine"
+
+msgid "Safety Alerts"
+msgstr "Alertes de sécurité"
+
+msgid "Safety Alerts by Program"
+msgstr "Alertes de sécurité par programme"
+
+msgid "Safety Oversight"
+msgstr "Surveillance de la sécurité"
+
+msgid "Safety Oversight Report"
+msgstr "Rapport de surveillance de la sécurité"
+
+msgid "Safety Oversight Reports"
+msgstr "Rapports de surveillance de la sécurité"
+
+msgid "Schedules"
+msgstr "Calendriers"
+
+msgid ""
+"Select the reporting period. The system will compute aggregate safety "
+"metrics and determine whether the quarter was routine or notable."
+msgstr ""
+"Sélectionnez la période de déclaration. Le système calculera les indicateurs"
+" de sécurité agrégés et déterminera si le trimestre était routine ou "
+"notable."
+
+msgid "Set up recurring report deadlines with automatic reminders."
+msgstr ""
+"Configurez des dates limites récurrentes pour les rapports avec des rappels "
+"automatiques."
+
+msgid "System Activity"
+msgstr "Activité du système"
+
+msgid ""
+"This is an automated reminder. No participant data is included in this "
+"message."
+msgstr ""
+"Ceci est un rappel automatisé. Aucune donnée de participant n'est incluse "
+"dans ce message."
+
+msgid "Upcoming:"
+msgstr "À venir :"
+
+msgid "View by program"
+msgstr "Voir par programme"
+
+msgid "View schedules"
+msgstr "Voir les calendriers"
+
+msgid "due"
+msgstr "échéance"
+
+msgid "older than 14 days"
+msgstr "plus de 14 jours"
+
+msgid "pending review"
+msgstr "en attente de révision"
+
+msgid ""
+"Based on staff assessments across all goals. Each assessment reflects the "
+"worker's judgment of how a participant is progressing — regardless of which "
+"specific metrics are tracked. Rising green ('In a good place') and blue "
+"('Something's shifting') lines mean more people are moving forward."
+msgstr ""
+"Basé sur les évaluations du personnel pour tous les objectifs. Chaque "
+"évaluation reflète le jugement de l'intervenant·e sur la progression du "
+"participant — peu importe les indicateurs suivis. Les lignes vertes (« En "
+"bonne posture ») et bleues (« Quelque chose bouge ») montrent que plus de "
+"personnes progressent."
+
+msgid ""
+"Choose the one metric most meaningful to both of you. You can change it "
+"later."
+msgstr ""
+"Choisissez l'indicateur le plus significatif pour vous deux. Vous pourrez le"
+" modifier plus tard."
+
+msgid "I don't feel heard by my worker"
+msgstr "Je ne me sens pas écouté·e par mon intervenant·e"
+
+msgid "I really trust my worker"
+msgstr "J'ai vraiment confiance en mon intervenant·e"
+
+msgid "My worker and I aren't on the same page"
+msgstr "Mon intervenant·e et moi ne sommes pas sur la même longueur d'onde"
+
+msgid "My worker gets what I need"
+msgstr "Mon intervenant·e comprend ce dont j'ai besoin"
+
+msgid "Participant self-rated"
+msgstr "Auto-évaluation du participant"
+
+msgid "Ratings of 1–3 are normal and helpful — they tell you what to adjust."
+msgstr ""
+"Les évaluations de 1 à 3 sont normales et utiles — elles vous indiquent quoi"
+" ajuster."
+
+msgid "Skip today"
+msgstr "Passer aujourd'hui"
+
+msgid "We're working okay together"
+msgstr "On travaille bien ensemble"
+
+msgid "Which measurement will best help you both see progress?"
+msgstr "Quel indicateur vous aidera le mieux à voir les progrès?"
+
+msgid "Who rated?"
+msgstr "Qui a évalué?"
+
+msgid "Worker observed"
+msgstr "Observation de l'intervenant·e"
+
+msgid "Working relationship check-in"
+msgstr "Bilan de la relation de travail"
+
+msgid "Working relationship rating"
+msgstr "Évaluation de la relation de travail"
+
+msgid "Working relationship:"
+msgstr "Relation de travail :"
+
+msgid "Fail"
+msgstr "Échec"
+
+msgid "Pass"
+msgstr "Réussi"

@@ -59,7 +59,7 @@
 {# ── Hero: Descriptor trend chart ── #}
 {% if structured.descriptor_trend %}
 <h2>{% trans "Progress Trend" %}</h2>
-<p class="chart-description muted">{% trans "Each line shows the percentage of participants at each stage of progress over time. Rising green ('In a good place') and blue ('Something's shifting') lines mean more people are moving forward." %}</p>
+<p class="chart-description muted">{% trans "Based on staff assessments across all goals. Each assessment reflects the worker's judgment of how a participant is progressing — regardless of which specific metrics are tracked. Rising green ('In a good place') and blue ('Something's shifting') lines mean more people are moving forward." %}</p>
 <div class="chart-container" style="position: relative; height: 300px;">
     <canvas id="descriptor-trend-chart"
             aria-label="{% trans 'Line chart showing participant progress descriptor trends by month' %}"

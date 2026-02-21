@@ -10,13 +10,14 @@ from apps.portal.staff_views import (
 )
 
 from . import erasure_views, views
-from .dashboard_views import executive_dashboard
+from .dashboard_views import alert_overview_by_program, executive_dashboard
 
 
 app_name = "clients"
 
 urlpatterns = [
     path("executive/", executive_dashboard, name="executive_dashboard"),
+    path("executive/alerts/", alert_overview_by_program, name="alert_overview"),
     path("", views.client_list, name="client_list"),
     path("create/", views.client_create, name="client_create"),
     path("check-duplicate/", views.check_duplicate, name="check_duplicate"),

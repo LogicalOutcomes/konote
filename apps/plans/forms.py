@@ -80,13 +80,14 @@ class PlanTargetStatusForm(forms.Form):
 
 
 class MetricAssignmentForm(forms.Form):
-    """Form for assigning metrics to a target (checkboxes)."""
+    """Form for assigning a single metric to a target."""
 
-    metrics = forms.ModelMultipleChoiceField(
+    metrics = forms.ModelChoiceField(
         queryset=MetricDefinition.objects.filter(is_enabled=True, status="active"),
-        widget=forms.CheckboxSelectMultiple,
+        widget=forms.RadioSelect,
         required=False,
-        label=_("Assigned metrics"),
+        label=_("Which measurement will best help you both see progress?"),
+        help_text=_("Choose the one metric most meaningful to both of you. You can change it later."),
     )
 
 
@@ -161,10 +162,12 @@ class GoalForm(forms.Form):
             "placeholder": _("SMART outcome or additional context"),
         }),
     )
-    metrics = forms.ModelMultipleChoiceField(
+    metrics = forms.ModelChoiceField(
         queryset=MetricDefinition.objects.filter(is_enabled=True, status="active"),
-        widget=forms.CheckboxSelectMultiple,
+        widget=forms.RadioSelect,
         required=False,
+        label=_("Which measurement will best help you both see progress?"),
+        help_text=_("Choose the one metric most meaningful to both of you. You can change it later."),
     )
 
     field_order = ["client_goal", "name", "section_choice", "new_section_name",
