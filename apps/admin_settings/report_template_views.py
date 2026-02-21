@@ -124,7 +124,9 @@ def report_template_confirm(request):
 def report_template_detail(request, profile_id):
     """View a report template's breakdowns and partner details."""
     profile = get_object_or_404(
-        ReportTemplate.objects.select_related("partner").prefetch_related("breakdowns"),
+        ReportTemplate.objects.select_related("partner").prefetch_related(
+            "breakdowns", "report_metrics__metric_definition",
+        ),
         pk=profile_id,
     )
     return render(request, "admin_settings/funder_profiles/detail.html", {

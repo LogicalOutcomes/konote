@@ -17,6 +17,8 @@
             <dd>{{ profile.created_at|date:"Y-m-d H:i" }}{% if profile.created_by %} {% trans "by" %} {{ profile.created_by.display_name }}{% endif %}</dd>
             <dt>{% trans "Breakdowns" %}</dt>
             <dd>{{ profile.breakdowns.count }}</dd>
+            <dt>{% trans "Outcome Metrics" %}</dt>
+            <dd>{{ profile.report_metrics.count }}</dd>
             <dt>{% trans "Partner" %}</dt>
             <dd>
                 {% if profile.partner %}
@@ -81,6 +83,30 @@
 </article>
 {% empty %}
 <p>{% trans "No breakdowns defined." %}</p>
+{% endfor %}
+
+<h2>{% trans "Outcome Metrics" %}</h2>
+
+{% for rm in profile.report_metrics.all %}
+<article>
+    <header>
+        <strong>{{ rm.display_label|default:rm.metric_definition.name }}</strong>
+        <small class="secondary"> — {{ rm.get_aggregation_display }}</small>
+    </header>
+    {% if rm.display_label and rm.display_label != rm.metric_definition.name %}
+    <p style="margin-bottom: 0.25rem;"><small>{% trans "Source metric" %}: {{ rm.metric_definition.name }}</small></p>
+    {% endif %}
+    {% if rm.threshold_value %}
+    <p style="margin-bottom: 0;"><small>{% trans "Threshold" %}: {{ rm.threshold_value }}</small></p>
+    {% endif %}
+</article>
+{% empty %}
+<article aria-label="{% trans 'No metrics configured' %}" style="background: var(--kn-warning-bg); border-left: 4px solid var(--kn-warning-fg); padding: 1rem;">
+    <strong><span aria-hidden="true">⚠️</span> {% trans "No outcome metrics configured" %}</strong>
+    <p style="margin-bottom: 0;">
+        {% trans "This template has no specific metrics defined. Reports using this template will include all metrics with data. To limit which metrics appear, add metrics via the Django admin." %}
+    </p>
+</article>
 {% endfor %}
 
 <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
