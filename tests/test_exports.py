@@ -536,11 +536,12 @@ class FunderReportTemplateMetricFilterTest(TestCase):
             user=self.user,
             report_template=self.template,
         )
-        metric_names = [
-            m["metric_name"] for m in data["achievement_summary"]["by_metric"]
+        metric_ids = [
+            m["metric_id"] for m in data["achievement_summary"]["by_metric"]
         ]
-        self.assertIn("Score A", metric_names)
-        self.assertNotIn("Score B", metric_names)
+        self.assertIn(self.metric_a.pk, metric_ids)
+        self.assertNotIn(self.metric_b.pk, metric_ids)
+        self.assertEqual(len(metric_ids), 1)
 
     def test_template_without_metrics_includes_all(self):
         """When template has zero ReportMetric entries, all metrics appear (fallback)."""
