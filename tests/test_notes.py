@@ -699,6 +699,54 @@ class NoteViewsTest(TestCase):
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Consent Required")
 
+    # -- Alliance Check-In --
+
+    def test_full_note_with_alliance_rating(self):
+        """Alliance rating and rater saved on a full note."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/new/",
+            {
+                "interaction_type": "session",
+                "alliance_rating": "4",
+                "alliance_rater": "client",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(note_type="full")
+        self.assertEqual(note.alliance_rating, 4)
+        self.assertEqual(note.alliance_rater, "client")
+
+    def test_full_note_alliance_skipped(self):
+        """Alliance rating can be skipped (null)."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/new/",
+            {
+                "interaction_type": "session",
+                "alliance_rating": "",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(note_type="full")
+        self.assertIsNone(note.alliance_rating)
+
+    def test_full_note_alliance_worker_observed(self):
+        """Worker-observed alliance rating saves correctly."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/new/",
+            {
+                "interaction_type": "session",
+                "alliance_rating": "2",
+                "alliance_rater": "worker_observed",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        note = ProgressNote.objects.get(note_type="full")
+        self.assertEqual(note.alliance_rating, 2)
+        self.assertEqual(note.alliance_rater, "worker_observed")
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class QualitativeSummaryTest(TestCase):

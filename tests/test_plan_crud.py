@@ -373,15 +373,15 @@ class MetricAssignmentTest(PlanCRUDBaseTest):
             min_value=0, max_value=10, unit="score",
         )
 
-    def test_counsellor_can_assign_metrics(self):
-        """Staff has plan.edit: SCOPED per permissions matrix — can assign metrics."""
+    def test_counsellor_can_assign_metric(self):
+        """Staff has plan.edit: SCOPED per permissions matrix — can assign one metric."""
         self.http.login(username="counsellor", password="pass")
         url = reverse("plans:target_metrics", args=[self.target.pk])
         resp = self.http.post(url, {
-            "metrics": [self.metric_a.pk, self.metric_b.pk],
+            "metrics": str(self.metric_a.pk),
         })
         self.assertEqual(resp.status_code, 302)
-        self.assertEqual(PlanTargetMetric.objects.filter(plan_target=self.target).count(), 2)
+        self.assertEqual(PlanTargetMetric.objects.filter(plan_target=self.target).count(), 1)
 
     def test_manager_cannot_assign_metrics(self):
         """Program manager has plan.edit: DENY per permissions matrix."""
@@ -638,23 +638,19 @@ class GoalCreateTest(PlanCRUDBaseTest):
         self.assertEqual(PlanTargetRevision.objects.count(), 1)
         self.assertEqual(PlanTargetMetric.objects.count(), 1)
 
-    def test_multiple_metrics_can_be_assigned(self):
-        """Multiple metrics can be selected for a single goal."""
-        metric_b = MetricDefinition.objects.create(
-            name="Goal Progress", definition="1-5 progress scale", category="general",
-            is_universal=True, is_enabled=True, min_value=1, max_value=5,
-        )
+    def test_single_metric_assigned_to_goal(self):
+        """Only one metric can be selected per goal (single-select)."""
         self.http.login(username="counsellor", password="pass")
         url = reverse("plans:goal_create", args=[self.client_file.pk])
         resp = self.http.post(url, {
-            "name": "Multi-metric goal",
+            "name": "Single-metric goal",
             "section_choice": str(self.section.pk),
-            "metrics": [self.metric.pk, metric_b.pk],
+            "metrics": str(self.metric.pk),
         })
         self.assertEqual(resp.status_code, 302)
         target = PlanTarget.objects.get(plan_section=self.section)
         self.assertEqual(
-            PlanTargetMetric.objects.filter(plan_target=target).count(), 2
+            PlanTargetMetric.objects.filter(plan_target=target).count(), 1
         )
 
     def test_get_shows_form_with_universal_metrics(self):
