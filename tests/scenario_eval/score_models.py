@@ -63,6 +63,9 @@ class StepEvaluation:
     task_outcome: str = None       # one of TASK_OUTCOMES or None
     task_outcome_reasoning: str = ""
 
+    # Set by interaction test gate when a linked test is failing
+    is_blocked: bool = False
+
     @property
     def effective_dimension_scores(self):
         """Dimension scores with objective overrides applied.

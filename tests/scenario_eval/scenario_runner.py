@@ -601,6 +601,40 @@ class ScenarioRunner(BrowserTestBase):
                     )
 
     # ------------------------------------------------------------------
+    # QA-GATE: Interaction test gate
+    # ------------------------------------------------------------------
+
+    def _check_interaction_gate(self, test_ref):
+        """Check if a referenced interaction test is currently passing.
+
+        Args:
+            test_ref: Test reference like "test_interactions::test_create_note"
+
+        Returns:
+            True if the test is passing (or can't be checked), False if failing.
+        """
+        import subprocess
+
+        # Parse test reference: "test_interactions::test_name"
+        parts = test_ref.split("::")
+        if len(parts) != 2:
+            logger.warning("Invalid interaction_test ref: %s", test_ref)
+            return True  # Don't block on bad config
+
+        module, test_name = parts
+        test_path = f"tests/scenario_eval/{module}.py::{test_name}"
+
+        try:
+            result = subprocess.run(
+                ["python", "-m", "pytest", test_path, "-x", "--tb=no", "-q"],
+                capture_output=True, text=True, timeout=120,
+            )
+            return result.returncode == 0
+        except (subprocess.TimeoutExpired, FileNotFoundError):
+            logger.warning("Could not run gate test %s — allowing", test_ref)
+            return True  # Don't block if we can't run the test
+
+    # ------------------------------------------------------------------
     # QA-W1: Pre-flight check — verify login, language, and data
     # ------------------------------------------------------------------
 
@@ -780,11 +814,33 @@ class ScenarioRunner(BrowserTestBase):
         # QA-ISO1: Validate prerequisites before running
         self._validate_prerequisites(scenario)
 
+        # QA-GATE: Skip evaluation if linked interaction test is failing
+        persona_id = scenario.get("persona", "")
+        interaction_test = scenario.get("interaction_test", "")
+        if interaction_test:
+            gate_passed = self._check_interaction_gate(interaction_test)
+            if not gate_passed:
+                result = ScenarioResult(
+                    scenario_id=scenario["id"],
+                    title=scenario.get("title", ""),
+                )
+                result.step_evaluations.append(
+                    StepEvaluation(
+                        scenario_id=scenario["id"],
+                        step_id=0,
+                        persona_id=persona_id,
+                        is_blocked=True,
+                        one_line_summary=(
+                            f"BLOCKED — interaction test failing: {interaction_test}"
+                        ),
+                    )
+                )
+                return result
+
         # QA-ISO1: Auto-login from persona data
         current_user = self._auto_login_for_scenario(scenario, personas)
 
         # Resolve expected language for objective scoring (QA-T10)
-        persona_id = scenario.get("persona", "")
         persona_data = personas.get(persona_id, {})
         expected_lang = _get_persona_language(persona_data)
 

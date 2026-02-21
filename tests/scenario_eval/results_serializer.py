@@ -77,12 +77,11 @@ def serialize_results(results):
     all_scores = [s["avg_score"] for s in scenarios if s["avg_score"] > 0]
     all_gaps = [s["satisfaction_gap"] for s in scenarios]
 
-    # Aggregate task outcomes across all scenarios
+    # Aggregate task outcomes across all scenarios (using ScenarioResult.task_outcome_counts)
     outcome_counts = {}
     for r in results:
-        for e in r.step_evaluations:
-            if e.task_outcome:
-                outcome_counts[e.task_outcome] = outcome_counts.get(e.task_outcome, 0) + 1
+        for outcome, count in r.task_outcome_counts.items():
+            outcome_counts[outcome] = outcome_counts.get(outcome, 0) + count
 
     summary = {
         "total_scenarios": len(scenarios),
