@@ -13615,3 +13615,286 @@ msgstr "Commencé à"
 #, python-format
 msgid "Your last session was recorded on %(date)s."
 msgstr "Votre dernière séance a été enregistrée le %(date)s."
+
+msgid "1=Jan, 4=Apr (Ontario govt), 7=Jul, etc."
+msgstr "1=jan., 4=avr. (gouv. de l'Ontario), 7=juill., etc."
+
+msgid "Accreditation Body"
+msgstr "Organisme d'accréditation"
+
+msgid "Add a reporting partner — funder, network, board, or other."
+msgstr "Ajouter un partenaire de rapport — bailleur de fonds, réseau, conseil ou autre."
+
+msgid "Annual"
+msgstr "Annuel"
+
+msgid "Assign to Partner"
+msgstr "Attribuer à un partenaire"
+
+msgid "Average change (intake to latest)"
+msgstr "Changement moyen (de l'admission au plus récent)"
+
+msgid "Average value"
+msgstr "Valeur moyenne"
+
+msgid "Bilingual"
+msgstr "Bilingue"
+
+msgid "Board of Directors"
+msgstr "Conseil d'administration"
+
+msgid "Calendar year (Jan-Dec)"
+msgstr "Année civile (jan.-déc.)"
+
+msgid "Chart / Visualisation"
+msgstr "Graphique / Visualisation"
+
+msgid "Contact email"
+msgstr "Courriel du contact"
+
+msgid "Contact name"
+msgstr "Nom du contact"
+
+msgid "Count meeting threshold"
+msgstr "Compte atteignant le seuil"
+
+msgid "Count of participants"
+msgstr "Compte de participants"
+
+msgid "Create Partner"
+msgstr "Créer un partenaire"
+
+msgid "Delete Partner"
+msgstr "Supprimer le partenaire"
+
+msgid "Demographic Summary"
+msgstr "Sommaire démographique"
+
+msgid "Description of the reporting requirements."
+msgstr "Description des exigences de rapport."
+
+msgid "Donor"
+msgstr "Donateur"
+
+msgid "Edit Partner"
+msgstr "Modifier le partenaire"
+
+msgid "Fiscal year (custom start month)"
+msgstr "Année fiscale (mois de début personnalisé)"
+
+msgid "For threshold-based aggregation: the target value."
+msgstr "Pour l'agrégation basée sur un seuil : la valeur cible."
+
+msgid "French name (optional)."
+msgstr "Nom en français (facultatif)."
+
+msgid "Funder"
+msgstr "Bailleur de fonds"
+
+msgid "Government / Regulator"
+msgstr "Gouvernement / Organisme de réglementation"
+
+msgid "Grant / agreement number"
+msgstr "Numéro de subvention / entente"
+
+msgid "Grant Number"
+msgstr "Numéro de subvention"
+
+msgid "Grant Period"
+msgstr "Période de subvention"
+
+msgid "Grant or contribution agreement number (if applicable)."
+msgstr "Numéro de subvention ou d'entente de contribution (le cas échéant)."
+
+msgid "Grant period"
+msgstr "Période de subvention"
+
+msgid "Grant period end"
+msgstr "Fin de la période de subvention"
+
+msgid "Grant period start"
+msgstr "Début de la période de subvention"
+
+msgid "Grant period start must be before grant period end."
+msgstr "Le début de la période de subvention doit être avant la fin de la période de subvention."
+
+msgid "Guidance for narrative sections (what to write about)."
+msgstr "Directives pour les sections narratives (quoi rédiger)."
+
+msgid "How often this report is produced."
+msgstr "À quelle fréquence ce rapport est produit."
+
+msgid "How the reporting period aligns with the calendar."
+msgstr "Comment la période de rapport s'aligne avec le calendrier."
+
+msgid "How this metric should be aggregated in the report."
+msgstr "Comment cet indicateur devrait être agrégé dans le rapport."
+
+msgid ""
+"If no programs are selected, this partner's templates will be available for "
+"all active programs."
+msgstr ""
+"Si aucun programme n'est sélectionné, les modèles de ce partenaire seront "
+"disponibles pour tous les programmes actifs."
+
+msgid "Manage Partners"
+msgstr "Gérer les partenaires"
+
+msgid "Manage Programs"
+msgstr "Gérer les programmes"
+
+msgid ""
+"Manage reporting partners (funders, networks, boards) and their report "
+"templates."
+msgstr ""
+"Gérer les partenaires de rapport (bailleurs de fonds, réseaux, conseils) et "
+"leurs modèles de rapport."
+
+msgid "Manage reporting partners — funders, networks, boards, and more."
+msgstr "Gérer les partenaires de rapport — bailleurs de fonds, réseaux, conseils et plus."
+
+msgid "Metrics Table"
+msgstr "Tableau de métriques"
+
+msgid "Mixed — narrative and tables"
+msgstr "Mixte — narratif et tableaux"
+
+msgid "Monthly"
+msgstr "Mensuel"
+
+msgid "Name (French)"
+msgstr "Nom (français)"
+
+msgid "Narrative / Written Section"
+msgstr "Narratif / Section écrite"
+
+msgid "Narrative with data"
+msgstr "Narratif avec données"
+
+msgid "Network / Collaboration"
+msgstr "Réseau / Collaboration"
+
+msgid "New Partner"
+msgstr "Nouveau partenaire"
+
+msgid "No partner assigned"
+msgstr "Aucun partenaire attribué"
+
+msgid "No partners configured"
+msgstr "Aucun partenaire configuré"
+
+msgid ""
+"No partners have been added yet. Create your first partner to start linking "
+"report templates."
+msgstr ""
+"Aucun partenaire n'a encore été ajouté. Créez votre premier partenaire pour "
+"commencer à lier des modèles de rapport."
+
+msgid "No programs linked — all active programs will be included."
+msgstr "Aucun programme lié — tous les programmes actifs seront inclus."
+
+msgid "No report templates linked to this partner yet."
+msgstr "Aucun modèle de rapport lié à ce partenaire pour le moment."
+
+msgid "Only active programs are shown."
+msgstr "Seuls les programmes actifs sont affichés."
+
+msgid "Override label for this partner's terminology."
+msgstr "Étiquette de remplacement pour la terminologie de ce partenaire."
+
+msgid "Partner"
+msgstr "Partenaire"
+
+msgid "Partner \"%(name)s\" created."
+msgstr "Partenaire « %(name)s » créé."
+
+msgid "Partner \"%(name)s\" deleted."
+msgstr "Partenaire « %(name)s » supprimé."
+
+msgid "Partner \"%(name)s\" updated."
+msgstr "Partenaire « %(name)s » mis à jour."
+
+msgid "Partner Name"
+msgstr "Nom du partenaire"
+
+msgid "Partner name"
+msgstr "Nom du partenaire"
+
+msgid "Partner name (French)"
+msgstr "Nom du partenaire (français)"
+
+msgid "Partner name, e.g., 'United Way Greater Toronto'."
+msgstr "Nom du partenaire, p. ex. « Centraide du Grand Toronto »."
+
+msgid "Partners"
+msgstr "Partenaires"
+
+msgid "Partners & Reports"
+msgstr "Partenaires et rapports"
+
+msgid "Percentage meeting threshold"
+msgstr "Pourcentage atteignant le seuil"
+
+msgid "Percentage of participants"
+msgstr "Pourcentage de participants"
+
+msgid "Please create a partner first before uploading a report template."
+msgstr "Veuillez d'abord créer un partenaire avant de téléverser un modèle de rapport."
+
+msgid "Programs are now managed on the partner. Redirecting."
+msgstr "Les programmes sont maintenant gérés sur le partenaire. Redirection."
+
+msgid "Programs updated for partner \"%(name)s\"."
+msgstr "Programmes mis à jour pour le partenaire « %(name)s »."
+
+msgid "Quarterly"
+msgstr "Trimestriel"
+
+msgid "Save Programs"
+msgstr "Enregistrer les programmes"
+
+msgid ""
+"Select the partner (funder, network, etc.) this report template belongs to. "
+"Programs are managed on the partner."
+msgstr ""
+"Sélectionnez le partenaire (bailleur de fonds, réseau, etc.) auquel ce "
+"modèle de rapport appartient. Les programmes sont gérés sur le partenaire."
+
+msgid "Semi-annual"
+msgstr "Semestriel"
+
+msgid "Sum total"
+msgstr "Somme totale"
+
+msgid "Tables and charts"
+msgstr "Tableaux et graphiques"
+
+msgid "Template name, e.g., 'Quarterly Outcomes Report'."
+msgstr "Nom du modèle, p. ex. « Rapport trimestriel sur les résultats »."
+
+msgid "The partner this report template belongs to."
+msgstr "Le partenaire auquel ce modèle de rapport appartient."
+
+msgid "This template has no partner assigned. Please assign a partner first."
+msgstr "Ce modèle n'a aucun partenaire attribué. Veuillez d'abord attribuer un partenaire."
+
+msgid "Type of reporting relationship."
+msgstr "Type de relation de rapport."
+
+msgid "Update this partner's details."
+msgstr "Mettre à jour les détails de ce partenaire."
+
+msgid "View Partner"
+msgstr "Voir le partenaire"
+
+msgid "Whether this metric is required by a consortium standard schema."
+msgstr "Indique si cet indicateur est requis par un schéma standard de consortium."
+
+msgid "Yes, Delete Partner"
+msgstr "Oui, supprimer le partenaire"
+
+msgid "— Select a partner —"
+msgstr "— Sélectionner un partenaire —"
+
+msgid "← Back to Partners"
+msgstr "← Retour aux partenaires"
