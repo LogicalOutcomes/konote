@@ -11,6 +11,78 @@ from datetime import datetime
 from .score_models import DIMENSIONS, ScenarioResult, band_emoji, score_to_band
 
 
+def _overall_traffic_light(results):
+    """Determine overall traffic-light colour from results."""
+    if not results:
+        return "RED"
+    scores = [r.avg_score for r in results if r.avg_score > 0]
+    if not scores:
+        return "RED"
+    avg = sum(scores) / len(scores)
+    # Any blocker = RED, any orange = YELLOW at best
+    has_blocker = any(r.band == "red" for r in results)
+    has_fix = any(r.band == "orange" for r in results)
+    if has_blocker:
+        return "RED"
+    if has_fix or avg < 4.0:
+        return "YELLOW"
+    return "GREEN"
+
+
+def _generate_traffic_light_summary(results):
+    """Generate the traffic-light summary section for the top of the report."""
+    from .score_models import TASK_OUTCOMES
+
+    lines = []
+    now = __import__("datetime").datetime.now().strftime("%Y-%m-%d")
+    colour = _overall_traffic_light(results)
+
+    lines.append(f"## EVALUATION SUMMARY — {now} — {colour}")
+    lines.append("")
+
+    total = len(results)
+    scored = [r for r in results if r.avg_score > 0]
+    blocked = [r for r in results if any(
+        "BLOCKED" in e.one_line_summary for e in r.step_evaluations
+    )]
+    lines.append(f"Scenarios scored: {len(scored)}/{total}")
+    if blocked:
+        lines.append(f"Blocked (skipped): {len(blocked)}")
+    lines.append("")
+
+    # Task outcome counts
+    outcome_counts = {}
+    total_outcomes = 0
+    for r in results:
+        for e in r.step_evaluations:
+            if e.task_outcome:
+                outcome_counts[e.task_outcome] = outcome_counts.get(e.task_outcome, 0) + 1
+                total_outcomes += 1
+
+    if outcome_counts:
+        lines.append("TASK OUTCOMES:")
+        for outcome in TASK_OUTCOMES:
+            count = outcome_counts.get(outcome, 0)
+            pct = f" ({count * 100 // total_outcomes}%)" if total_outcomes else ""
+            label = outcome.replace("_", " ").title()
+            lines.append(f"  {label}: {count} scenarios{pct}")
+        lines.append("")
+
+    # Top concerns (abandoned + error_unnoticed scenarios)
+    concerns = []
+    for r in results:
+        for e in r.step_evaluations:
+            if e.task_outcome in ("abandoned", "error_unnoticed"):
+                concerns.append((r.title, e.persona_id, e.task_outcome, e.task_outcome_reasoning))
+    if concerns:
+        lines.append("TOP CONCERNS:")
+        for title, persona, outcome, reason in concerns[:5]:
+            lines.append(f"  - {title} — {persona} would {outcome.replace('_', ' ')} ({reason})")
+        lines.append("")
+
+    return lines
+
+
 def generate_report(results, output_path=None):
     """Generate a Markdown satisfaction report.
 
@@ -25,6 +97,10 @@ def generate_report(results, output_path=None):
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     lines.append(f"# Satisfaction Report — {now}")
+    lines.append("")
+
+    # --- Traffic-light summary (QA enrichment) ---
+    lines.extend(_generate_traffic_light_summary(results))
     lines.append("")
 
     # --- Section 1: Satisfaction Gaps (headline metric) ---
@@ -129,6 +205,8 @@ def generate_report(results, output_path=None):
             step_band = score_to_band(e.avg_dimension_score)
             lines.append(f"**Step {e.step_id}** ({e.persona_id}) — {e.avg_dimension_score:.1f} {band_emoji(step_band)}")
             lines.append(f"  {e.one_line_summary}")
+            if e.task_outcome:
+                lines.append(f"  Task outcome: **{e.task_outcome}** — {e.task_outcome_reasoning}")
 
             # Show effective dimension scores (objective overrides LLM)
             for dim_name, dim_score in e.effective_dimension_scores.items():
