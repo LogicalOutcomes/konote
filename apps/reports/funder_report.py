@@ -420,8 +420,8 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
     rows.append([_("Total Service Contacts"), format_number(report_data["total_contacts"])])
     cb = report_data.get("contact_breakdown", {})
     if cb:
-        rows.append([_("Successful Contacts"), format_number(cb.get("successful_contacts", 0))])
-        rows.append([_("Contact Attempts (no answer/left message)"), format_number(cb.get("contact_attempts", 0))])
+        rows.append(["  " + str(_("Successful Contacts")), format_number(cb.get("successful_contacts", 0))])
+        rows.append(["  " + str(_("Contact Attempts (no answer/left message)")), format_number(cb.get("contact_attempts", 0))])
     rows.append([])
 
     # Age demographics
