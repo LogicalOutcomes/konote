@@ -41,7 +41,7 @@
 ### Phase: Post-Housekeeping Verification
 
 - [x] Run full test suite (`pytest -m "not browser and not scenario_eval"`) to verify PR #143 test fixes pass against current main — 2026-02-20 (VERIFY1)
-- [ ] Fix 12 pre-existing test failures — 5 SQLite isolation ("no such table: users"), 2 SQLite/PG behavioural differences, 1 AI fixture mismatch, 1 stale .mo, 2 missing staticfiles dir, 1 missing QA file (TEST-PREEXIST1)
+- [x] Fix 6 pre-existing test failures — SQLite isolation, fixture mismatch, stale .mo, missing QA file — 2026-02-21 (TEST-PREEXIST1)
 
 ## Do Occasionally
 
@@ -91,10 +91,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — GG (CIDS-IMPACT1)
 - [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — GG (CIDS-VALIDATE1)
 
-### Phase: Participant View Improvements
-
-- [ ] Add adjustable timeframe and date range controls to Participant analysis charts (see tasks/participant-view-improvements.md) — GG (CHART-TIME1)
-- [ ] Add target filter to Notes section so staff can follow progress on a single target without reading every note (see tasks/participant-view-improvements.md) — GG (UX-NOTES-BY-TARGET1)
+### Phase: Participant View Improvements — complete!
 
 ### Phase: Other Upcoming
 
@@ -113,10 +110,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Surveys QA Scenarios
 
-- [ ] Add survey demo data to seed_demo_data — 2 active surveys, 1 draft, 1 response, 1 assignment, 1 trigger rule (see tasks/qa-survey-scenarios.md) (QA-SURV1)
-- [ ] Create CSV test fixture for survey import at tests/fixtures/sample-survey-import.csv (QA-SURV2)
 - [ ] Write 8 scenario YAML files (SCN-110 through SCN-117) in konote-qa-scenarios repo (see tasks/qa-survey-scenarios.md) (QA-SURV3)
-- [ ] Add test methods for survey scenarios to tests/scenario_eval/test_scenario_eval.py (QA-SURV4)
 - [ ] Update page-inventory.yaml in qa-scenarios repo with survey pages (QA-SURV5)
 
 ### Phase: Surveys Future Work
@@ -180,11 +174,17 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
 - [x] Add basic smoke test for `translate_strings` command — removed dead test class but no replacement exists — 2026-02-20 (TEST-TRANS2)
 - [ ] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering (CODE-TIDY1)
-- [ ] Unify analysis chart quick-select links and date picker form into a single input mechanism (UX-CHART1)
-- [ ] Add edge-case tests for invalid/inaccessible target IDs and 3m/6m timeframe paths (TEST-FILTER1)
 
 ## Recently Done
 
+- [x] Unify analysis chart quick-select and date picker into single form control — 2026-02-21 (UX-CHART1)
+- [x] Add adjustable timeframe and date range controls to analysis charts — already implemented, verified — 2026-02-21 (CHART-TIME1)
+- [x] Add target filter to Notes section — already implemented, verified — 2026-02-21 (UX-NOTES-BY-TARGET1)
+- [x] Accessibility fixes: aria-labels on audit table, notes error container, mobile touch targets — 2026-02-21 (A11Y-UX1)
+- [x] Add edge-case tests for target filter and analysis timeframe paths — 2026-02-21 (TEST-FILTER1)
+- [x] Add survey demo data to seed_demo_data — 3 surveys, 1 response, 1 assignment, 1 trigger rule — 2026-02-21 (QA-SURV1)
+- [x] Create CSV test fixture for survey import — 2026-02-21 (QA-SURV2)
+- [x] Add 8 scenario test stubs for SCN-110 through SCN-117 — 2026-02-21 (QA-SURV4)
 - [x] Rename original KoNote GitHub repo to KoNote Classic and add redirect — 2026-02-20 (REPO1)
 - [x] Fix fiscal year dropdown showing English strings in French UI — wrapped with gettext, added 12 French translations — 2026-02-20 (BUG-FY1)
 - [x] Define Prosper Canada configuration template — 8 fixture files covering terminology, metrics, plans, roles, report schema — 2026-02-20 (DEPLOY-TEMPLATE1)

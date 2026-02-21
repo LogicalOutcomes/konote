@@ -359,6 +359,8 @@ class MergeExecutionTest(TestCase):
 class MergeSecurityTest(TestCase):
     """Test security rules — confidential exclusion, demo separation, erasure blocking."""
 
+    databases = {"default", "audit"}
+
     def setUp(self):
         enc_module._fernet = None
         self.admin = User.objects.create_user(
