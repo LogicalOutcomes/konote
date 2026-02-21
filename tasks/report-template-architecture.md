@@ -457,14 +457,75 @@ Partner: "Board of Directors"
 | Consortium schema divergence | `consortium_schema_version` tracking with update notifications |
 | Staff turnover | Original documents stored with Partner; template = institutional memory |
 
+## Separation of Concerns: KoNote vs. Partner Dashboards
+
+A fundamental architectural principle: **KoNote is the data system. Dashboards are separate products.**
+
+### What KoNote Does
+
+KoNote handles everything inside the agency:
+
+1. **Collect** — staff record progress notes, metrics, and demographics; participants complete surveys through the portal
+2. **Configure** — administrators define Partners and their ReportTemplates (what metrics, what demographics, what schedule)
+3. **Generate** — the system produces reports on schedule, matching the template definition exactly
+4. **Review** — program directors review aggregate data, write narrative sections, flag anomalies
+5. **Approve** — authorised staff approve the report for release
+6. **Export** — approved reports are exported as CSV, JSON, or PDF
+
+That's where KoNote's responsibility ends. The export is the **boundary**.
+
+### What Partner Dashboards Do
+
+Each partner — whether a funder, consortium, board, or collaboration — may want an interactive dashboard to visualise and aggregate the data they receive. These dashboards:
+
+- **Have NO live connection to any KoNote instance.** No database queries, no API calls into agency data, no real-time feeds.
+- **Consume only approved exports.** CSV files, JSON files, or data served by the read-only PublishedReport API (which is itself just a structured way to deliver pre-approved aggregate data).
+- **Are separate products** — designed and built to meet the specific partner's needs. A United Way dashboard looks different from a Prosper Canada dashboard looks different from a board reporting portal.
+- **Can be built with any technology.** Since they consume flat files, there's no dependency on Django or KoNote's tech stack. A partner could use Tableau, Power BI, a custom web app, or a spreadsheet.
+
+### Why This Separation Matters
+
+| Concern | Why It Matters |
+|---------|---------------|
+| **Privacy** | No live connection means no risk of exposing participant data. The export is aggregate, de-identified, cell-suppressed (n<5), and explicitly approved before it leaves the agency. |
+| **Agency autonomy** | The agency decides what gets shared, reviews it, and approves it. No partner can pull data that hasn't been approved. This is essential for trust, especially during onboarding. |
+| **PIPEDA/PHIPA compliance** | Data minimisation is built into the architecture — only approved aggregate data crosses the boundary. |
+| **Simplicity** | CSV is the universal interchange format. Every funder already has a system that can import it. No integration work required on the partner's side. |
+| **Durability** | Dashboards don't break when an agency is offline, migrating, or behind on updates. The export is a snapshot, not a live feed. |
+| **Independence** | Agencies can switch dashboard tools, or partners can change their visualisation approach, without touching KoNote. |
+
+### How the Read-Only API Fits
+
+The [cross-agency reporting API design](../docs/plans/2026-02-20-cross-agency-reporting-api-design.md) (SCALE-API1) proposes a `GET /api/v1/reports/` endpoint. This is **not** a live database connection — it serves the same approved, aggregate PublishedReport data that would be in a CSV export, just in a machine-readable format. It's a convenience for automated consumption (e.g., Prosper Canada's aggregation dashboard polling 20 agencies), not a replacement for the export model.
+
+The API:
+- Serves only data the agency has explicitly approved and published
+- Contains no PII — same aggregate data as CSV exports
+- Is authenticated by API key (one per partner relationship)
+- Is read-only — no writes, no configuration, no user management
+- Can be disabled per-agency if the agency prefers manual CSV exports
+
+### The Dashboard Design Process
+
+For each partner that wants a dashboard, the process would be:
+
+1. **Partner defines their needs** — what metrics they want to see, how they want to slice them, what comparisons matter
+2. **Dashboard is designed and built separately** — could be a KoNote-provided product, a third-party tool, or the partner's own system
+3. **Data flows via export** — agencies export approved reports (CSV/JSON/API); dashboard ingests them
+4. **Dashboard is the partner's responsibility** — KoNote provides the data in a standard format; how the partner visualises it is their concern
+
+This means KoNote can serve an unlimited number of different partner dashboard needs without any changes to its core architecture. Each dashboard is a downstream consumer of standard exports.
+
 ## Connection to Multi-Tenancy Plan
 
-This architecture is designed to integrate with the [multi-tenancy implementation plan](prosper-canada/multi-tenancy-implementation-plan.md):
+This architecture integrates with the [multi-tenancy implementation plan](prosper-canada/multi-tenancy-implementation-plan.md), but the Partner model works identically whether an agency runs standalone or inside a multi-tenant deployment:
 
 - **Partner** lives in tenant schema → each agency manages their own partners
 - **Partner.consortium** FK points to shared-schema Consortium → enables cross-agency linkage
 - **ConsortiumReportSchema** lives in shared schema → networks define standards centrally
 - **ConsortiumMembership, ProgramSharing, PublishedReport** (from multi-tenancy plan) remain unchanged
-- **Cross-agency API** (SCALE-API1) serves PublishedReport data that was generated from Partner-linked ReportTemplates
+- The read-only API (SCALE-API1) serves PublishedReport data generated from Partner-linked ReportTemplates
 
-The two architectures complement each other: this one handles "what to report and when," the multi-tenancy plan handles "how to share it across agencies."
+**The multi-tenancy plan becomes primarily an operations concern** — "how do we affordably host 20 agencies?" — not an architectural prerequisite for cross-agency reporting. A standalone KoNote instance can export the same CSV as one running inside a multi-tenant deployment. The Partner model, report templates, scheduling, and export boundary work identically in both cases.
+
+The two architectures complement each other: **this one handles "what to report and when," the multi-tenancy plan handles "how to host efficiently at scale."**
