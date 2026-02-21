@@ -68,7 +68,7 @@ The same logic applies to constructs like confidence, satisfaction, and perceive
 - [PROMIS --- NIH Common Fund](https://commonfund.nih.gov/promis)
 - [Validation of the PROMIS Self-Efficacy Measures](https://pmc.ncbi.nlm.nih.gov/articles/PMC5479750/)
 - [Response scale selection in adult pain measures](https://pmc.ncbi.nlm.nih.gov/articles/PMC6127068/)
-- [Pain self-report as gold standard debate](https://pubmed.ncbi.nlm.nih.gov/25370143/)
+- Twycross, A., Voepel-Lewis, T., Vincent, C., Franck, L.S., & von Baeyer, C.L. (2015). [A debate on the proposition that self-report is the gold standard in assessment of pediatric pain intensity.](https://pubmed.ncbi.nlm.nih.gov/25370143/) *Clinical Journal of Pain, 31*(8), 707--712. Note: This debate centres on children --- the most challenging population for self-report validity. If self-report is defensible as the gold standard even for paediatric assessment, it is a fortiori valid for the adult participants in KoNote.
 
 ---
 
@@ -135,7 +135,7 @@ Each divergence pattern tells the coach something different. That is the diagnos
 **Key references:**
 
 - Wilson, I.B. & Cleary, P.D. (1995). [Linking clinical variables with health-related quality of life: A conceptual model of patient outcomes.](https://pubmed.ncbi.nlm.nih.gov/7996652/) *JAMA, 273*(1), 59--65.
-- [Recovery Star: Validating user recovery](https://www.cambridge.org/core/journals/the-psychiatrist/article/recovery-star-validating-user-recovery/1D1F193ED6EF820A778AA04972A17B1B) --- Two-factor structure, 48% variance.
+- Dickens, G., Weleminsky, J., Onifade, Y., & Sugarman, P. (2012). [Recovery Star: validating user recovery.](https://www.cambridge.org/core/journals/the-psychiatrist/article/recovery-star-validating-user-recovery/1D1F193ED6EF820A778AA04972A17B1B) *The Psychiatrist, 36*(2), 45--50. --- Two-factor structure, 48% variance.
 - Prochaska, J.O. & Velicer, W.F. (1997). [The transtheoretical model of health behavior change.](https://pubmed.ncbi.nlm.nih.gov/10170434/) *American Journal of Health Promotion, 12*(1), 38--48.
 - Perera, H.N., Izadikhah, Z., O'Connor, P., & McIlveen, P. (2018). [Resolving dimensionality problems with WHOQOL-BREF item responses.](https://pubmed.ncbi.nlm.nih.gov/27872348/) *Assessment, 25*(8), 1014--1025.
 
