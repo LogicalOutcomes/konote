@@ -46,7 +46,7 @@
     {# ---- Results table ---- #}
     {% if page.object_list %}
     <figure>
-        <table role="grid">
+        <table role="grid" aria-label="{% trans 'Access log entries' %}">
             <thead>
                 <tr>
                     <th scope="col">{% trans "Timestamp" %}</th>

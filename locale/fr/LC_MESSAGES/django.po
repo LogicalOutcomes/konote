@@ -3849,6 +3849,9 @@ msgstr "Suggestions de mesures par IA"
 msgid "Access Log"
 msgstr "Journal d'accès"
 
+msgid "Access log entries"
+msgstr "Entrées du journal d'accès"
+
 msgid "Add Member"
 msgstr "Ajouter un membre"
 
