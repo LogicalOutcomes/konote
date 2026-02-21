@@ -13618,3 +13618,64 @@ msgstr "Commencé à"
 #, python-format
 msgid "Your last session was recorded on %(date)s."
 msgstr "Votre dernière séance a été enregistrée le %(date)s."
+
+msgid ""
+"Based on staff assessments across all goals. Each assessment reflects the "
+"worker's judgment of how a participant is progressing — regardless of which "
+"specific metrics are tracked. Rising green ('In a good place') and blue "
+"('Something's shifting') lines mean more people are moving forward."
+msgstr ""
+"Basé sur les évaluations du personnel pour tous les objectifs. Chaque "
+"évaluation reflète le jugement de l'intervenant·e sur la progression du "
+"participant — peu importe les indicateurs suivis. Les lignes vertes "
+"(« En bonne posture ») et bleues (« Quelque chose bouge ») montrent que "
+"plus de personnes progressent."
+
+msgid ""
+"Choose the one metric most meaningful to both of you. You can change it "
+"later."
+msgstr ""
+"Choisissez l'indicateur le plus significatif pour vous deux. Vous pourrez "
+"le modifier plus tard."
+
+msgid "I don't feel heard by my worker"
+msgstr "Je ne me sens pas écouté·e par mon intervenant·e"
+
+msgid "I really trust my worker"
+msgstr "J'ai vraiment confiance en mon intervenant·e"
+
+msgid "My worker and I aren't on the same page"
+msgstr "Mon intervenant·e et moi ne sommes pas sur la même longueur d'onde"
+
+msgid "My worker gets what I need"
+msgstr "Mon intervenant·e comprend ce dont j'ai besoin"
+
+msgid "Participant self-rated"
+msgstr "Auto-évaluation du participant"
+
+msgid "Ratings of 1–3 are normal and helpful — they tell you what to adjust."
+msgstr "Les évaluations de 1 à 3 sont normales et utiles — elles vous indiquent quoi ajuster."
+
+msgid "Skip today"
+msgstr "Passer aujourd'hui"
+
+msgid "We're working okay together"
+msgstr "On travaille bien ensemble"
+
+msgid "Which measurement will best help you both see progress?"
+msgstr "Quel indicateur vous aidera le mieux à voir les progrès?"
+
+msgid "Who rated?"
+msgstr "Qui a évalué?"
+
+msgid "Worker observed"
+msgstr "Observation de l'intervenant·e"
+
+msgid "Working relationship check-in"
+msgstr "Bilan de la relation de travail"
+
+msgid "Working relationship rating"
+msgstr "Évaluation de la relation de travail"
+
+msgid "Working relationship:"
+msgstr "Relation de travail :"
