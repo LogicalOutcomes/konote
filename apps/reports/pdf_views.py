@@ -179,14 +179,14 @@ def generate_outcome_report_pdf(
     grouped_rows = {}
     if not is_aggregate and grouping_type != "none" and grouping_label:
         for row in rows:
-            group = row.get("demographic_group", "Unknown")
+            group = row.get("demographic_group", _("Unknown"))
             if group not in grouped_rows:
                 grouped_rows[group] = []
             grouped_rows[group].append(row)
         # Sort groups alphabetically, but put "Unknown" at the end
         sorted_groups = sorted(
             grouped_rows.keys(),
-            key=lambda x: (x == "Unknown", x)
+            key=lambda x: (x == _("Unknown"), str(x))
         )
         grouped_rows = {k: grouped_rows[k] for k in sorted_groups}
 

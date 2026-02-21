@@ -192,6 +192,8 @@ def _build_demographic_map(metric_values, grouping_type, grouping_field, as_of_d
     Returns:
         Dict mapping client_id to demographic group label.
     """
+    from django.utils.translation import gettext as _
+
     from apps.clients.models import ClientDetailValue, ClientFile
 
     client_demographic_map = {}
@@ -226,7 +228,7 @@ def _build_demographic_map(metric_values, grouping_type, grouping_field, as_of_d
         for cv in values:
             raw_value = cv.get_value()
             if not raw_value:
-                client_demographic_map[cv.client_file_id] = "Unknown"
+                client_demographic_map[cv.client_file_id] = _("Unknown")
             else:
                 display_value = option_labels.get(raw_value, raw_value)
                 client_demographic_map[cv.client_file_id] = display_value
@@ -234,7 +236,7 @@ def _build_demographic_map(metric_values, grouping_type, grouping_field, as_of_d
         # Mark clients without a value as Unknown
         for client_id in client_ids:
             if client_id not in client_demographic_map:
-                client_demographic_map[client_id] = "Unknown"
+                client_demographic_map[client_id] = _("Unknown")
 
     return client_demographic_map
 
@@ -320,6 +322,8 @@ def export_form(request):
     Access: admin (any program), program_manager or executive (their programs).
     Enforced by @requires_permission("report.program_report").
     """
+    from django.utils.translation import gettext as _
+
     is_aggregate = is_aggregate_only_user(request.user)
     is_pm_export = not is_aggregate and not request.user.is_admin
 
@@ -738,7 +742,7 @@ def export_form(request):
 
             # Add demographic group if grouping is enabled
             if grouping_type != "none":
-                row["demographic_group"] = client_demographic_map.get(client.pk, "Unknown")
+                row["demographic_group"] = client_demographic_map.get(client.pk, _("Unknown"))
 
             rows.append(row)
 
@@ -787,7 +791,7 @@ def export_form(request):
             for row in rows:
                 if grouping_type != "none":
                     writer.writerow(sanitise_csv_row([
-                        row.get("demographic_group", "Unknown"),
+                        row.get("demographic_group", _("Unknown")),
                         row["record_id"],
                         row.get("goal_name", ""),
                         row["metric_name"],

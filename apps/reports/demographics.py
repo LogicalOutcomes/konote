@@ -233,10 +233,10 @@ def _apply_category_merge(
             reverse_map[source] = target_label
 
     for raw_label, ids in raw_groups.items():
-        if str(raw_label) == str(_("Unknown")):
+        if raw_label == _("Unknown"):
             merged[_("Unknown")].extend(ids)
-        elif str(raw_label) in reverse_map:
-            merged[reverse_map[str(raw_label)]].extend(ids)
+        elif raw_label in reverse_map:
+            merged[reverse_map[raw_label]].extend(ids)
         else:
             merged[_("Other")].extend(ids)
 

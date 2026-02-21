@@ -579,6 +579,22 @@ class ReportsFrenchTest(FrenchJourneyBaseTest):
         # English choices must NOT appear as option text
         self.assertNotIn(">No grouping<", content)
 
+    def test_unknown_group_sorts_last_in_french(self):
+        """'Unknown' demographic group should sort to the end in both languages."""
+        from django.utils.translation import gettext as gettext_
+
+        # In English
+        with translation_override("en"):
+            groups = [gettext_("Unknown"), "Female", "Male"]
+            sorted_en = sorted(groups, key=lambda x: (x == gettext_("Unknown"), str(x)))
+            self.assertEqual(str(sorted_en[-1]), "Unknown")
+
+        # In French
+        with translation_override("fr"):
+            groups = [gettext_("Unknown"), "Femme", "Homme"]
+            sorted_fr = sorted(groups, key=lambda x: (x == gettext_("Unknown"), str(x)))
+            self.assertEqual(str(sorted_fr[-1]), "Inconnu")
+
 
 # ─────────────────────────────────────────────────────────────────────────
 # 9. Admin Settings in French
@@ -956,7 +972,8 @@ class POFileCompletenessTest(TestCase):
     def test_no_new_empty_msgstr_in_french_po(self):
         """No new untranslated strings should be added without French translations."""
         import os
-        import re
+
+        import polib
 
         po_path = os.path.join(
             os.path.dirname(os.path.dirname(__file__)),
@@ -964,25 +981,9 @@ class POFileCompletenessTest(TestCase):
         )
         self.assertTrue(os.path.exists(po_path), f".po file not found: {po_path}")
 
-        content = open(po_path, encoding="utf-8").read()
-
-        # Find all msgid/msgstr pairs — skip the header block (empty msgid "")
-        empty_ids = []
-        blocks = re.split(r"\n\n+", content.strip())
-        for block in blocks:
-            lines = block.strip().splitlines()
-            msgid = None
-            msgstr = None
-            for line in lines:
-                if line.startswith('msgid "') and not line.startswith('msgid ""'):
-                    msgid = line[7:-1]
-                elif line.startswith('msgstr ""'):
-                    msgstr = ""
-                elif line.startswith('msgstr "') and line != 'msgstr ""':
-                    msgstr = line[8:-1]
-            if msgid and msgstr == "":
-                empty_ids.append(msgid)
-
+        po = polib.pofile(po_path)
+        untranslated = po.untranslated_entries()
+        empty_ids = [entry.msgid for entry in untranslated]
         count = len(empty_ids)
 
         # Fail if translation coverage has gotten WORSE
