@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from . import partner_views
 from . import report_template_views
 from . import setup_wizard_views
 
@@ -16,6 +17,13 @@ urlpatterns = [
     path("messaging/", views.messaging_settings, name="messaging_settings"),
     path("diagnose-charts/", views.diagnose_charts, name="diagnose_charts"),
     path("demo-directory/", views.demo_directory, name="demo_directory"),
+    # Partner management
+    path("partners/", partner_views.partner_list, name="partner_list"),
+    path("partners/create/", partner_views.partner_create, name="partner_create"),
+    path("partners/<int:partner_id>/", partner_views.partner_detail, name="partner_detail"),
+    path("partners/<int:partner_id>/edit/", partner_views.partner_edit, name="partner_edit"),
+    path("partners/<int:partner_id>/programs/", partner_views.partner_edit_programs, name="partner_edit_programs"),
+    path("partners/<int:partner_id>/delete/", partner_views.partner_delete, name="partner_delete"),
     # Report template management
     path("report-templates/", report_template_views.report_template_list, name="report_template_list"),
     path("report-templates/upload/", report_template_views.report_template_upload, name="report_template_upload"),

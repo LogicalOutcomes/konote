@@ -13,15 +13,15 @@ from apps.reports.csv_parser import (
     save_parsed_profile,
     validate_parsed_profile,
 )
-from apps.reports.models import ReportTemplate
+from apps.reports.models import Partner, ReportTemplate
 from apps.programs.models import Program
 
 
 @login_required
 @admin_required
 def report_template_list(request):
-    """List all report templates with their linked programs."""
-    profiles = ReportTemplate.objects.prefetch_related("programs", "breakdowns").all()
+    """List all report templates with their linked programs (via partner)."""
+    profiles = ReportTemplate.objects.select_related("partner").prefetch_related("breakdowns").all()
     return render(request, "admin_settings/funder_profiles/list.html", {
         "profiles": profiles,
     })
@@ -32,7 +32,13 @@ def report_template_list(request):
 def report_template_upload(request):
     """Upload a report template CSV."""
     if request.method != "POST":
-        return render(request, "admin_settings/funder_profiles/upload.html")
+        partners = Partner.objects.filter(is_active=True).order_by("name")
+        if not partners.exists():
+            messages.warning(request, _("Please create a partner first before uploading a report template."))
+            return redirect("admin_settings:partner_list")
+        return render(request, "admin_settings/funder_profiles/upload.html", {
+            "partners": partners,
+        })
 
     csv_file = request.FILES.get("csv_file")
     csv_text = request.POST.get("csv_text", "").strip()
@@ -64,11 +70,13 @@ def report_template_upload(request):
 
     # Show preview for confirmation
     programs = Program.objects.filter(status="active").order_by("name")
+    partners = Partner.objects.filter(is_active=True).order_by("name")
 
     return render(request, "admin_settings/funder_profiles/preview.html", {
         "parsed": parsed,
         "warnings": warnings,
         "programs": programs,
+        "partners": partners,
         "csv_content": csv_content,
     })
 
@@ -91,14 +99,17 @@ def report_template_confirm(request):
         messages.error(request, _("CSV validation failed. Please correct errors and re-upload."))
         return redirect("admin_settings:report_template_upload")
 
-    # Save to database
-    profile = save_parsed_profile(parsed, created_by=request.user)
+    # Get selected partner
+    partner_id = request.POST.get("partner")
+    partner = None
+    if partner_id:
+        partner = Partner.objects.filter(pk=partner_id, is_active=True).first()
+    if not partner:
+        messages.error(request, _("Please select a valid partner."))
+        return redirect("admin_settings:report_template_upload")
 
-    # Link to selected programs
-    program_ids = request.POST.getlist("programs")
-    if program_ids:
-        programs = Program.objects.filter(pk__in=program_ids, status="active")
-        profile.programs.set(programs)
+    # Save to database with partner
+    profile = save_parsed_profile(parsed, created_by=request.user, partner=partner)
 
     messages.success(
         request,
@@ -111,9 +122,9 @@ def report_template_confirm(request):
 @login_required
 @admin_required
 def report_template_detail(request, profile_id):
-    """View a report template's breakdowns and linked programs."""
+    """View a report template's breakdowns and partner details."""
     profile = get_object_or_404(
-        ReportTemplate.objects.prefetch_related("breakdowns", "programs"),
+        ReportTemplate.objects.select_related("partner").prefetch_related("breakdowns"),
         pk=profile_id,
     )
     return render(request, "admin_settings/funder_profiles/detail.html", {
@@ -124,23 +135,15 @@ def report_template_detail(request, profile_id):
 @login_required
 @admin_required
 def report_template_edit_programs(request, profile_id):
-    """Edit which programs are linked to a report template."""
-    profile = get_object_or_404(ReportTemplate, pk=profile_id)
+    """Programs are now managed on the Partner entity — redirect there."""
+    profile = get_object_or_404(ReportTemplate.objects.select_related("partner"), pk=profile_id)
 
-    if request.method == "POST":
-        program_ids = request.POST.getlist("programs")
-        programs = Program.objects.filter(pk__in=program_ids, status="active")
-        profile.programs.set(programs)
-        messages.success(request, _("Program assignments updated."))
-        return redirect("admin_settings:report_template_detail", profile_id=profile.pk)
+    if profile.partner:
+        messages.info(request, _("Programs are now managed on the partner. Redirecting."))
+        return redirect("admin_settings:partner_detail", partner_id=profile.partner.pk)
 
-    programs = Program.objects.filter(status="active").order_by("name")
-    linked_ids = set(profile.programs.values_list("pk", flat=True))
-    return render(request, "admin_settings/funder_profiles/edit_programs.html", {
-        "profile": profile,
-        "programs": programs,
-        "linked_ids": linked_ids,
-    })
+    messages.warning(request, _("This template has no partner assigned. Please assign a partner first."))
+    return redirect("admin_settings:report_template_detail", profile_id=profile.pk)
 
 
 @login_required

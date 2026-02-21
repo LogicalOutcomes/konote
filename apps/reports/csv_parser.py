@@ -290,7 +290,7 @@ def _parse_keep_all_row(
     bd.keep_all = True
 
 
-def save_parsed_profile(parsed: ParsedProfile, created_by) -> "ReportTemplate":
+def save_parsed_profile(parsed: ParsedProfile, created_by, partner=None) -> "ReportTemplate":
     """
     Save a ParsedProfile to the database, creating ReportTemplate and
     DemographicBreakdown objects.
@@ -298,6 +298,7 @@ def save_parsed_profile(parsed: ParsedProfile, created_by) -> "ReportTemplate":
     Args:
         parsed: A validated ParsedProfile from parse_report_template_csv().
         created_by: The User who uploaded the profile.
+        partner: The Partner this template belongs to (required).
 
     Returns:
         The created ReportTemplate instance.
@@ -310,6 +311,7 @@ def save_parsed_profile(parsed: ParsedProfile, created_by) -> "ReportTemplate":
         description=parsed.description,
         source_csv=parsed.raw_csv,
         created_by=created_by,
+        partner=partner,
     )
 
     for i, bd in enumerate(parsed.breakdowns):

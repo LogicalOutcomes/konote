@@ -35,8 +35,9 @@ def dashboard(request):
     # IMPROVE-1b: Demo Accounts summary
     demo_users = User.objects.filter(is_demo=True, is_active=True).count()
 
-    # Report templates count
-    from apps.reports.models import ReportTemplate
+    # Partners and report templates count
+    from apps.reports.models import Partner, ReportTemplate
+    partner_count = Partner.objects.count()
     report_template_count = ReportTemplate.objects.count()
 
     # Messaging profile for dashboard card
@@ -51,6 +52,7 @@ def dashboard(request):
         "note_template_count": note_template_count,
         "instance_settings_count": instance_settings_count,
         "demo_users": demo_users,
+        "partner_count": partner_count,
         "report_template_count": report_template_count,
         "messaging_profile": messaging_profile,
     })

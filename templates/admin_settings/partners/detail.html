@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ partner.name }} — {% trans "Partner" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{{ partner.name }}</h1>
+    <p><mark>{{ partner.get_partner_type_display }}</mark></p>
+</hgroup>
+
+<div class="grid" style="margin-bottom: 1.5rem;">
+    <article>
+        <header>{% trans "Details" %}</header>
+        <dl>
+            <dt>{% trans "Name" %}</dt>
+            <dd>{{ partner.name }}</dd>
+
+            {% if partner.name_fr %}
+            <dt>{% trans "Name (French)" %}</dt>
+            <dd>{{ partner.name_fr }}</dd>
+            {% endif %}
+
+            <dt>{% trans "Type" %}</dt>
+            <dd>{{ partner.get_partner_type_display }}</dd>
+
+            {% if partner.contact_name or partner.contact_email %}
+            <dt>{% trans "Contact" %}</dt>
+            <dd>
+                {% if partner.contact_name %}{{ partner.contact_name }}{% endif %}
+                {% if partner.contact_name and partner.contact_email %} — {% endif %}
+                {% if partner.contact_email %}<a href="mailto:{{ partner.contact_email }}">{{ partner.contact_email }}</a>{% endif %}
+            </dd>
+            {% endif %}
+
+            {% if partner.grant_number %}
+            <dt>{% trans "Grant Number" %}</dt>
+            <dd>{{ partner.grant_number }}</dd>
+            {% endif %}
+
+            {% if partner.grant_period_start or partner.grant_period_end %}
+            <dt>{% trans "Grant Period" %}</dt>
+            <dd>
+                {% if partner.grant_period_start %}{{ partner.grant_period_start|date:"Y-m-d" }}{% endif %}
+                {% if partner.grant_period_start and partner.grant_period_end %} {% trans "to" %} {% endif %}
+                {% if partner.grant_period_end %}{{ partner.grant_period_end|date:"Y-m-d" }}{% endif %}
+            </dd>
+            {% endif %}
+
+            <dt>{% trans "Active" %}</dt>
+            <dd>{% if partner.is_active %}{% trans "Yes" %}{% else %}{% trans "No" %}{% endif %}</dd>
+
+            {% if partner.notes %}
+            <dt>{% trans "Notes" %}</dt>
+            <dd>{{ partner.notes|linebreaksbr }}</dd>
+            {% endif %}
+
+            <dt>{% trans "Created" %}</dt>
+            <dd>{{ partner.created_at|date:"Y-m-d H:i" }}</dd>
+
+            <dt>{% trans "Updated" %}</dt>
+            <dd>{{ partner.updated_at|date:"Y-m-d H:i" }}</dd>
+        </dl>
+    </article>
+</div>
+
+<h2>{% trans "Programs" %}</h2>
+{% if partner.programs.all %}
+<ul>
+    {% for program in partner.programs.all %}
+    <li>{{ program.name }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<p><em>{% trans "No programs linked — all active programs will be included." %}</em></p>
+{% endif %}
+
+<h2>{% trans "Report Templates" %}</h2>
+{% if partner.report_templates.all %}
+<div class="overflow-auto">
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Name" %}</th>
+                <th>{% trans "Breakdowns" %}</th>
+                <th>{% trans "Created" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for template in partner.report_templates.all %}
+            <tr>
+                <td>
+                    <a href="{% url 'admin_settings:report_template_detail' template.pk %}">
+                        <strong>{{ template.name }}</strong>
+                    </a>
+                </td>
+                <td>{{ template.breakdowns.count }}</td>
+                <td><small>{{ template.created_at|date:"Y-m-d" }}</small></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p><em>{% trans "No report templates linked to this partner yet." %}</em></p>
+{% endif %}
+
+<div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+    <a href="{% url 'admin_settings:partner_edit' partner.pk %}" role="button">{% trans "Edit Partner" %}</a>
+    <a href="{% url 'admin_settings:partner_edit_programs' partner.pk %}" role="button" class="outline">{% trans "Manage Programs" %}</a>
+    <a href="{% url 'admin_settings:partner_delete' partner.pk %}" role="button" class="outline" style="color: var(--kn-danger-fg); border-color: var(--kn-danger-fg);">{% trans "Delete Partner" %}</a>
+</div>
+
+<p style="margin-top: 1.5rem;"><a href="{% url 'admin_settings:partner_list' %}">{% trans "← Back to Partners" %}</a></p>
+{% endblock %}

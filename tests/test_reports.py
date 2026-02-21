@@ -50,6 +50,12 @@ from apps.reports.forms import MetricExportForm
 from apps.reports.models import SecureExportLink
 import konote.encryption as enc_module
 
+
+def create_test_partner(name="Test Partner", partner_type="funder", **kwargs):
+    from apps.reports.models import Partner
+    return Partner.objects.create(name=name, partner_type=partner_type, **kwargs)
+
+
 TEST_KEY = Fernet.generate_key().decode()
 
 
@@ -1693,13 +1699,18 @@ class FunderReportViewTests(TestCase):
 
     def test_funder_report_form_shows_template_preview_details(self):
         """Authorized users should see read-only reporting template preview details."""
-        from apps.reports.models import DemographicBreakdown, ReportTemplate
+        from apps.reports.models import DemographicBreakdown, Partner, ReportTemplate
 
+        partner = Partner.objects.create(
+            name="Canadian Community Foundation",
+            partner_type="funder",
+        )
+        partner.programs.add(self.program)
         template = ReportTemplate.objects.create(
             name="Canadian Community Foundation — Quarterly Outcomes",
             description="Matches the demographic breakdown required by the Canadian Community Foundation.",
+            partner=partner,
         )
-        template.programs.add(self.program)
         DemographicBreakdown.objects.create(
             report_template=template,
             label="Age Group",
