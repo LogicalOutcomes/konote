@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from django.test import TestCase, Client, override_settings
 from django.utils import timezone
+from django.utils.translation import override as translation_override
 from cryptography.fernet import Fernet
 
 from apps.auth_app.models import User
@@ -1077,10 +1078,11 @@ class DemographicFieldChoicesTests(TestCase):
 
     def test_choices_include_no_grouping_and_age_range(self):
         """Choices should always include 'No grouping' and 'Age Range'."""
-        choices = get_demographic_field_choices()
+        with translation_override("en"):
+            choices = get_demographic_field_choices()
 
         values = [c[0] for c in choices]
-        labels = [c[1] for c in choices]
+        labels = [str(c[1]) for c in choices]
 
         self.assertIn("", values)
         self.assertIn("age_range", values)

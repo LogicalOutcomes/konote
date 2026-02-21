@@ -12,6 +12,7 @@ from datetime import date
 from typing import Any
 
 from django.db.models import QuerySet
+from django.utils.translation import gettext_lazy as _
 
 from apps.clients.models import ClientDetailValue, ClientFile, CustomFieldDefinition
 from apps.notes.models import MetricValue
@@ -41,14 +42,14 @@ def get_age_range(birth_date: date | str | None, as_of_date: date | None = None)
         Age range string (e.g., "25-34") or "Unknown" if birth_date is missing/invalid.
     """
     if not birth_date:
-        return "Unknown"
+        return _("Unknown")
 
     # Handle string dates (from encrypted field)
     if isinstance(birth_date, str):
         try:
             birth_date = date.fromisoformat(birth_date)
         except (ValueError, TypeError):
-            return "Unknown"
+            return _("Unknown")
 
     if as_of_date is None:
         as_of_date = date.today()
@@ -64,7 +65,7 @@ def get_age_range(birth_date: date | str | None, as_of_date: date | None = None)
         if min_age <= age <= max_age:
             return label
 
-    return "Unknown"
+    return _("Unknown")
 
 
 def group_clients_by_age(
@@ -114,13 +115,13 @@ def _find_age_bin(
 ) -> str:
     """Find the matching age bin label for a birth date."""
     if not birth_date:
-        return "Unknown"
+        return _("Unknown")
 
     if isinstance(birth_date, str):
         try:
             birth_date = date.fromisoformat(birth_date)
         except (ValueError, TypeError):
-            return "Unknown"
+            return _("Unknown")
 
     if as_of_date is None:
         as_of_date = date.today()
@@ -133,7 +134,7 @@ def _find_age_bin(
         if min_age <= age <= max_age:
             return label
 
-    return "Unknown"
+    return _("Unknown")
 
 
 def group_clients_by_custom_field(
@@ -186,7 +187,7 @@ def group_clients_by_custom_field(
         raw_value = cv.get_value()  # Handles decryption if sensitive
 
         if not raw_value:
-            groups["Unknown"].append(client_id)
+            groups[_("Unknown")].append(client_id)
         else:
             # Use option label for dropdowns, raw value otherwise
             display_value = option_labels.get(raw_value, raw_value)
@@ -197,7 +198,7 @@ def group_clients_by_custom_field(
     # Add clients without any value for this field to "Unknown"
     for client_id in client_ids:
         if client_id not in clients_with_values:
-            groups["Unknown"].append(client_id)
+            groups[_("Unknown")].append(client_id)
 
     raw_groups = dict(groups)
 
@@ -232,12 +233,12 @@ def _apply_category_merge(
             reverse_map[source] = target_label
 
     for raw_label, ids in raw_groups.items():
-        if raw_label == "Unknown":
-            merged["Unknown"].extend(ids)
-        elif raw_label in reverse_map:
-            merged[reverse_map[raw_label]].extend(ids)
+        if str(raw_label) == str(_("Unknown")):
+            merged[_("Unknown")].extend(ids)
+        elif str(raw_label) in reverse_map:
+            merged[reverse_map[str(raw_label)]].extend(ids)
         else:
-            merged["Other"].extend(ids)
+            merged[_("Other")].extend(ids)
 
     # Remove empty "Other" and "Unknown" groups
     result = {}
@@ -278,7 +279,7 @@ def aggregate_by_demographic(
             for mv in metric_values_qs
         )
         stats["client_ids"] = client_ids
-        return {"All": stats}
+        return {_("All"): stats}
 
     # Get all unique client IDs from the metric values
     all_client_ids = set()
@@ -300,7 +301,7 @@ def aggregate_by_demographic(
         # Invalid grouping — return ungrouped
         stats = _stats_from_list(list(metric_values_qs))
         stats["client_ids"] = all_client_ids
-        return {"All": stats}
+        return {_("All"): stats}
 
     # Aggregate metric values for each demographic group
     results: dict[str, dict[str, Any]] = {}
@@ -348,7 +349,7 @@ def get_demographic_field_choices(program=None) -> list[tuple[str, str]]:
     from apps.clients.models import ClientProgramEnrolment, CustomFieldDefinition
 
     choices = [
-        ("", "No grouping"),
+        ("", _("No grouping")),
     ]
 
     # Confidential programs: no demographic grouping at all
@@ -363,7 +364,7 @@ def get_demographic_field_choices(program=None) -> list[tuple[str, str]]:
         if enrolled_count < 50:
             return choices
 
-    choices.append(("age_range", "Age Range"))
+    choices.append(("age_range", _("Age Range")))
 
     # Groups whose fields should NEVER appear in reports
     BLOCKED_GROUPS = {

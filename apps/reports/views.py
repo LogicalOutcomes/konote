@@ -250,16 +250,18 @@ def _get_grouping_label(group_by_value, grouping_field):
     Returns:
         String label for the grouping (e.g., "Age Range", "Gender").
     """
+    from django.utils.translation import gettext as _
+
     if not group_by_value:
         return None
 
     if group_by_value == "age_range":
-        return "Age Range"
+        return _("Age Range")
 
     if grouping_field:
         return grouping_field.name
 
-    return "Demographic Group"
+    return _("Demographic Group")
 
 
 def _write_achievement_csv(writer, achievement_summary, program):
