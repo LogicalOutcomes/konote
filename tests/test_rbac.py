@@ -144,6 +144,22 @@ class ClientAccessTest(TestCase):
         response = self.middleware(request)
         self.assertEqual(response.status_code, 200)
 
+    def test_nonexistent_client_returns_200_not_403(self):
+        """Accessing a non-existent client should pass through to the view (404), not 403.
+
+        Before the fix, a non-existent client_id produced an empty enrollment
+        set → no program overlap → misleading 403. The middleware should let
+        the view's get_object_or_404 handle the 404 instead.
+        """
+        nonexistent_id = 999999
+        request = self.factory.get(f"/participants/{nonexistent_id}/")
+        request.user = self.staff_a
+        request.session = {}
+        response = self.middleware(request)
+        # Middleware should pass through (200 from dummy_response),
+        # letting the view handle the 404
+        self.assertEqual(response.status_code, 200)
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ReceptionistFieldAccessTest(TestCase):

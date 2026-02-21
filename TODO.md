@@ -7,6 +7,7 @@
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GG (SEC3-Q1)
 - [ ] Confirm standard report schema and configuration template with Claire (Prosper Canada) before building — SG (RPT-SCHEMA1)
 - [ ] Review and approve multi-tenancy implementation plan with Sara and Prince before building — covers django-tenants integration, per-tenant encryption, consortium data model, and hybrid federation architecture (see tasks/prosper-canada/multi-tenancy-implementation-plan.md) — SG/PD (MT-APPROVE1)
+- [ ] Approve CIDS implementation plan with Sara and/or Claire before building — covers metadata fields, code list integration, CIDS-enriched reports, and full JSON-LD export; confirm funder consumption pathway and whether to engage Common Approach as pilot implementer (see tasks/cids-json-ld-export.md) — SG/GG (CIDS-APPROVE1)
 
 ## Active Work
 
@@ -16,12 +17,14 @@
 - [x] Define Prosper Canada configuration template — standard roles, metrics, terminology, plan templates for financial coaching agencies (see config_templates/prosper-canada/) — 2026-02-20 — GG (DEPLOY-TEMPLATE1)
 - [ ] Follow up with Claire (Prosper Canada) for additional must-haves on feature comparison — SG (DEPLOY-PC2)
 - [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — GG (ONBOARD-GATE)
+- [ ] Store signed Configuration Summary with each deployment so new admins can see what was decided and why — GG (DEPLOY-CONFIG-DOC1)
 - [ ] Verify production email configuration for exports, erasure alerts, and password resets — GG (OPS3)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — GG (OPS4)
 - [ ] Document scheduled task setup for export monitoring in the runbook — GG (EXP2w)
 - [ ] Enforce cross-program sharing consent (PHIPA) in views — consent flag already captured, need view-level enforcement (PHIPA-ENFORCE1)
 - [ ] Build cross-agency data rollup for funders — waiting on requirements from Prosper Canada re: which metrics to aggregate (see tasks/prosper-canada/) — GG (SCALE-ROLLUP1)
 - [ ] Build role-based dashboard views — coach, PM, and executive landing pages with role-specific data (see tasks/dashboard-roles-plan.md) — GG (DASH-ROLES1)
+- [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with Prosper Canada dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — GG (DEPLOY-TOOLKIT1)
 
 ### Phase: Communication Modules — complete!
 
@@ -38,7 +41,7 @@
 ### Phase: Post-Housekeeping Verification
 
 - [x] Run full test suite (`pytest -m "not browser and not scenario_eval"`) to verify PR #143 test fixes pass against current main — 2026-02-20 (VERIFY1)
-- [ ] Fix 12 pre-existing test failures — 5 SQLite isolation ("no such table: users"), 2 SQLite/PG behavioural differences, 1 AI fixture mismatch, 1 stale .mo, 2 missing staticfiles dir, 1 missing QA file (TEST-PREEXIST1)
+- [x] Fix 6 pre-existing test failures — SQLite isolation, fixture mismatch, stale .mo, missing QA file — 2026-02-21 (TEST-PREEXIST1)
 
 ## Do Occasionally
 
@@ -76,6 +79,17 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Build umbrella admin dashboard — central view for Prosper Canada to see instance health, published reports, and aggregate metrics across agencies (SCALE-DASH1)
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 - [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
+
+### Phase: CIDS Compliance (Common Approach Data Standard) — waiting on CIDS-APPROVE1
+
+- [ ] Add CIDS metadata fields to MetricDefinition, Program, and PlanTarget — optional fields for IRIS+ codes, SDG goals, sector codes (see tasks/cids-json-ld-export.md Phase 1) — GG (CIDS-META1)
+- [ ] Create OrganizationProfile model for CIDS BasicTier org metadata — legal name, sector, province (Phase 1) — GG (CIDS-ORG1)
+- [ ] Import CIDS code lists (17 lists) via management command from codelist.commonapproach.org with version tracking (Phase 2) — GG (CIDS-CODES1)
+- [ ] Build admin UI for CIDS tagging — dropdowns on program and metric forms, integrate into config template system (Phase 2) — GG (CIDS-ADMIN1)
+- [ ] Add CIDS codes to existing CSV/PDF funder reports + "Standards Alignment" appendix page — quick win, no new format needed (Phase 2.5) — GG (CIDS-ENRICH1)
+- [ ] Build JSON-LD export with basic SHACL validation — new format option alongside CSV/PDF, aggregate only (Phase 3) — GG (CIDS-EXPORT1)
+- [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — GG (CIDS-IMPACT1)
+- [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — GG (CIDS-VALIDATE1)
 
 ### Phase: Participant View Improvements — complete!
 
@@ -148,6 +162,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Surveys — lightweight structured feedback collection from participants (see tasks/surveys-design.md) (SURVEY1)
 - [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
 - [ ] Build agency data offboarding command for secure departures and PIPEDA requests (SEC3)
+- [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
 - [ ] Add first-run setup wizard UI for guided initial configuration (SETUP1-UI)
 - [ ] Add TOTP multi-factor authentication (see tasks/mfa-implementation.md) (SEC2)
 - [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
