@@ -324,10 +324,12 @@ def generate_funder_report_data(
     template_label_overrides = {}
     if report_template:
         from .models import ReportMetric
-        template_metrics = ReportMetric.objects.filter(
-            report_template=report_template,
-        ).select_related("metric_definition").order_by("sort_order")
-        if template_metrics.exists():
+        template_metrics = list(
+            ReportMetric.objects.filter(
+                report_template=report_template,
+            ).select_related("metric_definition").order_by("sort_order")
+        )
+        if template_metrics:
             template_metric_defs = [rm.metric_definition for rm in template_metrics]
             template_label_overrides = {
                 rm.metric_definition_id: rm.translated_label
