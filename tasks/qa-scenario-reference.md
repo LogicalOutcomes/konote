@@ -43,13 +43,11 @@ All outputs go to the qa-scenarios repo:
 
 ## QA Pipeline Overview
 
-The full QA pipeline has three steps:
+Two pipelines, done in order. Each step is a separate Claude Code session. Full instructions in `tasks/recurring-tasks.md`.
 
-1. **`/run-scenario-server`** (konote-app) — captures screenshots via Playwright
-2. **`/run-scenarios`** (konote-qa-scenarios) — evaluates captured screenshots
-3. **`/process-qa-report`** (konote-app) — expert panel review + action plan
+**Pipeline A — Scenario Evaluation:** A1 capture screenshots (konote-app) → A2 evaluate scenarios (qa-scenarios) → A3 process report (konote-app)
 
-See `tasks/recurring-tasks.md` for the full workflow schedule.
+**Pipeline B — Page Audit:** B1 capture page states (konote-app) → B2 page audit (qa-scenarios)
 
 ## Troubleshooting
 

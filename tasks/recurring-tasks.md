@@ -38,24 +38,76 @@ Expected outcome: updated `tasks/ux-review-latest.md` plus actionable follow-up 
 
 Run after major releases or substantial UI changes.
 
-Expected outcome: new dated reports in `qa-scenarios/reports/` and a prioritized fix list.
+Expected outcome: new dated reports in `qa-scenarios/reports/` and a prioritised fix list.
 
-### Claude Code command flow
+There are **two independent pipelines**. Do them in order. Each pipeline is a sequence of sessions — finish one step before starting the next.
 
-1. **konote-app:** `/run-scenario-server` (captures scenario screenshots)
-2. **qa-scenarios:** `/run-scenarios` (evaluates scenarios, creates satisfaction report + improvement tickets)
-3. **konote-app:** `/capture-page-states` (captures page screenshots)
-4. **qa-scenarios:** `/run-page-audit` (evaluates pages, creates page-audit report + tickets)
-5. *(Optional)* **konote-app:** `/process-qa-report` (expert panel synthesis + action plan)
+### Pipeline A: Scenario Evaluation (always do this)
+
+Scores how real personas experience the app across 65+ scripted workflows.
+
+| Step | Session | Repo | Command | Prompt for Claude Code |
+|------|---------|------|---------|----------------------|
+| A1 | 1 | konote-app | Manual (see prompt below) | Capture scenario screenshots |
+| A2 | 2 | konote-qa-scenarios | `/run-scenarios` | Evaluate screenshots, produce satisfaction report |
+| A3 | 3 | konote-app | `/process-qa-report` | Expert panel review, action plan |
+
+**A1 prompt** (paste into a new konote-app session):
+```
+Pull latest main, run migrations, re-seed demo data, then run the scenario evaluation suite:
+
+git fetch origin main && git checkout main && git pull origin main
+python manage.py migrate && python manage.py migrate --database=audit
+python manage.py seed && python manage.py seed_demo_data --demo-mode --force
+
+SCENARIO_HOLDOUT_DIR="c:/Users/gilli/OneDrive/Documents/GitHub/konote-qa-scenarios" \
+  python -m pytest tests/scenario_eval/test_scenario_eval.py -v --no-llm
+
+Report: how many passed/failed/skipped, how many screenshots captured.
+```
+
+**A2 prompt** (paste into a new konote-qa-scenarios session):
+```
+Fresh screenshots were captured today. Run /run-scenarios for the full evaluation — all scenarios, not just the smoke subset. Update TODO.md with results.
+```
+
+**A3 prompt** (paste into a new konote-app session):
+```
+Run /process-qa-report on the latest satisfaction report from konote-qa-scenarios.
+```
+
+### Pipeline B: Page Audit (do after Pipeline A)
+
+Scores individual pages against Nielsen heuristics. Uses different screenshots than Pipeline A.
+
+| Step | Session | Repo | Command | Prompt for Claude Code |
+|------|---------|------|---------|----------------------|
+| B1 | 4 | konote-app | `/capture-page-states` | Capture page-state screenshots |
+| B2 | 5 | konote-qa-scenarios | `/run-page-audit` | Evaluate page screenshots, produce audit report |
+
+**B1**: Run `/capture-page-states` in a konote-app session.
+**B2**: Run `/run-page-audit` in a konote-qa-scenarios session.
+
+### Summary: session order
+
+1. **konote-app** — A1: capture scenario screenshots
+2. **konote-qa-scenarios** — A2: evaluate scenarios
+3. **konote-app** — A3: process QA report
+4. **konote-app** — B1: capture page states
+5. **konote-qa-scenarios** — B2: page audit
+
+Each step must finish before the next starts. Each step is a separate Claude Code session.
 
 ### Kilo Code alternative (if slash commands are unavailable)
 
-1. Read and follow `.claude/commands/run-scenarios.md`
-2. Read and follow `.claude/commands/capture-page-states.md`
-3. Read and follow `.claude/commands/run-page-audit.md`
-4. Read and follow `.claude/commands/process-qa-report.md`
+Follow the same session order. Instead of slash commands, read and follow:
+- A1: use the prompt above
+- A2: `.claude/commands/run-scenarios.md` (in qa-scenarios repo)
+- A3: `.claude/commands/process-qa-report.md` (in konote-app)
+- B1: `.claude/commands/capture-page-states.md` (in konote-app)
+- B2: `.claude/commands/run-page-audit.md` (in qa-scenarios repo)
 
-### PowerShell subset runs (in this repo)
+### PowerShell subset runs (in konote-app repo)
 
 ```powershell
 $env:SCENARIO_HOLDOUT_DIR = "C:\Users\gilli\OneDrive\Documents\GitHub\konote-qa-scenarios"
