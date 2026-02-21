@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Safety Oversight Reports" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+        <li aria-current="page">{% trans "Safety Oversight" %}</li>
+    </ul>
+</nav>
+
+<header class="page-header">
+    <h1>{% trans "Safety Oversight Reports" %}</h1>
+    <p class="page-subtitle">{% trans "Quarterly safety reports for board, funders, and accreditation." %}</p>
+</header>
+
+<div class="action-bar">
+    <a href="{% url 'reports:oversight_generate' %}" role="button">{% trans "Generate New Report" %}</a>
+    <a href="{% url 'reports:schedule_list' %}" role="button" class="outline">{% trans "Manage Schedules" %}</a>
+</div>
+
+{% if reports %}
+<div class="overflow-auto">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Period" %}</th>
+                <th scope="col">{% trans "Status" %}</th>
+                <th scope="col">{% trans "Approved" %}</th>
+                <th scope="col">{% trans "Generated" %}</th>
+                <th scope="col" aria-label="{% trans 'Actions' %}"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for report in reports %}
+            <tr>
+                <td><a href="{% url 'reports:oversight_detail' report_id=report.pk %}">{{ report.period_label }}</a></td>
+                <td>
+                    {% if report.overall_status == "ROUTINE" %}
+                    <span class="badge badge-success">{% trans "Routine" %}</span>
+                    {% else %}
+                    <span class="badge badge-warning">{% trans "Notable" %}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if report.approved_at %}
+                    {{ report.approved_at|date:"M j, Y" }}
+                    {% else %}
+                    <span class="text-muted">{% trans "Pending" %}</span>
+                    {% endif %}
+                </td>
+                <td>{{ report.created_at|date:"M j, Y" }}</td>
+                <td>
+                    <a href="{% url 'reports:oversight_detail' report_id=report.pk %}">{% trans "View" %}</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>{% trans "No oversight reports have been generated yet." %}</p>
+{% endif %}
+{% endblock %}

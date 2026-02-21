@@ -491,7 +491,8 @@ def goal_create(request, client_id):
                 ).first()
 
             try:
-                metric_ids = [m.pk for m in cleaned.get("metrics", [])]
+                selected_metric = cleaned.get("metrics")
+                metric_ids = [selected_metric.pk] if selected_metric else []
 
                 # Handle AI-suggested custom metric
                 custom_metric_name = request.POST.get("custom_metric_name", "").strip()
@@ -693,16 +694,16 @@ def target_metrics(request, target_id):
             selected = form.cleaned_data["metrics"]
             # Remove old assignments
             PlanTargetMetric.objects.filter(plan_target=target).delete()
-            # Create new ones
-            for i, metric_def in enumerate(selected):
+            # Create new one if selected
+            if selected:
                 PlanTargetMetric.objects.create(
-                    plan_target=target, metric_def=metric_def, sort_order=i
+                    plan_target=target, metric_def=selected, sort_order=0
                 )
-            messages.success(request, _("Metrics updated."))
+            messages.success(request, _("Metric updated."))
             return redirect("plans:plan_view", client_id=target.client_file.pk)
     else:
-        current_ids = PlanTargetMetric.objects.filter(plan_target=target).values_list("metric_def_id", flat=True)
-        form = MetricAssignmentForm(initial={"metrics": current_ids})
+        current = PlanTargetMetric.objects.filter(plan_target=target).first()
+        form = MetricAssignmentForm(initial={"metrics": current.metric_def_id if current else None})
 
     # Group metrics by category for template display
     metrics_by_category = {}

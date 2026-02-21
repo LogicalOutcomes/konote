@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Safety Alerts by Program" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+        <li><a href="{% url 'clients:executive_dashboard' %}">{% trans "Executive Dashboard" %}</a></li>
+        <li aria-current="page">{% trans "Safety Alerts" %}</li>
+    </ul>
+</nav>
+
+<header class="page-header">
+    <h1>{% trans "Safety Alerts by Program" %}</h1>
+    <p class="page-subtitle">{% trans "Aggregate alert counts per program. No individual participant details are shown." %}</p>
+</header>
+
+{% if program_alerts %}
+<div class="overflow-auto">
+    <table>
+        <thead>
+            <tr>
+                <th scope="col">{{ term.program|default:"Program" }}</th>
+                <th scope="col" class="text-center">{% trans "Active" %}</th>
+                <th scope="col" class="text-center">{% trans "Older than 14 days" %}</th>
+                <th scope="col" class="text-center">{% trans "Pending Review" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in program_alerts %}
+            <tr>
+                <td>
+                    <span class="program-dot" style="background-color: {{ row.program.colour_hex }}" aria-hidden="true"></span>
+                    {{ row.program.translated_name }}
+                </td>
+                <td class="text-center {% if row.active > 0 %}text-danger{% endif %}">
+                    <strong>{{ row.active }}</strong>
+                </td>
+                <td class="text-center {% if row.aging > 0 %}text-warning{% endif %}">
+                    {{ row.aging }}
+                </td>
+                <td class="text-center {% if row.pending_cancellation > 0 %}text-warning{% endif %}">
+                    {{ row.pending_cancellation }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>{% trans "No programs found." %}</p>
+{% endif %}
+
+<p><a href="{% url 'clients:executive_dashboard' %}">&larr; {% trans "Back to Executive Dashboard" %}</a></p>
+{% endblock %}

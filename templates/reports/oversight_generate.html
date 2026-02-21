@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Generate Safety Oversight Report" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<nav aria-label="{% trans 'Breadcrumb' %}">
+    <ul class="breadcrumb">
+        <li><a href="{% url 'home' %}">{% trans "Home" %}</a></li>
+        <li><a href="{% url 'reports:oversight_list' %}">{% trans "Safety Oversight" %}</a></li>
+        <li aria-current="page">{% trans "Generate" %}</li>
+    </ul>
+</nav>
+
+<header class="page-header">
+    <h1>{% trans "Generate Safety Oversight Report" %}</h1>
+    <p class="page-subtitle">{% trans "Select the reporting period. The system will compute aggregate safety metrics and determine whether the quarter was routine or notable." %}</p>
+</header>
+
+<form method="post">
+    {% csrf_token %}
+    <fieldset>
+        <label for="id_period">{{ form.period.label }}</label>
+        {{ form.period }}
+        {% if form.period.errors %}
+        <small class="text-danger">{{ form.period.errors.0 }}</small>
+        {% endif %}
+    </fieldset>
+
+    <button type="submit">{% trans "Generate Report" %}</button>
+    <a href="{% url 'reports:oversight_list' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+</form>
+{% endblock %}

@@ -1,4 +1,4 @@
-"""Models for the reports app — secure export link tracking and report templates."""
+"""Models for the reports app — partners, report templates, and secure exports."""
 import os
 import uuid
 from datetime import timedelta
@@ -10,35 +10,144 @@ from django.utils.translation import gettext_lazy as _
 
 
 # ---------------------------------------------------------------------------
-# Report Template — demographic breakdown configuration uploaded as CSV
+# Partner — a reporting relationship (funder, board, network, etc.)
 # ---------------------------------------------------------------------------
 
-class ReportTemplate(models.Model):
+class Partner(models.Model):
     """
-    A reporting template's requirements for demographic breakdowns.
+    A reporting relationship between the agency and an external entity.
 
-    Admins create profiles by uploading a CSV (typically generated with
-    Claude's help from a funder's reporting template). Each profile
-    defines one or more demographic breakdowns with custom age bins
-    and/or category merges.
+    Partners include funders, boards, networks, regulators, accreditation
+    bodies, and donors. Each partner may require one or more report
+    templates with specific metrics, demographics, and schedules.
 
-    Executives and PMs select a profile at export time (read-only) to
-    produce reports matching that funder's required categorisations.
+    The term "Partner" was chosen over "Stakeholder" (colonial connotations
+    in the Canadian context) and "FundingSource" (too narrow — boards and
+    networks are not funders).
     """
+
+    PARTNER_TYPES = [
+        ("funder", _("Funder")),
+        ("network", _("Network / Collaboration")),
+        ("board", _("Board of Directors")),
+        ("regulator", _("Government / Regulator")),
+        ("accreditation", _("Accreditation Body")),
+        ("donor", _("Donor")),
+        ("other", _("Other")),
+    ]
 
     name = models.CharField(
         max_length=255,
-        help_text=_("Template name, e.g., 'United Way Greater Toronto'."),
+        help_text=_("Partner name, e.g., 'United Way Greater Toronto'."),
     )
-    description = models.TextField(
+    name_fr = models.CharField(
+        max_length=255,
         blank=True,
-        help_text=_("Description of the reporting requirements, e.g., 'Annual Community Impact Report'."),
+        default="",
+        help_text=_("French name (optional)."),
+    )
+    partner_type = models.CharField(
+        max_length=20,
+        choices=PARTNER_TYPES,
+        help_text=_("Type of reporting relationship."),
     )
     programs = models.ManyToManyField(
         "programs.Program",
         blank=True,
+        related_name="partners",
+        help_text=_(
+            "Programs this partner funds or oversees. "
+            "Leave empty for organisation-wide partners (e.g., board)."
+        ),
+    )
+    contact_name = models.CharField(max_length=255, blank=True)
+    contact_email = models.EmailField(blank=True)
+    grant_number = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text=_("Grant or contribution agreement number (if applicable)."),
+    )
+    grant_period_start = models.DateField(null=True, blank=True)
+    grant_period_end = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+        db_table = "partners"
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def translated_name(self):
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.name_fr:
+            return self.name_fr
+        return self.name
+
+    def get_programs(self):
+        """Linked programs, or all active programs if none specified."""
+        programs = self.programs.all()
+        if programs.exists():
+            return programs
+        from apps.programs.models import Program
+
+        return Program.objects.filter(status="active")
+
+
+# ---------------------------------------------------------------------------
+# Report Template — complete report definition linked to a partner
+# ---------------------------------------------------------------------------
+
+class ReportTemplate(models.Model):
+    """
+    A complete report definition for a specific partner.
+
+    Defines what metrics to include, how to aggregate them, what
+    demographic breakdowns to apply, and the reporting period. One
+    partner may have multiple templates (e.g., quarterly + annual).
+
+    Admins can also upload CSV files to define demographic breakdowns
+    (the original workflow, preserved for backward compatibility).
+    """
+
+    PERIOD_TYPES = [
+        ("monthly", _("Monthly")),
+        ("quarterly", _("Quarterly")),
+        ("semi_annual", _("Semi-annual")),
+        ("annual", _("Annual")),
+        ("custom", _("Custom")),
+    ]
+
+    PERIOD_ALIGNMENTS = [
+        ("calendar", _("Calendar year (Jan-Dec)")),
+        ("fiscal", _("Fiscal year (custom start month)")),
+        ("grant", _("Grant period")),
+    ]
+
+    OUTPUT_FORMATS = [
+        ("tabular", _("Tables and charts")),
+        ("narrative", _("Narrative with data")),
+        ("mixed", _("Mixed — narrative and tables")),
+    ]
+
+    partner = models.ForeignKey(
+        Partner,
+        on_delete=models.CASCADE,
         related_name="report_templates",
-        help_text=_("Programs linked to this reporting template."),
+        help_text=_("The partner this report template belongs to."),
+    )
+    name = models.CharField(
+        max_length=255,
+        help_text=_("Template name, e.g., 'Quarterly Outcomes Report'."),
+    )
+    description = models.TextField(
+        blank=True,
+        help_text=_("Description of the reporting requirements."),
     )
     source_csv = models.TextField(
         blank=True,
@@ -50,6 +159,33 @@ class ReportTemplate(models.Model):
         null=True,
         related_name="created_report_templates",
     )
+    period_type = models.CharField(
+        max_length=20,
+        choices=PERIOD_TYPES,
+        default="annual",
+        help_text=_("How often this report is produced."),
+    )
+    period_alignment = models.CharField(
+        max_length=20,
+        choices=PERIOD_ALIGNMENTS,
+        default="fiscal",
+        help_text=_("How the reporting period aligns with the calendar."),
+    )
+    fiscal_year_start_month = models.PositiveSmallIntegerField(
+        default=4,
+        help_text=_("1=Jan, 4=Apr (Ontario govt), 7=Jul, etc."),
+    )
+    output_format = models.CharField(
+        max_length=20,
+        choices=OUTPUT_FORMATS,
+        default="mixed",
+    )
+    language = models.CharField(
+        max_length=5,
+        default="en",
+        choices=[("en", _("English")), ("fr", _("French")), ("both", _("Bilingual"))],
+    )
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -58,7 +194,144 @@ class ReportTemplate(models.Model):
         db_table = "report_templates"
 
     def __str__(self):
+        if self.partner:
+            return f"{self.name} ({self.partner.name})"
         return self.name
+
+
+# ---------------------------------------------------------------------------
+# Report Section — structural section within a report template
+# ---------------------------------------------------------------------------
+
+class ReportSection(models.Model):
+    """
+    A structural section within a report template.
+
+    Organises report content into logical blocks (metrics tables,
+    demographic summaries, narrative sections, charts). Each section
+    can contain ReportMetric entries or free-form content.
+    """
+
+    SECTION_TYPES = [
+        ("metrics_table", _("Metrics Table")),
+        ("demographic_summary", _("Demographic Summary")),
+        ("narrative", _("Narrative / Written Section")),
+        ("chart", _("Chart / Visualisation")),
+        ("service_stats", _("Service Statistics")),
+    ]
+
+    report_template = models.ForeignKey(
+        ReportTemplate,
+        on_delete=models.CASCADE,
+        related_name="sections",
+    )
+    title = models.CharField(max_length=255)
+    title_fr = models.CharField(max_length=255, blank=True, default="")
+    section_type = models.CharField(max_length=20, choices=SECTION_TYPES)
+    instructions = models.TextField(
+        blank=True,
+        help_text=_("Guidance for narrative sections (what to write about)."),
+    )
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["sort_order"]
+        db_table = "report_sections"
+
+    def __str__(self):
+        return f"{self.report_template.name} — {self.title}"
+
+    @property
+    def translated_title(self):
+        from django.utils.translation import get_language
+
+        if get_language() == "fr" and self.title_fr:
+            return self.title_fr
+        return self.title
+
+
+# ---------------------------------------------------------------------------
+# Report Metric — a metric included in a report with aggregation rules
+# ---------------------------------------------------------------------------
+
+class ReportMetric(models.Model):
+    """
+    A metric included in a report template with specific aggregation rules.
+
+    The same underlying MetricDefinition (e.g., 'housing stability score')
+    can appear in two templates with different aggregation: average in one,
+    threshold count in another. The display label can also be overridden
+    to match a specific partner's terminology.
+    """
+
+    AGGREGATION_TYPES = [
+        ("count", _("Count of participants")),
+        ("average", _("Average value")),
+        ("average_change", _("Average change (intake to latest)")),
+        ("percentage", _("Percentage of participants")),
+        ("threshold_count", _("Count meeting threshold")),
+        ("threshold_percentage", _("Percentage meeting threshold")),
+        ("sum", _("Sum total")),
+    ]
+
+    report_template = models.ForeignKey(
+        ReportTemplate,
+        on_delete=models.CASCADE,
+        related_name="report_metrics",
+    )
+    metric_definition = models.ForeignKey(
+        "plans.MetricDefinition",
+        on_delete=models.CASCADE,
+        related_name="report_usages",
+    )
+    section = models.ForeignKey(
+        ReportSection,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="metrics",
+    )
+    aggregation = models.CharField(
+        max_length=25,
+        choices=AGGREGATION_TYPES,
+        help_text=_("How this metric should be aggregated in the report."),
+    )
+    threshold_value = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text=_("For threshold-based aggregation: the target value."),
+    )
+    display_label = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text=_("Override label for this partner's terminology."),
+    )
+    display_label_fr = models.CharField(max_length=255, blank=True, default="")
+    sort_order = models.PositiveIntegerField(default=0)
+    is_consortium_required = models.BooleanField(
+        default=False,
+        help_text=_("Whether this metric is required by a consortium standard schema."),
+    )
+
+    class Meta:
+        ordering = ["sort_order"]
+        db_table = "report_metrics"
+
+    def __str__(self):
+        label = self.display_label or self.metric_definition.name
+        return f"{self.report_template.name} — {label} ({self.aggregation})"
+
+    @property
+    def translated_label(self):
+        from django.utils.translation import get_language
+
+        if get_language() == "fr":
+            if self.display_label_fr:
+                return self.display_label_fr
+            return self.metric_definition.translated_name
+        return self.display_label or self.metric_definition.name
 
 
 class DemographicBreakdown(models.Model):
@@ -287,3 +560,211 @@ class InsightSummary(models.Model):
 
     def __str__(self):
         return f"Insight {self.cache_key} ({self.generated_at:%Y-%m-%d})"
+
+
+class OversightReportSnapshot(models.Model):
+    """Stored snapshot of a quarterly safety oversight report.
+
+    Contains computed metrics frozen at generation time, plus
+    attestation fields for the "Approve and File" workflow.
+    """
+
+    STATUS_CHOICES = [
+        ("ROUTINE", _("Routine")),
+        ("NOTABLE", _("Notable")),
+    ]
+
+    # Period
+    period_label = models.CharField(
+        max_length=20,
+        help_text="Human-readable label, e.g. 'Q1 2026'.",
+    )
+    period_start = models.DateField()
+    period_end = models.DateField()
+
+    # Computed metrics (frozen at generation time)
+    metrics_json = models.JSONField(
+        help_text="All computed metrics: alerts_raised, alerts_resolved, "
+                  "median_resolution_days, active_at_quarter_end, "
+                  "notes_recorded, active_participants, active_staff, "
+                  "aging_alerts, pending_reviews, program_breakdown.",
+    )
+
+    # Status
+    overall_status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default="ROUTINE",
+    )
+    notable_triggers = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of trigger descriptions that caused NOTABLE status.",
+    )
+    narrative = models.TextField(
+        blank=True,
+        default="",
+        help_text="Management narrative added when status is NOTABLE.",
+    )
+
+    # Health indicators
+    no_aging_alerts = models.BooleanField(default=True)
+    no_pending_reviews = models.BooleanField(default=True)
+    no_program_concentration = models.BooleanField(default=True)
+
+    # Attestation
+    approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="approved_oversight_reports",
+    )
+    approved_at = models.DateTimeField(null=True, blank=True)
+
+    # Visibility
+    is_external = models.BooleanField(
+        default=False,
+        help_text="External version suppresses counts under 5.",
+    )
+
+    # Metadata
+    generated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="generated_oversight_reports",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "oversight_report_snapshots"
+        ordering = ["-period_start"]
+
+    def __str__(self):
+        return f"Oversight Report {self.period_label} ({self.overall_status})"
+
+
+class ReportSchedule(models.Model):
+    """Scheduled recurring report with deadline reminders.
+
+    The management command check_report_deadlines runs daily and:
+    - Sets banner_shown_at when within reminder window
+    - Sends email reminder when within email window
+    - After report generation, advance_due_date() moves to next period
+    """
+
+    FREQUENCY_CHOICES = [
+        ("quarterly", _("Quarterly")),
+        ("monthly", _("Monthly")),
+        ("annually", _("Annually")),
+    ]
+
+    REPORT_TYPE_CHOICES = [
+        ("oversight", _("Safety Oversight Report")),
+        ("funder_report", _("Funder Report")),
+    ]
+
+    name = models.CharField(max_length=255)
+    report_type = models.CharField(max_length=50, choices=REPORT_TYPE_CHOICES)
+    frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES)
+
+    # Current deadline
+    due_date = models.DateField(
+        help_text="Next due date for this report.",
+    )
+
+    # Reminder configuration
+    reminder_days_before = models.PositiveIntegerField(
+        default=14,
+        help_text="Days before due date to start showing dashboard banner.",
+    )
+
+    # State tracking
+    banner_shown_at = models.DateTimeField(null=True, blank=True)
+    email_sent_at = models.DateTimeField(null=True, blank=True)
+    last_generated_at = models.DateTimeField(null=True, blank=True)
+
+    # Who to notify
+    notify_users = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        related_name="report_schedules",
+        help_text="Users who receive reminders. If empty, all admins are notified.",
+    )
+
+    is_active = models.BooleanField(default=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="created_report_schedules",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "report_schedules"
+        ordering = ["due_date"]
+
+    def __str__(self):
+        return f"{self.name} (due {self.due_date})"
+
+    def advance_due_date(self):
+        """Move due_date to the next period after generation."""
+        import calendar
+
+        month = self.due_date.month
+        year = self.due_date.year
+        day = self.due_date.day
+
+        if self.frequency == "quarterly":
+            month += 3
+        elif self.frequency == "monthly":
+            month += 1
+        elif self.frequency == "annually":
+            year += 1
+
+        # Handle month overflow
+        while month > 12:
+            month -= 12
+            year += 1
+
+        # Clamp day to last day of target month
+        max_day = calendar.monthrange(year, month)[1]
+        day = min(day, max_day)
+
+        self.due_date = self.due_date.replace(year=year, month=month, day=day)
+        self.email_sent_at = None
+        self.banner_shown_at = None
+        self.save(update_fields=[
+            "due_date", "email_sent_at", "banner_shown_at", "updated_at",
+        ])
+
+    @property
+    def is_due_soon(self):
+        """True if within the banner reminder window."""
+        from django.utils import timezone as tz
+
+        today = tz.now().date()
+        return (
+            self.is_active
+            and self.due_date is not None
+            and (self.due_date - today).days <= self.reminder_days_before
+        )
+
+    @property
+    def is_overdue(self):
+        """True if past due date and not yet generated this period."""
+        from django.utils import timezone as tz
+
+        today = tz.now().date()
+        return (
+            self.is_active
+            and self.due_date is not None
+            and today > self.due_date
+            and (
+                self.last_generated_at is None
+                or self.last_generated_at.date() < self.due_date
+            )
+        )

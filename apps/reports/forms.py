@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.programs.models import Program
 from apps.plans.models import MetricDefinition
 from .demographics import get_demographic_field_choices
-from .models import ReportTemplate
+from .models import Partner, ReportTemplate
 from .utils import get_fiscal_year_choices, get_fiscal_year_range, get_current_fiscal_year, is_aggregate_only_user
 
 
@@ -112,11 +112,11 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         queryset=ReportTemplate.objects.none(),
         required=False,
         empty_label=_("None — use grouping below"),
-        label=_("Funder reporting template"),
+        label=_("Reporting template"),
         help_text=_(
-            "Your admin sets these up to match a specific funder's reporting format "
+            "Your admin sets these up to match a specific partner's reporting format "
             "(e.g., age brackets, employment categories). Pick one to format your "
-            "export the way that funder expects. You can preview what each template "
+            "export the way that partner expects. You can preview what each template "
             "includes below."
         ),
     )
@@ -134,13 +134,13 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         self.fields["fiscal_year"].choices = fy_choices
         # Build demographic grouping choices dynamically
         self.fields["group_by"].choices = get_demographic_field_choices()
-        # Scope report templates to programs the user can access
+        # Scope report templates to programs the user can access (through partner)
         if user:
             from .utils import get_manageable_programs
             accessible_programs = get_manageable_programs(user)
             template_qs = (
                 ReportTemplate.objects.filter(
-                    programs__in=accessible_programs
+                    partner__programs__in=accessible_programs
                 ).distinct().order_by("name")
             )
             if template_qs.exists():
@@ -241,11 +241,11 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
         queryset=ReportTemplate.objects.none(),
         required=False,
         empty_label=_("None — use default age categories"),
-        label=_("Funder reporting template"),
+        label=_("Reporting template"),
         help_text=_(
-            "Your admin sets these up to match a specific funder's reporting format "
+            "Your admin sets these up to match a specific partner's reporting format "
             "(e.g., age brackets, employment categories). Pick one to format your "
-            "report the way that funder expects. You can preview what each template "
+            "report the way that partner expects. You can preview what each template "
             "includes below."
         ),
     )
@@ -263,13 +263,13 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
         self.fields["fiscal_year"].choices = get_fiscal_year_choices()
         # Default to current fiscal year
         self.fields["fiscal_year"].initial = str(get_current_fiscal_year())
-        # Scope report templates to programs the user can access
+        # Scope report templates to programs the user can access (through partner)
         if user:
             from .utils import get_manageable_programs
             accessible_programs = get_manageable_programs(user)
             template_qs = (
                 ReportTemplate.objects.filter(
-                    programs__in=accessible_programs
+                    partner__programs__in=accessible_programs
                 ).distinct().order_by("name")
             )
             if template_qs.exists():
@@ -300,13 +300,15 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
             raise forms.ValidationError(_("Please select a fiscal year."))
 
         # Validate that the selected reporting template is linked to the
-        # selected program.  Without this check an executive could pick
-        # a template intended for a different program, producing a report
-        # with empty or misleading breakdown sections.
+        # selected program (through partner).  Without this check an
+        # executive could pick a template intended for a different
+        # program, producing a report with empty or misleading breakdown
+        # sections.
         report_template = cleaned.get("report_template")
         program = cleaned.get("program")
         if report_template and program:
-            if not report_template.programs.filter(pk=program.pk).exists():
+            partner = report_template.partner
+            if not partner or not partner.programs.filter(pk=program.pk).exists():
                 self.add_error(
                     "report_template",
                     _("This reporting template is not linked to the selected program. "
@@ -373,3 +375,130 @@ class IndividualClientExportForm(ExportRecipientMixin, forms.Form):
         super().__init__(*args, **kwargs)
         self.contains_client_identifying_data = True
         self.add_recipient_fields()
+
+
+class PartnerForm(forms.ModelForm):
+    """Form for creating and editing reporting partners."""
+
+    class Meta:
+        model = Partner
+        fields = [
+            "name",
+            "name_fr",
+            "partner_type",
+            "contact_name",
+            "contact_email",
+            "grant_number",
+            "grant_period_start",
+            "grant_period_end",
+            "is_active",
+            "notes",
+        ]
+        labels = {
+            "name": _("Partner name"),
+            "name_fr": _("Partner name (French)"),
+            "partner_type": _("Type"),
+            "contact_name": _("Contact name"),
+            "contact_email": _("Contact email"),
+            "grant_number": _("Grant / agreement number"),
+            "grant_period_start": _("Grant period start"),
+            "grant_period_end": _("Grant period end"),
+            "is_active": _("Active"),
+            "notes": _("Notes"),
+        }
+        widgets = {
+            "grant_period_start": forms.DateInput(attrs={"type": "date"}),
+            "grant_period_end": forms.DateInput(attrs={"type": "date"}),
+            "notes": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["is_active"].initial = True
+
+    def clean(self):
+        cleaned = super().clean()
+        start = cleaned.get("grant_period_start")
+        end = cleaned.get("grant_period_end")
+        if start and end and start > end:
+            raise forms.ValidationError(
+                _("Grant period start must be before grant period end.")
+            )
+        return cleaned
+
+
+# ---------------------------------------------------------------------------
+# Safety Oversight Report forms
+# ---------------------------------------------------------------------------
+
+class OversightReportForm(forms.Form):
+    """Form for generating a safety oversight report."""
+
+    period = forms.ChoiceField(
+        label=_("Reporting Period"),
+        choices=[],
+    )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["period"].choices = self._build_quarter_choices()
+
+    @staticmethod
+    def _build_quarter_choices():
+        """Return (value, label) tuples for last 4 quarters."""
+        import datetime
+
+        today = datetime.date.today()
+        choices = []
+        # Start from the current quarter and go back 4
+        year = today.year
+        quarter = (today.month - 1) // 3 + 1
+
+        for _ in range(4):
+            label = f"Q{quarter} {year}"
+            choices.append((label, label))
+            quarter -= 1
+            if quarter < 1:
+                quarter = 4
+                year -= 1
+
+        return choices
+
+
+class OversightApproveForm(forms.Form):
+    """Attestation form for approving a safety oversight report."""
+
+    narrative = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={"rows": 4, "placeholder": _("Add management observations if applicable...")}),
+        label=_("Management Observations"),
+    )
+    confirm = forms.BooleanField(
+        required=True,
+        label=_("I confirm this report has been reviewed and is ready to file."),
+    )
+
+
+class ReportScheduleForm(forms.ModelForm):
+    """Form for creating or editing a report schedule."""
+
+    class Meta:
+        from .models import ReportSchedule
+
+        model = ReportSchedule
+        fields = [
+            "name", "report_type", "frequency", "due_date",
+            "reminder_days_before",
+        ]
+        widgets = {
+            "due_date": forms.DateInput(attrs={"type": "date"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Wire up aria-describedby for fields with errors (after validation)
+        for field_name in self.errors:
+            if field_name in self.fields:
+                widget = self.fields[field_name].widget
+                widget.attrs["aria-invalid"] = "true"
+                widget.attrs["aria-describedby"] = f"id_{field_name}_error"

@@ -19,6 +19,7 @@ from django.shortcuts import get_object_or_404, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
 from apps.auth_app.decorators import admin_required, requires_permission
@@ -226,7 +227,7 @@ def _build_demographic_map(metric_values, grouping_type, grouping_field, as_of_d
         for cv in values:
             raw_value = cv.get_value()
             if not raw_value:
-                client_demographic_map[cv.client_file_id] = "Unknown"
+                client_demographic_map[cv.client_file_id] = _("Unknown")
             else:
                 display_value = option_labels.get(raw_value, raw_value)
                 client_demographic_map[cv.client_file_id] = display_value
@@ -234,7 +235,7 @@ def _build_demographic_map(metric_values, grouping_type, grouping_field, as_of_d
         # Mark clients without a value as Unknown
         for client_id in client_ids:
             if client_id not in client_demographic_map:
-                client_demographic_map[client_id] = "Unknown"
+                client_demographic_map[client_id] = _("Unknown")
 
     return client_demographic_map
 
@@ -254,12 +255,12 @@ def _get_grouping_label(group_by_value, grouping_field):
         return None
 
     if group_by_value == "age_range":
-        return "Age Range"
+        return _("Age Range")
 
     if grouping_field:
         return grouping_field.name
 
-    return "Demographic Group"
+    return _("Demographic Group")
 
 
 def _write_achievement_csv(writer, achievement_summary, program):
@@ -270,21 +271,21 @@ def _write_achievement_csv(writer, achievement_summary, program):
     all roles.
     """
     writer.writerow([])  # blank separator
-    writer.writerow(sanitise_csv_row(["# ===== ACHIEVEMENT RATE SUMMARY ====="]))
+    writer.writerow(sanitise_csv_row([_("# ===== ACHIEVEMENT RATE SUMMARY =====")]))
     ach_total = suppress_small_cell(achievement_summary["total_clients"], program)
     ach_met = suppress_small_cell(achievement_summary["clients_met_any_target"], program)
     if isinstance(ach_total, str) or isinstance(ach_met, str):
         writer.writerow(sanitise_csv_row([
-            f"# Overall: {ach_met} of {ach_total} clients met at least one target"
+            _("# Overall: %(met)s of %(total)s clients met at least one target")
+            % {"met": ach_met, "total": ach_total}
         ]))
     elif achievement_summary["total_clients"] > 0:
         writer.writerow(sanitise_csv_row([
-            f"# Overall: {ach_met} of "
-            f"{ach_total} clients "
-            f"({achievement_summary['overall_rate']}%) met at least one target"
+            _("# Overall: %(met)s of %(total)s clients (%(rate)s%%) met at least one target")
+            % {"met": ach_met, "total": ach_total, "rate": achievement_summary['overall_rate']}
         ]))
     else:
-        writer.writerow(sanitise_csv_row(["# No client data available for achievement calculation"]))
+        writer.writerow(sanitise_csv_row([_("# No client data available for achievement calculation")]))
 
     for metric in achievement_summary.get("by_metric", []):
         m_total = suppress_small_cell(metric["total_clients"], program)
@@ -292,19 +293,19 @@ def _write_achievement_csv(writer, achievement_summary, program):
         if metric["has_target"]:
             if isinstance(m_total, str) or isinstance(m_met, str):
                 writer.writerow(sanitise_csv_row([
-                    f"# {metric['metric_name']}: {m_met} of {m_total} clients "
-                    f"met target of {metric['target_value']}"
+                    _("# %(name)s: %(met)s of %(total)s clients met target of %(target)s")
+                    % {"name": metric['metric_name'], "met": m_met, "total": m_total, "target": metric['target_value']}
                 ]))
             else:
                 writer.writerow(sanitise_csv_row([
-                    f"# {metric['metric_name']}: {m_met} of "
-                    f"{m_total} clients ({metric['achievement_rate']}%) "
-                    f"met target of {metric['target_value']}"
+                    _("# %(name)s: %(met)s of %(total)s clients (%(rate)s%%) met target of %(target)s")
+                    % {"name": metric['metric_name'], "met": m_met, "total": m_total,
+                       "rate": metric['achievement_rate'], "target": metric['target_value']}
                 ]))
         else:
             writer.writerow(sanitise_csv_row([
-                f"# {metric['metric_name']}: {m_total} clients "
-                "(no target defined)"
+                _("# %(name)s: %(total)s clients (no target defined)")
+                % {"name": metric['metric_name'], "total": m_total}
             ]))
 
 
@@ -639,7 +640,7 @@ def export_form(request):
             writer.writerow(sanitise_csv_row([f"# Program: {program.name}"]))
             writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
             writer.writerow(sanitise_csv_row([f"# Total Participants: {total_clients_display}"]))
-            writer.writerow(sanitise_csv_row(["# Export Mode: Aggregate Summary"]))
+            writer.writerow(sanitise_csv_row([_("# Export Mode: Aggregate Summary")]))
             if grouping_type != "none":
                 writer.writerow(sanitise_csv_row([f"# Grouped By: {grouping_label}"]))
 
@@ -651,7 +652,7 @@ def export_form(request):
 
             # Aggregate data table — NO client record IDs, NO author names
             writer.writerow(sanitise_csv_row([
-                "Metric Name", "Participants Measured", "Data Points", "Average", "Min", "Max",
+                _("Metric Name"), _("Participants Measured"), _("Data Points"), _("Average"), _("Min"), _("Max"),
             ]))
             for agg_row in aggregate_rows:
                 writer.writerow(sanitise_csv_row([
@@ -668,7 +669,7 @@ def export_form(request):
                 writer.writerow([])
                 writer.writerow(sanitise_csv_row([f"# ===== BREAKDOWN BY {grouping_label.upper()} ====="]))
                 writer.writerow(sanitise_csv_row([
-                    grouping_label, "Metric Name", "Participants Measured", "Average", "Min", "Max",
+                    grouping_label, _("Metric Name"), _("Participants Measured"), _("Average"), _("Min"), _("Max"),
                 ]))
                 for demo_row in demographic_aggregate_rows:
                     writer.writerow(sanitise_csv_row([
@@ -686,7 +687,7 @@ def export_form(request):
                     writer.writerow([])
                     writer.writerow(sanitise_csv_row([f"# ===== {section['label'].upper()} ====="]))
                     writer.writerow(sanitise_csv_row([
-                        section["label"], "Metric Name", "Participants Measured", "Average", "Min", "Max",
+                        section["label"], _("Metric Name"), _("Participants Measured"), _("Average"), _("Min"), _("Max"),
                     ]))
                     for demo_row in section["rows"]:
                         writer.writerow(sanitise_csv_row([
@@ -736,7 +737,7 @@ def export_form(request):
 
             # Add demographic group if grouping is enabled
             if grouping_type != "none":
-                row["demographic_group"] = client_demographic_map.get(client.pk, "Unknown")
+                row["demographic_group"] = client_demographic_map.get(client.pk, _("Unknown"))
 
             rows.append(row)
 
@@ -778,14 +779,14 @@ def export_form(request):
 
             # Column headers — include demographic column if grouping enabled
             if grouping_type != "none":
-                writer.writerow(sanitise_csv_row([grouping_label, "Client Record ID", "Goal", "Metric Name", "Value", "Date", "Author"]))
+                writer.writerow(sanitise_csv_row([grouping_label, _("Client Record ID"), _("Goal"), _("Metric Name"), _("Value"), _("Date"), _("Author")]))
             else:
-                writer.writerow(sanitise_csv_row(["Client Record ID", "Goal", "Metric Name", "Value", "Date", "Author"]))
+                writer.writerow(sanitise_csv_row([_("Client Record ID"), _("Goal"), _("Metric Name"), _("Value"), _("Date"), _("Author")]))
 
             for row in rows:
                 if grouping_type != "none":
                     writer.writerow(sanitise_csv_row([
-                        row.get("demographic_group", "Unknown"),
+                        row.get("demographic_group", _("Unknown")),
                         row["record_id"],
                         row.get("goal_name", ""),
                         row["metric_name"],
@@ -1212,6 +1213,7 @@ def funder_report_form(request):
             "recipient": recipient,
             "secure_link_id": str(link.id),
             "report_template": report_template.name if report_template else None,
+            "partner": report_template.partner.name if report_template and report_template.partner else None,
         },
     )
 
@@ -1365,7 +1367,6 @@ def team_meeting_view(request):
     from datetime import timedelta
 
     from django.db.models import Count, Max, Q
-    from django.utils.translation import gettext as _
 
     from apps.auth_app.decorators import _get_user_highest_role
     from apps.auth_app.constants import ROLE_RANK
@@ -1503,7 +1504,6 @@ def revoke_export_link(request, link_id):
     from django.contrib import messages
     from django.http import HttpResponseNotAllowed
     from django.shortcuts import redirect
-    from django.utils.translation import gettext as _
 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])

@@ -538,12 +538,24 @@ class Command(BaseCommand):
 
     def _seed_demo_reporting_template(self, programs):
         """Create a demo-only report template with a sample funder profile."""
-        from apps.reports.models import DemographicBreakdown, ReportTemplate
+        from apps.reports.models import DemographicBreakdown, Partner, ReportTemplate
+
+        partner_name = "Canadian Community Foundation"
+        partner, partner_created = Partner.objects.get_or_create(
+            name=partner_name,
+            defaults={
+                "partner_type": "funder",
+                "contact_name": "Demo Contact",
+                "contact_email": "demo@example.com",
+            },
+        )
+        partner.programs.set(programs)
 
         profile_name = "Canadian Community Foundation — Quarterly Outcomes"
         profile, created = ReportTemplate.objects.get_or_create(
             name=profile_name,
             defaults={
+                "partner": partner,
                 "description": (
                     "Matches the demographic breakdown required by the "
                     "Canadian Community Foundation for quarterly outcome "
@@ -552,6 +564,10 @@ class Command(BaseCommand):
                 ),
             },
         )
+        # Ensure partner is set even if template already exists
+        if not profile.partner:
+            profile.partner = partner
+            profile.save(update_fields=["partner"])
 
         if created:
             DemographicBreakdown.objects.create(
@@ -568,14 +584,13 @@ class Command(BaseCommand):
                 sort_order=0,
             )
 
-        profile.programs.set(programs)
         if created:
             self.stdout.write(
-                f"  Demo report template: '{profile_name}' created."
+                f"  Demo report template: '{profile_name}' created with partner '{partner_name}'."
             )
         else:
             self.stdout.write(
-                f"  Demo report template: '{profile_name}' already exists; programs synced."
+                f"  Demo report template: '{profile_name}' already exists; partner synced."
             )
 
     def _update_demo_client_fields(self):

@@ -17,12 +17,15 @@
             <dd>{{ profile.created_at|date:"Y-m-d H:i" }}{% if profile.created_by %} {% trans "by" %} {{ profile.created_by.display_name }}{% endif %}</dd>
             <dt>{% trans "Breakdowns" %}</dt>
             <dd>{{ profile.breakdowns.count }}</dd>
-            <dt>{% trans "Linked Programs" %}</dt>
+            <dt>{% trans "Partner" %}</dt>
             <dd>
-                {% if profile.programs.all %}
-                    {% for p in profile.programs.all %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                {% if profile.partner %}
+                    <a href="{% url 'admin_settings:partner_detail' profile.partner.pk %}">{{ profile.partner.name }}</a>
+                    {% if profile.partner.programs.all %}
+                        <br><small class="secondary">{% trans "Programs" %}: {% for p in profile.partner.programs.all %}{{ p.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</small>
+                    {% endif %}
                 {% else %}
-                    <em>{% trans "No programs linked" %}</em>
+                    <em>{% trans "No partner assigned" %}</em>
                 {% endif %}
             </dd>
         </dl>
@@ -81,7 +84,7 @@
 {% endfor %}
 
 <div style="margin-top: 1.5rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-    <a href="{% url 'admin_settings:report_template_edit_programs' profile.pk %}" role="button" class="outline">{% trans "Edit Programs" %}</a>
+    {% if profile.partner %}<a href="{% url 'admin_settings:partner_detail' profile.partner.pk %}" role="button" class="outline">{% trans "View Partner" %}</a>{% endif %}
     <a href="{% url 'admin_settings:report_template_download_csv' profile.pk %}" role="button" class="outline secondary">{% trans "Download CSV" %}</a>
     <a href="{% url 'admin_settings:report_template_delete' profile.pk %}" role="button" class="outline" style="color: var(--kn-danger-fg); border-color: var(--kn-danger-fg);">{% trans "Delete Template" %}</a>
 </div>

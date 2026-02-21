@@ -23,6 +23,15 @@ msgstr "Passer au contenu principal"
 msgid "Reports"
 msgstr "Rapports"
 
+msgid "No grouping"
+msgstr "Aucun regroupement"
+
+msgid "Age Range"
+msgstr "Tranche d'âge"
+
+msgid "Demographic Group"
+msgstr "Groupe démographique"
+
 msgid "Admin"
 msgstr "Administration"
 
@@ -1087,9 +1096,7 @@ msgid ""
 "appear below."
 msgstr ""
 "Cochez les %(targets)s que vous souhaitez enregistrer. Seuls ceux "
-"sélectionnés apparaîtront ci-dessous.Cochez les %(targets)s pour lesquels "
-"vous souhaitez enregistrer des données. Seuls ceux sélectionnés apparaîtront"
-" ci-dessous."
+"sélectionnés apparaîtront ci-dessous."
 
 #, python-format
 msgid "No active %(targets)s found."
@@ -3848,6 +3855,9 @@ msgstr "Suggestions de mesures par IA"
 
 msgid "Access Log"
 msgstr "Journal d'accès"
+
+msgid "Access log entries"
+msgstr "Entrées du journal d'accès"
 
 msgid "Add Member"
 msgstr "Ajouter un membre"
@@ -13615,3 +13625,686 @@ msgstr "Commencé à"
 #, python-format
 msgid "Your last session was recorded on %(date)s."
 msgstr "Votre dernière séance a été enregistrée le %(date)s."
+
+msgid "1=Jan, 4=Apr (Ontario govt), 7=Jul, etc."
+msgstr "1=jan., 4=avr. (gouv. de l'Ontario), 7=juill., etc."
+
+msgid "Accreditation Body"
+msgstr "Organisme d'accréditation"
+
+msgid "Add a reporting partner — funder, network, board, or other."
+msgstr ""
+"Ajouter un partenaire de rapport — bailleur de fonds, réseau, conseil ou "
+"autre."
+
+msgid "Annual"
+msgstr "Annuel"
+
+msgid "Assign to Partner"
+msgstr "Attribuer à un partenaire"
+
+msgid "Average change (intake to latest)"
+msgstr "Changement moyen (de l'admission au plus récent)"
+
+msgid "Average value"
+msgstr "Valeur moyenne"
+
+msgid "Bilingual"
+msgstr "Bilingue"
+
+msgid "Board of Directors"
+msgstr "Conseil d'administration"
+
+msgid "Calendar year (Jan-Dec)"
+msgstr "Année civile (jan.-déc.)"
+
+msgid "Chart / Visualisation"
+msgstr "Graphique / Visualisation"
+
+msgid "Contact email"
+msgstr "Courriel du contact"
+
+msgid "Contact name"
+msgstr "Nom du contact"
+
+msgid "Count meeting threshold"
+msgstr "Compte atteignant le seuil"
+
+msgid "Count of participants"
+msgstr "Compte de participants"
+
+msgid "Create Partner"
+msgstr "Créer un partenaire"
+
+msgid "Delete Partner"
+msgstr "Supprimer le partenaire"
+
+msgid "Demographic Summary"
+msgstr "Sommaire démographique"
+
+msgid "Description of the reporting requirements."
+msgstr "Description des exigences de rapport."
+
+msgid "Donor"
+msgstr "Donateur"
+
+msgid "Edit Partner"
+msgstr "Modifier le partenaire"
+
+msgid "Fiscal year (custom start month)"
+msgstr "Année fiscale (mois de début personnalisé)"
+
+msgid "For threshold-based aggregation: the target value."
+msgstr "Pour l'agrégation basée sur un seuil : la valeur cible."
+
+msgid "French name (optional)."
+msgstr "Nom en français (facultatif)."
+
+msgid "Funder"
+msgstr "Bailleur de fonds"
+
+msgid "Government / Regulator"
+msgstr "Gouvernement / Organisme de réglementation"
+
+msgid "Grant / agreement number"
+msgstr "Numéro de subvention / entente"
+
+msgid "Grant Number"
+msgstr "Numéro de subvention"
+
+msgid "Grant Period"
+msgstr "Période de subvention"
+
+msgid "Grant or contribution agreement number (if applicable)."
+msgstr "Numéro de subvention ou d'entente de contribution (le cas échéant)."
+
+msgid "Grant period"
+msgstr "Période de subvention"
+
+msgid "Grant period end"
+msgstr "Fin de la période de subvention"
+
+msgid "Grant period start"
+msgstr "Début de la période de subvention"
+
+msgid "Grant period start must be before grant period end."
+msgstr ""
+"Le début de la période de subvention doit être avant la fin de la période de"
+" subvention."
+
+msgid "Guidance for narrative sections (what to write about)."
+msgstr "Directives pour les sections narratives (quoi rédiger)."
+
+msgid "How often this report is produced."
+msgstr "À quelle fréquence ce rapport est produit."
+
+msgid "How the reporting period aligns with the calendar."
+msgstr "Comment la période de rapport s'aligne avec le calendrier."
+
+msgid "How this metric should be aggregated in the report."
+msgstr "Comment cet indicateur devrait être agrégé dans le rapport."
+
+msgid ""
+"If no programs are selected, this partner's templates will be available for "
+"all active programs."
+msgstr ""
+"Si aucun programme n'est sélectionné, les modèles de ce partenaire seront "
+"disponibles pour tous les programmes actifs."
+
+msgid "Manage Partners"
+msgstr "Gérer les partenaires"
+
+msgid "Manage Programs"
+msgstr "Gérer les programmes"
+
+msgid ""
+"Manage reporting partners (funders, networks, boards) and their report "
+"templates."
+msgstr ""
+"Gérer les partenaires de rapport (bailleurs de fonds, réseaux, conseils) et "
+"leurs modèles de rapport."
+
+msgid "Manage reporting partners — funders, networks, boards, and more."
+msgstr ""
+"Gérer les partenaires de rapport — bailleurs de fonds, réseaux, conseils et "
+"plus."
+
+msgid "Metrics Table"
+msgstr "Tableau de métriques"
+
+msgid "Mixed — narrative and tables"
+msgstr "Mixte — narratif et tableaux"
+
+msgid "Monthly"
+msgstr "Mensuel"
+
+msgid "Name (French)"
+msgstr "Nom (français)"
+
+msgid "Narrative / Written Section"
+msgstr "Narratif / Section écrite"
+
+msgid "Narrative with data"
+msgstr "Narratif avec données"
+
+msgid "Network / Collaboration"
+msgstr "Réseau / Collaboration"
+
+msgid "New Partner"
+msgstr "Nouveau partenaire"
+
+msgid "No partner assigned"
+msgstr "Aucun partenaire attribué"
+
+msgid "No partners configured"
+msgstr "Aucun partenaire configuré"
+
+msgid ""
+"No partners have been added yet. Create your first partner to start linking "
+"report templates."
+msgstr ""
+"Aucun partenaire n'a encore été ajouté. Créez votre premier partenaire pour "
+"commencer à lier des modèles de rapport."
+
+msgid "No programs linked — all active programs will be included."
+msgstr "Aucun programme lié — tous les programmes actifs seront inclus."
+
+msgid "No report templates linked to this partner yet."
+msgstr "Aucun modèle de rapport lié à ce partenaire pour le moment."
+
+msgid "Only active programs are shown."
+msgstr "Seuls les programmes actifs sont affichés."
+
+msgid "Override label for this partner's terminology."
+msgstr "Étiquette de remplacement pour la terminologie de ce partenaire."
+
+msgid "Partner"
+msgstr "Partenaire"
+
+msgid "Partner \"%(name)s\" created."
+msgstr "Partenaire « %(name)s » créé."
+
+msgid "Partner \"%(name)s\" deleted."
+msgstr "Partenaire « %(name)s » supprimé."
+
+msgid "Partner \"%(name)s\" updated."
+msgstr "Partenaire « %(name)s » mis à jour."
+
+msgid "Partner Name"
+msgstr "Nom du partenaire"
+
+msgid "Partner name"
+msgstr "Nom du partenaire"
+
+msgid "Partner name (French)"
+msgstr "Nom du partenaire (français)"
+
+msgid "Partner name, e.g., 'United Way Greater Toronto'."
+msgstr "Nom du partenaire, p. ex. « Centraide du Grand Toronto »."
+
+msgid "Partners"
+msgstr "Partenaires"
+
+msgid "Partners & Reports"
+msgstr "Partenaires et rapports"
+
+msgid "Percentage meeting threshold"
+msgstr "Pourcentage atteignant le seuil"
+
+msgid "Percentage of participants"
+msgstr "Pourcentage de participants"
+
+msgid "Please create a partner first before uploading a report template."
+msgstr ""
+"Veuillez d'abord créer un partenaire avant de téléverser un modèle de "
+"rapport."
+
+msgid "Programs are now managed on the partner. Redirecting."
+msgstr "Les programmes sont maintenant gérés sur le partenaire. Redirection."
+
+msgid "Programs updated for partner \"%(name)s\"."
+msgstr "Programmes mis à jour pour le partenaire « %(name)s »."
+
+msgid "Quarterly"
+msgstr "Trimestriel"
+
+msgid "Save Programs"
+msgstr "Enregistrer les programmes"
+
+msgid ""
+"Select the partner (funder, network, etc.) this report template belongs to. "
+"Programs are managed on the partner."
+msgstr ""
+"Sélectionnez le partenaire (bailleur de fonds, réseau, etc.) auquel ce "
+"modèle de rapport appartient. Les programmes sont gérés sur le partenaire."
+
+msgid "Semi-annual"
+msgstr "Semestriel"
+
+msgid "Sum total"
+msgstr "Somme totale"
+
+msgid "Tables and charts"
+msgstr "Tableaux et graphiques"
+
+msgid "Template name, e.g., 'Quarterly Outcomes Report'."
+msgstr "Nom du modèle, p. ex. « Rapport trimestriel sur les résultats »."
+
+msgid "The partner this report template belongs to."
+msgstr "Le partenaire auquel ce modèle de rapport appartient."
+
+msgid "This template has no partner assigned. Please assign a partner first."
+msgstr ""
+"Ce modèle n'a aucun partenaire attribué. Veuillez d'abord attribuer un "
+"partenaire."
+
+msgid "Type of reporting relationship."
+msgstr "Type de relation de rapport."
+
+msgid "Update this partner's details."
+msgstr "Mettre à jour les détails de ce partenaire."
+
+msgid "View Partner"
+msgstr "Voir le partenaire"
+
+msgid "Whether this metric is required by a consortium standard schema."
+msgstr ""
+"Indique si cet indicateur est requis par un schéma standard de consortium."
+
+msgid "Yes, Delete Partner"
+msgstr "Oui, supprimer le partenaire"
+
+msgid "— Select a partner —"
+msgstr "— Sélectionner un partenaire —"
+
+msgid "← Back to Partners"
+msgstr "← Retour aux partenaires"
+
+msgid "Active Participants"
+msgstr "Participants actifs"
+
+msgid "Active Staff"
+msgstr "Personnel actif"
+
+msgid "Active at End"
+msgstr "Actives en fin de période"
+
+msgid "Active at Quarter End"
+msgstr "Actives en fin de trimestre"
+
+msgid "Add management observations if applicable..."
+msgstr "Ajoutez des observations de la direction, le cas échéant…"
+
+msgid ""
+"Aggregate alert counts per program. No individual participant details are "
+"shown."
+msgstr ""
+"Nombre total d'alertes par programme. Aucun détail individuel sur les "
+"participants n'est affiché."
+
+msgid "Alerts Raised"
+msgstr "Alertes signalées"
+
+msgid "Alerts Resolved"
+msgstr "Alertes résolues"
+
+msgid "Annually"
+msgstr "Annuellement"
+
+msgid "Approve and File"
+msgstr "Approuver et classer"
+
+msgid "Attestation"
+msgstr "Attestation"
+
+msgid "Back to Executive Dashboard"
+msgstr "Retour au tableau de bord de la direction"
+
+msgid "Counts below 5 are suppressed for privacy."
+msgstr "Les nombres inférieurs à 5 sont masqués pour protéger la vie privée."
+
+msgid "Create Schedule"
+msgstr "Créer un calendrier"
+
+msgid "Download PDF"
+msgstr "Télécharger le PDF"
+
+msgid "Due Soon"
+msgstr "Échéance proche"
+
+msgid "Edit Schedule"
+msgstr "Modifier le calendrier"
+
+msgid "External"
+msgstr "Externe"
+
+msgid "External view: counts below 5 are suppressed for privacy."
+msgstr ""
+"Vue externe : les nombres inférieurs à 5 sont masqués pour protéger la vie "
+"privée."
+
+msgid "Frequency"
+msgstr "Fréquence"
+
+msgid "Generate"
+msgstr "Générer"
+
+msgid "Generate New Report"
+msgstr "Générer un nouveau rapport"
+
+msgid "Generate Safety Oversight Report"
+msgstr "Générer le rapport de surveillance de la sécurité"
+
+msgid "Generated"
+msgstr "Généré"
+
+msgid "Health Indicators"
+msgstr "Indicateurs de santé"
+
+msgid "I confirm this report has been reviewed and is ready to file."
+msgstr "Je confirme que ce rapport a été révisé et est prêt à être classé."
+
+msgid "Internal"
+msgstr "Interne"
+
+msgid "Key Metrics"
+msgstr "Indicateurs clés"
+
+msgid "Manage Schedules"
+msgstr "Gérer les calendriers"
+
+msgid "Management Observations"
+msgstr "Observations de la direction"
+
+msgid "Median Resolution (days)"
+msgstr "Résolution médiane (jours)"
+
+msgid "Next Due"
+msgstr "Prochaine échéance"
+
+msgid "No aging alerts (older than 14 days)"
+msgstr "Aucune alerte ancienne (plus de 14 jours)"
+
+msgid "No oversight reports have been generated yet."
+msgstr "Aucun rapport de surveillance n'a encore été généré."
+
+msgid "No pending cancellation reviews"
+msgstr "Aucune révision d'annulation en attente"
+
+msgid "No program concentration detected"
+msgstr "Aucune concentration de programme détectée"
+
+msgid "No programs found."
+msgstr "Aucun programme trouvé."
+
+msgid "No report schedules have been set up yet."
+msgstr "Aucun calendrier de rapport n'a encore été configuré."
+
+msgid "Notable"
+msgstr "Notable"
+
+msgid "Notable Items"
+msgstr "Éléments notables"
+
+msgid "Notes Recorded"
+msgstr "Notes enregistrées"
+
+msgid "Older than 14 days"
+msgstr "Plus de 14 jours"
+
+msgid "Overdue"
+msgstr "En retard"
+
+msgid "Overdue:"
+msgstr "En retard :"
+
+msgid "Paused"
+msgstr "En pause"
+
+msgid "Period"
+msgstr "Période"
+
+msgid "Please log in to generate and submit this report before the deadline."
+msgstr ""
+"Veuillez vous connecter pour générer et soumettre ce rapport avant la date "
+"limite."
+
+msgid "Program Breakdown"
+msgstr "Répartition par programme"
+
+msgid "Quarterly safety reports for board, funders, and accreditation."
+msgstr ""
+"Rapports de sécurité trimestriels pour le conseil, les bailleurs de fonds et"
+" l'accréditation."
+
+msgid "Report Deadline Reminder"
+msgstr "Rappel de la date limite du rapport"
+
+msgid "Report Schedules"
+msgstr "Calendriers des rapports"
+
+msgid ""
+"Review the report above, add any management observations, then approve to "
+"file this report."
+msgstr ""
+"Révisez le rapport ci-dessus, ajoutez des observations de la direction si "
+"nécessaire, puis approuvez pour classer ce rapport."
+
+msgid "Routine"
+msgstr "Routine"
+
+msgid "Safety Alerts"
+msgstr "Alertes de sécurité"
+
+msgid "Safety Alerts by Program"
+msgstr "Alertes de sécurité par programme"
+
+msgid "Safety Oversight"
+msgstr "Surveillance de la sécurité"
+
+msgid "Safety Oversight Report"
+msgstr "Rapport de surveillance de la sécurité"
+
+msgid "Safety Oversight Reports"
+msgstr "Rapports de surveillance de la sécurité"
+
+msgid "Schedules"
+msgstr "Calendriers"
+
+msgid ""
+"Select the reporting period. The system will compute aggregate safety "
+"metrics and determine whether the quarter was routine or notable."
+msgstr ""
+"Sélectionnez la période de déclaration. Le système calculera les indicateurs"
+" de sécurité agrégés et déterminera si le trimestre était routine ou "
+"notable."
+
+msgid "Set up recurring report deadlines with automatic reminders."
+msgstr ""
+"Configurez des dates limites récurrentes pour les rapports avec des rappels "
+"automatiques."
+
+msgid "System Activity"
+msgstr "Activité du système"
+
+msgid ""
+"This is an automated reminder. No participant data is included in this "
+"message."
+msgstr ""
+"Ceci est un rappel automatisé. Aucune donnée de participant n'est incluse "
+"dans ce message."
+
+msgid "Upcoming:"
+msgstr "À venir :"
+
+msgid "View by program"
+msgstr "Voir par programme"
+
+msgid "View schedules"
+msgstr "Voir les calendriers"
+
+msgid "due"
+msgstr "échéance"
+
+msgid "older than 14 days"
+msgstr "plus de 14 jours"
+
+msgid "pending review"
+msgstr "en attente de révision"
+
+msgid ""
+"Based on staff assessments across all goals. Each assessment reflects the "
+"worker's judgment of how a participant is progressing — regardless of which "
+"specific metrics are tracked. Rising green ('In a good place') and blue "
+"('Something's shifting') lines mean more people are moving forward."
+msgstr ""
+"Basé sur les évaluations du personnel pour tous les objectifs. Chaque "
+"évaluation reflète le jugement de l'intervenant·e sur la progression du "
+"participant — peu importe les indicateurs suivis. Les lignes vertes (« En "
+"bonne posture ») et bleues (« Quelque chose bouge ») montrent que plus de "
+"personnes progressent."
+
+msgid ""
+"Choose the one metric most meaningful to both of you. You can change it "
+"later."
+msgstr ""
+"Choisissez l'indicateur le plus significatif pour vous deux. Vous pourrez le"
+" modifier plus tard."
+
+msgid "I don't feel heard by my worker"
+msgstr "Je ne me sens pas écouté·e par mon intervenant·e"
+
+msgid "I really trust my worker"
+msgstr "J'ai vraiment confiance en mon intervenant·e"
+
+msgid "My worker and I aren't on the same page"
+msgstr "Mon intervenant·e et moi ne sommes pas sur la même longueur d'onde"
+
+msgid "My worker gets what I need"
+msgstr "Mon intervenant·e comprend ce dont j'ai besoin"
+
+msgid "Participant self-rated"
+msgstr "Auto-évaluation du participant"
+
+msgid "Ratings of 1–3 are normal and helpful — they tell you what to adjust."
+msgstr ""
+"Les évaluations de 1 à 3 sont normales et utiles — elles vous indiquent quoi"
+" ajuster."
+
+msgid "Skip today"
+msgstr "Passer aujourd'hui"
+
+msgid "We're working okay together"
+msgstr "On travaille bien ensemble"
+
+msgid "Which measurement will best help you both see progress?"
+msgstr "Quel indicateur vous aidera le mieux à voir les progrès?"
+
+msgid "Who rated?"
+msgstr "Qui a évalué?"
+
+msgid "Worker observed"
+msgstr "Observation de l'intervenant·e"
+
+msgid "Working relationship check-in"
+msgstr "Bilan de la relation de travail"
+
+msgid "Working relationship rating"
+msgstr "Évaluation de la relation de travail"
+
+msgid "Working relationship:"
+msgstr "Relation de travail :"
+
+msgid "Fail"
+msgstr "Échec"
+
+msgid "Pass"
+msgstr "Réussi"
+
+msgid ""
+"# %(name)s: %(met)s of %(total)s clients (%(rate)s%%) met target of "
+"%(target)s"
+msgstr ""
+"# %(name)s : %(met)s sur %(total)s clients (%(rate)s %%) ont atteint la "
+"cible de %(target)s"
+
+msgid "# %(name)s: %(met)s of %(total)s clients met target of %(target)s"
+msgstr "# %(name)s : %(met)s sur %(total)s clients ont atteint la cible de %(target)s"
+
+msgid "# %(name)s: %(total)s clients (no target defined)"
+msgstr "# %(name)s : %(total)s clients (aucune cible définie)"
+
+msgid "# ===== ACHIEVEMENT RATE SUMMARY ====="
+msgstr "# ===== RÉSUMÉ DU TAUX D'ATTEINTE ====="
+
+msgid "# Export Mode: Aggregate Summary"
+msgstr "# Mode d'exportation : Résumé agrégé"
+
+msgid "# No client data available for achievement calculation"
+msgstr "# Aucune donnée client disponible pour le calcul d'atteinte"
+
+msgid ""
+"# Overall: %(met)s of %(total)s clients (%(rate)s%%) met at least one target"
+msgstr ""
+"# Global : %(met)s sur %(total)s clients (%(rate)s %%) ont atteint au moins "
+"une cible"
+
+msgid "# Overall: %(met)s of %(total)s clients met at least one target"
+msgstr "# Global : %(met)s sur %(total)s clients ont atteint au moins une cible"
+
+msgid "AGE DEMOGRAPHICS"
+msgstr "DONNÉES DÉMOGRAPHIQUES PAR ÂGE"
+
+msgid "Clients Achieving Target"
+msgstr "Clients ayant atteint la cible"
+
+msgid "Clients Measured"
+msgstr "Clients mesurés"
+
+msgid "Clients Meeting Any Target"
+msgstr "Clients ayant atteint au moins une cible"
+
+msgid "Contact Attempts (no answer/left message)"
+msgstr "Tentatives de contact (sans réponse/message laissé)"
+
+msgid ""
+"DRAFT — Verify this format matches reporting requirements before submission"
+msgstr ""
+"ÉBAUCHE — Vérifiez que ce format correspond aux exigences de rapport avant "
+"de soumettre"
+
+msgid "Demographic Profile: %(name)s"
+msgstr "Profil démographique : %(name)s"
+
+msgid "Generated: %(date)s"
+msgstr "Généré : %(date)s"
+
+msgid "ORGANISATION INFORMATION"
+msgstr "INFORMATIONS SUR L'ORGANISME"
+
+msgid "OUTCOME INDICATORS"
+msgstr "INDICATEURS DE RÉSULTATS"
+
+msgid "OVERALL SUMMARY"
+msgstr "RÉSUMÉ GLOBAL"
+
+msgid "PRIMARY OUTCOME"
+msgstr "RÉSULTAT PRINCIPAL"
+
+msgid "PROGRAM OUTCOME REPORT TEMPLATE"
+msgstr "MODÈLE DE RAPPORT DE RÉSULTATS DU PROGRAMME"
+
+msgid "SECONDARY OUTCOMES"
+msgstr "RÉSULTATS SECONDAIRES"
+
+msgid "SERVICE STATISTICS"
+msgstr "STATISTIQUES DE SERVICE"
+
+msgid "Successful Contacts"
+msgstr "Contacts réussis"
+
+msgid "Total Clients with Outcome Data"
+msgstr "Total des clients avec données de résultats"
+
+msgid "Please select a valid partner."
+msgstr "Veuillez sélectionner un partenaire valide."

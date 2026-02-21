@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% blocktrans with name=partner.name %}Manage Programs — {{ name }}{% endblocktrans %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Manage Programs" %}</h1>
+    <p>{% blocktrans with name=partner.name %}Select which programs are linked to {{ name }}. Linked programs determine which report templates appear in exports.{% endblocktrans %}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    <fieldset>
+        <legend>{% trans "Programs" %}</legend>
+        <p><small>{% trans "Only active programs are shown." %}</small></p>
+
+        {% for program in all_programs %}
+        <label>
+            <input type="checkbox" name="program_ids" value="{{ program.pk }}"
+                {% if program.pk in linked_ids %}checked{% endif %}>
+            {{ program.name }}
+        </label>
+        {% empty %}
+        <p>{% trans "No active programs found." %}</p>
+        {% endfor %}
+    </fieldset>
+
+    <p><small>{% trans "If no programs are selected, this partner's templates will be available for all active programs." %}</small></p>
+
+    <div style="margin-top: 1rem;">
+        <button type="submit">{% trans "Save Programs" %}</button>
+        <a href="{% url 'admin_settings:partner_detail' partner.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+
+<p style="margin-top: 1.5rem;"><a href="{% url 'admin_settings:partner_detail' partner.pk %}">{% blocktrans with name=partner.name %}← Back to {{ name }}{% endblocktrans %}</a></p>
+{% endblock %}

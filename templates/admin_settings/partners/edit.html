@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% blocktrans with name=partner.name %}Edit {{ name }}{% endblocktrans %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% blocktrans with name=partner.name %}Edit {{ name }}{% endblocktrans %}</h1>
+    <p>{% trans "Update this partner's details." %}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <label>
+        {{ field.label }}
+        {{ field }}
+        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+    </label>
+    {% if field.errors %}
+    <small style="color: var(--kn-danger-fg);">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% endfor %}
+
+    <div style="margin-top: 1rem;">
+        <button type="submit">{% trans "Save Changes" %}</button>
+        <a href="{% url 'admin_settings:partner_detail' partner.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+
+<p style="margin-top: 1.5rem;"><a href="{% url 'admin_settings:partner_detail' partner.pk %}">{% blocktrans with name=partner.name %}← Back to {{ name }}{% endblocktrans %}</a></p>
+{% endblock %}

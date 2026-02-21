@@ -18,10 +18,16 @@
             <div class="stat-value">{{ executive_data.overdue_followups }}</div>
             <div class="stat-label">{% trans "Overdue Follow-ups" %}</div>
         </article>
-        {% if executive_data.show_alerts and executive_data.active_alerts is not None %}
-        <article class="stat-card {% if executive_data.active_alerts > 0 %}stat-alert{% endif %}">
-            <div class="stat-value">{{ executive_data.active_alerts }}</div>
+        {% if executive_data.show_alerts and executive_data.alert_oversight %}
+        <article class="stat-card {% if executive_data.alert_oversight.active > 0 %}stat-alert{% endif %}">
+            <div class="stat-value">{{ executive_data.alert_oversight.active }}</div>
             <div class="stat-label">{% trans "Active Safety Alerts" %}</div>
+            {% if executive_data.alert_oversight.aging > 0 %}
+            <div class="stat-detail stat-warning-text">{{ executive_data.alert_oversight.aging }} {% trans "older than 14 days" %}</div>
+            {% endif %}
+            {% if executive_data.alert_oversight.pending_cancellation > 0 %}
+            <div class="stat-detail">{{ executive_data.alert_oversight.pending_cancellation }} {% trans "pending review" %}</div>
+            {% endif %}
         </article>
         {% endif %}
         {% if executive_data.total_suggestions_important > 0 %}

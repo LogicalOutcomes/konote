@@ -16,6 +16,7 @@ from unittest.mock import patch
 from cryptography.fernet import Fernet
 from django.test import Client as HttpClient, SimpleTestCase, TestCase, override_settings
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.reports.funder_report import format_number, generate_funder_report_csv_rows
 
@@ -91,16 +92,16 @@ class FunderReportCSVSuppressedAgeTests(SimpleTestCase):
         )
         rows = generate_funder_report_csv_rows(report_data)
 
-        # Find the age demographics rows
+        # Find the age demographics rows (match translated section header)
         age_rows = []
         in_age_section = False
         for row in rows:
-            if row == ["AGE DEMOGRAPHICS"]:
+            if len(row) == 1 and "AGE" in str(row[0]).upper():
                 in_age_section = True
                 continue
-            if in_age_section and len(row) == 3 and row[0] != "Age Group":
+            if in_age_section and len(row) == 3 and row[0] not in ("Age Group", _("Age Group")):
                 age_rows.append(row)
-                if row[0] == "Total":
+                if row[0] in ("Total", _("Total")):
                     break
 
         # Suppressed counts should have '*' percentage
@@ -138,26 +139,26 @@ class FunderReportCSVSuppressedCustomDemoTests(SimpleTestCase):
         )
         rows = generate_funder_report_csv_rows(report_data)
 
-        # Find the custom section rows
+        # Find the custom section rows (match uppercased label)
         custom_rows = []
         in_section = False
         for row in rows:
-            if row == ["GENDER IDENTITY"]:
+            if len(row) == 1 and "GENDER" in str(row[0]).upper():
                 in_section = True
                 continue
-            if in_section and len(row) == 3 and row[0] != "Category":
+            if in_section and len(row) == 3 and row[0] not in ("Category", _("Category")):
                 custom_rows.append(row)
-                if row[0] == "Total":
+                if row[0] in ("Total", _("Total")):
                     break
 
         # All percentages should be '*' when total is suppressed
         for cr in custom_rows:
-            if cr[0] != "Total":
+            if cr[0] not in ("Total", _("Total")):
                 self.assertEqual(cr[2], "*", f"Expected '*' for {cr[0]}, got {cr[2]}")
 
         # Total row should show suppressed value with '*' percentage
         total_row = custom_rows[-1]
-        self.assertEqual(total_row[0], "Total")
+        self.assertIn(total_row[0], ("Total", _("Total")))
         self.assertEqual(total_row[1], "suppressed")
         self.assertEqual(total_row[2], "*")
 
@@ -172,16 +173,16 @@ class FunderReportCSVSuppressedCustomDemoTests(SimpleTestCase):
         )
         rows = generate_funder_report_csv_rows(report_data)
 
-        # Find the section rows
+        # Find the section rows (match uppercased label)
         section_rows = []
         in_section = False
         for row in rows:
-            if row == ["ETHNICITY"]:
+            if len(row) == 1 and "ETHNICITY" in str(row[0]).upper():
                 in_section = True
                 continue
-            if in_section and len(row) == 3 and row[0] != "Category":
+            if in_section and len(row) == 3 and row[0] not in ("Category", _("Category")):
                 section_rows.append(row)
-                if row[0] == "Total":
+                if row[0] in ("Total", _("Total")):
                     break
 
         # Suppressed count should have '*'
@@ -366,3 +367,69 @@ class AnalysisChartTimeframeTest(TestCase):
         content = resp.content.decode()
         self.assertIn('"value": 7.0', content)
         self.assertNotIn('"value": 3.0', content)
+
+    def test_analysis_3m_filter_excludes_old_data(self):
+        """3-month filter should exclude data older than 90 days."""
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+
+        # Create a metric value backdated > 90 days ago
+        old_note = ProgressNote.objects.create(
+            client_file=self.client_file, author=self.user,
+            backdate=timezone.now() - timedelta(days=120),
+        )
+        old_pnt = ProgressNoteTarget.objects.create(
+            progress_note=old_note, plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            metric_def=self.metric, progress_note_target=old_pnt, value="1",
+        )
+
+        self.http.login(username="analyst", password="pass")
+        resp = self.http.get(
+            f"/reports/participant/{self.client_file.pk}/analysis/?timeframe=3m"
+        )
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        # The 120-day-old value=1.0 should be excluded
+        self.assertNotIn('"value": 1.0', content)
+        # The 5-day-old value=7.0 should still be present
+        self.assertIn('"value": 7.0', content)
+
+    def test_analysis_6m_filter_excludes_old_data(self):
+        """6-month filter should exclude data older than 180 days."""
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+
+        # Create a metric value backdated > 180 days ago
+        old_note = ProgressNote.objects.create(
+            client_file=self.client_file, author=self.user,
+            backdate=timezone.now() - timedelta(days=200),
+        )
+        old_pnt = ProgressNoteTarget.objects.create(
+            progress_note=old_note, plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            metric_def=self.metric, progress_note_target=old_pnt, value="2",
+        )
+
+        self.http.login(username="analyst", password="pass")
+        resp = self.http.get(
+            f"/reports/participant/{self.client_file.pk}/analysis/?timeframe=6m"
+        )
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        # The 200-day-old value=2.0 should be excluded
+        self.assertNotIn('"value": 2.0', content)
+        # The 5-day-old value=7.0 should still be present
+        self.assertIn('"value": 7.0', content)
+
+    def test_analysis_invalid_timeframe_returns_all(self):
+        """Invalid timeframe value should return all data (no crash)."""
+        self.http.login(username="analyst", password="pass")
+        resp = self.http.get(
+            f"/reports/participant/{self.client_file.pk}/analysis/?timeframe=invalid"
+        )
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        # Both data points should still be present
+        self.assertIn('"value": 3.0', content)
+        self.assertIn('"value": 7.0', content)
