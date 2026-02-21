@@ -138,8 +138,6 @@ class ReportTemplate(models.Model):
     partner = models.ForeignKey(
         Partner,
         on_delete=models.CASCADE,
-        null=True,
-        blank=True,
         related_name="report_templates",
         help_text=_("The partner this report template belongs to."),
     )
@@ -150,12 +148,6 @@ class ReportTemplate(models.Model):
     description = models.TextField(
         blank=True,
         help_text=_("Description of the reporting requirements."),
-    )
-    programs = models.ManyToManyField(
-        "programs.Program",
-        blank=True,
-        related_name="report_templates",
-        help_text=_("Programs linked to this reporting template."),
     )
     source_csv = models.TextField(
         blank=True,
