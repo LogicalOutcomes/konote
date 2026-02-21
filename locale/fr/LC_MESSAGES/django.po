@@ -23,6 +23,15 @@ msgstr "Passer au contenu principal"
 msgid "Reports"
 msgstr "Rapports"
 
+msgid "No grouping"
+msgstr "Aucun regroupement"
+
+msgid "Age Range"
+msgstr "Tranche d'âge"
+
+msgid "Demographic Group"
+msgstr "Groupe démographique"
+
 msgid "Admin"
 msgstr "Administration"
 
