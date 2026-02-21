@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "New Partner" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "New Partner" %}</h1>
+    <p>{% trans "Add a reporting partner — funder, network, board, or other." %}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <label>
+        {{ field.label }}
+        {{ field }}
+        {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+    </label>
+    {% if field.errors %}
+    <small style="color: var(--kn-danger-fg);">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% endfor %}
+
+    <div style="margin-top: 1rem;">
+        <button type="submit">{% trans "Create Partner" %}</button>
+        <a href="{% url 'admin_settings:partner_list' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+
+<p style="margin-top: 1.5rem;"><a href="{% url 'admin_settings:partner_list' %}">{% trans "← Back to Partners" %}</a></p>
+{% endblock %}

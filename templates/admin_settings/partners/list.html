@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Partners" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Partners" %}</h1>
+    <p>{% trans "Manage reporting partners — funders, networks, boards, and more." %}</p>
+</hgroup>
+
+<div style="margin-bottom: 1.5rem;">
+    <a href="{% url 'admin_settings:partner_create' %}" role="button">{% trans "New Partner" %}</a>
+</div>
+
+{% if partners %}
+<div class="overflow-auto">
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Partner Name" %}</th>
+                <th>{% trans "Type" %}</th>
+                <th>{% trans "Programs" %}</th>
+                <th>{% trans "Templates" %}</th>
+                <th>{% trans "Created" %}</th>
+                <th>{% trans "Actions" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for partner in partners %}
+            <tr>
+                <td>
+                    <a href="{% url 'admin_settings:partner_detail' partner.pk %}">
+                        <strong>{{ partner.name }}</strong>
+                    </a>
+                </td>
+                <td>{{ partner.get_partner_type_display }}</td>
+                <td>{{ partner.programs.count }}</td>
+                <td>{{ partner.report_templates.count }}</td>
+                <td><small>{{ partner.created_at|date:"Y-m-d" }}</small></td>
+                <td>
+                    <a href="{% url 'admin_settings:partner_detail' partner.pk %}" class="secondary">{% trans "View" %}</a>
+                    &nbsp;|&nbsp;
+                    <a href="{% url 'admin_settings:partner_edit' partner.pk %}" class="secondary">{% trans "Edit" %}</a>
+                    &nbsp;|&nbsp;
+                    <a href="{% url 'admin_settings:partner_delete' partner.pk %}" class="secondary" style="color: var(--kn-danger-fg);">{% trans "Delete" %}</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<article>
+    <p>{% trans "No partners have been added yet. Create your first partner to start linking report templates." %}</p>
+</article>
+{% endif %}
+
+<p><a href="{% url 'admin_settings:dashboard' %}">{% trans "← Back to Settings" %}</a></p>
+{% endblock %}
