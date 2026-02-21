@@ -28,6 +28,8 @@ def _serialize_step(step_eval):
         "overall_satisfaction": step_eval.overall_satisfaction,
         "one_line_summary": step_eval.one_line_summary,
         "improvement_suggestions": list(step_eval.improvement_suggestions),
+        "task_outcome": step_eval.task_outcome,
+        "task_outcome_reasoning": step_eval.task_outcome_reasoning,
         "dimension_scores": {
             dim: _serialize_dimension_score(ds)
             for dim, ds in step_eval.dimension_scores.items()
@@ -75,12 +77,20 @@ def serialize_results(results):
     all_scores = [s["avg_score"] for s in scenarios if s["avg_score"] > 0]
     all_gaps = [s["satisfaction_gap"] for s in scenarios]
 
+    # Aggregate task outcomes across all scenarios
+    outcome_counts = {}
+    for r in results:
+        for e in r.step_evaluations:
+            if e.task_outcome:
+                outcome_counts[e.task_outcome] = outcome_counts.get(e.task_outcome, 0) + 1
+
     summary = {
         "total_scenarios": len(scenarios),
         "has_blocker": len(blockers) > 0,
         "blockers": blockers,
         "avg_score": round(sum(all_scores) / len(all_scores), 2) if all_scores else 0,
         "worst_gap": round(max(all_gaps), 2) if all_gaps else 0,
+        "task_outcome_counts": outcome_counts,
     }
 
     return {
