@@ -21,8 +21,8 @@
     <dd>{{ profile.name }}</dd>
     <dt>{% trans "Breakdowns" %}</dt>
     <dd>{{ profile.breakdowns.count }}</dd>
-    <dt>{% trans "Linked Programs" %}</dt>
-    <dd>{{ profile.programs.count }}</dd>
+    <dt>{% trans "Partner" %}</dt>
+    <dd>{% if profile.partner %}{{ profile.partner.name }}{% else %}—{% endif %}</dd>
 </dl>
 
 <form method="post">

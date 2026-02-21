@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Delete Partner" %} — {{ partner.name }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Delete Partner" %}</h1>
+    <p>{% blocktrans with name=partner.name %}Are you sure you want to delete "{{ name }}"?{% endblocktrans %}</p>
+</hgroup>
+
+<article aria-label="{% trans 'Warning' %}" role="alert" style="background: var(--kn-danger-bg); border-left: 4px solid var(--kn-danger-fg); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong>{% trans "This action cannot be undone." %}</strong>
+    <p style="margin-bottom: 0;">
+        {% blocktrans %}Deleting this partner will also delete all associated report templates and their breakdown definitions. Existing reports that were generated using these templates will not be affected.{% endblocktrans %}
+    </p>
+</article>
+
+<dl>
+    <dt>{% trans "Partner Name" %}</dt>
+    <dd>{{ partner.name }}</dd>
+    <dt>{% trans "Type" %}</dt>
+    <dd>{{ partner.get_partner_type_display }}</dd>
+    <dt>{% trans "Templates" %}</dt>
+    <dd>{{ partner.report_templates.count }}</dd>
+    <dt>{% trans "Programs" %}</dt>
+    <dd>{{ partner.programs.count }}</dd>
+</dl>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" style="background-color: var(--kn-danger-fg); border-color: var(--kn-danger-fg); color: #fff;">{% trans "Yes, Delete Partner" %}</button>
+    <a href="{% url 'admin_settings:partner_detail' partner.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+</form>
+{% endblock %}
