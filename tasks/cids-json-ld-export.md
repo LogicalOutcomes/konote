@@ -2,7 +2,7 @@
 
 **Task ID:** CIDS-EXPORT1
 **Created:** 2026-02-21
-**Status:** Waiting on approval from Sara and/or Claire before building
+**Status:** Waiting on approval from [PM] and/or [funder contact] before building
 **Strategic value:** Full CIDS compliance would make KoNote one of the first participant management systems in Canada to deliver standardised impact data exports — a significant differentiator for funder adoption across the nonprofit sector.
 
 ---
@@ -29,7 +29,7 @@ Position KoNote as a pilot implementer. Common Approach needs reference implemen
 
 ### 2. Build CIDS tagging into the onboarding config template system
 
-When a config template (e.g., Prosper Canada) already includes IRIS+ codes for standard metrics, every agency deployed with that template is automatically CIDS-tagged. Zero per-agency effort. Make CIDS metadata tagging free for all agencies to maximise the network effect — funders want *all* their agencies using standardised codes, not just the ones who can afford it.
+When a config template (e.g., [funder partner]) already includes IRIS+ codes for standard metrics, every agency deployed with that template is automatically CIDS-tagged. Zero per-agency effort. Make CIDS metadata tagging free for all agencies to maximise the network effect — funders want *all* their agencies using standardised codes, not just the ones who can afford it.
 
 ### 3. Ship CIDS-enriched CSV/PDF first (new Phase 2.5)
 
@@ -57,7 +57,7 @@ A simple pass/fail SHACL check before export catches structural errors early. De
 
 - **All tiers:** CIDS metadata tagging (configured during onboarding, zero marginal cost)
 - **Premium / managed service:** JSON-LD export, SHACL validation badge, API endpoint for funder portals
-- **Buyer:** The funder consortium pays (e.g., Prosper Canada's managed service includes CIDS reporting for all member agencies)
+- **Buyer:** The funder consortium pays (e.g., [funder partner]'s managed service includes CIDS reporting for all member agencies)
 
 ---
 
@@ -166,7 +166,7 @@ Import the 17 CIDS code lists so admins can pick from dropdowns rather than typi
 - Add CIDS fields to MetricDefinition admin form
 - Use select2-style dropdowns populated from `CidsCodeList`
 - PlanTarget CIDS fields can be set via the plan template (so they auto-apply to client targets)
-- Integrate into config template system — e.g., Prosper Canada template pre-maps CIDS codes for standard metrics
+- Integrate into config template system — e.g., [funder partner] template pre-maps CIDS codes for standard metrics
 
 ### Phase 2.5: CIDS-Enriched CSV/PDF Reports (quick win)
 
@@ -400,22 +400,22 @@ Phases 1 through 2.5 are the minimum viable deliverable. Phases 3-5 complete ful
 
 ---
 
-## Open Questions (for Sara / Claire)
+## Open Questions (for [PM] / [funder contact])
 
 1. **Which funder expressed interest?** We need to confirm their actual consumption pathway — do they want JSON-LD, or would CIDS-tagged CSV/PDF satisfy their requirements?
 2. **Should we engage Common Approach now?** Recommendation: yes, position as a partnership/pilot implementation
-3. **Should CIDS metadata be part of the Prosper Canada config template?** Recommendation: yes, pre-map their standard metrics to IRIS+ codes
+3. **Should CIDS metadata be part of the [funder partner] config template?** Recommendation: yes, pre-map their standard metrics to IRIS+ codes
 4. **Target tier?** Recommendation: EssentialTier (covers org, programs, outcomes, indicators, impact dimensions)
 
 ---
 
 ## Related Tasks
 
-- **RPT-SCHEMA1** — Define standardised report schema for Prosper Canada (CIDS codes would feed into this)
+- **RPT-SCHEMA1** — Define standardised report schema for [funder partner] (CIDS codes would feed into this)
 - **SCALE-ROLLUP1** — Cross-agency data rollup for funders (CIDS-tagged data makes rollup much easier)
 - **SCALE-API1** — Cross-agency reporting API (could serve JSON-LD directly)
 - **MT-CONSORT1** — Consortium data model (CIDS export + multi-tenancy = portfolio-wide impact reports)
-- **DEPLOY-TEMPLATE1** — Prosper Canada config template (should include pre-mapped CIDS codes)
+- **DEPLOY-TEMPLATE1** — [funder partner] config template (should include pre-mapped CIDS codes)
 
 ---
 

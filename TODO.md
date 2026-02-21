@@ -2,29 +2,29 @@
 
 ## Flagged
 
-- [ ] Review requirements analysis doc with Sara before sending to client (docs/konote-requirements-analysis-draft.md) — GG (DOC-REQ1)
-- [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — GG (ONBOARD-APPROVE)
-- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GG (SEC3-Q1)
-- [ ] Confirm standard report schema and configuration template with Claire (Prosper Canada) before building — SG (RPT-SCHEMA1)
-- [ ] Review and approve multi-tenancy implementation plan with Sara and Prince before building — covers django-tenants integration, per-tenant encryption, consortium data model, and hybrid federation architecture (see tasks/prosper-canada/multi-tenancy-implementation-plan.md) — SG/PD (MT-APPROVE1)
-- [ ] Approve CIDS implementation plan with Sara and/or Claire before building — covers metadata fields, code list integration, CIDS-enriched reports, and full JSON-LD export; confirm funder consumption pathway and whether to engage Common Approach as pilot implementer (see tasks/cids-json-ld-export.md) — SG/GG (CIDS-APPROVE1)
+- [ ] Review requirements analysis doc with [PM] before sending to client (docs/konote-requirements-analysis-draft.md) — (DOC-REQ1)
+- [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — (ONBOARD-APPROVE)
+- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — (SEC3-Q1)
+- [ ] Confirm standard report schema and configuration template with [funder contact] before building — (RPT-SCHEMA1)
+- [ ] Review and approve multi-tenancy implementation plan with [PM] and [Dev] before building — covers django-tenants integration, per-tenant encryption, consortium data model, and hybrid federation architecture (see tasks/multi-tenancy-implementation-plan.md) — SG/PD (MT-APPROVE1)
+- [ ] Approve CIDS implementation plan with project lead before building — covers metadata fields, code list integration, CIDS-enriched reports, and full JSON-LD export; confirm funder consumption pathway and whether to engage Common Approach as pilot implementer (see tasks/cids-json-ld-export.md) — (CIDS-APPROVE1)
 
 ## Active Work
 
 ### Phase: Launch Readiness
 
-- [ ] Complete Agency Deployment Protocol with Prosper Canada — Phase 0 Discovery Call first (see tasks/prosper-canada/deployment-protocol.md) — SG (DEPLOY-PC1)
-- [x] Define Prosper Canada configuration template — standard roles, metrics, terminology, plan templates for financial coaching agencies (see config_templates/prosper-canada/) — 2026-02-20 — GG (DEPLOY-TEMPLATE1)
-- [ ] Follow up with Claire (Prosper Canada) for additional must-haves on feature comparison — SG (DEPLOY-PC2)
-- [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — GG (ONBOARD-GATE)
-- [ ] Store signed Configuration Summary with each deployment so new admins can see what was decided and why — GG (DEPLOY-CONFIG-DOC1)
-- [ ] Verify production email configuration for exports, erasure alerts, and password resets — GG (OPS3)
-- [ ] Test backup restore from a production-like database dump and capture runbook notes — GG (OPS4)
-- [ ] Document scheduled task setup for export monitoring in the runbook — GG (EXP2w)
+- [ ] Complete Agency Deployment Protocol with [funder partner] — Phase 0 Discovery Call first (see tasks/deployment-protocol.md) — (DEPLOY-PC1)
+- [x] Define [funder partner] configuration template — standard roles, metrics, terminology, plan templates for financial coaching agencies (see config_templates/) — 2026-02-20 — (DEPLOY-TEMPLATE1)
+- [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
+- [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — (ONBOARD-GATE)
+- [ ] Store signed Configuration Summary with each deployment so new admins can see what was decided and why — (DEPLOY-CONFIG-DOC1)
+- [ ] Verify production email configuration for exports, erasure alerts, and password resets — (OPS3)
+- [ ] Test backup restore from a production-like database dump and capture runbook notes — (OPS4)
+- [ ] Document scheduled task setup for export monitoring in the runbook — (EXP2w)
 - [ ] Enforce cross-program sharing consent (PHIPA) in views — consent flag already captured, need view-level enforcement (PHIPA-ENFORCE1)
-- [ ] Build cross-agency data rollup for funders — waiting on requirements from Prosper Canada re: which metrics to aggregate (see tasks/prosper-canada/) — GG (SCALE-ROLLUP1)
-- [x] Build role-based dashboard views — coach, PM, and executive landing pages with role-specific data (see tasks/dashboard-roles-plan.md) — 2026-02-20 — GG (DASH-ROLES1)
-- [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with Prosper Canada dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — GG (DEPLOY-TOOLKIT1)
+- [ ] Build cross-agency data rollup for funders — waiting on requirements from [funder partner] re: which metrics to aggregate (see tasks/) — (SCALE-ROLLUP1)
+- [x] Build role-based dashboard views — coach, PM, and executive landing pages with role-specific data (see tasks/dashboard-roles-plan.md) — 2026-02-20 — (DASH-ROLES1)
+- [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — (DEPLOY-TOOLKIT1)
 
 ### Phase: Communication Modules — complete!
 
@@ -68,28 +68,28 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Multi-Agency Scaling
 
-- [ ] Integrate django-tenants for schema-per-tenant multi-tenancy — PostgreSQL backend, shared/tenant app split, tenant model, domain model (see tasks/prosper-canada/multi-tenancy-implementation-plan.md, Tasks 0-2) — GG (MT-CORE1)
-- [ ] Implement per-tenant encryption keys — key table in shared schema, encrypted by master key, update encryption.py (see plan Task 3) — GG (MT-ENCRYPT1)
-- [ ] Create consortium data model — Consortium, ConsortiumMembership, ProgramSharing, PublishedReport with program-level sharing granularity (see plan Task 4) — GG (MT-CONSORT1)
-- [ ] Add consent_to_aggregate_reporting field and audit tenant_schema column (see plan Tasks 5-6) — GG (MT-CONSENT1)
-- [ ] Validate existing features across tenant schemas — update test infrastructure, fix tenant-related test failures (see plan Tasks 7-8) — GG (MT-VALIDATE1)
+- [ ] Integrate django-tenants for schema-per-tenant multi-tenancy — PostgreSQL backend, shared/tenant app split, tenant model, domain model (see tasks/multi-tenancy-implementation-plan.md, Tasks 0-2) — (MT-CORE1)
+- [ ] Implement per-tenant encryption keys — key table in shared schema, encrypted by master key, update encryption.py (see plan Task 3) — (MT-ENCRYPT1)
+- [ ] Create consortium data model — Consortium, ConsortiumMembership, ProgramSharing, PublishedReport with program-level sharing granularity (see plan Task 4) — (MT-CONSORT1)
+- [ ] Add consent_to_aggregate_reporting field and audit tenant_schema column (see plan Tasks 5-6) — (MT-CONSENT1)
+- [ ] Validate existing features across tenant schemas — update test infrastructure, fix tenant-related test failures (see plan Tasks 7-8) — (MT-VALIDATE1)
 - [ ] Build deploy script to automate Phase 2 infrastructure provisioning — Azure resources, env vars, migrations, output a URL (plan: docs/plans/2026-02-20-deploy-script-design.md) (DEPLOY-SCRIPT1)
-- [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/prosper-canada/managed-service-model.md) (OPS-MANAGED1)
-- [ ] Build cross-agency reporting API — standardised endpoint per instance for Prosper Canada to consume published reports (plan: docs/plans/2026-02-20-cross-agency-reporting-api-design.md) (SCALE-API1)
-- [ ] Build umbrella admin dashboard — central view for Prosper Canada to see instance health, published reports, and aggregate metrics across agencies (SCALE-DASH1)
+- [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/managed-service-model.md) (OPS-MANAGED1)
+- [ ] Build cross-agency reporting API — standardised endpoint per instance for [funder partner] to consume published reports (plan: docs/plans/2026-02-20-cross-agency-reporting-api-design.md) (SCALE-API1)
+- [ ] Build umbrella admin dashboard — central view for [funder partner] to see instance health, published reports, and aggregate metrics across agencies (SCALE-DASH1)
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 - [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
 
 ### Phase: CIDS Compliance (Common Approach Data Standard) — waiting on CIDS-APPROVE1
 
-- [ ] Add CIDS metadata fields to MetricDefinition, Program, and PlanTarget — optional fields for IRIS+ codes, SDG goals, sector codes (see tasks/cids-json-ld-export.md Phase 1) — GG (CIDS-META1)
-- [ ] Create OrganizationProfile model for CIDS BasicTier org metadata — legal name, sector, province (Phase 1) — GG (CIDS-ORG1)
-- [ ] Import CIDS code lists (17 lists) via management command from codelist.commonapproach.org with version tracking (Phase 2) — GG (CIDS-CODES1)
-- [ ] Build admin UI for CIDS tagging — dropdowns on program and metric forms, integrate into config template system (Phase 2) — GG (CIDS-ADMIN1)
-- [ ] Add CIDS codes to existing CSV/PDF funder reports + "Standards Alignment" appendix page — quick win, no new format needed (Phase 2.5) — GG (CIDS-ENRICH1)
-- [ ] Build JSON-LD export with basic SHACL validation — new format option alongside CSV/PDF, aggregate only (Phase 3) — GG (CIDS-EXPORT1)
-- [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — GG (CIDS-IMPACT1)
-- [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — GG (CIDS-VALIDATE1)
+- [ ] Add CIDS metadata fields to MetricDefinition, Program, and PlanTarget — optional fields for IRIS+ codes, SDG goals, sector codes (see tasks/cids-json-ld-export.md Phase 1) — (CIDS-META1)
+- [ ] Create OrganizationProfile model for CIDS BasicTier org metadata — legal name, sector, province (Phase 1) — (CIDS-ORG1)
+- [ ] Import CIDS code lists (17 lists) via management command from codelist.commonapproach.org with version tracking (Phase 2) — (CIDS-CODES1)
+- [ ] Build admin UI for CIDS tagging — dropdowns on program and metric forms, integrate into config template system (Phase 2) — (CIDS-ADMIN1)
+- [ ] Add CIDS codes to existing CSV/PDF funder reports + "Standards Alignment" appendix page — quick win, no new format needed (Phase 2.5) — (CIDS-ENRICH1)
+- [ ] Build JSON-LD export with basic SHACL validation — new format option alongside CSV/PDF, aggregate only (Phase 3) — (CIDS-EXPORT1)
+- [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — (CIDS-IMPACT1)
+- [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — (CIDS-VALIDATE1)
 
 ### Phase: Participant View Improvements — complete!
 
@@ -106,11 +106,11 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Implement report preview on-screen before downloading PDF/CSV (REP-PREVIEW1)
 - [ ] Research/Implement including data visuals (charts/graphs) in PDF reports (REP-PDF1)
 - [ ] Redesign PDF report layout: merge title page with page 2 to eliminate redundant empty space (REP-PDF2)
-- [ ] Define standardised report schema for Prosper Canada — 10-15 key metrics and demographic breakdowns shared across all partner agencies (RPT-SCHEMA1)
+- [ ] Define standardised report schema for [funder partner] — 10-15 key metrics and demographic breakdowns shared across all partner agencies (RPT-SCHEMA1)
 
 ### Phase: Demo Data Quality
 
-- [ ] Fix suggestion theme linking in seed_demo_data — make suggestions program-specific and remove blind fallback that links irrelevant notes to themes (see tasks/demo-data-suggestion-fix.md) — GG (DEMO-FIX1)
+- [ ] Fix suggestion theme linking in seed_demo_data — make suggestions program-specific and remove blind fallback that links irrelevant notes to themes (see tasks/demo-data-suggestion-fix.md) — (DEMO-FIX1)
 
 ### Phase: Surveys QA Scenarios
 
@@ -203,7 +203,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Add 8 scenario test stubs for SCN-110 through SCN-117 — 2026-02-21 (QA-SURV4)
 - [x] Rename original KoNote GitHub repo to KoNote Classic and add redirect — 2026-02-20 (REPO1)
 - [x] Fix fiscal year dropdown showing English strings in French UI — wrapped with gettext, added 12 French translations — 2026-02-20 (BUG-FY1)
-- [x] Define Prosper Canada configuration template — 8 fixture files covering terminology, metrics, plans, roles, report schema — 2026-02-20 (DEPLOY-TEMPLATE1)
+- [x] Define [funder partner] configuration template — 8 fixture files covering terminology, metrics, plans, roles, report schema — 2026-02-20 (DEPLOY-TEMPLATE1)
 - [x] Add financial metric plausibility subsection to data validation design — warn_min/warn_max for debt, income, savings, credit score — 2026-02-20 (DQ1-FIN)
 - [x] Write implementation plans for RPT-APPROVE1, DEPLOY-SCRIPT1, SCALE-API1 — 2026-02-20
 - [x] Build "Questions for You" portal feature — auto-save, multi-page, conditional sections, review page, dashboard badge — 2026-02-20 (PORTAL-Q1)

@@ -25,7 +25,7 @@ Two expert panels examined this problem (a report template panel and a unified a
 1. **Partner is a separate entity**, not a field on ReportTemplate. One partner (e.g., IRCC) may require 3 different reports (monthly, quarterly, annual). Normalisation demands a separate entity.
 2. **Partner → Program is many-to-many**, and optional. A provincial grant funds two programs; the board oversees all programs (empty M2M = "all programs").
 3. **Reports and surveys both connect to Partner.** A funder may require specific assessment tools alongside specific reports.
-4. **ConsortiumReportSchema is the "template of templates."** When a network like Prosper Canada defines a standard schema, each agency instantiates it as their own Partner + ReportTemplate.
+4. **ConsortiumReportSchema is the "template of templates."** When a network like [funder partner] defines a standard schema, each agency instantiates it as their own Partner + ReportTemplate.
 5. **Scheduling has three phases**: data cutoff → draft deadline → submission deadline. Supports calendar-aligned, grant-aligned, and fixed-date recurrence.
 
 ## Entity Relationship Diagram
@@ -360,13 +360,13 @@ Partner: "United Way of Greater Toronto"
 ### Cross-Agency Network (With Consortium)
 
 ```
-Consortium: "Prosper Canada Network" (shared schema)
+Consortium: "[funder partner] Network" (shared schema)
   ConsortiumReportSchema v1: standard 10 metrics + 4 demographic breakdowns
 
 Agency A (tenant):
-  Partner: "Prosper Canada"
+  Partner: "[funder partner]"
     type: network
-    consortium: → Prosper Canada Network
+    consortium: → [funder partner] Network
     programs: [Financial Coaching]
 
     ReportTemplate: "PC Quarterly Report"
@@ -375,9 +375,9 @@ Agency A (tenant):
       schedule: quarterly
 
 Agency B (tenant):
-  Partner: "Prosper Canada"
+  Partner: "[funder partner]"
     type: network
-    consortium: → Prosper Canada Network
+    consortium: → [funder partner] Network
 
     ReportTemplate: "PC Quarterly Report"
       consortium_schema_version: 1
@@ -480,7 +480,7 @@ Each partner — whether a funder, consortium, board, or collaboration — may w
 
 - **Have NO live connection to any KoNote instance.** No database queries, no API calls into agency data, no real-time feeds.
 - **Consume only approved exports.** CSV files, JSON files, or data served by the read-only PublishedReport API (which is itself just a structured way to deliver pre-approved aggregate data).
-- **Are separate products** — designed and built to meet the specific partner's needs. A United Way dashboard looks different from a Prosper Canada dashboard looks different from a board reporting portal.
+- **Are separate products** — designed and built to meet the specific partner's needs. A United Way dashboard looks different from a [funder partner] dashboard looks different from a board reporting portal.
 - **Can be built with any technology.** Since they consume flat files, there's no dependency on Django or KoNote's tech stack. A partner could use Tableau, Power BI, a custom web app, or a spreadsheet.
 
 ### Why This Separation Matters
@@ -496,7 +496,7 @@ Each partner — whether a funder, consortium, board, or collaboration — may w
 
 ### How the Read-Only API Fits
 
-The [cross-agency reporting API design](../docs/plans/2026-02-20-cross-agency-reporting-api-design.md) (SCALE-API1) proposes a `GET /api/v1/reports/` endpoint. This is **not** a live database connection — it serves the same approved, aggregate PublishedReport data that would be in a CSV export, just in a machine-readable format. It's a convenience for automated consumption (e.g., Prosper Canada's aggregation dashboard polling 20 agencies), not a replacement for the export model.
+The [cross-agency reporting API design](../docs/plans/2026-02-20-cross-agency-reporting-api-design.md) (SCALE-API1) proposes a `GET /api/v1/reports/` endpoint. This is **not** a live database connection — it serves the same approved, aggregate PublishedReport data that would be in a CSV export, just in a machine-readable format. It's a convenience for automated consumption (e.g., [funder partner]'s aggregation dashboard polling 20 agencies), not a replacement for the export model.
 
 The API:
 - Serves only data the agency has explicitly approved and published

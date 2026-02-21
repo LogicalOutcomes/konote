@@ -55,7 +55,7 @@ When agencies share outcome data with funders, there is no quality gate or appro
 
 For now, "publish" = "approve the export." The export file includes the agency notes. There is no separate funder-facing system.
 
-In the future, if Prosper Canada needs a cross-agency dashboard, each agency's "published" reports could feed a reporting API. But that's a Tier 3 item — don't build it now.
+In the future, if [funder partner] needs a cross-agency dashboard, each agency's "published" reports could feed a reporting API. But that's a Tier 3 item — don't build it now.
 
 ## Report-Level Annotations
 
@@ -70,19 +70,19 @@ The annotation is a single text field attached to the report export. It is:
 
 ## Standardised Report Schema (RPT-SCHEMA1)
 
-For umbrella funders like Prosper Canada, define a standard set of metrics and demographic breakdowns that all partner agencies report on. This enables:
+For umbrella funders like [funder partner], define a standard set of metrics and demographic breakdowns that all partner agencies report on. This enables:
 
 - Consistent reports across agencies (Prosper can combine CSVs)
 - The "Publish" action knows exactly what to include
 - Reduces per-agency configuration for report templates
 
-**Standard schema for Prosper Canada (to be confirmed with Claire):**
+**Standard schema for [funder partner] (to be confirmed with [funder contact]):**
 - Key outcome metrics (10-15 TBD)
 - Demographic breakdowns (age bins, gender, income bracket — TBD)
 - Contact outcomes (sessions completed, contact types)
 - Program enrolment counts
 
-This schema is defined once at the umbrella level and baked into the Prosper Canada configuration template (DEPLOY-TEMPLATE1).
+This schema is defined once at the umbrella level and baked into the [funder partner] configuration template (DEPLOY-TEMPLATE1).
 
 ## Key Files
 
@@ -113,4 +113,4 @@ This schema is defined once at the umbrella level and baked into the Prosper Can
 
 - DQ1 (entry-time plausibility) reduces the number of errors that reach the report stage — nice to have but not blocking
 - DQ2 (pre-report quality checks) is the core of the quality review screen — design is in data-validation-design.md
-- RPT-SCHEMA1 (standardised schema) should be defined with Prosper Canada before building the report template
+- RPT-SCHEMA1 (standardised schema) should be defined with [funder partner] before building the report template

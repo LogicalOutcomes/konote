@@ -58,10 +58,10 @@ Steps 1-3 can be done in parallel. Steps 5-7 can be done in parallel once Progra
 
 ## Starting from a Template
 
-If the agency belongs to an umbrella organisation (like Prosper Canada), start from the umbrella's configuration template instead of answering every question from scratch.
+If the agency belongs to an umbrella organisation (like [funder partner]), start from the umbrella's configuration template instead of answering every question from scratch.
 
 Available templates:
-- **Prosper Canada** — financial coaching agencies ([see example](examples/prosper-canada/))
+- **[funder partner]** — financial coaching agencies ([see example](examples/prosper-canada/))
 
 With a template, the conversation changes from "answer all 50 decisions" to "here are the standard answers — what's different for your agency?" This typically cuts setup time from 3-6 weeks to 1-2 weeks.
 
@@ -81,7 +81,7 @@ Every document follows the same structure:
 
 KoNote configuration is applied through a combination of:
 
-1. **`apply_setup` management command** — loads JSON configuration files for terminology, features, metrics, plan templates, and custom fields. See [config_templates/prosper-canada/README.md](../../config_templates/prosper-canada/README.md).
+1. **`apply_setup` management command** — loads JSON configuration files for terminology, features, metrics, plan templates, and custom fields. See [config_templates/README.md](../../config_templates/README.md).
 2. **Django admin interface** — for settings not yet supported by `apply_setup` (note templates, report templates, role permissions).
 3. **Environment variables** — for infrastructure settings (database URLs, encryption keys, authentication mode).
 
@@ -114,4 +114,4 @@ These provide deeper context when needed:
 | 07 Reports | To do | New — needs funder reporting requirements |
 | 08 Users | To do | Reformat from deployment-protocol.md Phase 2, 4 |
 | 09 Verification | To do | Reformat from deployment-protocol.md Phase 4 |
-| Prosper Canada example | Partial | Config templates exist in config_templates/prosper-canada/ |
+| [funder partner] example | Partial | Config templates exist in config_templates/ |

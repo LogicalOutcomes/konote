@@ -23,7 +23,7 @@ We're not starting from scratch. These assets already capture most of the deploy
 | Asset | Location | What it covers |
 |-------|----------|---------------|
 | Deployment Protocol | [tasks/prosper-canada/deployment-protocol.md](prosper-canada/deployment-protocol.md) | Full 5-phase onboarding process with interview scripts |
-| Config Templates | [config_templates/prosper-canada/](../config_templates/prosper-canada/) | Pre-built configuration for financial coaching agencies |
+| Config Templates | [config_templates/](../config_templates/) | Pre-built configuration for financial coaching agencies |
 | Permissions Interview | [tasks/agency-permissions-interview.md](agency-permissions-interview.md) | Guided interview for roles and access decisions |
 | Admin Docs | [docs/admin/](../docs/admin/) | Feature-by-feature admin documentation |
 | Deploying KoNote | [docs/deploying-konote.md](../docs/deploying-konote.md) | Platform comparison and technical deployment guides |
@@ -58,7 +58,7 @@ YAML/JSON snippet, admin steps, or management command]
 - Requires: [what must be done first]
 - Feeds into: [what uses this configuration]
 
-## Example: Prosper Canada
+## Example: [funder partner]
 [Completed decisions with rationale]
 ```
 
@@ -88,9 +88,9 @@ One document per configuration domain. Organised in setup order.
 
 Most of the content for these already exists in the deployment protocol and permissions interview. The work is **reformatting**, not writing from scratch.
 
-## Two-Week Plan: Prosper Canada Prototype
+## Two-Week Plan: [funder partner] Prototype
 
-The first test is Prosper Canada, where our developer (Prince) uses Claude Code desktop to do the setup. This is our instrumented prototype.
+The first test is [funder partner], where our developer ([Dev]) uses Claude Code desktop to do the setup. This is our instrumented prototype.
 
 ### Week 1 (by Mar 1)
 
@@ -98,20 +98,20 @@ The first test is Prosper Canada, where our developer (Prince) uses Claude Code 
 |-----|--------|-------|
 | 1-2 | Create 00-overview.md — the master document mapping the full setup journey | GG |
 | 2-3 | Create decision documents 01-06 by reformatting deployment-protocol.md sections | GG |
-| 3-4 | Fill in Prosper Canada examples using existing config_templates/prosper-canada/ data | GG |
-| 4-5 | Developer dry-run: Prince opens Claude Code desktop, gives it the docs, attempts to configure a test instance. **Keeps a friction log.** | PD |
+| 3-4 | Fill in [funder partner] examples using existing config_templates/ data | GG |
+| 4-5 | Developer dry-run: [Dev] opens Claude Code desktop, gives it the docs, attempts to configure a test instance. **Keeps a friction log.** | PD |
 
 ### Week 2 (Mar 1-7)
 
 | Day | Action | Owner |
 |-----|--------|-------|
 | 1-2 | Fix gaps identified in the friction log | GG |
-| 3-5 | Developer does the real Prosper Canada setup using the documents + Claude | PD |
+| 3-5 | Developer does the real [funder partner] setup using the documents + Claude | PD |
 | 5 | Retrospective: what worked, what didn't, what would an admin need that the developer didn't | All |
 
 ### The Friction Log
 
-The most important artefact from the prototype. During both the dry run and real setup, Prince keeps a simple markdown file noting every point where:
+The most important artefact from the prototype. During both the dry run and real setup, [Dev] keeps a simple markdown file noting every point where:
 
 - The reference doc didn't answer a question Claude asked
 - Claude couldn't figure out how to do something from the docs alone
@@ -124,7 +124,7 @@ This log drives the next iteration. It's also the kind of thing an AI tool can h
 ## Long-Term Vision
 
 ### Near-term (next 3 months)
-- Decision documents refined based on Prosper Canada friction log
+- Decision documents refined based on [funder partner] friction log
 - Common configurations added for 2-3 agency types (financial coaching, mental health, youth services)
 - Developer continues to use Claude Code desktop for setups, guided by the docs
 
@@ -150,7 +150,7 @@ These are all good ideas for later, but the AI landscape is changing too fast to
 
 ## Success Criteria
 
-After the Prosper Canada prototype:
+After the [funder partner] prototype:
 
 1. Developer was able to complete the full setup using Claude + decision documents
 2. Friction log has fewer than 10 significant gaps

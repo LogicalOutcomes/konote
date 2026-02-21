@@ -14,12 +14,12 @@ Staff enter numeric data (metric values, financial fields) with no plausibility 
 
 ### Priority: Financial Metric Plausibility
 
-Financial coaching metrics are the highest priority for plausibility warnings. The motivating example: a $700M debt entry (typo — actual value was $700) at a West Neighbourhood House financial coaching session. Without plausibility checks, this kind of error flows straight into funder reports and distorts aggregate outcomes.
+Financial coaching metrics are the highest priority for plausibility warnings. The motivating example: a $700M debt entry (typo — actual value was $700) at a [partner agency] financial coaching session. Without plausibility checks, this kind of error flows straight into funder reports and distorts aggregate outcomes.
 
 **Why financial metrics first:**
 - Financial values span a wide valid range (debt can genuinely be $0 to $200,000+), so hard min/max alone won't catch typos
 - Typos in financial data often involve extra digits ($700 → $700,000) or misplaced decimals ($7.00 → $700)
-- Funders like Prosper Canada aggregate financial outcomes across agencies — one outlier distorts the whole picture
+- Funders like [funder partner] aggregate financial outcomes across agencies — one outlier distorts the whole picture
 - Clinical scales (PHQ-9, GAD-7) already have narrow ranges that catch most typos via hard min/max
 
 #### Suggested `warn_min` / `warn_max` for Financial Coaching Metrics
@@ -38,14 +38,14 @@ These are soft thresholds — the form shows a warning but still allows submissi
 | Income Change ($) | -$100,000 | $100,000 | -$5,000 | $10,000 | Large swings warrant verification |
 
 **Notes:**
-- `_confirm: true` — these ranges need validation with Prosper Canada / Claire before setting as defaults
+- `_confirm: true` — these ranges need validation with [funder partner] / [funder contact] before setting as defaults
 - Agencies can adjust warn_min/warn_max per metric in Admin Settings
 - The warning message should say something like: "This value ($700,000) is unusually high for Total Debt. Please double-check. If correct, click Confirm."
 
 ### Two plausibility signals
 
 1. **Statistical outlier** — value is far from the client's recent history for that metric. Example: PHQ-9 scores have been 5-8 for months, suddenly entered as 25.
-2. **Absolute plausibility** — value seems implausible regardless of history. Example: $700,000,000 debt on a financial metric where the actual value was $700 (the typo that motivated this feature — flagged by Rebekah at West Neighbourhood House).
+2. **Absolute plausibility** — value seems implausible regardless of history. Example: $700,000,000 debt on a financial metric where the actual value was $700 (the typo that motivated this feature — flagged by [agency contact] at [partner agency]).
 
 ### Possible approaches
 
