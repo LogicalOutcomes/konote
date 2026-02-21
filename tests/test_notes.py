@@ -372,8 +372,8 @@ class NoteViewsTest(TestCase):
         resp = self.http.get(f"/notes/participant/{self.client_file.pk}/?target=abc")
         self.assertEqual(resp.status_code, 200)
 
-    def test_target_filter_inaccessible_target(self):
-        """Target from a different programme should not expose notes."""
+    def test_target_filter_with_foreign_target_id(self):
+        """Passing a target ID from another client/programme should not crash or leak data."""
         # Create a target in prog_b (staff has no role in prog_b)
         section_b = PlanSection.objects.create(
             client_file=self.other_client, name="Other Goals", program=self.prog_b,

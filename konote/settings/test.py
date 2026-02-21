@@ -30,8 +30,11 @@ PASSWORD_HASHERS = [
     "django.contrib.auth.hashers.MD5PasswordHasher",
 ]
 
-# Disable CSP in tests
-MIDDLEWARE = [m for m in MIDDLEWARE if m != "csp.middleware.CSPMiddleware"]
+# Disable CSP and WhiteNoise in tests (WhiteNoise warns about missing staticfiles/ dir)
+MIDDLEWARE = [
+    m for m in MIDDLEWARE
+    if m not in ("csp.middleware.CSPMiddleware", "whitenoise.middleware.WhiteNoiseMiddleware")
+]
 
 # Disable rate limiting in tests (prevents 403s from cumulative POST counts)
 RATELIMIT_ENABLE = False

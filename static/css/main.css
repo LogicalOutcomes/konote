@@ -3987,6 +3987,11 @@ article[aria-label="notification"].fading-out {
         min-height: 44px !important;
         padding: 8px 12px !important;
     }
+
+    /* Analysis chart timeframe quick-select buttons */
+    [data-timeframe] {
+        min-height: 44px !important;
+    }
 }
 
 
