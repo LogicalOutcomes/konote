@@ -3470,7 +3470,7 @@ class Command(BaseCommand):
                     {"value": "no", "label": "No", "label_fr": "Non", "score": 1},
                 ],
             )
-            low_rating_q = SurveyQuestion.objects.create(
+            SurveyQuestion.objects.create(
                 section=sec1, sort_order=3, required=False,
                 question_text="Would you recommend our services to someone in a similar situation?",
                 question_text_fr="Recommanderiez-vous nos services à quelqu'un dans une situation similaire?",
