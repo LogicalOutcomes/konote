@@ -49,6 +49,12 @@ from apps.reports.forms import MetricExportForm
 from apps.reports.models import SecureExportLink
 import konote.encryption as enc_module
 
+
+def create_test_partner(name="Test Partner", partner_type="funder", **kwargs):
+    from apps.reports.models import Partner
+    return Partner.objects.create(name=name, partner_type=partner_type, **kwargs)
+
+
 TEST_KEY = Fernet.generate_key().decode()
 
 
