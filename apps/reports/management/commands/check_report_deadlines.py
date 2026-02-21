@@ -67,23 +67,20 @@ class Command(BaseCommand):
             if days_until <= schedule.reminder_days_before:
                 if schedule.email_sent_at is None:
                     product_name = InstanceSetting.get("product_name", "KoNote")
-                    recipients = list(
-                        schedule.notify_users.filter(
-                            is_active=True,
-                        ).values_list("email", flat=True)
-                    )
-                    # Filter out empty emails
-                    recipients = [e for e in recipients if e]
+                    # Email field is encrypted — must use property, not values_list
+                    recipients = [
+                        u.email for u in schedule.notify_users.filter(is_active=True)
+                        if u.email
+                    ]
 
                     if not recipients:
                         # Fall back to admin emails
                         from apps.auth_app.models import User
-                        recipients = list(
-                            User.objects.filter(
+                        recipients = [
+                            u.email for u in User.objects.filter(
                                 is_admin=True, is_active=True, is_demo=False,
-                            ).values_list("email", flat=True)
-                        )
-                        recipients = [e for e in recipients if e]
+                            ) if u.email
+                        ]
 
                     if recipients:
                         if dry_run:

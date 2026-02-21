@@ -983,7 +983,7 @@ def executive_dashboard(request):
 @login_required
 def alert_overview_by_program(request):
     """Safety alert breakdown by program for executive oversight."""
-    from apps.clients.models import ClientFile, ClientProgramEnrolment
+    from apps.clients.views import get_client_queryset
     from apps.programs.models import Program, UserProgramRole
 
     user_program_ids = list(
@@ -996,7 +996,7 @@ def alert_overview_by_program(request):
 
     programs = Program.objects.filter(pk__in=user_program_ids).order_by("name")
     base_client_ids = set(
-        ClientFile.objects.accessible_by(request.user).values_list("pk", flat=True)
+        get_client_queryset(request.user).values_list("pk", flat=True)
     )
     filtered_program_ids = list(programs.values_list("pk", flat=True))
 
