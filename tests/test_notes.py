@@ -352,6 +352,54 @@ class NoteViewsTest(TestCase):
         self.assertContains(resp, "All targets")
         self.assertContains(resp, "Housing stability")
 
+    def test_target_filter_invalid_id_returns_all_notes(self):
+        """Non-existent target ID should show all notes (no crash)."""
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Visible note", author=self.staff,
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/?target=99999")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_target_filter_non_numeric_ignored(self):
+        """Non-numeric target value should be ignored gracefully."""
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Still visible", author=self.staff,
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/participant/{self.client_file.pk}/?target=abc")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_target_filter_inaccessible_target(self):
+        """Target from a different programme should not expose notes."""
+        # Create a target in prog_b (staff has no role in prog_b)
+        section_b = PlanSection.objects.create(
+            client_file=self.other_client, name="Other Goals", program=self.prog_b,
+        )
+        target_b = PlanTarget.objects.create(
+            plan_section=section_b, client_file=self.other_client, name="Other Target",
+        )
+        note_b = ProgressNote.objects.create(
+            client_file=self.other_client, note_type="full",
+            author=self.admin, interaction_type="session",
+        )
+        ProgressNoteTarget.objects.create(progress_note=note_b, plan_target=target_b)
+
+        # Staff user filters their own client's notes with target from other programme
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Own note", author=self.staff,
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(
+            f"/notes/participant/{self.client_file.pk}/?target={target_b.pk}"
+        )
+        self.assertEqual(resp.status_code, 200)
+        # Should not expose notes from the other programme's client
+        self.assertNotContains(resp, f'id="note-{note_b.pk}"')
+
     # -- Full Notes --
 
     def test_full_note_create_with_targets_and_metrics(self):
