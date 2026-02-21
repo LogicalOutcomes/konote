@@ -1,5 +1,6 @@
 """Views for Safety Oversight Reports and Report Scheduling."""
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -77,9 +78,13 @@ def oversight_report_approve(request, report_id):
             "narrative", "approved_by", "approved_at",
         ])
 
-        # If this report is linked to a schedule, mark it generated
+        # Advance only schedules whose due_date falls within or before
+        # this report's period — prevents approving a Q1 report from
+        # advancing an annual schedule due in Q4.
         schedules = ReportSchedule.objects.filter(
-            report_type="oversight", is_active=True,
+            report_type="oversight",
+            is_active=True,
+            due_date__lte=snapshot.period_end,
         )
         for schedule in schedules:
             if (schedule.last_generated_at is None
@@ -87,6 +92,7 @@ def oversight_report_approve(request, report_id):
                 schedule.last_generated_at = timezone.now()
                 schedule.save(update_fields=["last_generated_at", "updated_at"])
                 schedule.advance_due_date()
+                cache.delete("upcoming_report_schedules")
 
     return redirect("reports:oversight_detail", report_id=snapshot.pk)
 
@@ -136,6 +142,7 @@ def report_schedule_create(request):
             schedule = form.save(commit=False)
             schedule.created_by = request.user
             schedule.save()
+            cache.delete("upcoming_report_schedules")
             return redirect("reports:schedule_list")
     else:
         form = ReportScheduleForm()
@@ -157,6 +164,7 @@ def report_schedule_edit(request, schedule_id):
         form = ReportScheduleForm(request.POST, instance=schedule)
         if form.is_valid():
             form.save()
+            cache.delete("upcoming_report_schedules")
             return redirect("reports:schedule_list")
     else:
         form = ReportScheduleForm(instance=schedule)

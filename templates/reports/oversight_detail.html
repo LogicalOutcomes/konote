@@ -155,15 +155,18 @@
 <h2>{% trans "Health Indicators" %}</h2>
 <ul class="health-check">
     <li class="{% if no_aging_alerts %}check-pass{% else %}check-fail{% endif %}">
-        {% if no_aging_alerts %}&#10003;{% else %}&#10007;{% endif %}
+        <span aria-hidden="true">{% if no_aging_alerts %}&#10003;{% else %}&#10007;{% endif %}</span>
+        <span class="visually-hidden">{% if no_aging_alerts %}{% trans "Pass" %}{% else %}{% trans "Fail" %}{% endif %}:</span>
         {% trans "No aging alerts (older than 14 days)" %}
     </li>
     <li class="{% if no_pending_reviews %}check-pass{% else %}check-fail{% endif %}">
-        {% if no_pending_reviews %}&#10003;{% else %}&#10007;{% endif %}
+        <span aria-hidden="true">{% if no_pending_reviews %}&#10003;{% else %}&#10007;{% endif %}</span>
+        <span class="visually-hidden">{% if no_pending_reviews %}{% trans "Pass" %}{% else %}{% trans "Fail" %}{% endif %}:</span>
         {% trans "No pending cancellation reviews" %}
     </li>
     <li class="{% if no_program_concentration %}check-pass{% else %}check-fail{% endif %}">
-        {% if no_program_concentration %}&#10003;{% else %}&#10007;{% endif %}
+        <span aria-hidden="true">{% if no_program_concentration %}&#10003;{% else %}&#10007;{% endif %}</span>
+        <span class="visually-hidden">{% if no_program_concentration %}{% trans "Pass" %}{% else %}{% trans "Fail" %}{% endif %}:</span>
         {% trans "No program concentration detected" %}
     </li>
 </ul>
@@ -184,7 +187,7 @@
 {% if program_breakdown %}
 <h2>{% trans "Program Breakdown" %}</h2>
 <div class="overflow-auto">
-    <table role="grid">
+    <table>
         <thead>
             <tr>
                 <th scope="col">{{ term.program|default:"Program" }}</th>
