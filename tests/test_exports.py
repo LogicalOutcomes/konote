@@ -18,7 +18,11 @@ from django.test import Client as HttpClient, SimpleTestCase, TestCase, override
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.reports.funder_report import format_number, generate_funder_report_csv_rows
+from apps.reports.funder_report import (
+    format_number,
+    generate_funder_report_csv_rows,
+    generate_funder_report_data,
+)
 
 
 class FormatNumberTests(SimpleTestCase):
@@ -433,3 +437,152 @@ class AnalysisChartTimeframeTest(TestCase):
         # Both data points should still be present
         self.assertIn('"value": 3.0', content)
         self.assertIn('"value": 7.0', content)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class FunderReportTemplateMetricFilterTest(TestCase):
+    """Template-defined metrics should filter funder report achievement data."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+        from apps.auth_app.models import User
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+        from apps.plans.models import MetricDefinition, PlanSection, PlanTarget, PlanTargetMetric
+        from apps.programs.models import Program, UserProgramRole
+        from apps.reports.models import Partner, ReportMetric, ReportTemplate
+
+        self.user = User.objects.create_user(
+            username="exec", password="pass", display_name="Exec"
+        )
+        self.program = Program.objects.create(name="Coaching")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role="executive", status="active"
+        )
+
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Template"
+        self.client_file.last_name = "Test"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program, status="enrolled"
+        )
+
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Goals", program=self.program,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Goal 1",
+        )
+
+        # Two metrics: "Score A" and "Score B"
+        self.metric_a = MetricDefinition.objects.create(
+            name="Score A", min_value=0, max_value=10, unit="pts",
+            definition="Metric A", category="general",
+        )
+        self.metric_b = MetricDefinition.objects.create(
+            name="Score B", min_value=0, max_value=10, unit="pts",
+            definition="Metric B", category="general",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=self.metric_a)
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=self.metric_b)
+
+        # Create a note with values for both metrics
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, author=self.user,
+        )
+        pnt = ProgressNoteTarget.objects.create(
+            progress_note=note, plan_target=target,
+        )
+        MetricValue.objects.create(
+            metric_def=self.metric_a, progress_note_target=pnt, value="8",
+        )
+        MetricValue.objects.create(
+            metric_def=self.metric_b, progress_note_target=pnt, value="6",
+        )
+
+        # Create a template with only metric A
+        partner = Partner.objects.create(name="Test Funder", partner_type="funder")
+        self.template = ReportTemplate.objects.create(
+            partner=partner, name="Quarterly Report",
+        )
+        ReportMetric.objects.create(
+            report_template=self.template,
+            metric_definition=self.metric_a,
+            aggregation="threshold_percentage",
+            display_label="Custom Score Label",
+            sort_order=1,
+        )
+
+        # Also create an empty template (no ReportMetric entries)
+        self.empty_template = ReportTemplate.objects.create(
+            partner=partner, name="Empty Template",
+        )
+
+    def tearDown(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+    def test_template_with_metrics_filters_to_those_metrics(self):
+        """When template has ReportMetric entries, only those metrics appear."""
+        data = generate_funder_report_data(
+            self.program,
+            date_from=date(2025, 4, 1),
+            date_to=date(2026, 3, 31),
+            user=self.user,
+            report_template=self.template,
+        )
+        metric_names = [
+            m["metric_name"] for m in data["achievement_summary"]["by_metric"]
+        ]
+        self.assertIn("Score A", metric_names)
+        self.assertNotIn("Score B", metric_names)
+
+    def test_template_without_metrics_includes_all(self):
+        """When template has zero ReportMetric entries, all metrics appear (fallback)."""
+        data = generate_funder_report_data(
+            self.program,
+            date_from=date(2025, 4, 1),
+            date_to=date(2026, 3, 31),
+            user=self.user,
+            report_template=self.empty_template,
+        )
+        metric_names = [
+            m["metric_name"] for m in data["achievement_summary"]["by_metric"]
+        ]
+        self.assertIn("Score A", metric_names)
+        self.assertIn("Score B", metric_names)
+
+    def test_no_template_includes_all(self):
+        """Without a template, all metrics with data appear."""
+        data = generate_funder_report_data(
+            self.program,
+            date_from=date(2025, 4, 1),
+            date_to=date(2026, 3, 31),
+            user=self.user,
+            report_template=None,
+        )
+        metric_names = [
+            m["metric_name"] for m in data["achievement_summary"]["by_metric"]
+        ]
+        self.assertIn("Score A", metric_names)
+        self.assertIn("Score B", metric_names)
+
+    def test_template_display_label_overrides_metric_name(self):
+        """ReportMetric.display_label should override metric_name in results."""
+        data = generate_funder_report_data(
+            self.program,
+            date_from=date(2025, 4, 1),
+            date_to=date(2026, 3, 31),
+            user=self.user,
+            report_template=self.template,
+        )
+        metric_names = [
+            m["metric_name"] for m in data["achievement_summary"]["by_metric"]
+        ]
+        self.assertIn("Custom Score Label", metric_names)
+        self.assertNotIn("Score A", metric_names)
