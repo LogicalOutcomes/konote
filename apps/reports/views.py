@@ -1212,6 +1212,7 @@ def funder_report_form(request):
             "recipient": recipient,
             "secure_link_id": str(link.id),
             "report_template": report_template.name if report_template else None,
+            "partner": report_template.partner.name if report_template and report_template.partner else None,
         },
     )
 
