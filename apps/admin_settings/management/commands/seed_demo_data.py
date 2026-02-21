@@ -67,6 +67,16 @@ from apps.portal.models import (
 )
 from apps.programs.models import Program
 from apps.registration.models import RegistrationLink, RegistrationSubmission
+from apps.surveys.models import (
+    Survey,
+    SurveyAnswer,
+    SurveyAssignment,
+    SurveyLink,
+    SurveyQuestion,
+    SurveyResponse,
+    SurveySection,
+    SurveyTriggerRule,
+)
 from seeds.demo_client_fields import CLIENT_CUSTOM_FIELDS
 
 User = get_user_model()
@@ -1218,6 +1228,19 @@ class Command(BaseCommand):
         except User.DoesNotExist:
             pass
 
+        # Always ensure survey demo data exists (idempotent).
+        try:
+            worker1 = User.objects.get(username="demo-worker-1")
+            manager = User.objects.filter(username="demo-manager").first()
+            self._create_demo_surveys(
+                {"demo-worker-1": worker1},
+                programs_by_name,
+                manager or worker1,
+                timezone.now(),
+            )
+        except User.DoesNotExist:
+            pass
+
         # Check if rich data already exists
         force = options.get("force", False)
         demo_notes_exist = ProgressNote.objects.filter(
@@ -1271,6 +1294,10 @@ class Command(BaseCommand):
             ).delete()[0]
             correction_count = CorrectionRequest.objects.filter(
                 client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
+            # Delete demo surveys (cascade handles sections, questions, assignments, responses, answers)
+            survey_count = Survey.objects.filter(
+                created_by__is_demo=True
             ).delete()[0]
             # Delete registration submissions (keep the link itself)
             submission_count = RegistrationSubmission.objects.filter(
@@ -1362,6 +1389,10 @@ class Command(BaseCommand):
 
         # --- Create registration submissions ---
         self._create_demo_registration_submissions(workers, programs_by_name, now)
+
+        # --- Create demo surveys with assignments and responses ---
+        manager = User.objects.filter(username="demo-manager").first()
+        self._create_demo_surveys(workers, programs_by_name, manager or worker1, now)
 
         # --- Set contact info and messaging consent ---
         self._set_client_contact_and_consent(now)
@@ -3373,3 +3404,381 @@ class Command(BaseCommand):
             created += 1
 
         self.stdout.write(f"  Staff messages: {created} created.")
+
+    def _create_demo_surveys(self, workers, programs_by_name, created_by, now):
+        """Create demo surveys with sections, questions, assignments, and responses.
+
+        Creates:
+        - Client Satisfaction Survey (active) — general service feedback
+        - Programme Feedback Survey (active, bilingual EN/FR) — for French scenarios
+        - Housing Intake Assessment (draft) — shows draft state in list
+        - Assignments to the 3 portal participants (DEMO-001, DEMO-004, DEMO-010)
+        - Completed responses with answers for results views
+        - One trigger rule (enrolment-based)
+        - One shareable link
+        """
+        from apps.portal.models import ParticipantUser
+
+        # --- Survey 1: Client Satisfaction Survey (active) ---
+        satisfaction, created = Survey.objects.get_or_create(
+            name="Client Satisfaction Survey",
+            defaults={
+                "name_fr": "Sondage de satisfaction des participants",
+                "description": "A brief survey about your experience with our services.",
+                "description_fr": "Un bref sondage sur votre expérience avec nos services.",
+                "status": "active",
+                "portal_visible": True,
+                "show_scores_to_participant": True,
+                "created_by": created_by,
+            },
+        )
+
+        if created:
+            # Section 1: Service Quality
+            sec1 = SurveySection.objects.create(
+                survey=satisfaction,
+                title="Service Quality",
+                title_fr="Qualité du service",
+                instructions="Please rate your experience with the following aspects of our services.",
+                instructions_fr="Veuillez évaluer votre expérience avec les aspects suivants de nos services.",
+                sort_order=0,
+                scoring_method="average",
+                max_score=5,
+            )
+            SurveyQuestion.objects.create(
+                section=sec1, sort_order=0, required=True,
+                question_text="How satisfied are you with the support you received?",
+                question_text_fr="Dans quelle mesure êtes-vous satisfait(e) du soutien reçu?",
+                question_type="rating_scale",
+                min_value=1, max_value=5,
+            )
+            SurveyQuestion.objects.create(
+                section=sec1, sort_order=1, required=True,
+                question_text="How would you rate the communication with your worker?",
+                question_text_fr="Comment évaluez-vous la communication avec votre intervenant(e)?",
+                question_type="rating_scale",
+                min_value=1, max_value=5,
+            )
+            SurveyQuestion.objects.create(
+                section=sec1, sort_order=2, required=True,
+                question_text="Do you feel your goals are being addressed?",
+                question_text_fr="Sentez-vous que vos objectifs sont pris en compte?",
+                question_type="single_choice",
+                options_json=[
+                    {"value": "yes", "label": "Yes", "label_fr": "Oui", "score": 5},
+                    {"value": "somewhat", "label": "Somewhat", "label_fr": "En partie", "score": 3},
+                    {"value": "no", "label": "No", "label_fr": "Non", "score": 1},
+                ],
+            )
+            low_rating_q = SurveyQuestion.objects.create(
+                section=sec1, sort_order=3, required=False,
+                question_text="Would you recommend our services to someone in a similar situation?",
+                question_text_fr="Recommanderiez-vous nos services à quelqu'un dans une situation similaire?",
+                question_type="yes_no",
+            )
+
+            # Section 2: Additional Feedback (conditional — shows when "No" to goals question)
+            goals_q = SurveyQuestion.objects.filter(
+                section=sec1, sort_order=2
+            ).first()
+            sec2 = SurveySection.objects.create(
+                survey=satisfaction,
+                title="Additional Feedback",
+                title_fr="Commentaires supplémentaires",
+                instructions="We'd love to hear more about your experience.",
+                instructions_fr="Nous aimerions en savoir plus sur votre expérience.",
+                sort_order=1,
+                page_break=True,
+                condition_question=goals_q,
+                condition_value="no",
+            )
+            SurveyQuestion.objects.create(
+                section=sec2, sort_order=0, required=False,
+                question_text="What could we do better?",
+                question_text_fr="Que pourrions-nous améliorer?",
+                question_type="long_text",
+            )
+            SurveyQuestion.objects.create(
+                section=sec2, sort_order=1, required=False,
+                question_text="Is there anything else you'd like us to know?",
+                question_text_fr="Y a-t-il autre chose que vous aimeriez nous dire?",
+                question_type="long_text",
+            )
+
+        # --- Survey 2: Programme Feedback Survey (active, bilingual) ---
+        feedback, created_fb = Survey.objects.get_or_create(
+            name="Programme Feedback Survey",
+            defaults={
+                "name_fr": "Sondage d'évaluation du programme",
+                "description": "Help us understand how the programme is working for you.",
+                "description_fr": "Aidez-nous à comprendre comment le programme fonctionne pour vous.",
+                "status": "active",
+                "portal_visible": True,
+                "created_by": created_by,
+            },
+        )
+
+        if created_fb:
+            sec_fb1 = SurveySection.objects.create(
+                survey=feedback,
+                title="Programme Experience",
+                title_fr="Expérience du programme",
+                sort_order=0,
+                scoring_method="sum",
+                max_score=20,
+            )
+            SurveyQuestion.objects.create(
+                section=sec_fb1, sort_order=0, required=True,
+                question_text="How often do you attend programme activities?",
+                question_text_fr="À quelle fréquence participez-vous aux activités du programme?",
+                question_type="single_choice",
+                options_json=[
+                    {"value": "weekly", "label": "Weekly", "label_fr": "Chaque semaine", "score": 5},
+                    {"value": "biweekly", "label": "Every two weeks", "label_fr": "Aux deux semaines", "score": 4},
+                    {"value": "monthly", "label": "Monthly", "label_fr": "Chaque mois", "score": 3},
+                    {"value": "rarely", "label": "Rarely", "label_fr": "Rarement", "score": 1},
+                ],
+            )
+            SurveyQuestion.objects.create(
+                section=sec_fb1, sort_order=1, required=True,
+                question_text="How helpful has the programme been for you?",
+                question_text_fr="Dans quelle mesure le programme vous a-t-il aidé(e)?",
+                question_type="rating_scale",
+                min_value=1, max_value=5,
+            )
+            SurveyQuestion.objects.create(
+                section=sec_fb1, sort_order=2, required=True,
+                question_text="Which aspects of the programme do you find most useful?",
+                question_text_fr="Quels aspects du programme trouvez-vous les plus utiles?",
+                question_type="multiple_choice",
+                options_json=[
+                    {"value": "one_on_one", "label": "One-on-one meetings", "label_fr": "Rencontres individuelles"},
+                    {"value": "group", "label": "Group activities", "label_fr": "Activités de groupe"},
+                    {"value": "resources", "label": "Resources and referrals", "label_fr": "Ressources et références"},
+                    {"value": "goal_setting", "label": "Goal setting", "label_fr": "Établissement d'objectifs"},
+                ],
+            )
+
+            sec_fb2 = SurveySection.objects.create(
+                survey=feedback,
+                title="Suggestions",
+                title_fr="Suggestions",
+                instructions="Share your ideas for how we can improve.",
+                instructions_fr="Partagez vos idées pour nous aider à nous améliorer.",
+                sort_order=1,
+                page_break=True,
+            )
+            SurveyQuestion.objects.create(
+                section=sec_fb2, sort_order=0, required=False,
+                question_text="What would you change about the programme?",
+                question_text_fr="Que changeriez-vous dans le programme?",
+                question_type="short_text",
+            )
+
+        # --- Survey 3: Housing Intake Assessment (draft) ---
+        housing_survey, created_hs = Survey.objects.get_or_create(
+            name="Housing Intake Assessment",
+            defaults={
+                "name_fr": "Évaluation d'admission au logement",
+                "description": "Initial assessment for housing programme participants.",
+                "description_fr": "Évaluation initiale pour les participants au programme de logement.",
+                "status": "draft",
+                "portal_visible": False,
+                "created_by": created_by,
+            },
+        )
+
+        if created_hs:
+            sec_hs = SurveySection.objects.create(
+                survey=housing_survey,
+                title="Housing Situation",
+                title_fr="Situation de logement",
+                sort_order=0,
+            )
+            SurveyQuestion.objects.create(
+                section=sec_hs, sort_order=0, required=True,
+                question_text="What is your current housing situation?",
+                question_text_fr="Quelle est votre situation de logement actuelle?",
+                question_type="single_choice",
+                options_json=[
+                    {"value": "stable", "label": "Stable housing", "label_fr": "Logement stable"},
+                    {"value": "temporary", "label": "Temporary housing", "label_fr": "Logement temporaire"},
+                    {"value": "shelter", "label": "Shelter", "label_fr": "Refuge"},
+                    {"value": "none", "label": "No housing", "label_fr": "Sans logement"},
+                ],
+            )
+            SurveyQuestion.objects.create(
+                section=sec_hs, sort_order=1, required=False,
+                question_text="How long have you been in your current situation?",
+                question_text_fr="Depuis combien de temps êtes-vous dans cette situation?",
+                question_type="short_text",
+            )
+
+        # --- Trigger Rule: auto-assign satisfaction survey on enrolment ---
+        employment = programs_by_name.get("Supported Employment")
+        if satisfaction and employment:
+            SurveyTriggerRule.objects.get_or_create(
+                survey=satisfaction,
+                trigger_type="enrolment",
+                program=employment,
+                defaults={
+                    "repeat_policy": "once_per_participant",
+                    "auto_assign": True,
+                    "due_days": 30,
+                    "is_active": True,
+                    "created_by": created_by,
+                },
+            )
+
+        # --- Shareable Link for satisfaction survey ---
+        if satisfaction:
+            SurveyLink.objects.get_or_create(
+                survey=satisfaction,
+                defaults={
+                    "is_active": True,
+                    "collect_name": True,
+                    "created_by": created_by,
+                },
+            )
+
+        # --- Assignments and Responses ---
+        portal_clients = [
+            ("DEMO-001", "demo-worker-1"),
+            ("DEMO-004", "demo-worker-1"),
+            ("DEMO-010", "demo-worker-2"),
+        ]
+
+        worker1 = workers.get("demo-worker-1")
+        assignments_created = 0
+        responses_created = 0
+
+        for record_id, worker_username in portal_clients:
+            client = ClientFile.objects.filter(record_id=record_id).first()
+            if not client:
+                continue
+            participant = ParticipantUser.objects.filter(client_file=client).first()
+            if not participant:
+                continue
+
+            assigned_by = workers.get(worker_username, worker1)
+
+            # Assign satisfaction survey to all 3 portal participants
+            assign_sat, a_created = SurveyAssignment.objects.get_or_create(
+                survey=satisfaction,
+                participant_user=participant,
+                client_file=client,
+                defaults={
+                    "status": "completed" if record_id == "DEMO-001" else "pending",
+                    "assigned_by": assigned_by,
+                    "due_date": (now + timedelta(days=14)).date(),
+                },
+            )
+            if a_created:
+                assignments_created += 1
+                # Backdate
+                SurveyAssignment.objects.filter(pk=assign_sat.pk).update(
+                    created_at=now - timedelta(days=7),
+                )
+
+            # Create a completed response for DEMO-001 (Jordan)
+            if record_id == "DEMO-001" and a_created:
+                response = SurveyResponse.objects.create(
+                    survey=satisfaction,
+                    assignment=assign_sat,
+                    client_file=client,
+                    channel="portal",
+                )
+                # Backdate submission
+                SurveyResponse.objects.filter(pk=response.pk).update(
+                    submitted_at=now - timedelta(days=3),
+                )
+                # Fill in answers for section 1 questions
+                questions = SurveyQuestion.objects.filter(
+                    section__survey=satisfaction,
+                ).order_by("section__sort_order", "sort_order")
+                demo_answers = [
+                    ("4", 4),   # satisfaction rating
+                    ("5", 5),   # communication rating
+                    ("yes", None),  # goals addressed
+                    ("yes", None),  # recommend
+                ]
+                for q, (val, numeric) in zip(questions, demo_answers):
+                    answer = SurveyAnswer(
+                        response=response,
+                        question=q,
+                        numeric_value=numeric,
+                    )
+                    answer.value = val
+                    answer.save()
+                responses_created += 1
+
+                # Mark assignment as completed
+                SurveyAssignment.objects.filter(pk=assign_sat.pk).update(
+                    status="completed",
+                    completed_at=now - timedelta(days=3),
+                    started_at=now - timedelta(days=3, hours=1),
+                )
+
+            # Assign programme feedback survey to DEMO-001 and DEMO-010
+            if record_id in ("DEMO-001", "DEMO-010"):
+                assign_fb, fb_created = SurveyAssignment.objects.get_or_create(
+                    survey=feedback,
+                    participant_user=participant,
+                    client_file=client,
+                    defaults={
+                        "status": "pending",
+                        "assigned_by": assigned_by,
+                        "due_date": (now + timedelta(days=21)).date(),
+                    },
+                )
+                if fb_created:
+                    assignments_created += 1
+
+        # --- Staff-entered response for DEMO-004 (Sam) on satisfaction ---
+        sam_client = ClientFile.objects.filter(record_id="DEMO-004").first()
+        if sam_client:
+            existing_staff_response = SurveyResponse.objects.filter(
+                survey=satisfaction, client_file=sam_client, channel="staff_entered",
+            ).exists()
+            if not existing_staff_response:
+                sam_assign = SurveyAssignment.objects.filter(
+                    survey=satisfaction, client_file=sam_client,
+                ).first()
+                response_staff = SurveyResponse.objects.create(
+                    survey=satisfaction,
+                    assignment=sam_assign,
+                    client_file=sam_client,
+                    channel="staff_entered",
+                )
+                SurveyResponse.objects.filter(pk=response_staff.pk).update(
+                    submitted_at=now - timedelta(days=1),
+                )
+                questions = SurveyQuestion.objects.filter(
+                    section__survey=satisfaction,
+                ).order_by("section__sort_order", "sort_order")
+                staff_answers = [
+                    ("3", 3),
+                    ("4", 4),
+                    ("somewhat", None),
+                    ("yes", None),
+                ]
+                for q, (val, numeric) in zip(questions, staff_answers):
+                    answer = SurveyAnswer(
+                        response=response_staff,
+                        question=q,
+                        numeric_value=numeric,
+                    )
+                    answer.value = val
+                    answer.save()
+                responses_created += 1
+                if sam_assign:
+                    SurveyAssignment.objects.filter(pk=sam_assign.pk).update(
+                        status="completed",
+                        completed_at=now - timedelta(days=1),
+                    )
+
+        survey_count = Survey.objects.count()
+        self.stdout.write(
+            f"  Surveys: {survey_count} surveys, {assignments_created} assignments, "
+            f"{responses_created} responses created."
+        )
