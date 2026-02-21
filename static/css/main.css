@@ -77,6 +77,39 @@
     }
 }
 
+/* ---- Report deadline banners ---- */
+.report-deadline-banner {
+    padding: 0.5rem 1rem;
+    text-align: center;
+    font-size: 0.9rem;
+}
+.report-deadline-overdue {
+    background-color: #fee2e2; /* red-100 */
+    border-bottom: 2px solid #ef4444; /* red-500 */
+    color: #991b1b; /* red-800 */
+}
+.report-deadline-upcoming {
+    background-color: #dbeafe; /* blue-100 */
+    border-bottom: 2px solid #3b82f6; /* blue-500 */
+    color: #1e3a5f;
+}
+.report-deadline-banner a {
+    color: inherit;
+    font-weight: bold;
+}
+@media (prefers-color-scheme: dark) {
+    .report-deadline-overdue {
+        background-color: #450a0a;
+        border-bottom-color: #dc2626;
+        color: #fca5a5;
+    }
+    .report-deadline-upcoming {
+        background-color: #1e2a4a;
+        border-bottom-color: #3b82f6;
+        color: #93c5fd;
+    }
+}
+
 /* ---- Offline banner (BUG-6) ---- */
 .offline-banner {
     background-color: #fef3cd;

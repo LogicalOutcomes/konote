@@ -39,6 +39,24 @@
     </div>
     {% endif %}
 
+    {% if overdue_reports %}
+    <div class="report-deadline-banner report-deadline-overdue" role="alert">
+        <strong>{% trans "Overdue:" %}</strong>
+        {% for schedule in overdue_reports %}
+        {{ schedule.name }} ({% trans "due" %} {{ schedule.due_date|date:"M j" }}){% if not forloop.last %}, {% endif %}
+        {% endfor %}
+        — <a href="{% url 'reports:schedule_list' %}">{% trans "View schedules" %}</a>
+    </div>
+    {% elif upcoming_reports %}
+    <div class="report-deadline-banner report-deadline-upcoming" role="alert">
+        <strong>{% trans "Upcoming:" %}</strong>
+        {% for schedule in upcoming_reports %}
+        {{ schedule.name }} ({% trans "due" %} {{ schedule.due_date|date:"M j" }}){% if not forloop.last %}, {% endif %}
+        {% endfor %}
+        — <a href="{% url 'reports:schedule_list' %}">{% trans "View schedules" %}</a>
+    </div>
+    {% endif %}
+
     {% if not user.is_authenticated %}
     <nav class="container-fluid">
         <ul>
@@ -118,6 +136,7 @@
                         <li><a href="{% url 'registration:submission_list' %}">{% trans "Pending Submissions" %}{% if pending_submissions_count %} <span class="badge badge-warning">{{ pending_submissions_count }}</span>{% endif %}</a></li>
                         <li><a href="{% url 'admin_settings:dashboard' %}">{% trans "Settings" %}</a></li>
                         <li><a href="{% url 'admin_settings:report_template_list' %}">{% trans "Report Templates" %}</a></li>
+                        <li><a href="{% url 'reports:oversight_list' %}">{% trans "Safety Oversight" %}</a></li>
                         <li><a href="{% url 'admin_users:invite_list' %}">{% trans "New Users" %}</a></li>
                         <li><a href="{% url 'audit:audit_log_list' %}">{% trans "Audit Log" %}</a></li>
                         <li><a href="{% url 'merge_candidates_list' %}">{% trans "Merge Duplicates" %}</a></li>

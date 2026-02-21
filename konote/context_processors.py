@@ -342,6 +342,33 @@ def unread_messages(request):
     return {"unread_message_count": count if count > 0 else None}
 
 
+def upcoming_reports(request):
+    """Inject upcoming/overdue report schedule info for dashboard banner.
+
+    Only calculated for authenticated admin users. Cached 5 minutes.
+    """
+    if not hasattr(request, "user") or not request.user.is_authenticated:
+        return {}
+
+    if not request.user.is_admin:
+        return {}
+
+    from apps.reports.models import ReportSchedule
+
+    cache_key = "upcoming_report_schedules"
+    result = cache.get(cache_key)
+    if result is None:
+        active_schedules = ReportSchedule.objects.filter(is_active=True)
+        overdue = [s for s in active_schedules if s.is_overdue]
+        due_soon = [s for s in active_schedules if s.is_due_soon and not s.is_overdue]
+        result = {
+            "overdue_reports": overdue,
+            "upcoming_reports": due_soon,
+        }
+        cache.set(cache_key, result, 300)  # 5 min cache
+    return result
+
+
 def active_program_context(request):
     """Inject active program context for the program switcher (CONF9).
 
