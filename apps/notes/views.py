@@ -484,6 +484,8 @@ def note_create(request, client_id):
                     participant_suggestion=form.cleaned_data.get("participant_suggestion", ""),
                     suggestion_priority=form.cleaned_data.get("suggestion_priority", ""),
                     engagement_observation=form.cleaned_data.get("engagement_observation", ""),
+                    alliance_rating=form.cleaned_data.get("alliance_rating") or None,
+                    alliance_rater=form.cleaned_data.get("alliance_rater", ""),
                     follow_up_date=form.cleaned_data.get("follow_up_date"),
                 )
                 session_date = form.cleaned_data.get("session_date")
