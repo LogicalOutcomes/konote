@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 from django.db.models import Count
 
 from apps.auth_app.decorators import requires_permission
-from apps.programs.access import get_accessible_programs, get_client_or_403
+from apps.programs.access import get_client_or_403
 from apps.programs.models import UserProgramRole
 from apps.notes.models import (
     ProgressNote, SuggestionLink, SuggestionTheme,
@@ -276,7 +276,9 @@ def program_insights(request):
         achievement_rates_data = get_achievement_rates(program, date_from, date_to)
         metric_trends = get_metric_trends(program, date_from, date_to)
         data_completeness = get_data_completeness(program, date_from, date_to)
-        two_lenses = get_two_lenses(program, date_from, date_to)
+        two_lenses = get_two_lenses(program, date_from, date_to,
+                                    structured=structured,
+                                    distributions=metric_distributions)
 
         # Enrich achievement rates with not-achieved count and journey context
         for metric_id, ach in achievement_rates_data.items():

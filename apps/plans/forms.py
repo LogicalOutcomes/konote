@@ -1,4 +1,6 @@
 """Plan forms — ModelForms for sections, targets, metrics."""
+import json
+
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
@@ -151,6 +153,37 @@ class MetricDefinitionForm(forms.ModelForm):
             )
             self.fields["owning_program"].empty_label = None
             self.fields["owning_program"].required = True
+
+    def _clean_json_list_field(self, field_name):
+        """Validate that a field contains a JSON list (or is empty)."""
+        value = self.cleaned_data.get(field_name)
+        if not value:
+            return []
+        if isinstance(value, list):
+            return value
+        # If it's a string (from Textarea), try to parse it
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                return []
+            try:
+                parsed = json.loads(value)
+            except (json.JSONDecodeError, ValueError):
+                raise forms.ValidationError(
+                    _('Please enter a valid JSON list, e.g. ["Option 1", "Option 2"].')
+                )
+            if not isinstance(parsed, list):
+                raise forms.ValidationError(
+                    _("This field must be a list, e.g. [\"Option 1\", \"Option 2\"].")
+                )
+            return parsed
+        return value
+
+    def clean_achievement_options(self):
+        return self._clean_json_list_field("achievement_options")
+
+    def clean_achievement_success_values(self):
+        return self._clean_json_list_field("achievement_success_values")
 
 
 class GoalForm(forms.Form):

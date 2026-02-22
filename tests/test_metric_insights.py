@@ -465,3 +465,266 @@ class MetricDefinitionValidationTest(TestCase):
         )
         self.assertEqual(metric.metric_type, "scale")
         self.assertTrue(metric.higher_is_better)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class MetricTrendsTest(TestCase):
+    """Test monthly band trend calculation."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program", status="active")
+        self.user = User.objects.create_user(username="worker", password="testpass123")
+        self.metric = MetricDefinition.objects.create(
+            name="Goal Progress", category="general",
+            is_universal=True, metric_type="scale",
+            min_value=1, max_value=5,
+            threshold_low=2, threshold_high=4,
+            higher_is_better=True,
+        )
+        self.date_from = date.today() - timedelta(days=180)
+        self.date_to = date.today()
+
+    def _create_participant_with_monthly_scores(self, record_id, monthly_scores):
+        """Create a participant with scores in specific months.
+
+        monthly_scores: list of (month_offset_days, score) tuples
+        """
+        client = ClientFile.objects.create(record_id=record_id)
+        ClientProgramEnrolment.objects.create(
+            client_file=client, program=self.program, status="enrolled",
+        )
+        section = PlanSection.objects.create(
+            client_file=client, name="Section", program=self.program,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=client, name="Goal",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=self.metric)
+
+        for offset_days, score in monthly_scores:
+            note = ProgressNote.objects.create(
+                client_file=client, note_type="full",
+                author=self.user, author_program=self.program,
+                backdate=timezone.now() - timedelta(days=offset_days),
+            )
+            pnt = ProgressNoteTarget.objects.create(
+                progress_note=note, plan_target=target,
+            )
+            MetricValue.objects.create(
+                progress_note_target=pnt, metric_def=self.metric,
+                value=str(score),
+            )
+        return client
+
+    def test_monthly_bucketing(self):
+        """Trends should produce monthly data points."""
+        # Create 12 participants with scores in 2 different months
+        for i in range(12):
+            self._create_participant_with_monthly_scores(
+                f"TREND-{i:03d}",
+                [(60, 4), (10, 4)],  # Two months apart, 2 assessments each
+            )
+
+        result = get_metric_trends(self.program, self.date_from, self.date_to)
+        trend = result.get(self.metric.pk)
+        self.assertIsNotNone(trend)
+        self.assertGreaterEqual(len(trend), 1)
+        # Each point has the expected keys
+        for point in trend:
+            self.assertIn("month", point)
+            self.assertIn("band_low_pct", point)
+            self.assertIn("band_high_pct", point)
+            self.assertIn("total", point)
+
+    def test_new_participants_excluded_from_trends(self):
+        """Participants with only 1 assessment total should be excluded."""
+        # 10 participants with 2 assessments (included)
+        for i in range(10):
+            self._create_participant_with_monthly_scores(
+                f"MULTI-{i:03d}", [(60, 4), (10, 4)],
+            )
+        # 5 participants with only 1 assessment (excluded)
+        for i in range(5):
+            self._create_participant_with_monthly_scores(
+                f"NEW-{i:03d}", [(10, 4)],
+            )
+
+        result = get_metric_trends(self.program, self.date_from, self.date_to)
+        trend = result.get(self.metric.pk)
+        self.assertIsNotNone(trend)
+        # Each month's total should not include new participants
+        for point in trend:
+            self.assertLessEqual(point["total"], 10)
+
+    def test_month_below_n_threshold_excluded(self):
+        """Months with fewer than 10 included participants should be excluded."""
+        # Only 5 participants — no month should meet the n>=10 threshold
+        for i in range(5):
+            self._create_participant_with_monthly_scores(
+                f"FEW-{i:03d}", [(60, 4), (10, 4)],
+            )
+
+        result = get_metric_trends(self.program, self.date_from, self.date_to)
+        # Should have no trend data (or metric not in results)
+        self.assertNotIn(self.metric.pk, result)
+
+
+class TrendDirectionTest(TestCase):
+    """Test _compute_trend_direction helper."""
+
+    def test_improving_trend(self):
+        from apps.reports.insights_views import _compute_trend_direction
+        trend_data = [
+            {"good_place": 20, "shifting": 10},
+            {"good_place": 30, "shifting": 15},
+        ]
+        result = _compute_trend_direction(trend_data)
+        self.assertIn("improving", result.lower() if hasattr(result, 'lower') else str(result))
+
+    def test_declining_trend(self):
+        from apps.reports.insights_views import _compute_trend_direction
+        trend_data = [
+            {"good_place": 40, "shifting": 20},
+            {"good_place": 25, "shifting": 10},
+        ]
+        result = _compute_trend_direction(trend_data)
+        self.assertIn("declining", result.lower() if hasattr(result, 'lower') else str(result))
+
+    def test_stable_trend(self):
+        from apps.reports.insights_views import _compute_trend_direction
+        trend_data = [
+            {"good_place": 30, "shifting": 20},
+            {"good_place": 31, "shifting": 21},
+        ]
+        result = _compute_trend_direction(trend_data)
+        self.assertIn("stable", result.lower() if hasattr(result, 'lower') else str(result))
+
+    def test_single_data_point_returns_empty(self):
+        from apps.reports.insights_views import _compute_trend_direction
+        result = _compute_trend_direction([{"good_place": 30, "shifting": 20}])
+        self.assertEqual(result, "")
+
+    def test_empty_data_returns_empty(self):
+        from apps.reports.insights_views import _compute_trend_direction
+        self.assertEqual(_compute_trend_direction([]), "")
+        self.assertEqual(_compute_trend_direction(None), "")
+
+
+class SummaryBuildersTest(TestCase):
+    """Test _build_distributions_summary and _build_outcomes_summary."""
+
+    def test_distributions_summary_empty(self):
+        from apps.reports.insights_views import _build_distributions_summary
+        self.assertEqual(_build_distributions_summary({}), "")
+        self.assertEqual(_build_distributions_summary(None), "")
+
+    def test_distributions_summary_with_data(self):
+        from apps.reports.insights_views import _build_distributions_summary
+        distributions = {
+            1: {"total": 20, "band_low_pct": 25.0},
+            2: {"total": 10, "band_low_pct": 10.0},
+        }
+        result = _build_distributions_summary(distributions)
+        self.assertIn("30", result)  # total_scored = 20 + 10
+
+    def test_outcomes_summary_empty(self):
+        from apps.reports.insights_views import _build_outcomes_summary
+        self.assertEqual(_build_outcomes_summary({}), "")
+        self.assertEqual(_build_outcomes_summary(None), "")
+
+    def test_outcomes_summary_with_data(self):
+        from apps.reports.insights_views import _build_outcomes_summary
+        achievements = {
+            1: {"achieved_pct": 70.0, "name": "Employment", "target_rate": 80},
+        }
+        result = _build_outcomes_summary(achievements)
+        self.assertIn("70.0%", result)
+        self.assertIn("Employment", result)
+        self.assertIn("target: 80%", result)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ReEnrolmentDuplicateTest(TestCase):
+    """Test that re-enrolled participants are not double-counted."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program", status="active")
+        self.user = User.objects.create_user(username="worker", password="testpass123")
+        self.metric = MetricDefinition.objects.create(
+            name="Goal Progress", category="general",
+            is_universal=True, metric_type="scale",
+            min_value=1, max_value=5,
+            threshold_low=2, threshold_high=4,
+            higher_is_better=True,
+        )
+        self.date_from = date.today() - timedelta(days=90)
+        self.date_to = date.today()
+
+    def test_dual_enrolment_no_value_inflation(self):
+        """A participant with two active enrolments should not have inflated values."""
+        client = ClientFile.objects.create(record_id="DUAL-ENROL-001")
+        # Two active enrolments for the same program (data quality issue)
+        ClientProgramEnrolment.objects.create(
+            client_file=client, program=self.program, status="enrolled",
+        )
+        ClientProgramEnrolment.objects.create(
+            client_file=client, program=self.program, status="enrolled",
+        )
+
+        section = PlanSection.objects.create(
+            client_file=client, name="Section", program=self.program,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=client, name="Goal",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=self.metric)
+
+        # Two notes with scores
+        for i in range(2):
+            note = ProgressNote.objects.create(
+                client_file=client, note_type="full",
+                author=self.user, author_program=self.program,
+                backdate=timezone.now() - timedelta(days=i + 1),
+            )
+            pnt = ProgressNoteTarget.objects.create(
+                progress_note=note, plan_target=target,
+            )
+            MetricValue.objects.create(
+                progress_note_target=pnt, metric_def=self.metric,
+                value="4",
+            )
+
+        # Add 9 more normal participants to meet threshold
+        for i in range(9):
+            c = ClientFile.objects.create(record_id=f"NORMAL-{i:03d}")
+            ClientProgramEnrolment.objects.create(
+                client_file=c, program=self.program, status="enrolled",
+            )
+            s = PlanSection.objects.create(
+                client_file=c, name="Section", program=self.program,
+            )
+            t = PlanTarget.objects.create(
+                plan_section=s, client_file=c, name="Goal",
+            )
+            PlanTargetMetric.objects.create(plan_target=t, metric_def=self.metric)
+            for j in range(2):
+                note = ProgressNote.objects.create(
+                    client_file=c, note_type="full",
+                    author=self.user, author_program=self.program,
+                    backdate=timezone.now() - timedelta(days=j + 1),
+                )
+                pnt = ProgressNoteTarget.objects.create(
+                    progress_note=note, plan_target=t,
+                )
+                MetricValue.objects.create(
+                    progress_note_target=pnt, metric_def=self.metric,
+                    value="4",
+                )
+
+        result = get_metric_distributions(self.program, self.date_from, self.date_to)
+        dist = result.get(self.metric.pk)
+        self.assertIsNotNone(dist)
+        # The dual-enrolled participant should be counted once, total = 10
+        self.assertEqual(dist["total"], 10)

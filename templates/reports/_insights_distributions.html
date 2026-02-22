@@ -14,19 +14,16 @@
         {% if dist.band_low_pct > 0 %}
         <div class="insights-bar-segment band-low" style="width: {{ dist.band_low_pct }}%;"
              title="{% trans 'More support needed' %}: {{ dist.band_low_pct }}%">
-            {% if dist.band_low_pct >= 10 %}{{ dist.band_low_pct }}%{% endif %}
         </div>
         {% endif %}
         {% if dist.band_mid_pct > 0 %}
         <div class="insights-bar-segment band-mid" style="width: {{ dist.band_mid_pct }}%;"
              title="{% trans 'On track' %}: {{ dist.band_mid_pct }}%">
-            {% if dist.band_mid_pct >= 10 %}{{ dist.band_mid_pct }}%{% endif %}
         </div>
         {% endif %}
         {% if dist.band_high_pct > 0 %}
         <div class="insights-bar-segment band-high" style="width: {{ dist.band_high_pct }}%;"
              title="{% trans 'Goals within reach' %}: {{ dist.band_high_pct }}%">
-            {% if dist.band_high_pct >= 10 %}{{ dist.band_high_pct }}%{% endif %}
         </div>
         {% endif %}
     </div>
@@ -100,7 +97,7 @@
 {# New participant note #}
 {% if total_new_participants > 0 %}
 <p class="insights-new-participant-note muted">
-    {% blocktrans with count=total_new_participants count counter=total_new_participants %}{{ count }} participant has only one assessment — not included in distributions.{% plural %}{{ count }} participants have only one assessment — not included in distributions.{% endblocktrans %}
+    {% blocktrans with count=total_new_participants count counter=total_new_participants %}{{ count }} participant has only one assessment — not included in distributions because a second assessment is needed to show their trajectory.{% plural %}{{ count }} participants have only one assessment — not included in distributions because a second assessment is needed to show their trajectory.{% endblocktrans %}
     {% trans "Movement tracking — who is progressing between bands over time — will be available in a future update." %}
 </p>
 {% endif %}
