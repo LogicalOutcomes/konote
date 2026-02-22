@@ -1,6 +1,10 @@
 """Forms for the reports app — metric export filtering, report templates, and individual client export."""
+import calendar
+from datetime import date
+
 from django import forms
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext
 
 from apps.programs.models import Program
 from apps.plans.models import MetricDefinition
@@ -424,6 +428,352 @@ class PartnerForm(forms.ModelForm):
             raise forms.ValidationError(
                 _("Grant period start must be before grant period end.")
             )
+        return cleaned
+
+
+# ---------------------------------------------------------------------------
+# Template-driven report generation (DRR: reporting-architecture.md)
+# ---------------------------------------------------------------------------
+
+
+def _get_period_start_month(template):
+    """Determine the year/period start month based on template alignment."""
+    if template.period_alignment == "fiscal":
+        return template.fiscal_year_start_month or 4  # Default: April
+    elif template.period_alignment == "calendar":
+        return 1
+    elif template.period_alignment == "grant":
+        partner = template.partner
+        if partner and partner.grant_period_start:
+            return partner.grant_period_start.month
+        return template.fiscal_year_start_month or 4  # Fallback to fiscal
+    return 4
+
+
+def _fiscal_year_label(start_month, year, month):
+    """Return e.g. 'FY2025-26' for fiscal years, or just '2026' for calendar."""
+    if start_month == 1:
+        return str(year)
+    # Determine the fiscal year that contains this month
+    if month >= start_month:
+        fy_start = year
+    else:
+        fy_start = year - 1
+    fy_end_short = str(fy_start + 1)[-2:]
+    return f"FY{fy_start}-{fy_end_short}"
+
+
+def build_period_choices(template):
+    """
+    Build (value, label) choices for the period dropdown.
+
+    Value format: "YYYY-MM-DD|YYYY-MM-DD" (pipe-delimited start|end dates).
+    Returns empty list for custom period_type (uses raw date inputs instead).
+    """
+    today = date.today()
+
+    if template.period_type == "custom":
+        return []
+
+    start_month = _get_period_start_month(template)
+
+    if template.period_type == "monthly":
+        choices = []
+        for i in range(12):
+            m = today.month - i
+            y = today.year
+            while m < 1:
+                m += 12
+                y -= 1
+            last_day = calendar.monthrange(y, m)[1]
+            start = date(y, m, 1)
+            end = date(y, m, last_day)
+            label = start.strftime("%B %Y")
+            choices.append((f"{start}|{end}", label))
+        return choices
+
+    if template.period_type == "quarterly":
+        return _build_quarter_choices(start_month, today, count=8)
+
+    if template.period_type == "semi_annual":
+        return _build_half_choices(start_month, today, count=4)
+
+    if template.period_type == "annual":
+        return _build_annual_choices(start_month, today, count=5)
+
+    return []
+
+
+def _build_quarter_choices(start_month, today, count=8):
+    """Build quarterly period choices working backwards from today."""
+    choices = []
+
+    # Find which quarter we're currently in
+    # Quarters are relative to start_month
+    months_into_year = (today.month - start_month) % 12
+    current_q = months_into_year // 3  # 0-indexed quarter
+    # Start of current quarter
+    q_month = start_month + current_q * 3
+    q_year = today.year
+    if today.month < start_month:
+        q_year -= 1
+    # Normalise month overflow
+    while q_month > 12:
+        q_month -= 12
+        q_year += 1
+
+    for _ in range(count):
+        q_start = date(q_year, q_month, 1)
+        # End is last day of the 3rd month of the quarter
+        end_month = q_month + 2
+        end_year = q_year
+        while end_month > 12:
+            end_month -= 12
+            end_year += 1
+        last_day = calendar.monthrange(end_year, end_month)[1]
+        q_end = date(end_year, end_month, last_day)
+
+        # Quarter number (1-4)
+        q_num = ((q_month - start_month) % 12) // 3 + 1
+        fy_label = _fiscal_year_label(start_month, q_year, q_month)
+
+        # Month abbreviations for the quarter
+        m1 = date(q_year, q_month, 1).strftime("%b")
+        m3 = date(end_year, end_month, 1).strftime("%b")
+        label = f"Q{q_num} {fy_label} ({m1}\u2013{m3})"
+
+        choices.append((f"{q_start}|{q_end}", label))
+
+        # Move back one quarter
+        q_month -= 3
+        if q_month < 1:
+            q_month += 12
+            q_year -= 1
+
+    return choices
+
+
+def _build_half_choices(start_month, today, count=4):
+    """Build semi-annual period choices working backwards from today."""
+    choices = []
+
+    months_into_year = (today.month - start_month) % 12
+    current_h = months_into_year // 6  # 0 or 1
+    h_month = start_month + current_h * 6
+    h_year = today.year
+    if today.month < start_month:
+        h_year -= 1
+    while h_month > 12:
+        h_month -= 12
+        h_year += 1
+
+    for _ in range(count):
+        h_start = date(h_year, h_month, 1)
+        end_month = h_month + 5
+        end_year = h_year
+        while end_month > 12:
+            end_month -= 12
+            end_year += 1
+        last_day = calendar.monthrange(end_year, end_month)[1]
+        h_end = date(end_year, end_month, last_day)
+
+        h_num = ((h_month - start_month) % 12) // 6 + 1
+        fy_label = _fiscal_year_label(start_month, h_year, h_month)
+        m1 = date(h_year, h_month, 1).strftime("%b")
+        m6 = date(end_year, end_month, 1).strftime("%b")
+        label = f"H{h_num} {fy_label} ({m1}\u2013{m6})"
+
+        choices.append((f"{h_start}|{h_end}", label))
+
+        h_month -= 6
+        if h_month < 1:
+            h_month += 12
+            h_year -= 1
+
+    return choices
+
+
+def _build_annual_choices(start_month, today, count=5):
+    """Build annual period choices working backwards from today."""
+    choices = []
+
+    # Start from current year (fiscal year perspective)
+    y = today.year
+    if today.month < start_month:
+        y -= 1
+
+    for _ in range(count):
+        y_start = date(y, start_month, 1)
+        end_month = start_month - 1 if start_month > 1 else 12
+        end_year = y + 1 if start_month > 1 else y
+        last_day = calendar.monthrange(end_year, end_month)[1]
+        y_end = date(end_year, end_month, last_day)
+
+        fy_label = _fiscal_year_label(start_month, y, start_month)
+        choices.append((f"{y_start}|{y_end}", fy_label))
+
+        y -= 1
+
+    return choices
+
+
+def parse_period_value(value, template):
+    """
+    Parse a period dropdown value back to (date_from, date_to, label).
+
+    Values are pipe-delimited: "YYYY-MM-DD|YYYY-MM-DD".
+    """
+    if not value or "|" not in value:
+        raise ValueError(gettext("Invalid period selection."))
+    parts = value.split("|")
+    if len(parts) != 2:
+        raise ValueError(gettext("Invalid period selection."))
+    try:
+        date_from = date.fromisoformat(parts[0])
+        date_to = date.fromisoformat(parts[1])
+    except (ValueError, TypeError):
+        raise ValueError(gettext("Invalid period dates."))
+    if date_from > date_to:
+        raise ValueError(gettext("Period start must be before end."))
+    # Find the matching label from choices
+    choices = build_period_choices(template)
+    label = f"{date_from} to {date_to}"  # Fallback
+    for choice_val, choice_label in choices:
+        if choice_val == value:
+            label = choice_label
+            break
+    return date_from, date_to, label
+
+
+class TemplateExportForm(ExportRecipientMixin, forms.Form):
+    """
+    Template-driven report generation form.
+
+    The user selects a report template and a period; the template defines
+    which programs, metrics, demographics, and aggregation rules to use.
+    No program dropdown, no metric checkboxes.
+
+    Used at /reports/generate/ — accessible to executives, PMs, and admins.
+    See tasks/design-rationale/reporting-architecture.md for full specification.
+    """
+
+    report_template = forms.ModelChoiceField(
+        queryset=ReportTemplate.objects.none(),
+        required=True,
+        label=_("Which report?"),
+        empty_label=_("\u2014 Select a report \u2014"),
+    )
+
+    period = forms.ChoiceField(
+        required=False,
+        label=_("Which period?"),
+        choices=[],
+    )
+
+    # For custom period_type only
+    date_from = forms.DateField(
+        required=False,
+        label=_("Date from"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    date_to = forms.DateField(
+        required=False,
+        label=_("Date to"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
+    FORMAT_CHOICES = [
+        ("csv", _("CSV (spreadsheet)")),
+        ("pdf", _("PDF (printable report)")),
+    ]
+
+    format = forms.ChoiceField(
+        choices=FORMAT_CHOICES,
+        initial="csv",
+        widget=forms.RadioSelect,
+        label=_("Export format"),
+    )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        self.contains_client_identifying_data = False  # Always aggregate
+
+        # Scope templates to those linked to programs the user can access
+        if user:
+            from .utils import get_manageable_programs
+            accessible_programs = get_manageable_programs(user)
+            template_qs = (
+                ReportTemplate.objects.filter(
+                    is_active=True,
+                    partner__programs__in=accessible_programs,
+                )
+                .select_related("partner")
+                .distinct()
+                .order_by("partner__name", "name")
+            )
+            self.fields["report_template"].queryset = template_qs
+            self.fields["report_template"].label_from_instance = (
+                lambda obj: f"{obj.partner.translated_name} \u2014 {obj.name}"
+            )
+
+        # On POST, populate period choices from the submitted template
+        # so Django validation can find the selected value in the choices list.
+        template_id = None
+        if args and args[0]:  # POST data
+            template_id = args[0].get("report_template")
+
+        if template_id:
+            try:
+                template_obj = ReportTemplate.objects.select_related("partner").get(
+                    pk=template_id
+                )
+                self.fields["period"].choices = build_period_choices(template_obj)
+                # Constrain format if template specifies
+                if template_obj.output_format == "tabular":
+                    self.fields["format"].choices = [("csv", _("CSV (spreadsheet)"))]
+                    self.fields["format"].initial = "csv"
+                elif template_obj.output_format == "narrative":
+                    self.fields["format"].choices = [("pdf", _("PDF (printable report)"))]
+                    self.fields["format"].initial = "pdf"
+            except ReportTemplate.DoesNotExist:
+                pass
+
+        self.add_recipient_fields()
+
+    def clean(self):
+        cleaned = super().clean()
+        template = cleaned.get("report_template")
+
+        if not template:
+            return cleaned
+
+        if template.period_type == "custom":
+            # Custom period uses raw date fields
+            df = cleaned.get("date_from")
+            dt = cleaned.get("date_to")
+            if not df:
+                self.add_error("date_from", _("This field is required for a custom date range."))
+            if not dt:
+                self.add_error("date_to", _("This field is required for a custom date range."))
+            if df and dt and df > dt:
+                raise forms.ValidationError(_("'Date from' must be before 'Date to'."))
+            if df and dt:
+                cleaned["period_label"] = f"{df} to {dt}"
+        else:
+            # Parse the selected period value to date_from / date_to
+            period_val = cleaned.get("period")
+            if not period_val:
+                self.add_error("period", _("Please select a reporting period."))
+                return cleaned
+            try:
+                df, dt, label = parse_period_value(period_val, template)
+                cleaned["date_from"] = df
+                cleaned["date_to"] = dt
+                cleaned["period_label"] = label
+            except ValueError as e:
+                self.add_error("period", str(e))
+
         return cleaned
 
 
