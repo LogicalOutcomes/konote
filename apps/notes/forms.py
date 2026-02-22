@@ -1,5 +1,6 @@
 """Forms for progress notes."""
 from django import forms
+from django.db.models import Count
 from django.utils.translation import gettext_lazy as _
 
 from apps.plans.models import SELF_EFFICACY_METRIC_NAME
@@ -91,11 +92,26 @@ class QuickNoteForm(forms.Form):
         return cleaned
 
 
+class _TemplateChoiceField(forms.ModelChoiceField):
+    """ModelChoiceField that shows section count next to template name."""
+
+    def label_from_instance(self, obj):
+        count = getattr(obj, "_section_count", None)
+        if count is None:
+            count = obj.sections.count()
+        label = obj.translated_name
+        if count:
+            label += " (%d)" % count
+        return label
+
+
 class FullNoteForm(forms.Form):
     """Top-level form for a full structured progress note."""
 
-    template = forms.ModelChoiceField(
-        queryset=ProgressNoteTemplate.objects.filter(status="active"),
+    template = _TemplateChoiceField(
+        queryset=ProgressNoteTemplate.objects.filter(status="active").annotate(
+            _section_count=Count("sections"),
+        ),
         required=False,
         label=_("This note is for..."),
         empty_label=_("Freeform"),
