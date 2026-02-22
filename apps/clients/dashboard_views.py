@@ -1025,7 +1025,8 @@ def executive_dashboard_export(request):
     from .views import get_client_queryset
 
     # Role gate: only executives, PMs, and admins may export
-    user_role = getattr(request, "user_program_role", None)
+    from apps.auth_app.decorators import _get_user_highest_role_any
+    user_role = getattr(request, "user_program_role", None) or _get_user_highest_role_any(request.user)
     is_admin = getattr(request.user, "is_admin", False)
     if user_role not in ("executive", "program_manager") and not is_admin:
         return HttpResponseForbidden("Access restricted to management roles.")

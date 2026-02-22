@@ -885,3 +885,117 @@ class QualitativeSummaryTest(TestCase):
         self.http.login(username="recep", password="pass")
         resp = self.http.get(f"/notes/participant/{self.client_file.pk}/qualitative/")
         self.assertEqual(resp.status_code, 403)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class CheckNoteDateTest(TestCase):
+    """Tests for the duplicate note date warning endpoint (UX-DUPENOTE1)."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
+        self.receptionist = User.objects.create_user(username="recep", password="pass", is_admin=False)
+        self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role="receptionist")
+
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Jane"
+        self.client_file.last_name = "Doe"
+        self.client_file.status = "active"
+        self.client_file.consent_given_at = timezone.now()
+        self.client_file.consent_type = "written"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(client_file=self.client_file, program=self.prog)
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_warns_when_note_exists_on_date(self):
+        """check_note_date returns existing note info for a date with notes."""
+        today = timezone.localdate()
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            notes_text="Existing note", author=self.staff,
+            interaction_type="session",
+        )
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(
+            f"/notes/participant/{self.client_file.pk}/check-date/",
+            {"session_date": today.isoformat()},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Heads up")
+        self.assertContains(resp, "One-on-One Session")
+
+    def test_empty_when_no_notes_on_date(self):
+        """check_note_date returns empty when no notes exist for the date."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(
+            f"/notes/participant/{self.client_file.pk}/check-date/",
+            {"session_date": "2020-01-01"},
+        )
+        self.assertEqual(resp.status_code, 200)
+        # Should not contain any note author info
+        self.assertNotContains(resp, "staff")
+
+    def test_empty_when_no_date_provided(self):
+        """check_note_date returns empty partial when no date is given."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(
+            f"/notes/participant/{self.client_file.pk}/check-date/",
+        )
+        self.assertEqual(resp.status_code, 200)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class TemplatePreviewTest(TestCase):
+    """Tests for the template preview endpoint (UX-PREVIEW1)."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
+        self.receptionist = User.objects.create_user(username="recep", password="pass", is_admin=False)
+        self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
+        UserProgramRole.objects.create(user=self.receptionist, program=self.prog, role="receptionist")
+
+        from apps.notes.models import ProgressNoteTemplate, ProgressNoteTemplateSection
+        self.template = ProgressNoteTemplate.objects.create(
+            name="Session Template", status="active",
+            default_interaction_type="session",
+        )
+        ProgressNoteTemplateSection.objects.create(
+            template=self.template, name="Goals Review",
+            section_type="plan", sort_order=1,
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_staff_can_preview(self):
+        """Staff can see template preview."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/template/{self.template.pk}/preview/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Goals Review")
+
+    def test_receptionist_blocked(self):
+        """Receptionists cannot preview templates."""
+        self.http.login(username="recep", password="pass")
+        resp = self.http.get(f"/notes/template/{self.template.pk}/preview/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_inactive_template_404(self):
+        """Inactive templates return 404."""
+        self.template.status = "archived"
+        self.template.save()
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get(f"/notes/template/{self.template.pk}/preview/")
+        self.assertEqual(resp.status_code, 404)
