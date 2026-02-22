@@ -419,6 +419,45 @@ document.addEventListener("click", function (event) {
     }
 })();
 
+// --- Tab bar: arrow key navigation for ARIA tablist (BUG-14 — WCAG 2.1.1) ---
+// Left/Right arrow keys move focus between tabs; Home/End jump to first/last
+(function () {
+    function setupTablistKeyboard() {
+        var tabBar = document.querySelector("[role='tablist']");
+        if (!tabBar) return;
+
+        tabBar.addEventListener("keydown", function (e) {
+            var tabs = Array.from(tabBar.querySelectorAll("[role='tab']"));
+            if (!tabs.length) return;
+            var current = tabs.indexOf(document.activeElement);
+            if (current === -1) return;
+            var next;
+            if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+                next = current < tabs.length - 1 ? current + 1 : 0;
+            } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+                next = current > 0 ? current - 1 : tabs.length - 1;
+            } else if (e.key === "Home") {
+                next = 0;
+            } else if (e.key === "End") {
+                next = tabs.length - 1;
+            } else {
+                return;
+            }
+            e.preventDefault();
+            tabs[next].focus();
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", setupTablistKeyboard);
+    } else {
+        setupTablistKeyboard();
+    }
+    document.body.addEventListener("htmx:afterSettle", function () {
+        setupTablistKeyboard();
+    });
+})();
+
 // --- Tab bar: scroll active tab into view + edge fade indicators ---
 (function () {
     function setupTabBar() {
