@@ -188,12 +188,13 @@
             <h2 class="priority-label"><span class="stat-icon" aria-hidden="true">&#9888;</span> {% trans "Alerts" %}</h2>
             <ul class="card-list">
                 {% for alert in active_alerts %}
-                <li class="priority-item priority-alert">
+                <li class="priority-item priority-alert dismissable-item" data-dismiss-key="alert-{{ alert.pk }}">
                     <a href="{% url 'clients:client_detail' client_id=alert.client_file.pk %}">
                         {{ alert.client_file.display_name }} {{ alert.client_file.last_name }}
                     </a>
                     <span class="priority-detail">{{ alert.content|truncatechars:40 }}</span>
                     <small class="secondary">{{ alert.created_at|date:"M j" }}</small>
+                    <button type="button" class="dismiss-btn outline secondary" aria-label="{% trans 'Dismiss' %}" title="{% trans 'Dismiss for today' %}">&times;</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -204,12 +205,13 @@
             <h2 class="priority-label">{% trans "Follow-ups Due" %}</h2>
             <ul class="card-list">
                 {% for note in pending_follow_ups %}
-                <li class="priority-item{% if note.follow_up_date < today %} priority-overdue{% endif %}">
+                <li class="priority-item{% if note.follow_up_date < today %} priority-overdue{% endif %} dismissable-item" data-dismiss-key="followup-{{ note.pk }}">
                     <a href="{% url 'clients:client_detail' client_id=note.client_file.pk %}">
                         {{ note.client_file.display_name }} {{ note.client_file.last_name }}
                     </a>
                     <span class="priority-detail">{{ note.notes_text|truncatechars:40 }}</span>
                     <small class="secondary">{{ note.follow_up_date|date:"M j" }}</small>
+                    <button type="button" class="dismiss-btn outline secondary" aria-label="{% trans 'Dismiss' %}" title="{% trans 'Dismiss for today' %}">&times;</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -220,9 +222,10 @@
             <h2 class="priority-label">{% trans "No Recent Notes" %}</h2>
             <ul class="card-list">
                 {% for item in needs_attention %}
-                <li class="priority-item">
+                <li class="priority-item dismissable-item" data-dismiss-key="attention-{{ item.client.pk }}">
                     <a href="{% url 'clients:client_detail' client_id=item.client.pk %}">{{ item.name }}</a>
                     <span class="priority-detail secondary">{% trans "30+ days without notes" %}</span>
+                    <button type="button" class="dismiss-btn outline secondary" aria-label="{% trans 'Dismiss' %}" title="{% trans 'Dismiss for today' %}">&times;</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -256,4 +259,47 @@
     </article>
 </div>
 
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// BUG-19: Dismissable priority items (localStorage, expires daily)
+(function () {
+    var today = new Date().toISOString().slice(0, 10);
+    var storageKey = "konote_dismissed_" + today;
+    var dismissed;
+    try { dismissed = JSON.parse(localStorage.getItem(storageKey)) || {}; } catch (e) { dismissed = {}; }
+
+    // Clean up old days
+    try {
+        for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (k && k.indexOf("konote_dismissed_") === 0 && k !== storageKey) {
+                localStorage.removeItem(k);
+            }
+        }
+    } catch (e) { /* ignore */ }
+
+    // Hide already-dismissed items
+    document.querySelectorAll(".dismissable-item").forEach(function (item) {
+        var key = item.getAttribute("data-dismiss-key");
+        if (key && dismissed[key]) item.hidden = true;
+    });
+
+    // Dismiss on click
+    document.querySelectorAll(".dismiss-btn").forEach(function (btn) {
+        btn.addEventListener("click", function (e) {
+            e.preventDefault();
+            var item = btn.closest(".dismissable-item");
+            if (!item) return;
+            var key = item.getAttribute("data-dismiss-key");
+            item.hidden = true;
+            if (key) {
+                dismissed[key] = true;
+                try { localStorage.setItem(storageKey, JSON.stringify(dismissed)); } catch (e) { /* ignore */ }
+            }
+        });
+    });
+})();
+</script>
 {% endblock %}
