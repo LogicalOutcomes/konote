@@ -443,6 +443,7 @@ def quick_note_inline(request, client_id):
 
 
 @login_required
+@program_role_required(min_role="staff")
 def template_preview(request, template_id):
     """HTMX endpoint: return a preview of the template's sections."""
     template = get_object_or_404(ProgressNoteTemplate, pk=template_id, status="active")
@@ -466,7 +467,7 @@ def check_note_date(request, client_id):
         return render(request, "notes/_note_date_warning.html", {"existing_notes": []})
 
     existing = (
-        ProgressNote.objects.filter(client_file_id=client_id, status="active")
+        ProgressNote.objects.filter(client_file_id=client_id, status="default")
         .annotate(
             eff_date=Coalesce("backdate", "created_at", output_field=DateTimeField()),
         )
