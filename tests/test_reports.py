@@ -47,7 +47,7 @@ from apps.reports.utils import (
     get_fiscal_year_choices,
 )
 from apps.reports.forms import MetricExportForm
-from apps.reports.models import SecureExportLink
+from apps.reports.models import ReportMetric, SecureExportLink
 import konote.encryption as enc_module
 
 
@@ -1772,6 +1772,370 @@ class FunderReportViewTests(TestCase):
         self.assertIn("SERVICE STATISTICS", content)
         self.assertIn("AGE DEMOGRAPHICS", content)
 
+
+
+# =============================================================================
+# Template-driven report generation (DRR: reporting-architecture.md)
+# =============================================================================
+
+
+class BuildPeriodChoicesTest(TestCase):
+    """Tests for the build_period_choices helper."""
+
+    def _make_template(self, period_type="quarterly", period_alignment="fiscal",
+                       fiscal_year_start_month=4, **kwargs):
+        from apps.reports.models import Partner, ReportTemplate
+        partner = Partner.objects.create(name="Test Partner", partner_type="funder", **kwargs)
+        return ReportTemplate.objects.create(
+            name="Test Template",
+            partner=partner,
+            period_type=period_type,
+            period_alignment=period_alignment,
+            fiscal_year_start_month=fiscal_year_start_month,
+        )
+
+    def test_custom_returns_empty(self):
+        """Custom period type should return an empty list (uses date inputs)."""
+        from apps.reports.forms import build_period_choices
+        template = self._make_template(period_type="custom")
+        choices = build_period_choices(template)
+        self.assertEqual(choices, [])
+
+    def test_quarterly_fiscal_returns_8_quarters(self):
+        """Quarterly + fiscal should return 8 quarters."""
+        from apps.reports.forms import build_period_choices
+        template = self._make_template(period_type="quarterly", period_alignment="fiscal")
+        choices = build_period_choices(template)
+        self.assertEqual(len(choices), 8)
+
+    def test_quarterly_fiscal_labels_contain_fy(self):
+        """Quarterly + fiscal labels should contain FY prefix."""
+        from apps.reports.forms import build_period_choices
+        template = self._make_template(period_type="quarterly", period_alignment="fiscal")
+        choices = build_period_choices(template)
+        # At least one choice should have "FY" in the label
+        labels = [label for _, label in choices]
+        self.assertTrue(any("FY" in lbl for lbl in labels))
+
+    def test_quarterly_calendar_labels_no_fy(self):
+        """Quarterly + calendar labels should not use FY prefix."""
+        from apps.reports.forms import build_period_choices
+        template = self._make_template(period_type="quarterly", period_alignment="calendar",
+                                       fiscal_year_start_month=1)
+        choices = build_period_choices(template)
+        labels = [label for _, label in choices]
+        self.assertTrue(any("Q" in lbl for lbl in labels))
+
+    def test_monthly_returns_12_months(self):
+        """Monthly should return 12 months."""
+        from apps.reports.forms import build_period_choices
+        template = self._make_template(period_type="monthly")
+        choices = build_period_choices(template)
+        self.assertEqual(len(choices), 12)
+
+    def test_annual_fiscal_returns_5_years(self):
+        """Annual + fiscal should return 5 years."""
+        from apps.reports.forms import build_period_choices
+        template = self._make_template(period_type="annual", period_alignment="fiscal")
+        choices = build_period_choices(template)
+        self.assertEqual(len(choices), 5)
+
+    def test_semi_annual_returns_4_halves(self):
+        """Semi-annual should return 4 half-year periods."""
+        from apps.reports.forms import build_period_choices
+        template = self._make_template(period_type="semi_annual", period_alignment="fiscal")
+        choices = build_period_choices(template)
+        self.assertEqual(len(choices), 4)
+
+    def test_period_values_are_pipe_delimited_dates(self):
+        """Period values should be 'YYYY-MM-DD|YYYY-MM-DD' format."""
+        from apps.reports.forms import build_period_choices
+        template = self._make_template(period_type="quarterly")
+        choices = build_period_choices(template)
+        for value, _label in choices:
+            parts = value.split("|")
+            self.assertEqual(len(parts), 2, f"Bad value format: {value}")
+            # Both parts should parse as dates
+            date.fromisoformat(parts[0])
+            date.fromisoformat(parts[1])
+
+
+class ParsePeriodValueTest(TestCase):
+    """Tests for the parse_period_value helper."""
+
+    def _make_template(self, **kwargs):
+        from apps.reports.models import Partner, ReportTemplate
+        partner = Partner.objects.create(name="Test Partner", partner_type="funder")
+        return ReportTemplate.objects.create(
+            name="Test", partner=partner, period_type="quarterly",
+            period_alignment="fiscal", fiscal_year_start_month=4, **kwargs,
+        )
+
+    def test_valid_value_returns_dates_and_label(self):
+        """A valid pipe-delimited value should return date_from, date_to, label."""
+        from apps.reports.forms import parse_period_value
+        template = self._make_template()
+        df, dt, label = parse_period_value("2025-04-01|2025-06-30", template)
+        self.assertEqual(df, date(2025, 4, 1))
+        self.assertEqual(dt, date(2025, 6, 30))
+        self.assertIsInstance(label, str)
+
+    def test_invalid_value_raises(self):
+        """An invalid value should raise ValueError."""
+        from apps.reports.forms import parse_period_value
+        template = self._make_template()
+        with self.assertRaises(ValueError):
+            parse_period_value("not-a-date", template)
+
+    def test_empty_value_raises(self):
+        """An empty value should raise ValueError."""
+        from apps.reports.forms import parse_period_value
+        template = self._make_template()
+        with self.assertRaises(ValueError):
+            parse_period_value("", template)
+
+
+class TemplateExportFormTest(TestCase):
+    """Tests for the TemplateExportForm class."""
+
+    def setUp(self):
+        from apps.reports.models import Partner, ReportTemplate, ReportMetric
+        self.program = Program.objects.create(name="Youth Services", status="active")
+        self.admin = User.objects.create_user(
+            username="admin", password="testpass123", is_admin=True
+        )
+        self.partner = Partner.objects.create(
+            name="United Way", partner_type="funder",
+        )
+        self.partner.programs.add(self.program)
+        self.template = ReportTemplate.objects.create(
+            name="Quarterly Outcomes",
+            partner=self.partner,
+            period_type="quarterly",
+            period_alignment="fiscal",
+            fiscal_year_start_month=4,
+            is_active=True,
+        )
+
+    def test_form_has_required_fields(self):
+        """Template export form should have report_template, period, format, and recipient fields."""
+        from apps.reports.forms import TemplateExportForm
+        form = TemplateExportForm(user=self.admin)
+        self.assertIn("report_template", form.fields)
+        self.assertIn("period", form.fields)
+        self.assertIn("format", form.fields)
+        self.assertIn("recipient", form.fields)
+        self.assertIn("recipient_reason", form.fields)
+
+    def test_form_does_not_have_program_or_metrics(self):
+        """Template export form should NOT have program, metrics, or group_by fields."""
+        from apps.reports.forms import TemplateExportForm
+        form = TemplateExportForm(user=self.admin)
+        self.assertNotIn("program", form.fields)
+        self.assertNotIn("metrics", form.fields)
+        self.assertNotIn("group_by", form.fields)
+
+    def test_templates_scoped_to_user_programs(self):
+        """Only templates linked to user's accessible programs should appear."""
+        from apps.reports.models import Partner, ReportTemplate
+        from apps.reports.forms import TemplateExportForm
+        # Create another template linked to a different program
+        other_program = Program.objects.create(name="Other Program", status="active")
+        other_partner = Partner.objects.create(name="Other Funder", partner_type="funder")
+        other_partner.programs.add(other_program)
+        ReportTemplate.objects.create(
+            name="Other Report", partner=other_partner,
+            period_type="annual", is_active=True,
+        )
+        # Staff user with access to only Youth Services
+        staff = User.objects.create_user(username="pm", password="testpass123")
+        UserProgramRole.objects.create(
+            user=staff, program=self.program, role="program_manager", status="active",
+        )
+        form = TemplateExportForm(user=staff)
+        qs = form.fields["report_template"].queryset
+        self.assertIn(self.template, qs)
+        self.assertEqual(qs.count(), 1)
+
+    def test_template_label_format(self):
+        """Template dropdown labels should be 'Partner — Report Name'."""
+        from apps.reports.forms import TemplateExportForm
+        form = TemplateExportForm(user=self.admin)
+        label_fn = form.fields["report_template"].label_from_instance
+        label = label_fn(self.template)
+        self.assertIn("United Way", label)
+        self.assertIn("Quarterly Outcomes", label)
+
+    def test_requires_template(self):
+        """Form should be invalid without a template selection."""
+        from apps.reports.forms import TemplateExportForm
+        form = TemplateExportForm(data={
+            "format": "csv",
+            "recipient": "self",
+            "recipient_reason": "test",
+        }, user=self.admin)
+        self.assertFalse(form.is_valid())
+        self.assertIn("report_template", form.errors)
+
+    def test_contains_client_identifying_data_is_false(self):
+        """Template export form should never contain client-identifying data."""
+        from apps.reports.forms import TemplateExportForm
+        form = TemplateExportForm(user=self.admin)
+        self.assertFalse(form.contains_client_identifying_data)
+
+
+class GenerateReportViewTest(TestCase):
+    """Tests for the generate_report_form view."""
+
+    databases = ["default", "audit"]
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client_http = Client()
+        self.admin = User.objects.create_user(
+            username="admin", password="testpass123", is_admin=True
+        )
+        self.staff = User.objects.create_user(
+            username="staff", password="testpass123", is_admin=False
+        )
+        self.program = Program.objects.create(name="Test Program", status="active")
+        from apps.reports.models import Partner, ReportTemplate
+        self.partner = Partner.objects.create(name="Test Partner", partner_type="funder")
+        self.partner.programs.add(self.program)
+        self.template = ReportTemplate.objects.create(
+            name="Test Report",
+            partner=self.partner,
+            period_type="quarterly",
+            period_alignment="fiscal",
+            fiscal_year_start_month=4,
+            is_active=True,
+        )
+
+    def test_admin_can_access_generate_report(self):
+        """Admin should access the template-driven report form."""
+        self.client_http.login(username="admin", password="testpass123")
+        resp = self.client_http.get("/reports/generate/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Generate Report")
+
+    def test_unauthenticated_redirects_to_login(self):
+        """Unauthenticated users should be redirected to login."""
+        resp = self.client_http.get("/reports/generate/")
+        self.assertEqual(resp.status_code, 302)
+
+    def test_unauthorized_gets_403(self):
+        """Staff without program role should get 403."""
+        self.client_http.login(username="staff", password="testpass123")
+        resp = self.client_http.get("/reports/generate/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_no_templates_shows_empty_state(self):
+        """When no active templates exist, show the empty state message."""
+        from apps.reports.models import ReportTemplate
+        ReportTemplate.objects.all().update(is_active=False)
+        self.client_http.login(username="admin", password="testpass123")
+        resp = self.client_http.get("/reports/generate/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "No report templates available")
+
+    def test_post_creates_secure_link(self):
+        """Valid POST should create a SecureExportLink."""
+        from apps.reports.forms import build_period_choices
+        self.client_http.login(username="admin", password="testpass123")
+        choices = build_period_choices(self.template)
+        period_val = choices[0][0] if choices else "2025-04-01|2025-06-30"
+        resp = self.client_http.post("/reports/generate/", {
+            "report_template": self.template.pk,
+            "period": period_val,
+            "format": "csv",
+            "recipient": "United Way",
+            "recipient_reason": "Quarterly reporting",
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(SecureExportLink.objects.exists())
+        link = SecureExportLink.objects.latest("created_at")
+        self.assertFalse(link.contains_pii)
+
+
+class TemplatePeriodOptionsViewTest(TestCase):
+    """Tests for the HTMX template_period_options endpoint."""
+
+    def setUp(self):
+        self.client_http = Client()
+        self.admin = User.objects.create_user(
+            username="admin", password="testpass123", is_admin=True
+        )
+        self.program = Program.objects.create(name="Test Program", status="active")
+        from apps.reports.models import Partner, ReportTemplate, ReportMetric, DemographicBreakdown
+        from apps.plans.models import MetricDefinition
+        self.partner = Partner.objects.create(name="United Way", partner_type="funder")
+        self.partner.programs.add(self.program)
+        self.template = ReportTemplate.objects.create(
+            name="Quarterly Report",
+            partner=self.partner,
+            period_type="quarterly",
+            period_alignment="fiscal",
+            fiscal_year_start_month=4,
+            is_active=True,
+        )
+        metric_def = MetricDefinition.objects.create(
+            name="Employment Score", is_enabled=True, status="active",
+        )
+        ReportMetric.objects.create(
+            report_template=self.template,
+            metric_definition=metric_def,
+            display_label="Employment Outcome",
+            aggregation="average",
+            sort_order=0,
+        )
+        DemographicBreakdown.objects.create(
+            report_template=self.template,
+            label="Age Group",
+            source_type="age",
+            sort_order=0,
+        )
+
+    def test_returns_period_dropdown(self):
+        """HTMX endpoint should return period select element."""
+        self.client_http.login(username="admin", password="testpass123")
+        resp = self.client_http.get(
+            "/reports/generate/period-options/",
+            {"template_id": self.template.pk},
+        )
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn("id_period", content)
+        self.assertIn("<select", content)
+
+    def test_returns_confirmation_panel(self):
+        """HTMX endpoint should return read-only confirmation with programs, metrics, breakdowns."""
+        self.client_http.login(username="admin", password="testpass123")
+        resp = self.client_http.get(
+            "/reports/generate/period-options/",
+            {"template_id": self.template.pk},
+        )
+        content = resp.content.decode()
+        self.assertIn("United Way", content)
+        self.assertIn("Test Program", content)
+        self.assertIn("Employment Outcome", content)
+        self.assertIn("Age Group", content)
+
+    def test_missing_template_returns_empty(self):
+        """Missing template_id should return empty response."""
+        self.client_http.login(username="admin", password="testpass123")
+        resp = self.client_http.get("/reports/generate/period-options/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content, b"")
+
+    def test_invalid_template_returns_empty(self):
+        """Non-existent template ID should return empty response."""
+        self.client_http.login(username="admin", password="testpass123")
+        resp = self.client_http.get(
+            "/reports/generate/period-options/",
+            {"template_id": 99999},
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.content, b"")
 
 
 # =============================================================================
