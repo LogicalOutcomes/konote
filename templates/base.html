@@ -112,7 +112,21 @@
             <li><a href="/reports/insights/"{% if nav_active == "insights" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Insights" %}</a></li>
             {% endif %}
             {% if can_see_reports or user.is_admin %}
-            <li><a href="/reports/export/"{% if nav_active == "reports" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reports" %}</a></li>
+            {% if has_program_roles and not can_see_clients %}
+            {# Executive: template-driven reports only #}
+            <li><a href="{% url 'reports:generate_report' %}"{% if nav_active == "reports" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reports" %}</a></li>
+            {% else %}
+            {# PM/Admin: dropdown with both paths #}
+            <li>
+                <details class="dropdown" role="list">
+                    <summary aria-haspopup="listbox"{% if nav_active == "reports" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reports" %}</summary>
+                    <ul role="listbox">
+                        <li><a href="{% url 'reports:generate_report' %}">{% trans "Generate Report" %}</a></li>
+                        <li><a href="{% url 'reports:export_form' %}">{% trans "Export Data" %}</a></li>
+                    </ul>
+                </details>
+            </li>
+            {% endif %}
             {% endif %}
             {% has_permission "alert.review_cancel_recommendation" as can_review_recommendations %}
             {% if can_review_recommendations %}

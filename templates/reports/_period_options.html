@@ -6,11 +6,11 @@
 <div class="grid">
     <label for="id_date_from">
         {% trans "Date from" %}
-        <input type="date" name="date_from" id="id_date_from">
+        <input type="date" name="date_from" id="id_date_from" required>
     </label>
     <label for="id_date_to">
         {% trans "Date to" %}
-        <input type="date" name="date_to" id="id_date_to">
+        <input type="date" name="date_to" id="id_date_to" required>
     </label>
 </div>
 {% elif period_choices %}

@@ -134,6 +134,9 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
         self.contains_client_identifying_data = bool(user and not is_aggregate_only_user(user))
+        # Consortium-required metric IDs (locked checkboxes in template)
+        self.consortium_locked_metrics = set()
+        self.consortium_partner_name = ""
         # Scope program dropdown to programs the user can export from
         if user:
             from .utils import get_manageable_programs
@@ -162,6 +165,23 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
                 del self.fields["report_template"]
         else:
             del self.fields["report_template"]
+        # Build consortium-required metric IDs from POST data
+        if self.data.get("report_template"):
+            try:
+                template_id = int(self.data["report_template"])
+                from .models import ReportMetric as RM
+                locked = RM.objects.filter(
+                    report_template_id=template_id,
+                    is_consortium_required=True,
+                ).select_related("metric_definition", "report_template__partner")
+                for rm in locked:
+                    self.consortium_locked_metrics.add(rm.metric_definition_id)
+                    if not self.consortium_partner_name:
+                        self.consortium_partner_name = (
+                            rm.report_template.partner.translated_name
+                        )
+            except (ValueError, TypeError):
+                pass
         # Add recipient tracking fields for audit purposes
         self.add_recipient_fields()
 
@@ -224,6 +244,18 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         date_to = cleaned.get("date_to")
         if date_from and date_to and date_from > date_to:
             raise forms.ValidationError(_("'Date from' must be before 'Date to'."))
+
+        # Ensure consortium-required metrics cannot be deselected
+        if self.consortium_locked_metrics:
+            selected = set(
+                m.pk for m in cleaned.get("metrics", [])
+            )
+            missing = self.consortium_locked_metrics - selected
+            if missing:
+                # Force-add them back
+                from apps.plans.models import MetricDefinition
+                locked_defs = MetricDefinition.objects.filter(pk__in=missing)
+                cleaned["metrics"] = list(cleaned.get("metrics", [])) + list(locked_defs)
 
         return cleaned
 
@@ -659,7 +691,7 @@ def parse_period_value(value, template):
         raise ValueError(gettext("Period start must be before end."))
     # Find the matching label from choices
     choices = build_period_choices(template)
-    label = f"{date_from} to {date_to}"  # Fallback
+    label = f"{date_from} {gettext('to')} {date_to}"  # Fallback
     for choice_val, choice_label in choices:
         if choice_val == value:
             label = choice_label
@@ -736,7 +768,13 @@ class TemplateExportForm(ExportRecipientMixin, forms.Form):
             )
             self.fields["report_template"].queryset = template_qs
             self.fields["report_template"].label_from_instance = (
-                lambda obj: f"{obj.partner.translated_name} \u2014 {obj.name}"
+                lambda obj: (
+                    obj.name
+                    if obj.partner and obj.partner.translated_name in obj.name
+                    else f"{obj.partner.translated_name} \u2014 {obj.name}"
+                    if obj.partner
+                    else obj.name
+                )
             )
 
         # On POST, populate period choices from the submitted template

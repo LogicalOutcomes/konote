@@ -86,6 +86,34 @@
     padding-top: 0.3cm;
     border-top: 1px solid #e5e7eb;
 }
+.metrics-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.5cm 0;
+}
+.metrics-table th, .metrics-table td {
+    border: 1px solid #d1d5db;
+    padding: 6px 10px;
+    text-align: right;
+    font-size: 10pt;
+}
+.metrics-table th:first-child, .metrics-table td:first-child {
+    text-align: left;
+}
+.metrics-table thead th {
+    background-color: #f7f8fa;
+    font-weight: 600;
+}
+.narrative-section {
+    border-left: 4px solid #0d7377;
+    padding: 0.4cm 0.5cm;
+    margin: 0.5cm 0;
+    background-color: #f7f8fa;
+}
+.narrative-section .placeholder {
+    font-style: italic;
+    color: #718096;
+}
 {% endblock %}
 
 {% block content %}
@@ -117,6 +145,170 @@
     <dt>{% trans "Reporting Period" %}</dt>
     <dd>{{ report_data.reporting_period }}</dd>
 </dl>
+
+{% if sections %}
+{# Section-driven layout: render in ReportSection.sort_order #}
+{% for section in sections %}
+{% if section.section_type == "service_stats" %}
+<div class="report-header">{{ section.title }}</div>
+<div class="stat-grid">
+    <div class="stat-box">
+        <div class="value">{{ report_data.total_individuals_served|default:"0" }}</div>
+        <div class="label">{% trans "Total Individuals Served" %}</div>
+    </div>
+    <div class="stat-box">
+        <div class="value">{{ report_data.new_clients_this_period|default:"0" }}</div>
+        <div class="label">{% trans "New Participants This Period" %}</div>
+    </div>
+    <div class="stat-box">
+        <div class="value">{{ report_data.total_contacts|default:"0" }}</div>
+        <div class="label">{% trans "Total Service Contacts" %}</div>
+    </div>
+</div>
+
+{% elif section.section_type == "metrics_table" %}
+<div class="report-header">{{ section.title }}</div>
+{% if metric_results %}
+<table class="metrics-table">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Metric" %}</th>
+            {% for mr in metric_results %}
+            {% if forloop.first %}
+            {% for group_label, group_data in mr.values.items %}
+            <th scope="col">{{ group_label }}</th>
+            {% endfor %}
+            {% endif %}
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for mr in metric_results %}
+        <tr>
+            <td>{{ mr.label }}</td>
+            {% for group_label, group_data in mr.values.items %}
+            <td>
+                {% if group_data.n > 0 and group_data.n < suppression_threshold %}
+                &lt; {{ suppression_threshold }}
+                {% elif mr.aggregation == "threshold_percentage" or mr.aggregation == "percentage" %}
+                {{ group_data.value }}%
+                {% else %}
+                {{ group_data.value }}
+                {% endif %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+{# Fallback to legacy outcome display #}
+{% if report_data.primary_outcome %}
+<div class="outcome-card">
+    <h4>{{ report_data.primary_outcome.name }}</h4>
+    <div class="rate">{{ report_data.primary_outcome.achievement_rate }}%</div>
+    <div class="details">
+        <strong>{% trans "Target:" %}</strong> {{ report_data.primary_outcome.target_value }}<br>
+        <strong>{% trans "Clients Measured:" %}</strong> {{ report_data.primary_outcome.clients_measured }}
+    </div>
+</div>
+{% endif %}
+{% if report_data.secondary_outcomes %}
+<table>
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Indicator Name" %}</th>
+            <th scope="col">{% trans "Target" %}</th>
+            <th scope="col">{% trans "Measured" %}</th>
+            <th scope="col">{% trans "Achieved" %}</th>
+            <th scope="col">{% trans "Rate" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for outcome in report_data.secondary_outcomes %}
+        <tr>
+            <td>{{ outcome.name }}</td>
+            <td>{{ outcome.target_value }}</td>
+            <td>{{ outcome.clients_measured }}</td>
+            <td>{{ outcome.clients_achieved }}</td>
+            <td>{{ outcome.achievement_rate }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+{% endif %}
+
+{% elif section.section_type == "demographic_summary" %}
+<div class="report-header">{{ section.title }}</div>
+<div style="margin: 0.5cm 0;">
+    <div class="demo-row header">
+        <div>{% trans "Age Group" %}</div>
+        <div style="text-align: right;">{% trans "Count" %}</div>
+        <div style="text-align: right;">{% trans "Percentage" %}</div>
+    </div>
+    {% for age_group, count in report_data.age_demographics.items %}
+    <div class="demo-row">
+        <div>
+            {{ age_group }}
+            {% if report_data.age_demographics_total > 0 %}
+            <div class="demo-bar">
+                <div class="demo-bar-fill" style="width: {% widthratio count report_data.age_demographics_total 100 %}%;"></div>
+            </div>
+            {% endif %}
+        </div>
+        <div style="text-align: right;">{{ count }}</div>
+        <div style="text-align: right;">
+            {% if report_data.age_demographics_total > 0 %}
+            {% widthratio count report_data.age_demographics_total 100 %}%
+            {% else %}
+            {% trans "N/A" %}
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    <div class="demo-row header">
+        <div>{% trans "Total" %}</div>
+        <div style="text-align: right;">{{ report_data.age_demographics_total }}</div>
+        <div style="text-align: right;">100%</div>
+    </div>
+</div>
+
+{% elif section.section_type == "narrative" %}
+<div class="report-header">{{ section.title }}</div>
+<div class="narrative-section">
+    {% if section.instructions %}
+    <p>{{ section.instructions }}</p>
+    {% endif %}
+    <p class="placeholder">{% trans "[To be added during review]" %}</p>
+</div>
+
+{% elif section.section_type == "chart" %}
+<div class="report-header">{{ section.title }}</div>
+<div class="narrative-section">
+    <p class="placeholder">{% trans "Chart visualisation is not yet available in PDF reports." %}</p>
+</div>
+
+{% endif %}
+{% endfor %}
+
+{# Overall summary after all sections #}
+{% if report_data.achievement_summary.total_clients > 0 %}
+<div class="report-header">{% trans "Overall Summary" %}</div>
+<div class="summary-grid">
+    <div class="summary-card">
+        <div class="number">{{ report_data.achievement_summary.overall_rate }}%</div>
+        <div class="label">{% trans "Overall Achievement Rate" %}</div>
+    </div>
+    <div class="summary-card">
+        <div class="number">{{ report_data.achievement_summary.clients_met_any_target }} / {{ report_data.achievement_summary.total_clients }}</div>
+        <div class="label">{% trans "Participants Met at Least One Target" %}</div>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+{# Legacy layout: no ReportSection records — hard-coded order for backwards compatibility #}
 
 <!-- Service Statistics -->
 <div class="report-header">{% trans "Service Statistics" %}</div>
@@ -230,6 +422,7 @@
         <div class="label">{% trans "Participants Met at Least One Target" %}</div>
     </div>
 </div>
+{% endif %}
 {% endif %}
 
 <div class="footer-note">

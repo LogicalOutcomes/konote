@@ -232,13 +232,19 @@ def generate_outcome_report_pdf(
     return render_pdf("reports/pdf_funder_report.html", context, filename)
 
 
-def generate_funder_report_pdf(request, report_data):
+def generate_funder_report_pdf(request, report_data, sections=None,
+                               metric_results=None):
     """
     Generate a PDF for funder report (aggregate program outcome report).
 
     Args:
         request: The HTTP request.
         report_data: Dict returned by generate_funder_report_data().
+        sections: Optional list of ReportSection instances (ordered by
+            sort_order) to structure the PDF layout.  When provided, the
+            template renders sections in order instead of hard-coded layout.
+        metric_results: Optional list from compute_template_metrics()
+            providing aggregated metric values per demographic group.
 
     Returns:
         HttpResponse with PDF attachment.
@@ -246,10 +252,18 @@ def generate_funder_report_pdf(request, report_data):
     if not is_pdf_available():
         return _pdf_unavailable_response(request)
 
+    from .suppression import SMALL_CELL_THRESHOLD
+
     context = {
         "report_data": report_data,
         "generated_by": request.user.display_name,
+        "suppression_threshold": SMALL_CELL_THRESHOLD,
     }
+
+    if sections:
+        context["sections"] = sections
+    if metric_results:
+        context["metric_results"] = metric_results
 
     safe_name = sanitise_filename(report_data["program_name"].replace(" ", "_"))
     fy_label = sanitise_filename(report_data["reporting_period"].replace(" ", "_"))

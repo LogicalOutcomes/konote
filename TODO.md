@@ -34,6 +34,24 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Coming Up
 
+### Phase: QA Round 7 — Tier 2 Fixes (see tasks/qa-action-plan-2026-02-21.md)
+
+- [x] Verify 8 items already implemented (BUG-4, BUG-8, BUG-11, IMPROVE-12/13, BLOCKER-2/3/5) — 2026-02-22 (QA-R7-TIER2-VERIFY)
+- [x] Hide admin dropdown in nav for executive role (IMPROVE-3) — 2026-02-22 (QA-R7-NAV1)
+- [x] Add "Log Communication" to client profile Actions dropdown (BUG-7) — 2026-02-22 (QA-R7-COMM1)
+- [x] Add quarterly date range presets to ad-hoc report form (IMPROVE-4) — 2026-02-22 (QA-R7-RPT-QUARTER1)
+
+### Phase: QA Round 7 — Page Audit Tier 2 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
+
+- [ ] Fix groups-attendance: replace "--" with "N/R" (aria-label) + rename "Rate" to "Attendance Rate" — screen reader a11y (QA-PA-ATTEND1)
+- [ ] Fix groups-attendance "1 sessions" pluralization — Django pluralize filter + French blocktrans (QA-PA-ATTEND2)
+- [ ] Improve comm-my-messages empty state — distinguish "no messages yet" from "all read", add guidance text (QA-PA-MSG1)
+- [ ] Add required-field indicator to comm-leave-message textarea — asterisk + aria-required (QA-PA-MSG2)
+- [ ] Add onboarding context to plan-goal-create — collapsible 1-2 sentence explainer for new users (QA-PA-GOAL1)
+- [ ] Add step indicator ("Step 1 of 2") to goal creation wizard — helps DS1c (ADHD) track progress (QA-PA-GOAL2)
+- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — fix in qa-scenarios repo (QA-PA-TEST1)
+- [ ] Seed comm-my-messages populated state with actual messages — fix in qa-scenarios repo (QA-PA-TEST2)
+
 ### Phase: Post-Launch Communication Enhancements
 
 - [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
@@ -101,8 +119,17 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Update website feature list and marketing copy to include surveys and portal (WEB-FEAT1)
 - [ ] Add Evidence section to website — adapt docs/evidence-outcome-measurement.md into a public-facing page explaining the research behind KoNote's outcome measurement approach (see tasks/web-evidence-prompt.md) (WEB-EVIDENCE1)
 
+### Phase: QA Round 7 — Page Audit Tier 1 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
+
+- [ ] Create custom styled 500.html template — bilingual, branded fallback for all unhandled errors (QA-PA-500)
+- [ ] Fix public unsubscribe page returning 500 — CASL compliance, must work before any agency enables email (depends on QA-PA-500) (QA-PA-BLOCKER4)
+- [ ] Fix public survey link page returning 500 — community members see raw error from email/flyer links (depends on QA-PA-500) (QA-PA-BLOCKER3)
+- [ ] Fix plan-goal-create heading "Add Target" → "Add Goal" — terminology migration artifact, 5-min fix (QA-PA-BUG1)
 ## Parking Lot
 
+- [ ] Add PIPEDA compliance context to admin-erasure-requests page — explain what gets deleted vs. retained — GK reviews privacy/data retention (QA-PA-ERASURE1)
+- [ ] Replace decorative circular element on erasure empty state with static icon — cosmetic, low priority (QA-PA-ERASURE2)
+- [ ] Add breadcrumbs to plan-goal-create (Participants > Name > Plan > Add Goal) — navigation aid for new users (QA-PA-GOAL3)
 - [ ] PIPEDA data export from client profile — "Export Data" action for Section 8 access requests, needs design for data categories and output format — GK reviews privacy workflow (QA-R7-PRIVACY1)
 - [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
 - [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
@@ -141,12 +168,12 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ## Recently Done
 
 - [x] Add quarterly date range presets to ad-hoc report form — optgroup dropdown with FY + quarters, i18n month names, 8 tests — 2026-02-22 (QA-R7-RPT-QUARTER1)
-- [x] QA Round 7 Tier 2 — verified 8 items already implemented, fixed IMPROVE-3 (executive nav) and BUG-7 (log communication), fixed BUG-5/BUG-6 (receptionist search + create button) — 2026-02-22 (QA-R7-TIER2)
+- [x] QA Round 7 Tier 2 — verified 8 items already implemented, fixed IMPROVE-3 (executive nav) and BUG-7 (log communication) — 2026-02-22 (QA-R7-TIER2)
 - [x] Scenario YAML URL fixes — updated 7 files in konote-qa-scenarios repo from /admin/ to /manage/ paths (PR #14) — 2026-02-22 (QA-R7-YAML1)
-- [x] QA Round 7 Tier 1 — language persistence (PR #10), skip-to-content verified, notes 403 fixed, htmx syntax fixed, /manage/ routes verified as scenario YAML issue — 2026-02-21 (QA-R7-TIER1)
-- [x] Code review fixes for template-driven reporting — 12 issues (suppression threshold, WCAG, XSS, race condition, tests) (PR #12) — 2026-02-22 (RPT-REVIEW1)
+- [x] QA Round 7 Tier 1 — language persistence, skip-to-content verified, notes 403 fixed, htmx syntax fixed — 2026-02-21 (QA-R7-TIER1)
 - [x] Fix report generation page — duplicate template name in dropdown and HTMX period options 500 error (PR #14) — 2026-02-22 (BUG-RPT1)
-- [x] UX + QA Round 7 fixes — 18 items: accessibility (ARIA tablist, form validation), dashboard (task-oriented layout, dismissable items, executive date range/export), notes UX (template preview, duplicate warning, post-save counts), front desk orientation, hidden programs notice, label improvements, HTMX cancel — 2026-02-21
+- [x] Code review fixes for template-driven reporting — 12 issues (suppression, WCAG, XSS, race condition, tests) (PR #12) — 2026-02-22 (RPT-REVIEW1)
+- [x] Aggregation engine + consortium metric locking for ad-hoc export form — 2026-02-22 (RPT-AGG1)
+- [x] UX + QA Round 7 fixes — 18 items: accessibility, dashboard, notes UX, front desk, label improvements — 2026-02-21
 - [x] Unify analysis chart quick-select and date picker into single form control — 2026-02-21 (UX-CHART1)
 - [x] Accessibility fixes: aria-labels on audit table, notes error container, mobile touch targets — 2026-02-21 (A11Y-UX1)
-- [x] Add survey demo data and scenario test stubs — 2026-02-21 (QA-SURV1, QA-SURV2, QA-SURV4)

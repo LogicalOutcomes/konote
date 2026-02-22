@@ -69,7 +69,7 @@
     </article>
     {% endif %}
 
-    {# Program dropdown #}
+    {# 1. Program dropdown #}
     <label for="{{ form.program.id_for_label }}">
         {{ form.program.label }}
         {{ form.program }}
@@ -78,37 +78,7 @@
     <small class="error" role="alert">{{ form.program.errors.0 }}</small>
     {% endif %}
 
-    {# Period quick-select (fiscal year or quarter) #}
-    <label for="{{ form.fiscal_year.id_for_label }}">
-        {{ form.fiscal_year.label }}
-        {{ form.fiscal_year }}
-        {% if form.fiscal_year.help_text %}
-        <small>{{ form.fiscal_year.help_text }}</small>
-        {% endif %}
-        {% if form.fiscal_year.errors %}
-        <small class="error" role="alert">{{ form.fiscal_year.errors.0 }}</small>
-        {% endif %}
-    </label>
-
-    {# Date range #}
-    <div class="grid">
-        <label for="{{ form.date_from.id_for_label }}">
-            {{ form.date_from.label }}
-            {{ form.date_from }}
-            {% if form.date_from.errors %}
-            <small class="error" role="alert">{{ form.date_from.errors.0 }}</small>
-            {% endif %}
-        </label>
-        <label for="{{ form.date_to.id_for_label }}">
-            {{ form.date_to.label }}
-            {{ form.date_to }}
-            {% if form.date_to.errors %}
-            <small class="error" role="alert">{{ form.date_to.errors.0 }}</small>
-            {% endif %}
-        </label>
-    </div>
-
-    {# Funder reporting template #}
+    {# 2. Report template (optional) — auto-fills downstream fields #}
     {% if form.report_template %}
     <label for="{{ form.report_template.id_for_label }}">
         {{ form.report_template.label }}
@@ -178,29 +148,45 @@
     </p>
     {% endif %}
 
-    {# Grouping (disabled when a reporting template is selected) #}
-    <label for="{{ form.group_by.id_for_label }}" id="grouping-container">
-        {{ form.group_by.label }}
-        {{ form.group_by }}
-        <small id="grouping-note">{{ form.group_by.help_text }}</small>
-        {% if form.group_by.errors %}
-        <small class="error" role="alert">{{ form.group_by.errors.0 }}</small>
+    {# Consortium warning (shown dynamically when template is selected) #}
+    <div id="consortium-warning" style="display: none;">
+        <article aria-label="{% trans 'Consortium notice' %}" style="background: var(--kn-info-bg); border-left: 4px solid var(--kn-info-fg); padding: 1rem; margin-bottom: 1rem;">
+            <strong>{% trans "Consortium reporting" %}</strong>
+            <p style="margin-bottom: 0;" id="consortium-warning-text"></p>
+        </article>
+    </div>
+
+    {# 3. Fiscal year / Date range #}
+    <label for="{{ form.fiscal_year.id_for_label }}">
+        {{ form.fiscal_year.label }}
+        {{ form.fiscal_year }}
+        {% if form.fiscal_year.help_text %}
+        <small>{{ form.fiscal_year.help_text }}</small>
+        {% endif %}
+        {% if form.fiscal_year.errors %}
+        <small class="error" role="alert">{{ form.fiscal_year.errors.0 }}</small>
         {% endif %}
     </label>
 
-    {# Export format #}
-    <fieldset>
-        <legend>{{ form.format.label }}</legend>
-        {% for radio in form.format %}
-        <label>
-            {{ radio.tag }}
-            {{ radio.choice_label }}
+    <div class="grid">
+        <label for="{{ form.date_from.id_for_label }}">
+            {{ form.date_from.label }}
+            {{ form.date_from }}
+            {% if form.date_from.errors %}
+            <small class="error" role="alert">{{ form.date_from.errors.0 }}</small>
+            {% endif %}
         </label>
-        {% endfor %}
-    </fieldset>
+        <label for="{{ form.date_to.id_for_label }}">
+            {{ form.date_to.label }}
+            {{ form.date_to }}
+            {% if form.date_to.errors %}
+            <small class="error" role="alert">{{ form.date_to.errors.0 }}</small>
+            {% endif %}
+        </label>
+    </div>
 
-    {# Metric checkboxes #}
-    <fieldset>
+    {# 4. Metrics — auto-checked from template when selected #}
+    <fieldset id="metrics-fieldset">
         <legend>{{ form.metrics.label }}</legend>
         {% if form.metrics.errors %}
         <small class="error" role="alert">{{ form.metrics.errors.0 }}</small>
@@ -211,14 +197,24 @@
             <a href="#" id="deselect-all-metrics" class="secondary">{% trans "Deselect all" %}</a>
         </div>
         {% for checkbox in form.metrics %}
-        <label>
+        <label data-metric-id="{{ checkbox.data.value }}">
             {{ checkbox.tag }}
             {{ checkbox.choice_label }}
         </label>
         {% endfor %}
     </fieldset>
 
-    {# Achievement rate option #}
+    {# 5. Grouping — disabled when template selected #}
+    <label for="{{ form.group_by.id_for_label }}" id="grouping-container">
+        {{ form.group_by.label }}
+        {{ form.group_by }}
+        <small id="grouping-note">{{ form.group_by.help_text }}</small>
+        {% if form.group_by.errors %}
+        <small class="error" role="alert">{{ form.group_by.errors.0 }}</small>
+        {% endif %}
+    </label>
+
+    {# 6. Additional options — achievement rate #}
     <fieldset>
         <legend>{% trans "Additional Options" %}</legend>
         <label>
@@ -230,7 +226,18 @@
         </label>
     </fieldset>
 
-    {# Recipient tracking for audit purposes #}
+    {# 7. Export format #}
+    <fieldset>
+        <legend>{{ form.format.label }}</legend>
+        {% for radio in form.format %}
+        <label>
+            {{ radio.tag }}
+            {{ radio.choice_label }}
+        </label>
+        {% endfor %}
+    </fieldset>
+
+    {# 8. Recipient details #}
     <fieldset>
         <legend>{% trans "Export recipient details" %}</legend>
         <p class="helper-text" style="margin-bottom: 1rem; color: var(--pico-muted-color);">
@@ -258,81 +265,81 @@
         </label>
     </fieldset>
 
+    {# 9. Generate button #}
     <button type="submit">{% trans "Generate Report" %}</button>
 </form>
 
 <script>
 /**
- * Fiscal year auto-fill functionality.
- * When a fiscal year is selected, automatically populate the date fields.
- * Canadian fiscal year: April 1 to March 31.
+ * Ad-hoc export form interactivity.
+ *
+ * 1. Fiscal year auto-fill (Canadian fiscal year: April 1 – March 31)
+ * 2. Template preview toggle
+ * 3. Grouping disable when template selected
+ * 4. Template auto-fill: check/uncheck metrics from template
  */
 document.addEventListener('DOMContentLoaded', function() {
-    const fiscalYearSelect = document.getElementById('id_fiscal_year');
-    const dateFromInput = document.getElementById('id_date_from');
-    const dateToInput = document.getElementById('id_date_to');
-
-    if (!fiscalYearSelect || !dateFromInput || !dateToInput) return;
-
-    fiscalYearSelect.addEventListener('change', function() {
-        const val = this.value;
-        if (!val) {
-            // Blank selection — clear dates to allow manual entry
-            dateFromInput.value = '';
-            dateToInput.value = '';
-            return;
-        }
-
-        function pad(n) { return String(n).padStart(2, '0'); }
-
-        if (val.startsWith('Q')) {
-            // Quarter preset, e.g. "Q1-2025"
-            var parts = val.split('-');
-            var qNum = parseInt(parts[0].substring(1), 10);
-            var fyStart = parseInt(parts[1], 10);
-            // Q1=Apr-Jun, Q2=Jul-Sep, Q3=Oct-Dec, Q4=Jan-Mar
-            // Keep in sync with _QUARTER_STARTS in apps/reports/utils.py
-            var qStarts = {1:[fyStart,4], 2:[fyStart,7], 3:[fyStart,10], 4:[fyStart+1,1]};
-            var sYear = qStarts[qNum][0], sMonth = qStarts[qNum][1];
-            var eMonth = sMonth + 2, eYear = sYear;
-            if (eMonth > 12) { eMonth -= 12; eYear += 1; }
-            var lastDay = new Date(eYear, eMonth, 0).getDate();
-            dateFromInput.value = sYear + '-' + pad(sMonth) + '-01';
-            dateToInput.value = eYear + '-' + pad(eMonth) + '-' + pad(lastDay);
-        } else {
-            // Fiscal year preset (April 1 to March 31)
-            var startYear = parseInt(val, 10);
-            dateFromInput.value = startYear + '-04-01';
-            dateToInput.value = (startYear + 1) + '-03-31';
-        }
-    });
-
-    // Dynamic template preview — show breakdowns for the selected template
+    var fiscalYearSelect = document.getElementById('id_fiscal_year');
+    var dateFromInput = document.getElementById('id_date_from');
+    var dateToInput = document.getElementById('id_date_to');
     var templateSelect = document.getElementById('id_report_template');
-    if (templateSelect) {
-        function showSelectedPreview() {
-            var previews = document.querySelectorAll('.template-preview');
-            previews.forEach(function(el) { el.style.display = 'none'; });
+    var groupBySelect = document.getElementById('id_group_by');
 
-            var selected = templateSelect.value;
-            if (selected) {
-                var match = document.querySelector('.template-preview[data-template-id="' + selected + '"]');
-                if (match) match.style.display = 'block';
+    // 1. Fiscal year / quarter auto-fill
+    if (fiscalYearSelect && dateFromInput && dateToInput) {
+        fiscalYearSelect.addEventListener('change', function() {
+            var val = this.value;
+            if (!val) {
+                dateFromInput.value = '';
+                dateToInput.value = '';
+                return;
             }
-        }
 
-        templateSelect.addEventListener('change', showSelectedPreview);
-        showSelectedPreview();
+            function pad(n) { return String(n).padStart(2, '0'); }
+
+            if (val.startsWith('Q')) {
+                // Quarter preset, e.g. "Q1-2025"
+                var parts = val.split('-');
+                var qNum = parseInt(parts[0].substring(1), 10);
+                var fyStart = parseInt(parts[1], 10);
+                // Q1=Apr-Jun, Q2=Jul-Sep, Q3=Oct-Dec, Q4=Jan-Mar
+                // Keep in sync with _QUARTER_STARTS in apps/reports/utils.py
+                var qStarts = {1:[fyStart,4], 2:[fyStart,7], 3:[fyStart,10], 4:[fyStart+1,1]};
+                var sYear = qStarts[qNum][0], sMonth = qStarts[qNum][1];
+                var eMonth = sMonth + 2, eYear = sYear;
+                if (eMonth > 12) { eMonth -= 12; eYear += 1; }
+                var lastDay = new Date(eYear, eMonth, 0).getDate();
+                dateFromInput.value = sYear + '-' + pad(sMonth) + '-01';
+                dateToInput.value = eYear + '-' + pad(eMonth) + '-' + pad(lastDay);
+            } else {
+                // Fiscal year preset (April 1 to March 31)
+                var startYear = parseInt(val, 10);
+                dateFromInput.value = startYear + '-04-01';
+                dateToInput.value = (startYear + 1) + '-03-31';
+            }
+        });
     }
 
-    // Disable grouping when a reporting template is selected
-    var groupBySelect = document.getElementById('id_group_by');
-    if (templateSelect && groupBySelect) {
+    if (!templateSelect) return;
+
+    // 2. Template preview toggle
+    function showSelectedPreview() {
+        var previews = document.querySelectorAll('.template-preview');
+        previews.forEach(function(el) { el.style.display = 'none'; });
+        var selected = templateSelect.value;
+        if (selected) {
+            var match = document.querySelector('.template-preview[data-template-id="' + selected + '"]');
+            if (match) match.style.display = 'block';
+        }
+    }
+    templateSelect.addEventListener('change', showSelectedPreview);
+    showSelectedPreview();
+
+    // 3. Grouping disable
+    if (groupBySelect) {
         var groupingContainer = document.getElementById('grouping-container');
         var groupingNote = document.getElementById('grouping-note');
         var defaultHelpText = groupingNote ? groupingNote.textContent : '';
-
-        // Link the help text to the select for screen readers
         groupBySelect.setAttribute('aria-describedby', 'grouping-note');
 
         function toggleGrouping() {
@@ -347,10 +354,99 @@ document.addEventListener('DOMContentLoaded', function() {
                     : defaultHelpText;
             }
         }
-
         templateSelect.addEventListener('change', toggleGrouping);
-        toggleGrouping(); // Handle pre-filled forms on page load
+        toggleGrouping();
     }
+
+    // 4. Template auto-fill: fetch metric IDs and check/lock checkboxes
+    var autofillUrl = '{% url "reports:adhoc_template_autofill" %}';
+    var consortiumWarning = document.getElementById('consortium-warning');
+    var consortiumText = document.getElementById('consortium-warning-text');
+    var currentAutoFillController = null;
+
+    function autoFillFromTemplate() {
+        var templateId = templateSelect.value;
+        // Reset consortium warning
+        if (consortiumWarning) consortiumWarning.style.display = 'none';
+
+        // Cancel any in-flight request
+        if (currentAutoFillController) {
+            currentAutoFillController.abort();
+            currentAutoFillController = null;
+        }
+
+        // Reset previously locked checkboxes
+        var metricLabels = document.querySelectorAll('#metrics-fieldset label[data-metric-id]');
+        metricLabels.forEach(function(label) {
+            var checkbox = label.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.disabled = false;
+                label.title = '';
+            }
+            var hidden = label.querySelector('input[type="hidden"][name="metrics"]');
+            if (hidden) hidden.remove();
+        });
+
+        if (!templateId) return;
+
+        currentAutoFillController = new AbortController();
+        fetch(autofillUrl + '?template_id=' + templateId, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            signal: currentAutoFillController.signal
+        })
+        .then(function(resp) { return resp.json(); })
+        .then(function(data) {
+            currentAutoFillController = null;
+            if (!data.metric_ids || !data.metric_ids.length) return;
+
+            // Check metrics from template
+            metricLabels.forEach(function(label) {
+                var metricId = parseInt(label.getAttribute('data-metric-id'), 10);
+                var checkbox = label.querySelector('input[type="checkbox"]');
+                if (!checkbox) return;
+
+                if (data.metric_ids.indexOf(metricId) !== -1) {
+                    checkbox.checked = true;
+                    // Lock consortium-required metrics
+                    if (data.consortium_locked.indexOf(metricId) !== -1) {
+                        checkbox.disabled = true;
+                        label.title = '{% filter escapejs %}{% trans "Required by consortium reporting standards" %}{% endfilter %}';
+                        // Add hidden input so disabled checkbox value still submits
+                        var hidden = document.createElement('input');
+                        hidden.type = 'hidden';
+                        hidden.name = 'metrics';
+                        hidden.value = metricId;
+                        label.appendChild(hidden);
+                    }
+                }
+            });
+
+            // Show consortium warning if applicable (using createElement, not innerHTML)
+            if (data.consortium_locked.length > 0 && data.partner_name && consortiumWarning && consortiumText) {
+                while (consortiumText.firstChild) consortiumText.removeChild(consortiumText.firstChild);
+                consortiumText.appendChild(
+                    document.createTextNode('{% filter escapejs %}{% trans "This program reports to a consortium partner. For partner-compliant reports, use the" %}{% endfilter %} ')
+                );
+                var link = document.createElement('a');
+                link.href = '{% url "reports:generate_report" %}';
+                link.textContent = '{% filter escapejs %}{% trans "template-driven report" %}{% endfilter %}';
+                consortiumText.appendChild(link);
+                consortiumText.appendChild(
+                    document.createTextNode(' {% filter escapejs %}{% trans "instead." %}{% endfilter %}')
+                );
+                consortiumWarning.style.display = 'block';
+            }
+        })
+        .catch(function(err) {
+            if (err.name === 'AbortError') return; // Expected cancellation
+            currentAutoFillController = null;
+            console.warn('Template auto-fill failed for template', templateId, err);
+        });
+    }
+
+    templateSelect.addEventListener('change', autoFillFromTemplate);
+    // Auto-fill on page load if template is pre-selected (POST re-render)
+    if (templateSelect.value) autoFillFromTemplate();
 });
 </script>
 {% endblock %}
