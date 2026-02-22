@@ -6,8 +6,24 @@
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GK (SEC3-Q1)
 - [ ] Confirm standard report schema and configuration template with partner contact before building — SG (RPT-SCHEMA1)
 - [ ] Approve CIDS implementation plan with project lead before building — covers metadata fields, code list integration, CIDS-enriched reports, and full JSON-LD export; confirm partner consumption pathway and whether to engage Common Approach as pilot implementer (see tasks/cids-json-ld-export.md) — SG/GK (CIDS-APPROVE1)
+- [ ] Approve band display labels and clinical thresholds for insights metric distributions — hard blocker on Phase 2 template work (see tasks/design-rationale/insights-metric-distributions.md, Phase 0) — GK (INSIGHTS-LANG1)
+- [ ] Discuss: are Design Rationale Records (DRRs) working well as a practice? Should we keep using them, change the format, or retire them? — GK (PROCESS-DRR1)
+- [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
 
 ## Active Work
+
+### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
+
+- [ ] Phase 0: GK language review — band labels, clinical thresholds, achievement examples, Two Lenses wording — HARD BLOCKER on Phase 2 (INSIGHTS-P0-LANG)
+- [ ] Phase 0: Update MetricDefinition admin form with new fields (metric_type, thresholds, achievement options, targets) (INSIGHTS-P0-ADMIN)
+- [ ] Phase 0: Configure at least one test program with achievement metrics for development (INSIGHTS-P0-SEED)
+- [ ] Phase 1: Add metric_type, threshold, achievement, and target fields to MetricDefinition model (INSIGHTS-P1-MODEL)
+- [ ] Phase 1: Build metric aggregation functions — distributions, achievement rates, trends, Two Lenses, data completeness (INSIGHTS-P1-AGG)
+- [ ] Phase 2: Restructure insights page — participant voice to Section 2, progressive disclosure with smart auto-expand (INSIGHTS-P2-LAYOUT)
+- [ ] Phase 2: Add summary cards, distribution bars, achievement bars with journey context, CSS (INSIGHTS-P2-VIZ)
+- [ ] Phase 3: Update executive dashboard — program cards with trend direction, data completeness, feedback themes (INSIGHTS-P3-EXEC)
+- [ ] Phase 4: Achievement metric recording UI — dropdown in note form, tests (INSIGHTS-P4-RECORD)
+- [ ] Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
 
 ### Phase: Launch Readiness
 
