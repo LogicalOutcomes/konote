@@ -311,3 +311,129 @@ class CrossProgramConsentTest(TestCase):
         resp = self.client.get(f"/notes/participant/{self.shared_client.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertIsNone(resp.context.get("consent_viewing_program"))
+
+    # ── PHIPA-ENFORCE1: direct URL and timeline consent tests ──────────
+
+    def _get_viewing_and_restricted_notes(self):
+        """Determine which note is in the viewing program and which is restricted.
+
+        get_author_program picks the highest-ranked shared program. Since
+        both roles are "staff", the result depends on DB ordering. This
+        helper makes tests agnostic about which program is chosen.
+        """
+        from apps.programs.access import get_author_program
+        viewing = get_author_program(self.multi_staff, self.shared_client)
+        if viewing.pk == self.program_a.pk:
+            return self.note_a, self.note_b
+        return self.note_b, self.note_a
+
+    def test_direct_url_restricted_note_returns_403(self):
+        """Direct URL to a note from another program when restricted -> 403."""
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+        _, restricted_note = self._get_viewing_and_restricted_notes()
+        resp = self.client.get(f"/notes/{restricted_note.pk}/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_direct_url_allowed_note_returns_200(self):
+        """Direct URL to a note from viewing program when restricted -> 200."""
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+        allowed_note, _ = self._get_viewing_and_restricted_notes()
+        resp = self.client.get(f"/notes/{allowed_note.pk}/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_null_program_note_accessible_via_direct_url(self):
+        """Legacy note (null author_program) always accessible regardless of consent."""
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+        resp = self.client.get(f"/notes/{self.note_null.pk}/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_event_timeline_respects_consent(self):
+        """Event timeline only shows notes from viewing program when restricted."""
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+        resp = self.client.get(f"/events/participant/{self.shared_client.pk}/")
+        self.assertEqual(resp.status_code, 200)
+        note_entries = [e for e in resp.context["timeline"] if e["type"] == "note"]
+        note_ids = {e["obj"].pk for e in note_entries}
+        # Should see one program's note + null note, but not both programs
+        self.assertIn(self.note_null.pk, note_ids)
+        has_a = self.note_a.pk in note_ids
+        has_b = self.note_b.pk in note_ids
+        self.assertTrue(has_a != has_b, "Timeline should show only one program's notes")
+
+    def test_apply_consent_filter_fail_closed_no_viewing_program(self):
+        """When sharing is OFF and no viewing program found, return empty queryset.
+
+        DRR decision #9: fail-closed is safer than fail-open for a privacy
+        feature. A bug here should result in 'can't see notes' (safe)
+        rather than 'can see everything' (unsafe).
+        """
+        from apps.notes.models import ProgressNote
+        from apps.programs.access import apply_consent_filter
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+
+        # Create a user with NO shared programs with the client
+        no_shared = User.objects.create_user(
+            username="noshared", password="testpass123",
+            display_name="No Shared Worker",
+        )
+        program_c = Program.objects.create(name="Program C", status="active")
+        UserProgramRole.objects.create(
+            user=no_shared, program=program_c, role="staff",
+        )
+
+        notes_qs = ProgressNote.objects.filter(client_file=self.shared_client)
+        filtered, viewing_name = apply_consent_filter(
+            notes_qs, self.shared_client, no_shared,
+            user_program_ids={program_c.pk},
+        )
+        # Fail-closed: empty queryset, not the original notes
+        self.assertEqual(filtered.count(), 0)
+        self.assertIsNone(viewing_name)
+
+    def test_consent_filter_respects_conf9_context_switcher(self):
+        """CONF9: active_program_ids overrides get_author_program for viewing program.
+
+        When the context switcher selects a single program, the consent
+        filter should use that program — not whatever get_author_program
+        would pick based on role rank.
+        """
+        from apps.notes.models import ProgressNote
+        from apps.programs.access import apply_consent_filter, get_author_program
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+
+        # Determine which program get_author_program would normally pick
+        default_viewing = get_author_program(self.multi_staff, self.shared_client)
+        # Pick the OTHER program via CONF9 switcher
+        if default_viewing.pk == self.program_a.pk:
+            switched_program = self.program_b
+            expected_note = self.note_b
+            excluded_note = self.note_a
+        else:
+            switched_program = self.program_a
+            expected_note = self.note_a
+            excluded_note = self.note_b
+
+        notes_qs = ProgressNote.objects.filter(client_file=self.shared_client)
+        filtered, viewing_name = apply_consent_filter(
+            notes_qs, self.shared_client, self.multi_staff,
+            user_program_ids={switched_program.pk},
+            active_program_ids={switched_program.pk},
+        )
+        filtered_ids = set(filtered.values_list("pk", flat=True))
+        # Should see the switched program's note + null, NOT the default
+        self.assertIn(expected_note.pk, filtered_ids)
+        self.assertIn(self.note_null.pk, filtered_ids)
+        self.assertNotIn(excluded_note.pk, filtered_ids)
+        self.assertEqual(viewing_name, switched_program.name)

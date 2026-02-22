@@ -14599,6 +14599,14 @@ msgstr "Étape 1 de 2"
 msgid "Step 2 of 2"
 msgstr "Étape 2 de 2"
 
+#: apps/programs/access.py
+msgid ""
+"This note is restricted to a specific program. Contact your administrator if "
+"you need cross-program access."
+msgstr ""
+"Cette note est réservée à un programme spécifique. Contactez votre "
+"administrateur si vous avez besoin d\u2019un accès inter-programmes."
+
 msgid "What is a goal?"
 msgstr "Qu’est-ce qu’un objectif ?"
 
@@ -14676,3 +14684,4 @@ msgstr ""
 "En attendant, vous pouvez cr\u00e9er un rapport ponctuel avec "
 "l\u2019<strong>exportation personnalis\u00e9e</strong>, o\u00f9 vous choisissez "
 "vous-m\u00eame le programme, les indicateurs et la p\u00e9riode."
+
