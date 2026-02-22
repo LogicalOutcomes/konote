@@ -171,6 +171,9 @@ def event_list(request, client_id):
     from apps.notes.models import ProgressNote
     from apps.communications.models import Communication
 
+    # program_q scopes to the user's programs; consent filter below narrows
+    # further to the viewing program when cross-program sharing is OFF.
+    # Both are needed: consent filter passes through when sharing is ON.
     notes = ProgressNote.objects.filter(client_file=client).filter(program_q).select_related("author", "author_program")
 
     # PHIPA: apply consent filter to notes in the timeline

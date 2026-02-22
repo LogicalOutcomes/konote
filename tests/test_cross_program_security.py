@@ -367,3 +367,35 @@ class CrossProgramConsentTest(TestCase):
         has_a = self.note_a.pk in note_ids
         has_b = self.note_b.pk in note_ids
         self.assertTrue(has_a != has_b, "Timeline should show only one program's notes")
+
+    def test_apply_consent_filter_fail_closed_no_viewing_program(self):
+        """When sharing is OFF and no viewing program found, return empty queryset.
+
+        DRR decision #9: fail-closed is safer than fail-open for a privacy
+        feature. A bug here should result in 'can't see notes' (safe)
+        rather than 'can see everything' (unsafe).
+        """
+        from apps.notes.models import ProgressNote
+        from apps.programs.access import apply_consent_filter
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+
+        # Create a user with NO shared programs with the client
+        no_shared = User.objects.create_user(
+            username="noshared", password="testpass123",
+            display_name="No Shared Worker",
+        )
+        program_c = Program.objects.create(name="Program C", status="active")
+        UserProgramRole.objects.create(
+            user=no_shared, program=program_c, role="staff",
+        )
+
+        notes_qs = ProgressNote.objects.filter(client_file=self.shared_client)
+        filtered, viewing_name = apply_consent_filter(
+            notes_qs, self.shared_client, no_shared,
+            user_program_ids={program_c.pk},
+        )
+        # Fail-closed: empty queryset, not the original notes
+        self.assertEqual(filtered.count(), 0)
+        self.assertIsNone(viewing_name)
