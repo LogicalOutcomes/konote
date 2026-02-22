@@ -14433,11 +14433,17 @@ msgstr "Répartitions démographiques :"
 msgid "Export Data"
 msgstr "Exporter les données"
 
+msgid "Fiscal Years"
+msgstr "Années fiscales"
+
 msgid "Invalid period dates."
 msgstr "Dates de période invalides."
 
 msgid "Invalid period selection."
 msgstr "Sélection de période invalide."
+
+msgid "Invalid quarter selection."
+msgstr "Sélection de trimestre invalide."
 
 msgid "No report templates available"
 msgstr "Aucun modèle de rapport disponible"
@@ -14457,11 +14463,24 @@ msgstr "Veuillez sélectionner une période de rapport."
 msgid "Programs:"
 msgstr "Programmes :"
 
+msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s–%(m2)s)"
+msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s–%(m2)s)"
+
+msgid "Quarters"
+msgstr "Trimestres"
+
 msgid "Report details"
 msgstr "Détails du rapport"
 
 msgid "Required by consortium reporting standards"
 msgstr "Requis par les normes de rapport du consortium"
+
+msgid ""
+"Select a fiscal year or quarter to auto-fill dates, or leave blank for "
+"custom range."
+msgstr ""
+"Sélectionnez une année fiscale ou un trimestre pour remplir automatiquement "
+"les dates, ou laissez vide pour une plage personnalisée."
 
 msgid ""
 "Select a report template and period to generate a partner-ready report."
@@ -14528,3 +14547,6 @@ msgstr "Chargement des options de période…"
 
 msgid "participant"
 msgstr "participant"
+
+msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
+msgstr ""

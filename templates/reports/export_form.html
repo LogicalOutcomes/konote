@@ -285,19 +285,38 @@ document.addEventListener('DOMContentLoaded', function() {
     var templateSelect = document.getElementById('id_report_template');
     var groupBySelect = document.getElementById('id_group_by');
 
-    // 1. Fiscal year auto-fill
+    // 1. Fiscal year / quarter auto-fill
     if (fiscalYearSelect && dateFromInput && dateToInput) {
         fiscalYearSelect.addEventListener('change', function() {
-            var selectedYear = this.value;
-            if (!selectedYear) {
+            var val = this.value;
+            if (!val) {
                 dateFromInput.value = '';
                 dateToInput.value = '';
                 return;
             }
-            var startYear = parseInt(selectedYear, 10);
-            var endYear = startYear + 1;
-            dateFromInput.value = startYear + '-04-01';
-            dateToInput.value = endYear + '-03-31';
+
+            function pad(n) { return String(n).padStart(2, '0'); }
+
+            if (val.startsWith('Q')) {
+                // Quarter preset, e.g. "Q1-2025"
+                var parts = val.split('-');
+                var qNum = parseInt(parts[0].substring(1), 10);
+                var fyStart = parseInt(parts[1], 10);
+                // Q1=Apr-Jun, Q2=Jul-Sep, Q3=Oct-Dec, Q4=Jan-Mar
+                // Keep in sync with _QUARTER_STARTS in apps/reports/utils.py
+                var qStarts = {1:[fyStart,4], 2:[fyStart,7], 3:[fyStart,10], 4:[fyStart+1,1]};
+                var sYear = qStarts[qNum][0], sMonth = qStarts[qNum][1];
+                var eMonth = sMonth + 2, eYear = sYear;
+                if (eMonth > 12) { eMonth -= 12; eYear += 1; }
+                var lastDay = new Date(eYear, eMonth, 0).getDate();
+                dateFromInput.value = sYear + '-' + pad(sMonth) + '-01';
+                dateToInput.value = eYear + '-' + pad(eMonth) + '-' + pad(lastDay);
+            } else {
+                // Fiscal year preset (April 1 to March 31)
+                var startYear = parseInt(val, 10);
+                dateFromInput.value = startYear + '-04-01';
+                dateToInput.value = (startYear + 1) + '-03-31';
+            }
         });
     }
 

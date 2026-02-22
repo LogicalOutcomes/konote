@@ -8,6 +8,8 @@ Covers BUG-AI2: get_structured_insights() must return JSON-serializable
 dicts (no gettext_lazy proxies as keys).
 
 Covers CHART-TIME1: client_analysis timeframe filter.
+
+Covers IMPROVE-4: get_quarter_range() and get_quarter_choices() utility functions.
 """
 import json
 from datetime import date, timedelta
@@ -23,6 +25,7 @@ from apps.reports.funder_report import (
     generate_funder_report_csv_rows,
     generate_funder_report_data,
 )
+from apps.reports.utils import get_quarter_range, get_quarter_choices
 
 
 class FormatNumberTests(SimpleTestCase):
@@ -587,6 +590,58 @@ class FunderReportTemplateMetricFilterTest(TestCase):
         ]
         self.assertIn("Custom Score Label", metric_names)
         self.assertNotIn("Score A", metric_names)
+
+
+class QuarterRangeTests(SimpleTestCase):
+    """get_quarter_range() must return correct date boundaries for each fiscal quarter."""
+
+    def test_q1_apr_jun(self):
+        date_from, date_to = get_quarter_range(1, 2025)
+        self.assertEqual(date_from, date(2025, 4, 1))
+        self.assertEqual(date_to, date(2025, 6, 30))
+
+    def test_q2_jul_sep(self):
+        date_from, date_to = get_quarter_range(2, 2025)
+        self.assertEqual(date_from, date(2025, 7, 1))
+        self.assertEqual(date_to, date(2025, 9, 30))
+
+    def test_q3_oct_dec(self):
+        date_from, date_to = get_quarter_range(3, 2025)
+        self.assertEqual(date_from, date(2025, 10, 1))
+        self.assertEqual(date_to, date(2025, 12, 31))
+
+    def test_q4_crosses_calendar_year(self):
+        """Q4 of FY 2025-26 should be Jan 1 – Mar 31 of the *next* calendar year."""
+        date_from, date_to = get_quarter_range(4, 2025)
+        self.assertEqual(date_from, date(2026, 1, 1))
+        self.assertEqual(date_to, date(2026, 3, 31))
+
+    def test_invalid_quarter_raises(self):
+        with self.assertRaises(KeyError):
+            get_quarter_range(5, 2025)
+
+
+class QuarterChoicesTests(SimpleTestCase):
+    """get_quarter_choices() must return valid choices working backwards."""
+
+    def test_returns_8_choices_by_default(self):
+        choices = get_quarter_choices()
+        self.assertEqual(len(choices), 8)
+
+    def test_all_values_have_correct_format(self):
+        choices = get_quarter_choices()
+        for value, label in choices:
+            self.assertRegex(value, r"^Q[1-4]-\d{4}$")
+
+    def test_date_ranges_are_valid(self):
+        """Every choice value should parse to a valid 3-month date range."""
+        choices = get_quarter_choices()
+        for value, _label in choices:
+            q_str, fy_str = value.split("-")
+            q_num = int(q_str[1:])
+            fy_year = int(fy_str)
+            date_from, date_to = get_quarter_range(q_num, fy_year)
+            self.assertLess(date_from, date_to)
 
 
 # ---------------------------------------------------------------------------
