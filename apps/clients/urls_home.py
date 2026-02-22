@@ -126,9 +126,10 @@ def home(request):
     # --- Accessible programs for search filters ---
     accessible_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
 
-    # BUG-12: Only show create button if user has at least "staff" role
-    # (user_role already calculated above for is_receptionist check)
-    can_create = ROLE_RANK.get(user_role, 0) >= ROLE_RANK["staff"]
+    # Show create button if user's role grants client.create permission
+    # (receptionist has ALLOW — front desk does intake)
+    from apps.auth_app.permissions import DENY, PERMISSIONS
+    can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
 
     # --- DASH-ROLES1: Fetch role-specific dashboard data ---
     pm_program_stats = None
