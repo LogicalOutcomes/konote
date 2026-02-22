@@ -1,0 +1,63 @@
+{% load i18n %}
+{# HTMX fragment: returned by template_period_options view when user selects a template. #}
+
+{% if is_custom_period %}
+{# Custom period: show raw date inputs #}
+<div class="grid">
+    <label for="id_date_from">
+        {% trans "Date from" %}
+        <input type="date" name="date_from" id="id_date_from">
+    </label>
+    <label for="id_date_to">
+        {% trans "Date to" %}
+        <input type="date" name="date_to" id="id_date_to">
+    </label>
+</div>
+{% elif period_choices %}
+{# Structured period: show dropdown #}
+<label for="id_period">
+    {% trans "Which period?" %}
+    <select name="period" id="id_period">
+        {% for value, label in period_choices %}
+        <option value="{{ value }}">{{ label }}</option>
+        {% endfor %}
+    </select>
+</label>
+{% endif %}
+
+{# Read-only confirmation panel: shows what the template includes #}
+{% if template %}
+<article aria-label="{% trans 'Report details' %}" style="border-left: 4px solid var(--kn-info-fg); padding: 0.75rem 1rem; margin-top: 1rem;">
+    <strong>{{ template.partner.translated_name }} &mdash; {{ template.name }}</strong>
+    {% if template.description %}
+    <br><small class="secondary">{{ template.description }}</small>
+    {% endif %}
+
+    {% if programs %}
+    <p style="margin-top: 0.5rem; margin-bottom: 0.25rem;">
+        <strong>{% trans "Programs:" %}</strong>
+        {% for prog in programs %}{{ prog.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+    </p>
+    {% endif %}
+
+    {% if metrics %}
+    <p style="margin-bottom: 0.25rem;"><strong>{% trans "This report includes:" %}</strong></p>
+    <ul style="margin-top: 0; margin-bottom: 0.5rem; padding-left: 2rem;">
+        {% for rm in metrics %}
+        <li>{{ rm.translated_label }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p><small>{% trans "All metrics with data will be included." %}</small></p>
+    {% endif %}
+
+    {% if breakdowns %}
+    <p style="margin-bottom: 0.25rem;"><strong>{% trans "Demographic breakdowns:" %}</strong></p>
+    <ul style="margin-top: 0; margin-bottom: 0; padding-left: 2rem;">
+        {% for bd in breakdowns %}
+        <li>{{ bd.label }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</article>
+{% endif %}
