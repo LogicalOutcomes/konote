@@ -369,8 +369,10 @@ class ScenarioRunner(BrowserTestBase):
         _ensure_client("Alex", "Chen", program=self.program_a)
 
         # SCN-015, SCN-025: Priya Patel (batch notes, receptionist lookup)
+        # Enrolled in both programs so frontdesk2 (program_b) can find her
         _ensure_client("Priya", "Patel",
-                       program=self.program_a, phone="905-555-0233")
+                       programs=[self.program_a, self.program_b],
+                       phone="905-555-0233")
 
         # SCN-084: Priya Sharma (messaging consent blocks)
         _ensure_client("Priya", "Sharma",
