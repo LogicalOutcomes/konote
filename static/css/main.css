@@ -4424,6 +4424,30 @@ article[aria-label="notification"].fading-out {
     color: var(--kn-text-muted);
 }
 
+/* Goal form — onboarding and step indicator */
+.onboarding-hint {
+    background: var(--kn-primary-subtle);
+    border-radius: var(--kn-radius-card, 8px);
+    padding: var(--kn-space-sm) var(--kn-space-base);
+    margin-bottom: var(--kn-space-lg);
+}
+.onboarding-hint summary {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--kn-text-secondary);
+}
+.onboarding-hint p {
+    margin: var(--kn-space-xs) 0 0;
+    font-size: 0.9rem;
+    color: var(--kn-text-secondary);
+}
+.step-indicator {
+    font-size: 0.85rem;
+    color: var(--kn-text-muted);
+    margin-bottom: var(--kn-space-base);
+}
+
 /* AI suggestion card */
 .ai-suggestion-card {
     border: 2px solid var(--kn-primary);

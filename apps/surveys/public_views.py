@@ -3,9 +3,12 @@
 These views handle the shareable link channel. Anyone with a valid
 link token can view and submit a survey response.
 """
+import logging
+
 from django.db import transaction
-from django.http import HttpResponseGone
+from django.http import HttpResponseGone, HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template import loader
 from django.utils.translation import gettext as _
 
 from .models import (
@@ -14,10 +17,20 @@ from .models import (
     SurveyResponse,
 )
 
+logger = logging.getLogger(__name__)
+
 
 def public_survey_form(request, token):
     """Display and process a public survey form via shareable link."""
-    link = get_object_or_404(SurveyLink, token=token)
+    try:
+        link = get_object_or_404(SurveyLink, token=token)
+    except Exception:
+        # Database table may not exist yet, or other unexpected error.
+        # Show the expired/unavailable page rather than a raw 500.
+        logger.exception("Error loading survey link: %s", token)
+        return render(request, "surveys/public_expired.html", {
+            "survey": None,
+        })
 
     # Check if link is usable
     if not link.is_active or link.is_expired or link.survey.status != "active":
@@ -119,7 +132,13 @@ def public_survey_form(request, token):
 
 def public_survey_thank_you(request, token):
     """Thank-you page after public survey submission."""
-    link = get_object_or_404(SurveyLink, token=token)
+    try:
+        link = get_object_or_404(SurveyLink, token=token)
+    except Exception:
+        logger.exception("Error loading survey link for thank-you: %s", token)
+        return render(request, "surveys/public_expired.html", {
+            "survey": None,
+        })
     return render(request, "surveys/public_thank_you.html", {
         "survey": link.survey,
     })

@@ -1,13 +1,18 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% blocktrans with target=term.target|default:"Goal" %}Add {{ target }}{% endblocktrans %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
+{% block title %}{% trans "Add a Goal" %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% blocktrans with target=term.target|default:"Goal" %}Add {{ target }}{% endblocktrans %}</h1>
+    <h1>{% trans "Add a Goal" %}</h1>
     <p>{{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
+
+<details class="onboarding-hint">
+    <summary>{% trans "What is a goal?" %}</summary>
+    <p>{% blocktrans with client=term.client|default:"participant" %}A goal is something the {{ client }} wants to achieve. You'll capture what they said in their own words, then shape it into a short, trackable goal with a way to measure progress.{% endblocktrans %}</p>
+</details>
 
 {% if form.errors %}
 <div class="error-summary" role="alert" id="error-summary" tabindex="-1">
@@ -105,6 +110,8 @@
     {# ====== Phase 1: Listen (non-AI only, hidden on POST) ====== #}
     <div id="goal-phase-1" {% if form.is_bound %}hidden{% endif %}>
 
+        <p class="step-indicator" aria-live="polite"><strong>{% trans "Step 1 of 2" %}</strong> — {% trans "Listen" %}</p>
+
         {# ── Participant's words (no name attr — hidden field in phase 2 submits) ── #}
         <fieldset>
             <legend>{{ form.client_goal.label }}</legend>
@@ -158,6 +165,8 @@
 
     {# ====== Phase 2: Shape the goal (non-AI, hidden on GET) ====== #}
     <div id="goal-phase-2" {% if not form.is_bound %}hidden{% endif %}>
+
+        <p class="step-indicator" aria-live="polite"><strong>{% trans "Step 2 of 2" %}</strong> — {% trans "Shape the goal" %}</p>
 
         {# ── Reference quote — shows what the participant said ── #}
         <blockquote id="participant-quote" class="participant-quote" hidden>
@@ -339,7 +348,7 @@
 
         {# ── Submit ── #}
         <div role="group">
-            <button type="submit">{% blocktrans with target=term.target|default:"Goal" %}Add {{ target }}{% endblocktrans %}</button>
+            <button type="submit">{% trans "Add a Goal" %}</button>
             <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
         </div>
     </div>
@@ -548,7 +557,7 @@
 
     {# ── Submit ── #}
     <div role="group">
-        <button type="submit">{% blocktrans with target=term.target|default:"Goal" %}Add {{ target }}{% endblocktrans %}</button>
+        <button type="submit">{% trans "Add a Goal" %}</button>
         <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 
