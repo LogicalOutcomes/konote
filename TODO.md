@@ -53,6 +53,20 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Coming Up
 
+### Phase: QA Round 7 — Tier 2 Fixes (see tasks/qa-action-plan-2026-02-21.md)
+
+- [ ] Fix keyboard tab order and quick note reachability on create-participant form and client profile (BLOCKER-5 remaining + IMPROVE-9/10) (QA-R7-A11Y1)
+- [ ] Fix French receptionist: client search returns no results for R2 + missing create button for R2-FR (QA-R7-FRDESK1)
+- [ ] Add "Log Communication" to client profile Actions dropdown — pre-fill client name (QA-R7-COMM1)
+- [ ] Fix calendar feed URL generation — POST handler fails silently (QA-R7-CAL1)
+- [ ] Add success confirmation message after phone number update (QA-R7-BUG4)
+- [ ] Verify /manage/ note templates and event types pages exist + add funder profile selector to report form (QA-R7-ADMIN1)
+- [ ] Hide admin dropdown in nav for executive role (QA-R7-NAV1)
+- [ ] Accessibility polish: status dropdown auto-open on Tab, aria-live on search results, colour-only status indicators (IMPROVE-11/12/13) (QA-R7-A11Y2)
+- [ ] Fix settings page 404 for staff role — verify correct URL path (QA-R7-ROUTE1)
+- [ ] Build scoped user management view for PMs — manage staff in own programme via /manage/ (QA-R7-PM-USERS1)
+- [ ] Build scoped audit log view for PMs — programme-filtered, plain language, filterable (QA-R7-PM-AUDIT1)
+
 ### Phase: Post-Launch Communication Enhancements
 
 - [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
@@ -174,8 +188,22 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Hidden programs notice on client profile — 2026-02-21 (IMPROVE-5)
 - [x] Front desk orientation card on home page — 2026-02-21 (UX-FRONTDESK1)
 - [x] Task-oriented dashboard: quick links moved up, action-oriented headings — 2026-02-21 (UX-TASKDASH1, BUG-18)
+
+### Phase: QA Round 7 — Tier 1 Fixes (see tasks/qa-action-plan-2026-02-21.md)
+
+- [ ] Fix language persistence — build UserLanguageMiddleware so user profile preferred_language is authoritative, not cookie/session (affects 22 scenarios) (QA-R7-BUG1)
+- [ ] Verify /manage/ routes cover PM self-service — check if BLOCKER-1 is a scenario YAML issue, update qa-scenarios if needed (QA-R7-BLKR1)
+- [ ] Add skip-to-content link to base template — WCAG 2.4.1 Level A requirement (QA-R7-BUG15)
+- [ ] Fix notes URL returning 404 instead of 403 for receptionist — add explicit permission check before queryset filter (QA-R7-BUG2)
+- [ ] Fix htmx:syntax:error messages on create-participant page — audit all hx-* attributes (QA-R7-BUG20)
 ## Parking Lot
 
+- [ ] PIPEDA data export from client profile — "Export Data" action for Section 8 access requests, needs design for data categories and output format — GK reviews privacy workflow (QA-R7-PRIVACY1)
+- [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
+- [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
+- [ ] Add quarterly date range presets (Q1-Q4) and custom date range to funder report form (QA-R7-RPT-QUARTER1)
+- [ ] Verify accented character preservation through create/save/display cycle — may be test data issue, needs manual check (QA-R7-BUG13)
+- [ ] Verify form data preservation after validation error on create-participant — medium confidence, may be test artefact (QA-R7-BUG21)
 - [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
 - [ ] Verify deploy-azure.md reference in deployment protocol still resolves — may have been moved or renamed (DEPLOY-VERIFY1)
