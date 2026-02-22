@@ -192,7 +192,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ### Phase: QA Round 7 — Tier 1 Fixes (see tasks/qa-action-plan-2026-02-21.md)
 
 - [x] Fix language persistence — SafeLocaleMiddleware syncs cookie to user profile preferred_language, seed demo prefs — 2026-02-22 (QA-R7-BUG1)
-- [ ] Verify /manage/ routes cover PM self-service — check if BLOCKER-1 is a scenario YAML issue, update qa-scenarios if needed (QA-R7-BLKR1)
+- [x] Verify /manage/ routes cover PM self-service — CONFIRMED: app routes are correct, BLOCKER-1 is a qa-scenarios YAML issue (5 files use wrong /admin/ paths, need /manage/ URLs). Fix in konote-qa-scenarios repo — 2026-02-22 (QA-R7-BLKR1)
 - [x] Add skip-to-content link to base template — already implemented, verified — 2026-02-22 (QA-R7-BUG15)
 - [x] Fix notes URL returning 404 instead of 403 for receptionist — replaced HttpResponseForbidden with PermissionDenied for styled 403 — 2026-02-22 (QA-R7-BUG2)
 - [x] Fix htmx:syntax:error messages on create-participant page — fixed hx-trigger filter placement for HTMX 2.x — 2026-02-22 (QA-R7-BUG20)
