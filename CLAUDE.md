@@ -172,6 +172,8 @@ Some features involve complex trade-offs (legal, privacy, data modelling, adopti
 Current DRRs:
 - `tasks/design-rationale/circles-family-entity.md` — Circles (family/network entity). Covers relationship modelling, privacy, adoption risk, data model decisions from two expert panels.
 - `tasks/design-rationale/multi-tenancy.md` — Multi-tenancy architecture. Covers schema-per-tenant vs. alternatives, per-tenant encryption, consortium model, sequencing condition (after first single-tenant deployment).
+- `tasks/design-rationale/reporting-architecture.md` — Reporting system (canonical). Template-driven + ad-hoc paths, aggregation rules, period picker, consortium pipeline, privacy safeguards. Defers to multi-tenancy.md for suppression thresholds and consent.
+- `tasks/design-rationale/executive-dashboard-redesign.md` — Executive dashboard UX. Stats grid, program cards, accessibility. Monitoring only — does not produce exportable files.
 
 ### How Claude Manages Tasks
 
