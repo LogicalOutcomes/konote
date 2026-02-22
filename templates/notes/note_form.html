@@ -20,6 +20,7 @@
                 <label for="{{ form.template.id_for_label }}">{% trans "Template" %}</label>
                 {{ form.template }}
                 {% if form.template.errors %}<small class="error" id="template-error" role="alert">{{ form.template.errors.0 }}</small>{% endif %}
+                <div id="template-preview" aria-live="polite"></div>
             </div>
             <div class="field-interaction">
                 <label for="{{ form.interaction_type.id_for_label }}">{% trans "Interaction type" %}</label>
@@ -28,9 +29,15 @@
             </div>
             <div class="field-date">
                 <label for="{{ form.session_date.id_for_label }}">{% trans "Session Date" %}</label>
-                {{ form.session_date }}
+                <input type="date" name="session_date" id="{{ form.session_date.id_for_label }}"
+                       value="{{ form.session_date.value|default:'' }}"
+                       hx-get="{% url 'notes:check_note_date' client_id=client.pk %}"
+                       hx-trigger="change delay:300ms"
+                       hx-target="#duplicate-note-warning"
+                       hx-include="[name='session_date']">
                 <small id="session-date-help">{{ form.session_date.help_text }}</small>
                 {% if form.session_date.errors %}<small class="error" id="session-date-error" role="alert">{{ form.session_date.errors.0 }}</small>{% endif %}
+                <div id="duplicate-note-warning" aria-live="polite"></div>
             </div>
         </div>
     </fieldset>
@@ -395,16 +402,26 @@ if (suggestionField && priorityRow) {
     togglePriority(); // Handle pre-filled values on page load
 }
 
-// Auto-fill interaction type from template's default
+// Auto-fill interaction type from template's default + preview (UX-PREVIEW1)
 var templateSelect = document.querySelector('[name="template"]');
 var interactionSelect = document.querySelector('[name="interaction_type"]');
 var defaultsEl = document.getElementById("template-defaults");
+var previewEl = document.getElementById("template-preview");
 if (templateSelect && interactionSelect && defaultsEl) {
     var templateDefaults = JSON.parse(defaultsEl.textContent);
     templateSelect.addEventListener("change", function () {
         var tmplId = this.value;
         if (tmplId && templateDefaults[tmplId]) {
             interactionSelect.value = templateDefaults[tmplId];
+        }
+        // Fetch template preview
+        if (tmplId && previewEl) {
+            fetch("{% url 'notes:template_preview' template_id=0 %}".replace("/0/preview/", "/" + tmplId + "/preview/"), {
+                headers: {"HX-Request": "true"}
+            }).then(function (r) { return r.text(); })
+              .then(function (html) { previewEl.innerHTML = html; });
+        } else if (previewEl) {
+            previewEl.innerHTML = "";
         }
     });
 }

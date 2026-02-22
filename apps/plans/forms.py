@@ -22,6 +22,9 @@ class PlanSectionForm(forms.ModelForm):
         widgets = {
             "sort_order": forms.NumberInput(attrs={"min": 0}),
         }
+        labels = {
+            "sort_order": _("Display order"),
+        }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -38,6 +41,9 @@ class PlanSectionStatusForm(forms.ModelForm):
         widgets = {
             "status": forms.Select(choices=PlanSection.STATUS_CHOICES),
             "status_reason": forms.Textarea(attrs={"rows": 3, "placeholder": _("Reason for status change (optional)")}),
+        }
+        labels = {
+            "status_reason": _("Why is this being changed?"),
         }
 
 
@@ -75,6 +81,7 @@ class PlanTargetStatusForm(forms.Form):
     status = forms.ChoiceField(choices=PlanTarget.STATUS_CHOICES)
     status_reason = forms.CharField(
         required=False,
+        label=_("Why is this being changed?"),
         widget=forms.Textarea(attrs={"rows": 3, "placeholder": _("Reason for status change (optional)")}),
     )
 

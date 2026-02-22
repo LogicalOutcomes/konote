@@ -30,6 +30,10 @@ class GroupForm(forms.ModelForm):
         self.fields["program"].required = False
         self.fields["program"].empty_label = _("No program")
 
+        # Pre-select when user has exactly one program (BUG-22)
+        if not self.is_bound and qs.count() == 1:
+            self.initial["program"] = qs.first().pk
+
         # Radio buttons for group type (descriptions rendered in template)
         self.fields["group_type"].widget = forms.RadioSelect(
             choices=Group.GROUP_TYPE_CHOICES,

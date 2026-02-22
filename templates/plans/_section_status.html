@@ -28,6 +28,10 @@
     {% endfor %}
     <footer class="status-form-actions">
         <button type="submit" class="small">{% trans "Save" %}</button>
-        <button type="button" class="outline secondary small" onclick="location.reload()">{% trans "Cancel" %}</button>
+        <button type="button" class="outline secondary small"
+                hx-get="{% url 'plans:section_status' section_id=section.pk %}"
+                hx-target="#section-{{ section.pk }}"
+                hx-swap="innerHTML"
+                hx-vals='{"cancel": "1"}'>{% trans "Cancel" %}</button>
     </footer>
 </form>

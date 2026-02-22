@@ -146,15 +146,34 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: AI Target Suggestion — Polish — complete!
 
-### Phase: UX Fixes
-
-**Persona for all text rewrites:** Write as if speaking to a nonprofit staff person (coordinator, coach, counsellor, front desk) across a variety of program types — not a data analyst or developer.
+### Phase: UX Fixes — complete!
 
 - [x] Fix Add Target form UX: auto-select or clarify "area of the plan", remove "Attendance & Wellbeing" placeholder, and change metric text from "how much progress have they made" to "how much progress have I made" — 2026-02-20 (UX-TARGET1)
 - [x] Change "Add section only" link text to "Add Section" on plan view — 2026-02-20 (UX-SECTION1)
 - [x] Remove "+ Add note" link in Notes tab, update wayfinding text to reference Actions menu — 2026-02-20 (UX-NOTES3)
 - [x] Fix "server error occurred" when clicking "Shape this target" — metric catalogue key mismatch — 2026-02-20 (BUG-AI1)
 - [x] Fix "error message" when clicking "Draft Report summary" — gettext_lazy proxies as JSON keys — 2026-02-20 (BUG-AI2)
+
+### Phase: UX + QA Round 7 Fixes — complete!
+
+- [x] Permission fix: calendar feed settings missing access control — 2026-02-21 (PERMISSION-1)
+- [x] Fix 403 page: remove raw exception display, add role-specific messages — 2026-02-21 (BUG-3)
+- [x] ARIA tablist on client profile tabs with arrow key navigation — 2026-02-21 (BUG-14)
+- [x] Form validation ARIA: novalidate + custom errors with aria-describedby — 2026-02-21 (BUG-16)
+- [x] Group creation pre-selects program for single-program users — 2026-02-21 (BUG-22)
+- [x] Executive dashboard date range filter and CSV export — 2026-02-21 (BUG-9/10)
+- [x] Offline fallback page — 2026-02-21 (BUG-17)
+- [x] Dismissable priority items on dashboard (localStorage, daily reset) — 2026-02-21 (BUG-19)
+- [x] Form labels: "sort_order" → "Display order", "status_reason" → "Why is this being changed?" — 2026-02-21 (UX-LABEL1, UX-LABEL2)
+- [x] Replace location.reload() with HTMX cancel on plan status forms — 2026-02-21 (UX-RELOAD1)
+- [x] Template dropdown shows section count in full note form — 2026-02-21 (UX-DROPDOWN1)
+- [x] Duplicate note date warning via HTMX — 2026-02-21 (UX-DUPENOTE1)
+- [x] Enhanced post-save message with target/metric counts — 2026-02-21 (UX-POSTSAVE1)
+- [x] Template preview on note form — 2026-02-21 (UX-PREVIEW1)
+- [x] "Create New" button in empty search results + result count — 2026-02-21 (IMPROVE-2, IMPROVE-8)
+- [x] Hidden programs notice on client profile — 2026-02-21 (IMPROVE-5)
+- [x] Front desk orientation card on home page — 2026-02-21 (UX-FRONTDESK1)
+- [x] Task-oriented dashboard: quick links moved up, action-oriented headings — 2026-02-21 (UX-TASKDASH1, BUG-18)
 ## Parking Lot
 
 - [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
@@ -191,32 +210,13 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] UX + QA Round 7 fixes — 18 items: accessibility (ARIA tablist, form validation), dashboard (task-oriented layout, dismissable items, executive date range/export), notes UX (template preview, duplicate warning, post-save counts), front desk orientation, hidden programs notice, label improvements, HTMX cancel — 2026-02-21 (see Phase: UX + QA Round 7 Fixes above)
 - [x] Unify analysis chart quick-select and date picker into single form control — 2026-02-21 (UX-CHART1)
-- [x] Add adjustable timeframe and date range controls to analysis charts — already implemented, verified — 2026-02-21 (CHART-TIME1)
-- [x] Add target filter to Notes section — already implemented, verified — 2026-02-21 (UX-NOTES-BY-TARGET1)
 - [x] Accessibility fixes: aria-labels on audit table, notes error container, mobile touch targets — 2026-02-21 (A11Y-UX1)
-- [x] Add edge-case tests for target filter and analysis timeframe paths — 2026-02-21 (TEST-FILTER1)
-- [x] Add survey demo data to seed_demo_data — 3 surveys, 1 response, 1 assignment, 1 trigger rule — 2026-02-21 (QA-SURV1)
-- [x] Create CSV test fixture for survey import — 2026-02-21 (QA-SURV2)
-- [x] Add 8 scenario test stubs for SCN-110 through SCN-117 — 2026-02-21 (QA-SURV4)
-- [x] Rename original KoNote GitHub repo to KoNote Classic and add redirect — 2026-02-20 (REPO1)
-- [x] Fix fiscal year dropdown showing English strings in French UI — wrapped with gettext, added 12 French translations — 2026-02-20 (BUG-FY1)
-- [x] Define [funder partner] configuration template — 8 fixture files covering terminology, metrics, plans, roles, report schema — 2026-02-20 (DEPLOY-TEMPLATE1)
-- [x] Add financial metric plausibility subsection to data validation design — warn_min/warn_max for debt, income, savings, credit score — 2026-02-20 (DQ1-FIN)
-- [x] Write implementation plans for RPT-APPROVE1, DEPLOY-SCRIPT1, SCALE-API1 — 2026-02-20
-- [x] Build "Questions for You" portal feature — auto-save, multi-page, conditional sections, review page, dashboard badge — 2026-02-20 (PORTAL-Q1)
-- [x] Redesign detailed notes form (Round 2) — auto-calc metrics, scale pills, two-lens layout (see docs/plans/2026-02-19-notes-form-redesign-v2.md) — 2026-02-19 (UX-NOTES2)
-- [x] Improve Messages page clarity — sender-first cards, urgent flag, relative timestamps, focus management, French translations — 2026-02-19 (UX-MSG1)
-- [x] Active batch — theme fixes (FIX1–6), near-term improvements (BUG-SW1, URL-CLEAN1/2, QA-W60/W61), dashboard text (UX-DASH1), PERF2 already done, VERIFY2 confirmed — 2026-02-18 (THEME-FIX1–6, BUG-SW1, URL-CLEAN1, URL-CLEAN2, QA-W60, QA-W61, PERF2, UX-DASH1, VERIFY2)
-- [x] Use CSS custom property for error colour in `.ai-suggest-error` and `.gb-error` — replaced hardcoded `#dc3545` with theme tokens — 2026-02-18 (AI-CSS1)
-- [x] Add `%(client)s` blocktrans msgids to .po file with French translations — 2026-02-18 (AI-I18N1)
-- [x] Add `@require_POST` decorator to all 8 AI POST-only views — 2026-02-18 (AI-VIEWS1)
-- [x] Add test coverage for `ai_enabled` in goal_create view context — one test with AI on, one with AI off — 2026-02-18 (TEST-GB1)
-- [x] Git housekeeping — deleted 31+ stale branches, cleared 10 stashes, removed 3 worktrees, rebased and merged PR #136 (cleanup) and PR #143 (10 test fixes) — 2026-02-18 (HOUSEKEEP1)
-- [x] Agency Onboarding Interview Pack — 12 refinements: session split, privacy opener, role name alignment, jargon removal, summaries, warmer scenarios, deployment checklists — 2026-02-18 (ONBOARD1–12)
-- [x] Move PM management pages from /admin/ to /manage/ — new URL structure, middleware simplification, redirects from old URLs, 1795 tests pass — 2026-02-18 (QA-W59)
-- [x] Fix test suite freezing — add Django @tag('slow') to BrowserTestBase so --exclude-tag=slow properly skips 70 Playwright tests — 2026-02-18 (TEST-FIX1)
-- [x] UX walkthrough fixes — strengthen touch target CSS with !important overrides, add aria-label to submissions table; UX5/UX10/UX11 already done — 2026-02-17 (UX-WALK6)
-- [x] Mobile touch targets WCAG fix — enforce 44px minimum with explicit padding on nav, breadcrumbs, tabs, buttons, selects at mobile breakpoints — 2026-02-17 (UX-WALK5)
-- [x] Fix 3 failing scenario tests — empty prerequisite guard, Priya Sharma test client, logout dropdown fallback + crash guard — 2026-02-17 (QA-FIX1, QA-FIX2, QA-FIX3)
-- [x] Add demo content for suggestion themes (11 themes, 29 links) and staff messages (7 messages) — 2026-02-17 (DEMO-SUG1)
+- [x] Add survey demo data and scenario test stubs — 2026-02-21 (QA-SURV1, QA-SURV2, QA-SURV4)
+- [x] Fix fiscal year dropdown showing English strings in French UI — 2026-02-20 (BUG-FY1)
+- [x] Build "Questions for You" portal feature — auto-save, multi-page, conditional sections — 2026-02-20 (PORTAL-Q1)
+- [x] Redesign detailed notes form (Round 2) — auto-calc metrics, scale pills, two-lens layout — 2026-02-19 (UX-NOTES2)
+- [x] Move PM management pages from /admin/ to /manage/ — 2026-02-18 (QA-W59)
+- [x] Fix test suite freezing — skip Playwright tests with --exclude-tag=slow — 2026-02-18 (TEST-FIX1)
+- [x] Mobile touch targets WCAG fix — enforce 44px minimum — 2026-02-17 (UX-WALK5)

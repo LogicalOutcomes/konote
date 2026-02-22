@@ -212,6 +212,12 @@ def section_edit(request, section_id):
     if not _can_edit_plan(request.user, section.client_file):
         raise PermissionDenied(_("You don't have permission to access this page."))
 
+    if request.GET.get("cancel"):
+        return render(request, "plans/_section.html", {
+            "section": section,
+            "can_edit": True,
+        })
+
     if request.method == "POST":
         form = PlanSectionForm(request.POST, instance=section)
         if form.is_valid():
@@ -237,6 +243,12 @@ def section_status(request, section_id):
     section = get_object_or_404(PlanSection, pk=section_id)
     if not _can_edit_plan(request.user, section.client_file):
         raise PermissionDenied(_("You don't have permission to access this page."))
+
+    if request.GET.get("cancel"):
+        return render(request, "plans/_section.html", {
+            "section": section,
+            "can_edit": True,
+        })
 
     if request.method == "POST":
         form = PlanSectionStatusForm(request.POST, instance=section)
@@ -354,6 +366,12 @@ def target_status(request, target_id):
     target = get_object_or_404(PlanTarget, pk=target_id)
     if not _can_edit_plan(request.user, target.client_file):
         raise PermissionDenied(_("You don't have permission to access this page."))
+
+    if request.GET.get("cancel"):
+        return render(request, "plans/_target.html", {
+            "target": target,
+            "can_edit": True,
+        })
 
     if request.method == "POST":
         form = PlanTargetStatusForm(request.POST)

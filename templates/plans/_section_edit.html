@@ -18,8 +18,7 @@
                 hx-get="{% url 'plans:section_edit' section_id=section.pk %}"
                 hx-target="#section-{{ section.pk }}"
                 hx-swap="innerHTML"
-                hx-vals='{"cancel": "1"}'
-                onclick="location.reload()">
+                hx-vals='{"cancel": "1"}'>
             {% trans "Cancel" %}
         </button>
     </div>

@@ -614,6 +614,13 @@ def client_detail(request, client_id):
     enrolments = ClientProgramEnrolment.objects.filter(
         client_file=client, status="enrolled", program_id__in=user_program_ids,
     ).select_related("program")
+    # IMPROVE-5: Check if client has programs hidden from this user
+    all_enrolled_count = ClientProgramEnrolment.objects.filter(
+        client_file=client, status="enrolled",
+    ).count()
+    visible_count = enrolments.count()
+    has_hidden_programs = all_enrolled_count > visible_count
+
     # Custom fields for Info tab — uses shared helper with hide_empty=True (display mode)
     custom_fields_ctx = _get_custom_fields_context(client, user_role, hide_empty=True)
     custom_data = custom_fields_ctx["custom_data"]
@@ -653,6 +660,7 @@ def client_detail(request, client_id):
         "pending_erasure": pending_erasure,
         "visible_fields": visible_fields,
         "document_folder_url": get_document_folder_url(client),
+        "has_hidden_programs": has_hidden_programs,
         "breadcrumbs": breadcrumbs,
         **tab_counts,  # notes_count, events_count, targets_count
     }
@@ -1009,7 +1017,13 @@ def client_search(request):
 
     results.sort(key=lambda c: c["name"].lower())
 
-    context = {"results": results[:50], "query": query}
+    # IMPROVE-2: pass can_create so search results can show "Create New" prompt
+    from apps.auth_app.decorators import _get_user_highest_role
+    from apps.auth_app.constants import ROLE_RANK
+    user_role = _get_user_highest_role(request.user)
+    can_create = ROLE_RANK.get(user_role, 0) >= ROLE_RANK["staff"]
+
+    context = {"results": results[:50], "query": query, "can_create": can_create}
 
     # HTMX request — return only the partial
     if request.headers.get("HX-Request"):

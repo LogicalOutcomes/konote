@@ -180,6 +180,9 @@ class CustomFieldGroupForm(forms.ModelForm):
     class Meta:
         model = CustomFieldGroup
         fields = ["title", "sort_order", "status"]
+        labels = {
+            "sort_order": _("Display order"),
+        }
 
 
 class CustomFieldValuesForm(forms.Form):
@@ -245,6 +248,9 @@ class CustomFieldDefinitionForm(forms.ModelForm):
         ]
         widgets = {
             "options_json": forms.Textarea(attrs={"rows": 3, "placeholder": _('["Option 1", "Option 2"]')}),
+        }
+        labels = {
+            "sort_order": _("Display order"),
         }
         help_texts = {
             "front_desk_access": _("Set front desk access to 'View and edit' for contact info, emergency contacts, and safety alerts."),

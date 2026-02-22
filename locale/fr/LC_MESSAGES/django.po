@@ -14344,3 +14344,58 @@ msgstr ""
 
 msgid "Threshold"
 msgstr "Seuil"
+
+msgid "%(count)d metric(s) recorded"
+msgstr "%(count)d indicateur(s) enregistré(s)"
+
+msgid "%(count)d target(s) updated"
+msgstr "%(count)d objectif(s) mis à jour"
+
+msgid "Dismiss for today"
+msgstr "Masquer pour aujourd'hui"
+
+msgid "Heads up:"
+msgstr "Attention :"
+
+msgid "Leave messages for staff on a participant's profile"
+msgstr "Laisser des messages au personnel sur le profil d'un participant"
+
+msgid "Need access to something else? Ask your program manager."
+msgstr "Besoin d'accéder à autre chose? Demandez à votre gestionnaire de programme."
+
+msgid "Pick up where you left off"
+msgstr "Reprendre là où vous en étiez"
+
+msgid "Update contact information on any profile you can access"
+msgstr "Mettre à jour les coordonnées sur tout profil auquel vous avez accès"
+
+msgid "What needs your attention"
+msgstr "Ce qui nécessite votre attention"
+
+msgid "Why is this being changed?"
+msgstr "Pourquoi ce changement?"
+
+msgid "You can still save — this is just a reminder."
+msgstr "Vous pouvez quand même sauvegarder — ceci est un simple rappel."
+
+msgid "Your Front Desk Tools"
+msgstr "Vos outils de réception"
+
+#: templates/notes/_note_date_warning.html
+msgid "There is already %(counter)s note for this date."
+msgid_plural "There are already %(counter)s notes for this date."
+msgstr[0] "Il y a déjà %(counter)s note pour cette date."
+msgstr[1] "Il y a déjà %(counter)s notes pour cette date."
+
+#: templates/notes/_template_preview.html
+msgid "%(name)s includes:"
+msgstr "%(name)s comprend :"
+
+#: templates/clients/_tab_info.html
+msgid ""
+"This participant is also enrolled in other %(programs)s you don't have "
+"access to. Contact your program manager for details."
+msgstr ""
+"Ce participant est également inscrit dans d'autres %(programs)s auxquels "
+"vous n'avez pas accès. Communiquez avec votre gestionnaire de programme "
+"pour plus de détails."

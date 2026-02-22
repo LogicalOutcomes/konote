@@ -111,6 +111,20 @@
   {% include "clients/_dashboard_executive_summary.html" %}
 {% elif is_pm %}
   {% include "clients/_dashboard_pm_summary.html" %}
+{% elif is_receptionist %}
+<!-- Front Desk orientation (UX-FRONTDESK1) -->
+<article class="orientation-card">
+    <header class="card-header"><span>{% trans "Your Front Desk Tools" %}</span></header>
+    <ul class="card-list">
+        <li>{% blocktrans with clients=term.client_plural|default:"participants" %}Search for {{ clients }} using the search bar above{% endblocktrans %}</li>
+        <li>{% blocktrans with client=term.client|default:"participant" %}Register a new {{ client }} using the "+ New" button{% endblocktrans %}</li>
+        <li>{% trans "Update contact information on any profile you can access" %}</li>
+        <li>{% trans "Leave messages for staff on a participant's profile" %}</li>
+    </ul>
+    <footer class="card-footer">
+        <small class="secondary">{% trans "Need access to something else? Ask your program manager." %}</small>
+    </footer>
+</article>
 {% endif %}
 
 <!-- Stats row (clinical staff only — Front Desk and executives don't need these) -->
@@ -144,13 +158,27 @@
 </div>
 {% endif %}
 
+<!-- Quick links — moved up for faster access (UX-TASKDASH1) -->
+{% if features.programs or user.is_admin %}
+<nav class="quick-links" aria-label="{% trans 'Quick links' %}">
+    <span class="quick-links-label">{% trans "Quick links:" %}</span>
+    {% if features.programs %}
+    <a href="/programs/">{{ term.program_plural|default:"Programs" }}</a>
+    {% endif %}
+    {% if user.is_admin %}
+    <a href="/reports/export/">{% trans "Reports" %}</a>
+    <a href="/admin/settings/">{% trans "Settings" %}</a>
+    {% endif %}
+</nav>
+{% endif %}
+
 <!-- Two-column dashboard -->
 <div class="dashboard-grid">
     <!-- Priority items (alerts + needs attention) — hidden from Front Desk and executives -->
     {% if not is_receptionist and not is_executive %}
     <article>
         <header class="card-header">
-            <span>{% trans "Priority Items" %}</span>
+            <span>{% trans "What needs your attention" %}</span>
             {% if alert_count > 0 or needs_attention_count > 0 or follow_up_count > 0 %}
             <span class="badge badge-warning">{{ alert_count|add:needs_attention_count|add:follow_up_count }}</span>
             {% endif %}
@@ -160,12 +188,13 @@
             <h2 class="priority-label"><span class="stat-icon" aria-hidden="true">&#9888;</span> {% trans "Alerts" %}</h2>
             <ul class="card-list">
                 {% for alert in active_alerts %}
-                <li class="priority-item priority-alert">
+                <li class="priority-item priority-alert dismissable-item" data-dismiss-key="alert-{{ alert.pk }}">
                     <a href="{% url 'clients:client_detail' client_id=alert.client_file.pk %}">
                         {{ alert.client_file.display_name }} {{ alert.client_file.last_name }}
                     </a>
                     <span class="priority-detail">{{ alert.content|truncatechars:40 }}</span>
                     <small class="secondary">{{ alert.created_at|date:"M j" }}</small>
+                    <button type="button" class="dismiss-btn outline secondary" aria-label="{% trans 'Dismiss' %}" title="{% trans 'Dismiss for today' %}">&times;</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -176,12 +205,13 @@
             <h2 class="priority-label">{% trans "Follow-ups Due" %}</h2>
             <ul class="card-list">
                 {% for note in pending_follow_ups %}
-                <li class="priority-item{% if note.follow_up_date < today %} priority-overdue{% endif %}">
+                <li class="priority-item{% if note.follow_up_date < today %} priority-overdue{% endif %} dismissable-item" data-dismiss-key="followup-{{ note.pk }}">
                     <a href="{% url 'clients:client_detail' client_id=note.client_file.pk %}">
                         {{ note.client_file.display_name }} {{ note.client_file.last_name }}
                     </a>
                     <span class="priority-detail">{{ note.notes_text|truncatechars:40 }}</span>
                     <small class="secondary">{{ note.follow_up_date|date:"M j" }}</small>
+                    <button type="button" class="dismiss-btn outline secondary" aria-label="{% trans 'Dismiss' %}" title="{% trans 'Dismiss for today' %}">&times;</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -192,9 +222,10 @@
             <h2 class="priority-label">{% trans "No Recent Notes" %}</h2>
             <ul class="card-list">
                 {% for item in needs_attention %}
-                <li class="priority-item">
+                <li class="priority-item dismissable-item" data-dismiss-key="attention-{{ item.client.pk }}">
                     <a href="{% url 'clients:client_detail' client_id=item.client.pk %}">{{ item.name }}</a>
                     <span class="priority-detail secondary">{% trans "30+ days without notes" %}</span>
+                    <button type="button" class="dismiss-btn outline secondary" aria-label="{% trans 'Dismiss' %}" title="{% trans 'Dismiss for today' %}">&times;</button>
                 </li>
                 {% endfor %}
             </ul>
@@ -209,7 +240,7 @@
     <!-- Recent activity -->
     <article>
         <header class="card-header">
-            <span>{% trans "Recently Viewed" %}</span>
+            <span>{% trans "Pick up where you left off" %}</span>
         </header>
         {% if recent_clients %}
         <ul class="card-list">
@@ -228,17 +259,47 @@
     </article>
 </div>
 
-<!-- Quick links (if features enabled) -->
-{% if features.programs or user.is_admin %}
-<nav class="quick-links" aria-label="{% trans 'Quick links' %}">
-    <span class="quick-links-label">{% trans "Quick links:" %}</span>
-    {% if features.programs %}
-    <a href="/programs/">{{ term.program_plural|default:"Programs" }}</a>
-    {% endif %}
-    {% if user.is_admin %}
-    <a href="/reports/export/">{% trans "Reports" %}</a>
-    <a href="/admin/settings/">{% trans "Settings" %}</a>
-    {% endif %}
-</nav>
-{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// BUG-19: Dismissable priority items (localStorage, expires daily)
+(function () {
+    var today = new Date().toISOString().slice(0, 10);
+    var storageKey = "konote_dismissed_" + today;
+    var dismissed;
+    try { dismissed = JSON.parse(localStorage.getItem(storageKey)) || {}; } catch (e) { dismissed = {}; }
+
+    // Clean up old days
+    try {
+        for (var i = 0; i < localStorage.length; i++) {
+            var k = localStorage.key(i);
+            if (k && k.indexOf("konote_dismissed_") === 0 && k !== storageKey) {
+                localStorage.removeItem(k);
+            }
+        }
+    } catch (e) { /* ignore */ }
+
+    // Hide already-dismissed items
+    document.querySelectorAll(".dismissable-item").forEach(function (item) {
+        var key = item.getAttribute("data-dismiss-key");
+        if (key && dismissed[key]) item.hidden = true;
+    });
+
+    // Dismiss on click
+    document.querySelectorAll(".dismiss-btn").forEach(function (btn) {
+        btn.addEventListener("click", function (e) {
+            e.preventDefault();
+            var item = btn.closest(".dismissable-item");
+            if (!item) return;
+            var key = item.getAttribute("data-dismiss-key");
+            item.hidden = true;
+            if (key) {
+                dismissed[key] = true;
+                try { localStorage.setItem(storageKey, JSON.stringify(dismissed)); } catch (e) { /* ignore */ }
+            }
+        });
+    });
+})();
+</script>
 {% endblock %}

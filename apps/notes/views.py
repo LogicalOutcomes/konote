@@ -443,6 +443,51 @@ def quick_note_inline(request, client_id):
 
 
 @login_required
+def template_preview(request, template_id):
+    """HTMX endpoint: return a preview of the template's sections.
+
+    Requires at least staff-level role (receptionists cannot preview templates).
+    """
+    from apps.auth_app.constants import ROLE_RANK
+    from apps.auth_app.decorators import _get_user_highest_role
+
+    user_role = _get_user_highest_role(request.user)
+    if ROLE_RANK.get(user_role, 0) < ROLE_RANK.get("staff", 0):
+        return HttpResponseForbidden("Access restricted to clinical staff.")
+
+    template = get_object_or_404(ProgressNoteTemplate, pk=template_id, status="active")
+    sections = template.sections.prefetch_related("metrics__metric_def").all()
+    return render(request, "notes/_template_preview.html", {
+        "template": template,
+        "sections": sections,
+    })
+
+
+@login_required
+@requires_permission("note.view", _get_program_from_client)
+def check_note_date(request, client_id):
+    """HTMX endpoint: warn if a note already exists for this client on the given date."""
+    date_str = request.GET.get("session_date", "")
+    if not date_str:
+        return render(request, "notes/_note_date_warning.html", {"existing_notes": []})
+    try:
+        target_date = datetime.date.fromisoformat(date_str)
+    except ValueError:
+        return render(request, "notes/_note_date_warning.html", {"existing_notes": []})
+
+    existing = (
+        ProgressNote.objects.filter(client_file_id=client_id, status="default")
+        .annotate(
+            eff_date=Coalesce("backdate", "created_at", output_field=DateTimeField()),
+        )
+        .filter(eff_date__date=target_date)
+        .select_related("author")
+        .order_by("-created_at")[:5]
+    )
+    return render(request, "notes/_note_date_warning.html", {"existing_notes": existing})
+
+
+@login_required
 @requires_permission("note.create", _get_program_from_client)
 def note_create(request, client_id):
     """Create a full structured progress note with target entries and metric values."""
@@ -562,7 +607,19 @@ def note_create(request, client_id):
                 except Exception:
                     logger.exception("Auto-link failed for note %s", note.pk)
 
-            messages.success(request, _("Progress note saved."))
+            # UX-POSTSAVE1: Enhanced success message with target/metric counts
+            saved_targets = ProgressNoteTarget.objects.filter(progress_note=note).count()
+            saved_metrics = MetricValue.objects.filter(progress_note_target__progress_note=note).count()
+            parts = [_("Progress note saved.")]
+            if saved_targets:
+                parts.append(
+                    _("%(count)d target(s) updated") % {"count": saved_targets}
+                )
+            if saved_metrics:
+                parts.append(
+                    _("%(count)d metric(s) recorded") % {"count": saved_metrics}
+                )
+            messages.success(request, " ".join(parts))
 
             # Contextual toast when a suggestion was recorded
             if form.cleaned_data.get("suggestion_priority"):

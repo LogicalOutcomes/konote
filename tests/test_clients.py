@@ -1,5 +1,6 @@
 """Tests for client CRUD views and search."""
 from django.test import TestCase, Client, override_settings
+from django.utils import timezone
 from cryptography.fernet import Fernet
 
 from apps.auth_app.models import User
@@ -801,3 +802,181 @@ class ConsentRecordingTest(TestCase):
         self.assertEqual(resp.status_code, 403)
         self.cf.refresh_from_db()
         self.assertIsNone(self.cf.consent_given_at)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ExecutiveDashboardExportTest(TestCase):
+    """Tests for executive dashboard CSV export (BUG-9/10 review fixes)."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+
+        self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
+
+        # Executive user
+        self.executive = User.objects.create_user(
+            username="exec", password="pass", is_admin=False,
+        )
+        UserProgramRole.objects.create(
+            user=self.executive, program=self.prog, role="executive",
+        )
+
+        # PM user
+        self.pm = User.objects.create_user(
+            username="pm", password="pass", is_admin=False,
+        )
+        UserProgramRole.objects.create(
+            user=self.pm, program=self.prog, role="program_manager",
+        )
+
+        # Frontline staff (should be blocked)
+        self.staff = User.objects.create_user(
+            username="staff", password="pass", is_admin=False,
+        )
+        UserProgramRole.objects.create(
+            user=self.staff, program=self.prog, role="staff",
+        )
+
+        # Admin user
+        self.admin = User.objects.create_user(
+            username="admin", password="pass", is_admin=True,
+        )
+        UserProgramRole.objects.create(
+            user=self.admin, program=self.prog, role="program_manager",
+        )
+
+        # Create some clients
+        for i in range(6):
+            cf = ClientFile()
+            cf.first_name = f"Client{i}"
+            cf.last_name = "Test"
+            cf.status = "active"
+            cf.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=cf, program=self.prog,
+            )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_executive_can_export(self):
+        """Executive role can download CSV export."""
+        self.http.login(username="exec", password="pass")
+        resp = self.http.get("/participants/executive/export/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "text/csv")
+        self.assertIn("executive-dashboard.csv", resp["Content-Disposition"])
+
+    def test_pm_can_export(self):
+        """Program manager role can download CSV export."""
+        self.http.login(username="pm", password="pass")
+        resp = self.http.get("/participants/executive/export/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "text/csv")
+
+    def test_admin_can_export(self):
+        """Admin can download CSV export."""
+        self.http.login(username="admin", password="pass")
+        resp = self.http.get("/participants/executive/export/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "text/csv")
+
+    def test_staff_blocked_from_export(self):
+        """Frontline staff cannot download CSV export."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get("/participants/executive/export/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_export_creates_audit_log(self):
+        """CSV export creates an audit log entry."""
+        from apps.audit.models import AuditLog
+        self.http.login(username="exec", password="pass")
+        self.http.get("/participants/executive/export/")
+        log = AuditLog.objects.using("audit").filter(
+            action="export", resource_type="executive_dashboard",
+        ).first()
+        self.assertIsNotNone(log)
+        self.assertEqual(log.user_id, self.executive.pk)
+
+    def test_export_with_start_date(self):
+        """CSV export respects start_date query param."""
+        self.http.login(username="exec", password="pass")
+        resp = self.http.get("/participants/executive/export/", {"start_date": "2026-01-01"})
+        self.assertEqual(resp.status_code, 200)
+        content = resp.content.decode()
+        self.assertIn("Prog A", content)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class StatisticalDisclosureGuardTest(TestCase):
+    """Tests for small-program percentage suppression."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+        self.small_prog = Program.objects.create(
+            name="Small Prog", colour_hex="#FF0000", status="active",
+        )
+        self.large_prog = Program.objects.create(
+            name="Large Prog", colour_hex="#00FF00", status="active",
+        )
+
+        # Small program: 3 active clients (below threshold of 5)
+        for i in range(3):
+            cf = ClientFile()
+            cf.first_name = f"Small{i}"
+            cf.last_name = "Test"
+            cf.status = "active"
+            cf.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=cf, program=self.small_prog,
+            )
+
+        # Large program: 10 active clients (above threshold)
+        for i in range(10):
+            cf = ClientFile()
+            cf.first_name = f"Large{i}"
+            cf.last_name = "Test"
+            cf.status = "active"
+            cf.save()
+            ClientProgramEnrolment.objects.create(
+                client_file=cf, program=self.large_prog,
+            )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_small_program_suppresses_percentages(self):
+        """Programs below SMALL_PROGRAM_THRESHOLD suppress percentage metrics."""
+        from apps.clients.dashboard_views import (
+            SMALL_PROGRAM_THRESHOLD,
+            _batch_enrolment_stats,
+        )
+        now = timezone.now()
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        all_client_ids = set(ClientFile.objects.values_list("pk", flat=True))
+        small_ids = [self.small_prog.pk]
+        stats = _batch_enrolment_stats(small_ids, all_client_ids, month_start)
+        active = stats[self.small_prog.pk]["active"]
+        self.assertLess(active, SMALL_PROGRAM_THRESHOLD)
+
+    def test_large_program_shows_percentages(self):
+        """Programs above SMALL_PROGRAM_THRESHOLD show percentage metrics."""
+        from apps.clients.dashboard_views import (
+            SMALL_PROGRAM_THRESHOLD,
+            _batch_enrolment_stats,
+        )
+        now = timezone.now()
+        month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        all_client_ids = set(ClientFile.objects.values_list("pk", flat=True))
+        large_ids = [self.large_prog.pk]
+        stats = _batch_enrolment_stats(large_ids, all_client_ids, month_start)
+        active = stats[self.large_prog.pk]["active"]
+        self.assertGreaterEqual(active, SMALL_PROGRAM_THRESHOLD)

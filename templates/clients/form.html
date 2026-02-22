@@ -9,7 +9,7 @@
     <h1>{% if editing %}{% blocktrans with first=client.display_name last=client.last_name %}Edit {{ first }} {{ last }}{% endblocktrans %}{% else %}{% blocktrans with client=term.client|default:"Participant" %}New {{ client }}{% endblocktrans %}{% endif %}</h1>
 </hgroup>
 
-<form method="post">
+<form method="post" novalidate>
     {% csrf_token %}
 
     {% include "includes/_form_errors.html" %}
@@ -20,18 +20,18 @@
     <div class="grid">
         <div>
             <label for="id_first_name">{% trans "First Name" %} <abbr title="{% trans 'required' %}">*</abbr></label>
-            <input type="text" name="first_name" id="id_first_name" value="{{ form.first_name.value|default:'' }}" required {% if not editing and not form.errors %}autofocus{% endif %}
+            <input type="text" name="first_name" id="id_first_name" value="{{ form.first_name.value|default:'' }}" required {% if not editing and not form.errors %}autofocus{% endif %}{% if form.first_name.errors %} aria-invalid="true" aria-describedby="err_first_name"{% endif %}
                    hx-get="{% url 'clients:check_duplicate' %}"
                    hx-trigger="input changed delay:1s[this.value.length >= 3 && document.getElementById('id_birth_date').value !== '']"
                    hx-target="#duplicate-banner"
                    hx-include="[name='phone'], [name='first_name'], [name='birth_date'], [name='exclude']"
                    hx-sync="#duplicate-banner:replace">
-            {% if form.first_name.errors %}<small class="badge badge-danger">{{ form.first_name.errors.0 }}</small>{% endif %}
+            {% if form.first_name.errors %}<small class="error" id="err_first_name" role="alert">{{ form.first_name.errors.0 }}</small>{% endif %}
         </div>
         <div>
             <label for="id_last_name">{% trans "Last Name" %} <abbr title="{% trans 'required' %}">*</abbr></label>
-            <input type="text" name="last_name" id="id_last_name" value="{{ form.last_name.value|default:'' }}" required>
-            {% if form.last_name.errors %}<small class="badge badge-danger">{{ form.last_name.errors.0 }}</small>{% endif %}
+            <input type="text" name="last_name" id="id_last_name" value="{{ form.last_name.value|default:'' }}" required{% if form.last_name.errors %} aria-invalid="true" aria-describedby="err_last_name"{% endif %}>
+            {% if form.last_name.errors %}<small class="error" id="err_last_name" role="alert">{{ form.last_name.errors.0 }}</small>{% endif %}
         </div>
     </div>
 
@@ -50,13 +50,13 @@
     <div class="grid">
         <div>
             <label for="id_phone">{% trans "Phone Number" %}</label>
-            <input type="tel" name="phone" id="id_phone" value="{{ form.phone.value|default:'' }}" placeholder="(613) 555-1234"
+            <input type="tel" name="phone" id="id_phone" value="{{ form.phone.value|default:'' }}" placeholder="(613) 555-1234"{% if form.phone.errors %} aria-invalid="true" aria-describedby="err_phone"{% endif %}
                    hx-get="{% url 'clients:check_duplicate' %}"
                    hx-trigger="input changed delay:500ms"
                    hx-target="#duplicate-banner"
                    hx-include="[name='phone'], [name='first_name'], [name='birth_date'], [name='exclude']"
                    hx-sync="#duplicate-banner:replace">
-            {% if form.phone.errors %}<small class="badge badge-danger">{{ form.phone.errors.0 }}</small>{% endif %}
+            {% if form.phone.errors %}<small class="error" id="err_phone" role="alert">{{ form.phone.errors.0 }}</small>{% endif %}
         </div>
         <div></div>
     </div>
