@@ -669,7 +669,7 @@ def parse_period_value(value, template):
         raise ValueError(gettext("Period start must be before end."))
     # Find the matching label from choices
     choices = build_period_choices(template)
-    label = f"{date_from} to {date_to}"  # Fallback
+    label = f"{date_from} {gettext('to')} {date_to}"  # Fallback
     for choice_val, choice_label in choices:
         if choice_val == value:
             label = choice_label

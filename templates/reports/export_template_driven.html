@@ -44,6 +44,7 @@
                 hx-target="#period-panel"
                 hx-swap="innerHTML"
                 hx-trigger="change"
+                hx-indicator="#period-loading"
                 hx-vals='js:{"template_id": this.value}'
                 {% if form.report_template.errors %}aria-invalid="true" aria-describedby="err_report_template"{% endif %}>
             <option value="">{% trans "— Select a report —" %}</option>
@@ -59,6 +60,9 @@
     {% endif %}
 
     {# Period panel — populated by HTMX after template selection #}
+    <div id="period-loading" class="htmx-indicator" aria-hidden="true" style="padding: 0.5rem 0;">
+        <span aria-busy="true">{% trans "Loading period options…" %}</span>
+    </div>
     <div id="period-panel" aria-live="polite">
         {% if form.period.field.choices %}
         {# On POST re-render, show the period field inline #}

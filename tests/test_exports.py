@@ -587,3 +587,216 @@ class FunderReportTemplateMetricFilterTest(TestCase):
         ]
         self.assertIn("Custom Score Label", metric_names)
         self.assertNotIn("Score A", metric_names)
+
+
+# ---------------------------------------------------------------------------
+# Aggregation engine tests (Fix #7)
+# ---------------------------------------------------------------------------
+
+class ComputeMetricAggregationTests(SimpleTestCase):
+    """Tests for compute_metric_aggregation() — all 7 aggregation types."""
+
+    def _make_values(self, data):
+        """Helper: convert {client_id: [(date_str, value), ...]} to proper format."""
+        from datetime import datetime
+        result = {}
+        for cid, pairs in data.items():
+            result[cid] = [
+                (datetime.fromisoformat(d), float(v)) for d, v in pairs
+            ]
+        return result
+
+    def test_count(self):
+        from apps.reports.aggregation import compute_metric_aggregation
+        values = self._make_values({
+            1: [("2025-06-01", 5)],
+            2: [("2025-06-01", 3)],
+            3: [("2025-06-01", 7)],
+        })
+        result = compute_metric_aggregation(values, "count")
+        self.assertEqual(result["value"], 3)
+        self.assertEqual(result["n"], 3)
+
+    def test_average(self):
+        from apps.reports.aggregation import compute_metric_aggregation
+        values = self._make_values({
+            1: [("2025-06-01", 4)],
+            2: [("2025-06-01", 6)],
+        })
+        result = compute_metric_aggregation(values, "average")
+        self.assertEqual(result["value"], 5.0)
+        self.assertEqual(result["n"], 2)
+
+    def test_sum(self):
+        from apps.reports.aggregation import compute_metric_aggregation
+        values = self._make_values({
+            1: [("2025-06-01", 10)],
+            2: [("2025-06-01", 20)],
+            3: [("2025-06-01", 30)],
+        })
+        result = compute_metric_aggregation(values, "sum")
+        self.assertEqual(result["value"], 60.0)
+        self.assertEqual(result["n"], 3)
+
+    def test_average_change(self):
+        from apps.reports.aggregation import compute_metric_aggregation
+        values = self._make_values({
+            1: [("2025-01-01", 3), ("2025-06-01", 7)],  # change = +4
+            2: [("2025-01-01", 5), ("2025-06-01", 8)],  # change = +3
+        })
+        result = compute_metric_aggregation(values, "average_change")
+        self.assertEqual(result["value"], 3.5)  # avg of 4 and 3
+        self.assertEqual(result["n"], 2)
+
+    def test_average_change_excludes_single_value_clients(self):
+        from apps.reports.aggregation import compute_metric_aggregation
+        values = self._make_values({
+            1: [("2025-01-01", 3), ("2025-06-01", 7)],  # change = +4
+            2: [("2025-06-01", 5)],  # only 1 value — excluded
+        })
+        result = compute_metric_aggregation(values, "average_change")
+        self.assertEqual(result["value"], 4.0)
+        self.assertEqual(result["n"], 1)  # only client 1 contributes
+
+    def test_threshold_count(self):
+        from apps.reports.aggregation import compute_metric_aggregation
+        values = self._make_values({
+            1: [("2025-06-01", 8)],
+            2: [("2025-06-01", 3)],
+            3: [("2025-06-01", 7)],
+        })
+        result = compute_metric_aggregation(values, "threshold_count", threshold_value=7)
+        self.assertEqual(result["value"], 2)  # clients 1 and 3 meet threshold
+        self.assertEqual(result["n"], 3)
+
+    def test_threshold_percentage(self):
+        from apps.reports.aggregation import compute_metric_aggregation
+        values = self._make_values({
+            1: [("2025-06-01", 8)],
+            2: [("2025-06-01", 3)],
+            3: [("2025-06-01", 7)],
+            4: [("2025-06-01", 9)],
+        })
+        result = compute_metric_aggregation(values, "threshold_percentage", threshold_value=7)
+        self.assertEqual(result["value"], 75.0)  # 3 of 4
+        self.assertEqual(result["n"], 4)
+
+    def test_percentage_alias(self):
+        """'percentage' should behave identically to 'threshold_percentage'."""
+        from apps.reports.aggregation import compute_metric_aggregation
+        values = self._make_values({
+            1: [("2025-06-01", 10)],
+            2: [("2025-06-01", 2)],
+        })
+        result = compute_metric_aggregation(values, "percentage", threshold_value=5)
+        self.assertEqual(result["value"], 50.0)  # 1 of 2
+        self.assertEqual(result["n"], 2)
+
+    def test_empty_values_returns_zero(self):
+        from apps.reports.aggregation import compute_metric_aggregation
+        result = compute_metric_aggregation({}, "count")
+        self.assertEqual(result["value"], 0)
+        self.assertEqual(result["n"], 0)
+
+    def test_unknown_aggregation_raises_valueerror(self):
+        from apps.reports.aggregation import compute_metric_aggregation
+        values = self._make_values({1: [("2025-06-01", 5)]})
+        with self.assertRaises(ValueError) as ctx:
+            compute_metric_aggregation(values, "nonexistent_type")
+        self.assertIn("nonexistent_type", str(ctx.exception))
+
+    def test_uses_latest_value_per_client(self):
+        """Average should use the latest (by date) value per client."""
+        from apps.reports.aggregation import compute_metric_aggregation
+        values = self._make_values({
+            1: [("2025-01-01", 2), ("2025-06-01", 8)],  # latest = 8
+        })
+        result = compute_metric_aggregation(values, "average")
+        self.assertEqual(result["value"], 8.0)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ConsortiumMetricLockingTest(TestCase):
+    """Tests for consortium-required metric locking in MetricExportForm."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+        from apps.auth_app.models import User
+        from apps.plans.models import MetricDefinition
+        from apps.programs.models import Program, UserProgramRole
+        from apps.reports.models import Partner, ReportMetric, ReportTemplate
+
+        self.user = User.objects.create_user(
+            username="pm_user", password="pass", display_name="PM"
+        )
+        self.program = Program.objects.create(name="Coaching")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role="staff", status="active"
+        )
+
+        self.metric_a = MetricDefinition.objects.create(
+            name="Metric A", min_value=0, max_value=10, unit="pts",
+            definition="Test", category="general",
+        )
+        self.metric_b = MetricDefinition.objects.create(
+            name="Metric B", min_value=0, max_value=10, unit="pts",
+            definition="Test", category="general",
+        )
+
+        partner = Partner.objects.create(name="Consortium Funder", partner_type="funder")
+        partner.programs.add(self.program)
+        self.template = ReportTemplate.objects.create(
+            partner=partner, name="Consortium Report",
+        )
+        # Metric A is consortium-required; Metric B is not
+        ReportMetric.objects.create(
+            report_template=self.template,
+            metric_definition=self.metric_a,
+            aggregation="count",
+            is_consortium_required=True,
+            sort_order=1,
+        )
+        ReportMetric.objects.create(
+            report_template=self.template,
+            metric_definition=self.metric_b,
+            aggregation="average",
+            is_consortium_required=False,
+            sort_order=2,
+        )
+
+    def tearDown(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+    def test_consortium_locked_metrics_populated_from_template(self):
+        """When template is selected, consortium_locked_metrics includes required metric IDs."""
+        from apps.reports.forms import MetricExportForm
+
+        form = MetricExportForm(
+            data={"report_template": str(self.template.pk)},
+            user=self.user,
+        )
+        self.assertIn(self.metric_a.pk, form.consortium_locked_metrics)
+        self.assertNotIn(self.metric_b.pk, form.consortium_locked_metrics)
+
+    def test_consortium_partner_name_set(self):
+        """The consortium partner name should be set when locked metrics exist."""
+        from apps.reports.forms import MetricExportForm
+
+        form = MetricExportForm(
+            data={"report_template": str(self.template.pk)},
+            user=self.user,
+        )
+        self.assertEqual(form.consortium_partner_name, "Consortium Funder")
+
+    def test_no_template_means_no_locks(self):
+        """Without a template selection, no metrics should be locked."""
+        from apps.reports.forms import MetricExportForm
+
+        form = MetricExportForm(data={}, user=self.user)
+        self.assertEqual(form.consortium_locked_metrics, set())
+        self.assertEqual(form.consortium_partner_name, "")

@@ -119,7 +119,7 @@
             {# PM/Admin: dropdown with both paths #}
             <li>
                 <details class="dropdown" role="list">
-                    <summary{% if nav_active == "reports" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reports" %}</summary>
+                    <summary aria-haspopup="listbox"{% if nav_active == "reports" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Reports" %}</summary>
                     <ul role="listbox">
                         <li><a href="{% url 'reports:generate_report' %}">{% trans "Generate Report" %}</a></li>
                         <li><a href="{% url 'reports:export_form' %}">{% trans "Export Data" %}</a></li>

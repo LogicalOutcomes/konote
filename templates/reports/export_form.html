@@ -343,23 +343,44 @@ document.addEventListener('DOMContentLoaded', function() {
     var autofillUrl = '{% url "reports:adhoc_template_autofill" %}';
     var consortiumWarning = document.getElementById('consortium-warning');
     var consortiumText = document.getElementById('consortium-warning-text');
+    var currentAutoFillController = null;
 
     function autoFillFromTemplate() {
         var templateId = templateSelect.value;
         // Reset consortium warning
         if (consortiumWarning) consortiumWarning.style.display = 'none';
 
+        // Cancel any in-flight request
+        if (currentAutoFillController) {
+            currentAutoFillController.abort();
+            currentAutoFillController = null;
+        }
+
+        // Reset previously locked checkboxes
+        var metricLabels = document.querySelectorAll('#metrics-fieldset label[data-metric-id]');
+        metricLabels.forEach(function(label) {
+            var checkbox = label.querySelector('input[type="checkbox"]');
+            if (checkbox) {
+                checkbox.disabled = false;
+                label.title = '';
+            }
+            var hidden = label.querySelector('input[type="hidden"][name="metrics"]');
+            if (hidden) hidden.remove();
+        });
+
         if (!templateId) return;
 
+        currentAutoFillController = new AbortController();
         fetch(autofillUrl + '?template_id=' + templateId, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            signal: currentAutoFillController.signal
         })
         .then(function(resp) { return resp.json(); })
         .then(function(data) {
+            currentAutoFillController = null;
             if (!data.metric_ids || !data.metric_ids.length) return;
 
             // Check metrics from template
-            var metricLabels = document.querySelectorAll('#metrics-fieldset label[data-metric-id]');
             metricLabels.forEach(function(label) {
                 var metricId = parseInt(label.getAttribute('data-metric-id'), 10);
                 var checkbox = label.querySelector('input[type="checkbox"]');
@@ -372,27 +393,35 @@ document.addEventListener('DOMContentLoaded', function() {
                         checkbox.disabled = true;
                         label.title = '{% filter escapejs %}{% trans "Required by consortium reporting standards" %}{% endfilter %}';
                         // Add hidden input so disabled checkbox value still submits
-                        if (!label.querySelector('input[type="hidden"]')) {
-                            var hidden = document.createElement('input');
-                            hidden.type = 'hidden';
-                            hidden.name = 'metrics';
-                            hidden.value = metricId;
-                            label.appendChild(hidden);
-                        }
+                        var hidden = document.createElement('input');
+                        hidden.type = 'hidden';
+                        hidden.name = 'metrics';
+                        hidden.value = metricId;
+                        label.appendChild(hidden);
                     }
                 }
             });
 
-            // Show consortium warning if applicable
+            // Show consortium warning if applicable (using createElement, not innerHTML)
             if (data.consortium_locked.length > 0 && data.partner_name && consortiumWarning && consortiumText) {
-                consortiumText.innerHTML = '{% filter escapejs %}{% trans "This program reports to a consortium partner. For partner-compliant reports, use the" %}{% endfilter %} '
-                    + '<a href="{% url "reports:generate_report" %}">{% filter escapejs %}{% trans "template-driven report" %}{% endfilter %}</a> '
-                    + '{% filter escapejs %}{% trans "instead." %}{% endfilter %}';
+                while (consortiumText.firstChild) consortiumText.removeChild(consortiumText.firstChild);
+                consortiumText.appendChild(
+                    document.createTextNode('{% filter escapejs %}{% trans "This program reports to a consortium partner. For partner-compliant reports, use the" %}{% endfilter %} ')
+                );
+                var link = document.createElement('a');
+                link.href = '{% url "reports:generate_report" %}';
+                link.textContent = '{% filter escapejs %}{% trans "template-driven report" %}{% endfilter %}';
+                consortiumText.appendChild(link);
+                consortiumText.appendChild(
+                    document.createTextNode(' {% filter escapejs %}{% trans "instead." %}{% endfilter %}')
+                );
                 consortiumWarning.style.display = 'block';
             }
         })
         .catch(function(err) {
-            console.warn('Template auto-fill failed:', err);
+            if (err.name === 'AbortError') return; // Expected cancellation
+            currentAutoFillController = null;
+            console.warn('Template auto-fill failed for template', templateId, err);
         });
     }
 

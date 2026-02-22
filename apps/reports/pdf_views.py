@@ -252,9 +252,12 @@ def generate_funder_report_pdf(request, report_data, sections=None,
     if not is_pdf_available():
         return _pdf_unavailable_response(request)
 
+    from .suppression import SMALL_CELL_THRESHOLD
+
     context = {
         "report_data": report_data,
         "generated_by": request.user.display_name,
+        "suppression_threshold": SMALL_CELL_THRESHOLD,
     }
 
     if sections:

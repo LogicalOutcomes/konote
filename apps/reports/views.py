@@ -1275,6 +1275,18 @@ def generate_report_form(request):
     export_format = form.cleaned_data["format"]
     recipient = form.get_recipient_display()
 
+    # Warn if template spans multiple programs (only first is used)
+    template_programs = list(template.partner.get_programs())
+    if len(template_programs) > 1:
+        from django.contrib import messages as msg
+        msg.warning(
+            request,
+            _("This report template covers multiple programs but currently "
+              "only includes data from %(program)s. Multi-program reports "
+              "are coming soon.")
+            % {"program": template_programs[0].name},
+        )
+
     from .export_engine import generate_template_report
     try:
         content, filename, client_count = generate_template_report(
@@ -1362,15 +1374,21 @@ def template_period_options(request):
     if not template_id:
         return HttpResponse("")
 
+    # Scope to templates the user can access (via their programs)
+    from .utils import get_manageable_programs
+    accessible_programs = get_manageable_programs(request.user)
+
     try:
         template = (
             ReportTemplate.objects
+            .filter(partner__programs__in=accessible_programs)
             .select_related("partner")
             .prefetch_related(
                 "report_metrics__metric_definition",
                 "breakdowns__custom_field",
                 "partner__programs",
             )
+            .distinct()
             .get(pk=template_id, is_active=True)
         )
     except ReportTemplate.DoesNotExist:
@@ -1401,6 +1419,7 @@ def adhoc_template_autofill(request):
     response with metric definition IDs to check and consortium info.
     """
     from .models import ReportMetric as RM
+    from .utils import get_manageable_programs
 
     template_id = request.GET.get("template_id")
     if not template_id:
@@ -1409,9 +1428,16 @@ def adhoc_template_autofill(request):
             content_type="application/json",
         )
 
+    # Scope to templates the user can access (via their programs)
+    accessible_programs = get_manageable_programs(request.user)
+
     try:
-        template = ReportTemplate.objects.select_related("partner").get(
-            pk=template_id, is_active=True,
+        template = (
+            ReportTemplate.objects
+            .filter(partner__programs__in=accessible_programs)
+            .select_related("partner")
+            .distinct()
+            .get(pk=template_id, is_active=True)
         )
     except ReportTemplate.DoesNotExist:
         return HttpResponse(

@@ -33,7 +33,7 @@ from .funder_report import (
     get_demographic_groups,
 )
 from .models import ReportMetric, ReportSection
-from .suppression import suppress_small_cell
+from .suppression import SMALL_CELL_THRESHOLD, suppress_small_cell
 
 logger = logging.getLogger(__name__)
 
@@ -169,9 +169,9 @@ def generate_template_csv_rows(
                 group_data = mr["values"].get(group_label, {})
                 value = group_data.get("value", "")
                 n = group_data.get("n", 0)
-                # Apply suppression: if n < threshold, show "< N"
-                if isinstance(n, int) and n < 5 and n > 0:
-                    row.append("< 5")
+                # Apply suppression using the canonical threshold
+                if isinstance(n, int) and 0 < n < SMALL_CELL_THRESHOLD:
+                    row.append(f"< {SMALL_CELL_THRESHOLD}")
                 elif mr["aggregation"] in ("threshold_percentage", "percentage"):
                     row.append(f"{value}%")
                 else:
@@ -184,8 +184,8 @@ def generate_template_csv_rows(
                 for group_label in demographic_labels:
                     group_data = mr["values"].get(group_label, {})
                     n = group_data.get("n", 0)
-                    if isinstance(n, int) and n < 5 and n > 0:
-                        n_row.append("< 5")
+                    if isinstance(n, int) and 0 < n < SMALL_CELL_THRESHOLD:
+                        n_row.append(f"< {SMALL_CELL_THRESHOLD}")
                     else:
                         n_row.append(n)
                 rows.append(n_row)
@@ -285,6 +285,12 @@ def generate_template_report(template, date_from, date_to, period_label,
                 all_demographic_labels = list(demo_groups.keys())
 
     # Use the first program's data for now (multi-program merge is future work)
+    if len(programs) > 1:
+        logger.warning(
+            "Template %r spans %d programs but only %r is included in report. "
+            "Multi-program aggregation is not yet implemented.",
+            template.name, len(programs), programs[0].name,
+        )
     _program, report_data = all_report_data[0]
     metric_results = all_metric_results[0] if all_metric_results else []
 

@@ -104,9 +104,11 @@ def compute_metric_aggregation(
         pct = round((met_count / n) * 100, 1) if n > 0 else 0
         return {"value": pct, "n": n, "label_suffix": "(%)"}
 
-    # Fallback — treat as count
-    logger.warning("Unknown aggregation type %r, falling back to count", aggregation_type)
-    return {"value": n, "n": n, "label_suffix": "(n)"}
+    raise ValueError(
+        f"Unknown aggregation type {aggregation_type!r}. "
+        f"Valid types: count, average, sum, average_change, "
+        f"threshold_count, threshold_percentage, percentage."
+    )
 
 
 def compute_template_metrics(

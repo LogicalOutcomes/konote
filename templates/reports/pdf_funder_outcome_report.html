@@ -188,8 +188,8 @@
             <td>{{ mr.label }}</td>
             {% for group_label, group_data in mr.values.items %}
             <td>
-                {% if group_data.n < 5 and group_data.n > 0 %}
-                &lt; 5
+                {% if group_data.n > 0 and group_data.n < suppression_threshold %}
+                &lt; {{ suppression_threshold }}
                 {% elif mr.aggregation == "threshold_percentage" or mr.aggregation == "percentage" %}
                 {{ group_data.value }}%
                 {% else %}
