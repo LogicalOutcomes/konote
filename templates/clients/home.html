@@ -111,6 +111,20 @@
   {% include "clients/_dashboard_executive_summary.html" %}
 {% elif is_pm %}
   {% include "clients/_dashboard_pm_summary.html" %}
+{% elif is_receptionist %}
+<!-- Front Desk orientation (UX-FRONTDESK1) -->
+<article class="orientation-card">
+    <header class="card-header"><span>{% trans "Your Front Desk Tools" %}</span></header>
+    <ul class="card-list">
+        <li>{% blocktrans with clients=term.client_plural|default:"participants" %}Search for {{ clients }} using the search bar above{% endblocktrans %}</li>
+        <li>{% blocktrans with client=term.client|default:"participant" %}Register a new {{ client }} using the "+ New" button{% endblocktrans %}</li>
+        <li>{% trans "Update contact information on any profile you can access" %}</li>
+        <li>{% trans "Leave messages for staff on a participant's profile" %}</li>
+    </ul>
+    <footer class="card-footer">
+        <small class="secondary">{% trans "Need access to something else? Ask your program manager." %}</small>
+    </footer>
+</article>
 {% endif %}
 
 <!-- Stats row (clinical staff only — Front Desk and executives don't need these) -->
