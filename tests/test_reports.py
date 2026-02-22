@@ -2057,6 +2057,61 @@ class GenerateReportViewTest(TestCase):
         self.assertFalse(link.contains_pii)
 
 
+class GenerateReportCustomExportContextTest(TestCase):
+    """Tests that can_custom_export context is correct per role."""
+
+    databases = ["default", "audit"]
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client_http = Client()
+        self.program = Program.objects.create(name="Test Program", status="active")
+        from apps.reports.models import Partner, ReportTemplate
+        self.partner = Partner.objects.create(name="Test Partner", partner_type="funder")
+        self.partner.programs.add(self.program)
+        ReportTemplate.objects.create(
+            name="Test Report", partner=self.partner,
+            period_type="quarterly", period_alignment="fiscal",
+            fiscal_year_start_month=4, is_active=True,
+        )
+
+    def _make_user(self, username, role=None, is_admin=False):
+        user = User.objects.create_user(
+            username=username, password="testpass123", is_admin=is_admin,
+        )
+        if role:
+            UserProgramRole.objects.create(
+                user=user, program=self.program, role=role, status="active",
+            )
+        return user
+
+    def test_admin_gets_can_custom_export(self):
+        self._make_user("admin", is_admin=True)
+        self.client_http.login(username="admin", password="testpass123")
+        resp = self.client_http.get("/reports/generate/")
+        self.assertTrue(resp.context["can_custom_export"])
+
+    def test_program_manager_gets_can_custom_export(self):
+        self._make_user("pm", role="program_manager")
+        self.client_http.login(username="pm", password="testpass123")
+        resp = self.client_http.get("/reports/generate/")
+        self.assertTrue(resp.context["can_custom_export"])
+
+    def test_executive_gets_can_custom_export(self):
+        self._make_user("exec", role="executive")
+        self.client_http.login(username="exec", password="testpass123")
+        resp = self.client_http.get("/reports/generate/")
+        self.assertTrue(resp.context["can_custom_export"])
+
+    def test_staff_does_not_get_can_custom_export(self):
+        self._make_user("staff", role="staff")
+        self.client_http.login(username="staff", password="testpass123")
+        # Staff with report.funder_report=DENY gets 403, so they
+        # cannot even reach the page — verify that.
+        resp = self.client_http.get("/reports/generate/")
+        self.assertEqual(resp.status_code, 403)
+
+
 class TemplatePeriodOptionsViewTest(TestCase):
     """Tests for the HTMX template_period_options endpoint."""
 

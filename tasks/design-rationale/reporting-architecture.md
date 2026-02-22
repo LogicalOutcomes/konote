@@ -14,15 +14,15 @@
 | Path | URL | Who sees it | Purpose |
 |------|-----|-------------|---------|
 | **Template-driven** | `/reports/generate/` | Everyone (executives, PMs, admins) | Produce a report matching a partner's specification |
-| **Ad-hoc export** | `/reports/export/` | Program managers and admins only | Data extraction with full manual control |
+| **Ad-hoc export** | `/reports/export/` | Program managers, executives, and admins | Data extraction with manual control (aggregate-only for executives) |
 
-Executives ONLY see the template-driven path. No fallback to ad-hoc.
+Executives see both paths in navigation (decided 2026-02-22 per stakeholder request). The ad-hoc export enforces aggregate-only output for executives via `is_aggregate_only_user()` — no individual participant data is exposed. Templates remain the **primary** path for executives; Custom Export is a secondary option for one-off needs.
 
 ## Entry Points
 
 | From | Action | Destination |
 |------|--------|-------------|
-| **Navigation menu** | "Reports" link | `/reports/generate/` (executives); both paths for PMs |
+| **Navigation menu** | "Reports" dropdown | Both paths for all report-capable users (Generate Report + Custom Export) |
 | **Executive dashboard** | "Generate funder report" button | `/reports/generate/` with template pre-selected if the current program maps to exactly one template |
 | **Program detail page** | "Generate report" link (future) | `/reports/generate/` with template pre-selected |
 
@@ -58,9 +58,11 @@ The executive does NOT choose a program. The template already knows its programs
 
 When an executive has no templates available (no active templates linked to their accessible programs):
 
-> "No report templates have been set up yet. Report templates define what metrics and demographic breakdowns to include. Contact your administrator to configure one, or ask the Program Manager for a custom data export."
+> "No report templates have been set up yet. Report templates define what metrics and demographic breakdowns to include for recurring partner reports. Contact your administrator to create one."
 
-Do NOT fall back to the ad-hoc form. Do NOT show metric checkboxes.
+The page links to Custom Export as an alternative ("In the meantime, you can create a one-off report using Custom Export"). Admins also see a link to template management.
+
+Do NOT show metric checkboxes on this page. Custom Export is a separate page with its own aggregate-only safeguards for executives.
 
 ### Period picker logic
 
@@ -198,7 +200,7 @@ When multi-tenancy is live, template-driven reports are the mechanism for consor
 4. Consortium dashboard (deferred, per multi-tenancy DRR) consumes `PublishedReport` data
 5. Sharing granularity is **per-program**, not per-agency — different programs within one agency may share with different funders
 
-**This is why templates must be the only report path for executives.** Manual metric selection makes cross-agency reports impossible because each agency would choose different metrics. The template guarantees consistency across consortium members.
+**This is why templates are the primary report path for consortium reporting.** Manual metric selection makes cross-agency reports impossible because each agency would choose different metrics. The template guarantees consistency across consortium members. Executives can also use Custom Export for one-off aggregate needs, but only template-driven reports feed the consortium pipeline.
 
 **Implementation note:** Consortium reporting is deferred until "after report data model is validated with real data" (multi-tenancy DRR). The template-driven pipeline built here is a prerequisite.
 
@@ -214,7 +216,7 @@ When multi-tenancy is live, template-driven reports are the mechanism for consor
 | 6 | Wire ReportMetric aggregation into export pipeline | Step 4 |
 | 7 | Wire ReportSection into PDF output | Step 4 |
 | 8 | Add consortium-required locking to ad-hoc form | Steps 1-2 |
-| 9 | Update navigation: executives -> generate, PMs -> both | Steps 3, 8 |
+| 9 | ~~Update navigation~~ Done (2026-02-22): all report users see dropdown with Generate Report + Custom Export | Steps 3, 8 |
 | 10 | Restructure ad-hoc form field order + template auto-fill via HTMX | Step 8 |
 
 ## GK Review Required
@@ -227,7 +229,7 @@ When multi-tenancy is live, template-driven reports are the mechanism for consor
 
 ## Anti-Patterns (rejected)
 
-- **Falling back to ad-hoc for executives** — defeats the template architecture, creates inconsistent reports
+- **Removing aggregate-only enforcement on ad-hoc for executives** — executives may use Custom Export but MUST only receive aggregate output (enforced by `is_aggregate_only_user()`). Never expose individual participant data to executives via any path
 - **Manual metric selection when template exists** — the template defines the report, not the user
 - **Program dropdown for executives** — template already knows its programs via Partner
 - **Generic fiscal year dropdown when template has period_type** — causes date boundary errors across agencies
