@@ -8,6 +8,14 @@ The test framework handles everything internally: database setup, migrations, te
 
 ---
 
+## Before running: check the pipeline log
+
+Read `qa/pipeline-log.txt`. If the last entry says "Step 2: Evaluation complete" with no subsequent "Step 3" entry, the evaluation is already done and waiting for `/process-qa-report`. Do NOT re-run scenarios — tell the user to run `/process-qa-report` first.
+
+If the last entry says "Step 1" with today's date, screenshots were already captured today. Do NOT re-capture — tell the user to go to konote-qa-scenarios and run `/run-scenarios`.
+
+Only proceed if the pipeline log shows the previous round is fully processed (Step 3 done) or the file doesn't exist.
+
 ## Steps
 
 ### Step 1: Run the scenario tests

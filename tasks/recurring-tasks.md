@@ -40,6 +40,17 @@ Run after major releases or substantial UI changes.
 
 Expected outcome: new dated reports in `qa-scenarios/reports/` and a prioritised fix list.
 
+### Before you start: check where the pipeline left off
+
+**This pipeline spans multiple sessions. Steps get dropped between sessions.** Before doing anything, read `qa/pipeline-log.txt` and find the last entry:
+
+- Last entry says **"Step 1"** → A2 is next (go to konote-qa-scenarios, run `/run-scenarios`)
+- Last entry says **"Step 2"** with no subsequent "Step 3" → A3 is next (run `/process-qa-report` in konote-app)
+- Last entry says **"Step 3"** → Pipeline A is done. Start Pipeline B (run `/capture-page-states`)
+- `qa/pipeline-log.txt` doesn't exist → start from A1
+
+Also check `qa/` for handoff files. If `qa/*-improvement-tickets.md` exists with today's date but no "Step 3" entry in the log, the evaluation is done and waiting to be processed.
+
 There are **two independent pipelines**. Do them in order. Each pipeline is a sequence of sessions — finish one step before starting the next.
 
 ### Pipeline A: Scenario Evaluation (always do this)
