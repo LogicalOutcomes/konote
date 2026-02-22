@@ -68,6 +68,17 @@ GK is the subject matter expert for evaluation, nonprofit data modelling, and pr
 
 **How to flag for GK review:** Add "GK reviews [what]" to the task owner field in TODO.md. Do not wait for review on implementation — build it, then request review before merging.
 
+## PHIPA Consent Enforcement
+
+**If you're adding a view that queries `ProgressNote` and displays note content to staff:**
+
+1. For **list views** (querysets): call `apply_consent_filter(notes_qs, client, user, user_program_ids, active_program_ids=active_ids)` from `apps/programs/access.py`
+2. For **single-note views** (one note by ID): call `check_note_consent_or_403(note, client, user, active_ids)` from `apps/programs/access.py`
+
+This ensures cross-program clinical notes are only visible when the agency or participant has enabled sharing. See `tasks/design-rationale/phipa-consent-enforcement.md` for the full enforcement matrix, deferred items, and anti-patterns.
+
+**Exempt from consent filtering:** aggregate counts (dashboards), de-identified reports, plan views (already program-scoped), portal views (participant's own data).
+
 ## Development Rules (from expert review)
 
 These rules apply to **every phase**. Do not skip them.
@@ -174,6 +185,7 @@ Current DRRs:
 - `tasks/design-rationale/multi-tenancy.md` — Multi-tenancy architecture. Covers schema-per-tenant vs. alternatives, per-tenant encryption, consortium model, sequencing condition (after first single-tenant deployment).
 - `tasks/design-rationale/reporting-architecture.md` — Reporting system (canonical). Template-driven + ad-hoc paths, aggregation rules, period picker, consortium pipeline, privacy safeguards. Defers to multi-tenancy.md for suppression thresholds and consent.
 - `tasks/design-rationale/executive-dashboard-redesign.md` — Executive dashboard UX. Stats grid, program cards, accessibility. Monitoring only — does not produce exportable files.
+- `tasks/design-rationale/phipa-consent-enforcement.md` — PHIPA cross-program consent enforcement. Enforcement matrix (which views need filtering), anti-patterns (rejected approaches like custom managers, middleware), deferred work (search, qualitative summary), fail-closed design.
 
 ### How Claude Manages Tasks
 

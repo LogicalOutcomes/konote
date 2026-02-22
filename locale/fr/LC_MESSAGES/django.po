@@ -14549,4 +14549,18 @@ msgid "participant"
 msgstr "participant"
 
 msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
+msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
+
+msgid "Log Communication"
+msgstr "Consigner une communication"
+
+msgid "Record a phone call, visit, or message"
+msgstr "Consigner un appel, une visite ou un message"
+
+#: apps/programs/access.py
+msgid ""
+"This note is restricted to a specific program. Contact your administrator if "
+"you need cross-program access."
 msgstr ""
+"Cette note est réservée à un programme spécifique. Contactez votre "
+"administrateur si vous avez besoin d\u2019un accès inter-programmes."
