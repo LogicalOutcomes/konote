@@ -6,6 +6,7 @@ import logging
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, DateTimeField
@@ -197,7 +198,7 @@ def note_list(request, client_id):
     """Notes timeline for a client with filtering and pagination."""
     client = _get_client_or_403(request, client_id)
     if client is None:
-        return HttpResponseForbidden("You do not have access to this client.")
+        raise PermissionDenied(_("You do not have access to this participant."))
 
     # Get user's accessible programs (respects CONF9 context switcher)
     active_ids = getattr(request, "active_program_ids", None)
@@ -329,7 +330,7 @@ def quick_note_create(request, client_id):
     """Create a quick note for a client."""
     client = _get_client_or_403(request, client_id)
     if client is None:
-        return HttpResponseForbidden("You do not have access to this client.")
+        raise PermissionDenied(_("You do not have access to this participant."))
 
     # PRIV1: Check client consent before allowing note creation
     if not _check_client_consent(client):
@@ -391,7 +392,7 @@ def quick_note_inline(request, client_id):
     """
     client = _get_client_or_403(request, client_id)
     if client is None:
-        return HttpResponseForbidden("You do not have access to this client.")
+        raise PermissionDenied(_("You do not have access to this participant."))
 
     # Buttons mode (Cancel action restores the button state)
     if request.method == "GET" and request.GET.get("mode") == "buttons":
@@ -493,7 +494,7 @@ def note_create(request, client_id):
     """Create a full structured progress note with target entries and metric values."""
     client = _get_client_or_403(request, client_id)
     if client is None:
-        return HttpResponseForbidden("You do not have access to this client.")
+        raise PermissionDenied(_("You do not have access to this participant."))
 
     # PRIV1: Check client consent before allowing note creation
     if not _check_client_consent(client):
@@ -767,7 +768,7 @@ def note_cancel(request, note_id):
     note = get_object_or_404(ProgressNote, pk=note_id)
     client = _get_client_or_403(request, note.client_file_id)
     if client is None:
-        return HttpResponseForbidden("You do not have access to this client.")
+        raise PermissionDenied(_("You do not have access to this participant."))
 
     user = request.user
     # Permission check — program managers can cancel any note in their programs
@@ -827,7 +828,7 @@ def qualitative_summary(request, client_id):
     """Show qualitative progress summary — descriptor distribution and recent client words per target."""
     client = _get_client_or_403(request, client_id)
     if client is None:
-        return HttpResponseForbidden("You do not have access to this client.")
+        raise PermissionDenied(_("You do not have access to this participant."))
 
     # Get all active plan targets for this client
     targets = (
