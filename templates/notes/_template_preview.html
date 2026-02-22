@@ -1,0 +1,17 @@
+{% load i18n %}
+{% if sections %}
+<div class="template-preview" role="note">
+    <small><strong>{% blocktrans with name=template.translated_name %}{{ name }} includes:{% endblocktrans %}</strong></small>
+    <ul>
+        {% for section in sections %}
+        <li>
+            {{ section.translated_name }}
+            <small class="secondary">({{ section.get_section_type_display }})</small>
+            {% if section.metrics.all %}
+            — {% for m in section.metrics.all %}{{ m.metric_def.translated_name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}

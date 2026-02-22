@@ -443,6 +443,17 @@ def quick_note_inline(request, client_id):
 
 
 @login_required
+def template_preview(request, template_id):
+    """HTMX endpoint: return a preview of the template's sections."""
+    template = get_object_or_404(ProgressNoteTemplate, pk=template_id, status="active")
+    sections = template.sections.prefetch_related("metrics__metric_def").all()
+    return render(request, "notes/_template_preview.html", {
+        "template": template,
+        "sections": sections,
+    })
+
+
+@login_required
 @requires_permission("note.view", _get_program_from_client)
 def check_note_date(request, client_id):
     """HTMX endpoint: warn if a note already exists for this client on the given date."""
