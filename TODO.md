@@ -210,9 +210,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: QA Round 7 — Page Audit Tier 1 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
 
-- [ ] Fix public unsubscribe page returning 500 — CASL compliance, must work before any agency enables email (QA-PA-BLOCKER4)
-- [ ] Fix public survey link page returning 500 — community members see raw error from email/flyer links (QA-PA-BLOCKER3)
 - [ ] Create custom styled 500.html template — bilingual, branded fallback for all unhandled errors (QA-PA-500)
+- [ ] Fix public unsubscribe page returning 500 — CASL compliance, must work before any agency enables email (depends on QA-PA-500) (QA-PA-BLOCKER4)
+- [ ] Fix public survey link page returning 500 — community members see raw error from email/flyer links (depends on QA-PA-500) (QA-PA-BLOCKER3)
 - [ ] Fix plan-goal-create heading "Add Target" → "Add Goal" — terminology migration artifact, 5-min fix (QA-PA-BUG1)
 
 ## Parking Lot

@@ -16,6 +16,6 @@
 2026-02-17 22:30 — Step 2: Evaluation complete, satisfaction gap 1.0, 4 new tickets (30/45 scenarios scored)
 2026-02-17 23:15 — Step 3: Action plan created, 5 tasks added to TODO (4 tickets + 2 permission violations analysed, 4-expert panel). See tasks/qa-action-plan-2026-02-17a.md.
 2026-02-21 18:00 — Step 2: Evaluation complete (Round 7, report 2026-02-21). Gap: 1.22 (↑0.22 from Round 6), Coverage: 49/65 (75%), Blockers: 6, Permission violations: 1. 8 Red-band scores (5 are unbuilt survey feature). 16 regressions of 0.5+ pts. DS3 avg: 3.01 (↓0.29). Handoff written to .qa-handoff.json.
-2026-02-21 22:30 — Step 3: Action plan created, 22 tasks added to TODO (55 tickets analysed, 13 already fixed same-day, 4-expert panel). See tasks/qa-action-plan-2026-02-21.md.
 2026-02-21 22:00 — Step 2b: Page audit complete (Round 3, report 2026-02-21a). 11 pages, 38 evaluations. 6 BLOCKERs (2 net new: CASL unsubscribe + public survey 500), 8 BUGs, 4 IMPROVEs, 3 TEST. 45% Red, 9% Green, 55% not evaluable (404/500).
+2026-02-21 22:30 — Step 3: Action plan created, 22 tasks added to TODO (55 tickets analysed, 13 already fixed same-day, 4-expert panel). See tasks/qa-action-plan-2026-02-21.md.
 2026-02-21 22:45 — Step 3b: Page audit action plan created, 15 tasks added to TODO (21 tickets + 1 recovered from satisfaction report, 5 deduplicated against Round 7 scenario plan, 4-expert panel). See tasks/qa-action-plan-2026-02-21-page-audit.md.

@@ -2,7 +2,7 @@
 
 **Date:** 2026-02-21
 **Type:** Page audit (Pipeline B, Round 3)
-**Source report:** `qa/2026-02-21a-page-audit-tickets.md`
+**Source reports:** `qa/2026-02-21a-page-audit-tickets.md`, `qa/2026-02-21a-page-audit-report.md`, `2026-02-21aa-satisfaction-report.md` (batch AA, in qa-scenarios repo)
 **Previous page audit:** Round 2 (2026-02-13)
 **Companion plan:** `tasks/qa-action-plan-2026-02-21.md` (Round 7 scenario evaluation)
 
@@ -107,7 +107,7 @@ Before tiering, the panel identified overlaps with the existing `qa-action-plan-
 - **Complexity:** Moderate (1-2 hours) — fix underlying view error, style the page, add bilingual text, handle invalid/expired tokens
 - **Dependencies:** Needs custom 500.html as safety net (TEST-P-3)
 - **Fix in:** konote-app (communications views, templates)
-- **Acceptance:** Valid token loads unsubscribe confirmation; invalid token shows styled error; page is bilingual; works on mobile
+- **Acceptance:** Valid token loads unsubscribe confirmation; invalid token shows styled error; page is bilingual; works on mobile; unsubscribe takes effect within 10 business days (CASL s. 6(2)(c)(ii))
 - **GK gate:** No — this is a compliance obligation with clear requirements
 
 **2. BLOCKER-P-3 — Fix public survey link page (500 error)**
