@@ -234,11 +234,27 @@ def email_unsubscribe(request, token):
 
     Token is signed with django.core.signing — contains client_file_id
     and channel. Expires after 60 days. No login required.
+
+    CASL compliance (S.C. 2010, c. 23, s. 6(2)(c)): this endpoint must
+    always render a user-friendly page — never a raw 500.
     """
-    from .services import UNSUBSCRIBE_TOKEN_MAX_AGE
+    import logging
+    logger = logging.getLogger(__name__)
+
+    try:
+        from .services import UNSUBSCRIBE_TOKEN_MAX_AGE
+    except ImportError:
+        logger.exception("Failed to import UNSUBSCRIBE_TOKEN_MAX_AGE")
+        return render(request, "communications/unsubscribe.html", {
+            "error": _("This service is temporarily unavailable. "
+                       "Please contact the organisation directly to update your preferences."),
+        })
+
     try:
         data = signing.loads(token, salt="unsubscribe", max_age=UNSUBSCRIBE_TOKEN_MAX_AGE)
-    except signing.BadSignature:
+    except (signing.BadSignature, Exception) as exc:
+        if not isinstance(exc, signing.BadSignature):
+            logger.exception("Unexpected error validating unsubscribe token")
         return render(request, "communications/unsubscribe.html", {
             "error": _("This unsubscribe link has expired or is invalid. "
                        "Please contact the organisation directly to update your preferences."),
