@@ -142,20 +142,21 @@
 </form>
 {% endif %}
 
-{# Guidance section — what else can I do? #}
+{% if has_templates %}
+{# Guidance section — only shown when templates exist (the no-templates warning box handles the other case) #}
 <hr style="margin: 2rem 0;">
 <details>
     <summary><strong>{% trans "Need a different report?" %}</strong></summary>
     <div style="margin-top: 1rem;">
         {% if can_custom_export %}
-        <h3>{% trans "Create a custom export" %}</h3>
+        <h2>{% trans "Create a custom export" %}</h2>
         <p>
             {% blocktrans %}If none of the templates above match what you need, you can build a one-off report by choosing your own program, metrics, date range, and groupings.{% endblocktrans %}
         </p>
         <p><a href="{% url 'reports:export_form' %}" role="button" class="outline">{% trans "Custom Export" %}</a></p>
         {% endif %}
 
-        <h3>{% trans "Request a new report template" %}</h3>
+        <h2>{% trans "Request a new report template" %}</h2>
         <p>
             {% blocktrans %}Report templates are set up by your administrator. If you need a recurring report for a partner, funder, or board that isn't listed above, ask your administrator to create one. They can define which metrics, demographics, and time periods to include so the report is ready to generate each period.{% endblocktrans %}
         </p>
@@ -164,4 +165,5 @@
         {% endif %}
     </div>
 </details>
+{% endif %}
 {% endblock %}
