@@ -12,7 +12,6 @@
 ### Phase: Launch Readiness
 
 - [ ] Complete Agency Deployment Protocol with [funder partner] — Phase 0 Discovery Call first (see tasks/deployment-protocol.md) — (DEPLOY-PC1)
-- [x] Define [funder partner] configuration template — standard roles, metrics, terminology, plan templates for financial coaching agencies (see config_templates/) — 2026-02-20 — (DEPLOY-TEMPLATE1)
 - [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
 - [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — SG (ONBOARD-GATE)
 - [ ] Store signed Configuration Summary with each deployment so new admins can see what was decided and why — SG (DEPLOY-CONFIG-DOC1)
@@ -21,25 +20,7 @@
 - [ ] Document scheduled task setup for export monitoring in the runbook — PB (EXP2w)
 - [ ] Enforce cross-program sharing consent (PHIPA) in views — consent flag already captured, need view-level enforcement — PB (PHIPA-ENFORCE1)
 - [ ] Build cross-agency data rollup for funders — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
-- [x] Build role-based dashboard views — coach, PM, and executive landing pages with role-specific data (see tasks/dashboard-roles-plan.md) — 2026-02-20 — (DASH-ROLES1)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — (DEPLOY-TOOLKIT1)
-
-### Phase: Communication Modules — complete!
-
-### Phase: AI Goal Builder (PR #145 follow-up)
-
-- [x] Add French translations for 10 new strings in goal_form.html and _goal_builder.html — extract, translate, compile .po/.mo — 2026-02-18 (I18N-GB1)
-
-### Phase: Suggestion Themes — Review Follow-up (PRs #147, #149) — complete!
-
-### Phase: Near-Term Improvements — complete!
-
-- [x] Fix report export 500 error — missing defaultdict import, suppressed-value type crashes in CSV generation, no error handling — 2026-02-18 (BUG-EXP1)
-
-### Phase: Post-Housekeeping Verification
-
-- [x] Run full test suite (`pytest -m "not browser and not scenario_eval"`) to verify PR #143 test fixes pass against current main — 2026-02-20 (VERIFY1)
-- [x] Fix 6 pre-existing test failures — SQLite isolation, fixture mismatch, stale .mo, missing QA file — 2026-02-21 (TEST-PREEXIST1)
 
 ## Do Occasionally
 
@@ -55,17 +36,21 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: QA Round 7 — Tier 2 Fixes (see tasks/qa-action-plan-2026-02-21.md)
 
-- [x] Hide admin dropdown in nav for executive role — added `{% if not is_executive_only %}` guard — 2026-02-22 (QA-R7-NAV1)
-- [x] Add "Log Communication" to client profile Actions dropdown — links to Quick Note with clear label — 2026-02-22 (QA-R7-COMM1)
-- [x] Keyboard tab order and quick note reachability — VERIFIED: arrow key nav, Escape, Home/End already in app.js — 2026-02-22 (QA-R7-A11Y1)
-- [x] Calendar feed URL generation — VERIFIED: POST handler with token generation fully working — 2026-02-22 (QA-R7-CAL1)
-- [x] Phone number update confirmation — VERIFIED: messages.success() already in client_contact_edit view — 2026-02-22 (QA-R7-BUG4)
-- [x] /manage/ note templates and event types — VERIFIED: views exist with PM scoping — 2026-02-22 (QA-R7-ADMIN1)
-- [x] Accessibility polish: aria-live on search results, colour+text status badges — VERIFIED: already implemented — 2026-02-22 (QA-R7-A11Y2)
-- [x] Scoped user management for PMs — VERIFIED: admin_views.py already scopes to PM's programmes at /manage/users/ — 2026-02-22 (QA-R7-PM-USERS1)
-- [x] Scoped audit log for PMs — VERIFIED: _scoped_audit_qs() auto-scopes to PM's programmes — 2026-02-22 (QA-R7-PM-AUDIT1)
-- [x] Settings page for staff — VERIFIED: /admin/settings/ is admin-only by design, intentional — 2026-02-22 (QA-R7-ROUTE1)
-- [x] French receptionist search + create button — BUG-5: enrol Priya in both programs; BUG-6: use permission matrix for can_create (receptionist has client.create: ALLOW) — 2026-02-22 (QA-R7-FRDESK1)
+- [x] Verify 8 items already implemented (BUG-4, BUG-8, BUG-11, IMPROVE-12/13, BLOCKER-2/3/5) — 2026-02-22 (QA-R7-TIER2-VERIFY)
+- [x] Hide admin dropdown in nav for executive role (IMPROVE-3) — 2026-02-22 (QA-R7-NAV1)
+- [x] Add "Log Communication" to client profile Actions dropdown (BUG-7) — 2026-02-22 (QA-R7-COMM1)
+- [x] Add quarterly date range presets to ad-hoc report form (IMPROVE-4) — 2026-02-22 (QA-R7-RPT-QUARTER1)
+
+### Phase: QA Round 7 — Page Audit Tier 2 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
+
+- [ ] Fix groups-attendance: replace "--" with "N/R" (aria-label) + rename "Rate" to "Attendance Rate" — screen reader a11y (QA-PA-ATTEND1)
+- [ ] Fix groups-attendance "1 sessions" pluralization — Django pluralize filter + French blocktrans (QA-PA-ATTEND2)
+- [ ] Improve comm-my-messages empty state — distinguish "no messages yet" from "all read", add guidance text (QA-PA-MSG1)
+- [ ] Add required-field indicator to comm-leave-message textarea — asterisk + aria-required (QA-PA-MSG2)
+- [ ] Add onboarding context to plan-goal-create — collapsible 1-2 sentence explainer for new users (QA-PA-GOAL1)
+- [ ] Add step indicator ("Step 1 of 2") to goal creation wizard — helps DS1c (ADHD) track progress (QA-PA-GOAL2)
+- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — fix in qa-scenarios repo (QA-PA-TEST1)
+- [ ] Seed comm-my-messages populated state with actual messages — fix in qa-scenarios repo (QA-PA-TEST2)
 
 ### Phase: Post-Launch Communication Enhancements
 
@@ -103,8 +88,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — (CIDS-IMPACT1)
 - [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — (CIDS-VALIDATE1)
 
-### Phase: Participant View Improvements — complete!
-
 ### Phase: Other Upcoming
 
 - [ ] Permissions Phase 2 — remaining 10 items: discharge access transitions, consent model, DV-safe mode, GATED clinical access, group schedule vs roster, per-field front desk edit, SCOPED→PROGRAM rename, funder report key, alert escalation, dashboard split (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P3–12)
@@ -124,19 +107,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] Fix suggestion theme linking in seed_demo_data — make suggestions program-specific and remove blind fallback that links irrelevant notes to themes (see tasks/demo-data-suggestion-fix.md) — (DEMO-FIX1)
 
-### Phase: Surveys QA Scenarios
-
-- [x] Add survey demo data to seed_demo_data — 3 surveys, trigger rule, shareable link, assignments, responses — 2026-02-21 (QA-SURV1)
-- [x] Create CSV test fixture for survey import at tests/fixtures/sample-survey-import.csv — 2026-02-21 (QA-SURV2)
-- [x] Write 8 scenario YAML files (SCN-110 through SCN-117) in konote-qa-scenarios repo — 2026-02-21 (QA-SURV3)
-- [x] Add test methods for survey scenarios to tests/scenario_eval/test_scenario_eval.py — 2026-02-21 (QA-SURV4)
-- [x] Update page-inventory.yaml in qa-scenarios repo with survey pages — 2026-02-21 (QA-SURV5)
-
 ### Phase: Surveys Future Work
 
 - [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
-- [x] Build trigger rule management UI — /manage/surveys/<id>/rules/ and /manage/surveys/<id>/rules/new/ — 2026-02-20 (SURVEY-RULES1)
-- [x] Implement auto-save / partial answers in the portal — PartialAnswer model + portal_survey_autosave view — 2026-02-20 (SURVEY-AUTOSAVE1)
 - [ ] Run `translate_strings` to extract and compile French translations for the new survey templates (SURVEY-I18N1)
 
 ### Phase: Documentation & Website Updates
@@ -145,63 +118,21 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Update technical documentation in GitHub for surveys and portal architecture (DOC-TECH1)
 - [ ] Update website feature list and marketing copy to include surveys and portal (WEB-FEAT1)
 - [ ] Add Evidence section to website — adapt docs/evidence-outcome-measurement.md into a public-facing page explaining the research behind KoNote's outcome measurement approach (see tasks/web-evidence-prompt.md) (WEB-EVIDENCE1)
-- [x] Validate academic citations in docs/evidence-outcome-measurement.md — verified 23 references, fixed 6 errors — 2026-02-20 (DOC-REFCHECK1)
 
-### Phase: QA Round 6 — Design Tasks
+### Phase: QA Round 7 — Page Audit Tier 1 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
 
-- [x] Design /admin/ URL restructuring for PM self-service — move management pages to /manage/ so PMs can reach plan templates, note templates, event types (FG-2, PERMISSION-1/2/3, BUG-1 -> QA-W59)
-
-### Phase: Pre-existing Test Failures — DONE
-
-- [x] Fix `apply_setup` command tests (10 failures) — output format changed but tests not updated — 2026-02-18 (TEST-SETUP1)
-- [x] Fix `translate_strings --no-translate` test — option does not exist — 2026-02-18 (TEST-TRANS1)
-- [x] Fix portal session isolation test — accept 404 as valid denial — 2026-02-18 (TEST-PORTAL1)
-- [x] Fix BLOCKER-1 a11y test — updated to expect skip link (WCAG best practice) — 2026-02-18 (TEST-A11Y1)
-
-### Phase: AI Target Suggestion — Polish — complete!
-
-### Phase: UX Fixes — complete!
-
-- [x] Fix Add Target form UX: auto-select or clarify "area of the plan", remove "Attendance & Wellbeing" placeholder, and change metric text from "how much progress have they made" to "how much progress have I made" — 2026-02-20 (UX-TARGET1)
-- [x] Change "Add section only" link text to "Add Section" on plan view — 2026-02-20 (UX-SECTION1)
-- [x] Remove "+ Add note" link in Notes tab, update wayfinding text to reference Actions menu — 2026-02-20 (UX-NOTES3)
-- [x] Fix "server error occurred" when clicking "Shape this target" — metric catalogue key mismatch — 2026-02-20 (BUG-AI1)
-- [x] Fix "error message" when clicking "Draft Report summary" — gettext_lazy proxies as JSON keys — 2026-02-20 (BUG-AI2)
-
-### Phase: UX + QA Round 7 Fixes — complete!
-
-- [x] Permission fix: calendar feed settings missing access control — 2026-02-21 (PERMISSION-1)
-- [x] Fix 403 page: remove raw exception display, add role-specific messages — 2026-02-21 (BUG-3)
-- [x] ARIA tablist on client profile tabs with arrow key navigation — 2026-02-21 (BUG-14)
-- [x] Form validation ARIA: novalidate + custom errors with aria-describedby — 2026-02-21 (BUG-16)
-- [x] Group creation pre-selects program for single-program users — 2026-02-21 (BUG-22)
-- [x] Executive dashboard date range filter and CSV export — 2026-02-21 (BUG-9/10)
-- [x] Offline fallback page — 2026-02-21 (BUG-17)
-- [x] Dismissable priority items on dashboard (localStorage, daily reset) — 2026-02-21 (BUG-19)
-- [x] Form labels: "sort_order" → "Display order", "status_reason" → "Why is this being changed?" — 2026-02-21 (UX-LABEL1, UX-LABEL2)
-- [x] Replace location.reload() with HTMX cancel on plan status forms — 2026-02-21 (UX-RELOAD1)
-- [x] Template dropdown shows section count in full note form — 2026-02-21 (UX-DROPDOWN1)
-- [x] Duplicate note date warning via HTMX — 2026-02-21 (UX-DUPENOTE1)
-- [x] Enhanced post-save message with target/metric counts — 2026-02-21 (UX-POSTSAVE1)
-- [x] Template preview on note form — 2026-02-21 (UX-PREVIEW1)
-- [x] "Create New" button in empty search results + result count — 2026-02-21 (IMPROVE-2, IMPROVE-8)
-- [x] Hidden programs notice on client profile — 2026-02-21 (IMPROVE-5)
-- [x] Front desk orientation card on home page — 2026-02-21 (UX-FRONTDESK1)
-- [x] Task-oriented dashboard: quick links moved up, action-oriented headings — 2026-02-21 (UX-TASKDASH1, BUG-18)
-
-### Phase: QA Round 7 — Tier 1 Fixes (see tasks/qa-action-plan-2026-02-21.md)
-
-- [x] Fix language persistence — SafeLocaleMiddleware syncs cookie to user profile preferred_language, seed demo prefs — 2026-02-22 (QA-R7-BUG1)
-- [x] Verify /manage/ routes cover PM self-service — CONFIRMED: app routes are correct, BLOCKER-1 is a qa-scenarios YAML issue (5 files use wrong /admin/ paths, need /manage/ URLs). Fix in konote-qa-scenarios repo — 2026-02-22 (QA-R7-BLKR1)
-- [x] Add skip-to-content link to base template — already implemented, verified — 2026-02-22 (QA-R7-BUG15)
-- [x] Fix notes URL returning 404 instead of 403 for receptionist — replaced HttpResponseForbidden with PermissionDenied for styled 403 — 2026-02-22 (QA-R7-BUG2)
-- [x] Fix htmx:syntax:error messages on create-participant page — fixed hx-trigger filter placement for HTMX 2.x — 2026-02-22 (QA-R7-BUG20)
+- [ ] Create custom styled 500.html template — bilingual, branded fallback for all unhandled errors (QA-PA-500)
+- [ ] Fix public unsubscribe page returning 500 — CASL compliance, must work before any agency enables email (depends on QA-PA-500) (QA-PA-BLOCKER4)
+- [ ] Fix public survey link page returning 500 — community members see raw error from email/flyer links (depends on QA-PA-500) (QA-PA-BLOCKER3)
+- [ ] Fix plan-goal-create heading "Add Target" → "Add Goal" — terminology migration artifact, 5-min fix (QA-PA-BUG1)
 ## Parking Lot
 
+- [ ] Add PIPEDA compliance context to admin-erasure-requests page — explain what gets deleted vs. retained — GK reviews privacy/data retention (QA-PA-ERASURE1)
+- [ ] Replace decorative circular element on erasure empty state with static icon — cosmetic, low priority (QA-PA-ERASURE2)
+- [ ] Add breadcrumbs to plan-goal-create (Participants > Name > Plan > Add Goal) — navigation aid for new users (QA-PA-GOAL3)
 - [ ] PIPEDA data export from client profile — "Export Data" action for Section 8 access requests, needs design for data categories and output format — GK reviews privacy workflow (QA-R7-PRIVACY1)
 - [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
 - [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
-- [ ] Add quarterly date range presets (Q1-Q4) and custom date range to funder report form (QA-R7-RPT-QUARTER1)
 - [ ] Verify accented character preservation through create/save/display cycle — may be test data issue, needs manual check (QA-R7-BUG13)
 - [ ] Verify form data preservation after validation error on create-participant — medium confidence, may be test artefact (QA-R7-BUG21)
 - [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
@@ -222,11 +153,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Re-add API-based auto-translation to translate_strings for production use (I18N-API1)
 - [ ] Translate CSV comment rows (# Program, # Date Range, etc.) — needs design decision on whether to use agency custom terminology or static translations (I18N-CSV1)
 - [ ] Clean up ~628 stale PO entries in django.po no longer referenced in code (I18N-STALE1)
-- [x] Document local PostgreSQL setup for security_audit and pytest workflows — 2026-02-20 (DEV-PG1)
 - [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
 - [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
-- [x] Add basic smoke test for `translate_strings` command — removed dead test class but no replacement exists — 2026-02-20 (TEST-TRANS2)
 - [ ] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering (CODE-TIDY1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — funder reporting (ASSESS1)
 - [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
@@ -238,13 +167,13 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
-- [x] QA Round 7 Tier 2 — 2 code fixes + 8 verified: hide Manage dropdown for executives, add "Log Communication" to client Actions. Verified keyboard nav, calendar feed, phone confirmation, /manage/ views, aria-live, PM user mgmt, PM audit scoping, staff settings (intentional) — 2026-02-22 (see Phase: QA Round 7 — Tier 2 Fixes above)
-- [x] QA Round 7 Tier 1 — language persistence (middleware sync), styled 403 on notes, HTMX trigger fix, skip-to-content verified, /manage/ routes verified as scenario YAML issue — 2026-02-22 (see Phase: QA Round 7 — Tier 1 Fixes above)
-- [x] UX + QA Round 7 fixes — 18 items: accessibility (ARIA tablist, form validation), dashboard (task-oriented layout, dismissable items, executive date range/export), notes UX (template preview, duplicate warning, post-save counts), front desk orientation, hidden programs notice, label improvements, HTMX cancel — 2026-02-21 (see Phase: UX + QA Round 7 Fixes above)
+- [x] Add quarterly date range presets to ad-hoc report form — optgroup dropdown with FY + quarters, i18n month names, 8 tests — 2026-02-22 (QA-R7-RPT-QUARTER1)
+- [x] QA Round 7 Tier 2 — verified 8 items already implemented, fixed IMPROVE-3 (executive nav) and BUG-7 (log communication) — 2026-02-22 (QA-R7-TIER2)
+- [x] Scenario YAML URL fixes — updated 7 files in konote-qa-scenarios repo from /admin/ to /manage/ paths (PR #14) — 2026-02-22 (QA-R7-YAML1)
+- [x] QA Round 7 Tier 1 — language persistence, skip-to-content verified, notes 403 fixed, htmx syntax fixed — 2026-02-21 (QA-R7-TIER1)
+- [x] Fix report generation page — duplicate template name in dropdown and HTMX period options 500 error (PR #14) — 2026-02-22 (BUG-RPT1)
+- [x] Code review fixes for template-driven reporting — 12 issues (suppression, WCAG, XSS, race condition, tests) (PR #12) — 2026-02-22 (RPT-REVIEW1)
+- [x] Aggregation engine + consortium metric locking for ad-hoc export form — 2026-02-22 (RPT-AGG1)
+- [x] UX + QA Round 7 fixes — 18 items: accessibility, dashboard, notes UX, front desk, label improvements — 2026-02-21
 - [x] Unify analysis chart quick-select and date picker into single form control — 2026-02-21 (UX-CHART1)
 - [x] Accessibility fixes: aria-labels on audit table, notes error container, mobile touch targets — 2026-02-21 (A11Y-UX1)
-- [x] Add survey demo data and scenario test stubs — 2026-02-21 (QA-SURV1, QA-SURV2, QA-SURV4)
-- [x] Fix fiscal year dropdown showing English strings in French UI — 2026-02-20 (BUG-FY1)
-- [x] Build "Questions for You" portal feature — auto-save, multi-page, conditional sections — 2026-02-20 (PORTAL-Q1)
-- [x] Redesign detailed notes form (Round 2) — auto-calc metrics, scale pills, two-lens layout — 2026-02-19 (UX-NOTES2)
-- [x] Move PM management pages from /admin/ to /manage/ — 2026-02-18 (QA-W59)

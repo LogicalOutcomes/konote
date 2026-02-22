@@ -5,6 +5,7 @@ the error and falls back to English instead of crashing with a 500 error.
 """
 import logging
 
+from django.conf import settings
 from django.middleware.locale import LocaleMiddleware
 from django.utils import translation
 
@@ -81,10 +82,35 @@ class SafeLocaleMiddleware(LocaleMiddleware):
             request.LANGUAGE_CODE = "en"
 
     def process_response(self, request, response):
-        """Process response with error handling."""
+        """Process response with error handling and cookie sync.
+
+        BUG-1: Sync the language cookie to the user's preferred_language.
+        If the cookie disagrees with the profile (e.g. stale cookie from a
+        previous user or session), overwrite it.  This prevents language
+        "bleed" when users share a browser or when cookies drift.
+        """
         try:
-            return super().process_response(request, response)
+            response = super().process_response(request, response)
         except Exception as e:
             logger.error("Translation error in response processing: %s", str(e))
-            # Return response without translation patches
-            return response
+
+        # Sync cookie → user.preferred_language (defense in depth)
+        if hasattr(request, "user") and request.user.is_authenticated:
+            pref = getattr(request.user, "preferred_language", "")
+            if pref:
+                cookie_lang = request.COOKIES.get(
+                    settings.LANGUAGE_COOKIE_NAME, ""
+                )
+                if cookie_lang != pref:
+                    response.set_cookie(
+                        settings.LANGUAGE_COOKIE_NAME,
+                        pref,
+                        max_age=settings.LANGUAGE_COOKIE_AGE,
+                        path=settings.LANGUAGE_COOKIE_PATH,
+                        domain=settings.LANGUAGE_COOKIE_DOMAIN,
+                        secure=settings.LANGUAGE_COOKIE_SECURE,
+                        httponly=settings.LANGUAGE_COOKIE_HTTPONLY,
+                        samesite=settings.LANGUAGE_COOKIE_SAMESITE,
+                    )
+
+        return response

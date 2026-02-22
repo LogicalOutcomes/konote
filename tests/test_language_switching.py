@@ -345,3 +345,118 @@ class SharedBrowserScenarioTest(TestCase):
         new_user.refresh_from_db()
         # Should NOT have inherited French from User A
         self.assertEqual(new_user.preferred_language, "en")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local", RATELIMIT_ENABLE=False)
+class LanguagePersistenceTest(TestCase):
+    """BUG-1: Verify language persists across page navigation and POST requests."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        from django.core.cache import cache
+
+        enc_module._fernet = None
+        cache.clear()
+        self.http = Client()
+
+    def tearDown(self):
+        from django.core.cache import cache
+
+        enc_module._fernet = None
+        cache.clear()
+
+    def test_english_user_stays_english_across_navigation(self):
+        """User with preferred_language='en' sees English on every page."""
+        user = User.objects.create_user(
+            username="en_persist", password="testpass123", display_name="EN User"
+        )
+        user.preferred_language = "en"
+        user.save(update_fields=["preferred_language"])
+
+        self.http.login(username="en_persist", password="testpass123")
+
+        # Navigate to multiple pages — all should be English
+        for url in ["/", "/participants/", "/programs/"]:
+            resp = self.http.get(url)
+            if resp.status_code == 200:
+                self.assertEqual(
+                    resp.get("Content-Language", "en"), "en",
+                    f"Content-Language should be 'en' on {url}"
+                )
+
+    def test_french_user_stays_french_across_navigation(self):
+        """User with preferred_language='fr' sees French on every page."""
+        user = User.objects.create_user(
+            username="fr_persist", password="testpass123", display_name="FR User"
+        )
+        user.preferred_language = "fr"
+        user.save(update_fields=["preferred_language"])
+
+        self.http.login(username="fr_persist", password="testpass123")
+
+        for url in ["/", "/participants/", "/programs/"]:
+            resp = self.http.get(url)
+            if resp.status_code == 200:
+                self.assertEqual(
+                    resp.get("Content-Language", "en"), "fr",
+                    f"Content-Language should be 'fr' on {url}"
+                )
+
+    def test_stale_cookie_overridden_by_profile(self):
+        """Stale French cookie does not override English preferred_language."""
+        user = User.objects.create_user(
+            username="en_stale", password="testpass123", display_name="EN Stale"
+        )
+        user.preferred_language = "en"
+        user.save(update_fields=["preferred_language"])
+
+        self.http.login(username="en_stale", password="testpass123")
+
+        # Inject a stale French cookie (as if left by a previous user)
+        self.http.cookies[settings.LANGUAGE_COOKIE_NAME] = "fr"
+
+        resp = self.http.get("/")
+        if resp.status_code == 200:
+            self.assertEqual(resp.get("Content-Language", "en"), "en")
+
+    def test_stale_cookie_synced_on_response(self):
+        """When cookie disagrees with profile, response corrects the cookie."""
+        user = User.objects.create_user(
+            username="sync_test", password="testpass123", display_name="Sync"
+        )
+        user.preferred_language = "en"
+        user.save(update_fields=["preferred_language"])
+
+        self.http.login(username="sync_test", password="testpass123")
+
+        # Inject stale French cookie
+        self.http.cookies[settings.LANGUAGE_COOKIE_NAME] = "fr"
+
+        resp = self.http.get("/")
+        # The response should include a Set-Cookie correcting to "en"
+        cookie = resp.cookies.get(settings.LANGUAGE_COOKIE_NAME)
+        self.assertIsNotNone(cookie, "Response should set a corrected cookie")
+        self.assertEqual(cookie.value, "en")
+
+    def test_language_persists_after_post(self):
+        """Language stays consistent after a POST request (form submission)."""
+        user = User.objects.create_user(
+            username="post_persist", password="testpass123", display_name="Post"
+        )
+        user.preferred_language = "fr"
+        user.save(update_fields=["preferred_language"])
+
+        self.http.login(username="post_persist", password="testpass123")
+
+        # POST to language switch to verify it stays French
+        resp = self.http.post("/i18n/switch/", {
+            "language": "fr",
+            "next": "/",
+        })
+        self.assertEqual(resp.status_code, 302)
+
+        # Follow redirect — should still be French
+        resp = self.http.get("/")
+        if resp.status_code == 200:
+            self.assertEqual(resp.get("Content-Language", "en"), "fr")

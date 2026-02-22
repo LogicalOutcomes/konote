@@ -1,7 +1,9 @@
 """Utility functions for the reports app — fiscal year calculations and permissions."""
+import calendar
 from datetime import date
 from typing import List, Tuple
 
+from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
 
 
@@ -167,4 +169,74 @@ def get_fiscal_year_choices(num_years: int = 5) -> List[Tuple[str, str]]:
         # Translators: FY = Fiscal Year, e.g. "FY 2025-26" / "AF 2025-26"
         label = _("FY %(start)s-%(end)s") % {"start": fy_start, "end": fy_end_short}
         choices.append((str(fy_start), label))
+    return choices
+
+
+# Quarter boundaries within a Canadian fiscal year (April start):
+#   Q1 = Apr–Jun,  Q2 = Jul–Sep,  Q3 = Oct–Dec,  Q4 = Jan–Mar
+# Keep in sync with qStarts in templates/reports/export_form.html
+_QUARTER_STARTS = {
+    1: (0, 4),   # same calendar year, April
+    2: (0, 7),   # same calendar year, July
+    3: (0, 10),  # same calendar year, October
+    4: (1, 1),   # next calendar year, January
+}
+
+
+def get_quarter_range(quarter: int, fy_start_year: int) -> Tuple[date, date]:
+    """
+    Return the date range for a fiscal quarter.
+
+    Args:
+        quarter: 1-4 (Q1=Apr-Jun, Q2=Jul-Sep, Q3=Oct-Dec, Q4=Jan-Mar)
+        fy_start_year: The starting year of the fiscal year (e.g. 2025 for FY 2025-26)
+    """
+    year_offset, month = _QUARTER_STARTS[quarter]
+    year = fy_start_year + year_offset
+    date_from = date(year, month, 1)
+    end_month = month + 2
+    end_year = year
+    if end_month > 12:
+        end_month -= 12
+        end_year += 1
+    last_day = calendar.monthrange(end_year, end_month)[1]
+    date_to = date(end_year, end_month, last_day)
+    return (date_from, date_to)
+
+
+def get_quarter_choices(num_quarters: int = 8) -> List[Tuple[str, str]]:
+    """
+    Return quarterly choices working backwards from the current quarter.
+
+    Values are formatted as "Q{n}-{fy_start_year}" (e.g. "Q1-2025").
+    Labels include month abbreviations for clarity.
+    """
+    today = date.today()
+    current_fy = get_current_fiscal_year()
+
+    # Which fiscal quarter are we in?
+    fiscal_month = (today.month - 4) % 12 + 1  # Apr=1 … Mar=12
+    current_q = (fiscal_month - 1) // 3 + 1    # 1-4
+
+    choices = []
+    fy = current_fy
+    q = current_q
+
+    for _i in range(num_quarters):
+        fy_end_short = str(fy + 1)[-2:]
+        q_from, q_to = get_quarter_range(q, fy)
+        m_start = date_format(q_from, "M")
+        m_end = date_format(q_to, "M")
+        # Translators: e.g. "Q1 FY 2025-26 (Apr–Jun)"
+        label = _("Q%(q)s FY %(start)s-%(end)s (%(m1)s\u2013%(m2)s)") % {
+            "q": q, "start": fy, "end": fy_end_short,
+            "m1": m_start, "m2": m_end,
+        }
+        choices.append((f"Q{q}-{fy}", label))
+
+        q -= 1
+        if q < 1:
+            q = 4
+            fy -= 1
+
     return choices
