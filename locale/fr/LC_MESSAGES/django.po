@@ -14361,7 +14361,8 @@ msgid "Leave messages for staff on a participant's profile"
 msgstr "Laisser des messages au personnel sur le profil d'un participant"
 
 msgid "Need access to something else? Ask your program manager."
-msgstr "Besoin d'accéder à autre chose? Demandez à votre gestionnaire de programme."
+msgstr ""
+"Besoin d'accéder à autre chose? Demandez à votre gestionnaire de programme."
 
 msgid "Pick up where you left off"
 msgstr "Reprendre là où vous en étiez"
@@ -14397,5 +14398,87 @@ msgid ""
 "access to. Contact your program manager for details."
 msgstr ""
 "Ce participant est également inscrit dans d'autres %(programs)s auxquels "
-"vous n'avez pas accès. Communiquez avec votre gestionnaire de programme "
-"pour plus de détails."
+"vous n'avez pas accès. Communiquez avec votre gestionnaire de programme pour"
+" plus de détails."
+
+msgid "All metrics with data will be included."
+msgstr "Toutes les mesures avec des données seront incluses."
+
+msgid "Demographic breakdowns:"
+msgstr "Ventilations démographiques :"
+
+msgid "Fiscal Years"
+msgstr "Années fiscales"
+
+msgid "Invalid period dates."
+msgstr "Dates de période invalides."
+
+msgid "Invalid period selection."
+msgstr "Sélection de période invalide."
+
+msgid "Invalid quarter selection."
+msgstr "Sélection de trimestre invalide."
+
+msgid "No report templates available"
+msgstr "Aucun modèle de rapport disponible"
+
+msgid "No templates available"
+msgstr "Aucun modèle disponible"
+
+msgid "Percentages hidden (fewer than 5 active participants)"
+msgstr "Pourcentages masqués (moins de 5 participants actifs)"
+
+msgid "Period start must be before end."
+msgstr "Le début de la période doit précéder la fin."
+
+msgid "Please select a reporting period."
+msgstr "Veuillez sélectionner une période de rapport."
+
+msgid "Programs:"
+msgstr "Programmes :"
+
+msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
+msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
+
+msgid "Quarters"
+msgstr "Trimestres"
+
+msgid "Report details"
+msgstr "Détails du rapport"
+
+msgid ""
+"Select a fiscal year or quarter to auto-fill dates, or leave blank for "
+"custom range."
+msgstr ""
+"Sélectionnez une année fiscale ou un trimestre pour remplir "
+"automatiquement les dates, ou laissez vide pour une plage personnalisée."
+
+msgid ""
+"Select a report template and period to generate a partner-ready report."
+msgstr ""
+"Sélectionnez un modèle de rapport et une période pour générer un rapport "
+"prêt pour le partenaire."
+
+msgid "Show data from"
+msgstr "Afficher les données de"
+
+msgid "Something went wrong generating the report. Please try again."
+msgstr "Une erreur s'est produite lors de la génération du rapport. Veuillez réessayer."
+
+msgid "This field is required for a custom date range."
+msgstr "Ce champ est requis pour une plage de dates personnalisée."
+
+msgid "This report includes:"
+msgstr "Ce rapport comprend :"
+
+msgid "Which period?"
+msgstr "Quelle période ?"
+
+msgid "Which report?"
+msgstr "Quel rapport ?"
+
+msgid "\\u2014 Select a report \\u2014"
+msgstr "\\u2014 Sélectionner un rapport \\u2014"
+
+msgid "— Select a report —"
+msgstr "— Sélectionner un rapport —"
