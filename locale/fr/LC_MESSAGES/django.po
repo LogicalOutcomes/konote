@@ -14361,7 +14361,8 @@ msgid "Leave messages for staff on a participant's profile"
 msgstr "Laisser des messages au personnel sur le profil d'un participant"
 
 msgid "Need access to something else? Ask your program manager."
-msgstr "Besoin d'accéder à autre chose? Demandez à votre gestionnaire de programme."
+msgstr ""
+"Besoin d'accéder à autre chose? Demandez à votre gestionnaire de programme."
 
 msgid "Pick up where you left off"
 msgstr "Reprendre là où vous en étiez"
@@ -14397,5 +14398,133 @@ msgid ""
 "access to. Contact your program manager for details."
 msgstr ""
 "Ce participant est également inscrit dans d'autres %(programs)s auxquels "
-"vous n'avez pas accès. Communiquez avec votre gestionnaire de programme "
-"pour plus de détails."
+"vous n'avez pas accès. Communiquez avec votre gestionnaire de programme  "
+"plus de détails."
+
+msgid "(change)"
+msgstr "(changement)"
+
+msgid "(mean)"
+msgstr "(moyenne)"
+
+msgid "(total)"
+msgstr "(total)"
+
+msgid "All Participants"
+msgstr "Tous les participants"
+
+msgid "All metrics with data will be included."
+msgstr "Tous les indicateurs avec des données seront inclus."
+
+msgid "Chart visualisation is not yet available in PDF reports."
+msgstr ""
+"La visualisation graphique n’est pas encore disponible dans les rapports "
+"PDF."
+
+msgid "Consortium notice"
+msgstr "Avis de consortium"
+
+msgid "Consortium reporting"
+msgstr "Rapports de consortium"
+
+msgid "Demographic breakdowns:"
+msgstr "Répartitions démographiques :"
+
+msgid "Export Data"
+msgstr "Exporter les données"
+
+msgid "Invalid period dates."
+msgstr "Dates de période invalides."
+
+msgid "Invalid period selection."
+msgstr "Sélection de période invalide."
+
+msgid "No report templates available"
+msgstr "Aucun modèle de rapport disponible"
+
+msgid "No templates available"
+msgstr "Aucun modèle disponible"
+
+msgid "Percentages hidden (fewer than 5 active participants)"
+msgstr "Pourcentages masqués (moins de 5 participants actifs)"
+
+msgid "Period start must be before end."
+msgstr "La date de début doit précéder la date de fin."
+
+msgid "Please select a reporting period."
+msgstr "Veuillez sélectionner une période de rapport."
+
+msgid "Programs:"
+msgstr "Programmes :"
+
+msgid "Report details"
+msgstr "Détails du rapport"
+
+msgid "Required by consortium reporting standards"
+msgstr "Requis par les normes de rapport du consortium"
+
+msgid ""
+"Select a report template and period to generate a partner-ready report."
+msgstr ""
+"Sélectionnez un modèle de rapport et une période pour générer un rapport "
+"prêt pour le partenaire."
+
+msgid "Show data from"
+msgstr "Afficher les données de"
+
+msgid "Something went wrong generating the report. Please try again."
+msgstr ""
+"Une erreur est survenue lors de la génération du rapport. Veuillez "
+"réessayer."
+
+msgid "This field is required for a custom date range."
+msgstr "Ce champ est requis pour une plage de dates personnalisée."
+
+msgid ""
+"This program reports to a consortium partner. For partner-compliant reports,"
+" use the"
+msgstr ""
+"Ce programme relève d’un partenaire de consortium. Pour des rapports "
+"conformes au partenaire, utilisez le"
+
+msgid "This report includes:"
+msgstr "Ce rapport comprend :"
+
+msgid "Which period?"
+msgstr "Quelle période ?"
+
+msgid "Which report?"
+msgstr "Quel rapport ?"
+
+msgid "[To be added during review]"
+msgstr "[À ajouter lors de la révision]"
+
+msgid "\\u2014 Select a report \\u2014"
+msgstr "— Sélectionner un rapport —"
+
+msgid "instead."
+msgstr "à la place."
+
+msgid "template-driven report"
+msgstr "rapport basé sur un modèle"
+
+msgid "— Select a report —"
+msgstr "— Sélectionner un rapport —"
+
+msgid "Access restricted to clinical staff."
+msgstr "Accès réservé au personnel clinique."
+
+msgid "Notes can only be cancelled within 24 hours."
+msgstr "Les notes ne peuvent être annulées que dans les 24 heures."
+
+msgid "You can only cancel your own notes."
+msgstr "Vous ne pouvez annuler que vos propres notes."
+
+msgid "You do not have access to this %(client)s."
+msgstr "Vous n'avez pas accès à ce ou cette %(client)s."
+
+msgid "Loading period options…"
+msgstr "Chargement des options de période…"
+
+msgid "participant"
+msgstr "participant"

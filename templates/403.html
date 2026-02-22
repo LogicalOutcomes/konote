@@ -11,7 +11,9 @@
 
     <div class="error-content">
         <p class="error-message">
-            {% if not user.is_authenticated %}
+            {% if exception %}
+                {{ exception }}
+            {% elif not user.is_authenticated %}
                 {% trans "Please sign in to access this page." %}
             {% elif is_executive_only %}
                 {% trans "This area contains individual client data. Your executive role provides access to aggregate reports and insights." %}

@@ -67,6 +67,17 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Build scoped user management view for PMs — manage staff in own programme via /manage/ (QA-R7-PM-USERS1)
 - [ ] Build scoped audit log view for PMs — programme-filtered, plain language, filterable (QA-R7-PM-AUDIT1)
 
+### Phase: QA Round 7 — Page Audit Tier 2 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
+
+- [ ] Fix groups-attendance: replace "--" with "N/R" (aria-label) + rename "Rate" to "Attendance Rate" — screen reader a11y (QA-PA-ATTEND1)
+- [ ] Fix groups-attendance "1 sessions" pluralization — Django pluralize filter + French blocktrans (QA-PA-ATTEND2)
+- [ ] Improve comm-my-messages empty state — distinguish "no messages yet" from "all read", add guidance text (QA-PA-MSG1)
+- [ ] Add required-field indicator to comm-leave-message textarea — asterisk + aria-required (QA-PA-MSG2)
+- [ ] Add onboarding context to plan-goal-create — collapsible 1-2 sentence explainer for new users (QA-PA-GOAL1)
+- [ ] Add step indicator ("Step 1 of 2") to goal creation wizard — helps DS1c (ADHD) track progress (QA-PA-GOAL2)
+- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — fix in qa-scenarios repo (QA-PA-TEST1)
+- [ ] Seed comm-my-messages populated state with actual messages — fix in qa-scenarios repo (QA-PA-TEST2)
+
 ### Phase: Post-Launch Communication Enhancements
 
 - [ ] Two-way email integration — Microsoft Graph API and Gmail API for send/receive tied to participant timeline, OAuth2 admin consent flow (see tasks/messaging-calendar-plan.md Phase 6) (MSG-EMAIL-2WAY1)
@@ -196,8 +207,19 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Add skip-to-content link to base template — WCAG 2.4.1 Level A requirement (QA-R7-BUG15)
 - [ ] Fix notes URL returning 404 instead of 403 for receptionist — add explicit permission check before queryset filter (QA-R7-BUG2)
 - [ ] Fix htmx:syntax:error messages on create-participant page — audit all hx-* attributes (QA-R7-BUG20)
+
+### Phase: QA Round 7 — Page Audit Tier 1 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
+
+- [ ] Create custom styled 500.html template — bilingual, branded fallback for all unhandled errors (QA-PA-500)
+- [ ] Fix public unsubscribe page returning 500 — CASL compliance, must work before any agency enables email (depends on QA-PA-500) (QA-PA-BLOCKER4)
+- [ ] Fix public survey link page returning 500 — community members see raw error from email/flyer links (depends on QA-PA-500) (QA-PA-BLOCKER3)
+- [ ] Fix plan-goal-create heading "Add Target" → "Add Goal" — terminology migration artifact, 5-min fix (QA-PA-BUG1)
+
 ## Parking Lot
 
+- [ ] Add PIPEDA compliance context to admin-erasure-requests page — explain what gets deleted vs. retained — GK reviews privacy/data retention (QA-PA-ERASURE1)
+- [ ] Replace decorative circular element on erasure empty state with static icon — cosmetic, low priority (QA-PA-ERASURE2)
+- [ ] Add breadcrumbs to plan-goal-create (Participants > Name > Plan > Add Goal) — navigation aid for new users (QA-PA-GOAL3)
 - [ ] PIPEDA data export from client profile — "Export Data" action for Section 8 access requests, needs design for data categories and output format — GK reviews privacy workflow (QA-R7-PRIVACY1)
 - [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
 - [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)

@@ -350,6 +350,9 @@ def export_form(request):
             "delay_minutes": delay_minutes,
             "template_preview_items": _template_previews(form),
             "show_template_hint": hint,
+            "consortium_locked_metrics": form.consortium_locked_metrics,
+            "consortium_locked_metric_strings": {str(m) for m in form.consortium_locked_metrics},
+            "consortium_partner_name": form.consortium_partner_name,
         })
 
     form = MetricExportForm(request.POST, user=request.user)
@@ -362,6 +365,9 @@ def export_form(request):
             "delay_minutes": delay_minutes,
             "template_preview_items": _template_previews(form),
             "show_template_hint": hint,
+            "consortium_locked_metrics": form.consortium_locked_metrics,
+            "consortium_locked_metric_strings": {str(m) for m in form.consortium_locked_metrics},
+            "consortium_partner_name": form.consortium_partner_name,
         })
 
     program = form.cleaned_data["program"]
@@ -1269,6 +1275,18 @@ def generate_report_form(request):
     export_format = form.cleaned_data["format"]
     recipient = form.get_recipient_display()
 
+    # Warn if template spans multiple programs (only first is used)
+    template_programs = list(template.partner.get_programs())
+    if len(template_programs) > 1:
+        from django.contrib import messages as msg
+        msg.warning(
+            request,
+            _("This report template covers multiple programs but currently "
+              "only includes data from %(program)s. Multi-program reports "
+              "are coming soon.")
+            % {"program": template_programs[0].name},
+        )
+
     from .export_engine import generate_template_report
     try:
         content, filename, client_count = generate_template_report(
@@ -1356,15 +1374,21 @@ def template_period_options(request):
     if not template_id:
         return HttpResponse("")
 
+    # Scope to templates the user can access (via their programs)
+    from .utils import get_manageable_programs
+    accessible_programs = get_manageable_programs(request.user)
+
     try:
         template = (
             ReportTemplate.objects
+            .filter(partner__programs__in=accessible_programs)
             .select_related("partner")
             .prefetch_related(
                 "report_metrics__metric_definition",
                 "breakdowns__custom_field",
                 "partner__programs",
             )
+            .distinct()
             .get(pk=template_id, is_active=True)
         )
     except ReportTemplate.DoesNotExist:
@@ -1383,6 +1407,62 @@ def template_period_options(request):
         "breakdowns": breakdowns,
         "is_custom_period": template.period_type == "custom",
     })
+
+
+@login_required
+@requires_permission("report.program_report", allow_admin=True)
+def adhoc_template_autofill(request):
+    """
+    HTMX endpoint: return template auto-fill data for the ad-hoc export form.
+
+    When a template is selected in /reports/export/, this returns a JSON
+    response with metric definition IDs to check and consortium info.
+    """
+    from .models import ReportMetric as RM
+    from .utils import get_manageable_programs
+
+    template_id = request.GET.get("template_id")
+    if not template_id:
+        return HttpResponse(
+            json.dumps({"metric_ids": [], "consortium_locked": [], "partner_name": ""}),
+            content_type="application/json",
+        )
+
+    # Scope to templates the user can access (via their programs)
+    accessible_programs = get_manageable_programs(request.user)
+
+    try:
+        template = (
+            ReportTemplate.objects
+            .filter(partner__programs__in=accessible_programs)
+            .select_related("partner")
+            .distinct()
+            .get(pk=template_id, is_active=True)
+        )
+    except ReportTemplate.DoesNotExist:
+        return HttpResponse(
+            json.dumps({"metric_ids": [], "consortium_locked": [], "partner_name": ""}),
+            content_type="application/json",
+        )
+
+    report_metrics = RM.objects.filter(
+        report_template=template,
+    ).select_related("metric_definition")
+
+    metric_ids = [rm.metric_definition_id for rm in report_metrics]
+    consortium_locked = [
+        rm.metric_definition_id for rm in report_metrics
+        if rm.is_consortium_required
+    ]
+
+    return HttpResponse(
+        json.dumps({
+            "metric_ids": metric_ids,
+            "consortium_locked": consortium_locked,
+            "partner_name": template.partner.translated_name,
+        }),
+        content_type="application/json",
+    )
 
 
 # ─── Secure link views ──────────────────────────────────────────────
