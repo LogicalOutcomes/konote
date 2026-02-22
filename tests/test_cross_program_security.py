@@ -399,3 +399,41 @@ class CrossProgramConsentTest(TestCase):
         # Fail-closed: empty queryset, not the original notes
         self.assertEqual(filtered.count(), 0)
         self.assertIsNone(viewing_name)
+
+    def test_consent_filter_respects_conf9_context_switcher(self):
+        """CONF9: active_program_ids overrides get_author_program for viewing program.
+
+        When the context switcher selects a single program, the consent
+        filter should use that program — not whatever get_author_program
+        would pick based on role rank.
+        """
+        from apps.notes.models import ProgressNote
+        from apps.programs.access import apply_consent_filter, get_author_program
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+
+        # Determine which program get_author_program would normally pick
+        default_viewing = get_author_program(self.multi_staff, self.shared_client)
+        # Pick the OTHER program via CONF9 switcher
+        if default_viewing.pk == self.program_a.pk:
+            switched_program = self.program_b
+            expected_note = self.note_b
+            excluded_note = self.note_a
+        else:
+            switched_program = self.program_a
+            expected_note = self.note_a
+            excluded_note = self.note_b
+
+        notes_qs = ProgressNote.objects.filter(client_file=self.shared_client)
+        filtered, viewing_name = apply_consent_filter(
+            notes_qs, self.shared_client, self.multi_staff,
+            user_program_ids={switched_program.pk},
+            active_program_ids={switched_program.pk},
+        )
+        filtered_ids = set(filtered.values_list("pk", flat=True))
+        # Should see the switched program's note + null, NOT the default
+        self.assertIn(expected_note.pk, filtered_ids)
+        self.assertIn(self.note_null.pk, filtered_ids)
+        self.assertNotIn(excluded_note.pk, filtered_ids)
+        self.assertEqual(viewing_name, switched_program.name)
