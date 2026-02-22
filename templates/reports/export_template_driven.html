@@ -19,9 +19,18 @@
 {% if not has_templates %}
 <article aria-label="{% trans 'No templates available' %}" style="background: var(--kn-warning-bg); border-left: 4px solid var(--kn-warning-fg); padding: 1rem;">
     <strong>{% trans "No report templates available" %}</strong>
-    <p style="margin-bottom: 0;">
-        {% blocktrans %}No report templates have been set up yet. Report templates define what metrics and demographic breakdowns to include. Contact your administrator to configure one, or ask the Program Manager for a custom data export.{% endblocktrans %}
+    <p>
+        {% blocktrans %}No report templates have been set up yet. Report templates define what metrics and demographic breakdowns to include for recurring partner reports. Contact your administrator to create one.{% endblocktrans %}
     </p>
+    {% if can_custom_export %}
+    <p style="margin-bottom: 0;">
+        {% blocktrans %}In the meantime, you can create a one-off report using <strong>Custom Export</strong>, where you choose the program, metrics, and date range yourself.{% endblocktrans %}
+    </p>
+    <p><a href="{% url 'reports:export_form' %}">{% trans "Go to Custom Export" %}</a></p>
+    {% endif %}
+    {% if user.is_admin %}
+    <p style="margin-bottom: 0;"><a href="{% url 'admin_settings:report_template_list' %}">{% trans "Set up report templates" %}</a></p>
+    {% endif %}
 </article>
 {% else %}
 
@@ -132,4 +141,27 @@
     <button type="submit">{% trans "Generate Report" %}</button>
 </form>
 {% endif %}
+
+{# Guidance section — what else can I do? #}
+<hr style="margin: 2rem 0;">
+<details>
+    <summary><strong>{% trans "Need a different report?" %}</strong></summary>
+    <div style="margin-top: 1rem;">
+        {% if can_custom_export %}
+        <h3>{% trans "Create a custom export" %}</h3>
+        <p>
+            {% blocktrans %}If none of the templates above match what you need, you can build a one-off report by choosing your own program, metrics, date range, and groupings.{% endblocktrans %}
+        </p>
+        <p><a href="{% url 'reports:export_form' %}" role="button" class="outline">{% trans "Custom Export" %}</a></p>
+        {% endif %}
+
+        <h3>{% trans "Request a new report template" %}</h3>
+        <p>
+            {% blocktrans %}Report templates are set up by your administrator. If you need a recurring report for a partner, funder, or board that isn't listed above, ask your administrator to create one. They can define which metrics, demographics, and time periods to include so the report is ready to generate each period.{% endblocktrans %}
+        </p>
+        {% if user.is_admin %}
+        <p><a href="{% url 'admin_settings:report_template_list' %}" role="button" class="outline">{% trans "Manage Report Templates" %}</a></p>
+        {% endif %}
+    </div>
+</details>
 {% endblock %}
