@@ -37,6 +37,9 @@
         </div>
         {% endif %}
     </dl>
+    {% if has_hidden_programs %}
+    <p class="secondary" role="note"><small>{% blocktrans with programs=term.program_plural|default:"programs" %}This participant is also enrolled in other {{ programs }} you don't have access to. Contact your program manager for details.{% endblocktrans %}</small></p>
+    {% endif %}
 </section>
 
 {# Staff message actions — leave or view messages #}
