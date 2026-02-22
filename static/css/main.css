@@ -4581,3 +4581,242 @@ article[aria-label="notification"].fading-out {
 .message-card .message-meta a {
     color: var(--kn-text-secondary);
 }
+
+/* ══════════════════════════════════════════════════════════════════ */
+/* ── Insights: Metric Distributions (Phase 2.7)                ──── */
+/* ══════════════════════════════════════════════════════════════════ */
+
+/* Band colours — Pico palette, NOT red-to-green. Must pass 4.5:1 contrast. */
+:root {
+    --kn-band-low: #5e81ac;    /* Nord frost blue — "More support needed" */
+    --kn-band-mid: #d08770;    /* Nord aurora orange — "On track" */
+    --kn-band-high: #a3be8c;   /* Nord aurora green — "Goals within reach" */
+    --kn-band-low-bg: rgba(94, 129, 172, 0.15);
+    --kn-band-mid-bg: rgba(208, 135, 112, 0.15);
+    --kn-band-high-bg: rgba(163, 190, 140, 0.15);
+}
+@media (prefers-color-scheme: dark) {
+    :root {
+        --kn-band-low: #81a1c1;
+        --kn-band-mid: #d08770;
+        --kn-band-high: #a3be8c;
+        --kn-band-low-bg: rgba(129, 161, 193, 0.2);
+        --kn-band-mid-bg: rgba(208, 135, 112, 0.2);
+        --kn-band-high-bg: rgba(163, 190, 140, 0.2);
+    }
+}
+
+/* Summary cards — 4-card horizontal grid */
+.insights-summary-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+@media (max-width: 768px) {
+    .insights-summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+@media (max-width: 480px) {
+    .insights-summary-cards {
+        grid-template-columns: 1fr;
+    }
+}
+.insights-card {
+    padding: 1rem;
+    border: 1px solid var(--kn-border, #dee2e6);
+    border-radius: var(--kn-radius, 4px);
+    background: var(--kn-card-bg, #f8f9fa);
+}
+.insights-card-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--kn-text-muted, #888);
+    margin-bottom: 0.25rem;
+}
+.insights-card-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 0.25rem;
+}
+.insights-card-detail {
+    font-size: 0.8rem;
+    color: var(--kn-text-muted, #888);
+}
+.insights-card-warning {
+    font-size: 0.75rem;
+    color: var(--kn-caution-fg, #e65100);
+    margin-top: 0.25rem;
+}
+
+/* Progressive disclosure sections */
+.insights-section {
+    margin-bottom: 0.5rem;
+    border: 1px solid var(--kn-border, #dee2e6);
+    border-radius: var(--kn-radius, 4px);
+}
+.insights-section > summary {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: var(--kn-text);
+    background: var(--kn-card-bg, #f8f9fa);
+    border-radius: var(--kn-radius, 4px);
+    list-style: none;
+}
+.insights-section > summary::-webkit-details-marker { display: none; }
+.insights-section > summary::before {
+    content: "\25b6";
+    display: inline-block;
+    margin-right: 0.5rem;
+    font-size: 0.7rem;
+    transition: transform 0.15s;
+}
+.insights-section[open] > summary::before {
+    transform: rotate(90deg);
+}
+.insights-section[open] > summary {
+    border-bottom: 1px solid var(--kn-border, #dee2e6);
+    border-radius: var(--kn-radius, 4px) var(--kn-radius, 4px) 0 0;
+}
+.insights-section > :not(summary) {
+    padding: 1rem;
+}
+
+/* Distribution bars */
+.insights-metric-section {
+    margin-bottom: 1.5rem;
+}
+.insights-distribution-bar {
+    display: flex;
+    height: 2rem;
+    border-radius: var(--kn-radius, 4px);
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+.insights-bar-segment {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #fff;
+    min-width: 0;
+    transition: width 0.3s;
+}
+.insights-bar-segment.band-low {
+    background: var(--kn-band-low);
+}
+.insights-bar-segment.band-mid {
+    background: var(--kn-band-mid);
+}
+.insights-bar-segment.band-high {
+    background: var(--kn-band-high);
+}
+
+/* Band legend */
+.insights-bar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+.insights-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+.insights-legend-swatch {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+.insights-legend-swatch.band-low { background: var(--kn-band-low); }
+.insights-legend-swatch.band-mid { background: var(--kn-band-mid); }
+.insights-legend-swatch.band-high { background: var(--kn-band-high); }
+
+.insights-target-note {
+    font-size: 0.8rem;
+}
+.insights-new-participant-note {
+    font-size: 0.85rem;
+    padding: 0.5rem 0;
+}
+
+/* Achievement/outcome bars */
+.insights-outcome-section {
+    margin-bottom: 1.5rem;
+}
+.insights-outcome-bar-container {
+    position: relative;
+    margin-bottom: 0.25rem;
+}
+.insights-outcome-bar {
+    height: 1.75rem;
+    background: var(--kn-band-low-bg);
+    border-radius: var(--kn-radius, 4px);
+    overflow: hidden;
+}
+.insights-outcome-bar-fill {
+    height: 100%;
+    background: var(--kn-band-high);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #fff;
+    border-radius: var(--kn-radius, 4px) 0 0 var(--kn-radius, 4px);
+    min-width: 2.5rem;
+}
+.insights-outcome-target-marker {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 2px;
+    background: var(--kn-text, #333);
+    opacity: 0.6;
+}
+.insights-outcome-target-marker::after {
+    content: attr(title);
+    position: absolute;
+    top: -1.2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    white-space: nowrap;
+    color: var(--kn-text-muted);
+}
+.insights-outcome-detail {
+    font-size: 0.85rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+.insights-journey-context {
+    font-size: 0.85rem;
+    border-left: 3px solid var(--kn-band-mid);
+    padding: 0.3rem 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* Two Lenses card styling */
+.insights-two-lenses {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+/* Completeness card */
+.insights-completeness-card .insights-card-value span {
+    font-size: 1rem;
+    margin-right: 0.25rem;
+}
