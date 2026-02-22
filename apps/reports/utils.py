@@ -3,6 +3,7 @@ import calendar
 from datetime import date
 from typing import List, Tuple
 
+from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
 
 
@@ -173,6 +174,7 @@ def get_fiscal_year_choices(num_years: int = 5) -> List[Tuple[str, str]]:
 
 # Quarter boundaries within a Canadian fiscal year (April start):
 #   Q1 = Apr–Jun,  Q2 = Jul–Sep,  Q3 = Oct–Dec,  Q4 = Jan–Mar
+# Keep in sync with qStarts in templates/reports/export_form.html
 _QUARTER_STARTS = {
     1: (0, 4),   # same calendar year, April
     2: (0, 7),   # same calendar year, July
@@ -220,11 +222,11 @@ def get_quarter_choices(num_quarters: int = 8) -> List[Tuple[str, str]]:
     fy = current_fy
     q = current_q
 
-    for _ in range(num_quarters):
+    for _i in range(num_quarters):
         fy_end_short = str(fy + 1)[-2:]
         q_from, q_to = get_quarter_range(q, fy)
-        m_start = q_from.strftime("%b")
-        m_end = q_to.strftime("%b")
+        m_start = date_format(q_from, "M")
+        m_end = date_format(q_to, "M")
         # Translators: e.g. "Q1 FY 2025-26 (Apr–Jun)"
         label = _("Q%(q)s FY %(start)s-%(end)s (%(m1)s\u2013%(m2)s)") % {
             "q": q, "start": fy, "end": fy_end_short,

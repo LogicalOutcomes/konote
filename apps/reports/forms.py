@@ -3,6 +3,7 @@ import calendar
 from datetime import date
 
 from django import forms
+from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import gettext
 
@@ -509,7 +510,7 @@ def build_period_choices(template):
             last_day = calendar.monthrange(y, m)[1]
             start = date(y, m, 1)
             end = date(y, m, last_day)
-            label = start.strftime("%B %Y")
+            label = date_format(start, "N Y")
             choices.append((f"{start}|{end}", label))
         return choices
 
@@ -559,8 +560,8 @@ def _build_quarter_choices(start_month, today, count=8):
         fy_label = _fiscal_year_label(start_month, q_year, q_month)
 
         # Month abbreviations for the quarter
-        m1 = date(q_year, q_month, 1).strftime("%b")
-        m3 = date(end_year, end_month, 1).strftime("%b")
+        m1 = date_format(date(q_year, q_month, 1), "M")
+        m3 = date_format(date(end_year, end_month, 1), "M")
         label = f"Q{q_num} {fy_label} ({m1}\u2013{m3})"
 
         choices.append((f"{q_start}|{q_end}", label))
@@ -600,8 +601,8 @@ def _build_half_choices(start_month, today, count=4):
 
         h_num = ((h_month - start_month) % 12) // 6 + 1
         fy_label = _fiscal_year_label(start_month, h_year, h_month)
-        m1 = date(h_year, h_month, 1).strftime("%b")
-        m6 = date(end_year, end_month, 1).strftime("%b")
+        m1 = date_format(date(h_year, h_month, 1), "M")
+        m6 = date_format(date(end_year, end_month, 1), "M")
         label = f"H{h_num} {fy_label} ({m1}\u2013{m6})"
 
         choices.append((f"{h_start}|{h_end}", label))

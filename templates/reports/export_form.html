@@ -291,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
             var qNum = parseInt(parts[0].substring(1), 10);
             var fyStart = parseInt(parts[1], 10);
             // Q1=Apr-Jun, Q2=Jul-Sep, Q3=Oct-Dec, Q4=Jan-Mar
+            // Keep in sync with _QUARTER_STARTS in apps/reports/utils.py
             var qStarts = {1:[fyStart,4], 2:[fyStart,7], 3:[fyStart,10], 4:[fyStart+1,1]};
             var sYear = qStarts[qNum][0], sMonth = qStarts[qNum][1];
             var eMonth = sMonth + 2, eYear = sYear;

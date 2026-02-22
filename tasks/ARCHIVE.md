@@ -4,6 +4,17 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-02-22 QA Round 7 cleanup)
+
+- [x] Mobile touch targets WCAG fix — enforce 44px minimum — 2026-02-17 (UX-WALK5)
+- [x] Fix test suite freezing — skip Playwright tests with --exclude-tag=slow — 2026-02-18 (TEST-FIX1)
+- [x] Move PM management pages from /admin/ to /manage/ — 2026-02-18 (QA-W59)
+- [x] Redesign detailed notes form (Round 2) — auto-calc metrics, scale pills, two-lens layout — 2026-02-19 (UX-NOTES2)
+- [x] Build "Questions for You" portal feature — auto-save, multi-page, conditional sections — 2026-02-20 (PORTAL-Q1)
+- [x] Fix fiscal year dropdown showing English strings in French UI — 2026-02-20 (BUG-FY1)
+
+---
+
 ## Moved from Recently Done (2026-02-18 AI polish)
 
 - [x] Add demo content for suggestion themes (11 themes, 29 links) and staff messages (7 messages) — 2026-02-17 (DEMO-SUG1)
