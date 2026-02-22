@@ -13,8 +13,6 @@
         <p class="error-message">
             {% if not user.is_authenticated %}
                 {% trans "Please sign in to access this page." %}
-            {% elif exception %}
-                {{ exception }}
             {% elif is_executive_only %}
                 {% trans "This area contains individual client data. Your executive role provides access to aggregate reports and insights." %}
             {% elif is_receptionist_only %}
