@@ -152,6 +152,7 @@
             {% has_permission "metric.manage" as can_manage_metrics %}
             {% has_permission "registration.manage" as can_manage_registration %}
             {% has_permission "audit.view" as can_see_audit %}
+            {% if not is_executive_only %}
             {% if can_manage_users or can_manage_plan_templates or can_manage_note_templates or can_manage_event_types or can_manage_metrics or can_manage_registration or can_see_audit %}
             <li>
                 <details class="dropdown" role="list">
@@ -190,6 +191,7 @@
                     </ul>
                 </details>
             </li>
+            {% endif %}
             {% endif %}
             {% endif %}
             {% include "_program_switcher.html" %}
