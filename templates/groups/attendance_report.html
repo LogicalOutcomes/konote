@@ -8,7 +8,7 @@
 
 <hgroup>
     <h1>{% blocktrans with name=group.name %}Attendance Report — {{ name }}{% endblocktrans %}</h1>
-    <p>{% blocktrans with total=total_sessions %}{{ total }} sessions in selected range{% endblocktrans %}</p>
+    <p>{% blocktrans count total=total_sessions %}{{ total }} session in selected range{% plural %}{{ total }} sessions in selected range{% endblocktrans %}</p>
 </hgroup>
 
 <!-- Date range filter -->
@@ -50,7 +50,7 @@
             <th scope="col"><small>{{ s.session_date|date:"M j" }}</small></th>
             {% endfor %}
             <th scope="col">{% trans "Present" %}</th>
-            <th scope="col">{% trans "Rate" %}</th>
+            <th scope="col" title="{% trans 'Percentage of sessions attended' %}">{% trans "Attendance Rate" %}</th>
         </tr>
     </thead>
     <tbody>
@@ -64,12 +64,12 @@
                 {% elif present == False %}
                     <span class="badge badge-danger" aria-label="{% trans 'Absent' %}">&#10007;</span>
                 {% else %}
-                    <span class="secondary">—</span>
+                    <abbr title="{% trans 'Not recorded' %}" class="secondary">{% trans "N/R" %}</abbr>
                 {% endif %}
             </td>
             {% endfor %}
             <td data-label="{% trans 'Present' %}">{{ row.present }}/{{ row.total }}</td>
-            <td data-label="{% trans 'Rate' %}">
+            <td data-label="{% trans 'Attendance Rate' %}">
                 {% if row.rate != None %}
                     {% if row.rate >= 80 %}
                         <span class="badge badge-success">{{ row.rate }}%</span>
@@ -79,7 +79,7 @@
                         <span class="badge badge-danger">{{ row.rate }}%</span>
                     {% endif %}
                 {% else %}
-                    —
+                    <abbr title="{% trans 'Not recorded' %}" class="secondary">{% trans "N/R" %}</abbr>
                 {% endif %}
             </td>
         </tr>

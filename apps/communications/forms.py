@@ -192,6 +192,7 @@ class StaffMessageForm(forms.Form):
         widget=forms.Textarea(attrs={
             "rows": 3,
             "placeholder": _("e.g. Sarah called, wants to reschedule Thursday appointment"),
+            "aria-required": "true",
         }),
         max_length=500,
     )

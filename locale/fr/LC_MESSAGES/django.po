@@ -14551,11 +14551,53 @@ msgstr "participant"
 msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
 msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
 
+msgid "Add a Goal"
+msgstr "Ajouter un objectif"
+
+msgid "Attendance Rate"
+msgstr "Taux de présence"
+
+msgid "Create a custom export"
+msgstr "Cr\u00e9er une exportation personnalis\u00e9e"
+
+msgid "Custom Export"
+msgstr "Exportation personnalis\u00e9e"
+
+msgid "Go to Custom Export"
+msgstr "Aller \u00e0 l\u2019exportation personnalis\u00e9e"
+
+msgid "Listen"
+msgstr "Écouter"
+
 msgid "Log Communication"
 msgstr "Consigner une communication"
 
+msgid "Manage Report Templates"
+msgstr "G\u00e9rer les mod\u00e8les de rapports"
+
+msgid "N/R"
+msgstr "N/C"
+
+msgid "Need a different report?"
+msgstr "Besoin d\u2019un autre rapport\u00a0?"
+
+msgid "No messages yet."
+msgstr "Aucun message pour le moment."
+
+msgid "Percentage of sessions attended"
+msgstr "Pourcentage de séances auxquelles la personne a participé"
+
 msgid "Record a phone call, visit, or message"
 msgstr "Consigner un appel, une visite ou un message"
+
+msgid "Shape the goal"
+msgstr "Formuler l’objectif"
+
+msgid "Step 1 of 2"
+msgstr "Étape 1 de 2"
+
+msgid "Step 2 of 2"
+msgstr "Étape 2 de 2"
 
 #: apps/programs/access.py
 msgid ""
@@ -14564,3 +14606,82 @@ msgid ""
 msgstr ""
 "Cette note est réservée à un programme spécifique. Contactez votre "
 "administrateur si vous avez besoin d\u2019un accès inter-programmes."
+
+msgid "What is a goal?"
+msgstr "Qu’est-ce qu’un objectif ?"
+
+msgid "You're all caught up — no unread messages."
+msgstr "Tout est à jour — aucun message non lu."
+
+msgid "%(total)s session in selected range"
+msgid_plural "%(total)s sessions in selected range"
+msgstr[0] "%(total)s séance dans la période sélectionnée"
+msgstr[1] "%(total)s séances dans la période sélectionnée"
+
+msgid "You have %(count)s unread message."
+msgid_plural "You have %(count)s unread messages."
+msgstr[0] "Vous avez %(count)s message non lu."
+msgstr[1] "Vous avez %(count)s messages non lus."
+
+msgid ""
+"Messages from colleagues will appear here when someone leaves a note about a"
+" participant you're working with."
+msgstr ""
+"Les messages de vos collègues apparaîtront ici lorsque quelqu'un laissera "
+"une note au sujet d'un participant avec lequel vous travaillez."
+
+msgid ""
+"A goal is something the %(client)s wants to achieve. You'll capture what "
+"they said in their own words, then shape it into a short, trackable goal "
+"with a way to measure progress."
+msgstr ""
+"Un objectif est quelque chose que le ou la %(client)s souhaite accomplir. "
+"Vous noterez ce qu'il ou elle a dit dans ses propres mots, puis vous le "
+"formulerez en un objectif court et mesurable avec un indicateur de progrès."
+
+msgid "Request a new report template"
+msgstr "Demander un nouveau mod\u00e8le de rapport"
+
+msgid "Set up report templates"
+msgstr "Configurer les mod\u00e8les de rapports"
+
+msgid ""
+"If none of the templates above match what you need, you can build a one-off "
+"report by choosing your own program, metrics, date range, and groupings."
+msgstr ""
+"Si aucun des mod\u00e8les ci-dessus ne correspond \u00e0 vos besoins, vous pouvez "
+"cr\u00e9er un rapport ponctuel en choisissant votre programme, vos indicateurs, "
+"votre p\u00e9riode et vos regroupements."
+
+msgid ""
+"Report templates are set up by your administrator. If you need a recurring "
+"report for a partner, funder, or board that isn't listed above, ask your "
+"administrator to create one. They can define which metrics, demographics, "
+"and time periods to include so the report is ready to generate each period."
+msgstr ""
+"Les mod\u00e8les de rapports sont configur\u00e9s par votre administrateur. Si vous "
+"avez besoin d\u2019un rapport r\u00e9current pour un partenaire, un bailleur de fonds "
+"ou un conseil d\u2019administration qui n\u2019est pas list\u00e9 ci-dessus, demandez \u00e0 "
+"votre administrateur d\u2019en cr\u00e9er un. Il peut d\u00e9finir les indicateurs, les "
+"donn\u00e9es d\u00e9mographiques et les p\u00e9riodes \u00e0 inclure afin que le rapport soit "
+"pr\u00eat \u00e0 g\u00e9n\u00e9rer \u00e0 chaque p\u00e9riode."
+
+msgid ""
+"No report templates have been set up yet. Report templates define what "
+"metrics and demographic breakdowns to include for recurring partner reports. "
+"Contact your administrator to create one."
+msgstr ""
+"Aucun mod\u00e8le de rapport n\u2019a encore \u00e9t\u00e9 configur\u00e9. Les mod\u00e8les de rapports "
+"d\u00e9finissent les indicateurs et les ventilations d\u00e9mographiques \u00e0 inclure "
+"pour les rapports r\u00e9currents des partenaires. Contactez votre administrateur "
+"pour en cr\u00e9er un."
+
+msgid ""
+"In the meantime, you can create a one-off report using <strong>Custom "
+"Export</strong>, where you choose the program, metrics, and date range "
+"yourself."
+msgstr ""
+"En attendant, vous pouvez cr\u00e9er un rapport ponctuel avec "
+"l\u2019<strong>exportation personnalis\u00e9e</strong>, o\u00f9 vous choisissez "
+"vous-m\u00eame le programme, les indicateurs et la p\u00e9riode."
+

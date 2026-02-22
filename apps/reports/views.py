@@ -1252,12 +1252,20 @@ def generate_report_form(request):
     Access: admin, program_manager, executive (their programmes).
     Enforced by @requires_permission("report.funder_report").
     """
+    from apps.auth_app.decorators import _get_user_highest_role_any
+    from apps.auth_app.permissions import can_access, DENY
+    user_role = _get_user_highest_role_any(request.user)
+    can_custom_export = (
+        user_role is not None and can_access(user_role, "report.program_report") != DENY
+    ) or getattr(request.user, "is_admin", False)
+
     if request.method != "POST":
         form = TemplateExportForm(user=request.user)
         has_templates = form.fields["report_template"].queryset.exists()
         return render(request, "reports/export_template_driven.html", {
             "form": form,
             "has_templates": has_templates,
+            "can_custom_export": can_custom_export,
         })
 
     form = TemplateExportForm(request.POST, user=request.user)
@@ -1266,6 +1274,7 @@ def generate_report_form(request):
         return render(request, "reports/export_template_driven.html", {
             "form": form,
             "has_templates": has_templates,
+            "can_custom_export": can_custom_export,
         })
 
     template = form.cleaned_data["report_template"]
