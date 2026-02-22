@@ -2,12 +2,10 @@
 
 ## Flagged
 
-- [ ] Review requirements analysis doc with [PM] before sending to client (docs/konote-requirements-analysis-draft.md) — (DOC-REQ1)
-- [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — (ONBOARD-APPROVE)
-- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — (SEC3-Q1)
-- [ ] Confirm standard report schema and configuration template with [funder contact] before building — (RPT-SCHEMA1)
-- [ ] Review and approve multi-tenancy implementation plan with [PM] and [Dev] before building — covers django-tenants integration, per-tenant encryption, consortium data model, and hybrid federation architecture (see tasks/multi-tenancy-implementation-plan.md) — SG/PD (MT-APPROVE1)
-- [ ] Approve CIDS implementation plan with project lead before building — covers metadata fields, code list integration, CIDS-enriched reports, and full JSON-LD export; confirm funder consumption pathway and whether to engage Common Approach as pilot implementer (see tasks/cids-json-ld-export.md) — (CIDS-APPROVE1)
+- [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — GK (ONBOARD-APPROVE)
+- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GK (SEC3-Q1)
+- [ ] Confirm standard report schema and configuration template with funder contact before building — SG (RPT-SCHEMA1)
+- [ ] Approve CIDS implementation plan with project lead before building — covers metadata fields, code list integration, CIDS-enriched reports, and full JSON-LD export; confirm funder consumption pathway and whether to engage Common Approach as pilot implementer (see tasks/cids-json-ld-export.md) — SG/GK (CIDS-APPROVE1)
 
 ## Active Work
 
@@ -16,13 +14,13 @@
 - [ ] Complete Agency Deployment Protocol with [funder partner] — Phase 0 Discovery Call first (see tasks/deployment-protocol.md) — (DEPLOY-PC1)
 - [x] Define [funder partner] configuration template — standard roles, metrics, terminology, plan templates for financial coaching agencies (see config_templates/) — 2026-02-20 — (DEPLOY-TEMPLATE1)
 - [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
-- [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — (ONBOARD-GATE)
-- [ ] Store signed Configuration Summary with each deployment so new admins can see what was decided and why — (DEPLOY-CONFIG-DOC1)
-- [ ] Verify production email configuration for exports, erasure alerts, and password resets — (OPS3)
-- [ ] Test backup restore from a production-like database dump and capture runbook notes — (OPS4)
-- [ ] Document scheduled task setup for export monitoring in the runbook — (EXP2w)
-- [ ] Enforce cross-program sharing consent (PHIPA) in views — consent flag already captured, need view-level enforcement (PHIPA-ENFORCE1)
-- [ ] Build cross-agency data rollup for funders — waiting on requirements from [funder partner] re: which metrics to aggregate (see tasks/) — (SCALE-ROLLUP1)
+- [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — SG (ONBOARD-GATE)
+- [ ] Store signed Configuration Summary with each deployment so new admins can see what was decided and why — SG (DEPLOY-CONFIG-DOC1)
+- [ ] Verify production email configuration for exports, erasure alerts, and password resets — PB (OPS3)
+- [ ] Test backup restore from a production-like database dump and capture runbook notes — PB (OPS4)
+- [ ] Document scheduled task setup for export monitoring in the runbook — PB (EXP2w)
+- [ ] Enforce cross-program sharing consent (PHIPA) in views — consent flag already captured, need view-level enforcement — PB (PHIPA-ENFORCE1)
+- [ ] Build cross-agency data rollup for funders — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
 - [x] Build role-based dashboard views — coach, PM, and executive landing pages with role-specific data (see tasks/dashboard-roles-plan.md) — 2026-02-20 — (DASH-ROLES1)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — (DEPLOY-TOOLKIT1)
 
@@ -66,13 +64,13 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Pre-report data quality checks — validate data quality before funder report export (see tasks/data-validation-design.md) (DQ2)
 - [ ] Add funder report approval workflow — quality review, agency annotations, explicit publish step before sharing with funders (see tasks/funder-report-approval.md, plan: docs/plans/2026-02-20-funder-report-approval-design.md) (RPT-APPROVE1)
 
-### Phase: Multi-Agency Scaling
+### Phase: Multi-Agency Scaling — start after first single-tenant agency is live (see tasks/design-rationale/multi-tenancy.md)
 
-- [ ] Integrate django-tenants for schema-per-tenant multi-tenancy — PostgreSQL backend, shared/tenant app split, tenant model, domain model (see tasks/multi-tenancy-implementation-plan.md, Tasks 0-2) — (MT-CORE1)
-- [ ] Implement per-tenant encryption keys — key table in shared schema, encrypted by master key, update encryption.py (see plan Task 3) — (MT-ENCRYPT1)
-- [ ] Create consortium data model — Consortium, ConsortiumMembership, ProgramSharing, PublishedReport with program-level sharing granularity (see plan Task 4) — (MT-CONSORT1)
-- [ ] Add consent_to_aggregate_reporting field and audit tenant_schema column (see plan Tasks 5-6) — (MT-CONSENT1)
-- [ ] Validate existing features across tenant schemas — update test infrastructure, fix tenant-related test failures (see plan Tasks 7-8) — (MT-VALIDATE1)
+- [ ] Integrate django-tenants for schema-per-tenant multi-tenancy — PostgreSQL backend, shared/tenant app split, tenant model, domain model (see tasks/multi-tenancy-implementation-plan.md, Tasks 0-2) — PB (MT-CORE1)
+- [ ] Implement per-tenant encryption keys — key table in shared schema, encrypted by master key, update encryption.py (see plan Task 3) — PB (MT-ENCRYPT1)
+- [ ] Create consortium data model — Consortium, ConsortiumMembership, ProgramSharing, PublishedReport with program-level sharing granularity (see plan Task 4) — PB, GK reviews data model (MT-CONSORT1)
+- [ ] Add consent_to_aggregate_reporting field and audit tenant_schema column (see plan Tasks 5-6) — PB (MT-CONSENT1)
+- [ ] Validate existing features across tenant schemas — update test infrastructure, fix tenant-related test failures (see plan Tasks 7-8) — PB (MT-VALIDATE1)
 - [ ] Build deploy script to automate Phase 2 infrastructure provisioning — Azure resources, env vars, migrations, output a URL (plan: docs/plans/2026-02-20-deploy-script-design.md) (DEPLOY-SCRIPT1)
 - [ ] Define managed service model — who handles infrastructure, backups, updates, support tiers, funding model (see tasks/managed-service-model.md) (OPS-MANAGED1)
 - [ ] Build cross-agency reporting API — standardised endpoint per instance for [funder partner] to consume published reports (plan: docs/plans/2026-02-20-cross-agency-reporting-api-design.md) (SCALE-API1)
