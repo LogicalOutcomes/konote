@@ -909,6 +909,18 @@ class ExecutiveDashboardExportTest(TestCase):
         content = resp.content.decode()
         self.assertIn("Prog A", content)
 
+    def test_anonymous_user_redirected_export(self):
+        """Unauthenticated users are redirected to login on export."""
+        resp = self.http.get("/participants/executive/export/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/login/", resp.url)
+
+    def test_anonymous_user_redirected_dashboard(self):
+        """Unauthenticated users are redirected to login on dashboard."""
+        resp = self.http.get("/participants/executive/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/login/", resp.url)
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class StatisticalDisclosureGuardTest(TestCase):
