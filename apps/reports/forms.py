@@ -10,7 +10,11 @@ from apps.programs.models import Program
 from apps.plans.models import MetricDefinition
 from .demographics import get_demographic_field_choices
 from .models import Partner, ReportTemplate
-from .utils import get_fiscal_year_choices, get_fiscal_year_range, get_current_fiscal_year, is_aggregate_only_user
+from .utils import (
+    get_fiscal_year_choices, get_fiscal_year_range, get_current_fiscal_year,
+    get_quarter_choices, get_quarter_range,
+    is_aggregate_only_user,
+)
 
 
 class ExportRecipientMixin:
@@ -80,11 +84,11 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         empty_label=_("— Select a program —"),
     )
 
-    # Fiscal year quick-select (optional — overrides manual dates when selected)
+    # Period quick-select (optional — overrides manual dates when selected)
     fiscal_year = forms.ChoiceField(
         required=False,
-        label=_("Fiscal Year (April-March)"),
-        help_text=_("Select a fiscal year to auto-fill dates, or leave blank for custom range."),
+        label=_("Period"),
+        help_text=_("Select a fiscal year or quarter to auto-fill dates, or leave blank for custom range."),
     )
 
     metrics = forms.ModelMultipleChoiceField(
@@ -133,9 +137,13 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         if user:
             from .utils import get_manageable_programs
             self.fields["program"].queryset = get_manageable_programs(user)
-        # Build fiscal year choices dynamically (includes blank option)
-        fy_choices = [("", _("— Custom date range —"))] + get_fiscal_year_choices()
-        self.fields["fiscal_year"].choices = fy_choices
+        # Build period choices: blank + fiscal years + quarters (as optgroups)
+        period_choices = [
+            ("", _("— Custom date range —")),
+            (_("Fiscal Years"), get_fiscal_year_choices()),
+            (_("Quarters"), get_quarter_choices()),
+        ]
+        self.fields["fiscal_year"].choices = period_choices
         # Build demographic grouping choices dynamically
         self.fields["group_by"].choices = get_demographic_field_choices()
         # Scope report templates to programs the user can access (through partner)
@@ -181,15 +189,28 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         date_from = cleaned.get("date_from")
         date_to = cleaned.get("date_to")
 
-        # If fiscal year is selected, use those dates instead of manual entry
+        # If a period preset is selected, use those dates instead of manual entry
         if fiscal_year:
-            try:
-                fy_start_year = int(fiscal_year)
-                date_from, date_to = get_fiscal_year_range(fy_start_year)
-                cleaned["date_from"] = date_from
-                cleaned["date_to"] = date_to
-            except (ValueError, TypeError):
-                raise forms.ValidationError(_("Invalid fiscal year selection."))
+            if fiscal_year.startswith("Q"):
+                # Quarter preset, e.g. "Q1-2025"
+                try:
+                    q_str, fy_str = fiscal_year.split("-")
+                    q_num = int(q_str[1:])
+                    fy_start_year = int(fy_str)
+                    date_from, date_to = get_quarter_range(q_num, fy_start_year)
+                    cleaned["date_from"] = date_from
+                    cleaned["date_to"] = date_to
+                except (ValueError, IndexError, KeyError):
+                    raise forms.ValidationError(_("Invalid quarter selection."))
+            else:
+                # Fiscal year preset
+                try:
+                    fy_start_year = int(fiscal_year)
+                    date_from, date_to = get_fiscal_year_range(fy_start_year)
+                    cleaned["date_from"] = date_from
+                    cleaned["date_to"] = date_to
+                except (ValueError, TypeError):
+                    raise forms.ValidationError(_("Invalid fiscal year selection."))
         else:
             # Manual date entry — both fields required
             if not date_from:
