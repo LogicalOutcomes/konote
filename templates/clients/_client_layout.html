@@ -38,6 +38,7 @@
                 <li class="dropdown-divider" role="separator"></li>
                 {% endif %}
                 {% if can_log_comm %}
+                <li role="none"><a role="menuitem" href="{% url 'notes:quick_note_create' client_id=client.pk %}">{% trans "Log Communication" %}<small>{% trans "Record a phone call, visit, or message" %}</small></a></li>
                 <li role="none"><a role="menuitem" href="{% url 'communications:compose_email' client_id=client.pk %}">{% trans "Send Email" %}</a></li>
                 {% endif %}
                 {% if can_view_metrics %}
