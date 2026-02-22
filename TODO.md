@@ -47,7 +47,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 - [ ] **UX walkthrough** — run after UI changes. In Claude Code: `pytest tests/ux_walkthrough/ -v`, then review `tasks/ux-review-latest.md` and add fixes to TODO (UX-WALK1)
 - [ ] **Code review** — run every 2–4 weeks or before a production deploy. Open Claude Code and paste the review prompt from [tasks/code-review-process.md](tasks/code-review-process.md) (REV1)
-- [ ] **Full QA suite** — run after major releases or substantial UI changes. In Claude Code: `/run-scenario-server`, then `/capture-page-states` in konote-app; `/run-scenarios`, then `/run-page-audit` in konote-qa-scenarios (QA-FULL1)
+- [ ] **Full QA suite** — run after major releases or substantial UI changes. Two pipelines (A then B), five sessions total — see [tasks/recurring-tasks.md](tasks/recurring-tasks.md) for full steps (QA-FULL1)
 - [ ] **French translation spot-check** — have a French speaker review key screens. Run `python manage.py check_translations` to verify .po file coverage (I18N-REV1)
 - [ ] **Redeploy to Railway** — after merging to main. Push to `main` and Railway auto-deploys (OPS-RAIL1)
 
@@ -113,9 +113,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ### Phase: Surveys QA Scenarios
 
 - [x] Add survey demo data to seed_demo_data — 3 surveys, trigger rule, shareable link, assignments, responses — 2026-02-21 (QA-SURV1)
-- [ ] Create CSV test fixture for survey import at tests/fixtures/sample-survey-import.csv (QA-SURV2)
+- [x] Create CSV test fixture for survey import at tests/fixtures/sample-survey-import.csv — 2026-02-21 (QA-SURV2)
 - [x] Write 8 scenario YAML files (SCN-110 through SCN-117) in konote-qa-scenarios repo — 2026-02-21 (QA-SURV3)
-- [ ] Add test methods for survey scenarios to tests/scenario_eval/test_scenario_eval.py (QA-SURV4)
+- [x] Add test methods for survey scenarios to tests/scenario_eval/test_scenario_eval.py — 2026-02-21 (QA-SURV4)
 - [ ] Update page-inventory.yaml in qa-scenarios repo with survey pages (QA-SURV5)
 
 ### Phase: Surveys Future Work
