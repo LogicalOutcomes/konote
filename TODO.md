@@ -116,7 +116,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Create CSV test fixture for survey import at tests/fixtures/sample-survey-import.csv — 2026-02-21 (QA-SURV2)
 - [x] Write 8 scenario YAML files (SCN-110 through SCN-117) in konote-qa-scenarios repo — 2026-02-21 (QA-SURV3)
 - [x] Add test methods for survey scenarios to tests/scenario_eval/test_scenario_eval.py — 2026-02-21 (QA-SURV4)
-- [ ] Update page-inventory.yaml in qa-scenarios repo with survey pages (QA-SURV5)
+- [x] Update page-inventory.yaml in qa-scenarios repo with survey pages — 2026-02-21 (QA-SURV5)
 
 ### Phase: Surveys Future Work
 
