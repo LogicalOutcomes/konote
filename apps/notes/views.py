@@ -25,7 +25,9 @@ from apps.auth_app.decorators import program_role_required, requires_permission
 from apps.clients.models import ClientFile
 from apps.plans.models import PlanTarget, PlanTargetMetric
 from apps.programs.access import (
+    apply_consent_filter,
     build_program_display_context,
+    check_note_consent_or_403,
     get_author_program,
     get_client_or_403,
     get_program_from_client,
@@ -223,9 +225,9 @@ def note_list(request, client_id):
     )
 
     # PHIPA: consent filter narrows to viewing program if sharing is off
-    from apps.programs.access import apply_consent_filter
     notes, consent_viewing_program = apply_consent_filter(
         notes, client, request.user, user_program_ids,
+        active_program_ids=active_ids,
     )
 
     # Filters — interaction type replaces the old quick/full type filter
@@ -719,6 +721,10 @@ def note_detail(request, note_id):
             % {"client": request.get_term("client", _("participant"))}
         )
 
+        # PHIPA: verify this note is visible under consent rules
+        active_ids = getattr(request, "active_program_ids", None)
+        check_note_consent_or_403(note, client, request.user, active_ids)
+
         # Filter out any orphaned entries (plan_target deleted outside Django)
         target_entries = list(
             ProgressNoteTarget.objects.filter(progress_note=note, plan_target__isnull=False)
@@ -769,6 +775,11 @@ def note_summary(request, note_id):
             _("You do not have access to this %(client)s.")
             % {"client": request.get_term("client", _("participant"))}
         )
+
+        # PHIPA: verify this note is visible under consent rules
+        active_ids = getattr(request, "active_program_ids", None)
+        check_note_consent_or_403(note, client, request.user, active_ids)
+
         return render(request, "notes/_note_summary.html", {"note": note, "client": client})
     except Exception as e:
         logger.exception(
