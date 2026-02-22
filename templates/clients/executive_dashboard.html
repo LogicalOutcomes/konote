@@ -132,6 +132,11 @@
                 <hr>
 
                 {# Engagement & outcomes #}
+                {% if stat.suppress_pct %}
+                <div class="metric-row">
+                    <span class="metric-label secondary"><small>{% trans "Percentages hidden (fewer than 5 active participants)" %}</small></span>
+                </div>
+                {% endif %}
                 {% if stat.engagement_quality is not None %}
                 <div class="metric-row {% if stat.engagement_quality >= 70 %}metric-success{% elif stat.engagement_quality >= 40 %}metric-neutral{% else %}metric-warning{% endif %}">
                     <span class="metric-label">{% trans "Engagement Quality" %}</span>

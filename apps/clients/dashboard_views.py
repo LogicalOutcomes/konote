@@ -15,6 +15,11 @@ from django.shortcuts import render
 from django.utils import timezone
 
 
+# Minimum active participants before percentage metrics are shown.
+# Below this threshold, percentages could identify individuals.
+SMALL_PROGRAM_THRESHOLD = 5
+
+
 # ---------------------------------------------------------------------------
 # Metric helper functions (single-program versions, kept for unit tests)
 # ---------------------------------------------------------------------------
@@ -945,25 +950,31 @@ def executive_dashboard(request):
         pid = program.pk
         es = enrolment_stats.get(pid, {})
 
+        active_count = es.get("active", 0)
+        # Suppress percentage metrics for small programs to prevent
+        # statistical disclosure (identifying individuals from aggregates).
+        suppress_pct = active_count < SMALL_PROGRAM_THRESHOLD
+
         stat = {
             "program": program,
             "total": es.get("total", 0),
-            "active": es.get("active", 0),
+            "active": active_count,
             "new_this_month": es.get("new_this_month", 0),
             "notes_this_week": notes_week_map.get(pid, 0),
-            "engagement_quality": engagement_map.get(pid),
-            "goal_completion": goal_map.get(pid),
+            "engagement_quality": None if suppress_pct else engagement_map.get(pid),
+            "goal_completion": None if suppress_pct else goal_map.get(pid),
             "intake_pending": intake_map.get(pid, 0),
+            "suppress_pct": suppress_pct,
         }
 
         if show_events:
-            stat["no_show_rate"] = no_show_map.get(pid)
+            stat["no_show_rate"] = None if suppress_pct else no_show_map.get(pid)
 
         if pid in programs_with_groups:
-            stat["group_attendance"] = group_att_map.get(pid)
+            stat["group_attendance"] = None if suppress_pct else group_att_map.get(pid)
 
         if show_portal:
-            stat["portal_adoption"] = portal_map.get(pid)
+            stat["portal_adoption"] = None if suppress_pct else portal_map.get(pid)
 
         sugg = suggestion_map.get(pid, {})
         stat["suggestion_total"] = sugg.get("total", 0)
@@ -1061,16 +1072,18 @@ def executive_dashboard_export(request):
     for program in filtered_programs:
         pid = program.pk
         es = enrolment_stats.get(pid, {})
-        eng = engagement_map.get(pid)
-        goal = goal_map.get(pid)
+        active_count = es.get("active", 0)
+        suppress_pct = active_count < SMALL_PROGRAM_THRESHOLD
+        eng = None if suppress_pct else engagement_map.get(pid)
+        goal = None if suppress_pct else goal_map.get(pid)
         writer.writerow([
             program.translated_name,
             es.get("total", 0),
-            es.get("active", 0),
+            active_count,
             es.get("new_this_month", 0),
             notes_week_map.get(pid, 0),
-            f"{eng}%" if eng is not None else "",
-            f"{goal}%" if goal is not None else "",
+            f"{eng}%" if eng is not None else ("suppressed" if suppress_pct else ""),
+            f"{goal}%" if goal is not None else ("suppressed" if suppress_pct else ""),
         ])
 
     # Audit log entry for export
