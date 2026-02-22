@@ -10,7 +10,10 @@ urlpatterns = [
     # Outcome Insights
     path("insights/", insights_views.program_insights, name="program_insights"),
     path("participant/<int:client_id>/insights/", insights_views.client_insights_partial, name="client_insights"),
-    # Exports
+    # Template-driven report generation (DRR: reporting-architecture.md)
+    path("generate/", views.generate_report_form, name="generate_report"),
+    path("generate/period-options/", views.template_period_options, name="template_period_options"),
+    # Exports (ad-hoc + legacy funder report)
     path("export/", views.export_form, name="export_form"),
     path("funder-report/", views.funder_report_form, name="funder_report"),
     path("participant/<int:client_id>/analysis/", views.client_analysis, name="client_analysis"),

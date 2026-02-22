@@ -38,7 +38,7 @@ from .demographics import (
 )
 from .models import DemographicBreakdown, ReportTemplate, SecureExportLink
 from .suppression import suppress_small_cell
-from .forms import FunderReportForm, MetricExportForm
+from .forms import FunderReportForm, MetricExportForm, TemplateExportForm, build_period_choices
 from .aggregations import aggregate_metrics, _stats_from_list
 from .utils import (
     can_create_export,
@@ -1229,6 +1229,160 @@ def funder_report_form(request):
         "is_pdf": export_format == "pdf",
     })
 
+
+
+# ─── Template-driven report generation (DRR: reporting-architecture.md) ─────
+
+
+@login_required
+@requires_permission("report.funder_report", allow_admin=True)
+def generate_report_form(request):
+    """
+    Template-driven report generation.
+
+    GET  — display the form with template dropdown.
+    POST — validate, generate report, create secure download link.
+
+    Access: admin, program_manager, executive (their programmes).
+    Enforced by @requires_permission("report.funder_report").
+    """
+    if request.method != "POST":
+        form = TemplateExportForm(user=request.user)
+        has_templates = form.fields["report_template"].queryset.exists()
+        return render(request, "reports/export_template_driven.html", {
+            "form": form,
+            "has_templates": has_templates,
+        })
+
+    form = TemplateExportForm(request.POST, user=request.user)
+    if not form.is_valid():
+        has_templates = form.fields["report_template"].queryset.exists()
+        return render(request, "reports/export_template_driven.html", {
+            "form": form,
+            "has_templates": has_templates,
+        })
+
+    template = form.cleaned_data["report_template"]
+    date_from = form.cleaned_data["date_from"]
+    date_to = form.cleaned_data["date_to"]
+    period_label = form.cleaned_data.get("period_label", f"{date_from} to {date_to}")
+    export_format = form.cleaned_data["format"]
+    recipient = form.get_recipient_display()
+
+    from .export_engine import generate_template_report
+    try:
+        content, filename, client_count = generate_template_report(
+            template=template,
+            date_from=date_from,
+            date_to=date_to,
+            period_label=period_label,
+            user=request.user,
+            export_format=export_format,
+            request=request,
+        )
+    except Exception:
+        logger.exception("Failed to generate template report")
+        from django.contrib import messages
+        messages.error(
+            request,
+            _("Something went wrong generating the report. Please try again."),
+        )
+        return render(request, "reports/export_template_driven.html", {
+            "form": form,
+            "has_templates": True,
+        })
+
+    link = _save_export_and_create_link(
+        request=request,
+        content=content,
+        filename=filename,
+        export_type="funder_report",
+        client_count=client_count,
+        includes_notes=False,
+        recipient=recipient,
+        filters_dict={
+            "template": template.name,
+            "partner": template.partner.name,
+            "period": period_label,
+            "date_from": str(date_from),
+            "date_to": str(date_to),
+        },
+        contains_pii=False,
+    )
+
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=request.user.display_name,
+        action="export",
+        resource_type="template_report",
+        ip_address=_get_client_ip(request),
+        is_demo_context=getattr(request.user, "is_demo", False),
+        metadata={
+            "template": template.name,
+            "partner": template.partner.name,
+            "period": period_label,
+            "date_from": str(date_from),
+            "date_to": str(date_to),
+            "format": export_format,
+            "recipient": recipient,
+            "secure_link_id": str(link.id),
+        },
+    )
+
+    download_url = request.build_absolute_uri(
+        reverse("reports:download_export", args=[link.id])
+    )
+    download_path = reverse("reports:download_export", args=[link.id])
+    return render(request, "reports/export_link_created.html", {
+        "link": link,
+        "download_url": download_url,
+        "download_path": download_path,
+        "program_name": template.partner.translated_name,
+        "is_pdf": export_format == "pdf",
+    })
+
+
+@login_required
+@requires_permission("report.funder_report", allow_admin=True)
+def template_period_options(request):
+    """
+    HTMX endpoint: return period dropdown + template details for a selected template.
+
+    Called when the user changes the template dropdown on the generate
+    report form. Returns an HTML fragment injected into #period-panel.
+    """
+    template_id = request.GET.get("template_id")
+    if not template_id:
+        return HttpResponse("")
+
+    try:
+        template = (
+            ReportTemplate.objects
+            .select_related("partner")
+            .prefetch_related(
+                "report_metrics__metric_definition",
+                "breakdowns__custom_field",
+                "partner__programs",
+            )
+            .get(pk=template_id, is_active=True)
+        )
+    except ReportTemplate.DoesNotExist:
+        return HttpResponse("")
+
+    period_choices = build_period_choices(template)
+    programs = template.partner.get_programs()
+    metrics = template.report_metrics.all().order_by("sort_order")
+    breakdowns = template.breakdowns.all().order_by("sort_order")
+
+    return render(request, "reports/_period_options.html", {
+        "template": template,
+        "period_choices": period_choices,
+        "programs": programs,
+        "metrics": metrics,
+        "breakdowns": breakdowns,
+        "is_custom_period": template.period_type == "custom",
+    })
 
 
 # ─── Secure link views ──────────────────────────────────────────────
