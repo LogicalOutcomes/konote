@@ -199,7 +199,17 @@
         {% endfor %}
     </fieldset>
 
-    {# Metric checkboxes #}
+    {# Consortium warning #}
+    {% if consortium_partner_name %}
+    <article aria-label="{% trans 'Consortium notice' %}" style="background: var(--kn-info-bg); border-left: 4px solid var(--kn-info-fg); padding: 1rem; margin-bottom: 1rem;">
+        <strong>{% trans "Consortium reporting" %}</strong>
+        <p style="margin-bottom: 0;">
+            {% blocktrans with partner=consortium_partner_name %}This program reports to {{ partner }}. For partner-compliant reports, use the <a href="/reports/generate/">template-driven report</a> instead.{% endblocktrans %}
+        </p>
+    </article>
+    {% endif %}
+
+    {# Metric checkboxes — consortium-required metrics shown as locked #}
     <fieldset>
         <legend>{{ form.metrics.label }}</legend>
         {% if form.metrics.errors %}
@@ -211,10 +221,19 @@
             <a href="#" id="deselect-all-metrics" class="secondary">{% trans "Deselect all" %}</a>
         </div>
         {% for checkbox in form.metrics %}
+        {% if checkbox.data.value in consortium_locked_metric_strings %}
+        <label title="{% blocktrans with partner=consortium_partner_name %}Required by {{ partner }} reporting standards{% endblocktrans %}">
+            <input type="checkbox" checked disabled>
+            <input type="hidden" name="metrics" value="{{ checkbox.data.value }}">
+            {{ checkbox.choice_label }}
+            <small style="color: var(--pico-muted-color);">({% trans "required" %})</small>
+        </label>
+        {% else %}
         <label>
             {{ checkbox.tag }}
             {{ checkbox.choice_label }}
         </label>
+        {% endif %}
         {% endfor %}
     </fieldset>
 

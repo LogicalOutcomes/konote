@@ -350,6 +350,9 @@ def export_form(request):
             "delay_minutes": delay_minutes,
             "template_preview_items": _template_previews(form),
             "show_template_hint": hint,
+            "consortium_locked_metrics": form.consortium_locked_metrics,
+            "consortium_locked_metric_strings": {str(m) for m in form.consortium_locked_metrics},
+            "consortium_partner_name": form.consortium_partner_name,
         })
 
     form = MetricExportForm(request.POST, user=request.user)
@@ -362,6 +365,9 @@ def export_form(request):
             "delay_minutes": delay_minutes,
             "template_preview_items": _template_previews(form),
             "show_template_hint": hint,
+            "consortium_locked_metrics": form.consortium_locked_metrics,
+            "consortium_locked_metric_strings": {str(m) for m in form.consortium_locked_metrics},
+            "consortium_partner_name": form.consortium_partner_name,
         })
 
     program = form.cleaned_data["program"]
