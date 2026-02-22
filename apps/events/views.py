@@ -14,6 +14,7 @@ from django.utils.translation import gettext as _
 
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.programs.access import (
+    apply_consent_filter,
     build_program_display_context,
     get_author_program,
     get_client_or_403,
@@ -172,6 +173,12 @@ def event_list(request, client_id):
 
     notes = ProgressNote.objects.filter(client_file=client).filter(program_q).select_related("author", "author_program")
 
+    # PHIPA: apply consent filter to notes in the timeline
+    notes, consent_viewing_program = apply_consent_filter(
+        notes, client, request.user, user_program_ids,
+        active_program_ids=active_ids,
+    )
+
     # Communications — filter by user's accessible programs (same as events/notes)
     communications = (
         Communication.objects.filter(client_file=client)
@@ -227,6 +234,7 @@ def event_list(request, client_id):
         "has_more": has_more,
         "next_offset": offset + page_size,
         "is_append": offset > 0,
+        "consent_viewing_program": consent_viewing_program,
     }
     # HTMX partial response — return just the timeline entries for filter/pagination
     if request.headers.get("HX-Request") and "filter" in request.GET:
