@@ -571,6 +571,31 @@ def _batch_suggestion_counts(filtered_program_ids):
 # Feature flags (reuse cached context processor pattern)
 # ---------------------------------------------------------------------------
 
+def _parse_date_range(request, now):
+    """Parse start_date query param into an aware datetime for filtering.
+
+    Returns (month_start, custom_start_date) where month_start is an aware
+    datetime and custom_start_date is a date object for template display.
+    """
+    start_date_str = request.GET.get("start_date", "")
+    try:
+        custom_start = datetime.date.fromisoformat(start_date_str) if start_date_str else None
+    except ValueError:
+        custom_start = None
+
+    default_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    if custom_start:
+        month_start = timezone.make_aware(
+            datetime.datetime.combine(custom_start, datetime.time.min)
+        )
+    else:
+        month_start = default_month_start
+        custom_start = month_start.date()
+
+    return month_start, custom_start
+
+
 def _get_feature_flags():
     """Return feature flags dict, using cache if available."""
     flags = cache.get("feature_toggles")
@@ -828,38 +853,11 @@ def executive_dashboard(request):
     # Base client queryset (respects demo/real separation)
     base_clients = get_client_queryset(request.user)
 
-    # Time boundaries — support custom date range via query params (BUG-9/10)
+    # Time boundaries — support custom start date via query param (BUG-9/10)
     now = timezone.now()
     today = now.date()
-    default_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
 
-    start_date_str = request.GET.get("start_date", "")
-    end_date_str = request.GET.get("end_date", "")
-    try:
-        custom_start = datetime.date.fromisoformat(start_date_str) if start_date_str else None
-    except ValueError:
-        custom_start = None
-    try:
-        custom_end = datetime.date.fromisoformat(end_date_str) if end_date_str else None
-    except ValueError:
-        custom_end = None
-
-    if custom_start:
-        month_start = timezone.make_aware(
-            datetime.datetime.combine(custom_start, datetime.time.min)
-        )
-    else:
-        month_start = default_month_start
-        custom_start = month_start.date()
-
-    if custom_end:
-        # Use end of day for the end date
-        period_end = timezone.make_aware(
-            datetime.datetime.combine(custom_end, datetime.time.max)
-        )
-    else:
-        period_end = now
-        custom_end = today
+    month_start, custom_start = _parse_date_range(request, now)
 
     week_start = now - timedelta(days=now.weekday())
 
@@ -1002,7 +1000,6 @@ def executive_dashboard(request):
         "total_suggestions_important": total_suggestions_important,
         "selected_program_id": selected_program_id,
         "start_date": custom_start,
-        "end_date": custom_end,
         "data_refreshed_at": now,
         "nav_active": "executive",
     })
@@ -1012,19 +1009,22 @@ def executive_dashboard(request):
 def executive_dashboard_export(request):
     """Export executive dashboard program stats as CSV (BUG-9/10)."""
     import csv
-    from django.http import HttpResponse
+    from django.http import HttpResponse, HttpResponseForbidden
     from apps.programs.models import Program, UserProgramRole
-    from apps.clients.models import ClientProgramEnrolment
     from .views import get_client_queryset
 
-    flags = _get_feature_flags()
+    # Role gate: only executives, PMs, and admins may export
+    user_role = getattr(request, "user_program_role", None)
+    is_admin = getattr(request.user, "is_admin", False)
+    if user_role not in ("executive", "program_manager") and not is_admin:
+        return HttpResponseForbidden("Access restricted to management roles.")
+
     user_program_ids = list(
         UserProgramRole.objects.filter(
             user=request.user, status="active"
         ).values_list("program_id", flat=True)
     )
     if not user_program_ids:
-        from django.http import HttpResponseForbidden
         return HttpResponseForbidden("No programs assigned.")
 
     programs = Program.objects.filter(pk__in=user_program_ids, status="active")
@@ -1041,23 +1041,7 @@ def executive_dashboard_export(request):
     filtered_programs = programs.filter(pk=selected_program_id) if selected_program_id else programs
 
     now = timezone.now()
-    default_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-
-    start_date_str = request.GET.get("start_date", "")
-    end_date_str = request.GET.get("end_date", "")
-    try:
-        custom_start = datetime.date.fromisoformat(start_date_str) if start_date_str else None
-    except ValueError:
-        custom_start = None
-    try:
-        custom_end = datetime.date.fromisoformat(end_date_str) if end_date_str else None
-    except ValueError:
-        custom_end = None
-
-    month_start = (
-        timezone.make_aware(datetime.datetime.combine(custom_start, datetime.time.min))
-        if custom_start else default_month_start
-    )
+    month_start, _ = _parse_date_range(request, now)
     week_start = now - timedelta(days=now.weekday())
 
     base_clients = get_client_queryset(request.user)
@@ -1088,6 +1072,23 @@ def executive_dashboard_export(request):
             f"{eng}%" if eng is not None else "",
             f"{goal}%" if goal is not None else "",
         ])
+
+    # Audit log entry for export
+    from apps.audit.models import AuditLog
+    AuditLog.objects.using("audit").create(
+        event_timestamp=now,
+        user_id=request.user.pk,
+        user_display=getattr(request.user, "display_name", str(request.user)),
+        action="export",
+        resource_type="executive_dashboard",
+        resource_id=0,
+        is_demo_context=getattr(request.user, "is_demo", False),
+        metadata={
+            "format": "csv",
+            "programs": filtered_program_ids,
+            "start_date": str(month_start.date()),
+        },
+    )
 
     return response
 
