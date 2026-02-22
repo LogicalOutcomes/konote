@@ -311,3 +311,59 @@ class CrossProgramConsentTest(TestCase):
         resp = self.client.get(f"/notes/participant/{self.shared_client.pk}/")
         self.assertEqual(resp.status_code, 200)
         self.assertIsNone(resp.context.get("consent_viewing_program"))
+
+    # ── PHIPA-ENFORCE1: direct URL and timeline consent tests ──────────
+
+    def _get_viewing_and_restricted_notes(self):
+        """Determine which note is in the viewing program and which is restricted.
+
+        get_author_program picks the highest-ranked shared program. Since
+        both roles are "staff", the result depends on DB ordering. This
+        helper makes tests agnostic about which program is chosen.
+        """
+        from apps.programs.access import get_author_program
+        viewing = get_author_program(self.multi_staff, self.shared_client)
+        if viewing.pk == self.program_a.pk:
+            return self.note_a, self.note_b
+        return self.note_b, self.note_a
+
+    def test_direct_url_restricted_note_returns_403(self):
+        """Direct URL to a note from another program when restricted -> 403."""
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+        _, restricted_note = self._get_viewing_and_restricted_notes()
+        resp = self.client.get(f"/notes/{restricted_note.pk}/")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_direct_url_allowed_note_returns_200(self):
+        """Direct URL to a note from viewing program when restricted -> 200."""
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+        allowed_note, _ = self._get_viewing_and_restricted_notes()
+        resp = self.client.get(f"/notes/{allowed_note.pk}/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_null_program_note_accessible_via_direct_url(self):
+        """Legacy note (null author_program) always accessible regardless of consent."""
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+        resp = self.client.get(f"/notes/{self.note_null.pk}/")
+        self.assertEqual(resp.status_code, 200)
+
+    def test_event_timeline_respects_consent(self):
+        """Event timeline only shows notes from viewing program when restricted."""
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+        resp = self.client.get(f"/events/participant/{self.shared_client.pk}/")
+        self.assertEqual(resp.status_code, 200)
+        note_entries = [e for e in resp.context["timeline"] if e["type"] == "note"]
+        note_ids = {e["obj"].pk for e in note_entries}
+        # Should see one program's note + null note, but not both programs
+        self.assertIn(self.note_null.pk, note_ids)
+        has_a = self.note_a.pk in note_ids
+        has_b = self.note_b.pk in note_ids
+        self.assertTrue(has_a != has_b, "Timeline should show only one program's notes")
