@@ -1,11 +1,11 @@
 {% extends "base.html" %}
 {% load i18n %}
 
-{% block title %}{% blocktrans with target=term.target|default:"Goal" %}Add {{ target }}{% endblocktrans %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
+{% block title %}{% trans "Add a Goal" %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
 
 {% block content %}
 <hgroup>
-    <h1>{% blocktrans with target=term.target|default:"Goal" %}Add {{ target }}{% endblocktrans %}</h1>
+    <h1>{% trans "Add a Goal" %}</h1>
     <p>{{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
 
@@ -339,7 +339,7 @@
 
         {# ── Submit ── #}
         <div role="group">
-            <button type="submit">{% blocktrans with target=term.target|default:"Goal" %}Add {{ target }}{% endblocktrans %}</button>
+            <button type="submit">{% trans "Add a Goal" %}</button>
             <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
         </div>
     </div>
@@ -548,7 +548,7 @@
 
     {# ── Submit ── #}
     <div role="group">
-        <button type="submit">{% blocktrans with target=term.target|default:"Goal" %}Add {{ target }}{% endblocktrans %}</button>
+        <button type="submit">{% trans "Add a Goal" %}</button>
         <a href="{% url 'plans:plan_view' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 

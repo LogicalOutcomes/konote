@@ -457,14 +457,18 @@ def my_messages(request):
         ).values_list("client_file_id", flat=True)
     )
 
-    staff_messages = StaffMessage.objects.filter(
+    user_messages_qs = StaffMessage.objects.filter(
         client_file_id__in=accessible_client_ids,
-        status="unread",
     ).filter(
         db_models.Q(for_user=request.user) | db_models.Q(for_user__isnull=True)
+    )
+
+    staff_messages = user_messages_qs.filter(
+        status="unread",
     ).select_related("left_by", "for_user", "client_file").order_by("-is_urgent", "-created_at")
 
     return render(request, "communications/my_messages.html", {
         "staff_messages": staff_messages,
+        "has_any_messages": user_messages_qs.exists(),
         "nav_active": "messages",
     })
