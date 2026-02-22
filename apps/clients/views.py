@@ -1009,7 +1009,13 @@ def client_search(request):
 
     results.sort(key=lambda c: c["name"].lower())
 
-    context = {"results": results[:50], "query": query}
+    # IMPROVE-2: pass can_create so search results can show "Create New" prompt
+    from apps.auth_app.decorators import _get_user_highest_role
+    from apps.auth_app.constants import ROLE_RANK
+    user_role = _get_user_highest_role(request.user)
+    can_create = ROLE_RANK.get(user_role, 0) >= ROLE_RANK["staff"]
+
+    context = {"results": results[:50], "query": query, "can_create": can_create}
 
     # HTMX request — return only the partial
     if request.headers.get("HX-Request"):
