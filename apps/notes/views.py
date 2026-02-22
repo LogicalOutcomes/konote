@@ -703,7 +703,7 @@ def note_detail(request, note_id):
                 "Permission denied in note_detail for user=%s note=%s client=%s",
                 request.user.pk, note_id, note.client_file_id
             )
-            return HttpResponseForbidden("You do not have access to this client.")
+            raise PermissionDenied(_("You do not have access to this participant."))
 
         # Filter out any orphaned entries (plan_target deleted outside Django)
         target_entries = list(
@@ -751,7 +751,7 @@ def note_summary(request, note_id):
                 "Permission denied in note_summary for user=%s note=%s client=%s",
                 request.user.pk, note_id, note.client_file_id
             )
-            return HttpResponseForbidden("You do not have access to this client.")
+            raise PermissionDenied(_("You do not have access to this participant."))
         return render(request, "notes/_note_summary.html", {"note": note, "client": client})
     except Exception as e:
         logger.exception(
