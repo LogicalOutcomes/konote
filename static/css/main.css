@@ -4739,13 +4739,6 @@ article[aria-label="notification"].fading-out {
 .insights-outcome-bar-fill {
     height: 100%;
     background: var(--kn-band-high);
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    padding-right: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #fff;
     border-radius: var(--kn-radius, 4px) 0 0 var(--kn-radius, 4px);
     min-width: 2.5rem;
 }

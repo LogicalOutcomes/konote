@@ -11,9 +11,7 @@ Privacy thresholds (from DRR):
 """
 import statistics
 from collections import defaultdict
-from datetime import date
-
-from django.db.models import DateTimeField, Q
+from django.db.models import DateTimeField
 from django.db.models.functions import Coalesce, TruncMonth
 
 from apps.clients.models import ClientProgramEnrolment

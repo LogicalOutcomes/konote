@@ -10,7 +10,7 @@ from django.utils.translation import gettext as _
 from django.db.models import Count
 
 from apps.auth_app.decorators import requires_permission
-from apps.programs.access import get_accessible_programs, get_client_or_403
+from apps.programs.access import get_client_or_403
 from apps.programs.models import UserProgramRole
 from apps.notes.models import (
     ProgressNote, SuggestionLink, SuggestionTheme,
