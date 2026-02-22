@@ -674,7 +674,7 @@ PROGRAM_SUGGESTIONS = {
     "Community Kitchen": [
         "It would be nice to take home extra portions for my family after cooking",
         "I'd love more recipe variety that reflects different cultural backgrounds and dietary needs",
-        "Having written materials about food safety I can review at home would help",
+        "It'd be great to get the recipes on paper so I can try them at home",
         "Could we have more options for people with dietary restrictions?",
     ],
 }
@@ -1658,6 +1658,10 @@ class Command(BaseCommand):
 
             # Add participant suggestion to ~1/3 of full notes
             if not is_quick and note_idx % 3 == 1:
+                if program_name not in PROGRAM_SUGGESTIONS:
+                    self.stdout.write(self.style.WARNING(
+                        f"    No program-specific suggestions for '{program_name}' — using defaults."
+                    ))
                 suggestions = PROGRAM_SUGGESTIONS.get(
                     program_name, _DEFAULT_SUGGESTIONS
                 )
@@ -3380,6 +3384,17 @@ class Command(BaseCommand):
 
                 # Recalculate priority from linked note priorities
                 recalculate_theme_priority(theme)
+
+        # Post-seeding check: flag any themes with zero linked suggestions
+        empty_themes = SuggestionTheme.objects.filter(
+            program__in=[p for p in programs_by_name.values() if p],
+            links__isnull=True,
+        ).values_list("name", "program__name")
+        if empty_themes:
+            for name, prog in empty_themes:
+                self.stdout.write(self.style.ERROR(
+                    f"    Theme '{name}' ({prog}) has 0 linked suggestions — keywords may have drifted."
+                ))
 
         self.stdout.write(
             f"  Suggestion themes: {theme_count} themes, {link_count} links created."
