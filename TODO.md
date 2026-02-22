@@ -191,11 +191,11 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: QA Round 7 — Tier 1 Fixes (see tasks/qa-action-plan-2026-02-21.md)
 
-- [ ] Fix language persistence — build UserLanguageMiddleware so user profile preferred_language is authoritative, not cookie/session (affects 22 scenarios) (QA-R7-BUG1)
+- [x] Fix language persistence — SafeLocaleMiddleware syncs cookie to user profile preferred_language, seed demo prefs — 2026-02-22 (QA-R7-BUG1)
 - [ ] Verify /manage/ routes cover PM self-service — check if BLOCKER-1 is a scenario YAML issue, update qa-scenarios if needed (QA-R7-BLKR1)
-- [ ] Add skip-to-content link to base template — WCAG 2.4.1 Level A requirement (QA-R7-BUG15)
-- [ ] Fix notes URL returning 404 instead of 403 for receptionist — add explicit permission check before queryset filter (QA-R7-BUG2)
-- [ ] Fix htmx:syntax:error messages on create-participant page — audit all hx-* attributes (QA-R7-BUG20)
+- [x] Add skip-to-content link to base template — already implemented, verified — 2026-02-22 (QA-R7-BUG15)
+- [x] Fix notes URL returning 404 instead of 403 for receptionist — replaced HttpResponseForbidden with PermissionDenied for styled 403 — 2026-02-22 (QA-R7-BUG2)
+- [x] Fix htmx:syntax:error messages on create-participant page — fixed hx-trigger filter placement for HTMX 2.x — 2026-02-22 (QA-R7-BUG20)
 ## Parking Lot
 
 - [ ] PIPEDA data export from client profile — "Export Data" action for Section 8 access requests, needs design for data categories and output format — GK reviews privacy workflow (QA-R7-PRIVACY1)
