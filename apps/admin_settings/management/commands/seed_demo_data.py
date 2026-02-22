@@ -646,12 +646,44 @@ PARTICIPANT_REFLECTIONS = [
     "The hardest part is still showing up but once I'm here I always feel better about things",
 ]
 
-PARTICIPANT_SUGGESTIONS = [
-    "It would help to have more evening sessions for people who work during the day",
-    "Maybe we could do a group session where people share what's working for them",
+PROGRAM_SUGGESTIONS = {
+    "Supported Employment": [
+        "It would help to have more evening sessions for people who work during the day",
+        "Maybe we could do a group session where people share what's working for them",
+        "I think having a buddy or mentor from someone who's been through the program would really help",
+        "I wish there were weekend workshops for interview practice when I'm not at work",
+    ],
+    "Housing Stability": [
+        "The landlord hasn't responded to my maintenance request in two weeks and I don't know what to do",
+        "I didn't know about my tenant rights until my worker told me — more info on eviction rules would help",
+        "It would help if someone could explain the legal process for fighting a rent increase",
+        "I wish there was a faster way to get repair issues dealt with in my building",
+    ],
+    "Youth Drop-In": [
+        "It would be cool if we had more variety in our group activities, like cooking or art",
+        "I need a quiet space to do homework before the evening program starts",
+        "I wish we could stay later on Fridays — there's nothing to do at home",
+        "Can we try some different options for activities? The same ones every week get boring",
+    ],
+    "Newcomer Connections": [
+        "I think having a buddy system would help new people feel less alone at the start",
+        "It's hard to attend sessions when I have no one to watch my children",
+        "Being paired with someone who's been here longer would make it less scary at the start",
+        "I wish there was childcare available so parents can actually participate",
+    ],
+    "Community Kitchen": [
+        "It would be nice to take home extra portions for my family after cooking",
+        "I'd love more recipe variety that reflects different cultural backgrounds and dietary needs",
+        "It'd be great to get the recipes on paper so I can try them at home",
+        "Could we have more options for people with dietary restrictions?",
+    ],
+}
+
+# Fallback for any program not in the dict above
+_DEFAULT_SUGGESTIONS = [
+    "It would help to have more flexibility in scheduling",
     "I think having a buddy system would help new people feel less alone at the start",
     "It would be nice to have some written materials I can take home and review later",
-    "I wish there was a way to check in between sessions when things get really hard",
 ]
 
 
@@ -1626,8 +1658,15 @@ class Command(BaseCommand):
 
             # Add participant suggestion to ~1/3 of full notes
             if not is_quick and note_idx % 3 == 1:
-                suggestion_idx = note_idx % len(PARTICIPANT_SUGGESTIONS)
-                note.participant_suggestion = PARTICIPANT_SUGGESTIONS[suggestion_idx]
+                if program_name not in PROGRAM_SUGGESTIONS:
+                    self.stdout.write(self.style.WARNING(
+                        f"    No program-specific suggestions for '{program_name}' — using defaults."
+                    ))
+                suggestions = PROGRAM_SUGGESTIONS.get(
+                    program_name, _DEFAULT_SUGGESTIONS
+                )
+                suggestion_idx = note_idx % len(suggestions)
+                note.participant_suggestion = suggestions[suggestion_idx]
                 note.suggestion_priority = random.choice(
                     ["noted", "worth_exploring", "important"]
                 )
@@ -3338,22 +3377,24 @@ class Command(BaseCommand):
                         linked_notes.append(note)
                         link_count += 1
 
-                # If no keyword matches, link 1-2 arbitrary notes so theme isn't empty
-                if not linked_notes and notes_with_suggestions:
-                    for fallback_note in notes_with_suggestions[:2]:
-                        if not SuggestionLink.objects.filter(
-                            theme=theme, progress_note=fallback_note
-                        ).exists():
-                            SuggestionLink.objects.create(
-                                theme=theme,
-                                progress_note=fallback_note,
-                                auto_linked=False,
-                                linked_by=author,
-                            )
-                            link_count += 1
+                if not linked_notes:
+                    self.stdout.write(self.style.WARNING(
+                        f"    Theme '{theme.name}' ({program_name}) has no keyword matches — skipping."
+                    ))
 
                 # Recalculate priority from linked note priorities
                 recalculate_theme_priority(theme)
+
+        # Post-seeding check: flag any themes with zero linked suggestions
+        empty_themes = SuggestionTheme.objects.filter(
+            program__in=[p for p in programs_by_name.values() if p],
+            links__isnull=True,
+        ).values_list("name", "program__name")
+        if empty_themes:
+            for name, prog in empty_themes:
+                self.stdout.write(self.style.ERROR(
+                    f"    Theme '{name}' ({prog}) has 0 linked suggestions — keywords may have drifted."
+                ))
 
         self.stdout.write(
             f"  Suggestion themes: {theme_count} themes, {link_count} links created."
