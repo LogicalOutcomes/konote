@@ -562,7 +562,19 @@ def note_create(request, client_id):
                 except Exception:
                     logger.exception("Auto-link failed for note %s", note.pk)
 
-            messages.success(request, _("Progress note saved."))
+            # UX-POSTSAVE1: Enhanced success message with target/metric counts
+            saved_targets = ProgressNoteTarget.objects.filter(progress_note=note).count()
+            saved_metrics = MetricValue.objects.filter(progress_note_target__progress_note=note).count()
+            parts = [_("Progress note saved.")]
+            if saved_targets:
+                parts.append(
+                    _("%(count)d target(s) updated") % {"count": saved_targets}
+                )
+            if saved_metrics:
+                parts.append(
+                    _("%(count)d metric(s) recorded") % {"count": saved_metrics}
+                )
+            messages.success(request, " ".join(parts))
 
             # Contextual toast when a suggestion was recorded
             if form.cleaned_data.get("suggestion_priority"):
