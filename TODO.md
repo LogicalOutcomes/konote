@@ -65,7 +65,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Scoped user management for PMs — VERIFIED: admin_views.py already scopes to PM's programmes at /manage/users/ — 2026-02-22 (QA-R7-PM-USERS1)
 - [x] Scoped audit log for PMs — VERIFIED: _scoped_audit_qs() auto-scopes to PM's programmes — 2026-02-22 (QA-R7-PM-AUDIT1)
 - [x] Settings page for staff — VERIFIED: /admin/settings/ is admin-only by design, intentional — 2026-02-22 (QA-R7-ROUTE1)
-- [ ] French receptionist search + create button — skipped, likely QA scenario data issue (QA-R7-FRDESK1)
+- [x] French receptionist search + create button — BUG-5: enrol Priya in both programs; BUG-6: use permission matrix for can_create (receptionist has client.create: ALLOW) — 2026-02-22 (QA-R7-FRDESK1)
 
 ### Phase: Post-Launch Communication Enhancements
 
