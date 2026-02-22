@@ -14398,8 +14398,8 @@ msgid ""
 "access to. Contact your program manager for details."
 msgstr ""
 "Ce participant est également inscrit dans d'autres %(programs)s auxquels "
-"vous n'avez pas accès. Communiquez avec votre gestionnaire de programme pour"
-" plus de détails."
+"vous n'avez pas accès. Communiquez avec votre gestionnaire de programme  "
+"plus de détails."
 
 msgid "(change)"
 msgstr "(changement)"
@@ -14510,3 +14510,21 @@ msgstr "rapport basé sur un modèle"
 
 msgid "— Select a report —"
 msgstr "— Sélectionner un rapport —"
+
+msgid "Access restricted to clinical staff."
+msgstr "Accès réservé au personnel clinique."
+
+msgid "Notes can only be cancelled within 24 hours."
+msgstr "Les notes ne peuvent être annulées que dans les 24 heures."
+
+msgid "You can only cancel your own notes."
+msgstr "Vous ne pouvez annuler que vos propres notes."
+
+msgid "You do not have access to this %(client)s."
+msgstr "Vous n'avez pas accès à ce ou cette %(client)s."
+
+msgid "Loading period options…"
+msgstr "Chargement des options de période…"
+
+msgid "participant"
+msgstr "participant"
