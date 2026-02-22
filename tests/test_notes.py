@@ -950,6 +950,15 @@ class CheckNoteDateTest(TestCase):
         )
         self.assertEqual(resp.status_code, 200)
 
+    def test_anonymous_user_redirected(self):
+        """Unauthenticated users are redirected to login."""
+        resp = self.http.get(
+            f"/notes/participant/{self.client_file.pk}/check-date/",
+            {"session_date": "2026-01-01"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/login/", resp.url)
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class TemplatePreviewTest(TestCase):
@@ -999,3 +1008,9 @@ class TemplatePreviewTest(TestCase):
         self.http.login(username="staff", password="pass")
         resp = self.http.get(f"/notes/template/{self.template.pk}/preview/")
         self.assertEqual(resp.status_code, 404)
+
+    def test_anonymous_user_redirected(self):
+        """Unauthenticated users are redirected to login."""
+        resp = self.http.get(f"/notes/template/{self.template.pk}/preview/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/login/", resp.url)

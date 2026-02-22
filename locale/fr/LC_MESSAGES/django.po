@@ -14399,3 +14399,11 @@ msgstr ""
 "Ce participant est également inscrit dans d'autres %(programs)s auxquels "
 "vous n'avez pas accès. Communiquez avec votre gestionnaire de programme "
 "pour plus de détails."
+
+#: templates/clients/executive_dashboard.html
+msgid "Show data from"
+msgstr "Afficher les données à partir du"
+
+#: templates/clients/executive_dashboard.html
+msgid "Percentages hidden (fewer than 5 active participants)"
+msgstr "Pourcentages masqués (moins de 5 participants actifs)"
