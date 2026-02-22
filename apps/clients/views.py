@@ -257,11 +257,11 @@ def client_list(request):
     paginator = Paginator(client_data, 25)
     page = paginator.get_page(request.GET.get("page"))
 
-    # BUG-2: Only show create buttons if user has at least "staff" role
+    # Show create button if user's role grants client.create permission
     from apps.auth_app.decorators import _get_user_highest_role
-    from apps.auth_app.constants import ROLE_RANK
+    from apps.auth_app.permissions import DENY, PERMISSIONS
     user_role = _get_user_highest_role(request.user)
-    can_create = ROLE_RANK.get(user_role, 0) >= ROLE_RANK["staff"]
+    can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
 
     context = {
         "page": page,
@@ -1019,9 +1019,9 @@ def client_search(request):
 
     # IMPROVE-2: pass can_create so search results can show "Create New" prompt
     from apps.auth_app.decorators import _get_user_highest_role
-    from apps.auth_app.constants import ROLE_RANK
+    from apps.auth_app.permissions import DENY, PERMISSIONS
     user_role = _get_user_highest_role(request.user)
-    can_create = ROLE_RANK.get(user_role, 0) >= ROLE_RANK["staff"]
+    can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
 
     context = {"results": results[:50], "query": query, "can_create": can_create}
 
