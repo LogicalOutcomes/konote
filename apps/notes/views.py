@@ -11,7 +11,6 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Count, DateTimeField
 from django.db.models.functions import Coalesce
-from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -198,7 +197,10 @@ def note_list(request, client_id):
     """Notes timeline for a client with filtering and pagination."""
     client = _get_client_or_403(request, client_id)
     if client is None:
-        raise PermissionDenied(_("You do not have access to this participant."))
+        raise PermissionDenied(
+            _("You do not have access to this %(client)s.")
+            % {"client": request.get_term("client", _("participant"))}
+        )
 
     # Get user's accessible programs (respects CONF9 context switcher)
     active_ids = getattr(request, "active_program_ids", None)
@@ -330,7 +332,10 @@ def quick_note_create(request, client_id):
     """Create a quick note for a client."""
     client = _get_client_or_403(request, client_id)
     if client is None:
-        raise PermissionDenied(_("You do not have access to this participant."))
+        raise PermissionDenied(
+            _("You do not have access to this %(client)s.")
+            % {"client": request.get_term("client", _("participant"))}
+        )
 
     # PRIV1: Check client consent before allowing note creation
     if not _check_client_consent(client):
@@ -392,7 +397,10 @@ def quick_note_inline(request, client_id):
     """
     client = _get_client_or_403(request, client_id)
     if client is None:
-        raise PermissionDenied(_("You do not have access to this participant."))
+        raise PermissionDenied(
+            _("You do not have access to this %(client)s.")
+            % {"client": request.get_term("client", _("participant"))}
+        )
 
     # Buttons mode (Cancel action restores the button state)
     if request.method == "GET" and request.GET.get("mode") == "buttons":
@@ -454,7 +462,7 @@ def template_preview(request, template_id):
 
     user_role = _get_user_highest_role(request.user)
     if ROLE_RANK.get(user_role, 0) < ROLE_RANK.get("staff", 0):
-        return HttpResponseForbidden("Access restricted to clinical staff.")
+        raise PermissionDenied(_("Access restricted to clinical staff."))
 
     template = get_object_or_404(ProgressNoteTemplate, pk=template_id, status="active")
     sections = template.sections.prefetch_related("metrics__metric_def").all()
@@ -494,7 +502,10 @@ def note_create(request, client_id):
     """Create a full structured progress note with target entries and metric values."""
     client = _get_client_or_403(request, client_id)
     if client is None:
-        raise PermissionDenied(_("You do not have access to this participant."))
+        raise PermissionDenied(
+            _("You do not have access to this %(client)s.")
+            % {"client": request.get_term("client", _("participant"))}
+        )
 
     # PRIV1: Check client consent before allowing note creation
     if not _check_client_consent(client):
@@ -703,7 +714,10 @@ def note_detail(request, note_id):
                 "Permission denied in note_detail for user=%s note=%s client=%s",
                 request.user.pk, note_id, note.client_file_id
             )
-            raise PermissionDenied(_("You do not have access to this participant."))
+            raise PermissionDenied(
+            _("You do not have access to this %(client)s.")
+            % {"client": request.get_term("client", _("participant"))}
+        )
 
         # Filter out any orphaned entries (plan_target deleted outside Django)
         target_entries = list(
@@ -751,7 +765,10 @@ def note_summary(request, note_id):
                 "Permission denied in note_summary for user=%s note=%s client=%s",
                 request.user.pk, note_id, note.client_file_id
             )
-            raise PermissionDenied(_("You do not have access to this participant."))
+            raise PermissionDenied(
+            _("You do not have access to this %(client)s.")
+            % {"client": request.get_term("client", _("participant"))}
+        )
         return render(request, "notes/_note_summary.html", {"note": note, "client": client})
     except Exception as e:
         logger.exception(
@@ -768,17 +785,20 @@ def note_cancel(request, note_id):
     note = get_object_or_404(ProgressNote, pk=note_id)
     client = _get_client_or_403(request, note.client_file_id)
     if client is None:
-        raise PermissionDenied(_("You do not have access to this participant."))
+        raise PermissionDenied(
+            _("You do not have access to this %(client)s.")
+            % {"client": request.get_term("client", _("participant"))}
+        )
 
     user = request.user
     # Permission check — program managers can cancel any note in their programs
     user_role = getattr(request, "user_program_role", None)
     if user_role != "program_manager":
         if note.author_id != user.pk:
-            return HttpResponseForbidden("You can only cancel your own notes.")
+            raise PermissionDenied(_("You can only cancel your own notes."))
         age = timezone.now() - note.created_at
         if age.total_seconds() > 86400:
-            return HttpResponseForbidden("Notes can only be cancelled within 24 hours.")
+            raise PermissionDenied(_("Notes can only be cancelled within 24 hours."))
 
     if note.status == "cancelled":
         messages.info(request, _("This note is already cancelled."))
@@ -828,7 +848,10 @@ def qualitative_summary(request, client_id):
     """Show qualitative progress summary — descriptor distribution and recent client words per target."""
     client = _get_client_or_403(request, client_id)
     if client is None:
-        raise PermissionDenied(_("You do not have access to this participant."))
+        raise PermissionDenied(
+            _("You do not have access to this %(client)s.")
+            % {"client": request.get_term("client", _("participant"))}
+        )
 
     # Get all active plan targets for this client
     targets = (
