@@ -1,0 +1,18 @@
+{% load i18n %}
+{% if existing_notes %}
+<div class="note-date-warning" role="alert">
+    <p>
+        <strong>{% trans "Heads up:" %}</strong>
+        {% blocktrans count counter=existing_notes|length %}There is already {{ counter }} note for this date.{% plural %}There are already {{ counter }} notes for this date.{% endblocktrans %}
+        {% trans "You can still save — this is just a reminder." %}
+    </p>
+    <ul>
+        {% for note in existing_notes %}
+        <li>
+            {{ note.get_interaction_type_display }}
+            {% if note.author %} — {{ note.author.display_name }}{% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}

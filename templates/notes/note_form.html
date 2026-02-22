@@ -28,9 +28,15 @@
             </div>
             <div class="field-date">
                 <label for="{{ form.session_date.id_for_label }}">{% trans "Session Date" %}</label>
-                {{ form.session_date }}
+                <input type="date" name="session_date" id="{{ form.session_date.id_for_label }}"
+                       value="{{ form.session_date.value|default:'' }}"
+                       hx-get="{% url 'notes:check_note_date' client_id=client.pk %}"
+                       hx-trigger="change delay:300ms"
+                       hx-target="#duplicate-note-warning"
+                       hx-include="[name='session_date']">
                 <small id="session-date-help">{{ form.session_date.help_text }}</small>
                 {% if form.session_date.errors %}<small class="error" id="session-date-error" role="alert">{{ form.session_date.errors.0 }}</small>{% endif %}
+                <div id="duplicate-note-warning" aria-live="polite"></div>
             </div>
         </div>
     </fieldset>

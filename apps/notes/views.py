@@ -443,6 +443,30 @@ def quick_note_inline(request, client_id):
 
 
 @login_required
+@requires_permission("note.view", _get_program_from_client)
+def check_note_date(request, client_id):
+    """HTMX endpoint: warn if a note already exists for this client on the given date."""
+    date_str = request.GET.get("session_date", "")
+    if not date_str:
+        return render(request, "notes/_note_date_warning.html", {"existing_notes": []})
+    try:
+        target_date = datetime.date.fromisoformat(date_str)
+    except ValueError:
+        return render(request, "notes/_note_date_warning.html", {"existing_notes": []})
+
+    existing = (
+        ProgressNote.objects.filter(client_file_id=client_id, status="active")
+        .annotate(
+            eff_date=Coalesce("backdate", "created_at", output_field=DateTimeField()),
+        )
+        .filter(eff_date__date=target_date)
+        .select_related("author")
+        .order_by("-created_at")[:5]
+    )
+    return render(request, "notes/_note_date_warning.html", {"existing_notes": existing})
+
+
+@login_required
 @requires_permission("note.create", _get_program_from_client)
 def note_create(request, client_id):
     """Create a full structured progress note with target entries and metric values."""
