@@ -8,6 +8,10 @@ The test framework handles database setup, test data seeding, and live server st
 
 ---
 
+## Before running: check the pipeline log
+
+Read `qa/pipeline-log.txt`. This command is Pipeline B, Step B1. Only run it after Pipeline A is fully complete (Step 3 entry exists for the current round). If the last entry says "Step 2" with no "Step 3", tell the user to run `/process-qa-report` first.
+
 ## Steps
 
 ### Step 1: Verify test files exist
