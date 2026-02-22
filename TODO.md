@@ -202,11 +202,11 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: QA Round 7 — Tier 1 Fixes (see tasks/qa-action-plan-2026-02-21.md)
 
-- [ ] Fix language persistence — build UserLanguageMiddleware so user profile preferred_language is authoritative, not cookie/session (affects 22 scenarios) (QA-R7-BUG1)
+- [x] Fix language persistence — cookie sync in SafeLocaleMiddleware + seed demo users with preferred_language (PR #10) — 2026-02-21 (QA-R7-BUG1)
 - [ ] Verify /manage/ routes cover PM self-service — check if BLOCKER-1 is a scenario YAML issue, update qa-scenarios if needed (QA-R7-BLKR1)
-- [ ] Add skip-to-content link to base template — WCAG 2.4.1 Level A requirement (QA-R7-BUG15)
-- [ ] Fix notes URL returning 404 instead of 403 for receptionist — add explicit permission check before queryset filter (QA-R7-BUG2)
-- [ ] Fix htmx:syntax:error messages on create-participant page — audit all hx-* attributes (QA-R7-BUG20)
+- [x] Skip-to-content link already implemented in base template — verified (QA-R7-BUG15)
+- [x] Fix notes URL returning raw 403 text — use PermissionDenied for styled 403.html (PR #10) — 2026-02-21 (QA-R7-BUG2)
+- [x] Fix htmx:syntax:error on create-participant — move hx-trigger filter before modifiers (PR #10) — 2026-02-21 (QA-R7-BUG20)
 
 ### Phase: QA Round 7 — Page Audit Tier 1 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
 
@@ -214,7 +214,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Fix public unsubscribe page returning 500 — CASL compliance, must work before any agency enables email (depends on QA-PA-500) (QA-PA-BLOCKER4)
 - [ ] Fix public survey link page returning 500 — community members see raw error from email/flyer links (depends on QA-PA-500) (QA-PA-BLOCKER3)
 - [ ] Fix plan-goal-create heading "Add Target" → "Add Goal" — terminology migration artifact, 5-min fix (QA-PA-BUG1)
-
 ## Parking Lot
 
 - [ ] Add PIPEDA compliance context to admin-erasure-requests page — explain what gets deleted vs. retained — GK reviews privacy/data retention (QA-PA-ERASURE1)
@@ -260,6 +259,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Fix report generation page — duplicate template name in dropdown and HTMX period options 500 error (PR #14) — 2026-02-22 (BUG-RPT1)
+- [x] Code review fixes for template-driven reporting — 12 issues (suppression threshold, WCAG, XSS, race condition, tests) (PR #12) — 2026-02-22 (RPT-REVIEW1)
 - [x] UX + QA Round 7 fixes — 18 items: accessibility (ARIA tablist, form validation), dashboard (task-oriented layout, dismissable items, executive date range/export), notes UX (template preview, duplicate warning, post-save counts), front desk orientation, hidden programs notice, label improvements, HTMX cancel — 2026-02-21 (see Phase: UX + QA Round 7 Fixes above)
 - [x] Unify analysis chart quick-select and date picker into single form control — 2026-02-21 (UX-CHART1)
 - [x] Accessibility fixes: aria-labels on audit table, notes error container, mobile touch targets — 2026-02-21 (A11Y-UX1)
@@ -268,5 +269,3 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Build "Questions for You" portal feature — auto-save, multi-page, conditional sections — 2026-02-20 (PORTAL-Q1)
 - [x] Redesign detailed notes form (Round 2) — auto-calc metrics, scale pills, two-lens layout — 2026-02-19 (UX-NOTES2)
 - [x] Move PM management pages from /admin/ to /manage/ — 2026-02-18 (QA-W59)
-- [x] Fix test suite freezing — skip Playwright tests with --exclude-tag=slow — 2026-02-18 (TEST-FIX1)
-- [x] Mobile touch targets WCAG fix — enforce 44px minimum — 2026-02-17 (UX-WALK5)
