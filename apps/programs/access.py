@@ -198,15 +198,21 @@ def should_share_across_programs(client, agency_shares_by_default):
     return agency_shares_by_default
 
 
-def apply_consent_filter(notes_qs, client, user, user_program_ids):
+def apply_consent_filter(notes_qs, client, user, user_program_ids,
+                         active_program_ids=None):
     """Apply PHIPA cross-program consent filtering to a notes queryset.
 
     PHIPA: Clinical notes should only be visible across programs when
     the agency or client has enabled sharing. This is the ONLY function
     that should apply consent-based filtering to note querysets.
 
+    If active_program_ids is provided (from CONF9 context switcher), the
+    viewing program is narrowed to match the switcher selection.
+
     Returns (filtered_queryset, viewing_program_name_or_None).
     viewing_program_name is set when filtering is active (for template indicator).
+
+    See: tasks/design-rationale/phipa-consent-enforcement.md
     """
     from apps.clients.dashboard_views import _get_feature_flags
 
@@ -216,15 +222,91 @@ def apply_consent_filter(notes_qs, client, user, user_program_ids):
     if should_share_across_programs(client, agency_shares):
         return notes_qs, None  # No additional filtering needed
 
-    # Determine the viewing program for this user+client pair
-    viewing_program = get_author_program(user, client)
+    # Determine the viewing program for this user+client pair.
+    # When CONF9 context switcher is active with a single program,
+    # prefer that program as the viewing program.
+    viewing_program = None
+    if active_program_ids and len(active_program_ids) == 1:
+        single_pid = next(iter(active_program_ids))
+        # Verify user+client share this program
+        client_program_ids = set(
+            ClientProgramEnrolment.objects.filter(
+                client_file=client, status="enrolled"
+            ).values_list("program_id", flat=True)
+        )
+        if single_pid in client_program_ids:
+            try:
+                viewing_program = Program.objects.get(pk=single_pid)
+            except Program.DoesNotExist:
+                pass
+
+    if viewing_program is None:
+        viewing_program = get_author_program(user, client)
+
     if viewing_program:
         filtered = notes_qs.filter(
             Q(author_program=viewing_program) | Q(author_program__isnull=True)
         )
         return filtered, viewing_program.name
 
-    # No shared program found — shouldn't happen (user passed access check)
-    return notes_qs, None
+    # No shared program found — fail closed for safety (DRR decision #9)
+    import logging
+    logging.getLogger(__name__).warning(
+        "apply_consent_filter: no viewing program for user=%s client=%s "
+        "(sharing OFF, fail-closed)", user.pk, client.pk,
+    )
+    return notes_qs.none(), None
+
+
+def check_note_consent_or_403(note, client, user, active_program_ids=None):
+    """Verify a single note is visible given PHIPA consent settings.
+
+    For single-note views (note_detail, note_summary) where we check
+    one note rather than filter a queryset.
+
+    Raises PermissionDenied if the note is from a program hidden by
+    consent rules.
+
+    See: tasks/design-rationale/phipa-consent-enforcement.md
+    """
+    from django.core.exceptions import PermissionDenied
+    from django.utils.translation import gettext as _
+    from apps.clients.dashboard_views import _get_feature_flags
+
+    flags = _get_feature_flags()
+    agency_shares = flags.get("cross_program_note_sharing", True)
+
+    if should_share_across_programs(client, agency_shares):
+        return  # Sharing is on for this client, note is visible
+
+    # Legacy notes (no author_program) are always visible
+    if note.author_program is None:
+        return
+
+    # Determine the viewing program (respects CONF9 switcher)
+    viewing_program = None
+    if active_program_ids and len(active_program_ids) == 1:
+        single_pid = next(iter(active_program_ids))
+        client_program_ids = set(
+            ClientProgramEnrolment.objects.filter(
+                client_file=client, status="enrolled"
+            ).values_list("program_id", flat=True)
+        )
+        if single_pid in client_program_ids:
+            try:
+                viewing_program = Program.objects.get(pk=single_pid)
+            except Program.DoesNotExist:
+                pass
+
+    if viewing_program is None:
+        viewing_program = get_author_program(user, client)
+
+    if viewing_program and note.author_program_id == viewing_program.pk:
+        return  # Note is from the viewing program
+
+    raise PermissionDenied(
+        _("This note is restricted to a specific program. "
+          "Contact your administrator if you need cross-program access.")
+    )
 
 
