@@ -1,0 +1,103 @@
+{% load i18n %}
+{# Where Participants Are — Layer 1: Scale metric distributions #}
+
+<h3>{% trans "Where Participants Are" %}</h3>
+<p class="chart-description muted">{% trans "Distribution of participants across outcome bands, based on their most recent scores. One data point per person (median across goals)." %}</p>
+
+{% for metric_id, dist in metric_distributions.items %}
+<div class="insights-metric-section">
+    <h4>{{ dist.name }} <small class="muted">(n={{ dist.total }}{% if dist.last_recorded %}, {% trans "most recent" %}: {{ dist.last_recorded|date:"M j" }}{% endif %})</small></h4>
+
+    {# Stacked horizontal bar #}
+    <div class="insights-distribution-bar" role="img"
+         aria-label="{% blocktrans with name=dist.name %}Distribution bar for {{ name }}{% endblocktrans %}">
+        {% if dist.band_low_pct > 0 %}
+        <div class="insights-bar-segment band-low" style="width: {{ dist.band_low_pct }}%;"
+             title="{% trans 'More support needed' %}: {{ dist.band_low_pct }}%">
+        </div>
+        {% endif %}
+        {% if dist.band_mid_pct > 0 %}
+        <div class="insights-bar-segment band-mid" style="width: {{ dist.band_mid_pct }}%;"
+             title="{% trans 'On track' %}: {{ dist.band_mid_pct }}%">
+        </div>
+        {% endif %}
+        {% if dist.band_high_pct > 0 %}
+        <div class="insights-bar-segment band-high" style="width: {{ dist.band_high_pct }}%;"
+             title="{% trans 'Goals within reach' %}: {{ dist.band_high_pct }}%">
+        </div>
+        {% endif %}
+    </div>
+
+    {# Band legend with labels #}
+    <div class="insights-bar-legend">
+        <span class="insights-legend-item">
+            <span class="insights-legend-swatch band-low"></span>
+            {% if dist.higher_is_better %}{% trans "More support needed" %}{% else %}{% trans "Goals within reach" %}{% endif %}:
+            {{ dist.band_low_count }}
+        </span>
+        <span class="insights-legend-item">
+            <span class="insights-legend-swatch band-mid"></span>
+            {% trans "On track" %}: {{ dist.band_mid_count }}
+        </span>
+        <span class="insights-legend-item">
+            <span class="insights-legend-swatch band-high"></span>
+            {% if dist.higher_is_better %}{% trans "Goals within reach" %}{% else %}{% trans "More support needed" %}{% endif %}:
+            {{ dist.band_high_count }}
+        </span>
+    </div>
+
+    {% if dist.target_band_high_pct %}
+    <p class="insights-target-note muted">
+        {% blocktrans with target=dist.target_band_high_pct %}Target: {{ target }}% in top band{% endblocktrans %}
+    </p>
+    {% endif %}
+
+    {# Trend chart for this metric #}
+    {% if metric_trends and metric_id|stringformat:"s" in metric_trends_keys %}
+    <div class="chart-container" style="position: relative; height: 200px; margin-top: 1rem;">
+        <canvas id="distribution-trend-{{ metric_id }}"
+                aria-label="{% blocktrans with name=dist.name %}Trend chart for {{ name }}{% endblocktrans %}"
+                role="img"></canvas>
+    </div>
+    {% endif %}
+
+    {# Accessible data table #}
+    <details class="chart-data-table">
+        <summary>{% trans "View data table" %}</summary>
+        <table role="table" aria-label="{% blocktrans with name=dist.name %}Data for {{ name }}{% endblocktrans %}">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Band" %}</th>
+                    <th scope="col">{% trans "Count" %}</th>
+                    <th scope="col">{% trans "Percentage" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{% if dist.higher_is_better %}{% trans "More support needed" %}{% else %}{% trans "Goals within reach" %}{% endif %}</td>
+                    <td>{{ dist.band_low_count }}</td>
+                    <td>{{ dist.band_low_pct }}%</td>
+                </tr>
+                <tr>
+                    <td>{% trans "On track" %}</td>
+                    <td>{{ dist.band_mid_count }}</td>
+                    <td>{{ dist.band_mid_pct }}%</td>
+                </tr>
+                <tr>
+                    <td>{% if dist.higher_is_better %}{% trans "Goals within reach" %}{% else %}{% trans "More support needed" %}{% endif %}</td>
+                    <td>{{ dist.band_high_count }}</td>
+                    <td>{{ dist.band_high_pct }}%</td>
+                </tr>
+            </tbody>
+        </table>
+    </details>
+</div>
+{% endfor %}
+
+{# New participant note #}
+{% if total_new_participants > 0 %}
+<p class="insights-new-participant-note muted">
+    {% blocktrans with count=total_new_participants count counter=total_new_participants %}{{ count }} participant has only one assessment — not included in distributions because a second assessment is needed to show their trajectory.{% plural %}{{ count }} participants have only one assessment — not included in distributions because a second assessment is needed to show their trajectory.{% endblocktrans %}
+    {% trans "Movement tracking — who is progressing between bands over time — will be available in a future update." %}
+</p>
+{% endif %}

@@ -1,93 +1,149 @@
-{% extends "base.html" %}
-{% load i18n %}
+{% load i18n %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% trans "Server Error" %} — KoNote</title>
+    <style>
+        /* Standalone error page — no external CSS dependencies.
+           Uses hardcoded brand colours so this page renders even when
+           static files or context processors are unavailable.
+           Django's default 500 handler renders with an empty context,
+           so this template must NOT extend base.html. */
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, sans-serif;
+            color: #1a202c;
+            background: #f7fafc;
+            margin: 0;
+            padding: 2rem 1rem;
+            line-height: 1.6;
+        }
+        .error-page {
+            max-width: 520px;
+            margin: 2rem auto;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.1);
+            padding: 2rem;
+        }
+        .error-page header {
+            text-align: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+        }
+        .error-page h1 {
+            color: #842029;
+            font-size: 1.5rem;
+            margin: 0;
+        }
+        .error-brand {
+            display: block;
+            color: #0d7377;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: .75rem;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #842029;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid #842029;
+            margin-bottom: 1.5rem;
+        }
+        .error-help {
+            background: rgba(13, 115, 119, 0.08);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+        }
+        .error-help h2 {
+            font-size: 1rem;
+            margin: 0 0 .5rem;
+            color: #1a202c;
+        }
+        .error-help ul {
+            margin: 0;
+            padding-left: 1.5rem;
+        }
+        .error-help li {
+            margin-bottom: .25rem;
+            color: #4a5568;
+        }
+        .error-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            padding-top: 1rem;
+            border-top: 1px solid #e2e8f0;
+        }
+        .error-actions a {
+            display: inline-block;
+            padding: .5rem 1.25rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: .95rem;
+        }
+        .btn-back {
+            color: #0d7377;
+            border: 1px solid #0d7377;
+        }
+        .btn-back:hover { background: rgba(13, 115, 119, 0.08); }
+        .btn-home {
+            background: #0d7377;
+            color: #fff;
+        }
+        .btn-home:hover { background: #0a5c5f; }
+        .btn-home:focus, .btn-back:focus {
+            outline: 2px solid #0d7377;
+            outline-offset: 2px;
+        }
+        @media (prefers-color-scheme: dark) {
+            body { background: #1a202c; color: #e2e8f0; }
+            .error-page { background: #2d3748; }
+            .error-page header { border-color: #4a5568; }
+            .error-page h1 { color: #feb2b2; }
+            .error-message { background: #3b1a1a; color: #feb2b2; border-color: #feb2b2; }
+            .error-help { background: rgba(13, 115, 119, 0.15); }
+            .error-help h2 { color: #e2e8f0; }
+            .error-help li { color: #cbd5e0; }
+            .error-actions { border-color: #4a5568; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <article class="error-page" role="alert">
+            <header>
+                <span class="error-brand" aria-hidden="true">KoNote</span>
+                <h1>{% trans "Something Went Wrong" %}</h1>
+            </header>
 
-{% block title %}{% trans "Server Error" %} — KoNote{% endblock %}
+            <p class="error-message">
+                {% trans "An unexpected error occurred. Our team has been notified." %}
+            </p>
 
-{% block content %}
-<article class="error-page">
-    <header>
-        <h1>{% trans "Something Went Wrong" %}</h1>
-    </header>
+            <div class="error-help">
+                <h2>{% trans "What you can do" %}</h2>
+                <ul>
+                    <li>{% trans "Wait a moment and try again" %}</li>
+                    <li>{% trans "Return to the home page using the link below" %}</li>
+                    <li>{% trans "Contact your administrator if the problem continues" %}</li>
+                </ul>
+            </div>
 
-    <div class="error-content">
-        <p class="error-message">
-            {% trans "An unexpected error occurred. Our team has been notified." %}
-        </p>
-
-        <div class="error-help">
-            <h2>{% trans "What you can do" %}</h2>
-            <ul>
-                <li>{% trans "Wait a moment and try again" %}</li>
-                <li>{% trans "Return to the home page using the link below" %}</li>
-                <li>{% trans "Contact your administrator if the problem continues" %}</li>
-            </ul>
-        </div>
-    </div>
-
-    <footer class="error-actions">
-        <a href="javascript:history.back()" role="button" class="outline">
-            &larr; {% trans "Go Back" %}
-        </a>
-        <a href="/" role="button">
-            {% trans "Home" %}
-        </a>
-    </footer>
-</article>
-{% endblock %}
-
-{% block extra_head %}
-<style>
-    /* Note: CSS requires American spelling (color, center) even though we use Canadian in content */
-    .error-page {
-        max-width: 600px;
-        margin: var(--kn-space-2xl) auto;
-        text-align: center;
-    }
-    .error-page header {
-        padding-bottom: var(--kn-space-base);
-        border-bottom: 1px solid var(--kn-border-light);
-        margin-bottom: var(--kn-space-lg);
-    }
-    .error-page header h1 {
-        color: var(--kn-danger-fg);
-        margin-bottom: 0;
-    }
-    .error-content {
-        text-align: left;
-    }
-    .error-message {
-        background: var(--kn-danger-bg);
-        color: var(--kn-danger-fg);
-        padding: var(--kn-space-base);
-        border-radius: var(--kn-radius-card);
-        border-left: 4px solid var(--kn-danger-fg);
-        margin-bottom: var(--kn-space-lg);
-    }
-    .error-help {
-        background: var(--kn-primary-subtle);
-        padding: var(--kn-space-base);
-        border-radius: var(--kn-radius-card);
-        margin-bottom: var(--kn-space-lg);
-    }
-    .error-help h2 {
-        font-size: 1rem;
-        margin-bottom: var(--kn-space-sm);
-        color: var(--kn-text);
-    }
-    .error-help ul {
-        margin: 0;
-        padding-left: var(--kn-space-lg);
-    }
-    .error-help li {
-        margin-bottom: var(--kn-space-xs);
-        color: var(--kn-text-secondary);
-    }
-    .error-actions {
-        display: flex;
-        gap: var(--kn-space-base);
-        justify-content: center;
-        padding-top: var(--kn-space-base);
-        border-top: 1px solid var(--kn-border-light);
-    }
-</style>
-{% endblock %}
+            <footer class="error-actions">
+                <a href="javascript:history.back()" class="btn-back">
+                    &larr; {% trans "Go Back" %}
+                </a>
+                <a href="/" class="btn-home">
+                    {% trans "Home" %}
+                </a>
+            </footer>
+        </article>
+    </main>
+</body>
+</html>

@@ -1,4 +1,6 @@
 """Plan forms — ModelForms for sections, targets, metrics."""
+import json
+
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
@@ -106,7 +108,14 @@ class MetricDefinitionForm(forms.ModelForm):
 
     class Meta:
         model = MetricDefinition
-        fields = ["name", "name_fr", "definition", "definition_fr", "category", "min_value", "max_value", "unit", "unit_fr", "owning_program"]
+        fields = [
+            "name", "name_fr", "definition", "definition_fr", "category",
+            "metric_type", "min_value", "max_value", "unit", "unit_fr",
+            "higher_is_better", "threshold_low", "threshold_high",
+            "achievement_options", "achievement_success_values",
+            "target_rate", "target_band_high_pct",
+            "owning_program",
+        ]
         widgets = {
             "name": forms.TextInput(attrs={"placeholder": _("Metric name")}),
             "name_fr": forms.TextInput(attrs={"placeholder": _("French metric name (optional)")}),
@@ -116,6 +125,18 @@ class MetricDefinitionForm(forms.ModelForm):
             "max_value": forms.NumberInput(attrs={"step": "any"}),
             "unit": forms.TextInput(attrs={"placeholder": _("e.g., score, days, %")}),
             "unit_fr": forms.TextInput(attrs={"placeholder": _("e.g., pointage, jours, %")}),
+            "threshold_low": forms.NumberInput(attrs={"step": "any"}),
+            "threshold_high": forms.NumberInput(attrs={"step": "any"}),
+            "target_rate": forms.NumberInput(attrs={"step": "any", "min": "0", "max": "100"}),
+            "target_band_high_pct": forms.NumberInput(attrs={"step": "any", "min": "0", "max": "100"}),
+            "achievement_options": forms.Textarea(attrs={
+                "rows": 3,
+                "placeholder": _('e.g. ["Employed", "In training", "Unemployed"]'),
+            }),
+            "achievement_success_values": forms.Textarea(attrs={
+                "rows": 2,
+                "placeholder": _('e.g. ["Employed"]'),
+            }),
         }
 
     def __init__(self, *args, requesting_user=None, **kwargs):
@@ -132,6 +153,37 @@ class MetricDefinitionForm(forms.ModelForm):
             )
             self.fields["owning_program"].empty_label = None
             self.fields["owning_program"].required = True
+
+    def _clean_json_list_field(self, field_name):
+        """Validate that a field contains a JSON list (or is empty)."""
+        value = self.cleaned_data.get(field_name)
+        if not value:
+            return []
+        if isinstance(value, list):
+            return value
+        # If it's a string (from Textarea), try to parse it
+        if isinstance(value, str):
+            value = value.strip()
+            if not value:
+                return []
+            try:
+                parsed = json.loads(value)
+            except (json.JSONDecodeError, ValueError):
+                raise forms.ValidationError(
+                    _('Please enter a valid JSON list, e.g. ["Option 1", "Option 2"].')
+                )
+            if not isinstance(parsed, list):
+                raise forms.ValidationError(
+                    _("This field must be a list, e.g. [\"Option 1\", \"Option 2\"].")
+                )
+            return parsed
+        return value
+
+    def clean_achievement_options(self):
+        return self._clean_json_list_field("achievement_options")
+
+    def clean_achievement_success_values(self):
+        return self._clean_json_list_field("achievement_success_values")
 
 
 class GoalForm(forms.Form):
