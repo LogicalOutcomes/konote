@@ -34,7 +34,8 @@ Read `qa/pipeline-log.txt` for context on what was captured and evaluated.
 
 ### Step 4: Convene expert panel review
 
-Analyse the tickets and produce an action plan:
+Analyse the tickets and produce an action plan. Follow the format of the most recent `tasks/qa-action-plan-*.md` file for consistency across rounds.
+
 - Group tickets by severity (BLOCKER, BUG, IMPROVE, TEST)
 - Identify regressions (scores that dropped 0.5+ pts from previous round)
 - Prioritise into tiers: Tier 1 (fix now), Tier 2 (fix soon), Tier 3 (backlog)
@@ -42,7 +43,7 @@ Analyse the tickets and produce an action plan:
 
 ### Step 5: Update TODO.md
 
-Add Tier 1 tasks to Active Work, Tier 2 to Coming Up, Tier 3 to Parking Lot.
+Add Tier 1 tasks to Active Work, Tier 2 to Coming Up, Tier 3 to Parking Lot. Flag any items that match GK's consultation gates (see CLAUDE.md § "Consultation Gates") with "GK reviews [topic]" in the owner field.
 
 ### Step 6: Update the pipeline log
 
