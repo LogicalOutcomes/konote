@@ -1,7 +1,7 @@
 # Reporting Architecture — Design Rationale Record
 
 **Date:** 2026-02-21
-**Status:** Proposed — not yet implemented
+**Status:** Steps 1-5 implemented (form, views, URL, export engine, HTMX cascade, tests). Steps 6-10 pending.
 **Canonical reference:** This is the single source of truth for all reporting design decisions in KoNote. Other documents (dashboard, navigation, etc.) defer to this document for reporting behaviour.
 **Dependencies:** Privacy thresholds and consortium data sharing follow `tasks/design-rationale/multi-tenancy.md` (settled). This document does not override that DRR.
 
