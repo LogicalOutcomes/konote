@@ -158,13 +158,27 @@
 </div>
 {% endif %}
 
+<!-- Quick links — moved up for faster access (UX-TASKDASH1) -->
+{% if features.programs or user.is_admin %}
+<nav class="quick-links" aria-label="{% trans 'Quick links' %}">
+    <span class="quick-links-label">{% trans "Quick links:" %}</span>
+    {% if features.programs %}
+    <a href="/programs/">{{ term.program_plural|default:"Programs" }}</a>
+    {% endif %}
+    {% if user.is_admin %}
+    <a href="/reports/export/">{% trans "Reports" %}</a>
+    <a href="/admin/settings/">{% trans "Settings" %}</a>
+    {% endif %}
+</nav>
+{% endif %}
+
 <!-- Two-column dashboard -->
 <div class="dashboard-grid">
     <!-- Priority items (alerts + needs attention) — hidden from Front Desk and executives -->
     {% if not is_receptionist and not is_executive %}
     <article>
         <header class="card-header">
-            <span>{% trans "Priority Items" %}</span>
+            <span>{% trans "What needs your attention" %}</span>
             {% if alert_count > 0 or needs_attention_count > 0 or follow_up_count > 0 %}
             <span class="badge badge-warning">{{ alert_count|add:needs_attention_count|add:follow_up_count }}</span>
             {% endif %}
@@ -223,7 +237,7 @@
     <!-- Recent activity -->
     <article>
         <header class="card-header">
-            <span>{% trans "Recently Viewed" %}</span>
+            <span>{% trans "Pick up where you left off" %}</span>
         </header>
         {% if recent_clients %}
         <ul class="card-list">
@@ -242,17 +256,4 @@
     </article>
 </div>
 
-<!-- Quick links (if features enabled) -->
-{% if features.programs or user.is_admin %}
-<nav class="quick-links" aria-label="{% trans 'Quick links' %}">
-    <span class="quick-links-label">{% trans "Quick links:" %}</span>
-    {% if features.programs %}
-    <a href="/programs/">{{ term.program_plural|default:"Programs" }}</a>
-    {% endif %}
-    {% if user.is_admin %}
-    <a href="/reports/export/">{% trans "Reports" %}</a>
-    <a href="/admin/settings/">{% trans "Settings" %}</a>
-    {% endif %}
-</nav>
-{% endif %}
 {% endblock %}
