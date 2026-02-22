@@ -13,9 +13,7 @@
         <div class="insights-outcome-bar" role="progressbar"
              aria-valuenow="{{ ach.achieved_pct }}" aria-valuemin="0" aria-valuemax="100"
              aria-label="{% blocktrans with name=ach.name pct=ach.achieved_pct %}{{ name }}: {{ pct }}% achieved{% endblocktrans %}">
-            <div class="insights-outcome-bar-fill" style="width: {{ ach.achieved_pct }}%;">
-                {{ ach.achieved_pct }}%
-            </div>
+            <div class="insights-outcome-bar-fill" style="width: {{ ach.achieved_pct }}%;"></div>
         </div>
         {% if ach.target_rate %}
         <div class="insights-outcome-target-marker" style="left: {{ ach.target_rate }}%;"

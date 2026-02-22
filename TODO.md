@@ -6,7 +6,6 @@
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GK (SEC3-Q1)
 - [ ] Confirm standard report schema and configuration template with partner contact before building — SG (RPT-SCHEMA1)
 - [ ] Approve CIDS implementation plan with project lead before building — covers metadata fields, code list integration, CIDS-enriched reports, and full JSON-LD export; confirm partner consumption pathway and whether to engage Common Approach as pilot implementer (see tasks/cids-json-ld-export.md) — SG/GK (CIDS-APPROVE1)
-- [x] Approve band display labels for insights metric distributions — approved: "More support needed" / "On track" / "Goals within reach" — 2026-02-22 — GK (INSIGHTS-LANG1)
 - [ ] Discuss: are Design Rationale Records (DRRs) working well as a practice? Should we keep using them, change the format, or retire them? — GK (PROCESS-DRR1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
 
@@ -14,15 +13,10 @@
 
 ### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
 
-- [x] Phase 0: GK language review — band labels approved: "More support needed" / "On track" / "Goals within reach" — 2026-02-22 (INSIGHTS-P0-LANG)
-- [x] Phase 0: Update MetricDefinition admin form with new fields (metric_type, thresholds, achievement options, targets) — 2026-02-22 (INSIGHTS-P0-ADMIN)
-- [x] Phase 1: Add metric_type, threshold, achievement, and target fields to MetricDefinition model — 2026-02-22 (INSIGHTS-P1-MODEL)
-- [x] Phase 1: Build metric aggregation functions — distributions, achievement rates, trends, Two Lenses, data completeness — 2026-02-22 (INSIGHTS-P1-AGG)
-- [x] Phase 2: Restructure insights page — participant voice to Section 2, progressive disclosure with smart auto-expand — 2026-02-22 (INSIGHTS-P2-LAYOUT)
-- [x] Phase 2: Add summary cards, distribution bars, achievement bars with journey context, CSS — 2026-02-22 (INSIGHTS-P2-VIZ)
 - [ ] Phase 3: Update executive dashboard — program cards with trend direction, data completeness, feedback themes (INSIGHTS-P3-EXEC)
 - [ ] Phase 4: Achievement metric recording UI — dropdown in note form, tests (INSIGHTS-P4-RECORD)
 - [ ] Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
+- [ ] Extract and translate French strings for metric distributions templates (~25-30 new strings, several blocktrans blocks) (INSIGHTS-I18N1)
 
 ### Phase: Launch Readiness
 
@@ -186,6 +180,8 @@ _Nothing pending._
 ## Recently Done
 
 - [x] Enforce PHIPA cross-program consent in views — note_detail, note_summary, event_list; fix fail-open bug; fix CONF9 interaction; shared banner include; 4 new tests; DRR created — 2026-02-22 (PHIPA-ENFORCE1)
+- [x] Insights metric distributions Phases 0-2 — model fields, aggregation, distributions, achievements, trends, Two Lenses, data completeness, 50 tests, 10 review fixes (PR #23) — 2026-02-22 (INSIGHTS-P0-ADMIN, INSIGHTS-P1-MODEL, INSIGHTS-P1-AGG, INSIGHTS-P2-LAYOUT, INSIGHTS-P2-VIZ)
+- [x] Approve band display labels — "More support needed" / "On track" / "Goals within reach" — 2026-02-22 — GK (INSIGHTS-LANG1)
 - [x] QA Page Audit Tier 1 + Tier 2 — 500.html standalone, public view hardening, goal heading/onboarding/steps, attendance a11y, messages UX, leave-message required field, translations (PR #20) — 2026-02-22 (QA-PA-TIER1-2)
 - [x] Fix suggestion theme linking in seed_demo_data — program-specific suggestions, removed blind fallback — 2026-02-22 (DEMO-FIX1)
 - [x] Add quarterly date range presets to ad-hoc report form — optgroup dropdown with FY + quarters, i18n month names, 8 tests — 2026-02-22 (QA-R7-RPT-QUARTER1)
