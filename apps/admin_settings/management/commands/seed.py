@@ -318,15 +318,23 @@ class Command(BaseCommand):
                     "is_admin": is_admin,
                     "is_demo": True,
                     "email": demo_email,
+                    "preferred_language": "en",
                 },
             )
             if created:
                 user.set_password("demo1234")
                 user.save()
-            # Backfill email on existing demo users
-            elif not user.email and demo_email:
-                user.email = demo_email
-                user.save()
+            else:
+                # Backfill email and preferred_language on existing demo users
+                changed = False
+                if not user.email and demo_email:
+                    user.email = demo_email
+                    changed = True
+                if not user.preferred_language:
+                    user.preferred_language = "en"
+                    changed = True
+                if changed:
+                    user.save()
 
         front_desk = User.objects.get(username="demo-frontdesk")
         worker1 = User.objects.get(username="demo-worker-1")

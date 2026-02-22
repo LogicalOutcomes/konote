@@ -14361,7 +14361,8 @@ msgid "Leave messages for staff on a participant's profile"
 msgstr "Laisser des messages au personnel sur le profil d'un participant"
 
 msgid "Need access to something else? Ask your program manager."
-msgstr "Besoin d'accéder à autre chose? Demandez à votre gestionnaire de programme."
+msgstr ""
+"Besoin d'accéder à autre chose? Demandez à votre gestionnaire de programme."
 
 msgid "Pick up where you left off"
 msgstr "Reprendre là où vous en étiez"
@@ -14400,10 +14401,25 @@ msgstr ""
 "vous n'avez pas accès. Communiquez avec votre gestionnaire de programme "
 "pour plus de détails."
 
-#: templates/clients/executive_dashboard.html
-msgid "Show data from"
-msgstr "Afficher les données à partir du"
+msgid "Access restricted to clinical staff."
+msgstr "Accès réservé au personnel clinique."
+
+msgid "Notes can only be cancelled within 24 hours."
+msgstr "Les notes ne peuvent être annulées que dans les 24 heures."
 
 #: templates/clients/executive_dashboard.html
 msgid "Percentages hidden (fewer than 5 active participants)"
 msgstr "Pourcentages masqués (moins de 5 participants actifs)"
+
+#: templates/clients/executive_dashboard.html
+msgid "Show data from"
+msgstr "Afficher les données à partir du"
+
+msgid "You can only cancel your own notes."
+msgstr "Vous ne pouvez annuler que vos propres notes."
+
+msgid "You do not have access to this %(client)s."
+msgstr "Vous n'avez pas accès à ce ou cette %(client)s."
+
+msgid "participant"
+msgstr "participant"
