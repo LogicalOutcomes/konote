@@ -825,6 +825,7 @@ def calendar_feed(request, token):
 
 
 @login_required
+@requires_permission("meeting.view", allow_admin=True)
 def calendar_feed_settings(request):
     """Manage calendar feed token — generate, regenerate, or view feed URL."""
     feed_token = CalendarFeedToken.objects.filter(user=request.user).first()
