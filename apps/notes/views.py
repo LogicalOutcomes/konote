@@ -443,9 +443,18 @@ def quick_note_inline(request, client_id):
 
 
 @login_required
-@program_role_required(min_role="staff")
 def template_preview(request, template_id):
-    """HTMX endpoint: return a preview of the template's sections."""
+    """HTMX endpoint: return a preview of the template's sections.
+
+    Requires at least staff-level role (receptionists cannot preview templates).
+    """
+    from apps.auth_app.constants import ROLE_RANK
+    from apps.auth_app.decorators import _get_user_highest_role
+
+    user_role = _get_user_highest_role(request.user)
+    if ROLE_RANK.get(user_role, 0) < ROLE_RANK.get("staff", 0):
+        return HttpResponseForbidden("Access restricted to clinical staff.")
+
     template = get_object_or_404(ProgressNoteTemplate, pk=template_id, status="active")
     sections = template.sections.prefetch_related("metrics__metric_def").all()
     return render(request, "notes/_template_preview.html", {
