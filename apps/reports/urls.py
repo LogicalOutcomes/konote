@@ -15,6 +15,7 @@ urlpatterns = [
     path("generate/period-options/", views.template_period_options, name="template_period_options"),
     # Exports (ad-hoc + legacy funder report)
     path("export/", views.export_form, name="export_form"),
+    path("export/template-autofill/", views.adhoc_template_autofill, name="adhoc_template_autofill"),
     path("funder-report/", views.funder_report_form, name="funder_report"),
     path("participant/<int:client_id>/analysis/", views.client_analysis, name="client_analysis"),
     path("participant/<int:client_id>/pdf/", pdf_views.client_progress_pdf, name="client_progress_pdf"),
