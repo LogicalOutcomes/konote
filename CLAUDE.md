@@ -52,6 +52,22 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 - **Long-running commands** (pytest with Playwright, Django server, migrations): these can take 1–5 minutes. If the terminal reports "Command is still running", **wait for the final output**. Do NOT run `echo`, `type`, or other polling commands to check status — this causes an infinite loop. The terminal will return output automatically when the command finishes.
 - **PowerShell is the default shell** on this project. Use `$env:VAR = "value"` to set environment variables, not `set VAR=value` (that's CMD syntax).
 
+## Consultation Gates — When to Involve GK (Gillian Kerr)
+
+GK is the subject matter expert for evaluation, nonprofit data modelling, and program design. She is not involved in day-to-day development but must review specific types of changes:
+
+| Change Type | GK Reviews? | Examples |
+|-------------|------------|---------|
+| **New data entities** (models representing real-world concepts) | Yes | Circle, Survey, any new entity type |
+| **Changes to outcome models** (PlanTarget, MetricDefinition, ProgressNote structure) | Yes | Adding fields that affect how outcomes are tracked or reported |
+| **Metric definitions and measurement methodology** | Yes | What gets measured, scale definitions, plausibility thresholds |
+| **AI workflow design** (prompts, scoring logic, suggestion algorithms) | Yes | Goal builder prompts, report summary logic, suggestion themes |
+| **Evaluation principles** (feedback-informed practice, strengths-based language) | Yes | Alliance rating approach, two-lens note design, template wording |
+| UI changes, bug fixes, infrastructure, deployment, testing | No | |
+| Translations, documentation, admin UI improvements | No | |
+
+**How to flag for GK review:** Add "GK reviews [what]" to the task owner field in TODO.md. Do not wait for review on implementation — build it, then request review before merging.
+
 ## Development Rules (from expert review)
 
 These rules apply to **every phase**. Do not skip them.
@@ -136,9 +152,26 @@ TODO.md is a **dashboard** — scannable at a glance. It is not a project plan, 
 | Task dashboard (one line per task) | `TODO.md` |
 | Task detail, subtasks, context, notes | `tasks/*.md` |
 | Phase prompts for Claude Code | `tasks/phase-*-prompt.md` |
+| Design rationale for complex features | `tasks/design-rationale/*.md` |
 | Decisions, notes, changelog | `CHANGELOG.md` |
 | How Claude manages tasks | `CLAUDE.md` (this section) |
 | Completed tasks older than 30 days | `tasks/ARCHIVE.md` |
+
+### Design Rationale Records (DRRs)
+
+Some features involve complex trade-offs (legal, privacy, data modelling, adoption risk) that were evaluated by expert panels. These decisions are preserved in `tasks/design-rationale/` so future sessions don't re-introduce designs that were already evaluated and rejected.
+
+**Before modifying any feature that has a DRR**, read the corresponding file. These documents contain:
+- **Anti-patterns** (things explicitly rejected, with reasons)
+- **Decided trade-offs** (where competing concerns were weighed)
+- **Graduated complexity paths** (when deferred features should be reconsidered)
+- **Risk registries** (what can go wrong and how to monitor it)
+
+**Do not override DRR decisions without explicit stakeholder approval.** If circumstances have changed, document why in the DRR before proceeding.
+
+Current DRRs:
+- `tasks/design-rationale/circles-family-entity.md` — Circles (family/network entity). Covers relationship modelling, privacy, adoption risk, data model decisions from two expert panels.
+- `tasks/design-rationale/multi-tenancy.md` — Multi-tenancy architecture. Covers schema-per-tenant vs. alternatives, per-tenant encryption, consortium model, sequencing condition (after first single-tenant deployment).
 
 ### How Claude Manages Tasks
 
