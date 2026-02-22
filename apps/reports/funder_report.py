@@ -173,6 +173,60 @@ def format_number(value: int | float | None) -> str:
     return f"{value:,}"
 
 
+def get_demographic_groups(
+    active_client_ids: list[int],
+    date_to: date,
+    report_template=None,
+) -> dict[str, list[int]]:
+    """Build demographic groups as {label: [client_ids]} for metric aggregation.
+
+    Always includes an "All Participants" key containing all active client IDs.
+    Additional groups come from the template's DemographicBreakdown records
+    (age bins and custom fields). Without a template, uses default age bins.
+
+    Args:
+        active_client_ids: Client IDs with activity in the reporting period.
+        date_to: Calculate ages as of this date.
+        report_template: Optional ReportTemplate with DemographicBreakdown records.
+
+    Returns:
+        OrderedDict-like dict: {"All Participants": [...], "Age 13-17": [...], ...}
+    """
+    groups: dict[str, list[int]] = {_("All Participants"): list(active_client_ids)}
+
+    if report_template:
+        from .models import DemographicBreakdown
+        breakdowns = DemographicBreakdown.objects.filter(
+            report_template=report_template,
+        ).select_related("custom_field").order_by("sort_order")
+
+        for bd in breakdowns:
+            if bd.source_type == "age":
+                custom_bins = bd.bins_json or None
+                if custom_bins:
+                    age_groups = group_clients_by_age(
+                        active_client_ids, date_to, custom_bins=custom_bins,
+                    )
+                else:
+                    age_groups = group_clients_by_age(active_client_ids, date_to)
+                for label, ids in age_groups.items():
+                    groups[label] = ids
+            elif bd.source_type == "custom_field" and bd.custom_field:
+                cf_groups = group_clients_by_custom_field(
+                    active_client_ids, bd.custom_field,
+                    merge_categories=bd.merge_categories_json or None,
+                )
+                for label, ids in cf_groups.items():
+                    groups[label] = ids
+    else:
+        # Default: standard age bins
+        age_groups = group_clients_by_age(active_client_ids, date_to)
+        for label, ids in age_groups.items():
+            groups[label] = ids
+
+    return groups
+
+
 def generate_funder_report_data(
     program,
     date_from: date,
