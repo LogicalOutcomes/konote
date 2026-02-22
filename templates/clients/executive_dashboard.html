@@ -5,11 +5,16 @@
 
 {% block content %}
 <header class="page-header">
-    <h1>{% trans "Executive Overview" %}</h1>
-    <p class="page-subtitle">{% trans "A high-level look at how your programs are doing. This dashboard shows overall numbers — individual participant records are kept private." %}</p>
-    {% if data_refreshed_at %}
-    <p class="data-timestamp">{% trans "Last updated" %}: {{ data_refreshed_at|date:"SHORT_DATETIME_FORMAT" }}</p>
-    {% endif %}
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap;">
+        <div>
+            <h1>{% trans "Executive Overview" %}</h1>
+            <p class="page-subtitle">{% trans "A high-level look at how your programs are doing. This dashboard shows overall numbers — individual participant records are kept private." %}</p>
+            {% if data_refreshed_at %}
+            <p class="data-timestamp">{% trans "Last updated" %}: {{ data_refreshed_at|date:"SHORT_DATETIME_FORMAT" }}</p>
+            {% endif %}
+        </div>
+        <a href="{% url 'clients:executive_dashboard_export' %}?start_date={{ start_date|date:'Y-m-d' }}&end_date={{ end_date|date:'Y-m-d' }}{% if selected_program_id %}&program={{ selected_program_id }}{% endif %}" role="button" class="outline small">{% trans "Export CSV" %}</a>
+    </div>
 </header>
 
 {# Program filter #}
@@ -26,6 +31,19 @@
     </select>
 </form>
 {% endif %}
+
+{# Date range filter (BUG-9/10) #}
+<form method="get" action="" class="date-range-form">
+    {% if selected_program_id %}<input type="hidden" name="program" value="{{ selected_program_id }}">{% endif %}
+    <fieldset role="group">
+        <legend class="sr-only">{% trans "Date range" %}</legend>
+        <label for="start-date">{% trans "From" %}</label>
+        <input type="date" id="start-date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+        <label for="end-date">{% trans "To" %}</label>
+        <input type="date" id="end-date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+        <button type="submit" class="outline">{% trans "Update" %}</button>
+    </fieldset>
+</form>
 
 {# Top-line summary cards #}
 <section class="stats-overview" aria-label="{% trans 'Organization Summary' %}">

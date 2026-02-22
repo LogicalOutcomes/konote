@@ -5,6 +5,7 @@ Performance note: The per-program statistics section uses batch queries
 count from ~12 * N (where N = number of programs) to a fixed ~10 queries
 regardless of how many programs exist.
 """
+import datetime
 from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
@@ -827,10 +828,39 @@ def executive_dashboard(request):
     # Base client queryset (respects demo/real separation)
     base_clients = get_client_queryset(request.user)
 
-    # Time boundaries
+    # Time boundaries — support custom date range via query params (BUG-9/10)
     now = timezone.now()
     today = now.date()
-    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    default_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    start_date_str = request.GET.get("start_date", "")
+    end_date_str = request.GET.get("end_date", "")
+    try:
+        custom_start = datetime.date.fromisoformat(start_date_str) if start_date_str else None
+    except ValueError:
+        custom_start = None
+    try:
+        custom_end = datetime.date.fromisoformat(end_date_str) if end_date_str else None
+    except ValueError:
+        custom_end = None
+
+    if custom_start:
+        month_start = timezone.make_aware(
+            datetime.datetime.combine(custom_start, datetime.time.min)
+        )
+    else:
+        month_start = default_month_start
+        custom_start = month_start.date()
+
+    if custom_end:
+        # Use end of day for the end date
+        period_end = timezone.make_aware(
+            datetime.datetime.combine(custom_end, datetime.time.max)
+        )
+    else:
+        period_end = now
+        custom_end = today
+
     week_start = now - timedelta(days=now.weekday())
 
     # Collect all active client IDs across filtered programs (for top-line cards)
@@ -971,9 +1001,95 @@ def executive_dashboard(request):
         "show_portal": show_portal,
         "total_suggestions_important": total_suggestions_important,
         "selected_program_id": selected_program_id,
+        "start_date": custom_start,
+        "end_date": custom_end,
         "data_refreshed_at": now,
         "nav_active": "executive",
     })
+
+
+@login_required
+def executive_dashboard_export(request):
+    """Export executive dashboard program stats as CSV (BUG-9/10)."""
+    import csv
+    from django.http import HttpResponse
+    from apps.programs.models import Program, UserProgramRole
+    from apps.clients.models import ClientProgramEnrolment
+    from .views import get_client_queryset
+
+    flags = _get_feature_flags()
+    user_program_ids = list(
+        UserProgramRole.objects.filter(
+            user=request.user, status="active"
+        ).values_list("program_id", flat=True)
+    )
+    if not user_program_ids:
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden("No programs assigned.")
+
+    programs = Program.objects.filter(pk__in=user_program_ids, status="active")
+
+    selected_program_id = request.GET.get("program")
+    if selected_program_id:
+        try:
+            selected_program_id = int(selected_program_id)
+            if selected_program_id not in user_program_ids:
+                selected_program_id = None
+        except (ValueError, TypeError):
+            selected_program_id = None
+
+    filtered_programs = programs.filter(pk=selected_program_id) if selected_program_id else programs
+
+    now = timezone.now()
+    default_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    start_date_str = request.GET.get("start_date", "")
+    end_date_str = request.GET.get("end_date", "")
+    try:
+        custom_start = datetime.date.fromisoformat(start_date_str) if start_date_str else None
+    except ValueError:
+        custom_start = None
+    try:
+        custom_end = datetime.date.fromisoformat(end_date_str) if end_date_str else None
+    except ValueError:
+        custom_end = None
+
+    month_start = (
+        timezone.make_aware(datetime.datetime.combine(custom_start, datetime.time.min))
+        if custom_start else default_month_start
+    )
+    week_start = now - timedelta(days=now.weekday())
+
+    base_clients = get_client_queryset(request.user)
+    base_client_ids = set(base_clients.values_list("pk", flat=True))
+    filtered_program_ids = list(filtered_programs.values_list("pk", flat=True))
+
+    enrolment_stats = _batch_enrolment_stats(filtered_program_ids, base_client_ids, month_start)
+    notes_week_map = _batch_notes_this_week(filtered_program_ids, week_start)
+    engagement_map = _batch_engagement_quality(filtered_program_ids, month_start)
+    goal_map = _batch_goal_completion(filtered_program_ids)
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="executive-dashboard.csv"'
+    writer = csv.writer(response)
+    writer.writerow(["Program", "Total Enrolled", "Active", "New This Period", "Notes This Week", "Engagement %", "Goal Completion %"])
+
+    for program in filtered_programs:
+        pid = program.pk
+        es = enrolment_stats.get(pid, {})
+        eng = engagement_map.get(pid)
+        goal = goal_map.get(pid)
+        writer.writerow([
+            program.translated_name,
+            es.get("total", 0),
+            es.get("active", 0),
+            es.get("new_this_month", 0),
+            notes_week_map.get(pid, 0),
+            f"{eng}%" if eng is not None else "",
+            f"{goal}%" if goal is not None else "",
+        ])
+
+    return response
 
 
 # ---------------------------------------------------------------------------
