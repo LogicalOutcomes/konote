@@ -4678,9 +4678,6 @@ article[aria-label="notification"].fading-out {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #fff;
     min-width: 0;
     transition: width 0.3s;
 }

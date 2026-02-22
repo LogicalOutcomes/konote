@@ -57,6 +57,12 @@
             {% trans "Gap: aligned" %}
             {% endif %}
         </div>
+        <div class="insights-card-detail">
+            {% blocktrans with n_self=two_lenses.n_self_report n_staff=two_lenses.n_staff %}n={{ n_self }} self-report, n={{ n_staff }} staff{% endblocktrans %}
+        </div>
+        {% if two_lenses.n_self_report < 20 or two_lenses.n_staff < 20 %}
+        <div class="insights-card-warning">{% trans "Small sample — interpret gap with caution." %}</div>
+        {% endif %}
         {% elif lead_achievement %}
         <div class="insights-card-label">{{ lead_achievement.name }}</div>
         <div class="insights-card-value">{{ lead_achievement.achieved_pct }}%</div>
@@ -95,9 +101,9 @@
         <div class="insights-card-label">{% trans "Data completeness" %}</div>
         {% if data_completeness %}
         <div class="insights-card-value">
-            {% if data_completeness.completeness_level == "full" %}<span title="{% trans 'Full data' %}">&#9679;</span>
-            {% elif data_completeness.completeness_level == "partial" %}<span title="{% trans 'Partial data' %}">&#9684;</span>
-            {% else %}<span title="{% trans 'Low data' %}">&#9675;</span>{% endif %}
+            {% if data_completeness.completeness_level == "full" %}<span title="{% trans 'Full data' %}" aria-label="{% trans 'Full data' %}">&#9679;</span>
+            {% elif data_completeness.completeness_level == "partial" %}<span title="{% trans 'Partial data' %}" aria-label="{% trans 'Partial data' %}">&#9684;</span>
+            {% else %}<span title="{% trans 'Low data' %}" aria-label="{% trans 'Low data' %}">&#9675;</span>{% endif %}
             {{ data_completeness.completeness_pct }}%
         </div>
         <div class="insights-card-detail">
@@ -542,14 +548,14 @@
                         {
                             label: '{{ lbl_band_low|escapejs }}',
                             data: points.map(function(p) { return p.band_low_pct; }),
-                            borderColor: 'var(--kn-band-low, #5e81ac)',
+                            borderColor: '#5e81ac',
                             tension: 0.3,
                             fill: false,
                         },
                         {
                             label: '{{ lbl_band_high|escapejs }}',
                             data: points.map(function(p) { return p.band_high_pct; }),
-                            borderColor: 'var(--kn-band-high, #a3be8c)',
+                            borderColor: '#a3be8c',
                             tension: 0.3,
                             fill: false,
                         },

@@ -111,13 +111,14 @@ def get_metric_distributions(program, date_from, date_to):
     last_recorded_per_metric = {}
 
     values_data = qs.select_related("metric_def").values_list(
+        "pk",  # MetricValue PK for distinct rows
         "metric_def_id",
         "progress_note_target__plan_target__client_file_id",
         "value",
         "_effective_date",
-    )
+    ).distinct()
 
-    for metric_def_id, client_file_id, raw_value, effective_date in values_data:
+    for mv_pk, metric_def_id, client_file_id, raw_value, effective_date in values_data:
         try:
             numeric_value = float(raw_value)
         except (ValueError, TypeError):
@@ -201,13 +202,14 @@ def get_achievement_rates(program, date_from, date_to):
     metric_defs = {}
 
     values_data = qs.values_list(
+        "pk",
         "metric_def_id",
         "progress_note_target__plan_target__client_file_id",
         "value",
         "_effective_date",
-    )
+    ).distinct()
 
-    for metric_def_id, client_file_id, raw_value, effective_date in values_data:
+    for mv_pk, metric_def_id, client_file_id, raw_value, effective_date in values_data:
         existing = metric_participant_latest[metric_def_id].get(client_file_id)
         if existing is None or effective_date > existing[1]:
             metric_participant_latest[metric_def_id][client_file_id] = (raw_value, effective_date)
@@ -265,13 +267,14 @@ def get_metric_trends(program, date_from, date_to):
     metric_defs = {}
 
     values_data = qs.values_list(
+        "pk",
         "metric_def_id",
         "progress_note_target__plan_target__client_file_id",
         "value",
         "month",
-    )
+    ).distinct()
 
-    for metric_def_id, client_file_id, raw_value, month in values_data:
+    for mv_pk, metric_def_id, client_file_id, raw_value, month in values_data:
         try:
             numeric_value = float(raw_value)
         except (ValueError, TypeError):
@@ -324,31 +327,37 @@ def get_metric_trends(program, date_from, date_to):
     return results
 
 
-def get_two_lenses(program, date_from, date_to):
+def get_two_lenses(program, date_from, date_to, structured=None, distributions=None):
     """Compare participant self-report vs. staff assessment.
 
     When program has both Self-Efficacy data and staff descriptors with n >= 10,
     returns the gap between participant self-report high band % and staff
     'good_place' descriptor %.
 
-    Returns:
-        dict or None: {self_report_pct, staff_pct, gap, has_sufficient_data}
-    """
-    from apps.reports.insights import get_structured_insights
+    Args:
+        structured: Pre-computed result from get_structured_insights() (avoids re-query).
+        distributions: Pre-computed result from get_metric_distributions() (avoids re-query).
 
-    # Get staff descriptor data
-    structured = get_structured_insights(program=program, date_from=date_from, date_to=date_to)
+    Returns:
+        dict or None: {self_report_pct, staff_pct, gap, n_self_report, n_staff,
+                       has_sufficient_data}
+    """
+    # Use pre-computed data if available, otherwise fetch
+    if structured is None:
+        from apps.reports.insights import get_structured_insights
+        structured = get_structured_insights(program=program, date_from=date_from, date_to=date_to)
+
     staff_good_place_pct = structured.get("descriptor_distribution", {}).get("In a good place", 0)
     staff_participant_count = structured.get("participant_count", 0)
 
     if staff_participant_count < MIN_N_FOR_DISTRIBUTION:
         return None
 
-    # Get Self-Efficacy distribution
-    from apps.plans.models import SELF_EFFICACY_METRIC_NAME
-    distributions = get_metric_distributions(program, date_from, date_to)
+    if distributions is None:
+        distributions = get_metric_distributions(program, date_from, date_to)
 
     # Find Self-Efficacy metric in distributions
+    from apps.plans.models import SELF_EFFICACY_METRIC_NAME
     self_eff_data = None
     for metric_id, data in distributions.items():
         md = MetricDefinition.objects.filter(pk=metric_id, name=SELF_EFFICACY_METRIC_NAME).first()
@@ -366,6 +375,8 @@ def get_two_lenses(program, date_from, date_to):
         "self_report_pct": self_report_pct,
         "staff_pct": staff_good_place_pct,
         "gap": gap,
+        "n_self_report": self_eff_data["total"],
+        "n_staff": staff_participant_count,
         "has_sufficient_data": True,
     }
 
@@ -396,20 +407,8 @@ def get_data_completeness(program, date_from, date_to):
         }
 
     # Count participants with at least one MetricValue in the date range
-    mv_qs = MetricValue.objects.filter(
-        progress_note_target__progress_note__status="default",
-        progress_note_target__progress_note__client_file__enrolments__program=program,
-        progress_note_target__progress_note__client_file__enrolments__status="enrolled",
-    ).annotate(
-        _effective_date=_effective_date_annotation(),
-    )
-    if date_from:
-        mv_qs = mv_qs.filter(_effective_date__date__gte=date_from)
-    if date_to:
-        mv_qs = mv_qs.filter(_effective_date__date__lte=date_to)
-
     with_scores_count = (
-        mv_qs
+        _base_metric_values_qs(program, date_from, date_to)
         .values("progress_note_target__plan_target__client_file_id")
         .distinct()
         .count()

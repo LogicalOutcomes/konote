@@ -276,7 +276,9 @@ def program_insights(request):
         achievement_rates_data = get_achievement_rates(program, date_from, date_to)
         metric_trends = get_metric_trends(program, date_from, date_to)
         data_completeness = get_data_completeness(program, date_from, date_to)
-        two_lenses = get_two_lenses(program, date_from, date_to)
+        two_lenses = get_two_lenses(program, date_from, date_to,
+                                    structured=structured,
+                                    distributions=metric_distributions)
 
         # Enrich achievement rates with not-achieved count and journey context
         for metric_id, ach in achievement_rates_data.items():
