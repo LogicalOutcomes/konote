@@ -45,12 +45,12 @@
                 hx-swap="innerHTML"
                 hx-trigger="change"
                 hx-indicator="#period-loading"
-                hx-vals='js:{"template_id": this.value}'
+                hx-params="report_template"
                 {% if form.report_template.errors %}aria-invalid="true" aria-describedby="err_report_template"{% endif %}>
             <option value="">{% trans "— Select a report —" %}</option>
             {% for choice in form.report_template.field.queryset %}
             <option value="{{ choice.pk }}" {% if form.report_template.value|stringformat:"s" == choice.pk|stringformat:"s" %}selected{% endif %}>
-                {{ choice.partner.translated_name }} — {{ choice.name }}
+                {{ choice.name }}
             </option>
             {% endfor %}
         </select>

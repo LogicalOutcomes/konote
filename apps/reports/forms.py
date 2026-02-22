@@ -746,7 +746,13 @@ class TemplateExportForm(ExportRecipientMixin, forms.Form):
             )
             self.fields["report_template"].queryset = template_qs
             self.fields["report_template"].label_from_instance = (
-                lambda obj: f"{obj.partner.translated_name} \u2014 {obj.name}"
+                lambda obj: (
+                    obj.name
+                    if obj.partner and obj.partner.translated_name in obj.name
+                    else f"{obj.partner.translated_name} \u2014 {obj.name}"
+                    if obj.partner
+                    else obj.name
+                )
             )
 
         # On POST, populate period choices from the submitted template
