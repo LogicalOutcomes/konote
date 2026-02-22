@@ -1352,7 +1352,7 @@ def template_period_options(request):
     Called when the user changes the template dropdown on the generate
     report form. Returns an HTML fragment injected into #period-panel.
     """
-    template_id = request.GET.get("template_id")
+    template_id = request.GET.get("report_template")
     if not template_id:
         return HttpResponse("")
 
