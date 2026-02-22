@@ -12,14 +12,22 @@
 <form method="post">
     {% csrf_token %}
     {% for field in form %}
-    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-    {{ field }}
-    {% if field.help_text %}
-    <small>{{ field.help_text }}</small>
-    {% endif %}
-    {% if field.errors %}
-    <small class="error" role="alert">{{ field.errors.0 }}</small>
-    {% endif %}
+    <div {% if field.name == "higher_is_better" or field.name == "threshold_low" or field.name == "threshold_high" or field.name == "target_band_high_pct" %}class="metric-scale-field"{% elif field.name == "achievement_options" or field.name == "achievement_success_values" or field.name == "target_rate" %}class="metric-achievement-field"{% endif %}>
+        {% if field.name == "higher_is_better" %}
+        <label>
+            {{ field }} {{ field.label }}
+        </label>
+        {% else %}
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% endif %}
+        {% if field.help_text %}
+        <small>{{ field.help_text }}</small>
+        {% endif %}
+        {% if field.errors %}
+        <small class="error" role="alert">{{ field.errors.0 }}</small>
+        {% endif %}
+    </div>
     {% endfor %}
 
     <div role="group">
@@ -27,4 +35,29 @@
         <a href="{% url 'metrics:metric_library' %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
     </div>
 </form>
+
+<script>
+(function() {
+    var metricTypeSelect = document.getElementById('id_metric_type');
+    if (!metricTypeSelect) return;
+
+    var scaleFields = document.querySelectorAll('.metric-scale-field');
+    var achievementFields = document.querySelectorAll('.metric-achievement-field');
+
+    function toggleFields() {
+        var isScale = metricTypeSelect.value === 'scale';
+        var isAchievement = metricTypeSelect.value === 'achievement';
+
+        scaleFields.forEach(function(el) {
+            el.style.display = isScale ? '' : 'none';
+        });
+        achievementFields.forEach(function(el) {
+            el.style.display = isAchievement ? '' : 'none';
+        });
+    }
+
+    metricTypeSelect.addEventListener('change', toggleFields);
+    toggleFields();
+})();
+</script>
 {% endblock %}
