@@ -8,13 +8,7 @@
     <title>{% trans "Thank You" %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
-    <style>
-        .lang-nav { display:flex; justify-content:flex-end; padding:0.75rem 1.25rem 0 }
-        .lang-nav form { margin:0 }
-        .lang-link { background:none; border:none; color:var(--kn-primary, #0d7377); font-size:0.875rem; font-weight:600; cursor:pointer; text-decoration:underline; text-underline-offset:0.2em; padding:0.25rem 0.5rem }
-        .lang-link:hover,.lang-link:focus-visible { background:rgba(13,115,119,0.08) }
-        .lang-link:focus-visible { outline:2px solid var(--kn-primary, #0d7377); outline-offset:2px }
-    </style>
+    {% include "_lang_toggle_styles.html" %}
 </head>
 <body>
 {% include "_lang_toggle.html" with max_width="720px" %}
