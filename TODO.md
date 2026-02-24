@@ -100,6 +100,13 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — (CIDS-IMPACT1)
 - [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — (CIDS-VALIDATE1)
 
+### Phase: I18N Process Improvements (see tasks/i18n-process-improvements.md)
+
+- [ ] Resolve ~147 fuzzy PO entries — old French translations that may no longer match current English strings (I18N-FUZZY1)
+- [ ] Add terminology table and "What Gets Translated" matrix to CLAUDE.md Translations section — so every session sees the glossary (I18N-CLAUDE-REF1)
+- [ ] Verify active offer compliance for language toggle — visible on every page, keyboard-accessible, not buried in menus (I18N-ACTIVE-OFFER1)
+- [ ] Add insights-metric-distributions DRR to CLAUDE.md DRR list — missing from list but exists on disk (I18N-DRR-LIST1)
+
 ### Phase: Other Upcoming
 
 - [ ] Permissions Phase 2 — remaining 10 items: discharge access transitions, consent model, DV-safe mode, GATED clinical access, group schedule vs roster, per-field front desk edit, SCOPED→PROGRAM rename, partner report key, alert escalation, dashboard split (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P3–12)
