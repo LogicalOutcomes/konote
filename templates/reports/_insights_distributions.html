@@ -1,0 +1,109 @@
+{% load i18n %}
+{# Layer 1: Where Participants Are — scale metric band distributions #}
+
+{% if metric_distributions %}
+<section aria-labelledby="distributions-heading">
+
+{% for metric_id, dist in metric_distributions.items %}
+<div class="insights-distribution-bar">
+    <div class="insights-distribution-bar__header">
+        <h4 class="insights-distribution-bar__title">{{ dist.name }}</h4>
+        <span class="insights-distribution-bar__meta">
+            {% blocktrans with n=dist.total %}n={{ n }}{% endblocktrans %}
+            {% if dist.last_recorded %}
+            &middot; {% blocktrans with date=dist.last_recorded %}last recorded {{ date }}{% endblocktrans %}
+            {% endif %}
+        </span>
+    </div>
+
+    {# Stacked horizontal bar #}
+    <div class="insights-distribution-bar__bar"
+         role="img"
+         aria-label="{% blocktrans with name=dist.name low=dist.band_low_pct mid=dist.band_mid_pct high=dist.band_high_pct %}{{ name }}: {{ low }}% more support needed, {{ mid }}% on track, {{ high }}% goals within reach{% endblocktrans %}">
+        {% if dist.band_low_pct > 0 %}
+        <div class="insights-distribution-bar__segment insights-distribution-bar__segment--low"
+             style="width: {{ dist.band_low_pct }}%;"
+             aria-hidden="true">
+            {% if dist.band_low_pct >= 10 %}{{ dist.band_low_pct }}%{% endif %}
+        </div>
+        {% endif %}
+        {% if dist.band_mid_pct > 0 %}
+        <div class="insights-distribution-bar__segment insights-distribution-bar__segment--mid"
+             style="width: {{ dist.band_mid_pct }}%;"
+             aria-hidden="true">
+            {% if dist.band_mid_pct >= 10 %}{{ dist.band_mid_pct }}%{% endif %}
+        </div>
+        {% endif %}
+        {% if dist.band_high_pct > 0 %}
+        <div class="insights-distribution-bar__segment insights-distribution-bar__segment--high"
+             style="width: {{ dist.band_high_pct }}%;"
+             aria-hidden="true">
+            {% if dist.band_high_pct >= 10 %}{{ dist.band_high_pct }}%{% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    {# Legend #}
+    <div class="insights-distribution-bar__legend">
+        <span class="insights-distribution-bar__legend-item">
+            <span class="insights-distribution-bar__swatch insights-distribution-bar__swatch--low" aria-hidden="true"></span>
+            {% trans "More support needed" %}: {{ dist.band_low_pct }}%
+        </span>
+        <span class="insights-distribution-bar__legend-item">
+            <span class="insights-distribution-bar__swatch insights-distribution-bar__swatch--mid" aria-hidden="true"></span>
+            {% trans "On track" %}: {{ dist.band_mid_pct }}%
+        </span>
+        <span class="insights-distribution-bar__legend-item">
+            <span class="insights-distribution-bar__swatch insights-distribution-bar__swatch--high" aria-hidden="true"></span>
+            {% trans "Goals within reach" %}: {{ dist.band_high_pct }}%
+        </span>
+    </div>
+
+    {# Trend direction #}
+    {% with trend_dir=trend_directions|default_if_none:""|dictsort:metric_id %}
+    {% endwith %}
+
+    {# Accessible data table #}
+    {% if metric_trends %}
+    {% with trends=metric_trends %}
+    {% for trend_metric_id, trend_data in trends.items %}
+    {% if trend_metric_id == metric_id %}
+    <details class="chart-data-table">
+        <summary>{% blocktrans with name=dist.name %}View {{ name }} trend data{% endblocktrans %}</summary>
+        <table role="table" aria-label="{% blocktrans with name=dist.name %}{{ name }} monthly band percentages{% endblocktrans %}">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Month" %}</th>
+                    <th scope="col">{% trans "More support needed" %}</th>
+                    <th scope="col">{% trans "Goals within reach" %}</th>
+                    <th scope="col">{% trans "Participants" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in trend_data %}
+                <tr>
+                    <td>{{ row.month }}</td>
+                    <td>{{ row.band_low_pct }}%</td>
+                    <td>{{ row.band_high_pct }}%</td>
+                    <td>{{ row.total }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </details>
+    {% endif %}
+    {% endfor %}
+    {% endwith %}
+    {% endif %}
+</div>
+{% endfor %}
+
+{# New participant note #}
+{% if total_new_participants > 0 %}
+<p class="insights-new-note">
+    {% blocktrans with count=total_new_participants count counter=total_new_participants %}{{ count }} participant has only one assessment and is not included in distributions. Movement tracking — who is progressing between bands over time — will be available in a future update.{% plural %}{{ count }} participants have only one assessment and are not included in distributions. Movement tracking — who is progressing between bands over time — will be available in a future update.{% endblocktrans %}
+</p>
+{% endif %}
+
+</section>
+{% endif %}
