@@ -214,14 +214,16 @@ class ODKCentralClient:
             f"/projects/{project_id}/datasets/{dataset_name}/entities/{entity_uuid}",
         )
 
-    def bulk_create_entities(self, project_id, dataset_name, entities):
-        """Create multiple entities at once.
+    def create_entities_sequential(self, project_id, dataset_name, entities):
+        """Create multiple entities one at a time.
+
+        ODK Central does not have a bulk create endpoint (as of 2025),
+        so each entity requires a separate HTTP request. For large lists
+        (500+ participants) this may take several minutes.
 
         Args:
             entities: List of dicts with "label" and "data" keys.
         """
-        # ODK Central doesn't have a bulk create endpoint as of 2025,
-        # so we create entities one at a time.
         created = []
         for entity_data in entities:
             result = self.create_entity(

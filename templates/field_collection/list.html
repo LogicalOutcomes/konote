@@ -18,7 +18,7 @@
             <th scope="col">{% trans "Status" %}</th>
             <th scope="col">{% trans "Profile" %}</th>
             <th scope="col">{% trans "Data Tier" %}</th>
-            <th scope="col"></th>
+            <th scope="col"><span class="visually-hidden">{% trans "Actions" %}</span></th>
         </tr>
     </thead>
     <tbody>
@@ -26,21 +26,21 @@
         <tr>
             <td>{{ item.program.name }}</td>
             <td>
-                {% if item.config.enabled %}
+                {% if item.config and item.config.enabled %}
                     <span class="badge badge-success">{% trans "Enabled" %}</span>
                 {% else %}
                     <span class="badge badge-neutral">{% trans "Disabled" %}</span>
                 {% endif %}
             </td>
             <td>
-                {% if item.config.enabled %}
+                {% if item.config and item.config.enabled %}
                     {{ item.config.get_profile_display }}
                 {% else %}
                     —
                 {% endif %}
             </td>
             <td>
-                {% if item.config.enabled %}
+                {% if item.config and item.config.enabled %}
                     {{ item.config.get_data_tier_display }}
                 {% else %}
                     —
@@ -53,6 +53,10 @@
                     {% trans "Configure" %}
                 </a>
             </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">{% trans "No active programs found." %}</td>
         </tr>
         {% endfor %}
     </tbody>

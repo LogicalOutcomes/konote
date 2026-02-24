@@ -79,33 +79,48 @@ class ProgramFieldConfig(models.Model):
         status = "enabled" if self.enabled else "disabled"
         return f"{self.program.name} — field collection {status}"
 
-    def save(self, *args, **kwargs):
-        """Apply profile defaults to form toggles when profile changes."""
-        profile_forms = {
-            "group": {
-                "form_session_attendance": True,
-                "form_visit_note": False,
-                "form_circle_observation": False,
-            },
-            "home_visiting": {
-                "form_session_attendance": False,
-                "form_visit_note": True,
-                "form_circle_observation": False,
-            },
-            "circle": {
-                "form_session_attendance": False,
-                "form_visit_note": True,
-                "form_circle_observation": True,
-            },
-            "full_field": {
-                "form_session_attendance": True,
-                "form_visit_note": True,
-                "form_circle_observation": True,
-            },
-        }
-        defaults = profile_forms.get(self.profile, {})
+    PROFILE_FORM_DEFAULTS = {
+        "group": {
+            "form_session_attendance": True,
+            "form_visit_note": False,
+            "form_circle_observation": False,
+        },
+        "home_visiting": {
+            "form_session_attendance": False,
+            "form_visit_note": True,
+            "form_circle_observation": False,
+        },
+        "circle": {
+            "form_session_attendance": False,
+            "form_visit_note": True,
+            "form_circle_observation": True,
+        },
+        "full_field": {
+            "form_session_attendance": True,
+            "form_visit_note": True,
+            "form_circle_observation": True,
+        },
+    }
+
+    def _apply_profile_defaults(self):
+        """Set form toggles based on the selected profile."""
+        defaults = self.PROFILE_FORM_DEFAULTS.get(self.profile, {})
         for field, value in defaults.items():
             setattr(self, field, value)
+
+    def save(self, *args, **kwargs):
+        """Apply profile defaults only on creation or when profile changes."""
+        if not self.pk:
+            # New record — always apply profile defaults
+            self._apply_profile_defaults()
+        else:
+            # Existing record — only apply if profile changed
+            try:
+                old = ProgramFieldConfig.objects.get(pk=self.pk)
+                if old.profile != self.profile:
+                    self._apply_profile_defaults()
+            except ProgramFieldConfig.DoesNotExist:
+                self._apply_profile_defaults()
         super().save(*args, **kwargs)
 
     @property

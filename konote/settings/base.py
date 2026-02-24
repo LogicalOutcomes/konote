@@ -40,9 +40,9 @@ AUTH_MODE = os.environ.get("AUTH_MODE", "local")
 DEMO_MODE = os.environ.get("DEMO_MODE", "").lower() in ("1", "true", "yes")
 
 # ODK Central — offline field data collection (optional)
+# Credentials are read from env vars at sync time by sync_odk command,
+# not stored in settings. Only URL is kept here for the feature toggle check.
 ODK_CENTRAL_URL = os.environ.get("ODK_CENTRAL_URL", "")
-ODK_CENTRAL_EMAIL = os.environ.get("ODK_CENTRAL_EMAIL", "")
-ODK_CENTRAL_PASSWORD = os.environ.get("ODK_CENTRAL_PASSWORD", "")
 
 # Application definition
 INSTALLED_APPS = [

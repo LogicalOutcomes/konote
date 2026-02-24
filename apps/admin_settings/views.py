@@ -293,7 +293,7 @@ DEFAULT_FEATURES = {
         "when_off": [_lazy("Field collection settings are hidden"), _lazy("Existing sync configurations are preserved")],
         "depends_on": [],
         "used_by": [],
-        "requires_config": ["ODK_CENTRAL_URL", "ODK_CENTRAL_EMAIL", "ODK_CENTRAL_PASSWORD"],
+        "requires_config": ["ODK_CENTRAL_URL"],
     },
 }
 

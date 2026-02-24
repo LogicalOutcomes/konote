@@ -12,9 +12,9 @@ Usage:
 """
 
 import logging
+import os
 from datetime import date, datetime
 
-from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from django.utils import timezone
 
@@ -24,7 +24,8 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     help = "Sync data between KoNote and ODK Central"
 
-    def _get_sync_user(self):
+    @staticmethod
+    def _get_sync_user():
         """Get or create a system user for ODK sync imports."""
         from apps.auth_app.models import User
         user, _ = User.objects.get_or_create(
@@ -59,10 +60,10 @@ class Command(BaseCommand):
         program_id = options.get("program")
         dry_run = options["dry_run"]
 
-        # Validate ODK Central configuration
-        odk_url = getattr(settings, "ODK_CENTRAL_URL", "")
-        odk_email = getattr(settings, "ODK_CENTRAL_EMAIL", "")
-        odk_password = getattr(settings, "ODK_CENTRAL_PASSWORD", "")
+        # Read ODK Central credentials from environment at sync time
+        odk_url = os.environ.get("ODK_CENTRAL_URL", "")
+        odk_email = os.environ.get("ODK_CENTRAL_EMAIL", "")
+        odk_password = os.environ.get("ODK_CENTRAL_PASSWORD", "")
 
         if not all([odk_url, odk_email, odk_password]):
             raise CommandError(
@@ -144,11 +145,13 @@ class Command(BaseCommand):
 
     def _ensure_odk_project(self, client, config):
         """Create or verify the ODK Central project for this program."""
+        from apps.field_collection.odk_client import ODKCentralError
+
         if config.odk_project_id:
             try:
                 client.get_project(config.odk_project_id)
                 return config
-            except Exception:
+            except ODKCentralError:
                 self.stdout.write(
                     self.style.WARNING(f"  ODK project {config.odk_project_id} not found, creating new one...")
                 )
@@ -294,6 +297,8 @@ class Command(BaseCommand):
 
     def _sync_group_entities(self, client, project_id, groups, tier_fields):
         """Create or update group entities in ODK Central."""
+        from apps.field_collection.odk_client import ODKCentralError
+
         dataset_name = "Groups"
 
         datasets = client.list_entity_lists(project_id)
@@ -317,7 +322,7 @@ class Command(BaseCommand):
                     data=entity_data,
                     uuid=uuid,
                 )
-            except Exception:
+            except ODKCentralError:
                 # Entity may already exist — try update
                 client.update_entity(
                     project_id, dataset_name, uuid,
@@ -327,6 +332,8 @@ class Command(BaseCommand):
 
     def _sync_app_users(self, client, project_id, config, staff_roles):
         """Create ODK app users from KoNote staff roles."""
+        from apps.field_collection.odk_client import ODKCentralError
+
         existing_users = client.list_app_users(project_id)
         existing_names = {u["displayName"] for u in existing_users}
 
@@ -338,18 +345,21 @@ class Command(BaseCommand):
                 for form_id in config.enabled_forms:
                     try:
                         client.assign_app_user_to_form(project_id, form_id, app_user["id"])
-                    except Exception:
-                        pass  # Form may not exist yet
+                    except ODKCentralError as e:
+                        logger.warning("Could not assign app user to form %s: %s", form_id, e)
 
     def _pull_submissions(self, client, config, sync_run, dry_run):
         """Pull new submissions from ODK Central and create KoNote records."""
+        from apps.field_collection.models import SyncRun as SyncRunModel
+        from apps.field_collection.odk_client import ODKCentralError
+
         project_id = config.odk_project_id
         if not project_id:
             self.stdout.write("  No ODK project ID — skipping pull")
             return
 
         # Determine "since" filter from last successful sync
-        last_sync = SyncRun.objects.filter(
+        last_sync = SyncRunModel.objects.filter(
             status__in=["success", "partial"],
             direction__in=["pull", "both"],
         ).order_by("-started_at").first()
@@ -365,8 +375,9 @@ class Command(BaseCommand):
                     created, skipped = self._import_attendance(submissions, config)
                     sync_run.attendance_records_created += created
                     sync_run.submissions_skipped += skipped
-            except Exception as e:
+            except ODKCentralError as e:
                 self.stderr.write(f"  Error pulling attendance: {e}")
+                logger.error("Error pulling attendance for %s: %s", config.program.name, e)
                 sync_run.error_count += 1
 
         # Pull visit note submissions
@@ -378,8 +389,9 @@ class Command(BaseCommand):
                     created, skipped = self._import_visit_notes(submissions, config)
                     sync_run.notes_created += created
                     sync_run.submissions_skipped += skipped
-            except Exception as e:
+            except ODKCentralError as e:
                 self.stderr.write(f"  Error pulling visit notes: {e}")
+                logger.error("Error pulling visit notes for %s: %s", config.program.name, e)
                 sync_run.error_count += 1
 
     def _import_attendance(self, submissions, config):
@@ -433,6 +445,7 @@ class Command(BaseCommand):
 
             except Exception as e:
                 self.stderr.write(f"    Error importing attendance: {e}")
+                logger.error("Error importing attendance submission: %s", e, exc_info=True)
                 skipped += 1
 
         return created, skipped
@@ -444,12 +457,6 @@ class Command(BaseCommand):
 
         created = 0
         skipped = 0
-
-        # Map engagement scale values to KoNote's format
-        engagement_map = {
-            "1": "1", "2": "2", "3": "3",
-            "4": "4", "5": "5", "6": "6",
-        }
 
         for sub in submissions:
             try:
@@ -497,10 +504,10 @@ class Command(BaseCommand):
                         datetime.combine(visit_date, datetime.min.time())
                     )
 
-                # Engagement observation
+                # Engagement observation (scales match between ODK and KoNote)
                 engagement = sub.get("engagement", "")
                 if engagement and hasattr(note, "engagement_observation"):
-                    note.engagement_observation = engagement_map.get(engagement, "")
+                    note.engagement_observation = engagement
 
                 # Alliance rating
                 alliance = sub.get("alliance_rating", "")
@@ -515,6 +522,7 @@ class Command(BaseCommand):
 
             except Exception as e:
                 self.stderr.write(f"    Error importing visit note: {e}")
+                logger.error("Error importing visit note: %s", e, exc_info=True)
                 skipped += 1
 
         return created, skipped
@@ -533,7 +541,3 @@ class Command(BaseCommand):
         self.stdout.write(f"  Submissions skipped: {sync_run.submissions_skipped}")
         if sync_run.error_count:
             self.stdout.write(self.style.ERROR(f"  Errors: {sync_run.error_count}"))
-
-
-# Import SyncRun at module level for the "since" lookup
-from apps.field_collection.models import SyncRun  # noqa: E402
