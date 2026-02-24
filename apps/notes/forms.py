@@ -210,6 +210,7 @@ class MetricValueForm(forms.Form):
     metric_def_id = forms.IntegerField(widget=forms.HiddenInput())
     value = forms.CharField(required=False, max_length=100)
     is_scale = False
+    is_achievement = False
     auto_calc_value = None
 
     def __init__(self, *args, metric_def=None, target_name="", **kwargs):
@@ -241,48 +242,70 @@ class MetricValueForm(forms.Form):
                 help_parts.append(range_str)
             self.fields["value"].help_text = " | ".join(help_parts)
 
-            # Detect scale metrics: both min/max set, both integers, small range
-            is_scale = (
-                metric_def.min_value is not None
-                and metric_def.max_value is not None
-                and metric_def.min_value == int(metric_def.min_value)
-                and metric_def.max_value == int(metric_def.max_value)
-                and (metric_def.max_value - metric_def.min_value) <= 10
-            )
-
-            if is_scale:
-                low = int(metric_def.min_value)
-                high = int(metric_def.max_value)
+            # Achievement metrics: render as radio pills with option labels
+            if metric_def.metric_type == "achievement" and metric_def.achievement_options:
                 choices = [("", "---------")] + [
-                    (str(i), str(i)) for i in range(low, high + 1)
+                    (opt, opt) for opt in metric_def.achievement_options
                 ]
                 self.fields["value"].widget = forms.RadioSelect(
                     choices=choices,
                     attrs={
-                        "class": "scale-pills-input",
+                        "class": "achievement-pills-input",
                         "aria-label": f"{metric_def.translated_name}: {metric_def.translated_definition}",
                     },
                 )
-                self.is_scale = True
+                self.is_achievement = True
+                # Override help text — don't show range for achievements
+                self.fields["value"].help_text = metric_def.translated_definition or ""
             else:
-                # Standard number input for wide-range metrics
-                attrs = {}
-                if metric_def.min_value is not None:
-                    attrs["min"] = metric_def.min_value
-                if metric_def.max_value is not None:
-                    attrs["max"] = metric_def.max_value
-                if attrs:
-                    attrs["type"] = "number"
-                    attrs["step"] = "any"
-                    self.fields["value"].widget = forms.NumberInput(attrs=attrs)
-                self.is_scale = False
+                # Detect scale metrics: both min/max set, both integers, small range
+                is_scale = (
+                    metric_def.min_value is not None
+                    and metric_def.max_value is not None
+                    and metric_def.min_value == int(metric_def.min_value)
+                    and metric_def.max_value == int(metric_def.max_value)
+                    and (metric_def.max_value - metric_def.min_value) <= 10
+                )
+
+                if is_scale:
+                    low = int(metric_def.min_value)
+                    high = int(metric_def.max_value)
+                    choices = [("", "---------")] + [
+                        (str(i), str(i)) for i in range(low, high + 1)
+                    ]
+                    self.fields["value"].widget = forms.RadioSelect(
+                        choices=choices,
+                        attrs={
+                            "class": "scale-pills-input",
+                            "aria-label": f"{metric_def.translated_name}: {metric_def.translated_definition}",
+                        },
+                    )
+                    self.is_scale = True
+                else:
+                    # Standard number input for wide-range metrics
+                    attrs = {}
+                    if metric_def.min_value is not None:
+                        attrs["min"] = metric_def.min_value
+                    if metric_def.max_value is not None:
+                        attrs["max"] = metric_def.max_value
+                    if attrs:
+                        attrs["type"] = "number"
+                        attrs["step"] = "any"
+                        self.fields["value"].widget = forms.NumberInput(attrs=attrs)
+                    self.is_scale = False
 
     def clean_value(self):
         val = self.cleaned_data.get("value", "").strip()
         if not val:
             return ""
-        # Validate against min/max if the metric defines them
         if hasattr(self, "metric_def"):
+            # Achievement metrics: validate option is in the allowed list
+            if self.metric_def.metric_type == "achievement":
+                valid_options = self.metric_def.achievement_options or []
+                if val not in valid_options:
+                    raise forms.ValidationError(_("Invalid option selected."))
+                return val
+            # Scale/numeric metrics: validate against min/max
             try:
                 numeric = float(val)
             except ValueError:
