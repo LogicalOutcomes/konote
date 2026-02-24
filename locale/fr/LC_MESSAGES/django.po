@@ -14686,23 +14686,23 @@ msgstr ""
 "visites individuelles."
 
 msgid "%(scored)d scored · %(low_pct).0f%% need more support"
-msgstr "%(scored)d évalués · %(low_pct).0f %% ont besoin de plus de soutien"
+msgstr "%(scored)d évalué(e)s · %(low_pct).0f %% ont besoin de plus de soutien"
 
 msgid "Achievement"
-msgstr "Réalisation"
+msgstr "Atteinte"
 
 msgid ""
 "Achievement rates for program-defined outcomes. Shows the percentage of "
 "participants who have reached each milestone."
 msgstr ""
-"Taux de réalisation des résultats définis par le programme. Affiche le "
-"pourcentage de participants ayant atteint chaque jalon."
+"Taux d'atteinte des résultats définis par le programme. Affiche le "
+"pourcentage de participant(e)s ayant atteint chaque jalon."
 
 msgid "Active participants"
-msgstr "Participants actifs"
+msgstr "Participant(e)s actifs"
 
 msgid "Band"
-msgstr "Bande"
+msgstr "Palier"
 
 msgid "Data completeness"
 msgstr "Complétude des données"
@@ -14711,16 +14711,15 @@ msgid ""
 "Distribution of participants across outcome bands, based on their most "
 "recent scores. One data point per person (median across goals)."
 msgstr ""
-"Répartition des participants selon les bandes de résultats, basée sur leurs "
-"scores les plus récents. Un point de données par personne (médiane des "
-"objectifs)."
+"Répartition des participant(e)s selon les paliers de résultats, basée sur "
+"leurs scores les plus récents. Un point de données par personne (médiane de "
+"l'ensemble des objectifs)."
 
 msgid "Distributions may not represent the full program."
-msgstr "Les répartitions peuvent ne pas représenter l’ensemble du programme."
+msgstr "Les répartitions peuvent ne pas représenter l'ensemble du programme."
 
 msgid "False for metrics like PHQ-9 where lower is better."
-msgstr ""
-"Faux pour les mesures comme le PHQ-9 où un score plus bas est préférable."
+msgstr "Faux pour les mesures comme le PHQ-9 où un score plus bas est meilleur."
 
 msgid "Feedback themes"
 msgstr "Thèmes de rétroaction"
@@ -14729,7 +14728,7 @@ msgid "Full data"
 msgstr "Données complètes"
 
 msgid "Gap: aligned"
-msgstr "Écart : aligné"
+msgstr "Écart\u00a0: aligné"
 
 msgid "Goals within reach"
 msgstr "Objectifs à portée"
@@ -14738,29 +14737,26 @@ msgid "Headline"
 msgstr "En vedette"
 
 msgid "High band boundary (scale metrics)."
-msgstr "Limite de la bande supérieure (mesures d’échelle)."
+msgstr "Limite du palier supérieur (mesures par échelle)."
 
 msgid ""
 "How workers rate participant progress at each session — a professional "
 "judgment, not a measured score."
 msgstr ""
-"Comment les intervenants évaluent les progrès des participants à chaque "
-"séance — un jugement professionnel, et non un score mesuré."
+"Comment les intervenant(e)s évaluent la progression des participant(e)s à "
+"chaque séance — un jugement professionnel, pas un score mesuré."
 
 msgid "Invalid option selected."
 msgstr "Option sélectionnée non valide."
 
 msgid "Line chart showing staff assessment trends by month"
-msgstr ""
-"Graphique linéaire montrant les tendances d’évaluation du personnel par mois"
+msgstr "Graphique linéaire montrant les tendances d'évaluation du personnel par mois"
 
 msgid "Low band boundary (scale metrics)."
-msgstr "Limite de la bande inférieure (mesures d’échelle)."
+msgstr "Limite du palier inférieur (mesures par échelle)."
 
 msgid "Low band threshold must be less than high band threshold."
-msgstr ""
-"Le seuil de la bande inférieure doit être inférieur au seuil de la bande "
-"supérieure."
+msgstr "Le seuil du palier inférieur doit être inférieur au seuil du palier supérieur."
 
 msgid "Low data"
 msgstr "Peu de données"
@@ -14772,8 +14768,8 @@ msgid ""
 "Movement tracking — who is progressing between bands over time — will be "
 "available in a future update."
 msgstr ""
-"Le suivi des mouvements — qui progresse entre les bandes au fil du temps — "
-"sera disponible dans une mise à jour future."
+"Le suivi des mouvements — qui progresse entre les paliers au fil du temps "
+"— sera disponible dans une mise à jour future."
 
 msgid "Not yet achieved"
 msgstr "Pas encore atteint"
@@ -14788,30 +14784,26 @@ msgid "Open feedback themes"
 msgstr "Thèmes de rétroaction ouverts"
 
 msgid "Optional target % for achievement metrics (e.g. 70 for 70%)."
-msgstr ""
-"Cible optionnelle en % pour les mesures de réalisation (p. ex. 70 pour "
-"70 %)."
+msgstr "Cible facultative en % pour les mesures d'atteinte (ex. 70 pour 70 %)."
 
 msgid "Optional target for % in high band (scale metrics)."
-msgstr ""
-"Cible optionnelle pour le % dans la bande supérieure (mesures d’échelle)."
+msgstr "Cible facultative pour le % dans le palier supérieur (mesures par échelle)."
 
 msgid ""
 "Options for achievement metrics, e.g. [\"Employed\", \"In training\", "
 "\"Unemployed\"]."
 msgstr ""
-"Options pour les mesures de réalisation, p. ex. [« Employé », « En "
-"formation », « Sans emploi »]."
+"Options pour les mesures d'atteinte, ex. [\"Employed\", \"In training\", "
+"\"Unemployed\"]."
 
 msgid "Partial data"
 msgstr "Données partielles"
 
 msgid "Participant Voice"
-msgstr "Voix des participants"
+msgstr "Voix des participant(e)s"
 
 msgid "Please enter a valid JSON list, e.g. [\"Option 1\", \"Option 2\"]."
-msgstr ""
-"Veuillez entrer une liste JSON valide, p. ex. [« Option 1 », « Option 2 »]."
+msgstr "Veuillez entrer une liste JSON valide, ex. [\"Option 1\", \"Option 2\"]."
 
 msgid "Program Outcomes"
 msgstr "Résultats du programme"
@@ -14820,14 +14812,14 @@ msgid ""
 "Scale = numeric value recorded repeatedly. Achievement = categorical, "
 "typically recorded once."
 msgstr ""
-"Échelle = valeur numérique enregistrée de façon répétée. Réalisation = "
+"Échelle = valeur numérique enregistrée de façon répétée. Atteinte = "
 "catégorielle, généralement enregistrée une seule fois."
 
 msgid "Secondary signal"
 msgstr "Signal secondaire"
 
 msgid "Small sample — interpret gap with caution."
-msgstr "Petit échantillon — interpréter l’écart avec prudence."
+msgstr "Petit échantillon — interpréter l'écart avec prudence."
 
 msgid "Staff Assessments"
 msgstr "Évaluations du personnel"
@@ -14839,7 +14831,7 @@ msgid "Staff assessment trend data"
 msgstr "Données de tendance des évaluations du personnel"
 
 msgid "This field must be a list, e.g. [\\\"Option 1\\\", \\\"Option 2\\\"]."
-msgstr "Ce champ doit être une liste, p. ex. [« Option 1 », « Option 2 »]."
+msgstr "Ce champ doit être une liste, ex. [\\\"Option 1\\\", \\\"Option 2\\\"]."
 
 msgid "Trend"
 msgstr "Tendance"
@@ -14848,10 +14840,10 @@ msgid "Two Lenses"
 msgstr "Deux perspectives"
 
 msgid "Where Participants Are"
-msgstr "Où en sont les participants"
+msgstr "Où en sont les participant(e)s"
 
 msgid "Which options count as achieved, e.g. [\"Employed\"]."
-msgstr "Quelles options comptent comme atteintes, p. ex. [« Employé »]."
+msgstr "Quelles options comptent comme atteintes, ex. [\"Employed\"]."
 
 msgid "active"
 msgstr "actif"
@@ -14860,10 +14852,10 @@ msgid "declining"
 msgstr "en déclin"
 
 msgid "e.g. [\"Employed\", \"In training\", \"Unemployed\"]"
-msgstr "p. ex. [« Employé », « En formation », « Sans emploi »]"
+msgstr "ex. [\"Employed\", \"In training\", \"Unemployed\"]"
 
 msgid "e.g. [\"Employed\"]"
-msgstr "p. ex. [« Employé »]"
+msgstr "ex. [\"Employed\"]"
 
 msgid "good place"
 msgstr "bonne posture"
@@ -14878,7 +14870,7 @@ msgid "open themes"
 msgstr "thèmes ouverts"
 
 msgid "rated"
-msgstr "évalué"
+msgstr "évalué(e)s"
 
 msgid "stable"
 msgstr "stable"
@@ -15012,13 +15004,6 @@ msgstr ""
 "Contrôle les renseignements sur les participants disponibles sur les "
 "appareils de terrain. Les niveaux supérieurs exposent plus de renseignements"
 " personnels et exigent une sécurité accrue des appareils."
-
-msgid ""
-"DV safety: circles with blocked members and fewer than 4 visible members are"
-" automatically hidden"
-msgstr ""
-"Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres "
-"visibles sont automatiquement masqués"
 
 msgid "DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"
 msgstr "Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres visibles sont automatiquement masqués"
@@ -15249,192 +15234,11 @@ msgstr "exécutions de synchronisation"
 msgid "— None —"
 msgstr "— Aucun —"
 
-msgid "%(scored)d scored · %(low_pct).0f%% need more support"
-msgstr "%(scored)d évalué(e)s · %(low_pct).0f %% ont besoin de plus de soutien"
+msgid "\u2014 Select a report \u2014"
+msgstr "— Sélectionner un rapport —"
 
-msgid "Achievement"
-msgstr "Atteinte"
-
-msgid ""
-"Achievement rates for program-defined outcomes. Shows the percentage of "
-"participants who have reached each milestone."
-msgstr ""
-"Taux d'atteinte des résultats définis par le programme. Affiche le "
-"pourcentage de participant(e)s ayant atteint chaque jalon."
-
-msgid "Active participants"
-msgstr "Participant(e)s actifs"
-
-msgid "Band"
-msgstr "Palier"
-
-msgid "Data completeness"
-msgstr "Complétude des données"
-
-msgid ""
-"Distribution of participants across outcome bands, based on their most "
-"recent scores. One data point per person (median across goals)."
-msgstr ""
-"Répartition des participant(e)s selon les paliers de résultats, basée sur "
-"leurs scores les plus récents. Un point de données par personne (médiane de "
-"l'ensemble des objectifs)."
-
-msgid "Distributions may not represent the full program."
-msgstr "Les répartitions peuvent ne pas représenter l'ensemble du programme."
-
-msgid "False for metrics like PHQ-9 where lower is better."
-msgstr "Faux pour les mesures comme le PHQ-9 où un score plus bas est meilleur."
-
-msgid "Feedback themes"
-msgstr "Thèmes de rétroaction"
-
-msgid "Full data"
-msgstr "Données complètes"
-
-msgid "Gap: aligned"
-msgstr "Écart\u00a0: aligné"
-
-msgid "Goals within reach"
-msgstr "Objectifs à portée"
-
-msgid "Headline"
-msgstr "En vedette"
-
-msgid "High band boundary (scale metrics)."
-msgstr "Limite du palier supérieur (mesures par échelle)."
-
-msgid ""
-"How workers rate participant progress at each session — a professional "
-"judgment, not a measured score."
-msgstr ""
-"Comment les intervenant(e)s évaluent la progression des participant(e)s à "
-"chaque séance — un jugement professionnel, pas un score mesuré."
-
-msgid "Line chart showing staff assessment trends by month"
-msgstr "Graphique linéaire montrant les tendances d'évaluation du personnel par mois"
-
-msgid "Low band boundary (scale metrics)."
-msgstr "Limite du palier inférieur (mesures par échelle)."
-
-msgid "Low band threshold must be less than high band threshold."
-msgstr "Le seuil du palier inférieur doit être inférieur au seuil du palier supérieur."
-
-msgid "Low data"
-msgstr "Peu de données"
-
-msgid "More support needed"
-msgstr "Plus de soutien nécessaire"
-
-msgid ""
-"Movement tracking — who is progressing between bands over time — will be "
-"available in a future update."
-msgstr ""
-"Le suivi des mouvements — qui progresse entre les paliers au fil du temps "
-"— sera disponible dans une mise à jour future."
-
-msgid "Not yet achieved"
-msgstr "Pas encore atteint"
-
-msgid "Numeric scale"
-msgstr "Échelle numérique"
-
-msgid "On track"
-msgstr "En bonne voie"
-
-msgid "Open feedback themes"
-msgstr "Thèmes de rétroaction ouverts"
-
-msgid "Optional target % for achievement metrics (e.g. 70 for 70%)."
-msgstr "Cible facultative en % pour les mesures d'atteinte (ex. 70 pour 70 %)."
-
-msgid "Optional target for % in high band (scale metrics)."
-msgstr "Cible facultative pour le % dans le palier supérieur (mesures par échelle)."
-
-msgid ""
-"Options for achievement metrics, e.g. [\"Employed\", \"In training\", "
-"\"Unemployed\"]."
-msgstr ""
-"Options pour les mesures d'atteinte, ex. [\"Employed\", \"In training\", "
-"\"Unemployed\"]."
-
-msgid "Partial data"
-msgstr "Données partielles"
-
-msgid "Participant Voice"
-msgstr "Voix des participant(e)s"
-
-msgid "Please enter a valid JSON list, e.g. [\"Option 1\", \"Option 2\"]."
-msgstr "Veuillez entrer une liste JSON valide, ex. [\"Option 1\", \"Option 2\"]."
-
-msgid "Program Outcomes"
-msgstr "Résultats du programme"
-
-msgid ""
-"Scale = numeric value recorded repeatedly. Achievement = categorical, "
-"typically recorded once."
-msgstr ""
-"Échelle = valeur numérique enregistrée de façon répétée. Atteinte = "
-"catégorielle, généralement enregistrée une seule fois."
-
-msgid "Secondary signal"
-msgstr "Signal secondaire"
-
-msgid "Small sample — interpret gap with caution."
-msgstr "Petit échantillon — interpréter l'écart avec prudence."
-
-msgid "Staff Assessments"
-msgstr "Évaluations du personnel"
-
-msgid "Staff Assessments Over Time"
-msgstr "Évaluations du personnel au fil du temps"
-
-msgid "Staff assessment trend data"
-msgstr "Données de tendance des évaluations du personnel"
-
-msgid "This field must be a list, e.g. [\\\"Option 1\\\", \\\"Option 2\\\"]."
-msgstr "Ce champ doit être une liste, ex. [\\\"Option 1\\\", \\\"Option 2\\\"]."
-
-msgid "Trend"
-msgstr "Tendance"
-
-msgid "Two Lenses"
-msgstr "Deux perspectives"
-
-msgid "Where Participants Are"
-msgstr "Où en sont les participant(e)s"
-
-msgid "Which options count as achieved, e.g. [\"Employed\"]."
-msgstr "Quelles options comptent comme atteintes, ex. [\"Employed\"]."
-
-msgid "active"
-msgstr "actif"
-
-msgid "declining"
-msgstr "en déclin"
-
-msgid "e.g. [\"Employed\", \"In training\", \"Unemployed\"]"
-msgstr "ex. [\"Employed\", \"In training\", \"Unemployed\"]"
-
-msgid "e.g. [\"Employed\"]"
-msgstr "ex. [\"Employed\"]"
-
-msgid "good place"
-msgstr "bonne posture"
-
-msgid "improving"
-msgstr "en amélioration"
-
-msgid "most recent"
-msgstr "le plus récent"
-
-msgid "open themes"
-msgstr "thèmes ouverts"
-
-msgid "rated"
-msgstr "évalué(e)s"
-
-msgid "stable"
-msgstr "stable"
+msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\u2013%(m2)s)"
+msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s\u2013%(m2)s)"
 
 msgid "No outcome data recorded yet"
 msgstr "Aucune donnée de résultats enregistrée"
@@ -15447,7 +15251,7 @@ msgid "Program Learning"
 msgstr "Apprentissage du programme"
 
 msgid "View program learning"
-msgstr "Voir l'apprentissage du programme"
+msgstr "Voir l’apprentissage du programme"
 
 msgid "feedback themes to review"
 msgstr "thèmes de rétroaction à examiner"
@@ -15463,3 +15267,4 @@ msgstr "cible"
 
 msgid "trend"
 msgstr "tendance"
+

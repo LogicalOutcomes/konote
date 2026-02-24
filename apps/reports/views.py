@@ -263,17 +263,22 @@ def _get_grouping_label(group_by_value, grouping_field):
     return _("Demographic Group")
 
 
-def _write_achievement_csv(writer, achievement_summary, program):
+def _write_achievement_csv(writer, achievement_summary, program, *,
+                           is_confidential=None):
     """Write the achievement rate summary section to a CSV writer.
 
     Used by both aggregate and individual export paths. The achievement
     data is already aggregate (counts and percentages) so it's safe for
     all roles.
+
+    Args:
+        is_confidential: Optional bool override for All Programs mode
+            where program is None but confidential suppression is needed.
     """
     writer.writerow([])  # blank separator
     writer.writerow(sanitise_csv_row([_("# ===== ACHIEVEMENT RATE SUMMARY =====")]))
-    ach_total = suppress_small_cell(achievement_summary["total_clients"], program)
-    ach_met = suppress_small_cell(achievement_summary["clients_met_any_target"], program)
+    ach_total = suppress_small_cell(achievement_summary["total_clients"], program, is_confidential=is_confidential)
+    ach_met = suppress_small_cell(achievement_summary["clients_met_any_target"], program, is_confidential=is_confidential)
     if isinstance(ach_total, str) or isinstance(ach_met, str):
         writer.writerow(sanitise_csv_row([
             _("# Overall: %(met)s of %(total)s clients met at least one target")
@@ -288,8 +293,8 @@ def _write_achievement_csv(writer, achievement_summary, program):
         writer.writerow(sanitise_csv_row([_("# No client data available for achievement calculation")]))
 
     for metric in achievement_summary.get("by_metric", []):
-        m_total = suppress_small_cell(metric["total_clients"], program)
-        m_met = suppress_small_cell(metric.get("clients_met_target", 0), program)
+        m_total = suppress_small_cell(metric["total_clients"], program, is_confidential=is_confidential)
+        m_met = suppress_small_cell(metric.get("clients_met_target", 0), program, is_confidential=is_confidential)
         if metric["has_target"]:
             if isinstance(m_total, str) or isinstance(m_met, str):
                 writer.writerow(sanitise_csv_row([
@@ -538,8 +543,8 @@ def export_form(request):
             avg_val = round(stats["avg"], 1) if stats.get("avg") is not None else "N/A"
             aggregate_rows.append({
                 "metric_name": mv.metric_def.name,
-                "clients_measured": suppress_small_cell(len(metric_client_sets.get(mid, set())), program),
-                "data_points": suppress_small_cell(stats.get("valid_count", 0), program),
+                "clients_measured": suppress_small_cell(len(metric_client_sets.get(mid, set())), program, is_confidential=_has_confidential_program),
+                "data_points": suppress_small_cell(stats.get("valid_count", 0), program, is_confidential=_has_confidential_program),
                 "avg": avg_val,
                 "min": stats.get("min", "N/A"),
                 "max": stats.get("max", "N/A"),
@@ -562,7 +567,7 @@ def export_form(request):
                     demographic_aggregate_rows.append({
                         "demographic_group": group_label,
                         "metric_name": mv_metric_def.name,
-                        "clients_measured": suppress_small_cell(client_count, program),
+                        "clients_measured": suppress_small_cell(client_count, program, is_confidential=_has_confidential_program),
                         "avg": avg_val,
                         "min": stats.get("min", "N/A"),
                         "max": stats.get("max", "N/A"),
@@ -645,7 +650,7 @@ def export_form(request):
                         section_rows.append({
                             "demographic_group": group_label,
                             "metric_name": mv_metric_def.name,
-                            "clients_measured": suppress_small_cell(client_count, program),
+                            "clients_measured": suppress_small_cell(client_count, program, is_confidential=_has_confidential_program),
                             "avg": avg_val,
                             "min": stats.get("min", "N/A"),
                             "max": stats.get("max", "N/A"),
@@ -657,7 +662,7 @@ def export_form(request):
                         "rows": section_rows,
                     })
 
-        total_clients_display = suppress_small_cell(len(unique_clients), program)
+        total_clients_display = suppress_small_cell(len(unique_clients), program, is_confidential=_has_confidential_program)
 
         safe_display = sanitise_filename(str(program_display_name).replace(" ", "_"))
 
@@ -672,6 +677,7 @@ def export_form(request):
                 total_clients_display=total_clients_display,
                 total_data_points_display=suppress_small_cell(
                     sum(s.get("valid_count", 0) for s in agg_by_metric.values()), program,
+                    is_confidential=_has_confidential_program,
                 ),
                 is_aggregate=True,
                 aggregate_rows=aggregate_rows,
@@ -697,7 +703,7 @@ def export_form(request):
 
             # Achievement rate summary (same as individual path — already aggregate)
             if achievement_summary:
-                _write_achievement_csv(writer, achievement_summary, program)
+                _write_achievement_csv(writer, achievement_summary, program, is_confidential=_has_confidential_program)
 
             writer.writerow([])  # blank separator
 
@@ -792,8 +798,8 @@ def export_form(request):
             rows.append(row)
 
         # Apply small-cell suppression for confidential programs
-        total_clients_display = suppress_small_cell(len(unique_clients), program)
-        total_data_points_display = suppress_small_cell(len(rows), program)
+        total_clients_display = suppress_small_cell(len(unique_clients), program, is_confidential=_has_confidential_program)
+        total_data_points_display = suppress_small_cell(len(rows), program, is_confidential=_has_confidential_program)
 
         safe_display_indiv = sanitise_filename(str(program_display_name).replace(" ", "_"))
 
@@ -825,7 +831,7 @@ def export_form(request):
 
             # Achievement rate summary if requested
             if achievement_summary:
-                _write_achievement_csv(writer, achievement_summary, program)
+                _write_achievement_csv(writer, achievement_summary, program, is_confidential=_has_confidential_program)
 
             writer.writerow([])  # blank separator
 
