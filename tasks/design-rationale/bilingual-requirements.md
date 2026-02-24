@@ -24,6 +24,8 @@ This record exists because AI coding assistants (including Claude) have a persis
 3. If a proposed change skips translations "to save time" or "for a later pass," it violates this DRR — do not proceed without explicit stakeholder approval
 4. Translation is not polish. It is a functional requirement with legal, contractual, and accessibility dimensions.
 
+**Note on review process:** Unlike design DRRs (circles, PHIPA, reporting) which required expert panels to resolve contested trade-offs, the legal requirements here are established by Canadian legislation — not debatable design choices. Technical workflow decisions (Claude-as-translator, API backup, translate-per-commit) are based on project experience across 20+ development sessions. No formal expert panel was convened because there were no contested decisions to resolve.
+
 ---
 
 ## Why Bilingual Is Non-Negotiable
@@ -32,10 +34,10 @@ KoNote is built for Canadian nonprofits. In Canada, bilingual service delivery i
 
 ### 1. Federal Official Languages Act (R.S.C., 1985, c. 31; modernised 2023)
 
-Canada's Official Languages Act establishes English and French as equal official languages. The 2023 modernisation (Bill C-13) strengthened obligations for digital services and extended protections to organisations that deliver services on behalf of federal institutions.
+Canada's Official Languages Act establishes English and French as equal official languages. The 2023 modernisation (Bill C-13) strengthened obligations for digital services and extended protections for official language minority communities.
 
 **How this applies to KoNote:**
-- Nonprofits that receive federal funding (Employment and Social Development Canada, Immigration Refugees and Citizenship Canada, Canadian Heritage, etc.) are often contractually required to deliver services in both official languages.
+- The OLA does not directly bind nonprofits, but federal funders (Employment and Social Development Canada, Immigration Refugees and Citizenship Canada, Canadian Heritage, etc.) include official languages clauses in their contribution agreements. Nonprofits that accept federal funding are contractually required to deliver services in both official languages.
 - When a nonprofit delivers a federally funded program, the software it uses to manage that program is part of the service delivery infrastructure. A unilingual English case management system means unilingual English service records — which means a Francophone participant's file is maintained in a language they cannot read.
 - Federal funders increasingly audit digital tools as part of official languages compliance reviews.
 
@@ -48,6 +50,7 @@ Ontario's FLSA requires government agencies and designated organisations in 26 d
 **How this applies to KoNote:**
 - KoNote's initial deployment targets Ontario nonprofits. Many operate in designated areas (Ottawa, Toronto, Sudbury, Hamilton, etc.) where roughly 80% of Ontario's Francophone population lives.
 - FLSA-designated agencies must provide services in French "of comparable quality" to English services. A system where French translations are incomplete, stale, or missing for key screens fails this standard.
+- The FLSA requires an **active offer** of French services — agencies must proactively bring the availability of French services to the user's attention from first contact, not wait for someone to ask. In software, this means the language toggle must be visible, accessible, and the French interface must be fully functional — not a degraded version of the English one.
 - Even non-designated agencies in Ontario serve Francophone participants. A case management system that only works properly in English creates a two-tier service experience.
 
 ### 3. Funder and Partner Requirements
@@ -289,6 +292,19 @@ The custom `SafeLocaleMiddleware` handles edge cases that Django's built-in `Loc
 - The terminology override system (`{{ term.client }}`) lets agencies customise key terms in both languages
 
 **Monitor:** During human review sessions, count terminology corrections. If >5% of reviewed strings need terminology fixes (not just phrasing preferences), add more domain-specific translation guidance to CLAUDE.md.
+
+### Fuzzy Translation Entries (MEDIUM)
+
+**What:** When a source string changes (e.g., "Save" becomes "Save Changes"), the .po file marks the existing translation as "fuzzy" — meaning the old translation may no longer be correct. Unlike empty strings (which show no translation), fuzzy entries display the old translation, which may be wrong or misleading.
+
+**Consequence:** A French user sees a translation that doesn't match what the button actually does. This is worse than a missing translation (which at least shows the English text accurately) because it actively misleads.
+
+**Mitigation:**
+- `check_translations` reports fuzzy entry count
+- Claude sessions should review and resolve fuzzy entries when encountered during translation work
+- The `translate_strings` command preserves fuzzy flags so they remain visible
+
+**Monitor:** Track fuzzy count alongside empty count. Currently ~147 fuzzy entries — reduce toward zero. If fuzzy count increases after a session that renamed or rewrote UI strings, investigate immediately.
 
 ### blocktrans Extraction Gap (MEDIUM)
 
