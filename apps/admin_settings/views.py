@@ -294,6 +294,7 @@ DEFAULT_FEATURES = {
             _lazy("Staff can create circles and manage members"),
             _lazy("Circle membership shows on participant files"),
             _lazy("Notes can be tagged to a circle"),
+            _lazy("DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"),
         ],
         "when_off": [_lazy("Circles menu is hidden — existing circle data is preserved")],
         "depends_on": [],
