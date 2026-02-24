@@ -13,6 +13,7 @@ from django.core.cache import cache
 from django.db.models import Count, Q
 from django.shortcuts import render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 
 # Minimum active participants before percentage metrics are shown.
@@ -539,6 +540,122 @@ def _batch_top_themes(filtered_program_ids, limit_per_program=3):
             themes_map[pid].append(t)
 
     return counts_map, themes_map
+
+
+def _batch_program_learning(programs, date_from, date_to):
+    """Compute program learning data for executive dashboard cards.
+
+    For each program, computes:
+        - Lead outcome headline (achievement rate or scale "goals within reach" %)
+        - Trend direction (improving / stable / declining)
+        - Target rate (if set)
+        - Data completeness (level + counts)
+        - Open feedback theme count with urgency flag
+
+    Returns dict of program_id -> {
+        headline_label, headline_pct, headline_type,
+        target_rate, trend_direction, trend_label,
+        completeness_level, completeness_enrolled, completeness_with_data,
+        theme_open_count, has_urgent_theme, suppress,
+    }
+    """
+    from apps.reports.metric_insights import (
+        get_achievement_rates,
+        get_data_completeness,
+        get_metric_distributions,
+    )
+    from apps.reports.insights import get_structured_insights
+    from apps.reports.insights_views import _compute_trend_direction
+    from apps.notes.models import SuggestionTheme, deduplicate_themes
+
+    result = {}
+
+    for program in programs:
+        pid = program.pk
+
+        # Achievement rates (Layer 2)
+        achievement = get_achievement_rates(program, date_from, date_to)
+        # Scale distributions (Layer 1)
+        distributions = get_metric_distributions(program, date_from, date_to)
+        # Data completeness
+        completeness = get_data_completeness(program, date_from, date_to)
+        # Structured insights for trend direction
+        structured = get_structured_insights(
+            program=program, date_from=date_from, date_to=date_to,
+        )
+        trend_direction = _compute_trend_direction(structured.get("descriptor_trend", []))
+
+        # Determine lead headline
+        headline_label = None
+        headline_pct = None
+        headline_type = None  # "achievement" or "scale"
+        target_rate = None
+
+        # Prefer achievement rate (Layer 2) if available
+        if achievement:
+            lead = next(iter(achievement.values()))
+            headline_label = lead["name"]
+            headline_pct = lead["achieved_pct"]
+            headline_type = "achievement"
+            target_rate = lead.get("target_rate")
+        elif distributions:
+            # Fallback to scale metric "goals within reach" %
+            # Prefer universal metric, else first available
+            lead_dist = None
+            for mid, dist in distributions.items():
+                if dist.get("is_universal"):
+                    lead_dist = dist
+                    break
+            if not lead_dist:
+                lead_dist = next(iter(distributions.values()))
+            headline_label = lead_dist["name"]
+            headline_pct = lead_dist["band_high_pct"]
+            headline_type = "scale"
+            target_rate = lead_dist.get("target_band_high_pct")
+
+        # Suppress if total participants with data < 5 (privacy threshold)
+        suppress = False
+        if completeness["with_scores_count"] < SMALL_PROGRAM_THRESHOLD:
+            suppress = True
+            headline_pct = None
+
+        # Open feedback themes
+        active_themes = list(
+            SuggestionTheme.objects.active()
+            .filter(program=program)
+            .values("pk", "name", "status", "priority", "program_id",
+                    "updated_at")
+        )
+        active_themes = deduplicate_themes(active_themes)
+        theme_open_count = len(active_themes)
+        has_urgent_theme = any(t.get("priority") == "urgent" for t in active_themes)
+
+        # Trend label for display
+        if trend_direction == _("improving"):
+            trend_label = "\u2191"  # ↑
+        elif trend_direction == _("declining"):
+            trend_label = "\u2193"  # ↓
+        elif trend_direction == _("stable"):
+            trend_label = "\u2192"  # →
+        else:
+            trend_label = ""
+
+        result[pid] = {
+            "headline_label": headline_label,
+            "headline_pct": headline_pct,
+            "headline_type": headline_type,
+            "target_rate": target_rate,
+            "trend_direction": trend_direction,
+            "trend_label": trend_label,
+            "completeness_level": completeness["completeness_level"],
+            "completeness_enrolled": completeness["enrolled_count"],
+            "completeness_with_data": completeness["with_scores_count"],
+            "theme_open_count": theme_open_count,
+            "has_urgent_theme": has_urgent_theme,
+            "suppress": suppress,
+        }
+
+    return result
 
 
 def _batch_suggestion_counts(filtered_program_ids):
