@@ -1,5 +1,7 @@
 """Admin views for field collection configuration."""
 
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import Http404
@@ -10,6 +12,8 @@ from django.utils.translation import gettext as _
 from apps.admin_settings.models import FeatureToggle
 from apps.audit.models import AuditLog
 from apps.auth_app.decorators import admin_required
+
+logger = logging.getLogger(__name__)
 from apps.programs.models import Program
 
 from .forms import ProgramFieldConfigForm
@@ -80,7 +84,7 @@ def field_collection_edit(request, program_id):
                     },
                 )
             except Exception:
-                pass  # Audit DB may be unavailable in tests
+                logger.warning("Could not write audit log for field collection config change", exc_info=True)
 
             messages.success(request, _("Field collection settings updated for %(program)s.") % {"program": program.name})
             return redirect("field_collection:list")
