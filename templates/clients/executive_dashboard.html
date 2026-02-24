@@ -100,7 +100,7 @@
     {% if program_stats %}
     <div class="program-cards">
         {% for stat in program_stats %}
-        <article class="program-card">
+        <article class="program-card{% if stat.has_urgent_theme or stat.has_declining_trend %} card-accent-caution{% endif %}">
             <header>
                 <span class="program-dot" style="background-color: {{ stat.program.colour_hex }}" aria-hidden="true"></span>
                 <h3>{{ stat.program.translated_name }}</h3>
@@ -227,6 +227,61 @@
                 </div>
                 <div class="metric-row">
                     <a href="{% url 'reports:program_insights' %}?program={{ stat.program.pk }}" class="metric-link">{% trans "View in Outcome Insights" %} &rarr;</a>
+                </div>
+                {% endif %}
+
+                {# Outcome Learning section — only shown when lead_outcome is available #}
+                {% if stat.lead_outcome is not None %}
+                <div class="outcome-section">
+                    <div class="metric-row">
+                        <span class="metric-label"><strong>{% trans "Outcome Learning" %}</strong></span>
+                    </div>
+
+                    {# Line 1: Lead outcome #}
+                    <div class="metric-row">
+                        <span class="outcome-lead">
+                            {% if stat.lead_outcome_type == "achievement" %}
+                            {{ stat.lead_outcome_name }}: {{ stat.lead_outcome }}%
+                            {% else %}
+                            {{ stat.lead_outcome }}% {% trans "in high band" %} — {{ stat.lead_outcome_name }}
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    {# Line 2: Target + trend direction #}
+                    {% if stat.lead_outcome_target or stat.trend_direction %}
+                    <div class="metric-row outcome-target">
+                        {% if stat.lead_outcome_target %}
+                        <span class="metric-label">{% trans "Target" %}: {{ stat.lead_outcome_target }}%</span>
+                        {% endif %}
+                        {% if stat.trend_direction == "improving" %}
+                        <span class="trend-up" aria-label="{% trans 'Improving trend' %}">↑</span>
+                        {% elif stat.trend_direction == "stable" %}
+                        <span class="trend-stable" aria-label="{% trans 'Stable trend' %}">→</span>
+                        {% elif stat.trend_direction == "declining" %}
+                        <span class="trend-down" aria-label="{% trans 'Declining trend' %}">↓</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+
+                    {# Line 3: Data completeness indicator #}
+                    {% if stat.data_completeness %}
+                    <div class="metric-row completeness-indicator">
+                        {% if stat.data_completeness.completeness_level == "full" %}
+                        <span aria-label="{% trans 'Full data completeness' %}">●</span>
+                        {% elif stat.data_completeness.completeness_level == "partial" %}
+                        <span aria-label="{% trans 'Partial data completeness' %}">◐</span>
+                        {% else %}
+                        <span aria-label="{% trans 'Low data completeness' %}">○</span>
+                        {% endif %}
+                        <span class="metric-label">{{ stat.data_completeness.with_scores_count }} {% trans "of" %} {{ stat.data_completeness.enrolled_count }} {% trans "enrolled have scores" %}</span>
+                    </div>
+                    {% endif %}
+
+                    {# Link to program insights #}
+                    <div class="metric-row">
+                        <a href="{% url 'reports:program_insights' %}?program={{ stat.program.pk }}" class="metric-link">{% trans "View program learning" %} &rarr;</a>
+                    </div>
                 </div>
                 {% endif %}
             </div>
