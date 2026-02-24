@@ -688,6 +688,10 @@ def export_form(request):
             writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
             writer.writerow(sanitise_csv_row([f"# Total Participants: {total_clients_display}"]))
             writer.writerow(sanitise_csv_row([_("# Export Mode: Aggregate Summary")]))
+            if all_programs_mode:
+                writer.writerow(sanitise_csv_row([
+                    _("# Note: Participants enrolled in multiple programs are counted once per program.")
+                ]))
             if grouping_type != "none":
                 writer.writerow(sanitise_csv_row([f"# Grouped By: {grouping_label}"]))
 
@@ -1144,6 +1148,7 @@ def funder_report_form(request):
 
     program = form.cleaned_data["program"]
     all_programs_mode = form.is_all_programs
+    _has_confidential_program = False  # May be upgraded below for All Programs
 
     if all_programs_mode:
         if not can_create_export(request.user, "funder_report"):
@@ -1247,6 +1252,9 @@ def funder_report_form(request):
             writer.writerow(sanitise_csv_row([f"# Fiscal Year: {fiscal_year_label}"]))
             writer.writerow(sanitise_csv_row([
                 f"# Date Range: {date_from} to {date_to}"
+            ]))
+            writer.writerow(sanitise_csv_row([
+                _("# Note: Participants enrolled in multiple programs are counted once per program.")
             ]))
             writer.writerow([])
             for ap, rd in all_report_sections:

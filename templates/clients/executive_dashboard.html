@@ -109,7 +109,7 @@
             {# Metric insight indicators -- quick-scan overview #}
             <div class="exec-insight-bar" aria-label="{% trans 'Program insight indicators' %}">
                 {% if stat.trend_direction %}
-                <span class="exec-indicator exec-trend-{{ stat.trend_direction }}" title="{% trans 'Trend' %}: {{ stat.trend_direction }}">
+                <span class="exec-indicator exec-trend-{{ stat.trend_direction }}" aria-label="{% trans 'Trend' %}: {{ stat.trend_direction }}">
                     {% if stat.trend_direction == "improving" %}
                     <span aria-hidden="true">&uarr;</span> {% trans "Improving" %}
                     {% elif stat.trend_direction == "declining" %}
@@ -120,7 +120,7 @@
                 </span>
                 {% endif %}
 
-                <span class="exec-indicator exec-completeness-{{ stat.data_completeness_level }}" title="{% trans 'Data completeness' %}: {{ stat.data_completeness_pct }}%">
+                <span class="exec-indicator exec-completeness-{{ stat.data_completeness_level }}" aria-label="{% trans 'Data completeness' %}: {{ stat.data_completeness_pct }}%">
                     {% if stat.data_completeness_level == "full" %}
                     {% trans "Data: Full" %}
                     {% elif stat.data_completeness_level == "partial" %}
@@ -131,7 +131,7 @@
                 </span>
 
                 {% if stat.urgent_theme_count > 0 %}
-                <span class="exec-indicator exec-urgent" title="{% trans 'Urgent suggestion themes' %}">
+                <span class="exec-indicator exec-urgent" aria-label="{% trans 'Urgent suggestion themes' %}">
                     {{ stat.urgent_theme_count }} {% trans "urgent" %}
                 </span>
                 {% endif %}
