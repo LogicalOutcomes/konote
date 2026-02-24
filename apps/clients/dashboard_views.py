@@ -1059,6 +1059,14 @@ def executive_dashboard(request):
     # Batch: active theme counts + top theme details per program
     theme_map, top_themes_map = _batch_top_themes(filtered_program_ids)
 
+    # Batch: program learning data (outcome headlines, trend, completeness)
+    # Use the dashboard date range (month_start to today) for consistency
+    learning_date_from = month_start.date()
+    learning_date_to = today
+    learning_map = _batch_program_learning(
+        filtered_programs, learning_date_from, learning_date_to,
+    )
+
     # Assemble per-program stat dicts
     program_stats = []
     total_clients = 0
@@ -1104,6 +1112,10 @@ def executive_dashboard(request):
         top = top_themes_map.get(pid, [])
         stat["top_themes"] = top
         stat["theme_overflow"] = max(0, themes.get("total", 0) - len(top))
+
+        # Program learning data (outcome headline, trend, completeness)
+        learning = learning_map.get(pid, {})
+        stat["learning"] = learning
 
         program_stats.append(stat)
         total_clients += es.get("total", 0)
