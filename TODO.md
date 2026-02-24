@@ -103,7 +103,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ### Phase: I18N Process Improvements (see tasks/i18n-process-improvements.md)
 
 - [ ] Resolve ~147 fuzzy PO entries — old French translations that may no longer match current English strings (I18N-FUZZY1)
-- [ ] Add terminology table and "What Gets Translated" matrix to CLAUDE.md Translations section — so every session sees the glossary (I18N-CLAUDE-REF1)
 - [ ] Verify active offer compliance for language toggle — visible on every page, keyboard-accessible, not buried in menus (I18N-ACTIVE-OFFER1)
 - [ ] Add insights-metric-distributions DRR to CLAUDE.md DRR list — missing from list but exists on disk (I18N-DRR-LIST1)
 

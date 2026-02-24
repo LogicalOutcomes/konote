@@ -41,31 +41,7 @@ After resolving all fuzzy entries, run python manage.py translate_strings to rec
 
 ---
 
-## Task 2: Add terminology table and "What Gets Translated" to CLAUDE.md (I18N-CLAUDE-REF1)
-
-**What:** The bilingual DRR contains two valuable reference tables — a social services terminology glossary (English → Canadian French) and a "What Gets Translated" matrix. Currently these only live in the DRR, which Claude only reads when prompted. They should be in the Translations section of CLAUDE.md so every session sees them.
-
-**Why it matters:** Without the terminology table visible every session, Claude may translate "discharge" as "décharge" (legal context) instead of "congé" (social services context), or "progress note" as "note de progrès" (calque) instead of "note d'évolution" (correct term).
-
-**Steps:**
-1. Read `tasks/design-rationale/bilingual-requirements.md` — find the "Social Services Terminology" and "What Gets Translated" tables
-2. Add both tables to CLAUDE.md under the `## Translations` section
-3. Add a note: "See `tasks/design-rationale/bilingual-requirements.md` for full bilingual requirements rationale"
-4. Keep the tables in the DRR too (CLAUDE.md is the quick reference; DRR is the full rationale)
-5. Commit
-
-**Prompt for next session:**
-```
-Read tasks/i18n-process-improvements.md for context. Work on Task 2: add terminology and translation scope tables to CLAUDE.md.
-
-Copy the "Social Services Terminology" table and the "What Gets Translated" table from tasks/design-rationale/bilingual-requirements.md into the ## Translations section of CLAUDE.md. Add them after the existing translation workflow steps. Add a reference link back to the DRR for full rationale. Keep the tables concise — CLAUDE.md is a quick reference, not the full document.
-
-Commit the CLAUDE.md change.
-```
-
----
-
-## Task 3: Verify active offer compliance for language toggle (I18N-ACTIVE-OFFER1)
+## Task 2: Verify active offer compliance for language toggle (I18N-ACTIVE-OFFER1)
 
 **What:** Under Ontario's FLSA, designated agencies must make an "active offer" of French services — the French option must be visible and accessible without the user having to search for it. The language toggle in KoNote needs to meet this standard: visible on every page, keyboard-accessible, and not buried in a menu.
 
@@ -81,14 +57,14 @@ Commit the CLAUDE.md change.
 
 **Prompt for next session:**
 ```
-Read tasks/i18n-process-improvements.md for context. Work on Task 3: verify active offer compliance for the language toggle.
+Read tasks/i18n-process-improvements.md for context. Work on Task 2: verify active offer compliance for the language toggle.
 
 Check the base template(s) to find where the language toggle is rendered. Verify it appears on every authenticated page, is keyboard-accessible, has an aria-label, and is visible without scrolling. If it's buried in a footer or settings page, move it to the header/nav area. Run the app locally and test the toggle works correctly in both directions (EN→FR, FR→EN) without losing the current page context.
 ```
 
 ---
 
-## Task 4: Add insights-metric-distributions DRR to CLAUDE.md list (I18N-DRR-LIST1)
+## Task 3: Add insights-metric-distributions DRR to CLAUDE.md list (I18N-DRR-LIST1)
 
 **What:** During the review, we noticed that `tasks/design-rationale/insights-metric-distributions.md` exists on disk but is missing from the "Current DRRs:" list in CLAUDE.md. This means future sessions won't know to read it before modifying insights/reporting features.
 
@@ -99,14 +75,14 @@ Check the base template(s) to find where the language toggle is rendered. Verify
 
 **Prompt for next session:**
 ```
-Read tasks/i18n-process-improvements.md for context. Work on Task 4: add the insights-metric-distributions DRR to the CLAUDE.md DRR list.
+Read tasks/i18n-process-improvements.md for context. Work on Task 3: add the insights-metric-distributions DRR to the CLAUDE.md DRR list.
 
 Open CLAUDE.md and find the "Current DRRs:" list. Add an entry for tasks/design-rationale/insights-metric-distributions.md. Read the DRR first to write an accurate one-line description. Commit.
 ```
 
 ---
 
-## Task 5: Clean up ~628 stale PO entries (I18N-STALE1 — already in Parking Lot)
+## Task 4: Clean up ~628 stale PO entries (I18N-STALE1 — already in Parking Lot)
 
 **What:** This task already exists in TODO.md as I18N-STALE1. The DRR review confirmed it's still relevant. ~628 entries in `django.po` reference strings no longer in the codebase. They bloat the file and make coverage metrics misleading (the ~84% figure includes stale entries in the denominator).
 
@@ -114,7 +90,7 @@ Open CLAUDE.md and find the "Current DRRs:" list. Add an entry for tasks/design-
 
 **Prompt for next session:**
 ```
-Read tasks/i18n-process-improvements.md for context. Work on Task 5: clean up stale PO entries.
+Read tasks/i18n-process-improvements.md for context. Work on Task 4: clean up stale PO entries.
 
 Run python manage.py translate_strings --dry-run to see what strings are currently extracted from templates and Python files. Then open locale/fr/LC_MESSAGES/django.po and identify entries whose msgid doesn't appear in any template or Python file. Remove those stale entries. Run translate_strings to recompile, then run check_translations to verify coverage improved. Commit.
 
