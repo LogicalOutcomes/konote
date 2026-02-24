@@ -66,6 +66,20 @@
         </ul>
         <ul>
             <li><a href="{% url 'auth_app:login' %}">{% trans "Sign In" %}</a></li>
+            <li>
+                {% get_current_language as CURRENT_LANG_ANON %}
+                <form action="{% url 'switch_language' %}" method="post" class="nav-lang-form" aria-label="{% trans 'Language selection' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}">
+                    {% if CURRENT_LANG_ANON == "en" %}
+                    <input type="hidden" name="language" value="fr">
+                    <button type="submit" class="lang-link" lang="fr" hreflang="fr">Fran&ccedil;ais</button>
+                    {% else %}
+                    <input type="hidden" name="language" value="en">
+                    <button type="submit" class="lang-link" lang="en" hreflang="en">English</button>
+                    {% endif %}
+                </form>
+            </li>
         </ul>
     </nav>
     {% endif %}
@@ -220,12 +234,12 @@
             <li>
                 <!-- Language link — canada.ca convention -->
                 {% get_current_language as CURRENT_LANG %}
-                <form action="{% url 'switch_language' %}" method="post" class="nav-lang-form">
+                <form action="{% url 'switch_language' %}" method="post" class="nav-lang-form" aria-label="{% trans 'Language selection' %}">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.path }}">
                     {% if CURRENT_LANG == "en" %}
                     <input type="hidden" name="language" value="fr">
-                    <button type="submit" class="lang-link" lang="fr" hreflang="fr">Français</button>
+                    <button type="submit" class="lang-link" lang="fr" hreflang="fr">Fran&ccedil;ais</button>
                     {% else %}
                     <input type="hidden" name="language" value="en">
                     <button type="submit" class="lang-link" lang="en" hreflang="en">English</button>
@@ -282,12 +296,12 @@
                 <a href="{% url 'help' %}">{% trans "Help" %}</a>
                 <button type="button" class="keyboard-shortcuts-btn" id="show-shortcuts" aria-label="{% trans 'Keyboard shortcuts' %}">?</button>
                 {% get_current_language as FOOTER_LANG %}
-                <form action="{% url 'switch_language' %}" method="post" class="footer-lang-form">
+                <form action="{% url 'switch_language' %}" method="post" class="footer-lang-form" aria-label="{% trans 'Language selection' %}">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.path }}">
                     {% if FOOTER_LANG == "en" %}
                     <input type="hidden" name="language" value="fr">
-                    <button type="submit" class="lang-link" lang="fr" hreflang="fr">Français</button>
+                    <button type="submit" class="lang-link" lang="fr" hreflang="fr">Fran&ccedil;ais</button>
                     {% else %}
                     <input type="hidden" name="language" value="en">
                     <button type="submit" class="lang-link" lang="en" hreflang="en">English</button>
