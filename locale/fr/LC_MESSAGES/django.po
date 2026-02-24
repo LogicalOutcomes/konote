@@ -14923,22 +14923,23 @@ msgstr ""
 "fois par programme."
 
 msgid "All Programs \\u2014 Organisation Summary"
-msgstr ""
+msgstr "Tous les programmes \\u2014 Résumé organisationnel"
 
 msgid "None \\u2014 use default age categories"
-msgstr ""
+msgstr "Aucun \\u2014 utiliser les catégories d'âge par défaut"
 
 msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
-msgstr ""
+msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
 
 msgid "\\u2014 Custom date range \\u2014"
-msgstr ""
+msgstr "\\u2014 Période personnalisée \\u2014"
 
 msgid "\\u2014 Select a program \\u2014"
-msgstr ""
+msgstr "\\u2014 Sélectionner un programme \\u2014"
 
 msgid "\\u2014 Select a report \\u2014"
-msgstr ""
+msgstr "\\u2014 Sélectionner un rapport \\u2014"
+
 msgid "Archive"
 msgstr "Archiver"
 
