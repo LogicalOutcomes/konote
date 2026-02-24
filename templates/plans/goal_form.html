@@ -9,6 +9,13 @@
     <p>{{ client.display_name }} {{ client.last_name }}</p>
 </hgroup>
 
+{% if not ai_enabled %}
+<details class="onboarding-context">
+    <summary>{% blocktrans with target=term.target|default:"goal" %}How does adding a {{ target }} work?{% endblocktrans %}</summary>
+    <p>{% blocktrans with target=term.target|default:"goal" client=term.client|default:"participant" %}Start by capturing what the {{ client }} wants to work on in their own words, then shape it into a trackable {{ target }} with a name and optional metric.{% endblocktrans %}</p>
+</details>
+{% endif %}
+
 {% if form.errors %}
 <div class="error-summary" role="alert" id="error-summary" tabindex="-1">
     <strong>{% trans "Please fix the following:" %}</strong>
@@ -105,6 +112,10 @@
     {# ====== Phase 1: Listen (non-AI only, hidden on POST) ====== #}
     <div id="goal-phase-1" {% if form.is_bound %}hidden{% endif %}>
 
+        <p class="step-indicator" role="status" aria-live="polite">
+            <strong>{% trans "Step 1 of 2" %}</strong> — {% trans "Listen" %}
+        </p>
+
         {# ── Participant's words (no name attr — hidden field in phase 2 submits) ── #}
         <fieldset>
             <legend>{{ form.client_goal.label }}</legend>
@@ -158,6 +169,10 @@
 
     {# ====== Phase 2: Shape the goal (non-AI, hidden on GET) ====== #}
     <div id="goal-phase-2" {% if not form.is_bound %}hidden{% endif %}>
+
+        <p class="step-indicator" role="status" aria-live="polite">
+            <strong>{% trans "Step 2 of 2" %}</strong> — {% trans "Shape" %}
+        </p>
 
         {# ── Reference quote — shows what the participant said ── #}
         <blockquote id="participant-quote" class="participant-quote" hidden>
