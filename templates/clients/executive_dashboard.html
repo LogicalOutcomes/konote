@@ -109,7 +109,7 @@
             {# Metric insight indicators -- quick-scan overview #}
             <div class="exec-insight-bar" aria-label="{% trans 'Program insight indicators' %}">
                 {% if stat.trend_direction %}
-                <span class="exec-indicator exec-trend-{{ stat.trend_direction }}" aria-label="{% trans 'Trend' %}: {{ stat.trend_direction }}">
+                <span class="exec-indicator exec-trend-{{ stat.trend_direction }}">
                     {% if stat.trend_direction == "improving" %}
                     <span aria-hidden="true">&uarr;</span> {% trans "Improving" %}
                     {% elif stat.trend_direction == "declining" %}
