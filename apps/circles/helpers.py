@@ -67,19 +67,25 @@ def get_visible_circles(user):
         # No blocks — no DV small-circle hiding needed
         return base_circles.filter(pk__in=visible_circle_ids)
 
-    # DV small-circle hiding: for circles that have blocked members,
-    # count visible members. If fewer than 4, hide the entire circle.
+    # DV small-circle hiding: single query for all visible circles,
+    # then group by circle_id in Python to check each one.
+    from collections import defaultdict
+    all_memberships = CircleMembership.objects.filter(
+        circle_id__in=visible_circle_ids, status="active"
+    ).values_list("circle_id", "client_file_id")
+
+    circle_members = defaultdict(list)
+    for cid, client_id in all_memberships:
+        circle_members[cid].append(client_id)
+
     circles_to_hide = set()
     for circle_id in visible_circle_ids:
-        memberships = CircleMembership.objects.filter(
-            circle_id=circle_id, status="active"
-        ).values_list("client_file_id", flat=True)
-
-        has_blocked = any(cid in blocked_ids for cid in memberships if cid)
+        member_ids = circle_members.get(circle_id, [])
+        has_blocked = any(mid in blocked_ids for mid in member_ids if mid)
         if has_blocked:
             visible_count = sum(
-                1 for cid in memberships
-                if cid is None or (cid in accessible_ids)
+                1 for mid in member_ids
+                if mid is None or (mid in accessible_ids)
             )
             if visible_count < 4:
                 circles_to_hide.add(circle_id)
