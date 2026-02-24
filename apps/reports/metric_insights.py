@@ -353,8 +353,12 @@ def get_metric_trends(program, date_from, date_to):
     return results
 
 
-def get_two_lenses(program, date_from, date_to):
+def get_two_lenses(program, date_from, date_to, distributions=None):
     """Compare participant self-report (Self-Efficacy) with staff descriptor data.
+
+    Args:
+        distributions: Pre-computed result from get_metric_distributions().
+            If None, distributions will be computed (extra DB query).
 
     Returns:
         dict or None: {
@@ -373,8 +377,9 @@ def get_two_lenses(program, date_from, date_to):
     if not self_efficacy:
         return None
 
-    # Get Self-Efficacy distributions
-    distributions = get_metric_distributions(program, date_from, date_to)
+    # Get Self-Efficacy distributions (reuse pre-computed if available)
+    if distributions is None:
+        distributions = get_metric_distributions(program, date_from, date_to)
     se_dist = distributions.get(self_efficacy.pk)
     if not se_dist or se_dist["total"] < MIN_N_FOR_DISPLAY:
         return None

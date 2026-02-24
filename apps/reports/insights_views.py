@@ -184,7 +184,7 @@ def program_insights(request):
             metric_distributions = get_metric_distributions(program, date_from, date_to)
             achievement_rates = get_achievement_rates(program, date_from, date_to)
             metric_trends = get_metric_trends(program, date_from, date_to)
-            two_lenses = get_two_lenses(program, date_from, date_to)
+            two_lenses = get_two_lenses(program, date_from, date_to, distributions=metric_distributions)
             data_completeness = get_data_completeness(program, date_from, date_to)
 
             # Compute trend directions per metric
