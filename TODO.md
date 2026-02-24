@@ -5,7 +5,6 @@
 - [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — GK (ONBOARD-APPROVE)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GK (SEC3-Q1)
 - [ ] Confirm standard report schema and configuration template with partner contact before building — SG (RPT-SCHEMA1)
-- [ ] Approve CIDS implementation plan with project lead before building — covers metadata fields, code list integration, CIDS-enriched reports, and full JSON-LD export; confirm partner consumption pathway and whether to engage Common Approach as pilot implementer (see tasks/cids-json-ld-export.md) — SG/GK (CIDS-APPROVE1)
 - [ ] Discuss: are Design Rationale Records (DRRs) working well as a practice? Should we keep using them, change the format, or retire them? — GK (PROCESS-DRR1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
 - [ ] Discuss: Should GK design insights/reports pages as HTML mockups (in a `mockups/` folder) to iterate on layout without PRs? Developer would translate approved mockups into Django templates — PB (PROCESS-MOCKUPS1)
@@ -29,7 +28,7 @@
 
 ### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
 
-- [ ] Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
+- [ ] 🔨 Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
 
 ### Phase: Launch Readiness
 
@@ -40,8 +39,8 @@
 - [ ] Verify production email configuration for exports, erasure alerts, and password resets — PB (OPS3)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — PB (OPS4)
 - [ ] Document scheduled task setup for export monitoring in the runbook — PB (EXP2w)
-- [ ] Add program-level filtering to note search (`_find_clients_with_matching_notes`) — search can reveal restricted program data through side channel (see DRR: phipa-consent-enforcement.md) — PB (PHIPA-SEARCH1)
-- [ ] Add consent filter to qualitative_summary view — shows client words from note entries across programs (see DRR) — PB (PHIPA-QUAL1)
+- [x] Add program-level filtering to note search — consent filter in `_find_clients_with_matching_notes` + tests (PR #38) — 2026-02-24 — PB (PHIPA-SEARCH1)
+- [x] Add consent filter to qualitative_summary view — cross-program consent enforcement + tests (PR #38) — 2026-02-24 — PB (PHIPA-QUAL1)
 - [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — (DEPLOY-TOOLKIT1)
 
@@ -100,7 +99,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 - [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
 
-### Phase: CIDS Compliance (Common Approach Data Standard) — waiting on CIDS-APPROVE1
+### Phase: CIDS Compliance (Common Approach Data Standard) — approved 2026-02-24
 
 - [ ] Add CIDS metadata fields to MetricDefinition, Program, and PlanTarget — optional fields for IRIS+ codes, SDG goals, sector codes (see tasks/cids-json-ld-export.md Phase 1) — (CIDS-META1)
 - [ ] Create OrganizationProfile model for CIDS BasicTier org metadata — legal name, sector, province (Phase 1) — (CIDS-ORG1)
@@ -192,6 +191,8 @@ _Nothing pending._
 
 ## Recently Done
 
+- [x] Approve CIDS implementation plan — metadata fields, code list integration, CIDS-enriched reports, JSON-LD export; partner pathway confirmed — 2026-02-24 — SG/GK (CIDS-APPROVE1)
+- [x] PHIPA consent filtering for note search and qualitative summary — program-level filter + tests (PR #38) — 2026-02-24 — PB (PHIPA-SEARCH1, PHIPA-QUAL1)
 - [x] All Programs report filter — "__all__" sentinel in MetricExportForm + FunderReportForm, multi-program aggregation, RBAC-scoped, 18 tests — 2026-02-24 (REP-ALL-PROGS1)
 - [x] Executive dashboard metric indicators — trend direction, data completeness, urgent themes per program card, batch query, 2 tests — 2026-02-24 (INSIGHTS-P3-EXEC)
 - [x] French translations — all 54 remaining empty strings translated and compiled — 2026-02-24 (INSIGHTS-I18N1)
