@@ -339,8 +339,9 @@ def client_create(request):
                 new_circle_name = form.cleaned_data.get("new_circle_name", "").strip()
                 if existing_circle_id or new_circle_name:
                     from apps.circles.models import Circle, CircleMembership
+                    from apps.circles.helpers import get_visible_circles
                     if existing_circle_id:
-                        circle = Circle.objects.filter(pk=existing_circle_id).first()
+                        circle = get_visible_circles(request.user).filter(pk=existing_circle_id).first()
                     else:
                         circle = Circle(is_demo=request.user.is_demo)
                         circle.name = new_circle_name
