@@ -127,6 +127,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Confidence in your job search",
                             "How ready do you feel for work?",
+                            "Job Placement",
                         ],
                     },
                     {
@@ -156,6 +157,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "How ready do you feel for work?",
                             "How are you feeling today?",
+                            "Job Placement",
                         ],
                     },
                     {
@@ -185,6 +187,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "How ready do you feel for work?",
                             "Goal Progress (1-10)",
+                            "Job Placement",
                         ],
                     },
                 ],
@@ -209,6 +212,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Housing Stability Index",
                             "How safe do you feel where you live?",
+                            "Housing Secured",
                         ],
                     },
                     {
@@ -235,6 +239,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Housing Stability Index",
                             "How safe do you feel where you live?",
+                            "Housing Secured",
                         ],
                     },
                     {
@@ -264,6 +269,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Housing Stability Index",
                             "How safe do you feel where you live?",
+                            "Housing Secured",
                         ],
                     },
                     {
@@ -293,6 +299,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "How connected do you feel to the group?",
                             "Sessions attended this month",
+                            "School Enrolment",
                         ],
                     },
                     {
@@ -322,6 +329,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Sessions attended this month",
                             "How are you feeling today?",
+                            "School Enrolment",
                         ],
                     },
                     {
@@ -351,6 +359,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Sessions attended this month",
                             "Service Engagement",
+                            "School Enrolment",
                         ],
                     },
                     {
