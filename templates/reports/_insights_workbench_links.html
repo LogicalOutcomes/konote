@@ -1,0 +1,79 @@
+{% load i18n %}
+{# Workbench-to-report links — bridges program learning (insights) to formal reporting #}
+
+<section class="insights-workbench-links" aria-labelledby="workbench-links-heading">
+    <hr>
+    <h2 id="workbench-links-heading">{% trans "Ready to Report?" %}</h2>
+    <p class="muted">
+        {% trans "Insights are your program learning workbench — explore what's happening in real time. When you're ready to produce a formal report for a partner, use the links below." %}
+    </p>
+
+    {# ── Data completeness warning ── #}
+    {% if data_completeness and data_completeness.completeness_pct < 80 %}
+    <article role="alert" aria-label="{% trans 'Data completeness warning' %}" class="insights-completeness-warning">
+        <p>
+            <strong>{% trans "Data completeness notice" %}:</strong>
+            {% blocktrans with pct=data_completeness.completeness_pct scored=data_completeness.with_scores_count enrolled=data_completeness.enrolled_count %}Only {{ pct }}% of enrolled {{ term_clients }} have scores for this period ({{ scored }} of {{ enrolled }}). Reports generated now may not represent the full program.{% endblocktrans %}
+        </p>
+    </article>
+    {% endif %}
+
+    {# ── Upcoming report schedules ── #}
+    {% if upcoming_schedules %}
+    {% for schedule in upcoming_schedules %}
+    {% if schedule.is_overdue %}
+    <article role="alert" aria-label="{% trans 'Overdue report' %}" class="insights-schedule-overdue">
+        <p>
+            <strong>{{ schedule.name }}</strong> —
+            {% blocktrans with due=schedule.due_date %}was due {{ due }}{% endblocktrans %}.
+            <a href="{% url 'reports:generate_report' %}" aria-label="{% blocktrans with name=schedule.name %}Generate {{ name }}{% endblocktrans %}">{% trans "Generate report" %} &rarr;</a>
+        </p>
+    </article>
+    {% elif schedule.is_due_soon %}
+    <article role="status" aria-label="{% trans 'Upcoming report deadline' %}" class="insights-schedule-due-soon">
+        <p>
+            <strong>{{ schedule.name }}</strong> —
+            {% blocktrans with due=schedule.due_date %}due {{ due }}{% endblocktrans %}.
+            <a href="{% url 'reports:generate_report' %}" aria-label="{% blocktrans with name=schedule.name %}Generate {{ name }}{% endblocktrans %}">{% trans "Generate report" %} &rarr;</a>
+        </p>
+    </article>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+
+    {# ── Partner report templates ── #}
+    {% if partner_templates %}
+    <table role="table" aria-label="{% trans 'Partner report templates' %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Report" %}</th>
+                <th scope="col">{% trans "Partner" %}</th>
+                <th scope="col">{% trans "Frequency" %}</th>
+                <th scope="col" style="width: 10rem;">{% trans "Action" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tpl in partner_templates %}
+            <tr>
+                <td>{{ tpl.name }}</td>
+                <td>{{ tpl.partner.translated_name }}</td>
+                <td>{{ tpl.get_period_type_display }}</td>
+                <td>
+                    <a href="{% url 'reports:generate_report' %}?template={{ tpl.pk }}"
+                       role="button"
+                       class="outline"
+                       aria-label="{% blocktrans with name=tpl.name %}Generate {{ name }}{% endblocktrans %}">
+                        {% trans "Generate" %}
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="muted">
+        {% trans "No report templates are configured for this program yet." %}
+        {% trans "An administrator can set up partner report templates under Reports." %}
+    </p>
+    {% endif %}
+</section>
