@@ -99,21 +99,17 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ## Parking Lot
 
 - [ ] Add PIPEDA compliance context to admin-erasure-requests page — show selected tier's consequences in plain language (see tasks/erasure-compliance-context.md) — GK approved 2026-02-24 (QA-PA-ERASURE1)
-- [ ] Replace decorative circular element on erasure empty state with static icon — cosmetic, low priority (QA-PA-ERASURE2)
-- [ ] Add breadcrumbs to plan-goal-create (Participants > Name > Plan > Add Goal) — navigation aid for new users (QA-PA-GOAL3)
 - [ ] PIPEDA data access request — guided manual checklist + 30-day tracking, not automated export (see tasks/pipeda-data-access-checklist.md) — GK approved 2026-02-24 (QA-R7-PRIVACY1)
 - [ ] Note sharing toggle on client profile — binary On/Off, PM/admin only, hidden when agency sharing is off (see tasks/note-sharing-toggle.md) — GK approved 2026-02-24 (QA-R7-PRIVACY2)
 - [ ] Privacy compliance banner + annual summary — event-driven pending-request banner on exec dashboard, one-line board report summary (see tasks/compliance-banner.md) — GK approved 2026-02-24 (QA-R7-EXEC-COMPLIANCE1)
 - [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — add to seed_demo_data or fixture (QA-PA-TEST1)
 - [ ] Seed comm-my-messages populated state with actual messages — add to seed_demo_data (QA-PA-TEST2)
 - [ ] Add axe-core pass to `/capture-page-states` — automated WCAG checks for screen reader/speech recognition coverage (T59)
-- [ ] Accessibility polish: status dropdown auto-open on Tab, colour-only status indicator fix (remaining from QA-R7-A11Y2) (A11Y-POLISH1)
 - [ ] Verify BLOCKER-1 and BLOCKER-2 with manual keyboard/JAWS test — requires human testing with assistive tech (T50)
 - [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
 - [ ] Add stress testing for 50+ concurrent users (QA-T15)
 - [ ] Add legacy system import migration scenario test (QA-T16)
-- [ ] Add onboarding guidance for new users (help link or first-run banner) (QA-W19)
 - [ ] Implement multi-session testing for SCN-046 shared device scenario (QA-W55)
 - [ ] Surveys — lightweight structured feedback collection from participants (see tasks/surveys-design.md) (SURVEY1)
 - [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
@@ -136,6 +132,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Parking lot cleanup Phase 2 — UX polish: clipboard icon on empty states (QA-PA-ERASURE2), goal form breadcrumbs (QA-PA-GOAL3), status badge shape indicators + filter focus ring (A11Y-POLISH1), onboarding banner (QA-W19) — 2026-02-24
 - [x] Parking lot cleanup Phase 1 — code hygiene (CODE-TIDY1, QA-W62), verification (QA-R7-BUG13, QA-R7-BUG21, SURVEY-LINK1, DEPLOY-VERIFY1), i18n (I18N-CSV1, I18N-STALE1 already clean, INSIGHTS-I18N1, SURVEY-I18N1 already translated) — 2026-02-24
 - [x] Approve CIDS implementation plan — metadata fields, code list integration, CIDS-enriched reports, JSON-LD export; partner pathway confirmed — 2026-02-24 — SG/GK (CIDS-APPROVE1)
 - [x] Insights Phase 3: executive dashboard program learning cards — trend direction, data completeness, feedback themes, 84 French translations, 14 tests — 2026-02-24 (INSIGHTS-P3-EXEC, INSIGHTS-I18N1)
