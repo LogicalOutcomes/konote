@@ -4,6 +4,12 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-02-24 security review session)
+
+- [x] Insights Phase 3: executive dashboard program learning cards — trend direction, data completeness, feedback themes, 84 French translations, 14 tests — 2026-02-24 (INSIGHTS-P3-EXEC, INSIGHTS-I18N1)
+
+---
+
 ## Moved from Recently Done (2026-02-24 TODO sync — completed items cleanup)
 
 - [x] PHIPA: add consent filtering to note search and qualitative_summary — program-level filtering prevents side-channel disclosure, 6 new tests — 2026-02-24 (PHIPA-SEARCH1, PHIPA-QUAL1)

@@ -1004,13 +1004,24 @@ def executive_dashboard(request):
 
     privacy_banner_items = []
     if is_exec_or_admin:
-        from .models import DataAccessRequest, ErasureRequest
+        from .models import ClientProgramEnrolment, DataAccessRequest, ErasureRequest
 
-        # Pending erasure requests
-        pending_erasures = ErasureRequest.objects.filter(status="pending").count()
+        # Accessible clients scoped to user's programs
+        accessible_client_ids = set(
+            ClientProgramEnrolment.objects.filter(
+                program_id__in=filtered_program_ids,
+            ).values_list("client_file_id", flat=True)
+        )
+
+        # Pending erasure requests — scoped to user's programs
+        pending_erasures = ErasureRequest.objects.filter(
+            status="pending",
+            client_file_id__in=accessible_client_ids,
+        ).count()
         if pending_erasures:
             oldest_pending = ErasureRequest.objects.filter(
                 status="pending",
+                client_file_id__in=accessible_client_ids,
             ).order_by("requested_at").first()
             if oldest_pending:
                 days_ago = (now.date() - oldest_pending.requested_at.date()).days
@@ -1022,12 +1033,6 @@ def executive_dashboard(request):
                 })
 
         # Pending data access requests — scoped to user's programs
-        from .models import ClientProgramEnrolment
-        accessible_client_ids = set(
-            ClientProgramEnrolment.objects.filter(
-                program_id__in=filtered_program_ids,
-            ).values_list("client_file_id", flat=True)
-        )
         pending_access = DataAccessRequest.objects.filter(
             completed_at__isnull=True,
             client_file_id__in=accessible_client_ids,

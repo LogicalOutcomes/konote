@@ -124,6 +124,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Security hardening: MFA secret encrypted at rest, backup codes hashed, rate limiting on verify, 5-min session expiry, data access authorization + POST-only, privacy banner program-scoped, 25 new tests — 2026-02-24 (SEC2-HARDEN, QA-R7-PRIVACY1-HARDEN)
 - [x] Insights P5: workbench-to-report links, board summary template, translations (4,331/4,331 100%), 19 tests (PR #42) — 2026-02-24 (INSIGHTS-P5-POLISH)
 - [x] Insights P4: achievement metric recording UI, pill radio buttons, All Programs reporting, 177 tests (PR #32) — 2026-02-24 (INSIGHTS-P4-RECORD, REP-ALL-PROGS1)
 - [x] PIPEDA data access request — guided checklist + 30-day tracking + audit trail — 2026-02-24 (QA-R7-PRIVACY1)
@@ -133,4 +134,3 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Parking lot quick wins: shield icon on erasure empty states, breadcrumbs on goal creation, import ordering, deploy-azure.md verified (PR #42) — 2026-02-24 (QA-PA-ERASURE2, QA-PA-GOAL3, CODE-TIDY1, DEPLOY-VERIFY1)
 - [x] French translations for survey templates — 2026-02-24 (SURVEY-I18N1)
 - [x] Approve CIDS implementation plan — metadata fields, code list integration, CIDS-enriched reports, JSON-LD export; partner pathway confirmed — 2026-02-24 — SG/GK (CIDS-APPROVE1)
-- [x] Insights Phase 3: executive dashboard program learning cards — trend direction, data completeness, feedback themes, 84 French translations, 14 tests — 2026-02-24 (INSIGHTS-P3-EXEC, INSIGHTS-I18N1)

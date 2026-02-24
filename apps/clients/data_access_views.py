@@ -129,5 +129,6 @@ def data_access_complete(request, pk):
         messages.success(request, _("Data access request marked as complete."))
         return redirect("data_access:data_access_checklist", pk=dar.pk)
 
-    # Form invalid — redirect back (errors will surface via messages)
+    # Form invalid — tell the user what went wrong
+    messages.error(request, _("Please correct the errors below and try again."))
     return redirect("data_access:data_access_checklist", pk=dar.pk)
