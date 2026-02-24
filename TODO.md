@@ -11,7 +11,7 @@
 
 ### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
 
-- [ ] Phase 4: Achievement metric recording UI — dropdown in note form, tests (INSIGHTS-P4-RECORD)
+- [x] Phase 4: Achievement metric recording UI — dropdown in note form, tests — 2026-02-24 (INSIGHTS-P4-RECORD)
 - [ ] Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
 
 ### Phase: Launch Readiness
