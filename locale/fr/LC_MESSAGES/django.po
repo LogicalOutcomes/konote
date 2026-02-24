@@ -15495,3 +15495,93 @@ msgstr "Aucun modèle de rapport n'est configuré pour ce programme."
 #: templates/reports/_insights_workbench_links.html
 msgid "An administrator can set up partner report templates under Reports."
 msgstr "Un administrateur peut configurer des modèles de rapport de partenaire sous Rapports."
+
+#: templates/reports/pdf_board_summary.html
+msgid "Board Summary"
+msgstr "Sommaire pour le conseil"
+
+#: templates/reports/pdf_board_summary.html
+msgid "Program Overview"
+msgstr "Aperçu du programme"
+
+#: templates/reports/pdf_board_summary.html
+msgid "Months of Data"
+msgstr "Mois de données"
+
+#: templates/reports/pdf_board_summary.html
+msgid "Needs attention"
+msgstr "Nécessite une attention"
+
+#: templates/reports/pdf_board_summary.html
+msgid "No outcome metrics with targets have been defined for this program yet."
+msgstr "Aucune mesure de résultat avec des cibles n'a encore été définie pour ce programme."
+
+#: templates/reports/pdf_board_summary.html
+msgid "What Participants Are Telling Us"
+msgstr "Ce que les participants nous disent"
+
+#: templates/reports/pdf_board_summary.html
+msgid "No feedback themes have been identified for this period."
+msgstr "Aucun thème de rétroaction n'a été identifié pour cette période."
+
+#: templates/reports/pdf_board_summary.html
+msgid "Data Quality"
+msgstr "Qualité des données"
+
+#: templates/reports/pdf_board_summary.html
+msgid "Data Completeness"
+msgstr "Exhaustivité des données"
+
+#: templates/reports/pdf_board_summary.html
+msgid "Caution: Low data completeness. Outcome results may not be representative of the full participant group. Consider strategies to increase data collection before drawing conclusions."
+msgstr "Attention : faible exhaustivité des données. Les résultats peuvent ne pas être représentatifs de l'ensemble du groupe de participants. Envisagez des stratégies pour augmenter la collecte de données avant de tirer des conclusions."
+
+#: templates/reports/pdf_board_summary.html
+msgid "Note: Data completeness is below the recommended 80% threshold. Results should be interpreted with this in mind."
+msgstr "Remarque : l'exhaustivité des données est inférieure au seuil recommandé de 80 %. Les résultats doivent être interprétés en tenant compte de cette limite."
+
+#: templates/reports/pdf_board_summary.html
+msgid "Qualitative Context"
+msgstr "Contexte qualitatif"
+
+#: templates/reports/pdf_board_summary.html
+msgid "[To be completed by program staff before board distribution. Consider: key achievements, challenges, and plans for the coming period.]"
+msgstr "[À remplir par le personnel du programme avant la distribution au conseil. Considérez : les réalisations clés, les défis et les plans pour la période à venir.]"
+
+#: templates/reports/pdf_board_summary.html
+msgid "This summary was generated using KoNote."
+msgstr "Ce sommaire a été généré à l'aide de KoNote."
+
+#: templates/reports/pdf_board_summary.html
+msgid "Counts below 5 in any category are suppressed to protect participant privacy."
+msgstr "Les effectifs inférieurs à 5 dans toute catégorie sont supprimés pour protéger la confidentialité des participants."
+
+#: templates/reports/pdf_board_summary.html
+#, python-format
+msgid "Generated %(date)s"
+msgstr "Généré le %(date)s"
+
+#: templates/reports/pdf_board_summary.html
+#, python-format
+msgid "(target: %(target)s%%)"
+msgstr "(cible : %(target)s %%)"
+
+#: templates/reports/pdf_board_summary.html
+#, python-format
+msgid "Participant quotes are not displayed when fewer than %(min)s participants are enrolled, to protect confidentiality."
+msgstr "Les citations des participants ne sont pas affichées lorsque moins de %(min)s participants sont inscrits, pour protéger la confidentialité."
+
+#: templates/reports/pdf_board_summary.html
+#, python-format
+msgid "Data completeness: %(pct)s percent"
+msgstr "Exhaustivité des données : %(pct)s pour cent"
+
+#: templates/reports/pdf_board_summary.html
+#, python-format
+msgid "%(scored)s of %(enrolled)s enrolled participants have recorded outcome scores in this period."
+msgstr "%(scored)s des %(enrolled)s participants inscrits ont enregistré des scores de résultats au cours de cette période."
+
+#: templates/reports/pdf_board_summary.html
+#, python-format
+msgid "Data reflects participant outcomes recorded during %(period)s."
+msgstr "Les données reflètent les résultats des participants enregistrés pendant %(period)s."
