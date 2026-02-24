@@ -15435,3 +15435,63 @@ msgstr "évalué(e)s"
 
 msgid "stable"
 msgstr "stable"
+
+#: templates/reports/_insights_workbench_links.html
+msgid "Ready to Report?"
+msgstr "Prêt à produire un rapport?"
+
+#: templates/reports/_insights_workbench_links.html
+msgid "Insights are your program learning workbench — explore what's happening in real time. When you're ready to produce a formal report for a partner, use the links below."
+msgstr "Les perspectives sont votre espace d'apprentissage de programme — explorez ce qui se passe en temps réel. Lorsque vous êtes prêt à produire un rapport formel pour un partenaire, utilisez les liens ci-dessous."
+
+#: templates/reports/_insights_workbench_links.html
+msgid "Data completeness warning"
+msgstr "Avertissement sur l'exhaustivité des données"
+
+#: templates/reports/_insights_workbench_links.html
+msgid "Data completeness notice"
+msgstr "Avis sur l'exhaustivité des données"
+
+#: templates/reports/_insights_workbench_links.html
+#, python-format
+msgid "Only %(pct)s%% of enrolled %(client_plural)s have scores for this period (%(scored)s of %(enrolled)s). Reports generated now may not represent the full program."
+msgstr "Seulement %(pct)s%% des %(client_plural)s inscrit(e)s ont des scores pour cette période (%(scored)s sur %(enrolled)s). Les rapports générés maintenant pourraient ne pas représenter l'ensemble du programme."
+
+#: templates/reports/_insights_workbench_links.html
+msgid "Overdue report"
+msgstr "Rapport en retard"
+
+#: templates/reports/_insights_workbench_links.html
+#, python-format
+msgid "was due %(due)s"
+msgstr "était dû le %(due)s"
+
+#: templates/reports/_insights_workbench_links.html
+msgid "Generate report"
+msgstr "Générer le rapport"
+
+#: templates/reports/_insights_workbench_links.html
+#, python-format
+msgid "Generate %(name)s"
+msgstr "Générer %(name)s"
+
+#: templates/reports/_insights_workbench_links.html
+msgid "Upcoming report deadline"
+msgstr "Échéance de rapport à venir"
+
+#: templates/reports/_insights_workbench_links.html
+#, python-format
+msgid "due %(due)s"
+msgstr "dû le %(due)s"
+
+#: templates/reports/_insights_workbench_links.html
+msgid "Partner report templates"
+msgstr "Modèles de rapport des partenaires"
+
+#: templates/reports/_insights_workbench_links.html
+msgid "No report templates are configured for this program yet."
+msgstr "Aucun modèle de rapport n'est configuré pour ce programme."
+
+#: templates/reports/_insights_workbench_links.html
+msgid "An administrator can set up partner report templates under Reports."
+msgstr "Un administrateur peut configurer des modèles de rapport de partenaire sous Rapports."

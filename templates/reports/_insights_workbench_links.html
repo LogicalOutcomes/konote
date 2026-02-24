@@ -13,7 +13,7 @@
     <article role="alert" aria-label="{% trans 'Data completeness warning' %}" class="insights-completeness-warning">
         <p>
             <strong>{% trans "Data completeness notice" %}:</strong>
-            {% blocktrans with pct=data_completeness.completeness_pct scored=data_completeness.with_scores_count enrolled=data_completeness.enrolled_count %}Only {{ pct }}% of enrolled {{ term_clients }} have scores for this period ({{ scored }} of {{ enrolled }}). Reports generated now may not represent the full program.{% endblocktrans %}
+            {% blocktrans with pct=data_completeness.completeness_pct scored=data_completeness.with_scores_count enrolled=data_completeness.enrolled_count client_plural=term.client_plural %}Only {{ pct }}% of enrolled {{ client_plural }} have scores for this period ({{ scored }} of {{ enrolled }}). Reports generated now may not represent the full program.{% endblocktrans %}
         </p>
     </article>
     {% endif %}
