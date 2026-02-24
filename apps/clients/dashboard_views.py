@@ -14,6 +14,13 @@ from django.db.models import Count, Q
 from django.shortcuts import render
 from django.utils import timezone
 
+from apps.reports.metric_insights import (
+    get_achievement_rates,
+    get_data_completeness,
+    get_metric_distributions,
+    get_metric_trends,
+)
+
 
 # Minimum active participants before percentage metrics are shown.
 # Below this threshold, percentages could identify individuals.
@@ -987,6 +994,65 @@ def executive_dashboard(request):
         top = top_themes_map.get(pid, [])
         stat["top_themes"] = top
         stat["theme_overflow"] = max(0, themes.get("total", 0) - len(top))
+
+        # -- Outcome learning (metric insights) --
+        # Determine lead outcome, trend direction, and data completeness
+        achievement_rates = get_achievement_rates(program, month_start, today)
+        distributions = get_metric_distributions(program, month_start, today)
+        trends = get_metric_trends(program, month_start, today)
+        completeness = get_data_completeness(program, month_start, today)
+
+        lead_outcome = None
+        lead_outcome_name = None
+        lead_outcome_target = None
+        lead_outcome_type = None  # "achievement" or "scale"
+
+        # Layer 2: first achievement metric with achieved_pct
+        if achievement_rates:
+            first_ach = next(iter(achievement_rates.values()))
+            lead_outcome = first_ach["achieved_pct"]
+            lead_outcome_name = first_ach["name"]
+            lead_outcome_target = first_ach.get("target_rate")
+            lead_outcome_type = "achievement"
+
+        # Layer 1 fallback: first scale metric band_high_pct
+        if lead_outcome is None and distributions:
+            first_dist = next(iter(distributions.values()))
+            lead_outcome = first_dist["band_high_pct"]
+            lead_outcome_name = first_dist["name"]
+            lead_outcome_target = first_dist.get("target_band_high_pct")
+            lead_outcome_type = "scale"
+
+        # Trend direction: compare first vs last month (>5% change)
+        trend_direction = None
+        if trends:
+            # Use the first metric's trend data
+            first_trend = next(iter(trends.values()))
+            if len(first_trend) >= 2:
+                first_pct = first_trend[0]["band_high_pct"]
+                last_pct = first_trend[-1]["band_high_pct"]
+                change = last_pct - first_pct
+                if change > 5:
+                    trend_direction = "improving"
+                elif change < -5:
+                    trend_direction = "declining"
+                else:
+                    trend_direction = "stable"
+
+        # Has urgent theme?
+        has_urgent_theme = any(
+            t.get("priority") == "important" or t.get("priority") == "urgent"
+            for t in top
+        )
+
+        stat["lead_outcome"] = lead_outcome
+        stat["lead_outcome_name"] = lead_outcome_name
+        stat["lead_outcome_target"] = lead_outcome_target
+        stat["lead_outcome_type"] = lead_outcome_type
+        stat["trend_direction"] = trend_direction
+        stat["data_completeness"] = completeness
+        stat["has_urgent_theme"] = has_urgent_theme
+        stat["has_declining_trend"] = trend_direction == "declining"
 
         program_stats.append(stat)
         total_clients += es.get("total", 0)
