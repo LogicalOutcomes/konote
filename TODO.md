@@ -60,12 +60,12 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: QA Round 7 — Page Audit Tier 2 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
 
-- [ ] Fix groups-attendance: replace "--" with "N/R" (aria-label) + rename "Rate" to "Attendance Rate" — screen reader a11y (QA-PA-ATTEND1)
-- [ ] Fix groups-attendance "1 sessions" pluralization — Django pluralize filter + French blocktrans (QA-PA-ATTEND2)
-- [ ] Improve comm-my-messages empty state — distinguish "no messages yet" from "all read", add guidance text (QA-PA-MSG1)
-- [ ] Add required-field indicator to comm-leave-message textarea — asterisk + aria-required (QA-PA-MSG2)
-- [ ] Add onboarding context to plan-goal-create — collapsible 1-2 sentence explainer for new users (QA-PA-GOAL1)
-- [ ] Add step indicator ("Step 1 of 2") to goal creation wizard — helps DS1c (ADHD) track progress (QA-PA-GOAL2)
+- [x] Fix groups-attendance: replace "--" with "N/R" (aria-label) + rename "Rate" to "Attendance Rate" — 2026-02-24 (QA-PA-ATTEND1)
+- [x] Fix groups-attendance "1 sessions" pluralization — blocktrans count syntax — 2026-02-24 (QA-PA-ATTEND2)
+- [x] Improve comm-my-messages empty state — distinguish "no messages yet" from "all read", add guidance text — 2026-02-24 (QA-PA-MSG1)
+- [x] Add required-field indicator to comm-leave-message textarea — asterisk + aria-required — 2026-02-24 (QA-PA-MSG2)
+- [x] Add onboarding context to plan-goal-create — collapsible explainer for new users — 2026-02-24 (QA-PA-GOAL1)
+- [x] Add step indicator ("Step 1 of 2") to goal creation wizard — 2026-02-24 (QA-PA-GOAL2)
 - [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — fix in qa-scenarios repo (QA-PA-TEST1)
 - [ ] Seed comm-my-messages populated state with actual messages — fix in qa-scenarios repo (QA-PA-TEST2)
 
