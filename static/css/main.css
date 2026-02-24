@@ -293,6 +293,10 @@ nav.breadcrumb [aria-current="page"] {
     font-size: 0.8125rem;
     padding: var(--kn-space-sm) var(--kn-space-lg) var(--kn-space-sm) var(--kn-space-sm);
 }
+.client-toolbar__filters select:focus-visible {
+    outline: 2px solid var(--kn-focus-ring, Highlight);
+    outline-offset: 2px;
+}
 .client-toolbar__clear {
     font-size: 0.8125rem;
     color: var(--kn-text-muted);
