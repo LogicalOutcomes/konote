@@ -1969,6 +1969,15 @@ msgstr ""
 msgid "This action cannot be undone."
 msgstr "Cette action ne peut pas être annulée."
 
+msgid "Their name and contact details will be blanked. Anonymous service records stay in reports. This cannot be undone."
+msgstr "Leur nom et leurs coordonnées seront effacés. Les dossiers de services anonymes restent dans les rapports. Cette action est irréversible."
+
+msgid "All individual information will be removed. Only anonymous counts remain in reports. This cannot be undone."
+msgstr "Toutes les informations individuelles seront supprimées. Seuls les totaux anonymes restent dans les rapports. Cette action est irréversible."
+
+msgid "Everything about this person will be permanently deleted, including from reports. This cannot be undone."
+msgstr "Toutes les données de cette personne seront définitivement supprimées, y compris des rapports. Cette action est irréversible."
+
 #, python-format
 msgid "Delete %(target)s"
 msgstr "Supprimer %(target)s"
