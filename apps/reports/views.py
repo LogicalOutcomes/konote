@@ -371,8 +371,24 @@ def export_form(request):
         })
 
     program = form.cleaned_data["program"]
-    if not can_create_export(request.user, "metrics", program=program):
-        return HttpResponseForbidden("You do not have permission to export data for this program.")
+    all_programs_mode = form.is_all_programs  # True when user selected "All Programs"
+
+    if all_programs_mode:
+        # "All Programs" — verify user has general export permission
+        if not can_create_export(request.user, "metrics"):
+            return HttpResponseForbidden("You do not have permission to export data.")
+        # Force aggregate-only for cross-program exports (privacy safeguard)
+        is_aggregate = True
+        is_pm_export = False
+    else:
+        if not can_create_export(request.user, "metrics", program=program):
+            return HttpResponseForbidden("You do not have permission to export data for this program.")
+
+    # Display label for the program in exports
+    program_display_name = (
+        _("All Programs \u2014 Organisation Summary") if all_programs_mode
+        else program.name
+    )
 
     selected_metrics = form.cleaned_data["metrics"]
     date_from = form.cleaned_data["date_from"]
@@ -390,13 +406,21 @@ def export_form(request):
         grouping_type = "none"
         grouping_field = None
 
-    # Find clients matching user's demo status enrolled in the selected program
+    # Find clients matching user's demo status enrolled in accessible programs
     # Security: Demo users can only export demo clients; real users only real clients
     accessible_client_ids = get_client_queryset(request.user).values_list("pk", flat=True)
-    client_ids = ClientProgramEnrolment.objects.filter(
-        program=program, status="enrolled",
-        client_file_id__in=accessible_client_ids,
-    ).values_list("client_file_id", flat=True)
+    if all_programs_mode:
+        # All programs the user has access to
+        accessible_programs = get_manageable_programs(request.user)
+        client_ids = ClientProgramEnrolment.objects.filter(
+            program__in=accessible_programs, status="enrolled",
+            client_file_id__in=accessible_client_ids,
+        ).values_list("client_file_id", flat=True).distinct()
+    else:
+        client_ids = ClientProgramEnrolment.objects.filter(
+            program=program, status="enrolled",
+            client_file_id__in=accessible_client_ids,
+        ).values_list("client_file_id", flat=True)
 
     # Build date-aware boundaries
     date_from_dt = timezone.make_aware(datetime.combine(date_from, time.min))
@@ -444,19 +468,32 @@ def export_form(request):
     # Calculate achievement rates if requested (aggregate — safe for all roles)
     achievement_summary = None
     if include_achievement:
-        achievement_summary = get_achievement_summary(
-            program,
-            date_from=date_from,
-            date_to=date_to,
-            metric_defs=list(selected_metrics),
-            use_latest=True,
-        )
+        if all_programs_mode:
+            # Aggregate achievement across all accessible programs
+            from .achievements import merge_achievement_summaries
+            summaries = []
+            for ap in accessible_programs:
+                s = get_achievement_summary(
+                    ap, date_from=date_from, date_to=date_to,
+                    metric_defs=list(selected_metrics), use_latest=True,
+                )
+                if s:
+                    summaries.append(s)
+            achievement_summary = merge_achievement_summaries(summaries) if summaries else None
+        else:
+            achievement_summary = get_achievement_summary(
+                program,
+                date_from=date_from,
+                date_to=date_to,
+                metric_defs=list(selected_metrics),
+                use_latest=True,
+            )
 
     export_format = form.cleaned_data["format"]
     recipient = form.get_recipient_display()
 
     filters_dict = {
-        "program": program.name,
+        "program": str(program_display_name),
         "metrics": [m.name for m in selected_metrics],
         "date_from": str(date_from),
         "date_to": str(date_to),
@@ -620,6 +657,8 @@ def export_form(request):
 
         total_clients_display = suppress_small_cell(len(unique_clients), program)
 
+        safe_display = sanitise_filename(str(program_display_name).replace(" ", "_"))
+
         if export_format == "pdf":
             from .pdf_views import generate_outcome_report_pdf
             pdf_response = generate_outcome_report_pdf(
@@ -635,15 +674,15 @@ def export_form(request):
                 is_aggregate=True,
                 aggregate_rows=aggregate_rows,
                 demographic_aggregate_rows=demographic_aggregate_rows or None,
+                program_display_name=str(program_display_name),
             )
-            safe_name = sanitise_filename(program.name.replace(" ", "_"))
-            filename = f"outcome_report_{safe_name}_{date_from}_{date_to}.pdf"
+            filename = f"outcome_report_{safe_display}_{date_from}_{date_to}.pdf"
             content = pdf_response.content
         else:
             # Aggregate CSV — summary statistics only
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
-            writer.writerow(sanitise_csv_row([f"# Program: {program.name}"]))
+            writer.writerow(sanitise_csv_row([f"# Program: {program_display_name}"]))
             writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
             writer.writerow(sanitise_csv_row([f"# Total Participants: {total_clients_display}"]))
             writer.writerow(sanitise_csv_row([_("# Export Mode: Aggregate Summary")]))
@@ -705,8 +744,7 @@ def export_form(request):
                             demo_row["max"],
                         ]))
 
-            safe_prog = sanitise_filename(program.name.replace(" ", "_"))
-            filename = f"metric_export_{safe_prog}_{date_from}_{date_to}.csv"
+            filename = f"metric_export_{safe_display}_{date_from}_{date_to}.csv"
             content = csv_buffer.getvalue()
 
         rows = []  # No individual rows for aggregate exports
@@ -751,6 +789,8 @@ def export_form(request):
         total_clients_display = suppress_small_cell(len(unique_clients), program)
         total_data_points_display = suppress_small_cell(len(rows), program)
 
+        safe_display_indiv = sanitise_filename(str(program_display_name).replace(" ", "_"))
+
         if export_format == "pdf":
             from .pdf_views import generate_outcome_report_pdf
             pdf_response = generate_outcome_report_pdf(
@@ -761,16 +801,16 @@ def export_form(request):
                 achievement_summary=achievement_summary,
                 total_clients_display=total_clients_display,
                 total_data_points_display=total_data_points_display,
+                program_display_name=str(program_display_name),
             )
-            safe_name = sanitise_filename(program.name.replace(" ", "_"))
-            filename = f"outcome_report_{safe_name}_{date_from}_{date_to}.pdf"
+            filename = f"outcome_report_{safe_display_indiv}_{date_from}_{date_to}.pdf"
             content = pdf_response.content
         else:
             # Build CSV in memory buffer (not directly into HttpResponse)
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
             # Summary header rows (prefixed with # so spreadsheet apps treat them as comments)
-            writer.writerow(sanitise_csv_row([f"# Program: {program.name}"]))
+            writer.writerow(sanitise_csv_row([f"# Program: {program_display_name}"]))
             writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
             writer.writerow(sanitise_csv_row([f"# Total Clients: {total_clients_display}"]))
             writer.writerow(sanitise_csv_row([f"# Total Data Points: {total_data_points_display}"]))
@@ -810,8 +850,7 @@ def export_form(request):
                         row["author"],
                     ]))
 
-            safe_prog = sanitise_filename(program.name.replace(" ", "_"))
-            filename = f"metric_export_{safe_prog}_{date_from}_{date_to}.csv"
+            filename = f"metric_export_{safe_display_indiv}_{date_from}_{date_to}.csv"
             content = csv_buffer.getvalue()
 
     # Save to file and create secure download link
@@ -841,7 +880,8 @@ def export_form(request):
 
     # Audit log with recipient tracking
     audit_metadata = {
-        "program": program.name,
+        "program": str(program_display_name),
+        "all_programs": all_programs_mode,
         "metrics": [m.name for m in selected_metrics],
         "date_from": str(date_from),
         "date_to": str(date_to),
@@ -876,7 +916,7 @@ def export_form(request):
         "link": link,
         "download_url": download_url,
         "download_path": download_path,
-        "program_name": program.name,
+        "program_name": str(program_display_name),
         "is_pdf": export_format == "pdf",
     })
 
