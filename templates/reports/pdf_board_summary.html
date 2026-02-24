@@ -1,0 +1,321 @@
+{% extends "reports/pdf_base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Board Summary" %} — {{ program.name }}{% endblock %}
+
+{% block styles %}
+{{ block.super }}
+/* Board summary styles — compact 1-2 page layout */
+.board-header {
+    text-align: centre;
+    padding: 0.5cm 0 0.8cm 0;
+    border-bottom: 3px solid #0d7377;
+    margin-bottom: 0.5cm;
+}
+.board-header h1 {
+    font-size: 20pt;
+    color: #0d7377;
+    margin: 0 0 0.2cm 0;
+}
+.board-header .program-name {
+    font-size: 14pt;
+    color: #1a202c;
+    margin: 0 0 0.2cm 0;
+}
+.board-header .period-label {
+    font-size: 10pt;
+    color: #718096;
+}
+.section-heading {
+    background-color: #0d7377;
+    color: #ffffff;
+    padding: 0.2cm 0.4cm;
+    font-size: 11pt;
+    font-weight: 600;
+    margin-top: 0.6cm;
+    margin-bottom: 0.3cm;
+}
+.overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 0.3cm;
+    margin: 0.3cm 0;
+}
+.overview-stat {
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    padding: 0.3cm;
+    text-align: center;
+}
+.overview-stat .value {
+    font-size: 18pt;
+    font-weight: 700;
+    color: #0d7377;
+}
+.overview-stat .label {
+    font-size: 8pt;
+    color: #718096;
+    margin-top: 0.1cm;
+}
+.outcome-row {
+    display: grid;
+    grid-template-columns: 1fr 100px 80px;
+    padding: 4px 10px;
+    border-bottom: 1px solid #e5e7eb;
+    align-items: center;
+}
+.outcome-row.header {
+    background-color: #f7f8fa;
+    font-weight: 600;
+    font-size: 9pt;
+    color: #4a5568;
+}
+.outcome-name {
+    font-size: 10pt;
+}
+.outcome-target {
+    text-align: right;
+    font-size: 10pt;
+}
+.trend-indicator {
+    text-align: centre;
+    font-size: 10pt;
+    font-weight: 600;
+}
+.trend-improving { color: #1a5632; }
+.trend-stable { color: #4a5568; }
+.trend-declining { color: #9b2c2c; }
+.trend-new { color: #718096; font-style: italic; }
+.theme-list {
+    list-style: none;
+    padding: 0;
+    margin: 0.2cm 0;
+}
+.theme-item {
+    padding: 0.2cm 0.3cm;
+    border-left: 3px solid #0d7377;
+    margin-bottom: 0.2cm;
+    font-size: 10pt;
+}
+.theme-item.urgent {
+    border-left-color: #e53e3e;
+    background-color: #fff5f5;
+}
+.theme-priority {
+    font-size: 8pt;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 0.3cm;
+}
+.theme-priority.urgent { color: #e53e3e; }
+.theme-priority.high { color: #dd6b20; }
+.theme-priority.medium { color: #718096; }
+.quote-block {
+    border-left: 3px solid #b2dfdb;
+    padding: 0.15cm 0.4cm;
+    margin: 0.15cm 0;
+    font-style: italic;
+    font-size: 9pt;
+    color: #4a5568;
+}
+.privacy-note {
+    font-size: 8pt;
+    color: #718096;
+    font-style: italic;
+    margin: 0.2cm 0;
+}
+.completeness-bar-container {
+    background-color: #e5e7eb;
+    height: 12px;
+    border-radius: 6px;
+    width: 100%;
+    margin: 0.15cm 0;
+}
+.completeness-bar-fill {
+    height: 100%;
+    border-radius: 6px;
+}
+.completeness-full { background-color: #48bb78; }
+.completeness-partial { background-color: #ed8936; }
+.completeness-low { background-color: #e53e3e; }
+.completeness-label {
+    font-size: 10pt;
+    font-weight: 600;
+    margin-bottom: 0.1cm;
+}
+.completeness-detail {
+    font-size: 9pt;
+    color: #4a5568;
+}
+.data-warning {
+    background-color: #fffbeb;
+    border: 1px solid #f59e0b;
+    border-radius: 4px;
+    padding: 0.2cm 0.3cm;
+    font-size: 9pt;
+    color: #92400e;
+    margin-top: 0.2cm;
+}
+.narrative-section {
+    border: 1px dashed #d1d5db;
+    border-radius: 4px;
+    padding: 0.4cm;
+    margin: 0.3cm 0;
+    min-height: 2cm;
+}
+.narrative-placeholder {
+    font-style: italic;
+    color: #718096;
+    font-size: 10pt;
+}
+.board-footer {
+    font-size: 8pt;
+    color: #718096;
+    margin-top: 0.5cm;
+    padding-top: 0.3cm;
+    border-top: 1px solid #e5e7eb;
+}
+{% endblock %}
+
+{% block content %}
+<!-- Header (no cover page — board summaries are compact) -->
+<div class="board-header">
+    <h1>{% trans "Board Summary" %}</h1>
+    <div class="program-name">{{ program.name }}</div>
+    <div class="period-label">
+        {{ organisation_name }} | {{ period_label }}<br>
+        {% blocktrans with date=generated_at|date:"Y-m-d" %}Generated {{ date }}{% endblocktrans %}
+    </div>
+</div>
+
+<!-- Section 1: Program Overview -->
+<div class="section-heading">{% trans "Program Overview" %}</div>
+
+<div class="overview-grid">
+    <div class="overview-stat">
+        <div class="value">{{ enrolled_count|default:"0" }}</div>
+        <div class="label">{% trans "Active Participants" %}</div>
+    </div>
+    <div class="overview-stat">
+        <div class="value">{{ notes_count|default:"0" }}</div>
+        <div class="label">{% trans "Progress Notes" %}</div>
+    </div>
+    <div class="overview-stat">
+        <div class="value">{{ months_of_data|default:"0" }}</div>
+        <div class="label">{% trans "Months of Data" %}</div>
+    </div>
+</div>
+
+{% if outcomes %}
+<div class="outcome-row header">
+    <div>{% trans "Outcome" %}</div>
+    <div style="text-align: right;">{% trans "Current" %}</div>
+    <div style="text-align: center;">{% trans "Trend" %}</div>
+</div>
+{% for outcome in outcomes %}
+<div class="outcome-row avoid-break">
+    <div class="outcome-name">{{ outcome.name }}</div>
+    <div class="outcome-target">
+        {% if outcome.achieved_pct is not None %}
+            {{ outcome.achieved_pct }}%
+            {% if outcome.target_rate %}
+                <span style="font-size: 8pt; color: #718096;">{% blocktrans with target=outcome.target_rate %}(target: {{ target }}%){% endblocktrans %}</span>
+            {% endif %}
+        {% else %}
+            —
+        {% endif %}
+    </div>
+    <div class="trend-indicator {% if outcome.trend == 'improving' %}trend-improving{% elif outcome.trend == 'stable' %}trend-stable{% elif outcome.trend == 'declining' %}trend-declining{% else %}trend-new{% endif %}">
+        {% if outcome.trend == "improving" %}
+            &#9650; {% trans "Improving" %}
+        {% elif outcome.trend == "stable" %}
+            &#9654; {% trans "Stable" %}
+        {% elif outcome.trend == "declining" %}
+            &#9660; {% trans "Needs attention" %}
+        {% else %}
+            — {% trans "New" %}
+        {% endif %}
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<p style="font-size: 10pt; color: #718096; font-style: italic;">{% trans "No outcome metrics with targets have been defined for this program yet." %}</p>
+{% endif %}
+
+<!-- Section 2: What Participants Are Telling Us -->
+<div class="section-heading">{% trans "What Participants Are Telling Us" %}</div>
+
+{% if themes %}
+<ul class="theme-list" role="list">
+    {% for theme in themes %}
+    <li class="theme-item {% if theme.priority == 'urgent' %}urgent{% endif %}" role="listitem">
+        {{ theme.name }}
+        {% if theme.priority == "urgent" %}
+            <span class="theme-priority urgent">{% trans "Urgent" %}</span>
+        {% elif theme.priority == "high" %}
+            <span class="theme-priority high">{% trans "High" %}</span>
+        {% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p style="font-size: 10pt; color: #718096; font-style: italic;">{% trans "No feedback themes have been identified for this period." %}</p>
+{% endif %}
+
+{% if quotes %}
+{% for quote in quotes %}
+<div class="quote-block">
+    &ldquo;{{ quote.text }}&rdquo;
+</div>
+{% endfor %}
+{% elif quotes_suppressed %}
+<p class="privacy-note">
+    {% blocktrans with min=min_participants_for_quotes %}Participant quotes are not displayed when fewer than {{ min }} participants are enrolled, to protect confidentiality.{% endblocktrans %}
+</p>
+{% endif %}
+
+<!-- Section 3: Data Quality -->
+<div class="section-heading">{% trans "Data Quality" %}</div>
+
+<div class="avoid-break">
+    <div class="completeness-label">
+        {% trans "Data Completeness" %}: {{ completeness.completeness_pct }}%
+    </div>
+    <div class="completeness-bar-container" role="img" aria-label="{% blocktrans with pct=completeness.completeness_pct %}Data completeness: {{ pct }} percent{% endblocktrans %}">
+        <div class="completeness-bar-fill {% if completeness.completeness_level == 'full' %}completeness-full{% elif completeness.completeness_level == 'partial' %}completeness-partial{% else %}completeness-low{% endif %}"
+             style="width: {{ completeness.completeness_pct }}%;"></div>
+    </div>
+    <div class="completeness-detail">
+        {% blocktrans with scored=completeness.with_scores_count enrolled=completeness.enrolled_count %}{{ scored }} of {{ enrolled }} enrolled participants have recorded outcome scores in this period.{% endblocktrans %}
+    </div>
+
+    {% if completeness.completeness_pct < 80 %}
+    <div class="data-warning" role="alert">
+        {% if completeness.completeness_pct < 50 %}
+            {% trans "Caution: Low data completeness. Outcome results may not be representative of the full participant group. Consider strategies to increase data collection before drawing conclusions." %}
+        {% else %}
+            {% trans "Note: Data completeness is below the recommended 80% threshold. Results should be interpreted with this in mind." %}
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Section 4: Narrative -->
+<div class="section-heading">{% trans "Qualitative Context" %}</div>
+
+<div class="narrative-section">
+    {% if narrative %}
+        {{ narrative|linebreaksbr }}
+    {% else %}
+        <p class="narrative-placeholder">{% trans "[To be completed by program staff before board distribution. Consider: key achievements, challenges, and plans for the coming period.]" %}</p>
+    {% endif %}
+</div>
+
+<!-- Footer -->
+<div class="board-footer">
+    <strong>{% trans "Confidential" %}</strong> —
+    {% trans "This summary was generated using KoNote." %}
+    {% blocktrans with period=period_label %}Data reflects participant outcomes recorded during {{ period }}.{% endblocktrans %}
+    {% trans "Counts below 5 in any category are suppressed to protect participant privacy." %}
+</div>
+{% endblock %}
