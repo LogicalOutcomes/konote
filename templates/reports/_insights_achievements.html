@@ -1,0 +1,72 @@
+{% load i18n %}
+{# Layer 2: Program Outcomes — achievement metric progress bars #}
+
+{% if achievement_rates %}
+<section aria-labelledby="outcomes-heading">
+
+{% for metric_id, ach in achievement_rates.items %}
+<div class="insights-outcome-bar">
+    <div class="insights-outcome-bar__header">
+        <h4 class="insights-outcome-bar__title">{{ ach.name }}</h4>
+        <span class="insights-outcome-bar__count">
+            {% blocktrans with achieved=ach.achieved_count total=ach.total %}{{ achieved }} of {{ total }}{% endblocktrans %}
+        </span>
+    </div>
+
+    {# Progress bar with optional target marker #}
+    <div class="insights-outcome-bar__track"
+         role="img"
+         aria-label="{% blocktrans with name=ach.name pct=ach.achieved_pct %}{{ name }}: {{ pct }}% achieved{% endblocktrans %}">
+        <div class="insights-outcome-bar__fill"
+             style="width: {{ ach.achieved_pct }}%;">
+            {{ ach.achieved_pct }}%
+        </div>
+        {% if ach.target_rate %}
+        <div class="insights-outcome-bar__target"
+             style="left: {{ ach.target_rate }}%;"
+             data-label="{% blocktrans with target=ach.target_rate %}target: {{ target }}%{% endblocktrans %}"
+             role="presentation"></div>
+        {% endif %}
+    </div>
+
+    {% if ach.target_rate %}
+    <p class="insights-outcome-bar__context">
+        {% if ach.achieved_pct >= ach.target_rate %}
+            {% blocktrans with target=ach.target_rate %}Meeting target of {{ target }}%{% endblocktrans %}
+        {% else %}
+            {% blocktrans with target=ach.target_rate %}Target: {{ target }}%{% endblocktrans %}
+        {% endif %}
+    </p>
+    {% endif %}
+</div>
+{% endfor %}
+
+{# Accessible data table #}
+<details class="chart-data-table">
+    <summary>{% trans "View outcome data table" %}</summary>
+    <table role="table" aria-label="{% trans 'Program outcome achievement rates' %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Outcome" %}</th>
+                <th scope="col">{% trans "Achieved" %}</th>
+                <th scope="col">{% trans "Total" %}</th>
+                <th scope="col">{% trans "Rate" %}</th>
+                <th scope="col">{% trans "Target" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for metric_id, ach in achievement_rates.items %}
+            <tr>
+                <td>{{ ach.name }}</td>
+                <td>{{ ach.achieved_count }}</td>
+                <td>{{ ach.total }}</td>
+                <td>{{ ach.achieved_pct }}%</td>
+                <td>{% if ach.target_rate %}{{ ach.target_rate }}%{% else %}—{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</details>
+
+</section>
+{% endif %}
