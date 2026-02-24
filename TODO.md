@@ -13,10 +13,10 @@
 
 ### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
 
-- [ ] Phase 3: Update executive dashboard — program cards with trend direction, data completeness, feedback themes (INSIGHTS-P3-EXEC)
-- [ ] Phase 4: Achievement metric recording UI — dropdown in note form, tests (INSIGHTS-P4-RECORD)
+- [x] Phase 3: Update executive dashboard — program cards with lead outcome, trend direction, data completeness, feedback themes, 7 tests — 2026-02-24 (INSIGHTS-P3-EXEC)
+- [x] Phase 4: Achievement metric recording UI — dropdown in note form, form validation, 4 tests — 2026-02-24 (INSIGHTS-P4-RECORD)
 - [ ] Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
-- [ ] Extract and translate French strings for metric distributions templates (~25-30 new strings, several blocktrans blocks) (INSIGHTS-I18N1)
+- [x] Extract and translate French strings for metric distributions templates — 65 new strings translated — 2026-02-24 (INSIGHTS-I18N1)
 
 ### Phase: Launch Readiness
 
@@ -120,7 +120,7 @@ _Nothing pending._
 ### Phase: Surveys Future Work
 
 - [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
-- [ ] Run `translate_strings` to extract and compile French translations for the new survey templates (SURVEY-I18N1)
+- [x] Run `translate_strings` to extract and compile French translations for the new survey templates — 2026-02-24 (SURVEY-I18N1)
 
 ### Phase: Documentation & Website Updates
 
@@ -168,7 +168,7 @@ _Nothing pending._
 - [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
 - [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
-- [ ] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering (CODE-TIDY1)
+- [x] Tidy `import datetime as dt` placement in reports/views.py — consolidated into single from-import — 2026-02-24 (CODE-TIDY1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
 - [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
 - [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
@@ -179,13 +179,13 @@ _Nothing pending._
 
 ## Recently Done
 
-- [x] Approve CIDS implementation plan — go decision, proceeding with metadata fields, code list integration, CIDS-enriched reports, and JSON-LD export — 2026-02-24 — GK (CIDS-APPROVE1)
-- [x] Research session reporting requirements (IRCC, Employment Ontario, CFPB, United Way) — key gap: need duration and modality fields on notes (see tasks/session-reporting-research.md) — 2026-02-24 (REP-REQ1)
+- [x] Insights Phase 3: Executive dashboard program outcome cards — lead outcome, trend direction, completeness indicator, 7 tests — 2026-02-24 (INSIGHTS-P3-EXEC)
+- [x] Insights Phase 4: Achievement metric dropdown in note form — Select widget, validation, 4 tests — 2026-02-24 (INSIGHTS-P4-RECORD)
+- [x] French translations for insights + surveys + exec dashboard — 65 new strings — 2026-02-24 (INSIGHTS-I18N1, SURVEY-I18N1)
+- [x] Tidy datetime import in reports/views.py + copy session reporting research file — 2026-02-24 (CODE-TIDY1, REP-REQ1)
+- [x] TODO housekeeping — sync flags (CIDS-APPROVE1, INSIGHTS-LANG1 resolved), reassign ONBOARD-APPROVE/SEC3-Q1 to SG, archive 9 items — 2026-02-24
+- [x] Approve CIDS implementation plan — go decision — 2026-02-24 — GK (CIDS-APPROVE1)
 - [x] Add Evidence section to website — evidence.html published in konote-website — 2026-02-24 (WEB-EVIDENCE1)
-- [x] Verify deploy-azure.md reference in deployment protocol — file exists at docs/archive/deploy-azure.md — 2026-02-24 (DEPLOY-VERIFY1)
 - [x] Enforce PHIPA cross-program consent in views — note_detail, note_summary, event_list; fix fail-open bug; fix CONF9 interaction; shared banner include; 4 new tests; DRR created — 2026-02-22 (PHIPA-ENFORCE1)
 - [x] Insights metric distributions Phases 0-2 — model fields, aggregation, distributions, achievements, trends, Two Lenses, data completeness, 50 tests, 10 review fixes (PR #23) — 2026-02-22 (INSIGHTS-P0-ADMIN, INSIGHTS-P1-MODEL, INSIGHTS-P1-AGG, INSIGHTS-P2-LAYOUT, INSIGHTS-P2-VIZ)
 - [x] Approve band display labels — "More support needed" / "On track" / "Goals within reach" — 2026-02-22 — GK (INSIGHTS-LANG1)
-- [x] QA Page Audit Tier 1 + Tier 2 — 500.html standalone, public view hardening, goal heading/onboarding/steps, attendance a11y, messages UX, leave-message required field, translations (PR #20) — 2026-02-22 (QA-PA-TIER1-2)
-- [x] Fix suggestion theme linking in seed_demo_data — program-specific suggestions, removed blind fallback — 2026-02-22 (DEMO-FIX1)
-- [x] Add quarterly date range presets to ad-hoc report form — optgroup dropdown with FY + quarters, i18n month names, 8 tests — 2026-02-22 (QA-R7-RPT-QUARTER1)
