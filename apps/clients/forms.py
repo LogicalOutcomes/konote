@@ -113,7 +113,7 @@ class ClientFileForm(forms.Form):
         error_messages={"required": _("Please select at least one program.")},
     )
 
-    def __init__(self, *args, available_programs=None, **kwargs):
+    def __init__(self, *args, available_programs=None, circle_choices=None, **kwargs):
         super().__init__(*args, **kwargs)
         if available_programs is not None:
             self.fields["programs"].queryset = available_programs
@@ -121,6 +121,31 @@ class ClientFileForm(forms.Form):
             # Pre-select when user has exactly one program (IMPROVE-2)
             if not self.is_bound and available_programs.count() == 1:
                 self.initial["programs"] = [available_programs.first().pk]
+
+        # Circle fields — only added when circles feature toggle is on
+        if circle_choices is not None:
+            self.fields["existing_circle"] = forms.ChoiceField(
+                choices=[("", _("— None —"))] + list(circle_choices),
+                required=False,
+                label=_("Link to existing circle"),
+                help_text=_("Optional — link to an existing circle or create a new one below."),
+            )
+            self.fields["new_circle_name"] = forms.CharField(
+                max_length=255,
+                required=False,
+                label=_("Or create a new circle"),
+                widget=forms.TextInput(attrs={"placeholder": _("e.g. Garcia Family")}),
+            )
+
+    def clean(self):
+        cleaned = super().clean()
+        existing = cleaned.get("existing_circle", "")
+        new_name = cleaned.get("new_circle_name", "").strip()
+        if existing and new_name:
+            raise forms.ValidationError(
+                _("Choose either an existing circle or create a new one — not both.")
+            )
+        return cleaned
 
     def clean_phone(self):
         phone = self.cleaned_data.get("phone", "").strip()

@@ -286,8 +286,17 @@ def client_list(request):
 @requires_permission("client.create")
 def client_create(request):
     available_programs = _get_accessible_programs(request.user)
+
+    # Circle integration — only when feature is enabled
+    circle_choices = None
+    from apps.admin_settings.models import FeatureToggle
+    if FeatureToggle.get_all_flags().get("circles", False):
+        from apps.circles.helpers import get_visible_circles
+        visible = get_visible_circles(request.user)
+        circle_choices = [(c.pk, c.name) for c in visible]
+
     if request.method == "POST":
-        form = ClientFileForm(request.POST, available_programs=available_programs)
+        form = ClientFileForm(request.POST, available_programs=available_programs, circle_choices=circle_choices)
         if form.is_valid():
             # BUG-7: Wrap in transaction so client + enrollments commit
             # atomically. Prevents a half-created client if enrollment
@@ -325,6 +334,28 @@ def client_create(request):
                     ClientProgramEnrolment.objects.create(
                         client_file=client, program=program, status="enrolled",
                     )
+                # Circle linking/creation (when circles feature is on)
+                existing_circle_id = form.cleaned_data.get("existing_circle", "")
+                new_circle_name = form.cleaned_data.get("new_circle_name", "").strip()
+                if existing_circle_id or new_circle_name:
+                    from apps.circles.models import Circle, CircleMembership
+                    if existing_circle_id:
+                        circle = Circle.objects.filter(pk=existing_circle_id).first()
+                    else:
+                        circle = Circle(is_demo=request.user.is_demo)
+                        circle.name = new_circle_name
+                        circle.created_by = request.user
+                        circle.save()
+                    if circle:
+                        # Set as primary contact if first participant member
+                        has_participant = CircleMembership.objects.filter(
+                            circle=circle, client_file__isnull=False, status="active",
+                        ).exists()
+                        CircleMembership.objects.create(
+                            circle=circle,
+                            client_file=client,
+                            is_primary_contact=not has_participant,
+                        )
             # Allow immediate access on redirect — the RBAC middleware may
             # not yet see the new enrollment depending on connection timing.
             request.session["_just_created_client_id"] = client.pk
@@ -338,7 +369,7 @@ def client_create(request):
             )
             return redirect("clients:client_detail", client_id=client.pk)
     else:
-        form = ClientFileForm(available_programs=available_programs)
+        form = ClientFileForm(available_programs=available_programs, circle_choices=circle_choices)
     return render(request, "clients/form.html", {"form": form, "editing": False})
 
 
