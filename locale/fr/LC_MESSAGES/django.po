@@ -14939,3 +14939,85 @@ msgstr ""
 
 msgid "\\u2014 Select a report \\u2014"
 msgstr ""
+msgid "Archive"
+msgstr "Archiver"
+
+msgid "Choose either a participant or enter a name — not both."
+msgstr "Choisissez un(e) participant(e) ou entrez un nom — pas les deux."
+
+msgid "Choose either an existing circle or create a new one — not both."
+msgstr "Choisissez un cercle existant ou créez-en un nouveau — pas les deux."
+
+msgid "Circle"
+msgstr "Cercle"
+
+msgid "Circle archived."
+msgstr "Cercle archivé."
+
+msgid "Circle created."
+msgstr "Cercle créé."
+
+msgid ""
+"Circle notes should describe shared observations, not clinical details about"
+" specific individuals."
+msgstr ""
+"Les notes de cercle doivent décrire des observations partagées, pas des "
+"détails cliniques sur des personnes spécifiques."
+
+msgid "Circle updated."
+msgstr "Cercle mis à jour."
+
+msgid "For people who are not enrolled as participants."
+msgstr "Pour les personnes qui ne sont pas inscrites comme participant(e)s."
+
+msgid "Link to existing circle"
+msgstr "Lier à un cercle existant"
+
+msgid "Name (non-participant)"
+msgstr "Nom (non-participant(e))"
+
+msgid "Optional — link to an existing circle or create a new one below."
+msgstr ""
+"Facultatif — liez à un cercle existant ou créez-en un nouveau ci-dessous."
+
+msgid "Or create a new circle"
+msgstr "Ou créer un nouveau cercle"
+
+msgid "Primary"
+msgstr "Principal(e)"
+
+msgid "Primary Contact"
+msgstr "Contact principal"
+
+msgid "Primary contact"
+msgstr "Contact principal"
+
+msgid "Relationship"
+msgstr "Relation"
+
+msgid "Search by name..."
+msgstr "Rechercher par nom..."
+
+msgid "This participant is already in this circle."
+msgstr "Ce ou cette participant(e) fait déjà partie de ce cercle."
+
+msgid "Who does the agency call first?"
+msgstr "Qui l'organisme appelle-t-il en premier?"
+
+msgid "e.g. Garcia Family"
+msgstr "ex. Famille Garcia"
+
+msgid "e.g. parent, spouse, child, caregiver"
+msgstr "ex. parent, conjoint(e), enfant, aidant(e)"
+
+msgid "e.g. parent, spouse, sibling"
+msgstr "ex. parent, conjoint(e), frère/sœur"
+
+msgid "— None —"
+msgstr "— Aucun —"
+
+msgid "Optional — describes this person's role in the circle."
+msgstr "Facultatif — décrit le rôle de cette personne dans le cercle."
+
+msgid "DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"
+msgstr "Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres visibles sont automatiquement masqués"

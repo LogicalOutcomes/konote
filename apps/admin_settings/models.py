@@ -45,6 +45,9 @@ DEFAULT_TERMS = {
     "member_plural": ("Members", "Membres"),
     "session": ("Session", "Séance"),
     "session_plural": ("Sessions", "Séances"),
+    # Circles
+    "circle": ("Circle", "Cercle"),
+    "circle_plural": ("Circles", "Cercles"),
 }
 
 # Help text showing where each term appears in the interface.
@@ -82,6 +85,8 @@ TERM_HELP_TEXT = {
     "member_plural": _lazy("Used in: group detail page, attendance summary"),
     "session": _lazy("Used in: group session recording form, attendance page"),
     "session_plural": _lazy("Used in: group detail page, session history"),
+    "circle": _lazy("Used in: navigation, circle list, circle detail, participant file sidebar, note form"),
+    "circle_plural": _lazy("Used in: navigation menu, dashboard counts, reports"),
 }
 
 
