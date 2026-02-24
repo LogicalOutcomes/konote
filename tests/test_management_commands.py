@@ -271,6 +271,31 @@ class SeedDemoDataTest(TestCase):
         self.assertIsNotNone(demo_template)
         self.assertIn("Canadian Community Foundation", demo_template.description)
 
+    def test_achievement_metrics_seeded(self):
+        """Achievement metrics are created and have MetricValues recorded."""
+        out = io.StringIO()
+        call_command("seed", stdout=out)
+
+        from apps.notes.models import MetricValue
+        from apps.plans.models import MetricDefinition
+
+        # Verify achievement metric definitions were created
+        achievement_defs = MetricDefinition.objects.filter(metric_type="achievement")
+        self.assertGreaterEqual(achievement_defs.count(), 3)
+
+        # Verify at least some MetricValues exist for achievement metrics
+        achievement_values = MetricValue.objects.filter(
+            metric_def__metric_type="achievement"
+        )
+        self.assertGreater(achievement_values.count(), 0)
+
+        # Verify values are valid option strings (not numeric)
+        sample = achievement_values.first()
+        self.assertFalse(
+            sample.value.replace(".", "").replace("-", "").isdigit(),
+            f"Achievement value should be a category string, got '{sample.value}'",
+        )
+
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, DEMO_MODE=False)
 class UpdateDemoClientFieldsTest(TestCase):

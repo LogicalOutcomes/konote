@@ -431,5 +431,38 @@
     "unit": "score",
     "unit_fr": "pointage",
     "is_universal": true
+  },
+  {
+    "name": "Job Placement",
+    "name_fr": "Placement en emploi",
+    "definition": "Has the participant secured employment? Updated at each session to reflect current status.",
+    "definition_fr": "Le participant a-t-il trouvé un emploi? Mis à jour à chaque séance pour refléter le statut actuel.",
+    "category": "employment",
+    "metric_type": "achievement",
+    "achievement_options": ["Not placed", "Interview stage", "Placed — part-time", "Placed — full-time"],
+    "achievement_success_values": ["Placed — part-time", "Placed — full-time"],
+    "target_rate": 65
+  },
+  {
+    "name": "Housing Secured",
+    "name_fr": "Logement obtenu",
+    "definition": "Has the participant secured stable housing? Updated at each session to reflect current status.",
+    "definition_fr": "Le participant a-t-il obtenu un logement stable? Mis à jour à chaque séance pour refléter le statut actuel.",
+    "category": "housing",
+    "metric_type": "achievement",
+    "achievement_options": ["No housing", "Emergency shelter", "Transitional", "Permanent housing"],
+    "achievement_success_values": ["Permanent housing"],
+    "target_rate": 50
+  },
+  {
+    "name": "School Enrolment",
+    "name_fr": "Inscription scolaire",
+    "definition": "Is the youth enrolled in school or an educational program?",
+    "definition_fr": "Le jeune est-il inscrit à l'école ou à un programme éducatif?",
+    "category": "youth",
+    "metric_type": "achievement",
+    "achievement_options": ["Not enrolled", "Enrolled part-time", "Enrolled full-time"],
+    "achievement_success_values": ["Enrolled part-time", "Enrolled full-time"],
+    "target_rate": 80
   }
 ]

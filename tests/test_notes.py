@@ -502,6 +502,46 @@ class NoteViewsTest(TestCase):
         form = MetricValueForm(metric_def=metric)
         self.assertEqual(form.fields["value"].widget.__class__.__name__, "NumberInput")
 
+    def test_achievement_metric_renders_as_radio(self):
+        """Achievement metrics render as RadioSelect with option labels."""
+        from apps.notes.forms import MetricValueForm
+        metric = MetricDefinition.objects.create(
+            name="Job Placement", metric_type="achievement",
+            achievement_options=["Not placed", "Interview stage", "Placed — full-time"],
+            achievement_success_values=["Placed — full-time"],
+            definition="Employment status", category="employment",
+        )
+        form = MetricValueForm(metric_def=metric)
+        self.assertTrue(form.is_achievement)
+        self.assertFalse(form.is_scale)
+        self.assertEqual(form.fields["value"].widget.__class__.__name__, "RadioSelect")
+        choices = form.fields["value"].widget.choices
+        self.assertEqual(len(choices), 4)  # empty + 3 options
+
+    def test_achievement_metric_validates_option(self):
+        """Achievement metric rejects values not in achievement_options."""
+        from apps.notes.forms import MetricValueForm
+        metric = MetricDefinition.objects.create(
+            name="Housing Secured", metric_type="achievement",
+            achievement_options=["No housing", "Transitional", "Permanent housing"],
+            achievement_success_values=["Permanent housing"],
+            definition="Housing status", category="housing",
+        )
+        # Valid option
+        form = MetricValueForm(
+            data={"metric_def_id": metric.pk, "value": "Permanent housing"},
+            metric_def=metric,
+        )
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["value"], "Permanent housing")
+
+        # Invalid option
+        form = MetricValueForm(
+            data={"metric_def_id": metric.pk, "value": "Invented option"},
+            metric_def=metric,
+        )
+        self.assertFalse(form.is_valid())
+
     def test_auto_calc_session_count(self):
         """Auto-calc metric shows session count for current month."""
         section = PlanSection.objects.create(

@@ -14,6 +14,13 @@ from django.db.models import Count, Q
 from django.shortcuts import render
 from django.utils import timezone
 
+from apps.clients.models import ClientProgramEnrolment
+from apps.notes.models import ProgressNote, SuggestionTheme
+from apps.programs.models import Program, UserProgramRole
+from apps.reports.insights import get_structured_insights
+from apps.reports.insights_views import _compute_trend_direction
+from apps.reports.metric_insights import get_data_completeness
+
 
 # Minimum active participants before percentage metrics are shown.
 # Below this threshold, percentages could identify individuals.
@@ -541,6 +548,72 @@ def _batch_top_themes(filtered_program_ids, limit_per_program=3):
     return counts_map, themes_map
 
 
+def _batch_metric_insights(filtered_program_ids, date_from, date_to):
+    """Compute metric insight indicators per program for the executive dashboard.
+
+    Returns dict of program_id -> {
+        trend_direction: "improving" | "stable" | "declining" | ""
+        data_completeness_level: "full" | "partial" | "low"
+        data_completeness_pct: int
+        urgent_theme_count: int
+    }
+
+    Batches urgent theme counts and enrolled counts in single queries.
+    Trend direction still requires a per-program call to get_structured_insights
+    (complex monthly aggregation that isn't easily batched).
+    """
+    programs = Program.objects.filter(pk__in=filtered_program_ids)
+
+    # Batch 1: count urgent themes per program (one query)
+    urgent_themes = list(
+        SuggestionTheme.objects.active()
+        .filter(program_id__in=filtered_program_ids, priority="urgent")
+        .values("program_id")
+        .annotate(cnt=Count("pk"))
+    )
+    urgent_map = {r["program_id"]: r["cnt"] for r in urgent_themes}
+
+    # Batch 2: enrolled client counts per program (one query instead of N)
+    enrolled_rows = (
+        ClientProgramEnrolment.objects.filter(
+            program_id__in=filtered_program_ids,
+            status="enrolled",
+        )
+        .values("program_id")
+        .annotate(cnt=Count("client_file_id", distinct=True))
+    )
+    enrolled_map = {r["program_id"]: r["cnt"] for r in enrolled_rows}
+
+    result = {}
+    for program in programs:
+        pid = program.pk
+
+        # Data completeness — use batched enrolled count, per-program scores query
+        enrolled = enrolled_map.get(pid, 0)
+        if enrolled > 0:
+            completeness = get_data_completeness(program, date_from, date_to)
+        else:
+            completeness = {
+                "completeness_pct": 0,
+                "completeness_level": "low",
+            }
+
+        # Trend direction (needs structured insights for descriptor_trend)
+        structured = get_structured_insights(
+            program=program, date_from=date_from, date_to=date_to,
+        )
+        trend_direction = _compute_trend_direction(structured.get("descriptor_trend", []))
+
+        result[pid] = {
+            "trend_direction": trend_direction,
+            "data_completeness_level": completeness["completeness_level"],
+            "data_completeness_pct": completeness["completeness_pct"],
+            "urgent_theme_count": urgent_map.get(pid, 0),
+        }
+
+    return result
+
+
 def _batch_suggestion_counts(filtered_program_ids):
     """Suggestion counts per program, grouped by priority, in one query.
 
@@ -942,6 +1015,11 @@ def executive_dashboard(request):
     # Batch: active theme counts + top theme details per program
     theme_map, top_themes_map = _batch_top_themes(filtered_program_ids)
 
+    # Batch: metric insight indicators (trend, completeness, urgent themes)
+    metric_insights_map = _batch_metric_insights(
+        filtered_program_ids, month_start.date(), today,
+    )
+
     # Assemble per-program stat dicts
     program_stats = []
     total_clients = 0
@@ -987,6 +1065,13 @@ def executive_dashboard(request):
         top = top_themes_map.get(pid, [])
         stat["top_themes"] = top
         stat["theme_overflow"] = max(0, themes.get("total", 0) - len(top))
+
+        # Metric insight indicators (trend, completeness, urgent themes)
+        mi = metric_insights_map.get(pid, {})
+        stat["trend_direction"] = mi.get("trend_direction", "")
+        stat["data_completeness_level"] = mi.get("data_completeness_level", "low")
+        stat["data_completeness_pct"] = mi.get("data_completeness_pct", 0)
+        stat["urgent_theme_count"] = mi.get("urgent_theme_count", 0)
 
         program_stats.append(stat)
         total_clients += es.get("total", 0)

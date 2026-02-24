@@ -152,6 +152,15 @@ class ProgressNote(models.Model):
     author_program = models.ForeignKey(
         "programs.Program", on_delete=models.SET_NULL, null=True, blank=True
     )
+    # Optional circle tag — note appears in circle timeline but access is
+    # still governed by client_file's permissions, not the circle's.
+    circle = models.ForeignKey(
+        "circles.Circle",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tagged_notes",
+    )
     # Encrypted clinical content fields
     _notes_text_encrypted = models.BinaryField(default=b"", blank=True)
     _summary_encrypted = models.BinaryField(default=b"", blank=True)
