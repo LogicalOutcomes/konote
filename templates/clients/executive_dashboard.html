@@ -100,7 +100,7 @@
     {% if program_stats %}
     <div class="program-cards">
         {% for stat in program_stats %}
-        <article class="program-card{% if stat.learning.has_urgent_theme or stat.learning.trend_direction == "declining" %} program-card-caution{% endif %}">
+        <article class="program-card{% if stat.learning.has_urgent_theme or stat.learning.has_declining_trend %} program-card-caution{% endif %}">
             <header>
                 <span class="program-dot" style="background-color: {{ stat.program.colour_hex }}" aria-hidden="true"></span>
                 <h3>{{ stat.program.translated_name }}</h3>

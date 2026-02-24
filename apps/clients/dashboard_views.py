@@ -554,7 +554,7 @@ def _batch_program_learning(programs, date_from, date_to):
 
     Returns dict of program_id -> {
         headline_label, headline_pct, headline_type,
-        target_rate, trend_direction, trend_label,
+        target_rate, trend_direction, trend_label, has_declining_trend,
         completeness_level, completeness_enrolled, completeness_with_data,
         theme_open_count, has_urgent_theme, suppress,
     }
@@ -583,7 +583,16 @@ def _batch_program_learning(programs, date_from, date_to):
         structured = get_structured_insights(
             program=program, date_from=date_from, date_to=date_to,
         )
-        trend_direction = _compute_trend_direction(structured.get("descriptor_trend", []))
+        descriptor_trend = structured.get("descriptor_trend", [])
+        trend_direction = _compute_trend_direction(descriptor_trend)
+        # Pre-compute boolean for template use (avoids comparing translated strings)
+        has_declining_trend = False
+        if len(descriptor_trend) >= 2:
+            first = descriptor_trend[0]
+            last = descriptor_trend[-1]
+            first_good = first.get("good_place", 0) + first.get("shifting", 0)
+            last_good = last.get("good_place", 0) + last.get("shifting", 0)
+            has_declining_trend = (last_good - first_good) < -5
 
         # Determine lead headline
         headline_label = None
@@ -656,6 +665,7 @@ def _batch_program_learning(programs, date_from, date_to):
             "completeness_with_data": completeness["with_scores_count"],
             "theme_open_count": theme_open_count,
             "has_urgent_theme": has_urgent_theme,
+            "has_declining_trend": has_declining_trend,
             "suppress": suppress,
         }
 

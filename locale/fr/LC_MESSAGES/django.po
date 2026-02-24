@@ -7814,7 +7814,7 @@ msgid ""
 "for this participant."
 msgstr ""
 "Affichage des notes de %(program)s uniquement. Le partage entre programmes "
-"n\\u2019est pas activé pour ce participant."
+"n\u2019est pas activé pour ce participant."
 
 #. Tri-state sharing display on client info tab
 msgid "Share across programs"
@@ -7824,7 +7824,7 @@ msgid "Restricted"
 msgstr "Restreint"
 
 msgid "Follow agency setting"
-msgstr "Suivre le paramètre de l\\u2019agence"
+msgstr "Suivre le paramètre de l\u2019agence"
 
 msgid "Clinical notes are restricted to the program where they were recorded."
 msgstr ""
@@ -7833,7 +7833,7 @@ msgstr ""
 
 msgid "Uses the agency-wide default for cross-program note sharing."
 msgstr ""
-"Utilise le paramètre par défaut de l\\u2019agence pour le partage des notes "
+"Utilise le paramètre par défaut de l\u2019agence pour le partage des notes "
 "entre programmes."
 
 msgid "Cross-program note sharing"
@@ -7843,9 +7843,9 @@ msgid ""
 "Controls whether clinical notes from other programs are visible for this "
 "participant. Most participants should use the agency default."
 msgstr ""
-"Contrôle si les notes cliniques d\\u2019autres programmes sont visibles pour"
+"Contrôle si les notes cliniques d\u2019autres programmes sont visibles pour"
 " ce participant. La plupart des participants devraient utiliser le paramètre"
-" par défaut de l\\u2019agence."
+" par défaut de l\u2019agence."
 
 msgid "Restrict to one program"
 msgstr "Restreindre à un seul programme"
@@ -10581,14 +10581,14 @@ msgid ""
 "Activity overview for team meeting prep — shows notes, communications, and "
 "meetings by staff member."
 msgstr ""
-"Aperçu des activités pour la préparation des réunions d\\u2019équipe — "
+"Aperçu des activités pour la préparation des réunions d\u2019équipe — "
 "notes, communications et réunions par membre du personnel."
 
 msgid ""
 "Are you sure you want to revoke portal access? The participant will be "
 "logged out immediately."
 msgstr ""
-"Voulez-vous vraiment révoquer l\\u2019accès au portail ? Le participant sera"
+"Voulez-vous vraiment révoquer l\u2019accès au portail ? Le participant sera"
 " déconnecté immédiatement."
 
 msgid "Back to participant"
@@ -10643,7 +10643,7 @@ msgid "MFA method"
 msgstr "Méthode AMF"
 
 msgid "Manage portal access"
-msgstr "Gérer l\\u2019accès au portail"
+msgstr "Gérer l\u2019accès au portail"
 
 msgid "Mark as Read"
 msgstr "Marquer comme lu"
@@ -10664,7 +10664,7 @@ msgid "No messages."
 msgstr "Aucun message."
 
 msgid "No portal account exists for this participant."
-msgstr "Aucun compte portail n\\u2019existe pour ce participant."
+msgstr "Aucun compte portail n\u2019existe pour ce participant."
 
 msgid "No staff activity found for this period."
 msgstr "Aucune activité du personnel trouvée pour cette période."
@@ -10679,10 +10679,10 @@ msgid "Portal Access"
 msgstr "Accès au portail"
 
 msgid "Reset MFA"
-msgstr "Réinitialiser l\\u2019AMF"
+msgstr "Réinitialiser l\u2019AMF"
 
 msgid "Revoke Access"
-msgstr "Révoquer l\\u2019accès"
+msgstr "Révoquer l\u2019accès"
 
 msgid "Selected staff member not found."
 msgstr "Membre du personnel sélectionné introuvable."
@@ -10690,7 +10690,7 @@ msgstr "Membre du personnel sélectionné introuvable."
 msgid ""
 "Share this code verbally — do not write it down or include it in the link."
 msgstr ""
-"Partagez ce code verbalement — ne l\\u2019écrivez pas et ne l\\u2019incluez "
+"Partagez ce code verbalement — ne l\u2019écrivez pas et ne l\u2019incluez "
 "pas dans le lien."
 
 msgid "Share this link with the participant:"
@@ -10702,13 +10702,13 @@ msgstr ""
 "Membre du personnel destinataire. Vide = tout intervenant de ce dossier."
 
 msgid "Team Activity"
-msgstr "Activité de l\\u2019équipe"
+msgstr "Activité de l\u2019équipe"
 
 msgid "Team Activity Summary"
-msgstr "Résumé de l\\u2019activité de l\\u2019équipe"
+msgstr "Résumé de l\u2019activité de l\u2019équipe"
 
 msgid "Team activity summary"
-msgstr "Résumé de l\\u2019activité de l\\u2019équipe"
+msgstr "Résumé de l\u2019activité de l\u2019équipe"
 
 msgid "This view is for program managers only."
 msgstr "Cette vue est réservée aux gestionnaires de programme."
@@ -10729,8 +10729,8 @@ msgid ""
 "You can create a new invite — the old one will remain valid until it "
 "expires."
 msgstr ""
-"Vous pouvez créer une nouvelle invitation — l\\u2019ancienne restera valide "
-"jusqu\\u2019à son expiration."
+"Vous pouvez créer une nouvelle invitation — l\u2019ancienne restera valide "
+"jusqu\u2019à son expiration."
 
 msgid "e.g. Sarah called, wants to reschedule Thursday appointment"
 msgstr "ex. Sarah a appelé, veut reporter le rendez-vous de jeudi"
@@ -14518,7 +14518,7 @@ msgstr "Quel rapport ?"
 msgid "[To be added during review]"
 msgstr "[À ajouter lors de la révision]"
 
-msgid "\\u2014 Select a report \\u2014"
+msgid "\u2014 Select a report \u2014"
 msgstr "— Sélectionner un rapport —"
 
 msgid "instead."
@@ -14548,8 +14548,8 @@ msgstr "Chargement des options de période…"
 msgid "participant"
 msgstr "participant"
 
-msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
-msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
+msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\u2013%(m2)s)"
+msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s\u2013%(m2)s)"
 
 msgid "Add a Goal"
 msgstr "Ajouter un objectif"
@@ -14558,13 +14558,13 @@ msgid "Attendance Rate"
 msgstr "Taux de présence"
 
 msgid "Create a custom export"
-msgstr "Cr\\u00e9er une exportation personnalis\\u00e9e"
+msgstr "Cr\u00e9er une exportation personnalis\u00e9e"
 
 msgid "Custom Export"
-msgstr "Exportation personnalis\\u00e9e"
+msgstr "Exportation personnalis\u00e9e"
 
 msgid "Go to Custom Export"
-msgstr "Aller \\u00e0 l\\u2019exportation personnalis\\u00e9e"
+msgstr "Aller \u00e0 l\u2019exportation personnalis\u00e9e"
 
 msgid "Listen"
 msgstr "Écouter"
@@ -14573,13 +14573,13 @@ msgid "Log Communication"
 msgstr "Consigner une communication"
 
 msgid "Manage Report Templates"
-msgstr "G\\u00e9rer les mod\\u00e8les de rapports"
+msgstr "G\u00e9rer les mod\u00e8les de rapports"
 
 msgid "N/R"
 msgstr "N/C"
 
 msgid "Need a different report?"
-msgstr "Besoin d\\u2019un autre rapport\\u00a0?"
+msgstr "Besoin d\u2019un autre rapport\u00a0?"
 
 msgid "No messages yet."
 msgstr "Aucun message pour le moment."
@@ -14605,7 +14605,7 @@ msgid ""
 " you need cross-program access."
 msgstr ""
 "Cette note est réservée à un programme spécifique. Contactez votre "
-"administrateur si vous avez besoin d\\u2019un accès inter-programmes."
+"administrateur si vous avez besoin d\u2019un accès inter-programmes."
 
 msgid "What is a goal?"
 msgstr "Qu’est-ce qu’un objectif ?"
@@ -14640,18 +14640,18 @@ msgstr ""
 "formulerez en un objectif court et mesurable avec un indicateur de progrès."
 
 msgid "Request a new report template"
-msgstr "Demander un nouveau mod\\u00e8le de rapport"
+msgstr "Demander un nouveau mod\u00e8le de rapport"
 
 msgid "Set up report templates"
-msgstr "Configurer les mod\\u00e8les de rapports"
+msgstr "Configurer les mod\u00e8les de rapports"
 
 msgid ""
 "If none of the templates above match what you need, you can build a one-off "
 "report by choosing your own program, metrics, date range, and groupings."
 msgstr ""
-"Si aucun des mod\\u00e8les ci-dessus ne correspond \\u00e0 vos besoins, vous"
-" pouvez cr\\u00e9er un rapport ponctuel en choisissant votre programme, vos "
-"indicateurs, votre p\\u00e9riode et vos regroupements."
+"Si aucun des mod\u00e8les ci-dessus ne correspond \u00e0 vos besoins, vous"
+" pouvez cr\u00e9er un rapport ponctuel en choisissant votre programme, vos "
+"indicateurs, votre p\u00e9riode et vos regroupements."
 
 msgid ""
 "Report templates are set up by your administrator. If you need a recurring "
@@ -14659,35 +14659,35 @@ msgid ""
 "administrator to create one. They can define which metrics, demographics, "
 "and time periods to include so the report is ready to generate each period."
 msgstr ""
-"Les mod\\u00e8les de rapports sont configur\\u00e9s par votre "
-"administrateur. Si vous avez besoin d\\u2019un rapport r\\u00e9current pour "
-"un partenaire, un bailleur de fonds ou un conseil d\\u2019administration qui"
-" n\\u2019est pas list\\u00e9 ci-dessus, demandez \\u00e0 votre "
-"administrateur d\\u2019en cr\\u00e9er un. Il peut d\\u00e9finir les "
-"indicateurs, les donn\\u00e9es d\\u00e9mographiques et les p\\u00e9riodes "
-"\\u00e0 inclure afin que le rapport soit pr\\u00eat \\u00e0 "
-"g\\u00e9n\\u00e9rer \\u00e0 chaque p\\u00e9riode."
+"Les mod\u00e8les de rapports sont configur\u00e9s par votre "
+"administrateur. Si vous avez besoin d\u2019un rapport r\u00e9current pour "
+"un partenaire, un bailleur de fonds ou un conseil d\u2019administration qui"
+" n\u2019est pas list\u00e9 ci-dessus, demandez \u00e0 votre "
+"administrateur d\u2019en cr\u00e9er un. Il peut d\u00e9finir les "
+"indicateurs, les donn\u00e9es d\u00e9mographiques et les p\u00e9riodes "
+"\u00e0 inclure afin que le rapport soit pr\u00eat \u00e0 "
+"g\u00e9n\u00e9rer \u00e0 chaque p\u00e9riode."
 
 msgid ""
 "No report templates have been set up yet. Report templates define what "
 "metrics and demographic breakdowns to include for recurring partner reports."
 " Contact your administrator to create one."
 msgstr ""
-"Aucun mod\\u00e8le de rapport n\\u2019a encore \\u00e9t\\u00e9 "
-"configur\\u00e9. Les mod\\u00e8les de rapports d\\u00e9finissent les "
-"indicateurs et les ventilations d\\u00e9mographiques \\u00e0 inclure pour "
-"les rapports r\\u00e9currents des partenaires. Contactez votre "
-"administrateur pour en cr\\u00e9er un."
+"Aucun mod\u00e8le de rapport n\u2019a encore \u00e9t\u00e9 "
+"configur\u00e9. Les mod\u00e8les de rapports d\u00e9finissent les "
+"indicateurs et les ventilations d\u00e9mographiques \u00e0 inclure pour "
+"les rapports r\u00e9currents des partenaires. Contactez votre "
+"administrateur pour en cr\u00e9er un."
 
 msgid ""
 "In the meantime, you can create a one-off report using <strong>Custom "
 "Export</strong>, where you choose the program, metrics, and date range "
 "yourself."
 msgstr ""
-"En attendant, vous pouvez cr\\u00e9er un rapport ponctuel avec "
-"l\\u2019<strong>exportation personnalis\\u00e9e</strong>, o\\u00f9 vous "
-"choisissez vous-m\\u00eame le programme, les indicateurs et la "
-"p\\u00e9riode."
+"En attendant, vous pouvez cr\u00e9er un rapport ponctuel avec "
+"l\u2019<strong>exportation personnalis\u00e9e</strong>, o\u00f9 vous "
+"choisissez vous-m\u00eame le programme, les indicateurs et la "
+"p\u00e9riode."
 
 msgid "%(scored)d scored · %(low_pct).0f%% need more support"
 msgstr "%(scored)d évalués · %(low_pct).0f%% ont besoin de plus de soutien"
@@ -14912,141 +14912,3 @@ msgstr "cible"
 
 msgid "trend"
 msgstr "tendance"
-
-#. blocktrans: _insights_basic.html
-#, python-format
-msgid "Participants: %(self_pct)s%% feel confident"
-msgstr "Participants : %(self_pct)s%% se sentent confiants"
-
-#. blocktrans: _insights_basic.html
-#, python-format
-msgid "Staff: %(staff_pct)s%% rated \"good place\""
-msgstr "Personnel : %(staff_pct)s%% évalués « en bonne voie »"
-
-#. blocktrans: _insights_basic.html
-#, python-format
-msgid "Gap: +%(gap)s%% — participants more optimistic"
-msgstr "Écart : +%(gap)s%% — les participants sont plus optimistes"
-
-#. blocktrans: _insights_basic.html
-#, python-format
-msgid "Gap: %(gap)s%% — staff more optimistic"
-msgstr "Écart : %(gap)s%% — le personnel est plus optimiste"
-
-#. blocktrans: _insights_basic.html
-#, python-format
-msgid "n=%(n_self)s self-report, n=%(n_staff)s staff"
-msgstr "n=%(n_self)s autoévaluation, n=%(n_staff)s personnel"
-
-#. blocktrans: _insights_basic.html + _insights_metrics.html
-#, python-format
-msgid "target: %(target)s%%"
-msgstr "cible : %(target)s%%"
-
-#. blocktrans: _insights_basic.html
-#, python-format
-msgid "%(scored)s of %(enrolled)s enrolled have scores"
-msgstr "%(scored)s sur %(enrolled)s inscrits ont des scores"
-
-#. blocktrans: _insights_basic.html
-#, python-format
-msgid ""
-"Individual quotes are not shown for programs with fewer than %(count)s "
-"active participants, to protect confidentiality. Quotes are available on "
-"each participant’s Analysis tab."
-msgstr ""
-"Les citations individuelles ne sont pas affichées pour les programmes "
-"comptant moins de %(count)s participants actifs, afin de protéger la "
-"confidentialité. Les citations sont disponibles dans l’onglet Analyse de "
-"chaque participant."
-
-#. blocktrans: _insights_distributions.html
-#, python-format
-msgid "Distribution bar for %(name)s"
-msgstr "Barre de distribution pour %(name)s"
-
-#. blocktrans: _insights_distributions.html
-#, python-format
-msgid "Target: %(target)s%% in top band"
-msgstr "Cible : %(target)s%% dans la tranche supérieure"
-
-#. blocktrans: _insights_distributions.html
-#, python-format
-msgid "Trend chart for %(name)s"
-msgstr "Graphique de tendance pour %(name)s"
-
-#. blocktrans: _insights_distributions.html + _insights_metrics.html
-#, python-format
-msgid "Data for %(name)s"
-msgstr "Données pour %(name)s"
-
-#. blocktrans: _insights_metrics.html
-#, python-format
-msgid "%(name)s: %(pct)s%% achieved"
-msgstr "%(name)s : %(pct)s%% atteint"
-
-#. blocktrans: _insights_metrics.html
-#, python-format
-msgid "Target: %(target)s%%"
-msgstr "Cible : %(target)s%%"
-
-#. blocktrans count: _insights_basic.html
-#, python-format
-msgid "%(count)s urgent"
-msgid_plural "%(count)s urgent"
-msgstr[0] "%(count)s urgent"
-msgstr[1] "%(count)s urgents"
-
-#. blocktrans count: _insights_basic.html
-#, python-format
-msgid "%(total)s suggestion this period"
-msgid_plural "%(total)s suggestions this period"
-msgstr[0] "%(total)s suggestion cette période"
-msgstr[1] "%(total)s suggestions cette période"
-
-#. blocktrans count: _insights_basic.html
-#, python-format
-msgid "%(addressed)s of %(total)s theme addressed"
-msgid_plural "%(addressed)s of %(total)s themes addressed"
-msgstr[0] "%(addressed)s thème sur %(total)s traité"
-msgstr[1] "%(addressed)s thèmes sur %(total)s traités"
-
-#. blocktrans count: _insights_basic.html
-#, python-format
-msgid "%(count)s suggestion not yet grouped into a theme"
-msgid_plural "%(count)s suggestions not yet grouped into a theme"
-msgstr[0] "%(count)s suggestion pas encore regroupée dans un thème"
-msgstr[1] "%(count)s suggestions pas encore regroupées dans un thème"
-
-#. blocktrans count: _insights_basic.html
-#, python-format
-msgid "%(count)s Ungrouped Suggestion"
-msgid_plural "%(count)s Ungrouped Suggestions"
-msgstr[0] "%(count)s suggestion non regroupée"
-msgstr[1] "%(count)s suggestions non regroupées"
-
-#. blocktrans count: _insights_basic.html
-#, python-format
-msgid "%(count)s Addressed Theme"
-msgid_plural "%(count)s Addressed Themes"
-msgstr[0] "%(count)s thème traité"
-msgstr[1] "%(count)s thèmes traités"
-
-#. blocktrans count: _insights_distributions.html
-#, python-format
-msgid ""
-"%(count)s participant has only one assessment — not included in "
-"distributions because a second assessment is needed to show their "
-"trajectory."
-msgid_plural ""
-"%(count)s participants have only one assessment — not included in "
-"distributions because a second assessment is needed to show their "
-"trajectory."
-msgstr[0] ""
-"%(count)s participant n’a qu’une seule évaluation — non inclus dans les "
-"distributions, car une deuxième évaluation est nécessaire pour montrer sa "
-"trajectoire."
-msgstr[1] ""
-"%(count)s participants n’ont qu’une seule évaluation — non inclus dans les "
-"distributions, car une deuxième évaluation est nécessaire pour montrer leur "
-"trajectoire."
