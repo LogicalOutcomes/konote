@@ -9,23 +9,24 @@
 - [ ] Approve band display labels and clinical thresholds for insights metric distributions — hard blocker on Phase 2 template work (see tasks/design-rationale/insights-metric-distributions.md, Phase 0) — GK (INSIGHTS-LANG1)
 - [ ] Discuss: are Design Rationale Records (DRRs) working well as a practice? Should we keep using them, change the format, or retire them? — GK (PROCESS-DRR1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
-- [ ] Approve four-tier PII model for offline field devices and "managed is better than banned" privacy position (see tasks/design-rationale/offline-field-collection.md) — GK (FIELD-ODK-GK1)
 - [ ] Discuss: Should GK design insights/reports pages as HTML mockups (in a `mockups/` folder) to iterate on layout without PRs? Developer would translate approved mockups into Django templates — PB (PROCESS-MOCKUPS1)
 
 ## Active Work
 
-### Phase: Circles Lite (see tasks/design-rationale/circles-family-entity.md)
+### Phase: Offline Field Collection (PR #34 — Prince reviewing)
 
-- [x] Create circles app skeleton with models and migration — 2026-02-24 (CIRCLES-1)
-- [x] Add circle FK to ProgressNote — 2026-02-24 (CIRCLES-2)
-- [x] Feature toggle, terminology, permissions, and seed data — 2026-02-24 (CIRCLES-3)
-- [x] Circle forms (CircleForm, CircleMembershipForm) — 2026-02-24 (CIRCLES-4)
-- [x] Views, helpers, URLs, and templates — 2026-02-24 (CIRCLES-5)
-- [x] Navigation, participant sidebar, and note form integration — 2026-02-24 (CIRCLES-6)
-- [x] Intake integration (link existing or create new circle) — 2026-02-24 (CIRCLES-7)
-- [x] Admin registration and test suite (33 tests) — 2026-02-24 (CIRCLES-8)
-- [x] French translations — 2026-02-24 (CIRCLES-9)
-- [ ] Code review and merge to main — (CIRCLES-MERGE)
+- [x] App skeleton, models, ODK client, sync command — 2026-02-24 (FIELD-ODK-APP1, SYNC1)
+- [x] XLSForms for attendance and visit notes — 2026-02-24 (FIELD-ODK-FORM-ATT1, FORM-VIS1)
+- [x] Admin UI, feature toggle, settings — 2026-02-24 (FIELD-ODK-ADMIN1)
+- [x] App user mapping, pull submissions, dedup — 2026-02-24 (FIELD-ODK-USERS1, IMPORT1)
+- [x] Four PII tiers with scope control — 2026-02-24 (FIELD-ODK-TIERS1)
+- [x] Sync status dashboard — 2026-02-24 (FIELD-ODK-DASH1)
+- [x] Tests (43 tests), two code reviews — 2026-02-24 (FIELD-ODK-TEST1)
+- [x] French translations — 2026-02-24 (FIELD-ODK-I18N1)
+- [ ] Deploy ODK Central on Canadian VM (Docker Compose) — ops task (FIELD-ODK-DEPLOY1)
+- [ ] Circle Observation XLSForm — depends on circles in ODK (FIELD-ODK-FORM-CIR1)
+- [ ] Push Circle/CircleMember Entity lists — depends on above (FIELD-ODK-CIRCLES1)
+- [ ] Agency-facing documentation — ODK Collect setup, device loss protocol (FIELD-ODK-DOC1)
 
 ### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
 
@@ -114,25 +115,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — (CIDS-IMPACT1)
 - [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — (CIDS-VALIDATE1)
 
-### Phase: Offline Field Collection — start after Circles Lite is built (see tasks/design-rationale/offline-field-collection.md)
-
-- [ ] Deploy ODK Central on Canadian VM (Docker Compose) and configure domain/HTTPS (FIELD-ODK-DEPLOY1)
-- [ ] Create `apps/field_collection/` Django app with Program model fields: field_collection_enabled, field_data_tier, field_collection_profile (FIELD-ODK-APP1)
-- [ ] Build `sync_odk` management command — push Entities to ODK Central, pull submissions into KoNote (FIELD-ODK-SYNC1)
-- [ ] Design XLSForm for Session Attendance — group selection, member checkboxes, date, notes (FIELD-ODK-FORM-ATT1)
-- [ ] Design XLSForm for Visit Note — participant selection, observations, engagement/alliance scales (FIELD-ODK-FORM-VIS1)
-- [ ] Build admin UI for field collection settings on Program page — toggle, tier, profile (FIELD-ODK-ADMIN1)
-- [ ] Map ODK App Users from KoNote UserProgramRoles in sync command (FIELD-ODK-USERS1)
-- [ ] Handle pulled submissions: create GroupSession/Attendance/ProgressNote records with dedup (FIELD-ODK-IMPORT1)
-- [ ] Implement four PII tiers with scope control for Field+Contact tier (FIELD-ODK-TIERS1)
-- [ ] Design XLSForm for Circle Observation — circle selection, members present, relationship recording (FIELD-ODK-FORM-CIR1)
-- [ ] Push Circle and CircleMember Entity lists in sync command (FIELD-ODK-CIRCLES1)
-- [ ] Build sync status dashboard in KoNote admin — last sync, record counts, errors (FIELD-ODK-DASH1)
-- [ ] Write tests for sync command — push, pull, dedup, error handling, tier filtering (FIELD-ODK-TEST1)
-- [ ] Write agency-facing documentation — ODK Collect setup, form usage, device loss protocol (FIELD-ODK-DOC1)
-- [ ] French translations for admin UI and documentation (FIELD-ODK-I18N1)
-- [ ] Approve four-tier PII model and device loss protocol — GK reviews privacy position (FIELD-ODK-GK1)
-
 ### Phase: Other Upcoming
 
 - [ ] Permissions Phase 2 — remaining 10 items: discharge access transitions, consent model, DV-safe mode, GATED clinical access, group schedule vs roster, per-field front desk edit, SCOPED→PROGRAM rename, partner report key, alert escalation, dashboard split (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P3–12)
@@ -214,6 +196,8 @@ _Nothing pending._
 
 ## Recently Done
 
+- [x] Offline Field Collection — full feature: models, ODK client, sync command, admin UI, 4 PII tiers, 43 tests, 2 code reviews, French translations (PR #34) — 2026-02-24 (FIELD-ODK-APP1–TEST1)
+- [x] Approve four-tier PII model for offline field devices — 2026-02-24 — GK (FIELD-ODK-GK1)
 - [x] Circles Lite Phase 1 — full feature: models, views, templates, nav, sidebar, note tagging, intake, tests, translations — 2026-02-24 (CIRCLES-1–9)
 - [x] Enforce PHIPA cross-program consent in views — note_detail, note_summary, event_list; fix fail-open bug; fix CONF9 interaction; shared banner include; 4 new tests; DRR created — 2026-02-22 (PHIPA-ENFORCE1)
 - [x] Insights metric distributions Phases 0-2 — model fields, aggregation, distributions, achievements, trends, Two Lenses, data completeness, 50 tests, 10 review fixes (PR #23) — 2026-02-22 (INSIGHTS-P0-ADMIN, INSIGHTS-P1-MODEL, INSIGHTS-P1-AGG, INSIGHTS-P2-LAYOUT, INSIGHTS-P2-VIZ)
