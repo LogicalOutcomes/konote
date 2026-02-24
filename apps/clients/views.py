@@ -680,7 +680,11 @@ def client_detail(request, client_id):
     if circles_enabled and not is_receptionist:
         from apps.circles.models import CircleMembership
         from apps.circles.helpers import get_visible_circles
+        from apps.circles.helpers import _get_accessible_client_ids, _get_blocked_client_ids
         visible_circle_ids = set(get_visible_circles(request.user).values_list("pk", flat=True))
+        accessible_client_ids = _get_accessible_client_ids(request.user)
+        blocked_client_ids = _get_blocked_client_ids(request.user)
+        accessible_client_ids -= blocked_client_ids
         memberships = (
             CircleMembership.objects.filter(
                 client_file=client, status="active", circle_id__in=visible_circle_ids,
@@ -689,15 +693,25 @@ def client_detail(request, client_id):
             .prefetch_related("circle__memberships__client_file")
         )
         for m in memberships:
-            # Build "other members" string for sidebar display
-            others = [
-                om.display_name
-                for om in m.circle.memberships.all()
-                if om.status == "active" and om.pk != m.pk
-            ]
-            m.other_members = ", ".join(others[:5])
+            # Build "other members" string — only show names the user can access
+            others = []
+            hidden_count = 0
+            for om in m.circle.memberships.all():
+                if om.status != "active" or om.pk == m.pk:
+                    continue
+                # Non-participant members (no client_file) are always shown
+                if om.client_file_id is None:
+                    others.append(om.display_name)
+                elif om.client_file_id in accessible_client_ids:
+                    others.append(om.display_name)
+                else:
+                    hidden_count += 1
+            display = ", ".join(others[:5])
             if len(others) > 5:
-                m.other_members += f" (+{len(others) - 5})"
+                display += f" (+{len(others) - 5})"
+            if hidden_count:
+                display += f" (+{hidden_count} other)" if hidden_count == 1 else f" (+{hidden_count} others)"
+            m.other_members = display
             client_circles.append(m)
 
     # PERM-S3: Field-level visibility based on role.
