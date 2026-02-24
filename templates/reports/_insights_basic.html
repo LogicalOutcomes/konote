@@ -36,7 +36,7 @@
 {% if data_tier == "sparse" %}
 
 {% if structured.descriptor_distribution %}
-<h2>{% trans "Progress Snapshot" %}</h2>
+<h2>{% trans "Staff Assessment Snapshot" %}</h2>
 <div class="descriptor-pills">
     {% for label, pct in structured.descriptor_distribution.items %}
     <span class="pill pill--descriptor">{{ label }}: {{ pct }}%</span>
@@ -56,10 +56,11 @@
 {% else %}
 {# ── Enough data for trends ── #}
 
-{# ── Hero: Descriptor trend chart ── #}
+{# ── Hero: Staff assessment trend chart ── #}
 {% if structured.descriptor_trend %}
-<h2>{% trans "Progress Trend" %}</h2>
-<p class="chart-description muted">{% trans "Based on staff assessments across all goals. Each assessment reflects the worker's judgment of how a participant is progressing — regardless of which specific metrics are tracked. Rising green ('In a good place') and blue ('Something's shifting') lines mean more people are moving forward." %}</p>
+<h2>{% trans "Staff Assessments Over Time" %}</h2>
+<p class="chart-description muted">{% trans "How workers rate participant progress at each session — a professional judgment, not a measured score. Rising green ('In a good place') and blue ('Something's shifting') lines mean more people are moving forward." %}</p>
+{% if interp_trend %}<p class="insight-interpretation">{{ interp_trend }}</p>{% endif %}
 <div class="chart-container" style="position: relative; height: 300px;">
     <canvas id="descriptor-trend-chart"
             aria-label="{% trans 'Line chart showing participant progress descriptor trends by month' %}"
@@ -92,7 +93,6 @@
         </tbody>
     </table>
 </details>
-{% if interp_trend %}<p class="insight-interpretation">{{ interp_trend }}</p>{% endif %}
 {% endif %}
 
 {# ── Engagement distribution ── #}
@@ -107,10 +107,10 @@
 {% if interp_engagement %}<p class="insight-interpretation">{{ interp_engagement }}</p>{% endif %}
 {% endif %}
 
-{# ── Descriptor snapshot (current totals) ── #}
+{# ── Staff assessment snapshot (current totals) ── #}
 {% if structured.descriptor_distribution %}
-<h3>{% trans "Current Period" %}</h3>
-<p class="chart-description muted">{% trans "A snapshot of where participants are right now — staff record this each time they write a progress note." %}</p>
+<h3>{% trans "Staff Assessment Snapshot" %}</h3>
+<p class="chart-description muted">{% trans "A snapshot of how workers rate participant progress right now — recorded each time they write a progress note." %}</p>
 <div class="descriptor-pills">
     {% for label, pct in structured.descriptor_distribution.items %}
     <span class="pill pill--descriptor">{{ label }}: {{ pct }}%</span>
