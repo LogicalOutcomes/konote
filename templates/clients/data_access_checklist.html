@@ -83,7 +83,7 @@
     <header>
         <h2 style="margin: 0; font-size: 1.1rem;">{% trans "Mark as Complete" %}</h2>
     </header>
-    <form method="post" action="{% url 'data_access_complete' pk=dar.pk %}">
+    <form method="post" action="{% url 'data_access:data_access_complete' pk=dar.pk %}">
         {% csrf_token %}
 
         <label for="id_delivery_method">{% trans "How was the information delivered?" %}</label>

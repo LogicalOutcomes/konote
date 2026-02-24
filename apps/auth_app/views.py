@@ -200,6 +200,7 @@ def _local_login(request):
                     # MFA check — redirect to TOTP verification if enabled
                     if user.mfa_enabled and user.mfa_secret:
                         request.session["_mfa_pending_user_id"] = user.pk
+                        request.session["_mfa_pending_at"] = timezone.now().timestamp()
                         return redirect("auth_app:mfa_verify")
 
                     login(request, user)
@@ -470,18 +471,50 @@ def _audit_logout(request):
 
 # --- MFA (TOTP) views ---
 
+# MFA session expiry: pending MFA must be completed within this window
+MFA_PENDING_EXPIRY_SECONDS = 300  # 5 minutes
+
+
+def _complete_mfa_login(request, user):
+    """Shared login completion after successful MFA verification."""
+    request.session.pop("_mfa_pending_user_id", None)
+    request.session.pop("_mfa_pending_at", None)
+    login(request, user)
+    user.last_login_at = timezone.now()
+    user.save(update_fields=["last_login_at"])
+    _audit_login(request, user)
+    lang_code = sync_language_on_login(request, user)
+    response = _login_redirect(user, request.session)
+    return _set_language_cookie(response, lang_code)
+
+
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
 def mfa_verify(request):
     """Verify TOTP code after password login when MFA is enabled."""
+    from django.contrib import messages
+    from django.utils.translation import gettext as _
+
     from .forms import MFAVerifyForm
+    from .models import User
 
     user_id = request.session.get("_mfa_pending_user_id")
     if not user_id:
         return redirect("auth_app:login")
 
+    # Reject expired MFA sessions (Fix 6)
+    pending_at = request.session.get("_mfa_pending_at")
+    if pending_at:
+        elapsed = timezone.now().timestamp() - pending_at
+        if elapsed > MFA_PENDING_EXPIRY_SECONDS:
+            request.session.pop("_mfa_pending_user_id", None)
+            request.session.pop("_mfa_pending_at", None)
+            return redirect("auth_app:login")
+
     try:
         user = User.objects.get(pk=user_id, is_active=True)
     except User.DoesNotExist:
         request.session.pop("_mfa_pending_user_id", None)
+        request.session.pop("_mfa_pending_at", None)
         return redirect("auth_app:login")
 
     error = None
@@ -492,33 +525,14 @@ def mfa_verify(request):
         if form.is_valid():
             code = form.cleaned_data["code"]
             if _verify_totp(user.mfa_secret, code):
-                # TOTP valid — complete login
-                request.session.pop("_mfa_pending_user_id", None)
-                login(request, user)
-                user.last_login_at = timezone.now()
-                user.save(update_fields=["last_login_at"])
-                _audit_login(request, user)
-                lang_code = sync_language_on_login(request, user)
-                response = _login_redirect(user, request.session)
-                return _set_language_cookie(response, lang_code)
+                return _complete_mfa_login(request, user)
 
-            # Check backup codes
-            if code in user.mfa_backup_codes:
-                user.mfa_backup_codes.remove(code)
-                user.save(update_fields=["mfa_backup_codes"])
-                request.session.pop("_mfa_pending_user_id", None)
-                login(request, user)
-                user.last_login_at = timezone.now()
-                user.save(update_fields=["last_login_at"])
-                _audit_login(request, user)
-                from django.contrib import messages
-                from django.utils.translation import gettext as _
+            # Check backup codes (hashed comparison)
+            if user.check_backup_code(code):
                 messages.warning(request, _("You used a backup code. You have %(count)s remaining.") % {"count": len(user.mfa_backup_codes)})
-                lang_code = sync_language_on_login(request, user)
-                response = _login_redirect(user, request.session)
-                return _set_language_cookie(response, lang_code)
+                return _complete_mfa_login(request, user)
 
-            error = "Invalid verification code. Please try again."
+            error = _("Invalid verification code. Please try again.")
 
     return render(request, "auth/mfa_verify.html", {
         "form": form,
@@ -529,16 +543,15 @@ def mfa_verify(request):
 @login_required
 def mfa_setup(request):
     """Enable TOTP MFA — show QR code and confirm with a verification code."""
-    import base64
-    import io
     import secrets
+
+    from django.contrib import messages
+    from django.utils.translation import gettext as _
 
     from .forms import MFAVerifyForm
 
     user = request.user
     if user.mfa_enabled:
-        from django.contrib import messages
-        from django.utils.translation import gettext as _
         messages.info(request, _("MFA is already enabled on your account."))
         return redirect("home")
 
@@ -556,20 +569,19 @@ def mfa_setup(request):
         if form.is_valid():
             code = form.cleaned_data["code"]
             if _verify_totp(secret, code):
-                # Code valid — enable MFA
+                # Code valid — enable MFA and store hashed backup codes
                 backup_codes = [secrets.token_hex(4) for _ in range(10)]
                 user.mfa_secret = secret
                 user.mfa_enabled = True
-                user.mfa_backup_codes = backup_codes
-                user.save(update_fields=["mfa_secret", "mfa_enabled", "mfa_backup_codes"])
+                user.set_backup_codes(backup_codes)
+                user.save(update_fields=["_mfa_secret_encrypted", "mfa_enabled", "mfa_backup_codes"])
                 request.session.pop("_mfa_setup_secret", None)
 
-                from django.utils.translation import gettext as _
                 return render(request, "auth/mfa_setup_complete.html", {
                     "backup_codes": backup_codes,
                 })
             else:
-                error = "Invalid code. Please check your authenticator app and try again."
+                error = _("Invalid code. Please check your authenticator app and try again.")
 
     # Generate QR code as data URI
     qr_uri = _generate_totp_uri(secret, user.username)
@@ -586,6 +598,9 @@ def mfa_setup(request):
 @login_required
 def mfa_disable(request):
     """Disable TOTP MFA — requires re-entering a valid code."""
+    from django.contrib import messages
+    from django.utils.translation import gettext as _
+
     from .forms import MFAVerifyForm
 
     user = request.user
@@ -599,17 +614,15 @@ def mfa_disable(request):
         form = MFAVerifyForm(request.POST)
         if form.is_valid():
             code = form.cleaned_data["code"]
-            if _verify_totp(user.mfa_secret, code) or code in user.mfa_backup_codes:
+            if _verify_totp(user.mfa_secret, code) or user.check_backup_code(code):
                 user.mfa_enabled = False
                 user.mfa_secret = ""
                 user.mfa_backup_codes = []
-                user.save(update_fields=["mfa_enabled", "mfa_secret", "mfa_backup_codes"])
-                from django.contrib import messages
-                from django.utils.translation import gettext as _
+                user.save(update_fields=["mfa_enabled", "_mfa_secret_encrypted", "mfa_backup_codes"])
                 messages.success(request, _("Multi-factor authentication has been disabled."))
                 return redirect("home")
             else:
-                error = "Invalid code. Please enter a valid verification code to disable MFA."
+                error = _("Invalid code. Please enter a valid verification code to disable MFA.")
 
     return render(request, "auth/mfa_disable.html", {
         "form": form,

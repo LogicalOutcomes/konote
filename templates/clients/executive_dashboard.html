@@ -58,9 +58,9 @@
             {% elif item.type == "data_access" %}
             <li {% if item.overdue %}style="color: var(--kn-danger-fg); font-weight: 600;"{% endif %}>
                 {% if item.overdue %}
-                {% blocktrans with name=item.client_name days=item.days_remaining %}{{ name }}'s data access request is overdue ({{ days }} days past deadline){% endblocktrans %}
+                {% blocktrans with days=item.days_remaining %}A data access request is overdue ({{ days }} days past deadline){% endblocktrans %}
                 {% else %}
-                {% blocktrans with name=item.client_name days=item.days_remaining %}{{ name }}'s data access request is due in {{ days }} days{% endblocktrans %}
+                {% blocktrans with days=item.days_remaining %}A data access request is due in {{ days }} days{% endblocktrans %}
                 {% endif %}
             </li>
             {% endif %}

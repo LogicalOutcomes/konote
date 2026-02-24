@@ -1021,15 +1021,22 @@ def executive_dashboard(request):
                     "overdue": False,
                 })
 
-        # Pending data access requests
+        # Pending data access requests — scoped to user's programs
+        from .models import ClientProgramEnrolment
+        accessible_client_ids = set(
+            ClientProgramEnrolment.objects.filter(
+                program_id__in=filtered_program_ids,
+            ).values_list("client_file_id", flat=True)
+        )
         pending_access = DataAccessRequest.objects.filter(
             completed_at__isnull=True,
+            client_file_id__in=accessible_client_ids,
         )
         for dar in pending_access:
             is_overdue = dar.deadline < today
             privacy_banner_items.append({
                 "type": "data_access",
-                "client_name": str(dar.client_file) if dar.client_file else "?",
+                "client_id": dar.client_file_id,
                 "days_remaining": dar.days_remaining,
                 "overdue": is_overdue,
                 "deadline": dar.deadline,

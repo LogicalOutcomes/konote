@@ -1,4 +1,5 @@
 """Custom user model with Azure AD and local auth support."""
+import hashlib
 import uuid
 
 from django.conf import settings
@@ -75,7 +76,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # MFA (TOTP) — local auth only; Azure AD users get MFA from Microsoft
     mfa_enabled = models.BooleanField(default=False)
-    mfa_secret = models.CharField(max_length=32, blank=True, default="")
+    _mfa_secret_encrypted = models.BinaryField(default=b"", blank=True)
     mfa_backup_codes = models.JSONField(default=list, blank=True)
 
     objects = UserManager()
@@ -101,6 +102,34 @@ class User(AbstractBaseUser, PermissionsMixin):
     @email.setter
     def email(self, value):
         self._email_encrypted = encrypt_field(value)
+
+    # Encrypted MFA secret property
+    @property
+    def mfa_secret(self):
+        return decrypt_field(self._mfa_secret_encrypted)
+
+    @mfa_secret.setter
+    def mfa_secret(self, value):
+        self._mfa_secret_encrypted = encrypt_field(value)
+
+    # Hashed backup code helpers
+    @staticmethod
+    def _hash_code(code):
+        """SHA-256 hash a backup code for storage."""
+        return hashlib.sha256(code.encode("utf-8")).hexdigest()
+
+    def set_backup_codes(self, plaintext_codes):
+        """Store backup codes as SHA-256 hashes."""
+        self.mfa_backup_codes = [self._hash_code(c) for c in plaintext_codes]
+
+    def check_backup_code(self, code):
+        """Verify and consume a backup code. Returns True if valid."""
+        hashed = self._hash_code(code)
+        if hashed in self.mfa_backup_codes:
+            self.mfa_backup_codes.remove(hashed)
+            self.save(update_fields=["mfa_backup_codes"])
+            return True
+        return False
 
 
 class Invite(models.Model):
