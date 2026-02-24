@@ -23,6 +23,9 @@ msgstr "Passer au contenu principal"
 msgid "Reports"
 msgstr "Rapports"
 
+msgid "No active programs found."
+msgstr "Aucun programme actif trouvé."
+
 msgid "No grouping"
 msgstr "Aucun regroupement"
 
@@ -9220,9 +9223,6 @@ msgstr "Aucune donnée CSV trouvée. Veuillez réessayer le téléversement."
 
 msgid "No Show"
 msgstr "Absence"
-
-msgid "No active programs found."
-msgstr "Aucun programme actif trouvé."
 
 msgid "No breakdowns defined."
 msgstr "Aucune ventilation définie."
