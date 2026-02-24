@@ -98,10 +98,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Parking Lot
 
-- [ ] Add PIPEDA compliance context to admin-erasure-requests page — show selected tier's consequences in plain language (see tasks/erasure-compliance-context.md) — GK approved 2026-02-24 (QA-PA-ERASURE1)
-- [ ] PIPEDA data access request — guided manual checklist + 30-day tracking, not automated export (see tasks/pipeda-data-access-checklist.md) — GK approved 2026-02-24 (QA-R7-PRIVACY1)
-- [ ] Note sharing toggle on client profile — binary On/Off, PM/admin only, hidden when agency sharing is off (see tasks/note-sharing-toggle.md) — GK approved 2026-02-24 (QA-R7-PRIVACY2)
-- [ ] Privacy compliance banner + annual summary — event-driven pending-request banner on exec dashboard, one-line board report summary (see tasks/compliance-banner.md) — GK approved 2026-02-24 (QA-R7-EXEC-COMPLIANCE1)
 - [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — add to seed_demo_data or fixture (QA-PA-TEST1)
 - [ ] Seed comm-my-messages populated state with actual messages — add to seed_demo_data (QA-PA-TEST2)
 - [ ] Add axe-core pass to `/capture-page-states` — automated WCAG checks for screen reader/speech recognition coverage (T59)
@@ -130,6 +126,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Parking lot cleanup Phase 4 — PIPEDA privacy: erasure tier consequences (QA-PA-ERASURE1), data access checklist + 30-day tracking (QA-R7-PRIVACY1), note sharing toggle (QA-R7-PRIVACY2), exec dashboard compliance banner (QA-R7-EXEC-COMPLIANCE1) — 2026-02-24
 - [x] Parking lot cleanup Phase 3 — security: TOTP MFA for local auth (SEC2), 24-hour deferred Tier 3 erasure with cancel window (ERASE-H8) — 2026-02-24
 - [x] Parking lot cleanup Phase 2 — UX polish: clipboard icon on empty states (QA-PA-ERASURE2), goal form breadcrumbs (QA-PA-GOAL3), status badge shape indicators + filter focus ring (A11Y-POLISH1), onboarding banner (QA-W19) — 2026-02-24
 - [x] Parking lot cleanup Phase 1 — code hygiene (CODE-TIDY1, QA-W62), verification (QA-R7-BUG13, QA-R7-BUG21, SURVEY-LINK1, DEPLOY-VERIFY1), i18n (I18N-CSV1, I18N-STALE1 already clean, INSIGHTS-I18N1, SURVEY-I18N1 already translated) — 2026-02-24
