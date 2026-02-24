@@ -1615,6 +1615,18 @@ button.outline.secondary:hover {
     border: 3px dashed var(--kn-border);
     opacity: 0.5;
 }
+/* Suppress decorative circle when an explicit icon is provided */
+.empty-state--has-icon::before {
+    display: none;
+}
+.empty-state__icon {
+    display: block;
+    margin: 0 auto var(--kn-space-base);
+    width: 48px;
+    height: 48px;
+    color: var(--kn-border);
+    opacity: 0.5;
+}
 .empty-state p {
     margin-bottom: var(--kn-space-base);
     font-size: 0.9375rem;
