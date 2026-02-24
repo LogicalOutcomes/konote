@@ -116,6 +116,10 @@ PERMISSIONS = {
 
         "message.leave": ALLOW,    # Front desk can leave messages for case workers
         "message.view": DENY,      # Cannot read messages left for others
+
+        "circle.view": DENY,      # Front desk don't see family/network relationships
+        "circle.create": DENY,
+        "circle.edit": DENY,
     },
 
     "staff": {
@@ -215,6 +219,10 @@ PERMISSIONS = {
 
         "message.leave": ALLOW,    # Staff can leave messages for each other
         "message.view": SCOPED,    # Can read messages for clients in their program
+
+        "circle.view": SCOPED,    # View circles for clients in their program
+        "circle.create": SCOPED,  # Create circles for clients in their program
+        "circle.edit": SCOPED,    # Edit circles and manage members in their program
     },
 
     "program_manager": {
@@ -322,6 +330,10 @@ PERMISSIONS = {
 
         "message.leave": ALLOW,    # PMs can leave messages
         "message.view": ALLOW,     # Can read all messages in their program
+
+        "circle.view": ALLOW,     # View all circles with accessible members
+        "circle.create": ALLOW,   # Create circles
+        "circle.edit": ALLOW,     # Edit circles and manage members
     },
 
     "executive": {
@@ -416,6 +428,10 @@ PERMISSIONS = {
 
         "message.leave": DENY,     # Executives don't interact with individual clients
         "message.view": DENY,      # No access to operational messages
+
+        "circle.view": DENY,      # Executives see aggregate data only, no family detail
+        "circle.create": DENY,
+        "circle.edit": DENY,
     },
 }
 
@@ -576,6 +592,10 @@ def permission_to_plain_english(perm_key, perm_level):
 
         "message.leave": "Leave messages for case workers about participants",
         "message.view": "Read messages left by front desk or other staff",
+
+        "circle.view": "View circles (families, households, support networks)",
+        "circle.create": "Create new circles",
+        "circle.edit": "Edit circles and manage circle members",
     }
 
     base = TRANSLATIONS.get(perm_key, perm_key)

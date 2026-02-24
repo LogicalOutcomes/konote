@@ -286,6 +286,20 @@ DEFAULT_FEATURES = {
         "depends_on": ["programs"],
         "used_by": [],
     },
+    "circles": {
+        "label": _lazy("Circles"),
+        "description": _lazy("Track families, households, and support networks as circles of connected people."),
+        "when_on": [
+            _lazy("Circles menu appears in the navigation bar"),
+            _lazy("Staff can create circles and manage members"),
+            _lazy("Circle membership shows on participant files"),
+            _lazy("Notes can be tagged to a circle"),
+            _lazy("DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"),
+        ],
+        "when_off": [_lazy("Circles menu is hidden — existing circle data is preserved")],
+        "depends_on": [],
+        "used_by": [],
+    },
 }
 
 # Features that default to enabled (most default to disabled)

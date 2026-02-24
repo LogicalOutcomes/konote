@@ -67,6 +67,7 @@ from apps.portal.models import (
 )
 from apps.programs.models import Program
 from apps.registration.models import RegistrationLink, RegistrationSubmission
+from apps.circles.models import Circle, CircleMembership
 from apps.surveys.models import (
     Survey,
     SurveyAnswer,
@@ -1240,6 +1241,13 @@ class Command(BaseCommand):
         except User.DoesNotExist:
             pass  # Workers not yet created — full seed below will handle it
 
+        # Always ensure demo circles exist (idempotent via get_or_create)
+        try:
+            worker1 = User.objects.get(username="demo-worker-1")
+            self._create_demo_circles(worker1)
+        except User.DoesNotExist:
+            pass
+
         # Always ensure at least one pending alert cancellation recommendation
         # exists for the Reviews queue (idempotent).
         try:
@@ -1342,6 +1350,8 @@ class Command(BaseCommand):
             submission_count = RegistrationSubmission.objects.filter(
                 registration_link__slug="demo"
             ).delete()[0]
+            # Delete demo circles (cascade handles memberships)
+            circle_count = Circle.objects.filter(is_demo=True).delete()[0]
             # Delete calendar feed tokens for demo workers
             demo_users = User.objects.filter(is_demo=True)
             CalendarFeedToken.objects.filter(user__in=demo_users).delete()
@@ -1351,6 +1361,7 @@ class Command(BaseCommand):
                 f"{plan_count} plans, {event_count} events, {alert_count} alerts, "
                 f"{journal_count} journal entries, {message_count} portal messages, "
                 f"{staff_note_count} staff notes, {correction_count} correction requests, "
+                f"{circle_count} circles, "
                 f"{submission_count} registration submissions."
             )
 
@@ -1410,6 +1421,9 @@ class Command(BaseCommand):
 
         # --- Ensure one pending recommendation exists for Reviews queue demo ---
         self._ensure_pending_alert_recommendation(workers, programs_by_name)
+
+        # --- Create demo circles ---
+        self._create_demo_circles(worker1)
 
         # --- Create demo groups ---
         self._create_demo_groups(workers, programs_by_name, now)
@@ -1489,6 +1503,83 @@ class Command(BaseCommand):
             link.auto_approve = True
             link.save(update_fields=["title", "description", "auto_approve"])
             self.stdout.write("  Updated demo registration link.")
+
+    def _create_demo_circles(self, created_by):
+        """Create demo circles with members.
+
+        Circles represent families, households, and support networks.
+        Uses get_or_create for idempotency.
+        """
+        DEMO_CIRCLES = [
+            {
+                "name": "Rivera Family",
+                "members": [
+                    {"record_id": "DEMO-001", "relationship": "child", "primary": True},
+                    {"name": "Maria Rivera", "relationship": "parent", "primary": False},
+                    {"name": "Carlos Rivera", "relationship": "parent", "primary": False},
+                ],
+            },
+            {
+                "name": "Williams-Dubois Household",
+                "members": [
+                    {"record_id": "DEMO-004", "relationship": "partner", "primary": True},
+                    {"record_id": "DEMO-005", "relationship": "partner", "primary": False},
+                ],
+            },
+            {
+                "name": "Diallo Family",
+                "members": [
+                    {"record_id": "DEMO-010", "relationship": "parent", "primary": True},
+                    {"name": "Ibrahim Diallo", "relationship": "spouse", "primary": False},
+                    {"name": "Awa Diallo", "relationship": "child", "primary": False},
+                    {"name": "Moussa Diallo", "relationship": "child", "primary": False},
+                ],
+            },
+            {
+                "name": "Sharma-Kovac Household",
+                "members": [
+                    {"record_id": "DEMO-013", "relationship": "partner", "primary": True},
+                    {"record_id": "DEMO-015", "relationship": "partner", "primary": False},
+                ],
+            },
+        ]
+
+        created_count = 0
+        for circle_def in DEMO_CIRCLES:
+            # Check if circle already exists by looking for exact name match in demo circles
+            existing = [
+                c for c in Circle.objects.demo().filter(status="active")
+                if c.name == circle_def["name"]
+            ]
+            if existing:
+                continue
+
+            circle = Circle(is_demo=True, created_by=created_by)
+            circle.name = circle_def["name"]
+            circle.save()
+
+            for member_def in circle_def["members"]:
+                membership = CircleMembership(
+                    circle=circle,
+                    relationship_label=member_def.get("relationship", ""),
+                    is_primary_contact=member_def.get("primary", False),
+                )
+                if "record_id" in member_def:
+                    client = ClientFile.objects.filter(
+                        record_id=member_def["record_id"]
+                    ).first()
+                    if client:
+                        membership.client_file = client
+                    else:
+                        continue
+                else:
+                    membership.member_name = member_def["name"]
+                membership.save()
+
+            created_count += 1
+
+        if created_count:
+            self.stdout.write(f"  Created {created_count} demo circles with members.")
 
     def _seed_client_data(
         self, record_id, plan_config, workers, programs_by_name,

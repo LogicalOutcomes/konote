@@ -213,7 +213,9 @@ At 200-2,000 participants, query performance is irrelevant — correctness matte
 
 ### Privacy Risk — ClientAccessBlock in Small Circles (LOW)
 **What:** In a 2-person household, hiding one member (DV safety block) leaves a 1-person "household" that reveals the hidden member's existence by absence.
-**Mitigation:** When ClientAccessBlock would hide a member from a circle with fewer than 4 visible members, hide the entire circle from the blocked staff member.
+**Mitigation:** When ClientAccessBlock would hide a member from a circle with fewer than `DV_MINIMUM_VISIBLE_MEMBERS` (currently 2) visible *enrolled participants*, hide the entire circle from the blocked staff member.
+
+**Design decision (2026-02-24, GK approved):** Non-participant members (typed names without a ClientFile) are **not counted** toward the visibility threshold. An expert panel (DV Safety Specialist, PHIPA Privacy Specialist, Caseworker Workflow Specialist, Systems Thinker) unanimously found that non-participant names *increase* identification risk rather than dilute it — "Ibrahim Diallo (spouse), Awa Diallo (child)" plus the circle name tells you exactly whose family this is, even with the blocked participant hidden. The threshold was lowered from 4 to 2 to account for the fact that most circles have only 1-2 enrolled participants. The threshold is defined as a named constant (`DV_MINIMUM_VISIBLE_MEMBERS` in `apps/circles/helpers.py`) and could be made configurable per agency in future if needed.
 
 ### Encrypted Field Search Performance (LOW for Phase 1)
 **What:** Circle names are encrypted. Searching for a circle by name requires loading all circles into memory and decrypting.

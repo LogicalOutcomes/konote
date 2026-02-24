@@ -11,6 +11,19 @@
 
 ## Active Work
 
+### Phase: Circles Lite (see tasks/design-rationale/circles-family-entity.md)
+
+- [x] Create circles app skeleton with models and migration — 2026-02-24 (CIRCLES-1)
+- [x] Add circle FK to ProgressNote — 2026-02-24 (CIRCLES-2)
+- [x] Feature toggle, terminology, permissions, and seed data — 2026-02-24 (CIRCLES-3)
+- [x] Circle forms (CircleForm, CircleMembershipForm) — 2026-02-24 (CIRCLES-4)
+- [x] Views, helpers, URLs, and templates — 2026-02-24 (CIRCLES-5)
+- [x] Navigation, participant sidebar, and note form integration — 2026-02-24 (CIRCLES-6)
+- [x] Intake integration (link existing or create new circle) — 2026-02-24 (CIRCLES-7)
+- [x] Admin registration and test suite (33 tests) — 2026-02-24 (CIRCLES-8)
+- [x] French translations — 2026-02-24 (CIRCLES-9)
+- [ ] Code review and merge to main — (CIRCLES-MERGE)
+
 ### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
 
 - [x] Phase 3: Update executive dashboard — program cards with lead outcome, trend direction, data completeness, feedback themes, 7 tests — 2026-02-24 (INSIGHTS-P3-EXEC)
@@ -104,8 +117,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Advanced Reporting
 
-- [x] Research typical nonprofit session reporting requirements (IRCC, Employment Ontario, CFPB, United Way) — key gap: need duration and modality fields on notes (see tasks/session-reporting-research.md) — 2026-02-24 (REP-REQ1)
-- [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (REP-SESS1)
+- [x] Research typical nonprofit session reporting requirements (IRCC, CFPB, Employment Ontario, United Way) — key gap: need duration and modality fields on notes (see tasks/session-reporting-research.md) — 2026-02-24 (REP-REQ1)
+- [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (see tasks/session-reporting-research.md for field requirements) (REP-SESS1)
 - [ ] Expand report template system to support more flexible data exports across various modules (REP-FLEX1)
 - [ ] Add "All Programs" option to report filters for organization-wide summaries (REP-ALL-PROGS1)
 - [ ] Implement report preview on-screen before downloading PDF/CSV (REP-PREVIEW1)
@@ -179,6 +192,7 @@ _Nothing pending._
 
 ## Recently Done
 
+- [x] Circles Lite Phase 1 — full feature: models, views, templates, nav, sidebar, note tagging, intake, tests, translations — 2026-02-24 (CIRCLES-1–9)
 - [x] Insights Phase 3: Executive dashboard program outcome cards — lead outcome, trend direction, completeness indicator, 7 tests — 2026-02-24 (INSIGHTS-P3-EXEC)
 - [x] Insights Phase 4: Achievement metric dropdown in note form — Select widget, validation, 4 tests — 2026-02-24 (INSIGHTS-P4-RECORD)
 - [x] French translations for insights + surveys + exec dashboard — 65 new strings — 2026-02-24 (INSIGHTS-I18N1, SURVEY-I18N1)

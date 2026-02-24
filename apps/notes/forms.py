@@ -66,6 +66,19 @@ class QuickNoteForm(forms.Form):
         help_text=_("(optional — adds to your home page reminders)"),
     )
 
+    def __init__(self, *args, circle_choices=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if circle_choices:
+            self.fields["circle"] = forms.ChoiceField(
+                choices=[("", _("— None —"))] + list(circle_choices),
+                required=False,
+                label=_("Circle"),
+                help_text=_("Circle notes should describe shared observations, not clinical details about specific individuals."),
+            )
+            # Auto-select when participant belongs to exactly one circle
+            if len(circle_choices) == 1:
+                self.fields["circle"].initial = circle_choices[0][0]
+
     def clean(self):
         cleaned = super().clean()
         interaction = cleaned.get("interaction_type", "")
@@ -179,6 +192,19 @@ class FullNoteForm(forms.Form):
         required=False,
         label=_("Priority"),
     )
+
+    def __init__(self, *args, circle_choices=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if circle_choices:
+            self.fields["circle"] = forms.ChoiceField(
+                choices=[("", _("— None —"))] + list(circle_choices),
+                required=False,
+                label=_("Circle"),
+                help_text=_("Circle notes should describe shared observations, not clinical details about specific individuals."),
+            )
+            # Auto-select when participant belongs to exactly one circle
+            if len(circle_choices) == 1:
+                self.fields["circle"].initial = circle_choices[0][0]
 
 
 class TargetNoteForm(forms.Form):
