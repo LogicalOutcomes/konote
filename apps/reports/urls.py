@@ -20,6 +20,8 @@ urlpatterns = [
     path("participant/<int:client_id>/analysis/", views.client_analysis, name="client_analysis"),
     path("participant/<int:client_id>/pdf/", pdf_views.client_progress_pdf, name="client_progress_pdf"),
     path("participant/<int:client_id>/export/", pdf_views.client_export, name="client_export"),
+    # Board Summary PDF
+    path("board-summary/<int:program_id>/pdf/", pdf_views.board_summary_pdf, name="board_summary_pdf"),
     # Team meeting view
     path("team-meeting/", views.team_meeting_view, name="team_meeting_view"),
     # Secure export links
