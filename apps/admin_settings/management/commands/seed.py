@@ -117,6 +117,7 @@ class Command(BaseCommand):
             ("messaging_sms", False),
             ("messaging_email", True),
             ("surveys", False),
+            ("circles", False),
         ]
         created = 0
         for key, enabled in defaults:
