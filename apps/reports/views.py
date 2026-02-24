@@ -1139,8 +1139,19 @@ def funder_report_form(request):
         )
 
     program = form.cleaned_data["program"]
-    if not can_create_export(request.user, "funder_report", program=program):
-        return HttpResponseForbidden("You do not have permission to export data for this program.")
+    all_programs_mode = form.is_all_programs
+
+    if all_programs_mode:
+        if not can_create_export(request.user, "funder_report"):
+            return HttpResponseForbidden("You do not have permission to export data.")
+    else:
+        if not can_create_export(request.user, "funder_report", program=program):
+            return HttpResponseForbidden("You do not have permission to export data for this program.")
+
+    program_display_name = (
+        _("All Programs \u2014 Organisation Summary") if all_programs_mode
+        else program.name
+    )
 
     date_from = form.cleaned_data["date_from"]
     date_to = form.cleaned_data["date_to"]
@@ -1148,57 +1159,102 @@ def funder_report_form(request):
     export_format = form.cleaned_data["format"]
     report_template = form.cleaned_data.get("report_template")
 
-    # Generate report data
-    # Security: Pass user for demo/real filtering
-    report_data = generate_funder_report_data(
-        program,
-        date_from=date_from,
-        date_to=date_to,
-        fiscal_year_label=fiscal_year_label,
-        user=request.user,
-        report_template=report_template,
-    )
+    if all_programs_mode:
+        # Generate per-program reports and merge into a combined CSV
+        accessible_programs = get_manageable_programs(request.user)
+        all_report_sections = []
+        total_raw_client_count = 0
+        for ap in accessible_programs:
+            rd = generate_funder_report_data(
+                ap, date_from=date_from, date_to=date_to,
+                fiscal_year_label=fiscal_year_label,
+                user=request.user, report_template=report_template,
+            )
+            total_raw_client_count += rd.get("total_individuals_served", 0)
+            # Suppression per-program
+            if ap.is_confidential:
+                rd["total_individuals_served"] = suppress_small_cell(
+                    rd["total_individuals_served"], ap,
+                )
+                rd["new_clients_this_period"] = suppress_small_cell(
+                    rd["new_clients_this_period"], ap,
+                )
+            all_report_sections.append((ap, rd))
+        raw_client_count = total_raw_client_count
+    else:
+        # Generate report data for single program
+        # Security: Pass user for demo/real filtering
+        report_data = generate_funder_report_data(
+            program,
+            date_from=date_from,
+            date_to=date_to,
+            fiscal_year_label=fiscal_year_label,
+            user=request.user,
+            report_template=report_template,
+        )
 
-    # Capture raw integer count before suppression — needed for
-    # client_count (PositiveIntegerField) and is_elevated check.
-    raw_client_count = report_data.get("total_individuals_served", 0)
+        # Capture raw integer count before suppression — needed for
+        # client_count (PositiveIntegerField) and is_elevated check.
+        raw_client_count = report_data.get("total_individuals_served", 0)
 
-    # Apply small-cell suppression for confidential programs
-    report_data["total_individuals_served"] = suppress_small_cell(
-        report_data["total_individuals_served"], program,
-    )
-    report_data["new_clients_this_period"] = suppress_small_cell(
-        report_data["new_clients_this_period"], program,
-    )
-    # Suppress age demographic counts individually
-    if program.is_confidential and "age_demographics" in report_data:
-        for age_group, count in report_data["age_demographics"].items():
-            if isinstance(count, int):
-                report_data["age_demographics"][age_group] = suppress_small_cell(count, program)
-
-    # Suppress custom demographic section counts for confidential programs.
-    # Without this, reporting-template breakdowns (e.g. Gender Identity) could
-    # leak small-cell counts that enable re-identification — a PIPEDA issue.
-    if program.is_confidential and "custom_demographic_sections" in report_data:
-        for section in report_data["custom_demographic_sections"]:
-            any_suppressed = False
-            for cat_label, count in section["data"].items():
+        # Apply small-cell suppression for confidential programs
+        report_data["total_individuals_served"] = suppress_small_cell(
+            report_data["total_individuals_served"], program,
+        )
+        report_data["new_clients_this_period"] = suppress_small_cell(
+            report_data["new_clients_this_period"], program,
+        )
+        # Suppress age demographic counts individually
+        if program.is_confidential and "age_demographics" in report_data:
+            for age_group, count in report_data["age_demographics"].items():
                 if isinstance(count, int):
-                    suppressed = suppress_small_cell(count, program)
-                    if suppressed != count:
-                        any_suppressed = True
-                    section["data"][cat_label] = suppressed
-            # If any cell was suppressed, suppress the total too —
-            # otherwise total minus visible sum reveals the suppressed aggregate.
-            if any_suppressed:
-                section["total"] = "suppressed"
+                    report_data["age_demographics"][age_group] = suppress_small_cell(count, program)
+
+        # Suppress custom demographic section counts for confidential programs.
+        # Without this, reporting-template breakdowns (e.g. Gender Identity) could
+        # leak small-cell counts that enable re-identification — a PIPEDA issue.
+        if program.is_confidential and "custom_demographic_sections" in report_data:
+            for section in report_data["custom_demographic_sections"]:
+                any_suppressed = False
+                for cat_label, count in section["data"].items():
+                    if isinstance(count, int):
+                        suppressed = suppress_small_cell(count, program)
+                        if suppressed != count:
+                            any_suppressed = True
+                        section["data"][cat_label] = suppressed
+                # If any cell was suppressed, suppress the total too —
+                # otherwise total minus visible sum reveals the suppressed aggregate.
+                if any_suppressed:
+                    section["total"] = "suppressed"
 
     recipient = form.get_recipient_display()
-    safe_name = sanitise_filename(program.name.replace(" ", "_"))
+    safe_name = sanitise_filename(str(program_display_name).replace(" ", "_"))
     safe_fy = sanitise_filename(fiscal_year_label.replace(" ", "_"))
 
     try:
-        if export_format == "pdf":
+        if all_programs_mode:
+            # Build combined CSV with one section per program
+            csv_buffer = io.StringIO()
+            writer = csv.writer(csv_buffer)
+            writer.writerow(sanitise_csv_row([
+                f"# All Programs \u2014 Organisation Summary"
+            ]))
+            writer.writerow(sanitise_csv_row([f"# Fiscal Year: {fiscal_year_label}"]))
+            writer.writerow(sanitise_csv_row([
+                f"# Date Range: {date_from} to {date_to}"
+            ]))
+            writer.writerow([])
+            for ap, rd in all_report_sections:
+                writer.writerow(sanitise_csv_row([
+                    f"# ===== {ap.name} ====="
+                ]))
+                csv_rows = generate_funder_report_csv_rows(rd)
+                for row in csv_rows:
+                    writer.writerow(sanitise_csv_row(row))
+                writer.writerow([])  # blank separator between programs
+            filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.csv"
+            content = csv_buffer.getvalue()
+        elif export_format == "pdf":
             from .pdf_views import generate_funder_report_pdf
             pdf_response = generate_funder_report_pdf(request, report_data)
             filename = f"Reporting_Template_Report_{safe_name}_{safe_fy}.pdf"
@@ -1232,7 +1288,8 @@ def funder_report_form(request):
         includes_notes=False,
         recipient=recipient,
         filters_dict={
-            "program": program.name,
+            "program": str(program_display_name),
+            "all_programs": all_programs_mode,
             "fiscal_year": fiscal_year_label,
             "date_from": str(date_from),
             "date_to": str(date_to),
@@ -1250,12 +1307,16 @@ def funder_report_form(request):
         ip_address=_get_client_ip(request),
         is_demo_context=getattr(request.user, "is_demo", False),
         metadata={
-            "program": program.name,
+            "program": str(program_display_name),
+            "all_programs": all_programs_mode,
             "fiscal_year": fiscal_year_label,
             "date_from": str(date_from),
             "date_to": str(date_to),
             "format": export_format,
-            "total_individuals_served": report_data["total_individuals_served"],
+            "total_individuals_served": (
+                raw_client_count if all_programs_mode
+                else report_data["total_individuals_served"]
+            ),
             "recipient": recipient,
             "secure_link_id": str(link.id),
             "report_template": report_template.name if report_template else None,
@@ -1271,7 +1332,7 @@ def funder_report_form(request):
         "link": link,
         "download_url": download_url,
         "download_path": download_path,
-        "program_name": program.name,
+        "program_name": str(program_display_name),
         "is_pdf": export_format == "pdf",
     })
 
