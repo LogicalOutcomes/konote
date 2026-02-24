@@ -185,6 +185,7 @@ _Nothing pending._
 
 ## Recently Done
 
+- [x] Insights review fixes: double query eliminated, view helper extracted, target marker a11y, 9 view-level tests added — PR #27 assigned to PB — 2026-02-24 (INSIGHTS-REVIEW1)
 - [x] Insights Phase 2: Restructure insights page with summary cards, progressive disclosure, distribution bars, achievement bars, Two Lenses, and CSS — 2026-02-24 (INSIGHTS-P2-LAYOUT, INSIGHTS-P2-VIZ)
 - [x] Insights Phase 0-1: GK language review approved, model fields, aggregation engine, admin form, chart relabelling — 2026-02-24 (INSIGHTS-P0-LANG, INSIGHTS-P0-ADMIN, INSIGHTS-P1-MODEL, INSIGHTS-P1-AGG)
 - [x] QA Page Audit Tier 2 — attendance N/R fix, messages empty state, required indicator, goal onboarding context, step indicators — 2026-02-24 (QA-PA-ATTEND1/2, QA-PA-MSG1/2, QA-PA-GOAL1/2)
