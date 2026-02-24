@@ -32,6 +32,8 @@ from apps.programs.access import (
     get_client_or_403,
     get_program_from_client,
     get_user_program_ids,
+    should_share_across_programs,
+    _resolve_viewing_program,
 )
 from apps.programs.models import UserProgramRole
 from .forms import FullNoteForm, MetricValueForm, NoteCancelForm, QuickNoteForm, TargetNoteForm
@@ -856,13 +858,37 @@ def note_cancel(request, note_id):
 @login_required
 @requires_permission("note.view", _get_program_from_client)
 def qualitative_summary(request, client_id):
-    """Show qualitative progress summary — descriptor distribution and recent client words per target."""
+    """Show qualitative progress summary — descriptor distribution and recent client words per target.
+
+    PHIPA (PHIPA-QUAL1): Filters ProgressNoteTarget entries by program access
+    and consent settings to prevent cross-program disclosure of client words.
+    """
     client = _get_client_or_403(request, client_id)
     if client is None:
         raise PermissionDenied(
             _("You do not have access to this %(client)s.")
             % {"client": request.get_term("client", _("participant"))}
         )
+
+    # PHIPA-QUAL1: Get user's accessible programs for consent filtering
+    active_ids = getattr(request, "active_program_ids", None)
+    user_program_ids = get_user_program_ids(request.user, active_ids)
+
+    # Check consent status for this client
+    from apps.clients.dashboard_views import _get_feature_flags
+    flags = _get_feature_flags()
+    agency_shares = flags.get("cross_program_note_sharing", True)
+    shares = should_share_across_programs(client, agency_shares)
+
+    # Determine viewing program if consent restricts cross-program access
+    consent_viewing_program = None
+    viewing_program = None
+    if not shares:
+        viewing_program = _resolve_viewing_program(
+            request.user, client, active_ids
+        )
+        if viewing_program:
+            consent_viewing_program = viewing_program.name
 
     # Get all active plan targets for this client
     targets = (
@@ -873,14 +899,31 @@ def qualitative_summary(request, client_id):
 
     target_data = []
     for target in targets:
+        # Base queryset: filter by user's accessible programs
         entries = (
             ProgressNoteTarget.objects.filter(
                 plan_target=target,
                 progress_note__status="default",
             )
+            .filter(
+                Q(progress_note__author_program_id__in=user_program_ids)
+                | Q(progress_note__author_program__isnull=True)
+            )
             .select_related("progress_note")
             .order_by("-progress_note__created_at")
         )
+
+        # PHIPA consent: further restrict to viewing program if sharing is off
+        if not shares:
+            if viewing_program:
+                entries = entries.filter(
+                    Q(progress_note__author_program=viewing_program)
+                    | Q(progress_note__author_program__isnull=True)
+                )
+            else:
+                # No viewing program found — fail closed (DRR decision #9)
+                entries = entries.none()
+
         # Descriptor distribution
         descriptor_counts = {}
         for choice_val, choice_label in ProgressNoteTarget.PROGRESS_DESCRIPTOR_CHOICES:
@@ -917,4 +960,5 @@ def qualitative_summary(request, client_id):
         "client": client,
         "target_data": target_data,
         "breadcrumbs": breadcrumbs,
+        "consent_viewing_program": consent_viewing_program,
     })
