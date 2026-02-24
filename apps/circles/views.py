@@ -4,11 +4,13 @@ from functools import wraps
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Q
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.admin_settings.models import FeatureToggle
+from apps.audit.models import AuditLog
 from apps.auth_app.decorators import requires_permission_global
 from apps.clients.models import ClientFile
 from apps.clients.views import get_client_queryset
@@ -17,6 +19,23 @@ from apps.programs.access import get_user_program_ids
 from .forms import CircleForm, CircleMembershipForm
 from .helpers import get_accessible_notes_for_circle, get_visible_circles
 from .models import Circle, CircleMembership
+
+
+def _audit_log(user, action, circle, metadata=None):
+    """Write an audit log entry for a circle operation."""
+    try:
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=user.pk,
+            user_display=user.display_name if hasattr(user, "display_name") else str(user),
+            action=action,
+            resource_type="circles",
+            resource_id=circle.pk,
+            is_demo_context=getattr(user, "is_demo", False),
+            metadata=metadata,
+        )
+    except Exception:
+        pass  # Audit DB may be unavailable in dev/test
 
 
 # ---------------------------------------------------------------------------
@@ -127,6 +146,7 @@ def circle_create(request):
             circle.status = form.cleaned_data["status"]
             circle.created_by = request.user
             circle.save()
+            _audit_log(request.user, "create", circle)
             messages.success(request, _("Circle created."))
             return redirect("circles:circle_detail", circle_id=circle.pk)
     else:
@@ -188,6 +208,7 @@ def circle_edit(request, circle_id):
             circle.name = form.cleaned_data["name"]
             circle.status = form.cleaned_data["status"]
             circle.save()
+            _audit_log(request.user, "update", circle)
             messages.success(request, _("Circle updated."))
             return redirect("circles:circle_detail", circle_id=circle.pk)
     else:
@@ -220,6 +241,7 @@ def circle_archive(request, circle_id):
     circle = get_object_or_404(visible_circles, pk=circle_id)
     circle.status = "archived"
     circle.save()
+    _audit_log(request.user, "update", circle, {"action": "archive"})
     messages.success(request, _("Circle archived."))
     return redirect("circles:circle_list")
 
@@ -266,6 +288,10 @@ def membership_add(request, circle_id):
                 membership.member_name = member_name
 
             membership.save()
+            _audit_log(request.user, "update", circle, {
+                "action": "member_add",
+                "membership_id": membership.pk,
+            })
             messages.success(request, _("Member added."))
             return redirect("circles:circle_detail", circle_id=circle.pk)
     else:
@@ -301,5 +327,12 @@ def membership_remove(request, circle_id, membership_id):
     )
     membership.status = "inactive"
     membership.save()
+    _audit_log(request.user, "update", circle, {
+        "action": "member_remove",
+        "membership_id": membership.pk,
+    })
     messages.success(request, _("Member removed."))
+    # HTMX: return empty response so the <tr> is swapped out cleanly
+    if request.headers.get("HX-Request"):
+        return HttpResponse("")
     return redirect("circles:circle_detail", circle_id=circle.pk)
