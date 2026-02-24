@@ -448,7 +448,15 @@ def my_messages(request):
         db_models.Q(for_user=request.user) | db_models.Q(for_user__isnull=True)
     ).select_related("left_by", "for_user", "client_file").order_by("-is_urgent", "-created_at")
 
+    # Distinguish "no messages yet" from "all read" for the empty state
+    has_any_messages = StaffMessage.objects.filter(
+        client_file_id__in=accessible_client_ids,
+    ).filter(
+        db_models.Q(for_user=request.user) | db_models.Q(for_user__isnull=True)
+    ).exists() if not staff_messages else True
+
     return render(request, "communications/my_messages.html", {
         "staff_messages": staff_messages,
+        "has_any_messages": has_any_messages,
         "nav_active": "messages",
     })

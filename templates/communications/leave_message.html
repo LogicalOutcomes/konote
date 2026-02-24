@@ -26,7 +26,7 @@
     {{ form.for_user }}
     <small>{% blocktrans with workers=term.worker_plural|default:"workers" %}Leave blank to notify all {{ workers }} on this file.{% endblocktrans %}</small>
 
-    <label for="id_message">{{ form.message.label }}</label>
+    <label for="id_message">{{ form.message.label }} <abbr title="{% trans 'required' %}" class="required">*</abbr></label>
     {{ form.message }}
     {% if form.message.errors %}
     <small class="error">{{ form.message.errors.0 }}</small>
