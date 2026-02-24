@@ -417,6 +417,68 @@ def get_achievement_summary(
     }
 
 
+def merge_achievement_summaries(summaries: list[dict[str, Any]]) -> dict[str, Any]:
+    """
+    Merge multiple per-program achievement summaries into one organisation-wide summary.
+
+    Used when the user selects "All Programs" to get a cross-program aggregate.
+    Client counts are summed (a client in multiple programs counts once per program),
+    and per-metric rates are recalculated as weighted averages.
+
+    Args:
+        summaries: List of dicts from get_achievement_summary(), one per program.
+
+    Returns:
+        A merged summary dict with the same structure as get_achievement_summary().
+    """
+    if not summaries:
+        return {
+            "total_clients": 0,
+            "clients_met_any_target": 0,
+            "overall_rate": 0.0,
+            "by_metric": [],
+        }
+
+    total_clients = sum(s.get("total_clients", 0) for s in summaries)
+    clients_met_any = sum(s.get("clients_met_any_target", 0) for s in summaries)
+    overall_rate = 0.0
+    if total_clients > 0:
+        overall_rate = round((clients_met_any / total_clients) * 100, 1)
+
+    # Merge per-metric breakdowns by metric_id
+    metric_map: dict[int, dict] = {}
+    for s in summaries:
+        for m in s.get("by_metric", []):
+            mid = m["metric_id"]
+            if mid not in metric_map:
+                metric_map[mid] = {
+                    "metric_id": mid,
+                    "metric_name": m["metric_name"],
+                    "target_value": m["target_value"],
+                    "has_target": m["has_target"],
+                    "total_clients": 0,
+                    "clients_met_target": 0,
+                }
+            metric_map[mid]["total_clients"] += m.get("total_clients", 0)
+            if m.get("clients_met_target") is not None:
+                metric_map[mid]["clients_met_target"] += m["clients_met_target"]
+
+    by_metric = []
+    for mid, mm in metric_map.items():
+        rate = None
+        if mm["has_target"] and mm["total_clients"] > 0:
+            rate = round((mm["clients_met_target"] / mm["total_clients"]) * 100, 1)
+        mm["achievement_rate"] = rate
+        by_metric.append(mm)
+
+    return {
+        "total_clients": total_clients,
+        "clients_met_any_target": clients_met_any,
+        "overall_rate": overall_rate,
+        "by_metric": by_metric,
+    }
+
+
 def format_achievement_summary(summary: dict[str, Any]) -> str:
     """
     Format achievement summary as a human-readable string for reports.
