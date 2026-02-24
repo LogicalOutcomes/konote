@@ -1604,16 +1604,14 @@ button.outline.secondary:hover {
     border-radius: var(--kn-radius-card);
     border: 1px dashed var(--kn-border-light);
 }
-/* Decorative circle above empty state text */
+/* Static icon above empty state text */
 .empty-state::before {
-    content: "";
+    content: "\1F4CB";  /* clipboard emoji — renders as text glyph */
     display: block;
-    width: 48px;
-    height: 48px;
+    font-size: 2rem;
+    line-height: 1;
     margin: 0 auto var(--kn-space-base);
-    border-radius: 50%;
-    border: 3px dashed var(--kn-border);
-    opacity: 0.5;
+    opacity: 0.45;
 }
 .empty-state p {
     margin-bottom: var(--kn-space-base);
