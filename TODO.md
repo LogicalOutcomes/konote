@@ -12,6 +12,21 @@
 
 ## Active Work
 
+### Phase: Offline Field Collection (PR #34 — Prince reviewing)
+
+- [x] App skeleton, models, ODK client, sync command — 2026-02-24 (FIELD-ODK-APP1, SYNC1)
+- [x] XLSForms for attendance and visit notes — 2026-02-24 (FIELD-ODK-FORM-ATT1, FORM-VIS1)
+- [x] Admin UI, feature toggle, settings — 2026-02-24 (FIELD-ODK-ADMIN1)
+- [x] App user mapping, pull submissions, dedup — 2026-02-24 (FIELD-ODK-USERS1, IMPORT1)
+- [x] Four PII tiers with scope control — 2026-02-24 (FIELD-ODK-TIERS1)
+- [x] Sync status dashboard — 2026-02-24 (FIELD-ODK-DASH1)
+- [x] Tests (43 tests), two code reviews — 2026-02-24 (FIELD-ODK-TEST1)
+- [x] French translations — 2026-02-24 (FIELD-ODK-I18N1)
+- [ ] Deploy ODK Central on Canadian VM (Docker Compose) — ops task (FIELD-ODK-DEPLOY1)
+- [ ] Circle Observation XLSForm — depends on circles in ODK (FIELD-ODK-FORM-CIR1)
+- [ ] Push Circle/CircleMember Entity lists — depends on above (FIELD-ODK-CIRCLES1)
+- [ ] Agency-facing documentation — ODK Collect setup, device loss protocol (FIELD-ODK-DOC1)
+
 ### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
 
 - [ ] 🔨 Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
@@ -84,7 +99,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Advanced Reporting
 
-- [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (REP-SESS1)
+- [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (see konote-prosper-canada/tasks/session-reporting-research.md for field requirements) (REP-SESS1)
 - [ ] Expand report template system to support more flexible data exports across various modules (REP-FLEX1)
 - [ ] Implement report preview on-screen before downloading PDF/CSV (REP-PREVIEW1)
 - [ ] Research/Implement including data visuals (charts/graphs) in PDF reports (REP-PDF1)
@@ -147,13 +162,13 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
-- [x] Insights Phase 3: Executive dashboard — program cards with trend direction, data completeness, feedback themes (PR #32) — 2026-02-24 (INSIGHTS-P3-EXEC)
-- [x] Insights Phase 4: Achievement metric recording UI — dropdown in note form, tests (PR #32) — 2026-02-24 (INSIGHTS-P4-RECORD)
-- [x] Extract and translate French strings for metric distributions templates (PR #32) — 2026-02-24 (INSIGHTS-I18N1)
-- [x] Research session reporting requirements (UNHCR, IRCC, CCIS, etc.) — completed, cross-referenced in docs — 2026-02-24 (REP-REQ1)
-- [x] Add "All Programs" option to report filters for organization-wide summaries (PR #32) — 2026-02-24 (REP-ALL-PROGS1)
-- [x] Add Evidence section to konote-website — evidence.html with Research Foundation content and citations (PR #2 in konote-website) — 2026-02-24 (WEB-EVIDENCE1)
-- [x] QA Round 7 Tier 2 Fixes — 4 items: verify 8 existing fixes, exec nav, log communication, quarterly presets — 2026-02-22 (QA-R7-TIER2)
-- [x] QA Round 7 Page Audit Tier 1 — 4 items: 500.html, public unsubscribe/survey hardening, goal heading fix — 2026-02-22 (QA-PA-TIER1)
-- [x] QA Round 7 Page Audit Tier 2 — 6 items: attendance a11y/pluralization, messages UX, goal onboarding/steps — 2026-02-22 (QA-PA-TIER2)
+- [x] All Programs report filter — "__all__" sentinel, multi-program aggregation, RBAC-scoped, 18 tests — 2026-02-24 (REP-ALL-PROGS1)
+- [x] Executive dashboard metric indicators — trend direction, data completeness, urgent themes per program card — 2026-02-24 (INSIGHTS-P3-EXEC)
+- [x] French translations — all 54 remaining empty strings translated and compiled — 2026-02-24 (INSIGHTS-I18N1)
+- [x] Achievement metric seed data + recording UI — radio pill UI in note form with validation + CSS + tests — 2026-02-24 (INSIGHTS-P0-SEED, INSIGHTS-P4-RECORD)
+- [x] Research session reporting requirements (IRCC, CFPB, Employment Ontario, United Way) — 2026-02-24 (REP-REQ1)
+- [x] Add Evidence section to konote-website — evidence.html with Research Foundation content and citations — 2026-02-24 (WEB-EVIDENCE1)
+- [x] Offline Field Collection — full feature: models, ODK client, sync, admin UI, 4 PII tiers, 43 tests, translations (PR #34) — 2026-02-24 (FIELD-ODK-APP1–TEST1)
+- [x] Circles Lite Phase 1 — full feature: models, views, templates, nav, sidebar, note tagging, intake, tests, translations — 2026-02-24 (CIRCLES-1–9)
 - [x] Enforce PHIPA cross-program consent in views — note_detail, note_summary, event_list; DRR created — 2026-02-22 (PHIPA-ENFORCE1)
+- [x] Insights metric distributions Phases 0-2 — model fields, aggregation, distributions, achievements, trends, Two Lenses, 50 tests (PR #23) — 2026-02-22 (INSIGHTS-P0–P2)

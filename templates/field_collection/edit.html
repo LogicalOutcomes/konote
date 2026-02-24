@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Field Collection" %} — {{ program.name }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Field Collection" %} — {{ program.name }}</h1>
+    <p>{% trans "Configure offline mobile data collection for this program." %}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    <fieldset>
+        <legend>{% trans "Enable Field Collection" %}</legend>
+        <label>
+            {{ form.enabled }}
+            {% trans "Enable offline field data collection for this program" %}
+        </label>
+        <small>{% trans "When enabled, field staff can use ODK Collect on their phones or tablets to record data offline and sync when back online." %}</small>
+    </fieldset>
+
+    <fieldset>
+        <legend>{% trans "Collection Profile" %}</legend>
+        <p><small>{% trans "Choose the type of field work done in this program. This determines which forms are available to field staff." %}</small></p>
+
+        <label for="{{ form.profile.id_for_label }}">{% trans "Profile" %}</label>
+        {{ form.profile }}
+
+        {% for key, desc in profile_descriptions.items %}
+        <details {% if config.profile == key %}open{% endif %}>
+            <summary><small>{{ key|title }}</small></summary>
+            <small>{{ desc }}</small>
+        </details>
+        {% endfor %}
+    </fieldset>
+
+    <fieldset>
+        <legend>{% trans "Data Tier" %}</legend>
+        <p><small>{% trans "Controls what participant information is available on field devices. Higher tiers expose more personal information and require stricter device security." %}</small></p>
+
+        <label for="{{ form.data_tier.id_for_label }}">{% trans "Data tier" %}</label>
+        {{ form.data_tier }}
+
+        {% for key, desc in tier_descriptions.items %}
+        <details {% if config.data_tier == key %}open{% endif %}>
+            <summary><small>{{ key|title }}</small></summary>
+            <small>{{ desc }}</small>
+        </details>
+        {% endfor %}
+
+        <article aria-label="{% trans 'Privacy note' %}">
+            <small>
+                <strong>{% trans "Privacy note:" %}</strong>
+                {% trans "Program names and service types are never shown on field devices, regardless of tier. Form titles use generic names like 'Visit Note' and 'Session Attendance'." %}
+            </small>
+        </article>
+    </fieldset>
+
+    {% if config.odk_project_id %}
+    <fieldset>
+        <legend>{% trans "ODK Central" %}</legend>
+        <p><small>{% trans "ODK Central project ID:" %} <code>{{ config.odk_project_id }}</code></small></p>
+        <p><small>{% trans "Forms enabled:" %}
+            {% for form_id in config.enabled_forms %}
+                <code>{{ form_id }}</code>{% if not forloop.last %}, {% endif %}
+            {% empty %}
+                {% trans "None" %}
+            {% endfor %}
+        </small></p>
+    </fieldset>
+    {% endif %}
+
+    <div role="group">
+        <button type="submit">{% trans "Save" %}</button>
+        <a href="{% url 'field_collection:list' %}" role="button" class="secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+
+{% endblock %}

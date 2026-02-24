@@ -18,7 +18,8 @@
         {% if ach.target_rate %}
         <div class="insights-outcome-target-marker" style="left: {{ ach.target_rate }}%;"
              title="{% blocktrans with target=ach.target_rate %}Target: {{ target }}%{% endblocktrans %}"
-             aria-hidden="true">
+             role="img"
+             aria-label="{% blocktrans with target=ach.target_rate %}Target: {{ target }}%{% endblocktrans %}">
         </div>
         {% endif %}
     </div>
