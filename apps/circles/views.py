@@ -41,16 +41,26 @@ def requires_feature(feature_key):
 # ---------------------------------------------------------------------------
 
 def _get_accessible_clients_for_search(user):
-    """Return list of (pk, display_name, last_name) for participant search."""
+    """Return list of (pk, display_name) for participant search.
+
+    Excludes clients blocked via ClientAccessBlock (DV safety).
+    """
+    from apps.clients.models import ClientAccessBlock, ClientProgramEnrolment
+
     qs = get_client_queryset(user).filter(status="active")
-    # In-memory: must decrypt to get names
     program_ids = get_user_program_ids(user)
-    from apps.clients.models import ClientProgramEnrolment
     enrolled_ids = set(
         ClientProgramEnrolment.objects.filter(
             program_id__in=program_ids, status="enrolled"
         ).values_list("client_file_id", flat=True)
     )
+    # DV safety: exclude blocked clients
+    blocked_ids = set(
+        ClientAccessBlock.objects.filter(user=user, is_active=True)
+        .values_list("client_file_id", flat=True)
+    )
+    enrolled_ids -= blocked_ids
+
     results = []
     for client in qs.filter(pk__in=enrolled_ids):
         name = f"{client.display_name} {client.last_name}".strip()
@@ -239,6 +249,11 @@ def membership_add(request, circle_id):
             )
 
             if client_file_id:
+                # Validate user has access to this client (DV safety + program scope)
+                accessible_pks = set(pk for pk, _ in _get_accessible_clients_for_search(request.user))
+                if client_file_id not in accessible_pks:
+                    messages.error(request, _("You do not have access to this participant."))
+                    return redirect("circles:circle_detail", circle_id=circle.pk)
                 client = get_object_or_404(ClientFile, pk=client_file_id)
                 # Check duplicate
                 if CircleMembership.objects.filter(
