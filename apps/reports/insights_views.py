@@ -32,6 +32,7 @@ from .metric_insights import (
     get_two_lenses,
     get_data_completeness,
 )
+from .models import ReportTemplate, ReportSchedule
 
 # Map DB values to human-readable labels for suggestion priorities
 _PRIORITY_LABELS = dict(ProgressNote.SUGGESTION_PRIORITY_CHOICES)
@@ -366,6 +367,42 @@ def program_insights(request):
             "outcomes_summary": outcomes_summary,
             **expand_flags,
             **interp,
+        })
+
+        # ── Workbench-to-report links ──
+        # Partner report templates configured for this program
+        partner_templates = (
+            ReportTemplate.objects.filter(
+                is_active=True,
+                partner__is_active=True,
+                partner__programs=program,
+            )
+            .select_related("partner")
+            .order_by("partner__name", "name")
+        )
+        # Also include org-wide templates (partners with no programs linked)
+        org_wide_templates = (
+            ReportTemplate.objects.filter(
+                is_active=True,
+                partner__is_active=True,
+            )
+            .exclude(partner__programs__isnull=False)
+            .select_related("partner")
+            .order_by("partner__name", "name")
+        )
+        all_partner_templates = list(partner_templates) + list(org_wide_templates)
+
+        # Upcoming report schedules (funder reports due soon)
+        upcoming_schedules = list(
+            ReportSchedule.objects.filter(
+                is_active=True,
+                report_type="funder_report",
+            ).order_by("due_date")[:5]
+        )
+
+        context.update({
+            "partner_templates": all_partner_templates,
+            "upcoming_schedules": upcoming_schedules,
         })
 
     # Check if AI is available for the template
