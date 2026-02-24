@@ -14660,7 +14660,8 @@ msgid "Name (non-participant)"
 msgstr "Nom (non-participant(e))"
 
 msgid "Optional — link to an existing circle or create a new one below."
-msgstr "Facultatif — liez à un cercle existant ou créez-en un nouveau ci-dessous."
+msgstr ""
+"Facultatif — liez à un cercle existant ou créez-en un nouveau ci-dessous."
 
 msgid "Or create a new circle"
 msgstr "Ou créer un nouveau cercle"
@@ -14697,3 +14698,6 @@ msgstr "ex. parent, conjoint(e), frère/sœur"
 
 msgid "— None —"
 msgstr "— Aucun —"
+
+msgid "Optional — describes this person's role in the circle."
+msgstr "Facultatif — décrit le rôle de cette personne dans le cercle."
