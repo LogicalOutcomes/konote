@@ -613,9 +613,12 @@ def _batch_program_learning(programs, date_from, date_to):
             headline_type = "scale"
             target_rate = lead_dist.get("target_band_high_pct")
 
-        # Suppress if total participants with data < 5 (privacy threshold)
+        # Suppress if metric data exists but participants with data < 5
+        # (privacy threshold). When there's no metric data at all, don't
+        # suppress — just show "No outcome data recorded".
         suppress = False
-        if completeness["with_scores_count"] < SMALL_PROGRAM_THRESHOLD:
+        has_any_metric_data = bool(achievement or distributions)
+        if has_any_metric_data and completeness["with_scores_count"] < SMALL_PROGRAM_THRESHOLD:
             suppress = True
             headline_pct = None
 
@@ -623,8 +626,9 @@ def _batch_program_learning(programs, date_from, date_to):
         active_themes = list(
             SuggestionTheme.objects.active()
             .filter(program=program)
+            .annotate(link_count=Count("links"))
             .values("pk", "name", "status", "priority", "program_id",
-                    "updated_at")
+                    "updated_at", "link_count")
         )
         active_themes = deduplicate_themes(active_themes)
         theme_open_count = len(active_themes)
