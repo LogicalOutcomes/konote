@@ -31,6 +31,17 @@
 </article>
 {% endif %}
 
+{% if er.status == "scheduled" %}
+<article aria-label="{% trans 'Scheduled erasure notice' %}" style="border-left: 4px solid var(--kn-warning-fg); background: var(--kn-warning-bg);">
+    <strong>{% trans "Scheduled for Permanent Erasure" %}</strong>
+    <p>{% blocktrans with scheduled=er.scheduled_execution_at|date:"Y-m-d H:i" %}This participant's data is scheduled for permanent erasure on {{ scheduled }}. During this 24-hour safety window, any program manager or admin can cancel.{% endblocktrans %}</p>
+    <form method="post" action="{% url 'erasure_cancel_scheduled' pk=er.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="outline secondary" onclick="return confirm('{% trans "Cancel this scheduled erasure? The participant data will be preserved." %}')">{% trans "Cancel Scheduled Erasure" %}</button>
+    </form>
+</article>
+{% endif %}
+
 {% if active_alerts and er.status == "pending" %}
 <article aria-label="active alerts" class="warning">
     <strong>{% trans "Active Alerts" %}</strong>

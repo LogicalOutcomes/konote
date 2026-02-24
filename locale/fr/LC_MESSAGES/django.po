@@ -14742,3 +14742,37 @@ msgstr "Fermer"
 msgid "Need help? Ask your program manager or administrator"
 msgstr "Besoin d'aide? Contactez votre gestionnaire de programme ou administrateur"
 
+#: apps/clients/models.py — ERASE-H8
+msgid "Scheduled — Awaiting Erasure"
+msgstr "Planifié — En attente d'effacement"
+
+#: apps/clients/erasure_views.py
+#, python-format
+msgid "All approvals received. %(term)s data is scheduled for permanent erasure in 24 hours. You can cancel during this period."
+msgstr "Toutes les approbations reçues. Les données du/de la %(term)s sont planifiées pour un effacement permanent dans 24 heures. Vous pouvez annuler pendant cette période."
+
+#: apps/clients/erasure_views.py
+msgid "This erasure cannot be cancelled — it is not in scheduled status."
+msgstr "Cet effacement ne peut pas être annulé — il n'est pas en statut planifié."
+
+#: apps/clients/erasure_views.py
+#, python-format
+msgid "Scheduled erasure cancelled. %(term)s data has been preserved."
+msgstr "Effacement planifié annulé. Les données du/de la %(term)s ont été préservées."
+
+#: templates/clients/erasure/erasure_request_detail.html
+msgid "Scheduled for Permanent Erasure"
+msgstr "Planifié pour effacement permanent"
+
+#: templates/clients/erasure/erasure_request_detail.html
+msgid "Cancel Scheduled Erasure"
+msgstr "Annuler l'effacement planifié"
+
+#: templates/clients/erasure/erasure_request_detail.html
+msgid "Cancel this scheduled erasure? The participant data will be preserved."
+msgstr "Annuler cet effacement planifié? Les données du participant seront préservées."
+
+#: templates/clients/erasure/erasure_request_detail.html
+msgid "Scheduled erasure notice"
+msgstr "Avis d'effacement planifié"
+

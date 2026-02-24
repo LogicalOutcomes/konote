@@ -475,6 +475,7 @@ class ErasureRequest(models.Model):
     STATUS_CHOICES = [
         ("pending", _("Pending Approval")),
         ("anonymised", _("Approved — Data Anonymised")),
+        ("scheduled", _("Scheduled — Awaiting Erasure")),
         ("approved", _("Approved — Data Erased")),
         ("rejected", _("Rejected")),
         ("cancelled", _("Cancelled")),
@@ -537,6 +538,10 @@ class ErasureRequest(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     completed_at = models.DateTimeField(null=True, blank=True)
     receipt_downloaded_at = models.DateTimeField(null=True, blank=True)
+    scheduled_execution_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Tier 3 only: when the deferred erasure will execute (24h after approval).",
+    )
 
     # Programs that need PM approval (snapshot of program PKs at request time)
     programs_required = models.JSONField(
