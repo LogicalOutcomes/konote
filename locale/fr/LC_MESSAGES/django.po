@@ -14770,6 +14770,9 @@ msgstr ""
 "Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres "
 "visibles sont automatiquement masqués"
 
+msgid "DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"
+msgstr "Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres visibles sont automatiquement masqués"
+
 msgid "Data Tier"
 msgstr "Niveau de données"
 

@@ -121,8 +121,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Advanced Reporting
 
-- [ ] Research typical nonprofit session reporting requirements (UNHCR, IRCC, CCIS, etc.) to design "Sessions by Participant" report (REP-REQ1)
-- [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (REP-SESS1)
+- [x] Research typical nonprofit session reporting requirements (IRCC, CFPB, Employment Ontario, United Way) — key gap: need duration and modality fields on notes (see konote-prosper-canada/tasks/session-reporting-research.md) — 2026-02-24 (REP-REQ1)
+- [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (see konote-prosper-canada/tasks/session-reporting-research.md for field requirements) (REP-SESS1)
 - [ ] Expand report template system to support more flexible data exports across various modules (REP-FLEX1)
 - [ ] Add "All Programs" option to report filters for organization-wide summaries (REP-ALL-PROGS1)
 - [ ] Implement report preview on-screen before downloading PDF/CSV (REP-PREVIEW1)
