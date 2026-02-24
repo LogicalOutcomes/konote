@@ -116,11 +116,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Build agency data offboarding command for secure departures and PIPEDA requests (SEC3)
 - [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
 - [ ] Add first-run setup wizard UI for guided initial configuration (SETUP1-UI)
-- [ ] Add TOTP multi-factor authentication (see tasks/mfa-implementation.md) (SEC2)
 - [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
 - [ ] Add bulk operations for discharge and assignment workflows (UX17)
 - [ ] Re-add API-based auto-translation to translate_strings for production use (I18N-API1)
-- [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
 - [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
@@ -132,6 +130,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Parking lot cleanup Phase 3 — security: TOTP MFA for local auth (SEC2), 24-hour deferred Tier 3 erasure with cancel window (ERASE-H8) — 2026-02-24
 - [x] Parking lot cleanup Phase 2 — UX polish: clipboard icon on empty states (QA-PA-ERASURE2), goal form breadcrumbs (QA-PA-GOAL3), status badge shape indicators + filter focus ring (A11Y-POLISH1), onboarding banner (QA-W19) — 2026-02-24
 - [x] Parking lot cleanup Phase 1 — code hygiene (CODE-TIDY1, QA-W62), verification (QA-R7-BUG13, QA-R7-BUG21, SURVEY-LINK1, DEPLOY-VERIFY1), i18n (I18N-CSV1, I18N-STALE1 already clean, INSIGHTS-I18N1, SURVEY-I18N1 already translated) — 2026-02-24
 - [x] Approve CIDS implementation plan — metadata fields, code list integration, CIDS-enriched reports, JSON-LD export; partner pathway confirmed — 2026-02-24 — SG/GK (CIDS-APPROVE1)
