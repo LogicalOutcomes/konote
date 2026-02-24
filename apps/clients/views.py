@@ -48,7 +48,10 @@ from apps.programs.access import (
     get_user_program_ids as _get_user_program_ids,
     get_accessible_programs as _get_accessible_programs,
     get_program_from_client as _get_program_from_client,
+    should_share_across_programs,
+    _resolve_viewing_program,
 )
+from django.db.models import Q
 
 
 def _get_accessible_clients(user, active_program_ids=None):
@@ -130,22 +133,99 @@ def _get_last_contact_dates(client_ids):
     return result
 
 
-def _find_clients_with_matching_notes(client_ids, query_lower):
+def _find_clients_with_matching_notes(client_ids, query_lower, user,
+                                      active_program_ids=None):
     """Return set of client IDs whose progress notes contain the search query.
 
     Encrypted fields can't be searched in SQL, so we decrypt each note's text
     fields in memory and check for a case- and accent-insensitive substring match.
     Stops checking a client as soon as one matching note is found.
+
+    PHIPA (PHIPA-SEARCH1): Filters notes by program access and consent
+    settings to prevent side-channel disclosure through search results.
+    A search for sensitive clinical terms must not reveal that a restricted-
+    program note contains that term.
     """
-    matched = set()
+    from apps.clients.dashboard_views import _get_feature_flags
+
+    user_program_ids = _get_user_program_ids(user, active_program_ids)
+
+    # Step 1: Filter notes to user's accessible programs (basic access control)
     notes = (
         ProgressNote.objects.filter(client_file_id__in=client_ids)
+        .filter(
+            Q(author_program_id__in=user_program_ids)
+            | Q(author_program__isnull=True)
+        )
+        .select_related("author_program")
         .prefetch_related("target_entries")
     )
+
+    # Step 2: Check agency sharing flag once
+    flags = _get_feature_flags()
+    agency_shares = flags.get("cross_program_note_sharing", True)
+
+    # Step 3: Pre-load per-client consent overrides for efficient filtering.
+    # Load client objects for those that need per-client checking.
+    # - Agency ON:  most clients (default) get all accessible notes.
+    #               Only filter for clients with cross_program_sharing="restrict".
+    # - Agency OFF: most clients (default) get only viewing-program notes.
+    #               Clients with cross_program_sharing="consent" get all accessible notes.
+    client_sharing_map = dict(
+        ClientFile.objects.filter(pk__in=client_ids)
+        .values_list("pk", "cross_program_sharing")
+    )
+
+    # Pre-compute the viewing program for clients that need per-client filtering.
+    # Resolving viewing program is expensive, so only do it when needed.
+    viewing_program_cache = {}  # client_id -> viewing_program or None
+
+    def _get_viewing_program_for_client(client_id):
+        if client_id not in viewing_program_cache:
+            client_obj = ClientFile.objects.get(pk=client_id)
+            viewing_program_cache[client_id] = _resolve_viewing_program(
+                user, client_obj, active_program_ids
+            )
+        return viewing_program_cache[client_id]
+
+    def _note_passes_consent(note):
+        """Check if a note passes PHIPA consent filtering for its client."""
+        cid = note.client_file_id
+        sharing = client_sharing_map.get(cid, "default")
+
+        # Determine if this client shares across programs
+        if sharing == "consent":
+            return True  # Client explicitly consents — all accessible notes OK
+        if sharing == "restrict":
+            # Client restricts — only viewing program notes
+            if note.author_program is None:
+                return True  # Legacy notes always visible
+            vp = _get_viewing_program_for_client(cid)
+            if vp is None:
+                return False  # Fail-closed (DRR decision #9)
+            return note.author_program_id == vp.pk
+
+        # sharing == "default" — follow agency toggle
+        if agency_shares:
+            return True  # Agency shares by default, client uses default
+        # Agency does NOT share, client uses default — restrict to viewing program
+        if note.author_program is None:
+            return True  # Legacy notes always visible
+        vp = _get_viewing_program_for_client(cid)
+        if vp is None:
+            return False  # Fail-closed
+        return note.author_program_id == vp.pk
+
+    matched = set()
     for note in notes:
         cid = note.client_file_id
         if cid in matched:
             continue  # already found a match for this client
+
+        # PHIPA consent check before revealing search match
+        if not _note_passes_consent(note):
+            continue
+
         for text in [note.notes_text or "", note.summary or "", note.participant_reflection or ""]:
             if query_lower in _strip_accents(text.lower()):
                 matched.add(cid)
@@ -236,9 +316,11 @@ def client_list(request):
             client_data.append(item)
 
     # Second pass: search progress notes for clients not matched by name/ID
+    # PHIPA-SEARCH1: pass user + active_program_ids for consent filtering
     if search_query and unmatched:
         note_matched_ids = _find_clients_with_matching_notes(
-            unmatched.keys(), search_query
+            unmatched.keys(), search_query,
+            user=request.user, active_program_ids=active_ids,
         )
         for cid in note_matched_ids:
             client_data.append(unmatched[cid])

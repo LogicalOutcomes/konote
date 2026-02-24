@@ -20,6 +20,7 @@
 </head>
 <body>
     <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
+    {% include "_lang_toggle.html" with max_width="500px" %}
     <main id="main-content" class="container" style="max-width: 500px; margin-top: 3rem;" tabindex="-1">
         <div class="login-wordmark">{{ site.product_name|default:"KoNote" }}</div>
 
