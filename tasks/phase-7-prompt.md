@@ -1,5 +1,11 @@
 # Phase 7 Prompt: Hardening & Deployment
 
+> **Note (2026-02-24):** Phase 7 is complete. The platform-specific
+> deployment guides (deploy-azure.md, deploy-elestio.md, deploy-railway.md)
+> were consolidated into a single comprehensive guide at
+> `docs/deploying-konote.md` plus `docs/deploy-fullhost.md`. This prompt
+> is kept for historical reference only.
+
 Copy this prompt into a new Claude Code conversation. Open the `KoNote-web` project folder first.
 
 ---
