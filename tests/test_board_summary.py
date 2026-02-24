@@ -96,18 +96,17 @@ class BoardSummaryAuthTest(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertIn("/login", resp.url)
 
-    def test_nonexistent_program_returns_403(self):
-        """Requesting a board summary for a non-existent program returns 403.
+    def test_nonexistent_program_returns_404(self):
+        """Admin requesting a non-existent program gets 404.
 
-        The decorator catches the 404 from get_program_fn and returns 403
-        to avoid leaking whether a resource exists.
+        Admin users bypass the decorator (allow_admin=True), so the view
+        body's get_object_or_404 raises Http404 directly.
         """
         self.http.login(username="admin", password="pass")
         resp = self.http.get(
             reverse("reports:board_summary_pdf", kwargs={"program_id": 99999})
         )
-        # Decorator wraps Http404 in 403 — acceptable security behaviour
-        self.assertIn(resp.status_code, [403, 404])
+        self.assertEqual(resp.status_code, 404)
 
     @patch("apps.reports.pdf_views.is_pdf_available", return_value=False)
     def test_admin_can_access_any_program(self, _mock_pdf):
