@@ -17,6 +17,14 @@ from apps.notes.models import (
 )
 from .insights import get_structured_insights, collect_quotes, MIN_PARTICIPANTS_FOR_QUOTES
 from .insights_forms import InsightsFilterForm
+from .metric_insights import (
+    get_metric_distributions,
+    get_achievement_rates,
+    get_metric_trends,
+    get_two_lenses,
+    get_data_completeness,
+    get_trend_direction,
+)
 from .interpretations import (
     interpret_progress_trend,
     interpret_engagement,
@@ -157,6 +165,78 @@ def program_insights(request):
                 ),
             }
 
+        # ── Metric distributions and achievements (Phase 2) ──
+        metric_distributions = {}
+        achievement_rates = {}
+        metric_trends = {}
+        two_lenses = None
+        data_completeness = {}
+        trend_directions = {}
+        lead_outcome = None
+        lead_metric = None
+        lead_trend_direction = None
+        distributions_summary_pct = None
+        distributions_trend_direction = None
+        total_new_participants = 0
+        has_urgent_themes = False
+
+        if data_tier != "sparse":
+            metric_distributions = get_metric_distributions(program, date_from, date_to)
+            achievement_rates = get_achievement_rates(program, date_from, date_to)
+            metric_trends = get_metric_trends(program, date_from, date_to)
+            two_lenses = get_two_lenses(program, date_from, date_to)
+            data_completeness = get_data_completeness(program, date_from, date_to)
+
+            # Compute trend directions per metric
+            for mid in metric_distributions:
+                trend_directions[mid] = get_trend_direction(metric_trends, mid)
+
+            # Total new participants across all metrics
+            total_new_participants = sum(
+                d.get("n_new_participants", 0) for d in metric_distributions.values()
+            )
+
+            # Lead outcome (first achievement metric for summary card)
+            if achievement_rates:
+                lead_outcome = next(iter(achievement_rates.values()))
+
+            # Lead metric (first scale metric for summary card, when no achievement)
+            if metric_distributions and not lead_outcome:
+                lead_metric = next(iter(metric_distributions.values()))
+
+            # Distributions summary for section preview
+            if metric_distributions:
+                first_dist = next(iter(metric_distributions.values()))
+                distributions_summary_pct = first_dist["band_high_pct"]
+                first_mid = next(iter(metric_distributions))
+                distributions_trend_direction = trend_directions.get(first_mid)
+
+            # Lead trend direction for summary card
+            if lead_outcome and achievement_rates:
+                lead_trend_direction = None  # No trend for achievement yet
+            elif metric_distributions:
+                first_mid = next(iter(metric_distributions))
+                lead_trend_direction = trend_directions.get(first_mid)
+
+            # Check for urgent themes
+            has_urgent_themes = any(
+                t.get("priority") == "urgent" for t in active_themes
+            )
+
+        # ── Auto-expand logic (DRR §5) ──
+        expand_participant_voice = True  # Default: always open
+        expand_distributions = bool(metric_distributions)
+        expand_outcomes = bool(achievement_rates)
+        expand_staff_assessments = bool(structured.get("descriptor_trend"))
+        expand_engagement = False  # Default: collapsed
+
+        if has_urgent_themes:
+            # Urgent feedback → Participant Voice always open
+            expand_participant_voice = True
+        elif metric_distributions or achievement_rates:
+            # Quantitative data exists → open those, Participant Voice stays open too
+            expand_participant_voice = True
+
         context.update({
             "program": program,
             "date_from": date_from,
@@ -177,6 +257,26 @@ def program_insights(request):
             "min_participants": MIN_PARTICIPANTS_FOR_QUOTES,
             "chart_data_json": structured["descriptor_trend"],
             "show_results": True,
+            # Metric distributions (Phase 2)
+            "metric_distributions": metric_distributions,
+            "achievement_rates": achievement_rates,
+            "metric_trends": metric_trends,
+            "two_lenses": two_lenses,
+            "data_completeness": data_completeness,
+            "trend_directions": trend_directions,
+            "lead_outcome": lead_outcome,
+            "lead_metric": lead_metric,
+            "lead_trend_direction": lead_trend_direction,
+            "distributions_summary_pct": distributions_summary_pct,
+            "distributions_trend_direction": distributions_trend_direction,
+            "total_new_participants": total_new_participants,
+            "has_urgent_themes": has_urgent_themes,
+            # Auto-expand flags
+            "expand_participant_voice": expand_participant_voice,
+            "expand_distributions": expand_distributions,
+            "expand_outcomes": expand_outcomes,
+            "expand_staff_assessments": expand_staff_assessments,
+            "expand_engagement": expand_engagement,
             **interp,
         })
 
