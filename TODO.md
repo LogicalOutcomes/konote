@@ -18,8 +18,8 @@
 - [ ] Phase 0: Configure at least one test program with achievement metrics for development (INSIGHTS-P0-SEED)
 - [x] Phase 1: Add metric_type, threshold, achievement, and target fields to MetricDefinition model — 2026-02-24 (INSIGHTS-P1-MODEL)
 - [x] Phase 1: Build metric aggregation functions — distributions, achievement rates, trends, Two Lenses, data completeness — 2026-02-24 (INSIGHTS-P1-AGG)
-- [ ] 🔨 Phase 2: Restructure insights page — participant voice to Section 2, progressive disclosure with smart auto-expand (INSIGHTS-P2-LAYOUT)
-- [ ] 🔨 Phase 2: Add summary cards, distribution bars, achievement bars with journey context, CSS (INSIGHTS-P2-VIZ)
+- [x] Phase 2: Restructure insights page — participant voice to Section 2, progressive disclosure with smart auto-expand — 2026-02-24 (INSIGHTS-P2-LAYOUT)
+- [x] Phase 2: Add summary cards, distribution bars, achievement bars with journey context, CSS — 2026-02-24 (INSIGHTS-P2-VIZ)
 - [ ] Phase 3: Update executive dashboard — program cards with trend direction, data completeness, feedback themes (INSIGHTS-P3-EXEC)
 - [ ] Phase 4: Achievement metric recording UI — dropdown in note form, tests (INSIGHTS-P4-RECORD)
 - [ ] Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
@@ -185,6 +185,9 @@ _Nothing pending._
 
 ## Recently Done
 
+- [x] Insights Phase 2: Restructure insights page with summary cards, progressive disclosure, distribution bars, achievement bars, Two Lenses, and CSS — 2026-02-24 (INSIGHTS-P2-LAYOUT, INSIGHTS-P2-VIZ)
+- [x] Insights Phase 0-1: GK language review approved, model fields, aggregation engine, admin form, chart relabelling — 2026-02-24 (INSIGHTS-P0-LANG, INSIGHTS-P0-ADMIN, INSIGHTS-P1-MODEL, INSIGHTS-P1-AGG)
+- [x] QA Page Audit Tier 2 — attendance N/R fix, messages empty state, required indicator, goal onboarding context, step indicators — 2026-02-24 (QA-PA-ATTEND1/2, QA-PA-MSG1/2, QA-PA-GOAL1/2)
 - [x] Fix suggestion theme linking in seed_demo_data — program-specific suggestions, removed blind fallback — 2026-02-22 (DEMO-FIX1)
 - [x] Add quarterly date range presets to ad-hoc report form — optgroup dropdown with FY + quarters, i18n month names, 8 tests — 2026-02-22 (QA-R7-RPT-QUARTER1)
 - [x] QA Round 7 Tier 2 — verified 8 items already implemented, fixed IMPROVE-3 (executive nav) and BUG-7 (log communication) — 2026-02-22 (QA-R7-TIER2)
@@ -192,7 +195,3 @@ _Nothing pending._
 - [x] QA Round 7 Tier 1 — language persistence, skip-to-content verified, notes 403 fixed, htmx syntax fixed — 2026-02-21 (QA-R7-TIER1)
 - [x] Fix report generation page — duplicate template name in dropdown and HTMX period options 500 error (PR #14) — 2026-02-22 (BUG-RPT1)
 - [x] Code review fixes for template-driven reporting — 12 issues (suppression, WCAG, XSS, race condition, tests) (PR #12) — 2026-02-22 (RPT-REVIEW1)
-- [x] Aggregation engine + consortium metric locking for ad-hoc export form — 2026-02-22 (RPT-AGG1)
-- [x] UX + QA Round 7 fixes — 18 items: accessibility, dashboard, notes UX, front desk, label improvements — 2026-02-21
-- [x] Unify analysis chart quick-select and date picker into single form control — 2026-02-21 (UX-CHART1)
-- [x] Accessibility fixes: aria-labels on audit table, notes error container, mobile touch targets — 2026-02-21 (A11Y-UX1)
