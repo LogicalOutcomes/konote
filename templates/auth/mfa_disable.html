@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Disable MFA" %}{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px;">
+    <h1>{% trans "Disable Multi-Factor Authentication" %}</h1>
+    <p>{% trans "To disable MFA, enter a verification code from your authenticator app or a backup code." %}</p>
+
+    {% if error %}
+    <article aria-label="error" style="border-left: 4px solid var(--kn-danger-fg); background: var(--kn-danger-bg); padding: var(--kn-space-sm) var(--kn-space-base);">
+        {{ error }}
+    </article>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <label for="id_code">{% trans "Verification code" %}</label>
+        {{ form.code }}
+        {% if form.code.errors %}
+        <small class="error">{{ form.code.errors.0 }}</small>
+        {% endif %}
+        <div class="grid">
+            <button type="submit" class="secondary">{% trans "Disable MFA" %}</button>
+            <a href="{% url 'home' %}" role="button">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

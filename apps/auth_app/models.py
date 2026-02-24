@@ -73,6 +73,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     consent_given_at = models.DateTimeField(null=True, blank=True)
     data_retention_days = models.IntegerField(default=2555, help_text="~7 years default.")
 
+    # MFA (TOTP) — local auth only; Azure AD users get MFA from Microsoft
+    mfa_enabled = models.BooleanField(default=False)
+    mfa_secret = models.CharField(max_length=32, blank=True, default="")
+    mfa_backup_codes = models.JSONField(default=list, blank=True)
+
     objects = UserManager()
 
     USERNAME_FIELD = "username"

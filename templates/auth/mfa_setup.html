@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Set Up Multi-Factor Authentication" %}{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px;">
+    <h1>{% trans "Set Up Multi-Factor Authentication" %}</h1>
+    <p>{% trans "Scan the QR code below with your authenticator app (Google Authenticator, Microsoft Authenticator, Authy, etc.), then enter the 6-digit code to confirm." %}</p>
+
+    {% if qr_data_uri %}
+    <figure style="text-align: center; margin: var(--kn-space-lg) 0;">
+        <img src="{{ qr_data_uri }}" alt="{% trans 'QR code for authenticator app' %}" style="image-rendering: pixelated; max-width: 200px;">
+    </figure>
+    {% endif %}
+
+    <details>
+        <summary>{% trans "Can't scan the QR code?" %}</summary>
+        <p>{% trans "Enter this secret key manually in your authenticator app:" %}</p>
+        <code style="word-break: break-all; font-size: 1.1rem;">{{ secret }}</code>
+    </details>
+
+    {% if error %}
+    <article aria-label="error" style="border-left: 4px solid var(--kn-danger-fg); background: var(--kn-danger-bg); padding: var(--kn-space-sm) var(--kn-space-base);">
+        {{ error }}
+    </article>
+    {% endif %}
+
+    <form method="post" style="margin-top: var(--kn-space-lg);">
+        {% csrf_token %}
+        <label for="id_code">{% trans "Enter the 6-digit code from your app" %}</label>
+        {{ form.code }}
+        {% if form.code.errors %}
+        <small class="error">{{ form.code.errors.0 }}</small>
+        {% endif %}
+        <div class="grid">
+            <button type="submit">{% trans "Verify and Enable MFA" %}</button>
+            <a href="{% url 'home' %}" class="secondary" role="button">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

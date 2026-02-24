@@ -1380,3 +1380,21 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
         if (hidden) hidden.value = "";
     });
 })();
+
+// --- Onboarding banner (QA-W19) ---
+// Shows a "Getting started" banner on the dashboard for first-time users.
+// Dismissed permanently via localStorage.
+(function () {
+    var banner = document.getElementById("onboarding-banner");
+    var btn = document.getElementById("dismiss-onboarding");
+    if (!banner || !btn) return;
+    var KEY = "konote_onboarding_dismissed";
+    try {
+        if (localStorage.getItem(KEY)) return; // already dismissed
+    } catch (e) { return; }
+    banner.hidden = false;
+    btn.addEventListener("click", function () {
+        banner.hidden = true;
+        try { localStorage.setItem(KEY, "1"); } catch (e) { /* ignore */ }
+    });
+})();

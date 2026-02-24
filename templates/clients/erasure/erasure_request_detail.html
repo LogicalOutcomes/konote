@@ -16,10 +16,12 @@
 {% if er.status == "pending" %}
 <article aria-label="warning" class="warning" style="border-left: 4px solid var(--kn-danger-fg); background: var(--kn-danger-bg);">
     <strong>{% trans "This action cannot be undone." %}</strong>
-    {% if er.erasure_tier == "full_erasure" %}
-    {% trans "Once all program managers approve, the client's data will be permanently deleted." %}
-    {% else %}
-    {% trans "Once all program managers approve, the client's identifying information will be permanently removed." %}
+    {% if er.erasure_tier == "anonymise" %}
+    {% trans "Their name and contact details will be blanked. Anonymous service records stay in reports. This cannot be undone." %}
+    {% elif er.erasure_tier == "anonymise_purge" %}
+    {% trans "All individual information will be removed. Only anonymous counts remain in reports. This cannot be undone." %}
+    {% elif er.erasure_tier == "full_erasure" %}
+    {% trans "Everything about this person will be permanently deleted, including from reports. This cannot be undone." %}
     {% endif %}
 </article>
 {% endif %}
@@ -28,6 +30,17 @@
 <article aria-label="{% trans 'Receipt warning' %}" style="border-left: 4px solid var(--kn-warning-fg); background: var(--kn-warning-bg);">
     <strong>{% trans "PDF receipt has not been downloaded." %}</strong>
     {% trans "Download the PDF receipt before approving. Once erased, client details cannot be recovered from the system." %}
+</article>
+{% endif %}
+
+{% if er.status == "scheduled" %}
+<article aria-label="{% trans 'Scheduled erasure notice' %}" style="border-left: 4px solid var(--kn-warning-fg); background: var(--kn-warning-bg);">
+    <strong>{% trans "Scheduled for Permanent Erasure" %}</strong>
+    <p>{% blocktrans with scheduled=er.scheduled_execution_at|date:"Y-m-d H:i" %}This participant's data is scheduled for permanent erasure on {{ scheduled }}. During this 24-hour safety window, any program manager or admin can cancel.{% endblocktrans %}</p>
+    <form method="post" action="{% url 'erasure_cancel_scheduled' pk=er.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="outline secondary" onclick="return confirm('{% trans "Cancel this scheduled erasure? The participant data will be preserved." %}')">{% trans "Cancel Scheduled Erasure" %}</button>
+    </form>
 </article>
 {% endif %}
 

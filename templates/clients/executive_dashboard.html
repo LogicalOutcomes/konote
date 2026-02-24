@@ -43,6 +43,33 @@
     </fieldset>
 </form>
 
+{# Privacy compliance banner — event-driven, hidden when nothing pending #}
+{% if privacy_banner_items %}
+<section class="privacy-compliance-banner" aria-label="{% trans 'Privacy Compliance' %}">
+    <article style="border-left: 4px solid var(--kn-warning-fg); background: var(--kn-warning-bg); margin-bottom: var(--kn-space-base);">
+        <strong>{% trans "Privacy Action Required" %}</strong>
+        <ul style="margin: 0.5rem 0 0; padding-left: 1.25rem;">
+        {% for item in privacy_banner_items %}
+            {% if item.type == "erasure" %}
+            <li>
+                {% blocktrans count count=item.count %}{{ count }} erasure request pending{% plural %}{{ count }} erasure requests pending{% endblocktrans %}
+                — {% blocktrans with days=item.days %}submitted {{ days }} days ago{% endblocktrans %}
+            </li>
+            {% elif item.type == "data_access" %}
+            <li {% if item.overdue %}style="color: var(--kn-danger-fg); font-weight: 600;"{% endif %}>
+                {% if item.overdue %}
+                {% blocktrans with name=item.client_name days=item.days_remaining %}{{ name }}'s data access request is overdue ({{ days }} days past deadline){% endblocktrans %}
+                {% else %}
+                {% blocktrans with name=item.client_name days=item.days_remaining %}{{ name }}'s data access request is due in {{ days }} days{% endblocktrans %}
+                {% endif %}
+            </li>
+            {% endif %}
+        {% endfor %}
+        </ul>
+    </article>
+</section>
+{% endif %}
+
 {# Top-line summary cards #}
 <section class="stats-overview" aria-label="{% trans 'Organization Summary' %}">
     <div class="stats-grid">

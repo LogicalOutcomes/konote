@@ -1,12 +1,12 @@
 """Report views — aggregate metric CSV export, report template report, client analysis charts, and secure links."""
 import csv
+import datetime as dt
 import io
 import json
 import logging
 import os
 import uuid
 from collections import defaultdict
-import datetime as dt
 from datetime import datetime, time, timedelta
 
 from django.conf import settings
@@ -643,12 +643,12 @@ def export_form(request):
             # Aggregate CSV — summary statistics only
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
-            writer.writerow(sanitise_csv_row([f"# Program: {program.name}"]))
-            writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
-            writer.writerow(sanitise_csv_row([f"# Total Participants: {total_clients_display}"]))
+            writer.writerow(sanitise_csv_row([_("# Program: %(name)s") % {"name": program.name}]))
+            writer.writerow(sanitise_csv_row([_("# Date Range: %(from)s to %(to)s") % {"from": date_from, "to": date_to}]))
+            writer.writerow(sanitise_csv_row([_("# Total Participants: %(count)s") % {"count": total_clients_display}]))
             writer.writerow(sanitise_csv_row([_("# Export Mode: Aggregate Summary")]))
             if grouping_type != "none":
-                writer.writerow(sanitise_csv_row([f"# Grouped By: {grouping_label}"]))
+                writer.writerow(sanitise_csv_row([_("# Grouped By: %(label)s") % {"label": grouping_label}]))
 
             # Achievement rate summary (same as individual path — already aggregate)
             if achievement_summary:
@@ -673,7 +673,7 @@ def export_form(request):
             # Demographic breakdown table
             if demographic_aggregate_rows:
                 writer.writerow([])
-                writer.writerow(sanitise_csv_row([f"# ===== BREAKDOWN BY {grouping_label.upper()} ====="]))
+                writer.writerow(sanitise_csv_row([_("# ===== BREAKDOWN BY %(label)s =====") % {"label": grouping_label.upper()}]))
                 writer.writerow(sanitise_csv_row([
                     grouping_label, _("Metric Name"), _("Participants Measured"), _("Average"), _("Min"), _("Max"),
                 ]))
@@ -770,12 +770,12 @@ def export_form(request):
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
             # Summary header rows (prefixed with # so spreadsheet apps treat them as comments)
-            writer.writerow(sanitise_csv_row([f"# Program: {program.name}"]))
-            writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
-            writer.writerow(sanitise_csv_row([f"# Total Clients: {total_clients_display}"]))
-            writer.writerow(sanitise_csv_row([f"# Total Data Points: {total_data_points_display}"]))
+            writer.writerow(sanitise_csv_row([_("# Program: %(name)s") % {"name": program.name}]))
+            writer.writerow(sanitise_csv_row([_("# Date Range: %(from)s to %(to)s") % {"from": date_from, "to": date_to}]))
+            writer.writerow(sanitise_csv_row([_("# Total Clients: %(count)s") % {"count": total_clients_display}]))
+            writer.writerow(sanitise_csv_row([_("# Total Data Points: %(count)s") % {"count": total_data_points_display}]))
             if grouping_type != "none":
-                writer.writerow(sanitise_csv_row([f"# Grouped By: {grouping_label}"]))
+                writer.writerow(sanitise_csv_row([_("# Grouped By: %(label)s") % {"label": grouping_label}]))
 
             # Achievement rate summary if requested
             if achievement_summary:

@@ -190,3 +190,17 @@ class UserProgramRoleForm(forms.Form):
         choices=UserProgramRole.ROLE_CHOICES,
         label=_("Role"),
     )
+
+
+class MFAVerifyForm(forms.Form):
+    """6-digit TOTP code entry for login verification or MFA setup confirmation."""
+    code = forms.CharField(
+        max_length=6, min_length=6,
+        label=_("Verification code"),
+        widget=forms.TextInput(attrs={
+            "inputmode": "numeric",
+            "autocomplete": "one-time-code",
+            "pattern": "[0-9]{6}",
+            "autofocus": True,
+        }),
+    )

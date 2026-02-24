@@ -293,6 +293,10 @@ nav.breadcrumb [aria-current="page"] {
     font-size: 0.8125rem;
     padding: var(--kn-space-sm) var(--kn-space-lg) var(--kn-space-sm) var(--kn-space-sm);
 }
+.client-toolbar__filters select:focus-visible {
+    outline: 2px solid var(--kn-focus-ring, Highlight);
+    outline-offset: 2px;
+}
 .client-toolbar__clear {
     font-size: 0.8125rem;
     color: var(--kn-text-muted);
@@ -1604,16 +1608,14 @@ button.outline.secondary:hover {
     border-radius: var(--kn-radius-card);
     border: 1px dashed var(--kn-border-light);
 }
-/* Decorative circle above empty state text */
+/* Static icon above empty state text */
 .empty-state::before {
-    content: "";
+    content: "\1F4CB";  /* clipboard emoji — renders as text glyph */
     display: block;
-    width: 48px;
-    height: 48px;
+    font-size: 2rem;
+    line-height: 1;
     margin: 0 auto var(--kn-space-base);
-    border-radius: 50%;
-    border: 3px dashed var(--kn-border);
-    opacity: 0.5;
+    opacity: 0.45;
 }
 .empty-state p {
     margin-bottom: var(--kn-space-base);
@@ -4422,6 +4424,39 @@ article[aria-label="notification"].fading-out {
     margin-top: var(--kn-space-lg);
     font-size: 0.875rem;
     color: var(--kn-text-muted);
+}
+
+/* Dashboard onboarding banner (QA-W19) */
+.onboarding-banner {
+    background: var(--kn-primary-subtle);
+    border: 1px solid var(--kn-border-light);
+    border-radius: var(--kn-radius-card, 8px);
+    padding: var(--kn-space-base) var(--kn-space-lg);
+    margin-bottom: var(--kn-space-lg);
+}
+.onboarding-banner header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--kn-space-sm);
+}
+.onboarding-banner .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--kn-text-muted);
+    padding: 0 var(--kn-space-xs);
+    line-height: 1;
+}
+.onboarding-banner ul {
+    margin: 0;
+    padding-left: 1.25em;
+    font-size: 0.9rem;
+    color: var(--kn-text-secondary);
+}
+.onboarding-banner li {
+    margin-bottom: var(--kn-space-xs);
 }
 
 /* Goal form — onboarding and step indicator */

@@ -1969,6 +1969,15 @@ msgstr ""
 msgid "This action cannot be undone."
 msgstr "Cette action ne peut pas être annulée."
 
+msgid "Their name and contact details will be blanked. Anonymous service records stay in reports. This cannot be undone."
+msgstr "Leur nom et leurs coordonnées seront effacés. Les dossiers de services anonymes restent dans les rapports. Cette action est irréversible."
+
+msgid "All individual information will be removed. Only anonymous counts remain in reports. This cannot be undone."
+msgstr "Toutes les informations individuelles seront supprimées. Seuls les totaux anonymes restent dans les rapports. Cette action est irréversible."
+
+msgid "Everything about this person will be permanently deleted, including from reports. This cannot be undone."
+msgstr "Toutes les données de cette personne seront définitivement supprimées, y compris des rapports. Cette action est irréversible."
+
 #, python-format
 msgid "Delete %(target)s"
 msgstr "Supprimer %(target)s"
@@ -7855,6 +7864,194 @@ msgstr ""
 "Partager les notes cliniques entre les programmes pour les participants "
 "partagés"
 
+#. Note sharing toggle (QA-R7-PRIVACY2)
+msgid "Share notes across programs"
+msgstr "Partager les notes entre les programmes"
+
+msgid "On"
+msgstr "Activé"
+
+msgid "Off"
+msgstr "Désactivé"
+
+#, python-format
+msgid "Notes about %(name)s are visible to staff in all their programs."
+msgstr "Les notes concernant %(name)s sont visibles au personnel de tous ses programmes."
+
+#, python-format
+msgid "Notes about %(name)s are only visible to the program that created them."
+msgstr "Les notes concernant %(name)s ne sont visibles que par le programme qui les a créées."
+
+msgid "Stop sharing"
+msgstr "Arrêter le partage"
+
+msgid "Start sharing"
+msgstr "Activer le partage"
+
+msgid "Note sharing enabled."
+msgstr "Partage des notes activé."
+
+msgid "Note sharing disabled."
+msgstr "Partage des notes désactivé."
+
+#, python-format
+msgid ""
+"Stop sharing %(name)s's notes across programs? Notes will only be visible to"
+" the program that created them."
+msgstr ""
+"Arrêter le partage des notes de %(name)s entre les programmes? Les notes ne "
+"seront visibles que par le programme qui les a créées."
+
+#. Data access request (QA-R7-PRIVACY1)
+msgid "Log Data Access Request"
+msgstr "Consigner une demande d'accès aux données"
+
+#, python-format
+msgid "Record a data access request from %(name)s or their representative."
+msgstr "Consigner une demande d'accès aux données de %(name)s ou de son représentant."
+
+msgid "Date request received"
+msgstr "Date de réception de la demande"
+
+msgid "How was the request received?"
+msgstr "Comment la demande a-t-elle été reçue?"
+
+msgid "Verbal"
+msgstr "Verbal"
+
+msgid "Written"
+msgstr "Écrit"
+
+msgid "The 30-day PIPEDA response deadline will be calculated from the date above."
+msgstr "Le délai de réponse de 30 jours selon la LPRPDE sera calculé à partir de la date ci-dessus."
+
+msgid "Log Request & View Checklist"
+msgstr "Consigner et voir la liste de vérification"
+
+msgid "Data access request logged."
+msgstr "Demande d'accès aux données consignée."
+
+msgid "Data Access Request"
+msgstr "Demande d'accès aux données"
+
+msgid "Date Received"
+msgstr "Date de réception"
+
+msgid "Received By"
+msgstr "Reçue par"
+
+msgid "Logged By"
+msgstr "Consignée par"
+
+#, python-format
+msgid "Delivered on %(date)s (%(method)s)."
+msgstr "Remise le %(date)s (%(method)s)."
+
+msgid "Overdue"
+msgstr "En retard"
+
+#, python-format
+msgid "The 30-day PIPEDA deadline was %(date)s. Please respond as soon as possible."
+msgstr "Le délai de 30 jours selon la LPRPDE était le %(date)s. Veuillez répondre dès que possible."
+
+#, python-format
+msgid "Response due by %(date)s"
+msgstr "Réponse requise avant le %(date)s"
+
+#, python-format
+msgid "%(days)s days remaining."
+msgstr "%(days)s jours restants."
+
+msgid "Information to Gather"
+msgstr "Informations à rassembler"
+
+msgid "Not all items may apply to your agency. Include what you have."
+msgstr "Tous les éléments ne s'appliquent pas nécessairement à votre agence. Incluez ce que vous avez."
+
+msgid "Client profile (print the profile page)"
+msgstr "Profil du participant (imprimer la page de profil)"
+
+msgid "Program enrolments and status"
+msgstr "Inscriptions aux programmes et statut"
+
+msgid "Progress notes (use the notes list — filter by this participant, print or export)"
+msgstr "Notes de suivi (utiliser la liste des notes — filtrer par ce participant, imprimer ou exporter)"
+
+msgid "Plan goals and metric history (print the plan page)"
+msgstr "Objectifs du plan et historique des mesures (imprimer la page du plan)"
+
+msgid "Communication log entries"
+msgstr "Entrées du journal de communication"
+
+msgid "Survey responses (if your agency uses surveys)"
+msgstr "Réponses aux sondages (si votre agence utilise les sondages)"
+
+msgid "Alerts and flags"
+msgstr "Alertes et signalements"
+
+msgid ""
+"Review before including. You may withhold safety-related notes under PIPEDA "
+"s.9(1) if disclosure could threaten the safety of others."
+msgstr ""
+"Examiner avant d'inclure. Vous pouvez retenir les notes liées à la sécurité "
+"en vertu de l'art. 9(1) de la LPRPDE si la divulgation pourrait menacer la "
+"sécurité d'autrui."
+
+msgid "Mark as Complete"
+msgstr "Marquer comme terminé"
+
+msgid "How was the information delivered?"
+msgstr "Comment les informations ont-elles été remises?"
+
+msgid "Date delivered"
+msgstr "Date de remise"
+
+msgid "In person"
+msgstr "En personne"
+
+msgid "Mark this data access request as complete?"
+msgstr "Marquer cette demande d'accès aux données comme terminée?"
+
+msgid "Data access request marked as complete."
+msgstr "Demande d'accès aux données marquée comme terminée."
+
+msgid "This request has already been completed."
+msgstr "Cette demande a déjà été traitée."
+
+msgid "Back to Participant"
+msgstr "Retour au participant"
+
+msgid "Respond to Data Access Request"
+msgstr "Répondre à une demande d'accès aux données"
+
+msgid "These actions are for privacy compliance and data governance."
+msgstr "Ces actions concernent la conformité en matière de vie privée et la gouvernance des données."
+
+#. Privacy compliance banner (QA-R7-EXEC-COMPLIANCE1)
+msgid "Privacy Compliance"
+msgstr "Conformité en matière de vie privée"
+
+msgid "Privacy Action Required"
+msgstr "Action requise en matière de vie privée"
+
+#, python-format
+msgid "%(count)s erasure request pending"
+msgid_plural "%(count)s erasure requests pending"
+msgstr[0] "%(count)s demande d'effacement en attente"
+msgstr[1] "%(count)s demandes d'effacement en attente"
+
+#, python-format
+msgid "submitted %(days)s days ago"
+msgstr "soumise il y a %(days)s jours"
+
+#, python-format
+msgid "%(name)s's data access request is overdue (%(days)s days past deadline)"
+msgstr "La demande d'accès aux données de %(name)s est en retard (%(days)s jours après l'échéance)"
+
+#, python-format
+msgid "%(name)s's data access request is due in %(days)s days"
+msgstr "La demande d'accès aux données de %(name)s est due dans %(days)s jours"
+
 msgid ""
 "Once all program managers approve, participant data will be permanently "
 "anonymised or erased depending on the level selected below."
@@ -12940,6 +13137,23 @@ msgstr "ce mois-ci"
 msgid "total"
 msgstr "total"
 
+#: apps/reports/insights_views.py
+msgid "improving"
+msgstr "en amélioration"
+
+#: apps/reports/insights_views.py
+msgid "declining"
+msgstr "en déclin"
+
+#: apps/reports/insights_views.py
+msgid "stable"
+msgstr "stable"
+
+#: apps/reports/insights_views.py
+#, python-format
+msgid "%(scored)d scored · %(low_pct).0f%% need more support"
+msgstr "%(scored)d évalués · %(low_pct).0f %% ont besoin de plus de soutien"
+
 #: apps/portal/templates/portal/staff_manage_portal.html
 #, python-format
 msgid "Manage portal access for %(name)s."
@@ -14255,6 +14469,34 @@ msgid "# Overall: %(met)s of %(total)s clients met at least one target"
 msgstr ""
 "# Global : %(met)s sur %(total)s clients ont atteint au moins une cible"
 
+#: apps/reports/views.py
+msgid "# Program: %(name)s"
+msgstr "# Programme : %(name)s"
+
+#: apps/reports/views.py
+msgid "# Date Range: %(from)s to %(to)s"
+msgstr "# Période : %(from)s au %(to)s"
+
+#: apps/reports/views.py
+msgid "# Total Participants: %(count)s"
+msgstr "# Total des participants : %(count)s"
+
+#: apps/reports/views.py
+msgid "# Total Clients: %(count)s"
+msgstr "# Total des clients : %(count)s"
+
+#: apps/reports/views.py
+msgid "# Total Data Points: %(count)s"
+msgstr "# Total des points de données : %(count)s"
+
+#: apps/reports/views.py
+msgid "# Grouped By: %(label)s"
+msgstr "# Regroupé par : %(label)s"
+
+#: apps/reports/views.py
+msgid "# ===== BREAKDOWN BY %(label)s ====="
+msgstr "# ===== VENTILATION PAR %(label)s ====="
+
 msgid "AGE DEMOGRAPHICS"
 msgstr "DONNÉES DÉMOGRAPHIQUES PAR ÂGE"
 
@@ -14684,4 +14926,50 @@ msgstr ""
 "En attendant, vous pouvez cr\u00e9er un rapport ponctuel avec "
 "l\u2019<strong>exportation personnalis\u00e9e</strong>, o\u00f9 vous choisissez "
 "vous-m\u00eame le programme, les indicateurs et la p\u00e9riode."
+
+#: templates/clients/home.html — onboarding banner (QA-W19)
+msgid "Getting started"
+msgstr "Pour commencer"
+
+#: templates/clients/home.html
+msgid "Dismiss"
+msgstr "Fermer"
+
+#: templates/clients/home.html
+msgid "Need help? Ask your program manager or administrator"
+msgstr "Besoin d'aide? Contactez votre gestionnaire de programme ou administrateur"
+
+#: apps/clients/models.py — ERASE-H8
+msgid "Scheduled — Awaiting Erasure"
+msgstr "Planifié — En attente d'effacement"
+
+#: apps/clients/erasure_views.py
+#, python-format
+msgid "All approvals received. %(term)s data is scheduled for permanent erasure in 24 hours. You can cancel during this period."
+msgstr "Toutes les approbations reçues. Les données du/de la %(term)s sont planifiées pour un effacement permanent dans 24 heures. Vous pouvez annuler pendant cette période."
+
+#: apps/clients/erasure_views.py
+msgid "This erasure cannot be cancelled — it is not in scheduled status."
+msgstr "Cet effacement ne peut pas être annulé — il n'est pas en statut planifié."
+
+#: apps/clients/erasure_views.py
+#, python-format
+msgid "Scheduled erasure cancelled. %(term)s data has been preserved."
+msgstr "Effacement planifié annulé. Les données du/de la %(term)s ont été préservées."
+
+#: templates/clients/erasure/erasure_request_detail.html
+msgid "Scheduled for Permanent Erasure"
+msgstr "Planifié pour effacement permanent"
+
+#: templates/clients/erasure/erasure_request_detail.html
+msgid "Cancel Scheduled Erasure"
+msgstr "Annuler l'effacement planifié"
+
+#: templates/clients/erasure/erasure_request_detail.html
+msgid "Cancel this scheduled erasure? The participant data will be preserved."
+msgstr "Annuler cet effacement planifié? Les données du participant seront préservées."
+
+#: templates/clients/erasure/erasure_request_detail.html
+msgid "Scheduled erasure notice"
+msgstr "Avis d'effacement planifié"
 
