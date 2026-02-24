@@ -1,4 +1,4 @@
-"""Tests for metric distribution aggregation (Phase 1 of Insights Metric Distributions).
+"""Tests for metric distribution aggregation and insights views.
 
 Covers:
 - MetricDefinition new fields and validation
@@ -8,20 +8,23 @@ Covers:
 - get_data_completeness() enrolled vs scored counts
 - get_two_lenses() self-report vs staff comparison
 - Privacy: n<5 suppression, n<10 exclusion
+- program_insights() view context variables
 """
 from datetime import date, timedelta
 
 from cryptography.fernet import Fernet
 
 from django.core.exceptions import ValidationError
-from django.test import SimpleTestCase, TestCase, override_settings
+from django.test import Client as TestClient, SimpleTestCase, TestCase, override_settings
+from django.urls import reverse
 from django.utils import timezone
 
 import konote.encryption as enc_module
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
 from apps.plans.models import MetricDefinition, PlanSection, PlanTarget, PlanTargetMetric
-from apps.programs.models import Program
+from apps.auth_app.models import User
+from apps.programs.models import Program, UserProgramRole
 from apps.reports.metric_insights import (
     MIN_N_FOR_BAND,
     MIN_N_FOR_DISPLAY,
@@ -547,3 +550,256 @@ class TrendDirectionTest(SimpleTestCase):
 
     def test_missing_metric(self):
         self.assertEqual(get_trend_direction({}, 99), "stable")
+
+
+# ── View context tests ────────────────────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ProgramInsightsViewContextTest(TestCase):
+    """Test that program_insights() passes correct context variables."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program", status="active")
+        self.user = User.objects.create_user(
+            username="pm_user", password="testpass123", display_name="PM",
+        )
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program,
+            role="program_manager", status="active",
+        )
+
+        self.metric = MetricDefinition.objects.create(
+            name="Goal Progress",
+            definition="Scale metric for testing",
+            metric_type="scale",
+            min_value=1,
+            max_value=5,
+            threshold_low=2,
+            threshold_high=4,
+            higher_is_better=True,
+            is_universal=True,
+            category="general",
+        )
+
+        self.test_client = TestClient()
+        self.test_client.login(username="pm_user", password="testpass123")
+        self.url = reverse("reports:program_insights")
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def _create_participant(self, record_id, scores):
+        """Create an enrolled participant with metric scores."""
+        client = ClientFile.objects.create(record_id=record_id)
+        ClientProgramEnrolment.objects.create(
+            client_file=client, program=self.program, status="enrolled",
+        )
+        section = PlanSection.objects.create(
+            client_file=client, name="Goals", program=self.program,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=client, name="Goal 1",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=self.metric)
+        for i, score in enumerate(scores):
+            note = ProgressNote.objects.create(
+                client_file=client, note_type="full",
+                author=self.user, author_program=self.program,
+                backdate=timezone.now() - timedelta(days=i * 30),
+                engagement_observation="engaged",
+            )
+            pnt = ProgressNoteTarget.objects.create(
+                progress_note=note, plan_target=target,
+                progress_descriptor="shifting",
+            )
+            MetricValue.objects.create(
+                progress_note_target=pnt, metric_def=self.metric, value=str(score),
+            )
+
+    def _get_params(self):
+        """GET params that make the form valid."""
+        return {
+            "program": self.program.pk,
+            "time_period": "12m",
+        }
+
+    def test_sparse_data_no_metric_context(self):
+        """With <20 notes (sparse tier), metric context should be empty defaults."""
+        # Create just a few participants — not enough for non-sparse tier
+        for i in range(3):
+            self._create_participant(f"SPARSE-{i}", [3, 4])
+
+        response = self.test_client.get(self.url, self._get_params())
+        self.assertEqual(response.status_code, 200)
+        ctx = response.context
+
+        self.assertTrue(ctx["show_results"])
+        self.assertEqual(ctx["data_tier"], "sparse")
+        self.assertEqual(ctx["metric_distributions"], {})
+        self.assertEqual(ctx["achievement_rates"], {})
+        self.assertIsNone(ctx["two_lenses"])
+        self.assertEqual(ctx["total_new_participants"], 0)
+
+    def test_sufficient_data_has_metric_context(self):
+        """With 20+ notes, metric context variables should be populated."""
+        # 12 participants × 2 notes each = 24 notes (limited tier)
+        for i in range(12):
+            self._create_participant(f"DATA-{i}", [3, 4])
+
+        response = self.test_client.get(self.url, self._get_params())
+        self.assertEqual(response.status_code, 200)
+        ctx = response.context
+
+        self.assertTrue(ctx["show_results"])
+        self.assertIn(ctx["data_tier"], ("limited", "full"))
+        # Metric distributions should be populated (12 multi-assessment participants)
+        self.assertIn(self.metric.pk, ctx["metric_distributions"])
+        self.assertIsInstance(ctx["data_completeness"], dict)
+        self.assertIn("completeness_pct", ctx["data_completeness"])
+
+    def test_auto_expand_flags_present(self):
+        """Auto-expand flags should always be in context when show_results is True."""
+        for i in range(12):
+            self._create_participant(f"EXPAND-{i}", [3, 4])
+
+        response = self.test_client.get(self.url, self._get_params())
+        ctx = response.context
+
+        self.assertIn("expand_participant_voice", ctx)
+        self.assertIn("expand_distributions", ctx)
+        self.assertIn("expand_outcomes", ctx)
+        self.assertIn("expand_staff_assessments", ctx)
+        self.assertIn("expand_engagement", ctx)
+        # Participant Voice is always open
+        self.assertTrue(ctx["expand_participant_voice"])
+        # Engagement defaults to collapsed
+        self.assertFalse(ctx["expand_engagement"])
+
+    def test_expand_distributions_matches_data(self):
+        """expand_distributions should be True when metric_distributions is non-empty."""
+        for i in range(12):
+            self._create_participant(f"DIST-{i}", [3, 4])
+
+        response = self.test_client.get(self.url, self._get_params())
+        ctx = response.context
+
+        has_distributions = bool(ctx["metric_distributions"])
+        self.assertEqual(ctx["expand_distributions"], has_distributions)
+
+    def test_no_form_submission_no_results(self):
+        """Without GET params, show_results should not be in context."""
+        response = self.test_client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("show_results", response.context)
+
+    def test_unauthenticated_redirects(self):
+        """Unauthenticated users should be redirected to login."""
+        anon_client = TestClient()
+        response = anon_client.get(self.url, self._get_params())
+        self.assertEqual(response.status_code, 302)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class BuildMetricContextTest(TestCase):
+    """Test the _build_metric_context() helper directly."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program", status="active")
+        self.user = User.objects.create_user(
+            username="worker5", password="testpass123",
+        )
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program,
+            role="staff", status="active",
+        )
+
+        self.metric = MetricDefinition.objects.create(
+            name="Goal Progress",
+            definition="Scale metric for testing",
+            metric_type="scale",
+            min_value=1,
+            max_value=5,
+            threshold_low=2,
+            threshold_high=4,
+            higher_is_better=True,
+            is_universal=True,
+            category="general",
+        )
+
+        self.date_from = date.today() - timedelta(days=365)
+        self.date_to = date.today()
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def _create_participant(self, record_id, scores):
+        client = ClientFile.objects.create(record_id=record_id)
+        ClientProgramEnrolment.objects.create(
+            client_file=client, program=self.program, status="enrolled",
+        )
+        section = PlanSection.objects.create(
+            client_file=client, name="Goals", program=self.program,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=client, name="Goal 1",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=self.metric)
+        for i, score in enumerate(scores):
+            note = ProgressNote.objects.create(
+                client_file=client, note_type="full",
+                author=self.user, author_program=self.program,
+                backdate=timezone.now() - timedelta(days=i * 30),
+            )
+            pnt = ProgressNoteTarget.objects.create(
+                progress_note=note, plan_target=target,
+            )
+            MetricValue.objects.create(
+                progress_note_target=pnt, metric_def=self.metric, value=str(score),
+            )
+
+    def test_returns_all_expected_keys(self):
+        """Helper should return all keys the template expects."""
+        from apps.reports.insights_views import _build_metric_context
+
+        for i in range(12):
+            self._create_participant(f"CTX-{i}", [3, 4])
+
+        result = _build_metric_context(
+            self.program, self.date_from, self.date_to, active_themes=[],
+        )
+
+        expected_keys = {
+            "metric_distributions", "achievement_rates", "metric_trends",
+            "two_lenses", "data_completeness", "trend_directions",
+            "lead_outcome", "lead_metric", "lead_trend_direction",
+            "distributions_summary_pct", "distributions_trend_direction",
+            "total_new_participants", "has_urgent_themes",
+        }
+        self.assertEqual(set(result.keys()), expected_keys)
+
+    def test_has_urgent_themes_flag(self):
+        """has_urgent_themes should be True when active_themes has an urgent item."""
+        from apps.reports.insights_views import _build_metric_context
+
+        result = _build_metric_context(
+            self.program, self.date_from, self.date_to,
+            active_themes=[{"priority": "urgent", "name": "Test"}],
+        )
+        self.assertTrue(result["has_urgent_themes"])
+
+    def test_no_urgent_themes_flag(self):
+        """has_urgent_themes should be False with no urgent items."""
+        from apps.reports.insights_views import _build_metric_context
+
+        result = _build_metric_context(
+            self.program, self.date_from, self.date_to,
+            active_themes=[{"priority": "important", "name": "Test"}],
+        )
+        self.assertFalse(result["has_urgent_themes"])
