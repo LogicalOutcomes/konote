@@ -20,21 +20,7 @@
 </head>
 <body>
     <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
-    <!-- Language toggle — FLSA active offer -->
-    {% get_current_language as CURRENT_LANG %}
-    <nav class="lang-nav" aria-label="{% trans 'Language selection' %}" style="max-width:500px; margin:0 auto">
-        <form action="{% url 'switch_language' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="next" value="{{ request.path }}">
-            {% if CURRENT_LANG == "en" %}
-            <input type="hidden" name="language" value="fr">
-            <button type="submit" class="lang-link" lang="fr" hreflang="fr">Fran&ccedil;ais</button>
-            {% else %}
-            <input type="hidden" name="language" value="en">
-            <button type="submit" class="lang-link" lang="en" hreflang="en">English</button>
-            {% endif %}
-        </form>
-    </nav>
+    {% include "_lang_toggle.html" with max_width="500px" %}
     <main id="main-content" class="container" style="max-width: 500px; margin-top: 3rem;" tabindex="-1">
         <div class="login-wordmark">{{ site.product_name|default:"KoNote" }}</div>
 
