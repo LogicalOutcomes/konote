@@ -187,6 +187,7 @@ Current DRRs:
 - `tasks/design-rationale/executive-dashboard-redesign.md` — Executive dashboard UX. Stats grid, program cards, accessibility. Monitoring only — does not produce exportable files.
 - `tasks/design-rationale/offline-field-collection.md` — Offline field collection via ODK Central. PII tiers, program profiles, sync architecture, device loss protocol, iOS limitations. Three expert panels (16 perspectives).
 - `tasks/design-rationale/phipa-consent-enforcement.md` — PHIPA cross-program consent enforcement. Enforcement matrix (which views need filtering), anti-patterns (rejected approaches like custom managers, middleware), deferred work (search, qualitative summary), fail-closed design.
+- `tasks/design-rationale/insights-metric-distributions.md` — Insights page & program reporting. Distributions not averages, three data layers (outcomes/goals/qualitative), client-centred page hierarchy, Campbell's Law safeguards, band display labels.
 - `tasks/design-rationale/bilingual-requirements.md` — Bilingual (EN/FR) requirements. Why translation is non-negotiable (Official Languages Act, Ontario FLSA, funder requirements, WCAG 3.1.2). Anti-patterns (deferring translations, treating them as low-priority). Technical approach (Claude + API backup). Translation standards for Claude sessions.
 
 ### How Claude Manages Tasks

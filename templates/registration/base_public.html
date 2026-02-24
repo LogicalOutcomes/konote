@@ -92,6 +92,8 @@
 <body>
     <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
 
+    {% include "_lang_toggle.html" %}
+
     <!-- Simple header for public pages -->
     <header class="container" style="padding: 1rem 0; text-align: center; border-bottom: 1px solid var(--pico-muted-border-color);">
         <strong>{{ site.product_name|default:"KoNote" }}</strong>
