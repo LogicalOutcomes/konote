@@ -13,6 +13,7 @@ from django.core.cache import cache
 from django.db.models import Count, Q
 from django.shortcuts import render
 from django.utils import timezone
+from django.utils.translation import gettext as _
 
 from apps.clients.models import ClientProgramEnrolment
 from apps.notes.models import ProgressNote, SuggestionTheme
@@ -548,6 +549,136 @@ def _batch_top_themes(filtered_program_ids, limit_per_program=3):
     return counts_map, themes_map
 
 
+def _batch_program_learning(programs, date_from, date_to):
+    """Compute program learning data for executive dashboard cards.
+
+    For each program, computes:
+        - Lead outcome headline (achievement rate or scale "goals within reach" %)
+        - Trend direction (improving / stable / declining)
+        - Target rate (if set)
+        - Data completeness (level + counts)
+        - Open feedback theme count with urgency flag
+
+    Returns dict of program_id -> {
+        headline_label, headline_pct, headline_type,
+        target_rate, trend_direction, trend_label, has_declining_trend,
+        completeness_level, completeness_enrolled, completeness_with_data,
+        theme_open_count, has_urgent_theme, suppress,
+    }
+    """
+    from apps.reports.metric_insights import (
+        get_achievement_rates,
+        get_data_completeness,
+        get_metric_distributions,
+    )
+    from apps.reports.insights import get_structured_insights
+    from apps.reports.insights_views import _compute_trend_direction
+    from apps.notes.models import SuggestionTheme, deduplicate_themes
+
+    result = {}
+
+    for program in programs:
+        pid = program.pk
+
+        # Achievement rates (Layer 2)
+        achievement = get_achievement_rates(program, date_from, date_to)
+        # Scale distributions (Layer 1)
+        distributions = get_metric_distributions(program, date_from, date_to)
+        # Data completeness
+        completeness = get_data_completeness(program, date_from, date_to)
+        # Structured insights for trend direction
+        structured = get_structured_insights(
+            program=program, date_from=date_from, date_to=date_to,
+        )
+        descriptor_trend = structured.get("descriptor_trend", [])
+        trend_direction = _compute_trend_direction(descriptor_trend)
+        # Pre-compute boolean for template use (avoids comparing translated strings)
+        has_declining_trend = False
+        if len(descriptor_trend) >= 2:
+            first = descriptor_trend[0]
+            last = descriptor_trend[-1]
+            first_good = first.get("good_place", 0) + first.get("shifting", 0)
+            last_good = last.get("good_place", 0) + last.get("shifting", 0)
+            has_declining_trend = (last_good - first_good) < -5
+
+        # Determine lead headline
+        headline_label = None
+        headline_pct = None
+        headline_type = None  # "achievement" or "scale"
+        target_rate = None
+
+        # Prefer achievement rate (Layer 2) if available
+        if achievement:
+            lead = next(iter(achievement.values()))
+            headline_label = lead["name"]
+            headline_pct = lead["achieved_pct"]
+            headline_type = "achievement"
+            target_rate = lead.get("target_rate")
+        elif distributions:
+            # Fallback to scale metric "goals within reach" %
+            # Prefer universal metric, else first available
+            lead_dist = None
+            for mid, dist in distributions.items():
+                if dist.get("is_universal"):
+                    lead_dist = dist
+                    break
+            if not lead_dist:
+                lead_dist = next(iter(distributions.values()))
+            headline_label = lead_dist["name"]
+            headline_pct = lead_dist["band_high_pct"]
+            headline_type = "scale"
+            target_rate = lead_dist.get("target_band_high_pct")
+
+        # Suppress if metric data exists but participants with data < 5
+        # (privacy threshold). When there's no metric data at all, don't
+        # suppress — just show "No outcome data recorded".
+        suppress = False
+        has_any_metric_data = bool(achievement or distributions)
+        if has_any_metric_data and completeness["with_scores_count"] < SMALL_PROGRAM_THRESHOLD:
+            suppress = True
+            headline_pct = None
+
+        # Open feedback themes
+        active_themes = list(
+            SuggestionTheme.objects.active()
+            .filter(program=program)
+            .annotate(link_count=Count("links"))
+            .values("pk", "name", "status", "priority", "program_id",
+                    "updated_at", "link_count")
+        )
+        active_themes = deduplicate_themes(active_themes)
+        theme_open_count = len(active_themes)
+        has_urgent_theme = any(t.get("priority") == "urgent" for t in active_themes)
+
+        # Trend label for display
+        if trend_direction == _("improving"):
+            trend_label = "\u2191"  # ↑
+        elif trend_direction == _("declining"):
+            trend_label = "\u2193"  # ↓
+        elif trend_direction == _("stable"):
+            trend_label = "\u2192"  # →
+        else:
+            trend_label = ""
+
+        result[pid] = {
+            "headline_label": headline_label,
+            "headline_pct": headline_pct,
+            "headline_type": headline_type,
+            "target_rate": target_rate,
+            "trend_direction": trend_direction,
+            "trend_label": trend_label,
+            "completeness_level": completeness["completeness_level"],
+            "completeness_enrolled": completeness["enrolled_count"],
+            "completeness_with_data": completeness["with_scores_count"],
+            "theme_open_count": theme_open_count,
+            "has_urgent_theme": has_urgent_theme,
+            "has_declining_trend": has_declining_trend,
+            "suppress": suppress,
+        }
+
+    return result
+
+
 def _batch_metric_insights(filtered_program_ids, date_from, date_to):
     """Compute metric insight indicators per program for the executive dashboard.
 
@@ -1015,6 +1146,14 @@ def executive_dashboard(request):
     # Batch: active theme counts + top theme details per program
     theme_map, top_themes_map = _batch_top_themes(filtered_program_ids)
 
+    # Batch: program learning data (outcome headlines, trend, completeness)
+    # Use the dashboard date range (month_start to today) for consistency
+    learning_date_from = month_start.date()
+    learning_date_to = today
+    learning_map = _batch_program_learning(
+        filtered_programs, learning_date_from, learning_date_to,
+    )
+
     # Batch: metric insight indicators (trend, completeness, urgent themes)
     metric_insights_map = _batch_metric_insights(
         filtered_program_ids, month_start.date(), today,
@@ -1065,6 +1204,10 @@ def executive_dashboard(request):
         top = top_themes_map.get(pid, [])
         stat["top_themes"] = top
         stat["theme_overflow"] = max(0, themes.get("total", 0) - len(top))
+
+        # Program learning data (outcome headline, trend, completeness)
+        learning = learning_map.get(pid, {})
+        stat["learning"] = learning
 
         # Metric insight indicators (trend, completeness, urgent themes)
         mi = metric_insights_map.get(pid, {})

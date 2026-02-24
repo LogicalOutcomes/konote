@@ -1,5 +1,5 @@
 """Tests for the executive dashboard view and metric helpers."""
-from datetime import timedelta
+from datetime import date, timedelta
 
 from cryptography.fernet import Fernet
 from django.test import Client, TestCase, override_settings
@@ -9,8 +9,10 @@ from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.events.models import Alert, Event, Meeting
 from apps.groups.models import Group, GroupMembership, GroupSession, GroupSessionAttendance
-from apps.notes.models import ProgressNote
-from apps.plans.models import PlanSection, PlanTarget
+from apps.notes.models import (
+    MetricValue, ProgressNote, ProgressNoteTarget, SuggestionTheme,
+)
+from apps.plans.models import MetricDefinition, PlanSection, PlanTarget, PlanTargetMetric
 from apps.programs.models import Program, UserProgramRole
 from apps.registration.models import RegistrationLink, RegistrationSubmission
 import konote.encryption as enc_module
@@ -297,6 +299,413 @@ class ExecutiveDashboardHelperTest(TestCase):
         )
         result = _count_active_alerts({cf.pk})
         self.assertEqual(result, 1)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ProgramLearningCardTest(TestCase):
+    """Tests for the Program Learning section on executive dashboard cards.
+
+    Covers: achievement headline, scale fallback, theme counts, privacy
+    suppression, data completeness, trend direction, link correctness,
+    and anti-pattern verification (no band counts on executive cards).
+    """
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.user = User.objects.create_user(username="exec", password="testpass123")
+        self.program = Program.objects.create(
+            name="Youth Employment", colour_hex="#10B981", status="active",
+        )
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role="executive",
+        )
+        self.date_from = date.today() - timedelta(days=90)
+        self.date_to = date.today()
+
+    def _create_enrolled_client(self, record_id="C001"):
+        """Create an active client enrolled in self.program."""
+        cf = ClientFile.objects.create(record_id=record_id, status="active")
+        ClientProgramEnrolment.objects.create(
+            client_file=cf, program=self.program, status="enrolled",
+        )
+        return cf
+
+    def _create_achievement_metric(self, name="Employment", target_rate=70):
+        """Create an achievement metric with success values."""
+        return MetricDefinition.objects.create(
+            name=name, category="custom", metric_type="achievement",
+            achievement_options=["Employed", "In training", "Unemployed"],
+            achievement_success_values=["Employed"],
+            target_rate=target_rate,
+        )
+
+    def _create_scale_metric(self, name="Goal Progress", is_universal=True):
+        """Create a universal scale metric."""
+        return MetricDefinition.objects.create(
+            name=name, category="general", metric_type="scale",
+            is_universal=is_universal, min_value=1, max_value=5,
+            threshold_low=2, threshold_high=4, higher_is_better=True,
+        )
+
+    def _record_achievement(self, client, metric, value="Employed"):
+        """Record one achievement metric value for a client."""
+        section = PlanSection.objects.filter(
+            client_file=client, program=self.program,
+        ).first()
+        if not section:
+            section = PlanSection.objects.create(
+                client_file=client, name="Section", program=self.program,
+            )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=client, name="Goal",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+        note = ProgressNote.objects.create(
+            client_file=client, note_type="full",
+            author=self.user, author_program=self.program,
+            backdate=timezone.now() - timedelta(days=1),
+        )
+        pnt = ProgressNoteTarget.objects.create(
+            progress_note=note, plan_target=target,
+        )
+        MetricValue.objects.create(
+            progress_note_target=pnt, metric_def=metric, value=value,
+        )
+
+    def _record_scale_scores(self, client, metric, scores):
+        """Record multiple scale metric scores for a client."""
+        section = PlanSection.objects.filter(
+            client_file=client, program=self.program,
+        ).first()
+        if not section:
+            section = PlanSection.objects.create(
+                client_file=client, name="Section", program=self.program,
+            )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=client, name="Goal",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+        for i, score in enumerate(scores):
+            note = ProgressNote.objects.create(
+                client_file=client, note_type="full",
+                author=self.user, author_program=self.program,
+                backdate=timezone.now() - timedelta(days=i + 1),
+            )
+            pnt = ProgressNoteTarget.objects.create(
+                progress_note=note, plan_target=target,
+            )
+            MetricValue.objects.create(
+                progress_note_target=pnt, metric_def=metric, value=str(score),
+            )
+
+    def _get_dashboard_response(self):
+        """Log in and fetch the executive dashboard."""
+        self.http.login(username="exec", password="testpass123")
+        return self.http.get("/participants/executive/")
+
+    # ── Test 1: Achievement metric headline ──
+
+    def test_achievement_headline_shown(self):
+        """Programs with achievement metrics show the achievement rate."""
+        metric = self._create_achievement_metric(target_rate=70)
+        # Create 10+ participants with achievement data (meet n >= 10 threshold)
+        for i in range(12):
+            client = self._create_enrolled_client(f"ACH-{i:03d}")
+            value = "Employed" if i < 8 else "Unemployed"
+            self._record_achievement(client, metric, value)
+
+        resp = self._get_dashboard_response()
+        stat = resp.context["program_stats"][0]
+        learning = stat["learning"]
+
+        self.assertEqual(learning["headline_type"], "achievement")
+        self.assertEqual(learning["headline_label"], "Employment")
+        self.assertIsNotNone(learning["headline_pct"])
+        self.assertEqual(learning["target_rate"], 70)
+
+    # ── Test 2: Scale metric fallback (no achievements) ──
+
+    def test_scale_fallback_when_no_achievements(self):
+        """Programs without achievement metrics show scale 'goals within reach' %."""
+        metric = self._create_scale_metric()
+        # Create 10+ participants with scale data
+        for i in range(12):
+            client = self._create_enrolled_client(f"SCALE-{i:03d}")
+            self._record_scale_scores(client, metric, [4, 5])  # high band
+
+        resp = self._get_dashboard_response()
+        stat = resp.context["program_stats"][0]
+        learning = stat["learning"]
+
+        self.assertEqual(learning["headline_type"], "scale")
+        self.assertEqual(learning["headline_label"], "Goal Progress")
+        self.assertIsNotNone(learning["headline_pct"])
+
+    # ── Test 3: Suggestion theme counts ──
+
+    def test_theme_open_count(self):
+        """Open feedback theme count is correct on the learning card."""
+        # Create some open themes
+        SuggestionTheme.objects.create(
+            name="More group activities",
+            program=self.program, status="open", priority="noted",
+        )
+        SuggestionTheme.objects.create(
+            name="Transportation barriers",
+            program=self.program, status="open", priority="urgent",
+        )
+        SuggestionTheme.objects.create(
+            name="Resolved issue",
+            program=self.program, status="addressed", priority="noted",
+        )
+        # Create a client so the program card appears
+        self._create_enrolled_client()
+
+        resp = self._get_dashboard_response()
+        stat = resp.context["program_stats"][0]
+        learning = stat["learning"]
+
+        self.assertEqual(learning["theme_open_count"], 2)
+        self.assertTrue(learning["has_urgent_theme"])
+
+    def test_theme_count_excludes_addressed(self):
+        """Addressed themes are not counted in open theme count."""
+        SuggestionTheme.objects.create(
+            name="Old theme",
+            program=self.program, status="addressed", priority="noted",
+        )
+        self._create_enrolled_client()
+
+        resp = self._get_dashboard_response()
+        stat = resp.context["program_stats"][0]
+        learning = stat["learning"]
+
+        self.assertEqual(learning["theme_open_count"], 0)
+        self.assertFalse(learning["has_urgent_theme"])
+
+    # ── Test 4: Privacy suppression (n < 5) ──
+
+    def test_privacy_suppression_below_threshold(self):
+        """With < 5 participants with data, headline is None and no percentage shown.
+
+        The metric insight functions themselves require n >= 10, so with only
+        3 participants the functions return empty results. The learning card
+        correctly shows "No outcome data recorded" rather than any percentages,
+        which protects privacy.
+        """
+        metric = self._create_achievement_metric()
+        # Only 3 participants with data (below SMALL_PROGRAM_THRESHOLD=5)
+        for i in range(3):
+            client = self._create_enrolled_client(f"SMALL-{i:03d}")
+            self._record_achievement(client, metric)
+
+        resp = self._get_dashboard_response()
+        stat = resp.context["program_stats"][0]
+        learning = stat["learning"]
+
+        # No percentage should be shown (either suppressed or no data returned)
+        self.assertIsNone(learning["headline_pct"])
+        # The HTML should not contain any achievement percentage
+        content = resp.content.decode()
+        self.assertNotIn("% Employment", content)
+
+    # ── Test 5: Band counts do NOT appear on executive cards ──
+
+    def test_no_band_counts_in_rendered_html(self):
+        """Anti-pattern: band_low_count must NOT appear in executive dashboard HTML."""
+        metric = self._create_scale_metric()
+        for i in range(12):
+            client = self._create_enrolled_client(f"BAND-{i:03d}")
+            self._record_scale_scores(client, metric, [3, 3])
+
+        resp = self._get_dashboard_response()
+        content = resp.content.decode()
+
+        self.assertNotIn("band_low_count", content)
+        self.assertNotIn("band_mid_count", content)
+        self.assertNotIn("band_high_count", content)
+        # Also verify "More support needed" (band label) does not appear
+        # on the executive dashboard cards — per DRR anti-pattern
+        self.assertNotIn("More support needed", content)
+
+    # ── Test 6: Link to insights page with program pre-selected ──
+
+    def test_learning_link_to_insights_page(self):
+        """The 'View program learning' link includes program pre-selection."""
+        self._create_enrolled_client()
+
+        resp = self._get_dashboard_response()
+        content = resp.content.decode()
+
+        expected_link = f"/reports/insights/?program={self.program.pk}"
+        self.assertIn(expected_link, content)
+        self.assertIn("View program learning", content)
+
+    # ── Test 7: Data completeness indicators ──
+
+    def test_data_completeness_full(self):
+        """Programs with >80% data completeness show 'full' level."""
+        metric = self._create_scale_metric()
+        # 10 enrolled, all with scores → 100% completeness
+        for i in range(10):
+            client = self._create_enrolled_client(f"FULL-{i:03d}")
+            self._record_scale_scores(client, metric, [4, 4])
+
+        resp = self._get_dashboard_response()
+        stat = resp.context["program_stats"][0]
+        learning = stat["learning"]
+
+        self.assertEqual(learning["completeness_level"], "full")
+        self.assertEqual(learning["completeness_enrolled"], 10)
+        self.assertEqual(learning["completeness_with_data"], 10)
+
+    def test_data_completeness_partial(self):
+        """Programs with 50-80% data completeness show 'partial' level."""
+        metric = self._create_scale_metric()
+        # 10 enrolled, 6 with scores → 60% completeness
+        for i in range(10):
+            client = self._create_enrolled_client(f"PART-{i:03d}")
+            if i < 6:
+                self._record_scale_scores(client, metric, [3, 3])
+
+        resp = self._get_dashboard_response()
+        stat = resp.context["program_stats"][0]
+        learning = stat["learning"]
+
+        self.assertEqual(learning["completeness_level"], "partial")
+
+    def test_data_completeness_low(self):
+        """Programs with <50% data completeness show 'low' level."""
+        metric = self._create_scale_metric()
+        # 10 enrolled, 3 with scores → 30% completeness
+        for i in range(10):
+            client = self._create_enrolled_client(f"LOW-{i:03d}")
+            if i < 3:
+                self._record_scale_scores(client, metric, [3, 3])
+
+        resp = self._get_dashboard_response()
+        stat = resp.context["program_stats"][0]
+        learning = stat["learning"]
+
+        self.assertEqual(learning["completeness_level"], "low")
+
+    # ── Test 8: Data completeness text alternatives (accessibility) ──
+
+    def test_completeness_text_alternatives_in_html(self):
+        """Completeness indicators have text alternatives for screen readers."""
+        self._create_enrolled_client()
+
+        resp = self._get_dashboard_response()
+        content = resp.content.decode()
+
+        # At least one of the text alternatives must appear
+        has_text_alt = (
+            "Full data" in content
+            or "Partial data" in content
+            or "Low data" in content
+        )
+        self.assertTrue(has_text_alt, "No completeness text alternative found in HTML")
+
+    # ── Test 9: Trend direction calculation ──
+
+    def test_trend_direction_shows_in_learning(self):
+        """Learning card includes trend direction when descriptor data exists."""
+        self._create_enrolled_client()
+
+        resp = self._get_dashboard_response()
+        stat = resp.context["program_stats"][0]
+        learning = stat["learning"]
+
+        # trend_direction should be a string (possibly empty if no data)
+        self.assertIn("trend_direction", learning)
+        self.assertIsInstance(learning["trend_direction"], str)
+
+    # ── Test 10: Caution accent for urgent themes ──
+
+    def test_caution_accent_for_urgent_theme(self):
+        """Cards with urgent themes get the program-card-caution CSS class."""
+        SuggestionTheme.objects.create(
+            name="Safety concern",
+            program=self.program, status="open", priority="urgent",
+        )
+        self._create_enrolled_client()
+
+        resp = self._get_dashboard_response()
+        content = resp.content.decode()
+
+        self.assertIn("program-card-caution", content)
+
+    def test_no_caution_accent_without_urgent(self):
+        """Cards without urgent themes or declining trends have no caution accent.
+
+        Note: The CSS class name 'program-card-caution' appears in the <style>
+        block. We check specifically that the <article> element does not have
+        this class applied.
+        """
+        SuggestionTheme.objects.create(
+            name="Minor suggestion",
+            program=self.program, status="open", priority="noted",
+        )
+        self._create_enrolled_client()
+
+        resp = self._get_dashboard_response()
+        content = resp.content.decode()
+
+        # The <article> should use "program-card" but NOT "program-card-caution"
+        self.assertIn('class="program-card"', content)
+        self.assertNotIn('class="program-card program-card-caution"', content)
+
+    # ── Test 11: No outcome data scenario ──
+
+    def test_no_outcome_data_message(self):
+        """Programs with no metrics show 'No outcome data recorded' message."""
+        self._create_enrolled_client()
+
+        resp = self._get_dashboard_response()
+        content = resp.content.decode()
+
+        self.assertIn("No outcome data recorded", content)
+
+    # ── Test 12: Program Learning heading present ──
+
+    def test_program_learning_section_present(self):
+        """The Program Learning section heading is present in the HTML."""
+        self._create_enrolled_client()
+
+        resp = self._get_dashboard_response()
+        content = resp.content.decode()
+
+        self.assertIn("Program Learning", content)
+
+    # ── Test 13: Anti-pattern - no "performance" framing ──
+
+    def test_no_performance_framing(self):
+        """The executive dashboard must not use 'performance' framing."""
+        metric = self._create_scale_metric()
+        for i in range(12):
+            client = self._create_enrolled_client(f"PERF-{i:03d}")
+            self._record_scale_scores(client, metric, [4, 4])
+
+        resp = self._get_dashboard_response()
+        content = resp.content.decode().lower()
+
+        # "performance" should not appear as a framing label
+        # (it may appear in other technical contexts but not as a heading)
+        self.assertNotIn("program performance", content)
+
+    # ── Test 14: Anti-pattern - no "struggling" or "thriving" language ──
+
+    def test_no_deficit_language(self):
+        """Dashboard must not use 'struggling' or 'thriving' language."""
+        self._create_enrolled_client()
+
+        resp = self._get_dashboard_response()
+        content = resp.content.decode().lower()
+
+        self.assertNotIn("struggling", content)
+        self.assertNotIn("thriving", content)
 
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)

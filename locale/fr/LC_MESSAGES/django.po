@@ -15435,3 +15435,31 @@ msgstr "évalué(e)s"
 
 msgid "stable"
 msgstr "stable"
+
+msgid "No outcome data recorded yet"
+msgstr "Aucune donnée de résultats enregistrée"
+
+msgid "Outcome data suppressed (fewer than 5 participants with data)"
+msgstr ""
+"Données de résultats supprimées (moins de 5 participants avec des données)"
+
+msgid "Program Learning"
+msgstr "Apprentissage du programme"
+
+msgid "View program learning"
+msgstr "Voir l'apprentissage du programme"
+
+msgid "feedback themes to review"
+msgstr "thèmes de rétroaction à examiner"
+
+msgid "goals within reach"
+msgstr "objectifs à portée"
+
+msgid "participants with data"
+msgstr "participants avec des données"
+
+msgid "target"
+msgstr "cible"
+
+msgid "trend"
+msgstr "tendance"
