@@ -92,6 +92,22 @@
 <body>
     <a href="#main-content" class="visually-hidden-focusable">{% trans "Skip to main content" %}</a>
 
+    <!-- Language toggle — FLSA active offer -->
+    {% get_current_language as CURRENT_LANG %}
+    <nav class="lang-nav" aria-label="{% trans 'Language selection' %}">
+        <form action="{% url 'switch_language' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            {% if CURRENT_LANG == "en" %}
+            <input type="hidden" name="language" value="fr">
+            <button type="submit" class="lang-link" lang="fr" hreflang="fr">Fran&ccedil;ais</button>
+            {% else %}
+            <input type="hidden" name="language" value="en">
+            <button type="submit" class="lang-link" lang="en" hreflang="en">English</button>
+            {% endif %}
+        </form>
+    </nav>
+
     <!-- Simple header for public pages -->
     <header class="container" style="padding: 1rem 0; text-align: center; border-bottom: 1px solid var(--pico-muted-border-color);">
         <strong>{{ site.product_name|default:"KoNote" }}</strong>
