@@ -16,7 +16,8 @@
 ### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
 
 - [ ] Phase 3: Update executive dashboard — program cards with trend direction, data completeness, feedback themes (INSIGHTS-P3-EXEC)
-- [ ] Phase 4: Achievement metric recording UI — dropdown in note form, tests (INSIGHTS-P4-RECORD)
+- [x] Phase 0 Seed: Achievement metrics in demo data — 3 metrics, 9 clients with data, value generator (INSIGHTS-P0-SEED) — 2026-02-24
+- [x] Phase 4: Achievement metric recording UI — radio pills in note form, validation, CSS, 2 tests (INSIGHTS-P4-RECORD) — 2026-02-24
 - [ ] Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
 - [ ] Extract and translate French strings for metric distributions templates (~25-30 new strings, several blocktrans blocks) (INSIGHTS-I18N1)
 
@@ -181,6 +182,7 @@ _Nothing pending._
 
 ## Recently Done
 
+- [x] Achievement metric seed data + recording UI — 3 achievement metrics in library, demo data for 9 clients, radio pill UI in note form with validation + CSS + tests — 2026-02-24 (INSIGHTS-P0-SEED, INSIGHTS-P4-RECORD)
 - [x] Enforce PHIPA cross-program consent in views — note_detail, note_summary, event_list; fix fail-open bug; fix CONF9 interaction; shared banner include; 4 new tests; DRR created — 2026-02-22 (PHIPA-ENFORCE1)
 - [x] Insights metric distributions Phases 0-2 — model fields, aggregation, distributions, achievements, trends, Two Lenses, data completeness, 50 tests, 10 review fixes (PR #23) — 2026-02-22 (INSIGHTS-P0-ADMIN, INSIGHTS-P1-MODEL, INSIGHTS-P1-AGG, INSIGHTS-P2-LAYOUT, INSIGHTS-P2-VIZ)
 - [x] Approve band display labels — "More support needed" / "On track" / "Goals within reach" — 2026-02-22 — GK (INSIGHTS-LANG1)
