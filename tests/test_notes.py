@@ -1014,3 +1014,118 @@ class TemplatePreviewTest(TestCase):
         resp = self.http.get(f"/notes/template/{self.template.pk}/preview/")
         self.assertEqual(resp.status_code, 302)
         self.assertIn("/login/", resp.url)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class TestAchievementMetricForm(TestCase):
+    """Tests for achievement metric dropdown in note form (INSIGHTS-P4-RECORD)."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
+        self.prog = Program.objects.create(name="Prog A", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.staff, program=self.prog, role="staff")
+
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Jane"
+        self.client_file.last_name = "Doe"
+        self.client_file.status = "active"
+        self.client_file.consent_given_at = timezone.now()
+        self.client_file.consent_type = "written"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(client_file=self.client_file, program=self.prog)
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_achievement_metric_renders_select(self):
+        """Achievement metrics with options should render a Select widget."""
+        from apps.notes.forms import MetricValueForm
+
+        metric = MetricDefinition.objects.create(
+            name="Employment Status",
+            metric_type="achievement",
+            achievement_options=["Employed", "In training", "Unemployed"],
+            definition="Current employment status",
+            category="employment",
+        )
+        form = MetricValueForm(metric_def=metric)
+        self.assertTrue(form.is_achievement)
+        self.assertFalse(form.is_scale)
+        self.assertEqual(form.fields["value"].widget.__class__.__name__, "Select")
+        # Should have blank + 3 options = 4 choices
+        choices = list(form.fields["value"].choices)
+        self.assertEqual(len(choices), 4)
+        self.assertEqual(choices[0][0], "")  # blank option
+        self.assertEqual(choices[1][0], "Employed")
+        self.assertEqual(choices[2][0], "In training")
+        self.assertEqual(choices[3][0], "Unemployed")
+
+    def test_scale_metric_still_renders_radio(self):
+        """Scale metrics should still render RadioSelect, not be affected by achievement logic."""
+        from apps.notes.forms import MetricValueForm
+
+        metric = MetricDefinition.objects.create(
+            name="Confidence", min_value=1, max_value=5, unit="",
+            definition="Rate your confidence", category="general",
+            metric_type="scale",
+        )
+        form = MetricValueForm(metric_def=metric)
+        self.assertTrue(form.is_scale)
+        self.assertFalse(form.is_achievement)
+        self.assertEqual(form.fields["value"].widget.__class__.__name__, "RadioSelect")
+
+    def test_achievement_value_saved_correctly(self):
+        """POST a note with an achievement metric value — verify MetricValue is created."""
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Employment", program=self.prog,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Get a job",
+        )
+        metric = MetricDefinition.objects.create(
+            name="Employment Status",
+            metric_type="achievement",
+            achievement_options=["Employed", "In training", "Unemployed"],
+            definition="Current employment status",
+            category="employment",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=metric)
+
+        self.http.login(username="staff", password="pass")
+        resp = self.http.post(
+            f"/notes/participant/{self.client_file.pk}/new/",
+            {
+                "interaction_type": "session",
+                "consent_confirmed": True,
+                f"target_{target.pk}-target_id": str(target.pk),
+                f"target_{target.pk}-notes": "Discussed employment",
+                f"metric_{target.pk}_{metric.pk}-metric_def_id": str(metric.pk),
+                f"metric_{target.pk}_{metric.pk}-value": "Employed",
+            },
+        )
+        self.assertEqual(resp.status_code, 302)
+        mv = MetricValue.objects.get(metric_def=metric)
+        self.assertEqual(mv.value, "Employed")
+
+    def test_achievement_invalid_option_rejected(self):
+        """Submitting a value not in achievement_options should be rejected."""
+        from apps.notes.forms import MetricValueForm
+
+        metric = MetricDefinition.objects.create(
+            name="Employment Status",
+            metric_type="achievement",
+            achievement_options=["Employed", "In training", "Unemployed"],
+            definition="Current employment status",
+            category="employment",
+        )
+        form = MetricValueForm(
+            data={"metric_def_id": metric.pk, "value": "Retired"},
+            metric_def=metric,
+        )
+        self.assertFalse(form.is_valid())
+        # The ChoiceField itself rejects invalid choices before clean_value runs
+        self.assertIn("value", form.errors)

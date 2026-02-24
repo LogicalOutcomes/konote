@@ -4846,3 +4846,11 @@ article[aria-label="notification"].fading-out {
     font-size: 1rem;
     margin-right: 0.25rem;
 }
+
+/* ---- Achievement metric dropdown (INSIGHTS-P4-RECORD) ---- */
+.achievement-select {
+    max-width: 280px;
+}
+.achievement-metric-input {
+    margin-block: var(--kn-space-sm);
+}

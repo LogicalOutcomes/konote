@@ -210,6 +210,7 @@ class MetricValueForm(forms.Form):
     metric_def_id = forms.IntegerField(widget=forms.HiddenInput())
     value = forms.CharField(required=False, max_length=100)
     is_scale = False
+    is_achievement = False
     auto_calc_value = None
 
     def __init__(self, *args, metric_def=None, target_name="", **kwargs):
@@ -240,6 +241,18 @@ class MetricValueForm(forms.Form):
                     range_str += str(metric_def.max_value)
                 help_parts.append(range_str)
             self.fields["value"].help_text = " | ".join(help_parts)
+
+            # Achievement metrics: categorical dropdown (e.g. employment status)
+            if metric_def.metric_type == "achievement" and metric_def.achievement_options:
+                self.is_achievement = True
+                choices = [("", _("— Select —"))]
+                choices.extend((opt, opt) for opt in metric_def.achievement_options)
+                self.fields["value"] = forms.ChoiceField(
+                    choices=choices,
+                    required=False,
+                    widget=forms.Select(attrs={"class": "achievement-select"}),
+                )
+                return
 
             # Detect scale metrics: both min/max set, both integers, small range
             is_scale = (
@@ -281,6 +294,14 @@ class MetricValueForm(forms.Form):
         val = self.cleaned_data.get("value", "").strip()
         if not val:
             return ""
+        # Achievement metrics: validate value is in configured options
+        if hasattr(self, "metric_def") and self.is_achievement:
+            if self.metric_def.achievement_options and val not in self.metric_def.achievement_options:
+                raise forms.ValidationError(
+                    _("\"%(value)s\" is not a valid option for this metric.")
+                    % {"value": val}
+                )
+            return val
         # Validate against min/max if the metric defines them
         if hasattr(self, "metric_def"):
             try:
