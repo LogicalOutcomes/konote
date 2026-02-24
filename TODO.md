@@ -13,6 +13,19 @@
 
 ## Active Work
 
+### Phase: Circles Lite (see tasks/design-rationale/circles-family-entity.md)
+
+- [x] Create circles app skeleton with models and migration — 2026-02-24 (CIRCLES-1)
+- [x] Add circle FK to ProgressNote — 2026-02-24 (CIRCLES-2)
+- [x] Feature toggle, terminology, permissions, and seed data — 2026-02-24 (CIRCLES-3)
+- [x] Circle forms (CircleForm, CircleMembershipForm) — 2026-02-24 (CIRCLES-4)
+- [x] Views, helpers, URLs, and templates — 2026-02-24 (CIRCLES-5)
+- [x] Navigation, participant sidebar, and note form integration — 2026-02-24 (CIRCLES-6)
+- [x] Intake integration (link existing or create new circle) — 2026-02-24 (CIRCLES-7)
+- [x] Admin registration and test suite (33 tests) — 2026-02-24 (CIRCLES-8)
+- [x] French translations — 2026-02-24 (CIRCLES-9)
+- [ ] Code review and merge to main — (CIRCLES-MERGE)
+
 ### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
 
 - [ ] Phase 3: Update executive dashboard — program cards with trend direction, data completeness, feedback themes (INSIGHTS-P3-EXEC)
@@ -181,6 +194,7 @@ _Nothing pending._
 
 ## Recently Done
 
+- [x] Circles Lite Phase 1 — full feature: models, views, templates, nav, sidebar, note tagging, intake, tests, translations — 2026-02-24 (CIRCLES-1–9)
 - [x] Enforce PHIPA cross-program consent in views — note_detail, note_summary, event_list; fix fail-open bug; fix CONF9 interaction; shared banner include; 4 new tests; DRR created — 2026-02-22 (PHIPA-ENFORCE1)
 - [x] Insights metric distributions Phases 0-2 — model fields, aggregation, distributions, achievements, trends, Two Lenses, data completeness, 50 tests, 10 review fixes (PR #23) — 2026-02-22 (INSIGHTS-P0-ADMIN, INSIGHTS-P1-MODEL, INSIGHTS-P1-AGG, INSIGHTS-P2-LAYOUT, INSIGHTS-P2-VIZ)
 - [x] Approve band display labels — "More support needed" / "On track" / "Goals within reach" — 2026-02-22 — GK (INSIGHTS-LANG1)

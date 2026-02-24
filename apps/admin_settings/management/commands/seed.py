@@ -117,6 +117,7 @@ class Command(BaseCommand):
             ("messaging_sms", False),
             ("messaging_email", True),
             ("surveys", False),
+            ("circles", False),
         ]
         created = 0
         for key, enabled in defaults:
@@ -141,8 +142,11 @@ class Command(BaseCommand):
             FeatureToggle.objects.filter(feature_key="surveys").update(
                 is_enabled=True
             )
+            FeatureToggle.objects.filter(feature_key="circles").update(
+                is_enabled=True
+            )
             self.stdout.write(
-                "  Demo mode: participant_portal, messaging_email, ai_assist, surveys enabled."
+                "  Demo mode: participant_portal, messaging_email, ai_assist, surveys, circles enabled."
             )
 
     def _seed_instance_settings(self):

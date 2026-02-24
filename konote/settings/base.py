@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "apps.reports",
     "apps.registration",
     "apps.groups",
+    "apps.circles",
     "apps.portal",
     "apps.communications",
     "apps.surveys",

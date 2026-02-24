@@ -14558,13 +14558,13 @@ msgid "Attendance Rate"
 msgstr "Taux de présence"
 
 msgid "Create a custom export"
-msgstr "Cr\u00e9er une exportation personnalis\u00e9e"
+msgstr "Cr\\u00e9er une exportation personnalis\\u00e9e"
 
 msgid "Custom Export"
-msgstr "Exportation personnalis\u00e9e"
+msgstr "Exportation personnalis\\u00e9e"
 
 msgid "Go to Custom Export"
-msgstr "Aller \u00e0 l\u2019exportation personnalis\u00e9e"
+msgstr "Aller \\u00e0 l\\u2019exportation personnalis\\u00e9e"
 
 msgid "Listen"
 msgstr "Écouter"
@@ -14573,13 +14573,13 @@ msgid "Log Communication"
 msgstr "Consigner une communication"
 
 msgid "Manage Report Templates"
-msgstr "G\u00e9rer les mod\u00e8les de rapports"
+msgstr "G\\u00e9rer les mod\\u00e8les de rapports"
 
 msgid "N/R"
 msgstr "N/C"
 
 msgid "Need a different report?"
-msgstr "Besoin d\u2019un autre rapport\u00a0?"
+msgstr "Besoin d\\u2019un autre rapport\\u00a0?"
 
 msgid "No messages yet."
 msgstr "Aucun message pour le moment."
@@ -14640,18 +14640,18 @@ msgstr ""
 "formulerez en un objectif court et mesurable avec un indicateur de progrès."
 
 msgid "Request a new report template"
-msgstr "Demander un nouveau mod\u00e8le de rapport"
+msgstr "Demander un nouveau mod\\u00e8le de rapport"
 
 msgid "Set up report templates"
-msgstr "Configurer les mod\u00e8les de rapports"
+msgstr "Configurer les mod\\u00e8les de rapports"
 
 msgid ""
 "If none of the templates above match what you need, you can build a one-off "
 "report by choosing your own program, metrics, date range, and groupings."
 msgstr ""
-"Si aucun des mod\u00e8les ci-dessus ne correspond \u00e0 vos besoins, vous pouvez "
-"cr\u00e9er un rapport ponctuel en choisissant votre programme, vos indicateurs, "
-"votre p\u00e9riode et vos regroupements."
+"Si aucun des mod\\u00e8les ci-dessus ne correspond \\u00e0 vos besoins, vous"
+" pouvez cr\\u00e9er un rapport ponctuel en choisissant votre programme, vos "
+"indicateurs, votre p\\u00e9riode et vos regroupements."
 
 msgid ""
 "Report templates are set up by your administrator. If you need a recurring "
@@ -14659,22 +14659,25 @@ msgid ""
 "administrator to create one. They can define which metrics, demographics, "
 "and time periods to include so the report is ready to generate each period."
 msgstr ""
-"Les mod\u00e8les de rapports sont configur\u00e9s par votre administrateur. Si vous "
-"avez besoin d\u2019un rapport r\u00e9current pour un partenaire, un bailleur de fonds "
-"ou un conseil d\u2019administration qui n\u2019est pas list\u00e9 ci-dessus, demandez \u00e0 "
-"votre administrateur d\u2019en cr\u00e9er un. Il peut d\u00e9finir les indicateurs, les "
-"donn\u00e9es d\u00e9mographiques et les p\u00e9riodes \u00e0 inclure afin que le rapport soit "
-"pr\u00eat \u00e0 g\u00e9n\u00e9rer \u00e0 chaque p\u00e9riode."
+"Les mod\\u00e8les de rapports sont configur\\u00e9s par votre "
+"administrateur. Si vous avez besoin d\\u2019un rapport r\\u00e9current pour "
+"un partenaire, un bailleur de fonds ou un conseil d\\u2019administration qui"
+" n\\u2019est pas list\\u00e9 ci-dessus, demandez \\u00e0 votre "
+"administrateur d\\u2019en cr\\u00e9er un. Il peut d\\u00e9finir les "
+"indicateurs, les donn\\u00e9es d\\u00e9mographiques et les p\\u00e9riodes "
+"\\u00e0 inclure afin que le rapport soit pr\\u00eat \\u00e0 "
+"g\\u00e9n\\u00e9rer \\u00e0 chaque p\\u00e9riode."
 
 msgid ""
 "No report templates have been set up yet. Report templates define what "
-"metrics and demographic breakdowns to include for recurring partner reports. "
-"Contact your administrator to create one."
+"metrics and demographic breakdowns to include for recurring partner reports."
+" Contact your administrator to create one."
 msgstr ""
-"Aucun mod\u00e8le de rapport n\u2019a encore \u00e9t\u00e9 configur\u00e9. Les mod\u00e8les de rapports "
-"d\u00e9finissent les indicateurs et les ventilations d\u00e9mographiques \u00e0 inclure "
-"pour les rapports r\u00e9currents des partenaires. Contactez votre administrateur "
-"pour en cr\u00e9er un."
+"Aucun mod\\u00e8le de rapport n\\u2019a encore \\u00e9t\\u00e9 "
+"configur\\u00e9. Les mod\\u00e8les de rapports d\\u00e9finissent les "
+"indicateurs et les ventilations d\\u00e9mographiques \\u00e0 inclure pour "
+"les rapports r\\u00e9currents des partenaires. Contactez votre "
+"administrateur pour en cr\\u00e9er un."
 
 msgid ""
 "In the meantime, you can create a one-off report using <strong>Custom "
@@ -14685,3 +14688,85 @@ msgstr ""
 "l\u2019<strong>exportation personnalis\u00e9e</strong>, o\u00f9 vous choisissez "
 "vous-m\u00eame le programme, les indicateurs et la p\u00e9riode."
 
+msgid "Archive"
+msgstr "Archiver"
+
+msgid "Choose either a participant or enter a name — not both."
+msgstr "Choisissez un(e) participant(e) ou entrez un nom — pas les deux."
+
+msgid "Choose either an existing circle or create a new one — not both."
+msgstr "Choisissez un cercle existant ou créez-en un nouveau — pas les deux."
+
+msgid "Circle"
+msgstr "Cercle"
+
+msgid "Circle archived."
+msgstr "Cercle archivé."
+
+msgid "Circle created."
+msgstr "Cercle créé."
+
+msgid ""
+"Circle notes should describe shared observations, not clinical details about"
+" specific individuals."
+msgstr ""
+"Les notes de cercle doivent décrire des observations partagées, pas des "
+"détails cliniques sur des personnes spécifiques."
+
+msgid "Circle updated."
+msgstr "Cercle mis à jour."
+
+msgid "For people who are not enrolled as participants."
+msgstr "Pour les personnes qui ne sont pas inscrites comme participant(e)s."
+
+msgid "Link to existing circle"
+msgstr "Lier à un cercle existant"
+
+msgid "Name (non-participant)"
+msgstr "Nom (non-participant(e))"
+
+msgid "Optional — link to an existing circle or create a new one below."
+msgstr ""
+"Facultatif — liez à un cercle existant ou créez-en un nouveau ci-dessous."
+
+msgid "Or create a new circle"
+msgstr "Ou créer un nouveau cercle"
+
+msgid "Primary"
+msgstr "Principal(e)"
+
+msgid "Primary Contact"
+msgstr "Contact principal"
+
+msgid "Primary contact"
+msgstr "Contact principal"
+
+msgid "Relationship"
+msgstr "Relation"
+
+msgid "Search by name..."
+msgstr "Rechercher par nom..."
+
+msgid "This participant is already in this circle."
+msgstr "Ce ou cette participant(e) fait déjà partie de ce cercle."
+
+msgid "Who does the agency call first?"
+msgstr "Qui l'organisme appelle-t-il en premier?"
+
+msgid "e.g. Garcia Family"
+msgstr "ex. Famille Garcia"
+
+msgid "e.g. parent, spouse, child, caregiver"
+msgstr "ex. parent, conjoint(e), enfant, aidant(e)"
+
+msgid "e.g. parent, spouse, sibling"
+msgstr "ex. parent, conjoint(e), frère/sœur"
+
+msgid "— None —"
+msgstr "— Aucun —"
+
+msgid "Optional — describes this person's role in the circle."
+msgstr "Facultatif — décrit le rôle de cette personne dans le cercle."
+
+msgid "DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"
+msgstr "Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres visibles sont automatiquement masqués"

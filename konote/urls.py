@@ -43,6 +43,7 @@ urlpatterns = [
     path("reports/client/<path:rest>", RedirectView.as_view(url="/reports/participant/%(rest)s", permanent=True)),
     path("reports/", include("apps.reports.urls")),
     path("groups/", include("apps.groups.urls")),
+    path("circles/", include("apps.circles.urls")),
     path("surveys/", include("apps.surveys.urls")),
     # ── Public survey links (no login required) ──
     path("s/<str:token>/", public_survey_form, name="public_survey_form"),
