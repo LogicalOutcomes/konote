@@ -49,7 +49,7 @@ I'm building KoNote Web, a nonprofit client management system. Phases 1-6 are do
 - Document the rate limits in a comment block in `konote/settings/base.py`
 
 **4. Deployment Guide: Azure**
-- Create `docs/deploy-azure.md`
+- Create `docs/deploy-azure.md` (done — now at `docs/archive/deploy-azure.md`)
 - Step-by-step for a non-developer:
   - Create Azure App Service (Linux, Python 3.12)
   - Create Azure Database for PostgreSQL (two databases)

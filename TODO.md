@@ -161,7 +161,6 @@ _Nothing pending._
 - [ ] Accessibility polish: status dropdown auto-open on Tab, colour-only status indicator fix (remaining from QA-R7-A11Y2) (A11Y-POLISH1)
 - [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
-- [ ] Verify deploy-azure.md reference in deployment protocol still resolves — may have been moved or renamed (DEPLOY-VERIFY1)
 - [ ] Add stress testing for 50+ concurrent users (QA-T15)
 - [ ] Add legacy system import migration scenario test (QA-T16)
 - [ ] Add onboarding guidance for new users (help link or first-run banner) (QA-W19)
@@ -180,7 +179,6 @@ _Nothing pending._
 - [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
 - [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
-- [ ] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering (CODE-TIDY1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
 - [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
 - [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
@@ -191,6 +189,8 @@ _Nothing pending._
 
 ## Recently Done
 
+- [x] Verify deploy-azure.md reference — file moved to docs/archive/deploy-azure.md; updated phase-7-prompt.md reference — 2026-02-24 (DEPLOY-VERIFY1)
+- [x] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering — 2026-02-24 (CODE-TIDY1)
 - [x] Approve CIDS implementation plan — metadata fields, code list integration, CIDS-enriched reports, JSON-LD export; partner pathway confirmed — 2026-02-24 — SG/GK (CIDS-APPROVE1)
 - [x] PHIPA consent filtering for note search and qualitative summary — program-level filter + tests (PR #38) — 2026-02-24 — PB (PHIPA-SEARCH1, PHIPA-QUAL1)
 - [x] All Programs report filter — "__all__" sentinel in MetricExportForm + FunderReportForm, multi-program aggregation, RBAC-scoped, 18 tests — 2026-02-24 (REP-ALL-PROGS1)
