@@ -22,10 +22,12 @@
     <a href="{% url 'circles:circle_edit' circle_id=circle.pk %}" role="button" class="outline">{% trans "Edit" %}</a>
     <a href="{% url 'circles:membership_add' circle_id=circle.pk %}" role="button" class="outline">{% trans "Add Member" %}</a>
     {% if circle.status == "active" %}
-    <form method="post" action="{% url 'circles:circle_archive' circle_id=circle.pk %}" style="display: inline;">
+    <form method="post" action="{% url 'circles:circle_archive' circle_id=circle.pk %}"
+          hx-post="{% url 'circles:circle_archive' circle_id=circle.pk %}"
+          hx-confirm="{% blocktrans with name=circle.name %}Archive {{ name }}? This can be undone by editing the circle.{% endblocktrans %}"
+          style="display: inline;">
         {% csrf_token %}
-        <button type="submit" class="outline secondary"
-                onclick="return confirm('{% blocktrans with name=circle.name %}Archive {{ name }}? This can be undone by editing the circle.{% endblocktrans %}')">
+        <button type="submit" class="outline secondary">
             {% trans "Archive" %}
         </button>
     </form>
