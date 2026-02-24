@@ -12,18 +12,20 @@
 
 ## Active Work
 
-### Phase: Circles Lite (see tasks/design-rationale/circles-family-entity.md)
+### Phase: Offline Field Collection (PR #34 — Prince reviewing)
 
-- [x] Create circles app skeleton with models and migration — 2026-02-24 (CIRCLES-1)
-- [x] Add circle FK to ProgressNote — 2026-02-24 (CIRCLES-2)
-- [x] Feature toggle, terminology, permissions, and seed data — 2026-02-24 (CIRCLES-3)
-- [x] Circle forms (CircleForm, CircleMembershipForm) — 2026-02-24 (CIRCLES-4)
-- [x] Views, helpers, URLs, and templates — 2026-02-24 (CIRCLES-5)
-- [x] Navigation, participant sidebar, and note form integration — 2026-02-24 (CIRCLES-6)
-- [x] Intake integration (link existing or create new circle) — 2026-02-24 (CIRCLES-7)
-- [x] Admin registration and test suite (33 tests) — 2026-02-24 (CIRCLES-8)
-- [x] French translations — 2026-02-24 (CIRCLES-9)
-- [ ] Code review and merge to main — (CIRCLES-MERGE)
+- [x] App skeleton, models, ODK client, sync command — 2026-02-24 (FIELD-ODK-APP1, SYNC1)
+- [x] XLSForms for attendance and visit notes — 2026-02-24 (FIELD-ODK-FORM-ATT1, FORM-VIS1)
+- [x] Admin UI, feature toggle, settings — 2026-02-24 (FIELD-ODK-ADMIN1)
+- [x] App user mapping, pull submissions, dedup — 2026-02-24 (FIELD-ODK-USERS1, IMPORT1)
+- [x] Four PII tiers with scope control — 2026-02-24 (FIELD-ODK-TIERS1)
+- [x] Sync status dashboard — 2026-02-24 (FIELD-ODK-DASH1)
+- [x] Tests (43 tests), two code reviews — 2026-02-24 (FIELD-ODK-TEST1)
+- [x] French translations — 2026-02-24 (FIELD-ODK-I18N1)
+- [ ] Deploy ODK Central on Canadian VM (Docker Compose) — ops task (FIELD-ODK-DEPLOY1)
+- [ ] Circle Observation XLSForm — depends on circles in ODK (FIELD-ODK-FORM-CIR1)
+- [ ] Push Circle/CircleMember Entity lists — depends on above (FIELD-ODK-CIRCLES1)
+- [ ] Agency-facing documentation — ODK Collect setup, device loss protocol (FIELD-ODK-DOC1)
 
 ### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
 
@@ -194,6 +196,8 @@ _Nothing pending._
 - [x] Executive dashboard metric indicators — trend direction, data completeness, urgent themes per program card, batch query, 2 tests — 2026-02-24 (INSIGHTS-P3-EXEC)
 - [x] French translations — all 54 remaining empty strings translated and compiled — 2026-02-24 (INSIGHTS-I18N1)
 - [x] Achievement metric seed data + recording UI — 3 achievement metrics in library, demo data for 9 clients, radio pill UI in note form with validation + CSS + tests — 2026-02-24 (INSIGHTS-P0-SEED, INSIGHTS-P4-RECORD)
+- [x] Offline Field Collection — full feature: models, ODK client, sync command, admin UI, 4 PII tiers, 43 tests, 2 code reviews, French translations (PR #34) — 2026-02-24 (FIELD-ODK-APP1–TEST1)
+- [x] Approve four-tier PII model for offline field devices — 2026-02-24 — GK (FIELD-ODK-GK1)
 - [x] Circles Lite Phase 1 — full feature: models, views, templates, nav, sidebar, note tagging, intake, tests, translations — 2026-02-24 (CIRCLES-1–9)
 - [x] Enforce PHIPA cross-program consent in views — note_detail, note_summary, event_list; fix fail-open bug; fix CONF9 interaction; shared banner include; 4 new tests; DRR created — 2026-02-22 (PHIPA-ENFORCE1)
 - [x] Insights metric distributions Phases 0-2 — model fields, aggregation, distributions, achievements, trends, Two Lenses, data completeness, 50 tests, 10 review fixes (PR #23) — 2026-02-22 (INSIGHTS-P0-ADMIN, INSIGHTS-P1-MODEL, INSIGHTS-P1-AGG, INSIGHTS-P2-LAYOUT, INSIGHTS-P2-VIZ)

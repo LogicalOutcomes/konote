@@ -286,6 +286,15 @@ DEFAULT_FEATURES = {
         "depends_on": ["programs"],
         "used_by": [],
     },
+    "field_collection": {
+        "label": _lazy("Field Collection"),
+        "description": _lazy("Offline mobile data collection for field staff using ODK Central."),
+        "when_on": [_lazy("Per-program field collection settings become available"), _lazy("Admin can configure ODK Central sync for attendance and visit notes")],
+        "when_off": [_lazy("Field collection settings are hidden"), _lazy("Existing sync configurations are preserved")],
+        "depends_on": [],
+        "used_by": [],
+        "requires_config": ["ODK_CENTRAL_URL"],
+    },
     "circles": {
         "label": _lazy("Circles"),
         "description": _lazy("Track families, households, and support networks as circles of connected people."),

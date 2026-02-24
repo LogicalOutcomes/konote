@@ -23,6 +23,9 @@ msgstr "Passer au contenu principal"
 msgid "Reports"
 msgstr "Rapports"
 
+msgid "No active programs found."
+msgstr "Aucun programme actif trouvé."
+
 msgid "No grouping"
 msgstr "Aucun regroupement"
 
@@ -9221,9 +9224,6 @@ msgstr "Aucune donnée CSV trouvée. Veuillez réessayer le téléversement."
 msgid "No Show"
 msgstr "Absence"
 
-msgid "No active programs found."
-msgstr "Aucun programme actif trouvé."
-
 msgid "No breakdowns defined."
 msgstr "Aucune ventilation définie."
 
@@ -14599,7 +14599,7 @@ msgid ""
 " you need cross-program access."
 msgstr ""
 "Cette note est réservée à un programme spécifique. Contactez votre "
-"administrateur si vous avez besoin d’un accès inter-programmes."
+"administrateur si vous avez besoin d'un accès inter-programmes."
 
 msgid "What is a goal?"
 msgstr "Qu’est-ce qu’un objectif ?"
@@ -14676,8 +14676,14 @@ msgid ""
 "yourself."
 msgstr ""
 "En attendant, vous pouvez créer un rapport ponctuel avec "
-"l’<strong>exportation personnalisée</strong>, où vous choisissez vous-même "
+"l'<strong>exportation personnalisée</strong>, où vous choisissez vous-même "
 "le programme, les indicateurs et la période."
+
+msgid ""
+"All forms. For programs doing both group sessions and individual visits."
+msgstr ""
+"Tous les formulaires. Pour les programmes combinant séances de groupe et "
+"visites individuelles."
 
 msgid "%(scored)d scored · %(low_pct).0f%% need more support"
 msgstr "%(scored)d évalués · %(low_pct).0f %% ont besoin de plus de soutien"
@@ -14942,14 +14948,27 @@ msgstr ""
 msgid "Archive"
 msgstr "Archiver"
 
+msgid "Both directions"
+msgstr "Les deux directions"
+
 msgid "Choose either a participant or enter a name — not both."
 msgstr "Choisissez un(e) participant(e) ou entrez un nom — pas les deux."
 
 msgid "Choose either an existing circle or create a new one — not both."
 msgstr "Choisissez un cercle existant ou créez-en un nouveau — pas les deux."
 
+msgid ""
+"Choose the type of field work done in this program. This determines which "
+"forms are available to field staff."
+msgstr ""
+"Choisissez le type de travail de terrain effectué dans ce programme. Cela "
+"détermine quels formulaires sont disponibles pour le personnel de terrain."
+
 msgid "Circle"
 msgstr "Cercle"
+
+msgid "Circle Programs — visit notes + circle observations"
+msgstr "Programmes de cercles — notes de visite + observations de cercle"
 
 msgid "Circle archived."
 msgstr "Cercle archivé."
@@ -14967,8 +14986,111 @@ msgstr ""
 msgid "Circle updated."
 msgstr "Cercle mis à jour."
 
+msgid "Collection Profile"
+msgstr "Profil de collecte"
+
+msgid "Collection profile"
+msgstr "Profil de collecte"
+
+msgid "Configure"
+msgstr "Configurer"
+
+msgid ""
+"Configure offline mobile data collection for field staff using ODK Central."
+msgstr ""
+"Configurer la collecte de données mobile hors ligne pour le personnel de "
+"terrain via ODK Central."
+
+msgid "Configure offline mobile data collection for this program."
+msgstr ""
+"Configurer la collecte de données mobile hors ligne pour ce programme."
+
+msgid ""
+"Controls what participant information is available on field devices. Higher "
+"tiers expose more personal information and require stricter device security."
+msgstr ""
+"Contrôle les renseignements sur les participants disponibles sur les "
+"appareils de terrain. Les niveaux supérieurs exposent plus de renseignements"
+" personnels et exigent une sécurité accrue des appareils."
+
+msgid ""
+"DV safety: circles with blocked members and fewer than 4 visible members are"
+" automatically hidden"
+msgstr ""
+"Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres "
+"visibles sont automatiquement masqués"
+
+msgid "DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"
+msgstr "Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres visibles sont automatiquement masqués"
+
+msgid "Data Tier"
+msgstr "Niveau de données"
+
+msgid "Data tier"
+msgstr "Niveau de données"
+
+msgid "Determines which forms are available to field staff."
+msgstr ""
+"Détermine quels formulaires sont disponibles pour le personnel de terrain."
+
+msgid "Enable Field Collection"
+msgstr "Activer la collecte de terrain"
+
+msgid "Enable offline field data collection for this program"
+msgstr ""
+"Activer la collecte de données de terrain hors ligne pour ce programme"
+
+msgid "Enable offline field data collection for this program."
+msgstr ""
+"Activer la collecte de données de terrain hors ligne pour ce programme."
+
+msgid "Field Collection"
+msgstr "Collecte de terrain"
+
+msgid "Field collection settings by program"
+msgstr "Paramètres de collecte de terrain par programme"
+
+msgid "Field collection settings updated for %(program)s."
+msgstr "Paramètres de collecte de terrain mis à jour pour %(program)s."
+
+msgid "Field — ID + first name + last initial"
+msgstr "Terrain — ID + prénom + initiale du nom"
+
+msgid "Field+Contact — ID + name + last initial + phone"
+msgstr "Terrain+Contact — ID + nom + initiale du nom + téléphone"
+
 msgid "For people who are not enrolled as participants."
 msgstr "Pour les personnes qui ne sont pas inscrites comme participant(e)s."
+
+msgid "Forms enabled:"
+msgstr "Formulaires activés :"
+
+msgid "Full Field — all forms"
+msgstr "Terrain complet — tous les formulaires"
+
+msgid "Group Programs — session attendance"
+msgstr "Programmes de groupe — présences aux séances"
+
+msgid "Home Visiting — visit notes"
+msgstr "Visites à domicile — notes de visite"
+
+msgid ""
+"ID + first name + last initial. For large caseloads with name collisions. "
+"Requires device PIN."
+msgstr ""
+"ID + prénom + initiale du nom. Pour les grandes charges de cas avec des noms"
+" similaires. Exige un NIP d'appareil."
+
+msgid "ID + first name. Sufficient for most programs with small caseloads."
+msgstr ""
+"ID + prénom. Suffisant pour la plupart des programmes avec peu de dossiers."
+
+msgid ""
+"ID + name + last initial + phone. For home visiting with appointment "
+"scheduling. Requires PIN + device policy."
+msgstr ""
+"ID + nom + initiale du nom + téléphone. Pour les visites à domicile avec "
+"prise de rendez-vous. Exige un NIP + politique d'appareil."
 
 msgid "Link to existing circle"
 msgstr "Lier à un cercle existant"
@@ -14976,12 +15098,32 @@ msgstr "Lier à un cercle existant"
 msgid "Name (non-participant)"
 msgstr "Nom (non-participant(e))"
 
+msgid "ODK Central"
+msgstr "ODK Central"
+
+msgid "ODK Central project ID:"
+msgstr "ID de projet ODK Central :"
+
+msgid "Only KoNote ID on device. For DV shelters and high-risk programs."
+msgstr ""
+"Seulement l'ID KoNote sur l'appareil. Pour les maisons d'hébergement en "
+"violence conjugale et les programmes à risque élevé."
+
 msgid "Optional — link to an existing circle or create a new one below."
 msgstr ""
 "Facultatif — liez à un cercle existant ou créez-en un nouveau ci-dessous."
 
+msgid "Optional — describes this person's role in the circle."
+msgstr "Facultatif — décrit le rôle de cette personne dans le cercle."
+
 msgid "Or create a new circle"
 msgstr "Ou créer un nouveau cercle"
+
+msgid "Partial"
+msgstr "Partiel"
+
+msgid "Partial — some errors"
+msgstr "Partiel — quelques erreurs"
 
 msgid "Primary"
 msgstr "Principal(e)"
@@ -14992,17 +15134,93 @@ msgstr "Contact principal"
 msgid "Primary contact"
 msgstr "Contact principal"
 
+msgid "Privacy note"
+msgstr "Note de confidentialité"
+
+msgid "Privacy note:"
+msgstr "Note de confidentialité :"
+
+msgid ""
+"Program names and service types are never shown on field devices, regardless"
+" of tier. Form titles use generic names like 'Visit Note' and 'Session "
+"Attendance'."
+msgstr ""
+"Les noms de programmes et types de services ne sont jamais affichés sur les "
+"appareils de terrain, quel que soit le niveau. Les titres de formulaires "
+"utilisent des noms génériques comme « Note de visite » et « Présences aux "
+"séances »."
+
+msgid "Pull (ODK → KoNote)"
+msgstr "Réception (ODK → KoNote)"
+
+msgid "Pulled"
+msgstr "Reçu"
+
+msgid "Push (KoNote → ODK)"
+msgstr "Envoi (KoNote → ODK)"
+
+msgid "Pushed"
+msgstr "Envoyé"
+
+msgid "Recent Sync Activity"
+msgstr "Activité de synchronisation récente"
+
+msgid "Recent sync runs"
+msgstr "Synchronisations récentes"
+
 msgid "Relationship"
 msgstr "Relation"
+
+msgid "Restricted — ID only"
+msgstr "Restreint — ID seulement"
+
+msgid "Running"
+msgstr "En cours"
 
 msgid "Search by name..."
 msgstr "Rechercher par nom..."
 
+msgid ""
+"Session Attendance form only. For drop-in programs, workshops, and "
+"recreation."
+msgstr ""
+"Formulaire de présences aux séances seulement. Pour les programmes sans "
+"rendez-vous, ateliers et loisirs."
+
+msgid "Standard — ID + first name"
+msgstr "Standard — ID + prénom"
+
 msgid "This participant is already in this circle."
 msgstr "Ce ou cette participant(e) fait déjà partie de ce cercle."
 
+msgid ""
+"Visit Note + Circle Observation. For family and care network monitoring."
+msgstr ""
+"Note de visite + observation de cercle. Pour le suivi des familles et des "
+"réseaux de soutien."
+
+msgid ""
+"Visit Note form only. For individual outreach, coaching, and check-ins."
+msgstr ""
+"Formulaire de note de visite seulement. Pour l'accompagnement individuel, le"
+" coaching et les suivis."
+
+msgid "When"
+msgstr "Quand"
+
+msgid ""
+"When enabled, field staff can use ODK Collect on their phones or tablets to "
+"record data offline and sync when back online."
+msgstr ""
+"Lorsqu'activé, le personnel de terrain peut utiliser ODK Collect sur son "
+"téléphone ou sa tablette pour enregistrer des données hors ligne et "
+"synchroniser au retour en ligne."
+
 msgid "Who does the agency call first?"
 msgstr "Qui l'organisme appelle-t-il en premier?"
+
+msgid "attendance"
+msgstr "présences"
 
 msgid "e.g. Garcia Family"
 msgstr "ex. Famille Garcia"
@@ -15013,11 +15231,207 @@ msgstr "ex. parent, conjoint(e), enfant, aidant(e)"
 msgid "e.g. parent, spouse, sibling"
 msgstr "ex. parent, conjoint(e), frère/sœur"
 
+msgid "field collection configuration"
+msgstr "configuration de collecte de terrain"
+
+msgid "field collection configurations"
+msgstr "configurations de collecte de terrain"
+
+msgid "groups"
+msgstr "groupes"
+
+msgid "sync run"
+msgstr "exécution de synchronisation"
+
+msgid "sync runs"
+msgstr "exécutions de synchronisation"
+
 msgid "— None —"
 msgstr "— Aucun —"
 
-msgid "Optional — describes this person's role in the circle."
-msgstr "Facultatif — décrit le rôle de cette personne dans le cercle."
+msgid "%(scored)d scored · %(low_pct).0f%% need more support"
+msgstr "%(scored)d évalué(e)s · %(low_pct).0f %% ont besoin de plus de soutien"
 
-msgid "DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"
-msgstr "Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres visibles sont automatiquement masqués"
+msgid "Achievement"
+msgstr "Atteinte"
+
+msgid ""
+"Achievement rates for program-defined outcomes. Shows the percentage of "
+"participants who have reached each milestone."
+msgstr ""
+"Taux d'atteinte des résultats définis par le programme. Affiche le "
+"pourcentage de participant(e)s ayant atteint chaque jalon."
+
+msgid "Active participants"
+msgstr "Participant(e)s actifs"
+
+msgid "Band"
+msgstr "Palier"
+
+msgid "Data completeness"
+msgstr "Complétude des données"
+
+msgid ""
+"Distribution of participants across outcome bands, based on their most "
+"recent scores. One data point per person (median across goals)."
+msgstr ""
+"Répartition des participant(e)s selon les paliers de résultats, basée sur "
+"leurs scores les plus récents. Un point de données par personne (médiane de "
+"l'ensemble des objectifs)."
+
+msgid "Distributions may not represent the full program."
+msgstr "Les répartitions peuvent ne pas représenter l'ensemble du programme."
+
+msgid "False for metrics like PHQ-9 where lower is better."
+msgstr "Faux pour les mesures comme le PHQ-9 où un score plus bas est meilleur."
+
+msgid "Feedback themes"
+msgstr "Thèmes de rétroaction"
+
+msgid "Full data"
+msgstr "Données complètes"
+
+msgid "Gap: aligned"
+msgstr "Écart\u00a0: aligné"
+
+msgid "Goals within reach"
+msgstr "Objectifs à portée"
+
+msgid "Headline"
+msgstr "En vedette"
+
+msgid "High band boundary (scale metrics)."
+msgstr "Limite du palier supérieur (mesures par échelle)."
+
+msgid ""
+"How workers rate participant progress at each session — a professional "
+"judgment, not a measured score."
+msgstr ""
+"Comment les intervenant(e)s évaluent la progression des participant(e)s à "
+"chaque séance — un jugement professionnel, pas un score mesuré."
+
+msgid "Line chart showing staff assessment trends by month"
+msgstr "Graphique linéaire montrant les tendances d'évaluation du personnel par mois"
+
+msgid "Low band boundary (scale metrics)."
+msgstr "Limite du palier inférieur (mesures par échelle)."
+
+msgid "Low band threshold must be less than high band threshold."
+msgstr "Le seuil du palier inférieur doit être inférieur au seuil du palier supérieur."
+
+msgid "Low data"
+msgstr "Peu de données"
+
+msgid "More support needed"
+msgstr "Plus de soutien nécessaire"
+
+msgid ""
+"Movement tracking — who is progressing between bands over time — will be "
+"available in a future update."
+msgstr ""
+"Le suivi des mouvements — qui progresse entre les paliers au fil du temps "
+"— sera disponible dans une mise à jour future."
+
+msgid "Not yet achieved"
+msgstr "Pas encore atteint"
+
+msgid "Numeric scale"
+msgstr "Échelle numérique"
+
+msgid "On track"
+msgstr "En bonne voie"
+
+msgid "Open feedback themes"
+msgstr "Thèmes de rétroaction ouverts"
+
+msgid "Optional target % for achievement metrics (e.g. 70 for 70%)."
+msgstr "Cible facultative en % pour les mesures d'atteinte (ex. 70 pour 70 %)."
+
+msgid "Optional target for % in high band (scale metrics)."
+msgstr "Cible facultative pour le % dans le palier supérieur (mesures par échelle)."
+
+msgid ""
+"Options for achievement metrics, e.g. [\"Employed\", \"In training\", "
+"\"Unemployed\"]."
+msgstr ""
+"Options pour les mesures d'atteinte, ex. [\"Employed\", \"In training\", "
+"\"Unemployed\"]."
+
+msgid "Partial data"
+msgstr "Données partielles"
+
+msgid "Participant Voice"
+msgstr "Voix des participant(e)s"
+
+msgid "Please enter a valid JSON list, e.g. [\"Option 1\", \"Option 2\"]."
+msgstr "Veuillez entrer une liste JSON valide, ex. [\"Option 1\", \"Option 2\"]."
+
+msgid "Program Outcomes"
+msgstr "Résultats du programme"
+
+msgid ""
+"Scale = numeric value recorded repeatedly. Achievement = categorical, "
+"typically recorded once."
+msgstr ""
+"Échelle = valeur numérique enregistrée de façon répétée. Atteinte = "
+"catégorielle, généralement enregistrée une seule fois."
+
+msgid "Secondary signal"
+msgstr "Signal secondaire"
+
+msgid "Small sample — interpret gap with caution."
+msgstr "Petit échantillon — interpréter l'écart avec prudence."
+
+msgid "Staff Assessments"
+msgstr "Évaluations du personnel"
+
+msgid "Staff Assessments Over Time"
+msgstr "Évaluations du personnel au fil du temps"
+
+msgid "Staff assessment trend data"
+msgstr "Données de tendance des évaluations du personnel"
+
+msgid "This field must be a list, e.g. [\\\"Option 1\\\", \\\"Option 2\\\"]."
+msgstr "Ce champ doit être une liste, ex. [\\\"Option 1\\\", \\\"Option 2\\\"]."
+
+msgid "Trend"
+msgstr "Tendance"
+
+msgid "Two Lenses"
+msgstr "Deux perspectives"
+
+msgid "Where Participants Are"
+msgstr "Où en sont les participant(e)s"
+
+msgid "Which options count as achieved, e.g. [\"Employed\"]."
+msgstr "Quelles options comptent comme atteintes, ex. [\"Employed\"]."
+
+msgid "active"
+msgstr "actif"
+
+msgid "declining"
+msgstr "en déclin"
+
+msgid "e.g. [\"Employed\", \"In training\", \"Unemployed\"]"
+msgstr "ex. [\"Employed\", \"In training\", \"Unemployed\"]"
+
+msgid "e.g. [\"Employed\"]"
+msgstr "ex. [\"Employed\"]"
+
+msgid "good place"
+msgstr "bonne posture"
+
+msgid "improving"
+msgstr "en amélioration"
+
+msgid "most recent"
+msgstr "le plus récent"
+
+msgid "open themes"
+msgstr "thèmes ouverts"
+
+msgid "rated"
+msgstr "évalué(e)s"
+
+msgid "stable"
+msgstr "stable"
