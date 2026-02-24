@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.auth_app.decorators import admin_required, requires_permission
+from apps.auth_app.decorators import _get_user_highest_role, admin_required, requires_permission
 from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
@@ -258,8 +258,6 @@ def client_list(request):
     page = paginator.get_page(request.GET.get("page"))
 
     # Show create button if user's role grants client.create permission
-    from apps.auth_app.decorators import _get_user_highest_role
-    from apps.auth_app.permissions import DENY, PERMISSIONS
     user_role = _get_user_highest_role(request.user)
     can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
 
@@ -644,7 +642,6 @@ def client_detail(request, client_id):
     # PERM-S3: Field-level visibility based on role.
     # Determines which core model fields (e.g. birth_date) the user can see.
     # Custom fields use their own front_desk_access setting instead.
-    from apps.auth_app.decorators import _get_user_highest_role
     effective_role = user_role or _get_user_highest_role(request.user)
     visible_fields = client.get_visible_fields(effective_role) if effective_role else client.get_visible_fields("receptionist")
 
@@ -1018,8 +1015,6 @@ def client_search(request):
     results.sort(key=lambda c: c["name"].lower())
 
     # IMPROVE-2: pass can_create so search results can show "Create New" prompt
-    from apps.auth_app.decorators import _get_user_highest_role
-    from apps.auth_app.permissions import DENY, PERMISSIONS
     user_role = _get_user_highest_role(request.user)
     can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
 
