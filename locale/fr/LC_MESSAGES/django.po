@@ -14558,13 +14558,13 @@ msgid "Attendance Rate"
 msgstr "Taux de présence"
 
 msgid "Create a custom export"
-msgstr "Cr\u00e9er une exportation personnalis\u00e9e"
+msgstr "Cr\\u00e9er une exportation personnalis\\u00e9e"
 
 msgid "Custom Export"
-msgstr "Exportation personnalis\u00e9e"
+msgstr "Exportation personnalis\\u00e9e"
 
 msgid "Go to Custom Export"
-msgstr "Aller \u00e0 l\u2019exportation personnalis\u00e9e"
+msgstr "Aller \\u00e0 l\\u2019exportation personnalis\\u00e9e"
 
 msgid "Listen"
 msgstr "Écouter"
@@ -14573,13 +14573,13 @@ msgid "Log Communication"
 msgstr "Consigner une communication"
 
 msgid "Manage Report Templates"
-msgstr "G\u00e9rer les mod\u00e8les de rapports"
+msgstr "G\\u00e9rer les mod\\u00e8les de rapports"
 
 msgid "N/R"
 msgstr "N/C"
 
 msgid "Need a different report?"
-msgstr "Besoin d\u2019un autre rapport\u00a0?"
+msgstr "Besoin d\\u2019un autre rapport\\u00a0?"
 
 msgid "No messages yet."
 msgstr "Aucun message pour le moment."
@@ -14601,11 +14601,11 @@ msgstr "Étape 2 de 2"
 
 #: apps/programs/access.py
 msgid ""
-"This note is restricted to a specific program. Contact your administrator if "
-"you need cross-program access."
+"This note is restricted to a specific program. Contact your administrator if"
+" you need cross-program access."
 msgstr ""
 "Cette note est réservée à un programme spécifique. Contactez votre "
-"administrateur si vous avez besoin d\u2019un accès inter-programmes."
+"administrateur si vous avez besoin d\\u2019un accès inter-programmes."
 
 msgid "What is a goal?"
 msgstr "Qu’est-ce qu’un objectif ?"
@@ -14640,18 +14640,18 @@ msgstr ""
 "formulerez en un objectif court et mesurable avec un indicateur de progrès."
 
 msgid "Request a new report template"
-msgstr "Demander un nouveau mod\u00e8le de rapport"
+msgstr "Demander un nouveau mod\\u00e8le de rapport"
 
 msgid "Set up report templates"
-msgstr "Configurer les mod\u00e8les de rapports"
+msgstr "Configurer les mod\\u00e8les de rapports"
 
 msgid ""
 "If none of the templates above match what you need, you can build a one-off "
 "report by choosing your own program, metrics, date range, and groupings."
 msgstr ""
-"Si aucun des mod\u00e8les ci-dessus ne correspond \u00e0 vos besoins, vous pouvez "
-"cr\u00e9er un rapport ponctuel en choisissant votre programme, vos indicateurs, "
-"votre p\u00e9riode et vos regroupements."
+"Si aucun des mod\\u00e8les ci-dessus ne correspond \\u00e0 vos besoins, vous"
+" pouvez cr\\u00e9er un rapport ponctuel en choisissant votre programme, vos "
+"indicateurs, votre p\\u00e9riode et vos regroupements."
 
 msgid ""
 "Report templates are set up by your administrator. If you need a recurring "
@@ -14659,29 +14659,394 @@ msgid ""
 "administrator to create one. They can define which metrics, demographics, "
 "and time periods to include so the report is ready to generate each period."
 msgstr ""
-"Les mod\u00e8les de rapports sont configur\u00e9s par votre administrateur. Si vous "
-"avez besoin d\u2019un rapport r\u00e9current pour un partenaire, un bailleur de fonds "
-"ou un conseil d\u2019administration qui n\u2019est pas list\u00e9 ci-dessus, demandez \u00e0 "
-"votre administrateur d\u2019en cr\u00e9er un. Il peut d\u00e9finir les indicateurs, les "
-"donn\u00e9es d\u00e9mographiques et les p\u00e9riodes \u00e0 inclure afin que le rapport soit "
-"pr\u00eat \u00e0 g\u00e9n\u00e9rer \u00e0 chaque p\u00e9riode."
+"Les mod\\u00e8les de rapports sont configur\\u00e9s par votre "
+"administrateur. Si vous avez besoin d\\u2019un rapport r\\u00e9current pour "
+"un partenaire, un bailleur de fonds ou un conseil d\\u2019administration qui"
+" n\\u2019est pas list\\u00e9 ci-dessus, demandez \\u00e0 votre "
+"administrateur d\\u2019en cr\\u00e9er un. Il peut d\\u00e9finir les "
+"indicateurs, les donn\\u00e9es d\\u00e9mographiques et les p\\u00e9riodes "
+"\\u00e0 inclure afin que le rapport soit pr\\u00eat \\u00e0 "
+"g\\u00e9n\\u00e9rer \\u00e0 chaque p\\u00e9riode."
 
 msgid ""
 "No report templates have been set up yet. Report templates define what "
-"metrics and demographic breakdowns to include for recurring partner reports. "
-"Contact your administrator to create one."
+"metrics and demographic breakdowns to include for recurring partner reports."
+" Contact your administrator to create one."
 msgstr ""
-"Aucun mod\u00e8le de rapport n\u2019a encore \u00e9t\u00e9 configur\u00e9. Les mod\u00e8les de rapports "
-"d\u00e9finissent les indicateurs et les ventilations d\u00e9mographiques \u00e0 inclure "
-"pour les rapports r\u00e9currents des partenaires. Contactez votre administrateur "
-"pour en cr\u00e9er un."
+"Aucun mod\\u00e8le de rapport n\\u2019a encore \\u00e9t\\u00e9 "
+"configur\\u00e9. Les mod\\u00e8les de rapports d\\u00e9finissent les "
+"indicateurs et les ventilations d\\u00e9mographiques \\u00e0 inclure pour "
+"les rapports r\\u00e9currents des partenaires. Contactez votre "
+"administrateur pour en cr\\u00e9er un."
 
 msgid ""
 "In the meantime, you can create a one-off report using <strong>Custom "
 "Export</strong>, where you choose the program, metrics, and date range "
 "yourself."
 msgstr ""
-"En attendant, vous pouvez cr\u00e9er un rapport ponctuel avec "
-"l\u2019<strong>exportation personnalis\u00e9e</strong>, o\u00f9 vous choisissez "
-"vous-m\u00eame le programme, les indicateurs et la p\u00e9riode."
+"En attendant, vous pouvez cr\\u00e9er un rapport ponctuel avec "
+"l\\u2019<strong>exportation personnalis\\u00e9e</strong>, o\\u00f9 vous "
+"choisissez vous-m\\u00eame le programme, les indicateurs et la "
+"p\\u00e9riode."
 
+msgid "%(scored)d scored · %(low_pct).0f%% need more support"
+msgstr "%(scored)d évalués · %(low_pct).0f%% ont besoin de plus de soutien"
+
+msgid "Achievement"
+msgstr "Atteinte"
+
+msgid ""
+"Achievement rates for program-defined outcomes. Shows the percentage of "
+"participants who have reached each milestone."
+msgstr ""
+"Taux d’atteinte des résultats définis par le programme. Affiche le "
+"pourcentage de participants ayant atteint chaque jalon."
+
+msgid "Active participants"
+msgstr "Participants actifs"
+
+msgid "Band"
+msgstr "Tranche"
+
+msgid "Data completeness"
+msgstr "Exhaustivité des données"
+
+msgid ""
+"Distribution of participants across outcome bands, based on their most "
+"recent scores. One data point per person (median across goals)."
+msgstr ""
+"Répartition des participants selon les tranches de résultats, d’après leurs "
+"scores les plus récents. Un point de données par personne (médiane des "
+"objectifs)."
+
+msgid "Distributions may not represent the full program."
+msgstr "Les distributions peuvent ne pas représenter l’ensemble du programme."
+
+msgid "False for metrics like PHQ-9 where lower is better."
+msgstr ""
+"Faux pour les indicateurs comme le PHQ-9 où un score plus bas est meilleur."
+
+msgid "Feedback themes"
+msgstr "Thèmes de rétroaction"
+
+msgid "Full data"
+msgstr "Données complètes"
+
+msgid "Gap: aligned"
+msgstr "Écart : aligné"
+
+msgid "Goals within reach"
+msgstr "Objectifs à portée"
+
+msgid "Headline"
+msgstr "En vedette"
+
+msgid "High band boundary (scale metrics)."
+msgstr "Limite supérieure de la tranche (indicateurs d’échelle)."
+
+msgid ""
+"How workers rate participant progress at each session — a professional "
+"judgment, not a measured score."
+msgstr ""
+"Comment le personnel évalue les progrès des participants à chaque séance — "
+"un jugement professionnel, pas un score mesuré."
+
+msgid "Line chart showing staff assessment trends by month"
+msgstr ""
+"Graphique linéaire montrant les tendances des évaluations du personnel par "
+"mois"
+
+msgid "Low band boundary (scale metrics)."
+msgstr "Limite inférieure de la tranche (indicateurs d’échelle)."
+
+msgid "Low band threshold must be less than high band threshold."
+msgstr ""
+"Le seuil de la tranche inférieure doit être inférieur au seuil de la tranche"
+" supérieure."
+
+msgid "Low data"
+msgstr "Données insuffisantes"
+
+msgid "More support needed"
+msgstr "Plus de soutien nécessaire"
+
+msgid ""
+"Movement tracking — who is progressing between bands over time — will be "
+"available in a future update."
+msgstr ""
+"Le suivi des mouvements — qui progresse entre les tranches au fil du temps —"
+" sera disponible dans une mise à jour future."
+
+msgid "No outcome data recorded yet"
+msgstr "Aucune donnée de résultats enregistrée"
+
+msgid "Not yet achieved"
+msgstr "Pas encore atteint"
+
+msgid "Numeric scale"
+msgstr "Échelle numérique"
+
+msgid "On track"
+msgstr "En bonne voie"
+
+msgid "Open feedback themes"
+msgstr "Thèmes de rétroaction ouverts"
+
+msgid "Optional target % for achievement metrics (e.g. 70 for 70%)."
+msgstr ""
+"Cible optionnelle en % pour les indicateurs d’atteinte (p. ex. 70 pour "
+"70 %)."
+
+msgid "Optional target for % in high band (scale metrics)."
+msgstr ""
+"Cible optionnelle pour le % dans la tranche supérieure (indicateurs "
+"d’échelle)."
+
+msgid ""
+"Options for achievement metrics, e.g. [\"Employed\", \"In training\", "
+"\"Unemployed\"]."
+msgstr ""
+"Options pour les indicateurs d’atteinte, p. ex. [\"Émployé\", \"En "
+"formation\", \"Sans emploi\"]."
+
+msgid "Outcome data suppressed (fewer than 5 participants with data)"
+msgstr ""
+"Données de résultats supprimées (moins de 5 participants avec des données)"
+
+msgid "Partial data"
+msgstr "Données partielles"
+
+msgid "Participant Voice"
+msgstr "Voix des participants"
+
+msgid "Please enter a valid JSON list, e.g. [\"Option 1\", \"Option 2\"]."
+msgstr "Veuillez entrer une liste JSON valide, p. ex. [\"Option 1\", \"Option 2\"]."
+
+msgid "Program Learning"
+msgstr "Apprentissage du programme"
+
+msgid "Program Outcomes"
+msgstr "Résultats du programme"
+
+msgid ""
+"Scale = numeric value recorded repeatedly. Achievement = categorical, "
+"typically recorded once."
+msgstr ""
+"Échelle = valeur numérique enregistrée répétitivement. Atteinte = "
+"catégorielle, généralement enregistrée une fois."
+
+msgid "Secondary signal"
+msgstr "Signal secondaire"
+
+msgid "Small sample — interpret gap with caution."
+msgstr "Petit échantillon — interpréter l’écart avec prudence."
+
+msgid "Staff Assessments"
+msgstr "Évaluations du personnel"
+
+msgid "Staff Assessments Over Time"
+msgstr "Évaluations du personnel au fil du temps"
+
+msgid "Staff assessment trend data"
+msgstr "Données de tendance des évaluations du personnel"
+
+msgid "This field must be a list, e.g. [\\\"Option 1\\\", \\\"Option 2\\\"]."
+msgstr "Ce champ doit être une liste, p. ex. [\"Option 1\", \"Option 2\"]."
+
+msgid "Trend"
+msgstr "Tendance"
+
+msgid "Two Lenses"
+msgstr "Deux perspectives"
+
+msgid "View program learning"
+msgstr "Voir l’apprentissage du programme"
+
+msgid "Where Participants Are"
+msgstr "Où en sont les participants"
+
+msgid "Which options count as achieved, e.g. [\"Employed\"]."
+msgstr "Quelles options comptent comme atteintes, p. ex. [\"Employé\"]."
+
+msgid "active"
+msgstr "actif"
+
+msgid "declining"
+msgstr "en déclin"
+
+msgid "e.g. [\"Employed\", \"In training\", \"Unemployed\"]"
+msgstr "p. ex. [\"Employé\", \"En formation\", \"Sans emploi\"]"
+
+msgid "e.g. [\"Employed\"]"
+msgstr "p. ex. [\"Employé\"]"
+
+msgid "feedback themes to review"
+msgstr "thèmes de rétroaction à examiner"
+
+msgid "goals within reach"
+msgstr "objectifs à portée"
+
+msgid "good place"
+msgstr "en bonne voie"
+
+msgid "improving"
+msgstr "en amélioration"
+
+msgid "most recent"
+msgstr "le plus récent"
+
+msgid "open themes"
+msgstr "thèmes ouverts"
+
+msgid "participants with data"
+msgstr "participants avec des données"
+
+msgid "rated"
+msgstr "évalué"
+
+msgid "stable"
+msgstr "stable"
+
+msgid "target"
+msgstr "cible"
+
+msgid "trend"
+msgstr "tendance"
+
+#. blocktrans: _insights_basic.html
+#, python-format
+msgid "Participants: %(self_pct)s%% feel confident"
+msgstr "Participants : %(self_pct)s%% se sentent confiants"
+
+#. blocktrans: _insights_basic.html
+#, python-format
+msgid "Staff: %(staff_pct)s%% rated \"good place\""
+msgstr "Personnel : %(staff_pct)s%% évalués « en bonne voie »"
+
+#. blocktrans: _insights_basic.html
+#, python-format
+msgid "Gap: +%(gap)s%% — participants more optimistic"
+msgstr "Écart : +%(gap)s%% — les participants sont plus optimistes"
+
+#. blocktrans: _insights_basic.html
+#, python-format
+msgid "Gap: %(gap)s%% — staff more optimistic"
+msgstr "Écart : %(gap)s%% — le personnel est plus optimiste"
+
+#. blocktrans: _insights_basic.html
+#, python-format
+msgid "n=%(n_self)s self-report, n=%(n_staff)s staff"
+msgstr "n=%(n_self)s autoévaluation, n=%(n_staff)s personnel"
+
+#. blocktrans: _insights_basic.html + _insights_metrics.html
+#, python-format
+msgid "target: %(target)s%%"
+msgstr "cible : %(target)s%%"
+
+#. blocktrans: _insights_basic.html
+#, python-format
+msgid "%(scored)s of %(enrolled)s enrolled have scores"
+msgstr "%(scored)s sur %(enrolled)s inscrits ont des scores"
+
+#. blocktrans: _insights_basic.html
+#, python-format
+msgid ""
+"Individual quotes are not shown for programs with fewer than %(count)s "
+"active participants, to protect confidentiality. Quotes are available on "
+"each participant’s Analysis tab."
+msgstr ""
+"Les citations individuelles ne sont pas affichées pour les programmes "
+"comptant moins de %(count)s participants actifs, afin de protéger la "
+"confidentialité. Les citations sont disponibles dans l’onglet Analyse de "
+"chaque participant."
+
+#. blocktrans: _insights_distributions.html
+#, python-format
+msgid "Distribution bar for %(name)s"
+msgstr "Barre de distribution pour %(name)s"
+
+#. blocktrans: _insights_distributions.html
+#, python-format
+msgid "Target: %(target)s%% in top band"
+msgstr "Cible : %(target)s%% dans la tranche supérieure"
+
+#. blocktrans: _insights_distributions.html
+#, python-format
+msgid "Trend chart for %(name)s"
+msgstr "Graphique de tendance pour %(name)s"
+
+#. blocktrans: _insights_distributions.html + _insights_metrics.html
+#, python-format
+msgid "Data for %(name)s"
+msgstr "Données pour %(name)s"
+
+#. blocktrans: _insights_metrics.html
+#, python-format
+msgid "%(name)s: %(pct)s%% achieved"
+msgstr "%(name)s : %(pct)s%% atteint"
+
+#. blocktrans: _insights_metrics.html
+#, python-format
+msgid "Target: %(target)s%%"
+msgstr "Cible : %(target)s%%"
+
+#. blocktrans count: _insights_basic.html
+#, python-format
+msgid "%(count)s urgent"
+msgid_plural "%(count)s urgent"
+msgstr[0] "%(count)s urgent"
+msgstr[1] "%(count)s urgents"
+
+#. blocktrans count: _insights_basic.html
+#, python-format
+msgid "%(total)s suggestion this period"
+msgid_plural "%(total)s suggestions this period"
+msgstr[0] "%(total)s suggestion cette période"
+msgstr[1] "%(total)s suggestions cette période"
+
+#. blocktrans count: _insights_basic.html
+#, python-format
+msgid "%(addressed)s of %(total)s theme addressed"
+msgid_plural "%(addressed)s of %(total)s themes addressed"
+msgstr[0] "%(addressed)s thème sur %(total)s traité"
+msgstr[1] "%(addressed)s thèmes sur %(total)s traités"
+
+#. blocktrans count: _insights_basic.html
+#, python-format
+msgid "%(count)s suggestion not yet grouped into a theme"
+msgid_plural "%(count)s suggestions not yet grouped into a theme"
+msgstr[0] "%(count)s suggestion pas encore regroupée dans un thème"
+msgstr[1] "%(count)s suggestions pas encore regroupées dans un thème"
+
+#. blocktrans count: _insights_basic.html
+#, python-format
+msgid "%(count)s Ungrouped Suggestion"
+msgid_plural "%(count)s Ungrouped Suggestions"
+msgstr[0] "%(count)s suggestion non regroupée"
+msgstr[1] "%(count)s suggestions non regroupées"
+
+#. blocktrans count: _insights_basic.html
+#, python-format
+msgid "%(count)s Addressed Theme"
+msgid_plural "%(count)s Addressed Themes"
+msgstr[0] "%(count)s thème traité"
+msgstr[1] "%(count)s thèmes traités"
+
+#. blocktrans count: _insights_distributions.html
+#, python-format
+msgid ""
+"%(count)s participant has only one assessment — not included in "
+"distributions because a second assessment is needed to show their "
+"trajectory."
+msgid_plural ""
+"%(count)s participants have only one assessment — not included in "
+"distributions because a second assessment is needed to show their "
+"trajectory."
+msgstr[0] ""
+"%(count)s participant n’a qu’une seule évaluation — non inclus dans les "
+"distributions, car une deuxième évaluation est nécessaire pour montrer sa "
+"trajectoire."
+msgstr[1] ""
+"%(count)s participants n’ont qu’une seule évaluation — non inclus dans les "
+"distributions, car une deuxième évaluation est nécessaire pour montrer leur "
+"trajectoire."
