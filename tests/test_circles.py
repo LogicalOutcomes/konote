@@ -426,7 +426,7 @@ class CirclePrivacyTest(TestCase):
         self.assertContains(resp, "1 on records you don")
 
     def test_dv_hiding_small_circle(self):
-        """Circle with <4 visible members after access block is hidden."""
+        """Circle with <2 visible enrolled participants after block is hidden."""
         # Block staff from seeing client_b
         ClientAccessBlock.objects.create(
             user=self.staff,
@@ -435,26 +435,46 @@ class CirclePrivacyTest(TestCase):
             created_by=self.staff,
         )
         self.http.login(username="staff1", password="testpass123")
-        # Circle has 2 members, 1 blocked = 1 visible < 4 → hidden
+        # Circle has 2 enrolled members, 1 blocked = 1 visible < 2 → hidden
+        resp = self.http.get("/circles/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, "AB Family")
+
+    def test_dv_hiding_ignores_non_participants(self):
+        """Non-participant members don't count toward DV visibility threshold."""
+        # Add 3 non-participant members (typed names, no client_file)
+        for name in ["Uncle Bob", "Aunt Carol", "Cousin Dave"]:
+            m = CircleMembership(circle=self.circle)
+            m.member_name = name
+            m.save()
+        # Block client_b
+        ClientAccessBlock.objects.create(
+            user=self.staff,
+            client_file=self.client_b,
+            reason="DV safety",
+            created_by=self.staff,
+        )
+        self.http.login(username="staff1", password="testpass123")
+        # Circle has 1 visible enrolled participant + 3 non-participants
+        # Non-participants don't count → 1 visible < 2 → still hidden
         resp = self.http.get("/circles/")
         self.assertEqual(resp.status_code, 200)
         self.assertNotContains(resp, "AB Family")
 
     def test_circle_visible_with_enough_members(self):
-        """Circle with >= 4 visible members is shown even with blocks."""
-        # Add more clients to reach threshold
-        for i in range(3):
-            c = ClientFile(is_demo=False)
-            c.first_name = f"Extra{i}"
-            c.last_name = "X"
-            c.save()
-            ClientProgramEnrolment.objects.create(
-                client_file=c, program=self.program1, status="enrolled",
-            )
-            CircleMembership.objects.create(
-                circle=self.circle, client_file=c,
-            )
-        # Block client_b (still 4 visible members → ok)
+        """Circle with >= 2 visible enrolled participants shown even with blocks."""
+        # Add one more enrolled client to reach threshold
+        c = ClientFile(is_demo=False)
+        c.first_name = "Extra"
+        c.last_name = "X"
+        c.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=c, program=self.program1, status="enrolled",
+        )
+        CircleMembership.objects.create(
+            circle=self.circle, client_file=c,
+        )
+        # Block client_b (still 2 visible enrolled participants → ok)
         ClientAccessBlock.objects.create(
             user=self.staff,
             client_file=self.client_b,

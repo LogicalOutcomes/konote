@@ -3,13 +3,22 @@
 Circles have no program FK — visibility is derived from membership.
 A user can see a circle if they can access at least one of its members.
 
-DV safety: when ClientAccessBlock hides a member and fewer than 4
-visible members remain, hide the entire circle (DRR risk registry).
+DV safety: when ClientAccessBlock hides a member and fewer than
+DV_MINIMUM_VISIBLE_MEMBERS enrolled participants remain visible,
+hide the entire circle. Non-participant members (typed names without
+a ClientFile) are NOT counted — they increase identification risk
+rather than dilute it (see DRR risk registry, expert panel 2026-02-24).
 """
 from apps.clients.models import ClientAccessBlock, ClientProgramEnrolment
 from apps.programs.models import UserProgramRole
 
 from .models import Circle, CircleMembership
+
+# Minimum number of visible enrolled participants required to show a circle
+# when it contains a blocked member. Below this threshold, the circle is
+# hidden to prevent identification by inference. Policy decision — see
+# tasks/design-rationale/circles-family-entity.md.
+DV_MINIMUM_VISIBLE_MEMBERS = 2
 
 
 def get_accessible_client_ids(user):
@@ -39,8 +48,9 @@ def get_visible_circles(user):
     Visibility rules:
     1. User can see a circle if at least one member's client_file is accessible
     2. Blocked clients (ClientAccessBlock) are excluded from member count
-    3. If a block causes fewer than 4 visible members, hide the entire circle
-       (DV safety — in a 2-person household, hiding one reveals the other by absence)
+    3. If a block causes fewer than 2 visible enrolled participants, hide the
+       entire circle (DV safety — non-participant names are not counted because
+       they increase identification risk rather than dilute it)
     4. Demo/real data separation via user.is_demo
     """
     # Get base circle queryset matching demo status
@@ -83,11 +93,14 @@ def get_visible_circles(user):
         member_ids = circle_members.get(circle_id, [])
         has_blocked = any(mid in blocked_ids for mid in member_ids if mid)
         if has_blocked:
+            # Only count enrolled participants (those with a client_file).
+            # Non-participant members (mid is None) are NOT counted — their
+            # names increase identification risk rather than dilute it.
             visible_count = sum(
                 1 for mid in member_ids
-                if mid is None or (mid in accessible_ids)
+                if mid is not None and mid in accessible_ids
             )
-            if visible_count < 4:
+            if visible_count < DV_MINIMUM_VISIBLE_MEMBERS:
                 circles_to_hide.add(circle_id)
 
     final_ids = visible_circle_ids - circles_to_hide
