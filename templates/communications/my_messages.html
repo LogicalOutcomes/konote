@@ -7,11 +7,18 @@
 <h1>{% trans "My Messages" %}</h1>
 
 {% if staff_messages %}
-    <p>{% blocktrans with count=staff_messages|length %}You have {{ count }} unread message(s).{% endblocktrans %}</p>
+    <p>{% blocktrans count count=staff_messages|length %}You have {{ count }} unread message.{% plural %}You have {{ count }} unread messages.{% endblocktrans %}</p>
     {% for msg in staff_messages %}
         {% include "communications/_my_message_card.html" %}
     {% endfor %}
+{% elif has_any_messages %}
+    <div class="empty-state">
+        <p>{% trans "You're all caught up — no unread messages." %}</p>
+    </div>
 {% else %}
-    <p>{% trans "No unread messages." %}</p>
+    <div class="empty-state">
+        <p>{% trans "No messages yet." %}</p>
+        <p class="secondary">{% blocktrans with worker_term=term.worker_plural|default:"workers" %}Messages from colleagues will appear here when someone leaves a note about a participant you're working with.{% endblocktrans %}</p>
+    </div>
 {% endif %}
 {% endblock %}

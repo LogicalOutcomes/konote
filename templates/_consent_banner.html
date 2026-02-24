@@ -1,0 +1,10 @@
+{% load i18n %}
+{% if consent_viewing_program %}
+<div class="notice" role="status">
+    <p>
+        {% blocktrans with program=consent_viewing_program %}
+        Showing notes from {{ program }} only. Cross-program sharing is not enabled for this participant.
+        {% endblocktrans %}
+    </p>
+</div>
+{% endif %}

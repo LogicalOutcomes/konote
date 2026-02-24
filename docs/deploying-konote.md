@@ -576,24 +576,32 @@ az group create --name KoNote-prod --location canadacentral
 
 ### Step 2: Create PostgreSQL Databases
 
+Use the small starter size (Burstable `Standard_B1ms` with `32 GB` storage) to keep costs low.
+
 ```bash
 # Main database
 az postgres flexible-server create \
   --resource-group KoNote-prod \
-  --name KoNote-db \
+  --name konote-db \
   --location canadacentral \
   --admin-user konote \
   --admin-password <YOUR_PASSWORD> \
-  --version 16
+  --version 16 \
+  --tier Burstable \
+  --sku-name Standard_B1ms \
+  --storage-size 32
 
 # Audit database
 az postgres flexible-server create \
   --resource-group KoNote-prod \
-  --name KoNote-audit-db \
+  --name konote-audit-db \
   --location canadacentral \
   --admin-user audit_writer \
   --admin-password <YOUR_AUDIT_PASSWORD> \
-  --version 16
+  --version 16 \
+  --tier Burstable \
+  --sku-name Standard_B1ms \
+  --storage-size 32
 ```
 
 Create the databases:
@@ -601,12 +609,12 @@ Create the databases:
 ```bash
 az postgres flexible-server db create \
   --resource-group KoNote-prod \
-  --server-name KoNote-db \
+  --server-name konote-db \
   --database-name konote
 
 az postgres flexible-server db create \
   --resource-group KoNote-prod \
-  --server-name KoNote-audit-db \
+  --server-name konote-audit-db \
   --database-name konote_audit
 ```
 
@@ -615,33 +623,45 @@ az postgres flexible-server db create \
 ```bash
 az acr create \
   --resource-group KoNote-prod \
-  --name KoNoteregistry \
+  --name konoteregistry  \
   --sku Basic
 ```
 
 ### Step 4: Build and Push Docker Image
 
 ```bash
-docker build -t KoNote:latest .
-az acr login --name KoNoteregistry
-docker tag KoNote:latest KoNoteregistry.azurecr.io/KoNote:latest
-docker push KoNoteregistry.azurecr.io/KoNote:latest
+docker build -t konote:latest .
+az acr login --name konoteregistry 
+docker tag konote:latest konoteregistry.azurecr.io/konote:latest
+docker push konoteregistry.azurecr.io/konote:latest
 ```
 
 ### Step 5: Create Container App
 
 ```bash
-az containerapp create \
-  --name KoNote-web \
+az provider register -n Microsoft.App --wait
+
+az containerapp env create \
+  --name konote-env \
   --resource-group KoNote-prod \
-  --environment KoNote-env \
-  --image KoNoteregistry.azurecr.io/KoNote:latest \
+  --location canadacentral \
+  --logs-destination none
+
+az containerapp create \
+  --name konote-web \
+  --resource-group KoNote-prod \
+  --environment konote-env \
+  --image konoteregistry.azurecr.io/konote:latest \
   --target-port 8000 \
   --ingress external \
-  --registry-server KoNoteregistry.azurecr.io \
-  --cpu 0.5 \
-  --memory 1Gi
+  --registry-server konoteregistry.azurecr.io \
+  --cpu 0.25 \
+  --memory 0.5Gi \
+  --min-replicas 0 \
+  --max-replicas 1
 ```
+
+This setup minimizes cost by disabling log-workspace ingestion, using the smallest practical CPU/memory, and allowing scale-to-zero when idle.
 
 ### Step 6: Configure Environment Variables
 
@@ -652,7 +672,7 @@ In Azure Portal, go to your Container App → Containers → Environment variabl
 | `SECRET_KEY` | Your generated key |
 | `FIELD_ENCRYPTION_KEY` | Your generated key |
 | `DATABASE_URL` | `postgresql://konote:PASSWORD@konote-db.postgres.database.azure.com:5432/konote` |
-| `AUDIT_DATABASE_URL` | `postgresql://audit_writer:PASSWORD@KoNote-audit-db.postgres.database.azure.com:5432/konote_audit` |
+| `AUDIT_DATABASE_URL` | `postgresql://audit_writer:PASSWORD@konote-audit-db.postgres.database.azure.com:5432/konote_audit` |
 
 Optional (auto-detected):
 - `ALLOWED_HOSTS` — Auto-includes `.azurewebsites.net` domains; add custom domains if needed
@@ -666,7 +686,7 @@ Create a temporary Azure Container Instance to run migrations:
 az container create \
   --resource-group KoNote-prod \
   --name KoNote-migrate \
-  --image KoNoteregistry.azurecr.io/KoNote:latest \
+  --image konoteregistry.azurecr.io/konote:latest \
   --environment-variables DATABASE_URL="..." AUDIT_DATABASE_URL="..." SECRET_KEY="..." FIELD_ENCRYPTION_KEY="..." \
   --command-line "/bin/bash -c 'python manage.py migrate && python manage.py migrate --database=audit'"
 ```
@@ -681,7 +701,7 @@ Create a temporary container to run the admin creation command:
 az container create \
   --resource-group KoNote-prod \
   --name KoNote-admin \
-  --image KoNoteregistry.azurecr.io/KoNote:latest \
+  --image konoteregistry.azurecr.io/konote:latest \
   --environment-variables DATABASE_URL="..." SECRET_KEY="..." FIELD_ENCRYPTION_KEY="..." \
   --command-line "/bin/bash -c 'python manage.py createsuperuser --username admin'"
 ```

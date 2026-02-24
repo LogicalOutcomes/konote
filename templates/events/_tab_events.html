@@ -7,6 +7,7 @@
     <small>{% blocktrans with program=term.program|default:"program" %}You are an administrator without {{ program }} assignments. To see data, ask another admin to assign you a {{ program }} role.{% endblocktrans %}</small>
 </p>
 {% endif %}
+{% include "_consent_banner.html" %}
 
 <!-- Active alerts -->
 {% has_permission "alert.cancel" as can_cancel_alert %}

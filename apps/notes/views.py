@@ -25,7 +25,9 @@ from apps.auth_app.decorators import program_role_required, requires_permission
 from apps.clients.models import ClientFile
 from apps.plans.models import PlanTarget, PlanTargetMetric
 from apps.programs.access import (
+    apply_consent_filter,
     build_program_display_context,
+    check_note_consent_or_403,
     get_author_program,
     get_client_or_403,
     get_program_from_client,
@@ -98,6 +100,27 @@ def _compute_auto_calc_values(client):
     ).count()
     computed["session_count"] = count
     return computed
+
+
+def _get_circle_choices_for_client(client, user=None):
+    """Return circle choices for the note form dropdown.
+
+    Returns a list of (circle_id, circle_name) tuples for circles the client
+    belongs to that the user can see, or an empty list if the circles feature
+    is off. Filters by get_visible_circles when user is provided (DV safety).
+    """
+    from apps.admin_settings.models import FeatureToggle
+    if not FeatureToggle.get_all_flags().get("circles", False):
+        return []
+    from apps.circles.models import CircleMembership
+    memberships = CircleMembership.objects.filter(
+        client_file=client, status="active",
+    ).select_related("circle")
+    if user:
+        from apps.circles.helpers import get_visible_circles
+        visible_ids = set(get_visible_circles(user).values_list("pk", flat=True))
+        memberships = memberships.filter(circle_id__in=visible_ids)
+    return [(m.circle_id, m.circle.name) for m in memberships]
 
 
 def _build_target_forms(client, post_data=None, auto_calc=None):
@@ -223,9 +246,9 @@ def note_list(request, client_id):
     )
 
     # PHIPA: consent filter narrows to viewing program if sharing is off
-    from apps.programs.access import apply_consent_filter
     notes, consent_viewing_program = apply_consent_filter(
         notes, client, request.user, user_program_ids,
+        active_program_ids=active_ids,
     )
 
     # Filters — interaction type replaces the old quick/full type filter
@@ -341,8 +364,10 @@ def quick_note_create(request, client_id):
     if not _check_client_consent(client):
         return render(request, "notes/consent_required.html", {"client": client})
 
+    circle_choices = _get_circle_choices_for_client(client, request.user)
+
     if request.method == "POST":
-        form = QuickNoteForm(request.POST)
+        form = QuickNoteForm(request.POST, circle_choices=circle_choices or None)
         if form.is_valid():
             with transaction.atomic():
                 note = ProgressNote(
@@ -355,6 +380,10 @@ def quick_note_create(request, client_id):
                     notes_text=form.cleaned_data["notes_text"],
                     follow_up_date=form.cleaned_data.get("follow_up_date"),
                 )
+                # Circle tagging
+                circle_id = form.cleaned_data.get("circle")
+                if circle_id:
+                    note.circle_id = circle_id
                 note.save()
 
                 # Auto-complete any pending follow-ups from this author for this client
@@ -370,7 +399,7 @@ def quick_note_create(request, client_id):
             _portal_access_reminder(request, client)
             return redirect("notes:note_list", client_id=client.pk)
     else:
-        form = QuickNoteForm()
+        form = QuickNoteForm(circle_choices=circle_choices or None)
 
     # Breadcrumbs: Clients > [Client Name] > Notes > Quick Note
     breadcrumbs = [
@@ -412,8 +441,10 @@ def quick_note_inline(request, client_id):
     if not _check_client_consent(client):
         return render(request, "notes/_inline_consent_required.html", {"client": client})
 
+    circle_choices = _get_circle_choices_for_client(client, request.user)
+
     if request.method == "POST":
-        form = QuickNoteForm(request.POST)
+        form = QuickNoteForm(request.POST, circle_choices=circle_choices or None)
         if form.is_valid():
             with transaction.atomic():
                 note = ProgressNote(
@@ -426,6 +457,9 @@ def quick_note_inline(request, client_id):
                     notes_text=form.cleaned_data["notes_text"],
                     follow_up_date=form.cleaned_data.get("follow_up_date"),
                 )
+                circle_id = form.cleaned_data.get("circle")
+                if circle_id:
+                    note.circle_id = circle_id
                 note.save()
 
                 # Auto-complete pending follow-ups
@@ -443,7 +477,7 @@ def quick_note_inline(request, client_id):
             })
     else:
         initial_type = request.GET.get("type", "phone")
-        form = QuickNoteForm(initial={"interaction_type": initial_type})
+        form = QuickNoteForm(initial={"interaction_type": initial_type}, circle_choices=circle_choices or None)
 
     return render(request, "notes/_quick_note_inline.html", {
         "form": form,
@@ -512,9 +546,10 @@ def note_create(request, client_id):
         return render(request, "notes/consent_required.html", {"client": client})
 
     auto_calc = _compute_auto_calc_values(client)
+    circle_choices = _get_circle_choices_for_client(client, request.user)
 
     if request.method == "POST":
-        form = FullNoteForm(request.POST)
+        form = FullNoteForm(request.POST, circle_choices=circle_choices or None)
         target_forms = _build_target_forms(client, request.POST, auto_calc=auto_calc)
 
         # Validate all forms
@@ -545,6 +580,10 @@ def note_create(request, client_id):
                     alliance_rater=form.cleaned_data.get("alliance_rater", ""),
                     follow_up_date=form.cleaned_data.get("follow_up_date"),
                 )
+                # Circle tagging
+                circle_id = form.cleaned_data.get("circle")
+                if circle_id:
+                    note.circle_id = circle_id
                 session_date = form.cleaned_data.get("session_date")
                 if session_date and session_date != timezone.localdate():
                     note.backdate = timezone.make_aware(
@@ -657,7 +696,7 @@ def note_create(request, client_id):
             _portal_access_reminder(request, client)
             return redirect("notes:note_list", client_id=client.pk)
     else:
-        form = FullNoteForm(initial={"session_date": timezone.localdate()})
+        form = FullNoteForm(initial={"session_date": timezone.localdate()}, circle_choices=circle_choices or None)
         target_forms = _build_target_forms(client, auto_calc=auto_calc)
 
     # Build template → default_interaction_type mapping for JS auto-fill
@@ -719,6 +758,10 @@ def note_detail(request, note_id):
             % {"client": request.get_term("client", _("participant"))}
         )
 
+        # PHIPA: verify this note is visible under consent rules
+        active_ids = getattr(request, "active_program_ids", None)
+        check_note_consent_or_403(note, client, request.user, active_ids)
+
         # Filter out any orphaned entries (plan_target deleted outside Django)
         target_entries = list(
             ProgressNoteTarget.objects.filter(progress_note=note, plan_target__isnull=False)
@@ -769,6 +812,11 @@ def note_summary(request, note_id):
             _("You do not have access to this %(client)s.")
             % {"client": request.get_term("client", _("participant"))}
         )
+
+        # PHIPA: verify this note is visible under consent rules
+        active_ids = getattr(request, "active_program_ids", None)
+        check_note_consent_or_403(note, client, request.user, active_ids)
+
         return render(request, "notes/_note_summary.html", {"note": note, "client": client})
     except Exception as e:
         logger.exception(
