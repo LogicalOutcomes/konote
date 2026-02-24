@@ -91,7 +91,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Surveys Future Work
 
-- [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
 - [ ] Run `translate_strings` to extract and compile French translations for the new survey templates (SURVEY-I18N1)
 
 ### Phase: Documentation & Website Updates
@@ -112,13 +111,10 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — add to seed_demo_data or fixture (QA-PA-TEST1)
 - [ ] Seed comm-my-messages populated state with actual messages — add to seed_demo_data (QA-PA-TEST2)
 - [ ] Add axe-core pass to `/capture-page-states` — automated WCAG checks for screen reader/speech recognition coverage (T59)
-- [ ] Verify accented character preservation through create/save/display cycle — may be test data issue, needs manual check (QA-R7-BUG13)
-- [ ] Verify form data preservation after validation error on create-participant — medium confidence, may be test artefact (QA-R7-BUG21)
 - [ ] Accessibility polish: status dropdown auto-open on Tab, colour-only status indicator fix (remaining from QA-R7-A11Y2) (A11Y-POLISH1)
 - [ ] Verify BLOCKER-1 and BLOCKER-2 with manual keyboard/JAWS test — requires human testing with assistive tech (T50)
 - [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
-- [ ] Verify deploy-azure.md reference in deployment protocol still resolves — may have been moved or renamed (DEPLOY-VERIFY1)
 - [ ] Add stress testing for 50+ concurrent users (QA-T15)
 - [ ] Add legacy system import migration scenario test (QA-T16)
 - [ ] Add onboarding guidance for new users (help link or first-run banner) (QA-W19)
@@ -136,8 +132,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Clean up ~628 stale PO entries in django.po no longer referenced in code (I18N-STALE1)
 - [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
-- [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
-- [ ] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering (CODE-TIDY1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
 - [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
 - [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
@@ -148,6 +142,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
+- [x] Parking lot cleanup Phase 1 — tidy import ordering (CODE-TIDY1), document scenario_loader cache (QA-W62), verify accented chars (QA-R7-BUG13), verify form preservation (QA-R7-BUG21), verify survey links complete (SURVEY-LINK1), update stale deploy-azure ref (DEPLOY-VERIFY1) — 2026-02-24
 - [x] Approve CIDS implementation plan — metadata fields, code list integration, CIDS-enriched reports, JSON-LD export; partner pathway confirmed — 2026-02-24 — SG/GK (CIDS-APPROVE1)
 - [x] Insights Phase 3: executive dashboard program learning cards — trend direction, data completeness, feedback themes, 84 French translations, 14 tests — 2026-02-24 (INSIGHTS-P3-EXEC, INSIGHTS-I18N1)
 - [x] PHIPA: add consent filtering to note search and qualitative_summary — program-level filtering prevents side-channel disclosure, 6 new tests — 2026-02-24 (PHIPA-SEARCH1, PHIPA-QUAL1)
