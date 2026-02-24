@@ -1,29 +1,38 @@
-"""PDF export views for client progress reports, program outcome reports, and individual client data export."""
+"""PDF export views for client progress reports, program outcome reports, board summaries, and individual client data export."""
 import csv
 import io
+import logging
 
 from django.contrib.auth.decorators import login_required
+from django.db.models import Count
 from django.http import HttpResponse, HttpResponseForbidden
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from apps.admin_settings.models import InstanceSetting
 from apps.audit.models import AuditLog
 from apps.auth_app.decorators import admin_required, minimum_role, requires_permission
 from apps.clients.models import ClientDetailValue, ClientProgramEnrolment
 from apps.events.models import Event
-from apps.notes.models import MetricValue, ProgressNote
+from apps.notes.models import MetricValue, ProgressNote, SuggestionTheme, THEME_PRIORITY_RANK
 from apps.plans.models import PlanSection, PlanTarget, PlanTargetMetric
+from apps.programs.models import Program
 
 from .csv_utils import sanitise_csv_row, sanitise_filename
 from .forms import IndividualClientExportForm
+from .insights import get_structured_insights, collect_quotes, MIN_PARTICIPANTS_FOR_QUOTES
+from .metric_insights import get_achievement_rates, get_metric_trends, get_data_completeness
 from .pdf_utils import (
     audit_pdf_export,
     get_pdf_unavailable_reason,
     is_pdf_available,
     render_pdf,
 )
+from .suppression import SMALL_CELL_THRESHOLD
 from .views import _get_client_ip, _get_client_or_403
+
+logger = logging.getLogger(__name__)
 
 
 def _pdf_unavailable_response(request):
@@ -586,3 +595,205 @@ def client_export(request, client_id):
         "client": client,
         "client_name": client_name,
     })
+
+
+# ---------------------------------------------------------------------------
+# Board Summary PDF
+# ---------------------------------------------------------------------------
+
+def _derive_outcome_trend(metric_id, metric_trends):
+    """Derive a trend direction for a single metric from monthly trend data.
+
+    Uses the band_high_pct (percentage in the top band) from the first
+    and last months to determine direction:
+      - >5pp increase  -> "improving"
+      - >5pp decrease  -> "declining"
+      - otherwise       -> "stable"
+      - <2 data points -> "new"
+
+    Does NOT show band counts (DRR anti-pattern: show trend direction only).
+    """
+    trend_points = metric_trends.get(metric_id, [])
+    if len(trend_points) < 2:
+        return "new"
+
+    first_high = trend_points[0].get("band_high_pct", 0)
+    last_high = trend_points[-1].get("band_high_pct", 0)
+    diff = last_high - first_high
+
+    if diff > 5:
+        return "improving"
+    elif diff < -5:
+        return "declining"
+    return "stable"
+
+
+def generate_board_summary_pdf(request, program, date_from, date_to,
+                               period_label, narrative=None):
+    """Generate a Board Summary PDF for a single program.
+
+    Collects data from multiple insight sources and renders a compact
+    1-2 page summary suitable for board meetings.
+
+    Args:
+        request: The HTTP request.
+        program: Program instance.
+        date_from: Start date for the reporting period.
+        date_to: End date for the reporting period.
+        period_label: Human-readable period (e.g. "Q3 FY2025-26").
+        narrative: Optional narrative text for the qualitative section.
+
+    Returns:
+        HttpResponse with PDF attachment.
+    """
+    if not is_pdf_available():
+        return _pdf_unavailable_response(request)
+
+    # Organisation name
+    organisation_name = InstanceSetting.get("organisation_name", "")
+    if not organisation_name:
+        organisation_name = InstanceSetting.get("agency_name", "")
+
+    # --- Section 1: Program Overview ---
+    structured = get_structured_insights(
+        program=program,
+        date_from=date_from,
+        date_to=date_to,
+    )
+
+    enrolled_count = (
+        ClientProgramEnrolment.objects.filter(
+            program=program, status="enrolled",
+        ).values("client_file_id").distinct().count()
+    )
+
+    # Achievement rates for outcome metrics
+    achievement_rates = get_achievement_rates(program, date_from, date_to)
+
+    # Metric trends for trend direction (no band counts — DRR anti-pattern)
+    metric_trends = get_metric_trends(program, date_from, date_to)
+
+    # Build outcome rows: name, current rate, target, trend direction
+    outcomes = []
+    for metric_id, ach_data in achievement_rates.items():
+        trend = _derive_outcome_trend(metric_id, metric_trends)
+        outcomes.append({
+            "name": ach_data["name"],
+            "achieved_pct": ach_data["achieved_pct"],
+            "target_rate": ach_data.get("target_rate"),
+            "trend": trend,
+        })
+
+    # --- Section 2: What Participants Are Telling Us ---
+    # Feedback themes (top 5, sorted by priority)
+    active_themes = list(
+        SuggestionTheme.objects.active()
+        .filter(program=program)
+        .annotate(link_count=Count("links"))
+        .values("pk", "name", "status", "priority", "updated_at", "link_count")
+    )
+    active_themes.sort(key=lambda t: (
+        -THEME_PRIORITY_RANK.get(t["priority"], 0),
+        -t["updated_at"].timestamp(),
+    ))
+    # Limit to top 5 for board summary
+    themes = active_themes[:5]
+
+    # Curated quotes (privacy-gated: suppress if <MIN_PARTICIPANTS_FOR_QUOTES)
+    quotes = []
+    quotes_suppressed = False
+    if enrolled_count >= MIN_PARTICIPANTS_FOR_QUOTES:
+        quotes = collect_quotes(
+            program=program,
+            date_from=date_from,
+            date_to=date_to,
+            max_quotes=3,          # Board summary: 3 curated quotes max
+            include_dates=False,   # Privacy: no dates in board report
+        )
+    elif enrolled_count > 0:
+        quotes_suppressed = True
+
+    # --- Section 3: Data Quality ---
+    completeness = get_data_completeness(program, date_from, date_to)
+
+    # --- Build context ---
+    context = {
+        "program": program,
+        "organisation_name": organisation_name,
+        "period_label": period_label,
+        "generated_at": timezone.now(),
+        # Section 1: Program Overview
+        "enrolled_count": enrolled_count,
+        "notes_count": structured["note_count"],
+        "months_of_data": structured["month_count"],
+        "outcomes": outcomes,
+        # Section 2: What Participants Are Telling Us
+        "themes": themes,
+        "quotes": quotes,
+        "quotes_suppressed": quotes_suppressed,
+        "min_participants_for_quotes": MIN_PARTICIPANTS_FOR_QUOTES,
+        # Section 3: Data Quality
+        "completeness": completeness,
+        # Section 4: Narrative
+        "narrative": narrative,
+    }
+
+    safe_prog = sanitise_filename(program.name.replace(" ", "_"))
+    safe_period = sanitise_filename(period_label.replace(" ", "_"))
+    filename = f"Board_Summary_{safe_prog}_{safe_period}.pdf"
+
+    audit_pdf_export(request, "export", "board_summary_pdf", {
+        "program": program.name,
+        "period": period_label,
+        "date_from": str(date_from),
+        "date_to": str(date_to),
+        "format": "pdf",
+    })
+
+    return render_pdf("reports/pdf_board_summary.html", context, filename)
+
+
+@login_required
+@requires_permission("report.funder_report")
+def board_summary_pdf(request, program_id):
+    """Generate a Board Summary PDF for a program.
+
+    GET parameters:
+        date_from: Start date (YYYY-MM-DD).
+        date_to: End date (YYYY-MM-DD).
+        period_label: Human-readable period label (optional).
+
+    Access: Same as funder report (admin, program_manager, executive).
+    """
+    from datetime import date
+
+    program = get_object_or_404(Program, pk=program_id)
+
+    # Parse date range from query params
+    date_from_str = request.GET.get("date_from", "")
+    date_to_str = request.GET.get("date_to", "")
+
+    try:
+        date_from = date.fromisoformat(date_from_str)
+    except (ValueError, TypeError):
+        # Default: last 12 months
+        date_to = date.today()
+        date_from = date(date_to.year - 1, date_to.month, date_to.day)
+
+    try:
+        date_to = date.fromisoformat(date_to_str)
+    except (ValueError, TypeError):
+        date_to = date.today()
+
+    period_label = request.GET.get(
+        "period_label",
+        f"{date_from.strftime('%b %Y')} \u2013 {date_to.strftime('%b %Y')}",
+    )
+
+    return generate_board_summary_pdf(
+        request=request,
+        program=program,
+        date_from=date_from,
+        date_to=date_to,
+        period_label=period_label,
+    )
