@@ -1837,7 +1837,7 @@ label {
 .achievement-pills label:hover {
     border-color: var(--kn-primary);
 }
-.achievement-pills label:focus-within {
+.achievement-pills label:has(input:focus-visible) {
     outline: 2px solid var(--kn-primary);
     outline-offset: 2px;
 }

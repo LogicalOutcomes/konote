@@ -412,11 +412,13 @@ def export_form(request):
     if all_programs_mode:
         # All programs the user has access to
         accessible_programs = get_manageable_programs(request.user)
+        _has_confidential_program = accessible_programs.filter(is_confidential=True).exists()
         client_ids = ClientProgramEnrolment.objects.filter(
             program__in=accessible_programs, status="enrolled",
             client_file_id__in=accessible_client_ids,
         ).values_list("client_file_id", flat=True).distinct()
     else:
+        _has_confidential_program = False
         client_ids = ClientProgramEnrolment.objects.filter(
             program=program, status="enrolled",
             client_file_id__in=accessible_client_ids,
@@ -885,7 +887,9 @@ def export_form(request):
         "metrics": [m.name for m in selected_metrics],
         "date_from": str(date_from),
         "date_to": str(date_to),
-        "total_clients": len(unique_clients),
+        "total_clients": (
+            "suppressed" if _has_confidential_program else len(unique_clients)
+        ),
         "total_data_points": total_data_points_count if is_aggregate else len(rows),
         "export_mode": "aggregate" if is_aggregate else "individual",
         "recipient": recipient,
@@ -1162,6 +1166,7 @@ def funder_report_form(request):
     if all_programs_mode:
         # Generate per-program reports and merge into a combined CSV
         accessible_programs = get_manageable_programs(request.user)
+        _has_confidential_program = accessible_programs.filter(is_confidential=True).exists()
         all_report_sections = []
         total_raw_client_count = 0
         for ap in accessible_programs:
@@ -1314,7 +1319,8 @@ def funder_report_form(request):
             "date_to": str(date_to),
             "format": export_format,
             "total_individuals_served": (
-                raw_client_count if all_programs_mode
+                "suppressed" if _has_confidential_program
+                else raw_client_count if all_programs_mode
                 else report_data["total_individuals_served"]
             ),
             "recipient": recipient,

@@ -14,6 +14,13 @@ from django.db.models import Count, Q
 from django.shortcuts import render
 from django.utils import timezone
 
+from apps.clients.models import ClientProgramEnrolment
+from apps.notes.models import ProgressNote, SuggestionTheme
+from apps.programs.models import Program, UserProgramRole
+from apps.reports.insights import get_structured_insights
+from apps.reports.insights_views import _compute_trend_direction
+from apps.reports.metric_insights import get_data_completeness
+
 
 # Minimum active participants before percentage metrics are shown.
 # Below this threshold, percentages could identify individuals.
@@ -551,18 +558,13 @@ def _batch_metric_insights(filtered_program_ids, date_from, date_to):
         urgent_theme_count: int
     }
 
-    Uses get_data_completeness from metric_insights and _compute_trend_direction
-    from insights_views. Collects urgent theme counts from SuggestionTheme.
+    Batches urgent theme counts and enrolled counts in single queries.
+    Trend direction still requires a per-program call to get_structured_insights
+    (complex monthly aggregation that isn't easily batched).
     """
-    from apps.notes.models import SuggestionTheme
-    from apps.programs.models import Program
-    from apps.reports.insights import get_structured_insights
-    from apps.reports.insights_views import _compute_trend_direction
-    from apps.reports.metric_insights import get_data_completeness
-
     programs = Program.objects.filter(pk__in=filtered_program_ids)
 
-    # Batch: count urgent themes per program (one query)
+    # Batch 1: count urgent themes per program (one query)
     urgent_themes = list(
         SuggestionTheme.objects.active()
         .filter(program_id__in=filtered_program_ids, priority="urgent")
@@ -571,12 +573,30 @@ def _batch_metric_insights(filtered_program_ids, date_from, date_to):
     )
     urgent_map = {r["program_id"]: r["cnt"] for r in urgent_themes}
 
+    # Batch 2: enrolled client counts per program (one query instead of N)
+    enrolled_rows = (
+        ClientProgramEnrolment.objects.filter(
+            program_id__in=filtered_program_ids,
+            status="enrolled",
+        )
+        .values("program_id")
+        .annotate(cnt=Count("client_file_id", distinct=True))
+    )
+    enrolled_map = {r["program_id"]: r["cnt"] for r in enrolled_rows}
+
     result = {}
     for program in programs:
         pid = program.pk
 
-        # Data completeness (calls metric_insights module)
-        completeness = get_data_completeness(program, date_from, date_to)
+        # Data completeness — use batched enrolled count, per-program scores query
+        enrolled = enrolled_map.get(pid, 0)
+        if enrolled > 0:
+            completeness = get_data_completeness(program, date_from, date_to)
+        else:
+            completeness = {
+                "completeness_pct": 0,
+                "completeness_level": "low",
+            }
 
         # Trend direction (needs structured insights for descriptor_trend)
         structured = get_structured_insights(

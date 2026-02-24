@@ -75,11 +75,76 @@ class ExportRecipientMixin:
         return recipient
 
 
-class MetricExportForm(ExportRecipientMixin, forms.Form):
-    """Filter form for the aggregate metric CSV export."""
+class ProgramSelectionMixin:
+    """Shared logic for forms with a program dropdown that supports 'All Programs'.
 
-    # Sentinel value for "All Programs" in the ChoiceField
+    Provides:
+    - ALL_PROGRAMS_VALUE sentinel constant
+    - _setup_program_choices(user) to build the dropdown
+    - clean_program() with RBAC validation
+    - is_all_programs property
+    - PDF format rejection when All Programs is selected
+    """
+
     ALL_PROGRAMS_VALUE = "__all__"
+
+    def _setup_program_choices(self, user):
+        """Build program dropdown choices and store user for RBAC validation."""
+        self._user = user
+        if user:
+            from .utils import get_manageable_programs
+            programs = get_manageable_programs(user)
+        else:
+            programs = Program.objects.filter(status="active")
+        program_choices = [("", _("\u2014 Select a program \u2014"))]
+        if programs.count() > 1:
+            program_choices.append(
+                (self.ALL_PROGRAMS_VALUE, _("All Programs \u2014 Organisation Summary"))
+            )
+        for p in programs.order_by("name"):
+            program_choices.append((str(p.pk), str(p)))
+        self.fields["program"].choices = program_choices
+
+    def clean_program(self):
+        """Validate the program selection.
+
+        Returns a Program instance for single-program exports, or None
+        for the "All Programs" sentinel (organisation-wide summary).
+        """
+        value = self.cleaned_data.get("program", "")
+        if value == self.ALL_PROGRAMS_VALUE:
+            return None  # Sentinel: all accessible programs
+        if not value:
+            raise forms.ValidationError(_("Please select a program."))
+        try:
+            program = Program.objects.get(pk=int(value), status="active")
+        except (Program.DoesNotExist, ValueError, TypeError):
+            raise forms.ValidationError(_("Invalid program selection."))
+        # RBAC: verify user has access to this program
+        if self._user:
+            from .utils import get_manageable_programs
+            if not get_manageable_programs(self._user).filter(pk=program.pk).exists():
+                raise forms.ValidationError(_("You do not have access to this program."))
+        return program
+
+    @property
+    def is_all_programs(self):
+        """Return True if the user selected the 'All Programs' option."""
+        if hasattr(self, "cleaned_data"):
+            return self.cleaned_data.get("program") is None
+        return False
+
+    def _validate_all_programs_format(self, cleaned):
+        """Reject PDF format when All Programs is selected (CSV only)."""
+        if cleaned.get("program") is None and cleaned.get("format") == "pdf":
+            self.add_error(
+                "format",
+                _("PDF export is not available for All Programs. Please select CSV."),
+            )
+
+
+class MetricExportForm(ProgramSelectionMixin, ExportRecipientMixin, forms.Form):
+    """Filter form for the aggregate metric CSV export."""
 
     program = forms.ChoiceField(
         required=True,
@@ -138,23 +203,7 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         # Consortium-required metric IDs (locked checkboxes in template)
         self.consortium_locked_metrics = set()
         self.consortium_partner_name = ""
-        # Store user for clean_program RBAC validation
-        self._user = user
-        # Build program choices: "All Programs" sentinel + individual programs
-        if user:
-            from .utils import get_manageable_programs
-            programs = get_manageable_programs(user)
-        else:
-            programs = Program.objects.filter(status="active")
-        program_choices = [("", _("\u2014 Select a program \u2014"))]
-        # Only show "All Programs" when user has access to more than one program
-        if programs.count() > 1:
-            program_choices.append(
-                (self.ALL_PROGRAMS_VALUE, _("All Programs \u2014 Organisation Summary"))
-            )
-        for p in programs.order_by("name"):
-            program_choices.append((str(p.pk), str(p)))
-        self.fields["program"].choices = program_choices
+        self._setup_program_choices(user)
         # Build period choices: blank + fiscal years + quarters (as optgroups)
         period_choices = [
             ("", _("\u2014 Custom date range \u2014")),
@@ -218,37 +267,9 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         help_text=_("Calculate and include outcome achievement statistics in the export."),
     )
 
-    def clean_program(self):
-        """Validate the program selection.
-
-        Returns a Program instance for single-program exports, or None
-        for the "All Programs" sentinel (organisation-wide summary).
-        """
-        value = self.cleaned_data.get("program", "")
-        if value == self.ALL_PROGRAMS_VALUE:
-            return None  # Sentinel: all accessible programs
-        if not value:
-            raise forms.ValidationError(_("Please select a program."))
-        try:
-            program = Program.objects.get(pk=int(value), status="active")
-        except (Program.DoesNotExist, ValueError, TypeError):
-            raise forms.ValidationError(_("Invalid program selection."))
-        # RBAC: verify user has access to this program
-        if self._user:
-            from .utils import get_manageable_programs
-            if not get_manageable_programs(self._user).filter(pk=program.pk).exists():
-                raise forms.ValidationError(_("You do not have access to this program."))
-        return program
-
-    @property
-    def is_all_programs(self):
-        """Return True if the user selected the 'All Programs' option."""
-        if hasattr(self, "cleaned_data"):
-            return self.cleaned_data.get("program") is None
-        return False
-
     def clean(self):
         cleaned = super().clean()
+        self._validate_all_programs_format(cleaned)
         fiscal_year = cleaned.get("fiscal_year")
         date_from = cleaned.get("date_from")
         date_to = cleaned.get("date_to")
@@ -303,7 +324,7 @@ class MetricExportForm(ExportRecipientMixin, forms.Form):
         return cleaned
 
 
-class FunderReportForm(ExportRecipientMixin, forms.Form):
+class FunderReportForm(ProgramSelectionMixin, ExportRecipientMixin, forms.Form):
     """
     Form for program outcome report template export.
 
@@ -311,9 +332,6 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
     have a fixed structure. Users select a program and fiscal year,
     and the report is generated with all applicable data.
     """
-
-    # Sentinel value for "All Programs" in the ChoiceField
-    ALL_PROGRAMS_VALUE = "__all__"
 
     program = forms.ChoiceField(
         required=True,
@@ -356,23 +374,7 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
         user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
         self.contains_client_identifying_data = False
-        # Store user for clean_program RBAC validation
-        self._user = user
-        # Build program choices: "All Programs" sentinel + individual programs
-        if user:
-            from .utils import get_manageable_programs
-            programs = get_manageable_programs(user)
-        else:
-            programs = Program.objects.filter(status="active")
-        program_choices = [("", _("\u2014 Select a program \u2014"))]
-        # Only show "All Programs" when user has access to more than one program
-        if programs.count() > 1:
-            program_choices.append(
-                (self.ALL_PROGRAMS_VALUE, _("All Programs \u2014 Organisation Summary"))
-            )
-        for p in programs.order_by("name"):
-            program_choices.append((str(p.pk), str(p)))
-        self.fields["program"].choices = program_choices
+        self._setup_program_choices(user)
         # Build fiscal year choices dynamically
         # Funder reports require a fiscal year selection (no custom date range)
         self.fields["fiscal_year"].choices = get_fiscal_year_choices()
@@ -396,37 +398,9 @@ class FunderReportForm(ExportRecipientMixin, forms.Form):
         # Add recipient tracking fields for audit purposes
         self.add_recipient_fields()
 
-    def clean_program(self):
-        """Validate the program selection.
-
-        Returns a Program instance for single-program reports, or None
-        for the "All Programs" sentinel (organisation-wide summary).
-        """
-        value = self.cleaned_data.get("program", "")
-        if value == self.ALL_PROGRAMS_VALUE:
-            return None  # Sentinel: all accessible programs
-        if not value:
-            raise forms.ValidationError(_("Please select a program."))
-        try:
-            program = Program.objects.get(pk=int(value), status="active")
-        except (Program.DoesNotExist, ValueError, TypeError):
-            raise forms.ValidationError(_("Invalid program selection."))
-        # RBAC: verify user has access to this program
-        if self._user:
-            from .utils import get_manageable_programs
-            if not get_manageable_programs(self._user).filter(pk=program.pk).exists():
-                raise forms.ValidationError(_("You do not have access to this program."))
-        return program
-
-    @property
-    def is_all_programs(self):
-        """Return True if the user selected the 'All Programs' option."""
-        if hasattr(self, "cleaned_data"):
-            return self.cleaned_data.get("program") is None
-        return False
-
     def clean(self):
         cleaned = super().clean()
+        self._validate_all_programs_format(cleaned)
         fiscal_year = cleaned.get("fiscal_year")
 
         if fiscal_year:
