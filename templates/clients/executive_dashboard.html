@@ -100,7 +100,7 @@
     {% if program_stats %}
     <div class="program-cards">
         {% for stat in program_stats %}
-        <article class="program-card">
+        <article class="program-card{% if stat.learning.has_urgent_theme or stat.learning.trend_direction == "declining" %} program-card-caution{% endif %}">
             <header>
                 <span class="program-dot" style="background-color: {{ stat.program.colour_hex }}" aria-hidden="true"></span>
                 <h3>{{ stat.program.translated_name }}</h3>
@@ -227,6 +227,83 @@
                 </div>
                 <div class="metric-row">
                     <a href="{% url 'reports:program_insights' %}?program={{ stat.program.pk }}" class="metric-link">{% trans "View in Outcome Insights" %} &rarr;</a>
+                </div>
+                {% endif %}
+
+                {# Program Learning section #}
+                {% if stat.learning %}
+                <hr>
+                <div class="program-learning" aria-label="{% trans 'Program Learning' %}">
+                    <div class="metric-row">
+                        <span class="metric-label"><strong>{% trans "Program Learning" %}</strong></span>
+                    </div>
+
+                    {# Line 1: Lead outcome headline #}
+                    {% if stat.learning.suppress %}
+                    <div class="metric-row">
+                        <span class="metric-label secondary"><small>{% trans "Outcome data suppressed (fewer than 5 participants with data)" %}</small></span>
+                    </div>
+                    {% elif stat.learning.headline_pct is not None %}
+                    <div class="metric-row">
+                        <span class="metric-label">
+                            {% if stat.learning.headline_type == "achievement" %}
+                            {{ stat.learning.headline_pct }}% {{ stat.learning.headline_label }}
+                            {% else %}
+                            {{ stat.learning.headline_pct }}% {% trans "goals within reach" %} ({{ stat.learning.headline_label }})
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% else %}
+                    <div class="metric-row">
+                        <span class="metric-label secondary"><small>{% trans "No outcome data recorded yet" %}</small></span>
+                    </div>
+                    {% endif %}
+
+                    {# Line 2: Target + trend direction #}
+                    {% if stat.learning.target_rate or stat.learning.trend_direction %}
+                    <div class="metric-row">
+                        <span class="metric-label">
+                            {% if stat.learning.target_rate %}{% trans "target" %}: {{ stat.learning.target_rate }}%{% endif %}
+                            {% if stat.learning.target_rate and stat.learning.trend_direction %} &middot; {% endif %}
+                            {% if stat.learning.trend_direction %}
+                            {% trans "trend" %}: {{ stat.learning.trend_direction }}
+                            <span aria-hidden="true">{{ stat.learning.trend_label }}</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    {# Line 3: Data completeness indicator #}
+                    <div class="metric-row">
+                        <span class="metric-label">
+                            {% if stat.learning.completeness_level == "full" %}
+                            <span class="completeness-indicator" aria-hidden="true">&#9679;</span>
+                            <span class="sr-only">{% trans "Full data" %}</span>
+                            {% elif stat.learning.completeness_level == "partial" %}
+                            <span class="completeness-indicator completeness-partial" aria-hidden="true">&#9680;</span>
+                            <span class="sr-only">{% trans "Partial data" %}</span>
+                            {% else %}
+                            <span class="completeness-indicator completeness-low" aria-hidden="true">&#9675;</span>
+                            <span class="sr-only">{% trans "Low data" %}</span>
+                            {% endif %}
+                            {{ stat.learning.completeness_with_data }} {% trans "of" %} {{ stat.learning.completeness_enrolled }} {% trans "participants with data" %}
+                        </span>
+                    </div>
+
+                    {# Line 4: Feedback themes count + urgency #}
+                    <div class="metric-row {% if stat.learning.has_urgent_theme %}metric-warning{% endif %}">
+                        <span class="metric-label">
+                            {{ stat.learning.theme_open_count }} {% trans "feedback themes to review" %}
+                            {% if stat.learning.has_urgent_theme %}
+                            <span class="badge badge-danger badge-sm">{% trans "Urgent" %}</span>
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    {# Link to program learning page #}
+                    <div class="metric-row">
+                        <a href="{% url 'reports:program_insights' %}?program={{ stat.program.pk }}" class="metric-link">{% trans "View program learning" %} &rarr;</a>
+                    </div>
                 </div>
                 {% endif %}
             </div>
