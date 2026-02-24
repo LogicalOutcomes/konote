@@ -89,10 +89,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Redesign PDF report layout: merge title page with page 2 to eliminate redundant empty space (REP-PDF2)
 - [ ] Define standardised report schema for [funder partner] — 10-15 key metrics and demographic breakdowns shared across all partner agencies (RPT-SCHEMA1)
 
-### Phase: Surveys Future Work
-
-- [ ] Run `translate_strings` to extract and compile French translations for the new survey templates (SURVEY-I18N1)
-
 ### Phase: Documentation & Website Updates
 
 - [ ] Create deployment documentation for surveys and portal features (DOC-DEPLOY1)
@@ -128,8 +124,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
 - [ ] Add bulk operations for discharge and assignment workflows (UX17)
 - [ ] Re-add API-based auto-translation to translate_strings for production use (I18N-API1)
-- [ ] Translate CSV comment rows (# Program, # Date Range, etc.) — needs design decision on whether to use agency custom terminology or static translations (I18N-CSV1)
-- [ ] Clean up ~628 stale PO entries in django.po no longer referenced in code (I18N-STALE1)
 - [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
@@ -142,7 +136,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ## Recently Done
 
-- [x] Parking lot cleanup Phase 1 — tidy import ordering (CODE-TIDY1), document scenario_loader cache (QA-W62), verify accented chars (QA-R7-BUG13), verify form preservation (QA-R7-BUG21), verify survey links complete (SURVEY-LINK1), update stale deploy-azure ref (DEPLOY-VERIFY1) — 2026-02-24
+- [x] Parking lot cleanup Phase 1 — code hygiene (CODE-TIDY1, QA-W62), verification (QA-R7-BUG13, QA-R7-BUG21, SURVEY-LINK1, DEPLOY-VERIFY1), i18n (I18N-CSV1, I18N-STALE1 already clean, INSIGHTS-I18N1, SURVEY-I18N1 already translated) — 2026-02-24
 - [x] Approve CIDS implementation plan — metadata fields, code list integration, CIDS-enriched reports, JSON-LD export; partner pathway confirmed — 2026-02-24 — SG/GK (CIDS-APPROVE1)
 - [x] Insights Phase 3: executive dashboard program learning cards — trend direction, data completeness, feedback themes, 84 French translations, 14 tests — 2026-02-24 (INSIGHTS-P3-EXEC, INSIGHTS-I18N1)
 - [x] PHIPA: add consent filtering to note search and qualitative_summary — program-level filtering prevents side-channel disclosure, 6 new tests — 2026-02-24 (PHIPA-SEARCH1, PHIPA-QUAL1)
