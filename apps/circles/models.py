@@ -124,7 +124,7 @@ class CircleMembership(models.Model):
         blank=True,
         related_name="circle_memberships",
     )
-    member_name = models.CharField(max_length=255, blank=True, default="")
+    _member_name_encrypted = models.BinaryField(default=b"")
     relationship_label = models.CharField(
         max_length=100, blank=True, default="",
         help_text="Free text — e.g. parent, spouse, sibling, grandparent.",
@@ -147,6 +147,14 @@ class CircleMembership(models.Model):
                 condition=models.Q(client_file__isnull=False, status="active"),
             ),
         ]
+
+    @property
+    def member_name(self):
+        return decrypt_field(self._member_name_encrypted)
+
+    @member_name.setter
+    def member_name(self, value):
+        self._member_name_encrypted = encrypt_field(value)
 
     @property
     def display_name(self):
