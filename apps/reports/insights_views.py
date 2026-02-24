@@ -392,7 +392,10 @@ def program_insights(request):
         )
         all_partner_templates = list(partner_templates) + list(org_wide_templates)
 
-        # Upcoming report schedules (funder reports due soon)
+        # Upcoming report schedules (funder reports due soon).
+        # Intentionally org-wide: ReportSchedule has no program FK — deadlines
+        # apply across the organisation. The insights view already requires
+        # report permissions, and schedule names/dates are not PII.
         upcoming_schedules = list(
             ReportSchedule.objects.filter(
                 is_active=True,

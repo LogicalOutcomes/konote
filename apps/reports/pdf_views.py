@@ -601,15 +601,21 @@ def client_export(request, client_id):
 # Board Summary PDF
 # ---------------------------------------------------------------------------
 
+# Percentage-point threshold for classifying a trend as improving/declining.
+# Values within +/- this threshold are classified as "stable".
+# GK should review this methodology choice (see CLAUDE.md consultation gates).
+TREND_THRESHOLD_PP = 5
+
+
 def _derive_outcome_trend(metric_id, metric_trends):
     """Derive a trend direction for a single metric from monthly trend data.
 
     Uses the band_high_pct (percentage in the top band) from the first
     and last months to determine direction:
-      - >5pp increase  -> "improving"
-      - >5pp decrease  -> "declining"
-      - otherwise       -> "stable"
-      - <2 data points -> "new"
+      - >TREND_THRESHOLD_PP increase  -> "improving"
+      - >TREND_THRESHOLD_PP decrease  -> "declining"
+      - otherwise                      -> "stable"
+      - <2 data points                -> "new"
 
     Does NOT show band counts (DRR anti-pattern: show trend direction only).
     """
@@ -621,9 +627,9 @@ def _derive_outcome_trend(metric_id, metric_trends):
     last_high = trend_points[-1].get("band_high_pct", 0)
     diff = last_high - first_high
 
-    if diff > 5:
+    if diff > TREND_THRESHOLD_PP:
         return "improving"
-    elif diff < -5:
+    elif diff < -TREND_THRESHOLD_PP:
         return "declining"
     return "stable"
 
@@ -642,6 +648,9 @@ def generate_board_summary_pdf(request, program, date_from, date_to,
         date_to: End date for the reporting period.
         period_label: Human-readable period (e.g. "Q3 FY2025-26").
         narrative: Optional narrative text for the qualitative section.
+            TODO: wire to a POST form field so staff can add context
+            before distributing to the board. Currently always None
+            from the web-facing view.
 
     Returns:
         HttpResponse with PDF attachment.
@@ -753,8 +762,13 @@ def generate_board_summary_pdf(request, program, date_from, date_to,
     return render_pdf("reports/pdf_board_summary.html", context, filename)
 
 
+def _get_program_from_url(request, program_id, **kwargs):
+    """Extract Program from URL kwargs for @requires_permission scoping."""
+    return get_object_or_404(Program, pk=program_id)
+
+
 @login_required
-@requires_permission("report.funder_report")
+@requires_permission("report.funder_report", get_program_fn=_get_program_from_url)
 def board_summary_pdf(request, program_id):
     """Generate a Board Summary PDF for a program.
 
@@ -763,9 +777,10 @@ def board_summary_pdf(request, program_id):
         date_to: End date (YYYY-MM-DD).
         period_label: Human-readable period label (optional).
 
-    Access: Same as funder report (admin, program_manager, executive).
+    Access: Program-scoped — user must have funder report permission
+    in the specific program (admin, program_manager, executive).
     """
-    from datetime import date
+    from datetime import date, timedelta
 
     program = get_object_or_404(Program, pk=program_id)
 
@@ -774,16 +789,15 @@ def board_summary_pdf(request, program_id):
     date_to_str = request.GET.get("date_to", "")
 
     try:
-        date_from = date.fromisoformat(date_from_str)
-    except (ValueError, TypeError):
-        # Default: last 12 months
-        date_to = date.today()
-        date_from = date(date_to.year - 1, date_to.month, date_to.day)
-
-    try:
         date_to = date.fromisoformat(date_to_str)
     except (ValueError, TypeError):
         date_to = date.today()
+
+    try:
+        date_from = date.fromisoformat(date_from_str)
+    except (ValueError, TypeError):
+        # Default: last 12 months (timedelta avoids leap-year crash)
+        date_from = date_to - timedelta(days=365)
 
     period_label = request.GET.get(
         "period_label",
