@@ -110,10 +110,10 @@ def _compute_trend_direction(descriptor_trend):
 
     diff = last_good - first_good
     if diff > 5:
-        return _("improving")
+        return "improving"
     elif diff < -5:
-        return _("declining")
-    return _("stable")
+        return "declining"
+    return "stable"
 
 
 def _build_distributions_summary(metric_distributions):
