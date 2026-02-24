@@ -769,6 +769,42 @@ output.form-output {
     color: inherit;
 }
 
+/* ---- Executive Dashboard: Outcome Learning ---- */
+.outcome-section {
+    border-top: 1px solid var(--kn-border-light, var(--pico-muted-border-color));
+    margin-top: var(--kn-space-sm, 0.5rem);
+    padding-top: var(--kn-space-sm, 0.5rem);
+}
+.outcome-lead {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+.outcome-target {
+    color: var(--kn-text-muted, var(--pico-muted-color));
+    font-size: 0.85rem;
+}
+.completeness-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+}
+.trend-up {
+    color: var(--kn-success-fg);
+    font-weight: 700;
+}
+.trend-stable {
+    color: var(--kn-text-muted, var(--pico-muted-color));
+    font-weight: 700;
+}
+.trend-down {
+    color: var(--kn-danger-fg);
+    font-weight: 700;
+}
+.card-accent-caution {
+    border-left: 3px solid var(--kn-warning-fg);
+}
+
 /* ---- Dashboard ---- */
 .dashboard-grid {
     display: grid;
