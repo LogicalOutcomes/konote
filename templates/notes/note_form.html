@@ -252,9 +252,10 @@
     {% if form.circle %}
     <!-- Circle tagging (optional) -->
     <fieldset>
+        <legend class="sr-only">{{ form.circle.label }}</legend>
         <label for="{{ form.circle.id_for_label }}">{{ form.circle.label }}</label>
         {{ form.circle }}
-        {% if form.circle.help_text %}<small>{{ form.circle.help_text }}</small>{% endif %}
+        {% if form.circle.help_text %}<small id="circle-help">{{ form.circle.help_text }}</small>{% endif %}
     </fieldset>
     {% endif %}
 
