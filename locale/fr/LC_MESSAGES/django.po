@@ -14767,3 +14767,6 @@ msgstr "— Aucun —"
 
 msgid "Optional — describes this person's role in the circle."
 msgstr "Facultatif — décrit le rôle de cette personne dans le cercle."
+
+msgid "DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"
+msgstr "Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres visibles sont automatiquement masqués"
