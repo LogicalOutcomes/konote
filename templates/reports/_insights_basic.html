@@ -1,7 +1,7 @@
 {% load i18n %}
 {% load permissions_tags %}
 {% has_permission "note.view" as can_view_notes %}
-{# Layer 1 insights partial — loaded via HTMX or included directly #}
+{# Program-level insights partial — loaded via HTMX or included directly #}
 
 <section class="insights-results" aria-label="{% trans 'Outcome Insights' %}">
 
@@ -32,6 +32,93 @@
 </article>
 {% endif %}
 
+{# ══════════════════════════════════════════════════════════════════ #}
+{# ── Section 1: Summary Cards (4 horizontal cards) ─────────────── #}
+{# ══════════════════════════════════════════════════════════════════ #}
+{% if data_tier != "sparse" %}
+<div class="insights-summary-cards" role="region" aria-label="{% trans 'Key metrics summary' %}">
+
+    {# Card 1: Two Lenses gap OR lead outcome OR metric headline #}
+    {% if two_lenses %}
+    <div class="insights-summary-card">
+        <p class="insights-summary-card__label">{% trans "Two Lenses" %}</p>
+        <p class="insights-summary-card__value">
+            {% if two_lenses.gap_abs > 10 %}
+                {{ two_lenses.gap_abs }}% {% trans "gap" %}
+            {% else %}
+                {% trans "Aligned" %}
+            {% endif %}
+        </p>
+        <p class="insights-summary-card__detail">
+            {% blocktrans with self_pct=two_lenses.self_report_pct staff_pct=two_lenses.staff_pct %}Participants: {{ self_pct }}% · Staff: {{ staff_pct }}%{% endblocktrans %}
+        </p>
+    </div>
+    {% elif lead_outcome %}
+    <div class="insights-summary-card">
+        <p class="insights-summary-card__label">{{ lead_outcome.name }}</p>
+        <p class="insights-summary-card__value">{{ lead_outcome.achieved_pct }}%</p>
+        <p class="insights-summary-card__detail">
+            {% blocktrans with achieved=lead_outcome.achieved_count total=lead_outcome.total %}{{ achieved }} of {{ total }} achieved{% endblocktrans %}
+            {% if lead_outcome.target_rate %} · {% blocktrans with target=lead_outcome.target_rate %}target: {{ target }}%{% endblocktrans %}{% endif %}
+        </p>
+    </div>
+    {% elif lead_metric %}
+    <div class="insights-summary-card">
+        <p class="insights-summary-card__label">{{ lead_metric.name }}</p>
+        <p class="insights-summary-card__value">{{ lead_metric.band_high_pct }}%</p>
+        <p class="insights-summary-card__detail">{% trans "goals within reach" %}</p>
+    </div>
+    {% endif %}
+
+    {# Card 2: Trend direction OR active participants #}
+    {% if lead_trend_direction %}
+    <div class="insights-summary-card">
+        <p class="insights-summary-card__label">{% trans "Trend" %}</p>
+        <p class="insights-summary-card__value">
+            <span class="insights-trend-direction insights-trend-direction--{{ lead_trend_direction }}">
+                {% if lead_trend_direction == "improving" %}&#8599; {% trans "Improving" %}
+                {% elif lead_trend_direction == "declining" %}&#8600; {% trans "Declining" %}
+                {% else %}&#8594; {% trans "Stable" %}
+                {% endif %}
+            </span>
+        </p>
+        <p class="insights-summary-card__detail">{% trans "over last 3 months" %}</p>
+    </div>
+    {% else %}
+    <div class="insights-summary-card">
+        <p class="insights-summary-card__label">{% trans "Participants" %}</p>
+        <p class="insights-summary-card__value">{{ structured.participant_count }}</p>
+        <p class="insights-summary-card__detail">{% trans "active in this period" %}</p>
+    </div>
+    {% endif %}
+
+    {# Card 3: Data completeness (always) #}
+    {% if data_completeness %}
+    <div class="insights-summary-card">
+        <p class="insights-summary-card__label">{% trans "Data Completeness" %}</p>
+        <p class="insights-summary-card__value">
+            <span class="insights-completeness insights-completeness--{{ data_completeness.completeness_level }}">
+                <span class="insights-completeness__icon" aria-hidden="true">{% if data_completeness.completeness_level == "full" %}&#9679;{% elif data_completeness.completeness_level == "partial" %}&#9680;{% else %}&#9675;{% endif %}</span>
+                {{ data_completeness.completeness_pct }}%
+            </span>
+        </p>
+        <p class="insights-summary-card__detail">
+            {% blocktrans with scored=data_completeness.with_scores_count enrolled=data_completeness.enrolled_count %}{{ scored }} of {{ enrolled }} enrolled have scores{% endblocktrans %}
+        </p>
+    </div>
+    {% endif %}
+
+    {# Card 4: Open feedback themes (always) #}
+    <div class="insights-summary-card{% if has_urgent_themes %} insights-summary-card--urgent{% endif %}">
+        <p class="insights-summary-card__label">{% trans "Feedback" %}</p>
+        <p class="insights-summary-card__value">{{ active_themes|length|default:"0" }}</p>
+        <p class="insights-summary-card__detail">
+            {% blocktrans with count=active_themes|length count counter=active_themes|length %}{{ count }} open theme{% plural %}{{ count }} open themes{% endblocktrans %}
+        </p>
+    </div>
+</div>
+{% endif %}{# end summary cards #}
+
 {# ── Sparse: snapshot only ── #}
 {% if data_tier == "sparse" %}
 
@@ -54,134 +141,90 @@
 {% endif %}
 
 {% else %}
-{# ── Enough data for trends ── #}
+{# ══════════════════════════════════════════════════════════════════ #}
+{# ── Enough data for full insights view ────────────────────────── #}
+{# ══════════════════════════════════════════════════════════════════ #}
 
-{# ── Hero: Staff assessment trend chart ── #}
-{% if structured.descriptor_trend %}
-<h2>{% trans "Staff Assessments Over Time" %}</h2>
-<p class="chart-description muted">{% trans "How workers rate participant progress at each session — a professional judgment, not a measured score. Rising green ('In a good place') and blue ('Something's shifting') lines mean more people are moving forward." %}</p>
-{% if interp_trend %}<p class="insight-interpretation">{{ interp_trend }}</p>{% endif %}
-<div class="chart-container" style="position: relative; height: 300px;">
-    <canvas id="descriptor-trend-chart"
-            aria-label="{% trans 'Line chart showing participant progress descriptor trends by month' %}"
-            role="img"></canvas>
-</div>
+{# ── Section 2: Participant Voice (moved up — client-centred) ──── #}
+{% if structured.suggestion_total or active_themes or quotes %}
+<details id="section-participant-voice" class="insights-section" {% if expand_participant_voice %}open{% endif %}>
+    <summary>
+        <strong>{% trans "Participant Voice" %}</strong>
+        <span class="insights-section__preview">
+            — {{ active_themes|length }} {% trans "open themes" %}
+            {% if structured.suggestion_total %}· {% blocktrans with total=structured.suggestion_total count counter=structured.suggestion_total %}{{ total }} suggestion this period{% plural %}{{ total }} suggestions this period{% endblocktrans %}{% endif %}
+        </span>
+    </summary>
 
-{# Accessible data table #}
-<details class="chart-data-table">
-    <summary>{% trans "View data table" %}</summary>
-    <table role="table" aria-label="{% trans 'Descriptor trend data' %}">
+    {# Participant Feedback themes & suggestions #}
+    {% if structured.suggestion_total or active_themes %}
+    <section class="feedback-section" aria-labelledby="feedback-heading">
+    <h3 id="feedback-heading">{% trans "Participant Feedback" %}</h3>
+    <p class="chart-description muted">{% trans "Things participants have asked for or suggested — recorded by staff in progress notes. These can help shape program improvements." %}</p>
+    {% if interp_suggestions %}<p class="insight-interpretation">{{ interp_suggestions }}</p>{% endif %}
+
+    {# Summary box: responsiveness + ungrouped count #}
+    {% if total_theme_count %}
+    <div class="feedback-summary-box" role="status" aria-label="{% trans 'Suggestion theme progress' %}">
+        <div class="feedback-summary-row">
+            <strong>
+                {% blocktrans with addressed=addressed_themes_count total=total_theme_count count counter=addressed_themes_count %}{{ addressed }} of {{ total }} theme addressed{% plural %}{{ addressed }} of {{ total }} themes addressed{% endblocktrans %}
+            </strong>
+            <progress value="{{ addressed_themes_count }}" max="{{ total_theme_count }}"
+                      aria-label="{% trans 'Themes addressed' %}"
+                      style="margin: 0.25rem 0 0; max-width: 300px;">
+            </progress>
+        </div>
+        {% if unlinked_suggestions %}
+        <div class="feedback-summary-note muted">
+            {% blocktrans with count=unlinked_suggestions|length count counter=unlinked_suggestions|length %}{{ count }} suggestion not yet grouped into a theme{% plural %}{{ count }} suggestions not yet grouped into a theme{% endblocktrans %}
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# Active themes table #}
+    {% if active_themes %}
+    <table class="feedback-themes-table" role="table" aria-label="{% trans 'Active suggestion themes' %}">
         <thead>
             <tr>
-                <th scope="col">{% trans "Month" %}</th>
-                <th scope="col">{% trans "Harder right now" %}</th>
-                <th scope="col">{% trans "Holding steady" %}</th>
-                <th scope="col">{% trans "Something's shifting" %}</th>
-                <th scope="col">{% trans "In a good place" %}</th>
+                <th scope="col">{% trans "Theme" %}</th>
+                <th scope="col" style="width:6rem;text-align:right;">{% trans "Suggestions" %}</th>
+                <th scope="col" style="width:6rem;">{% trans "Priority" %}</th>
+                <th scope="col" style="width:7rem;">{% trans "Status" %}</th>
+                {% if can_manage_themes %}<th scope="col" style="width:12rem;">{% trans "Actions" %}</th>{% endif %}
             </tr>
         </thead>
         <tbody>
-            {% for row in structured.descriptor_trend %}
-            <tr>
-                <td>{{ row.month }}</td>
-                <td>{{ row.harder }}%</td>
-                <td>{{ row.holding }}%</td>
-                <td>{{ row.shifting }}%</td>
-                <td>{{ row.good_place }}%</td>
-            </tr>
+            {% for theme in active_themes %}
+            {% include "reports/_theme_row.html" %}
             {% endfor %}
         </tbody>
     </table>
-</details>
-{% endif %}
-
-{# ── Engagement distribution ── #}
-{% if structured.engagement_distribution %}
-<h3>{% trans "Engagement" %}</h3>
-<p class="chart-description muted">{% trans "How actively participants are engaging with their program — based on what staff observe during sessions." %}</p>
-<div class="descriptor-pills">
-    {% for label, pct in structured.engagement_distribution.items %}
-    <span class="pill pill--engagement">{{ label }}: {{ pct }}%</span>
-    {% endfor %}
-</div>
-{% if interp_engagement %}<p class="insight-interpretation">{{ interp_engagement }}</p>{% endif %}
-{% endif %}
-
-{# ── Staff assessment snapshot (current totals) ── #}
-{% if structured.descriptor_distribution %}
-<h3>{% trans "Staff Assessment Snapshot" %}</h3>
-<p class="chart-description muted">{% trans "A snapshot of how workers rate participant progress right now — recorded each time they write a progress note." %}</p>
-<div class="descriptor-pills">
-    {% for label, pct in structured.descriptor_distribution.items %}
-    <span class="pill pill--descriptor">{{ label }}: {{ pct }}%</span>
-    {% endfor %}
-</div>
-{% if interp_snapshot %}<p class="insight-interpretation">{{ interp_snapshot }}</p>{% endif %}
-{% endif %}
-
-{% endif %}{# end sparse vs trend #}
-
-{# ══════════════════════════════════════════════════════════════════ #}
-{# ── Participant Feedback — unified section (all data tiers) ───── #}
-{# ══════════════════════════════════════════════════════════════════ #}
-{% if structured.suggestion_total or active_themes %}
-<section class="feedback-section" aria-labelledby="feedback-heading">
-<h3 id="feedback-heading">
-    {% trans "Participant Feedback" %}
-    <small class="muted">({% blocktrans with total=structured.suggestion_total count counter=structured.suggestion_total %}{{ total }} suggestion this period{% plural %}{{ total }} suggestions this period{% endblocktrans %})</small>
-</h3>
-<p class="chart-description muted">{% trans "Things participants have asked for or suggested — recorded by staff in progress notes. These can help shape program improvements." %}</p>
-{% if interp_suggestions %}<p class="insight-interpretation">{{ interp_suggestions }}</p>{% endif %}
-
-{# Summary box: responsiveness + ungrouped count #}
-{% if total_theme_count %}
-<div class="feedback-summary-box" role="status" aria-label="{% trans 'Suggestion theme progress' %}">
-    <div class="feedback-summary-row">
-        <strong>
-            {% blocktrans with addressed=addressed_themes_count total=total_theme_count count counter=addressed_themes_count %}{{ addressed }} of {{ total }} theme addressed{% plural %}{{ addressed }} of {{ total }} themes addressed{% endblocktrans %}
-        </strong>
-        <progress value="{{ addressed_themes_count }}" max="{{ total_theme_count }}"
-                  aria-label="{% trans 'Themes addressed' %}"
-                  style="margin: 0.25rem 0 0; max-width: 300px;">
-        </progress>
-    </div>
-    {% if unlinked_suggestions %}
-    <div class="feedback-summary-note muted">
-        {% blocktrans with count=unlinked_suggestions|length count counter=unlinked_suggestions|length %}{{ count }} suggestion not yet grouped into a theme{% plural %}{{ count }} suggestions not yet grouped into a theme{% endblocktrans %}
-    </div>
+    <p><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "View all themes" %} &rarr;</a></p>
     {% endif %}
-</div>
-{% endif %}
 
-{# Active themes table #}
-{% if active_themes %}
-<table class="feedback-themes-table" role="table" aria-label="{% trans 'Active suggestion themes' %}">
-    <thead>
-        <tr>
-            <th scope="col">{% trans "Theme" %}</th>
-            <th scope="col" style="width:6rem;text-align:right;">{% trans "Suggestions" %}</th>
-            <th scope="col" style="width:6rem;">{% trans "Priority" %}</th>
-            <th scope="col" style="width:7rem;">{% trans "Status" %}</th>
-            {% if can_manage_themes %}<th scope="col" style="width:12rem;">{% trans "Actions" %}</th>{% endif %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for theme in active_themes %}
-        {% include "reports/_theme_row.html" %}
+    {# Ungrouped suggestions #}
+    {% if unlinked_suggestions %}
+    <details {% if not active_themes %}open{% endif %}>
+        <summary>
+            {% blocktrans with count=unlinked_suggestions|length count counter=unlinked_suggestions|length %}{{ count }} Ungrouped Suggestion{% plural %}{{ count }} Ungrouped Suggestions{% endblocktrans %}
+        </summary>
+        <p class="muted">{% trans "Not yet linked to a theme." %}</p>
+        {% for s in unlinked_suggestions %}
+        <blockquote class="insight-quote">
+            <p>&ldquo;{{ s.text }}&rdquo;</p>
+            <cite>
+                {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span>{% if can_view_notes %} &middot; {% endif %}{% endif %}
+                {% if s.date %}{{ s.date }} &middot; {% endif %}
+                {% if can_view_notes %}<a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>{% endif %}
+            </cite>
+        </blockquote>
         {% endfor %}
-    </tbody>
-</table>
-<p><a href="{% url 'suggestion_themes:theme_list' %}">{% trans "View all themes" %} &rarr;</a></p>
-{% endif %}
-
-{# Ungrouped suggestions #}
-{% if unlinked_suggestions %}
-<details {% if not active_themes %}open{% endif %}>
-    <summary>
-        {% blocktrans with count=unlinked_suggestions|length count counter=unlinked_suggestions|length %}{{ count }} Ungrouped Suggestion{% plural %}{{ count }} Ungrouped Suggestions{% endblocktrans %}
-    </summary>
-    <p class="muted">{% trans "Not yet linked to a theme." %}</p>
-    {% for s in unlinked_suggestions %}
+    </details>
+    {% elif not active_themes and suggestions %}
+    {# No themes exist yet — show all suggestions directly #}
+    {% for s in suggestions %}
     <blockquote class="insight-quote">
         <p>&ldquo;{{ s.text }}&rdquo;</p>
         <cite>
@@ -191,68 +234,191 @@
         </cite>
     </blockquote>
     {% endfor %}
-</details>
-{% elif not active_themes and suggestions %}
-{# No themes exist yet — show all suggestions directly #}
-{% for s in suggestions %}
-<blockquote class="insight-quote">
-    <p>&ldquo;{{ s.text }}&rdquo;</p>
-    <cite>
-        {% if s.priority_label %}<span class="pill pill--engagement">{{ s.priority_label }}</span>{% if can_view_notes %} &middot; {% endif %}{% endif %}
-        {% if s.date %}{{ s.date }} &middot; {% endif %}
-        {% if can_view_notes %}<a href="{% url 'notes:note_detail' note_id=s.note_id %}">{% trans "View note" %}</a>{% endif %}
-    </cite>
-</blockquote>
-{% endfor %}
-{% endif %}
-
-{# Addressed themes (collapsed) #}
-{% if addressed_themes %}
-<details>
-    <summary>
-        {% blocktrans with count=addressed_themes_count count counter=addressed_themes_count %}{{ count }} Addressed Theme{% plural %}{{ count }} Addressed Themes{% endblocktrans %}
-    </summary>
-    <ul class="addressed-themes-list">
-        {% for theme in addressed_themes %}
-        <li>
-            <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}">{{ theme.name }}</a>
-            <span class="muted">({{ theme.link_count }})</span>
-        </li>
-        {% endfor %}
-    </ul>
-</details>
-{% endif %}
-
-</section>
-{% endif %}{# end suggestion_total or active_themes #}
-
-{# ── Quotes ── #}
-{% if data_tier != "sparse" %}
-{% if quotes %}
-<h3>{% trans "What participants are saying" %}</h3>
-{% for quote in quotes %}
-<blockquote class="insight-quote">
-    <p>&ldquo;{{ quote.text }}&rdquo;</p>
-    <cite>
-        {% if quote.target_name %}
-        {% blocktrans with target=quote.target_name %}On their {{ target }} goal{% endblocktrans %} &middot;
-        {% endif %}
-        {% if quote.date %}{{ quote.date }} &middot; {% endif %}
-        <a href="{% url 'notes:note_detail' note_id=quote.note_id %}">{% trans "View note" %}</a>
-    </cite>
-</blockquote>
-{% endfor %}
-{% elif not can_view_notes %}
-<p class="insights-privacy-note">
-    {% trans "Individual quotes are not shown in the executive view to protect participant confidentiality. Trends and aggregate data are shown above." %}
-    {% if ai_enabled %}
-    {% trans "Use the AI summary below for a narrative overview of participant feedback." %}
     {% endif %}
-</p>
-{% elif structured.participant_count < min_participants %}
-<p class="insights-privacy-note">
-    {% blocktrans with count=min_participants %}Individual quotes are not shown for programs with fewer than {{ count }} active participants, to protect confidentiality. Quotes are available on each participant's Analysis tab.{% endblocktrans %}
-</p>
+
+    {# Addressed themes (collapsed) #}
+    {% if addressed_themes %}
+    <details>
+        <summary>
+            {% blocktrans with count=addressed_themes_count count counter=addressed_themes_count %}{{ count }} Addressed Theme{% plural %}{{ count }} Addressed Themes{% endblocktrans %}
+        </summary>
+        <ul class="addressed-themes-list">
+            {% for theme in addressed_themes %}
+            <li>
+                <a href="{% url 'suggestion_themes:theme_detail' theme.pk %}">{{ theme.name }}</a>
+                <span class="muted">({{ theme.link_count }})</span>
+            </li>
+            {% endfor %}
+        </ul>
+    </details>
+    {% endif %}
+    </section>
+    {% endif %}{# end suggestion_total or active_themes #}
+
+    {# Quotes #}
+    {% if quotes %}
+    <h3>{% trans "What participants are saying" %}</h3>
+    {% for quote in quotes %}
+    <blockquote class="insight-quote">
+        <p>&ldquo;{{ quote.text }}&rdquo;</p>
+        <cite>
+            {% if quote.target_name %}
+            {% blocktrans with target=quote.target_name %}On their {{ target }} goal{% endblocktrans %} &middot;
+            {% endif %}
+            {% if quote.date %}{{ quote.date }} &middot; {% endif %}
+            <a href="{% url 'notes:note_detail' note_id=quote.note_id %}">{% trans "View note" %}</a>
+        </cite>
+    </blockquote>
+    {% endfor %}
+    {% elif not can_view_notes %}
+    <p class="insights-privacy-note">
+        {% trans "Individual quotes are not shown in the executive view to protect participant confidentiality. Trends and aggregate data are shown above." %}
+    </p>
+    {% elif structured.participant_count < min_participants %}
+    <p class="insights-privacy-note">
+        {% blocktrans with count=min_participants %}Individual quotes are not shown for programs with fewer than {{ count }} active participants, to protect confidentiality. Quotes are available on each participant's Analysis tab.{% endblocktrans %}
+    </p>
+    {% endif %}
+</details>
+{% endif %}{# end participant voice section #}
+
+{# ── Section 3: Where Participants Are (metric distributions) ──── #}
+{% if metric_distributions %}
+<details id="section-distributions" class="insights-section" {% if expand_distributions %}open{% endif %}>
+    <summary>
+        <strong>{% trans "Where Participants Are" %}</strong>
+        <span class="insights-section__preview">
+            — {% for metric_id, dist in metric_distributions.items %}{% if forloop.first %}{{ dist.total }} {% trans "scored" %}{% endif %}{% endfor %}
+            {% if distributions_summary_pct %} · {{ distributions_summary_pct }}% {% trans "goals within reach" %}{% endif %}
+            {% if distributions_trend_direction %} · {% trans "trend:" %} {% if distributions_trend_direction == "improving" %}{% trans "improving" %}{% elif distributions_trend_direction == "declining" %}{% trans "declining" %}{% else %}{% trans "stable" %}{% endif %}{% endif %}
+        </span>
+    </summary>
+    {% include "reports/_insights_distributions.html" %}
+</details>
+{% endif %}
+
+{# ── Section 4: Program Outcomes (achievement rates) ───────────── #}
+{% if achievement_rates %}
+<details id="section-outcomes" class="insights-section" {% if expand_outcomes %}open{% endif %}>
+    <summary>
+        <strong>{% trans "Program Outcomes" %}</strong>
+        <span class="insights-section__preview">
+            — {% for metric_id, ach in achievement_rates.items %}{% if forloop.first %}{{ ach.achieved_pct }}% {{ ach.name|lower }}{% endif %}{% if ach.target_rate %} ({% blocktrans with target=ach.target_rate %}target: {{ target }}%{% endblocktrans %}){% endif %}{% endfor %}
+        </span>
+    </summary>
+    {% include "reports/_insights_achievements.html" %}
+</details>
+{% endif %}
+
+{# ── Section 5: Staff Assessments (existing descriptor chart) ──── #}
+{% if structured.descriptor_trend %}
+<details id="section-staff-assessments" class="insights-section" {% if expand_staff_assessments %}open{% endif %}>
+    <summary>
+        <strong>{% trans "Staff Assessments Over Time" %}</strong>
+        <span class="insights-section__preview">
+            — {% trans "professional judgment of participant progress" %}
+        </span>
+    </summary>
+    <p class="chart-description muted">{% trans "How workers rate participant progress at each session — a professional judgment, not a measured score. Rising green ('In a good place') and blue ('Something's shifting') lines mean more people are moving forward." %}</p>
+    {% if interp_trend %}<p class="insight-interpretation">{{ interp_trend }}</p>{% endif %}
+    <div class="chart-container" style="position: relative; height: 300px;">
+        <canvas id="descriptor-trend-chart"
+                aria-label="{% trans 'Line chart showing participant progress descriptor trends by month' %}"
+                role="img"></canvas>
+    </div>
+
+    {# Accessible data table #}
+    <details class="chart-data-table">
+        <summary>{% trans "View data table" %}</summary>
+        <table role="table" aria-label="{% trans 'Descriptor trend data' %}">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Month" %}</th>
+                    <th scope="col">{% trans "Harder right now" %}</th>
+                    <th scope="col">{% trans "Holding steady" %}</th>
+                    <th scope="col">{% trans "Something's shifting" %}</th>
+                    <th scope="col">{% trans "In a good place" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in structured.descriptor_trend %}
+                <tr>
+                    <td>{{ row.month }}</td>
+                    <td>{{ row.harder }}%</td>
+                    <td>{{ row.holding }}%</td>
+                    <td>{{ row.shifting }}%</td>
+                    <td>{{ row.good_place }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </details>
+
+    {# Staff assessment snapshot (current totals) #}
+    {% if structured.descriptor_distribution %}
+    <h4>{% trans "Staff Assessment Snapshot" %}</h4>
+    <p class="chart-description muted">{% trans "A snapshot of how workers rate participant progress right now — recorded each time they write a progress note." %}</p>
+    <div class="descriptor-pills">
+        {% for label, pct in structured.descriptor_distribution.items %}
+        <span class="pill pill--descriptor">{{ label }}: {{ pct }}%</span>
+        {% endfor %}
+    </div>
+    {% if interp_snapshot %}<p class="insight-interpretation">{{ interp_snapshot }}</p>{% endif %}
+    {% endif %}
+</details>
+{% endif %}
+
+{# ── Section 6: Engagement ─────────────────────────────────────── #}
+{% if structured.engagement_distribution %}
+<details id="section-engagement" class="insights-section" {% if expand_engagement %}open{% endif %}>
+    <summary>
+        <strong>{% trans "Engagement" %}</strong>
+        <span class="insights-section__preview">
+            — {% trans "how actively participants engage with their program" %}
+        </span>
+    </summary>
+    <p class="chart-description muted">{% trans "How actively participants are engaging with their program — based on what staff observe during sessions." %}</p>
+    <div class="descriptor-pills">
+        {% for label, pct in structured.engagement_distribution.items %}
+        <span class="pill pill--engagement">{{ label }}: {{ pct }}%</span>
+        {% endfor %}
+    </div>
+    {% if interp_engagement %}<p class="insight-interpretation">{{ interp_engagement }}</p>{% endif %}
+</details>
+{% endif %}
+
+{# ── Two Lenses detail (expanded view below summary cards) ─────── #}
+{% if two_lenses %}
+<details id="section-two-lenses" class="insights-section" {% if two_lenses.gap_abs > 10 %}open{% endif %}>
+    <summary>
+        <strong>{% trans "Two Lenses" %}</strong>
+        <span class="insights-section__preview">
+            — {% trans "comparing participant and staff perspectives" %}
+        </span>
+    </summary>
+    <p class="chart-description muted">{% trans "How participants rate their own confidence compared to how staff rate their progress — both perspectives matter." %}</p>
+    <div class="insights-two-lenses">
+        <div class="insights-two-lenses__column">
+            <p class="insights-two-lenses__label">{% trans "Participants" %}</p>
+            <p class="insights-two-lenses__value">{{ two_lenses.self_report_pct }}%</p>
+            <p class="insights-two-lenses__detail">{% trans "feel confident" %}</p>
+        </div>
+        <div class="insights-two-lenses__column">
+            <p class="insights-two-lenses__label">{% trans "Staff" %}</p>
+            <p class="insights-two-lenses__value">{{ two_lenses.staff_pct }}%</p>
+            <p class="insights-two-lenses__detail">{% trans "rated 'in a good place'" %}</p>
+        </div>
+    </div>
+    <p class="insights-two-lenses__gap">
+        {% if two_lenses.gap_direction == "participants_higher" %}
+            {% blocktrans with gap=two_lenses.gap_abs %}Gap: +{{ gap }}% — participants slightly more optimistic{% endblocktrans %}
+        {% elif two_lenses.gap_direction == "staff_higher" %}
+            {% blocktrans with gap=two_lenses.gap_abs %}Gap: -{{ gap }}% — staff rate progress slightly higher{% endblocktrans %}
+        {% else %}
+            {% trans "Participant and staff perspectives are closely aligned" %}
+        {% endif %}
+    </p>
+</details>
 {% endif %}
 
 {# ── AI summary button ── #}
@@ -272,7 +438,8 @@
     <small class="muted">{% trans "Uses AI to generate a narrative draft with cited quotes. Review before including in reports." %}</small>
 </div>
 {% endif %}
-{% endif %}{# end not sparse #}
+
+{% endif %}{# end sparse vs trend #}
 
 {% endif %}{# end note_count > 0 #}
 
