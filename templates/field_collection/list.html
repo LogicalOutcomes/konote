@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Field Collection" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Field Collection" %}</h1>
+    <p>{% trans "Configure offline mobile data collection for field staff using ODK Central." %}</p>
+</hgroup>
+
+<h2>{% trans "Programs" %}</h2>
+<figure>
+<table role="grid" aria-label="{% trans 'Field collection settings by program' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "Program" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Profile" %}</th>
+            <th scope="col">{% trans "Data Tier" %}</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in program_configs %}
+        <tr>
+            <td>{{ item.program.name }}</td>
+            <td>
+                {% if item.config.enabled %}
+                    <span class="badge badge-success">{% trans "Enabled" %}</span>
+                {% else %}
+                    <span class="badge badge-neutral">{% trans "Disabled" %}</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if item.config.enabled %}
+                    {{ item.config.get_profile_display }}
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+            <td>
+                {% if item.config.enabled %}
+                    {{ item.config.get_data_tier_display }}
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'field_collection:edit' item.program.pk %}"
+                   role="button" class="outline secondary"
+                   style="padding: 0.25rem 0.5rem; margin: 0;">
+                    {% trans "Configure" %}
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+
+{% if recent_syncs %}
+<h2>{% trans "Recent Sync Activity" %}</h2>
+<figure>
+<table role="grid" aria-label="{% trans 'Recent sync runs' %}">
+    <thead>
+        <tr>
+            <th scope="col">{% trans "When" %}</th>
+            <th scope="col">{% trans "Direction" %}</th>
+            <th scope="col">{% trans "Status" %}</th>
+            <th scope="col">{% trans "Pushed" %}</th>
+            <th scope="col">{% trans "Pulled" %}</th>
+            <th scope="col">{% trans "Errors" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sync in recent_syncs %}
+        <tr>
+            <td>{{ sync.started_at|date:"Y-m-d H:i" }}</td>
+            <td>{{ sync.get_direction_display }}</td>
+            <td>
+                {% if sync.status == "success" %}
+                    <span class="badge badge-success">{% trans "Success" %}</span>
+                {% elif sync.status == "partial" %}
+                    <span class="badge badge-warning">{% trans "Partial" %}</span>
+                {% elif sync.status == "failed" %}
+                    <span class="badge badge-danger">{% trans "Failed" %}</span>
+                {% else %}
+                    <span class="badge badge-neutral">{% trans "Running" %}</span>
+                {% endif %}
+            </td>
+            <td>{{ sync.participants_pushed }} {% trans "participants" %}, {{ sync.groups_pushed }} {% trans "groups" %}</td>
+            <td>{{ sync.attendance_records_created }} {% trans "attendance" %}, {{ sync.notes_created }} {% trans "notes" %}</td>
+            <td>{{ sync.error_count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</figure>
+{% endif %}
+
+{% endblock %}

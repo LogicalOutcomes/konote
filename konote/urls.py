@@ -61,6 +61,7 @@ urlpatterns = [
 
     # ── /admin/ routes (Admin only) ──
     path("admin/settings/", include("apps.admin_settings.urls")),
+    path("admin/field-collection/", include("apps.field_collection.urls")),
     # Redirect /settings/ to /admin/settings/ for convenience
     path("settings/", login_required(RedirectView.as_view(url="/admin/settings/", permanent=False))),
 

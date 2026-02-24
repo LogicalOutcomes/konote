@@ -39,6 +39,11 @@ AUTH_MODE = os.environ.get("AUTH_MODE", "local")
 # Demo mode — shows quick-login buttons on login page
 DEMO_MODE = os.environ.get("DEMO_MODE", "").lower() in ("1", "true", "yes")
 
+# ODK Central — offline field data collection (optional)
+ODK_CENTRAL_URL = os.environ.get("ODK_CENTRAL_URL", "")
+ODK_CENTRAL_EMAIL = os.environ.get("ODK_CENTRAL_EMAIL", "")
+ODK_CENTRAL_PASSWORD = os.environ.get("ODK_CENTRAL_PASSWORD", "")
+
 # Application definition
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -62,6 +67,7 @@ INSTALLED_APPS = [
     "apps.portal",
     "apps.communications",
     "apps.surveys",
+    "apps.field_collection",
 ]
 
 MIDDLEWARE = [
