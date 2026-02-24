@@ -14601,11 +14601,11 @@ msgstr "Étape 2 de 2"
 
 #: apps/programs/access.py
 msgid ""
-"This note is restricted to a specific program. Contact your administrator if "
-"you need cross-program access."
+"This note is restricted to a specific program. Contact your administrator if"
+" you need cross-program access."
 msgstr ""
 "Cette note est réservée à un programme spécifique. Contactez votre "
-"administrateur si vous avez besoin d\u2019un accès inter-programmes."
+"administrateur si vous avez besoin d\\u2019un accès inter-programmes."
 
 msgid "What is a goal?"
 msgstr "Qu’est-ce qu’un objectif ?"
@@ -14752,15 +14752,23 @@ msgstr ""
 "terrain via ODK Central."
 
 msgid "Configure offline mobile data collection for this program."
-msgstr "Configurer la collecte de données mobile hors ligne pour ce programme."
+msgstr ""
+"Configurer la collecte de données mobile hors ligne pour ce programme."
 
 msgid ""
 "Controls what participant information is available on field devices. Higher "
 "tiers expose more personal information and require stricter device security."
 msgstr ""
 "Contrôle les renseignements sur les participants disponibles sur les "
-"appareils de terrain. Les niveaux supérieurs exposent plus de renseignements "
-"personnels et exigent une sécurité accrue des appareils."
+"appareils de terrain. Les niveaux supérieurs exposent plus de renseignements"
+" personnels et exigent une sécurité accrue des appareils."
+
+msgid ""
+"DV safety: circles with blocked members and fewer than 4 visible members are"
+" automatically hidden"
+msgstr ""
+"Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres "
+"visibles sont automatiquement masqués"
 
 msgid "DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"
 msgstr "Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres visibles sont automatiquement masqués"
@@ -14772,16 +14780,19 @@ msgid "Data tier"
 msgstr "Niveau de données"
 
 msgid "Determines which forms are available to field staff."
-msgstr "Détermine quels formulaires sont disponibles pour le personnel de terrain."
+msgstr ""
+"Détermine quels formulaires sont disponibles pour le personnel de terrain."
 
 msgid "Enable Field Collection"
 msgstr "Activer la collecte de terrain"
 
 msgid "Enable offline field data collection for this program"
-msgstr "Activer la collecte de données de terrain hors ligne pour ce programme"
+msgstr ""
+"Activer la collecte de données de terrain hors ligne pour ce programme"
 
 msgid "Enable offline field data collection for this program."
-msgstr "Activer la collecte de données de terrain hors ligne pour ce programme."
+msgstr ""
+"Activer la collecte de données de terrain hors ligne pour ce programme."
 
 msgid "Field Collection"
 msgstr "Collecte de terrain"
@@ -14817,11 +14828,12 @@ msgid ""
 "ID + first name + last initial. For large caseloads with name collisions. "
 "Requires device PIN."
 msgstr ""
-"ID + prénom + initiale du nom. Pour les grandes charges de cas avec des "
-"noms similaires. Exige un NIP d'appareil."
+"ID + prénom + initiale du nom. Pour les grandes charges de cas avec des noms"
+" similaires. Exige un NIP d'appareil."
 
 msgid "ID + first name. Sufficient for most programs with small caseloads."
-msgstr "ID + prénom. Suffisant pour la plupart des programmes avec peu de dossiers."
+msgstr ""
+"ID + prénom. Suffisant pour la plupart des programmes avec peu de dossiers."
 
 msgid ""
 "ID + name + last initial + phone. For home visiting with appointment "
@@ -14940,8 +14952,8 @@ msgstr ""
 msgid ""
 "Visit Note form only. For individual outreach, coaching, and check-ins."
 msgstr ""
-"Formulaire de note de visite seulement. Pour l'accompagnement individuel, "
-"le coaching et les suivis."
+"Formulaire de note de visite seulement. Pour l'accompagnement individuel, le"
+" coaching et les suivis."
 
 msgid "When"
 msgstr "Quand"
@@ -14986,3 +14998,190 @@ msgstr "exécutions de synchronisation"
 
 msgid "— None —"
 msgstr "— Aucun —"
+
+msgid "%(scored)d scored · %(low_pct).0f%% need more support"
+msgstr "%(scored)d évalué(e)s · %(low_pct).0f %% ont besoin de plus de soutien"
+
+msgid "Achievement"
+msgstr "Atteinte"
+
+msgid ""
+"Achievement rates for program-defined outcomes. Shows the percentage of "
+"participants who have reached each milestone."
+msgstr ""
+"Taux d'atteinte des résultats définis par le programme. Affiche le "
+"pourcentage de participant(e)s ayant atteint chaque jalon."
+
+msgid "Active participants"
+msgstr "Participant(e)s actifs"
+
+msgid "Band"
+msgstr "Palier"
+
+msgid "Data completeness"
+msgstr "Complétude des données"
+
+msgid ""
+"Distribution of participants across outcome bands, based on their most "
+"recent scores. One data point per person (median across goals)."
+msgstr ""
+"Répartition des participant(e)s selon les paliers de résultats, basée sur "
+"leurs scores les plus récents. Un point de données par personne (médiane de "
+"l'ensemble des objectifs)."
+
+msgid "Distributions may not represent the full program."
+msgstr "Les répartitions peuvent ne pas représenter l'ensemble du programme."
+
+msgid "False for metrics like PHQ-9 where lower is better."
+msgstr "Faux pour les mesures comme le PHQ-9 où un score plus bas est meilleur."
+
+msgid "Feedback themes"
+msgstr "Thèmes de rétroaction"
+
+msgid "Full data"
+msgstr "Données complètes"
+
+msgid "Gap: aligned"
+msgstr "Écart\u00a0: aligné"
+
+msgid "Goals within reach"
+msgstr "Objectifs à portée"
+
+msgid "Headline"
+msgstr "En vedette"
+
+msgid "High band boundary (scale metrics)."
+msgstr "Limite du palier supérieur (mesures par échelle)."
+
+msgid ""
+"How workers rate participant progress at each session — a professional "
+"judgment, not a measured score."
+msgstr ""
+"Comment les intervenant(e)s évaluent la progression des participant(e)s à "
+"chaque séance — un jugement professionnel, pas un score mesuré."
+
+msgid "Line chart showing staff assessment trends by month"
+msgstr "Graphique linéaire montrant les tendances d'évaluation du personnel par mois"
+
+msgid "Low band boundary (scale metrics)."
+msgstr "Limite du palier inférieur (mesures par échelle)."
+
+msgid "Low band threshold must be less than high band threshold."
+msgstr "Le seuil du palier inférieur doit être inférieur au seuil du palier supérieur."
+
+msgid "Low data"
+msgstr "Peu de données"
+
+msgid "More support needed"
+msgstr "Plus de soutien nécessaire"
+
+msgid ""
+"Movement tracking — who is progressing between bands over time — will be "
+"available in a future update."
+msgstr ""
+"Le suivi des mouvements — qui progresse entre les paliers au fil du temps "
+"— sera disponible dans une mise à jour future."
+
+msgid "Not yet achieved"
+msgstr "Pas encore atteint"
+
+msgid "Numeric scale"
+msgstr "Échelle numérique"
+
+msgid "On track"
+msgstr "En bonne voie"
+
+msgid "Open feedback themes"
+msgstr "Thèmes de rétroaction ouverts"
+
+msgid "Optional target % for achievement metrics (e.g. 70 for 70%)."
+msgstr "Cible facultative en % pour les mesures d'atteinte (ex. 70 pour 70 %)."
+
+msgid "Optional target for % in high band (scale metrics)."
+msgstr "Cible facultative pour le % dans le palier supérieur (mesures par échelle)."
+
+msgid ""
+"Options for achievement metrics, e.g. [\"Employed\", \"In training\", "
+"\"Unemployed\"]."
+msgstr ""
+"Options pour les mesures d'atteinte, ex. [\"Employed\", \"In training\", "
+"\"Unemployed\"]."
+
+msgid "Partial data"
+msgstr "Données partielles"
+
+msgid "Participant Voice"
+msgstr "Voix des participant(e)s"
+
+msgid "Please enter a valid JSON list, e.g. [\"Option 1\", \"Option 2\"]."
+msgstr "Veuillez entrer une liste JSON valide, ex. [\"Option 1\", \"Option 2\"]."
+
+msgid "Program Outcomes"
+msgstr "Résultats du programme"
+
+msgid ""
+"Scale = numeric value recorded repeatedly. Achievement = categorical, "
+"typically recorded once."
+msgstr ""
+"Échelle = valeur numérique enregistrée de façon répétée. Atteinte = "
+"catégorielle, généralement enregistrée une seule fois."
+
+msgid "Secondary signal"
+msgstr "Signal secondaire"
+
+msgid "Small sample — interpret gap with caution."
+msgstr "Petit échantillon — interpréter l'écart avec prudence."
+
+msgid "Staff Assessments"
+msgstr "Évaluations du personnel"
+
+msgid "Staff Assessments Over Time"
+msgstr "Évaluations du personnel au fil du temps"
+
+msgid "Staff assessment trend data"
+msgstr "Données de tendance des évaluations du personnel"
+
+msgid "This field must be a list, e.g. [\\\"Option 1\\\", \\\"Option 2\\\"]."
+msgstr "Ce champ doit être une liste, ex. [\\\"Option 1\\\", \\\"Option 2\\\"]."
+
+msgid "Trend"
+msgstr "Tendance"
+
+msgid "Two Lenses"
+msgstr "Deux perspectives"
+
+msgid "Where Participants Are"
+msgstr "Où en sont les participant(e)s"
+
+msgid "Which options count as achieved, e.g. [\"Employed\"]."
+msgstr "Quelles options comptent comme atteintes, ex. [\"Employed\"]."
+
+msgid "active"
+msgstr "actif"
+
+msgid "declining"
+msgstr "en déclin"
+
+msgid "e.g. [\"Employed\", \"In training\", \"Unemployed\"]"
+msgstr "ex. [\"Employed\", \"In training\", \"Unemployed\"]"
+
+msgid "e.g. [\"Employed\"]"
+msgstr "ex. [\"Employed\"]"
+
+msgid "good place"
+msgstr "bonne posture"
+
+msgid "improving"
+msgstr "en amélioration"
+
+msgid "most recent"
+msgstr "le plus récent"
+
+msgid "open themes"
+msgstr "thèmes ouverts"
+
+msgid "rated"
+msgstr "évalué(e)s"
+
+msgid "stable"
+msgstr "stable"
