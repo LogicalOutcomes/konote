@@ -186,6 +186,7 @@ Current DRRs:
 - `tasks/design-rationale/reporting-architecture.md` — Reporting system (canonical). Template-driven + ad-hoc paths, aggregation rules, period picker, consortium pipeline, privacy safeguards. Defers to multi-tenancy.md for suppression thresholds and consent.
 - `tasks/design-rationale/executive-dashboard-redesign.md` — Executive dashboard UX. Stats grid, program cards, accessibility. Monitoring only — does not produce exportable files.
 - `tasks/design-rationale/phipa-consent-enforcement.md` — PHIPA cross-program consent enforcement. Enforcement matrix (which views need filtering), anti-patterns (rejected approaches like custom managers, middleware), deferred work (search, qualitative summary), fail-closed design.
+- `tasks/design-rationale/insights-metric-distributions.md` — Insights page & program reporting. Distributions not averages, three data layers (outcomes/goals/qualitative), client-centred page hierarchy, Campbell's Law safeguards, band display labels.
 
 ### How Claude Manages Tasks
 
