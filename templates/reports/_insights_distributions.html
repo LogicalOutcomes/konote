@@ -2,7 +2,7 @@
 {# Layer 1: Where Participants Are — scale metric band distributions #}
 
 {% if metric_distributions %}
-<section aria-labelledby="distributions-heading">
+<section aria-label="{% trans 'Where Participants Are' %}">
 
 {% for metric_id, dist in metric_distributions.items %}
 <div class="insights-distribution-bar">
@@ -58,10 +58,6 @@
             {% trans "Goals within reach" %}: {{ dist.band_high_pct }}%
         </span>
     </div>
-
-    {# Trend direction #}
-    {% with trend_dir=trend_directions|default_if_none:""|dictsort:metric_id %}
-    {% endwith %}
 
     {# Accessible data table #}
     {% if metric_trends %}

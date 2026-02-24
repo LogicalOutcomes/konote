@@ -17,7 +17,7 @@ import logging
 from collections import defaultdict
 from statistics import median
 
-from django.db.models import DateTimeField, Q
+from django.db.models import DateTimeField
 from django.db.models.functions import Coalesce, TruncMonth
 
 from apps.clients.models import ClientProgramEnrolment

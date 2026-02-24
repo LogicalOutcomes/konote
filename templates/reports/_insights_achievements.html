@@ -2,7 +2,7 @@
 {# Layer 2: Program Outcomes — achievement metric progress bars #}
 
 {% if achievement_rates %}
-<section aria-labelledby="outcomes-heading">
+<section aria-label="{% trans 'Program Outcomes' %}">
 
 {% for metric_id, ach in achievement_rates.items %}
 <div class="insights-outcome-bar">
