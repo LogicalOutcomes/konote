@@ -106,7 +106,14 @@ class MetricDefinitionForm(forms.ModelForm):
 
     class Meta:
         model = MetricDefinition
-        fields = ["name", "name_fr", "definition", "definition_fr", "category", "min_value", "max_value", "unit", "unit_fr", "owning_program"]
+        fields = [
+            "name", "name_fr", "definition", "definition_fr", "category",
+            "metric_type", "higher_is_better",
+            "min_value", "max_value", "unit", "unit_fr",
+            "threshold_low", "threshold_high", "target_band_high_pct",
+            "achievement_options", "achievement_success_values", "target_rate",
+            "owning_program",
+        ]
         widgets = {
             "name": forms.TextInput(attrs={"placeholder": _("Metric name")}),
             "name_fr": forms.TextInput(attrs={"placeholder": _("French metric name (optional)")}),
@@ -116,6 +123,10 @@ class MetricDefinitionForm(forms.ModelForm):
             "max_value": forms.NumberInput(attrs={"step": "any"}),
             "unit": forms.TextInput(attrs={"placeholder": _("e.g., score, days, %")}),
             "unit_fr": forms.TextInput(attrs={"placeholder": _("e.g., pointage, jours, %")}),
+            "threshold_low": forms.NumberInput(attrs={"step": "any"}),
+            "threshold_high": forms.NumberInput(attrs={"step": "any"}),
+            "target_rate": forms.NumberInput(attrs={"step": "any", "min": "0", "max": "100"}),
+            "target_band_high_pct": forms.NumberInput(attrs={"step": "any", "min": "0", "max": "100"}),
         }
 
     def __init__(self, *args, requesting_user=None, **kwargs):
