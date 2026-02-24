@@ -15,6 +15,19 @@
     </div>
 </header>
 
+<!-- First-time onboarding banner (QA-W19) — dismissed permanently via localStorage -->
+<article class="onboarding-banner" id="onboarding-banner" hidden>
+    <header>
+        <strong>{% trans "Getting started" %}</strong>
+        <button type="button" class="close-btn" id="dismiss-onboarding" aria-label="{% trans 'Dismiss' %}">&times;</button>
+    </header>
+    <ul>
+        <li>{% blocktrans with clients=term.client_plural|default:"participants" %}Use the search bar to find {{ clients }}, or the "+ New" button to register one{% endblocktrans %}</li>
+        <li>{% blocktrans with client=term.client|default:"participant" %}Open a {{ client }} profile to view their plan, notes, and progress{% endblocktrans %}</li>
+        <li>{% trans "Need help? Ask your program manager or administrator" %}</li>
+    </ul>
+</article>
+
 <!-- Search and actions bar -->
 <div class="search-bar">
     <form id="search-filters">

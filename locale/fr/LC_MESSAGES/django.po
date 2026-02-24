@@ -14730,3 +14730,15 @@ msgstr ""
 "l\u2019<strong>exportation personnalis\u00e9e</strong>, o\u00f9 vous choisissez "
 "vous-m\u00eame le programme, les indicateurs et la p\u00e9riode."
 
+#: templates/clients/home.html — onboarding banner (QA-W19)
+msgid "Getting started"
+msgstr "Pour commencer"
+
+#: templates/clients/home.html
+msgid "Dismiss"
+msgstr "Fermer"
+
+#: templates/clients/home.html
+msgid "Need help? Ask your program manager or administrator"
+msgstr "Besoin d'aide? Contactez votre gestionnaire de programme ou administrateur"
+

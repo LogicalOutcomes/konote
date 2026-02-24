@@ -4426,6 +4426,39 @@ article[aria-label="notification"].fading-out {
     color: var(--kn-text-muted);
 }
 
+/* Dashboard onboarding banner (QA-W19) */
+.onboarding-banner {
+    background: var(--kn-primary-subtle);
+    border: 1px solid var(--kn-border-light);
+    border-radius: var(--kn-radius-card, 8px);
+    padding: var(--kn-space-base) var(--kn-space-lg);
+    margin-bottom: var(--kn-space-lg);
+}
+.onboarding-banner header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--kn-space-sm);
+}
+.onboarding-banner .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: var(--kn-text-muted);
+    padding: 0 var(--kn-space-xs);
+    line-height: 1;
+}
+.onboarding-banner ul {
+    margin: 0;
+    padding-left: 1.25em;
+    font-size: 0.9rem;
+    color: var(--kn-text-secondary);
+}
+.onboarding-banner li {
+    margin-bottom: var(--kn-space-xs);
+}
+
 /* Goal form — onboarding and step indicator */
 .onboarding-hint {
     background: var(--kn-primary-subtle);
