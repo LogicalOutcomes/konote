@@ -6,6 +6,7 @@ count from ~12 * N (where N = number of programs) to a fixed ~10 queries
 regardless of how many programs exist.
 """
 import datetime
+import logging
 from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
@@ -20,6 +21,8 @@ from apps.reports.metric_insights import (
     get_metric_distributions,
     get_metric_trends,
 )
+
+logger = logging.getLogger(__name__)
 
 
 # Minimum active participants before percentage metrics are shown.
@@ -996,41 +999,56 @@ def executive_dashboard(request):
         stat["theme_overflow"] = max(0, themes.get("total", 0) - len(top))
 
         # -- Outcome learning (metric insights) --
-        # Determine lead outcome, trend direction, and data completeness
-        achievement_rates = get_achievement_rates(program, month_start, today)
-        distributions = get_metric_distributions(program, month_start, today)
-        trends = get_metric_trends(program, month_start, today)
-        completeness = get_data_completeness(program, month_start, today)
+        # Determine lead outcome, trend direction, and data completeness.
+        # TODO: These are per-program DB calls. When scaling beyond ~10
+        #       programs, batch into a single query set per metric type.
+        try:
+            achievement_rates = get_achievement_rates(program, month_start, today)
+            distributions = get_metric_distributions(program, month_start, today)
+            trends = get_metric_trends(program, month_start, today)
+            completeness = get_data_completeness(program, month_start, today)
+        except Exception:
+            logger.exception(
+                "Failed to load metric insights for program %s", program.pk
+            )
+            achievement_rates = {}
+            distributions = {}
+            trends = {}
+            completeness = None
 
         lead_outcome = None
         lead_outcome_name = None
         lead_outcome_target = None
         lead_outcome_type = None  # "achievement" or "scale"
+        lead_metric_id = None  # track which metric is the lead
 
         # Layer 2: first achievement metric with achieved_pct
         if achievement_rates:
-            first_ach = next(iter(achievement_rates.values()))
+            first_key = next(iter(achievement_rates))
+            first_ach = achievement_rates[first_key]
             lead_outcome = first_ach["achieved_pct"]
             lead_outcome_name = first_ach["name"]
             lead_outcome_target = first_ach.get("target_rate")
             lead_outcome_type = "achievement"
+            lead_metric_id = first_key
 
         # Layer 1 fallback: first scale metric band_high_pct
         if lead_outcome is None and distributions:
-            first_dist = next(iter(distributions.values()))
+            first_key = next(iter(distributions))
+            first_dist = distributions[first_key]
             lead_outcome = first_dist["band_high_pct"]
             lead_outcome_name = first_dist["name"]
             lead_outcome_target = first_dist.get("target_band_high_pct")
             lead_outcome_type = "scale"
+            lead_metric_id = first_key
 
-        # Trend direction: compare first vs last month (>5% change)
+        # Trend direction: use the lead metric's trend (>5% change)
         trend_direction = None
-        if trends:
-            # Use the first metric's trend data
-            first_trend = next(iter(trends.values()))
-            if len(first_trend) >= 2:
-                first_pct = first_trend[0]["band_high_pct"]
-                last_pct = first_trend[-1]["band_high_pct"]
+        if trends and lead_metric_id and lead_metric_id in trends:
+            lead_trend = trends[lead_metric_id]
+            if len(lead_trend) >= 2:
+                first_pct = lead_trend[0]["band_high_pct"]
+                last_pct = lead_trend[-1]["band_high_pct"]
                 change = last_pct - first_pct
                 if change > 5:
                     trend_direction = "improving"

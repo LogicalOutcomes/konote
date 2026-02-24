@@ -775,6 +775,10 @@ output.form-output {
     margin-top: var(--kn-space-sm, 0.5rem);
     padding-top: var(--kn-space-sm, 0.5rem);
 }
+.outcome-heading {
+    font-size: 0.9rem;
+    margin-bottom: var(--kn-space-xs, 0.25rem);
+}
 .outcome-lead {
     font-weight: 700;
     font-size: 0.95rem;

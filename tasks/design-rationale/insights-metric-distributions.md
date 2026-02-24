@@ -306,6 +306,8 @@ Data completeness appears at three levels:
 
 This creates healthy pressure to *record data* rather than to *game data*.
 
+**Note on enrolment counts in executive dashboard:** The completeness indicator on executive dashboard cards shows "X of Y enrolled have scores". The enrolled count (Y) is operational data (how many people are in the program), not clinical data. It is already visible elsewhere on each program card (total/active counts). Showing it alongside data completeness does not introduce new privacy exposure but does provide the denominator needed to interpret the completeness percentage meaningfully.
+
 ## Movement Tracking (Deferred)
 
 Movement tracking answers: "How many people changed bands this period?" This is the most powerful insight but requires per-client longitudinal comparison (at least 2 data points per participant).

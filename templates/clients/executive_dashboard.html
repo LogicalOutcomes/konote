@@ -233,9 +233,7 @@
                 {# Outcome Learning section — only shown when lead_outcome is available #}
                 {% if stat.lead_outcome is not None %}
                 <div class="outcome-section">
-                    <div class="metric-row">
-                        <span class="metric-label"><strong>{% trans "Outcome Learning" %}</strong></span>
-                    </div>
+                    <h4 class="outcome-heading">{% trans "Outcome Learning" %}</h4>
 
                     {# Line 1: Lead outcome #}
                     <div class="metric-row">
