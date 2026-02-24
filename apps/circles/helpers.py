@@ -12,7 +12,7 @@ from apps.programs.models import UserProgramRole
 from .models import Circle, CircleMembership
 
 
-def _get_accessible_client_ids(user):
+def get_accessible_client_ids(user):
     """Return set of ClientFile IDs this user can access through program roles."""
     user_program_ids = set(
         UserProgramRole.objects.filter(user=user, status="active")
@@ -25,7 +25,7 @@ def _get_accessible_client_ids(user):
     )
 
 
-def _get_blocked_client_ids(user):
+def get_blocked_client_ids(user):
     """Return set of ClientFile IDs the user is blocked from (DV safety)."""
     return set(
         ClientAccessBlock.objects.filter(user=user, is_active=True)
@@ -49,8 +49,8 @@ def get_visible_circles(user):
     else:
         base_circles = Circle.objects.real().filter(status="active")
 
-    accessible_ids = _get_accessible_client_ids(user)
-    blocked_ids = _get_blocked_client_ids(user)
+    accessible_ids = get_accessible_client_ids(user)
+    blocked_ids = get_blocked_client_ids(user)
     # Remove blocked clients from accessible set
     accessible_ids -= blocked_ids
 
@@ -107,8 +107,8 @@ def get_accessible_notes_for_circle(circle, user):
 
     total_count = all_notes.count()
 
-    accessible_ids = _get_accessible_client_ids(user)
-    blocked_ids = _get_blocked_client_ids(user)
+    accessible_ids = get_accessible_client_ids(user)
+    blocked_ids = get_blocked_client_ids(user)
     accessible_ids -= blocked_ids
 
     accessible_notes = [

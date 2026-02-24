@@ -680,10 +680,10 @@ def client_detail(request, client_id):
     if circles_enabled and not is_receptionist:
         from apps.circles.models import CircleMembership
         from apps.circles.helpers import get_visible_circles
-        from apps.circles.helpers import _get_accessible_client_ids, _get_blocked_client_ids
+        from apps.circles.helpers import get_accessible_client_ids, get_blocked_client_ids
         visible_circle_ids = set(get_visible_circles(request.user).values_list("pk", flat=True))
-        accessible_client_ids = _get_accessible_client_ids(request.user)
-        blocked_client_ids = _get_blocked_client_ids(request.user)
+        accessible_client_ids = get_accessible_client_ids(request.user)
+        blocked_client_ids = get_blocked_client_ids(request.user)
         accessible_client_ids -= blocked_client_ids
         memberships = (
             CircleMembership.objects.filter(

@@ -100,11 +100,12 @@ def _compute_auto_calc_values(client):
     return computed
 
 
-def _get_circle_choices_for_client(client):
+def _get_circle_choices_for_client(client, user=None):
     """Return circle choices for the note form dropdown.
 
     Returns a list of (circle_id, circle_name) tuples for circles the client
-    belongs to, or an empty list if the circles feature is off.
+    belongs to that the user can see, or an empty list if the circles feature
+    is off. Filters by get_visible_circles when user is provided (DV safety).
     """
     from apps.admin_settings.models import FeatureToggle
     if not FeatureToggle.get_all_flags().get("circles", False):
@@ -113,6 +114,10 @@ def _get_circle_choices_for_client(client):
     memberships = CircleMembership.objects.filter(
         client_file=client, status="active",
     ).select_related("circle")
+    if user:
+        from apps.circles.helpers import get_visible_circles
+        visible_ids = set(get_visible_circles(user).values_list("pk", flat=True))
+        memberships = memberships.filter(circle_id__in=visible_ids)
     return [(m.circle_id, m.circle.name) for m in memberships]
 
 
@@ -357,7 +362,7 @@ def quick_note_create(request, client_id):
     if not _check_client_consent(client):
         return render(request, "notes/consent_required.html", {"client": client})
 
-    circle_choices = _get_circle_choices_for_client(client)
+    circle_choices = _get_circle_choices_for_client(client, request.user)
 
     if request.method == "POST":
         form = QuickNoteForm(request.POST, circle_choices=circle_choices or None)
@@ -434,7 +439,7 @@ def quick_note_inline(request, client_id):
     if not _check_client_consent(client):
         return render(request, "notes/_inline_consent_required.html", {"client": client})
 
-    circle_choices = _get_circle_choices_for_client(client)
+    circle_choices = _get_circle_choices_for_client(client, request.user)
 
     if request.method == "POST":
         form = QuickNoteForm(request.POST, circle_choices=circle_choices or None)
@@ -539,7 +544,7 @@ def note_create(request, client_id):
         return render(request, "notes/consent_required.html", {"client": client})
 
     auto_calc = _compute_auto_calc_values(client)
-    circle_choices = _get_circle_choices_for_client(client)
+    circle_choices = _get_circle_choices_for_client(client, request.user)
 
     if request.method == "POST":
         form = FullNoteForm(request.POST, circle_choices=circle_choices or None)

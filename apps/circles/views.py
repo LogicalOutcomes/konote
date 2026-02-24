@@ -243,6 +243,12 @@ def circle_archive(request, circle_id):
     circle.save()
     _audit_log(request.user, "update", circle, {"action": "archive"})
     messages.success(request, _("Circle archived."))
+    # HTMX: use HX-Redirect header so the full page navigates to list
+    if request.headers.get("HX-Request"):
+        from django.urls import reverse
+        response = HttpResponse(status=200)
+        response["HX-Redirect"] = reverse("circles:circle_list")
+        return response
     return redirect("circles:circle_list")
 
 
