@@ -429,6 +429,13 @@
 
 {% endif %}{# end note_count > 0 #}
 
+{# ══════════════════════════════════════════════════════════════════ #}
+{# ── Section 7: Workbench-to-Report Links ─────────────────────── #}
+{# ══════════════════════════════════════════════════════════════════ #}
+{% if partner_templates or upcoming_schedules %}
+{% include "reports/_insights_workbench_links.html" %}
+{% endif %}
+
 </section>
 
 {# Chart.js for descriptor trend #}
