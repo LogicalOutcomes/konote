@@ -13,6 +13,7 @@ from unittest.mock import MagicMock, patch
 from cryptography.fernet import Fernet
 from django.test import Client, TestCase, override_settings
 
+from apps.admin_settings.models import FeatureToggle
 from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.field_collection.models import ProgramFieldConfig, SyncRun
@@ -200,6 +201,11 @@ class FieldCollectionAdminViewsTest(TestCase):
             username="staff", password="testpass123", is_admin=False,
         )
         self.program = Program.objects.create(name="Home Visiting")
+        # Enable the feature toggle for view tests
+        FeatureToggle.objects.update_or_create(
+            feature_key="field_collection",
+            defaults={"is_enabled": True},
+        )
 
     def tearDown(self):
         enc_module._fernet = None
@@ -210,12 +216,26 @@ class FieldCollectionAdminViewsTest(TestCase):
         resp = self.http_client.get("/admin/field-collection/")
         self.assertNotEqual(resp.status_code, 200)
 
+    def test_list_view_requires_feature_toggle(self):
+        """Views return 404 when field_collection toggle is off."""
+        FeatureToggle.objects.filter(feature_key="field_collection").update(is_enabled=False)
+        self.http_client.login(username="admin", password="testpass123")
+        resp = self.http_client.get("/admin/field-collection/")
+        self.assertEqual(resp.status_code, 404)
+
     def test_list_view_shows_programs(self):
         """Admin can see all active programs with their field collection status."""
         self.http_client.login(username="admin", password="testpass123")
         resp = self.http_client.get("/admin/field-collection/")
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, "Home Visiting")
+
+    def test_list_view_no_side_effects(self):
+        """GET to list view does not create ProgramFieldConfig rows."""
+        self.http_client.login(username="admin", password="testpass123")
+        self.assertEqual(ProgramFieldConfig.objects.count(), 0)
+        self.http_client.get("/admin/field-collection/")
+        self.assertEqual(ProgramFieldConfig.objects.count(), 0)
 
     def test_edit_view_shows_form(self):
         self.http_client.login(username="admin", password="testpass123")
@@ -521,3 +541,266 @@ class ImportVisitNotesTest(TestCase):
 
         self.assertEqual(created, 0)
         self.assertEqual(skipped, 1)
+
+
+# ------------------------------------------------------------------
+# Profile save override tests
+# ------------------------------------------------------------------
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ProfileSaveOverrideTest(TestCase):
+    """Test that manual form toggle overrides survive saves."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Hybrid Program")
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_profile_defaults_applied_on_creation(self):
+        """New config gets profile defaults."""
+        config = ProgramFieldConfig(program=self.program, profile="group")
+        config.save()
+        self.assertTrue(config.form_session_attendance)
+        self.assertFalse(config.form_visit_note)
+
+    def test_manual_override_survives_non_profile_change(self):
+        """Changing data_tier should NOT reset form toggles."""
+        config = ProgramFieldConfig.objects.create(
+            program=self.program, profile="group",
+        )
+        # Profile defaults: attendance=True, visit_note=False
+        self.assertTrue(config.form_session_attendance)
+        self.assertFalse(config.form_visit_note)
+
+        # Manually enable visit_note (the override)
+        config.form_visit_note = True
+        config.save()
+        self.assertTrue(config.form_visit_note)
+
+        # Change tier (not profile) — override should survive
+        config.data_tier = "field"
+        config.save()
+        config.refresh_from_db()
+        self.assertTrue(config.form_visit_note, "Manual override was lost on non-profile save")
+
+    def test_profile_change_resets_toggles(self):
+        """Changing profile SHOULD reset form toggles to new profile defaults."""
+        config = ProgramFieldConfig.objects.create(
+            program=self.program, profile="group",
+        )
+        self.assertTrue(config.form_session_attendance)
+        self.assertFalse(config.form_visit_note)
+
+        # Change profile to home_visiting
+        config.profile = "home_visiting"
+        config.save()
+        config.refresh_from_db()
+        self.assertFalse(config.form_session_attendance)
+        self.assertTrue(config.form_visit_note)
+
+
+# ------------------------------------------------------------------
+# Group push tests
+# ------------------------------------------------------------------
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class GroupPushTest(TestCase):
+    """Test group entity generation for push."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Youth Rec")
+        self.group = Group.objects.create(
+            name="Tuesday Circle", program=self.program, group_type="group",
+        )
+        self.cf = ClientFile.objects.create(status="active")
+        self.cf.first_name = "Maria"
+        self.cf.save()
+        self.membership = GroupMembership.objects.create(
+            group=self.group, client_file=self.cf,
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_get_groups_for_push(self):
+        """Groups with active members are included in push."""
+        from apps.field_collection.management.commands.sync_odk import Command
+        cmd = Command()
+        groups = cmd._get_groups_for_push(self.program)
+
+        self.assertEqual(len(groups), 1)
+        self.assertEqual(groups[0]["name"], "Tuesday Circle")
+        self.assertEqual(len(groups[0]["members"]), 1)
+        self.assertEqual(groups[0]["members"][0]["name"], "Maria")
+
+    def test_inactive_groups_excluded(self):
+        """Inactive groups are not included in push."""
+        self.group.status = "inactive"
+        self.group.save()
+
+        from apps.field_collection.management.commands.sync_odk import Command
+        cmd = Command()
+        groups = cmd._get_groups_for_push(self.program)
+
+        self.assertEqual(len(groups), 0)
+
+
+# ------------------------------------------------------------------
+# Pull submissions orchestration tests
+# ------------------------------------------------------------------
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class PullSubmissionsTest(TestCase):
+    """Test _pull_submissions orchestration with mocked ODK client."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Home Visiting")
+        self.config = ProgramFieldConfig.objects.create(
+            program=self.program, enabled=True, profile="home_visiting",
+            odk_project_id=42,
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_pull_skips_when_no_project_id(self):
+        """Pull is skipped when config has no ODK project ID."""
+        self.config.odk_project_id = None
+        self.config.save(update_fields=["odk_project_id"])
+
+        from apps.field_collection.management.commands.sync_odk import Command
+        cmd = Command()
+        cmd.stdout = MagicMock()
+        cmd.stderr = MagicMock()
+        sync_run = SyncRun(direction="pull")
+
+        mock_client = MagicMock()
+        cmd._pull_submissions(mock_client, self.config, sync_run, dry_run=False)
+
+        mock_client.get_submissions.assert_not_called()
+
+    def test_pull_uses_since_filter(self):
+        """Pull uses last successful sync timestamp as since filter."""
+        # Create a past successful sync
+        from django.utils import timezone
+        past_sync = SyncRun.objects.create(
+            direction="pull", status="success",
+        )
+
+        from apps.field_collection.management.commands.sync_odk import Command
+        cmd = Command()
+        cmd.stdout = MagicMock()
+        cmd.stderr = MagicMock()
+        sync_run = SyncRun(direction="pull")
+
+        mock_client = MagicMock()
+        mock_client.get_submissions.return_value = []
+        cmd._pull_submissions(mock_client, self.config, sync_run, dry_run=False)
+
+        # Should have been called with a since parameter
+        call_args = mock_client.get_submissions.call_args
+        self.assertIsNotNone(call_args)
+        since_arg = call_args[1].get("since") or call_args[0][2] if len(call_args[0]) > 2 else call_args[1].get("since")
+        self.assertIsNotNone(since_arg)
+
+    def test_pull_dry_run_does_not_import(self):
+        """Dry run pulls submission count but does not create records."""
+        from apps.field_collection.management.commands.sync_odk import Command
+        cmd = Command()
+        cmd.stdout = MagicMock()
+        cmd.stderr = MagicMock()
+        sync_run = SyncRun(direction="pull")
+
+        mock_client = MagicMock()
+        mock_client.get_submissions.return_value = [
+            {"participant_konote_id": "1", "visit_date": "2026-02-24",
+             "visit_type": "home_visit", "observations": "Test"},
+        ]
+        cmd._pull_submissions(mock_client, self.config, sync_run, dry_run=True)
+
+        # Submissions were counted but not imported
+        self.assertEqual(sync_run.notes_created, 0)
+
+
+# ------------------------------------------------------------------
+# Handle() end-to-end tests (mocked ODK client)
+# ------------------------------------------------------------------
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class HandleEndToEndTest(TestCase):
+    """Test the sync_odk handle() method end-to-end with mocked ODK."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(name="Test Program")
+        ProgramFieldConfig.objects.create(
+            program=self.program, enabled=True, profile="home_visiting",
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    @patch.dict("os.environ", {
+        "ODK_CENTRAL_URL": "https://odk.example.com",
+        "ODK_CENTRAL_EMAIL": "admin@example.com",
+        "ODK_CENTRAL_PASSWORD": "secret",
+    })
+    @patch("apps.field_collection.odk_client.ODKCentralClient")
+    def test_dry_run_creates_no_records(self, MockClient):
+        """Dry run does not create SyncRun records."""
+        mock_instance = MockClient.return_value
+        mock_instance.list_projects.return_value = []
+
+        from apps.field_collection.management.commands.sync_odk import Command
+        cmd = Command()
+        cmd.stdout = MagicMock()
+        cmd.stderr = MagicMock()
+
+        initial_count = SyncRun.objects.count()
+        cmd.handle(direction="both", program=None, dry_run=True)
+        self.assertEqual(SyncRun.objects.count(), initial_count)
+
+    @patch.dict("os.environ", {
+        "ODK_CENTRAL_URL": "https://odk.example.com",
+        "ODK_CENTRAL_EMAIL": "admin@example.com",
+        "ODK_CENTRAL_PASSWORD": "secret",
+    })
+    @patch("apps.field_collection.odk_client.ODKCentralClient")
+    def test_handle_creates_sync_run(self, MockClient):
+        """Normal run creates a SyncRun record."""
+        mock_instance = MockClient.return_value
+        mock_instance.list_projects.return_value = []
+        mock_instance.get_project.return_value = {"id": 42}
+        mock_instance.create_project.return_value = {"id": 42}
+        mock_instance.list_entity_lists.return_value = []
+        mock_instance.list_entities.return_value = []
+        mock_instance.list_app_users.return_value = []
+        mock_instance.get_submissions.return_value = []
+
+        from apps.field_collection.management.commands.sync_odk import Command
+        cmd = Command()
+        cmd.stdout = MagicMock()
+        cmd.stderr = MagicMock()
+
+        cmd.handle(direction="push", program=None, dry_run=False)
+
+        sync_run = SyncRun.objects.latest("started_at")
+        self.assertEqual(sync_run.direction, "push")
+        self.assertIn(sync_run.status, ["success", "partial"])
+
+    def test_handle_missing_env_raises_error(self):
+        """Missing ODK env vars raises CommandError."""
+        from django.core.management.base import CommandError
+        from apps.field_collection.management.commands.sync_odk import Command
+
+        cmd = Command()
+        cmd.stdout = MagicMock()
+        cmd.stderr = MagicMock()
+
+        with patch.dict("os.environ", {"ODK_CENTRAL_URL": "", "ODK_CENTRAL_EMAIL": "", "ODK_CENTRAL_PASSWORD": ""}):
+            with self.assertRaises(CommandError):
+                cmd.handle(direction="both", program=None, dry_run=False)
