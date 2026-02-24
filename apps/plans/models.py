@@ -1,5 +1,6 @@
 """Plan sections, targets, metrics — the core outcomes tracking models."""
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -25,6 +26,11 @@ class MetricDefinition(models.Model):
         ("custom", _("Custom")),
     ]
 
+    METRIC_TYPE_CHOICES = [
+        ("scale", _("Numeric scale")),
+        ("achievement", _("Achievement")),
+    ]
+
     name = models.CharField(max_length=255)
     name_fr = models.CharField(
         max_length=255, blank=True, default="",
@@ -36,6 +42,38 @@ class MetricDefinition(models.Model):
         help_text=_("French definition (displayed when language is French)"),
     )
     category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default="custom")
+    metric_type = models.CharField(
+        max_length=20, choices=METRIC_TYPE_CHOICES, default="scale",
+        help_text="Scale metrics are recorded as numbers. Achievement metrics use categorical options.",
+    )
+    higher_is_better = models.BooleanField(
+        default=True,
+        help_text="False for metrics like PHQ-9 where lower scores indicate improvement.",
+    )
+    threshold_low = models.FloatField(
+        null=True, blank=True,
+        help_text="Low band boundary (scale metrics). Values at or below this are in the low band.",
+    )
+    threshold_high = models.FloatField(
+        null=True, blank=True,
+        help_text="High band boundary (scale metrics). Values at or above this are in the high band.",
+    )
+    achievement_options = models.JSONField(
+        default=list, blank=True,
+        help_text='Dropdown choices for achievement metrics, e.g. ["Employed", "In training", "Unemployed"].',
+    )
+    achievement_success_values = models.JSONField(
+        default=list, blank=True,
+        help_text='Which options count as "achieved", e.g. ["Employed"].',
+    )
+    target_rate = models.FloatField(
+        null=True, blank=True,
+        help_text="Target percentage for achievement metrics (e.g. 70 means aiming for 70% achieved).",
+    )
+    target_band_high_pct = models.FloatField(
+        null=True, blank=True,
+        help_text="Target percentage of participants in the high band (scale metrics).",
+    )
     is_library = models.BooleanField(default=False, help_text="Part of the built-in metric library.")
     is_universal = models.BooleanField(default=False, help_text="Universal scale (Goal Progress, Self-Efficacy, Satisfaction) shown prominently during goal creation.")
     is_enabled = models.BooleanField(default=True, help_text="Available for use in this instance.")
@@ -121,6 +159,68 @@ class MetricDefinition(models.Model):
         if get_language() == "fr" and self.portal_description_fr:
             return self.portal_description_fr
         return self.portal_description
+
+    def clean(self):
+        super().clean()
+        if self.threshold_low is not None and self.threshold_high is not None:
+            if self.threshold_low >= self.threshold_high:
+                raise ValidationError(
+                    {"threshold_high": _("High threshold must be greater than low threshold.")}
+                )
+        if self.metric_type == "achievement":
+            if self.threshold_low is not None or self.threshold_high is not None:
+                raise ValidationError(
+                    _("Scale thresholds do not apply to achievement metrics.")
+                )
+        if self.metric_type == "scale":
+            if self.achievement_options or self.achievement_success_values:
+                raise ValidationError(
+                    _("Achievement options do not apply to scale metrics.")
+                )
+
+    @property
+    def effective_threshold_low(self):
+        """Return threshold_low, or calculate from scale range (bottom third)."""
+        if self.threshold_low is not None:
+            return self.threshold_low
+        if self.min_value is not None and self.max_value is not None:
+            return self.min_value + (self.max_value - self.min_value) / 3
+        return None
+
+    @property
+    def effective_threshold_high(self):
+        """Return threshold_high, or calculate from scale range (top third)."""
+        if self.threshold_high is not None:
+            return self.threshold_high
+        if self.min_value is not None and self.max_value is not None:
+            return self.min_value + 2 * (self.max_value - self.min_value) / 3
+        return None
+
+    def classify_band(self, value):
+        """Classify a numeric value into band_low, band_mid, or band_high.
+
+        Respects higher_is_better: when False (e.g. PHQ-9), low values
+        are "goals within reach" (band_high) and high values are
+        "more support needed" (band_low).
+        """
+        low = self.effective_threshold_low
+        high = self.effective_threshold_high
+        if low is None or high is None:
+            return None
+
+        if self.higher_is_better:
+            if value <= low:
+                return "band_low"
+            elif value >= high:
+                return "band_high"
+            return "band_mid"
+        else:
+            # Lower is better (e.g. PHQ-9): high values need more support
+            if value >= high:
+                return "band_low"
+            elif value <= low:
+                return "band_high"
+            return "band_mid"
 
     class Meta:
         app_label = "plans"
