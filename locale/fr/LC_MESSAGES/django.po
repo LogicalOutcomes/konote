@@ -23,6 +23,9 @@ msgstr "Passer au contenu principal"
 msgid "Reports"
 msgstr "Rapports"
 
+msgid "No active programs found."
+msgstr "Aucun programme actif trouvé."
+
 msgid "No grouping"
 msgstr "Aucun regroupement"
 
@@ -1968,27 +1971,6 @@ msgstr ""
 
 msgid "This action cannot be undone."
 msgstr "Cette action ne peut pas être annulée."
-
-msgid ""
-"Their name and contact details will be blanked. Anonymous service records "
-"stay in reports. This cannot be undone."
-msgstr ""
-"Leur nom et leurs coordonnées seront effacés. Les dossiers de services "
-"anonymes restent dans les rapports. Cette action est irréversible."
-
-msgid ""
-"All individual information will be removed. Only anonymous counts remain in "
-"reports. This cannot be undone."
-msgstr ""
-"Toutes les informations individuelles seront supprimées. Seuls les totaux "
-"anonymes restent dans les rapports. Cette action est irréversible."
-
-msgid ""
-"Everything about this person will be permanently deleted, including from "
-"reports. This cannot be undone."
-msgstr ""
-"Toutes les données de cette personne seront définitivement supprimées, y "
-"compris des rapports. Cette action est irréversible."
 
 #, python-format
 msgid "Delete %(target)s"
@@ -7835,7 +7817,7 @@ msgid ""
 "for this participant."
 msgstr ""
 "Affichage des notes de %(program)s uniquement. Le partage entre programmes "
-"n\\u2019est pas activé pour ce participant."
+"n’est pas activé pour ce participant."
 
 #. Tri-state sharing display on client info tab
 msgid "Share across programs"
@@ -7845,7 +7827,7 @@ msgid "Restricted"
 msgstr "Restreint"
 
 msgid "Follow agency setting"
-msgstr "Suivre le paramètre de l\\u2019agence"
+msgstr "Suivre le paramètre de l’agence"
 
 msgid "Clinical notes are restricted to the program where they were recorded."
 msgstr ""
@@ -7854,8 +7836,8 @@ msgstr ""
 
 msgid "Uses the agency-wide default for cross-program note sharing."
 msgstr ""
-"Utilise le paramètre par défaut de l\\u2019agence pour le partage des notes "
-"entre programmes."
+"Utilise le paramètre par défaut de l’agence pour le partage des notes entre "
+"programmes."
 
 msgid "Cross-program note sharing"
 msgstr "Partage des notes entre programmes"
@@ -7864,9 +7846,9 @@ msgid ""
 "Controls whether clinical notes from other programs are visible for this "
 "participant. Most participants should use the agency default."
 msgstr ""
-"Contrôle si les notes cliniques d\\u2019autres programmes sont visibles pour"
-" ce participant. La plupart des participants devraient utiliser le paramètre"
-" par défaut de l\\u2019agence."
+"Contrôle si les notes cliniques d’autres programmes sont visibles pour ce "
+"participant. La plupart des participants devraient utiliser le paramètre par"
+" défaut de l’agence."
 
 msgid "Restrict to one program"
 msgstr "Restreindre à un seul programme"
@@ -7875,218 +7857,6 @@ msgid "Share clinical notes across programs for shared participants"
 msgstr ""
 "Partager les notes cliniques entre les programmes pour les participants "
 "partagés"
-
-#. Note sharing toggle (QA-R7-PRIVACY2)
-msgid "Share notes across programs"
-msgstr "Partager les notes entre les programmes"
-
-msgid "On"
-msgstr "Activé"
-
-msgid "Off"
-msgstr "Désactivé"
-
-#, python-format
-msgid "Notes about %(name)s are visible to staff in all their programs."
-msgstr ""
-"Les notes concernant %(name)s sont visibles au personnel de tous ses "
-"programmes."
-
-#, python-format
-msgid ""
-"Notes about %(name)s are only visible to the program that created them."
-msgstr ""
-"Les notes concernant %(name)s ne sont visibles que par le programme qui les "
-"a créées."
-
-msgid "Stop sharing"
-msgstr "Arrêter le partage"
-
-msgid "Start sharing"
-msgstr "Activer le partage"
-
-msgid "Note sharing enabled."
-msgstr "Partage des notes activé."
-
-msgid "Note sharing disabled."
-msgstr "Partage des notes désactivé."
-
-#, python-format
-msgid ""
-"Stop sharing %(name)s's notes across programs? Notes will only be visible to"
-" the program that created them."
-msgstr ""
-"Arrêter le partage des notes de %(name)s entre les programmes? Les notes ne "
-"seront visibles que par le programme qui les a créées."
-
-#. Data access request (QA-R7-PRIVACY1)
-msgid "Log Data Access Request"
-msgstr "Consigner une demande d'accès aux données"
-
-#, python-format
-msgid "Record a data access request from %(name)s or their representative."
-msgstr ""
-"Consigner une demande d'accès aux données de %(name)s ou de son "
-"représentant."
-
-msgid "Date request received"
-msgstr "Date de réception de la demande"
-
-msgid "How was the request received?"
-msgstr "Comment la demande a-t-elle été reçue?"
-
-msgid "Verbal"
-msgstr "Verbal"
-
-msgid "Written"
-msgstr "Écrit"
-
-msgid ""
-"The 30-day PIPEDA response deadline will be calculated from the date above."
-msgstr ""
-"Le délai de réponse de 30 jours selon la LPRPDE sera calculé à partir de la "
-"date ci-dessus."
-
-msgid "Log Request & View Checklist"
-msgstr "Consigner et voir la liste de vérification"
-
-msgid "Data access request logged."
-msgstr "Demande d'accès aux données consignée."
-
-msgid "Data Access Request"
-msgstr "Demande d'accès aux données"
-
-msgid "Date Received"
-msgstr "Date de réception"
-
-msgid "Received By"
-msgstr "Reçue par"
-
-msgid "Logged By"
-msgstr "Consignée par"
-
-#, python-format
-msgid "Delivered on %(date)s (%(method)s)."
-msgstr "Remise le %(date)s (%(method)s)."
-
-msgid "Overdue"
-msgstr "En retard"
-
-#, python-format
-msgid ""
-"The 30-day PIPEDA deadline was %(date)s. Please respond as soon as possible."
-msgstr ""
-"Le délai de 30 jours selon la LPRPDE était le %(date)s. Veuillez répondre "
-"dès que possible."
-
-#, python-format
-msgid "Response due by %(date)s"
-msgstr "Réponse requise avant le %(date)s"
-
-#, python-format
-msgid "%(days)s days remaining."
-msgstr "%(days)s jours restants."
-
-msgid "Information to Gather"
-msgstr "Informations à rassembler"
-
-msgid "Not all items may apply to your agency. Include what you have."
-msgstr ""
-"Tous les éléments ne s'appliquent pas nécessairement à votre agence. Incluez"
-" ce que vous avez."
-
-msgid "Client profile (print the profile page)"
-msgstr "Profil du participant (imprimer la page de profil)"
-
-msgid "Program enrolments and status"
-msgstr "Inscriptions aux programmes et statut"
-
-msgid ""
-"Progress notes (use the notes list — filter by this participant, print or "
-"export)"
-msgstr ""
-"Notes de suivi (utiliser la liste des notes — filtrer par ce participant, "
-"imprimer ou exporter)"
-
-msgid "Plan goals and metric history (print the plan page)"
-msgstr ""
-"Objectifs du plan et historique des mesures (imprimer la page du plan)"
-
-msgid "Communication log entries"
-msgstr "Entrées du journal de communication"
-
-msgid "Survey responses (if your agency uses surveys)"
-msgstr "Réponses aux sondages (si votre agence utilise les sondages)"
-
-msgid "Alerts and flags"
-msgstr "Alertes et signalements"
-
-msgid ""
-"Review before including. You may withhold safety-related notes under PIPEDA "
-"s.9(1) if disclosure could threaten the safety of others."
-msgstr ""
-"Examiner avant d'inclure. Vous pouvez retenir les notes liées à la sécurité "
-"en vertu de l'art. 9(1) de la LPRPDE si la divulgation pourrait menacer la "
-"sécurité d'autrui."
-
-msgid "Mark as Complete"
-msgstr "Marquer comme terminé"
-
-msgid "How was the information delivered?"
-msgstr "Comment les informations ont-elles été remises?"
-
-msgid "Date delivered"
-msgstr "Date de remise"
-
-msgid "In person"
-msgstr "En personne"
-
-msgid "Mark this data access request as complete?"
-msgstr "Marquer cette demande d'accès aux données comme terminée?"
-
-msgid "Data access request marked as complete."
-msgstr "Demande d'accès aux données marquée comme terminée."
-
-msgid "This request has already been completed."
-msgstr "Cette demande a déjà été traitée."
-
-msgid "Back to Participant"
-msgstr "Retour au participant"
-
-msgid "Respond to Data Access Request"
-msgstr "Répondre à une demande d'accès aux données"
-
-msgid "These actions are for privacy compliance and data governance."
-msgstr ""
-"Ces actions concernent la conformité en matière de vie privée et la "
-"gouvernance des données."
-
-#. Privacy compliance banner (QA-R7-EXEC-COMPLIANCE1)
-msgid "Privacy Compliance"
-msgstr "Conformité en matière de vie privée"
-
-msgid "Privacy Action Required"
-msgstr "Action requise en matière de vie privée"
-
-#, python-format
-msgid "%(count)s erasure request pending"
-msgid_plural "%(count)s erasure requests pending"
-msgstr[0] "%(count)s demande d'effacement en attente"
-msgstr[1] "%(count)s demandes d'effacement en attente"
-
-#, python-format
-msgid "submitted %(days)s days ago"
-msgstr "soumise il y a %(days)s jours"
-
-#, python-format
-msgid "A data access request is overdue (%(days)s days past deadline)"
-msgstr ""
-"Une demande d'accès aux données est en retard (%(days)s jours après "
-"l'échéance)"
-
-#, python-format
-msgid "A data access request is due in %(days)s days"
-msgstr "Une demande d'accès aux données est due dans %(days)s jours"
 
 msgid ""
 "Once all program managers approve, participant data will be permanently "
@@ -8695,30 +8465,7 @@ msgstr "Code QR pour l’application d’authentification"
 msgid "QR code to scan with your authenticator app"
 msgstr "Code QR à scanner avec votre application d’authentification"
 
-msgid "Invalid verification code. Please try again."
-msgstr "Code de vérification invalide. Veuillez réessayer."
-
-msgid "Invalid code. Please check your authenticator app and try again."
-msgstr ""
-"Code invalide. Veuillez vérifier votre application d’authentification et "
-"réessayer."
-
-msgid "Invalid code. Please enter a valid verification code to disable MFA."
-msgstr ""
-"Code invalide. Veuillez entrer un code de vérification valide pour "
-"désactiver l’AMF."
-
-msgid "MFA is already enabled on your account."
-msgstr "L’AMF est déjà activée sur votre compte."
-
-msgid "Multi-factor authentication has been disabled."
-msgstr "L’authentification multifacteur a été désactivée."
-
-#, python-format
-msgid "You used a backup code. You have %(count)s remaining."
-msgstr "Vous avez utilisé un code de secours. Il vous en reste %(count)s."
-
-msgid "Read what you’ve said in your own words"
+msgid "Read what you've said in your own words"
 msgstr "Relisez ce que vous avez dit dans vos propres mots"
 
 msgid "Remove my account"
@@ -9476,9 +9223,6 @@ msgstr "Aucune donnée CSV trouvée. Veuillez réessayer le téléversement."
 
 msgid "No Show"
 msgstr "Absence"
-
-msgid "No active programs found."
-msgstr "Aucun programme actif trouvé."
 
 msgid "No breakdowns defined."
 msgstr "Aucune ventilation définie."
@@ -10453,6 +10197,9 @@ msgstr "Utilisez un langage simple — évitez les abréviations et le jargon."
 msgid "Who will see this alert"
 msgstr "Qui verra cette alerte"
 
+msgid "In person"
+msgstr "En personne"
+
 msgid "Save & Schedule Another"
 msgstr "Enregistrer et planifier une autre"
 
@@ -10834,15 +10581,15 @@ msgid ""
 "Activity overview for team meeting prep — shows notes, communications, and "
 "meetings by staff member."
 msgstr ""
-"Aperçu des activités pour la préparation des réunions d\\u2019équipe — "
-"notes, communications et réunions par membre du personnel."
+"Aperçu des activités pour la préparation des réunions d’équipe — notes, "
+"communications et réunions par membre du personnel."
 
 msgid ""
 "Are you sure you want to revoke portal access? The participant will be "
 "logged out immediately."
 msgstr ""
-"Voulez-vous vraiment révoquer l\\u2019accès au portail ? Le participant sera"
-" déconnecté immédiatement."
+"Voulez-vous vraiment révoquer l’accès au portail ? Le participant sera "
+"déconnecté immédiatement."
 
 msgid "Back to participant"
 msgstr "Retour au participant"
@@ -10896,7 +10643,7 @@ msgid "MFA method"
 msgstr "Méthode AMF"
 
 msgid "Manage portal access"
-msgstr "Gérer l\\u2019accès au portail"
+msgstr "Gérer l’accès au portail"
 
 msgid "Mark as Read"
 msgstr "Marquer comme lu"
@@ -10917,7 +10664,7 @@ msgid "No messages."
 msgstr "Aucun message."
 
 msgid "No portal account exists for this participant."
-msgstr "Aucun compte portail n\\u2019existe pour ce participant."
+msgstr "Aucun compte portail n’existe pour ce participant."
 
 msgid "No staff activity found for this period."
 msgstr "Aucune activité du personnel trouvée pour cette période."
@@ -10932,10 +10679,10 @@ msgid "Portal Access"
 msgstr "Accès au portail"
 
 msgid "Reset MFA"
-msgstr "Réinitialiser l\\u2019AMF"
+msgstr "Réinitialiser l’AMF"
 
 msgid "Revoke Access"
-msgstr "Révoquer l\\u2019accès"
+msgstr "Révoquer l’accès"
 
 msgid "Selected staff member not found."
 msgstr "Membre du personnel sélectionné introuvable."
@@ -10943,8 +10690,8 @@ msgstr "Membre du personnel sélectionné introuvable."
 msgid ""
 "Share this code verbally — do not write it down or include it in the link."
 msgstr ""
-"Partagez ce code verbalement — ne l\\u2019écrivez pas et ne l\\u2019incluez "
-"pas dans le lien."
+"Partagez ce code verbalement — ne l’écrivez pas et ne l’incluez pas dans le "
+"lien."
 
 msgid "Share this link with the participant:"
 msgstr "Partagez ce lien avec le participant :"
@@ -10955,13 +10702,13 @@ msgstr ""
 "Membre du personnel destinataire. Vide = tout intervenant de ce dossier."
 
 msgid "Team Activity"
-msgstr "Activité de l\\u2019équipe"
+msgstr "Activité de l’équipe"
 
 msgid "Team Activity Summary"
-msgstr "Résumé de l\\u2019activité de l\\u2019équipe"
+msgstr "Résumé de l’activité de l’équipe"
 
 msgid "Team activity summary"
-msgstr "Résumé de l\\u2019activité de l\\u2019équipe"
+msgstr "Résumé de l’activité de l’équipe"
 
 msgid "This view is for program managers only."
 msgstr "Cette vue est réservée aux gestionnaires de programme."
@@ -10982,8 +10729,8 @@ msgid ""
 "You can create a new invite — the old one will remain valid until it "
 "expires."
 msgstr ""
-"Vous pouvez créer une nouvelle invitation — l\\u2019ancienne restera valide "
-"jusqu\\u2019à son expiration."
+"Vous pouvez créer une nouvelle invitation — l’ancienne restera valide "
+"jusqu’à son expiration."
 
 msgid "e.g. Sarah called, wants to reschedule Thursday appointment"
 msgstr "ex. Sarah a appelé, veut reporter le rendez-vous de jeudi"
@@ -13193,23 +12940,6 @@ msgstr "ce mois-ci"
 msgid "total"
 msgstr "total"
 
-#: apps/reports/insights_views.py
-msgid "improving"
-msgstr "en amélioration"
-
-#: apps/reports/insights_views.py
-msgid "declining"
-msgstr "en déclin"
-
-#: apps/reports/insights_views.py
-msgid "stable"
-msgstr "stable"
-
-#: apps/reports/insights_views.py
-#, python-format
-msgid "%(scored)d scored · %(low_pct).0f%% need more support"
-msgstr "%(scored)d évalués · %(low_pct).0f %% ont besoin de plus de soutien"
-
 #: apps/portal/templates/portal/staff_manage_portal.html
 #, python-format
 msgid "Manage portal access for %(name)s."
@@ -14322,6 +14052,9 @@ msgstr "Notes enregistrées"
 msgid "Older than 14 days"
 msgstr "Plus de 14 jours"
 
+msgid "Overdue"
+msgstr "En retard"
+
 msgid "Overdue:"
 msgstr "En retard :"
 
@@ -14521,34 +14254,6 @@ msgstr ""
 msgid "# Overall: %(met)s of %(total)s clients met at least one target"
 msgstr ""
 "# Global : %(met)s sur %(total)s clients ont atteint au moins une cible"
-
-#: apps/reports/views.py
-msgid "# Program: %(name)s"
-msgstr "# Programme : %(name)s"
-
-#: apps/reports/views.py
-msgid "# Date Range: %(from)s to %(to)s"
-msgstr "# Période : %(from)s au %(to)s"
-
-#: apps/reports/views.py
-msgid "# Total Participants: %(count)s"
-msgstr "# Total des participants : %(count)s"
-
-#: apps/reports/views.py
-msgid "# Total Clients: %(count)s"
-msgstr "# Total des clients : %(count)s"
-
-#: apps/reports/views.py
-msgid "# Total Data Points: %(count)s"
-msgstr "# Total des points de données : %(count)s"
-
-#: apps/reports/views.py
-msgid "# Grouped By: %(label)s"
-msgstr "# Regroupé par : %(label)s"
-
-#: apps/reports/views.py
-msgid "# ===== BREAKDOWN BY %(label)s ====="
-msgstr "# ===== VENTILATION PAR %(label)s ====="
 
 msgid "AGE DEMOGRAPHICS"
 msgstr "DONNÉES DÉMOGRAPHIQUES PAR ÂGE"
@@ -14813,7 +14518,7 @@ msgstr "Quel rapport ?"
 msgid "[To be added during review]"
 msgstr "[À ajouter lors de la révision]"
 
-msgid "\\u2014 Select a report \\u2014"
+msgid "— Select a report —"
 msgstr "— Sélectionner un rapport —"
 
 msgid "instead."
@@ -14821,9 +14526,6 @@ msgstr "à la place."
 
 msgid "template-driven report"
 msgstr "rapport basé sur un modèle"
-
-msgid "— Select a report —"
-msgstr "— Sélectionner un rapport —"
 
 msgid "Access restricted to clinical staff."
 msgstr "Accès réservé au personnel clinique."
@@ -14843,9 +14545,6 @@ msgstr "Chargement des options de période…"
 msgid "participant"
 msgstr "participant"
 
-msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
-msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
-
 msgid "Add a Goal"
 msgstr "Ajouter un objectif"
 
@@ -14853,13 +14552,13 @@ msgid "Attendance Rate"
 msgstr "Taux de présence"
 
 msgid "Create a custom export"
-msgstr "Cr\\u00e9er une exportation personnalis\\u00e9e"
+msgstr "Créer une exportation personnalisée"
 
 msgid "Custom Export"
-msgstr "Exportation personnalis\\u00e9e"
+msgstr "Exportation personnalisée"
 
 msgid "Go to Custom Export"
-msgstr "Aller \\u00e0 l\\u2019exportation personnalis\\u00e9e"
+msgstr "Aller à l’exportation personnalisée"
 
 msgid "Listen"
 msgstr "Écouter"
@@ -14868,13 +14567,13 @@ msgid "Log Communication"
 msgstr "Consigner une communication"
 
 msgid "Manage Report Templates"
-msgstr "G\\u00e9rer les mod\\u00e8les de rapports"
+msgstr "Gérer les modèles de rapports"
 
 msgid "N/R"
 msgstr "N/C"
 
 msgid "Need a different report?"
-msgstr "Besoin d\\u2019un autre rapport\\u00a0?"
+msgstr "Besoin d’un autre rapport ?"
 
 msgid "No messages yet."
 msgstr "Aucun message pour le moment."
@@ -14900,7 +14599,7 @@ msgid ""
 " you need cross-program access."
 msgstr ""
 "Cette note est réservée à un programme spécifique. Contactez votre "
-"administrateur si vous avez besoin d\\u2019un accès inter-programmes."
+"administrateur si vous avez besoin d'un accès inter-programmes."
 
 msgid "What is a goal?"
 msgstr "Qu’est-ce qu’un objectif ?"
@@ -14935,18 +14634,18 @@ msgstr ""
 "formulerez en un objectif court et mesurable avec un indicateur de progrès."
 
 msgid "Request a new report template"
-msgstr "Demander un nouveau mod\\u00e8le de rapport"
+msgstr "Demander un nouveau modèle de rapport"
 
 msgid "Set up report templates"
-msgstr "Configurer les mod\\u00e8les de rapports"
+msgstr "Configurer les modèles de rapports"
 
 msgid ""
 "If none of the templates above match what you need, you can build a one-off "
 "report by choosing your own program, metrics, date range, and groupings."
 msgstr ""
-"Si aucun des mod\\u00e8les ci-dessus ne correspond \\u00e0 vos besoins, vous"
-" pouvez cr\\u00e9er un rapport ponctuel en choisissant votre programme, vos "
-"indicateurs, votre p\\u00e9riode et vos regroupements."
+"Si aucun des modèles ci-dessus ne correspond à vos besoins, vous pouvez "
+"créer un rapport ponctuel en choisissant votre programme, vos indicateurs, "
+"votre période et vos regroupements."
 
 msgid ""
 "Report templates are set up by your administrator. If you need a recurring "
@@ -14954,322 +14653,618 @@ msgid ""
 "administrator to create one. They can define which metrics, demographics, "
 "and time periods to include so the report is ready to generate each period."
 msgstr ""
-"Les mod\\u00e8les de rapports sont configur\\u00e9s par votre "
-"administrateur. Si vous avez besoin d\\u2019un rapport r\\u00e9current pour "
-"un partenaire, un bailleur de fonds ou un conseil d\\u2019administration qui"
-" n\\u2019est pas list\\u00e9 ci-dessus, demandez \\u00e0 votre "
-"administrateur d\\u2019en cr\\u00e9er un. Il peut d\\u00e9finir les "
-"indicateurs, les donn\\u00e9es d\\u00e9mographiques et les p\\u00e9riodes "
-"\\u00e0 inclure afin que le rapport soit pr\\u00eat \\u00e0 "
-"g\\u00e9n\\u00e9rer \\u00e0 chaque p\\u00e9riode."
+"Les modèles de rapports sont configurés par votre administrateur. Si vous "
+"avez besoin d’un rapport récurrent pour un partenaire, un bailleur de fonds "
+"ou un conseil d’administration qui n’est pas listé ci-dessus, demandez à "
+"votre administrateur d’en créer un. Il peut définir les indicateurs, les "
+"données démographiques et les périodes à inclure afin que le rapport soit "
+"prêt à générer à chaque période."
 
 msgid ""
 "No report templates have been set up yet. Report templates define what "
 "metrics and demographic breakdowns to include for recurring partner reports."
 " Contact your administrator to create one."
 msgstr ""
-"Aucun mod\\u00e8le de rapport n\\u2019a encore \\u00e9t\\u00e9 "
-"configur\\u00e9. Les mod\\u00e8les de rapports d\\u00e9finissent les "
-"indicateurs et les ventilations d\\u00e9mographiques \\u00e0 inclure pour "
-"les rapports r\\u00e9currents des partenaires. Contactez votre "
-"administrateur pour en cr\\u00e9er un."
+"Aucun modèle de rapport n’a encore été configuré. Les modèles de rapports "
+"définissent les indicateurs et les ventilations démographiques à inclure "
+"pour les rapports récurrents des partenaires. Contactez votre administrateur"
+" pour en créer un."
 
 msgid ""
 "In the meantime, you can create a one-off report using <strong>Custom "
 "Export</strong>, where you choose the program, metrics, and date range "
 "yourself."
 msgstr ""
-"En attendant, vous pouvez cr\\u00e9er un rapport ponctuel avec "
-"l\\u2019<strong>exportation personnalis\\u00e9e</strong>, o\\u00f9 vous "
-"choisissez vous-m\\u00eame le programme, les indicateurs et la "
-"p\\u00e9riode."
+"En attendant, vous pouvez créer un rapport ponctuel avec "
+"l'<strong>exportation personnalisée</strong>, où vous choisissez vous-même "
+"le programme, les indicateurs et la période."
 
-#: templates/clients/home.html — onboarding banner (QA-W19)
-msgid "Getting started"
-msgstr "Pour commencer"
-
-#: templates/clients/home.html
-msgid "Need help? Ask your program manager or administrator"
-msgstr ""
-"Besoin d'aide? Contactez votre gestionnaire de programme ou administrateur"
-
-#: apps/clients/models.py — ERASE-H8
-msgid "Scheduled — Awaiting Erasure"
-msgstr "Planifié — En attente d'effacement"
-
-#: apps/clients/erasure_views.py
-#, python-format
 msgid ""
-"All approvals received. %(term)s data is scheduled for permanent erasure in "
-"24 hours. You can cancel during this period."
+"All forms. For programs doing both group sessions and individual visits."
 msgstr ""
-"Toutes les approbations reçues. Les données du/de la %(term)s sont "
-"planifiées pour un effacement permanent dans 24 heures. Vous pouvez annuler "
-"pendant cette période."
+"Tous les formulaires. Pour les programmes combinant séances de groupe et "
+"visites individuelles."
 
-#: apps/clients/erasure_views.py
-msgid "This erasure cannot be cancelled — it is not in scheduled status."
-msgstr ""
-"Cet effacement ne peut pas être annulé — il n'est pas en statut planifié."
-
-#: apps/clients/erasure_views.py
-#, python-format
-msgid "Scheduled erasure cancelled. %(term)s data has been preserved."
-msgstr ""
-"Effacement planifié annulé. Les données du/de la %(term)s ont été "
-"préservées."
-
-#: templates/clients/erasure/erasure_request_detail.html
-msgid "Scheduled for Permanent Erasure"
-msgstr "Planifié pour effacement permanent"
-
-#: templates/clients/erasure/erasure_request_detail.html
-msgid "Cancel Scheduled Erasure"
-msgstr "Annuler l'effacement planifié"
-
-#: templates/clients/erasure/erasure_request_detail.html
-msgid "Cancel this scheduled erasure? The participant data will be preserved."
-msgstr ""
-"Annuler cet effacement planifié? Les données du participant seront "
-"préservées."
-
-#: templates/clients/erasure/erasure_request_detail.html
-msgid "Scheduled erasure notice"
-msgstr "Avis d'effacement planifié"
+msgid "%(scored)d scored · %(low_pct).0f%% need more support"
+msgstr "%(scored)d évalué(e)s · %(low_pct).0f %% ont besoin de plus de soutien"
 
 msgid "Achievement"
-msgstr ""
+msgstr "Atteinte"
 
 msgid ""
 "Achievement rates for program-defined outcomes. Shows the percentage of "
 "participants who have reached each milestone."
 msgstr ""
+"Taux d'atteinte des résultats définis par le programme. Affiche le "
+"pourcentage de participant(e)s ayant atteint chaque jalon."
 
 msgid "Active participants"
-msgstr ""
-
-msgid "Backup codes"
-msgstr ""
+msgstr "Participant(e)s actifs"
 
 msgid "Band"
-msgstr ""
-
-msgid "Can't scan the QR code?"
-msgstr ""
-
-msgid "Continue to dashboard"
-msgstr ""
+msgstr "Palier"
 
 msgid "Data completeness"
-msgstr ""
-
-msgid "Disable MFA"
-msgstr ""
-
-msgid "Disable Multi-Factor Authentication"
-msgstr ""
+msgstr "Complétude des données"
 
 msgid ""
 "Distribution of participants across outcome bands, based on their most "
 "recent scores. One data point per person (median across goals)."
 msgstr ""
+"Répartition des participant(e)s selon les paliers de résultats, basée sur "
+"leurs scores les plus récents. Un point de données par personne (médiane de "
+"l'ensemble des objectifs)."
 
 msgid "Distributions may not represent the full program."
-msgstr ""
-
-msgid "Enter the 6-digit code from your app"
-msgstr ""
-
-msgid "Enter this secret key manually in your authenticator app:"
-msgstr ""
+msgstr "Les répartitions peuvent ne pas représenter l'ensemble du programme."
 
 msgid "False for metrics like PHQ-9 where lower is better."
-msgstr ""
+msgstr "Faux pour les mesures comme le PHQ-9 où un score plus bas est meilleur."
 
 msgid "Feedback themes"
-msgstr ""
+msgstr "Thèmes de rétroaction"
 
 msgid "Full data"
-msgstr ""
+msgstr "Données complètes"
 
 msgid "Gap: aligned"
-msgstr ""
+msgstr "Écart\u00a0: aligné"
 
 msgid "Goals within reach"
-msgstr ""
+msgstr "Objectifs à portée"
 
 msgid "Headline"
-msgstr ""
+msgstr "En vedette"
 
 msgid "High band boundary (scale metrics)."
-msgstr ""
+msgstr "Limite du palier supérieur (mesures par échelle)."
 
 msgid ""
 "How workers rate participant progress at each session — a professional "
 "judgment, not a measured score."
 msgstr ""
+"Comment les intervenant(e)s évaluent la progression des participant(e)s à "
+"chaque séance — un jugement professionnel, pas un score mesuré."
 
-msgid ""
-"If you lose access to your authenticator app, you can use one of these "
-"backup codes to sign in. Each code can only be used once. Store them in a "
-"safe place."
-msgstr ""
+msgid "Invalid option selected."
+msgstr "Option sélectionnée non valide."
 
 msgid "Line chart showing staff assessment trends by month"
-msgstr ""
+msgstr "Graphique linéaire montrant les tendances d'évaluation du personnel par mois"
 
 msgid "Low band boundary (scale metrics)."
-msgstr ""
+msgstr "Limite du palier inférieur (mesures par échelle)."
 
 msgid "Low band threshold must be less than high band threshold."
-msgstr ""
+msgstr "Le seuil du palier inférieur doit être inférieur au seuil du palier supérieur."
 
 msgid "Low data"
-msgstr ""
-
-msgid "MFA Enabled"
-msgstr ""
-
-msgid "Mail"
-msgstr ""
+msgstr "Peu de données"
 
 msgid "More support needed"
-msgstr ""
+msgstr "Plus de soutien nécessaire"
 
 msgid ""
 "Movement tracking — who is progressing between bands over time — will be "
 "available in a future update."
 msgstr ""
-
-msgid "Multi-Factor Authentication Enabled"
-msgstr ""
+"Le suivi des mouvements — qui progresse entre les paliers au fil du temps "
+"— sera disponible dans une mise à jour future."
 
 msgid "Not yet achieved"
-msgstr ""
+msgstr "Pas encore atteint"
 
 msgid "Numeric scale"
-msgstr ""
+msgstr "Échelle numérique"
 
 msgid "On track"
-msgstr ""
+msgstr "En bonne voie"
 
 msgid "Open feedback themes"
-msgstr ""
+msgstr "Thèmes de rétroaction ouverts"
 
 msgid "Optional target % for achievement metrics (e.g. 70 for 70%)."
-msgstr ""
+msgstr "Cible facultative en % pour les mesures d'atteinte (ex. 70 pour 70 %)."
 
 msgid "Optional target for % in high band (scale metrics)."
-msgstr ""
+msgstr "Cible facultative pour le % dans le palier supérieur (mesures par échelle)."
 
 msgid ""
 "Options for achievement metrics, e.g. [\"Employed\", \"In training\", "
 "\"Unemployed\"]."
 msgstr ""
+"Options pour les mesures d'atteinte, ex. [\"Employed\", \"In training\", "
+"\"Unemployed\"]."
 
 msgid "Partial data"
-msgstr ""
+msgstr "Données partielles"
 
 msgid "Participant Voice"
-msgstr ""
+msgstr "Voix des participant(e)s"
 
 msgid "Please enter a valid JSON list, e.g. [\"Option 1\", \"Option 2\"]."
-msgstr ""
+msgstr "Veuillez entrer une liste JSON valide, ex. [\"Option 1\", \"Option 2\"]."
 
 msgid "Program Outcomes"
-msgstr ""
-
-msgid "Read what you've said in your own words"
-msgstr ""
-
-msgid "Save your backup codes"
-msgstr ""
+msgstr "Résultats du programme"
 
 msgid ""
 "Scale = numeric value recorded repeatedly. Achievement = categorical, "
 "typically recorded once."
 msgstr ""
-
-msgid ""
-"Scan the QR code below with your authenticator app (Google Authenticator, "
-"Microsoft Authenticator, Authy, etc.), then enter the 6-digit code to "
-"confirm."
-msgstr ""
+"Échelle = valeur numérique enregistrée de façon répétée. Atteinte = "
+"catégorielle, généralement enregistrée une seule fois."
 
 msgid "Secondary signal"
-msgstr ""
-
-msgid "Set Up Multi-Factor Authentication"
-msgstr ""
+msgstr "Signal secondaire"
 
 msgid "Small sample — interpret gap with caution."
-msgstr ""
+msgstr "Petit échantillon — interpréter l'écart avec prudence."
 
 msgid "Staff Assessments"
-msgstr ""
+msgstr "Évaluations du personnel"
 
 msgid "Staff Assessments Over Time"
-msgstr ""
+msgstr "Évaluations du personnel au fil du temps"
 
 msgid "Staff assessment trend data"
-msgstr ""
+msgstr "Données de tendance des évaluations du personnel"
 
 msgid "This field must be a list, e.g. [\\\"Option 1\\\", \\\"Option 2\\\"]."
-msgstr ""
-
-msgid ""
-"To disable MFA, enter a verification code from your authenticator app or a "
-"backup code."
-msgstr ""
+msgstr "Ce champ doit être une liste, ex. [\\\"Option 1\\\", \\\"Option 2\\\"]."
 
 msgid "Trend"
-msgstr ""
+msgstr "Tendance"
 
 msgid "Two Lenses"
-msgstr ""
-
-msgid "Verify Identity"
-msgstr ""
-
-msgid "Verify and Enable MFA"
-msgstr ""
-
-msgid "Verify your identity"
-msgstr ""
+msgstr "Deux perspectives"
 
 msgid "Where Participants Are"
-msgstr ""
+msgstr "Où en sont les participant(e)s"
 
 msgid "Which options count as achieved, e.g. [\"Employed\"]."
-msgstr ""
-
-msgid ""
-"You can also enter a backup code if you have lost access to your "
-"authenticator app."
-msgstr ""
-
-msgid ""
-"Your account is now protected with multi-factor authentication. You will "
-"need to enter a code from your authenticator app each time you sign in."
-msgstr ""
+msgstr "Quelles options comptent comme atteintes, ex. [\"Employed\"]."
 
 msgid "active"
-msgstr ""
+msgstr "actif"
+
+msgid "declining"
+msgstr "en déclin"
 
 msgid "e.g. [\"Employed\", \"In training\", \"Unemployed\"]"
-msgstr ""
+msgstr "ex. [\"Employed\", \"In training\", \"Unemployed\"]"
 
 msgid "e.g. [\"Employed\"]"
-msgstr ""
+msgstr "ex. [\"Employed\"]"
 
 msgid "good place"
-msgstr ""
+msgstr "bonne posture"
+
+msgid "improving"
+msgstr "en amélioration"
 
 msgid "most recent"
-msgstr ""
+msgstr "le plus récent"
 
 msgid "open themes"
-msgstr ""
+msgstr "thèmes ouverts"
 
 msgid "rated"
+msgstr "évalué(e)s"
+
+msgid "stable"
+msgstr "stable"
+
+msgid "All Programs — Organisation Summary"
+msgstr "Tous les programmes — Sommaire organisationnel"
+
+msgid "Data: Full"
+msgstr "Données : complètes"
+
+msgid "Data: Low"
+msgstr "Données : faibles"
+
+msgid "Data: Partial"
+msgstr "Données : partielles"
+
+msgid "Declining"
+msgstr "En baisse"
+
+msgid "Improving"
+msgstr "En hausse"
+
+msgid "Please select a program."
+msgstr "Veuillez sélectionner un programme."
+
+msgid "Program insight indicators"
+msgstr "Indicateurs d'aperçu du programme"
+
+msgid "Stable"
+msgstr "Stable"
+
+msgid "Urgent suggestion themes"
+msgstr "Thèmes de suggestions urgentes"
+
+msgid "urgent"
+msgstr "urgent"
+
+msgid "PDF export is not available for All Programs. Please select CSV."
 msgstr ""
+"L'exportation PDF n'est pas disponible pour Tous les programmes. Veuillez "
+"sélectionner CSV."
+
+msgid ""
+"# Note: Participants enrolled in multiple programs are counted once per "
+"program."
+msgstr ""
+"# Note : Les participants inscrits à plusieurs programmes sont comptés une "
+"fois par programme."
+
+msgid "All Programs \\u2014 Organisation Summary"
+msgstr ""
+
+msgid "None \\u2014 use default age categories"
+msgstr ""
+
+msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
+msgstr ""
+
+msgid "\\u2014 Custom date range \\u2014"
+msgstr ""
+
+msgid "\\u2014 Select a program \\u2014"
+msgstr ""
+
+msgid "\\u2014 Select a report \\u2014"
+msgstr ""
+msgid "Archive"
+msgstr "Archiver"
+
+msgid "Both directions"
+msgstr "Les deux directions"
+
+msgid "Choose either a participant or enter a name — not both."
+msgstr "Choisissez un(e) participant(e) ou entrez un nom — pas les deux."
+
+msgid "Choose either an existing circle or create a new one — not both."
+msgstr "Choisissez un cercle existant ou créez-en un nouveau — pas les deux."
+
+msgid ""
+"Choose the type of field work done in this program. This determines which "
+"forms are available to field staff."
+msgstr ""
+"Choisissez le type de travail de terrain effectué dans ce programme. Cela "
+"détermine quels formulaires sont disponibles pour le personnel de terrain."
+
+msgid "Circle"
+msgstr "Cercle"
+
+msgid "Circle Programs — visit notes + circle observations"
+msgstr "Programmes de cercles — notes de visite + observations de cercle"
+
+msgid "Circle archived."
+msgstr "Cercle archivé."
+
+msgid "Circle created."
+msgstr "Cercle créé."
+
+msgid ""
+"Circle notes should describe shared observations, not clinical details about"
+" specific individuals."
+msgstr ""
+"Les notes de cercle doivent décrire des observations partagées, pas des "
+"détails cliniques sur des personnes spécifiques."
+
+msgid "Circle updated."
+msgstr "Cercle mis à jour."
+
+msgid "Collection Profile"
+msgstr "Profil de collecte"
+
+msgid "Collection profile"
+msgstr "Profil de collecte"
+
+msgid "Configure"
+msgstr "Configurer"
+
+msgid ""
+"Configure offline mobile data collection for field staff using ODK Central."
+msgstr ""
+"Configurer la collecte de données mobile hors ligne pour le personnel de "
+"terrain via ODK Central."
+
+msgid "Configure offline mobile data collection for this program."
+msgstr ""
+"Configurer la collecte de données mobile hors ligne pour ce programme."
+
+msgid ""
+"Controls what participant information is available on field devices. Higher "
+"tiers expose more personal information and require stricter device security."
+msgstr ""
+"Contrôle les renseignements sur les participants disponibles sur les "
+"appareils de terrain. Les niveaux supérieurs exposent plus de renseignements"
+" personnels et exigent une sécurité accrue des appareils."
+
+msgid "DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"
+msgstr "Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres visibles sont automatiquement masqués"
+
+msgid "Data Tier"
+msgstr "Niveau de données"
+
+msgid "Data tier"
+msgstr "Niveau de données"
+
+msgid "Determines which forms are available to field staff."
+msgstr ""
+"Détermine quels formulaires sont disponibles pour le personnel de terrain."
+
+msgid "Enable Field Collection"
+msgstr "Activer la collecte de terrain"
+
+msgid "Enable offline field data collection for this program"
+msgstr ""
+"Activer la collecte de données de terrain hors ligne pour ce programme"
+
+msgid "Enable offline field data collection for this program."
+msgstr ""
+"Activer la collecte de données de terrain hors ligne pour ce programme."
+
+msgid "Field Collection"
+msgstr "Collecte de terrain"
+
+msgid "Field collection settings by program"
+msgstr "Paramètres de collecte de terrain par programme"
+
+msgid "Field collection settings updated for %(program)s."
+msgstr "Paramètres de collecte de terrain mis à jour pour %(program)s."
+
+msgid "Field — ID + first name + last initial"
+msgstr "Terrain — ID + prénom + initiale du nom"
+
+msgid "Field+Contact — ID + name + last initial + phone"
+msgstr "Terrain+Contact — ID + nom + initiale du nom + téléphone"
+
+msgid "For people who are not enrolled as participants."
+msgstr "Pour les personnes qui ne sont pas inscrites comme participant(e)s."
+
+msgid "Forms enabled:"
+msgstr "Formulaires activés :"
+
+msgid "Full Field — all forms"
+msgstr "Terrain complet — tous les formulaires"
+
+msgid "Group Programs — session attendance"
+msgstr "Programmes de groupe — présences aux séances"
+
+msgid "Home Visiting — visit notes"
+msgstr "Visites à domicile — notes de visite"
+
+msgid ""
+"ID + first name + last initial. For large caseloads with name collisions. "
+"Requires device PIN."
+msgstr ""
+"ID + prénom + initiale du nom. Pour les grandes charges de cas avec des noms"
+" similaires. Exige un NIP d'appareil."
+
+msgid "ID + first name. Sufficient for most programs with small caseloads."
+msgstr ""
+"ID + prénom. Suffisant pour la plupart des programmes avec peu de dossiers."
+
+msgid ""
+"ID + name + last initial + phone. For home visiting with appointment "
+"scheduling. Requires PIN + device policy."
+msgstr ""
+"ID + nom + initiale du nom + téléphone. Pour les visites à domicile avec "
+"prise de rendez-vous. Exige un NIP + politique d'appareil."
+
+msgid "Link to existing circle"
+msgstr "Lier à un cercle existant"
+
+msgid "Name (non-participant)"
+msgstr "Nom (non-participant(e))"
+
+msgid "ODK Central"
+msgstr "ODK Central"
+
+msgid "ODK Central project ID:"
+msgstr "ID de projet ODK Central :"
+
+msgid "Only KoNote ID on device. For DV shelters and high-risk programs."
+msgstr ""
+"Seulement l'ID KoNote sur l'appareil. Pour les maisons d'hébergement en "
+"violence conjugale et les programmes à risque élevé."
+
+msgid "Optional — link to an existing circle or create a new one below."
+msgstr ""
+"Facultatif — liez à un cercle existant ou créez-en un nouveau ci-dessous."
+
+msgid "Optional — describes this person's role in the circle."
+msgstr "Facultatif — décrit le rôle de cette personne dans le cercle."
+
+msgid "Or create a new circle"
+msgstr "Ou créer un nouveau cercle"
+
+msgid "Partial"
+msgstr "Partiel"
+
+msgid "Partial — some errors"
+msgstr "Partiel — quelques erreurs"
+
+msgid "Primary"
+msgstr "Principal(e)"
+
+msgid "Primary Contact"
+msgstr "Contact principal"
+
+msgid "Primary contact"
+msgstr "Contact principal"
+
+msgid "Privacy note"
+msgstr "Note de confidentialité"
+
+msgid "Privacy note:"
+msgstr "Note de confidentialité :"
+
+msgid ""
+"Program names and service types are never shown on field devices, regardless"
+" of tier. Form titles use generic names like 'Visit Note' and 'Session "
+"Attendance'."
+msgstr ""
+"Les noms de programmes et types de services ne sont jamais affichés sur les "
+"appareils de terrain, quel que soit le niveau. Les titres de formulaires "
+"utilisent des noms génériques comme « Note de visite » et « Présences aux "
+"séances »."
+
+msgid "Pull (ODK → KoNote)"
+msgstr "Réception (ODK → KoNote)"
+
+msgid "Pulled"
+msgstr "Reçu"
+
+msgid "Push (KoNote → ODK)"
+msgstr "Envoi (KoNote → ODK)"
+
+msgid "Pushed"
+msgstr "Envoyé"
+
+msgid "Recent Sync Activity"
+msgstr "Activité de synchronisation récente"
+
+msgid "Recent sync runs"
+msgstr "Synchronisations récentes"
+
+msgid "Relationship"
+msgstr "Relation"
+
+msgid "Restricted — ID only"
+msgstr "Restreint — ID seulement"
+
+msgid "Running"
+msgstr "En cours"
+
+msgid "Search by name..."
+msgstr "Rechercher par nom..."
+
+msgid ""
+"Session Attendance form only. For drop-in programs, workshops, and "
+"recreation."
+msgstr ""
+"Formulaire de présences aux séances seulement. Pour les programmes sans "
+"rendez-vous, ateliers et loisirs."
+
+msgid "Standard — ID + first name"
+msgstr "Standard — ID + prénom"
+
+msgid "This participant is already in this circle."
+msgstr "Ce ou cette participant(e) fait déjà partie de ce cercle."
+
+msgid ""
+"Visit Note + Circle Observation. For family and care network monitoring."
+msgstr ""
+"Note de visite + observation de cercle. Pour le suivi des familles et des "
+"réseaux de soutien."
+
+msgid ""
+"Visit Note form only. For individual outreach, coaching, and check-ins."
+msgstr ""
+"Formulaire de note de visite seulement. Pour l'accompagnement individuel, le"
+" coaching et les suivis."
+
+msgid "When"
+msgstr "Quand"
+
+msgid ""
+"When enabled, field staff can use ODK Collect on their phones or tablets to "
+"record data offline and sync when back online."
+msgstr ""
+"Lorsqu'activé, le personnel de terrain peut utiliser ODK Collect sur son "
+"téléphone ou sa tablette pour enregistrer des données hors ligne et "
+"synchroniser au retour en ligne."
+
+msgid "Who does the agency call first?"
+msgstr "Qui l'organisme appelle-t-il en premier?"
+
+msgid "attendance"
+msgstr "présences"
+
+msgid "e.g. Garcia Family"
+msgstr "ex. Famille Garcia"
+
+msgid "e.g. parent, spouse, child, caregiver"
+msgstr "ex. parent, conjoint(e), enfant, aidant(e)"
+
+msgid "e.g. parent, spouse, sibling"
+msgstr "ex. parent, conjoint(e), frère/sœur"
+
+msgid "field collection configuration"
+msgstr "configuration de collecte de terrain"
+
+msgid "field collection configurations"
+msgstr "configurations de collecte de terrain"
+
+msgid "groups"
+msgstr "groupes"
+
+msgid "sync run"
+msgstr "exécution de synchronisation"
+
+msgid "sync runs"
+msgstr "exécutions de synchronisation"
+
+msgid "— None —"
+msgstr "— Aucun —"
+
+msgid "\u2014 Select a report \u2014"
+msgstr "— Sélectionner un rapport —"
+
+msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\u2013%(m2)s)"
+msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s\u2013%(m2)s)"
+
+msgid "No outcome data recorded yet"
+msgstr "Aucune donnée de résultats enregistrée"
+
+msgid "Outcome data suppressed (fewer than 5 participants with data)"
+msgstr ""
+"Données de résultats supprimées (moins de 5 participants avec des données)"
+
+msgid "Program Learning"
+msgstr "Apprentissage du programme"
+
+msgid "View program learning"
+msgstr "Voir l’apprentissage du programme"
+
+msgid "feedback themes to review"
+msgstr "thèmes de rétroaction à examiner"
+
+msgid "goals within reach"
+msgstr "objectifs à portée"
+
+msgid "participants with data"
+msgstr "participants avec des données"
+
+msgid "target"
+msgstr "cible"
+
+msgid "trend"
+msgstr "tendance"
+

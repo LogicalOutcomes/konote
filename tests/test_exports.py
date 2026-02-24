@@ -855,3 +855,541 @@ class ConsortiumMetricLockingTest(TestCase):
         form = MetricExportForm(data={}, user=self.user)
         self.assertEqual(form.consortium_locked_metrics, set())
         self.assertEqual(form.consortium_partner_name, "")
+
+
+# ---------------------------------------------------------------------------
+# All Programs option tests (REP-ALL-PROGS1)
+# ---------------------------------------------------------------------------
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AllProgramsFormChoicesTest(TestCase):
+    """The 'All Programs' option should appear only when user has > 1 program."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+        from apps.auth_app.models import User
+        from apps.programs.models import Program, UserProgramRole
+
+        self.user = User.objects.create_user(
+            username="multi_pm", password="pass", display_name="Multi PM"
+        )
+        self.program_a = Program.objects.create(name="Housing")
+        self.program_b = Program.objects.create(name="Employment")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program_a, role="program_manager", status="active"
+        )
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program_b, role="program_manager", status="active"
+        )
+
+        # A user with only one program
+        self.single_user = User.objects.create_user(
+            username="single_pm", password="pass", display_name="Single PM"
+        )
+        UserProgramRole.objects.create(
+            user=self.single_user, program=self.program_a, role="program_manager", status="active"
+        )
+
+    def tearDown(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+    def test_all_programs_shown_for_multi_program_user(self):
+        """User with 2+ programs sees the 'All Programs' choice."""
+        from apps.reports.forms import MetricExportForm
+
+        form = MetricExportForm(user=self.user)
+        choice_values = [v for v, _label in form.fields["program"].choices]
+        self.assertIn(MetricExportForm.ALL_PROGRAMS_VALUE, choice_values)
+
+    def test_all_programs_hidden_for_single_program_user(self):
+        """User with only 1 program should NOT see 'All Programs'."""
+        from apps.reports.forms import MetricExportForm
+
+        form = MetricExportForm(user=self.single_user)
+        choice_values = [v for v, _label in form.fields["program"].choices]
+        self.assertNotIn(MetricExportForm.ALL_PROGRAMS_VALUE, choice_values)
+
+    def test_funder_form_all_programs_shown_for_multi_program_user(self):
+        """FunderReportForm also shows 'All Programs' for multi-program users."""
+        from apps.reports.forms import FunderReportForm
+
+        form = FunderReportForm(user=self.user)
+        choice_values = [v for v, _label in form.fields["program"].choices]
+        self.assertIn(FunderReportForm.ALL_PROGRAMS_VALUE, choice_values)
+
+    def test_funder_form_all_programs_hidden_for_single_program_user(self):
+        """FunderReportForm hides 'All Programs' for single-program users."""
+        from apps.reports.forms import FunderReportForm
+
+        form = FunderReportForm(user=self.single_user)
+        choice_values = [v for v, _label in form.fields["program"].choices]
+        self.assertNotIn(FunderReportForm.ALL_PROGRAMS_VALUE, choice_values)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AllProgramsCleanProgramTest(TestCase):
+    """clean_program() must handle the sentinel, empty, valid, and invalid values."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+        from apps.auth_app.models import User
+        from apps.plans.models import MetricDefinition
+        from apps.programs.models import Program, UserProgramRole
+
+        self.user = User.objects.create_user(
+            username="val_pm", password="pass", display_name="Val PM"
+        )
+        self.program_a = Program.objects.create(name="Housing")
+        self.program_b = Program.objects.create(name="Employment")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program_a, role="program_manager", status="active"
+        )
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program_b, role="program_manager", status="active"
+        )
+        # Create metric for form validation to pass
+        self.metric = MetricDefinition.objects.create(
+            name="Score", min_value=0, max_value=10, unit="pts",
+            definition="Test", category="general",
+        )
+
+    def tearDown(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+    def test_all_programs_sentinel_returns_none(self):
+        """Selecting '__all__' returns None (sentinel for all programs)."""
+        from apps.reports.forms import MetricExportForm
+
+        form = MetricExportForm(
+            data={
+                "program": MetricExportForm.ALL_PROGRAMS_VALUE,
+                "metrics": [str(self.metric.pk)],
+                "fiscal_year": "2025",
+                "format": "csv",
+                "recipient": "Test Recipient",
+                "recipient_reason": "Testing",
+            },
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertIsNone(form.cleaned_data["program"])
+        self.assertTrue(form.is_all_programs)
+
+    def test_valid_program_returns_program_instance(self):
+        """Selecting a valid program pk returns the Program object."""
+        from apps.reports.forms import MetricExportForm
+
+        form = MetricExportForm(
+            data={
+                "program": str(self.program_a.pk),
+                "metrics": [str(self.metric.pk)],
+                "fiscal_year": "2025",
+                "format": "csv",
+                "recipient": "Test Recipient",
+                "recipient_reason": "Testing",
+            },
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertEqual(form.cleaned_data["program"], self.program_a)
+        self.assertFalse(form.is_all_programs)
+
+    def test_empty_program_raises_validation_error(self):
+        """Empty program selection raises a validation error."""
+        from apps.reports.forms import MetricExportForm
+
+        form = MetricExportForm(
+            data={
+                "program": "",
+                "metrics": [str(self.metric.pk)],
+                "fiscal_year": "2025",
+                "format": "csv",
+                "recipient": "Test Recipient",
+                "recipient_reason": "Testing",
+            },
+            user=self.user,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("program", form.errors)
+
+    def test_invalid_program_pk_raises_validation_error(self):
+        """Non-existent program pk raises a validation error."""
+        from apps.reports.forms import MetricExportForm
+
+        form = MetricExportForm(
+            data={
+                "program": "99999",
+                "metrics": [str(self.metric.pk)],
+                "fiscal_year": "2025",
+                "format": "csv",
+                "recipient": "Test Recipient",
+                "recipient_reason": "Testing",
+            },
+            user=self.user,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("program", form.errors)
+
+    def test_inaccessible_program_raises_validation_error(self):
+        """Program the user does NOT have a role for raises a validation error."""
+        from apps.auth_app.models import User
+        from apps.programs.models import Program, UserProgramRole
+        from apps.reports.forms import MetricExportForm
+
+        # Create a third program user has NO role for
+        other_program = Program.objects.create(name="Other")
+
+        form = MetricExportForm(
+            data={
+                "program": str(other_program.pk),
+                "metrics": [str(self.metric.pk)],
+                "fiscal_year": "2025",
+                "format": "csv",
+                "recipient": "Test Recipient",
+                "recipient_reason": "Testing",
+            },
+            user=self.user,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("program", form.errors)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AllProgramsFunderFormCleanTest(TestCase):
+    """FunderReportForm clean_program() and clean() with All Programs."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+        from apps.auth_app.models import User
+        from apps.programs.models import Program, UserProgramRole
+        from apps.reports.models import Partner, ReportTemplate
+
+        self.user = User.objects.create_user(
+            username="funder_pm", password="pass", display_name="Funder PM"
+        )
+        self.program_a = Program.objects.create(name="Housing")
+        self.program_b = Program.objects.create(name="Employment")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program_a, role="program_manager", status="active"
+        )
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program_b, role="program_manager", status="active"
+        )
+        # Create a report template linked to program A
+        partner = Partner.objects.create(name="Test Funder", partner_type="funder")
+        partner.programs.add(self.program_a)
+        self.template = ReportTemplate.objects.create(
+            partner=partner, name="Annual Report",
+        )
+
+    def tearDown(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+    def test_all_programs_sentinel_returns_none(self):
+        """FunderReportForm with '__all__' returns None and is_all_programs is True."""
+        from apps.reports.forms import FunderReportForm
+
+        form = FunderReportForm(
+            data={
+                "program": FunderReportForm.ALL_PROGRAMS_VALUE,
+                "fiscal_year": "2025",
+                "format": "csv",
+                "recipient": "Test Recipient",
+                "recipient_reason": "Testing",
+            },
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        self.assertIsNone(form.cleaned_data["program"])
+        self.assertTrue(form.is_all_programs)
+
+    def test_all_programs_skips_template_program_validation(self):
+        """With All Programs, template-program cross-validation is skipped.
+
+        Normally FunderReportForm.clean() checks that a selected template is
+        linked to the selected program. With All Programs (program=None),
+        this check should be skipped — templates apply across all.
+        """
+        from apps.reports.forms import FunderReportForm
+
+        form = FunderReportForm(
+            data={
+                "program": FunderReportForm.ALL_PROGRAMS_VALUE,
+                "fiscal_year": "2025",
+                "format": "csv",
+                "report_template": str(self.template.pk),
+                "recipient": "Test Recipient",
+                "recipient_reason": "Testing",
+            },
+            user=self.user,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+
+    def test_is_all_programs_false_before_validation(self):
+        """is_all_programs returns False before is_valid() is called."""
+        from apps.reports.forms import FunderReportForm
+
+        form = FunderReportForm(
+            data={"program": FunderReportForm.ALL_PROGRAMS_VALUE},
+            user=self.user,
+        )
+        # Before calling is_valid(), cleaned_data doesn't exist
+        self.assertFalse(form.is_all_programs)
+
+
+class MergeAchievementSummariesTest(SimpleTestCase):
+    """Tests for merge_achievement_summaries() — cross-program aggregation."""
+
+    def test_empty_list_returns_zero_summary(self):
+        """Empty summaries list returns zero-ed out summary."""
+        from apps.reports.achievements import merge_achievement_summaries
+
+        result = merge_achievement_summaries([])
+        self.assertEqual(result["total_clients"], 0)
+        self.assertEqual(result["clients_met_any_target"], 0)
+        self.assertEqual(result["overall_rate"], 0.0)
+        self.assertEqual(result["by_metric"], [])
+
+    def test_single_summary_passed_through(self):
+        """A single summary should pass through with recalculated rate."""
+        from apps.reports.achievements import merge_achievement_summaries
+
+        summary = {
+            "total_clients": 20,
+            "clients_met_any_target": 15,
+            "overall_rate": 75.0,
+            "by_metric": [
+                {
+                    "metric_id": 1,
+                    "metric_name": "Confidence",
+                    "target_value": 7,
+                    "has_target": True,
+                    "total_clients": 20,
+                    "clients_met_target": 15,
+                },
+            ],
+        }
+        result = merge_achievement_summaries([summary])
+        self.assertEqual(result["total_clients"], 20)
+        self.assertEqual(result["clients_met_any_target"], 15)
+        self.assertEqual(result["overall_rate"], 75.0)
+        self.assertEqual(len(result["by_metric"]), 1)
+        self.assertEqual(result["by_metric"][0]["achievement_rate"], 75.0)
+
+    def test_two_programs_merge_correctly(self):
+        """Two program summaries should merge client counts and recalculate rates."""
+        from apps.reports.achievements import merge_achievement_summaries
+
+        summary_a = {
+            "total_clients": 10,
+            "clients_met_any_target": 8,
+            "overall_rate": 80.0,
+            "by_metric": [
+                {
+                    "metric_id": 1,
+                    "metric_name": "Confidence",
+                    "target_value": 7,
+                    "has_target": True,
+                    "total_clients": 10,
+                    "clients_met_target": 8,
+                },
+            ],
+        }
+        summary_b = {
+            "total_clients": 20,
+            "clients_met_any_target": 10,
+            "overall_rate": 50.0,
+            "by_metric": [
+                {
+                    "metric_id": 1,
+                    "metric_name": "Confidence",
+                    "target_value": 7,
+                    "has_target": True,
+                    "total_clients": 20,
+                    "clients_met_target": 10,
+                },
+            ],
+        }
+        result = merge_achievement_summaries([summary_a, summary_b])
+        self.assertEqual(result["total_clients"], 30)
+        self.assertEqual(result["clients_met_any_target"], 18)
+        self.assertEqual(result["overall_rate"], 60.0)
+        # Per-metric: 18/30 = 60%
+        self.assertEqual(len(result["by_metric"]), 1)
+        self.assertEqual(result["by_metric"][0]["total_clients"], 30)
+        self.assertEqual(result["by_metric"][0]["clients_met_target"], 18)
+        self.assertEqual(result["by_metric"][0]["achievement_rate"], 60.0)
+
+    def test_different_metrics_across_programs(self):
+        """Metrics unique to each program should both appear in merged output."""
+        from apps.reports.achievements import merge_achievement_summaries
+
+        summary_a = {
+            "total_clients": 10,
+            "clients_met_any_target": 5,
+            "overall_rate": 50.0,
+            "by_metric": [
+                {
+                    "metric_id": 1,
+                    "metric_name": "Confidence",
+                    "target_value": 7,
+                    "has_target": True,
+                    "total_clients": 10,
+                    "clients_met_target": 5,
+                },
+            ],
+        }
+        summary_b = {
+            "total_clients": 15,
+            "clients_met_any_target": 12,
+            "overall_rate": 80.0,
+            "by_metric": [
+                {
+                    "metric_id": 2,
+                    "metric_name": "Employment",
+                    "target_value": 1,
+                    "has_target": True,
+                    "total_clients": 15,
+                    "clients_met_target": 12,
+                },
+            ],
+        }
+        result = merge_achievement_summaries([summary_a, summary_b])
+        self.assertEqual(result["total_clients"], 25)
+        self.assertEqual(len(result["by_metric"]), 2)
+        metric_ids = {m["metric_id"] for m in result["by_metric"]}
+        self.assertEqual(metric_ids, {1, 2})
+
+    def test_metric_without_target_has_none_rate(self):
+        """Metrics with has_target=False should have achievement_rate=None."""
+        from apps.reports.achievements import merge_achievement_summaries
+
+        summary = {
+            "total_clients": 10,
+            "clients_met_any_target": 0,
+            "overall_rate": 0.0,
+            "by_metric": [
+                {
+                    "metric_id": 1,
+                    "metric_name": "Attendance",
+                    "target_value": None,
+                    "has_target": False,
+                    "total_clients": 10,
+                    "clients_met_target": None,
+                },
+            ],
+        }
+        result = merge_achievement_summaries([summary])
+        self.assertIsNone(result["by_metric"][0]["achievement_rate"])
+
+
+# ---------------------------------------------------------------------------
+# All Programs export integration test (Fix: program=None crash)
+# ---------------------------------------------------------------------------
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AllProgramsExportIntegrationTest(TestCase):
+    """POST to the metric export view with program='__all__' must not crash.
+
+    Regression test: when All Programs is selected, program is None.
+    Downstream calls to suppress_small_cell() and _write_achievement_csv()
+    must handle program=None without AttributeError.
+    """
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+        from apps.auth_app.models import User
+        from apps.clients.models import ClientFile, ClientProgramEnrolment
+        from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+        from apps.plans.models import MetricDefinition, PlanSection, PlanTarget, PlanTargetMetric
+        from apps.programs.models import Program, UserProgramRole
+
+        self.http = HttpClient()
+        # Admin user — bypasses permission checks and has access to all programs
+        self.admin = User.objects.create_user(
+            username="export_admin", password="pass", display_name="Admin",
+            is_admin=True,
+        )
+        self.program_a = Program.objects.create(name="Housing")
+        self.program_b = Program.objects.create(name="Employment")
+        # Admin still needs program roles for get_manageable_programs()
+        UserProgramRole.objects.create(
+            user=self.admin, program=self.program_a, role="program_manager", status="active"
+        )
+        UserProgramRole.objects.create(
+            user=self.admin, program=self.program_b, role="program_manager", status="active"
+        )
+
+        # Create a client enrolled in program A with metric data
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Export"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program_a, status="enrolled"
+        )
+
+        section = PlanSection.objects.create(
+            client_file=self.client_file, name="Goals", program=self.program_a,
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=self.client_file, name="Confidence",
+        )
+        self.metric = MetricDefinition.objects.create(
+            name="Score", min_value=0, max_value=10, unit="pts",
+            definition="Test metric", category="general",
+        )
+        PlanTargetMetric.objects.create(plan_target=target, metric_def=self.metric)
+
+        note = ProgressNote.objects.create(
+            client_file=self.client_file, author=self.admin,
+        )
+        pnt = ProgressNoteTarget.objects.create(
+            progress_note=note, plan_target=target,
+        )
+        MetricValue.objects.create(
+            metric_def=self.metric, progress_note_target=pnt, value="7",
+        )
+
+    def tearDown(self):
+        import konote.encryption as enc_module
+        enc_module._fernet = None
+
+    def test_all_programs_csv_export_returns_200(self):
+        """All Programs CSV export should return 200, not crash with AttributeError."""
+        self.http.login(username="export_admin", password="pass")
+        today = date.today()
+        resp = self.http.post("/reports/export/", {
+            "program": "__all__",
+            "metrics": [str(self.metric.pk)],
+            "date_from": (today - timedelta(days=90)).isoformat(),
+            "date_to": today.isoformat(),
+            "format": "csv",
+            "recipient": "Test Recipient",
+            "recipient_reason": "Integration test",
+        })
+        self.assertEqual(resp.status_code, 200)
+        # Should be a CSV download, not an error page
+        content_type = resp.get("Content-Type", "")
+        self.assertIn("text/csv", content_type)

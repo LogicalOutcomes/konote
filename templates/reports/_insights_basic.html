@@ -89,7 +89,11 @@
         {% endif %}
         {% elif trend_direction %}
         <div class="insights-card-label">{% trans "Trend" %}</div>
-        <div class="insights-card-value">{{ trend_direction }}</div>
+        <div class="insights-card-value">
+            {% if trend_direction == "improving" %}{% trans "Improving" %}
+            {% elif trend_direction == "declining" %}{% trans "Declining" %}
+            {% else %}{% trans "Stable" %}{% endif %}
+        </div>
         {% else %}
         <div class="insights-card-label">{% trans "Engagement" %}</div>
         <div class="insights-card-value">{{ structured.participant_count }} {% trans "active" %}</div>

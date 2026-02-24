@@ -48,6 +48,12 @@
         <label for="{{ form.follow_up_date.id_for_label }}">{% trans "Follow up by" %} <small class="secondary">{% trans "(optional)" %}</small></label>
         {{ form.follow_up_date }}
 
+        {% if form.circle %}
+        <label for="{{ form.circle.id_for_label }}">{{ form.circle.label }}</label>
+        {{ form.circle }}
+        {% if form.circle.help_text %}<small>{{ form.circle.help_text }}</small>{% endif %}
+        {% endif %}
+
         {# Consent — shown for session/home_visit and for reached contacts #}
         <div id="inline-consent-group" hidden>
             <label>

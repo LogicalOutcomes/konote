@@ -43,6 +43,7 @@ urlpatterns = [
     path("reports/client/<path:rest>", RedirectView.as_view(url="/reports/participant/%(rest)s", permanent=True)),
     path("reports/", include("apps.reports.urls")),
     path("groups/", include("apps.groups.urls")),
+    path("circles/", include("apps.circles.urls")),
     path("surveys/", include("apps.surveys.urls")),
     # ── Public survey links (no login required) ──
     path("s/<str:token>/", public_survey_form, name="public_survey_form"),
@@ -61,6 +62,7 @@ urlpatterns = [
 
     # ── /admin/ routes (Admin only) ──
     path("admin/settings/", include("apps.admin_settings.urls")),
+    path("admin/field-collection/", include("apps.field_collection.urls")),
     # Redirect /settings/ to /admin/settings/ for convenience
     path("settings/", login_required(RedirectView.as_view(url="/admin/settings/", permanent=False))),
 

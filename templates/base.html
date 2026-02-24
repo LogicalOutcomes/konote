@@ -66,6 +66,7 @@
         </ul>
         <ul>
             <li><a href="{% url 'auth_app:login' %}">{% trans "Sign In" %}</a></li>
+            <li>{% include "_lang_toggle.html" with inline=True form_class="nav-lang-form" %}</li>
         </ul>
     </nav>
     {% endif %}
@@ -93,6 +94,9 @@
             {% endif %}
             {% if features.groups and can_see_groups %}
             <li><a href="/groups/"{% if nav_active == "groups" %} class="nav-active" aria-current="page"{% endif %}>{{ term.group_plural|default:"Groups" }}</a></li>
+            {% endif %}
+            {% if features.circles and user_permissions.circle_view %}
+            <li><a href="/circles/"{% if nav_active == "circles" %} class="nav-active" aria-current="page"{% endif %}>{{ term.circle_plural|default:"Circles" }}</a></li>
             {% endif %}
             {% has_permission "meeting.view" as can_see_meetings %}
             {% if can_see_meetings %}
@@ -217,21 +221,7 @@
             <li class="nav-signout-mobile">
                 <a href="{% url 'auth_app:logout' %}">{% trans "Sign Out" %}</a>
             </li>
-            <li>
-                <!-- Language link — canada.ca convention -->
-                {% get_current_language as CURRENT_LANG %}
-                <form action="{% url 'switch_language' %}" method="post" class="nav-lang-form">
-                    {% csrf_token %}
-                    <input type="hidden" name="next" value="{{ request.path }}">
-                    {% if CURRENT_LANG == "en" %}
-                    <input type="hidden" name="language" value="fr">
-                    <button type="submit" class="lang-link" lang="fr" hreflang="fr">Français</button>
-                    {% else %}
-                    <input type="hidden" name="language" value="en">
-                    <button type="submit" class="lang-link" lang="en" hreflang="en">English</button>
-                    {% endif %}
-                </form>
-            </li>
+            <li>{% include "_lang_toggle.html" with inline=True form_class="nav-lang-form" %}</li>
         </ul>
     </nav>
     {% endif %}
@@ -281,18 +271,7 @@
                 <a href="{% url 'privacy' %}">{% trans "Privacy" %}</a>
                 <a href="{% url 'help' %}">{% trans "Help" %}</a>
                 <button type="button" class="keyboard-shortcuts-btn" id="show-shortcuts" aria-label="{% trans 'Keyboard shortcuts' %}">?</button>
-                {% get_current_language as FOOTER_LANG %}
-                <form action="{% url 'switch_language' %}" method="post" class="footer-lang-form">
-                    {% csrf_token %}
-                    <input type="hidden" name="next" value="{{ request.path }}">
-                    {% if FOOTER_LANG == "en" %}
-                    <input type="hidden" name="language" value="fr">
-                    <button type="submit" class="lang-link" lang="fr" hreflang="fr">Français</button>
-                    {% else %}
-                    <input type="hidden" name="language" value="en">
-                    <button type="submit" class="lang-link" lang="en" hreflang="en">English</button>
-                    {% endif %}
-                </form>
+                {% include "_lang_toggle.html" with inline=True form_class="footer-lang-form" %}
             </div>
             {% if user.is_authenticated %}
             <div class="site-footer-session">

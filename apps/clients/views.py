@@ -12,7 +12,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.auth_app.decorators import admin_required, requires_permission
+from apps.auth_app.decorators import _get_user_highest_role, admin_required, requires_permission
 from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
@@ -48,7 +48,10 @@ from apps.programs.access import (
     get_user_program_ids as _get_user_program_ids,
     get_accessible_programs as _get_accessible_programs,
     get_program_from_client as _get_program_from_client,
+    should_share_across_programs,
+    _resolve_viewing_program,
 )
+from django.db.models import Q
 
 
 def _get_accessible_clients(user, active_program_ids=None):
@@ -130,22 +133,99 @@ def _get_last_contact_dates(client_ids):
     return result
 
 
-def _find_clients_with_matching_notes(client_ids, query_lower):
+def _find_clients_with_matching_notes(client_ids, query_lower, user,
+                                      active_program_ids=None):
     """Return set of client IDs whose progress notes contain the search query.
 
     Encrypted fields can't be searched in SQL, so we decrypt each note's text
     fields in memory and check for a case- and accent-insensitive substring match.
     Stops checking a client as soon as one matching note is found.
+
+    PHIPA (PHIPA-SEARCH1): Filters notes by program access and consent
+    settings to prevent side-channel disclosure through search results.
+    A search for sensitive clinical terms must not reveal that a restricted-
+    program note contains that term.
     """
-    matched = set()
+    from apps.clients.dashboard_views import _get_feature_flags
+
+    user_program_ids = _get_user_program_ids(user, active_program_ids)
+
+    # Step 1: Filter notes to user's accessible programs (basic access control)
     notes = (
         ProgressNote.objects.filter(client_file_id__in=client_ids)
+        .filter(
+            Q(author_program_id__in=user_program_ids)
+            | Q(author_program__isnull=True)
+        )
+        .select_related("author_program")
         .prefetch_related("target_entries")
     )
+
+    # Step 2: Check agency sharing flag once
+    flags = _get_feature_flags()
+    agency_shares = flags.get("cross_program_note_sharing", True)
+
+    # Step 3: Pre-load per-client consent overrides for efficient filtering.
+    # Load client objects for those that need per-client checking.
+    # - Agency ON:  most clients (default) get all accessible notes.
+    #               Only filter for clients with cross_program_sharing="restrict".
+    # - Agency OFF: most clients (default) get only viewing-program notes.
+    #               Clients with cross_program_sharing="consent" get all accessible notes.
+    client_sharing_map = dict(
+        ClientFile.objects.filter(pk__in=client_ids)
+        .values_list("pk", "cross_program_sharing")
+    )
+
+    # Pre-compute the viewing program for clients that need per-client filtering.
+    # Resolving viewing program is expensive, so only do it when needed.
+    viewing_program_cache = {}  # client_id -> viewing_program or None
+
+    def _get_viewing_program_for_client(client_id):
+        if client_id not in viewing_program_cache:
+            client_obj = ClientFile.objects.get(pk=client_id)
+            viewing_program_cache[client_id] = _resolve_viewing_program(
+                user, client_obj, active_program_ids
+            )
+        return viewing_program_cache[client_id]
+
+    def _note_passes_consent(note):
+        """Check if a note passes PHIPA consent filtering for its client."""
+        cid = note.client_file_id
+        sharing = client_sharing_map.get(cid, "default")
+
+        # Determine if this client shares across programs
+        if sharing == "consent":
+            return True  # Client explicitly consents — all accessible notes OK
+        if sharing == "restrict":
+            # Client restricts — only viewing program notes
+            if note.author_program is None:
+                return True  # Legacy notes always visible
+            vp = _get_viewing_program_for_client(cid)
+            if vp is None:
+                return False  # Fail-closed (DRR decision #9)
+            return note.author_program_id == vp.pk
+
+        # sharing == "default" — follow agency toggle
+        if agency_shares:
+            return True  # Agency shares by default, client uses default
+        # Agency does NOT share, client uses default — restrict to viewing program
+        if note.author_program is None:
+            return True  # Legacy notes always visible
+        vp = _get_viewing_program_for_client(cid)
+        if vp is None:
+            return False  # Fail-closed
+        return note.author_program_id == vp.pk
+
+    matched = set()
     for note in notes:
         cid = note.client_file_id
         if cid in matched:
             continue  # already found a match for this client
+
+        # PHIPA consent check before revealing search match
+        if not _note_passes_consent(note):
+            continue
+
         for text in [note.notes_text or "", note.summary or "", note.participant_reflection or ""]:
             if query_lower in _strip_accents(text.lower()):
                 matched.add(cid)
@@ -236,9 +316,11 @@ def client_list(request):
             client_data.append(item)
 
     # Second pass: search progress notes for clients not matched by name/ID
+    # PHIPA-SEARCH1: pass user + active_program_ids for consent filtering
     if search_query and unmatched:
         note_matched_ids = _find_clients_with_matching_notes(
-            unmatched.keys(), search_query
+            unmatched.keys(), search_query,
+            user=request.user, active_program_ids=active_ids,
         )
         for cid in note_matched_ids:
             client_data.append(unmatched[cid])
@@ -258,8 +340,6 @@ def client_list(request):
     page = paginator.get_page(request.GET.get("page"))
 
     # Show create button if user's role grants client.create permission
-    from apps.auth_app.decorators import _get_user_highest_role
-    from apps.auth_app.permissions import DENY, PERMISSIONS
     user_role = _get_user_highest_role(request.user)
     can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
 
@@ -286,8 +366,17 @@ def client_list(request):
 @requires_permission("client.create")
 def client_create(request):
     available_programs = _get_accessible_programs(request.user)
+
+    # Circle integration — only when feature is enabled
+    circle_choices = None
+    from apps.admin_settings.models import FeatureToggle
+    if FeatureToggle.get_all_flags().get("circles", False):
+        from apps.circles.helpers import get_visible_circles
+        visible = get_visible_circles(request.user)
+        circle_choices = [(c.pk, c.name) for c in visible]
+
     if request.method == "POST":
-        form = ClientFileForm(request.POST, available_programs=available_programs)
+        form = ClientFileForm(request.POST, available_programs=available_programs, circle_choices=circle_choices)
         if form.is_valid():
             # BUG-7: Wrap in transaction so client + enrollments commit
             # atomically. Prevents a half-created client if enrollment
@@ -325,6 +414,29 @@ def client_create(request):
                     ClientProgramEnrolment.objects.create(
                         client_file=client, program=program, status="enrolled",
                     )
+                # Circle linking/creation (when circles feature is on)
+                existing_circle_id = form.cleaned_data.get("existing_circle", "")
+                new_circle_name = form.cleaned_data.get("new_circle_name", "").strip()
+                if existing_circle_id or new_circle_name:
+                    from apps.circles.models import Circle, CircleMembership
+                    from apps.circles.helpers import get_visible_circles
+                    if existing_circle_id:
+                        circle = get_visible_circles(request.user).filter(pk=existing_circle_id).first()
+                    else:
+                        circle = Circle(is_demo=request.user.is_demo)
+                        circle.name = new_circle_name
+                        circle.created_by = request.user
+                        circle.save()
+                    if circle:
+                        # Set as primary contact if first participant member
+                        has_participant = CircleMembership.objects.filter(
+                            circle=circle, client_file__isnull=False, status="active",
+                        ).exists()
+                        CircleMembership.objects.create(
+                            circle=circle,
+                            client_file=client,
+                            is_primary_contact=not has_participant,
+                        )
             # Allow immediate access on redirect — the RBAC middleware may
             # not yet see the new enrollment depending on connection timing.
             request.session["_just_created_client_id"] = client.pk
@@ -338,7 +450,7 @@ def client_create(request):
             )
             return redirect("clients:client_detail", client_id=client.pk)
     else:
-        form = ClientFileForm(available_programs=available_programs)
+        form = ClientFileForm(available_programs=available_programs, circle_choices=circle_choices)
     return render(request, "clients/form.html", {"form": form, "editing": False})
 
 
@@ -641,10 +753,50 @@ def client_detail(request, client_id):
 
     is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
 
+    # Circles sidebar (only when feature toggle is on and user is not front desk)
+    client_circles = []
+    from apps.admin_settings.models import FeatureToggle
+    circles_enabled = FeatureToggle.get_all_flags().get("circles", False)
+    if circles_enabled and not is_receptionist:
+        from apps.circles.models import CircleMembership
+        from apps.circles.helpers import get_visible_circles
+        from apps.circles.helpers import get_accessible_client_ids, get_blocked_client_ids
+        visible_circle_ids = set(get_visible_circles(request.user).values_list("pk", flat=True))
+        accessible_client_ids = get_accessible_client_ids(request.user)
+        blocked_client_ids = get_blocked_client_ids(request.user)
+        accessible_client_ids -= blocked_client_ids
+        memberships = (
+            CircleMembership.objects.filter(
+                client_file=client, status="active", circle_id__in=visible_circle_ids,
+            )
+            .select_related("circle")
+            .prefetch_related("circle__memberships__client_file")
+        )
+        for m in memberships:
+            # Build "other members" string — only show names the user can access
+            others = []
+            hidden_count = 0
+            for om in m.circle.memberships.all():
+                if om.status != "active" or om.pk == m.pk:
+                    continue
+                # Non-participant members (no client_file) are always shown
+                if om.client_file_id is None:
+                    others.append(om.display_name)
+                elif om.client_file_id in accessible_client_ids:
+                    others.append(om.display_name)
+                else:
+                    hidden_count += 1
+            display = ", ".join(others[:5])
+            if len(others) > 5:
+                display += f" (+{len(others) - 5})"
+            if hidden_count:
+                display += f" (+{hidden_count} other)" if hidden_count == 1 else f" (+{hidden_count} others)"
+            m.other_members = display
+            client_circles.append(m)
+
     # PERM-S3: Field-level visibility based on role.
     # Determines which core model fields (e.g. birth_date) the user can see.
     # Custom fields use their own front_desk_access setting instead.
-    from apps.auth_app.decorators import _get_user_highest_role
     effective_role = user_role or _get_user_highest_role(request.user)
     visible_fields = client.get_visible_fields(effective_role) if effective_role else client.get_visible_fields("receptionist")
 
@@ -674,6 +826,7 @@ def client_detail(request, client_id):
         "sharing_effective": sharing_effective,
         "document_folder_url": get_document_folder_url(client),
         "has_hidden_programs": has_hidden_programs,
+        "client_circles": client_circles,
         "breadcrumbs": breadcrumbs,
         **tab_counts,  # notes_count, events_count, targets_count
     }
@@ -1031,8 +1184,6 @@ def client_search(request):
     results.sort(key=lambda c: c["name"].lower())
 
     # IMPROVE-2: pass can_create so search results can show "Create New" prompt
-    from apps.auth_app.decorators import _get_user_highest_role
-    from apps.auth_app.permissions import DENY, PERMISSIONS
     user_role = _get_user_highest_role(request.user)
     can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
 

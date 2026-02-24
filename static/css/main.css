@@ -1804,6 +1804,64 @@ label {
     }
 }
 
+/* Achievement pills for categorical metrics (e.g. Job Placement) */
+.achievement-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: var(--kn-space-base);
+}
+.achievement-pills label {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--kn-border-light);
+    border-radius: var(--pico-border-radius);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+    font-size: 0.9375rem;
+    min-height: 44px;
+    margin-bottom: 0;
+    color: var(--kn-text);
+}
+.achievement-pills input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.achievement-pills label:has(input:checked) {
+    border-color: var(--kn-primary);
+    background: var(--kn-primary-subtle, #e8f0fe);
+    font-weight: 500;
+}
+.achievement-pills label:hover {
+    border-color: var(--kn-primary);
+}
+.achievement-pills label:has(input:focus-visible) {
+    outline: 2px solid var(--kn-primary);
+    outline-offset: 2px;
+}
+.achievement-pills label:focus-within {
+    outline: 2px solid var(--kn-primary);
+    outline-offset: 2px;
+}
+.achievement-metric {
+    margin-bottom: var(--kn-space-base);
+}
+
+@media (max-width: 480px) {
+    .achievement-pills {
+        flex-direction: column;
+    }
+    .achievement-pills label {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.8125rem;
+        min-height: 40px;
+    }
+}
+
 /* Notes form — Target cards */
 .target-card {
     border: 1px solid var(--kn-border-light);

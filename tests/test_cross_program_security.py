@@ -437,3 +437,265 @@ class CrossProgramConsentTest(TestCase):
         self.assertIn(self.note_null.pk, filtered_ids)
         self.assertNotIn(excluded_note.pk, filtered_ids)
         self.assertEqual(viewing_name, switched_program.name)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class SearchConsentTest(TestCase):
+    """PHIPA-SEARCH1: Verify note search respects consent filtering.
+
+    _find_clients_with_matching_notes() must not reveal that a restricted-
+    program note contains a search term (side-channel disclosure).
+    """
+
+    databases = {"default", "audit"}
+
+    @classmethod
+    def setUpTestData(cls):
+        enc_module._fernet = None
+
+        # Two programs
+        cls.program_a = Program.objects.create(name="Housing Support", status="active")
+        cls.program_b = Program.objects.create(name="Substance Use", status="active")
+
+        # Staff user — access to Program A only
+        cls.staff_a = User.objects.create_user(
+            username="searcher", password="testpass123", display_name="Search Worker",
+        )
+        UserProgramRole.objects.create(
+            user=cls.staff_a, program=cls.program_a, role="staff",
+        )
+
+        # Multi-program staff — access to both programs
+        cls.multi_staff = User.objects.create_user(
+            username="multisearch", password="testpass123", display_name="Multi Search",
+        )
+        UserProgramRole.objects.create(
+            user=cls.multi_staff, program=cls.program_a, role="staff",
+        )
+        UserProgramRole.objects.create(
+            user=cls.multi_staff, program=cls.program_b, role="staff",
+        )
+
+        # Client enrolled in both programs
+        cls.shared_client = ClientFile.objects.create(is_demo=False, status="active")
+        ClientProgramEnrolment.objects.create(
+            client_file=cls.shared_client, program=cls.program_a, status="enrolled",
+        )
+        ClientProgramEnrolment.objects.create(
+            client_file=cls.shared_client, program=cls.program_b, status="enrolled",
+        )
+
+        # Note in Program A with searchable term
+        from apps.notes.models import ProgressNote
+        cls.note_a = ProgressNote.objects.create(
+            client_file=cls.shared_client, author=cls.multi_staff,
+            author_program=cls.program_a, note_type="quick",
+            notes_text="Housing intake completed",
+        )
+        # Note in Program B with a different searchable term
+        cls.note_b = ProgressNote.objects.create(
+            client_file=cls.shared_client, author=cls.multi_staff,
+            author_program=cls.program_b, note_type="quick",
+            notes_text="Discussed relapse prevention strategies",
+        )
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def _set_agency_sharing(self, enabled):
+        from django.core.cache import cache
+        from apps.admin_settings.models import FeatureToggle
+        cache.clear()
+        FeatureToggle.objects.update_or_create(
+            feature_key="cross_program_note_sharing",
+            defaults={"is_enabled": enabled},
+        )
+
+    def test_search_does_not_find_restricted_program_notes(self):
+        """PHIPA-SEARCH1: User searches a term only in a restricted program
+        note — should NOT match (prevents side-channel disclosure)."""
+        from apps.clients.views import _find_clients_with_matching_notes
+        self._set_agency_sharing(True)
+        # Client restricts sharing
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+
+        # staff_a only has access to Program A — "relapse" is only in Program B note
+        matched = _find_clients_with_matching_notes(
+            [self.shared_client.pk], "relapse",
+            user=self.staff_a,
+        )
+        self.assertNotIn(self.shared_client.pk, matched)
+
+    def test_search_finds_accessible_program_notes(self):
+        """PHIPA-SEARCH1: User searches a term in their own program's note — should match."""
+        from apps.clients.views import _find_clients_with_matching_notes
+        self._set_agency_sharing(True)
+        self.shared_client.cross_program_sharing = "default"
+        self.shared_client.save()
+
+        # staff_a has access to Program A — "housing" is in Program A note
+        matched = _find_clients_with_matching_notes(
+            [self.shared_client.pk], "housing",
+            user=self.staff_a,
+        )
+        self.assertIn(self.shared_client.pk, matched)
+
+    def test_search_respects_client_restrict_override(self):
+        """PHIPA-SEARCH1: Client with restrict flag — search shouldn't find
+        cross-program notes even if agency sharing is on."""
+        from apps.clients.views import _find_clients_with_matching_notes
+        from apps.programs.access import get_author_program
+        self._set_agency_sharing(True)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+
+        # Multi-staff has access to both programs; determine which is viewing
+        viewing = get_author_program(self.multi_staff, self.shared_client)
+        if viewing.pk == self.program_a.pk:
+            restricted_term = "relapse"  # Only in Program B note
+        else:
+            restricted_term = "housing"  # Only in Program A note
+
+        matched = _find_clients_with_matching_notes(
+            [self.shared_client.pk], restricted_term,
+            user=self.multi_staff,
+        )
+        self.assertNotIn(self.shared_client.pk, matched)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class QualitativeSummaryConsentTest(TestCase):
+    """PHIPA-QUAL1: Verify qualitative_summary respects consent filtering.
+
+    qualitative_summary shows client words (direct quotes) from note entries
+    — must not show cross-program entries when sharing is restricted.
+    """
+
+    databases = {"default", "audit"}
+
+    @classmethod
+    def setUpTestData(cls):
+        enc_module._fernet = None
+
+        # Two programs
+        cls.program_a = Program.objects.create(name="Housing Support", status="active")
+        cls.program_b = Program.objects.create(name="Mental Health", status="active")
+
+        # Multi-program staff
+        cls.multi_staff = User.objects.create_user(
+            username="qualuser", password="testpass123", display_name="Qual Worker",
+        )
+        UserProgramRole.objects.create(
+            user=cls.multi_staff, program=cls.program_a, role="staff",
+        )
+        UserProgramRole.objects.create(
+            user=cls.multi_staff, program=cls.program_b, role="staff",
+        )
+
+        # Client enrolled in both programs
+        cls.shared_client = ClientFile.objects.create(is_demo=False, status="active")
+        ClientProgramEnrolment.objects.create(
+            client_file=cls.shared_client, program=cls.program_a, status="enrolled",
+        )
+        ClientProgramEnrolment.objects.create(
+            client_file=cls.shared_client, program=cls.program_b, status="enrolled",
+        )
+
+        # Plan target for the client
+        from apps.plans.models import PlanSection, PlanTarget
+        section = PlanSection.objects.create(
+            client_file=cls.shared_client, name="Goals", program=cls.program_a,
+        )
+        cls.target = PlanTarget.objects.create(
+            plan_section=section, client_file=cls.shared_client,
+            name="Stable housing",
+        )
+
+        # Progress notes + target entries from each program
+        from apps.notes.models import ProgressNote, ProgressNoteTarget
+        cls.note_a = ProgressNote.objects.create(
+            client_file=cls.shared_client, author=cls.multi_staff,
+            author_program=cls.program_a, note_type="full",
+            notes_text="Housing session",
+        )
+        cls.entry_a = ProgressNoteTarget.objects.create(
+            progress_note=cls.note_a, plan_target=cls.target,
+            progress_descriptor="shifting",
+        )
+        cls.entry_a.client_words = "I feel safer now"
+        cls.entry_a.save()
+
+        cls.note_b = ProgressNote.objects.create(
+            client_file=cls.shared_client, author=cls.multi_staff,
+            author_program=cls.program_b, note_type="full",
+            notes_text="Mental health session",
+        )
+        cls.entry_b = ProgressNoteTarget.objects.create(
+            progress_note=cls.note_b, plan_target=cls.target,
+            progress_descriptor="holding",
+        )
+        cls.entry_b.client_words = "Still working through anxiety"
+        cls.entry_b.save()
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client.login(username="qualuser", password="testpass123")
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def _set_agency_sharing(self, enabled):
+        from django.core.cache import cache
+        from apps.admin_settings.models import FeatureToggle
+        cache.clear()
+        FeatureToggle.objects.update_or_create(
+            feature_key="cross_program_note_sharing",
+            defaults={"is_enabled": enabled},
+        )
+
+    def test_qualitative_summary_filters_by_consent(self):
+        """PHIPA-QUAL1: Client with restricted sharing — qualitative summary
+        only shows viewing program entries."""
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+        resp = self.client.get(
+            f"/notes/participant/{self.shared_client.pk}/qualitative/"
+        )
+        self.assertEqual(resp.status_code, 200)
+        # Should show entries from only one program (viewing program)
+        target_data = resp.context["target_data"]
+        self.assertEqual(len(target_data), 1)
+        # total_entries should be 1 (only viewing program), not 2
+        self.assertEqual(target_data[0]["total_entries"], 1)
+
+    def test_qualitative_summary_shows_all_when_sharing_on(self):
+        """PHIPA-QUAL1: Sharing on — qualitative summary shows all entries."""
+        self._set_agency_sharing(True)
+        self.shared_client.cross_program_sharing = "default"
+        self.shared_client.save()
+        resp = self.client.get(
+            f"/notes/participant/{self.shared_client.pk}/qualitative/"
+        )
+        self.assertEqual(resp.status_code, 200)
+        target_data = resp.context["target_data"]
+        self.assertEqual(len(target_data), 1)
+        # Both entries should be visible
+        self.assertEqual(target_data[0]["total_entries"], 2)
+
+    def test_qualitative_summary_shows_consent_banner(self):
+        """PHIPA-QUAL1: When filtering is active, template shows the consent banner."""
+        self._set_agency_sharing(False)
+        self.shared_client.cross_program_sharing = "restrict"
+        self.shared_client.save()
+        resp = self.client.get(
+            f"/notes/participant/{self.shared_client.pk}/qualitative/"
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertIsNotNone(resp.context.get("consent_viewing_program"))
+        # Banner text should be in the response
+        self.assertContains(resp, "Cross-program sharing is not enabled")
