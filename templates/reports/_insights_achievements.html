@@ -25,7 +25,8 @@
         <div class="insights-outcome-bar__target"
              style="left: {{ ach.target_rate }}%;"
              data-label="{% blocktrans with target=ach.target_rate %}target: {{ target }}%{% endblocktrans %}"
-             role="presentation"></div>
+             role="img"
+             aria-label="{% blocktrans with target=ach.target_rate %}target: {{ target }}%{% endblocktrans %}"></div>
         {% endif %}
     </div>
 
