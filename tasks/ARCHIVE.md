@@ -4,6 +4,16 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-02-24 TODO cleanup)
+
+- [x] QA Round 7 Tier 1 — language persistence, skip-to-content verified, notes 403 fixed, htmx syntax fixed — 2026-02-21 (QA-R7-TIER1)
+- [x] Aggregation engine + consortium metric locking for ad-hoc export form — 2026-02-22 (RPT-AGG1)
+- [x] UX + QA Round 7 fixes — 18 items: accessibility, dashboard, notes UX, front desk, label improvements — 2026-02-21
+- [x] Unify analysis chart quick-select and date picker into single form control — 2026-02-21 (UX-CHART1)
+- [x] Accessibility fixes: aria-labels on audit table, notes error container, mobile touch targets — 2026-02-21 (A11Y-UX1)
+
+---
+
 ## Moved from Recently Done (2026-02-22 QA Round 7 cleanup)
 
 - [x] Mobile touch targets WCAG fix — enforce 44px minimum — 2026-02-17 (UX-WALK5)

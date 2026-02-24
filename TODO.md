@@ -2,12 +2,11 @@
 
 ## Flagged
 
-- [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — GK (ONBOARD-APPROVE)
-- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GK (SEC3-Q1)
+- [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — SG (ONBOARD-APPROVE)
+- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
 - [ ] Confirm standard report schema and configuration template with partner contact before building — SG (RPT-SCHEMA1)
 - [ ] Discuss: are Design Rationale Records (DRRs) working well as a practice? Should we keep using them, change the format, or retire them? — GK (PROCESS-DRR1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
-- [ ] Discuss: Should GK design insights/reports pages as HTML mockups (in a `mockups/` folder) to iterate on layout without PRs? Developer would translate approved mockups into Django templates — PB (PROCESS-MOCKUPS1)
 
 ## Active Work
 
@@ -55,24 +54,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] **Redeploy to Railway** — after merging to main. Push to `main` and Railway auto-deploys (OPS-RAIL1)
 
 ## Coming Up
-
-### Phase: QA Round 7 — Tier 2 Fixes (see tasks/qa-action-plan-2026-02-21.md)
-
-- [x] Verify 8 items already implemented (BUG-4, BUG-8, BUG-11, IMPROVE-12/13, BLOCKER-2/3/5) — 2026-02-22 (QA-R7-TIER2-VERIFY)
-- [x] Hide admin dropdown in nav for executive role (IMPROVE-3) — 2026-02-22 (QA-R7-NAV1)
-- [x] Add "Log Communication" to client profile Actions dropdown (BUG-7) — 2026-02-22 (QA-R7-COMM1)
-- [x] Add quarterly date range presets to ad-hoc report form (IMPROVE-4) — 2026-02-22 (QA-R7-RPT-QUARTER1)
-
-### Phase: QA Round 7 — Page Audit Tier 2 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
-
-- [x] Fix groups-attendance: replace "--" with "N/R" (aria-label) + rename "Rate" to "Attendance Rate" — screen reader a11y — 2026-02-22 (QA-PA-ATTEND1)
-- [x] Fix groups-attendance "1 sessions" pluralization — Django pluralize filter + French blocktrans — 2026-02-22 (QA-PA-ATTEND2)
-- [x] Improve comm-my-messages empty state — distinguish "no messages yet" from "all read", add guidance text — 2026-02-22 (QA-PA-MSG1)
-- [x] Add required-field indicator to comm-leave-message textarea — asterisk + aria-required — 2026-02-22 (QA-PA-MSG2)
-- [x] Add onboarding context to plan-goal-create — collapsible 1-2 sentence explainer for new users — 2026-02-22 (QA-PA-GOAL1)
-- [x] Add step indicator ("Step 1 of 2") to goal creation wizard — helps DS1c (ADHD) track progress — 2026-02-22 (QA-PA-GOAL2)
-- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — fix in qa-scenarios repo (QA-PA-TEST1)
-- [ ] Seed comm-my-messages populated state with actual messages — fix in qa-scenarios repo (QA-PA-TEST2)
 
 ### Phase: Post-Launch Communication Enhancements
 
@@ -125,10 +106,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Redesign PDF report layout: merge title page with page 2 to eliminate redundant empty space (REP-PDF2)
 - [ ] Define standardised report schema for [funder partner] — 10-15 key metrics and demographic breakdowns shared across all partner agencies (RPT-SCHEMA1)
 
-### Phase: Demo Data Quality
-
-_Nothing pending._
-
 ### Phase: Surveys Future Work
 
 - [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
@@ -141,22 +118,21 @@ _Nothing pending._
 - [ ] Update website feature list and marketing copy to include surveys and portal (WEB-FEAT1)
 - [ ] Add Evidence section to website — adapt docs/evidence-outcome-measurement.md into a public-facing page explaining the research behind KoNote's outcome measurement approach (see tasks/web-evidence-prompt.md) (WEB-EVIDENCE1)
 
-### Phase: QA Round 7 — Page Audit Tier 1 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
-
-- [x] Create custom styled 500.html template — standalone, bilingual, branded fallback for all unhandled errors — 2026-02-22 (QA-PA-500)
-- [x] Fix public unsubscribe page returning 500 — CASL compliance, safety net for import/token errors — 2026-02-22 (QA-PA-BLOCKER4)
-- [x] Fix public survey link page returning 500 — try/except renders "survey unavailable" instead of raw 500 — 2026-02-22 (QA-PA-BLOCKER3)
-- [x] Fix plan-goal-create heading "Add Target" → "Add a Goal" — terminology migration artifact — 2026-02-22 (QA-PA-BUG1)
-
 ## Parking Lot
 
-- [ ] Add PIPEDA compliance context to admin-erasure-requests page — explain what gets deleted vs. retained — GK reviews privacy/data retention (QA-PA-ERASURE1)
-- [ ] PIPEDA data export from client profile — "Export Data" action for Section 8 access requests, needs design for data categories and output format — GK reviews privacy workflow (QA-R7-PRIVACY1)
-- [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
-- [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
+- [ ] Add PIPEDA compliance context to admin-erasure-requests page — show selected tier's consequences in plain language (see tasks/erasure-compliance-context.md) — GK approved 2026-02-24 (QA-PA-ERASURE1)
+- [ ] Replace decorative circular element on erasure empty state with static icon — cosmetic, low priority (QA-PA-ERASURE2)
+- [ ] Add breadcrumbs to plan-goal-create (Participants > Name > Plan > Add Goal) — navigation aid for new users (QA-PA-GOAL3)
+- [ ] PIPEDA data access request — guided manual checklist + 30-day tracking, not automated export (see tasks/pipeda-data-access-checklist.md) — GK approved 2026-02-24 (QA-R7-PRIVACY1)
+- [ ] Note sharing toggle on client profile — binary On/Off, PM/admin only, hidden when agency sharing is off (see tasks/note-sharing-toggle.md) — GK approved 2026-02-24 (QA-R7-PRIVACY2)
+- [ ] Privacy compliance banner + annual summary — event-driven pending-request banner on exec dashboard, one-line board report summary (see tasks/compliance-banner.md) — GK approved 2026-02-24 (QA-R7-EXEC-COMPLIANCE1)
+- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — add to seed_demo_data or fixture (QA-PA-TEST1)
+- [ ] Seed comm-my-messages populated state with actual messages — add to seed_demo_data (QA-PA-TEST2)
+- [ ] Add axe-core pass to `/capture-page-states` — automated WCAG checks for screen reader/speech recognition coverage (T59)
 - [ ] Verify accented character preservation through create/save/display cycle — may be test data issue, needs manual check (QA-R7-BUG13)
 - [ ] Verify form data preservation after validation error on create-participant — medium confidence, may be test artefact (QA-R7-BUG21)
 - [ ] Accessibility polish: status dropdown auto-open on Tab, colour-only status indicator fix (remaining from QA-R7-A11Y2) (A11Y-POLISH1)
+- [ ] Verify BLOCKER-1 and BLOCKER-2 with manual keyboard/JAWS test — requires human testing with assistive tech (T50)
 - [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
 - [ ] Add stress testing for 50+ concurrent users (QA-T15)
@@ -209,10 +185,5 @@ _Nothing pending._
 - [x] Add quarterly date range presets to ad-hoc report form — optgroup dropdown with FY + quarters, i18n month names, 8 tests — 2026-02-22 (QA-R7-RPT-QUARTER1)
 - [x] QA Round 7 Tier 2 — verified 8 items already implemented, fixed IMPROVE-3 (executive nav) and BUG-7 (log communication) — 2026-02-22 (QA-R7-TIER2)
 - [x] Scenario YAML URL fixes — updated 7 files in konote-qa-scenarios repo from /admin/ to /manage/ paths (PR #14) — 2026-02-22 (QA-R7-YAML1)
-- [x] QA Round 7 Tier 1 — language persistence, skip-to-content verified, notes 403 fixed, htmx syntax fixed — 2026-02-21 (QA-R7-TIER1)
 - [x] Fix report generation page — duplicate template name in dropdown and HTMX period options 500 error (PR #14) — 2026-02-22 (BUG-RPT1)
 - [x] Code review fixes for template-driven reporting — 12 issues (suppression, WCAG, XSS, race condition, tests) (PR #12) — 2026-02-22 (RPT-REVIEW1)
-- [x] Aggregation engine + consortium metric locking for ad-hoc export form — 2026-02-22 (RPT-AGG1)
-- [x] UX + QA Round 7 fixes — 18 items: accessibility, dashboard, notes UX, front desk, label improvements — 2026-02-21
-- [x] Unify analysis chart quick-select and date picker into single form control — 2026-02-21 (UX-CHART1)
-- [x] Accessibility fixes: aria-labels on audit table, notes error container, mobile touch targets — 2026-02-21 (A11Y-UX1)
