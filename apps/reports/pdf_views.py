@@ -768,7 +768,7 @@ def _get_program_from_url(request, program_id, **kwargs):
 
 
 @login_required
-@requires_permission("report.funder_report", get_program_fn=_get_program_from_url)
+@requires_permission("report.funder_report", get_program_fn=_get_program_from_url, allow_admin=True)
 def board_summary_pdf(request, program_id):
     """Generate a Board Summary PDF for a program.
 
