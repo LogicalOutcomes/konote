@@ -1,5 +1,6 @@
 """Plan sections, targets, metrics — the core outcomes tracking models."""
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -14,6 +15,11 @@ class MetricDefinition(models.Model):
     A reusable metric type (e.g., 'PHQ-9 Score', 'Housing Stability').
     Agencies pick from a pre-built library and can add their own.
     """
+
+    METRIC_TYPE_CHOICES = [
+        ("scale", _("Numeric scale")),
+        ("achievement", _("Achievement")),
+    ]
 
     CATEGORY_CHOICES = [
         ("mental_health", _("Mental Health")),
@@ -84,7 +90,47 @@ class MetricDefinition(models.Model):
         max_length=20, default="active",
         choices=[("active", _("Active")), ("deactivated", _("Deactivated"))],
     )
+    metric_type = models.CharField(
+        max_length=20, choices=METRIC_TYPE_CHOICES, default="scale",
+        help_text=_("Scale = numeric value recorded repeatedly. Achievement = categorical, typically recorded once."),
+    )
+    higher_is_better = models.BooleanField(
+        default=True,
+        help_text=_("False for metrics like PHQ-9 where lower is better."),
+    )
+    threshold_low = models.FloatField(
+        null=True, blank=True,
+        help_text=_("Low band boundary (scale metrics)."),
+    )
+    threshold_high = models.FloatField(
+        null=True, blank=True,
+        help_text=_("High band boundary (scale metrics)."),
+    )
+    achievement_options = models.JSONField(
+        default=list, blank=True,
+        help_text=_('Options for achievement metrics, e.g. ["Employed", "In training", "Unemployed"].'),
+    )
+    achievement_success_values = models.JSONField(
+        default=list, blank=True,
+        help_text=_('Which options count as achieved, e.g. ["Employed"].'),
+    )
+    target_rate = models.FloatField(
+        null=True, blank=True,
+        help_text=_("Optional target % for achievement metrics (e.g. 70 for 70%)."),
+    )
+    target_band_high_pct = models.FloatField(
+        null=True, blank=True,
+        help_text=_("Optional target for % in high band (scale metrics)."),
+    )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self):
+        super().clean()
+        if self.threshold_low is not None and self.threshold_high is not None:
+            if self.threshold_low >= self.threshold_high:
+                raise ValidationError(
+                    _("Low band threshold must be less than high band threshold.")
+                )
 
     @property
     def translated_name(self):

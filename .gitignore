@@ -29,8 +29,10 @@ venv/
 *.swp
 *.code-workspace
 
-# Claude Code
-.claude/
+# Claude Code — track shared skills/commands, ignore personal config
+.claude/*
+!.claude/commands/
+!.claude/skills/
 .claude-active
 
 # Git worktrees

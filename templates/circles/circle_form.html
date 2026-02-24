@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% if is_edit %}{% blocktrans with circle=term.circle|default:"Circle" %}Edit {{ circle }}{% endblocktrans %}{% else %}{% blocktrans with circle=term.circle|default:"Circle" %}New {{ circle }}{% endblocktrans %}{% endif %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% if is_edit %}{% blocktrans with name=circle.name %}Edit {{ name }}{% endblocktrans %}{% else %}{% blocktrans with circle=term.circle|default:"Circle" %}New {{ circle }}{% endblocktrans %}{% endif %}</h1>
+    {% if not is_edit %}
+    <p>{% blocktrans with circle=term.circle|default:"circle" %}A {{ circle }} groups people connected by family, household, or caregiving relationships.{% endblocktrans %}</p>
+    {% endif %}
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">
+        {{ field.label }}
+        {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+    </label>
+    {{ field }}
+    {% if field.help_text %}
+    <small>{{ field.help_text }}</small>
+    {% endif %}
+    {% if field.errors %}
+    <small class="badge badge-danger">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% endfor %}
+
+    <div role="group">
+        <button type="submit">{% if is_edit %}{% trans "Save Changes" %}{% else %}{% blocktrans with circle=term.circle|default:"Circle" %}Create {{ circle }}{% endblocktrans %}{% endif %}</button>
+        {% if is_edit %}
+        <a href="{% url 'circles:circle_detail' circle_id=circle.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
+        {% else %}
+        <a href="{% url 'circles:circle_list' %}" role="button" class="outline">{% trans "Cancel" %}</a>
+        {% endif %}
+    </div>
+</form>
+{% endblock %}

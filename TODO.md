@@ -10,21 +10,29 @@
 - [ ] Discuss: are Design Rationale Records (DRRs) working well as a practice? Should we keep using them, change the format, or retire them? — GK (PROCESS-DRR1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
 - [ ] Approve four-tier PII model for offline field devices and "managed is better than banned" privacy position (see tasks/design-rationale/offline-field-collection.md) — GK (FIELD-ODK-GK1)
+- [ ] Discuss: Should GK design insights/reports pages as HTML mockups (in a `mockups/` folder) to iterate on layout without PRs? Developer would translate approved mockups into Django templates — PB (PROCESS-MOCKUPS1)
 
 ## Active Work
 
+### Phase: Circles Lite (see tasks/design-rationale/circles-family-entity.md)
+
+- [x] Create circles app skeleton with models and migration — 2026-02-24 (CIRCLES-1)
+- [x] Add circle FK to ProgressNote — 2026-02-24 (CIRCLES-2)
+- [x] Feature toggle, terminology, permissions, and seed data — 2026-02-24 (CIRCLES-3)
+- [x] Circle forms (CircleForm, CircleMembershipForm) — 2026-02-24 (CIRCLES-4)
+- [x] Views, helpers, URLs, and templates — 2026-02-24 (CIRCLES-5)
+- [x] Navigation, participant sidebar, and note form integration — 2026-02-24 (CIRCLES-6)
+- [x] Intake integration (link existing or create new circle) — 2026-02-24 (CIRCLES-7)
+- [x] Admin registration and test suite (33 tests) — 2026-02-24 (CIRCLES-8)
+- [x] French translations — 2026-02-24 (CIRCLES-9)
+- [ ] Code review and merge to main — (CIRCLES-MERGE)
+
 ### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
 
-- [ ] Phase 0: GK language review — band labels, clinical thresholds, achievement examples, Two Lenses wording — HARD BLOCKER on Phase 2 (INSIGHTS-P0-LANG)
-- [ ] Phase 0: Update MetricDefinition admin form with new fields (metric_type, thresholds, achievement options, targets) (INSIGHTS-P0-ADMIN)
-- [ ] Phase 0: Configure at least one test program with achievement metrics for development (INSIGHTS-P0-SEED)
-- [ ] Phase 1: Add metric_type, threshold, achievement, and target fields to MetricDefinition model (INSIGHTS-P1-MODEL)
-- [ ] Phase 1: Build metric aggregation functions — distributions, achievement rates, trends, Two Lenses, data completeness (INSIGHTS-P1-AGG)
-- [ ] Phase 2: Restructure insights page — participant voice to Section 2, progressive disclosure with smart auto-expand (INSIGHTS-P2-LAYOUT)
-- [ ] Phase 2: Add summary cards, distribution bars, achievement bars with journey context, CSS (INSIGHTS-P2-VIZ)
 - [ ] Phase 3: Update executive dashboard — program cards with trend direction, data completeness, feedback themes (INSIGHTS-P3-EXEC)
 - [ ] Phase 4: Achievement metric recording UI — dropdown in note form, tests (INSIGHTS-P4-RECORD)
 - [ ] Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
+- [ ] Extract and translate French strings for metric distributions templates (~25-30 new strings, several blocktrans blocks) (INSIGHTS-I18N1)
 
 ### Phase: Launch Readiness
 
@@ -35,7 +43,8 @@
 - [ ] Verify production email configuration for exports, erasure alerts, and password resets — PB (OPS3)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — PB (OPS4)
 - [ ] Document scheduled task setup for export monitoring in the runbook — PB (EXP2w)
-- [ ] Enforce cross-program sharing consent (PHIPA) in views — consent flag already captured, need view-level enforcement — PB (PHIPA-ENFORCE1)
+- [ ] Add program-level filtering to note search (`_find_clients_with_matching_notes`) — search can reveal restricted program data through side channel (see DRR: phipa-consent-enforcement.md) — PB (PHIPA-SEARCH1)
+- [ ] Add consent filter to qualitative_summary view — shows client words from note entries across programs (see DRR) — PB (PHIPA-QUAL1)
 - [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — (DEPLOY-TOOLKIT1)
 
@@ -60,12 +69,12 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: QA Round 7 — Page Audit Tier 2 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
 
-- [ ] Fix groups-attendance: replace "--" with "N/R" (aria-label) + rename "Rate" to "Attendance Rate" — screen reader a11y (QA-PA-ATTEND1)
-- [ ] Fix groups-attendance "1 sessions" pluralization — Django pluralize filter + French blocktrans (QA-PA-ATTEND2)
-- [ ] Improve comm-my-messages empty state — distinguish "no messages yet" from "all read", add guidance text (QA-PA-MSG1)
-- [ ] Add required-field indicator to comm-leave-message textarea — asterisk + aria-required (QA-PA-MSG2)
-- [ ] Add onboarding context to plan-goal-create — collapsible 1-2 sentence explainer for new users (QA-PA-GOAL1)
-- [ ] Add step indicator ("Step 1 of 2") to goal creation wizard — helps DS1c (ADHD) track progress (QA-PA-GOAL2)
+- [x] Fix groups-attendance: replace "--" with "N/R" (aria-label) + rename "Rate" to "Attendance Rate" — screen reader a11y — 2026-02-22 (QA-PA-ATTEND1)
+- [x] Fix groups-attendance "1 sessions" pluralization — Django pluralize filter + French blocktrans — 2026-02-22 (QA-PA-ATTEND2)
+- [x] Improve comm-my-messages empty state — distinguish "no messages yet" from "all read", add guidance text — 2026-02-22 (QA-PA-MSG1)
+- [x] Add required-field indicator to comm-leave-message textarea — asterisk + aria-required — 2026-02-22 (QA-PA-MSG2)
+- [x] Add onboarding context to plan-goal-create — collapsible 1-2 sentence explainer for new users — 2026-02-22 (QA-PA-GOAL1)
+- [x] Add step indicator ("Step 1 of 2") to goal creation wizard — helps DS1c (ADHD) track progress — 2026-02-22 (QA-PA-GOAL2)
 - [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — fix in qa-scenarios repo (QA-PA-TEST1)
 - [ ] Seed comm-my-messages populated state with actual messages — fix in qa-scenarios repo (QA-PA-TEST2)
 
@@ -130,8 +139,8 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Advanced Reporting
 
-- [ ] Research typical nonprofit session reporting requirements (UNHCR, IRCC, CCIS, etc.) to design "Sessions by Participant" report (REP-REQ1)
-- [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (REP-SESS1)
+- [x] Research typical nonprofit session reporting requirements (IRCC, CFPB, Employment Ontario, United Way) — key gap: need duration and modality fields on notes (see konote-prosper-canada/tasks/session-reporting-research.md) — 2026-02-24 (REP-REQ1)
+- [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (see konote-prosper-canada/tasks/session-reporting-research.md for field requirements) (REP-SESS1)
 - [ ] Expand report template system to support more flexible data exports across various modules (REP-FLEX1)
 - [ ] Add "All Programs" option to report filters for organization-wide summaries (REP-ALL-PROGS1)
 - [ ] Implement report preview on-screen before downloading PDF/CSV (REP-PREVIEW1)
@@ -157,10 +166,10 @@ _Nothing pending._
 
 ### Phase: QA Round 7 — Page Audit Tier 1 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
 
-- [ ] Create custom styled 500.html template — bilingual, branded fallback for all unhandled errors (QA-PA-500)
-- [ ] Fix public unsubscribe page returning 500 — CASL compliance, must work before any agency enables email (depends on QA-PA-500) (QA-PA-BLOCKER4)
-- [ ] Fix public survey link page returning 500 — community members see raw error from email/flyer links (depends on QA-PA-500) (QA-PA-BLOCKER3)
-- [ ] Fix plan-goal-create heading "Add Target" → "Add Goal" — terminology migration artifact, 5-min fix (QA-PA-BUG1)
+- [x] Create custom styled 500.html template — standalone, bilingual, branded fallback for all unhandled errors — 2026-02-22 (QA-PA-500)
+- [x] Fix public unsubscribe page returning 500 — CASL compliance, safety net for import/token errors — 2026-02-22 (QA-PA-BLOCKER4)
+- [x] Fix public survey link page returning 500 — try/except renders "survey unavailable" instead of raw 500 — 2026-02-22 (QA-PA-BLOCKER3)
+- [x] Fix plan-goal-create heading "Add Target" → "Add a Goal" — terminology migration artifact — 2026-02-22 (QA-PA-BUG1)
 
 ## Parking Lot
 
@@ -205,6 +214,11 @@ _Nothing pending._
 
 ## Recently Done
 
+- [x] Circles Lite Phase 1 — full feature: models, views, templates, nav, sidebar, note tagging, intake, tests, translations — 2026-02-24 (CIRCLES-1–9)
+- [x] Enforce PHIPA cross-program consent in views — note_detail, note_summary, event_list; fix fail-open bug; fix CONF9 interaction; shared banner include; 4 new tests; DRR created — 2026-02-22 (PHIPA-ENFORCE1)
+- [x] Insights metric distributions Phases 0-2 — model fields, aggregation, distributions, achievements, trends, Two Lenses, data completeness, 50 tests, 10 review fixes (PR #23) — 2026-02-22 (INSIGHTS-P0-ADMIN, INSIGHTS-P1-MODEL, INSIGHTS-P1-AGG, INSIGHTS-P2-LAYOUT, INSIGHTS-P2-VIZ)
+- [x] Approve band display labels — "More support needed" / "On track" / "Goals within reach" — 2026-02-22 — GK (INSIGHTS-LANG1)
+- [x] QA Page Audit Tier 1 + Tier 2 — 500.html standalone, public view hardening, goal heading/onboarding/steps, attendance a11y, messages UX, leave-message required field, translations (PR #20) — 2026-02-22 (QA-PA-TIER1-2)
 - [x] Fix suggestion theme linking in seed_demo_data — program-specific suggestions, removed blind fallback — 2026-02-22 (DEMO-FIX1)
 - [x] Add quarterly date range presets to ad-hoc report form — optgroup dropdown with FY + quarters, i18n month names, 8 tests — 2026-02-22 (QA-R7-RPT-QUARTER1)
 - [x] QA Round 7 Tier 2 — verified 8 items already implemented, fixed IMPROVE-3 (executive nav) and BUG-7 (log communication) — 2026-02-22 (QA-R7-TIER2)

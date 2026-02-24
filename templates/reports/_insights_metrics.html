@@ -1,0 +1,67 @@
+{% load i18n %}
+{# Program Outcomes — Layer 2: Achievement metric rates #}
+
+<h3>{% trans "Program Outcomes" %}</h3>
+<p class="chart-description muted">{% trans "Achievement rates for program-defined outcomes. Shows the percentage of participants who have reached each milestone." %}</p>
+
+{% for metric_id, ach in achievement_rates.items %}
+<div class="insights-outcome-section">
+    <h4>{{ ach.name }} <small class="muted">(n={{ ach.total }})</small></h4>
+
+    {# Horizontal progress bar #}
+    <div class="insights-outcome-bar-container">
+        <div class="insights-outcome-bar" role="progressbar"
+             aria-valuenow="{{ ach.achieved_pct }}" aria-valuemin="0" aria-valuemax="100"
+             aria-label="{% blocktrans with name=ach.name pct=ach.achieved_pct %}{{ name }}: {{ pct }}% achieved{% endblocktrans %}">
+            <div class="insights-outcome-bar-fill" style="width: {{ ach.achieved_pct }}%;"></div>
+        </div>
+        {% if ach.target_rate %}
+        <div class="insights-outcome-target-marker" style="left: {{ ach.target_rate }}%;"
+             title="{% blocktrans with target=ach.target_rate %}Target: {{ target }}%{% endblocktrans %}"
+             role="img"
+             aria-label="{% blocktrans with target=ach.target_rate %}Target: {{ target }}%{% endblocktrans %}">
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="insights-outcome-detail">
+        <span>{{ ach.achieved_count }} {% trans "of" %} {{ ach.total }}</span>
+        {% if ach.target_rate %}
+        <span class="muted">({% blocktrans with target=ach.target_rate %}target: {{ target }}%{% endblocktrans %})</span>
+        {% endif %}
+    </div>
+
+    {# Journey context: when a corresponding scale metric exists #}
+    {% if ach.journey_context %}
+    <p class="insights-journey-context muted">
+        {{ ach.journey_context }}
+    </p>
+    {% endif %}
+
+    {# Accessible data table #}
+    <details class="chart-data-table">
+        <summary>{% trans "View data table" %}</summary>
+        <table role="table" aria-label="{% blocktrans with name=ach.name %}Data for {{ name }}{% endblocktrans %}">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Status" %}</th>
+                    <th scope="col">{% trans "Count" %}</th>
+                    <th scope="col">{% trans "Percentage" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{% trans "Achieved" %}</td>
+                    <td>{{ ach.achieved_count }}</td>
+                    <td>{{ ach.achieved_pct }}%</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Not yet achieved" %}</td>
+                    <td>{{ ach.not_achieved_count }}</td>
+                    <td>{{ ach.not_achieved_pct }}%</td>
+                </tr>
+            </tbody>
+        </table>
+    </details>
+</div>
+{% endfor %}
