@@ -174,6 +174,7 @@ Current DRRs:
 - `tasks/design-rationale/multi-tenancy.md` — Multi-tenancy architecture. Covers schema-per-tenant vs. alternatives, per-tenant encryption, consortium model, sequencing condition (after first single-tenant deployment).
 - `tasks/design-rationale/reporting-architecture.md` — Reporting system (canonical). Template-driven + ad-hoc paths, aggregation rules, period picker, consortium pipeline, privacy safeguards. Defers to multi-tenancy.md for suppression thresholds and consent.
 - `tasks/design-rationale/executive-dashboard-redesign.md` — Executive dashboard UX. Stats grid, program cards, accessibility. Monitoring only — does not produce exportable files.
+- `tasks/design-rationale/offline-field-collection.md` — Offline field collection via ODK Central. PII tiers, program profiles, sync architecture, device loss protocol, iOS limitations. Three expert panels (16 perspectives).
 
 ### How Claude Manages Tasks
 
