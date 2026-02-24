@@ -641,6 +641,33 @@ def client_detail(request, client_id):
 
     is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
 
+    # Circles sidebar (only when feature toggle is on and user is not front desk)
+    client_circles = []
+    from apps.admin_settings.models import FeatureToggle
+    circles_enabled = FeatureToggle.get_all_flags().get("circles", False)
+    if circles_enabled and not is_receptionist:
+        from apps.circles.models import CircleMembership
+        from apps.circles.helpers import get_visible_circles
+        visible_circle_ids = set(get_visible_circles(request.user).values_list("pk", flat=True))
+        memberships = (
+            CircleMembership.objects.filter(
+                client_file=client, status="active", circle_id__in=visible_circle_ids,
+            )
+            .select_related("circle")
+            .prefetch_related("circle__memberships__client_file")
+        )
+        for m in memberships:
+            # Build "other members" string for sidebar display
+            others = [
+                om.display_name
+                for om in m.circle.memberships.all()
+                if om.status == "active" and om.pk != m.pk
+            ]
+            m.other_members = ", ".join(others[:5])
+            if len(others) > 5:
+                m.other_members += f" (+{len(others) - 5})"
+            client_circles.append(m)
+
     # PERM-S3: Field-level visibility based on role.
     # Determines which core model fields (e.g. birth_date) the user can see.
     # Custom fields use their own front_desk_access setting instead.
@@ -661,6 +688,7 @@ def client_detail(request, client_id):
         "visible_fields": visible_fields,
         "document_folder_url": get_document_folder_url(client),
         "has_hidden_programs": has_hidden_programs,
+        "client_circles": client_circles,
         "breadcrumbs": breadcrumbs,
         **tab_counts,  # notes_count, events_count, targets_count
     }
