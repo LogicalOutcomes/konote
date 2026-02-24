@@ -1,0 +1,25 @@
+{# Language toggle — FLSA active offer compliance.
+   Usage:
+     Standalone (public pages):  {% include "_lang_toggle.html" %}
+     With form class (nav/footer): {% include "_lang_toggle.html" with form_class="nav-lang-form" %}
+     With max-width:              {% include "_lang_toggle.html" with max_width="720px" %}
+     Inline (no wrapping nav):    {% include "_lang_toggle.html" with inline=True form_class="footer-lang-form" %}
+   Note: embed pages intentionally omit the toggle (embedding page controls language).
+#}
+{% load i18n %}{% get_current_language as CURRENT_LANG %}{% if not inline %}
+<nav class="lang-nav" aria-label="{% trans 'Language selection' %}"{% if max_width %} style="max-width:{{ max_width }}; margin:0 auto"{% endif %}>
+{% endif %}
+    <form action="{% url 'switch_language' %}" method="post"{% if form_class %} class="{{ form_class }}"{% endif %}{% if inline %} aria-label="{% trans 'Language selection' %}"{% endif %}>
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        {% if CURRENT_LANG == "en" %}
+        <input type="hidden" name="language" value="fr">
+        <button type="submit" class="lang-link" lang="fr">Français</button>
+        {% else %}
+        <input type="hidden" name="language" value="en">
+        <button type="submit" class="lang-link" lang="en">English</button>
+        {% endif %}
+    </form>
+{% if not inline %}
+</nav>
+{% endif %}

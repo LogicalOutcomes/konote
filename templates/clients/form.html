@@ -105,6 +105,21 @@
     </fieldset>
     {% endif %}
 
+    {% if form.existing_circle %}
+    <fieldset>
+        <legend>{{ term.circle|default:"Circle" }}</legend>
+        <small>{% blocktrans with circle=term.circle|default:"circle" %}Optional — link to an existing {{ circle }} or create a new one.{% endblocktrans %}</small>
+
+        <label for="id_existing_circle">{% blocktrans with circle=term.circle|default:"circle" %}Link to existing {{ circle }}{% endblocktrans %}</label>
+        {{ form.existing_circle }}
+        {% if form.existing_circle.errors %}<small class="error" role="alert">{{ form.existing_circle.errors.0 }}</small>{% endif %}
+
+        <label for="id_new_circle_name">{% blocktrans with circle=term.circle|default:"circle" %}Or create a new {{ circle }}{% endblocktrans %}</label>
+        {{ form.new_circle_name }}
+        {% if form.new_circle_name.errors %}<small class="error" role="alert">{{ form.new_circle_name.errors.0 }}</small>{% endif %}
+    </fieldset>
+    {% endif %}
+
     <div role="group">
         <button type="submit">{% if editing %}{% trans "Save Changes" %}{% else %}{% blocktrans with client=term.client|default:"Participant" %}Create {{ client }}{% endblocktrans %}{% endif %}</button>
         {% if editing %}

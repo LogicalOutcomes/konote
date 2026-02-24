@@ -117,6 +117,19 @@
                         {{ mf.value.label }}: <strong>{{ mf.auto_calc_value }}</strong> <small class="secondary">({% trans "auto-calculated" %})</small>
                     </span>
                 </div>
+                {% elif mf.is_achievement %}
+                <div class="achievement-metric">
+                    <label>{{ mf.value.label }}</label>
+                    <div class="achievement-pills">
+                    {% for radio in mf.value %}
+                        {% if radio.choice_value %}
+                        <label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>
+                        {% endif %}
+                    {% endfor %}
+                    </div>
+                    {% if mf.value.help_text %}<small>{{ mf.value.help_text }}</small>{% endif %}
+                    {% if mf.value.errors %}<small class="error" role="alert">{{ mf.value.errors.0 }}</small>{% endif %}
+                </div>
                 {% elif mf.is_scale %}
                 <div class="scale-metric">
                     <label>{{ mf.value.label }}</label>
@@ -248,6 +261,16 @@
             {% if form.follow_up_date.errors %}<small class="error" id="follow-up-error" role="alert">{{ form.follow_up_date.errors.0 }}</small>{% endif %}
         </div>
     </fieldset>
+
+    {% if form.circle %}
+    <!-- Circle tagging (optional) -->
+    <fieldset>
+        <legend class="sr-only">{{ form.circle.label }}</legend>
+        <label for="{{ form.circle.id_for_label }}">{{ form.circle.label }}</label>
+        {{ form.circle }}
+        {% if form.circle.help_text %}<small id="circle-help">{{ form.circle.help_text }}</small>{% endif %}
+    </fieldset>
+    {% endif %}
 
     <!-- Sticky footer with confirmation and save -->
     <div class="sticky-form-footer" role="region" aria-label="{% trans 'Confirm and save' %}">

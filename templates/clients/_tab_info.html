@@ -175,6 +175,33 @@
 </section>
 {% endif %}
 
+{# Circles — staff + PM, gated on feature toggle #}
+{% if features.circles and not is_receptionist and not client.is_anonymised %}
+<section>
+    <details open>
+        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{{ term.circle_plural|default:"Circles" }}</h2></summary>
+        <div style="margin-top: var(--kn-space-base);">
+            {% if client_circles %}
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for cc in client_circles %}
+                <li style="margin-bottom: 0.5rem;">
+                    <a href="{% url 'circles:circle_detail' circle_id=cc.circle.pk %}">{{ cc.circle.name }}</a>
+                    {% if cc.relationship_label %}<small class="secondary"> — {{ cc.relationship_label }}</small>{% endif %}
+                    {% if cc.is_primary_contact %}<span class="badge badge-primary" style="font-size: 0.7rem;">{% trans "Primary" %}</span>{% endif %}
+                    {% if cc.other_members %}
+                    <br><small class="secondary">{{ cc.other_members }}</small>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="secondary" role="status">{% blocktrans with circle=term.circle|default:"circle" %}Not part of any {{ circle }}.{% endblocktrans %}</p>
+            {% endif %}
+        </div>
+    </details>
+</section>
+{% endif %}
+
 {# Participant Portal — staff + PM, gated on feature toggle #}
 {% if features.participant_portal and not is_receptionist and not client.is_anonymised %}
 <section>

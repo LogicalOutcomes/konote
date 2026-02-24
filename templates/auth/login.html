@@ -48,20 +48,7 @@
         <hr>
     {% else %}
     {# ── Return visit: language link top-right, following canada.ca convention ── #}
-    {% get_current_language as CURRENT_LANG %}
-    <nav class="lang-nav" aria-label="{% trans 'Language selection' %}">
-        <form action="{% url 'switch_language' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="next" value="{{ request.path }}">
-            {% if CURRENT_LANG == "en" %}
-            <input type="hidden" name="language" value="fr">
-            <button type="submit" class="lang-link" lang="fr" hreflang="fr">Français</button>
-            {% else %}
-            <input type="hidden" name="language" value="en">
-            <button type="submit" class="lang-link" lang="en" hreflang="en">English</button>
-            {% endif %}
-        </form>
-    </nav>
+    {% include "_lang_toggle.html" %}
 
     <main id="main-content" class="container login-container" tabindex="-1">
         <h1 class="login-wordmark">{{ site.product_name|default:"KoNote" }}</h1>

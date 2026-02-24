@@ -6,19 +6,33 @@
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GK (SEC3-Q1)
 - [ ] Confirm standard report schema and configuration template with partner contact before building — SG (RPT-SCHEMA1)
 - [ ] Approve CIDS implementation plan with project lead before building — covers metadata fields, code list integration, CIDS-enriched reports, and full JSON-LD export; confirm partner consumption pathway and whether to engage Common Approach as pilot implementer (see tasks/cids-json-ld-export.md) — SG/GK (CIDS-APPROVE1)
-- [ ] Approve band display labels and clinical thresholds for insights metric distributions — hard blocker on Phase 2 template work (see tasks/design-rationale/insights-metric-distributions.md, Phase 0) — GK (INSIGHTS-LANG1)
 - [ ] Discuss: are Design Rationale Records (DRRs) working well as a practice? Should we keep using them, change the format, or retire them? — GK (PROCESS-DRR1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
 - [ ] Discuss: Should GK design insights/reports pages as HTML mockups (in a `mockups/` folder) to iterate on layout without PRs? Developer would translate approved mockups into Django templates — PB (PROCESS-MOCKUPS1)
 
 ## Active Work
 
+### Phase: Offline Field Collection (PR #34 — Prince reviewing)
+
+- [x] App skeleton, models, ODK client, sync command — 2026-02-24 (FIELD-ODK-APP1, SYNC1)
+- [x] XLSForms for attendance and visit notes — 2026-02-24 (FIELD-ODK-FORM-ATT1, FORM-VIS1)
+- [x] Admin UI, feature toggle, settings — 2026-02-24 (FIELD-ODK-ADMIN1)
+- [x] App user mapping, pull submissions, dedup — 2026-02-24 (FIELD-ODK-USERS1, IMPORT1)
+- [x] Four PII tiers with scope control — 2026-02-24 (FIELD-ODK-TIERS1)
+- [x] Sync status dashboard — 2026-02-24 (FIELD-ODK-DASH1)
+- [x] Tests (43 tests), two code reviews — 2026-02-24 (FIELD-ODK-TEST1)
+- [x] French translations — 2026-02-24 (FIELD-ODK-I18N1)
+- [ ] Deploy ODK Central on Canadian VM (Docker Compose) — ops task (FIELD-ODK-DEPLOY1)
+- [ ] Circle Observation XLSForm — depends on circles in ODK (FIELD-ODK-FORM-CIR1)
+- [ ] Push Circle/CircleMember Entity lists — depends on above (FIELD-ODK-CIRCLES1)
+- [ ] Agency-facing documentation — ODK Collect setup, device loss protocol (FIELD-ODK-DOC1)
+
 ### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
 
-- [ ] Phase 3: Update executive dashboard — program cards with trend direction, data completeness, feedback themes (INSIGHTS-P3-EXEC)
-- [ ] Phase 4: Achievement metric recording UI — dropdown in note form, tests (INSIGHTS-P4-RECORD)
-- [ ] Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
-- [ ] Extract and translate French strings for metric distributions templates (~25-30 new strings, several blocktrans blocks) (INSIGHTS-I18N1)
+- [x] Phase 3: Update executive dashboard — program cards with lead outcome, trend direction, data completeness, feedback themes, 7 tests — 2026-02-24 (INSIGHTS-P3-EXEC)
+- [x] Phase 4: Achievement metric recording UI — dropdown in note form, form validation, 4 tests — 2026-02-24 (INSIGHTS-P4-RECORD)
+- [ ] 🔨 Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
+- [ ] 🔨 Extract and translate French strings for metric distributions templates (~25-30 new strings, several blocktrans blocks) — PB (INSIGHTS-I18N1)
 
 ### Phase: Launch Readiness
 
@@ -29,10 +43,16 @@
 - [ ] Verify production email configuration for exports, erasure alerts, and password resets — PB (OPS3)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — PB (OPS4)
 - [ ] Document scheduled task setup for export monitoring in the runbook — PB (EXP2w)
-- [ ] Add program-level filtering to note search (`_find_clients_with_matching_notes`) — search can reveal restricted program data through side channel (see DRR: phipa-consent-enforcement.md) — PB (PHIPA-SEARCH1)
-- [ ] Add consent filter to qualitative_summary view — shows client words from note entries across programs (see DRR) — PB (PHIPA-QUAL1)
+- [x] Add program-level filtering to note search (`_find_clients_with_matching_notes`) — PHIPA consent filter + 2 tests — 2026-02-24 (PHIPA-SEARCH1)
+- [x] Add consent filter to qualitative_summary view — PHIPA consent filter + test — 2026-02-24 (PHIPA-QUAL1)
 - [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — (DEPLOY-TOOLKIT1)
+
+### Phase: I18N Process Improvements (see tasks/i18n-process-improvements.md — on docs/bilingual-drr branch, PR #36)
+
+- [x] Resolve fuzzy PO entries — verified 0 fuzzy entries exist; custom translate_strings workflow avoids them — 2026-02-24 (I18N-FUZZY1)
+- [x] Verify language toggle meets Ontario FLSA active offer requirements — added toggle to 6 public/unauthenticated pages, added aria-labels — 2026-02-24 (I18N-ACTIVE-OFFER1)
+- [x] Add insights-metric-distributions DRR to CLAUDE.md list — 2026-02-24 (I18N-DRR-LIST1)
 
 ## Do Occasionally
 
@@ -45,24 +65,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] **Redeploy to Railway** — after merging to main. Push to `main` and Railway auto-deploys (OPS-RAIL1)
 
 ## Coming Up
-
-### Phase: QA Round 7 — Tier 2 Fixes (see tasks/qa-action-plan-2026-02-21.md)
-
-- [x] Verify 8 items already implemented (BUG-4, BUG-8, BUG-11, IMPROVE-12/13, BLOCKER-2/3/5) — 2026-02-22 (QA-R7-TIER2-VERIFY)
-- [x] Hide admin dropdown in nav for executive role (IMPROVE-3) — 2026-02-22 (QA-R7-NAV1)
-- [x] Add "Log Communication" to client profile Actions dropdown (BUG-7) — 2026-02-22 (QA-R7-COMM1)
-- [x] Add quarterly date range presets to ad-hoc report form (IMPROVE-4) — 2026-02-22 (QA-R7-RPT-QUARTER1)
-
-### Phase: QA Round 7 — Page Audit Tier 2 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
-
-- [x] Fix groups-attendance: replace "--" with "N/R" (aria-label) + rename "Rate" to "Attendance Rate" — screen reader a11y — 2026-02-22 (QA-PA-ATTEND1)
-- [x] Fix groups-attendance "1 sessions" pluralization — Django pluralize filter + French blocktrans — 2026-02-22 (QA-PA-ATTEND2)
-- [x] Improve comm-my-messages empty state — distinguish "no messages yet" from "all read", add guidance text — 2026-02-22 (QA-PA-MSG1)
-- [x] Add required-field indicator to comm-leave-message textarea — asterisk + aria-required — 2026-02-22 (QA-PA-MSG2)
-- [x] Add onboarding context to plan-goal-create — collapsible 1-2 sentence explainer for new users — 2026-02-22 (QA-PA-GOAL1)
-- [x] Add step indicator ("Step 1 of 2") to goal creation wizard — helps DS1c (ADHD) track progress — 2026-02-22 (QA-PA-GOAL2)
-- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — fix in qa-scenarios repo (QA-PA-TEST1)
-- [ ] Seed comm-my-messages populated state with actual messages — fix in qa-scenarios repo (QA-PA-TEST2)
 
 ### Phase: Post-Launch Communication Enhancements
 
@@ -100,49 +102,42 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — (CIDS-IMPACT1)
 - [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — (CIDS-VALIDATE1)
 
+### Phase: I18N Process Improvements (see tasks/i18n-process-improvements.md)
+
+- [ ] Resolve ~147 fuzzy PO entries — old French translations that may no longer match current English strings (I18N-FUZZY1)
+- [ ] Verify active offer compliance for language toggle — visible on every page, keyboard-accessible, not buried in menus (I18N-ACTIVE-OFFER1)
+- [ ] Add insights-metric-distributions DRR to CLAUDE.md DRR list — missing from list but exists on disk (I18N-DRR-LIST1)
+
 ### Phase: Other Upcoming
 
 - [ ] Permissions Phase 2 — remaining 10 items: discharge access transitions, consent model, DV-safe mode, GATED clinical access, group schedule vs roster, per-field front desk edit, SCOPED→PROGRAM rename, partner report key, alert escalation, dashboard split (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P3–12)
 
 ### Phase: Advanced Reporting
 
-- [ ] Research typical nonprofit session reporting requirements (UNHCR, IRCC, CCIS, etc.) to design "Sessions by Participant" report (REP-REQ1)
-- [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (REP-SESS1)
+- [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (see konote-prosper-canada/tasks/session-reporting-research.md for field requirements) (REP-SESS1)
 - [ ] Expand report template system to support more flexible data exports across various modules (REP-FLEX1)
-- [ ] Add "All Programs" option to report filters for organization-wide summaries (REP-ALL-PROGS1)
+- [x] Add "All Programs" option to report filters for organization-wide summaries — 2026-02-24 (REP-ALL-PROGS1)
 - [ ] Implement report preview on-screen before downloading PDF/CSV (REP-PREVIEW1)
 - [ ] Research/Implement including data visuals (charts/graphs) in PDF reports (REP-PDF1)
 - [ ] Redesign PDF report layout: merge title page with page 2 to eliminate redundant empty space (REP-PDF2)
 - [ ] Define standardised report schema for [funder partner] — 10-15 key metrics and demographic breakdowns shared across all partner agencies (RPT-SCHEMA1)
 
-### Phase: Demo Data Quality
-
-_Nothing pending._
-
 ### Phase: Surveys Future Work
 
 - [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
-- [ ] Run `translate_strings` to extract and compile French translations for the new survey templates (SURVEY-I18N1)
+- [x] Run `translate_strings` to extract and compile French translations for the new survey templates — 2026-02-24 (SURVEY-I18N1)
 
 ### Phase: Documentation & Website Updates
 
 - [ ] Create deployment documentation for surveys and portal features (DOC-DEPLOY1)
 - [ ] Update technical documentation in GitHub for surveys and portal architecture (DOC-TECH1)
-- [ ] Update website feature list and marketing copy to include surveys and portal (WEB-FEAT1)
-- [ ] Add Evidence section to website — adapt docs/evidence-outcome-measurement.md into a public-facing page explaining the research behind KoNote's outcome measurement approach (see tasks/web-evidence-prompt.md) (WEB-EVIDENCE1)
-
-### Phase: QA Round 7 — Page Audit Tier 1 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
-
-- [x] Create custom styled 500.html template — standalone, bilingual, branded fallback for all unhandled errors — 2026-02-22 (QA-PA-500)
-- [x] Fix public unsubscribe page returning 500 — CASL compliance, safety net for import/token errors — 2026-02-22 (QA-PA-BLOCKER4)
-- [x] Fix public survey link page returning 500 — try/except renders "survey unavailable" instead of raw 500 — 2026-02-22 (QA-PA-BLOCKER3)
-- [x] Fix plan-goal-create heading "Add Target" → "Add a Goal" — terminology migration artifact — 2026-02-22 (QA-PA-BUG1)
+- [ ] Update website feature list to add a Surveys card — features.html has Participant Portal but no explicit surveys section (WEB-FEAT1)
 
 ## Parking Lot
 
 - [ ] Add PIPEDA compliance context to admin-erasure-requests page — explain what gets deleted vs. retained — GK reviews privacy/data retention (QA-PA-ERASURE1)
-- [ ] Replace decorative circular element on erasure empty state with static icon — cosmetic, low priority (QA-PA-ERASURE2)
-- [ ] Add breadcrumbs to plan-goal-create (Participants > Name > Plan > Add Goal) — navigation aid for new users (QA-PA-GOAL3)
+- [ ] 🔨 Replace decorative circular element on erasure empty state with static icon — cosmetic, low priority (QA-PA-ERASURE2)
+- [ ] 🔨 Add breadcrumbs to plan-goal-create (Participants > Name > Plan > Add Goal) — navigation aid for new users (QA-PA-GOAL3)
 - [ ] PIPEDA data export from client profile — "Export Data" action for Section 8 access requests, needs design for data categories and output format — GK reviews privacy workflow (QA-R7-PRIVACY1)
 - [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
 - [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
@@ -151,7 +146,7 @@ _Nothing pending._
 - [ ] Accessibility polish: status dropdown auto-open on Tab, colour-only status indicator fix (remaining from QA-R7-A11Y2) (A11Y-POLISH1)
 - [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
-- [ ] Verify deploy-azure.md reference in deployment protocol still resolves — may have been moved or renamed (DEPLOY-VERIFY1)
+- [ ] 🔨 Verify deploy-azure.md reference in deployment protocol still resolves — may have been moved or renamed (DEPLOY-VERIFY1)
 - [ ] Add stress testing for 50+ concurrent users (QA-T15)
 - [ ] Add legacy system import migration scenario test (QA-T16)
 - [ ] Add onboarding guidance for new users (help link or first-run banner) (QA-W19)
@@ -170,7 +165,9 @@ _Nothing pending._
 - [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
 - [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
-- [ ] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering (CODE-TIDY1)
+- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — fix in qa-scenarios repo (QA-PA-TEST1)
+- [ ] Seed comm-my-messages populated state with actual messages — fix in qa-scenarios repo (QA-PA-TEST2)
+- [ ] 🔨 Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering (CODE-TIDY1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
 - [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
 - [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
@@ -181,18 +178,20 @@ _Nothing pending._
 
 ## Recently Done
 
+- [x] Add insights-metric-distributions DRR to CLAUDE.md list — 2026-02-24 (I18N-DRR-LIST1)
+- [x] PHIPA consent filtering for note search and qualitative summary — 3 tests (PR pending) — 2026-02-24 (PHIPA-SEARCH1, PHIPA-QUAL1)
+- [x] Create bilingual requirements DRR — legal rationale (Official Languages Act, Ontario FLSA, WCAG), anti-patterns for deferred translations, technical approach, translation standards for Claude sessions — 2026-02-24 (I18N-DRR1)
+- [x] All Programs report filter — "__all__" sentinel, multi-program aggregation, RBAC-scoped, 18 tests — 2026-02-24 (REP-ALL-PROGS1)
+- [x] Insights P3 executive dashboard + P4 achievement recording + 65 French translations (PR #35) — 2026-02-24 (INSIGHTS-P3-EXEC, INSIGHTS-P4-RECORD)
+- [x] French translations — all 54 remaining empty strings translated and compiled — 2026-02-24 (INSIGHTS-I18N1)
+- [x] Achievement metric seed data + recording UI — radio pill UI in note form with validation + CSS + tests — 2026-02-24 (INSIGHTS-P0-SEED)
+- [x] Research session reporting requirements (IRCC, CFPB, Employment Ontario, United Way) — 2026-02-24 (REP-REQ1)
+- [x] Add Evidence section to konote-website — evidence.html with Research Foundation content and citations — 2026-02-24 (WEB-EVIDENCE1)
+- [x] Offline Field Collection — full feature: models, ODK client, sync, admin UI, 4 PII tiers, 43 tests, translations (PR #34) — 2026-02-24 (FIELD-ODK-APP1–TEST1)
+- [x] Circles Lite Phase 1 — full feature: models, views, templates, nav, sidebar, note tagging, intake, tests, translations — 2026-02-24 (CIRCLES-1–9)
 - [x] Enforce PHIPA cross-program consent in views — note_detail, note_summary, event_list; fix fail-open bug; fix CONF9 interaction; shared banner include; 4 new tests; DRR created — 2026-02-22 (PHIPA-ENFORCE1)
 - [x] Insights metric distributions Phases 0-2 — model fields, aggregation, distributions, achievements, trends, Two Lenses, data completeness, 50 tests, 10 review fixes (PR #23) — 2026-02-22 (INSIGHTS-P0-ADMIN, INSIGHTS-P1-MODEL, INSIGHTS-P1-AGG, INSIGHTS-P2-LAYOUT, INSIGHTS-P2-VIZ)
 - [x] Approve band display labels — "More support needed" / "On track" / "Goals within reach" — 2026-02-22 — GK (INSIGHTS-LANG1)
 - [x] QA Page Audit Tier 1 + Tier 2 — 500.html standalone, public view hardening, goal heading/onboarding/steps, attendance a11y, messages UX, leave-message required field, translations (PR #20) — 2026-02-22 (QA-PA-TIER1-2)
-- [x] Fix suggestion theme linking in seed_demo_data — program-specific suggestions, removed blind fallback — 2026-02-22 (DEMO-FIX1)
-- [x] Add quarterly date range presets to ad-hoc report form — optgroup dropdown with FY + quarters, i18n month names, 8 tests — 2026-02-22 (QA-R7-RPT-QUARTER1)
 - [x] QA Round 7 Tier 2 — verified 8 items already implemented, fixed IMPROVE-3 (executive nav) and BUG-7 (log communication) — 2026-02-22 (QA-R7-TIER2)
-- [x] Scenario YAML URL fixes — updated 7 files in konote-qa-scenarios repo from /admin/ to /manage/ paths (PR #14) — 2026-02-22 (QA-R7-YAML1)
 - [x] QA Round 7 Tier 1 — language persistence, skip-to-content verified, notes 403 fixed, htmx syntax fixed — 2026-02-21 (QA-R7-TIER1)
-- [x] Fix report generation page — duplicate template name in dropdown and HTMX period options 500 error (PR #14) — 2026-02-22 (BUG-RPT1)
-- [x] Code review fixes for template-driven reporting — 12 issues (suppression, WCAG, XSS, race condition, tests) (PR #12) — 2026-02-22 (RPT-REVIEW1)
-- [x] Aggregation engine + consortium metric locking for ad-hoc export form — 2026-02-22 (RPT-AGG1)
-- [x] UX + QA Round 7 fixes — 18 items: accessibility, dashboard, notes UX, front desk, label improvements — 2026-02-21
-- [x] Unify analysis chart quick-select and date picker into single form control — 2026-02-21 (UX-CHART1)
-- [x] Accessibility fixes: aria-labels on audit table, notes error container, mobile touch targets — 2026-02-21 (A11Y-UX1)

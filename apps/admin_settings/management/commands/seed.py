@@ -65,6 +65,10 @@ class Command(BaseCommand):
                     "min_value": m.get("min_value"),
                     "max_value": m.get("max_value"),
                     "unit": m.get("unit", ""),
+                    "metric_type": m.get("metric_type", "scale"),
+                    "achievement_options": m.get("achievement_options", []),
+                    "achievement_success_values": m.get("achievement_success_values", []),
+                    "target_rate": m.get("target_rate"),
                     "name_fr": m.get("name_fr", ""),
                     "definition_fr": m.get("definition_fr", ""),
                     "unit_fr": m.get("unit_fr", ""),
@@ -117,6 +121,7 @@ class Command(BaseCommand):
             ("messaging_sms", False),
             ("messaging_email", True),
             ("surveys", False),
+            ("circles", False),
         ]
         created = 0
         for key, enabled in defaults:
@@ -141,8 +146,11 @@ class Command(BaseCommand):
             FeatureToggle.objects.filter(feature_key="surveys").update(
                 is_enabled=True
             )
+            FeatureToggle.objects.filter(feature_key="circles").update(
+                is_enabled=True
+            )
             self.stdout.write(
-                "  Demo mode: participant_portal, messaging_email, ai_assist, surveys enabled."
+                "  Demo mode: participant_portal, messaging_email, ai_assist, surveys, circles enabled."
             )
 
     def _seed_instance_settings(self):

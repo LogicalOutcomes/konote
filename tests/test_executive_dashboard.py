@@ -706,3 +706,83 @@ class ProgramLearningCardTest(TestCase):
 
         self.assertNotIn("struggling", content)
         self.assertNotIn("thriving", content)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ExecutiveDashboardMetricInsightsTest(TestCase):
+    """Tests that the executive dashboard includes metric insight indicators."""
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+
+        self.exec_user = User.objects.create_user(
+            username="exec_insights", password="testpass123"
+        )
+        self.prog = Program.objects.create(name="Insights Program", colour_hex="#10B981")
+        UserProgramRole.objects.create(
+            user=self.exec_user, program=self.prog, role="executive"
+        )
+
+    def _create_client(self, status="active"):
+        cf = ClientFile()
+        cf.first_name = "Test"
+        cf.last_name = "Client"
+        cf.status = status
+        cf.save()
+        ClientProgramEnrolment.objects.create(client_file=cf, program=self.prog)
+        return cf
+
+    def test_program_stats_include_metric_insight_fields(self):
+        """Dashboard context includes trend, completeness, and urgent theme fields."""
+        self._create_client("active")
+        self.http.login(username="exec_insights", password="testpass123")
+        resp = self.http.get("/participants/executive/")
+        self.assertEqual(resp.status_code, 200)
+
+        program_stats = resp.context["program_stats"]
+        self.assertEqual(len(program_stats), 1)
+        stat = program_stats[0]
+
+        # All three metric insight fields must be present
+        self.assertIn("trend_direction", stat)
+        self.assertIn("data_completeness_level", stat)
+        self.assertIn("data_completeness_pct", stat)
+        self.assertIn("urgent_theme_count", stat)
+
+        # Completeness level must be one of the expected values
+        self.assertIn(stat["data_completeness_level"], ("full", "partial", "low"))
+
+    def test_urgent_theme_count_reflects_urgent_themes(self):
+        """Dashboard counts urgent suggestion themes per program."""
+        from apps.notes.models import SuggestionTheme
+
+        self._create_client("active")
+
+        # Create two urgent themes and one non-urgent theme
+        SuggestionTheme.objects.create(
+            name="Accessibility barriers",
+            program=self.prog,
+            status="open",
+            priority="urgent",
+        )
+        SuggestionTheme.objects.create(
+            name="Transportation issues",
+            program=self.prog,
+            status="open",
+            priority="urgent",
+        )
+        SuggestionTheme.objects.create(
+            name="Scheduling flexibility",
+            program=self.prog,
+            status="open",
+            priority="noted",
+        )
+
+        self.http.login(username="exec_insights", password="testpass123")
+        resp = self.http.get("/participants/executive/")
+        self.assertEqual(resp.status_code, 200)
+
+        stat = resp.context["program_stats"][0]
+        self.assertEqual(stat["urgent_theme_count"], 2)

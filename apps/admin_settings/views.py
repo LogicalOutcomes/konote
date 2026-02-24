@@ -286,6 +286,29 @@ DEFAULT_FEATURES = {
         "depends_on": ["programs"],
         "used_by": [],
     },
+    "field_collection": {
+        "label": _lazy("Field Collection"),
+        "description": _lazy("Offline mobile data collection for field staff using ODK Central."),
+        "when_on": [_lazy("Per-program field collection settings become available"), _lazy("Admin can configure ODK Central sync for attendance and visit notes")],
+        "when_off": [_lazy("Field collection settings are hidden"), _lazy("Existing sync configurations are preserved")],
+        "depends_on": [],
+        "used_by": [],
+        "requires_config": ["ODK_CENTRAL_URL"],
+    },
+    "circles": {
+        "label": _lazy("Circles"),
+        "description": _lazy("Track families, households, and support networks as circles of connected people."),
+        "when_on": [
+            _lazy("Circles menu appears in the navigation bar"),
+            _lazy("Staff can create circles and manage members"),
+            _lazy("Circle membership shows on participant files"),
+            _lazy("Notes can be tagged to a circle"),
+            _lazy("DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"),
+        ],
+        "when_off": [_lazy("Circles menu is hidden — existing circle data is preserved")],
+        "depends_on": [],
+        "used_by": [],
+    },
 }
 
 # Features that default to enabled (most default to disabled)
