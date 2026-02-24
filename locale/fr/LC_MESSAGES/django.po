@@ -14723,7 +14723,8 @@ msgid "Distributions may not represent the full program."
 msgstr "Les répartitions peuvent ne pas représenter l'ensemble du programme."
 
 msgid "False for metrics like PHQ-9 where lower is better."
-msgstr "Faux pour les indicateurs comme le PHQ-9 où un score plus bas est meilleur."
+msgstr ""
+"Faux pour les indicateurs comme le PHQ-9 où un score plus bas est meilleur."
 
 msgid "Feedback themes"
 msgstr "Thèmes de rétroaction"
@@ -14751,13 +14752,16 @@ msgstr ""
 "un jugement professionnel, et non un score mesuré."
 
 msgid "Line chart showing staff assessment trends by month"
-msgstr "Graphique linéaire montrant les tendances d'évaluation du personnel par mois"
+msgstr ""
+"Graphique linéaire montrant les tendances d'évaluation du personnel par mois"
 
 msgid "Low band boundary (scale metrics)."
 msgstr "Limite inférieure de la tranche (indicateurs à échelle)."
 
 msgid "Low band threshold must be less than high band threshold."
-msgstr "Le seuil de la tranche basse doit être inférieur au seuil de la tranche haute."
+msgstr ""
+"Le seuil de la tranche basse doit être inférieur au seuil de la tranche "
+"haute."
 
 msgid "Low data"
 msgstr "Peu de données"
@@ -14769,8 +14773,8 @@ msgid ""
 "Movement tracking — who is progressing between bands over time — will be "
 "available in a future update."
 msgstr ""
-"Le suivi des mouvements — qui progresse entre les tranches au fil du temps "
-"— sera disponible dans une prochaine mise à jour."
+"Le suivi des mouvements — qui progresse entre les tranches au fil du temps —"
+" sera disponible dans une prochaine mise à jour."
 
 msgid "Not yet achieved"
 msgstr "Pas encore atteint"
@@ -14785,10 +14789,13 @@ msgid "Open feedback themes"
 msgstr "Thèmes de rétroaction ouverts"
 
 msgid "Optional target % for achievement metrics (e.g. 70 for 70%)."
-msgstr "Cible facultative en % pour les indicateurs de réalisation (p. ex. 70 pour 70 %)."
+msgstr ""
+"Cible facultative en % pour les indicateurs de réalisation (p. ex. 70 pour "
+"70 %)."
 
 msgid "Optional target for % in high band (scale metrics)."
-msgstr "Cible facultative pour le % dans la tranche haute (indicateurs à échelle)."
+msgstr ""
+"Cible facultative pour le % dans la tranche haute (indicateurs à échelle)."
 
 msgid ""
 "Options for achievement metrics, e.g. [\"Employed\", \"In training\", "
@@ -14875,3 +14882,36 @@ msgstr "évalués"
 
 msgid "stable"
 msgstr "stable"
+
+msgid "Declining trend"
+msgstr "Tendance en baisse"
+
+msgid "Full data completeness"
+msgstr "Données complètes"
+
+msgid "Improving trend"
+msgstr "Tendance en progression"
+
+msgid "Low data completeness"
+msgstr "Peu de données"
+
+msgid "Outcome Learning"
+msgstr "Apprentissage des résultats"
+
+msgid "Partial data completeness"
+msgstr "Données partielles"
+
+msgid "Stable trend"
+msgstr "Tendance stable"
+
+msgid "View program learning"
+msgstr "Voir l'apprentissage du programme"
+
+msgid "\\\"%(value)s\\\" is not a valid option for this metric."
+msgstr "\\\"%(value)s\\\" n'est pas une option valide pour cet indicateur."
+
+msgid "enrolled have scores"
+msgstr "inscrits ont des résultats"
+
+msgid "in high band"
+msgstr "dans la tranche haute"
