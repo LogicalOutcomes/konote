@@ -109,7 +109,7 @@
                 — {{ note.author.display_name }}
             {% endif %}
             {% if note.client_file %}
-                — <a href="{% url 'notes:note_detail' client_id=note.client_file_id note_id=note.pk %}">{{ note.client_file.display_name }}</a>
+                — <a href="{% url 'notes:note_detail' note_id=note.pk %}">{{ note.client_file.display_name }}</a>
             {% endif %}
         </header>
         {% if note.summary %}
