@@ -8027,6 +8027,31 @@ msgstr "Répondre à une demande d'accès aux données"
 msgid "These actions are for privacy compliance and data governance."
 msgstr "Ces actions concernent la conformité en matière de vie privée et la gouvernance des données."
 
+#. Privacy compliance banner (QA-R7-EXEC-COMPLIANCE1)
+msgid "Privacy Compliance"
+msgstr "Conformité en matière de vie privée"
+
+msgid "Privacy Action Required"
+msgstr "Action requise en matière de vie privée"
+
+#, python-format
+msgid "%(count)s erasure request pending"
+msgid_plural "%(count)s erasure requests pending"
+msgstr[0] "%(count)s demande d'effacement en attente"
+msgstr[1] "%(count)s demandes d'effacement en attente"
+
+#, python-format
+msgid "submitted %(days)s days ago"
+msgstr "soumise il y a %(days)s jours"
+
+#, python-format
+msgid "%(name)s's data access request is overdue (%(days)s days past deadline)"
+msgstr "La demande d'accès aux données de %(name)s est en retard (%(days)s jours après l'échéance)"
+
+#, python-format
+msgid "%(name)s's data access request is due in %(days)s days"
+msgstr "La demande d'accès aux données de %(name)s est due dans %(days)s jours"
+
 msgid ""
 "Once all program managers approve, participant data will be permanently "
 "anonymised or erased depending on the level selected below."
