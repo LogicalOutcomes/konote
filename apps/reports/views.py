@@ -6,8 +6,7 @@ import logging
 import os
 import uuid
 from collections import defaultdict
-import datetime as dt
-from datetime import datetime, time, timedelta
+from datetime import date, datetime, time, timedelta
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -929,12 +928,12 @@ def client_analysis(request, client_id):
         # Manual date inputs
         if date_from:
             try:
-                date_from_obj = dt.date.fromisoformat(date_from)
+                date_from_obj = date.fromisoformat(date_from)
             except ValueError:
                 pass
         if date_to:
             try:
-                date_to_obj = dt.date.fromisoformat(date_to)
+                date_to_obj = date.fromisoformat(date_to)
             except ValueError:
                 pass
 
