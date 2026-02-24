@@ -67,6 +67,7 @@ from apps.portal.models import (
 )
 from apps.programs.models import Program
 from apps.registration.models import RegistrationLink, RegistrationSubmission
+from apps.circles.models import Circle, CircleMembership
 from apps.surveys.models import (
     Survey,
     SurveyAnswer,
@@ -127,6 +128,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Confidence in your job search",
                             "How ready do you feel for work?",
+                            "Job Placement",
                         ],
                     },
                     {
@@ -156,6 +158,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "How ready do you feel for work?",
                             "How are you feeling today?",
+                            "Job Placement",
                         ],
                     },
                     {
@@ -185,6 +188,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "How ready do you feel for work?",
                             "Goal Progress (1-10)",
+                            "Job Placement",
                         ],
                     },
                 ],
@@ -209,6 +213,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Housing Stability Index",
                             "How safe do you feel where you live?",
+                            "Housing Secured",
                         ],
                     },
                     {
@@ -235,6 +240,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Housing Stability Index",
                             "How safe do you feel where you live?",
+                            "Housing Secured",
                         ],
                     },
                     {
@@ -264,6 +270,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Housing Stability Index",
                             "How safe do you feel where you live?",
+                            "Housing Secured",
                         ],
                     },
                     {
@@ -293,6 +300,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "How connected do you feel to the group?",
                             "Sessions attended this month",
+                            "School Enrolment",
                         ],
                     },
                     {
@@ -322,6 +330,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Sessions attended this month",
                             "How are you feeling today?",
+                            "School Enrolment",
                         ],
                     },
                     {
@@ -351,6 +360,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Sessions attended this month",
                             "Service Engagement",
+                            "School Enrolment",
                         ],
                     },
                     {
@@ -966,8 +976,61 @@ PROGRAM_FULL_SUMMARIES = {
 # ---------------------------------------------------------------------------
 
 
+def _generate_achievement_values(trend, count, metric_def):
+    """Generate a list of achievement option strings that follow a realistic trend.
+
+    For achievement metrics, returns categorical values (e.g. "Placed — full-time")
+    with probability weighted by the trend direction.
+    """
+    options = metric_def.achievement_options or []
+    success_values = set(metric_def.achievement_success_values or [])
+    if not options:
+        return [""] * count
+
+    # Split options into success and non-success
+    non_success = [o for o in options if o not in success_values]
+    success = [o for o in options if o in success_values]
+
+    values = []
+    for i in range(count):
+        t = i / max(count - 1, 1)  # 0.0 to 1.0
+
+        # Probability of a success value increases/decreases with trend
+        if trend == "improving":
+            success_prob = 0.1 + 0.7 * t  # 10% → 80%
+        elif trend == "struggling":
+            success_prob = 0.15 - 0.05 * t  # 15% → 10%
+        elif trend == "mixed":
+            success_prob = 0.3 + 0.2 * (1 if i % 3 == 2 else -1) * t
+        elif trend == "crisis_then_improving":
+            if t < 0.3:
+                success_prob = 0.05
+            else:
+                recovery_t = (t - 0.3) / 0.7
+                success_prob = 0.05 + 0.65 * recovery_t
+        elif trend == "stable":
+            success_prob = 0.6
+        else:
+            success_prob = 0.3
+
+        success_prob = max(0.0, min(1.0, success_prob))
+
+        if random.random() < success_prob and success:
+            values.append(random.choice(success))
+        elif non_success:
+            values.append(random.choice(non_success))
+        else:
+            values.append(random.choice(options))
+
+    return values
+
+
 def _generate_trend_values(trend, count, metric_name, metric_def):
     """Generate a list of metric values that follow a realistic trend."""
+    # Achievement metrics return option strings, not numbers
+    if metric_def.metric_type == "achievement":
+        return _generate_achievement_values(trend, count, metric_def)
+
     lo = metric_def.min_value or 0
     hi = metric_def.max_value or 100
 
@@ -1240,6 +1303,13 @@ class Command(BaseCommand):
         except User.DoesNotExist:
             pass  # Workers not yet created — full seed below will handle it
 
+        # Always ensure demo circles exist (idempotent via get_or_create)
+        try:
+            worker1 = User.objects.get(username="demo-worker-1")
+            self._create_demo_circles(worker1)
+        except User.DoesNotExist:
+            pass
+
         # Always ensure at least one pending alert cancellation recommendation
         # exists for the Reviews queue (idempotent).
         try:
@@ -1342,6 +1412,8 @@ class Command(BaseCommand):
             submission_count = RegistrationSubmission.objects.filter(
                 registration_link__slug="demo"
             ).delete()[0]
+            # Delete demo circles (cascade handles memberships)
+            circle_count = Circle.objects.filter(is_demo=True).delete()[0]
             # Delete calendar feed tokens for demo workers
             demo_users = User.objects.filter(is_demo=True)
             CalendarFeedToken.objects.filter(user__in=demo_users).delete()
@@ -1351,6 +1423,7 @@ class Command(BaseCommand):
                 f"{plan_count} plans, {event_count} events, {alert_count} alerts, "
                 f"{journal_count} journal entries, {message_count} portal messages, "
                 f"{staff_note_count} staff notes, {correction_count} correction requests, "
+                f"{circle_count} circles, "
                 f"{submission_count} registration submissions."
             )
 
@@ -1410,6 +1483,9 @@ class Command(BaseCommand):
 
         # --- Ensure one pending recommendation exists for Reviews queue demo ---
         self._ensure_pending_alert_recommendation(workers, programs_by_name)
+
+        # --- Create demo circles ---
+        self._create_demo_circles(worker1)
 
         # --- Create demo groups ---
         self._create_demo_groups(workers, programs_by_name, now)
@@ -1489,6 +1565,83 @@ class Command(BaseCommand):
             link.auto_approve = True
             link.save(update_fields=["title", "description", "auto_approve"])
             self.stdout.write("  Updated demo registration link.")
+
+    def _create_demo_circles(self, created_by):
+        """Create demo circles with members.
+
+        Circles represent families, households, and support networks.
+        Uses get_or_create for idempotency.
+        """
+        DEMO_CIRCLES = [
+            {
+                "name": "Rivera Family",
+                "members": [
+                    {"record_id": "DEMO-001", "relationship": "child", "primary": True},
+                    {"name": "Maria Rivera", "relationship": "parent", "primary": False},
+                    {"name": "Carlos Rivera", "relationship": "parent", "primary": False},
+                ],
+            },
+            {
+                "name": "Williams-Dubois Household",
+                "members": [
+                    {"record_id": "DEMO-004", "relationship": "partner", "primary": True},
+                    {"record_id": "DEMO-005", "relationship": "partner", "primary": False},
+                ],
+            },
+            {
+                "name": "Diallo Family",
+                "members": [
+                    {"record_id": "DEMO-010", "relationship": "parent", "primary": True},
+                    {"name": "Ibrahim Diallo", "relationship": "spouse", "primary": False},
+                    {"name": "Awa Diallo", "relationship": "child", "primary": False},
+                    {"name": "Moussa Diallo", "relationship": "child", "primary": False},
+                ],
+            },
+            {
+                "name": "Sharma-Kovac Household",
+                "members": [
+                    {"record_id": "DEMO-013", "relationship": "partner", "primary": True},
+                    {"record_id": "DEMO-015", "relationship": "partner", "primary": False},
+                ],
+            },
+        ]
+
+        created_count = 0
+        for circle_def in DEMO_CIRCLES:
+            # Check if circle already exists by looking for exact name match in demo circles
+            existing = [
+                c for c in Circle.objects.demo().filter(status="active")
+                if c.name == circle_def["name"]
+            ]
+            if existing:
+                continue
+
+            circle = Circle(is_demo=True, created_by=created_by)
+            circle.name = circle_def["name"]
+            circle.save()
+
+            for member_def in circle_def["members"]:
+                membership = CircleMembership(
+                    circle=circle,
+                    relationship_label=member_def.get("relationship", ""),
+                    is_primary_contact=member_def.get("primary", False),
+                )
+                if "record_id" in member_def:
+                    client = ClientFile.objects.filter(
+                        record_id=member_def["record_id"]
+                    ).first()
+                    if client:
+                        membership.client_file = client
+                    else:
+                        continue
+                else:
+                    membership.member_name = member_def["name"]
+                membership.save()
+
+            created_count += 1
+
+        if created_count:
+            self.stdout.write(f"  Created {created_count} demo circles with members.")
 
     def _seed_client_data(
         self, record_id, plan_config, workers, programs_by_name,

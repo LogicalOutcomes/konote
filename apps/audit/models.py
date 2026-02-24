@@ -35,6 +35,7 @@ class AuditLog(models.Model):
         "events": _("Event"),
         "programs": _("Program"),
         "groups": _("Group"),
+        "circles": _("Circle"),
         "audit_log": _("Audit log"),
         "export": _("Export"),
         "erasure": _("Erasure request"),

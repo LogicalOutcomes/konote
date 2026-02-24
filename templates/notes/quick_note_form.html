@@ -50,6 +50,13 @@
     </div>
     {% endif %}
 
+    {% if form.circle %}
+    <!-- Circle tagging (optional) -->
+    <label for="{{ form.circle.id_for_label }}">{{ form.circle.label }}</label>
+    {{ form.circle }}
+    {% if form.circle.help_text %}<small>{{ form.circle.help_text }}</small>{% endif %}
+    {% endif %}
+
     <!-- Sticky footer with save -->
     <div class="sticky-form-footer" role="region" aria-label="{% trans 'Save' %}">
         <div class="sticky-form-footer-inner">

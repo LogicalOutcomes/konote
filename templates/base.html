@@ -95,6 +95,9 @@
             {% if features.groups and can_see_groups %}
             <li><a href="/groups/"{% if nav_active == "groups" %} class="nav-active" aria-current="page"{% endif %}>{{ term.group_plural|default:"Groups" }}</a></li>
             {% endif %}
+            {% if features.circles and user_permissions.circle_view %}
+            <li><a href="/circles/"{% if nav_active == "circles" %} class="nav-active" aria-current="page"{% endif %}>{{ term.circle_plural|default:"Circles" }}</a></li>
+            {% endif %}
             {% has_permission "meeting.view" as can_see_meetings %}
             {% if can_see_meetings %}
             <li><a href="{% url 'events:meeting_list' %}"{% if nav_active == "meetings" %} class="nav-active" aria-current="page"{% endif %}>{% trans "Meetings" %}</a></li>
