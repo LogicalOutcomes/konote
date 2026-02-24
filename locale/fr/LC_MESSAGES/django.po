@@ -7864,6 +7864,44 @@ msgstr ""
 "Partager les notes cliniques entre les programmes pour les participants "
 "partagés"
 
+#. Note sharing toggle (QA-R7-PRIVACY2)
+msgid "Share notes across programs"
+msgstr "Partager les notes entre les programmes"
+
+msgid "On"
+msgstr "Activé"
+
+msgid "Off"
+msgstr "Désactivé"
+
+#, python-format
+msgid "Notes about %(name)s are visible to staff in all their programs."
+msgstr "Les notes concernant %(name)s sont visibles au personnel de tous ses programmes."
+
+#, python-format
+msgid "Notes about %(name)s are only visible to the program that created them."
+msgstr "Les notes concernant %(name)s ne sont visibles que par le programme qui les a créées."
+
+msgid "Stop sharing"
+msgstr "Arrêter le partage"
+
+msgid "Start sharing"
+msgstr "Activer le partage"
+
+msgid "Note sharing enabled."
+msgstr "Partage des notes activé."
+
+msgid "Note sharing disabled."
+msgstr "Partage des notes désactivé."
+
+#, python-format
+msgid ""
+"Stop sharing %(name)s's notes across programs? Notes will only be visible to"
+" the program that created them."
+msgstr ""
+"Arrêter le partage des notes de %(name)s entre les programmes? Les notes ne "
+"seront visibles que par le programme qui les a créées."
+
 msgid ""
 "Once all program managers approve, participant data will be permanently "
 "anonymised or erased depending on the level selected below."

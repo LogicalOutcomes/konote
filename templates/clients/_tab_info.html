@@ -154,21 +154,44 @@
 </section>
 {% endif %}
 
-{# Cross-program sharing consent — visible to staff and above #}
-{% if not is_receptionist and not client.is_anonymised %}
+{# Note sharing toggle — PM/admin only, hidden when agency sharing is off #}
+{% if is_pm_or_admin and not client.is_anonymised and features.cross_program_note_sharing %}
 <section>
     <details>
-        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Cross-Program Sharing" %}</h2></summary>
+        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Share notes across programs" %}</h2></summary>
         <div style="margin-top: var(--kn-space-base);">
-            {% if client.cross_program_sharing == "consent" %}
-            <p><span class="badge badge-success">{% trans "Share across programs" %}</span></p>
-            <p class="secondary">{% trans "This participant has consented to sharing clinical information across programs." %}</p>
-            {% elif client.cross_program_sharing == "restrict" %}
-            <p><span class="badge badge-danger">{% trans "Restricted" %}</span></p>
-            <p class="secondary">{% trans "Clinical notes are restricted to the program where they were recorded." %}</p>
+            {% if sharing_effective %}
+            <p><span class="badge badge-success">{% trans "On" %}</span></p>
+            <p class="secondary">{% blocktrans with name=client.display_name %}Notes about {{ name }} are visible to staff in all their programs.{% endblocktrans %}</p>
+            <form method="post" action="{% url 'clients:client_sharing_toggle' client_id=client.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="sharing" value="off">
+                <button type="submit" class="outline secondary" style="font-size: 0.875rem;" onclick="return confirm('{% blocktrans with name=client.display_name %}Stop sharing {{ name }}\'s notes across programs? Notes will only be visible to the program that created them.{% endblocktrans %}')">{% trans "Stop sharing" %}</button>
+            </form>
             {% else %}
-            <p><span class="badge badge-neutral">{% trans "Follow agency setting" %}</span></p>
-            <p class="secondary">{% trans "Uses the agency-wide default for cross-program note sharing." %}</p>
+            <p><span class="badge badge-neutral">{% trans "Off" %}</span></p>
+            <p class="secondary">{% blocktrans with name=client.display_name %}Notes about {{ name }} are only visible to the program that created them.{% endblocktrans %}</p>
+            <form method="post" action="{% url 'clients:client_sharing_toggle' client_id=client.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="sharing" value="on">
+                <button type="submit" class="outline" style="font-size: 0.875rem;">{% trans "Start sharing" %}</button>
+            </form>
+            {% endif %}
+        </div>
+    </details>
+</section>
+{% elif not is_receptionist and not client.is_anonymised and features.cross_program_note_sharing %}
+{# Read-only view for staff who aren't PM/admin #}
+<section>
+    <details>
+        <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Share notes across programs" %}</h2></summary>
+        <div style="margin-top: var(--kn-space-base);">
+            {% if sharing_effective %}
+            <p><span class="badge badge-success">{% trans "On" %}</span></p>
+            <p class="secondary">{% blocktrans with name=client.display_name %}Notes about {{ name }} are visible to staff in all their programs.{% endblocktrans %}</p>
+            {% else %}
+            <p><span class="badge badge-neutral">{% trans "Off" %}</span></p>
+            <p class="secondary">{% blocktrans with name=client.display_name %}Notes about {{ name }} are only visible to the program that created them.{% endblocktrans %}</p>
             {% endif %}
         </div>
     </details>
