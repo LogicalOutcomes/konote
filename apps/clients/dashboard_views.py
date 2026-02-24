@@ -1224,6 +1224,57 @@ def executive_dashboard(request):
         for s in suggestion_map.values()
     )
 
+    # -- Privacy compliance banner (QA-R7-EXEC-COMPLIANCE1) ---------------
+    # Only computed for executive/admin roles. Shows pending items only.
+    from apps.auth_app.decorators import _get_user_highest_role_any
+    user_role = getattr(request, "user_program_role", None) or _get_user_highest_role_any(request.user)
+    is_exec_or_admin = user_role in ("executive", "program_manager") or getattr(request.user, "is_admin", False)
+
+    privacy_banner_items = []
+    if is_exec_or_admin:
+        from .models import ClientProgramEnrolment, DataAccessRequest, ErasureRequest
+
+        # Accessible clients scoped to user's programs
+        accessible_client_ids = set(
+            ClientProgramEnrolment.objects.filter(
+                program_id__in=filtered_program_ids,
+            ).values_list("client_file_id", flat=True)
+        )
+
+        # Pending erasure requests — scoped to user's programs
+        pending_erasures = ErasureRequest.objects.filter(
+            status="pending",
+            client_file_id__in=accessible_client_ids,
+        ).count()
+        if pending_erasures:
+            oldest_pending = ErasureRequest.objects.filter(
+                status="pending",
+                client_file_id__in=accessible_client_ids,
+            ).order_by("requested_at").first()
+            if oldest_pending:
+                days_ago = (now.date() - oldest_pending.requested_at.date()).days
+                privacy_banner_items.append({
+                    "type": "erasure",
+                    "count": pending_erasures,
+                    "days": days_ago,
+                    "overdue": False,
+                })
+
+        # Pending data access requests — scoped to user's programs
+        pending_access = DataAccessRequest.objects.filter(
+            completed_at__isnull=True,
+            client_file_id__in=accessible_client_ids,
+        )
+        for dar in pending_access:
+            is_overdue = dar.deadline < today
+            privacy_banner_items.append({
+                "type": "data_access",
+                "client_id": dar.client_file_id,
+                "days_remaining": dar.days_remaining,
+                "overdue": is_overdue,
+                "deadline": dar.deadline,
+            })
+
     return render(request, "clients/executive_dashboard.html", {
         "programs": programs,
         "program_stats": program_stats,
@@ -1237,6 +1288,7 @@ def executive_dashboard(request):
         "show_events": show_events,
         "show_portal": show_portal,
         "total_suggestions_important": total_suggestions_important,
+        "privacy_banner_items": privacy_banner_items,
         "selected_program_id": selected_program_id,
         "start_date": custom_start,
         "data_refreshed_at": now,

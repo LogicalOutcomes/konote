@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "MFA Enabled" %}{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px;">
+    <h1>{% trans "Multi-Factor Authentication Enabled" %}</h1>
+    <p>{% trans "Your account is now protected with multi-factor authentication. You will need to enter a code from your authenticator app each time you sign in." %}</p>
+
+    <article aria-label="{% trans 'Backup codes' %}" style="border-left: 4px solid var(--kn-warning-fg); background: var(--kn-warning-bg);">
+        <strong>{% trans "Save your backup codes" %}</strong>
+        <p>{% trans "If you lose access to your authenticator app, you can use one of these backup codes to sign in. Each code can only be used once. Store them in a safe place." %}</p>
+    </article>
+
+    <div style="background: var(--kn-primary-subtle); padding: var(--kn-space-base); border-radius: var(--kn-radius-card); font-family: monospace; font-size: 1.1rem; line-height: 2;">
+        {% for code in backup_codes %}
+        {{ code }}<br>
+        {% endfor %}
+    </div>
+
+    <p style="margin-top: var(--kn-space-lg);">
+        <a href="{% url 'home' %}" role="button">{% trans "Continue to dashboard" %}</a>
+    </p>
+</div>
+{% endblock %}

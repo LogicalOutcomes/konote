@@ -436,3 +436,43 @@ class MergeConfirmForm(forms.Form):
                     label=conflict["field_name"],
                     initial=str(client_a_pk),
                 )
+
+
+# --- Data Access Request forms (QA-R7-PRIVACY1) ---
+
+class DataAccessRequestForm(forms.Form):
+    """Form to log a new PIPEDA data access request."""
+
+    REQUEST_METHOD_CHOICES = [
+        ("verbal", _("Verbal")),
+        ("written", _("Written")),
+        ("email", _("Email")),
+    ]
+
+    requested_at = forms.DateField(
+        label=_("Date request received"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    request_method = forms.ChoiceField(
+        choices=REQUEST_METHOD_CHOICES,
+        label=_("How was the request received?"),
+    )
+
+
+class DataAccessCompleteForm(forms.Form):
+    """Form to mark a data access request as complete."""
+
+    DELIVERY_METHOD_CHOICES = [
+        ("in_person", _("In person")),
+        ("mail", _("Mail")),
+        ("email", _("Email")),
+    ]
+
+    completed_at = forms.DateField(
+        label=_("Date delivered"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    delivery_method = forms.ChoiceField(
+        choices=DELIVERY_METHOD_CHOICES,
+        label=_("How was the information delivered?"),
+    )

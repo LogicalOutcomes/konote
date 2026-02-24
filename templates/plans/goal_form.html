@@ -4,6 +4,7 @@
 {% block title %}{% trans "Add a Goal" %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
 
 {% block content %}
+{% include "_breadcrumbs.html" %}
 <hgroup>
     <h1>{% trans "Add a Goal" %}</h1>
     <p>{{ client.display_name }} {{ client.last_name }}</p>

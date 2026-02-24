@@ -292,7 +292,7 @@ def erasure_approve(request, pk):
     if executed:
         email_sent = _notify_erasure_completed(er, request)
         if er.erasure_tier == "full_erasure":
-            messages.success(request, _("All approvals received. %(term)s data has been permanently erased.") % {"term": request.get_term("client")})
+            messages.success(request, _("All approvals received. %(term)s data is scheduled for permanent erasure in 24 hours. You can cancel during this period.") % {"term": request.get_term("client")})
         else:
             messages.success(request, _("All approvals received. %(term)s data has been anonymised.") % {"term": request.get_term("client")})
         if not email_sent:
@@ -654,3 +654,44 @@ def _notify_requester_rejection(erasure_request, rejecting_user, review_notes):
             code, exc_info=True,
         )
         return False
+
+
+# --- Cancel scheduled Tier 3 erasure ---
+
+@login_required
+@requires_permission_global("erasure.manage")
+def erasure_cancel_scheduled(request, pk):
+    """Cancel a scheduled Tier 3 erasure during the 24-hour safety window."""
+    if request.method != "POST":
+        return redirect("erasure_request_detail", pk=pk)
+
+    er = get_object_or_404(ErasureRequest, pk=pk)
+
+    if er.status != "scheduled":
+        messages.error(request, _("This erasure cannot be cancelled — it is not in scheduled status."))
+        return redirect("erasure_request_detail", pk=pk)
+
+    er.status = "cancelled"
+    er.scheduled_execution_at = None
+    er.save(update_fields=["status", "scheduled_execution_at"])
+
+    from .erasure import _log_audit
+    _log_audit(
+        user=request.user,
+        action="update",
+        resource_type="erasure_cancelled",
+        resource_id=er.pk,
+        ip_address=_get_client_ip(request),
+        metadata={
+            "client_pk": er.client_pk,
+            "erasure_code": er.erasure_code,
+            "reason": "scheduled_erasure_cancelled_by_user",
+        },
+    )
+
+    messages.success(
+        request,
+        _("Scheduled erasure cancelled. %(term)s data has been preserved.")
+        % {"term": request.get_term("client")},
+    )
+    return redirect("erasure_pending_list")

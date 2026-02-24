@@ -800,6 +800,18 @@ def client_detail(request, client_id):
     effective_role = user_role or _get_user_highest_role(request.user)
     visible_fields = client.get_visible_fields(effective_role) if effective_role else client.get_visible_fields("receptionist")
 
+    # Compute effective sharing state for the note sharing toggle (QA-R7-PRIVACY2).
+    # Binary: ON if field is "consent", or "default" with agency toggle on.
+    from django.core.cache import cache as _cache
+    _flags = _cache.get("feature_toggles") or {}
+    _agency_shares = _flags.get("cross_program_note_sharing", True)
+    if client.cross_program_sharing == "consent":
+        sharing_effective = True
+    elif client.cross_program_sharing == "restrict":
+        sharing_effective = False
+    else:  # "default"
+        sharing_effective = _agency_shares
+
     context = {
         "client": client,
         "enrolments": enrolments,
@@ -811,6 +823,7 @@ def client_detail(request, client_id):
         "is_pm_or_admin": is_pm_or_admin,
         "pending_erasure": pending_erasure,
         "visible_fields": visible_fields,
+        "sharing_effective": sharing_effective,
         "document_folder_url": get_document_folder_url(client),
         "has_hidden_programs": has_hidden_programs,
         "client_circles": client_circles,
@@ -1276,3 +1289,58 @@ def check_duplicate(request):
         "matches": matches,
         "match_type": match_type,
     })
+
+
+# ---- Note Sharing Toggle (QA-R7-PRIVACY2) ----
+
+@login_required
+@requires_permission("client.edit")
+def client_sharing_toggle(request, client_id):
+    """Toggle cross-program note sharing for a participant.
+
+    PM/admin only. Sets the field to "consent" (ON) or "restrict" (OFF).
+    The "default" state is never written by this toggle — it resolves
+    the binary for the user and stores the explicit choice.
+    """
+    if request.method != "POST":
+        return redirect("clients:client_detail", client_id=client_id)
+
+    from apps.programs.access import get_client_or_403
+    client = get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden()
+
+    old_value = client.cross_program_sharing
+    new_sharing = request.POST.get("sharing", "")
+
+    if new_sharing == "on":
+        client.cross_program_sharing = "consent"
+    elif new_sharing == "off":
+        client.cross_program_sharing = "restrict"
+    else:
+        return redirect("clients:client_detail", client_id=client_id)
+
+    client.save(update_fields=["cross_program_sharing"])
+
+    # Audit log
+    from apps.audit.models import AuditLog
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=getattr(request.user, "display_name", str(request.user)),
+        action="update",
+        resource_type="client_sharing",
+        resource_id=client.pk,
+        is_demo_context=getattr(request.user, "is_demo", False),
+        metadata={
+            "old_value": old_value,
+            "new_value": client.cross_program_sharing,
+        },
+    )
+
+    if new_sharing == "on":
+        messages.success(request, _("Note sharing enabled."))
+    else:
+        messages.success(request, _("Note sharing disabled."))
+
+    return redirect("clients:client_detail", client_id=client_id)
