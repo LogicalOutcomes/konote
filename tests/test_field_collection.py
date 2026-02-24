@@ -294,7 +294,7 @@ class PushEntitiesTest(TestCase):
         ClientProgramEnrolment.objects.create(
             client_file=client_file,
             program=self.program,
-            status="active",
+            status="enrolled",
         )
         return client_file
 

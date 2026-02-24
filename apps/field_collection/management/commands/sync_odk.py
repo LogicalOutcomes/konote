@@ -12,7 +12,7 @@ Usage:
 """
 
 import logging
-from datetime import date
+from datetime import date, datetime
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
@@ -23,6 +23,15 @@ logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
     help = "Sync data between KoNote and ODK Central"
+
+    def _get_sync_user(self):
+        """Get or create a system user for ODK sync imports."""
+        from apps.auth_app.models import User
+        user, _ = User.objects.get_or_create(
+            username="odk_sync",
+            defaults={"is_active": False, "is_admin": False},
+        )
+        return user
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -197,7 +206,7 @@ class Command(BaseCommand):
         # Get participants enrolled in this program
         participants = ClientFile.objects.filter(
             enrolments__program=config.program,
-            enrolments__status="active",
+            enrolments__status="enrolled",
             status="active",
         ).distinct()
 
@@ -478,13 +487,14 @@ class Command(BaseCommand):
                     client_file_id=participant_id,
                     note_type="quick",
                     interaction_type=interaction_type,
+                    author=self._get_sync_user(),
                     author_program=config.program,
                 )
                 note.notes_text = observations
 
                 if visit_date:
                     note.backdate = timezone.make_aware(
-                        timezone.datetime.combine(visit_date, timezone.datetime.min.time())
+                        datetime.combine(visit_date, datetime.min.time())
                     )
 
                 # Engagement observation
