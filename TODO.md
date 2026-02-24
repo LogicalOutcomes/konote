@@ -28,7 +28,7 @@
 
 ### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
 
-- [ ] 🔨 Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
+- [x] Phase 5: Workbench-to-report links, board summary template, translations, docs — 2026-02-24 (INSIGHTS-P5-POLISH)
 
 ### Phase: Launch Readiness
 
@@ -151,8 +151,6 @@ _Nothing pending._
 ## Parking Lot
 
 - [ ] Add PIPEDA compliance context to admin-erasure-requests page — explain what gets deleted vs. retained — GK reviews privacy/data retention (QA-PA-ERASURE1)
-- [ ] Replace decorative circular element on erasure empty state with static icon — cosmetic, low priority (QA-PA-ERASURE2)
-- [ ] Add breadcrumbs to plan-goal-create (Participants > Name > Plan > Add Goal) — navigation aid for new users (QA-PA-GOAL3)
 - [ ] PIPEDA data export from client profile — "Export Data" action for Section 8 access requests, needs design for data categories and output format — GK reviews privacy workflow (QA-R7-PRIVACY1)
 - [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
 - [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
@@ -189,6 +187,9 @@ _Nothing pending._
 
 ## Recently Done
 
+- [x] Insights Phase 5 — workbench-to-report links, board summary PDF, CLAUDE.md DRR reference, French translation sweep (100% coverage) — 2026-02-24 (INSIGHTS-P5-POLISH)
+- [x] Replace erasure empty state circle with shield icon — a11y, reusable pattern — 2026-02-24 (QA-PA-ERASURE2)
+- [x] Add breadcrumbs to goal creation page — Participants > Name > Plan > Add a Goal — 2026-02-24 (QA-PA-GOAL3)
 - [x] Verify deploy-azure.md reference — file moved to docs/archive/deploy-azure.md; updated phase-7-prompt.md reference — 2026-02-24 (DEPLOY-VERIFY1)
 - [x] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering — 2026-02-24 (CODE-TIDY1)
 - [x] Approve CIDS implementation plan — metadata fields, code list integration, CIDS-enriched reports, JSON-LD export; partner pathway confirmed — 2026-02-24 — SG/GK (CIDS-APPROVE1)
