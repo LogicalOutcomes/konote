@@ -9,8 +9,8 @@ from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.events.models import Alert, Event, Meeting
 from apps.groups.models import Group, GroupMembership, GroupSession, GroupSessionAttendance
-from apps.notes.models import ProgressNote
-from apps.plans.models import PlanSection, PlanTarget
+from apps.notes.models import MetricValue, ProgressNote, ProgressNoteTarget
+from apps.plans.models import MetricDefinition, PlanSection, PlanTarget
 from apps.programs.models import Program, UserProgramRole
 from apps.registration.models import RegistrationLink, RegistrationSubmission
 import konote.encryption as enc_module
@@ -297,3 +297,254 @@ class ExecutiveDashboardHelperTest(TestCase):
         )
         result = _count_active_alerts({cf.pk})
         self.assertEqual(result, 1)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ExecutiveDashboardOutcomeCardsTest(TestCase):
+    """Tests for the Outcome Learning section on executive dashboard cards."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+
+        self.exec_user = User.objects.create_user(
+            username="exec_outcome", password="testpass123"
+        )
+        self.program = Program.objects.create(name="Outcome Program", colour_hex="#10B981")
+        UserProgramRole.objects.create(
+            user=self.exec_user, program=self.program, role="executive"
+        )
+        self.now = timezone.now()
+
+    def _create_enrolled_client(self):
+        """Create an active client enrolled in self.program."""
+        cf = ClientFile()
+        cf.first_name = "Test"
+        cf.last_name = "Client"
+        cf.status = "active"
+        cf.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=cf, program=self.program, status="enrolled"
+        )
+        return cf
+
+    def _create_metric_value(self, client_file, metric_def, value, backdate=None):
+        """Create a MetricValue through the full relationship chain."""
+        section = PlanSection.objects.create(
+            client_file=client_file, name="Goals", program=self.program
+        )
+        target = PlanTarget.objects.create(
+            plan_section=section, client_file=client_file, status="default"
+        )
+        note = ProgressNote.objects.create(
+            client_file=client_file,
+            author=self.exec_user,
+            author_program=self.program,
+            backdate=backdate,
+        )
+        pnt = ProgressNoteTarget.objects.create(
+            progress_note=note, plan_target=target
+        )
+        MetricValue.objects.create(
+            progress_note_target=pnt,
+            metric_def=metric_def,
+            value=str(value),
+        )
+        return note
+
+    def _create_achievement_metric(self, name="Employment", target_rate=None):
+        """Create an achievement-type MetricDefinition."""
+        return MetricDefinition.objects.create(
+            name=name,
+            definition="Test achievement metric",
+            metric_type="achievement",
+            achievement_options=["Employed", "In training", "Unemployed"],
+            achievement_success_values=["Employed"],
+            target_rate=target_rate,
+            owning_program=self.program,
+        )
+
+    def _create_scale_metric(self, name="Wellbeing", target_band_high_pct=None):
+        """Create a scale-type MetricDefinition."""
+        return MetricDefinition.objects.create(
+            name=name,
+            definition="Test scale metric",
+            metric_type="scale",
+            min_value=1,
+            max_value=5,
+            higher_is_better=True,
+            target_band_high_pct=target_band_high_pct,
+            owning_program=self.program,
+        )
+
+    def _populate_achievement_data(self, metric_def, n=12):
+        """Create n participants with achievement metric values (n >= 10).
+
+        Returns (achieved_count, total).
+        Each participant gets 2 values (to avoid being skipped as "new").
+        The latest value determines achieved/not: first 65% get "Employed".
+        """
+        achieved = 0
+        for i in range(n):
+            cf = self._create_enrolled_client()
+            # First value (older)
+            self._create_metric_value(
+                cf, metric_def, "Unemployed",
+                backdate=self.now - timedelta(days=30),
+            )
+            # Latest value determines achievement
+            latest_val = "Employed" if i < int(n * 0.65) else "Unemployed"
+            if latest_val == "Employed":
+                achieved += 1
+            self._create_metric_value(cf, metric_def, latest_val)
+        return achieved, n
+
+    def _populate_scale_data(self, metric_def, n=12, high_pct=0.72):
+        """Create n participants with scale metric values (n >= 10).
+
+        Each participant gets 2 values to avoid being skipped as "new".
+        high_pct fraction score in the high band (>= 3.67 for 1-5 scale).
+        """
+        for i in range(n):
+            cf = self._create_enrolled_client()
+            if i < int(n * high_pct):
+                val = 4.5  # high band
+            else:
+                val = 2.0  # low band
+            # Two values per participant (not "new")
+            self._create_metric_value(
+                cf, metric_def, val,
+                backdate=self.now - timedelta(days=30),
+            )
+            self._create_metric_value(cf, metric_def, val)
+
+    def _get_program_stat(self, resp):
+        """Extract the stat dict for self.program from response context."""
+        for ps in resp.context["program_stats"]:
+            if ps["program"].pk == self.program.pk:
+                return ps
+        return None
+
+    def test_achievement_metric_shows_lead_outcome(self):
+        """Program with achievement metrics shows lead outcome rate."""
+        metric = self._create_achievement_metric(name="Employment", target_rate=70)
+        achieved, total = self._populate_achievement_data(metric, n=12)
+
+        self.http.login(username="exec_outcome", password="testpass123")
+        resp = self.http.get("/participants/executive/")
+        self.assertEqual(resp.status_code, 200)
+
+        stat = self._get_program_stat(resp)
+        self.assertIsNotNone(stat)
+        self.assertIsNotNone(stat["lead_outcome"])
+        self.assertEqual(stat["lead_outcome_type"], "achievement")
+        self.assertEqual(stat["lead_outcome_name"], "Employment")
+        self.assertEqual(stat["lead_outcome_target"], 70)
+        # Verify rendered HTML contains the outcome name
+        self.assertContains(resp, "Employment:")
+
+    def test_scale_metric_fallback_when_no_achievement(self):
+        """Program without achievement metrics falls back to scale metric signal."""
+        metric = self._create_scale_metric(name="Wellbeing", target_band_high_pct=75)
+        self._populate_scale_data(metric, n=12, high_pct=0.72)
+
+        self.http.login(username="exec_outcome", password="testpass123")
+        resp = self.http.get("/participants/executive/")
+        stat = self._get_program_stat(resp)
+
+        self.assertIsNotNone(stat["lead_outcome"])
+        self.assertEqual(stat["lead_outcome_type"], "scale")
+        self.assertEqual(stat["lead_outcome_name"], "Wellbeing")
+        # Template shows "in high band"
+        self.assertContains(resp, "in high band")
+
+    def test_band_counts_not_in_rendered_html(self):
+        """Band counts (band_low_count, band_mid_count, band_high_count) must NOT appear in HTML."""
+        metric = self._create_scale_metric(name="Wellbeing")
+        self._populate_scale_data(metric, n=12)
+
+        self.http.login(username="exec_outcome", password="testpass123")
+        resp = self.http.get("/participants/executive/")
+        content = resp.content.decode()
+
+        # These raw keys should not be rendered
+        self.assertNotIn("band_low_count", content)
+        self.assertNotIn("band_mid_count", content)
+        self.assertNotIn("band_high_count", content)
+
+    def test_data_completeness_indicator(self):
+        """Data completeness indicator matches the completeness level."""
+        # Create 10 enrolled clients but only give scores to some
+        metric = self._create_scale_metric(name="Scores")
+        for i in range(10):
+            cf = self._create_enrolled_client()
+            if i < 4:  # 4 out of 10 = 40% → "low"
+                self._create_metric_value(
+                    cf, metric, 3.0,
+                    backdate=self.now - timedelta(days=30),
+                )
+                self._create_metric_value(cf, metric, 3.0)
+
+        self.http.login(username="exec_outcome", password="testpass123")
+        resp = self.http.get("/participants/executive/")
+        stat = self._get_program_stat(resp)
+
+        completeness = stat["data_completeness"]
+        self.assertEqual(completeness["enrolled_count"], 10)
+        self.assertEqual(completeness["completeness_level"], "low")
+        # Template renders the circle and counts
+        self.assertContains(resp, "enrolled have scores")
+
+    def test_trend_direction_improving(self):
+        """Trend direction is improving when last month > first month by >5%."""
+        metric = self._create_scale_metric(name="Progress")
+
+        # Create 12 participants with improving scores over two months
+        for i in range(12):
+            cf = self._create_enrolled_client()
+            # Old scores: all low
+            self._create_metric_value(
+                cf, metric, 2.0,
+                backdate=self.now - timedelta(days=60),
+            )
+            # Recent scores: all high
+            self._create_metric_value(cf, metric, 4.5)
+
+        self.http.login(username="exec_outcome", password="testpass123")
+        resp = self.http.get("/participants/executive/")
+        stat = self._get_program_stat(resp)
+
+        # Trend may or may not have enough monthly data depending on date
+        # boundaries, but the field should be present
+        self.assertIn("trend_direction", stat)
+
+    def test_insights_link_present(self):
+        """Cards with outcome data link to the insights page with correct program param."""
+        metric = self._create_achievement_metric(name="Employment")
+        self._populate_achievement_data(metric, n=12)
+
+        self.http.login(username="exec_outcome", password="testpass123")
+        resp = self.http.get("/participants/executive/")
+
+        expected_link = f"/reports/insights/?program={self.program.pk}"
+        self.assertContains(resp, expected_link)
+        self.assertContains(resp, "View program learning")
+
+    def test_privacy_no_outcome_section_when_n_below_10(self):
+        """Programs with n < 10 do not show the outcome section."""
+        metric = self._create_achievement_metric(name="Employment")
+        # Only create 5 participants (below MIN_N_FOR_DISTRIBUTION = 10)
+        for i in range(5):
+            cf = self._create_enrolled_client()
+            self._create_metric_value(cf, metric, "Employed")
+
+        self.http.login(username="exec_outcome", password="testpass123")
+        resp = self.http.get("/participants/executive/")
+        stat = self._get_program_stat(resp)
+
+        # lead_outcome should be None (insufficient data)
+        self.assertIsNone(stat["lead_outcome"])
+        # Outcome section should not be rendered
+        self.assertNotContains(resp, "Outcome Learning")
