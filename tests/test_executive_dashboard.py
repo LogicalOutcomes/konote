@@ -385,14 +385,17 @@ class ExecutiveDashboardOutcomeCardsTest(TestCase):
         Returns (achieved_count, total).
         Each participant gets 2 values (to avoid being skipped as "new").
         The latest value determines achieved/not: first 65% get "Employed".
+        Dates are within current month to fall inside the dashboard date range.
         """
         achieved = 0
+        # Use a date early in the current month (always within month_start filter)
+        earlier_this_month = self.now - timedelta(days=min(self.now.day - 1, 7))
         for i in range(n):
             cf = self._create_enrolled_client()
-            # First value (older)
+            # First value (earlier this month)
             self._create_metric_value(
                 cf, metric_def, "Unemployed",
-                backdate=self.now - timedelta(days=30),
+                backdate=earlier_this_month,
             )
             # Latest value determines achievement
             latest_val = "Employed" if i < int(n * 0.65) else "Unemployed"
@@ -406,7 +409,9 @@ class ExecutiveDashboardOutcomeCardsTest(TestCase):
 
         Each participant gets 2 values to avoid being skipped as "new".
         high_pct fraction score in the high band (>= 3.67 for 1-5 scale).
+        Dates are within current month to fall inside the dashboard date range.
         """
+        earlier_this_month = self.now - timedelta(days=min(self.now.day - 1, 7))
         for i in range(n):
             cf = self._create_enrolled_client()
             if i < int(n * high_pct):
@@ -416,7 +421,7 @@ class ExecutiveDashboardOutcomeCardsTest(TestCase):
             # Two values per participant (not "new")
             self._create_metric_value(
                 cf, metric_def, val,
-                backdate=self.now - timedelta(days=30),
+                backdate=earlier_this_month,
             )
             self._create_metric_value(cf, metric_def, val)
 
@@ -476,49 +481,57 @@ class ExecutiveDashboardOutcomeCardsTest(TestCase):
 
     def test_data_completeness_indicator(self):
         """Data completeness indicator matches the completeness level."""
-        # Create 10 enrolled clients but only give scores to some
         metric = self._create_scale_metric(name="Scores")
-        for i in range(10):
+        earlier_this_month = self.now - timedelta(days=min(self.now.day - 1, 7))
+
+        # Create 20 enrolled clients, give metric data to 12 (enough for
+        # lead_outcome to render) and leave 8 without scores.
+        # 12/20 = 60% → "partial" completeness level.
+        for i in range(20):
             cf = self._create_enrolled_client()
-            if i < 4:  # 4 out of 10 = 40% → "low"
+            if i < 12:
                 self._create_metric_value(
-                    cf, metric, 3.0,
-                    backdate=self.now - timedelta(days=30),
+                    cf, metric, 4.0,
+                    backdate=earlier_this_month,
                 )
-                self._create_metric_value(cf, metric, 3.0)
+                self._create_metric_value(cf, metric, 4.0)
 
         self.http.login(username="exec_outcome", password="testpass123")
         resp = self.http.get("/participants/executive/")
         stat = self._get_program_stat(resp)
 
         completeness = stat["data_completeness"]
-        self.assertEqual(completeness["enrolled_count"], 10)
-        self.assertEqual(completeness["completeness_level"], "low")
+        self.assertEqual(completeness["enrolled_count"], 20)
+        self.assertEqual(completeness["completeness_level"], "partial")
         # Template renders the circle and counts
         self.assertContains(resp, "enrolled have scores")
 
-    def test_trend_direction_improving(self):
-        """Trend direction is improving when last month > first month by >5%."""
-        metric = self._create_scale_metric(name="Progress")
+    def test_trend_direction_calculated(self):
+        """Trend direction field is correctly calculated from monthly data.
 
-        # Create 12 participants with improving scores over two months
+        With data in the current month only, trend_direction should be None
+        (need >= 2 months). The field must always be present.
+        """
+        metric = self._create_scale_metric(name="Progress")
+        earlier_this_month = self.now - timedelta(days=min(self.now.day - 1, 7))
+
+        # All data within current month — only one month of data
         for i in range(12):
             cf = self._create_enrolled_client()
-            # Old scores: all low
             self._create_metric_value(
                 cf, metric, 2.0,
-                backdate=self.now - timedelta(days=60),
+                backdate=earlier_this_month,
             )
-            # Recent scores: all high
             self._create_metric_value(cf, metric, 4.5)
 
         self.http.login(username="exec_outcome", password="testpass123")
         resp = self.http.get("/participants/executive/")
         stat = self._get_program_stat(resp)
 
-        # Trend may or may not have enough monthly data depending on date
-        # boundaries, but the field should be present
+        # trend_direction field must always be present
         self.assertIn("trend_direction", stat)
+        # With only one month of data, trend should be None
+        self.assertIsNone(stat["trend_direction"])
 
     def test_insights_link_present(self):
         """Cards with outcome data link to the insights page with correct program param."""
