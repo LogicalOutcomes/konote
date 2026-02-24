@@ -12940,6 +12940,23 @@ msgstr "ce mois-ci"
 msgid "total"
 msgstr "total"
 
+#: apps/reports/insights_views.py
+msgid "improving"
+msgstr "en amélioration"
+
+#: apps/reports/insights_views.py
+msgid "declining"
+msgstr "en déclin"
+
+#: apps/reports/insights_views.py
+msgid "stable"
+msgstr "stable"
+
+#: apps/reports/insights_views.py
+#, python-format
+msgid "%(scored)d scored · %(low_pct).0f%% need more support"
+msgstr "%(scored)d évalués · %(low_pct).0f %% ont besoin de plus de soutien"
+
 #: apps/portal/templates/portal/staff_manage_portal.html
 #, python-format
 msgid "Manage portal access for %(name)s."
@@ -14254,6 +14271,34 @@ msgstr ""
 msgid "# Overall: %(met)s of %(total)s clients met at least one target"
 msgstr ""
 "# Global : %(met)s sur %(total)s clients ont atteint au moins une cible"
+
+#: apps/reports/views.py
+msgid "# Program: %(name)s"
+msgstr "# Programme : %(name)s"
+
+#: apps/reports/views.py
+msgid "# Date Range: %(from)s to %(to)s"
+msgstr "# Période : %(from)s au %(to)s"
+
+#: apps/reports/views.py
+msgid "# Total Participants: %(count)s"
+msgstr "# Total des participants : %(count)s"
+
+#: apps/reports/views.py
+msgid "# Total Clients: %(count)s"
+msgstr "# Total des clients : %(count)s"
+
+#: apps/reports/views.py
+msgid "# Total Data Points: %(count)s"
+msgstr "# Total des points de données : %(count)s"
+
+#: apps/reports/views.py
+msgid "# Grouped By: %(label)s"
+msgstr "# Regroupé par : %(label)s"
+
+#: apps/reports/views.py
+msgid "# ===== BREAKDOWN BY %(label)s ====="
+msgstr "# ===== VENTILATION PAR %(label)s ====="
 
 msgid "AGE DEMOGRAPHICS"
 msgstr "DONNÉES DÉMOGRAPHIQUES PAR ÂGE"
