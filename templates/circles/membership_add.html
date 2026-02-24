@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Add Member" %} — {{ circle.name }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Add Member" %}</h1>
+    <p>{{ circle.name }}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="badge badge-danger" role="alert">
+        {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <fieldset>
+        <legend>{% blocktrans with term=term.client|default:"participant" %}Select an existing {{ term }}{% endblocktrans %}</legend>
+        <label for="id_client_file">{{ term.client|default:"Participant" }}</label>
+        <select name="client_file" id="id_client_file">
+            <option value="">— {% trans "Select" %} —</option>
+            {% for pk, name in client_choices %}
+            <option value="{{ pk }}">{{ name }}</option>
+            {% endfor %}
+        </select>
+    </fieldset>
+
+    <p>{% trans "— or —" %}</p>
+
+    <fieldset>
+        <legend>{% blocktrans with term=term.client|default:"participant" %}Add a non-{{ term }} member{% endblocktrans %}</legend>
+        <label for="id_member_name">{% trans "Name" %}</label>
+        <input type="text" name="member_name" id="id_member_name" placeholder="{% trans 'Full name' %}">
+    </fieldset>
+
+    <label for="id_relationship_label">{% trans "Relationship" %}</label>
+    <input type="text" name="relationship_label" id="id_relationship_label"
+           placeholder="{% trans 'e.g. parent, spouse, child, caregiver' %}">
+
+    <label>
+        <input type="checkbox" name="is_primary_contact" id="id_is_primary_contact">
+        {% trans "Primary contact" %}
+    </label>
+
+    <div role="group">
+        <button type="submit">{% trans "Add Member" %}</button>
+        <a href="{% url 'circles:circle_detail' circle_id=circle.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

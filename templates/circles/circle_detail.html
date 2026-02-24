@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ circle.name }} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>
+        {{ circle.name }}
+        {% if circle.status == "active" %}
+            <span class="badge badge-success">{% trans "Active" %}</span>
+        {% else %}
+            <span class="badge badge-neutral">{% trans "Archived" %}</span>
+        {% endif %}
+    </h1>
+    <p>{{ term.circle|default:"Circle" }}</p>
+</hgroup>
+
+<!-- Action buttons -->
+{% if user_permissions.circle_edit %}
+<div role="group">
+    <a href="{% url 'circles:circle_edit' circle_id=circle.pk %}" role="button" class="outline">{% trans "Edit" %}</a>
+    <a href="{% url 'circles:membership_add' circle_id=circle.pk %}" role="button" class="outline">{% trans "Add Member" %}</a>
+    {% if circle.status == "active" %}
+    <form method="post" action="{% url 'circles:circle_archive' circle_id=circle.pk %}" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="outline secondary"
+                onclick="return confirm('{% blocktrans with name=circle.name %}Archive {{ name }}? This can be undone by editing the circle.{% endblocktrans %}')">
+            {% trans "Archive" %}
+        </button>
+    </form>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Members -->
+<section aria-labelledby="members-heading">
+    <h2 id="members-heading">{% trans "Members" %}</h2>
+
+    {% if members %}
+    <figure>
+    <table role="grid" aria-label="{% blocktrans with circle=term.circle|default:'Circle' %}{{ circle }} members{% endblocktrans %}">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Name" %}</th>
+                <th scope="col">{% trans "Relationship" %}</th>
+                <th scope="col">{% trans "Role" %}</th>
+                {% if user_permissions.circle_edit %}
+                <th scope="col">{% trans "Actions" %}</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for m in members %}
+            <tr>
+                <td>{{ m.display_name }}</td>
+                <td data-label="{% trans 'Relationship' %}">{{ m.relationship_label|default:"—" }}</td>
+                <td data-label="{% trans 'Role' %}">
+                    {% if m.is_primary_contact %}
+                        <span class="badge badge-primary">{% trans "Primary Contact" %}</span>
+                    {% else %}
+                        <span class="badge badge-neutral">{% trans "Member" %}</span>
+                    {% endif %}
+                </td>
+                {% if user_permissions.circle_edit %}
+                <td data-label="{% trans 'Actions' %}">
+                    <form method="post"
+                          action="{% url 'circles:membership_remove' circle_id=circle.pk membership_id=m.pk %}"
+                          hx-post="{% url 'circles:membership_remove' circle_id=circle.pk membership_id=m.pk %}"
+                          hx-confirm="{% blocktrans with name=m.display_name %}Remove {{ name }} from this circle?{% endblocktrans %}"
+                          hx-target="closest tr"
+                          hx-swap="outerHTML">
+                        {% csrf_token %}
+                        <button type="submit" class="outline secondary" aria-label="{% blocktrans with name=m.display_name %}Remove {{ name }}{% endblocktrans %}">{% trans "Remove" %}</button>
+                    </form>
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </figure>
+    {% else %}
+    <p><em>{% trans "No members yet." %}</em></p>
+    {% endif %}
+</section>
+
+<!-- Notes Timeline -->
+<section aria-labelledby="timeline-heading">
+    <h2 id="timeline-heading">{% trans "Notes" %}</h2>
+
+    {% if hidden_note_count > 0 %}
+    <p aria-live="polite">
+        <small>
+            {% blocktrans with shown=notes|length total=total_note_count hidden=hidden_note_count %}
+                Showing {{ shown }} of {{ total }} circle notes ({{ hidden }} on records you don't have access to).
+            {% endblocktrans %}
+        </small>
+    </p>
+    {% endif %}
+
+    {% if notes %}
+    {% for note in notes %}
+    <article>
+        <header>
+            <strong>{{ note.session_date|date:"Y-m-d" }}</strong>
+            — {{ note.get_interaction_type_display }}
+            {% if note.author %}
+                — {{ note.author.display_name }}
+            {% endif %}
+            {% if note.client_file %}
+                — <a href="{% url 'notes:note_detail' client_id=note.client_file_id note_id=note.pk %}">{{ note.client_file.display_name }}</a>
+            {% endif %}
+        </header>
+        {% if note.summary %}
+        <p>{{ note.summary|truncatewords:30 }}</p>
+        {% endif %}
+    </article>
+    {% endfor %}
+    {% else %}
+    <p><em>{% blocktrans with circle=term.circle|default:"circle" %}No notes tagged to this {{ circle }} yet.{% endblocktrans %}</em></p>
+    {% endif %}
+</section>
+{% endblock %}
