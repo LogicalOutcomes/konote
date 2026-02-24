@@ -225,12 +225,15 @@
     <details>
         <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Privacy & Data Management" %}</h2></summary>
         <div style="margin-top: var(--kn-space-base);">
-            <p class="secondary">{% trans "These actions are for privacy compliance and data governance. Data erasure is permanent and irreversible." %}</p>
-            {% if pending_erasure %}
-            <span class="badge badge-warning">{% trans "Erasure Pending" %}</span>
-            {% else %}
-            <a href="{% url 'clients:client_erasure_request' client_id=client.pk %}" class="secondary" style="font-size: 0.875rem;">{% trans "Request Irreversible Data Erasure" %}</a>
-            {% endif %}
+            <p class="secondary">{% trans "These actions are for privacy compliance and data governance." %}</p>
+            <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: var(--kn-space-sm);">
+                <a href="{% url 'clients:data_access_log' client_id=client.pk %}" class="secondary" style="font-size: 0.875rem;">{% trans "Respond to Data Access Request" %}</a>
+                {% if pending_erasure %}
+                <span class="badge badge-warning">{% trans "Erasure Pending" %}</span>
+                {% else %}
+                <a href="{% url 'clients:client_erasure_request' client_id=client.pk %}" class="secondary" style="font-size: 0.875rem;">{% trans "Request Irreversible Data Erasure" %}</a>
+                {% endif %}
+            </div>
         </div>
     </details>
 </section>

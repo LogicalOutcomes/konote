@@ -664,3 +664,74 @@ class ClientMerge(models.Model):
             f"Merge #{self.pk}: Participant #{self.archived_client_pk} "
             f"→ Participant #{self.kept_client_pk}"
         )
+
+
+class DataAccessRequest(models.Model):
+    """Tracks a PIPEDA Section 8 data access request through a guided manual process.
+
+    NOT an automated export — a checklist that tells staff what to gather,
+    tracks the 30-day deadline, and logs completion to the audit trail.
+    """
+
+    REQUEST_METHOD_CHOICES = [
+        ("verbal", _("Verbal")),
+        ("written", _("Written")),
+        ("email", _("Email")),
+    ]
+
+    DELIVERY_METHOD_CHOICES = [
+        ("in_person", _("In person")),
+        ("mail", _("Mail")),
+        ("email", _("Email")),
+    ]
+
+    client_file = models.ForeignKey(
+        ClientFile, on_delete=models.CASCADE, related_name="data_access_requests",
+    )
+    requested_at = models.DateField(
+        help_text="Date the access request was received.",
+    )
+    request_method = models.CharField(
+        max_length=20, choices=REQUEST_METHOD_CHOICES,
+    )
+    deadline = models.DateField(
+        help_text="Auto-set to requested_at + 30 days.",
+    )
+
+    # Completion
+    completed_at = models.DateField(null=True, blank=True)
+    delivery_method = models.CharField(
+        max_length=20, blank=True, choices=DELIVERY_METHOD_CHOICES,
+    )
+    completed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="data_access_completions",
+    )
+
+    # Metadata
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, related_name="data_access_requests_created",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "clients"
+        db_table = "data_access_requests"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        status = _("Complete") if self.completed_at else _("Pending")
+        return f"Data Access #{self.pk} — {status}"
+
+    @property
+    def is_overdue(self):
+        from datetime import date
+        return not self.completed_at and self.deadline < date.today()
+
+    @property
+    def days_remaining(self):
+        from datetime import date
+        if self.completed_at:
+            return None
+        return (self.deadline - date.today()).days

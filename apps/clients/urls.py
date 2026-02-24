@@ -11,6 +11,7 @@ from apps.portal.staff_views import (
 
 from . import erasure_views, views
 from .dashboard_views import alert_overview_by_program, executive_dashboard, executive_dashboard_export
+from .data_access_views import data_access_log
 
 
 app_name = "clients"
@@ -42,6 +43,8 @@ urlpatterns = [
     path("admin/fields/groups/<int:group_id>/edit/", views.custom_field_group_edit, name="custom_field_group_edit"),
     path("admin/fields/create/", views.custom_field_def_create, name="custom_field_def_create"),
     path("admin/fields/<int:field_id>/edit/", views.custom_field_def_edit, name="custom_field_def_edit"),
+    # Data access request (QA-R7-PRIVACY1)
+    path("<int:client_id>/data-access/", data_access_log, name="data_access_log"),
     # Erasure request (ERASE4)
     path("<int:client_id>/erase/", erasure_views.erasure_request_create, name="client_erasure_request"),
     # Portal staff note

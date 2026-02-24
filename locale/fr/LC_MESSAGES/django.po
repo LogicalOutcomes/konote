@@ -7902,6 +7902,131 @@ msgstr ""
 "Arrêter le partage des notes de %(name)s entre les programmes? Les notes ne "
 "seront visibles que par le programme qui les a créées."
 
+#. Data access request (QA-R7-PRIVACY1)
+msgid "Log Data Access Request"
+msgstr "Consigner une demande d'accès aux données"
+
+#, python-format
+msgid "Record a data access request from %(name)s or their representative."
+msgstr "Consigner une demande d'accès aux données de %(name)s ou de son représentant."
+
+msgid "Date request received"
+msgstr "Date de réception de la demande"
+
+msgid "How was the request received?"
+msgstr "Comment la demande a-t-elle été reçue?"
+
+msgid "Verbal"
+msgstr "Verbal"
+
+msgid "Written"
+msgstr "Écrit"
+
+msgid "The 30-day PIPEDA response deadline will be calculated from the date above."
+msgstr "Le délai de réponse de 30 jours selon la LPRPDE sera calculé à partir de la date ci-dessus."
+
+msgid "Log Request & View Checklist"
+msgstr "Consigner et voir la liste de vérification"
+
+msgid "Data access request logged."
+msgstr "Demande d'accès aux données consignée."
+
+msgid "Data Access Request"
+msgstr "Demande d'accès aux données"
+
+msgid "Date Received"
+msgstr "Date de réception"
+
+msgid "Received By"
+msgstr "Reçue par"
+
+msgid "Logged By"
+msgstr "Consignée par"
+
+#, python-format
+msgid "Delivered on %(date)s (%(method)s)."
+msgstr "Remise le %(date)s (%(method)s)."
+
+msgid "Overdue"
+msgstr "En retard"
+
+#, python-format
+msgid "The 30-day PIPEDA deadline was %(date)s. Please respond as soon as possible."
+msgstr "Le délai de 30 jours selon la LPRPDE était le %(date)s. Veuillez répondre dès que possible."
+
+#, python-format
+msgid "Response due by %(date)s"
+msgstr "Réponse requise avant le %(date)s"
+
+#, python-format
+msgid "%(days)s days remaining."
+msgstr "%(days)s jours restants."
+
+msgid "Information to Gather"
+msgstr "Informations à rassembler"
+
+msgid "Not all items may apply to your agency. Include what you have."
+msgstr "Tous les éléments ne s'appliquent pas nécessairement à votre agence. Incluez ce que vous avez."
+
+msgid "Client profile (print the profile page)"
+msgstr "Profil du participant (imprimer la page de profil)"
+
+msgid "Program enrolments and status"
+msgstr "Inscriptions aux programmes et statut"
+
+msgid "Progress notes (use the notes list — filter by this participant, print or export)"
+msgstr "Notes de suivi (utiliser la liste des notes — filtrer par ce participant, imprimer ou exporter)"
+
+msgid "Plan goals and metric history (print the plan page)"
+msgstr "Objectifs du plan et historique des mesures (imprimer la page du plan)"
+
+msgid "Communication log entries"
+msgstr "Entrées du journal de communication"
+
+msgid "Survey responses (if your agency uses surveys)"
+msgstr "Réponses aux sondages (si votre agence utilise les sondages)"
+
+msgid "Alerts and flags"
+msgstr "Alertes et signalements"
+
+msgid ""
+"Review before including. You may withhold safety-related notes under PIPEDA "
+"s.9(1) if disclosure could threaten the safety of others."
+msgstr ""
+"Examiner avant d'inclure. Vous pouvez retenir les notes liées à la sécurité "
+"en vertu de l'art. 9(1) de la LPRPDE si la divulgation pourrait menacer la "
+"sécurité d'autrui."
+
+msgid "Mark as Complete"
+msgstr "Marquer comme terminé"
+
+msgid "How was the information delivered?"
+msgstr "Comment les informations ont-elles été remises?"
+
+msgid "Date delivered"
+msgstr "Date de remise"
+
+msgid "In person"
+msgstr "En personne"
+
+msgid "Mark this data access request as complete?"
+msgstr "Marquer cette demande d'accès aux données comme terminée?"
+
+msgid "Data access request marked as complete."
+msgstr "Demande d'accès aux données marquée comme terminée."
+
+msgid "This request has already been completed."
+msgstr "Cette demande a déjà été traitée."
+
+msgid "Back to Participant"
+msgstr "Retour au participant"
+
+msgid "Respond to Data Access Request"
+msgstr "Répondre à une demande d'accès aux données"
+
+msgid "These actions are for privacy compliance and data governance."
+msgstr "Ces actions concernent la conformité en matière de vie privée et la gouvernance des données."
+
 msgid ""
 "Once all program managers approve, participant data will be permanently "
 "anonymised or erased depending on the level selected below."
