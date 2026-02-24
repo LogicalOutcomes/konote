@@ -119,8 +119,8 @@
                 </div>
                 {% elif mf.is_achievement %}
                 <div class="achievement-metric">
-                    <label>{{ mf.value.label }}</label>
-                    <div class="achievement-pills">
+                    <label id="{{ mf.value.id_for_label }}_label">{{ mf.value.label }}</label>
+                    <div class="achievement-pills" role="radiogroup" aria-labelledby="{{ mf.value.id_for_label }}_label">
                     {% for radio in mf.value %}
                         {% if radio.choice_value %}
                         <label>{{ radio.tag }}<span>{{ radio.choice_label }}</span></label>

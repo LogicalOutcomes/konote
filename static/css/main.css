@@ -1841,6 +1841,10 @@ label {
     outline: 2px solid var(--kn-primary);
     outline-offset: 2px;
 }
+.achievement-pills label:focus-within {
+    outline: 2px solid var(--kn-primary);
+    outline-offset: 2px;
+}
 .achievement-metric {
     margin-bottom: var(--kn-space-base);
 }
