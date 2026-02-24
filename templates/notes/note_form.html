@@ -249,6 +249,16 @@
         </div>
     </fieldset>
 
+    {% if form.circle %}
+    <!-- Circle tagging (optional) -->
+    <fieldset>
+        <legend class="sr-only">{{ form.circle.label }}</legend>
+        <label for="{{ form.circle.id_for_label }}">{{ form.circle.label }}</label>
+        {{ form.circle }}
+        {% if form.circle.help_text %}<small id="circle-help">{{ form.circle.help_text }}</small>{% endif %}
+    </fieldset>
+    {% endif %}
+
     <!-- Sticky footer with confirmation and save -->
     <div class="sticky-form-footer" role="region" aria-label="{% trans 'Confirm and save' %}">
         <div class="sticky-form-footer-inner">

@@ -102,6 +102,27 @@ def _compute_auto_calc_values(client):
     return computed
 
 
+def _get_circle_choices_for_client(client, user=None):
+    """Return circle choices for the note form dropdown.
+
+    Returns a list of (circle_id, circle_name) tuples for circles the client
+    belongs to that the user can see, or an empty list if the circles feature
+    is off. Filters by get_visible_circles when user is provided (DV safety).
+    """
+    from apps.admin_settings.models import FeatureToggle
+    if not FeatureToggle.get_all_flags().get("circles", False):
+        return []
+    from apps.circles.models import CircleMembership
+    memberships = CircleMembership.objects.filter(
+        client_file=client, status="active",
+    ).select_related("circle")
+    if user:
+        from apps.circles.helpers import get_visible_circles
+        visible_ids = set(get_visible_circles(user).values_list("pk", flat=True))
+        memberships = memberships.filter(circle_id__in=visible_ids)
+    return [(m.circle_id, m.circle.name) for m in memberships]
+
+
 def _build_target_forms(client, post_data=None, auto_calc=None):
     """Build TargetNoteForm + MetricValueForms for each active plan target.
 
@@ -343,8 +364,10 @@ def quick_note_create(request, client_id):
     if not _check_client_consent(client):
         return render(request, "notes/consent_required.html", {"client": client})
 
+    circle_choices = _get_circle_choices_for_client(client, request.user)
+
     if request.method == "POST":
-        form = QuickNoteForm(request.POST)
+        form = QuickNoteForm(request.POST, circle_choices=circle_choices or None)
         if form.is_valid():
             with transaction.atomic():
                 note = ProgressNote(
@@ -357,6 +380,10 @@ def quick_note_create(request, client_id):
                     notes_text=form.cleaned_data["notes_text"],
                     follow_up_date=form.cleaned_data.get("follow_up_date"),
                 )
+                # Circle tagging
+                circle_id = form.cleaned_data.get("circle")
+                if circle_id:
+                    note.circle_id = circle_id
                 note.save()
 
                 # Auto-complete any pending follow-ups from this author for this client
@@ -372,7 +399,7 @@ def quick_note_create(request, client_id):
             _portal_access_reminder(request, client)
             return redirect("notes:note_list", client_id=client.pk)
     else:
-        form = QuickNoteForm()
+        form = QuickNoteForm(circle_choices=circle_choices or None)
 
     # Breadcrumbs: Clients > [Client Name] > Notes > Quick Note
     breadcrumbs = [
@@ -414,8 +441,10 @@ def quick_note_inline(request, client_id):
     if not _check_client_consent(client):
         return render(request, "notes/_inline_consent_required.html", {"client": client})
 
+    circle_choices = _get_circle_choices_for_client(client, request.user)
+
     if request.method == "POST":
-        form = QuickNoteForm(request.POST)
+        form = QuickNoteForm(request.POST, circle_choices=circle_choices or None)
         if form.is_valid():
             with transaction.atomic():
                 note = ProgressNote(
@@ -428,6 +457,9 @@ def quick_note_inline(request, client_id):
                     notes_text=form.cleaned_data["notes_text"],
                     follow_up_date=form.cleaned_data.get("follow_up_date"),
                 )
+                circle_id = form.cleaned_data.get("circle")
+                if circle_id:
+                    note.circle_id = circle_id
                 note.save()
 
                 # Auto-complete pending follow-ups
@@ -445,7 +477,7 @@ def quick_note_inline(request, client_id):
             })
     else:
         initial_type = request.GET.get("type", "phone")
-        form = QuickNoteForm(initial={"interaction_type": initial_type})
+        form = QuickNoteForm(initial={"interaction_type": initial_type}, circle_choices=circle_choices or None)
 
     return render(request, "notes/_quick_note_inline.html", {
         "form": form,
@@ -514,9 +546,10 @@ def note_create(request, client_id):
         return render(request, "notes/consent_required.html", {"client": client})
 
     auto_calc = _compute_auto_calc_values(client)
+    circle_choices = _get_circle_choices_for_client(client, request.user)
 
     if request.method == "POST":
-        form = FullNoteForm(request.POST)
+        form = FullNoteForm(request.POST, circle_choices=circle_choices or None)
         target_forms = _build_target_forms(client, request.POST, auto_calc=auto_calc)
 
         # Validate all forms
@@ -547,6 +580,10 @@ def note_create(request, client_id):
                     alliance_rater=form.cleaned_data.get("alliance_rater", ""),
                     follow_up_date=form.cleaned_data.get("follow_up_date"),
                 )
+                # Circle tagging
+                circle_id = form.cleaned_data.get("circle")
+                if circle_id:
+                    note.circle_id = circle_id
                 session_date = form.cleaned_data.get("session_date")
                 if session_date and session_date != timezone.localdate():
                     note.backdate = timezone.make_aware(
@@ -659,7 +696,7 @@ def note_create(request, client_id):
             _portal_access_reminder(request, client)
             return redirect("notes:note_list", client_id=client.pk)
     else:
-        form = FullNoteForm(initial={"session_date": timezone.localdate()})
+        form = FullNoteForm(initial={"session_date": timezone.localdate()}, circle_choices=circle_choices or None)
         target_forms = _build_target_forms(client, auto_calc=auto_calc)
 
     # Build template → default_interaction_type mapping for JS auto-fill
