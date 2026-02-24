@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
@@ -636,6 +637,14 @@ def goal_create(request, client_id):
     from konote.ai_views import _ai_enabled
     ai_enabled = _can_edit_plan(request.user, client) and _ai_enabled()
 
+    # Breadcrumbs: Participants > [Client Name] > Plan > Add a Goal
+    breadcrumbs = [
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
+        {"url": reverse("plans:plan_view", kwargs={"client_id": client.pk}), "label": _("Plan")},
+        {"url": "", "label": _("Add a Goal")},
+    ]
+
     context = {
         "form": form,
         "client": client,
@@ -647,6 +656,7 @@ def goal_create(request, client_id):
         "selected_metric_ids": selected_metric_ids,
         "ai_enabled": ai_enabled,
         "participant_words": request.POST.get("participant_words", ""),
+        "breadcrumbs": breadcrumbs,
     }
     return render(request, "plans/goal_form.html", context)
 
