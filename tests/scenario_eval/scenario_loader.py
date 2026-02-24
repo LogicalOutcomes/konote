@@ -2,6 +2,19 @@
 
 Caches parsed YAML in module-level dicts so files are only read once
 per test session (scenarios and personas don't change during a run).
+
+Cache lifetime
+--------------
+The caches (_personas_cache and _all_scenarios_cache) live for the
+duration of the Python process. Inside pytest this means one test
+session — the caches are populated on first call and reused until
+the process exits.
+
+If you import this module outside pytest (e.g., a management command
+or long-running process), the caches will persist until the process
+restarts. Call ``_personas_cache.clear()`` and
+``_all_scenarios_cache.clear()`` to force a reload if the underlying
+YAML files may have changed.
 """
 import os
 from pathlib import Path
