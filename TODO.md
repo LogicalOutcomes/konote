@@ -36,7 +36,7 @@
 ### Phase: I18N Process Improvements (see tasks/i18n-process-improvements.md — on docs/bilingual-drr branch, PR #36)
 
 - [x] Resolve fuzzy PO entries — verified 0 fuzzy entries exist; custom translate_strings workflow avoids them — 2026-02-24 (I18N-FUZZY1)
-- [ ] Verify language toggle meets Ontario FLSA active offer requirements — visible, keyboard-accessible, on every page (I18N-ACTIVE-OFFER1)
+- [x] Verify language toggle meets Ontario FLSA active offer requirements — added toggle to 6 public/unauthenticated pages, added aria-labels — 2026-02-24 (I18N-ACTIVE-OFFER1)
 - [x] Add insights-metric-distributions DRR to CLAUDE.md list — 2026-02-24 (I18N-DRR-LIST1)
 
 ## Do Occasionally
