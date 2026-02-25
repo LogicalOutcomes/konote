@@ -569,10 +569,11 @@ class SessionReportAuditLogTest(TestCase):
         ).count()
 
         resp = self.http.post("/reports/sessions/", {
-            "program": self.program.pk,
+            "program": str(self.program.pk),
             "date_from": "2026-01-01",
             "date_to": "2026-01-31",
-            "recipient": "internal",
+            "recipient": "Jane Smith, Test Org",
+            "recipient_reason": "Quarterly reporting",
         })
         # Should redirect to download page on success
         self.assertIn(resp.status_code, (302, 200))
