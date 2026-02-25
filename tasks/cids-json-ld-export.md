@@ -2,8 +2,32 @@
 
 **Task ID:** CIDS-EXPORT1
 **Created:** 2026-02-21
-**Status:** Waiting on approval from [PM] and/or [funder contact] before building
+**Status:** Validated against CIDS 3.2.0 — GO with corrections (see tasks/cids-plan-validation.md)
+**Validated:** 2026-02-24 — 5 critical corrections + 6 Phase 3 items identified
 **Strategic value:** Full CIDS compliance would make KoNote one of the first participant management systems in Canada to deliver standardised impact data exports — a significant differentiator for funder adoption across the nonprofit sector.
+
+---
+
+## Validation Notes (2026-02-24)
+
+> Full validation report: `tasks/cids-plan-validation.md`
+
+**Critical corrections to apply during implementation:**
+
+1. **Namespace URIs wrong in JSON-LD example below.** `org:` is `http://ontology.eil.utoronto.ca/tove/organization#` (TOVE), NOT `http://www.w3.org/ns/org#` (W3C). `sch:` is `http://schema.org/` (HTTP), NOT `https://schema.org/`. **Fix:** Use official context URL `https://ontology.commonapproach.org/contexts/cidsContext.jsonld` instead of inline context.
+2. **Version is 3.2.0** (July 2025), not v2.0. Update Standards Alignment appendix.
+3. **Indicator uses `cids:unitDescription`**, not `i72:unit_of_measure` (which is for Measure objects).
+4. **Entity names use `org:hasName`/`cids:hasName`**, not `sch:name`. Descriptions use `cids:hasDescription`, not `sch:description`.
+5. **Program is FullTier** (not EssentialTier). BasicTier/EssentialTier are Organisation-centric.
+
+**Phase 3 items to resolve before JSON-LD export:**
+
+- Code objects need 6 required fields (not simple strings) — expand CidsCodeList model
+- EssentialTier Indicator requires `cids:hasBaseline` and `cids:definedBy`
+- StakeholderOutcome class missing — construct at export time
+- BeneficialStakeholder is a group/cohort, NOT individual (ClientFile does NOT map to it)
+- `i72:value` wraps values in `i72:Measure` objects with `i72:hasNumericalValue`
+- ImpactDuration is FullTier only (ImpactScale and ImpactDepth are EssentialTier)
 
 ---
 
@@ -74,21 +98,23 @@ A simple pass/fail SHACL check before export catches structural errors early. De
 | `cids:Indicator` | `MetricDefinition` | Measurement tools — add IRIS+ code, SDG |
 | `cids:IndicatorReport` | `MetricValue` | Already captures value + timestamp |
 | `cids:ImpactReport` | New: computed from data | Scale/depth/duration dimensions |
-| `cids:BeneficialStakeholder` | `ClientFile` | Participants — add role tagging |
+| `cids:BeneficialStakeholder` | Program cohort (aggregate) | **NOT ClientFile** — represents a group/cohort, not individual. ⚠️ Corrected 2026-02-24 |
 | `cids:Theme` | `MetricDefinition.category` | Map internal categories to CIDS themes |
 | `cids:Code` | New: code list references | External taxonomy links (IRIS+, SDG, ICNPO) |
+| `cids:StakeholderOutcome` | Constructed at export time | ⚠️ Added 2026-02-24 — junction of Stakeholder (who) and Outcome (what), required at EssentialTier |
+| `cids:Target` | `PlanTarget` target values | Distinct from cids:Outcome — represents measurement targets for indicators |
 | `cids:Input` | Not modelled | Funding/resources — out of scope for now |
 | `cids:Output` | Session counts, service stats | Already computed in funder reports |
 
 ### CIDS Tiers
 
-CIDS defines compliance tiers. KoNote should target **EssentialTier** first, then **FullTier**:
+CIDS defines compliance tiers. ⚠️ **Corrected 2026-02-24** — Program is FullTier, not EssentialTier. KoNote should target **BasicTier** first (fast win), then **EssentialTier** (impact dimensions), then **FullTier** (programs, activities):
 
 | Tier | What It Covers | KoNote Status |
 |---|---|---|
-| **BasicTier** | Organisation name, legal status, address | Easy — add org metadata model |
-| **EssentialTier** | Programs, outcomes, indicators, stakeholders, impact dimensions | Core work — metadata fields + exports |
-| **FullTier** | Counterfactuals, impact risk categories, detailed characteristics | Future — computed from longitudinal data |
+| **BasicTier** | Organisation, Outcome, Indicator, IndicatorReport, Theme (5 classes) | Quick win — org metadata + outcome/indicator export |
+| **EssentialTier** | + Stakeholder, StakeholderOutcome, ImpactReport, Target, Code, Characteristic, HowMuchImpact (Scale, Depth) | Core work — metadata fields + impact dimensions |
+| **FullTier** | + Program, ImpactModel, Activity, Service, Input, Output, ImpactDuration, Counterfactual, ImpactRisk (9 subtypes) | Future — KoNote naturally includes programs, so FullTier is achievable |
 | **SFFTier** | Social Finance Fund specific codes + characteristics | Only if SFF funding is involved |
 
 ---
