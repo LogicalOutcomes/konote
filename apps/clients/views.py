@@ -866,8 +866,20 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
                    If False, include all fields (for edit mode).
 
     Returns a dict with custom_data, has_editable_fields, client, and is_receptionist (front desk flag).
+
+    DV-safe enforcement (PERM-P5): when client.is_dv_safe is True and user
+    is a receptionist, fields marked is_dv_sensitive are excluded regardless
+    of their front_desk_access setting. Fail closed: if is_dv_safe cannot be
+    read, assume True for receptionists.
     """
     is_receptionist = user_role == "receptionist"
+    # DV-safe: determine whether to hide DV-sensitive fields from front desk
+    dv_hide = False
+    if is_receptionist:
+        try:
+            dv_hide = bool(getattr(client, "is_dv_safe", False))
+        except Exception:
+            dv_hide = True  # Fail closed
     groups = CustomFieldGroup.objects.filter(status="active").prefetch_related("fields")
     custom_data = []
     has_editable_fields = False
@@ -875,6 +887,8 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
     for group in groups:
         if is_receptionist:
             fields = group.fields.filter(status="active", front_desk_access__in=["view", "edit"])
+            if dv_hide:
+                fields = fields.exclude(is_dv_sensitive=True)
         else:
             fields = group.fields.filter(status="active")
         field_values = []
@@ -955,10 +969,16 @@ def client_save_custom_fields(request, client_id):
 
         # Get field definitions the user can edit
         if is_receptionist:
-            editable_field_defs = [
-                fd for group in groups
-                for fd in group.fields.filter(status="active", front_desk_access="edit")
-            ]
+            qs = CustomFieldDefinition.objects.filter(
+                group__in=groups, status="active", front_desk_access="edit",
+            )
+            # DV-safe: exclude DV-sensitive fields for this client (PERM-P5)
+            try:
+                if getattr(client, "is_dv_safe", False):
+                    qs = qs.exclude(is_dv_sensitive=True)
+            except Exception:
+                qs = qs.exclude(is_dv_sensitive=True)  # Fail closed
+            editable_field_defs = list(qs)
         else:
             editable_field_defs = [
                 fd for group in groups

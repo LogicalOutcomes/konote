@@ -289,16 +289,19 @@ class CustomFieldDefinitionForm(forms.ModelForm):
         model = CustomFieldDefinition
         fields = [
             "group", "name", "input_type", "placeholder", "is_required",
-            "is_sensitive", "front_desk_access", "options_json", "sort_order", "status",
+            "is_sensitive", "front_desk_access", "is_dv_sensitive",
+            "options_json", "sort_order", "status",
         ]
         widgets = {
             "options_json": forms.Textarea(attrs={"rows": 3, "placeholder": _('["Option 1", "Option 2"]')}),
         }
         labels = {
             "sort_order": _("Display order"),
+            "is_dv_sensitive": _("DV-sensitive"),
         }
         help_texts = {
             "front_desk_access": _("Set front desk access to 'View and edit' for contact info, emergency contacts, and safety alerts."),
+            "is_dv_sensitive": _("When checked, this field is hidden from front desk staff for participants with a DV safety flag."),
         }
 
 
