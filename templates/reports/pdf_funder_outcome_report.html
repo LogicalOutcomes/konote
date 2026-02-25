@@ -114,6 +114,23 @@
     font-style: italic;
     color: #718096;
 }
+.chart-section {
+    margin: 0.5cm 0;
+}
+.chart-container {
+    margin: 0.4cm 0;
+    text-align: center;
+}
+.chart-image {
+    max-width: 100%;
+    height: auto;
+}
+.chart-caption {
+    font-size: 9pt;
+    color: #718096;
+    margin-top: 0.1cm;
+    font-style: italic;
+}
 {% endblock %}
 
 {% block content %}
@@ -285,9 +302,20 @@
 
 {% elif section.section_type == "chart" %}
 <div class="report-header">{{ section.title }}</div>
-<div class="narrative-section">
-    <p class="placeholder">{% trans "Chart visualisation is not yet available in PDF reports." %}</p>
+{% if chart_images %}
+<div class="chart-section">
+    {% for chart in chart_images %}
+    <div class="chart-container avoid-break">
+        <img src="{{ chart.chart_data_uri }}" alt="{% blocktrans with label=chart.label %}Bar chart showing {{ label }} across demographic groups{% endblocktrans %}" class="chart-image">
+        <p class="chart-caption">{{ chart.label }}</p>
+    </div>
+    {% endfor %}
 </div>
+{% else %}
+<div class="narrative-section">
+    <p class="placeholder">{% trans "No chart data available for this report." %}</p>
+</div>
+{% endif %}
 
 {% endif %}
 {% endfor %}
