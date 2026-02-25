@@ -76,14 +76,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Push Circle/CircleMember Entity lists — depends on above (FIELD-ODK-CIRCLES1)
 - [ ] Agency-facing documentation — ODK Collect setup, device loss protocol (FIELD-ODK-DOC1)
 
-### Phase: Other Upcoming
-
-Blocked on infrastructure (dedicated sprint):
-- [x] GATED clinical access for PM — justification UI, time-boxed grants, configurable reasons + durations, admin views, 32 tests — 2026-02-25 (PERM-P6)
-- [x] Per-field front desk edit — build admin UI to configure which contact fields receptionist can edit (prerequisite for P5) — 2026-02-25 (PERM-P8)
-- [x] DV-safe mode — hide DV-sensitive fields from front desk when DV flag set; two-person removal, fail-closed, 28 tests — 2026-02-25 (PERM-P5)
-
-
 ### Phase: Surveys Future Work
 
 - [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
@@ -128,6 +120,9 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] GATED clinical access for PM — justification UI, time-boxed grants, configurable reasons + durations, admin views, 32 tests — 2026-02-25 (PERM-P6)
+- [x] Per-field front desk edit — build admin UI to configure which contact fields receptionist can edit (prerequisite for P5) — 2026-02-25 (PERM-P8)
+- [x] DV-safe mode — hide DV-sensitive fields from front desk when DV flag set; two-person removal, fail-closed, 28+5 tests — 2026-02-25 (PERM-P5)
 - [x] Email verification fixes — export double-submit protection, erasure form radio hardening, 17 password reset tests (PR pending) — 2026-02-24 (OPS3)
 - [x] Add axe-core pass to `/capture-page-states` — automated WCAG checks on every page+persona+state, standalone report, skip flag — 2026-02-25 (T59)
 - [x] Verified: surveys already implemented — full apps/surveys/ with models, views, forms, tests, migrations — 2026-02-24 (SURVEY1)
@@ -135,7 +130,3 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] Verified: deployment workflow enhancements already implemented — is_demo flag, seed command, demo/real separation — 2026-02-24 (DEPLOY1)
 - [x] Verified: participant-facing progress view already implemented — descriptor timeline in portal — 2026-02-24 (PORTAL-PROGRESS1)
 - [x] Re-add API-based auto-translation to translate_strings — `--auto-translate` flag, OpenAI-compatible API, 21 tests (PR #63) — 2026-02-24 (I18N-API1)
-- [x] Alliance Repair Guide — printable one-pager based on FIT principles, print CSS, help link in note form, 3 tests, GK reviews content (PR #62) — 2026-02-24 (ALLIANCE-GUIDE1)
-- [x] Bulk operations for discharge and program assignment — checkboxes, sticky action bar, HTMX modals, 7 tests (PR #64) — 2026-02-24 (UX17)
-- [x] Code review fixes (14 of 15 findings) — All Programs guard, age breakdown loop, aria-labels, PHIPA comment, export_type, permission tests, cross-program tests, audit log tests, role=grid removal, erasure badges, hardcoded URLs, ARIA state, modality null→default, innerHTML→HTMX, CSV string fix (PR #58) — 2026-02-24 (REVIEW-FIX1–15)
-- [x] Parking lot + Advanced Reporting parallel cleanup (15 items in 7 agents, 2 waves) — 2026-02-24 (QA-PA-ERASURE1, QA-PA-ERASURE2, QA-R7-BUG13, QA-R7-BUG21, A11Y-POLISH1, QA-W19, DEPLOY-VERIFY1, CODE-TIDY1, QA-W62, I18N-STALE1, I18N-CSV1, REP-SESS1, REP-PREVIEW1, REP-PDF1, REP-PDF2)
