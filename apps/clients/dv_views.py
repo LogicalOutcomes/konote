@@ -15,21 +15,12 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.admin_settings.models import get_access_tier, InstanceSetting
+from apps.admin_settings.models import get_access_tier
 from apps.audit.models import AuditLog
 from apps.programs.models import UserProgramRole
 
 from .models import ClientFile, DvFlagRemovalRequest
 from .views import get_client_queryset
-
-
-def _get_user_role(user):
-    """Return the user's highest role across all programs."""
-    ROLE_RANK = {"receptionist": 0, "staff": 1, "program_manager": 2, "executive": 3}
-    roles = UserProgramRole.objects.filter(user=user).values_list("role", flat=True)
-    if not roles:
-        return "receptionist"
-    return max(roles, key=lambda r: ROLE_RANK.get(r, 0))
 
 
 def _is_staff_or_above(user):
