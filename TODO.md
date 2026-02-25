@@ -95,19 +95,14 @@ Blocked on infrastructure (dedicated sprint):
 - [ ] Update technical documentation in GitHub for surveys and portal architecture (DOC-TECH1)
 - [ ] Update website feature list and marketing copy to include surveys and portal (WEB-FEAT1)
 - [ ] Add Evidence section to website — adapt docs/evidence-outcome-measurement.md into a public-facing page explaining the research behind KoNote's outcome measurement approach (see tasks/web-evidence-prompt.md) (WEB-EVIDENCE1)
+- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST1)
+- [ ] Seed comm-my-messages populated state with actual messages — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST2)
 
 ## Parking Lot: Ready to Build
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
 - [ ] Add axe-core pass to `/capture-page-states` — automated WCAG checks for screen reader/speech recognition coverage (T59)
-- [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed (T50)
-- [ ] Add stress testing for 50+ concurrent users (QA-T15)
-- [ ] Add legacy system import migration scenario test (QA-T16)
-- [ ] Implement multi-session testing for SCN-046 shared device scenario (QA-W55)
-- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — fix in qa-scenarios repo (QA-PA-TEST1)
-- [ ] Seed comm-my-messages populated state with actual messages — fix in qa-scenarios repo (QA-PA-TEST2)
-- [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
 
 ## Parking Lot: Needs Review
 
@@ -123,6 +118,11 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
 - [ ] Split `ai_assist` toggle into `ai_assist_tools_only` (default enabled) and `ai_assist_participant_data` (default disabled) — see tasks/design-rationale/ai-feature-toggles.md — GK reviews (AI-TOGGLE1)
+- [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed (T50)
+- [ ] Add stress testing for 50+ concurrent users (QA-T15)
+- [ ] Add legacy system import migration scenario test (QA-T16)
+- [ ] Implement multi-session testing for SCN-046 shared device scenario (QA-W55)
+- [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
 - [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
 - [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
 - [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
