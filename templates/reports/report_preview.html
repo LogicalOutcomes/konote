@@ -141,7 +141,7 @@
     <dl>
         {% if preview_type == "template" %}
         <dt>{% trans "Report" %}</dt>
-        <dd>{{ template.partner.translated_name }} &mdash; {{ template.name }}</dd>
+        <dd>{{ report_template.partner.translated_name }} &mdash; {{ report_template.name }}</dd>
         <dt>{% trans "Program" %}</dt>
         <dd>
             {% for prog in programs %}{{ prog.name }}{% if not forloop.last %}, {% endif %}{% endfor %}

@@ -230,7 +230,7 @@ def template_report_preview(request):
 
     return render(request, "reports/report_preview.html", {
         "preview_type": "template",
-        "template": template,
+        "report_template": template,
         "program": program,
         "programs": programs,
         "period_label": period_label,
