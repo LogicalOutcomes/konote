@@ -1964,7 +1964,11 @@ class Command(BaseCommand):
                         )
 
     def _create_alerts(self, workers, programs_by_name):
-        """Create alerts for clients with notable situations."""
+        """Create alerts for clients with notable situations.
+
+        Includes DV and crisis alerts that demonstrate the two-person safety
+        rule: staff create alerts, PMs review cancellation recommendations.
+        """
         alert_data = [
             {
                 "record_id": "DEMO-004",
@@ -1972,10 +1976,30 @@ class Command(BaseCommand):
                 "program": "Housing Stability",
                 "worker": "demo-worker-1",
             },
+            # DV alert — connects to DV-safe flag on DEMO-004 (set in _set_dv_safe_flags)
+            {
+                "record_id": "DEMO-004",
+                "content": (
+                    "Participant disclosed domestic violence situation. Safety plan "
+                    "in place. Notify supervisor before any home visits."
+                ),
+                "program": "Housing Stability",
+                "worker": "demo-worker-1",
+            },
             {
                 "record_id": "DEMO-005",
                 "content": "Eviction risk — legal aid case pending. Monitor closely.",
                 "program": "Housing Stability",
+                "worker": "demo-worker-1",
+            },
+            # Crisis alert — will have a pending cancellation recommendation
+            {
+                "record_id": "DEMO-001",
+                "content": (
+                    "Participant expressed suicidal ideation during session. Crisis "
+                    "team contacted. 72-hour follow-up required."
+                ),
+                "program": "Supported Employment",
                 "worker": "demo-worker-1",
             },
             {
@@ -2007,41 +2031,75 @@ class Command(BaseCommand):
                 )
 
     def _ensure_pending_alert_recommendation(self, workers, programs_by_name):
-        """Ensure one pending cancellation recommendation exists for demo reviews."""
-        client = ClientFile.objects.filter(record_id="DEMO-005").first()
-        if not client:
-            return
+        """Ensure pending cancellation recommendations exist for demo reviews.
 
-        program = programs_by_name.get("Housing Stability")
+        Creates two recommendations demonstrating the two-person safety rule:
+        1. DEMO-005 eviction alert — Casey recommends, Morgan reviews
+        2. DEMO-001 crisis alert — Casey recommends (72-hour follow-up complete)
+        """
         recommender = workers.get("demo-worker-1")
-        if not program or not recommender:
+        if not recommender:
             return
 
-        alert = Alert.objects.filter(
-            client_file=client,
-            author_program=program,
-            status="default",
-        ).order_by("-created_at").first()
+        # --- Recommendation 1: DEMO-005 eviction alert ---
+        recommendations = [
+            {
+                "record_id": "DEMO-005",
+                "program_name": "Housing Stability",
+                "alert_content": "Eviction risk — legal aid case pending. Monitor closely.",
+                "assessment": (
+                    "Client has had six weeks of stable housing check-ins with no new "
+                    "risk indicators. Recommend closing this alert and monitoring in regular notes."
+                ),
+            },
+            # --- Recommendation 2: DEMO-001 crisis alert (two-person rule) ---
+            {
+                "record_id": "DEMO-001",
+                "program_name": "Supported Employment",
+                "alert_content": (
+                    "Participant expressed suicidal ideation during session. Crisis "
+                    "team contacted. 72-hour follow-up required."
+                ),
+                "assessment": (
+                    "72-hour follow-up complete. Participant connected with ongoing "
+                    "counselling. No current risk indicators. Recommend closing alert."
+                ),
+            },
+        ]
 
-        if not alert:
-            alert = Alert.objects.create(
+        for rec in recommendations:
+            client = ClientFile.objects.filter(record_id=rec["record_id"]).first()
+            if not client:
+                continue
+
+            program = programs_by_name.get(rec["program_name"])
+            if not program:
+                continue
+
+            alert = Alert.objects.filter(
                 client_file=client,
-                content="Eviction risk — legal aid case pending. Monitor closely.",
-                author=recommender,
                 author_program=program,
+                status="default",
+            ).order_by("-created_at").first()
+
+            if not alert:
+                alert = Alert.objects.create(
+                    client_file=client,
+                    content=rec["alert_content"],
+                    author=recommender,
+                    author_program=program,
+                )
+
+            if AlertCancellationRecommendation.objects.filter(
+                alert=alert, status="pending"
+            ).exists():
+                continue
+
+            AlertCancellationRecommendation.objects.create(
+                alert=alert,
+                recommended_by=recommender,
+                assessment=rec["assessment"],
             )
-
-        if AlertCancellationRecommendation.objects.filter(alert=alert, status="pending").exists():
-            return
-
-        AlertCancellationRecommendation.objects.create(
-            alert=alert,
-            recommended_by=recommender,
-            assessment=(
-                "Client has had six weeks of stable housing check-ins with no new "
-                "risk indicators. Recommend closing this alert and monitoring in regular notes."
-            ),
-        )
 
     # ------------------------------------------------------------------
     # Demo groups: groups and projects
