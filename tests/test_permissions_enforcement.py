@@ -147,6 +147,11 @@ PERMISSION_URL_MAP = {
     "registration.manage": {"url": "/manage/registration/"},
     "suggestion_theme.view": {"url": "/manage/suggestions/"},
     "suggestion_theme.manage": {"url": "/manage/suggestions/create/"},
+
+    # Circle keys — enforced by @requires_permission_global
+    "circle.view": {"url": "/circles/"},
+    "circle.create": {"url": "/circles/create/"},
+    "circle.edit": {"url": "/circles/{circle_id}/edit/"},
 }
 
 ALL_ROLES = ["receptionist", "staff", "program_manager", "executive"]
@@ -223,6 +228,26 @@ class PermissionEnforcementTest(TestCase):
         )
         Meeting.objects.create(event=self.event)
 
+        # Enable circles feature toggle
+        from apps.admin_settings.models import FeatureToggle
+        FeatureToggle.objects.get_or_create(
+            feature_key="circles", defaults={"is_enabled": True},
+        )
+
+        # Circle with the client as a member
+        from apps.circles.models import Circle, CircleMembership
+        self.circle = Circle.objects.create(
+            created_by=self.users["staff"],
+        )
+        self.circle.name = "Test Family"
+        self.circle.save()
+        CircleMembership.objects.create(
+            circle=self.circle,
+            client_file=self.client_file,
+            relationship_label="parent",
+            is_primary_contact=True,
+        )
+
     def tearDown(self):
         enc_module._fernet = None
 
@@ -235,6 +260,7 @@ class PermissionEnforcementTest(TestCase):
             .replace("{alert_id}", str(self.alert.pk))
             .replace("{note_id}", str(self.note.pk))
             .replace("{event_id}", str(self.event.pk))
+            .replace("{circle_id}", str(self.circle.pk))
         )
 
     # ------------------------------------------------------------------
