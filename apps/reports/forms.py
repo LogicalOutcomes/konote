@@ -973,3 +973,94 @@ class ReportScheduleForm(forms.ModelForm):
                 widget = self.fields[field_name].widget
                 widget.attrs["aria-invalid"] = "true"
                 widget.attrs["aria-describedby"] = f"id_{field_name}_error"
+
+
+# ---------------------------------------------------------------------------
+# Sessions by Participant report form (REP-SESS1)
+# ---------------------------------------------------------------------------
+
+class SessionReportForm(ProgramSelectionMixin, ExportRecipientMixin, forms.Form):
+    """Form for generating a Sessions by Participant report.
+
+    Users select a program and date range. The report aggregates session
+    data from ProgressNote records, grouped by participant.
+
+    Accessible to program managers and admins.
+    See tasks/session-reporting-research.md for requirements.
+    """
+
+    program = forms.ChoiceField(
+        required=True,
+        label=_("Program"),
+    )
+
+    fiscal_year = forms.ChoiceField(
+        required=False,
+        label=_("Period"),
+        help_text=_("Select a fiscal year or quarter to auto-fill dates, or leave blank for custom range."),
+    )
+
+    date_from = forms.DateField(
+        required=False,
+        label=_("Date from"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    date_to = forms.DateField(
+        required=False,
+        label=_("Date to"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        self.contains_client_identifying_data = True
+        self._setup_program_choices(user)
+        # Build period choices
+        period_choices = [
+            ("", _("\u2014 Custom date range \u2014")),
+            (_("Fiscal Years"), get_fiscal_year_choices()),
+            (_("Quarters"), get_quarter_choices()),
+        ]
+        self.fields["fiscal_year"].choices = period_choices
+        # Add recipient tracking fields
+        self.add_recipient_fields()
+
+    def clean(self):
+        cleaned = super().clean()
+        fiscal_year = cleaned.get("fiscal_year")
+        date_from = cleaned.get("date_from")
+        date_to = cleaned.get("date_to")
+
+        # If a period preset is selected, use those dates
+        if fiscal_year:
+            if fiscal_year.startswith("Q"):
+                try:
+                    q_str, fy_str = fiscal_year.split("-")
+                    q_num = int(q_str[1:])
+                    fy_start_year = int(fy_str)
+                    date_from, date_to = get_quarter_range(q_num, fy_start_year)
+                    cleaned["date_from"] = date_from
+                    cleaned["date_to"] = date_to
+                except (ValueError, IndexError, KeyError):
+                    raise forms.ValidationError(_("Invalid quarter selection."))
+            else:
+                try:
+                    fy_start_year = int(fiscal_year)
+                    date_from, date_to = get_fiscal_year_range(fy_start_year)
+                    cleaned["date_from"] = date_from
+                    cleaned["date_to"] = date_to
+                except (ValueError, TypeError):
+                    raise forms.ValidationError(_("Invalid fiscal year selection."))
+        else:
+            if not date_from:
+                self.add_error("date_from", _("This field is required when not using a fiscal year."))
+            if not date_to:
+                self.add_error("date_to", _("This field is required when not using a fiscal year."))
+
+        date_from = cleaned.get("date_from")
+        date_to = cleaned.get("date_to")
+        if date_from and date_to and date_from > date_to:
+            raise forms.ValidationError(_("'Date from' must be before 'Date to'."))
+
+        return cleaned
