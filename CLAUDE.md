@@ -145,7 +145,8 @@ TODO.md is a **dashboard** — scannable at a glance. It is not a project plan, 
 | **Flagged** | Decisions needed, blockers, deadlines | Remove flags when resolved. If empty, show "_Nothing flagged._" |
 | **Active Work** | Tasks being worked on now | Grouped by phase. Include owner on every line. |
 | **Coming Up** | Next phase of work | Can reference task detail files for phases not yet started |
-| **Parking Lot** | Future tasks, not tied to current phase | Low-priority or waiting on prerequisites |
+| **Parking Lot: Ready to Build** | Scope is clear, just needs time | A session can pick these up without special approval |
+| **Parking Lot: Needs Review** | Not yet clear we should build, or design isn't settled | **Never build without explicit user approval in the current conversation** |
 | **Recently Done** | Last 5–10 completed tasks | Format: `- [x] Description — YYYY-MM-DD (ID)`. Move older items to `tasks/ARCHIVE.md`. |
 
 ### Language
@@ -189,9 +190,11 @@ Current DRRs:
 - `tasks/design-rationale/phipa-consent-enforcement.md` — PHIPA cross-program consent enforcement. Enforcement matrix (which views need filtering), anti-patterns (rejected approaches like custom managers, middleware), deferred work (search, qualitative summary), fail-closed design.
 - `tasks/design-rationale/insights-metric-distributions.md` — Insights page & program reporting. Distributions not averages, three data layers (outcomes/goals/qualitative), client-centred page hierarchy, Campbell's Law safeguards, band display labels.
 - `tasks/design-rationale/bilingual-requirements.md` — Bilingual (EN/FR) requirements. Why translation is non-negotiable (Official Languages Act, Ontario FLSA, funder requirements, WCAG 3.1.2). Anti-patterns (deferring translations, treating them as low-priority). Technical approach (Claude + API backup). Translation standards for Claude sessions.
+- `tasks/design-rationale/ai-feature-toggles.md` — AI feature toggle split. Two-tier design: `ai_assist_tools_only` (no participant data, default enabled) vs `ai_assist_participant_data` (de-identified participant content, default disabled). Anti-patterns (including translation in toggles, single three-level toggle). Future path: self-hosted open-source LLM for participant data.
 
 ### How Claude Manages Tasks
 
+- **Always `git pull origin main` before reading or updating TODO.md.** The local copy goes stale after PRs merge on GitHub. Never trust the local file without pulling first. When the user asks for the to-do list, pull first — do not skip this step or assume the local copy is current.
 - When user describes a task: create an ID, add one line to the right section in TODO.md
 - When a task needs subtasks or context: create a detail file in `tasks/`
 - When user asks about a task: read TODO.md for status, read `tasks/*.md` for detail

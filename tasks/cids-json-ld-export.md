@@ -109,13 +109,15 @@ A simple pass/fail SHACL check before export catches structural errors early. De
 
 ### CIDS Tiers
 
-CIDS defines compliance tiers. ⚠️ **Corrected 2026-02-24** — Program is FullTier, not EssentialTier. KoNote should target **BasicTier** first (fast win), then **EssentialTier** (impact dimensions), then **FullTier** (programs, activities):
+CIDS defines compliance tiers. ⚠️ **Corrected 2026-02-24** — Program is FullTier, not EssentialTier.
+
+**Decision (2026-02-25):** Target **FullTier directly**. KoNote already has programs, outcomes, indicators, and metric values — all the data FullTier requires. Delivering the full standard export positions KoNote nationally ("one of the first CIDS-compliant systems in Canada") and satisfies funder requirements for JSON-LD. BasicTier validation is a quick internal milestone on the way, not a separate deliverable.
 
 | Tier | What It Covers | KoNote Status |
 |---|---|---|
-| **BasicTier** | Organisation, Outcome, Indicator, IndicatorReport, Theme + supporting shapes (Address, Measure, org subtypes) | Quick win — org metadata + outcome/indicator export |
+| **BasicTier** | Organisation, Outcome, Indicator, IndicatorReport, Theme + supporting shapes (Address, Measure, org subtypes) | Internal milestone — validate early |
 | **EssentialTier** | + Stakeholder, StakeholderOutcome, ImpactReport, ImpactPathway, Target, Code, Characteristic, HowMuchImpact (Scale, Depth, Duration) | Core work — metadata fields + impact dimensions |
-| **FullTier** | + Program, ImpactModel, Activity, Service, Input, Output, Counterfactual, ImpactRisk (8 subtypes) | Future — KoNote naturally includes programs, so FullTier is achievable |
+| **FullTier** | + Program, ImpactModel, Activity, Service, Input, Output, Counterfactual, ImpactRisk (8 subtypes) | **Target tier** — KoNote already has all the data |
 | **SFFTier** | Social Finance Fund specific codes + characteristics | Only if SFF funding is involved |
 
 ---
@@ -125,6 +127,8 @@ CIDS defines compliance tiers. ⚠️ **Corrected 2026-02-24** — Program is Fu
 ### Phase 1: Metadata Fields (schema changes, no UI disruption)
 
 Add optional fields to existing models so agencies can tag their data with CIDS codes. None of these are required — agencies only fill them in when a funder asks for CIDS-compliant exports.
+
+> **Design principle (2026-02-25):** CIDS fields are **auto-populated behind the scenes** when staff create targets and metrics. Frontline staff never see or fill in CIDS fields. The system maps their normal work to CIDS automatically using config template pre-mappings and code list lookups. Admin-only visibility for overrides.
 
 #### 1a. New model: `OrganizationProfile` (one per tenant)
 
@@ -984,10 +988,10 @@ Each HowMuchImpact dimension requires:
 | **2** | Code list import + admin dropdowns + config template integration | Admins can tag programs and metrics with CIDS codes | Phase 1 |
 | **2.5** | CIDS-enriched CSV/PDF reports + "Standards Alignment" appendix | **Immediate funder value** — existing reports get standardised codes | Phase 2 |
 | **3** | JSON-LD export with basic SHACL validation | Full CIDS compliance — the differentiator | Phases 1-2 |
-| **4** | Computed impact dimensions (scale, depth, duration) | Richer CIDS output, no new data entry | Phase 3 |
+| **4** | Computed impact dimensions (scale, depth, duration) | FullTier CIDS output, no new data entry | Phase 3 |
 | **5** | Conformance badge + detailed validation reporting | Polish and marketing | Phase 3 |
 
-Phases 1 through 2.5 are the minimum viable deliverable. Phases 3-5 complete full JSON-LD compliance.
+**Target: FullTier compliance.** Phases 1 through 2.5 are the minimum viable deliverable. Phases 3-5 complete full JSON-LD FullTier compliance — the marketing differentiator.
 
 ---
 
@@ -1014,9 +1018,9 @@ Findings from codebase review (2026-02-24) — existing patterns to reuse and ga
 ## Go-to-Market Strategy
 
 ### Immediate (before code is written)
-- Engage Common Approach — offer KoNote as a pilot implementer
+- Engage Common Approach — offer KoNote as a pilot implementer (flagged for GK)
 - Announce "CIDS-ready" positioning on website and in funder conversations
-- Discuss requirements with the funder who expressed interest
+- Funders confirmed: they want full JSON-LD export
 
 ### After Phase 2.5 (CIDS-enriched reports)
 - Produce a real CIDS-tagged funder report from actual program data
@@ -1030,13 +1034,14 @@ Findings from codebase review (2026-02-24) — existing patterns to reuse and ga
 
 ---
 
-## Open Questions (for [PM] / [funder contact])
+## Decisions (resolved 2026-02-25)
 
-1. **Which funder expressed interest?** We need to confirm their actual consumption pathway — do they want JSON-LD, or would CIDS-tagged CSV/PDF satisfy their requirements?
-2. **Should we engage Common Approach now?** Recommendation: yes, position as a partnership/pilot implementation
-3. **Should CIDS metadata be part of the [funder partner] config template?** Recommendation: yes, pre-map their standard metrics to IRIS+ codes
-4. **Target tier?** ⚠️ Updated per validation: Program is FullTier, not EssentialTier. **Recommendation:** Target FullTier directly — KoNote already has programs, outcomes, indicators, and metric values, so FullTier is naturally achievable. BasicTier validation can be a quick first milestone (5 classes: Organisation, Outcome, Indicator, IndicatorReport, Theme).
-5. **CIDS version pinning?** Current spec is v3.2.0 (July 2025). Pin to v3.2.0?
+1. **Funder consumption pathway:** Funders want **full JSON-LD export**. This is also the marketing play — being profiled nationally as one of the first CIDS-compliant systems in Canada.
+2. **Common Approach engagement:** Yes, engage early. Flagged for GK — no blocker on implementation. Early engagement provides advance notice of spec changes and co-marketing opportunities.
+3. **Config template pre-mapping:** Yes. Pre-map CIDS codes in config templates so agencies are CIDS-ready out of the box. Zero per-agency burden.
+4. **Target tier:** **FullTier directly.** KoNote already has all the data. BasicTier validation is an internal milestone, not a separate deliverable.
+5. **CIDS version:** **Pin to v3.2.0.** Current spec, no newer version exists. Early Common Approach engagement is the insurance policy against being surprised by a version change.
+6. **Auto-population:** CIDS database columns are defined early (Phase 1) and **auto-populated when staff create targets and metrics**. Staff never see or fill in CIDS fields — the system maps their normal work to CIDS behind the scenes.
 
 ---
 
