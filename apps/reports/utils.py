@@ -78,7 +78,7 @@ def can_create_export(user, export_type, program=None):
     if user.is_admin:
         return True
 
-    if export_type in ("metrics", "funder_report"):
+    if export_type in ("metrics", "funder_report", "session_report"):
         qs = UserProgramRole.objects.filter(
             user=user, role__in=["program_manager", "executive"], status="active"
         )
