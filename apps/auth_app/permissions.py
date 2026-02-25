@@ -234,7 +234,7 @@ PERMISSIONS = {
         "client.view_safety": ALLOW,  # Allergies, medical alert CONDITIONS (not treatments),
                                       # emergency contacts, staff alerts. NOT medications.
         "client.view_medications": ALLOW,  # Same access pattern as clinical data
-        "client.view_clinical": ALLOW,  # Phase 3: GATED (just-in-time with reason)
+        "client.view_clinical": GATED,  # Tier 3: requires AccessGrant. Tiers 1-2: relaxed to ALLOW by decorator.
         "client.edit": PROGRAM,  # Same as staff until Phase 3
         "client.create": PROGRAM,  # Intake in smaller programs. Enforced by @requires_permission
         "client.edit_contact": DENY,  # PMs don't edit individual contact info
@@ -253,11 +253,11 @@ PERMISSIONS = {
         "group.manage_content": ALLOW,  # Managers oversee project milestones/outcomes. Enforced by @requires_permission
         "group.view_report": ALLOW,  # Attendance reports. Enforced by @requires_permission
 
-        "note.view": ALLOW,  # Phase 3: GATED with documented reason. Enforced by @requires_permission
+        "note.view": GATED,  # Tier 3: requires AccessGrant. Tiers 1-2: relaxed to ALLOW by decorator.
         "note.create": PROGRAM,  # Lead workers / team leads carry caseloads and write notes
         "note.edit": PROGRAM,  # Own notes only. Enforced by @requires_permission
 
-        "plan.view": ALLOW,  # Phase 3: GATED. Enforced by @requires_permission
+        "plan.view": GATED,  # Tier 3: requires AccessGrant. Tiers 1-2: relaxed to ALLOW by decorator.
         "plan.edit": DENY,
 
         "metric.view_individual": ALLOW,  # Phase 3: GATED
