@@ -19,7 +19,7 @@ from pathlib import Path
 from django.conf import settings
 from django.core.checks import Error, Warning, register
 
-from apps.auth_app.permissions import ALL_PERMISSION_KEYS
+from apps.auth_app.permissions import ALL_PERMISSION_KEYS, validate_permissions
 
 
 # Patterns to detect hardcoded role decorators in Python files
@@ -201,3 +201,19 @@ def check_dead_permission_keys(app_configs, **kwargs):
         )
 
     return warnings
+
+
+@register()
+def check_permissions_matrix_complete(app_configs, **kwargs):
+    """E021: Error if the permissions matrix is incomplete (missing roles or keys)."""
+    is_valid, validation_errors = validate_permissions()
+    if is_valid:
+        return []
+    return [
+        Error(
+            f"Permissions matrix incomplete: {error}",
+            hint="Check apps/auth_app/permissions.py — every role must define every key.",
+            id="KoNote.E021",
+        )
+        for error in validation_errors
+    ]
