@@ -3,6 +3,18 @@
 from django.db import migrations, models
 
 
+def convert_null_modality(apps, schema_editor):
+    """Convert NULL modality values to empty string."""
+    ProgressNote = apps.get_model("notes", "ProgressNote")
+    ProgressNote.objects.filter(modality__isnull=True).update(modality="")
+
+
+def reverse_null_modality(apps, schema_editor):
+    """Reverse: convert empty modality back to NULL."""
+    ProgressNote = apps.get_model("notes", "ProgressNote")
+    ProgressNote.objects.filter(modality="").update(modality=None)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -11,10 +23,7 @@ class Migration(migrations.Migration):
 
     operations = [
         # Convert existing NULL values to empty string before changing the field
-        migrations.RunSQL(
-            sql="UPDATE notes_progressnote SET modality = '' WHERE modality IS NULL;",
-            reverse_sql="UPDATE notes_progressnote SET modality = NULL WHERE modality = '';",
-        ),
+        migrations.RunPython(convert_null_modality, reverse_null_modality),
         migrations.AlterField(
             model_name='progressnote',
             name='modality',
