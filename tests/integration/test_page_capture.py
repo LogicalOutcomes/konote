@@ -428,11 +428,17 @@ class TestPageCapture(BrowserTestBase):
             axe_scans_count = manifest.get("axe_total_scans", 0)
             axe_violations = manifest.get("axe_total_violations", 0)
             axe_pages = manifest.get("axe_pages_with_violations", 0)
+            axe_errors = sum(1 for s in axe_scans if s.get("error"))
             print(f"\nAccessibility (axe-core)")
             print(f"------------------------")
             print(f"Axe scans: {axe_scans_count}")
             print(f"Pages with violations: {axe_pages}")
             print(f"Total violations: {axe_violations}")
+            if axe_errors and axe_errors == axe_scans_count:
+                print(f"WARNING: All {axe_errors} axe scans failed — "
+                      f"check CDN connectivity or network access")
+            elif axe_errors:
+                print(f"Axe scan errors: {axe_errors}")
             print(f"Axe report: {AXE_REPORT_PATH}")
         print(f"\nManifest: {MANIFEST_PATH}")
 
