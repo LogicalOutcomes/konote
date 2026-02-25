@@ -1446,7 +1446,9 @@ class Command(BaseCommand):
             grant_count = AccessGrant.objects.filter(
                 user__is_demo=True
             ).delete()[0]
-            fa_count = FieldAccessConfig.objects.all().delete()[0]
+            fa_count = FieldAccessConfig.objects.filter(
+                field_name__in=["birth_date", "email"]
+            ).delete()[0]
             # Reset DV-safe flags on demo clients
             ClientFile.objects.filter(
                 record_id__startswith="DEMO-", is_dv_safe=True
