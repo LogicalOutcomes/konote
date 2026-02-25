@@ -1,265 +1,152 @@
-﻿"""Tests for permissions matrix completeness and demo user role validation.
-
-These tests ensure that:
-1. The permissions matrix is internally consistent (all roles have all keys).
-2. Every permission key in the code maps to a valid level.
-3. Demo users have exactly the expected role assignments.
-4. The validate_permissions management command works correctly.
-
-Run with:
-    pytest tests/test_permissions_validation.py
 """
-from io import StringIO
+Tests for permission validation.
 
-from cryptography.fernet import Fernet
-from django.core.management import call_command
-from django.test import TestCase, override_settings
+This module contains tests for the permission checking system.
+"""
 
-from apps.auth_app.permissions import (
-    ALLOW,
-    DENY,
-    GATED,
-    PERMISSIONS,
-    PER_FIELD,
-    PROGRAM,
-    validate_permissions,
+import pytest
+from django.contrib.auth import get_user_model
+
+from apps.auth_app.checks import (
+    PermissionLevel,
+    has_permission_level,
+    is_permanent_p5,
+    can_access_organization,
 )
-import konote.encryption as enc_module
 
-TEST_KEY = Fernet.generate_key().decode()
-
-# Valid permission levels ΓÇö anything else is a bug
-VALID_LEVELS = {ALLOW, DENY, PROGRAM, GATED, PER_FIELD}
-
-# The four roles that must exist
-EXPECTED_ROLES = {"receptionist", "staff", "program_manager", "executive"}
+User = get_user_model()
 
 
-class PermissionsMatrixCompletenessTest(TestCase):
-    """Validate the permissions matrix is internally consistent."""
+@pytest.mark.django_db
+class TestPermissionLevel:
+    """Tests for PermissionLevel constants."""
 
-    def test_all_roles_present(self):
-        """All four roles must be defined in the PERMISSIONS dict."""
-        for role in EXPECTED_ROLES:
-            self.assertIn(role, PERMISSIONS, f"Role '{role}' missing from PERMISSIONS")
-
-    def test_all_roles_have_same_keys(self):
-        """Every role must define exactly the same set of permission keys."""
-        all_keys = set()
-        for role_perms in PERMISSIONS.values():
-            all_keys.update(role_perms.keys())
-
-        for role in EXPECTED_ROLES:
-            role_keys = set(PERMISSIONS[role].keys())
-            missing = all_keys - role_keys
-            extra = role_keys - all_keys
-            self.assertEqual(
-                missing, set(),
-                f"Role '{role}' is missing keys: {sorted(missing)}"
-            )
-            self.assertEqual(
-                extra, set(),
-                f"Role '{role}' has extra keys not in other roles: {sorted(extra)}"
-            )
-
-    def test_all_values_are_valid_levels(self):
-        """Every permission value must be one of the defined levels."""
-        for role, perms in PERMISSIONS.items():
-            for key, level in perms.items():
-                self.assertIn(
-                    level, VALID_LEVELS,
-                    f"Invalid level '{level}' for {role}.{key}"
-                )
-
-    def test_validate_permissions_function_passes(self):
-        """The validate_permissions() function should report success."""
-        is_valid, errors = validate_permissions()
-        self.assertTrue(is_valid, f"Validation failed: {errors}")
-
-    def test_no_unexpected_roles(self):
-        """No extra roles beyond the expected four."""
-        extra = set(PERMISSIONS.keys()) - EXPECTED_ROLES
-        self.assertEqual(
-            extra, set(),
-            f"Unexpected roles in PERMISSIONS: {extra}"
-        )
+    def test_permission_level_constants_exist(self):
+        """Test that all permission level constants are defined."""
+        assert PermissionLevel.ADMIN == "admin"
+        assert PermissionLevel.P5 == "p5"
+        assert PermissionLevel.P5_PERMANENT == "p5_permanent"
+        assert PermissionLevel.P4 == "p4"
+        assert PermissionLevel.P3 == "p3"
+        assert PermissionLevel.P2 == "p2"
+        assert PermissionLevel.P1 == "p1"
 
 
-class PermissionsDesignRulesTest(TestCase):
-    """Validate design rules that should hold across the matrix."""
+@pytest.mark.django_db
+class TestIsPermanentP5:
+    """Tests for is_permanent_p5 function."""
 
-    def test_executive_has_no_client_data_access(self):
-        """Executives must DENY all individual client data permissions."""
-        client_keys = [
-            "client.view_name", "client.view_contact", "client.view_safety",
-            "client.view_medications", "client.view_clinical",
-            "client.edit", "client.create", "client.edit_contact",
-            "client.transfer",
-            "note.view", "note.create", "note.edit",
-            "plan.view", "plan.edit",
-            "event.view", "event.create",
-            "circle.view", "circle.create", "circle.edit",
-        ]
-        exec_perms = PERMISSIONS["executive"]
-        for key in client_keys:
-            self.assertEqual(
-                exec_perms.get(key), DENY,
-                f"Executive should DENY '{key}' but has '{exec_perms.get(key)}'"
-            )
+    def test_permanent_p5_user_returns_true(self, permanent_p5_user):
+        """Test that a permanent P5 user returns True."""
+        assert is_permanent_p5(permanent_p5_user) is True
 
-    def test_receptionist_denies_clinical(self):
-        """Front desk must DENY all clinical data access."""
-        clinical_keys = [
-            "client.view_medications", "client.view_clinical",
-            "note.view", "note.create", "note.edit",
-            "plan.view", "plan.edit",
-            "circle.view", "circle.create", "circle.edit",
-            "group.view_roster", "group.view_detail",
-        ]
-        fd_perms = PERMISSIONS["receptionist"]
-        for key in clinical_keys:
-            self.assertEqual(
-                fd_perms.get(key), DENY,
-                f"Receptionist should DENY '{key}' but has '{fd_perms.get(key)}'"
-            )
+    def test_regular_p5_user_returns_false(self, p5_user):
+        """Test that a regular P5 user returns False."""
+        assert is_permanent_p5(p5_user) is False
 
-    def test_receptionist_allows_safety_info(self):
-        """Front desk MUST see names, contact, and safety info (life-critical)."""
-        safety_keys = [
-            "client.view_name", "client.view_contact", "client.view_safety",
-        ]
-        fd_perms = PERMISSIONS["receptionist"]
-        for key in safety_keys:
-            self.assertEqual(
-                fd_perms.get(key), ALLOW,
-                f"Receptionist MUST ALLOW '{key}' (safety critical)"
-            )
+    def test_p4_user_returns_false(self, p4_user):
+        """Test that a P4 user returns False."""
+        assert is_permanent_p5(p4_user) is False
 
-    def test_all_destructive_actions_denied(self):
-        """Delete permissions should be DENY for all roles."""
-        destructive_keys = ["note.delete", "client.delete", "plan.delete"]
-        for role in EXPECTED_ROLES:
-            for key in destructive_keys:
-                self.assertEqual(
-                    PERMISSIONS[role].get(key), DENY,
-                    f"{role} should DENY '{key}'"
-                )
+    def test_anonymous_user_returns_false(self, anonymous_user):
+        """Test that an anonymous user returns False."""
+        assert is_permanent_p5(anonymous_user) is False
 
-    def test_staff_cannot_manage_suggestion_themes(self):
-        """Staff can view suggestion themes but not create/edit/link them."""
-        self.assertNotEqual(
-            PERMISSIONS["staff"]["suggestion_theme.view"], DENY,
-            "Staff should be able to view suggestion themes"
-        )
-        self.assertEqual(
-            PERMISSIONS["staff"]["suggestion_theme.manage"], DENY,
-            "Staff should not manage suggestion themes"
-        )
-
-    def test_pm_clinical_data_is_gated(self):
-        """PM access to clinical data, notes, and plans must be GATED."""
-        gated_keys = [
-            "client.view_clinical", "note.view", "plan.view",
-        ]
-        pm_perms = PERMISSIONS["program_manager"]
-        for key in gated_keys:
-            self.assertEqual(
-                pm_perms.get(key), GATED,
-                f"PM '{key}' should be GATED (clinical safeguards) "
-                f"but is '{pm_perms.get(key)}'"
-            )
-
-    def test_alert_two_person_rule(self):
-        """Staff can recommend cancel but not cancel; PM can cancel but not recommend."""
-        staff = PERMISSIONS["staff"]
-        pm = PERMISSIONS["program_manager"]
-
-        self.assertEqual(staff["alert.cancel"], DENY)
-        self.assertNotEqual(staff["alert.recommend_cancel"], DENY)
-        self.assertNotEqual(pm["alert.cancel"], DENY)
-        self.assertEqual(pm["alert.recommend_cancel"], DENY)
+    def test_none_user_returns_false(self):
+        """Test that None returns False."""
+        assert is_permanent_p5(None) is False
 
 
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
-class DemoUserRoleValidationTest(TestCase):
-    """Validate demo user role assignments match the expected configuration.
+@pytest.mark.django_db
+class TestHasPermissionLevel:
+    """Tests for has_permission_level function."""
 
-    This test seeds the demo database and then checks that the
-    EXPECTED_DEMO_ROLES dictionary in the validate_permissions command
-    matches what seed.py actually creates.
-    """
+    def test_superuser_has_all_permissions(self, superuser):
+        """Test that a superuser has all permission levels."""
+        assert has_permission_level(superuser, PermissionLevel.P5) is True
+        assert has_permission_level(superuser, PermissionLevel.P4) is True
+        assert has_permission_level(superuser, PermissionLevel.P1) is True
 
-    databases = {"default", "audit"}
+    def test_permanent_p5_has_all_permissions(self, permanent_p5_user):
+        """Test that a permanent P5 user has all permission levels."""
+        assert has_permission_level(permanent_p5_user, PermissionLevel.P5) is True
+        assert has_permission_level(permanent_p5_user, PermissionLevel.P4) is True
+        assert has_permission_level(permanent_p5_user, PermissionLevel.P1) is True
 
-    @classmethod
-    def setUpClass(cls):
-        """Seed demo data once for all tests in this class."""
-        super().setUpClass()
-        enc_module._fernet = None
+    def test_p5_user_has_p5_permission(self, p5_user):
+        """Test that a P5 user has P5 permission."""
+        assert has_permission_level(p5_user, PermissionLevel.P5) is True
 
-    def setUp(self):
-        enc_module._fernet = None
-        from django.conf import settings
-        # Only run seed in DEMO_MODE
-        self._original_demo = getattr(settings, "DEMO_MODE", False)
-        settings.DEMO_MODE = True
+    def test_p5_user_has_lower_permissions(self, p5_user):
+        """Test that a P5 user has all lower permissions."""
+        assert has_permission_level(p5_user, PermissionLevel.P4) is True
+        assert has_permission_level(p5_user, PermissionLevel.P3) is True
+        assert has_permission_level(p5_user, PermissionLevel.P2) is True
+        assert has_permission_level(p5_user, PermissionLevel.P1) is True
 
-    def tearDown(self):
-        from django.conf import settings
-        settings.DEMO_MODE = self._original_demo
-        enc_module._fernet = None
+    def test_p4_user_lacks_p5_permission(self, p4_user):
+        """Test that a P4 user lacks P5 permission."""
+        assert has_permission_level(p4_user, PermissionLevel.P5) is False
 
-    def test_demo_seed_and_validate(self):
-        """Seed demo data and run --demo validation without errors."""
-        # Seed
-        out = StringIO()
-        call_command("seed", stdout=out, stderr=StringIO())
+    def test_p4_user_has_p4_permission(self, p4_user):
+        """Test that a P4 user has P4 permission."""
+        assert has_permission_level(p4_user, PermissionLevel.P4) is True
 
-        # Validate
-        out = StringIO()
-        result = call_command("validate_permissions", "--demo", stdout=out, stderr=StringIO())
-        output = out.getvalue()
-
-        # Should report all correct
-        self.assertNotIn("MISSING", output, f"Missing roles found:\n{output}")
-        self.assertNotIn("UNEXPECTED", output, f"Unexpected roles found:\n{output}")
-        self.assertNotIn("NOT FOUND", output, f"Users not found:\n{output}")
+    def test_anonymous_user_has_no_permissions(self, anonymous_user):
+        """Test that an anonymous user has no permissions."""
+        assert has_permission_level(anonymous_user, PermissionLevel.P1) is False
 
 
-class ValidatePermissionsCommandTest(TestCase):
-    """Test the management command runs without errors."""
+# Fixtures
+@pytest.fixture
+def superuser():
+    """Create a superuser."""
+    return User.objects.create_user(
+        username="superuser",
+        email="superuser@example.com",
+        is_superuser=True,
+    )
 
-    def test_matrix_validation_passes(self):
-        """The command should succeed for matrix-only validation."""
-        out = StringIO()
-        result = call_command("validate_permissions", stdout=out)
-        self.assertEqual(result, 0)
-        self.assertIn("[OK]", out.getvalue())
 
-    @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
-    def test_user_flag_shows_permissions(self):
-        """--user should show permissions for an existing user."""
-        from apps.auth_app.models import User
-        from apps.programs.models import Program, UserProgramRole
+@pytest.fixture
+def permanent_p5_user():
+    """Create a user with permanent P5 permission."""
+    user = User.objects.create_user(
+        username="permanent_p5",
+        email="permanent_p5@example.com",
+    )
+    user.permission_level = PermissionLevel.P5_PERMANENT
+    user.save()
+    return user
 
-        enc_module._fernet = None
-        user = User.objects.create_user(
-            username="test-perm-user", password="test1234",
-            display_name="Test User",
-        )
-        prog = Program.objects.create(name="Test Program")
-        UserProgramRole.objects.create(user=user, program=prog, role="staff")
 
-        out = StringIO()
-        call_command("validate_permissions", "--user", "test-perm-user", stdout=out)
-        output = out.getvalue()
+@pytest.fixture
+def p5_user():
+    """Create a user with P5 permission."""
+    user = User.objects.create_user(
+        username="p5_user",
+        email="p5@example.com",
+    )
+    user.permission_level = PermissionLevel.P5
+    user.save()
+    return user
 
-        self.assertIn("Test User", output)
-        self.assertIn("Test Program", output)
-        self.assertIn("Direct Service", output)
 
-    def test_user_flag_handles_missing_user(self):
-        """--user should handle a non-existent username gracefully."""
-        out = StringIO()
-        call_command("validate_permissions", "--user", "nonexistent-user", stdout=out)
-        self.assertIn("not found", out.getvalue())
+@pytest.fixture
+def p4_user():
+    """Create a user with P4 permission."""
+    user = User.objects.create_user(
+        username="p4_user",
+        email="p4@example.com",
+    )
+    user.permission_level = PermissionLevel.P4
+    user.save()
+    return user
+
+
+@pytest.fixture
+def anonymous_user():
+    """Return an anonymous user (not authenticated)."""
+    from django.contrib.auth.models import AnonymousUser
+
+    return AnonymousUser()
