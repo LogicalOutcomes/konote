@@ -81,7 +81,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 Blocked on infrastructure (dedicated sprint):
 - [x] GATED clinical access for PM — justification UI, time-boxed grants, configurable reasons + durations, admin views, 32 tests — 2026-02-25 (PERM-P6)
 - [x] Per-field front desk edit — build admin UI to configure which contact fields receptionist can edit (prerequisite for P5) — 2026-02-25 (PERM-P8)
-- [ ] DV-safe mode — hide address/emergency contact from front desk when DV flag set; blocked on PERM-P8 — GK reviews (PERM-P5)
+- [x] DV-safe mode — hide DV-sensitive fields from front desk when DV flag set; two-person removal, fail-closed, 28 tests — 2026-02-25 (PERM-P5)
 
 
 ### Phase: Surveys Future Work
