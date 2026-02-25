@@ -15859,7 +15859,162 @@ msgid "Deadlock notice"
 msgstr "Avis de blocage"
 
 msgid "Please select a specific program for session reports."
-msgstr "Veuillez sélectionner un programme spécifique pour les rapports de séances."
+msgstr ""
+"Veuillez sélectionner un programme spécifique pour les rapports de séances."
 
 msgid "Stuck request"
 msgstr "Demande bloquée"
+
+msgid "\"Let us revisit our goals together.\""
+msgstr "\"Revoyons nos objectifs ensemble.\""
+
+msgid "\"Thank you for telling me that.\""
+msgstr "\"Merci de m'avoir dit cela.\""
+
+msgid "\"What would be most helpful right now?\""
+msgstr "\"Qu'est-ce qui serait le plus utile en ce moment?\""
+
+msgid "3 things to avoid"
+msgstr "3 choses \u00e0 \u00e9viter"
+
+msgid "3 things to say"
+msgstr "3 choses \u00e0 dire"
+
+msgid ""
+"A low rating is not a reflection of your worth as a worker. It is "
+"information about what the participant needs."
+msgstr ""
+"Une note basse ne refl\u00e8te pas votre valeur en tant qu'intervenant. C'est "
+"une information sur ce dont le participant a besoin."
+
+msgid "Adjust your communication style"
+msgstr "Ajustez votre style de communication"
+
+msgid "Alliance Repair Guide"
+msgstr "Guide de r\u00e9paration de l'alliance"
+
+msgid ""
+"Are things moving too fast or too slow? A mismatch in pace is one of the "
+"most common reasons for low alliance ratings."
+msgstr ""
+"Les choses vont-elles trop vite ou trop lentement? Un d\u00e9calage de rythme "
+"est l'une des raisons les plus courantes d'une faible note d'alliance."
+
+msgid ""
+"Are you working on the right things? Sometimes a low rating means the "
+"participant's priorities have shifted, but the plan has not."
+msgstr ""
+"Travaillez-vous sur les bonnes choses? Parfois, une note basse signifie que "
+"les priorit\u00e9s du participant ont chang\u00e9, mais pas le plan."
+
+msgid "Ask open-ended questions."
+msgstr "Posez des questions ouvertes."
+
+msgid "Ask what would help."
+msgstr "Demandez ce qui pourrait aider."
+
+msgid "Changing the subject"
+msgstr "Changer de sujet"
+
+msgid "Check the pace"
+msgstr "V\u00e9rifiez le rythme"
+
+msgid "Defending yourself"
+msgstr "Se d\u00e9fendre"
+
+msgid "Dismissing the rating"
+msgstr "Minimiser la note"
+
+msgid "If ratings stay at 1 or 2 for three sessions in a row"
+msgstr "Si les notes restent \u00e0 1 ou 2 pendant trois s\u00e9ances cons\u00e9cutives"
+
+msgid "If the participant expresses feeling unsafe or unheard"
+msgstr "Si le participant exprime un sentiment d'ins\u00e9curit\u00e9 ou de ne pas \u00eatre entendu"
+
+msgid "If you are unsure how to respond to what the participant has shared"
+msgstr "Si vous ne savez pas comment r\u00e9pondre \u00e0 ce que le participant a partag\u00e9"
+
+msgid "Immediate Response (Same Session)"
+msgstr "R\u00e9ponse imm\u00e9diate (m\u00eame s\u00e9ance)"
+
+msgid "Increase participant choice"
+msgstr "Augmentez le choix du participant"
+
+msgid "It takes courage to share a low rating. Acknowledge that."
+msgstr "Il faut du courage pour donner une note basse. Reconnaissez-le."
+
+msgid "Listen without defending."
+msgstr "\u00c9coutez sans vous d\u00e9fendre."
+
+msgid ""
+"Offer options for how sessions are structured. People engage more when they "
+"feel they have a say."
+msgstr ""
+"Offrez des options pour la structure des s\u00e9ances. Les gens s'impliquent "
+"davantage quand ils sentent qu'ils ont leur mot \u00e0 dire."
+
+msgid "Opens the Alliance Repair Guide in a new tab"
+msgstr "Ouvre le guide de r\u00e9paration de l'alliance dans un nouvel onglet"
+
+msgid "Print this guide"
+msgstr "Imprimer ce guide"
+
+msgid ""
+"Ratings of 1 or 2 are valuable signals, not failures. They mean the "
+"participant is being honest about their experience."
+msgstr ""
+"Les notes de 1 ou 2 sont des signaux pr\u00e9cieux, pas des \u00e9checs. Elles "
+"signifient que le participant est honn\u00eate au sujet de son exp\u00e9rience."
+
+msgid "Repair Strategies"
+msgstr "Strat\u00e9gies de r\u00e9paration"
+
+msgid "Revisit goals together"
+msgstr "Revoir les objectifs ensemble"
+
+msgid ""
+"Some participants need more directness; others need more warmth. Ask them "
+"what works best."
+msgstr ""
+"Certains participants ont besoin de plus de franchise; d'autres de plus de "
+"chaleur. Demandez-leur ce qui fonctionne le mieux."
+
+msgid ""
+"Talk to your supervisor or a colleague for a fresh perspective. This is not "
+"a sign of weakness — it is good practice."
+msgstr ""
+"Parlez \u00e0 votre superviseur ou \u00e0 un coll\u00e8gue pour un regard neuf. Ce n'est "
+"pas un signe de faiblesse — c'est une bonne pratique."
+
+msgid "Thank them for their honesty."
+msgstr "Remerciez-les pour leur honn\u00eatet\u00e9."
+
+msgid ""
+"This is an opportunity to strengthen the relationship. Research shows that "
+"relationships repaired after a rupture are often stronger than those that "
+"were never tested."
+msgstr ""
+"C'est une occasion de renforcer la relation. La recherche montre que les "
+"relations r\u00e9par\u00e9es apr\u00e8s une rupture sont souvent plus solides que celles "
+"qui n'ont jamais \u00e9t\u00e9 mises \u00e0 l'\u00e9preuve."
+
+msgid "Try: \"Can you tell me more about what that has been like for you?\""
+msgstr "Essayez : \"Pouvez-vous m'en dire plus sur comment cela a \u00e9t\u00e9 pour vous?\""
+
+msgid "Try: \"What would make our time together more useful for you?\""
+msgstr "Essayez : \"Qu'est-ce qui rendrait notre temps ensemble plus utile pour vous?\""
+
+msgid "What Low Ratings Mean"
+msgstr "Ce que signifient les notes basses"
+
+msgid "What to do when a participant rates the working relationship as 1 or 2"
+msgstr "Quoi faire quand un participant \u00e9value la relation de travail \u00e0 1 ou 2"
+
+msgid "When to Seek Support"
+msgstr "Quand demander du soutien"
+
+msgid ""
+"Your job right now is to understand their experience, not to explain yours."
+msgstr ""
+"Votre r\u00f4le en ce moment est de comprendre leur exp\u00e9rience, pas d'expliquer "
+"la v\u00f4tre."
