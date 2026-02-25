@@ -46,6 +46,7 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 - **If parallel work is needed**, use `git worktree add` to give each session its own directory.
 - **Verify branch immediately before every commit** — in the SAME Bash call as the commit, not in a separate tool call. Another session can switch the branch in the gap between calls.
 - **Never leave edits uncommitted across multiple tool calls.** Edit then commit then next edit. Do not batch.
+- **After merging a PR from a worktree session**, pull main into BOTH the main repo directory (`/c/Users/gilli/GitHub/konote`) AND the worktree directory. The user works from the worktree and needs to see changes there immediately.
 
 ## Terminal Command Rules
 
@@ -194,7 +195,7 @@ Current DRRs:
 
 ### How Claude Manages Tasks
 
-- **Always `git pull origin main` before reading or updating TODO.md.** The local copy goes stale after PRs merge on GitHub. Never trust the local file without pulling first. When the user asks for the to-do list, pull first — do not skip this step or assume the local copy is current.
+- **Always `git pull origin main` before reading or updating TODO.md.** The local copy goes stale after PRs merge on GitHub. Never trust the local file without pulling first. When the user asks for the to-do list, pull first — do not skip this step or assume the local copy is current. **After merging a PR that changes TODO.md, pull main into the current working directory** (whether that's the main repo or a worktree) so the user sees the update immediately — do not wait to be asked.
 - When user describes a task: create an ID, add one line to the right section in TODO.md
 - When a task needs subtasks or context: create a detail file in `tasks/`
 - When user asks about a task: read TODO.md for status, read `tasks/*.md` for detail
