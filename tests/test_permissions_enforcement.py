@@ -1,6 +1,6 @@
 """Parametrized permission enforcement test (Wave 6A).
 
-Tests all 48 permission keys x 4 roles = 192 cases. For each (role, key)
+Tests all 68 permission keys x 4 roles = 272 cases. For each (role, key)
 pair, makes an HTTP request to the URL protected by that key and asserts:
   - DENY -> 403 (or 302 redirect for executives on client-scoped URLs)
   - ALLOW / PROGRAM / GATED / PER_FIELD -> NOT 403
@@ -268,7 +268,7 @@ class PermissionEnforcementTest(TestCase):
     # ------------------------------------------------------------------
 
     def test_permission_matrix_enforcement(self):
-        """All 48 permission keys x 4 roles: DENY -> 403, others -> not 403."""
+        """All 68 permission keys x 4 roles: DENY -> 403, others -> not 403."""
         for role in ALL_ROLES:
             user = self.users[role]
             for perm_key, config in PERMISSION_URL_MAP.items():

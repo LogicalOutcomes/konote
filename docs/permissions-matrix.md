@@ -30,7 +30,7 @@
 | See clinical data | — | Scoped | Gated | — | — |
 | Create new clients | Yes | Scoped | Scoped | — | — |
 | Edit client records | — | Scoped | Scoped | — | — |
-| Edit contact info (phone/email) | Per field | Scoped | — | — | — |
+| Edit contact info (phone/email) | Yes | Scoped | — | — | — |
 | Transfer between programs | — | Scoped | Scoped | — | — |
 | View consent records | — | Scoped | Yes | — | — |
 | Manage consent | — | Scoped | Scoped | — | — |
@@ -259,4 +259,5 @@ Circles represent families, households, or support networks. They are **cross-pr
 | Program Manager: view group session content | ALLOW | GATED | Phase 3 |
 | Program Manager: view individual metrics | ALLOW | GATED | Phase 3 |
 | Program Manager: view custom fields | ALLOW | GATED | Phase 3 |
+| Front Desk: edit contact info | ALLOW (whole page) | PER_FIELD (individual fields) | Phase 2 |
 | Direct Service: scoping | Program-wide | Assigned groups/clients only | Phase 2 |
