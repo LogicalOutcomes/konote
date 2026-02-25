@@ -500,6 +500,7 @@ def adhoc_report_preview(request):
                 else:
                     continue
 
+                # De-indented: this loop must run for BOTH age and custom_field branches
                 for group_label, stats in demo_agg.items():
                     client_count = len(stats.get("client_ids", set()))
                     avg_val = round(stats["avg"], 1) if stats.get("avg") is not None else "N/A"

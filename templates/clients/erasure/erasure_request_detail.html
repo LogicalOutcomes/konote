@@ -46,7 +46,7 @@
 {% endif %}
 
 {% if active_alerts and er.status == "pending" %}
-<article aria-label="active alerts" class="warning">
+<article aria-label="{% trans 'Active alerts' %}" class="warning">
     <strong>{% trans "Active Alerts" %}</strong>
     <p>{% trans "This client has active alerts. Consider reviewing them before approving." %}</p>
     <ul>
@@ -70,7 +70,7 @@
 {% endif %}
 
 {% if deadlocked and er.status == "pending" %}
-<article aria-label="deadlock notice" class="warning" style="border-left: 4px solid var(--kn-warning-fg);">
+<article aria-label="{% trans 'Deadlock notice' %}" class="warning" style="border-left: 4px solid var(--kn-warning-fg);">
     <strong>{% trans "Deadlock Detected" %}</strong>
     <p>{% trans "The person who requested this erasure is the only program manager for the remaining programs. An admin can approve as a fallback." %}</p>
 </article>
