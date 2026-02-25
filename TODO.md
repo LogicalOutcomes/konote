@@ -102,7 +102,7 @@ Blocked on infrastructure (dedicated sprint):
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-- [ ] Add axe-core pass to `/capture-page-states` — automated WCAG checks for screen reader/speech recognition coverage (T59)
+_Nothing here right now._
 
 ## Parking Lot: Needs Review
 
@@ -130,6 +130,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Add axe-core pass to `/capture-page-states` — automated WCAG checks for screen reader/speech recognition coverage — 2026-02-25 (T59)
 - [x] Verified: surveys already implemented — full apps/surveys/ with models, views, forms, tests, migrations — 2026-02-24 (SURVEY1)
 - [x] Verified: first-run setup wizard already implemented — 8-step guided configuration in admin settings — 2026-02-24 (SETUP1-UI)
 - [x] Verified: deployment workflow enhancements already implemented — is_demo flag, seed command, demo/real separation — 2026-02-24 (DEPLOY1)
