@@ -54,7 +54,6 @@
 .alliance-quick-ref h2 {
     border-bottom: none;
     margin-top: 0;
-    text-align: centre;
     text-align: center;
 }
 .alliance-quick-ref-grid {
@@ -66,7 +65,7 @@
     margin-top: 0;
 }
 .alliance-quick-ref-col.do-col {
-    color: var(--kn-success, #15803d);
+    color: var(--kn-success, #116b2f);
 }
 .alliance-quick-ref-col.avoid-col {
     color: var(--kn-danger, #b91c1c);
@@ -198,10 +197,13 @@
 
 {% block content %}
 <div class="guide-screen-only">
-    <button type="button" class="guide-print-btn outline" onclick="window.print()">
+    <button type="button" class="guide-print-btn outline" id="guide-print-btn">
         {% trans "Print this guide" %}
     </button>
 </div>
+<script>
+document.getElementById("guide-print-btn").addEventListener("click", function() { window.print(); });
+</script>
 
 <article class="alliance-guide" role="document" aria-label="{% trans 'Alliance Repair Guide' %}">
 
