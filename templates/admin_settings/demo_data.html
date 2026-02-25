@@ -92,7 +92,8 @@
                 {% trans "No active programs found. Configure programs before generating demo data." %}
             </p>
         {% else %}
-            <button type="submit" onclick="return confirm('{% trans "This will replace any existing demo data. Continue?" %}')">
+            {% trans "This will replace any existing demo data. Continue?" as confirm_generate %}
+            <button type="submit" onclick="return confirm('{{ confirm_generate|escapejs }}')">
                 {% if demo_client_count %}
                     {% trans "Regenerate Demo Data" %}
                 {% else %}
@@ -112,7 +113,8 @@
     <form method="post">
         {% csrf_token %}
         <input type="hidden" name="action" value="clear">
-        <button type="submit" class="secondary" onclick="return confirm('{% trans "This will permanently delete all demo data. Are you sure?" %}')">
+        {% trans "This will permanently delete all demo data. Are you sure?" as confirm_clear %}
+        <button type="submit" class="secondary" onclick="return confirm('{{ confirm_clear|escapejs }}')">
             {% trans "Clear All Demo Data" %}
         </button>
     </form>

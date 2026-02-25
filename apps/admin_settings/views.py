@@ -735,8 +735,12 @@ def demo_data_management(request):
             from apps.admin_settings.demo_engine import DemoDataEngine
             from io import StringIO
 
-            clients_per_program = int(request.POST.get("clients_per_program", 3))
-            days_span = int(request.POST.get("days_span", 180))
+            try:
+                clients_per_program = int(request.POST.get("clients_per_program", 3))
+                days_span = int(request.POST.get("days_span", 180))
+            except (ValueError, TypeError):
+                clients_per_program = 3
+                days_span = 180
 
             # Clamp values
             clients_per_program = max(1, min(10, clients_per_program))
