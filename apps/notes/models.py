@@ -246,6 +246,26 @@ class ProgressNote(models.Model):
         max_length=20, choices=ALLIANCE_RATER_CHOICES, default="", blank=True,
     )
 
+    MODALITY_CHOICES = [
+        ("in_person", _("In Person")),
+        ("phone", _("Phone")),
+        ("video", _("Video")),
+        ("email_text", _("Email/Text")),
+    ]
+
+    duration_minutes = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text=_("Session duration in minutes."),
+    )
+    modality = models.CharField(
+        max_length=20,
+        choices=MODALITY_CHOICES,
+        null=True,
+        blank=True,
+        help_text=_("How the session was delivered."),
+    )
+
     backdate = models.DateTimeField(null=True, blank=True, help_text="Override date if note is for a past session.")
     begin_timestamp = models.DateTimeField(null=True, blank=True)
     follow_up_date = models.DateField(
