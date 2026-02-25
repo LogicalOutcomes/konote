@@ -647,23 +647,36 @@ def client_transfer(request, client_id):
 @login_required
 @requires_permission("client.edit_contact", _get_program_from_client)
 def client_contact_edit(request, client_id):
-    """Edit client phone number only — narrow scope for front desk.
+    """Edit client contact fields based on field access config.
 
-    Front desk can update phone (client.edit_contact: ALLOW).
+    Front desk sees fields based on FieldAccessConfig (PER_FIELD).
+    Staff and above see phone + email by default.
     Does NOT include address or emergency contact (DV safety implications).
-    Replace with PER_FIELD form in Phase 2.
     """
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
+
+    # Use field access map from decorator if available (PER_FIELD),
+    # otherwise default to phone + email editable (staff/admin).
+    field_access_map = getattr(request, "field_access_map", {"phone": "edit", "email": "edit"})
+
     if request.method == "POST":
-        form = ClientContactForm(request.POST)
+        form = ClientContactForm(request.POST, field_access_map=field_access_map)
         if form.is_valid():
-            client.phone = form.cleaned_data["phone"]
+            if "phone" in form.cleaned_data:
+                client.phone = form.cleaned_data["phone"]
+            if "email" in form.cleaned_data:
+                client.email = form.cleaned_data["email"]
             client.save()
             messages.success(request, _("Contact information updated."))
             return redirect("clients:client_detail", client_id=client.pk)
     else:
-        form = ClientContactForm(initial={"phone": client.phone})
+        initial = {}
+        if field_access_map.get("phone") == "edit":
+            initial["phone"] = client.phone
+        if field_access_map.get("email") == "edit":
+            initial["email"] = client.email
+        form = ClientContactForm(initial=initial, field_access_map=field_access_map)
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
         {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},

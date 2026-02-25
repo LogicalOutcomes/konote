@@ -36,23 +36,43 @@ class ConsentRecordForm(forms.Form):
 
 
 class ClientContactForm(forms.Form):
-    """Narrow form for editing client phone number only.
+    """Dynamic form for editing client contact fields.
 
-    Used by front desk (client.edit_contact: ALLOW) and staff (PROGRAM).
+    Accepts a field_access_map (from FieldAccessConfig.get_all_access())
+    to determine which fields to include. Only fields with "edit" access
+    are shown.
+
+    Used by front desk (client.edit_contact: PER_FIELD) and staff (PROGRAM).
     Does NOT include address or emergency contact — safety implications for DV.
-    Replace with PER_FIELD form in Phase 2.
     """
 
-    phone = forms.CharField(
-        max_length=20, required=False,
-        label=_("Phone Number"),
-        widget=forms.TextInput(attrs={
-            "type": "tel",
-            "placeholder": _("(613) 555-1234"),
-            "autofocus": True,
-            "aria-describedby": "phone-errors",
-        }),
-    )
+    def __init__(self, *args, field_access_map=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Default: phone only (backward-compatible with pre-tier behaviour)
+        if field_access_map is None:
+            field_access_map = {"phone": "edit"}
+
+        # Dynamically add fields based on access config
+        if field_access_map.get("phone") == "edit":
+            self.fields["phone"] = forms.CharField(
+                max_length=20, required=False,
+                label=_("Phone Number"),
+                widget=forms.TextInput(attrs={
+                    "type": "tel",
+                    "placeholder": _("(613) 555-1234"),
+                    "aria-describedby": "phone-errors",
+                }),
+            )
+
+        if field_access_map.get("email") == "edit":
+            self.fields["email"] = forms.EmailField(
+                max_length=254, required=False,
+                label=_("Email Address"),
+                widget=forms.EmailInput(attrs={
+                    "placeholder": _("name@example.com"),
+                    "aria-describedby": "email-errors",
+                }),
+            )
 
     def clean_phone(self):
         phone = self.cleaned_data.get("phone", "").strip()
