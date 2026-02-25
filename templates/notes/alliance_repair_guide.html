@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Alliance Repair Guide" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block extra_head %}
+<style>
+/* ---- Alliance Repair Guide — print-optimised one-pager ---- */
+.alliance-guide {
+    max-width: 48rem;
+    margin: 0 auto;
+}
+.alliance-guide h1 {
+    font-size: 1.6rem;
+    margin-bottom: 0.25rem;
+}
+.alliance-guide .guide-subtitle {
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
+.alliance-guide h2 {
+    font-size: 1.15rem;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.2rem;
+    border-bottom: 2px solid var(--kn-primary, #0d7377);
+}
+.alliance-guide h3 {
+    font-size: 1rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.25rem;
+}
+.alliance-guide p,
+.alliance-guide li {
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+.alliance-guide ul {
+    margin: 0.25rem 0 0.5rem 1.25rem;
+    padding: 0;
+}
+.alliance-guide li {
+    margin-bottom: 0.2rem;
+}
+
+/* Quick reference card */
+.alliance-quick-ref {
+    border: 2px solid var(--kn-primary, #0d7377);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-top: 1rem;
+    page-break-inside: avoid;
+}
+.alliance-quick-ref h2 {
+    border-bottom: none;
+    margin-top: 0;
+    text-align: centre;
+    text-align: center;
+}
+.alliance-quick-ref-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+.alliance-quick-ref-col h3 {
+    margin-top: 0;
+}
+.alliance-quick-ref-col.do-col {
+    color: var(--kn-success, #15803d);
+}
+.alliance-quick-ref-col.avoid-col {
+    color: var(--kn-danger, #b91c1c);
+}
+.alliance-quick-ref-col ul {
+    color: var(--pico-color, #1a1a1a);
+}
+.alliance-quick-ref-col li {
+    font-size: 0.9rem;
+}
+
+/* Print button */
+.guide-print-btn {
+    margin-bottom: 1rem;
+}
+
+/* ---- Print styles — Letter size one-pager ---- */
+@media print {
+    /* Hide non-guide elements */
+    nav,
+    footer,
+    .demo-banner,
+    .report-deadline-banner,
+    .offline-banner,
+    #htmx-error-toast,
+    #htmx-success-toast,
+    #sr-announcer,
+    #shortcuts-modal,
+    #shortcuts-backdrop,
+    .loading-bar,
+    .visually-hidden-focusable,
+    .guide-print-btn,
+    .guide-screen-only {
+        display: none !important;
+    }
+
+    /* Page setup — US Letter */
+    @page {
+        size: letter;
+        margin: 1.5cm 2cm;
+    }
+
+    body {
+        font-size: 11pt;
+        line-height: 1.35;
+        color: #000 !important;
+        background: #fff !important;
+    }
+
+    main.container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .alliance-guide {
+        max-width: 100%;
+    }
+
+    .alliance-guide h1 {
+        font-size: 16pt;
+        margin-bottom: 2pt;
+    }
+
+    .alliance-guide .guide-subtitle {
+        font-size: 10pt;
+        margin-bottom: 10pt;
+    }
+
+    .alliance-guide h2 {
+        font-size: 12pt;
+        margin-top: 10pt;
+        margin-bottom: 4pt;
+        border-bottom: 1.5pt solid #000;
+    }
+
+    .alliance-guide h3 {
+        font-size: 11pt;
+        margin-top: 6pt;
+        margin-bottom: 2pt;
+    }
+
+    .alliance-guide p,
+    .alliance-guide li {
+        font-size: 10pt;
+        line-height: 1.3;
+    }
+
+    .alliance-guide ul {
+        margin: 2pt 0 4pt 14pt;
+    }
+
+    .alliance-guide li {
+        margin-bottom: 1pt;
+    }
+
+    /* Quick reference card */
+    .alliance-quick-ref {
+        border: 1.5pt solid #000;
+        padding: 6pt 10pt;
+        margin-top: 8pt;
+    }
+
+    .alliance-quick-ref h2 {
+        border-bottom: none;
+        font-size: 11pt;
+    }
+
+    .alliance-quick-ref-col.do-col,
+    .alliance-quick-ref-col.avoid-col {
+        color: #000;
+    }
+
+    .alliance-quick-ref-col h3 {
+        font-size: 10pt;
+    }
+
+    .alliance-quick-ref-col li {
+        font-size: 9.5pt;
+    }
+
+    /* Prevent page breaks inside sections */
+    .alliance-guide section {
+        page-break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="guide-screen-only">
+    <button type="button" class="guide-print-btn outline" onclick="window.print()">
+        {% trans "Print this guide" %}
+    </button>
+</div>
+
+<article class="alliance-guide" role="document" aria-label="{% trans 'Alliance Repair Guide' %}">
+
+    <header>
+        <h1>{% trans "Alliance Repair Guide" %}</h1>
+        <p class="guide-subtitle">{% trans "What to do when a participant rates the working relationship as 1 or 2" %}</p>
+    </header>
+
+    <section aria-labelledby="guide-what-it-means">
+        <h2 id="guide-what-it-means">{% trans "What Low Ratings Mean" %}</h2>
+        <ul>
+            <li>{% trans "Ratings of 1 or 2 are valuable signals, not failures. They mean the participant is being honest about their experience." %}</li>
+            <li>{% trans "A low rating is not a reflection of your worth as a worker. It is information about what the participant needs." %}</li>
+            <li>{% trans "This is an opportunity to strengthen the relationship. Research shows that relationships repaired after a rupture are often stronger than those that were never tested." %}</li>
+        </ul>
+    </section>
+
+    <section aria-labelledby="guide-immediate">
+        <h2 id="guide-immediate">{% trans "Immediate Response (Same Session)" %}</h2>
+        <ul>
+            <li><strong>{% trans "Thank them for their honesty." %}</strong> {% trans "It takes courage to share a low rating. Acknowledge that." %}</li>
+            <li><strong>{% trans "Ask open-ended questions." %}</strong> {% trans 'Try: "Can you tell me more about what that has been like for you?"' %}</li>
+            <li><strong>{% trans "Listen without defending." %}</strong> {% trans "Your job right now is to understand their experience, not to explain yours." %}</li>
+            <li><strong>{% trans "Ask what would help." %}</strong> {% trans 'Try: "What would make our time together more useful for you?"' %}</li>
+        </ul>
+    </section>
+
+    <section aria-labelledby="guide-strategies">
+        <h2 id="guide-strategies">{% trans "Repair Strategies" %}</h2>
+
+        <h3>{% trans "Revisit goals together" %}</h3>
+        <p>{% trans "Are you working on the right things? Sometimes a low rating means the participant's priorities have shifted, but the plan has not." %}</p>
+
+        <h3>{% trans "Adjust your communication style" %}</h3>
+        <p>{% trans "Some participants need more directness; others need more warmth. Ask them what works best." %}</p>
+
+        <h3>{% trans "Increase participant choice" %}</h3>
+        <p>{% trans "Offer options for how sessions are structured. People engage more when they feel they have a say." %}</p>
+
+        <h3>{% trans "Check the pace" %}</h3>
+        <p>{% trans "Are things moving too fast or too slow? A mismatch in pace is one of the most common reasons for low alliance ratings." %}</p>
+    </section>
+
+    <section aria-labelledby="guide-support">
+        <h2 id="guide-support">{% trans "When to Seek Support" %}</h2>
+        <ul>
+            <li>{% trans "If ratings stay at 1 or 2 for three sessions in a row" %}</li>
+            <li>{% trans "If the participant expresses feeling unsafe or unheard" %}</li>
+            <li>{% trans "If you are unsure how to respond to what the participant has shared" %}</li>
+        </ul>
+        <p>{% trans "Talk to your supervisor or a colleague for a fresh perspective. This is not a sign of weakness — it is good practice." %}</p>
+    </section>
+
+    <div class="alliance-quick-ref" role="region" aria-labelledby="guide-quick-ref">
+        <h2 id="guide-quick-ref">{% trans "Quick Reference" %}</h2>
+        <div class="alliance-quick-ref-grid">
+            <div class="alliance-quick-ref-col do-col">
+                <h3>{% trans "3 things to say" %}</h3>
+                <ul>
+                    <li>{% trans '"Thank you for telling me that."' %}</li>
+                    <li>{% trans '"What would be most helpful right now?"' %}</li>
+                    <li>{% trans '"Let us revisit our goals together."' %}</li>
+                </ul>
+            </div>
+            <div class="alliance-quick-ref-col avoid-col">
+                <h3>{% trans "3 things to avoid" %}</h3>
+                <ul>
+                    <li>{% trans "Defending yourself" %}</li>
+                    <li>{% trans "Dismissing the rating" %}</li>
+                    <li>{% trans "Changing the subject" %}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+</article>
+{% endblock %}
