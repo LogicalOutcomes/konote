@@ -246,6 +246,50 @@
 </section>
 {% endif %}
 
+{# DV Safety — staff+ only, Tier 2+, hidden from front desk (PERM-P5) #}
+{% if not is_receptionist and access_tier >= 2 and not client.is_anonymised %}
+<section>
+    <details{% if client.is_dv_safe %} open{% endif %}>
+        <summary>
+            <h2 style="display: inline; font-size: 1rem; margin: 0;">
+                {% trans "DV Safety" %}
+                {% if client.is_dv_safe %}<span class="badge badge-warning" style="font-size: 0.7rem; margin-left: 0.5rem;">{% trans "Active" %}</span>{% endif %}
+            </h2>
+        </summary>
+        <div style="margin-top: var(--kn-space-base);">
+            {% if client.is_dv_safe %}
+            <p class="secondary">{% trans "DV safety flag is active. Sensitive fields (address, emergency contact, employer) are hidden from front desk staff." %}</p>
+
+            {% if dv_pending_removal %}
+            <article aria-label="notice" style="border-left: 4px solid var(--pico-primary); padding: var(--kn-space-sm); margin-top: var(--kn-space-sm);">
+                <strong>{% trans "Removal request pending" %}</strong>
+                <p class="secondary" style="margin-bottom: 0;">
+                    {% blocktrans with name=dv_pending_removal.requested_by.get_full_name|default:dv_pending_removal.requested_by.username date=dv_pending_removal.requested_at|date:"M d, Y" %}Requested by {{ name }} on {{ date }}.{% endblocktrans %}
+                </p>
+                {% if is_pm_or_admin %}
+                <a href="{% url 'clients:dv_safe_review_remove' client_id=client.pk request_id=dv_pending_removal.pk %}" role="button" class="outline" style="font-size: 0.875rem; margin-top: var(--kn-space-xs);">{% trans "Review Request" %}</a>
+                {% endif %}
+            </article>
+            {% elif not dv_pending_removal %}
+            <a href="{% url 'clients:dv_safe_request_remove' client_id=client.pk %}" role="button" class="outline secondary" style="font-size: 0.875rem; margin-top: var(--kn-space-sm);">{% trans "Request Removal" %}</a>
+            <p class="secondary" style="margin-top: var(--kn-space-xs);"><small>{% trans "A program manager must approve removal." %}</small></p>
+            {% endif %}
+
+            {% else %}
+            <p class="secondary">{% trans "DV safety flag is not active. Enable it to hide sensitive fields from front desk staff." %}</p>
+            <form method="post" action="{% url 'clients:dv_safe_enable' client_id=client.pk %}" style="margin-top: var(--kn-space-sm);">
+                {% csrf_token %}
+                <button type="submit" class="outline" style="font-size: 0.875rem;"
+                    onclick="return confirm('{% trans "Enable DV safety flag? Sensitive fields will be hidden from front desk staff immediately." %}')">
+                    {% trans "Enable DV Safety" %}
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </details>
+</section>
+{% endif %}
+
 {# Privacy & Data Management — collapsed, PM+ only, not shown for anonymised clients #}
 {% if is_pm_or_admin and not client.is_anonymised %}
 <section>

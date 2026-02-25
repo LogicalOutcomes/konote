@@ -850,6 +850,18 @@ def client_detail(request, client_id):
         "breadcrumbs": breadcrumbs,
         **tab_counts,  # notes_count, events_count, targets_count
     }
+
+    # DV-safe context (PERM-P5) — only for staff+ at Tier 2+
+    if not is_receptionist:
+        from apps.admin_settings.models import get_access_tier
+        access_tier = get_access_tier()
+        context["access_tier"] = access_tier
+        if access_tier >= 2:
+            from .models import DvFlagRemovalRequest
+            context["dv_pending_removal"] = DvFlagRemovalRequest.objects.filter(
+                client_file=client, approved__isnull=True,
+            ).select_related("requested_by").first()
+            context["is_staff_or_above"] = True  # already checked: not receptionist
     # HTMX tab switch — return only the tab content partial
     if request.headers.get("HX-Request"):
         return render(request, "clients/_tab_info.html", context)

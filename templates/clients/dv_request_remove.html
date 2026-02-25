@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Request DV Flag Removal" %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Request DV Flag Removal" %}</h1>
+
+<p>{% blocktrans with name=client.display_name %}You are requesting removal of the DV safety flag for {{ name }}. A program manager must review and approve this request before the flag is removed.{% endblocktrans %}</p>
+
+{% if pending %}
+<article aria-label="notice" style="border-left: 4px solid var(--pico-del-color);">
+    <strong>{% trans "A removal request is already pending." %}</strong>
+    {% trans "Please wait for a program manager to review the existing request." %}
+</article>
+{% else %}
+<form method="post" action="{% url 'clients:dv_safe_request_remove' client_id=client.pk %}">
+    {% csrf_token %}
+    <label for="reason">{% trans "Reason for removal" %}</label>
+    <textarea id="reason" name="reason" rows="3" required
+        placeholder="{% trans 'Explain why the DV safety flag should be removed for this participant.' %}"
+        aria-describedby="reason-help"
+        {% if error %}aria-invalid="true"{% endif %}
+    ></textarea>
+    <small id="reason-help" class="secondary">{% trans "This will be reviewed by a program manager before the flag is removed." %}</small>
+
+    <div style="display: flex; gap: var(--kn-space-sm); margin-top: var(--kn-space-base);">
+        <button type="submit">{% trans "Submit Request" %}</button>
+        <a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endif %}
+{% endblock %}
