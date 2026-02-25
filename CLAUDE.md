@@ -145,7 +145,8 @@ TODO.md is a **dashboard** — scannable at a glance. It is not a project plan, 
 | **Flagged** | Decisions needed, blockers, deadlines | Remove flags when resolved. If empty, show "_Nothing flagged._" |
 | **Active Work** | Tasks being worked on now | Grouped by phase. Include owner on every line. |
 | **Coming Up** | Next phase of work | Can reference task detail files for phases not yet started |
-| **Parking Lot** | Future tasks, not tied to current phase | Low-priority or waiting on prerequisites |
+| **Parking Lot: Ready to Build** | Scope is clear, just needs time | A session can pick these up without special approval |
+| **Parking Lot: Needs Review** | Not yet clear we should build, or design isn't settled | **Never build without explicit user approval in the current conversation** |
 | **Recently Done** | Last 5–10 completed tasks | Format: `- [x] Description — YYYY-MM-DD (ID)`. Move older items to `tasks/ARCHIVE.md`. |
 
 ### Language
