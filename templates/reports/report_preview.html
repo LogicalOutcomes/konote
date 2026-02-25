@@ -1,0 +1,580 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Report Preview" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block extra_head %}
+<style>
+/* Print-friendly styles */
+@media print {
+    /* Hide navigation, download buttons, and non-content elements */
+    nav, .skip-nav, .demo-banner, .report-deadline-banner,
+    .preview-actions, .preview-back-link, #loading-bar,
+    .no-print {
+        display: none !important;
+    }
+    /* Full-width content for printing */
+    main, .container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    /* Clean table borders for print */
+    table {
+        border-collapse: collapse !important;
+    }
+    th, td {
+        border: 1px solid #333 !important;
+        padding: 0.4rem 0.6rem !important;
+    }
+    /* Page break control */
+    .preview-section {
+        page-break-inside: avoid;
+    }
+    h1, h2, h3 {
+        page-break-after: avoid;
+    }
+}
+
+/* Responsive table wrapper */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1.5rem;
+}
+.table-responsive table {
+    min-width: 500px;
+}
+
+/* Preview header styling */
+.preview-header {
+    border-left: 4px solid var(--kn-info-fg, #0d7377);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    background: var(--kn-info-bg, #f0fafa);
+}
+.preview-header dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.25rem 1rem;
+    margin: 0;
+}
+.preview-header dt {
+    font-weight: 600;
+    margin: 0;
+}
+.preview-header dd {
+    margin: 0;
+}
+
+/* Suppressed cell styling */
+.suppressed {
+    color: var(--pico-muted-color);
+    font-style: italic;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Report Preview" %}</h1>
+    <p>{% trans "Review the report data below before downloading." %}</p>
+</hgroup>
+
+{# ── Reusable hidden form fields for download buttons ── #}
+{# form_pairs is a list of (key, value) tuples that correctly handles multi-value fields like metrics #}
+
+{# ── Download action bar (top) ── #}
+<div class="preview-actions no-print" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+        {% if preview_type == "template" %}
+        <form method="post" action="{{ generate_url }}" style="display: inline;">
+            {% csrf_token %}
+            {% for pair in form_pairs %}
+            <input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}">
+            {% endfor %}
+            <input type="hidden" name="format" value="pdf">
+            <button type="submit" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span aria-hidden="true">&#x1F4C4;</span> {% trans "Download PDF" %}
+            </button>
+        </form>
+        <form method="post" action="{{ generate_url }}" style="display: inline;">
+            {% csrf_token %}
+            {% for pair in form_pairs %}
+            <input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}">
+            {% endfor %}
+            <input type="hidden" name="format" value="csv">
+            <button type="submit" class="secondary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span aria-hidden="true">&#x1F4CA;</span> {% trans "Download CSV" %}
+            </button>
+        </form>
+        {% else %}
+        <form method="post" action="{{ export_url }}" style="display: inline;">
+            {% csrf_token %}
+            {% for pair in form_pairs %}
+            <input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}">
+            {% endfor %}
+            <input type="hidden" name="format" value="pdf">
+            <button type="submit" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span aria-hidden="true">&#x1F4C4;</span> {% trans "Download PDF" %}
+            </button>
+        </form>
+        <form method="post" action="{{ export_url }}" style="display: inline;">
+            {% csrf_token %}
+            {% for pair in form_pairs %}
+            <input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}">
+            {% endfor %}
+            <input type="hidden" name="format" value="csv">
+            <button type="submit" class="secondary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span aria-hidden="true">&#x1F4CA;</span> {% trans "Download CSV" %}
+            </button>
+        </form>
+        {% endif %}
+        <button type="button" class="outline secondary" onclick="window.print();" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+            <span aria-hidden="true">&#x1F5A8;</span> {% trans "Print" %}
+        </button>
+    </div>
+</div>
+
+{# ── Report metadata header ── #}
+<article class="preview-header preview-section" aria-label="{% trans 'Report metadata' %}">
+    <dl>
+        {% if preview_type == "template" %}
+        <dt>{% trans "Report" %}</dt>
+        <dd>{{ template.partner.translated_name }} &mdash; {{ template.name }}</dd>
+        <dt>{% trans "Program" %}</dt>
+        <dd>
+            {% for prog in programs %}{{ prog.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
+        </dd>
+        {% else %}
+        <dt>{% trans "Report Type" %}</dt>
+        <dd>{% trans "Custom Export" %}</dd>
+        <dt>{% trans "Program" %}</dt>
+        <dd>{{ program_display_name }}</dd>
+        {% endif %}
+
+        <dt>{% trans "Period" %}</dt>
+        <dd>
+            {% if preview_type == "template" %}
+            {{ period_label }}
+            {% else %}
+            {{ date_from }} {% trans "to" %} {{ date_to }}
+            {% endif %}
+        </dd>
+
+        <dt>{% trans "Generated by" %}</dt>
+        <dd>{{ generated_by }}</dd>
+
+        <dt>{% trans "Generated" %}</dt>
+        <dd>{{ generated_at|date:"Y-m-d H:i" }}</dd>
+
+        {% if preview_type == "adhoc" and is_aggregate_only %}
+        <dt>{% trans "Data mode" %}</dt>
+        <dd>{% trans "Aggregate summary only" %}</dd>
+        {% endif %}
+    </dl>
+</article>
+
+{# ===============================================================
+   TEMPLATE-DRIVEN REPORT PREVIEW
+   =============================================================== #}
+{% if preview_type == "template" %}
+
+{# Service statistics #}
+<section class="preview-section">
+    <h2>{% trans "Service Statistics" %}</h2>
+    <div class="table-responsive">
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Statistic" %}</th>
+                    <th scope="col">{% trans "Value" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{% trans "Total Individuals Served" %}</td>
+                    <td>{{ report_data.total_individuals_served }}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "New Participants This Period" %}</td>
+                    <td>{{ report_data.new_clients_this_period }}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Total Service Contacts" %}</td>
+                    <td>{{ report_data.total_contacts }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{# Metrics table (from ReportMetric aggregation) #}
+{% if has_aggregation and metric_results %}
+<section class="preview-section">
+    <h2>{% trans "Outcome Metrics" %}</h2>
+    <div class="table-responsive">
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Metric" %}</th>
+                    {% for label in demographic_labels %}
+                    <th scope="col">{{ label }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for mr in metric_results %}
+                <tr>
+                    <th scope="row">{{ mr.label }}{% for label in demographic_labels %}{% with gd=mr.values %}{% if gd %}{% for k, v in gd.items %}{% if forloop.first and v.label_suffix %} {{ v.label_suffix }}{% endif %}{% endfor %}{% endif %}{% endwith %}{% endfor %}</th>
+                    {% for label in demographic_labels %}
+                    {% with gd=mr.values %}
+                    <td{% if gd|default_if_none:"" %} class="{% for k, v in gd.items %}{% if k == label and v.suppressed %}suppressed{% endif %}{% endfor %}"{% endif %}>
+                        {% for k, v in gd.items %}{% if k == label %}{{ v.value }}{% endif %}{% endfor %}
+                    </td>
+                    {% endwith %}
+                    {% endfor %}
+                </tr>
+                {# Show count (n) row for aggregation types that have meaningful n #}
+                {% if mr.aggregation == "average" or mr.aggregation == "threshold_percentage" or mr.aggregation == "percentage" %}
+                <tr>
+                    <th scope="row" style="font-weight: normal; font-style: italic; padding-left: 2rem;">{{ mr.label }} (n)</th>
+                    {% for label in demographic_labels %}
+                    {% with gd=mr.values %}
+                    <td style="font-style: italic;">
+                        {% for k, v in gd.items %}{% if k == label %}{% if v.suppressed %}<span class="suppressed">{{ v.n }}</span>{% else %}{{ v.n }}{% endif %}{% endif %}{% endfor %}
+                    </td>
+                    {% endwith %}
+                    {% endfor %}
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
+{# Demographics from report_data (age, custom fields) #}
+{% if report_data.age_demographics %}
+<section class="preview-section">
+    <h2>{% trans "Age Demographics" %}</h2>
+    <div class="table-responsive">
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Age Group" %}</th>
+                    <th scope="col">{% trans "Count" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group, count in report_data.age_demographics.items %}
+                <tr>
+                    <td>{{ group }}</td>
+                    <td>{{ count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
+{% if report_data.custom_demographic_sections %}
+{% for section in report_data.custom_demographic_sections %}
+<section class="preview-section">
+    <h2>{{ section.label }}</h2>
+    <div class="table-responsive">
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Category" %}</th>
+                    <th scope="col">{% trans "Count" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat_label, count in section.data.items %}
+                <tr>
+                    <td>{{ cat_label }}</td>
+                    <td>{{ count }}</td>
+                </tr>
+                {% endfor %}
+                {% if section.total %}
+                <tr>
+                    <th scope="row">{% trans "Total" %}</th>
+                    <td><strong>{{ section.total }}</strong></td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endfor %}
+{% endif %}
+
+{# ===============================================================
+   AD-HOC EXPORT PREVIEW
+   =============================================================== #}
+{% elif preview_type == "adhoc" %}
+
+{# Aggregate summary table #}
+<section class="preview-section">
+    <h2>{% trans "Summary Statistics" %}</h2>
+    <p>{% blocktrans with count=total_clients_display %}Total participants: {{ count }}{% endblocktrans %}</p>
+    <div class="table-responsive">
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Metric Name" %}</th>
+                    <th scope="col">{% trans "Participants Measured" %}</th>
+                    <th scope="col">{% trans "Data Points" %}</th>
+                    <th scope="col">{% trans "Average" %}</th>
+                    <th scope="col">{% trans "Min" %}</th>
+                    <th scope="col">{% trans "Max" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in aggregate_rows %}
+                <tr>
+                    <td>{{ row.metric_name }}</td>
+                    <td>{{ row.clients_measured }}</td>
+                    <td>{{ row.data_points }}</td>
+                    <td>{{ row.avg }}</td>
+                    <td>{{ row.min }}</td>
+                    <td>{{ row.max }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+{# Achievement summary #}
+{% if achievement_summary %}
+<section class="preview-section">
+    <h2>{% trans "Achievement Rate" %}</h2>
+    <div class="table-responsive">
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Measure" %}</th>
+                    <th scope="col">{% trans "Value" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{% trans "Total Clients" %}</td>
+                    <td>{{ achievement_summary.total_clients }}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Clients Met Any Target" %}</td>
+                    <td>{{ achievement_summary.clients_met_any_target }}</td>
+                </tr>
+                <tr>
+                    <td>{% trans "Overall Achievement Rate" %}</td>
+                    <td>{{ achievement_summary.overall_rate }}%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    {% if achievement_summary.metrics %}
+    <h3>{% trans "By Metric" %}</h3>
+    <div class="table-responsive">
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Metric" %}</th>
+                    <th scope="col">{% trans "Clients Measured" %}</th>
+                    <th scope="col">{% trans "Clients Met Target" %}</th>
+                    <th scope="col">{% trans "Rate" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in achievement_summary.metrics %}
+                <tr>
+                    <td>{{ m.metric_name }}</td>
+                    <td>{{ m.total_clients }}</td>
+                    <td>{{ m.clients_met }}</td>
+                    <td>{{ m.rate }}%</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</section>
+{% endif %}
+
+{# Demographic breakdown (legacy single-field grouping) #}
+{% if demographic_rows %}
+<section class="preview-section">
+    <h2>{% blocktrans with label=grouping_label %}Breakdown by {{ label }}{% endblocktrans %}</h2>
+    <div class="table-responsive">
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th scope="col">{{ grouping_label }}</th>
+                    <th scope="col">{% trans "Metric Name" %}</th>
+                    <th scope="col">{% trans "Participants Measured" %}</th>
+                    <th scope="col">{% trans "Average" %}</th>
+                    <th scope="col">{% trans "Min" %}</th>
+                    <th scope="col">{% trans "Max" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in demographic_rows %}
+                <tr>
+                    <td>{{ row.demographic_group }}</td>
+                    <td>{{ row.metric_name }}</td>
+                    <td>{{ row.clients_measured }}</td>
+                    <td>{{ row.avg }}</td>
+                    <td>{{ row.min }}</td>
+                    <td>{{ row.max }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endif %}
+
+{# Report template multi-breakdown sections #}
+{% if template_breakdown_sections %}
+{% for section in template_breakdown_sections %}
+<section class="preview-section">
+    <h2>{{ section.label }}</h2>
+    <div class="table-responsive">
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th scope="col">{{ section.label }}</th>
+                    <th scope="col">{% trans "Metric Name" %}</th>
+                    <th scope="col">{% trans "Participants Measured" %}</th>
+                    <th scope="col">{% trans "Average" %}</th>
+                    <th scope="col">{% trans "Min" %}</th>
+                    <th scope="col">{% trans "Max" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in section.rows %}
+                <tr>
+                    <td>{{ row.demographic_group }}</td>
+                    <td>{{ row.metric_name }}</td>
+                    <td>{{ row.clients_measured }}</td>
+                    <td>{{ row.avg }}</td>
+                    <td>{{ row.min }}</td>
+                    <td>{{ row.max }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endfor %}
+{% endif %}
+
+{# Individual data rows (PM/admin only — not shown for aggregate-only users) #}
+{% if individual_rows and not is_aggregate_only %}
+<section class="preview-section">
+    <h2>{% trans "Individual Data" %}</h2>
+    <p style="color: var(--pico-muted-color);">
+        {% trans "Showing individual participant records. This data is included in the download." %}
+    </p>
+    <div class="table-responsive">
+        <table role="grid">
+            <thead>
+                <tr>
+                    <th scope="col">{% trans "Client Record ID" %}</th>
+                    <th scope="col">{% trans "Goal" %}</th>
+                    <th scope="col">{% trans "Metric Name" %}</th>
+                    <th scope="col">{% trans "Value" %}</th>
+                    <th scope="col">{% trans "Date" %}</th>
+                    <th scope="col">{% trans "Author" %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in individual_rows|slice:":100" %}
+                <tr>
+                    <td>{{ row.record_id }}</td>
+                    <td>{{ row.goal_name }}</td>
+                    <td>{{ row.metric_name }}</td>
+                    <td>{{ row.value }}</td>
+                    <td>{{ row.date }}</td>
+                    <td>{{ row.author }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% if individual_rows|length > 100 %}
+    <p style="color: var(--pico-muted-color); font-style: italic;">
+        {% blocktrans with total=individual_rows|length %}Showing first 100 of {{ total }} rows. Download the full report to see all data.{% endblocktrans %}
+    </p>
+    {% endif %}
+</section>
+{% endif %}
+
+{% endif %}{# end preview_type check #}
+
+{# ── Download action bar (bottom) ── #}
+<hr class="no-print" style="margin: 2rem 0;">
+<div class="preview-actions no-print" style="margin-bottom: 1.5rem;">
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+        {% if preview_type == "template" %}
+        <form method="post" action="{{ generate_url }}" style="display: inline;">
+            {% csrf_token %}
+            {% for pair in form_pairs %}
+            <input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}">
+            {% endfor %}
+            <input type="hidden" name="format" value="pdf">
+            <button type="submit" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span aria-hidden="true">&#x1F4C4;</span> {% trans "Download PDF" %}
+            </button>
+        </form>
+        <form method="post" action="{{ generate_url }}" style="display: inline;">
+            {% csrf_token %}
+            {% for pair in form_pairs %}
+            <input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}">
+            {% endfor %}
+            <input type="hidden" name="format" value="csv">
+            <button type="submit" class="secondary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span aria-hidden="true">&#x1F4CA;</span> {% trans "Download CSV" %}
+            </button>
+        </form>
+        {% else %}
+        <form method="post" action="{{ export_url }}" style="display: inline;">
+            {% csrf_token %}
+            {% for pair in form_pairs %}
+            <input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}">
+            {% endfor %}
+            <input type="hidden" name="format" value="pdf">
+            <button type="submit" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span aria-hidden="true">&#x1F4C4;</span> {% trans "Download PDF" %}
+            </button>
+        </form>
+        <form method="post" action="{{ export_url }}" style="display: inline;">
+            {% csrf_token %}
+            {% for pair in form_pairs %}
+            <input type="hidden" name="{{ pair.0 }}" value="{{ pair.1 }}">
+            {% endfor %}
+            <input type="hidden" name="format" value="csv">
+            <button type="submit" class="secondary" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+                <span aria-hidden="true">&#x1F4CA;</span> {% trans "Download CSV" %}
+            </button>
+        </form>
+        {% endif %}
+        <button type="button" class="outline secondary" onclick="window.print();" style="display: inline-flex; align-items: center; gap: 0.5rem;">
+            <span aria-hidden="true">&#x1F5A8;</span> {% trans "Print" %}
+        </button>
+    </div>
+</div>
+
+{# Back link #}
+<p class="preview-back-link no-print" style="margin-top: 1rem;">
+    {% if preview_type == "template" %}
+    <a href="{% url 'reports:generate_report' %}">&larr; {% trans "Back to Generate Report" %}</a>
+    {% else %}
+    <a href="{% url 'reports:export_form' %}">&larr; {% trans "Back to Custom Export" %}</a>
+    {% endif %}
+</p>
+{% endblock %}

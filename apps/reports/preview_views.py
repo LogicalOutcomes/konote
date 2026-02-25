@@ -50,6 +50,24 @@ logger = logging.getLogger(__name__)
 from konote.utils import get_client_ip as _get_client_ip
 
 
+def _querydict_to_pairs(qd):
+    """Convert a QueryDict to a list of (key, value) tuples.
+
+    Handles multi-value fields (like ``metrics``) by emitting one pair
+    per value.  Excludes ``csrfmiddlewaretoken`` and ``preview`` since
+    the download forms provide those themselves.
+    """
+    pairs = []
+    for key in qd:
+        if key in ("csrfmiddlewaretoken", "preview", "format"):
+            continue
+        values = qd.getlist(key)
+        for val in values:
+            if val and val.strip():
+                pairs.append((key, val))
+    return pairs
+
+
 # ---------------------------------------------------------------------------
 # Template-driven report preview
 # ---------------------------------------------------------------------------
@@ -224,7 +242,7 @@ def template_report_preview(request):
         "has_aggregation": has_aggregation,
         "sections": sections,
         "generate_url": generate_url,
-        "form_data": request.POST,
+        "form_pairs": _querydict_to_pairs(request.POST),
         "generated_by": request.user.display_name,
         "generated_at": timezone.now(),
     })
@@ -584,7 +602,7 @@ def adhoc_report_preview(request):
         "is_aggregate_only": is_aggregate,
         "individual_rows": individual_rows if not is_aggregate else [],
         "export_url": export_url,
-        "form_data": request.POST,
+        "form_pairs": _querydict_to_pairs(request.POST),
         "generated_by": request.user.display_name,
         "generated_at": timezone.now(),
     })
