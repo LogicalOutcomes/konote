@@ -431,45 +431,26 @@ class SessionReportPermissionTest(TestCase):
     def test_pm_can_access_form(self):
         """Program managers should see the session report form."""
         self.http.login(username="pm", password="pass")
-        try:
-            resp = self.http.get("/reports/sessions/")
-            self.assertEqual(resp.status_code, 200)
-        except RecursionError:
-            # Template rendering recursion in test environment —
-            # the view itself ran (didn't 403), so access is granted.
-            pass
+        resp = self.http.get("/reports/sessions/")
+        self.assertEqual(resp.status_code, 200)
 
     def test_admin_can_access_form(self):
         """Admins should see the session report form."""
         self.http.login(username="admin", password="pass")
-        try:
-            resp = self.http.get("/reports/sessions/")
-            self.assertEqual(resp.status_code, 200)
-        except RecursionError:
-            # Template rendering recursion in test environment —
-            # the view itself ran (didn't 403), so access is granted.
-            pass
+        resp = self.http.get("/reports/sessions/")
+        self.assertEqual(resp.status_code, 200)
 
     def test_executive_blocked(self):
         """Executives (aggregate-only, non-admin) should be blocked from this report."""
         self.http.login(username="exec", password="pass")
         resp = self.http.get("/reports/sessions/")
-        # Executive gets through the decorator (report.program_report=ALLOW)
-        # but is blocked by the is_aggregate_only_user check in the view.
         self.assertEqual(resp.status_code, 403)
 
     def test_staff_blocked(self):
         """Staff without report.program_report permission should be blocked."""
         self.http.login(username="staff", password="pass")
-        # Staff has report.program_report=DENY, so the decorator blocks them.
-        # The 403 page may raise RecursionError in test template env.
-        try:
-            resp = self.http.get("/reports/sessions/")
-            self.assertIn(resp.status_code, (403, 500))
-        except RecursionError:
-            # The 403 template itself recursed — but the view correctly
-            # denied access (the decorator returned 403).
-            pass
+        resp = self.http.get("/reports/sessions/")
+        self.assertIn(resp.status_code, (403, 302))
 
     def test_anonymous_redirected(self):
         """Anonymous users should be redirected to login."""
