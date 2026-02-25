@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Access Grants" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Access Grants" %}</h1>
+    <p>{% trans "All clinical access grants across the agency. Grants are created when program managers document their reason for viewing clinical data at Tier 3." %}</p>
+</hgroup>
+
+{% if grants %}
+<figure>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "User" %}</th>
+                <th>{% trans "Program" %}</th>
+                <th>{% trans "Scope" %}</th>
+                <th>{% trans "Reason" %}</th>
+                <th>{% trans "Granted" %}</th>
+                <th>{% trans "Expires" %}</th>
+                <th>{% trans "Status" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grant in grants %}
+            <tr>
+                <td>{{ grant.user.display_name }}</td>
+                <td>{{ grant.program.name }}</td>
+                <td>{% if grant.client_file %}{{ grant.client_file }}{% else %}{% trans "All clients" %}{% endif %}</td>
+                <td>{{ grant.reason.label }}</td>
+                <td>{{ grant.granted_at|date:"M j, Y" }}</td>
+                <td>{{ grant.expires_at|date:"M j, Y" }}</td>
+                <td>
+                    {% if not grant.is_active %}
+                        <span class="badge">{% trans "Revoked" %}</span>
+                    {% elif grant.expires_at < now %}
+                        <span class="badge">{% trans "Expired" %}</span>
+                    {% else %}
+                        <span class="badge badge-success">{% trans "Active" %}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</figure>
+{% else %}
+<p>{% trans "No access grants have been created." %}</p>
+{% endif %}
+{% endblock %}

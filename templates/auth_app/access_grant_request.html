@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Request Clinical Access" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Request Clinical Access" %}</h1>
+    <p>{% trans "Your role requires a documented reason before viewing clinical data. Please explain why you need access." %}</p>
+</hgroup>
+
+{% if form.non_field_errors %}
+<article aria-label="{% trans 'Error' %}">
+    {% for error in form.non_field_errors %}
+    <p class="error-text">{{ error }}</p>
+    {% endfor %}
+</article>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next_url }}">
+    <input type="hidden" name="permission" value="{{ permission_key }}">
+
+    {% for field in form %}
+    <label for="{{ field.id_for_label }}">
+        {{ field.label }}
+        {% if field.field.required %}<abbr title="{% trans 'required' %}">*</abbr>{% endif %}
+    </label>
+    {{ field }}
+    {% if field.help_text %}<small>{{ field.help_text }}</small>{% endif %}
+    {% if field.errors %}
+    <small class="badge badge-danger">{{ field.errors.0 }}</small>
+    {% endif %}
+    {% endfor %}
+
+    <div role="group">
+        <button type="submit">{% trans "Request Access" %}</button>
+        <a href="/" role="button" class="outline">{% trans "Cancel" %}</a>
+    </div>
+</form>
+
+<small>
+    {% trans "Access grants are logged for privacy compliance. Your justification will be recorded in the audit trail." %}
+</small>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .error-text {
+        color: var(--kn-error, #dc3545);
+    }
+</style>
+{% endblock %}
