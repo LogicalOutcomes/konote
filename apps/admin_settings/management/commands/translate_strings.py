@@ -480,12 +480,17 @@ class Command(BaseCommand):
                 "Content-Type": "application/json",
             },
             json=payload,
-            timeout=120,
+            timeout=int(os.environ.get("TRANSLATE_API_TIMEOUT", "120")),
         )
         response.raise_for_status()
 
         data = response.json()
-        content = data["choices"][0]["message"]["content"].strip()
+        try:
+            content = data["choices"][0]["message"]["content"].strip()
+        except (KeyError, IndexError, TypeError) as exc:
+            raise ValueError(
+                f"Unexpected API response structure: {exc}"
+            ) from exc
 
         # Strip markdown code fences if the model wraps the response.
         if content.startswith("```"):
