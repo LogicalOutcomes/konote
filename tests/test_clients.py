@@ -1240,3 +1240,50 @@ class BulkOperationsTest(TestCase):
             "client_ids[]": [c1.pk],
         })
         self.assertEqual(resp.status_code, 403)
+
+    # ---- Edge cases ----
+
+    def test_bulk_status_empty_selection(self):
+        """Empty client_ids redirects back to client list."""
+        self.client.login(username="pm", password="testpass123")
+        resp = self.client.post("/participants/bulk-status/", {
+            "client_ids[]": "",
+        })
+        # Should redirect (no clients to show in confirmation)
+        self.assertIn(resp.status_code, [200, 302])
+
+    def test_bulk_status_invalid_ids(self):
+        """Non-integer client_ids are handled gracefully."""
+        self.client.login(username="pm", password="testpass123")
+        resp = self.client.post("/participants/bulk-status/", {
+            "confirm": "1",
+            "client_ids": "abc,def",
+            "status": "discharged",
+        })
+        # Form validation should catch this — re-render with error, not crash
+        self.assertIn(resp.status_code, [200, 302])
+
+    def test_bulk_transfer_already_enrolled_idempotent(self):
+        """Adding to a program the client is already in does not create duplicates."""
+        c1 = self._create_client("Alice", "Smith", [self.prog_a, self.prog_b])
+        self.client.login(username="pm", password="testpass123")
+
+        initial_count = ClientProgramEnrolment.objects.filter(
+            client_file=c1, program=self.prog_b,
+        ).count()
+        self.assertEqual(initial_count, 1)
+
+        # Bulk add to prog_b (already enrolled)
+        resp = self.client.post("/participants/bulk-transfer/", {
+            "confirm": "1",
+            "client_ids": str(c1.pk),
+            "add_program": self.prog_b.pk,
+            "remove_program": "",
+        })
+        self.assertEqual(resp.status_code, 302)
+
+        # Should still be exactly 1 enrolment, not 2
+        final_count = ClientProgramEnrolment.objects.filter(
+            client_file=c1, program=self.prog_b,
+        ).count()
+        self.assertEqual(final_count, 1)
