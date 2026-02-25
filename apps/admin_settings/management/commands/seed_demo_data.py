@@ -718,6 +718,23 @@ PROGRAM_THEMES = {
             "keywords": "buddy,mentor,alumni,share,working,group",
             "addressed_note": "Recruiting two alumni volunteers to pilot monthly peer sessions.",
         },
+        # Permission-correct themes: only PMs can create (suggestion_theme.manage)
+        {
+            "name": "Transportation Barriers",
+            "description": "Multiple participants report transit costs and scheduling as barriers to maintaining employment.",
+            "status": "open",
+            "source": "manual",
+            "keywords": "transit,transportation,bus,travel,commute,fare",
+            "created_by_username": "demo-worker-1",  # Casey — PM in Employment
+        },
+        {
+            "name": "Interview Confidence",
+            "description": "Participants express anxiety about interviews even after practice sessions. May need group-based rehearsal format.",
+            "status": "open",
+            "source": "ai_generated",
+            "keywords": "interview,confidence,nervous,anxiety,practice",
+            "created_by_username": "demo-manager",  # Morgan — PM in Employment
+        },
     ],
     "Housing Stability": [
         {
@@ -734,6 +751,14 @@ PROGRAM_THEMES = {
             "source": "ai_generated",
             "keywords": "tenant,rights,eviction,rent,legal",
             "addressed_note": "Created a tenant rights info sheet and added it to intake package.",
+        },
+        {
+            "name": "Housing Waitlist Anxiety",
+            "description": "Recurring theme of stress and hopelessness related to long waitlists for subsidised housing.",
+            "status": "open",
+            "source": "manual",
+            "keywords": "waitlist,wait,housing,anxiety,stress,hopeless",
+            "created_by_username": "demo-manager",  # Morgan — PM in Housing
         },
     ],
     "Youth Drop-In": [
@@ -791,6 +816,14 @@ PROGRAM_THEMES = {
             "status": "open",
             "source": "ai_generated",
             "keywords": "take,home,family,portions",
+        },
+        {
+            "name": "Food Security Concerns",
+            "description": "Participants frequently mention food insecurity outside of kitchen sessions.",
+            "status": "open",
+            "source": "manual",
+            "keywords": "food,hungry,insecurity,afford,meals,grocery",
+            "created_by_username": "demo-manager",  # Morgan — PM in Kitchen
         },
     ],
 }
@@ -3469,9 +3502,20 @@ class Command(BaseCommand):
             self.stdout.write(f"  Calendar feed tokens: {created} created for demo workers.")
 
     def _create_demo_suggestion_themes(self, workers, programs_by_name):
-        """Create suggestion themes and link them to existing demo notes."""
+        """Create suggestion themes and link them to existing demo notes.
+
+        Themes with created_by_username use a specific user (permission-correct
+        creator). Without it, defaults to the program's primary worker.
+        """
         theme_count = 0
         link_count = 0
+
+        # Build extended user lookup including manager
+        all_users = dict(workers)
+        try:
+            all_users["demo-manager"] = User.objects.get(username="demo-manager")
+        except User.DoesNotExist:
+            pass
 
         for program_name, theme_defs in PROGRAM_THEMES.items():
             program = programs_by_name.get(program_name)
@@ -3487,10 +3531,13 @@ class Command(BaseCommand):
                 .select_related("client_file")
             )
 
-            worker_username = PROGRAM_WORKER.get(program_name, "demo-worker-1")
-            author = workers.get(worker_username)
+            default_username = PROGRAM_WORKER.get(program_name, "demo-worker-1")
 
             for theme_def in theme_defs:
+                # Use explicit creator if specified, otherwise default worker
+                author_username = theme_def.get("created_by_username", default_username)
+                author = all_users.get(author_username)
+
                 theme, was_created = SuggestionTheme.objects.get_or_create(
                     program=program,
                     name=theme_def["name"],
