@@ -105,6 +105,7 @@ def _handle_instance_settings(request, context, wizard_data):
             "support_email": request.POST.get("support_email", ""),
             "logo_url": request.POST.get("logo_url", ""),
             "date_format": request.POST.get("date_format", "YYYY-MM-DD"),
+            "access_tier": request.POST.get("access_tier", "1"),
         }
         _set_wizard_data(request, wizard_data)
         return redirect("admin_settings:setup_wizard_step", step="terminology")

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Field Access for Front Desk" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{% trans "Field Access for Front Desk" %}</h1>
+    <p>{% blocktrans %}These settings control what the <strong>front desk role</strong> can see and edit on participant contact forms. Staff, program managers, and executives are not affected — they always have full access to these fields.{% endblocktrans %}</p>
+    <p class="secondary"><small>{% trans "Identity fields (name, record ID, status) are always visible to all roles and cannot be hidden." %}</small></p>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+
+    <h2>{% trans "Core Fields" %}</h2>
+    <p class="help-text">{% trans "These are built-in fields on every participant record." %}</p>
+
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Field" %}</th>
+                <th scope="col">{% trans "Front Desk Access" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for field in core_fields %}
+            <tr>
+                <td>{{ field.label }}</td>
+                <td>
+                    <select name="core_{{ field.name }}" aria-label="{% blocktrans with name=field.label %}Access level for {{ name }}{% endblocktrans %}">
+                        {% for value, label in access_choices %}
+                        <option value="{{ value }}" {% if field.access == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if grouped_custom_fields %}
+    <h2>{% trans "Custom Fields" %}</h2>
+    <p class="help-text">{% trans "These are fields your organisation has added. They are grouped by section." %}</p>
+
+    {% for group_name, fields in grouped_custom_fields.items %}
+    <h3 class="custom-field-group-heading">{{ group_name }}</h3>
+    <table role="grid">
+        <thead>
+            <tr>
+                <th scope="col">{% trans "Field" %}</th>
+                <th scope="col">{% trans "Front Desk Access" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for field in fields %}
+            <tr>
+                <td>{{ field.name }}</td>
+                <td>
+                    <select name="custom_{{ field.pk }}" aria-label="{% blocktrans with name=field.name %}Access level for {{ name }}{% endblocktrans %}">
+                        {% for value, label in access_choices %}
+                        <option value="{{ value }}" {% if field.access == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+
+    {% else %}
+    <h2>{% trans "Custom Fields" %}</h2>
+    <p>{% trans "No custom fields have been created yet." %}</p>
+    {% endif %}
+
+    <div class="form-actions">
+        <button type="submit">{% trans "Save Changes" %}</button>
+        <a href="{% url 'admin_settings:dashboard' %}" role="button" class="outline secondary">{% trans "Back to Settings" %}</a>
+    </div>
+</form>
+
+<hr>
+
+<form method="post" class="reset-form">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="reset_defaults">
+    <details>
+        <summary class="secondary" style="font-size: 0.875rem;">{% trans "Reset to Safe Defaults" %}</summary>
+        <p class="help-text">{% trans "This will remove all customised field access settings and restore the safe defaults for your access tier. All custom fields will be set to hidden." %}</p>
+        <button type="submit" class="outline contrast" onclick="return confirm('{% trans "Reset all field access settings to safe defaults? This cannot be undone." %}')">{% trans "Reset to Defaults" %}</button>
+    </details>
+</form>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .help-text {
+        font-size: 0.875rem;
+        color: var(--kn-text-secondary);
+        margin-bottom: 1rem;
+    }
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    .custom-field-group-heading {
+        font-size: 0.95rem;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+        padding-bottom: 0.25rem;
+        border-bottom: 1px solid var(--pico-muted-border-color);
+    }
+    .reset-form {
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}

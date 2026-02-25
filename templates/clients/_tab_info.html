@@ -65,7 +65,7 @@
         <summary><h2 style="display: inline; font-size: 1rem; margin: 0;">{% trans "Contact & Reminders" %}</h2></summary>
         <div style="margin-top: var(--kn-space-base);">
             <dl class="info-grid-compact">
-                {% if client.phone %}
+                {% if visible_fields.phone and client.phone %}
                 <div class="info-field">
                     <dt>{% trans "Phone" %}</dt>
                     <dd>
@@ -78,7 +78,7 @@
                     </dd>
                 </div>
                 {% endif %}
-                {% if client.email %}
+                {% if visible_fields.email and client.email %}
                 <div class="info-field">
                     <dt>{% trans "Email" %}</dt>
                     <dd>{{ client.email }}</dd>
@@ -105,7 +105,7 @@
             </div>
 
             {# Phone verified button #}
-            {% if client.phone %}
+            {% if visible_fields.phone and client.phone %}
             <form method="post" action="{% url 'clients:client_confirm_phone' client_id=client.pk %}" style="margin-top: var(--kn-space-sm);">
                 {% csrf_token %}
                 <button type="submit" class="outline secondary" style="padding: var(--kn-space-xs) var(--kn-space-sm); font-size: 0.75rem;">

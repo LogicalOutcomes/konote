@@ -44,6 +44,20 @@ def dashboard(request):
     current_settings = InstanceSetting.get_all()
     messaging_profile = current_settings.get("messaging_profile", "record_keeping")
 
+    # Field access card (Tier 2+ only)
+    from apps.admin_settings.models import get_access_tier
+    from apps.clients.models import CustomFieldDefinition, FieldAccessConfig
+    access_tier = get_access_tier()
+    field_access_count = 0
+    if access_tier >= 2:
+        # Count core fields with view or edit access
+        access_map = FieldAccessConfig.get_all_access()
+        field_access_count += sum(1 for v in access_map.values() if v in ("view", "edit"))
+        # Count custom fields with view or edit access
+        field_access_count += CustomFieldDefinition.objects.filter(
+            status="active", front_desk_access__in=["view", "edit"]
+        ).count()
+
     return render(request, "admin_settings/dashboard.html", {
         "enabled_features": enabled_features,
         "total_features": total_features,
@@ -55,6 +69,8 @@ def dashboard(request):
         "partner_count": partner_count,
         "report_template_count": report_template_count,
         "messaging_profile": messaging_profile,
+        "access_tier": access_tier,
+        "field_access_count": field_access_count,
     })
 
 

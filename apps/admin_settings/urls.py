@@ -1,6 +1,7 @@
 from django.urls import path
 
 from . import views
+from . import field_access_views
 from . import partner_views
 from . import report_template_views
 from . import setup_wizard_views
@@ -15,6 +16,7 @@ urlpatterns = [
     path("features/<str:feature_key>/toggle/", views.feature_toggle_action, name="feature_toggle_action"),
     path("instance/", views.instance_settings, name="instance_settings"),
     path("messaging/", views.messaging_settings, name="messaging_settings"),
+    path("field-access/", field_access_views.field_access, name="field_access"),
     path("diagnose-charts/", views.diagnose_charts, name="diagnose_charts"),
     path("demo-directory/", views.demo_directory, name="demo_directory"),
     # Partner management

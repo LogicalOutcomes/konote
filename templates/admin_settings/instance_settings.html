@@ -13,6 +13,30 @@
     {% csrf_token %}
 
     <fieldset>
+        <legend>{% trans "Access Tier" %}</legend>
+        <p><small>{% trans "Controls which advanced permission features are active. The baseline role matrix (front desk, worker, manager, executive) is always enforced at every tier." %}</small></p>
+
+        <div class="access-tier-options">
+            {% for radio in form.access_tier %}
+            <label class="tier-option">
+                {{ radio.tag }}
+                <strong>{{ radio.choice_label }}</strong>
+                {% if radio.data.value == "1" %}
+                <br><small>{% trans "Everyone on the team sees what they need for their role. Good for programs where data is non-sensitive and the team is small. Front desk still cannot see clinical notes. Executives see aggregate data only." %}</small>
+                {% elif radio.data.value == "2" %}
+                <br><small>{% trans "Different roles see different things, and you can configure exactly which fields front desk can see or edit. Good for agencies with distinct front desk, worker, and manager functions. DV-safe mode is available." %}</small>
+                {% elif radio.data.value == "3" %}
+                <br><small>{% trans "Additional protections for clinical and safety-sensitive data. Program managers must document why they need to view clinical notes, with time-limited access. DV-safe mode is prompted during setup." %}</small>
+                {% endif %}
+            </label>
+            {% endfor %}
+        </div>
+        {% if form.access_tier.errors %}
+        <small class="badge badge-danger">{{ form.access_tier.errors.0 }}</small>
+        {% endif %}
+    </fieldset>
+
+    <fieldset>
         <legend>{% trans "Branding & Display" %}</legend>
         {% for field in form %}
             {% if field.name == "product_name" or field.name == "support_email" or field.name == "logo_url" or field.name == "date_format" or field.name == "session_timeout_minutes" %}

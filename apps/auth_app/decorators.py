@@ -269,13 +269,11 @@ def requires_permission(permission_key, get_program_fn=None, get_client_fn=None,
                 return view_func(request, *args, **kwargs)
 
             if level == PER_FIELD:
-                # Future: delegate to field-level check.
-                # For now, treat as ALLOW with a log warning.
-                logger.warning(
-                    "PER_FIELD permission '%s' treated as ALLOW for user %s (role=%s). "
-                    "Field-level check not yet implemented.",
-                    permission_key, request.user.pk, user_role,
-                )
+                # Allow access but annotate request with field-level config.
+                # Views/forms use request.field_access_map to decide which
+                # fields to show/hide/make editable.
+                from apps.clients.models import FieldAccessConfig
+                request.field_access_map = FieldAccessConfig.get_all_access()
                 return view_func(request, *args, **kwargs)
 
             # Unknown level — fail closed
