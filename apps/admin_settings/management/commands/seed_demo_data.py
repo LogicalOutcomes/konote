@@ -1572,36 +1572,33 @@ class Command(BaseCommand):
         Circles represent families, households, and support networks.
         Uses get_or_create for idempotency.
         """
+        # Three circles demonstrating different family/network structures:
+        # A: Same-household couple + non-participant child (cross-enrolment)
+        # B: Youth support network with non-participant parent (different households)
+        # C: Newcomer family with participant sibling (same household)
         DEMO_CIRCLES = [
             {
-                "name": "Rivera Family",
+                "name": "Rivera-Chen Household",
                 "members": [
-                    {"record_id": "DEMO-001", "relationship": "child", "primary": True},
-                    {"name": "Maria Rivera", "relationship": "parent", "primary": False},
-                    {"name": "Carlos Rivera", "relationship": "parent", "primary": False},
+                    {"record_id": "DEMO-001", "relationship": "parent", "primary": True},
+                    {"record_id": "DEMO-002", "relationship": "partner", "primary": False},
+                    {"name": "Mika Rivera-Chen", "relationship": "child", "primary": False},
                 ],
             },
             {
-                "name": "Williams-Dubois Household",
+                "name": "Ahmed-Martinez Support Network",
                 "members": [
-                    {"record_id": "DEMO-004", "relationship": "partner", "primary": True},
-                    {"record_id": "DEMO-005", "relationship": "partner", "primary": False},
+                    {"record_id": "DEMO-009", "relationship": "self", "primary": False},
+                    {"record_id": "DEMO-007", "relationship": "friend", "primary": False},
+                    {"name": "Fatimah Ahmed", "relationship": "mother", "primary": True},
                 ],
             },
             {
-                "name": "Diallo Family",
+                "name": "Diallo-Hassan Family",
                 "members": [
                     {"record_id": "DEMO-010", "relationship": "parent", "primary": True},
+                    {"record_id": "DEMO-011", "relationship": "sibling", "primary": False},
                     {"name": "Ibrahim Diallo", "relationship": "spouse", "primary": False},
-                    {"name": "Awa Diallo", "relationship": "child", "primary": False},
-                    {"name": "Moussa Diallo", "relationship": "child", "primary": False},
-                ],
-            },
-            {
-                "name": "Sharma-Kovac Household",
-                "members": [
-                    {"record_id": "DEMO-013", "relationship": "partner", "primary": True},
-                    {"record_id": "DEMO-015", "relationship": "partner", "primary": False},
                 ],
             },
         ]
