@@ -32,9 +32,7 @@ from apps.notes.models import (
     ProgressNote,
     ProgressNoteTarget,
     ProgressNoteTemplateMetric,
-    SuggestionLink,
     SuggestionTheme,
-    recalculate_theme_priority,
 )
 from apps.plans.models import (
     MetricDefinition,
@@ -349,7 +347,6 @@ class DemoDataEngine:
         """Remove all existing demo data (users, clients, and cascaded objects)."""
         from apps.communications.models import Communication, StaffMessage
         from apps.events.models import CalendarFeedToken
-        from apps.groups.models import Group
         from apps.circles.models import Circle
         from apps.portal.models import (
             CorrectionRequest, ParticipantJournalEntry,
@@ -412,8 +409,7 @@ class DemoDataEngine:
         # Demo circles
         counts["circles"] = Circle.objects.filter(is_demo=True).delete()[0]
 
-        # Demo groups
-        counts["groups"] = Group.objects.filter(is_demo=True).delete()[0]
+        # Groups are cleaned by CASCADE when demo clients are deleted
 
         # Calendar feed tokens
         CalendarFeedToken.objects.filter(user__in=demo_users).delete()
@@ -457,9 +453,11 @@ class DemoDataEngine:
         """Find metrics associated with a program via its templates.
 
         Priority:
-        1. Metrics from plan templates owned by this program
-        2. Metrics from note templates owned by this program
+        1. Metrics from note templates scoped to this program
+        2. Metrics from global note templates (owning_program=None)
         3. Universal metrics (Goal Progress, Self-Efficacy, Satisfaction)
+
+        Universal metrics are always included as a baseline.
         """
         metric_ids = set()
 
@@ -973,6 +971,10 @@ class DemoDataEngine:
         """Create realistic events for a client."""
         event_types = {et.name: et for et in EventType.objects.all()}
 
+        if not event_types:
+            self.log_warning("  No EventType records found — skipping event generation.")
+            return
+
         intake_type = event_types.get("Intake")
         followup_type = event_types.get("Follow-up")
 
@@ -1140,6 +1142,16 @@ class DemoDataEngine:
 
         # 6. Create suggestion themes
         self.generate_suggestion_themes(programs, users, profile)
+
+        # Warn about profile program names that didn't match any active program
+        if profile and "programs" in profile:
+            active_names = {p.name for p in programs}
+            for profile_name in profile["programs"]:
+                if profile_name not in active_names:
+                    self.log_warning(
+                        f"  Profile program '{profile_name}' did not match "
+                        f"any active program — its content was not used."
+                    )
 
         total_clients = len(client_assignments)
         self.log(

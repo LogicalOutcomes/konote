@@ -725,6 +725,10 @@ def demo_data_management(request):
     ).values_list("setting_value", flat=True).first()
 
     if request.method == "POST":
+        if not demo_mode:
+            messages.error(request, _("Demo mode is not enabled."))
+            return redirect("admin_settings:demo_data_management")
+
         action = request.POST.get("action")
 
         if action == "generate":
