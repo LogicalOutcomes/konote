@@ -1,6 +1,7 @@
 """PDF export views for client progress reports, program outcome reports, and individual client data export."""
 import csv
 import io
+import uuid
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
@@ -508,6 +509,19 @@ def client_export(request, client_id):
     client_name = f"{client.first_name} {client.last_name}"
 
     if request.method == "POST":
+        # Idempotency: reject duplicate POSTs from the same form render
+        submitted_nonce = request.POST.get("_export_nonce", "")
+        session_key = f"export_nonce_{client_id}"
+        expected_nonce = request.session.get(session_key, "")
+        if not submitted_nonce or submitted_nonce != expected_nonce:
+            form = IndividualClientExportForm()
+            return render(request, "reports/client_export_form.html", {
+                "form": form, "client": client, "client_name": client_name,
+                "duplicate_warning": True,
+            })
+        # Clear nonce so it can't be reused
+        request.session.pop(session_key, None)
+
         form = IndividualClientExportForm(request.POST)
         if form.is_valid():
             export_format = form.cleaned_data["format"]
@@ -587,8 +601,13 @@ def client_export(request, client_id):
     else:
         form = IndividualClientExportForm()
 
+    # Generate nonce for idempotency
+    nonce = uuid.uuid4().hex
+    request.session[f"export_nonce_{client_id}"] = nonce
+
     return render(request, "reports/client_export_form.html", {
         "form": form,
         "client": client,
         "client_name": client_name,
+        "export_nonce": nonce,
     })

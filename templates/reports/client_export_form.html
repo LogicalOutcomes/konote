@@ -16,8 +16,16 @@
     </p>
 </article>
 
-<form method="post">
+{% if duplicate_warning %}
+<article aria-label="{% trans 'Duplicate export' %}" role="alert" style="border-left: 4px solid var(--kn-warning-fg); padding: 1rem; margin-bottom: 1.5rem;">
+    <strong>{% trans "This export was already submitted." %}</strong>
+    <p style="margin-bottom: 0;">{% trans "If you need another copy, please use the form below." %}</p>
+</article>
+{% endif %}
+
+<form method="post" id="export-form">
     {% csrf_token %}
+    <input type="hidden" name="_export_nonce" value="{{ export_nonce }}">
 
     <fieldset>
         <legend>{% trans "What to include" %}</legend>
@@ -86,7 +94,7 @@
     {% endif %}
 
     <div class="grid">
-        <button type="submit">
+        <button type="submit" id="export-submit-btn">
             <span aria-hidden="true">&#x1F4E5;</span> {% trans "Export Participant Data" %}
         </button>
         <a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="secondary">
@@ -94,4 +102,17 @@
         </a>
     </div>
 </form>
+
+<script>
+(function() {
+    var form = document.getElementById('export-form');
+    var btn = document.getElementById('export-submit-btn');
+    if (!form || !btn) return;
+    form.addEventListener('submit', function() {
+        btn.disabled = true;
+        btn.setAttribute('aria-busy', 'true');
+        btn.textContent = '{% trans "Exporting…" %}';
+    });
+})();
+</script>
 {% endblock %}
