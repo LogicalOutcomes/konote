@@ -32,6 +32,8 @@ urlpatterns = [
     path("oversight/<int:report_id>/", oversight_views.oversight_report_detail, name="oversight_detail"),
     path("oversight/<int:report_id>/approve/", oversight_views.oversight_report_approve, name="oversight_approve"),
     path("oversight/<int:report_id>/pdf/", oversight_views.oversight_report_pdf, name="oversight_pdf"),
+    # Sessions by Participant report (REP-SESS1)
+    path("sessions/", views.session_report_form, name="session_report"),
     # Report Schedules
     path("schedules/", oversight_views.report_schedule_list, name="schedule_list"),
     path("schedules/create/", oversight_views.report_schedule_create, name="schedule_create"),

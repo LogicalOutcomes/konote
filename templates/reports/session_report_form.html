@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Sessions by Participant" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+<hgroup>
+    <h1>{% trans "Sessions by Participant" %}</h1>
+    <p>{% trans "Generate a report of session counts, contact hours, and modality breakdown per participant." %}</p>
+</hgroup>
+
+<article aria-label="{% trans 'Data Contents' %}" style="margin-bottom: 1.5rem;">
+    <strong>{% trans "Participant-Level Data Export" %}</strong>
+    <p style="margin-bottom: 0;">
+        {% blocktrans %}This report includes individual participant names, session dates, duration, modality, and provider. It is intended for program managers and administrators who need dosage tracking or funder reporting on service volume.{% endblocktrans %}
+    </p>
+</article>
+
+<article aria-label="{% trans 'Report Contents' %}">
+    <h2>{% trans "What's included in this report?" %}</h2>
+    <ul>
+        <li>{% trans "Per-session detail rows: participant, date, type, duration, modality, provider" %}</li>
+        <li>{% trans "Per-participant summary: total sessions, contact hours, first and last session dates" %}</li>
+        <li>{% trans "Report-level aggregates: unique participants, total sessions, averages" %}</li>
+        <li>{% trans "Breakdowns by session type and modality" %}</li>
+    </ul>
+</article>
+
+<form method="post">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <article aria-label="{% trans 'Form errors' %}" role="alert" style="background: var(--kn-danger-bg); color: var(--kn-danger-fg);">
+        {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+    </article>
+    {% endif %}
+
+    {# Program dropdown #}
+    <label for="{{ form.program.id_for_label }}">
+        {{ form.program.label }}
+        {{ form.program }}
+    </label>
+    {% if form.program.errors %}
+    <small class="error" role="alert">{{ form.program.errors.0 }}</small>
+    {% endif %}
+
+    {# Period selection #}
+    <label for="{{ form.fiscal_year.id_for_label }}">
+        {{ form.fiscal_year.label }}
+        {{ form.fiscal_year }}
+        {% if form.fiscal_year.help_text %}
+        <small>{{ form.fiscal_year.help_text }}</small>
+        {% endif %}
+        {% if form.fiscal_year.errors %}
+        <small class="error" role="alert">{{ form.fiscal_year.errors.0 }}</small>
+        {% endif %}
+    </label>
+
+    {# Custom date range (visible when no period preset selected) #}
+    <div id="custom-date-range">
+        <div class="grid">
+            <label for="{{ form.date_from.id_for_label }}">
+                {{ form.date_from.label }}
+                {{ form.date_from }}
+                {% if form.date_from.errors %}
+                <small class="error" role="alert">{{ form.date_from.errors.0 }}</small>
+                {% endif %}
+            </label>
+            <label for="{{ form.date_to.id_for_label }}">
+                {{ form.date_to.label }}
+                {{ form.date_to }}
+                {% if form.date_to.errors %}
+                <small class="error" role="alert">{{ form.date_to.errors.0 }}</small>
+                {% endif %}
+            </label>
+        </div>
+    </div>
+
+    {# Recipient tracking for audit purposes #}
+    <fieldset>
+        <legend>{% trans "Export recipient details" %}</legend>
+        <p class="helper-text" style="margin-bottom: 1rem; color: var(--pico-muted-color);">
+            {% trans "For audit purposes, please indicate who will receive this exported data." %}
+        </p>
+        <label for="{{ form.recipient.id_for_label }}">
+            {{ form.recipient.label }}
+            {{ form.recipient }}
+            {% if form.recipient.help_text %}
+            <small>{{ form.recipient.help_text }}</small>
+            {% endif %}
+            {% if form.recipient.errors %}
+            <small class="error" role="alert">{{ form.recipient.errors.0 }}</small>
+            {% endif %}
+        </label>
+        <label for="{{ form.recipient_reason.id_for_label }}">
+            {{ form.recipient_reason.label }}
+            {{ form.recipient_reason }}
+            {% if form.recipient_reason.help_text %}
+            <small>{{ form.recipient_reason.help_text }}</small>
+            {% endif %}
+            {% if form.recipient_reason.errors %}
+            <small class="error" role="alert">{{ form.recipient_reason.errors.0 }}</small>
+            {% endif %}
+        </label>
+    </fieldset>
+
+    <button type="submit">{% trans "Generate Session Report" %}</button>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var fiscalYearSelect = document.getElementById('id_fiscal_year');
+    var customRange = document.getElementById('custom-date-range');
+    if (!fiscalYearSelect || !customRange) return;
+
+    function toggleCustomRange() {
+        // Show custom date range only when no preset is selected
+        customRange.style.display = fiscalYearSelect.value ? 'none' : 'block';
+    }
+
+    fiscalYearSelect.addEventListener('change', toggleCustomRange);
+    toggleCustomRange();
+});
+</script>
+{% endblock %}
