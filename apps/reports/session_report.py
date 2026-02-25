@@ -81,6 +81,12 @@ def generate_session_report(program, date_from, date_to, user=None):
     """
     enrolled_ids = _get_enrolled_client_ids(program, user)
 
+    # PHIPA consent: no apply_consent_filter() needed here. This report is
+    # program-scoped (single program enrolment), queries only session metadata
+    # (dates, duration, modality), and never displays note content. Matches the
+    # DRR exemption for aggregate/de-identified reports.
+    # See tasks/design-rationale/phipa-consent-enforcement.md
+
     # Query notes in the date range for enrolled clients
     date_filter = _effective_date_filter(date_from, date_to)
     notes_qs = (

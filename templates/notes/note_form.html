@@ -449,14 +449,12 @@ if (templateSelect && interactionSelect && defaultsEl) {
         if (tmplId && templateDefaults[tmplId]) {
             interactionSelect.value = templateDefaults[tmplId];
         }
-        // Fetch template preview
+        // Fetch template preview via HTMX
         if (tmplId && previewEl) {
-            fetch("{% url 'notes:template_preview' template_id=0 %}".replace("/0/preview/", "/" + tmplId + "/preview/"), {
-                headers: {"HX-Request": "true"}
-            }).then(function (r) { return r.text(); })
-              .then(function (html) { previewEl.innerHTML = html; });
+            var previewUrl = "{% url 'notes:template_preview' template_id=0 %}".replace("/0/preview/", "/" + tmplId + "/preview/");
+            htmx.ajax("GET", previewUrl, {target: "#template-preview", swap: "innerHTML"});
         } else if (previewEl) {
-            previewEl.innerHTML = "";
+            previewEl.replaceChildren();
         }
     });
 }

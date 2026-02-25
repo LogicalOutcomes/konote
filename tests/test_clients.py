@@ -1003,6 +1003,9 @@ class AccentedCharacterEncryptionTest(TestCase):
     def setUp(self):
         enc_module._fernet = None
 
+    def tearDown(self):
+        enc_module._fernet = None
+
     def test_accented_first_name_preserved(self):
         """French accented characters round-trip through encrypt -> save -> load -> decrypt."""
         client = ClientFile()

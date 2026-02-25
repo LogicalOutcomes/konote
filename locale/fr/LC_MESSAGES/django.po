@@ -15845,3 +15845,21 @@ msgstr ""
 
 msgid "Welcome to KoNote! Need help getting started?"
 msgstr ""
+
+msgid "%(date_from)s to %(date_to)s"
+msgstr "%(date_from)s au %(date_to)s"
+
+msgid "Active alerts"
+msgstr "Alertes actives"
+
+msgid "Approaching deadline"
+msgstr "Date limite approchante"
+
+msgid "Deadlock notice"
+msgstr "Avis de blocage"
+
+msgid "Please select a specific program for session reports."
+msgstr "Veuillez sélectionner un programme spécifique pour les rapports de séances."
+
+msgid "Stuck request"
+msgstr "Demande bloquée"

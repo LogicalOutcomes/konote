@@ -40,7 +40,10 @@ def generate_session_report_csv(report_data):
     rows.append([_("Program"), metadata["program_name"]])
     rows.append([
         _("Period"),
-        f"{metadata['date_from']} {_('to')} {metadata['date_to']}",
+        _("%(date_from)s to %(date_to)s") % {
+            "date_from": metadata["date_from"],
+            "date_to": metadata["date_to"],
+        },
     ])
     generated_at = metadata.get("generated_at", timezone.now())
     if hasattr(generated_at, "strftime"):

@@ -431,48 +431,154 @@ class SessionReportPermissionTest(TestCase):
     def test_pm_can_access_form(self):
         """Program managers should see the session report form."""
         self.http.login(username="pm", password="pass")
-        try:
-            resp = self.http.get("/reports/sessions/")
-            self.assertEqual(resp.status_code, 200)
-        except RecursionError:
-            # Template rendering recursion in test environment —
-            # the view itself ran (didn't 403), so access is granted.
-            pass
+        resp = self.http.get("/reports/sessions/")
+        self.assertEqual(resp.status_code, 200)
 
     def test_admin_can_access_form(self):
         """Admins should see the session report form."""
         self.http.login(username="admin", password="pass")
-        try:
-            resp = self.http.get("/reports/sessions/")
-            self.assertEqual(resp.status_code, 200)
-        except RecursionError:
-            # Template rendering recursion in test environment —
-            # the view itself ran (didn't 403), so access is granted.
-            pass
+        resp = self.http.get("/reports/sessions/")
+        self.assertEqual(resp.status_code, 200)
 
     def test_executive_blocked(self):
         """Executives (aggregate-only, non-admin) should be blocked from this report."""
         self.http.login(username="exec", password="pass")
         resp = self.http.get("/reports/sessions/")
-        # Executive gets through the decorator (report.program_report=ALLOW)
-        # but is blocked by the is_aggregate_only_user check in the view.
         self.assertEqual(resp.status_code, 403)
 
     def test_staff_blocked(self):
         """Staff without report.program_report permission should be blocked."""
         self.http.login(username="staff", password="pass")
-        # Staff has report.program_report=DENY, so the decorator blocks them.
-        # The 403 page may raise RecursionError in test template env.
-        try:
-            resp = self.http.get("/reports/sessions/")
-            self.assertIn(resp.status_code, (403, 500))
-        except RecursionError:
-            # The 403 template itself recursed — but the view correctly
-            # denied access (the decorator returned 403).
-            pass
+        resp = self.http.get("/reports/sessions/")
+        self.assertIn(resp.status_code, (403, 302))
 
     def test_anonymous_redirected(self):
         """Anonymous users should be redirected to login."""
         resp = self.http.get("/reports/sessions/")
         self.assertEqual(resp.status_code, 302)
         self.assertIn("login", resp.url)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class SessionReportCrossProgramTest(TestCase):
+    """Test that session report respects program boundaries."""
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.user = User.objects.create_user(username="pm", password="pass")
+
+        # Two programs
+        self.prog_a = Program.objects.create(name="Program A", colour_hex="#10B981")
+        self.prog_b = Program.objects.create(name="Program B", colour_hex="#EF4444")
+        UserProgramRole.objects.create(user=self.user, program=self.prog_a, role="program_manager")
+        UserProgramRole.objects.create(user=self.user, program=self.prog_b, role="program_manager")
+
+        # Client enrolled in program A only
+        self.client_a = ClientFile()
+        self.client_a.first_name = "Alice"
+        self.client_a.last_name = "Alpha"
+        self.client_a.status = "active"
+        self.client_a.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_a, program=self.prog_a, status="enrolled",
+        )
+
+        # Client enrolled in program B only
+        self.client_b = ClientFile()
+        self.client_b.first_name = "Bob"
+        self.client_b.last_name = "Beta"
+        self.client_b.status = "active"
+        self.client_b.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_b, program=self.prog_b, status="enrolled",
+        )
+
+        # Notes for each client
+        note_date = timezone.make_aware(timezone.datetime(2026, 1, 15, 10, 0, 0))
+        ProgressNote.objects.create(
+            client_file=self.client_a, note_type="quick",
+            interaction_type="session", author=self.user,
+            duration_minutes=60, backdate=note_date,
+        )
+        ProgressNote.objects.create(
+            client_file=self.client_b, note_type="quick",
+            interaction_type="session", author=self.user,
+            duration_minutes=45, backdate=note_date,
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_program_a_excludes_program_b_clients(self):
+        """Report for program A should not include program B's participants."""
+        report = generate_session_report(
+            self.prog_a, date(2026, 1, 1), date(2026, 1, 31), user=self.user,
+        )
+        client_ids = [p["client_id"] for p in report["participants"]]
+        self.assertIn(self.client_a.pk, client_ids)
+        self.assertNotIn(self.client_b.pk, client_ids)
+
+    def test_program_b_excludes_program_a_clients(self):
+        """Report for program B should not include program A's participants."""
+        report = generate_session_report(
+            self.prog_b, date(2026, 1, 1), date(2026, 1, 31), user=self.user,
+        )
+        client_ids = [p["client_id"] for p in report["participants"]]
+        self.assertIn(self.client_b.pk, client_ids)
+        self.assertNotIn(self.client_a.pk, client_ids)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class SessionReportAuditLogTest(TestCase):
+    """Test that session report generation creates an audit log entry."""
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = HttpClient()
+        self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        self.pm = User.objects.create_user(username="pm", password="pass")
+        UserProgramRole.objects.create(user=self.pm, program=self.program, role="program_manager")
+
+        self.client_file = ClientFile()
+        self.client_file.first_name = "Jane"
+        self.client_file.last_name = "Doe"
+        self.client_file.status = "active"
+        self.client_file.save()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program, status="enrolled",
+        )
+        ProgressNote.objects.create(
+            client_file=self.client_file, note_type="quick",
+            interaction_type="session", author=self.pm,
+            duration_minutes=30,
+            backdate=timezone.make_aware(timezone.datetime(2026, 1, 15, 10, 0, 0)),
+        )
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_audit_log_created_on_export(self):
+        """Generating a session report should write an audit log entry."""
+        from apps.audit.models import AuditLog
+
+        self.http.login(username="pm", password="pass")
+        initial_count = AuditLog.objects.using("audit").filter(
+            resource_type="session_report",
+        ).count()
+
+        resp = self.http.post("/reports/sessions/", {
+            "program": str(self.program.pk),
+            "date_from": "2026-01-01",
+            "date_to": "2026-01-31",
+            "recipient": "Jane Smith, Test Org",
+            "recipient_reason": "Quarterly reporting",
+        })
+        # Should redirect to download page on success
+        self.assertIn(resp.status_code, (302, 200))
+
+        new_count = AuditLog.objects.using("audit").filter(
+            resource_type="session_report",
+        ).count()
+        self.assertEqual(new_count, initial_count + 1)

@@ -1979,8 +1979,13 @@ def session_report_form(request):
     date_to = form.cleaned_data["date_to"]
     recipient = form.get_recipient_display()
 
+    if program is None:
+        return HttpResponseForbidden(
+            _("Please select a specific program for session reports.")
+        )
+
     # Permission check
-    if not can_create_export(request.user, "funder_report", program=program):
+    if not can_create_export(request.user, "session_report", program=program):
         return HttpResponseForbidden(
             _("You do not have permission to export data for this program.")
         )
@@ -2004,7 +2009,7 @@ def session_report_form(request):
     link = SecureExportLink.objects.create(
         created_by=request.user,
         expires_at=timezone.now() + timedelta(hours=24),
-        export_type="funder_report",
+        export_type="session_report",
         filters_json=json.dumps({
             "report_type": "session_by_participant",
             "program_id": program.pk,
