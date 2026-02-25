@@ -1031,3 +1031,40 @@ class AccentedCharacterEncryptionTest(TestCase):
             loaded = ClientFile.objects.get(pk=client.pk)
             self.assertEqual(loaded.first_name, first, f"First name failed for {first}")
             self.assertEqual(loaded.last_name, last, f"Last name failed for {last}")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class FormDataPreservationTest(TestCase):
+    """QA-R7-BUG21: Verify create-participant form preserves data after validation error."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http_client = Client()
+        self.admin = User.objects.create_user(
+            username="admin", password="testpass123", is_admin=True,
+        )
+        self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.admin, program=self.program, role="program_manager")
+
+    def test_form_data_preserved_on_validation_error(self):
+        """When a required field is missing, entered data should be in the response."""
+        self.http_client.login(username="admin", password="testpass123")
+        # Submit without selecting a program (required) to trigger a validation error
+        resp = self.http_client.post("/clients/new/", {
+            "first_name": "Marie-Claire",
+            "last_name": "Tremblay",
+            "preferred_name": "",
+            "middle_name": "",
+            "phone": "",
+            "record_id": "",
+            "status": "active",
+            "preferred_language": "fr",
+            # Deliberately omit "programs" to trigger validation error
+        })
+        self.assertEqual(resp.status_code, 200)  # Re-renders the form (not redirect)
+        content = resp.content.decode("utf-8")
+        # The form should contain the entered first name and last name
+        self.assertIn("Marie-Claire", content)
+        self.assertIn("Tremblay", content)
