@@ -246,38 +246,57 @@ class ClientFile(models.Model):
     def get_visible_fields(self, role):
         """Return dict of field visibility for a given role.
 
-        Core model fields are categorised as either "safety" (visible to all
-        roles including front desk) or "clinical" (hidden from front desk).
+        For non-receptionist roles: all fields visible (subject to clinical
+        permission check for clinical fields).
+
+        For receptionist at Tier 1: safe defaults from FieldAccessConfig.
+        For receptionist at Tier 2+: per-field config from FieldAccessConfig
+        (admin-configurable via the field access page).
 
         Custom fields (EAV) are NOT covered here — they use the per-field
         front_desk_access setting on CustomFieldDefinition instead.
 
         Usage in templates:
             {% if visible_fields.birth_date %}{{ client.birth_date }}{% endif %}
+            {% if visible_fields.phone_editable %}...edit form...{% endif %}
         """
         from apps.auth_app.permissions import can_access, ALLOW, PROGRAM, GATED
 
-        # Safety fields — visible to all roles including front desk.
-        # These are needed for check-in, emergency contact, and safety purposes.
-        safety_fields = {
+        # All core fields
+        all_fields = {
             'first_name', 'last_name', 'preferred_name', 'display_name',
-            'middle_name', 'phone', 'record_id', 'status',
+            'middle_name', 'phone', 'email', 'record_id', 'status',
+            'birth_date',
         }
-
-        # Clinical fields — only visible to staff and above.
-        # birth_date reveals age which is clinical context in a treatment setting.
-        clinical_fields = {'birth_date'}
 
         visible = {}
 
-        # Safety fields always visible
-        for f in safety_fields:
-            visible[f] = True
+        if role == 'receptionist':
+            # Always-visible fields (identity + status)
+            for f in FieldAccessConfig.ALWAYS_VISIBLE:
+                visible[f] = True
 
-        # Clinical fields depend on role permission
-        clinical_access = can_access(role, 'client.view_clinical')
-        for f in clinical_fields:
-            visible[f] = clinical_access in (ALLOW, PROGRAM, GATED)
+            # Configurable fields — check FieldAccessConfig
+            access_map = FieldAccessConfig.get_all_access()
+            for field_name, access_level in access_map.items():
+                visible[field_name] = access_level in ('view', 'edit')
+                visible[f'{field_name}_editable'] = access_level == 'edit'
+
+            # Clinical fields are always hidden from receptionist
+            visible['birth_date'] = access_map.get('birth_date', 'none') in ('view', 'edit')
+            visible['birth_date_editable'] = access_map.get('birth_date', 'none') == 'edit'
+
+        else:
+            # Non-receptionist: all fields visible
+            for f in all_fields:
+                visible[f] = True
+                visible[f'{f}_editable'] = True
+
+            # Clinical fields depend on role permission
+            clinical_access = can_access(role, 'client.view_clinical')
+            has_clinical = clinical_access in (ALLOW, PROGRAM, GATED)
+            visible['birth_date'] = has_clinical
+            visible['birth_date_editable'] = has_clinical
 
         return visible
 
@@ -607,6 +626,72 @@ class ErasureApproval(models.Model):
     def __str__(self):
         program_name = self.program.name if self.program else _("Deleted program")
         return f"Approval for {program_name} by {self.approved_by_display}"
+
+
+class FieldAccessConfig(models.Model):
+    """Configures front desk access to core model fields.
+
+    Only used at Tier 2+. At Tier 1, safe defaults apply automatically.
+    Custom fields use CustomFieldDefinition.front_desk_access instead.
+
+    This model covers core ClientFile fields (phone, email, birth_date, etc.)
+    that an agency may want to grant or restrict for the receptionist role.
+    """
+
+    ACCESS_CHOICES = [
+        ("none", _("Hidden")),
+        ("view", _("View only")),
+        ("edit", _("View and edit")),
+    ]
+
+    # Default access for core fields when no FieldAccessConfig row exists.
+    # At Tier 1, these defaults are used without admin UI.
+    # At Tier 2+, admin can override via the field access page.
+    SAFE_DEFAULTS = {
+        "phone": "edit",
+        "email": "edit",
+        "birth_date": "none",
+        "preferred_name": "view",
+    }
+
+    # Fields that are always visible to front desk regardless of config.
+    # These cannot be hidden because front desk needs them to identify clients.
+    ALWAYS_VISIBLE = {"first_name", "last_name", "display_name", "record_id", "status"}
+
+    field_name = models.CharField(max_length=100, unique=True)
+    front_desk_access = models.CharField(
+        max_length=10,
+        choices=ACCESS_CHOICES,
+        default="view",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "clients"
+        db_table = "field_access_configs"
+        ordering = ["field_name"]
+
+    def __str__(self):
+        return f"{self.field_name}: {self.get_front_desk_access_display()}"
+
+    @classmethod
+    def get_access(cls, field_name):
+        """Return the front desk access level for a core field.
+
+        Falls back to SAFE_DEFAULTS if no config row exists.
+        """
+        try:
+            return cls.objects.get(field_name=field_name).front_desk_access
+        except cls.DoesNotExist:
+            return cls.SAFE_DEFAULTS.get(field_name, "none")
+
+    @classmethod
+    def get_all_access(cls):
+        """Return dict of field_name -> access level for all configurable fields."""
+        result = dict(cls.SAFE_DEFAULTS)  # Start with defaults
+        for config in cls.objects.all():
+            result[config.field_name] = config.front_desk_access
+        return result
 
 
 class ClientMerge(models.Model):
