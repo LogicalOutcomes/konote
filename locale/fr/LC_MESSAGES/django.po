@@ -15106,8 +15106,8 @@ msgstr "tendance"
 msgid "Alerts and flags"
 msgstr ""
 
-msgid "All Programs \\u2014 Organisation Summary"
-msgstr ""
+msgid "All Programs \u2014 Organisation Summary"
+msgstr "Tous les programmes \u2014 R\u00e9sum\u00e9 de l\u2019organisme"
 
 msgid ""
 "All approvals received. %(term)s data is scheduled for permanent erasure in "
@@ -15527,3 +15527,36 @@ msgstr ""
 
 msgid "min"
 msgstr ""
+
+msgid "# ===== %(label)s ====="
+msgstr "# ===== %(label)s ====="
+
+msgid "# ===== %(name)s ====="
+msgstr "# ===== %(name)s ====="
+
+msgid "# ===== BREAKDOWN BY %(label)s ====="
+msgstr "# ===== VENTILATION PAR %(label)s ====="
+
+msgid "# All Programs \u2014 Organisation Summary"
+msgstr "# Tous les programmes \u2014 R\u00e9sum\u00e9 de l\u2019organisme"
+
+msgid "# Date Range: %(start)s to %(end)s"
+msgstr "# P\u00e9riode : %(start)s au %(end)s"
+
+msgid "# Fiscal Year: %(label)s"
+msgstr "# Exercice financier : %(label)s"
+
+msgid "# Grouped By: %(label)s"
+msgstr "# Regroupement : %(label)s"
+
+msgid "# Program: %(name)s"
+msgstr "# Programme : %(name)s"
+
+msgid "# Total Clients: %(count)s"
+msgstr "# Total des clients : %(count)s"
+
+msgid "# Total Data Points: %(count)s"
+msgstr "# Total des points de donn\u00e9es : %(count)s"
+
+msgid "# Total Participants: %(count)s"
+msgstr "# Total des participants : %(count)s"
