@@ -190,6 +190,7 @@ Current DRRs:
 - `tasks/design-rationale/phipa-consent-enforcement.md` — PHIPA cross-program consent enforcement. Enforcement matrix (which views need filtering), anti-patterns (rejected approaches like custom managers, middleware), deferred work (search, qualitative summary), fail-closed design.
 - `tasks/design-rationale/insights-metric-distributions.md` — Insights page & program reporting. Distributions not averages, three data layers (outcomes/goals/qualitative), client-centred page hierarchy, Campbell's Law safeguards, band display labels.
 - `tasks/design-rationale/bilingual-requirements.md` — Bilingual (EN/FR) requirements. Why translation is non-negotiable (Official Languages Act, Ontario FLSA, funder requirements, WCAG 3.1.2). Anti-patterns (deferring translations, treating them as low-priority). Technical approach (Claude + API backup). Translation standards for Claude sessions.
+- `tasks/design-rationale/ai-feature-toggles.md` — AI feature toggle split. Two-tier design: `ai_assist_tools_only` (no participant data, default enabled) vs `ai_assist_participant_data` (de-identified participant content, default disabled). Anti-patterns (including translation in toggles, single three-level toggle). Future path: self-hosted open-source LLM for participant data.
 
 ### How Claude Manages Tasks
 

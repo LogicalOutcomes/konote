@@ -122,6 +122,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] Build agency data offboarding command for secure departures and PIPEDA requests (SEC3)
 - [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
+- [ ] Split `ai_assist` toggle into `ai_assist_tools_only` (default enabled) and `ai_assist_participant_data` (default disabled) — see tasks/design-rationale/ai-feature-toggles.md — GK reviews (AI-TOGGLE1)
 - [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
 - [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
 - [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
