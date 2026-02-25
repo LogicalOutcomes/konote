@@ -12,6 +12,7 @@ from apps.portal.staff_views import (
 from . import erasure_views, views
 from .dashboard_views import alert_overview_by_program, executive_dashboard, executive_dashboard_export
 from .data_access_views import data_access_log
+from .dv_views import dv_safe_enable, dv_safe_request_remove, dv_safe_review_remove
 
 
 app_name = "clients"
@@ -49,6 +50,10 @@ urlpatterns = [
     path("<int:client_id>/data-access/", data_access_log, name="data_access_log"),
     # Erasure request (ERASE4)
     path("<int:client_id>/erase/", erasure_views.erasure_request_create, name="client_erasure_request"),
+    # DV safety (PERM-P5)
+    path("<int:client_id>/dv-safe/enable/", dv_safe_enable, name="dv_safe_enable"),
+    path("<int:client_id>/dv-safe/request-remove/", dv_safe_request_remove, name="dv_safe_request_remove"),
+    path("<int:client_id>/dv-safe/review-remove/<int:request_id>/", dv_safe_review_remove, name="dv_safe_review_remove"),
     # Portal staff note
     path("<int:client_id>/portal-note/", create_staff_portal_note, name="create_staff_portal_note"),
     # Portal management
