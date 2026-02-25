@@ -217,6 +217,16 @@ def _get_search_snippet(text, query, context_chars=80):
 
 
 @login_required
+def alliance_repair_guide(request):
+    """Printable one-pager: Alliance Repair Guide for low alliance ratings (1-2).
+
+    Reference material based on Feedback-Informed Treatment (FIT) principles.
+    Any authenticated staff can view — no special permission needed.
+    """
+    return render(request, "notes/alliance_repair_guide.html")
+
+
+@login_required
 @requires_permission("note.view", _get_program_from_client)
 def note_list(request, client_id):
     """Notes timeline for a client with filtering and pagination."""

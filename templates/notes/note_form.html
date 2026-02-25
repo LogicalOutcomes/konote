@@ -197,7 +197,9 @@
 
                 <fieldset class="alliance-fieldset">
                     <legend>{% trans "Working relationship check-in" %}</legend>
-                    <small class="alliance-intro">{% trans "Ratings of 1–3 are normal and helpful — they tell you what to adjust." %}</small>
+                    <small class="alliance-intro">{% trans "Ratings of 1–3 are normal and helpful — they tell you what to adjust." %}
+                        <a href="{% url 'notes:alliance_repair_guide' %}" target="_blank" rel="noopener" title="{% trans 'Opens the Alliance Repair Guide in a new tab' %}">{% trans "Alliance Repair Guide" %}</a>
+                    </small>
                     <div class="alliance-pills" role="radiogroup" aria-label="{% trans 'Working relationship rating' %}">
                     {% for radio in form.alliance_rating %}
                         {% if radio.choice_value %}
