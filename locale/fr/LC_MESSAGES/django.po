@@ -15847,7 +15847,7 @@ msgid "Welcome to KoNote! Need help getting started?"
 msgstr ""
 
 msgid "%(date_from)s to %(date_to)s"
-msgstr "%(date_from)s au %(date_to)s"
+msgstr "du %(date_from)s au %(date_to)s"
 
 msgid "Active alerts"
 msgstr "Alertes actives"
