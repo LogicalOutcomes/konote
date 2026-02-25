@@ -69,8 +69,8 @@ def _get_program_from_target(request, target_id, **kwargs):
 def _can_edit_plan(user, client_file):
     """Return True if the user may modify this client's plan.
 
-    Uses the permissions matrix (plan.edit) — only roles with ALLOW or SCOPED
-    for plan.edit can edit. Currently staff has SCOPED, PM has DENY.
+    Uses the permissions matrix (plan.edit) — only roles with ALLOW or PROGRAM
+    for plan.edit can edit. Currently staff has PROGRAM, PM has DENY.
 
     Note: admin status does NOT bypass program role checks (PERM-S2).
     """

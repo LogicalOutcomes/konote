@@ -13,7 +13,7 @@ from apps.auth_app.permissions import (
     DENY,
     GATED,
     PER_FIELD,
-    SCOPED,
+    PROGRAM,
     can_access,
 )
 
@@ -255,7 +255,7 @@ def requires_permission(permission_key, get_program_fn=None, get_client_fn=None,
                     _("Access denied. Your role does not have permission for this action.")
                 )
 
-            if level in (ALLOW, SCOPED):
+            if level in (ALLOW, PROGRAM):
                 return view_func(request, *args, **kwargs)
 
             if level == GATED:

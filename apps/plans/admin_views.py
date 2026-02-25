@@ -1,7 +1,7 @@
 """Admin views for plan template CRUD (PLAN4) and apply-to-client (PLAN5).
 
 Admins: full access to all templates.
-PMs with template.plan.manage: SCOPED: manage templates in their own programs,
+PMs with template.plan.manage: PROGRAM: manage templates in their own programs,
 read-only view of global (admin-created) templates.
 """
 from django.contrib import messages

@@ -20,7 +20,7 @@ def _scoped_audit_qs(request):
     """Return an AuditLog queryset scoped to the user's access level.
 
     Admins see all entries. Program managers see entries scoped to their
-    programs (audit.view: SCOPED in permissions matrix). Non-admin users
+    programs (audit.view: PROGRAM in permissions matrix). Non-admin users
     without PM roles are already blocked by the @requires_permission
     decorator, so this function only needs to handle admin vs PM scoping.
     """
