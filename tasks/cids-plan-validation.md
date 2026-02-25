@@ -85,9 +85,9 @@ Similarly, `"sch:description"` should be `"hasDescription"` (maps to `cids:hasDe
 **CIDS spec:** Program is a **FullTier** class. It does not appear at BasicTier or EssentialTier.
 
 **Tier definitions (from CIDS 3.2.0):**
-- **BasicTier:** Organization, Outcome, Indicator, IndicatorReport, Theme (5 classes)
-- **EssentialTier:** + Stakeholder, StakeholderOutcome, ImpactReport, Target, Code, Characteristic, CharacteristicReport, StakeholderReport, HowMuchImpact (ImpactScale, ImpactDepth)
-- **FullTier:** + Program, ImpactModel, ImpactPathway, OutcomeChain, Activity, Service, Input, Output, ImpactDuration, Counterfactual, ImpactRisk (9 subtypes)
+- **BasicTier:** Organization, Outcome, Indicator, IndicatorReport, Theme + supporting shapes (Address, Measure, org subtypes)
+- **EssentialTier:** + Stakeholder, StakeholderOutcome, ImpactReport, ImpactPathway, Target, Code, Characteristic, CharacteristicReport, StakeholderReport, HowMuchImpact (ImpactScale, ImpactDepth, ImpactDuration)
+- **FullTier:** + Program, ImpactModel, OutcomeChain, Activity, Service, Input, Output, Counterfactual, ImpactRisk (8 subtypes)
 
 **Impact:** This doesn't change the implementation (KoNote naturally includes programs), but the tier targeting description in the plan should be corrected. BasicTier exports are Organization-centric — outcomes link directly to the organisation, not through programs.
 
@@ -181,14 +181,14 @@ Note: `i72:hasNumericalValue` takes xsd:string (not a number literal), and the M
 
 **Fix:** Update JSON-LD example. This is an export-layer concern, not a model concern.
 
-### A6. ImpactDuration Is FullTier, Not EssentialTier
+### A6. All Three HowMuchImpact Dimensions Are EssentialTier
 
 **Plan groups ImpactScale + ImpactDepth + ImpactDuration together in Phase 4.**
-**CIDS spec:** ImpactScale and ImpactDepth are EssentialTier. ImpactDuration is **FullTier**.
+**CIDS SHACL:** All three (ImpactScale, ImpactDepth, ImpactDuration) are activated at **EssentialTier** per the SHACL shape files (`csh:activeTier cids:EssentialTier`).
 
-**Implication:** For EssentialTier-only exports, ImpactDuration should be omitted. The ImpactReport SHACL at EssentialTier requires `hasImpactScale` and `hasImpactDepth` (both exactly 1) but ImpactDuration is only required at FullTier.
+**Implication:** All three HowMuchImpact dimensions should be included in EssentialTier exports. The previous claim that ImpactDuration was FullTier-only was incorrect — verified against `cids.essentialtier.shacl.ttl`.
 
-**Fix:** Phase 4 implementation should flag ImpactDuration as FullTier-only.
+**Fix:** Phase 4 table should mark all three dimensions as EssentialTier. ⚠️ Corrected 2026-02-24.
 
 ---
 
@@ -216,7 +216,7 @@ Note: `i72:hasNumericalValue` takes xsd:string (not a number literal), and the M
 | **StakeholderOutcome** | `org:hasName`, `cids:hasDescription`, `cids:forStakeholder`, `cids:forOutcome`, `cids:isUnderserved` |
 | **Target** | `org:hasName`, `i72:value` (Measure), `prov:startedAtTime`, `prov:endedAtTime`, `cids:hasComment`, `sch:dateCreated` |
 | **Code** | `org:hasName`, `cids:hasDescription`, `sch:codeValue`, `cids:definedBy`, `cids:hasSpecification`, `i72:value` |
-| **ImpactScale/Depth** | `i72:value` (Measure), `cids:hasDescription` |
+| **ImpactScale/Depth/Duration** | `i72:value` (Measure), `cids:hasDescription` |
 
 ---
 

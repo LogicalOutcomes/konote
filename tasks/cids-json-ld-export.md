@@ -27,7 +27,7 @@
 - StakeholderOutcome class — construct at export time from Program cohort + PlanTarget
 - BeneficialStakeholder = group/cohort, NOT individual — concept mapping corrected
 - `i72:value` wraps in `i72:Measure` objects — JSON-LD example corrected
-- ImpactDuration is FullTier only — Impact Dimensions table annotated with tiers
+- All three HowMuchImpact dimensions (ImpactScale, ImpactDepth, ImpactDuration) are EssentialTier — Impact Dimensions table annotated with tiers
 
 ---
 
@@ -102,6 +102,7 @@ A simple pass/fail SHACL check before export catches structural errors early. De
 | `cids:Theme` | `MetricDefinition.category` | Map internal categories to CIDS themes |
 | `cids:Code` | New: code list references | External taxonomy links (IRIS+, SDG, ICNPO) |
 | `cids:StakeholderOutcome` | Constructed at export time | ⚠️ Added 2026-02-24 — junction of Stakeholder (who) and Outcome (what), required at EssentialTier |
+| `cids:ImpactPathway` | Constructed at export time | EssentialTier — links StakeholderOutcome → Outcome → Indicator → IndicatorReport in a chain |
 | `cids:Target` | `PlanTarget` target values | Distinct from cids:Outcome — represents measurement targets for indicators |
 | `cids:Input` | Not modelled | Funding/resources — out of scope for now |
 | `cids:Output` | Session counts, service stats | Already computed in funder reports |
@@ -112,9 +113,9 @@ CIDS defines compliance tiers. ⚠️ **Corrected 2026-02-24** — Program is Fu
 
 | Tier | What It Covers | KoNote Status |
 |---|---|---|
-| **BasicTier** | Organisation, Outcome, Indicator, IndicatorReport, Theme (5 classes) | Quick win — org metadata + outcome/indicator export |
-| **EssentialTier** | + Stakeholder, StakeholderOutcome, ImpactReport, Target, Code, Characteristic, HowMuchImpact (Scale, Depth) | Core work — metadata fields + impact dimensions |
-| **FullTier** | + Program, ImpactModel, Activity, Service, Input, Output, ImpactDuration, Counterfactual, ImpactRisk (9 subtypes) | Future — KoNote naturally includes programs, so FullTier is achievable |
+| **BasicTier** | Organisation, Outcome, Indicator, IndicatorReport, Theme + supporting shapes (Address, Measure, org subtypes) | Quick win — org metadata + outcome/indicator export |
+| **EssentialTier** | + Stakeholder, StakeholderOutcome, ImpactReport, ImpactPathway, Target, Code, Characteristic, HowMuchImpact (Scale, Depth, Duration) | Core work — metadata fields + impact dimensions |
+| **FullTier** | + Program, ImpactModel, Activity, Service, Input, Output, Counterfactual, ImpactRisk (8 subtypes) | Future — KoNote naturally includes programs, so FullTier is achievable |
 | **SFFTier** | Social Finance Fund specific codes + characteristics | Only if SFF funding is involved |
 
 ---
@@ -626,6 +627,7 @@ Wraps the EssentialTier structure in an ImpactModel and adds Program, Activity, 
       "hasName": "Housing First Initiative",
       "hasDescription": "Rapid rehousing and wraparound support for adults experiencing homelessness",
       "sch:dateCreated": "2020-09-01T00:00:00-04:00",
+      "oep:partOf": {"@id": "https://example-agency.konote.ca/cids/impact-model/housing-first"},
       "cids:hasBeneficialStakeholder": [
         {"@id": "https://example-agency.konote.ca/cids/stakeholder/adults-experiencing-homelessness"}
       ],
@@ -641,6 +643,7 @@ Wraps the EssentialTier structure in an ImpactModel and adds Program, Activity, 
           "prov:startedAtTime": "2025-04-01T00:00:00-04:00",
           "prov:endedAtTime": "2026-03-31T23:59:59-04:00",
           "sch:dateCreated": "2020-09-01T00:00:00-04:00",
+          "oep:partOf": {"@id": "https://example-agency.konote.ca/cids/program/housing-first"},
           "cids:hasInput": [
             {
               "@type": "cids:Input",
@@ -838,6 +841,8 @@ Wraps the EssentialTier structure in an ImpactModel and adds Program, Activity, 
       "hasDescription": "Adults experiencing homelessness achieve improved housing stability through the Housing First program",
       "cids:forStakeholder": {"@id": "https://example-agency.konote.ca/cids/stakeholder/adults-experiencing-homelessness"},
       "cids:forOutcome": {"@id": "https://example-agency.konote.ca/cids/outcome/housing-stability"},
+      "cids:fromPerspectiveOf": {"@id": "https://example-agency.konote.ca/cids/stakeholder/adults-homeless"},
+      "sch:dateCreated": "2025-04-01",
       "cids:isUnderserved": true,
       "cids:intendedImpact": "positive",
       "cids:hasImportance": "highImportance",
@@ -892,6 +897,7 @@ Wraps the EssentialTier structure in an ImpactModel and adds Program, Activity, 
             "@type": "cids:UnexpectedImpactRisk",
             "@id": "https://example-agency.konote.ca/cids/impact-risk/housing-fy2025",
             "org:hasIdentifier": "RISK-HSG-001",
+            "sch:dateCreated": "2025-04-01",
             "hasDescription": "Risk that housing market conditions (rising rents, low vacancy) reduce program effectiveness in subsequent years",
             "cids:hasLikelihood": "likely",
             "cids:hasConsequence": "average",
@@ -905,6 +911,8 @@ Wraps the EssentialTier structure in an ImpactModel and adds Program, Activity, 
   ]
 }
 ```
+
+> **Note:** The `oep:partOf` property (`http://www.w3.org/2001/sw/BestPractices/OEP/SimplePartWhole/part.owl#partOf`) is required by FullTier SHACL but is not defined in the official CIDS JSON-LD context file. To use it in JSON-LD exports, extend the context inline: `"oep": "http://www.w3.org/2001/sw/BestPractices/OEP/SimplePartWhole/part.owl#"`.
 
 > **Tip:** Use [pyshacl](https://github.com/RDFLib/pySHACL) to validate exports against the [CIDS SHACL shapes](https://github.com/commonapproach/CIDS/tree/main/validation/shacl). Start with BasicTier validation, then graduate to EssentialTier and FullTier as metadata coverage increases.
 
@@ -940,9 +948,9 @@ CIDS defines "How Much" impact dimensions via `cids:HowMuchImpact` subclasses. T
 |---|---|---|---|
 | **ImpactScale** (how many) | EssentialTier | Count of clients with MetricValues for this target | `i72:value` = count with values (actual); compare to count enrolled (planned) |
 | **ImpactDepth** (degree of change) | EssentialTier | Achievement rate from existing `achievements.py` | `i72:value` = % of clients meeting target threshold |
-| **ImpactDuration** (how long) | **FullTier** | Reporting period from FunderReportForm date range | `prov:startedAtTime` / `prov:endedAtTime` of the export period |
+| **ImpactDuration** (how long) | EssentialTier | Reporting period from FunderReportForm date range | `prov:startedAtTime` / `prov:endedAtTime` of the export period |
 
-⚠️ **ImpactDuration is FullTier** — omit from EssentialTier-only exports. ImpactScale and ImpactDepth are required at EssentialTier (each needs `i72:value` as `i72:Measure` object + `cids:hasDescription`).
+All three HowMuchImpact dimensions (ImpactScale, ImpactDepth, ImpactDuration) are EssentialTier. Each needs `i72:value` as `i72:Measure` object + `cids:hasDescription`.
 
 Each HowMuchImpact dimension requires:
 - `i72:value` → nested `i72:Measure` with `i72:hasNumericalValue` (string, not number)
