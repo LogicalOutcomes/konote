@@ -62,6 +62,9 @@ The manifest is written to `../konote-qa-scenarios/reports/screenshots/pages/.pa
   "states_captured": ["default", "populated"],
   "breakpoints": ["1366x768", "1920x1080", "375x667"],
   "total_screenshots": 487,
+  "axe_total_scans": 124,
+  "axe_pages_with_violations": 5,
+  "axe_total_violations": 12,
   "skipped": [],
   "missing_screenshots": [],
   "pages": [
@@ -70,11 +73,52 @@ The manifest is written to `../konote-qa-scenarios/reports/screenshots/pages/.pa
       "url": "/clients/",
       "personas_captured": ["R1", "R2", "DS1"],
       "states_captured": ["default", "populated"],
-      "screenshot_count": 18
+      "screenshot_count": 18,
+      "axe_results": [{"persona": "R1", "state": "default", "violation_count": 0, "violations": []}]
     }
   ]
 }
 ```
+
+## Axe-core Accessibility Scanning
+
+The capture pipeline runs axe-core 4.10.2 on every page+persona+state combination (once each, not per breakpoint). Results are saved in two places:
+
+### In the manifest (per-page)
+
+Each page entry in `.pages-manifest.json` includes an `axe_results` array:
+
+```json
+{
+  "page_id": "client-list",
+  "axe_results": [
+    {
+      "persona": "R1",
+      "state": "default",
+      "violation_count": 2,
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "description": "Elements must have sufficient color contrast",
+          "help_url": "https://dequeuniversity.com/rules/axe/4.10/color-contrast",
+          "nodes_count": 3
+        }
+      ]
+    }
+  ]
+}
+```
+
+The manifest also includes top-level summary counts: `axe_total_scans`, `axe_pages_with_violations`, `axe_total_violations`.
+
+### Standalone report
+
+`axe-a11y-report.json` (same directory as the manifest) groups findings by rule type across all pages, sorted by severity. Useful for identifying systemic issues (e.g., colour contrast failing on 20 pages = one fix in the base template CSS).
+
+### Skipping axe
+
+Set `PAGE_CAPTURE_SKIP_AXE=1` to skip axe scanning for faster debugging runs.
 
 ## Environment Variable Filters
 
@@ -85,6 +129,7 @@ Set these before running to narrow the capture scope:
 | `PAGE_CAPTURE_PAGES` | `auth-login,client-list` | Only capture these pages |
 | `PAGE_CAPTURE_PERSONAS` | `R1,DS1` | Only use these personas |
 | `PAGE_CAPTURE_BREAKPOINTS` | `1366x768` | Only capture at this size |
+| `PAGE_CAPTURE_SKIP_AXE` | `1` | Skip axe-core accessibility scans |
 
 ## Persona Mapping
 
