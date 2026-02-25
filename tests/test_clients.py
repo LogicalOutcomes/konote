@@ -992,3 +992,42 @@ class StatisticalDisclosureGuardTest(TestCase):
         stats = _batch_enrolment_stats(large_ids, all_client_ids, month_start)
         active = stats[self.large_prog.pk]["active"]
         self.assertGreaterEqual(active, SMALL_PROGRAM_THRESHOLD)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AccentedCharacterEncryptionTest(TestCase):
+    """QA-R7-BUG13: Verify accented characters survive Fernet encrypt/decrypt cycle."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def test_accented_first_name_preserved(self):
+        """French accented characters round-trip through encrypt -> save -> load -> decrypt."""
+        client = ClientFile()
+        client.first_name = "H\u00e9l\u00e8ne"
+        client.last_name = "B\u00e9h\u00e9rer"
+        client.save()
+
+        loaded = ClientFile.objects.get(pk=client.pk)
+        self.assertEqual(loaded.first_name, "H\u00e9l\u00e8ne")
+        self.assertEqual(loaded.last_name, "B\u00e9h\u00e9rer")
+
+    def test_full_accent_set_preserved(self):
+        """All common French/Canadian accented characters survive the cycle."""
+        accented_names = [
+            ("Ren\u00e9", "L\u00e9vesque"),
+            ("Fran\u00e7ois", "L\u00e9gar\u00e9"),
+            ("No\u00ebl", "C\u00f4t\u00e9"),
+            ("Andr\u00e9e", "B\u00e9land"),
+        ]
+        for first, last in accented_names:
+            client = ClientFile()
+            client.first_name = first
+            client.last_name = last
+            client.save()
+
+            loaded = ClientFile.objects.get(pk=client.pk)
+            self.assertEqual(loaded.first_name, first, f"First name failed for {first}")
+            self.assertEqual(loaded.last_name, last, f"Last name failed for {last}")
