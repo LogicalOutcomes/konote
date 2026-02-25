@@ -14686,7 +14686,8 @@ msgstr ""
 "visites individuelles."
 
 msgid "%(scored)d scored · %(low_pct).0f%% need more support"
-msgstr "%(scored)d évalué(e)s · %(low_pct).0f %% ont besoin de plus de soutien"
+msgstr ""
+"%(scored)d évalué(e)s · %(low_pct).0f %% ont besoin de plus de soutien"
 
 msgid "Achievement"
 msgstr "Atteinte"
@@ -14719,7 +14720,8 @@ msgid "Distributions may not represent the full program."
 msgstr "Les répartitions peuvent ne pas représenter l'ensemble du programme."
 
 msgid "False for metrics like PHQ-9 where lower is better."
-msgstr "Faux pour les mesures comme le PHQ-9 où un score plus bas est meilleur."
+msgstr ""
+"Faux pour les mesures comme le PHQ-9 où un score plus bas est meilleur."
 
 msgid "Feedback themes"
 msgstr "Thèmes de rétroaction"
@@ -14728,7 +14730,7 @@ msgid "Full data"
 msgstr "Données complètes"
 
 msgid "Gap: aligned"
-msgstr "Écart\u00a0: aligné"
+msgstr "Écart\\u00a0: aligné"
 
 msgid "Goals within reach"
 msgstr "Objectifs à portée"
@@ -14750,13 +14752,16 @@ msgid "Invalid option selected."
 msgstr "Option sélectionnée non valide."
 
 msgid "Line chart showing staff assessment trends by month"
-msgstr "Graphique linéaire montrant les tendances d'évaluation du personnel par mois"
+msgstr ""
+"Graphique linéaire montrant les tendances d'évaluation du personnel par mois"
 
 msgid "Low band boundary (scale metrics)."
 msgstr "Limite du palier inférieur (mesures par échelle)."
 
 msgid "Low band threshold must be less than high band threshold."
-msgstr "Le seuil du palier inférieur doit être inférieur au seuil du palier supérieur."
+msgstr ""
+"Le seuil du palier inférieur doit être inférieur au seuil du palier "
+"supérieur."
 
 msgid "Low data"
 msgstr "Peu de données"
@@ -14768,8 +14773,8 @@ msgid ""
 "Movement tracking — who is progressing between bands over time — will be "
 "available in a future update."
 msgstr ""
-"Le suivi des mouvements — qui progresse entre les paliers au fil du temps "
-"— sera disponible dans une mise à jour future."
+"Le suivi des mouvements — qui progresse entre les paliers au fil du temps — "
+"sera disponible dans une mise à jour future."
 
 msgid "Not yet achieved"
 msgstr "Pas encore atteint"
@@ -14784,10 +14789,12 @@ msgid "Open feedback themes"
 msgstr "Thèmes de rétroaction ouverts"
 
 msgid "Optional target % for achievement metrics (e.g. 70 for 70%)."
-msgstr "Cible facultative en % pour les mesures d'atteinte (ex. 70 pour 70 %)."
+msgstr ""
+"Cible facultative en % pour les mesures d'atteinte (ex. 70 pour 70 %)."
 
 msgid "Optional target for % in high band (scale metrics)."
-msgstr "Cible facultative pour le % dans le palier supérieur (mesures par échelle)."
+msgstr ""
+"Cible facultative pour le % dans le palier supérieur (mesures par échelle)."
 
 msgid ""
 "Options for achievement metrics, e.g. [\"Employed\", \"In training\", "
@@ -14920,23 +14927,6 @@ msgstr ""
 "# Note : Les participants inscrits à plusieurs programmes sont comptés une "
 "fois par programme."
 
-msgid "All Programs \\u2014 Organisation Summary"
-msgstr ""
-
-msgid "None \\u2014 use default age categories"
-msgstr ""
-
-msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
-msgstr ""
-
-msgid "\\u2014 Custom date range \\u2014"
-msgstr ""
-
-msgid "\\u2014 Select a program \\u2014"
-msgstr ""
-
-msgid "\\u2014 Select a report \\u2014"
-msgstr ""
 msgid "Archive"
 msgstr "Archiver"
 
@@ -15005,8 +14995,12 @@ msgstr ""
 "appareils de terrain. Les niveaux supérieurs exposent plus de renseignements"
 " personnels et exigent une sécurité accrue des appareils."
 
-msgid "DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"
-msgstr "Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres visibles sont automatiquement masqués"
+msgid ""
+"DV safety: circles with blocked members and fewer than 4 visible members are"
+" automatically hidden"
+msgstr ""
+"Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres "
+"visibles sont automatiquement masqués"
 
 msgid "Data Tier"
 msgstr "Niveau de données"
@@ -15234,11 +15228,11 @@ msgstr "exécutions de synchronisation"
 msgid "— None —"
 msgstr "— Aucun —"
 
-msgid "\u2014 Select a report \u2014"
+msgid "\\u2014 Select a report \\u2014"
 msgstr "— Sélectionner un rapport —"
 
-msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\u2013%(m2)s)"
-msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s\u2013%(m2)s)"
+msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
+msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
 
 msgid "No outcome data recorded yet"
 msgstr "Aucune donnée de résultats enregistrée"
@@ -15268,3 +15262,288 @@ msgstr "cible"
 msgid "trend"
 msgstr "tendance"
 
+msgid "Alerts and flags"
+msgstr ""
+
+msgid "All Programs \\u2014 Organisation Summary"
+msgstr ""
+
+msgid ""
+"All approvals received. %(term)s data is scheduled for permanent erasure in "
+"24 hours. You can cancel during this period."
+msgstr ""
+
+msgid ""
+"All individual information will be removed. Only anonymous counts remain in "
+"reports. This cannot be undone."
+msgstr ""
+"Toutes les informations individuelles seront supprimées. Seuls les "
+"décomptes anonymes restent dans les rapports. Cette action est irréversible."
+
+msgid "Back to Participant"
+msgstr ""
+
+msgid "Backup codes"
+msgstr ""
+
+msgid "Can't scan the QR code?"
+msgstr ""
+
+msgid "Cancel Scheduled Erasure"
+msgstr ""
+
+msgid "Cancel this scheduled erasure? The participant data will be preserved."
+msgstr ""
+
+msgid "Client profile (print the profile page)"
+msgstr ""
+
+msgid "Communication log entries"
+msgstr ""
+
+msgid "Continue to dashboard"
+msgstr ""
+
+msgid "Data Access Request"
+msgstr ""
+
+msgid "Data access request logged."
+msgstr ""
+
+msgid "Data access request marked as complete."
+msgstr ""
+
+msgid "Date Received"
+msgstr ""
+
+msgid "Date delivered"
+msgstr ""
+
+msgid "Date request received"
+msgstr ""
+
+msgid "Disable MFA"
+msgstr ""
+
+msgid "Disable Multi-Factor Authentication"
+msgstr ""
+
+msgid "Enter the 6-digit code from your app"
+msgstr ""
+
+msgid "Enter this secret key manually in your authenticator app:"
+msgstr ""
+
+msgid "Erasure consequence"
+msgstr "Conséquence de l'effacement"
+
+msgid ""
+"Everything about this person will be permanently deleted, including from "
+"reports. This cannot be undone."
+msgstr ""
+"Tout ce qui concerne cette personne sera définitivement supprimé, y compris "
+"des rapports. Cette action est irréversible."
+
+msgid "Getting started"
+msgstr ""
+
+msgid "How was the information delivered?"
+msgstr ""
+
+msgid "How was the request received?"
+msgstr ""
+
+msgid ""
+"If you lose access to your authenticator app, you can use one of these "
+"backup codes to sign in. Each code can only be used once. Store them in a "
+"safe place."
+msgstr ""
+
+msgid "Information to Gather"
+msgstr ""
+
+msgid "Invalid code. Please check your authenticator app and try again."
+msgstr ""
+
+msgid "Invalid code. Please enter a valid verification code to disable MFA."
+msgstr ""
+
+msgid "Invalid verification code. Please try again."
+msgstr ""
+
+msgid "Log Data Access Request"
+msgstr ""
+
+msgid "Log Request & View Checklist"
+msgstr ""
+
+msgid "Logged By"
+msgstr ""
+
+msgid "MFA Enabled"
+msgstr ""
+
+msgid "MFA is already enabled on your account."
+msgstr ""
+
+msgid "Mail"
+msgstr ""
+
+msgid "Mark as Complete"
+msgstr ""
+
+msgid "Mark this data access request as complete?"
+msgstr ""
+
+msgid "Multi-Factor Authentication Enabled"
+msgstr ""
+
+msgid "Multi-factor authentication has been disabled."
+msgstr ""
+
+msgid "Need help? Ask your program manager or administrator"
+msgstr ""
+
+msgid "None \\u2014 use default age categories"
+msgstr ""
+
+msgid "Not all items may apply to your agency. Include what you have."
+msgstr ""
+
+msgid "Note sharing disabled."
+msgstr ""
+
+msgid "Note sharing enabled."
+msgstr ""
+
+msgid "Off"
+msgstr ""
+
+msgid "On"
+msgstr ""
+
+msgid "Plan goals and metric history (print the plan page)"
+msgstr ""
+
+msgid "Please correct the errors below and try again."
+msgstr ""
+
+msgid "Privacy Action Required"
+msgstr ""
+
+msgid "Privacy Compliance"
+msgstr ""
+
+msgid "Program enrolments and status"
+msgstr ""
+
+msgid ""
+"Progress notes (use the notes list — filter by this participant, print or "
+"export)"
+msgstr ""
+
+msgid "Received By"
+msgstr ""
+
+msgid "Respond to Data Access Request"
+msgstr ""
+
+msgid ""
+"Review before including. You may withhold safety-related notes under PIPEDA "
+"s.9(1) if disclosure could threaten the safety of others."
+msgstr ""
+
+msgid "Save your backup codes"
+msgstr ""
+
+msgid ""
+"Scan the QR code below with your authenticator app (Google Authenticator, "
+"Microsoft Authenticator, Authy, etc.), then enter the 6-digit code to "
+"confirm."
+msgstr ""
+
+msgid "Scheduled erasure cancelled. %(term)s data has been preserved."
+msgstr ""
+
+msgid "Scheduled erasure notice"
+msgstr ""
+
+msgid "Scheduled for Permanent Erasure"
+msgstr ""
+
+msgid "Scheduled — Awaiting Erasure"
+msgstr ""
+
+msgid "Set Up Multi-Factor Authentication"
+msgstr ""
+
+msgid "Share notes across programs"
+msgstr ""
+
+msgid "Start sharing"
+msgstr ""
+
+msgid "Stop sharing"
+msgstr ""
+
+msgid "Survey responses (if your agency uses surveys)"
+msgstr ""
+
+msgid ""
+"The 30-day PIPEDA response deadline will be calculated from the date above."
+msgstr ""
+
+msgid ""
+"Their name and contact details will be blanked. Anonymous service records "
+"stay in reports. This cannot be undone."
+msgstr ""
+"Le nom et les coordonnées seront effacés. Les dossiers de service anonymes "
+"restent dans les rapports. Cette action est irréversible."
+
+msgid "These actions are for privacy compliance and data governance."
+msgstr ""
+
+msgid "This erasure cannot be cancelled — it is not in scheduled status."
+msgstr ""
+
+msgid "This request has already been completed."
+msgstr ""
+
+msgid ""
+"To disable MFA, enter a verification code from your authenticator app or a "
+"backup code."
+msgstr ""
+
+msgid "Verbal"
+msgstr ""
+
+msgid "Verify Identity"
+msgstr ""
+
+msgid "Verify and Enable MFA"
+msgstr ""
+
+msgid "Verify your identity"
+msgstr ""
+
+msgid "Written"
+msgstr ""
+
+msgid ""
+"You can also enter a backup code if you have lost access to your "
+"authenticator app."
+msgstr ""
+
+msgid "You used a backup code. You have %(count)s remaining."
+msgstr ""
+
+msgid ""
+"Your account is now protected with multi-factor authentication. You will "
+"need to enter a code from your authenticator app each time you sign in."
+msgstr ""
+
+msgid "\\u2014 Custom date range \\u2014"
+msgstr ""
+
+msgid "\\u2014 Select a program \\u2014"
+msgstr ""

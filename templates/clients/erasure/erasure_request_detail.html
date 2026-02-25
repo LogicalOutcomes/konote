@@ -14,8 +14,8 @@
 </hgroup>
 
 {% if er.status == "pending" %}
-<article aria-label="warning" class="warning" style="border-left: 4px solid var(--kn-danger-fg); background: var(--kn-danger-bg);">
-    <strong>{% trans "This action cannot be undone." %}</strong>
+<article aria-label="{% trans 'Erasure consequence' %}" style="border-left: 4px solid var(--kn-danger-fg); background: var(--kn-danger-bg);">
+    <p>
     {% if er.erasure_tier == "anonymise" %}
     {% trans "Their name and contact details will be blanked. Anonymous service records stay in reports. This cannot be undone." %}
     {% elif er.erasure_tier == "anonymise_purge" %}
@@ -23,6 +23,7 @@
     {% elif er.erasure_tier == "full_erasure" %}
     {% trans "Everything about this person will be permanently deleted, including from reports. This cannot be undone." %}
     {% endif %}
+    </p>
 </article>
 {% endif %}
 

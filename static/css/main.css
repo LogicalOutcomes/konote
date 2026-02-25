@@ -1621,6 +1621,10 @@ button.outline.secondary:hover {
     margin-bottom: var(--kn-space-base);
     font-size: 0.9375rem;
 }
+/* Suppress generic ::before when an inline SVG icon is used instead */
+.empty-state--erasure::before {
+    content: none;
+}
 
 /* ---- Admin settings cards ---- */
 .settings-grid {
