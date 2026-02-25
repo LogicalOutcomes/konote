@@ -1,7 +1,7 @@
 # KoNote Permissions Matrix
 
 > **Source of truth:** [permissions.py](../apps/auth_app/permissions.py)
-> **Last updated:** 2026-02-16
+> **Last updated:** 2026-02-25
 
 ---
 
@@ -27,10 +27,10 @@
 | See contact info | Yes | Yes | Yes | — | — |
 | See safety info | Yes | Yes | Yes | — | — |
 | See medications | — | Scoped | Yes | — | — |
-| See clinical data | — | Scoped | Yes | — | — |
+| See clinical data | — | Scoped | Gated | — | — |
 | Create new clients | Yes | Scoped | Scoped | — | — |
-| Edit client records | — | Scoped | — | — | — |
-| Edit contact info (phone/email) | Yes | Scoped | — | — | — |
+| Edit client records | — | Scoped | Scoped | — | — |
+| Edit contact info (phone/email) | Per field | Scoped | — | — | — |
 | Transfer between programs | — | Scoped | Scoped | — | — |
 | View consent records | — | Scoped | Yes | — | — |
 | Manage consent | — | Scoped | Scoped | — | — |
@@ -46,16 +46,22 @@
 | Manage project milestones/outcomes | — | Scoped | Yes | — | — |
 | View group attendance reports | — | Scoped | Yes | — | — |
 | **Progress Notes** | | | | | |
-| Read progress notes | — | Scoped | Yes | — | — |
+| Read progress notes | — | Scoped | Gated | — | — |
 | Write progress notes | — | Scoped | Scoped | — | — |
 | Edit progress notes | — | Scoped | Scoped | — | — |
 | **Plans** | | | | | |
-| View plans | — | Scoped | Yes | — | — |
+| View plans | — | Scoped | Gated | — | — |
 | Edit plans | — | Scoped | — | — | — |
-| **Metrics** | | | | | |
+| **Metrics & Insights** | | | | | |
 | View individual metrics | — | Scoped | Yes | — | — |
 | View aggregate metrics | — | Scoped | Yes | Yes | — |
 | View outcome insights | — | Scoped | Yes | Yes (aggregate) | — |
+| View suggestion themes | — | Scoped | Yes | Yes (summary) | — |
+| Manage suggestion themes | — | — | Scoped | — | — |
+| **Circles (Families & Networks)** | | | | | |
+| View circles | — | Scoped | Yes | — | — |
+| Create circles | — | Scoped | Yes | — | — |
+| Edit circles / manage members | — | Scoped | Yes | — | — |
 | **Meetings & Calendar** | | | | | |
 | View meetings | — | Scoped | Yes | — | — |
 | Schedule meetings | — | Scoped | Scoped | — | — |
@@ -108,6 +114,7 @@
 **Legend:**
 - **Yes** = Always allowed (within their program scope)
 - **Scoped** = Only for their assigned clients/groups within their program
+- **Gated** = Allowed with documented reason (just-in-time access via AccessGrant)
 - **Per field** = Depends on each field's individual access setting
 - **—** = Not allowed
 
@@ -121,18 +128,43 @@
 
 "Scoped" means the person can only see data for clients and groups they are **assigned to** within their program. Phase 1 scopes to the whole program; Phase 2 will narrow this to specific group/client assignments.
 
+### Gated Access (Program Manager — Clinical Safeguards)
+
+At access tier 3 (Clinical Safeguards), program managers must provide a documented reason before viewing clinical data, progress notes, or plans. This creates an `AccessGrant` record with:
+- **Reason** (supervision, complaint, safety, quality, intake)
+- **Written justification**
+- **Automatic expiry** (configurable, default 8 hours)
+
+At access tiers 1–2, gated permissions are relaxed to "Yes" (the gate is open). This lets agencies adopt clinical safeguards gradually.
+
 ### Administrator Is Not a Program Role
 
 Administrator (`is_admin=True`) is a **system-level flag**, not a program role. It grants access to configuration pages (users, settings, templates, terminology) but **not** to any client data.
 
 If an admin also needs to see client records, they must be assigned a program role (e.g., Program Manager in Program A). Their client access follows the rules of that program role — the admin flag doesn't give them extra clinical access.
 
-### Front Desk Custom Field Access
+### Front Desk Contact Field Access (Per-Field)
 
-Each custom field definition has a `front_desk_access` setting:
+Contact fields are individually configurable via `FieldAccessConfig`:
+
+| Field | Default Access | Notes |
+|-------|---------------|-------|
+| Phone | Edit | Front desk updates phone numbers |
+| Email | Edit (Tier 3: View only) | Tier 3 tightens email to view-only |
+| Preferred name | View | Can see but not change |
+| Birth date | Hidden | Not needed for front desk |
+
+Custom field definitions also have a `front_desk_access` setting:
 - **none** — Hidden from Front Desk (clinical/sensitive fields)
 - **view** — Front Desk can see but not edit
 - **edit** — Front Desk can see and edit
+
+### DV-Safe Mode
+
+When a client is flagged as DV-safe (`is_dv_safe=True`):
+- Sensitive custom fields (address, emergency contact, employer) are hidden from Front Desk
+- Only staff and above can enable DV-safe mode (unilateral)
+- Removal requires **two-person rule**: staff requests removal with reason, PM approves or rejects
 
 ### Program Isolation
 
@@ -205,15 +237,26 @@ Staff messaging allows team members to leave operational messages about particip
 
 Messages are encrypted because they may contain participant names (PII). Each message is tied to a client file and optionally to a specific staff recipient.
 
+### Circles (Families & Support Networks)
+
+Circles represent families, households, or support networks. They are **cross-program** — a circle has no program assignment. Visibility is derived from membership: a user can see a circle if they have access to at least one enrolled member.
+
+| Role | View | Create | Edit |
+|------|------|--------|------|
+| **Front Desk** | — | — | — |
+| **Direct Service** | Scoped | Scoped | Scoped |
+| **Program Manager** | Yes | Yes | Yes |
+| **Executive** | — | — | — |
+
+**DV safety:** If a `ClientAccessBlock` hides a member, and fewer than 2 visible enrolled participants remain, the entire circle is hidden. Non-participant member names (free text) are never counted toward visibility thresholds.
+
 ---
 
 ## Planned Changes (Future Phases)
 
 | Permission | Current | Planned | Phase |
 |---|---|---|---|
-| Program Manager: view clinical data | ALLOW | GATED (requires documented reason) | Phase 3 |
-| Program Manager: view notes | ALLOW | GATED | Phase 3 |
-| Program Manager: view plans | ALLOW | GATED | Phase 3 |
 | Program Manager: view group session content | ALLOW | GATED | Phase 3 |
-| Program Manager: export data | DENY | Request-only (requires admin approval) | Phase 3 |
+| Program Manager: view individual metrics | ALLOW | GATED | Phase 3 |
+| Program Manager: view custom fields | ALLOW | GATED | Phase 3 |
 | Direct Service: scoping | Program-wide | Assigned groups/clients only | Phase 2 |
