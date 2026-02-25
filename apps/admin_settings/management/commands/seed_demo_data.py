@@ -1383,6 +1383,9 @@ class Command(BaseCommand):
         except User.DoesNotExist:
             pass
 
+        # Always ensure DV-safe flags are set (idempotent — just sets a boolean).
+        self._set_dv_safe_flags()
+
         # Check if rich data already exists
         force = options.get("force", False)
         demo_notes_exist = ProgressNote.objects.filter(
@@ -1556,6 +1559,9 @@ class Command(BaseCommand):
 
         # --- Create staff-to-staff messages ---
         self._create_demo_staff_messages(workers, programs_by_name, now)
+
+        # --- Set DV-safe flags (PERM-P5 demonstration) ---
+        self._set_dv_safe_flags()
 
         self.stdout.write(self.style.SUCCESS(
             "  Demo rich data seeded successfully (15 clients across 5 programs)."
@@ -2192,6 +2198,25 @@ class Command(BaseCommand):
             created += 1
 
         self.stdout.write(f"  Narrative notes: {created} created.")
+
+    # ------------------------------------------------------------------
+    # DV-safe flags (PERM-P5 demonstration)
+    # ------------------------------------------------------------------
+
+    def _set_dv_safe_flags(self):
+        """Set is_dv_safe=True on DEMO-004 (Sam Williams) for DV-safe mode demo.
+
+        Narratively: Sam disclosed a domestic violence situation (see alert data).
+        When Dana (front desk) views Sam's record, DV-sensitive custom fields
+        (address, emergency contact, employer) are hidden — demonstrating PERM-P5.
+
+        Idempotent: just sets a boolean field.
+        """
+        updated = ClientFile.objects.filter(
+            record_id="DEMO-004", is_dv_safe=False,
+        ).update(is_dv_safe=True)
+        if updated:
+            self.stdout.write("  DV-safe: DEMO-004 (Sam Williams) flagged.")
 
     # ------------------------------------------------------------------
     # Demo groups: groups and projects
