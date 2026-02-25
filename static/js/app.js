@@ -1419,7 +1419,16 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
             bar.hidden = false;
             var countEl = getCount();
             if (countEl) {
-                countEl.textContent = count + " " + t("selected", "selected");
+                // Show "X selected on this page" when paginated
+                var totalEl = document.querySelector("[data-total-clients]");
+                var total = totalEl ? parseInt(totalEl.getAttribute("data-total-clients"), 10) : 0;
+                var visibleCbs = document.querySelectorAll(".bulk-select-row").length;
+                if (total > visibleCbs) {
+                    countEl.textContent = count + " " + t("selected", "selected")
+                        + " (" + t("on this page", "on this page") + ")";
+                } else {
+                    countEl.textContent = count + " " + t("selected", "selected");
+                }
             }
         } else {
             bar.hidden = true;
