@@ -4,6 +4,13 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-02-24 TODO verification)
+
+- [x] Verified: breadcrumbs already on plan-goal-create (implemented in prior session) — 2026-02-24 (QA-PA-GOAL3)
+- [x] Verified: TOTP MFA already implemented (see tasks/mfa-implementation.md) — 2026-02-24 (SEC2)
+- [x] Verified: deferred Tier 3 erasure (24-hour delay) already implemented — 2026-02-24 (ERASE-H8)
+- [x] Add insights-metric-distributions DRR to CLAUDE.md list — 2026-02-24 (I18N-DRR-LIST1)
+
 ## Moved from Recently Done (2026-02-24 parking-lot items)
 
 - [x] Create bilingual requirements DRR — legal rationale (Official Languages Act, Ontario FLSA, WCAG), anti-patterns for deferred translations, technical approach, translation standards for Claude sessions — 2026-02-24 (I18N-DRR1)
