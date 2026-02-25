@@ -44,18 +44,22 @@ Optional environment variable filters (set before running to narrow scope):
 - `PAGE_CAPTURE_PAGES` — comma-separated page IDs (e.g. `client-list,dashboard-staff`)
 - `PAGE_CAPTURE_PERSONAS` — comma-separated persona IDs (e.g. `R1,DS1`)
 - `PAGE_CAPTURE_BREAKPOINTS` — single breakpoint (e.g. `1366x768`)
+- `PAGE_CAPTURE_SKIP_AXE` — set to `1` to skip axe-core accessibility scanning (faster for debugging)
 
 ### Step 4: Report results
 
 After tests complete, report to the user:
 - Number of pages captured and total screenshots saved
+- Axe-core accessibility findings: total scans, pages with violations, total violations
 - Manifest location: `../konote-qa-scenarios/reports/screenshots/pages/.pages-manifest.json`
+- Axe report location: `../konote-qa-scenarios/reports/screenshots/pages/axe-a11y-report.json`
 - Any skipped pages or missing screenshots
 - Any failures or errors
 
 ### Next steps
 
 Tell the user:
-1. Switch to the `konote-qa-scenarios` repo
-2. Run `/run-page-audit` to evaluate the captured screenshots
-3. See `tasks/page-capture-reference.md` for troubleshooting, screenshot naming, and advanced options
+1. Review `axe-a11y-report.json` for a quick accessibility summary grouped by violation type
+2. Switch to the `konote-qa-scenarios` repo
+3. Run `/run-page-audit` to evaluate the captured screenshots
+4. See `tasks/page-capture-reference.md` for troubleshooting, screenshot naming, and advanced options
