@@ -78,10 +78,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Permissions Phase 2 (see tasks/permissions-expert-panel-2026-02-09.md)
 
-Ready now — code-only, no design decisions:
-- [ ] Rename SCOPED permission level to PROGRAM — constant + all references in permissions.py, decorators, template tags (PERM-P9)
-- [ ] Add `report.funder_report` permission key — separate from program reports, wire onto funder report view (PERM-P10)
-
 Ready after GK scope conversation:
 - [ ] Add `group.view_schedule` permission key — separate schedule (times/location) from roster (session content) — GK reviews scope boundary (PERM-P7)
 - [ ] Split dashboard permissions — `dashboard.view_individual` vs `dashboard.view_aggregate` keys — GK reviews which sections are individual vs aggregate (PERM-P12)
@@ -165,6 +161,8 @@ Blocked on infrastructure (dedicated sprint):
 
 ## Recently Done
 
+- [x] Rename SCOPED permission level to PROGRAM — constant + all references across 20 files — 2026-02-24 (PERM-P9)
+- [x] Add `report.funder_report` permission key — already in matrix and wired to 3 views, was done in Phase 1 — 2026-02-24 (PERM-P10)
 - [x] Insights Phases 3-5 complete — executive dashboard cards, achievement recording UI, workbench-to-report links, board summary, translations, docs — 2026-02-24 (INSIGHTS-P3-EXEC, INSIGHTS-P4-RECORD, INSIGHTS-P5-POLISH, INSIGHTS-I18N1)
 - [x] Approve CIDS implementation plan — metadata fields, code list integration, CIDS-enriched reports, JSON-LD export; partner pathway confirmed — 2026-02-24 — SG/GK (CIDS-APPROVE1)
 - [x] PHIPA consent filtering for note search and qualitative summary — program-level filtering prevents side-channel disclosure, tests — 2026-02-24 (PHIPA-SEARCH1, PHIPA-QUAL1)
