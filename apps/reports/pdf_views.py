@@ -252,6 +252,7 @@ def generate_funder_report_pdf(request, report_data, sections=None,
     if not is_pdf_available():
         return _pdf_unavailable_response(request)
 
+    from .chart_utils import generate_metric_charts, is_chart_available
     from .suppression import SMALL_CELL_THRESHOLD
 
     context = {
@@ -264,6 +265,11 @@ def generate_funder_report_pdf(request, report_data, sections=None,
         context["sections"] = sections
     if metric_results:
         context["metric_results"] = metric_results
+
+        # Generate chart images for chart sections
+        if is_chart_available():
+            chart_images = generate_metric_charts(metric_results)
+            context["chart_images"] = chart_images
 
     safe_name = sanitise_filename(report_data["program_name"].replace(" ", "_"))
     fy_label = sanitise_filename(report_data["reporting_period"].replace(" ", "_"))

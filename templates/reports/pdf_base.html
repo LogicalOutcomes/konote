@@ -23,24 +23,46 @@
             margin: 0;
             padding: 0;
         }
-        .pdf-cover {
-            text-align: center;
-            padding-top: 6cm;
-            page-break-after: always;
+        .pdf-header {
+            border-bottom: 3px solid #0d7377;
+            padding-bottom: 0.4cm;
+            margin-bottom: 0.6cm;
         }
-        .pdf-cover h1 {
-            font-size: 24pt;
-            margin-bottom: 0.5cm;
+        .pdf-header h1 {
+            font-size: 18pt;
+            margin: 0 0 0.15cm 0;
             color: #0d7377;
         }
-        .pdf-cover .subtitle {
-            font-size: 14pt;
+        .pdf-header .subtitle {
+            font-size: 13pt;
             color: #4a5568;
-            margin-bottom: 2cm;
+            margin-bottom: 0.3cm;
         }
-        .pdf-cover .meta {
-            font-size: 10pt;
+        .pdf-header .meta {
+            font-size: 9pt;
             color: #718096;
+            line-height: 1.4;
+        }
+        .pdf-header .meta-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.05cm 0.4cm;
+            font-size: 9pt;
+            color: #718096;
+        }
+        .pdf-header .meta-grid dt {
+            font-weight: 600;
+            color: #4a5568;
+        }
+        .pdf-header .meta-grid dd {
+            margin: 0;
+        }
+        .pdf-header .draft-notice {
+            margin-top: 0.3cm;
+            padding: 0.2cm 0.4cm;
+            background-color: #fef3c7;
+            border-radius: 3px;
+            font-size: 9pt;
         }
         h2 {
             font-size: 16pt;
