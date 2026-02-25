@@ -1934,8 +1934,9 @@ def session_report_form(request):
     from .session_report import generate_session_report
     from .session_csv import generate_session_report_csv
 
-    # Block aggregate-only users — this report contains participant-level data
-    if is_aggregate_only_user(request.user):
+    # Block aggregate-only users — this report contains participant-level data.
+    # Admins are exempt (they have system-wide access via allow_admin=True).
+    if is_aggregate_only_user(request.user) and not getattr(request.user, "is_admin", False):
         return HttpResponseForbidden(
             _("This report contains individual participant data. "
               "Please use the template-driven report for aggregate output.")
