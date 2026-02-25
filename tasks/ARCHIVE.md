@@ -23,6 +23,10 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 - [x] Achievement metric seed data + recording UI — radio pill UI in note form with validation + CSS + tests — 2026-02-24 (INSIGHTS-P0-SEED)
 - [x] Research session reporting requirements (IRCC, CFPB, Employment Ontario, United Way) — 2026-02-24 (REP-REQ1)
 
+## Moved from Recently Done (2026-02-25 website updates)
+
+- [x] PHIPA consent filtering for note search and qualitative summary — 3 tests (PR pending) — 2026-02-24 (PHIPA-SEARCH1, PHIPA-QUAL1)
+
 ## Moved from Recently Done (2026-02-24 review-fixes update)
 
 - [x] Add Evidence section to konote-website — evidence.html with Research Foundation content and citations — 2026-02-24 (WEB-EVIDENCE1)
