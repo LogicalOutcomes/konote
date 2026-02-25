@@ -4,6 +4,13 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-02-24 review-fixes update)
+
+- [x] Add Evidence section to konote-website — evidence.html with Research Foundation content and citations — 2026-02-24 (WEB-EVIDENCE1)
+- [x] Offline Field Collection — full feature: models, ODK client, sync, admin UI, 4 PII tiers, 43 tests, translations (PR #34) — 2026-02-24 (FIELD-ODK-APP1–TEST1)
+- [x] Circles Lite Phase 1 — full feature: models, views, templates, nav, sidebar, note tagging, intake, tests, translations — 2026-02-24 (CIRCLES-1–9)
+- [x] Enforce PHIPA cross-program consent in views — note_detail, note_summary, event_list; fix fail-open bug; fix CONF9 interaction; shared banner include; 4 new tests; DRR created — 2026-02-22 (PHIPA-ENFORCE1)
+
 ## Moved from Recently Done (2026-02-24 TODO cleanup)
 
 - [x] Insights metric distributions Phases 0-2 — model fields, aggregation, distributions, achievements, trends, Two Lenses, data completeness, 50 tests, 10 review fixes (PR #23) — 2026-02-22 (INSIGHTS-P0-ADMIN, INSIGHTS-P1-MODEL, INSIGHTS-P1-AGG, INSIGHTS-P2-LAYOUT, INSIGHTS-P2-VIZ)
