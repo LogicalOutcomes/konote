@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Review DV Flag Removal" %} — {{ client.display_name }} {{ client.last_name }}{% endblock %}
+
+{% block content %}
+<h1>{% trans "Review DV Flag Removal Request" %}</h1>
+
+<article style="border-left: 4px solid var(--pico-primary);">
+    <dl class="info-grid-compact">
+        <div class="info-field">
+            <dt>{% trans "Participant" %}</dt>
+            <dd>{{ client.display_name }} {{ client.last_name }}</dd>
+        </div>
+        <div class="info-field">
+            <dt>{% trans "Requested by" %}</dt>
+            <dd>{{ removal_request.requested_by.get_full_name|default:removal_request.requested_by.username }}</dd>
+        </div>
+        <div class="info-field">
+            <dt>{% trans "Requested" %}</dt>
+            <dd>{{ removal_request.requested_at|date:"M d, Y H:i" }}</dd>
+        </div>
+        <div class="info-field">
+            <dt>{% trans "Reason" %}</dt>
+            <dd>{{ removal_request.reason }}</dd>
+        </div>
+    </dl>
+</article>
+
+<form method="post" action="{% url 'clients:dv_safe_review_remove' client_id=client.pk request_id=removal_request.pk %}">
+    {% csrf_token %}
+    <label for="review_note">{% trans "Review note (optional)" %}</label>
+    <textarea id="review_note" name="review_note" rows="2"
+        placeholder="{% trans 'Add a note about your decision.' %}"
+    ></textarea>
+
+    <div style="display: flex; gap: var(--kn-space-sm); margin-top: var(--kn-space-base);">
+        <button type="submit" name="action" value="approve">{% trans "Approve — Remove DV Flag" %}</button>
+        <button type="submit" name="action" value="reject" class="outline secondary">{% trans "Reject — Keep DV Flag" %}</button>
+        <a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+
+<p class="secondary" style="margin-top: var(--kn-space-base);">
+    <small>{% trans "Approving will remove the DV safety flag and make previously hidden fields visible to front desk staff again. This action is audit logged." %}</small>
+</p>
+{% endblock %}

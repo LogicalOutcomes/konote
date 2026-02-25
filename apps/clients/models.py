@@ -90,6 +90,15 @@ class ClientFile(models.Model):
         help_text="True after PII has been stripped. Record kept for statistical purposes.",
     )
 
+    # DV safety — hides sensitive custom fields from front desk
+    is_dv_safe = models.BooleanField(
+        default=False,
+        help_text=_(
+            "When enabled, DV-sensitive custom fields (address, emergency contact, "
+            "employer) are hidden from front desk staff for this participant."
+        ),
+    )
+
     def __str__(self):
         if self.is_anonymised:
             return _("[ANONYMISED]")
@@ -363,6 +372,65 @@ class ClientAccessBlock(models.Model):
         return f"Block: {self.user} cannot access {self.client_file}"
 
 
+class DvFlagRemovalRequest(models.Model):
+    """Two-person-rule workflow for removing a DV safety flag.
+
+    Step 1: A staff member recommends removal (requested_by + reason).
+    Step 2: A program manager reviews and approves or rejects (reviewed_by).
+
+    Until approved, is_dv_safe stays True on the ClientFile. If rejected,
+    the request is closed and a new request can be made.
+    """
+
+    client_file = models.ForeignKey(
+        ClientFile,
+        on_delete=models.CASCADE,
+        related_name="dv_removal_requests",
+    )
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+    )
+    requested_at = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField(
+        help_text=_("Explain why the DV safety flag should be removed."),
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    approved = models.BooleanField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="None = pending, True = approved (flag removed), False = rejected.",
+    )
+    review_note = models.TextField(
+        default="",
+        blank=True,
+        help_text=_("Reviewer's note on approval or rejection."),
+    )
+
+    class Meta:
+        app_label = "clients"
+        db_table = "dv_flag_removal_requests"
+        ordering = ["-requested_at"]
+
+    def __str__(self):
+        status = "pending" if self.approved is None else ("approved" if self.approved else "rejected")
+        return f"DV removal request for {self.client_file} ({status})"
+
+    @property
+    def is_pending(self):
+        return self.approved is None
+
+
 class CustomFieldGroup(models.Model):
     """A group of custom fields (e.g., 'Contact Information', 'Demographics')."""
 
@@ -417,6 +485,13 @@ class CustomFieldDefinition(models.Model):
             ("edit", "View and edit"),
         ],
         help_text="What access front desk staff have to this field.",
+    )
+    is_dv_sensitive = models.BooleanField(
+        default=False,
+        help_text=_(
+            "When checked, this field is hidden from front desk staff "
+            "for participants with a DV safety flag."
+        ),
     )
     # Determines which validation and normalisation rules apply (I18N-FIX2).
     # Auto-detected from field name on first save if not explicitly set.
