@@ -4,6 +4,12 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-02-24 parking-lot items)
+
+- [x] Create bilingual requirements DRR — legal rationale (Official Languages Act, Ontario FLSA, WCAG), anti-patterns for deferred translations, technical approach, translation standards for Claude sessions — 2026-02-24 (I18N-DRR1)
+- [x] All Programs report filter — "__all__" sentinel, multi-program aggregation, RBAC-scoped, 18 tests — 2026-02-24 (REP-ALL-PROGS1)
+- [x] Insights P3 executive dashboard + P4 achievement recording + 65 French translations (PR #35) — 2026-02-24 (INSIGHTS-P3-EXEC, INSIGHTS-P4-RECORD)
+
 ## Moved from Recently Done (2026-02-24 parking-lot cleanup)
 
 - [x] French translations — all 54 remaining empty strings translated and compiled — 2026-02-24 (INSIGHTS-I18N1)
