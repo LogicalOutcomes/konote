@@ -1,4 +1,4 @@
-"""Tests for permissions matrix completeness and demo user role validation.
+﻿"""Tests for permissions matrix completeness and demo user role validation.
 
 These tests ensure that:
 1. The permissions matrix is internally consistent (all roles have all keys).
@@ -28,7 +28,7 @@ import konote.encryption as enc_module
 
 TEST_KEY = Fernet.generate_key().decode()
 
-# Valid permission levels — anything else is a bug
+# Valid permission levels ΓÇö anything else is a bug
 VALID_LEVELS = {ALLOW, DENY, PROGRAM, GATED, PER_FIELD}
 
 # The four roles that must exist
