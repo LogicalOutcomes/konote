@@ -118,7 +118,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function toggleCustomRange() {
         // Show custom date range only when no preset is selected
-        customRange.style.display = fiscalYearSelect.value ? 'none' : 'block';
+        var isHidden = !!fiscalYearSelect.value;
+        customRange.style.display = isHidden ? 'none' : 'block';
+        customRange.setAttribute('aria-hidden', isHidden ? 'true' : 'false');
     }
 
     fiscalYearSelect.addEventListener('change', toggleCustomRange);

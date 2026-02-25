@@ -184,7 +184,7 @@
 <section class="preview-section">
     <h2>{% trans "Service Statistics" %}</h2>
     <div class="table-responsive">
-        <table role="grid">
+        <table>
             <thead>
                 <tr>
                     <th scope="col">{% trans "Statistic" %}</th>
@@ -214,7 +214,7 @@
 <section class="preview-section">
     <h2>{% trans "Outcome Metrics" %}</h2>
     <div class="table-responsive">
-        <table role="grid">
+        <table>
             <thead>
                 <tr>
                     <th scope="col">{% trans "Metric" %}</th>
@@ -260,7 +260,7 @@
 <section class="preview-section">
     <h2>{% trans "Age Demographics" %}</h2>
     <div class="table-responsive">
-        <table role="grid">
+        <table>
             <thead>
                 <tr>
                     <th scope="col">{% trans "Age Group" %}</th>
@@ -285,7 +285,7 @@
 <section class="preview-section">
     <h2>{{ section.label }}</h2>
     <div class="table-responsive">
-        <table role="grid">
+        <table>
             <thead>
                 <tr>
                     <th scope="col">{% trans "Category" %}</th>
@@ -322,7 +322,7 @@
     <h2>{% trans "Summary Statistics" %}</h2>
     <p>{% blocktrans with count=total_clients_display %}Total participants: {{ count }}{% endblocktrans %}</p>
     <div class="table-responsive">
-        <table role="grid">
+        <table>
             <thead>
                 <tr>
                     <th scope="col">{% trans "Metric Name" %}</th>
@@ -354,7 +354,7 @@
 <section class="preview-section">
     <h2>{% trans "Achievement Rate" %}</h2>
     <div class="table-responsive">
-        <table role="grid">
+        <table>
             <thead>
                 <tr>
                     <th scope="col">{% trans "Measure" %}</th>
@@ -380,7 +380,7 @@
     {% if achievement_summary.metrics %}
     <h3>{% trans "By Metric" %}</h3>
     <div class="table-responsive">
-        <table role="grid">
+        <table>
             <thead>
                 <tr>
                     <th scope="col">{% trans "Metric" %}</th>
@@ -410,7 +410,7 @@
 <section class="preview-section">
     <h2>{% blocktrans with label=grouping_label %}Breakdown by {{ label }}{% endblocktrans %}</h2>
     <div class="table-responsive">
-        <table role="grid">
+        <table>
             <thead>
                 <tr>
                     <th scope="col">{{ grouping_label }}</th>
@@ -444,7 +444,7 @@
 <section class="preview-section">
     <h2>{{ section.label }}</h2>
     <div class="table-responsive">
-        <table role="grid">
+        <table>
             <thead>
                 <tr>
                     <th scope="col">{{ section.label }}</th>
@@ -481,7 +481,7 @@
         {% trans "Showing individual participant records. This data is included in the download." %}
     </p>
     <div class="table-responsive">
-        <table role="grid">
+        <table>
             <thead>
                 <tr>
                     <th scope="col">{% trans "Client Record ID" %}</th>

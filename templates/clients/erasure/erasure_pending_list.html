@@ -41,14 +41,14 @@
                 <td>
                     {{ er.approvals.count }}/{{ er.programs_required|length }}
                     {% if er.is_stuck %}
-                    <span class="badge badge-warning" title="{% trans 'This request may be stuck — a required program has no active PM.' %}">!</span>
+                    <span class="badge badge-warning" title="{% trans 'This request may be stuck — a required program has no active PM.' %}" aria-label="{% trans 'Stuck request' %}">!</span>
                     {% endif %}
                 </td>
                 <td>
                     {% if er.days_pending >= 30 %}
-                    <span class="badge badge-danger" title="{% trans 'PIPEDA requires a response within 30 days. This request is overdue.' %}">{{ er.days_pending }}d</span>
+                    <span class="badge badge-danger" title="{% trans 'PIPEDA requires a response within 30 days. This request is overdue.' %}" aria-label="{% trans 'Overdue' %}: {{ er.days_pending }}d">{{ er.days_pending }}d</span>
                     {% elif er.days_pending >= 25 %}
-                    <span class="badge badge-warning" title="{% trans 'Approaching 30-day PIPEDA deadline.' %}">{{ er.days_pending }}d</span>
+                    <span class="badge badge-warning" title="{% trans 'Approaching 30-day PIPEDA deadline.' %}" aria-label="{% trans 'Approaching deadline' %}: {{ er.days_pending }}d">{{ er.days_pending }}d</span>
                     {% else %}
                     <span class="badge badge-secondary">{{ er.days_pending }}d</span>
                     {% endif %}
