@@ -4,7 +4,7 @@
 
 - [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — SG (ONBOARD-APPROVE)
 - [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
-- [ ] Confirm standard report schema and configuration template with partner contact before building — SG (RPT-SCHEMA1)
+- [ ] Confirm standard report schema with partner contact — now folded into CIDS config template pre-mapping (CIDS-ADMIN1). The funder's report schema IS the CIDS code mapping. — SG (RPT-SCHEMA1)
 - [x] Validate CIDS implementation plan against CIDS 3.2.0 spec — 5 corrections + 6 Phase 3 items identified, GO with corrections. All decisions resolved 2026-02-25: FullTier target, JSON-LD export, pin v3.2.0, pre-map codes, auto-populate fields (see tasks/cids-plan-validation.md) (CIDS-APPROVE1)
 - [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
@@ -88,12 +88,12 @@ Blocked on infrastructure (dedicated sprint):
 ### Phase: Advanced Reporting
 
 - [x] Build "Sessions by Participant" report — duration/modality fields on ProgressNote, aggregation engine, CSV export, 26 tests — 2026-02-24 (REP-SESS1)
-- [ ] Expand report template system to support more flexible data exports across various modules (REP-FLEX1)
+- [ ] Expand report template system to support more flexible data exports across various modules — JSON-LD (CIDS) is the first new format, see CIDS-EXPORT1 (REP-FLEX1)
 - [x] Add "All Programs" option to report filters for organization-wide summaries — 2026-02-24 (REP-ALL-PROGS1)
 - [x] Report preview on-screen before downloading — two preview views (template + ad-hoc), RBAC, print CSS, 33 tests — 2026-02-24 (REP-PREVIEW1)
 - [x] Add data visualisations (charts/graphs) to PDF reports — matplotlib chart_utils.py, accessible colours, hatch patterns — 2026-02-24 (REP-PDF1)
 - [x] Merge PDF title page with page 2 — compact header across all 6 PDF templates — 2026-02-24 (REP-PDF2)
-- [ ] Define standardised report schema for [funder partner] — 10-15 key metrics and demographic breakdowns shared across all partner agencies (RPT-SCHEMA1)
+- [ ] Define standardised report schema for [funder partner] — now part of CIDS config template pre-mapping, see CIDS-ADMIN1 (RPT-SCHEMA1)
 
 ### Phase: Surveys Future Work
 
