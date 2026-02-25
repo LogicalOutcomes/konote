@@ -22,6 +22,7 @@ QA_REPO = _PROJECT_ROOT.parent / "konote-qa-scenarios"
 PAGE_INVENTORY_PATH = QA_REPO / "pages" / "page-inventory.yaml"
 SCREENSHOT_DIR = QA_REPO / "reports" / "screenshots" / "pages"
 MANIFEST_PATH = SCREENSHOT_DIR / ".pages-manifest.json"
+AXE_REPORT_PATH = SCREENSHOT_DIR / "axe-a11y-report.json"
 
 # ---------------------------------------------------------------------------
 # Persona → test username mapping
@@ -152,6 +153,9 @@ def new_manifest():
         "states_captured": [],
         "breakpoints": list(_BREAKPOINTS.keys()),
         "total_screenshots": 0,
+        "axe_total_scans": 0,
+        "axe_pages_with_violations": 0,
+        "axe_total_violations": 0,
         "skipped": [],
         "missing_screenshots": [],
         "pages": [],
@@ -186,3 +190,116 @@ def expand_personas(authorized_personas):
             seen.add(p)
             result.append(p)
     return result
+
+
+# ---------------------------------------------------------------------------
+# Axe-core accessibility scanning
+# ---------------------------------------------------------------------------
+
+def run_axe_for_page(run_axe_fn):
+    """Run axe-core on the current page and return compact results.
+
+    Args:
+        run_axe_fn: Callable that injects axe (if needed) and returns
+                    the raw axe results dict (e.g. BrowserTestBase.run_axe).
+
+    Returns:
+        dict with keys: violation_count (int), violations (list of dicts),
+        and optionally error (str) if axe failed.
+    """
+    try:
+        raw = run_axe_fn()
+        violations = raw.get("violations", [])
+        compact = [
+            {
+                "id": v["id"],
+                "impact": v.get("impact", "unknown"),
+                "description": v.get("description", ""),
+                "help_url": v.get("helpUrl", ""),
+                "nodes_count": len(v.get("nodes", [])),
+            }
+            for v in violations
+        ]
+        return {"violation_count": len(compact), "violations": compact}
+    except Exception as exc:
+        return {"violation_count": 0, "violations": [], "error": str(exc)}
+
+
+def write_axe_report(scan_results, timestamp):
+    """Write the standalone axe-a11y-report.json file.
+
+    Groups violations by rule type across all pages, sorted by severity.
+    Written alongside the manifest in the screenshots directory.
+
+    Args:
+        scan_results: list of dicts, each with keys:
+            page_id, persona, state, violation_count, violations,
+            error (optional).
+        timestamp: ISO timestamp string.
+    """
+    by_rule = {}
+    clean_pages = set()
+    error_pages = []
+    pages_with_violations = set()
+
+    for scan in scan_results:
+        if scan.get("error"):
+            error_pages.append({
+                "page_id": scan["page_id"],
+                "persona": scan["persona"],
+                "state": scan["state"],
+                "error": scan["error"],
+            })
+            continue
+
+        if scan["violation_count"] == 0:
+            clean_pages.add(scan["page_id"])
+        else:
+            pages_with_violations.add(scan["page_id"])
+
+        for v in scan["violations"]:
+            rule_id = v["id"]
+            if rule_id not in by_rule:
+                by_rule[rule_id] = {
+                    "rule_id": rule_id,
+                    "impact": v["impact"],
+                    "description": v["description"],
+                    "help_url": v.get("help_url", ""),
+                    "affected_pages": [],
+                    "total_nodes": 0,
+                }
+            by_rule[rule_id]["affected_pages"].append({
+                "page_id": scan["page_id"],
+                "persona": scan["persona"],
+                "state": scan["state"],
+                "nodes_count": v["nodes_count"],
+            })
+            by_rule[rule_id]["total_nodes"] += v["nodes_count"]
+
+    # Sort by impact severity, then by total affected nodes descending
+    impact_order = {
+        "critical": 0, "serious": 1, "moderate": 2, "minor": 3, "unknown": 4,
+    }
+    summary = sorted(
+        by_rule.values(),
+        key=lambda r: (impact_order.get(r["impact"], 4), -r["total_nodes"]),
+    )
+    for entry in summary:
+        entry["total_affected_pages"] = len(entry["affected_pages"])
+
+    # Pages clean across ALL scans (no violations in any persona/state)
+    truly_clean = clean_pages - pages_with_violations
+
+    report = {
+        "timestamp": timestamp,
+        "total_scans": len(scan_results),
+        "total_pages_scanned": len({s["page_id"] for s in scan_results}),
+        "pages_with_violations": len(pages_with_violations),
+        "violation_summary": summary,
+        "clean_pages": sorted(truly_clean),
+        "scan_errors": error_pages,
+    }
+
+    SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
+    with open(AXE_REPORT_PATH, "w", encoding="utf-8") as f:
+        json.dump(report, f, indent=2, default=str)
