@@ -185,3 +185,88 @@ class Invite(models.Model):
     @property
     def is_valid(self):
         return not self.is_expired and not self.is_used
+
+
+class AccessGrantReason(models.Model):
+    """Configurable justification reasons for GATED clinical access.
+
+    Agencies can add, rename, or deactivate reasons. Five defaults are
+    created automatically by data migration.
+    """
+
+    label = models.CharField(max_length=100)
+    label_fr = models.CharField(
+        max_length=100, blank=True, default="",
+        help_text="French translation. Leave blank to use English label.",
+    )
+    is_active = models.BooleanField(default=True)
+    sort_order = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "auth_app"
+        db_table = "access_grant_reasons"
+        ordering = ["sort_order", "label"]
+
+    def __str__(self):
+        return self.label
+
+
+class AccessGrant(models.Model):
+    """Records a PM's documented justification for viewing clinical data.
+
+    Only enforced at Tier 3 (Clinical Safeguards). At Tiers 1-2, GATED
+    permissions are relaxed to ALLOW automatically by the decorator.
+
+    Two grant scopes:
+    - Program-level: grants access to all clinical data in a program
+      (routine supervision). client_file is null.
+    - Client-level: grants access to a specific client's clinical data
+      (cross-program or targeted review). client_file is set.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="access_grants",
+    )
+    program = models.ForeignKey(
+        "programs.Program",
+        on_delete=models.CASCADE,
+        related_name="access_grants",
+    )
+    client_file = models.ForeignKey(
+        "clients.ClientFile",
+        on_delete=models.CASCADE,
+        null=True, blank=True,
+        related_name="access_grants",
+        help_text="If null, grant covers all clients in the program.",
+    )
+    reason = models.ForeignKey(
+        AccessGrantReason,
+        on_delete=models.PROTECT,
+        related_name="grants",
+    )
+    justification = models.TextField(
+        help_text="Brief description of why access is needed.",
+    )
+    granted_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        app_label = "auth_app"
+        db_table = "access_grants"
+        ordering = ["-granted_at"]
+
+    def __str__(self):
+        scope = f"client {self.client_file_id}" if self.client_file_id else f"program {self.program_id}"
+        return f"Grant #{self.pk} for {self.user} → {scope}"
+
+    @property
+    def is_expired(self):
+        return timezone.now() > self.expires_at
+
+    @property
+    def is_valid(self):
+        return self.is_active and not self.is_expired
