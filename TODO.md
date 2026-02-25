@@ -92,8 +92,6 @@ Blocked on infrastructure (dedicated sprint):
 - [ ] Per-field front desk edit — build admin UI to configure which contact fields receptionist can edit (prerequisite for P5) (PERM-P8)
 - [ ] DV-safe mode — hide address/emergency contact from front desk when DV flag set; blocked on PERM-P8 — GK reviews (PERM-P5)
 
-### Phase: Other Upcoming
-
 ### Phase: Advanced Reporting
 
 - [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (see konote-prosper-canada/tasks/session-reporting-research.md for field requirements) (REP-SESS1)

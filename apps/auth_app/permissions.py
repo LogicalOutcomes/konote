@@ -601,7 +601,7 @@ def permission_to_plain_english(perm_key, perm_level):
     base = TRANSLATIONS.get(perm_key, perm_key)
 
     if perm_level == PROGRAM:
-        base += " (for their assigned clients/groups)"
+        base += " (within their assigned program)"
     elif perm_level == GATED:
         base += " (with documented reason)"
     elif perm_level == PER_FIELD:
