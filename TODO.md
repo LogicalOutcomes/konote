@@ -96,6 +96,7 @@ Blocked on infrastructure (dedicated sprint):
 - [ ] Add Evidence section to website — adapt docs/evidence-outcome-measurement.md into a public-facing page explaining the research behind KoNote's outcome measurement approach (see tasks/web-evidence-prompt.md) (WEB-EVIDENCE1)
 - [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST1)
 - [ ] Seed comm-my-messages populated state with actual messages — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST2)
+- [ ] Add new features and capabilities to the web site as they are built (WEBSITE-UPDATE1)
 
 ## Parking Lot: Ready to Build
 
