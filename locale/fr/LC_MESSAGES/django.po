@@ -15802,49 +15802,49 @@ msgid "min"
 msgstr "min"
 
 msgid "# ===== %(label)s ====="
-msgstr ""
+msgstr "# ===== %(label)s ====="
 
 msgid "# ===== %(name)s ====="
-msgstr ""
+msgstr "# ===== %(name)s ====="
 
 msgid "# ===== BREAKDOWN BY %(label)s ====="
-msgstr ""
+msgstr "# ===== VENTILATION PAR %(label)s ====="
 
 msgid "# All Programs \\u2014 Organisation Summary"
-msgstr ""
+msgstr "# Tous les programmes \\u2014 Sommaire de l'organisation"
 
 msgid "# Date Range: %(start)s to %(end)s"
-msgstr ""
+msgstr "# Période : %(start)s au %(end)s"
 
 msgid "# Fiscal Year: %(label)s"
-msgstr ""
+msgstr "# Année fiscale : %(label)s"
 
 msgid "# Grouped By: %(label)s"
-msgstr ""
+msgstr "# Regroupé par : %(label)s"
 
 msgid "# Program: %(name)s"
-msgstr ""
+msgstr "# Programme : %(name)s"
 
 msgid "# Total Clients: %(count)s"
-msgstr ""
+msgstr "# Total des clients : %(count)s"
 
 msgid "# Total Data Points: %(count)s"
-msgstr ""
+msgstr "# Total des points de données : %(count)s"
 
 msgid "# Total Participants: %(count)s"
-msgstr ""
+msgstr "# Total des participants : %(count)s"
 
 msgid "Dismiss welcome banner"
-msgstr ""
+msgstr "Fermer la bannière de bienvenue"
 
 msgid "View help guide"
-msgstr ""
+msgstr "Consulter le guide d’aide"
 
 msgid "Welcome banner"
-msgstr ""
+msgstr "Bannière de bienvenue"
 
 msgid "Welcome to KoNote! Need help getting started?"
-msgstr ""
+msgstr "Bienvenue sur KoNote! Besoin d’aide pour commencer?"
 
 msgid "%(date_from)s to %(date_to)s"
 msgstr "du %(date_from)s au %(date_to)s"
@@ -16106,3 +16106,516 @@ msgstr "sur cette page"
 
 msgid "selected"
 msgstr "sélectionné(s)"
+
+msgid "1 day"
+msgstr "1 jour"
+
+msgid "14 days"
+msgstr "14 jours"
+
+msgid "3 days"
+msgstr "3 jours"
+
+msgid "30 days"
+msgstr "30 jours"
+
+msgid "7 days"
+msgstr "7 jours"
+
+msgid "A program manager must approve removal."
+msgstr "Un gestionnaire de programme doit approuver le retrait."
+
+msgid "A removal request is already pending for this participant."
+msgstr "Une demande de retrait est déjà en attente pour ce participant."
+
+msgid "A removal request is already pending."
+msgstr "Une demande de retrait est déjà en attente."
+
+msgid "Access Grant Reasons"
+msgstr "Motifs d’autorisation d’accès"
+
+msgid "Access Grants"
+msgstr "Autorisations d’accès"
+
+msgid "Access Tier"
+msgstr "Niveau d’accès"
+
+msgid "Access grant reasons are only used at Tier 3."
+msgstr "Les motifs d’autorisation d’accès ne sont utilisés qu’au niveau 3."
+
+msgid ""
+"Access grants are logged for privacy compliance. Your justification will be "
+"recorded in the audit trail."
+msgstr ""
+"Les autorisations d’accès sont consignées pour la conformité à la vie "
+"privée. Votre justification sera enregistrée dans le journal de "
+"vérification."
+
+msgid "Access grants are only required at Tier 3."
+msgstr "Les autorisations d’accès ne sont requises qu’au niveau 3."
+
+msgid "Access grants are only used at Tier 3."
+msgstr "Les autorisations d’accès ne sont utilisées qu’au niveau 3."
+
+msgid "Active Grants"
+msgstr "Autorisations actives"
+
+msgid "Add Reason"
+msgstr "Ajouter un motif"
+
+msgid "Add a Reason"
+msgstr "Ajouter un motif"
+
+msgid "Add a note about your decision."
+msgstr "Ajoutez une note à propos de votre décision."
+
+msgid ""
+"Additional protections for clinical and safety-sensitive data. Program "
+"managers must document why they need to view clinical notes, with time-"
+"limited access. DV-safe mode is prompted during setup."
+msgstr ""
+"Protections supplémentaires pour les données cliniques et sensibles en "
+"matière de sécurité. Les gestionnaires de programme doivent documenter "
+"pourquoi ils ont besoin de consulter les notes cliniques, avec un accès "
+"limité dans le temps. Le mode sécuritaire VD est proposé lors de la "
+"configuration."
+
+msgid "All clients"
+msgstr "Tous les clients"
+
+msgid ""
+"All clinical access grants across the agency. Grants are created when "
+"program managers document their reason for viewing clinical data at Tier 3."
+msgstr ""
+"Toutes les autorisations d’accès clinique de l’organisme. Les "
+"autorisations sont créées lorsque les gestionnaires de programme "
+"documentent leur motif pour consulter les données cliniques au niveau 3."
+
+msgid "Approve — Remove DV Flag"
+msgstr "Approuver — Retirer l’indicateur VD"
+
+msgid ""
+"Approving will remove the DV safety flag and make previously hidden fields "
+"visible to front desk staff again. This action is audit logged."
+msgstr ""
+"L’approbation retirera l’indicateur de sécurité VD et rendra les champs "
+"précédemment masqués visibles à nouveau pour le personnel de la "
+"réception. Cette action est consignée dans le journal de vérification."
+
+msgid "Brief explanation"
+msgstr "Brève explication"
+
+msgid "Clinical Access Grants"
+msgstr "Autorisations d’accès clinique"
+
+msgid "Clinical Safeguards"
+msgstr "Mesures de protection clinique"
+
+msgid "Clinical data you currently have access to, and recent expired grants."
+msgstr ""
+"Données cliniques auxquelles vous avez actuellement accès, et "
+"autorisations récemment expirées."
+
+msgid ""
+"Configure which fields front desk can see or edit. DV-safe mode is "
+"available."
+msgstr ""
+"Configurez les champs que la réception peut voir ou modifier. Le mode "
+"sécuritaire VD est disponible."
+
+msgid ""
+"Configure which fields front desk staff can see or edit on participant "
+"records."
+msgstr ""
+"Configurez les champs que le personnel de la réception peut voir ou "
+"modifier dans les dossiers des participants."
+
+msgid ""
+"Controls which advanced permission features are active. The baseline role "
+"matrix (front desk, worker, manager, executive) is always enforced at every "
+"tier."
+msgstr ""
+"Contrôle les fonctionnalités avancées de permission qui sont actives. "
+"La matrice de rôles de base (réception, intervenant, gestionnaire, "
+"direction) est toujours appliquée à chaque niveau."
+
+msgid ""
+"Controls which advanced permission features are active. The baseline role "
+"matrix is always enforced."
+msgstr ""
+"Contrôle les fonctionnalités avancées de permission qui sont actives. "
+"La matrice de rôles de base est toujours appliquée."
+
+msgid "Core Fields"
+msgstr "Champs de base"
+
+msgid "DV Safety"
+msgstr "Sécurité VD"
+
+msgid ""
+"DV safety flag has been enabled. Sensitive fields are now hidden from front "
+"desk staff."
+msgstr ""
+"L’indicateur de sécurité VD a été activé. Les champs sensibles sont "
+"maintenant masqués pour le personnel de la réception."
+
+msgid "DV safety flag has been removed."
+msgstr "L’indicateur de sécurité VD a été retiré."
+
+msgid ""
+"DV safety flag is active. Sensitive fields (address, emergency contact, "
+"employer) are hidden from front desk staff."
+msgstr ""
+"L’indicateur de sécurité VD est actif. Les champs sensibles (adresse, "
+"contact d’urgence, employeur) sont masqués pour le personnel de la "
+"réception."
+
+msgid "DV safety flag is already enabled for this participant."
+msgstr "L’indicateur de sécurité VD est déjà activé pour ce participant."
+
+msgid ""
+"DV safety flag is not active. Enable it to hide sensitive fields from front "
+"desk staff."
+msgstr ""
+"L’indicateur de sécurité VD n’est pas actif. Activez-le pour masquer "
+"les champs sensibles au personnel de la réception."
+
+msgid "DV safety flag is not enabled for this participant."
+msgstr "L’indicateur de sécurité VD n’est pas activé pour ce participant."
+
+msgid "DV-safe mode is not available at this access tier."
+msgstr "Le mode sécuritaire VD n’est pas disponible à ce niveau d’accès."
+
+msgid "DV-sensitive"
+msgstr "Sensible VD"
+
+msgid ""
+"Different roles see different things, and you can configure exactly which "
+"fields front desk can see or edit. Good for agencies with distinct front "
+"desk, worker, and manager functions. DV-safe mode is available."
+msgstr ""
+"Les différents rôles voient différentes choses, et vous pouvez "
+"configurer exactement quels champs la réception peut voir ou modifier. "
+"Idéal pour les organismes avec des fonctions distinctes de réception, "
+"d’intervenant et de gestionnaire. Le mode sécuritaire VD est disponible."
+
+msgid "Duplicate export"
+msgstr "Exportation en double"
+
+msgid "Enable DV Safety"
+msgstr "Activer la sécurité VD"
+
+msgid ""
+"Enable DV safety flag? Sensitive fields will be hidden from front desk staff"
+" immediately."
+msgstr ""
+"Activer l’indicateur de sécurité VD? Les champs sensibles seront "
+"masqués immédiatement pour le personnel de la réception."
+
+msgid "Error"
+msgstr "Erreur"
+
+msgid ""
+"Everyone on the team sees what they need for their role. Good for programs "
+"where data is non-sensitive and the team is small. Front desk still cannot "
+"see clinical notes. Executives see aggregate data only."
+msgstr ""
+"Chaque membre de l’équipe voit ce dont il a besoin pour son rôle. Idéal "
+"pour les programmes où les données ne sont pas sensibles et l’équipe "
+"est petite. La réception ne peut toujours pas voir les notes cliniques. "
+"La direction ne voit que les données agrégées."
+
+msgid "Explain why the DV safety flag should be removed for this participant."
+msgstr ""
+"Expliquez pourquoi l’indicateur de sécurité VD devrait être retiré pour "
+"ce participant."
+
+msgid "Explain why the DV safety flag should be removed."
+msgstr "Expliquez pourquoi l’indicateur de sécurité VD devrait être retiré."
+
+msgid "Exporting…"
+msgstr "Exportation en cours…"
+
+msgid "Field Access for Front Desk"
+msgstr "Accès aux champs pour la réception"
+
+msgid "Field access configuration requires Tier 2 or higher."
+msgstr ""
+"La configuration de l’accès aux champs nécessite le niveau 2 ou "
+"supérieur."
+
+msgid "Field access settings reset to safe defaults."
+msgstr ""
+"Les paramètres d’accès aux champs ont été réinitialisés aux valeurs par "
+"défaut sécuritaires."
+
+msgid "Field access settings saved."
+msgstr "Les paramètres d’accès aux champs ont été enregistrés."
+
+msgid "French (optional)"
+msgstr "Français (facultatif)"
+
+msgid "Front Desk Access"
+msgstr "Accès de la réception"
+
+msgid ""
+"Good for programs where data is non-sensitive and the team is small. Front "
+"desk still cannot see clinical notes."
+msgstr ""
+"Idéal pour les programmes où les données ne sont pas sensibles et "
+"l’équipe est petite. La réception ne peut toujours pas voir les notes "
+"cliniques."
+
+msgid "Granted"
+msgstr "Accordé"
+
+msgid "Hidden"
+msgstr "Masqué"
+
+msgid "How long do you need access?"
+msgstr "Pour combien de temps avez-vous besoin d’accès?"
+
+msgid ""
+"Identity fields (name, record ID, status) are always visible to all roles "
+"and cannot be hidden."
+msgstr ""
+"Les champs d’identité (nom, ID du dossier, statut) sont toujours "
+"visibles pour tous les rôles et ne peuvent pas être masqués."
+
+msgid "If you need another copy, please use the form below."
+msgstr ""
+"Si vous avez besoin d’une autre copie, veuillez utiliser le formulaire "
+"ci-dessous."
+
+msgid "Justification"
+msgstr "Justification"
+
+msgid "Manage Field Access"
+msgstr "Gérer l’accès aux champs"
+
+msgid "Manage Reasons"
+msgstr "Gérer les motifs"
+
+msgid ""
+"Manage the list of reasons program managers can choose when requesting "
+"clinical access."
+msgstr ""
+"Gérez la liste des motifs que les gestionnaires de programme peuvent "
+"choisir lorsqu’ils demandent un accès clinique."
+
+msgid ""
+"Manage the list of reasons program managers can choose when requesting "
+"clinical data access."
+msgstr ""
+"Gérez la liste des motifs que les gestionnaires de programme peuvent "
+"choisir lorsqu’ils demandent un accès aux données cliniques."
+
+msgid "Maximum duration is %(max)s days."
+msgstr "La durée maximale est de %(max)s jours."
+
+msgid "My Access Grants"
+msgstr "Mes autorisations d’accès"
+
+msgid "No access grants have been created."
+msgstr "Aucune autorisation d’accès n’a été créée."
+
+msgid "No active grants"
+msgstr "Aucune autorisation active"
+
+msgid "No custom fields have been created yet."
+msgstr "Aucun champ personnalisé n’a encore été créé."
+
+msgid "No fields accessible"
+msgstr "Aucun champ accessible"
+
+msgid "No recent expired grants."
+msgstr "Aucune autorisation récemment expirée."
+
+msgid "Only program managers can review DV flag removal requests."
+msgstr ""
+"Seuls les gestionnaires de programme peuvent examiner les demandes de "
+"retrait de l’indicateur VD."
+
+msgid "Open Access"
+msgstr "Accès ouvert"
+
+msgid "Please provide a reason for removing the DV safety flag."
+msgstr ""
+"Veuillez fournir un motif pour le retrait de l’indicateur de sécurité "
+"VD."
+
+msgid "Please wait for a program manager to review the existing request."
+msgstr ""
+"Veuillez attendre qu’un gestionnaire de programme examine la demande "
+"existante."
+
+msgid ""
+"Program managers must document why they need clinical notes, with time-"
+"limited access. DV-safe mode prompted during setup."
+msgstr ""
+"Les gestionnaires de programme doivent documenter pourquoi ils ont "
+"besoin des notes cliniques, avec un accès limité dans le temps. Le mode "
+"sécuritaire VD est proposé lors de la configuration."
+
+msgid "Reason for access"
+msgstr "Motif d’accès"
+
+msgid "Reason for removal"
+msgstr "Motif de retrait"
+
+msgid "Recent Expired / Revoked"
+msgstr "Récemment expirées / révoquées"
+
+msgid "Reject — Keep DV Flag"
+msgstr "Rejeter — Conserver l’indicateur VD"
+
+msgid "Removal request has been rejected. The DV safety flag remains active."
+msgstr ""
+"La demande de retrait a été rejetée. L’indicateur de sécurité VD reste "
+"actif."
+
+msgid "Removal request pending"
+msgstr "Demande de retrait en attente"
+
+msgid ""
+"Removal request submitted. A program manager must review and approve it."
+msgstr ""
+"Demande de retrait soumise. Un gestionnaire de programme doit "
+"l’examiner et l’approuver."
+
+msgid "Request Access"
+msgstr "Demander l’accès"
+
+msgid "Request Clinical Access"
+msgstr "Demander un accès clinique"
+
+msgid "Request DV Flag Removal"
+msgstr "Demander le retrait de l’indicateur VD"
+
+msgid "Request Removal"
+msgstr "Demander le retrait"
+
+msgid "Requested"
+msgstr "Demandé"
+
+msgid "Requested by"
+msgstr "Demandé par"
+
+msgid ""
+"Reset all field access settings to safe defaults? This cannot be undone."
+msgstr ""
+"Réinitialiser tous les paramètres d’accès aux champs aux valeurs par "
+"défaut sécuritaires? Cette action est irréversible."
+
+msgid "Reset to Defaults"
+msgstr "Réinitialiser aux valeurs par défaut"
+
+msgid "Reset to Safe Defaults"
+msgstr "Réinitialiser aux valeurs par défaut sécuritaires"
+
+msgid "Review DV Flag Removal"
+msgstr "Examiner le retrait de l’indicateur VD"
+
+msgid "Review DV Flag Removal Request"
+msgstr "Examiner la demande de retrait de l’indicateur VD"
+
+msgid "Review note (optional)"
+msgstr "Note d’examen (facultatif)"
+
+msgid "Reviewer's note on approval or rejection."
+msgstr "Note de l’examinateur sur l’approbation ou le rejet."
+
+msgid "Revoke Access Grant"
+msgstr "Révoquer l’autorisation d’accès"
+
+msgid "Revoke Now"
+msgstr "Révoquer maintenant"
+
+msgid "Role-Based"
+msgstr "Basé sur les rôles"
+
+msgid "Scope"
+msgstr "Portée"
+
+msgid "Submit Request"
+msgstr "Soumettre la demande"
+
+msgid "These are built-in fields on every participant record."
+msgstr "Ce sont les champs intégrés à chaque dossier de participant."
+
+msgid ""
+"These are fields your organisation has added. They are grouped by section."
+msgstr ""
+"Ce sont les champs que votre organisation a ajoutés. Ils sont regroupés "
+"par section."
+
+msgid "This export was already submitted."
+msgstr "Cette exportation a déjà été soumise."
+
+msgid "This will be reviewed by a program manager before the flag is removed."
+msgstr ""
+"Ceci sera examiné par un gestionnaire de programme avant que "
+"l’indicateur ne soit retiré."
+
+msgid ""
+"This will immediately end your access to the clinical data covered by this "
+"grant."
+msgstr ""
+"Ceci mettra immédiatement fin à votre accès aux données cliniques "
+"couvertes par cette autorisation."
+
+msgid ""
+"This will remove all customised field access settings and restore the safe "
+"defaults for your access tier. All custom fields will be set to hidden."
+msgstr ""
+"Ceci supprimera tous les paramètres personnalisés d’accès aux champs et "
+"restaurera les valeurs par défaut sécuritaires pour votre niveau "
+"d’accès. Tous les champs personnalisés seront masqués."
+
+msgid "Unable to determine which program this access is for."
+msgstr "Impossible de déterminer à quel programme cet accès est destiné."
+
+msgid "View Grants"
+msgstr "Voir les autorisations"
+
+msgid "View and edit"
+msgstr "Voir et modifier"
+
+msgid ""
+"View and monitor all documented justifications for program manager access to"
+" clinical data."
+msgstr ""
+"Consultez et surveillez toutes les justifications documentées pour "
+"l’accès des gestionnaires de programme aux données cliniques."
+
+msgid "View only"
+msgstr "Consultation seulement"
+
+msgid ""
+"When checked, this field is hidden from front desk staff for participants "
+"with a DV safety flag."
+msgstr ""
+"Lorsque coché, ce champ est masqué pour le personnel de la réception "
+"pour les participants ayant un indicateur de sécurité VD."
+
+msgid "You do not have permission to set the DV safety flag."
+msgstr "Vous n’avez pas la permission de définir l’indicateur de sécurité VD."
+
+msgid "You have no active access grants."
+msgstr "Vous n’avez aucune autorisation d’accès active."
+
+msgid ""
+"Your role requires a documented reason before viewing clinical data. Please "
+"explain why you need access."
+msgstr ""
+"Votre rôle exige un motif documenté avant de consulter les données "
+"cliniques. Veuillez expliquer pourquoi vous avez besoin d’accès."
+
+msgid "e.g. Audit de programme"
+msgstr "p. ex. Audit de programme"
+
+msgid "e.g. Program audit"
+msgstr "p. ex. Audit de programme"
+
+msgid "name@example.com"
+msgstr "nom@exemple.com"
