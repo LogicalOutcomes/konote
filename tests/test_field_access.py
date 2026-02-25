@@ -216,3 +216,106 @@ class FieldAccessAdminViewTest(TestCase):
         resp = self.client.get("/admin/settings/")
         self.assertEqual(resp.status_code, 200)
         self.assertNotContains(resp, "Field Access for Front Desk")
+
+    def test_saving_creates_audit_log(self):
+        """Saving field access changes creates an audit log entry."""
+        from apps.audit.models import AuditLog
+
+        self.client.login(username="admin", password="testpass123")
+        self.client.post("/admin/settings/field-access/", {
+            "core_phone": "view",
+            "core_email": "edit",
+            "core_preferred_name": "view",
+            "core_birth_date": "none",
+        })
+        logs = AuditLog.objects.using("audit").filter(
+            resource_type="settings",
+            action="update",
+        )
+        self.assertTrue(logs.exists())
+        log = logs.first()
+        self.assertIn("field_access", log.metadata.get("setting", ""))
+        self.assertIn("phone", log.metadata.get("changes", {}))
+
+    def test_saving_unchanged_creates_no_audit_log(self):
+        """Saving without changes does not create an audit log entry."""
+        from apps.audit.models import AuditLog
+
+        self.client.login(username="admin", password="testpass123")
+        # Save with the defaults — no change
+        self.client.post("/admin/settings/field-access/", {
+            "core_phone": "edit",
+            "core_email": "edit",
+            "core_preferred_name": "view",
+            "core_birth_date": "none",
+        })
+        logs = AuditLog.objects.using("audit").filter(
+            resource_type="settings",
+            action="update",
+        )
+        self.assertFalse(logs.exists())
+
+    def test_reset_to_defaults(self):
+        """Reset to defaults clears all stored config and sets custom fields to hidden."""
+        from apps.audit.models import AuditLog
+
+        # Create some config
+        FieldAccessConfig.objects.create(field_name="phone", front_desk_access="none")
+        group = CustomFieldGroup.objects.create(title="Demographics")
+        cf = CustomFieldDefinition.objects.create(
+            group=group, name="Pronouns", input_type="text", front_desk_access="edit",
+        )
+
+        self.client.login(username="admin", password="testpass123")
+        resp = self.client.post("/admin/settings/field-access/", {
+            "action": "reset_defaults",
+        })
+        self.assertEqual(resp.status_code, 302)
+
+        # Config rows deleted — safe defaults apply
+        self.assertEqual(FieldAccessConfig.objects.count(), 0)
+        self.assertEqual(FieldAccessConfig.get_access("phone"), "edit")
+
+        # Custom fields reset to hidden
+        cf.refresh_from_db()
+        self.assertEqual(cf.front_desk_access, "none")
+
+        # Audit log created
+        logs = AuditLog.objects.using("audit").filter(
+            resource_type="settings",
+            metadata__setting="field_access",
+        )
+        self.assertTrue(logs.exists())
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class TierSensitiveDefaultsTest(TestCase):
+    """Tests for tier-sensitive safe defaults."""
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def test_tier_1_email_defaults_to_edit(self):
+        """At Tier 1, email defaults to 'edit'."""
+        # Tier 1 is default when no InstanceSetting exists
+        result = FieldAccessConfig.get_all_access()
+        self.assertEqual(result["email"], "edit")
+
+    def test_tier_2_email_defaults_to_edit(self):
+        """At Tier 2, email still defaults to 'edit'."""
+        InstanceSetting.objects.create(setting_key="access_tier", setting_value="2")
+        result = FieldAccessConfig.get_all_access()
+        self.assertEqual(result["email"], "edit")
+
+    def test_tier_3_email_defaults_to_view(self):
+        """At Tier 3, email defaults to 'view' (tighter for clinical safety)."""
+        InstanceSetting.objects.create(setting_key="access_tier", setting_value="3")
+        result = FieldAccessConfig.get_all_access()
+        self.assertEqual(result["email"], "view")
+
+    def test_tier_3_stored_config_overrides_default(self):
+        """Stored config still overrides tier-sensitive defaults."""
+        InstanceSetting.objects.create(setting_key="access_tier", setting_value="3")
+        FieldAccessConfig.objects.create(field_name="email", front_desk_access="edit")
+        result = FieldAccessConfig.get_all_access()
+        self.assertEqual(result["email"], "edit")

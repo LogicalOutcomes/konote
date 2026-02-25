@@ -647,9 +647,17 @@ class FieldAccessConfig(models.Model):
     # Default access for core fields when no FieldAccessConfig row exists.
     # At Tier 1, these defaults are used without admin UI.
     # At Tier 2+, admin can override via the field access page.
+    # Tier 3 uses tighter defaults (email: view only) for clinical safety.
     SAFE_DEFAULTS = {
         "phone": "edit",
         "email": "edit",
+        "birth_date": "none",
+        "preferred_name": "view",
+    }
+
+    SAFE_DEFAULTS_TIER3 = {
+        "phone": "edit",
+        "email": "view",
         "birth_date": "none",
         "preferred_name": "view",
     }
@@ -675,20 +683,33 @@ class FieldAccessConfig(models.Model):
         return f"{self.field_name}: {self.get_front_desk_access_display()}"
 
     @classmethod
+    def _get_defaults(cls):
+        """Return the appropriate safe defaults for the current access tier.
+
+        Tier 3 (clinical) uses tighter defaults — email is view-only
+        instead of editable, since email addresses can be a safety
+        concern in clinical and DV-serving agencies.
+        """
+        from apps.admin_settings.models import get_access_tier
+        if get_access_tier() >= 3:
+            return cls.SAFE_DEFAULTS_TIER3
+        return cls.SAFE_DEFAULTS
+
+    @classmethod
     def get_access(cls, field_name):
         """Return the front desk access level for a core field.
 
-        Falls back to SAFE_DEFAULTS if no config row exists.
+        Falls back to tier-sensitive safe defaults if no config row exists.
         """
         try:
             return cls.objects.get(field_name=field_name).front_desk_access
         except cls.DoesNotExist:
-            return cls.SAFE_DEFAULTS.get(field_name, "none")
+            return cls._get_defaults().get(field_name, "none")
 
     @classmethod
     def get_all_access(cls):
         """Return dict of field_name -> access level for all configurable fields."""
-        result = dict(cls.SAFE_DEFAULTS)  # Start with defaults
+        result = dict(cls._get_defaults())  # Start with tier-sensitive defaults
         for config in cls.objects.all():
             result[config.field_name] = config.front_desk_access
         return result
