@@ -2543,6 +2543,7 @@ class Command(BaseCommand):
                 "record_id": "DEMO-001",
                 "worker": worker1,
                 "program": "Supported Employment",
+                "title": "Resume review follow-up",
                 "days_offset": 3,
                 "location": "Office A — 2nd floor",
                 "status": "scheduled",
@@ -2573,7 +2574,8 @@ class Command(BaseCommand):
                 "record_id": "DEMO-004",
                 "worker": worker1,
                 "program": "Housing Stability",
-                "days_offset": 5,
+                "title": "Housing tribunal prep",
+                "days_offset": 1,
                 "location": "Housing Support Office",
                 "status": "scheduled",
                 "duration": 60,
@@ -2613,7 +2615,8 @@ class Command(BaseCommand):
                 "record_id": "DEMO-010",
                 "worker": worker2,
                 "program": "Newcomer Connections",
-                "days_offset": 6,
+                "title": "Settlement check-in",
+                "days_offset": 5,
                 "location": "Settlement Office",
                 "status": "scheduled",
                 "duration": 60,
@@ -2763,10 +2766,10 @@ class Command(BaseCommand):
                 hours=random.choice([9, 10, 11, 13, 14, 15]),
             )
 
-            # Create the underlying Event
+            # Create the underlying Event (use title from data or default)
             event = Event.objects.create(
                 client_file=client,
-                title="Meeting",
+                title=md.get("title", "Meeting"),
                 start_timestamp=timestamp,
                 author_program=program,
             )
