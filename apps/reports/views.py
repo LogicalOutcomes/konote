@@ -690,16 +690,16 @@ def export_form(request):
             # Aggregate CSV — summary statistics only
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
-            writer.writerow(sanitise_csv_row([f"# Program: {program_display_name}"]))
-            writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
-            writer.writerow(sanitise_csv_row([f"# Total Participants: {total_clients_display}"]))
+            writer.writerow(sanitise_csv_row([_("# Program: %(name)s") % {"name": program_display_name}]))
+            writer.writerow(sanitise_csv_row([_("# Date Range: %(start)s to %(end)s") % {"start": date_from, "end": date_to}]))
+            writer.writerow(sanitise_csv_row([_("# Total Participants: %(count)s") % {"count": total_clients_display}]))
             writer.writerow(sanitise_csv_row([_("# Export Mode: Aggregate Summary")]))
             if all_programs_mode:
                 writer.writerow(sanitise_csv_row([
                     _("# Note: Participants enrolled in multiple programs are counted once per program.")
                 ]))
             if grouping_type != "none":
-                writer.writerow(sanitise_csv_row([f"# Grouped By: {grouping_label}"]))
+                writer.writerow(sanitise_csv_row([_("# Grouped By: %(label)s") % {"label": grouping_label}]))
 
             # Achievement rate summary (same as individual path — already aggregate)
             if achievement_summary:
@@ -724,7 +724,7 @@ def export_form(request):
             # Demographic breakdown table
             if demographic_aggregate_rows:
                 writer.writerow([])
-                writer.writerow(sanitise_csv_row([f"# ===== BREAKDOWN BY {grouping_label.upper()} ====="]))
+                writer.writerow(sanitise_csv_row([_("# ===== BREAKDOWN BY %(label)s =====") % {"label": grouping_label.upper()}]))
                 writer.writerow(sanitise_csv_row([
                     grouping_label, _("Metric Name"), _("Participants Measured"), _("Average"), _("Min"), _("Max"),
                 ]))
@@ -742,7 +742,7 @@ def export_form(request):
             if report_template_breakdown_sections:
                 for section in report_template_breakdown_sections:
                     writer.writerow([])
-                    writer.writerow(sanitise_csv_row([f"# ===== {section['label'].upper()} ====="]))
+                    writer.writerow(sanitise_csv_row([_("# ===== %(label)s =====") % {"label": section['label'].upper()}]))
                     writer.writerow(sanitise_csv_row([
                         section["label"], _("Metric Name"), _("Participants Measured"), _("Average"), _("Min"), _("Max"),
                     ]))
@@ -822,12 +822,12 @@ def export_form(request):
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
             # Summary header rows (prefixed with # so spreadsheet apps treat them as comments)
-            writer.writerow(sanitise_csv_row([f"# Program: {program_display_name}"]))
-            writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
-            writer.writerow(sanitise_csv_row([f"# Total Clients: {total_clients_display}"]))
-            writer.writerow(sanitise_csv_row([f"# Total Data Points: {total_data_points_display}"]))
+            writer.writerow(sanitise_csv_row([_("# Program: %(name)s") % {"name": program_display_name}]))
+            writer.writerow(sanitise_csv_row([_("# Date Range: %(start)s to %(end)s") % {"start": date_from, "end": date_to}]))
+            writer.writerow(sanitise_csv_row([_("# Total Clients: %(count)s") % {"count": total_clients_display}]))
+            writer.writerow(sanitise_csv_row([_("# Total Data Points: %(count)s") % {"count": total_data_points_display}]))
             if grouping_type != "none":
-                writer.writerow(sanitise_csv_row([f"# Grouped By: {grouping_label}"]))
+                writer.writerow(sanitise_csv_row([_("# Grouped By: %(label)s") % {"label": grouping_label}]))
 
             # Achievement rate summary if requested
             if achievement_summary:
@@ -1253,11 +1253,11 @@ def funder_report_form(request):
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
             writer.writerow(sanitise_csv_row([
-                f"# All Programs \u2014 Organisation Summary"
+                _("# All Programs \u2014 Organisation Summary")
             ]))
-            writer.writerow(sanitise_csv_row([f"# Fiscal Year: {fiscal_year_label}"]))
+            writer.writerow(sanitise_csv_row([_("# Fiscal Year: %(label)s") % {"label": fiscal_year_label}]))
             writer.writerow(sanitise_csv_row([
-                f"# Date Range: {date_from} to {date_to}"
+                _("# Date Range: %(start)s to %(end)s") % {"start": date_from, "end": date_to}
             ]))
             writer.writerow(sanitise_csv_row([
                 _("# Note: Participants enrolled in multiple programs are counted once per program.")
@@ -1265,7 +1265,7 @@ def funder_report_form(request):
             writer.writerow([])
             for ap, rd in all_report_sections:
                 writer.writerow(sanitise_csv_row([
-                    f"# ===== {ap.name} ====="
+                    _("# ===== %(name)s =====") % {"name": ap.name}
                 ]))
                 csv_rows = generate_funder_report_csv_rows(rd)
                 for row in csv_rows:
