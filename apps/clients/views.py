@@ -342,6 +342,10 @@ def client_list(request):
     # Show create button if user's role grants client.create permission
     user_role = _get_user_highest_role(request.user)
     can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
+    # Bulk operation permission flags (UX17)
+    can_bulk_status = PERMISSIONS.get(user_role, {}).get("client.edit", DENY) != DENY
+    can_bulk_transfer = PERMISSIONS.get(user_role, {}).get("client.transfer", DENY) != DENY
+    show_bulk = can_bulk_status or can_bulk_transfer
 
     context = {
         "page": page,
@@ -353,6 +357,9 @@ def client_list(request):
         "search_query": request.GET.get("q", ""),
         "sort_by": sort_by,
         "can_create": can_create,
+        "show_bulk": show_bulk,
+        "can_bulk_status": can_bulk_status,
+        "can_bulk_transfer": can_bulk_transfer,
     }
 
     # HTMX request — return only the table partial
