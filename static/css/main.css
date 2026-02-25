@@ -4520,6 +4520,10 @@ article[aria-label="notification"].fading-out {
 .onboarding-banner li {
     margin-bottom: var(--kn-space-xs);
 }
+.onboarding-banner .onboarding-help-link {
+    margin: var(--kn-space-sm) 0 0;
+    font-size: 0.9rem;
+}
 
 /* Goal form — onboarding and step indicator */
 .onboarding-hint {
