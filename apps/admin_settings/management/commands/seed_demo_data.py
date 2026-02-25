@@ -1548,6 +1548,9 @@ class Command(BaseCommand):
         # --- Create calendar feed tokens for demo workers ---
         self._create_demo_calendar_feeds(workers)
 
+        # --- Create narrative progress notes ---
+        self._create_narrative_notes(workers, programs_by_name, now)
+
         # --- Create suggestion themes and link to notes ---
         self._create_demo_suggestion_themes(workers, programs_by_name)
 
@@ -2100,6 +2103,95 @@ class Command(BaseCommand):
                 recommended_by=recommender,
                 assessment=rec["assessment"],
             )
+
+    # ------------------------------------------------------------------
+    # Narrative progress notes — human-readable case notes for demo
+    # ------------------------------------------------------------------
+
+    def _create_narrative_notes(self, workers, programs_by_name, now):
+        """Create readable narrative notes that bring the demo to life.
+
+        These supplement the metric-bearing notes from _seed_client_data
+        with plain-language case notes a worker might actually write.
+        """
+        narrative_data = [
+            {
+                "record_id": "DEMO-001",
+                "program": "Supported Employment",
+                "worker": "demo-worker-1",
+                "days_ago": 5,
+                "note_type": "full",
+                "interaction_type": "session",
+                "text": (
+                    "Client completed resume update. Identified 3 target employers "
+                    "in logistics sector. Next step: mock interview practice."
+                ),
+            },
+            {
+                "record_id": "DEMO-004",
+                "program": "Housing Stability",
+                "worker": "demo-worker-1",
+                "days_ago": 3,
+                "note_type": "full",
+                "interaction_type": "collateral",
+                "text": (
+                    "Accompanied client to housing tribunal hearing. Application "
+                    "for rent supplement submitted. Awaiting decision within 2 weeks."
+                ),
+            },
+            {
+                "record_id": "DEMO-007",
+                "program": "Youth Drop-In",
+                "worker": "demo-worker-2",
+                "days_ago": 7,
+                "note_type": "quick",
+                "interaction_type": "group",
+                "text": (
+                    "Jayden participated in homework club. Completed math assignment "
+                    "with peer tutor support. Expressed interest in coding workshop."
+                ),
+            },
+            {
+                "record_id": "DEMO-010",
+                "program": "Newcomer Connections",
+                "worker": "demo-worker-2",
+                "days_ago": 4,
+                "note_type": "full",
+                "interaction_type": "session",
+                "text": (
+                    "Assisted with Service Canada appointment scheduling. Reviewed "
+                    "banking documents. Client reports feeling more confident "
+                    "navigating services independently."
+                ),
+            },
+        ]
+
+        created = 0
+        for nd in narrative_data:
+            client = ClientFile.objects.filter(record_id=nd["record_id"]).first()
+            if not client:
+                continue
+            program = programs_by_name.get(nd["program"])
+            author = workers.get(nd["worker"])
+            if not program or not author:
+                continue
+
+            note = ProgressNote(
+                client_file=client,
+                author=author,
+                author_program=program,
+                note_type=nd["note_type"],
+                interaction_type=nd["interaction_type"],
+            )
+            note.notes_text = nd["text"]
+            note.save()
+
+            # Backdate for realistic timeline spread
+            backdated = now - timedelta(days=nd["days_ago"])
+            ProgressNote.objects.filter(pk=note.pk).update(created_at=backdated)
+            created += 1
+
+        self.stdout.write(f"  Narrative notes: {created} created.")
 
     # ------------------------------------------------------------------
     # Demo groups: groups and projects
