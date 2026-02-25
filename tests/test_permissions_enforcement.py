@@ -3,7 +3,7 @@
 Tests all 48 permission keys x 4 roles = 192 cases. For each (role, key)
 pair, makes an HTTP request to the URL protected by that key and asserts:
   - DENY -> 403 (or 302 redirect for executives on client-scoped URLs)
-  - ALLOW / SCOPED / GATED / PER_FIELD -> NOT 403
+  - ALLOW / PROGRAM / GATED / PER_FIELD -> NOT 403
 
 Keys with field-level enforcement (no URL to test):
   client.view_name, client.view_contact, client.view_safety,

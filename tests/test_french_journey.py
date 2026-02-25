@@ -327,7 +327,7 @@ class ClientDetailFrenchTest(FrenchJourneyBaseTest):
 
     def test_client_edit_form_labels_in_french(self):
         """Client edit form has French labels."""
-        # Staff role has client.edit SCOPED (same as program_manager)
+        # Staff role has client.edit PROGRAM (same as program_manager)
         self._login_staff_fr()
         resp = self.http.get(f"/participants/{self.client_file.pk}/edit/")
         self.assertEqual(resp.status_code, 200)

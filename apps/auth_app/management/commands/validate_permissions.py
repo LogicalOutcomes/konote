@@ -25,14 +25,14 @@ class Command(BaseCommand):
             for role in ["receptionist", "staff", "program_manager", "executive"]:
                 role_perms = PERMISSIONS[role]
                 allow_count = sum(1 for v in role_perms.values() if v == "allow")
-                scoped_count = sum(1 for v in role_perms.values() if v == "scoped")
+                program_count = sum(1 for v in role_perms.values() if v == "program")
                 deny_count = sum(1 for v in role_perms.values() if v == "deny")
-                other_count = sum(1 for v in role_perms.values() if v not in ["allow", "scoped", "deny"])
+                other_count = sum(1 for v in role_perms.values() if v not in ["allow", "program", "deny"])
 
                 self.stdout.write(
                     f"\n{role.upper()}: "
                     f"{allow_count} ALLOW, "
-                    f"{scoped_count} SCOPED, "
+                    f"{program_count} PROGRAM, "
                     f"{deny_count} DENY, "
                     f"{other_count} OTHER"
                 )

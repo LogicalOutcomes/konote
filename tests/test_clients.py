@@ -168,7 +168,7 @@ class ClientViewsTest(TestCase):
 
     def test_edit_client(self):
         cf = self._create_client("Jane", "Doe", [self.prog_a])
-        # Staff role has client.edit SCOPED (same as program_manager)
+        # Staff role has client.edit PROGRAM (same as program_manager)
         self.client.login(username="staff", password="testpass123")
         resp = self.client.post(f"/participants/{cf.pk}/edit/", {
             "first_name": "Janet",
@@ -184,7 +184,7 @@ class ClientViewsTest(TestCase):
         self.assertEqual(cf.first_name, "Janet")
 
     def test_pm_can_edit_client(self):
-        """Program managers have client.edit SCOPED — can edit clients in their program."""
+        """Program managers have client.edit PROGRAM — can edit clients in their program."""
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="pm", password="testpass123")
         resp = self.client.post(f"/participants/{cf.pk}/edit/", {
@@ -217,7 +217,7 @@ class ClientViewsTest(TestCase):
     # --- Transfer tests ---
 
     def test_staff_can_transfer_client(self):
-        """Staff have client.transfer SCOPED — can add a program."""
+        """Staff have client.transfer PROGRAM — can add a program."""
         # Give staff access to both programs
         UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
         cf = self._create_client("Jane", "Doe", [self.prog_a])
@@ -315,7 +315,7 @@ class ClientViewsTest(TestCase):
         )
 
     def test_pm_can_transfer_client(self):
-        """PMs have client.transfer SCOPED — can transfer clients."""
+        """PMs have client.transfer PROGRAM — can transfer clients."""
         UserProgramRole.objects.create(user=self.pm, program=self.prog_b, role="program_manager")
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="pm", password="testpass123")

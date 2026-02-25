@@ -206,7 +206,7 @@ class StaffWalkthroughTest(UxWalkthroughBase):
         # 15. Note detail (HTMX)
         self.visit_htmx(role, "Note detail", f"/notes/{self.note.pk}/")
 
-        # 16. Plan view — staff CAN edit (plan.edit: SCOPED)
+        # 16. Plan view — staff CAN edit (plan.edit: PROGRAM)
         self.visit(
             role,
             "Plan view",
@@ -214,7 +214,7 @@ class StaffWalkthroughTest(UxWalkthroughBase):
             role_should_see=["Add Section"],
         )
 
-        # 17. Section create — staff CAN create (plan.edit: SCOPED)
+        # 17. Section create — staff CAN create (plan.edit: PROGRAM)
         self.visit(
             role, "Section create form", f"/plans/client/{cid}/sections/create/"
         )
@@ -282,7 +282,7 @@ class ManagerWalkthroughTest(UxWalkthroughBase):
         self.visit(role, "Client list", "/participants/")
         self.visit(role, "Client detail", f"/participants/{cid}/")
 
-        # Notes — manager can view AND create (note.create: SCOPED)
+        # Notes — manager can view AND create (note.create: PROGRAM)
         self.visit(role, "Notes timeline", f"/notes/client/{cid}/")
         self.visit(role, "Quick note form", f"/notes/client/{cid}/quick/")
         self.visit(role, "Full note form", f"/notes/client/{cid}/new/")

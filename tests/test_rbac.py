@@ -415,7 +415,7 @@ class ReceptionistNotesAccessTest(TestCase):
 
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
 class ReceptionistPlansAccessTest(TestCase):
-    """Plan access tests: staff has plan.edit: SCOPED, all other roles have plan.edit: DENY.
+    """Plan access tests: staff has plan.edit: PROGRAM, all other roles have plan.edit: DENY.
 
     Receptionist also has plan.view: DENY, so cannot even view plans.
     Program manager has plan.view: ALLOW but plan.edit: DENY.
@@ -464,7 +464,7 @@ class ReceptionistPlansAccessTest(TestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_staff_can_create_section(self):
-        """Staff has plan.edit: SCOPED per permissions matrix — can create sections."""
+        """Staff has plan.edit: PROGRAM per permissions matrix — can create sections."""
         self.client.force_login(self.staff_user)
         response = self.client.get(f"/plans/participant/{self.client_file.pk}/sections/create/")
         self.assertEqual(response.status_code, 200)

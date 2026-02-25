@@ -4,6 +4,7 @@ from . import views
 
 app_name = "notes"
 urlpatterns = [
+    path("alliance-repair-guide/", views.alliance_repair_guide, name="alliance_repair_guide"),
     path("participant/<int:client_id>/", views.note_list, name="note_list"),
     path("participant/<int:client_id>/quick/", views.quick_note_create, name="quick_note_create"),
     path("participant/<int:client_id>/inline/", views.quick_note_inline, name="quick_note_inline"),
