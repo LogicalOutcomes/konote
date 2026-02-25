@@ -992,3 +992,79 @@ class StatisticalDisclosureGuardTest(TestCase):
         stats = _batch_enrolment_stats(large_ids, all_client_ids, month_start)
         active = stats[self.large_prog.pk]["active"]
         self.assertGreaterEqual(active, SMALL_PROGRAM_THRESHOLD)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AccentedCharacterEncryptionTest(TestCase):
+    """QA-R7-BUG13: Verify accented characters survive Fernet encrypt/decrypt cycle."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def test_accented_first_name_preserved(self):
+        """French accented characters round-trip through encrypt -> save -> load -> decrypt."""
+        client = ClientFile()
+        client.first_name = "H\u00e9l\u00e8ne"
+        client.last_name = "B\u00e9h\u00e9rer"
+        client.save()
+
+        loaded = ClientFile.objects.get(pk=client.pk)
+        self.assertEqual(loaded.first_name, "H\u00e9l\u00e8ne")
+        self.assertEqual(loaded.last_name, "B\u00e9h\u00e9rer")
+
+    def test_full_accent_set_preserved(self):
+        """All common French/Canadian accented characters survive the cycle."""
+        accented_names = [
+            ("Ren\u00e9", "L\u00e9vesque"),
+            ("Fran\u00e7ois", "L\u00e9gar\u00e9"),
+            ("No\u00ebl", "C\u00f4t\u00e9"),
+            ("Andr\u00e9e", "B\u00e9land"),
+        ]
+        for first, last in accented_names:
+            client = ClientFile()
+            client.first_name = first
+            client.last_name = last
+            client.save()
+
+            loaded = ClientFile.objects.get(pk=client.pk)
+            self.assertEqual(loaded.first_name, first, f"First name failed for {first}")
+            self.assertEqual(loaded.last_name, last, f"Last name failed for {last}")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class FormDataPreservationTest(TestCase):
+    """QA-R7-BUG21: Verify create-participant form preserves data after validation error."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http_client = Client()
+        self.admin = User.objects.create_user(
+            username="admin", password="testpass123", is_admin=True,
+        )
+        self.program = Program.objects.create(name="Test Program", colour_hex="#10B981")
+        UserProgramRole.objects.create(user=self.admin, program=self.program, role="program_manager")
+
+    def test_form_data_preserved_on_validation_error(self):
+        """When a required field is missing, entered data should be in the response."""
+        self.http_client.login(username="admin", password="testpass123")
+        # Submit without selecting a program (required) to trigger a validation error
+        resp = self.http_client.post("/clients/new/", {
+            "first_name": "Marie-Claire",
+            "last_name": "Tremblay",
+            "preferred_name": "",
+            "middle_name": "",
+            "phone": "",
+            "record_id": "",
+            "status": "active",
+            "preferred_language": "fr",
+            # Deliberately omit "programs" to trigger validation error
+        })
+        self.assertEqual(resp.status_code, 200)  # Re-renders the form (not redirect)
+        content = resp.content.decode("utf-8")
+        # The form should contain the entered first name and last name
+        self.assertIn("Marie-Claire", content)
+        self.assertIn("Tremblay", content)

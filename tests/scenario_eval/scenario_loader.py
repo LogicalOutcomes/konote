@@ -22,8 +22,23 @@ from pathlib import Path
 import yaml
 
 # Module-level caches — populated on first call, reused for the session.
+# In pytest: lives for the test session then discarded with the process.
+# In long-running processes (management commands, servers): persists until
+# the process restarts. Call clear_caches() to force a reload.
 _personas_cache = {}      # holdout_dir_str -> personas dict
 _all_scenarios_cache = {}  # holdout_dir_str -> [(path, scenario_dict), ...]
+
+
+def clear_caches():
+    """Clear all module-level caches, forcing a reload on next call.
+
+    Call this if YAML files may have changed since the caches were populated.
+    In pytest this is unnecessary (process exits after the session), but
+    management commands or long-running processes should call this before
+    re-reading scenarios if the holdout directory contents may have changed.
+    """
+    _personas_cache.clear()
+    _all_scenarios_cache.clear()
 
 
 def get_holdout_dir():
