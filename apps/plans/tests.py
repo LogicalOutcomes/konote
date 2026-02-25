@@ -21,7 +21,7 @@ from .views import _can_edit_plan, _parse_metric_csv
 class PlanPermissionHelperTest(TestCase):
     """Test the _can_edit_plan helper.
 
-    Per the permissions matrix, plan.edit is SCOPED for staff (can edit
+    Per the permissions matrix, plan.edit is PROGRAM for staff (can edit
     within their program) and DENY for program_manager/executive/receptionist.
     Admin status does NOT bypass program role checks (PERM-S2) — an admin
     needs a staff role to edit plans.
@@ -59,7 +59,7 @@ class PlanPermissionHelperTest(TestCase):
         self.assertFalse(_can_edit_plan(self.pm, self.client_file))
 
     def test_staff_can_edit(self):
-        """Staff has plan.edit=SCOPED — clinical workers edit plans."""
+        """Staff has plan.edit=PROGRAM — clinical workers edit plans."""
         self.assertTrue(_can_edit_plan(self.staff, self.client_file))
 
 
@@ -83,7 +83,7 @@ class PlanViewTest(TestCase):
 class SectionCreatePermissionTest(TestCase):
     """Test section create requires plan.edit permission (staff role).
 
-    Per the permissions matrix, plan.edit is SCOPED for staff and DENY for
+    Per the permissions matrix, plan.edit is PROGRAM for staff and DENY for
     program_manager. Staff (clinical workers) create sections; PMs oversee.
     """
 
@@ -107,7 +107,7 @@ class SectionCreatePermissionTest(TestCase):
         )
 
     def test_staff_can_create_section(self):
-        """Staff with plan.edit=SCOPED can create sections."""
+        """Staff with plan.edit=PROGRAM can create sections."""
         c = TestClient()
         c.login(username="staff", password="pass123")
         url = reverse("plans:section_create", args=[self.client_file.pk])
@@ -127,7 +127,7 @@ class SectionCreatePermissionTest(TestCase):
 class TargetEditRevisionTest(TestCase):
     """Test that editing a target creates a revision.
 
-    Uses a staff user because plan.edit=SCOPED for staff (the role that
+    Uses a staff user because plan.edit=PROGRAM for staff (the role that
     does clinical plan editing). Admin/PM have plan.edit=DENY.
     """
 
