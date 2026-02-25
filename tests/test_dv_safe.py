@@ -581,3 +581,165 @@ class DvCustomFieldAdminTest(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
         field = form.save()
         self.assertTrue(field.is_dv_sensitive)
+
+
+# ─── Self-Approval Tests ──────────────────────────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class DvSelfApprovalTest(TestCase):
+    """Tests that the same person cannot request and approve DV flag removal."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http_client = HttpClient()
+        self.pm, self.program = _create_pm_user()
+        self.other_pm, _ = _create_pm_user("other_pm")
+        self.staff, _ = _create_staff_user()
+        self.client_file = _create_client()
+        self.client_file.is_dv_safe = True
+        self.client_file.save(update_fields=["is_dv_safe"])
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program,
+        )
+        _setup_tier(2)
+
+    def test_requester_cannot_approve_own_request(self):
+        """PM who requested removal cannot approve their own request."""
+        req = DvFlagRemovalRequest.objects.create(
+            client_file=self.client_file,
+            requested_by=self.pm,
+            reason="Situation resolved",
+        )
+        self.http_client.login(username="pm_user", password="testpass123")
+        resp = self.http_client.post(
+            f"/participants/{self.client_file.pk}/dv-safe/review-remove/{req.pk}/",
+            {"action": "approve", "review_note": "Self-approving"},
+        )
+        self.assertEqual(resp.status_code, 403)
+        # Flag should still be active
+        self.client_file.refresh_from_db()
+        self.assertTrue(self.client_file.is_dv_safe)
+
+    def test_different_pm_can_approve(self):
+        """A different PM can approve a removal request."""
+        req = DvFlagRemovalRequest.objects.create(
+            client_file=self.client_file,
+            requested_by=self.pm,
+            reason="Situation resolved",
+        )
+        self.http_client.login(username="other_pm", password="testpass123")
+        resp = self.http_client.post(
+            f"/participants/{self.client_file.pk}/dv-safe/review-remove/{req.pk}/",
+            {"action": "approve", "review_note": "Confirmed safe"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.client_file.refresh_from_db()
+        self.assertFalse(self.client_file.is_dv_safe)
+
+    def test_requester_cannot_reject_own_request(self):
+        """PM who requested removal cannot reject their own request either."""
+        req = DvFlagRemovalRequest.objects.create(
+            client_file=self.client_file,
+            requested_by=self.pm,
+            reason="Situation resolved",
+        )
+        self.http_client.login(username="pm_user", password="testpass123")
+        resp = self.http_client.post(
+            f"/participants/{self.client_file.pk}/dv-safe/review-remove/{req.pk}/",
+            {"action": "reject"},
+        )
+        self.assertEqual(resp.status_code, 403)
+        # Request should still be pending
+        req.refresh_from_db()
+        self.assertTrue(req.is_pending)
+
+
+# ─── Save-Side Enforcement Tests ──────────────────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class DvSaveSideEnforcementTest(TestCase):
+    """Tests that receptionists cannot save DV-sensitive field values for DV-safe clients."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http_client = HttpClient()
+        self.receptionist, self.program = _create_receptionist_user()
+        self.client_file = _create_client()
+        ClientProgramEnrolment.objects.create(
+            client_file=self.client_file, program=self.program,
+        )
+
+        # Create custom fields — one DV-sensitive editable, one normal editable
+        # Use generic names to avoid auto-detected validation_type (phone, postal_code)
+        self.group = CustomFieldGroup.objects.create(
+            title="Contact Info", sort_order=0, status="active",
+        )
+        self.sensitive_field = _create_custom_field(
+            "Secret Info", front_desk_access="edit", is_dv_sensitive=True, group=self.group,
+        )
+        self.normal_field = _create_custom_field(
+            "Favourite Colour", front_desk_access="edit", is_dv_sensitive=False, group=self.group,
+        )
+        _setup_tier(2)
+
+    def test_receptionist_cannot_save_dv_sensitive_field(self):
+        """Receptionist POST of DV-sensitive field value is silently ignored for DV-safe client."""
+        self.client_file.is_dv_safe = True
+        self.client_file.save(update_fields=["is_dv_safe"])
+
+        self.http_client.login(username="reception_user", password="testpass123")
+        resp = self.http_client.post(
+            f"/participants/{self.client_file.pk}/custom-fields/",
+            {
+                f"custom_{self.sensitive_field.pk}": "Secret value",
+                f"custom_{self.normal_field.pk}": "Blue",
+            },
+        )
+        # Should succeed (redirect or 200) but only save the non-sensitive field
+        self.assertIn(resp.status_code, [200, 302])
+
+        from apps.clients.models import ClientDetailValue
+        # DV-sensitive field should NOT have been saved
+        sensitive_val = ClientDetailValue.objects.filter(
+            client_file=self.client_file, field_def=self.sensitive_field,
+        ).first()
+        self.assertIsNone(sensitive_val)
+
+        # Normal field SHOULD have been saved
+        normal_val = ClientDetailValue.objects.filter(
+            client_file=self.client_file, field_def=self.normal_field,
+        ).first()
+        self.assertIsNotNone(normal_val)
+        self.assertEqual(normal_val.value, "Blue")
+
+    def test_receptionist_can_save_without_dv_flag(self):
+        """Without DV flag, receptionist can save both fields normally."""
+        self.http_client.login(username="reception_user", password="testpass123")
+        resp = self.http_client.post(
+            f"/participants/{self.client_file.pk}/custom-fields/",
+            {
+                f"custom_{self.sensitive_field.pk}": "Some value",
+                f"custom_{self.normal_field.pk}": "Red",
+            },
+        )
+        self.assertIn(resp.status_code, [200, 302])
+
+        from apps.clients.models import ClientDetailValue
+        # Both fields should be saved
+        sensitive_val = ClientDetailValue.objects.filter(
+            client_file=self.client_file, field_def=self.sensitive_field,
+        ).first()
+        self.assertIsNotNone(sensitive_val)
+        self.assertEqual(sensitive_val.value, "Some value")
+
+        normal_val = ClientDetailValue.objects.filter(
+            client_file=self.client_file, field_def=self.normal_field,
+        ).first()
+        self.assertIsNotNone(normal_val)
+        self.assertEqual(normal_val.value, "Red")

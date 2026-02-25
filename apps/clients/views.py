@@ -19,7 +19,7 @@ from apps.programs.models import Program, UserProgramRole
 
 from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm
 from .helpers import get_client_tab_counts, get_document_folder_url
-from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldGroup
+from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldDefinition, CustomFieldGroup
 from .validators import (
     normalize_phone_number, normalize_postal_code,
     validate_phone_number, validate_postal_code,
