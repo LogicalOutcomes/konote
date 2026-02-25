@@ -76,9 +76,27 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — (CIDS-IMPACT1)
 - [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — (CIDS-VALIDATE1)
 
-### Phase: Other Upcoming
+### Phase: Permissions Phase 2 (see tasks/permissions-expert-panel-2026-02-09.md)
 
-- [ ] Permissions Phase 2 — remaining 10 items: discharge access transitions, consent model, DV-safe mode, GATED clinical access, group schedule vs roster, per-field front desk edit, SCOPED→PROGRAM rename, partner report key, alert escalation, dashboard split (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P3–12)
+Ready now — code-only, no design decisions:
+- [ ] Rename SCOPED permission level to PROGRAM — constant + all references in permissions.py, decorators, template tags (PERM-P9)
+- [ ] Add `report.funder_report` permission key — separate from program reports, wire onto funder report view (PERM-P10)
+
+Ready after GK scope conversation:
+- [ ] Add `group.view_schedule` permission key — separate schedule (times/location) from roster (session content) — GK reviews scope boundary (PERM-P7)
+- [ ] Split dashboard permissions — `dashboard.view_individual` vs `dashboard.view_aggregate` keys — GK reviews which sections are individual vs aggregate (PERM-P12)
+- [ ] Consent model refinement — decide whether to split `consent.manage` into 3 keys (record/modify_scope/withdraw) — GK reviews (PERM-P4)
+
+Needs design work first:
+- [ ] Discharge access transitions — define business rules for post-discharge access (historical notes, re-enrolment, transfer) — GK reviews (PERM-P3)
+- [ ] Alert escalation permission — define escalation workflow (who escalates to whom, separate from cancel flow) — GK reviews (PERM-P11)
+
+Blocked on infrastructure (dedicated sprint):
+- [ ] GATED clinical access for PM — build justification UI + time-boxing; `client.view_clinical` must move from ALLOW to GATED (highest-priority Phase 2 item) — GK reviews (PERM-P6)
+- [ ] Per-field front desk edit — build admin UI to configure which contact fields receptionist can edit (prerequisite for P5) (PERM-P8)
+- [ ] DV-safe mode — hide address/emergency contact from front desk when DV flag set; blocked on PERM-P8 — GK reviews (PERM-P5)
+
+### Phase: Other Upcoming
 
 ### Phase: Advanced Reporting
 
