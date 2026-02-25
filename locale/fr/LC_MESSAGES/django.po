@@ -15859,7 +15859,75 @@ msgid "Deadlock notice"
 msgstr "Avis de blocage"
 
 msgid "Please select a specific program for session reports."
-msgstr "Veuillez sélectionner un programme spécifique pour les rapports de séances."
+msgstr ""
+"Veuillez sélectionner un programme spécifique pour les rapports de séances."
 
 msgid "Stuck request"
 msgstr "Demande bloquée"
+
+msgid "%(count)d %(term)s program enrolment updated."
+msgstr "%(count)d %(term)s inscription au programme mise à jour."
+
+msgid "%(count)d %(term)s status updated to %(status)s."
+msgstr "%(count)d %(term)s statut mis à jour vers %(status)s."
+
+msgid "Add to program"
+msgstr "Ajouter au programme"
+
+msgid "Cannot add and remove the same program."
+msgstr "Impossible d'ajouter et de retirer le même programme."
+
+msgid "Change Status"
+msgstr "Changer le statut"
+
+msgid "Change status for selected participants"
+msgstr "Changer le statut des participants sélectionnés"
+
+msgid "Invalid participant selection."
+msgstr "Sélection de participants invalide."
+
+msgid "Invalid selection."
+msgstr "Sélection invalide."
+
+msgid "New status"
+msgstr "Nouveau statut"
+
+msgid "No participants selected."
+msgstr "Aucun participant sélectionné."
+
+msgid "None of the selected participants are accessible."
+msgstr "Aucun des participants sélectionnés n'est accessible."
+
+msgid "Please select a program to add or remove."
+msgstr "Veuillez sélectionner un programme à ajouter ou à retirer."
+
+msgid "Reason (optional)"
+msgstr "Raison (facultatif)"
+
+msgid "Remove from program"
+msgstr "Retirer du programme"
+
+msgid "Select all visible rows"
+msgstr "Sélectionner toutes les lignes visibles"
+
+msgid "Transfer Programs"
+msgstr "Transférer les programmes"
+
+msgid "Why is the status being changed?"
+msgstr "Pourquoi le statut est-il modifié?"
+
+#: templates/clients/_bulk_status_confirm.html
+#: templates/clients/_bulk_transfer_confirm.html
+#, python-format
+msgid "The following %(count)s %(clients)s will be updated:"
+msgstr "Les %(count)s %(clients)s suivants seront mis à jour :"
+
+#: templates/clients/_client_list_table.html
+#, python-format
+msgid "Select %(name)s"
+msgstr "Sélectionner %(name)s"
+
+#: templates/clients/list.html
+#, python-format
+msgid "Transfer selected participants between %(programs)s"
+msgstr "Transférer les participants sélectionnés entre les %(programs)s"
