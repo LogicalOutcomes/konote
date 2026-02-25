@@ -87,7 +87,7 @@
     <input type="hidden" name="action" value="reset_defaults">
     <details>
         <summary class="secondary" style="font-size: 0.875rem;">{% trans "Reset to Safe Defaults" %}</summary>
-        <p class="help-text">{% trans "This will reset all field access settings back to the safe defaults: phone (edit), email (edit), preferred name (view only), date of birth (hidden). All custom fields will be set to hidden." %}</p>
+        <p class="help-text">{% trans "This will remove all customised field access settings and restore the safe defaults for your access tier. All custom fields will be set to hidden." %}</p>
         <button type="submit" class="outline contrast" onclick="return confirm('{% trans "Reset all field access settings to safe defaults? This cannot be undone." %}')">{% trans "Reset to Defaults" %}</button>
     </details>
 </form>
