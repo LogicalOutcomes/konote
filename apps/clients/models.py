@@ -255,7 +255,7 @@ class ClientFile(models.Model):
         Usage in templates:
             {% if visible_fields.birth_date %}{{ client.birth_date }}{% endif %}
         """
-        from apps.auth_app.permissions import can_access, ALLOW, SCOPED, GATED
+        from apps.auth_app.permissions import can_access, ALLOW, PROGRAM, GATED
 
         # Safety fields — visible to all roles including front desk.
         # These are needed for check-in, emergency contact, and safety purposes.
@@ -277,7 +277,7 @@ class ClientFile(models.Model):
         # Clinical fields depend on role permission
         clinical_access = can_access(role, 'client.view_clinical')
         for f in clinical_fields:
-            visible[f] = clinical_access in (ALLOW, SCOPED, GATED)
+            visible[f] = clinical_access in (ALLOW, PROGRAM, GATED)
 
         return visible
 

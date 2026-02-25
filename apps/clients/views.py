@@ -342,6 +342,10 @@ def client_list(request):
     # Show create button if user's role grants client.create permission
     user_role = _get_user_highest_role(request.user)
     can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
+    # Bulk operation permission flags (UX17)
+    can_bulk_status = PERMISSIONS.get(user_role, {}).get("client.edit", DENY) != DENY
+    can_bulk_transfer = PERMISSIONS.get(user_role, {}).get("client.transfer", DENY) != DENY
+    show_bulk = can_bulk_status or can_bulk_transfer
 
     context = {
         "page": page,
@@ -353,6 +357,9 @@ def client_list(request):
         "search_query": request.GET.get("q", ""),
         "sort_by": sort_by,
         "can_create": can_create,
+        "show_bulk": show_bulk,
+        "can_bulk_status": can_bulk_status,
+        "can_bulk_transfer": can_bulk_transfer,
     }
 
     # HTMX request — return only the table partial
@@ -1344,3 +1351,271 @@ def client_sharing_toggle(request, client_id):
         messages.success(request, _("Note sharing disabled."))
 
     return redirect("clients:client_detail", client_id=client_id)
+
+
+# ---- Bulk Operations (UX17) ----
+
+@login_required
+@requires_permission("client.edit")
+def bulk_status(request):
+    """Bulk status change for multiple clients.
+
+    Step 1 (POST without 'confirm'): show confirmation form with client names.
+    Step 2 (POST with 'confirm'): execute status change and redirect.
+    """
+    from .forms import BulkStatusForm
+    from apps.audit.models import AuditLog
+
+    active_ids = getattr(request, "active_program_ids", None)
+
+    if request.method != "POST":
+        return redirect("clients:client_list")
+
+    # Build the initial client_ids string from the posted array
+    raw_ids = request.POST.getlist("client_ids[]") or request.POST.getlist("client_ids")
+    # If coming from confirmation form, client_ids is a comma-separated hidden field
+    if len(raw_ids) == 1 and "," in raw_ids[0]:
+        raw_ids = raw_ids[0].split(",")
+
+    client_ids_str = ",".join(str(x) for x in raw_ids if str(x).strip())
+
+    # Confirmation step — process the form
+    if "confirm" in request.POST:
+        form = BulkStatusForm(request.POST)
+        if form.is_valid():
+            client_ids = form.cleaned_data["client_ids"]
+            new_status = form.cleaned_data["status"]
+            reason = form.cleaned_data.get("status_reason", "")
+
+            # Security: filter to only accessible clients
+            accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
+            clients_to_update = accessible.filter(pk__in=client_ids)
+
+            updated_count = 0
+            for client_obj in clients_to_update:
+                old_status = client_obj.status
+                if old_status != new_status:
+                    client_obj.status = new_status
+                    client_obj.status_reason = reason
+                    client_obj.save(update_fields=["status", "status_reason", "updated_at"])
+                    updated_count += 1
+
+                    # Audit log per client
+                    AuditLog.objects.using("audit").create(
+                        event_timestamp=timezone.now(),
+                        user_id=request.user.pk,
+                        user_display=getattr(request.user, "display_name", str(request.user)),
+                        action="update",
+                        resource_type="clients",
+                        resource_id=client_obj.pk,
+                        is_demo_context=getattr(request.user, "is_demo", False),
+                        metadata={
+                            "bulk": True,
+                            "count": len(client_ids),
+                            "old_status": old_status,
+                            "new_status": new_status,
+                            "reason": reason,
+                        },
+                    )
+
+            messages.success(
+                request,
+                _("%(count)d %(term)s status updated to %(status)s.")
+                % {
+                    "count": updated_count,
+                    "term": request.get_term("client_plural") if updated_count != 1 else request.get_term("client"),
+                    "status": dict(ClientFile.STATUS_CHOICES).get(new_status, new_status),
+                },
+            )
+            return redirect("clients:client_list")
+        else:
+            # Form invalid — re-show confirmation with errors
+            accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
+            try:
+                ids = [int(x.strip()) for x in client_ids_str.split(",") if x.strip()]
+            except (ValueError, TypeError):
+                ids = []
+            selected_clients = list(accessible.filter(pk__in=ids))
+            return render(request, "clients/_bulk_status_confirm.html", {
+                "form": form,
+                "selected_clients": selected_clients,
+                "client_ids_str": client_ids_str,
+            })
+
+    # Initial step — show confirmation form
+    try:
+        client_ids = [int(x.strip()) for x in client_ids_str.split(",") if x.strip()]
+    except (ValueError, TypeError):
+        messages.error(request, _("Invalid selection."))
+        return redirect("clients:client_list")
+
+    if not client_ids:
+        messages.error(request, _("No participants selected."))
+        return redirect("clients:client_list")
+
+    # Security: filter to accessible clients only
+    accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
+    selected_clients = list(accessible.filter(pk__in=client_ids))
+
+    if not selected_clients:
+        messages.error(request, _("None of the selected participants are accessible."))
+        return redirect("clients:client_list")
+
+    form = BulkStatusForm(initial={"client_ids": client_ids_str})
+
+    template = "clients/_bulk_status_confirm.html"
+    context = {
+        "form": form,
+        "selected_clients": selected_clients,
+        "client_ids_str": client_ids_str,
+    }
+
+    # HTMX request — return partial for modal
+    if request.headers.get("HX-Request"):
+        return render(request, template, context)
+
+    return render(request, template, context)
+
+
+@login_required
+@requires_permission("client.transfer")
+def bulk_transfer(request):
+    """Bulk program transfer for multiple clients.
+
+    Step 1 (POST without 'confirm'): show confirmation form with client names.
+    Step 2 (POST with 'confirm'): execute transfer and redirect.
+    """
+    from .forms import BulkTransferForm
+    from apps.audit.models import AuditLog
+
+    active_ids = getattr(request, "active_program_ids", None)
+    available_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
+
+    if request.method != "POST":
+        return redirect("clients:client_list")
+
+    # Build the initial client_ids string from the posted array
+    raw_ids = request.POST.getlist("client_ids[]") or request.POST.getlist("client_ids")
+    if len(raw_ids) == 1 and "," in raw_ids[0]:
+        raw_ids = raw_ids[0].split(",")
+
+    client_ids_str = ",".join(str(x) for x in raw_ids if str(x).strip())
+
+    # Confirmation step — process the form
+    if "confirm" in request.POST:
+        form = BulkTransferForm(request.POST, available_programs=available_programs)
+        if form.is_valid():
+            client_ids = form.cleaned_data["client_ids"]
+            add_program = form.cleaned_data.get("add_program")
+            remove_program = form.cleaned_data.get("remove_program")
+
+            # Security: filter to only accessible clients
+            accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
+            clients_to_update = list(accessible.filter(pk__in=client_ids))
+
+            affected_count = 0
+            for client_obj in clients_to_update:
+                added = []
+                removed = []
+
+                # Add to program (idempotent — skip if already enrolled)
+                if add_program:
+                    enrolment, created = ClientProgramEnrolment.objects.get_or_create(
+                        client_file=client_obj, program=add_program,
+                        defaults={"status": "enrolled"},
+                    )
+                    if created:
+                        added.append(add_program.pk)
+                    elif enrolment.status != "enrolled":
+                        enrolment.status = "enrolled"
+                        enrolment.unenrolled_at = None
+                        enrolment.save()
+                        added.append(add_program.pk)
+
+                # Remove from program
+                if remove_program:
+                    updated = ClientProgramEnrolment.objects.filter(
+                        client_file=client_obj,
+                        program=remove_program,
+                        status="enrolled",
+                    ).update(status="unenrolled", unenrolled_at=timezone.now())
+                    if updated:
+                        removed.append(remove_program.pk)
+
+                if added or removed:
+                    affected_count += 1
+                    AuditLog.objects.using("audit").create(
+                        event_timestamp=timezone.now(),
+                        user_id=request.user.pk,
+                        user_display=getattr(request.user, "display_name", str(request.user)),
+                        action="update",
+                        resource_type="enrolment",
+                        resource_id=client_obj.pk,
+                        is_demo_context=getattr(request.user, "is_demo", False),
+                        metadata={
+                            "bulk": True,
+                            "count": len(client_ids),
+                            "programs_added": added,
+                            "programs_removed": removed,
+                        },
+                    )
+
+            messages.success(
+                request,
+                _("%(count)d %(term)s program enrolment updated.")
+                % {
+                    "count": affected_count,
+                    "term": request.get_term("client_plural") if affected_count != 1 else request.get_term("client"),
+                },
+            )
+            return redirect("clients:client_list")
+        else:
+            # Form invalid — re-show confirmation with errors
+            accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
+            try:
+                ids = [int(x.strip()) for x in client_ids_str.split(",") if x.strip()]
+            except (ValueError, TypeError):
+                ids = []
+            selected_clients = list(accessible.filter(pk__in=ids))
+            return render(request, "clients/_bulk_transfer_confirm.html", {
+                "form": form,
+                "selected_clients": selected_clients,
+                "client_ids_str": client_ids_str,
+            })
+
+    # Initial step — show confirmation form
+    try:
+        client_ids = [int(x.strip()) for x in client_ids_str.split(",") if x.strip()]
+    except (ValueError, TypeError):
+        messages.error(request, _("Invalid selection."))
+        return redirect("clients:client_list")
+
+    if not client_ids:
+        messages.error(request, _("No participants selected."))
+        return redirect("clients:client_list")
+
+    # Security: filter to accessible clients only
+    accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
+    selected_clients = list(accessible.filter(pk__in=client_ids))
+
+    if not selected_clients:
+        messages.error(request, _("None of the selected participants are accessible."))
+        return redirect("clients:client_list")
+
+    form = BulkTransferForm(
+        initial={"client_ids": client_ids_str},
+        available_programs=available_programs,
+    )
+
+    template = "clients/_bulk_transfer_confirm.html"
+    context = {
+        "form": form,
+        "selected_clients": selected_clients,
+        "client_ids_str": client_ids_str,
+    }
+
+    # HTMX request — return partial for modal
+    if request.headers.get("HX-Request"):
+        return render(request, template, context)
+
+    return render(request, template, context)

@@ -4,18 +4,28 @@ Extract translatable strings from templates and Python, add to .po, compile .mo.
 Replaces the need for gettext/makemessages on Windows. Uses regex extraction
 and polib for .po/.mo handling — pure Python, no system dependencies.
 
-Empty translations are filled in by Claude Code (editing the .po file directly),
-not by an external API.
+Empty translations can be filled in by:
+  - Claude Code (editing the .po file directly)
+  - An OpenAI-compatible translation API (--auto-translate flag)
 
 Usage:
-    python manage.py translate_strings            # Extract + add missing + compile
-    python manage.py translate_strings --dry-run  # Show what would change
+    python manage.py translate_strings                       # Extract + add missing + compile
+    python manage.py translate_strings --auto-translate      # Also auto-translate empty strings
+    python manage.py translate_strings --auto-translate --review  # Mark API translations as fuzzy
+    python manage.py translate_strings --dry-run             # Show what would change
 
 Exit codes:
     0 = success
     1 = error (duplicate msgids, file write failure, etc.)
+
+Environment variables (for --auto-translate):
+    TRANSLATE_API_KEY   — API key (required)
+    TRANSLATE_API_BASE  — API base URL (default: https://api.openai.com/v1)
+    TRANSLATE_MODEL     — Model name (default: gpt-4o-mini)
 """
 
+import json
+import logging
 import os
 import re
 import shutil
@@ -24,8 +34,33 @@ import tempfile
 from pathlib import Path
 
 import polib
+import requests
 from django.conf import settings
 from django.core.management.base import BaseCommand
+
+logger = logging.getLogger(__name__)
+
+# System prompt for the translation API — Canadian French nonprofit context.
+TRANSLATION_SYSTEM_PROMPT = """\
+You are a professional translator for a Canadian nonprofit case-management \
+application. Translate English strings to Canadian French.
+
+Rules:
+- Use formal "vous" (never "tu")
+- Use Canadian nonprofit terminology: organisme (not organisation), \
+bénéficiaire, intervenant, programme
+- Use Canadian French terms: courriel (not e-mail), téléverser (not uploader)
+- Use French typographic conventions: space before : ; ? !
+- Use « guillemets » for quotation marks (not "quotes")
+- Preserve ALL placeholders exactly as-is: %(name)s, %(count)d, {{ var }}, \
+{record_id}, etc.
+- Preserve ALL HTML tags exactly as-is: <strong>, <em>, <a href="...">, etc.
+- Do not translate text inside placeholders or HTML attributes
+
+You will receive a JSON object mapping numbers to English strings.
+Return a JSON object mapping the same numbers to French translations.
+Return ONLY the JSON object — no markdown fences, no explanation.\
+"""
 
 
 class Command(BaseCommand):
@@ -55,10 +90,34 @@ class Command(BaseCommand):
             default="fr",
             help="Target language code (default: fr).",
         )
+        parser.add_argument(
+            "--auto-translate",
+            action="store_true",
+            help=(
+                "Auto-translate empty strings via an OpenAI-compatible API. "
+                "Requires TRANSLATE_API_KEY environment variable."
+            ),
+        )
+        parser.add_argument(
+            "--review",
+            action="store_true",
+            help=(
+                "Mark API-translated strings as fuzzy for human review. "
+                "Only used with --auto-translate."
+            ),
+        )
+
+    # Batch size for API translation calls.
+    TRANSLATE_BATCH_SIZE = 25
 
     def handle(self, *args, **options):
         dry_run = options["dry_run"]
         lang = options["lang"]
+        auto_translate = options["auto_translate"]
+        review = options["review"]
+
+        # Determine total phases for display numbering.
+        total_phases = 4 if auto_translate else 3
 
         self.stdout.write("\nKoNote Translation Sync")
         self.stdout.write("=" * 40)
@@ -68,7 +127,7 @@ class Command(BaseCommand):
         # ----------------------------------------------------------
         # Phase 1: Extract strings
         # ----------------------------------------------------------
-        self.stdout.write("\n[1/3] Extracting strings...")
+        self.stdout.write(f"\n[1/{total_phases}] Extracting strings...")
 
         template_strings, template_file_count, blocktrans_count = (
             self._extract_templates(base_dir)
@@ -98,7 +157,7 @@ class Command(BaseCommand):
         # ----------------------------------------------------------
         # Phase 2: Compare with .po and add missing
         # ----------------------------------------------------------
-        self.stdout.write(f"\n[2/3] Comparing with django.po...")
+        self.stdout.write(f"\n[2/{total_phases}] Comparing with django.po...")
 
         po_path = self._find_po_file(lang, base_dir)
         if po_path is None:
@@ -194,6 +253,21 @@ class Command(BaseCommand):
                         f"    ... and {len(new_strings) - 20} more"
                     )
             total_empty = len(new_strings) + empty_count
+            if auto_translate and total_empty:
+                num_batches = (
+                    (total_empty + self.TRANSLATE_BATCH_SIZE - 1)
+                    // self.TRANSLATE_BATCH_SIZE
+                )
+                self.stdout.write(self.style.WARNING(
+                    f"\n  --auto-translate: {total_empty} strings "
+                    f"would be sent to the translation API "
+                    f"({num_batches} batch(es) of "
+                    f"{self.TRANSLATE_BATCH_SIZE})."
+                ))
+                if review:
+                    self.stdout.write(
+                        "  --review: translations would be marked fuzzy."
+                    )
             self._print_summary(total_empty, dry_run=True)
             return
 
@@ -208,9 +282,34 @@ class Command(BaseCommand):
             ))
 
         # ----------------------------------------------------------
-        # Phase 3: Compile .mo
+        # Phase 3 (optional): Auto-translate empty strings via API
         # ----------------------------------------------------------
-        self.stdout.write(f"\n[3/3] Compiling django.mo...")
+        if auto_translate:
+            self.stdout.write(
+                f"\n[3/{total_phases}] Auto-translating empty strings..."
+            )
+            translated = self._auto_translate_empty(po, review=review)
+            if translated:
+                self._save_po(po, po_path)
+                self.stdout.write(self.style.SUCCESS(
+                    f"      [OK] Translated {translated} strings via API"
+                ))
+                if review:
+                    self.stdout.write(
+                        "      [i] Translations marked as fuzzy for review"
+                    )
+            else:
+                self.stdout.write(
+                    "      No empty strings to translate."
+                )
+
+        # ----------------------------------------------------------
+        # Final phase: Compile .mo
+        # ----------------------------------------------------------
+        compile_phase = total_phases
+        self.stdout.write(
+            f"\n[{compile_phase}/{total_phases}] Compiling django.mo..."
+        )
 
         mo_path = po_path.with_suffix(".mo")
         fd, tmp_mo = tempfile.mkstemp(suffix=".mo", dir=str(mo_path.parent))
@@ -260,6 +359,163 @@ class Command(BaseCommand):
                 f"\n  ERROR writing .po file: {e}\n"
             ))
             sys.exit(1)
+
+    # ------------------------------------------------------------------
+    # Auto-translation helpers
+    # ------------------------------------------------------------------
+
+    def _auto_translate_empty(self, po, review=False):
+        """Translate all empty msgstr entries via an OpenAI-compatible API.
+
+        Sends strings in batches of TRANSLATE_BATCH_SIZE. Returns the total
+        number of strings successfully translated.
+        """
+        api_key = os.environ.get("TRANSLATE_API_KEY", "")
+        if not api_key:
+            self.stderr.write(self.style.ERROR(
+                "      ERROR: TRANSLATE_API_KEY environment variable not set."
+            ))
+            return 0
+
+        api_base = os.environ.get(
+            "TRANSLATE_API_BASE", "https://api.openai.com/v1"
+        ).rstrip("/")
+        model = os.environ.get("TRANSLATE_MODEL", "gpt-4o-mini")
+        url = f"{api_base}/chat/completions"
+
+        # Collect entries with empty translations.
+        empty_entries = [
+            entry for entry in po
+            if not entry.msgstr and not entry.msgstr_plural
+            and not entry.obsolete and entry.msgid
+        ]
+
+        if not empty_entries:
+            return 0
+
+        total_translated = 0
+
+        # Process in batches.
+        for batch_start in range(
+            0, len(empty_entries), self.TRANSLATE_BATCH_SIZE
+        ):
+            batch = empty_entries[
+                batch_start:batch_start + self.TRANSLATE_BATCH_SIZE
+            ]
+            batch_num = batch_start // self.TRANSLATE_BATCH_SIZE + 1
+            total_batches = (
+                (len(empty_entries) + self.TRANSLATE_BATCH_SIZE - 1)
+                // self.TRANSLATE_BATCH_SIZE
+            )
+
+            # Build the numbered mapping for the API.
+            source_map = {
+                str(i): entry.msgid for i, entry in enumerate(batch)
+            }
+
+            self.stdout.write(
+                f"      Batch {batch_num}/{total_batches} "
+                f"({len(batch)} strings)..."
+            )
+
+            try:
+                translations = self._call_translation_api(
+                    url, api_key, model, source_map
+                )
+            except Exception as exc:
+                logger.warning(
+                    "Translation API error on batch %d: %s", batch_num, exc
+                )
+                self.stderr.write(self.style.WARNING(
+                    f"      [!] Batch {batch_num} failed: {exc} — skipping"
+                ))
+                continue
+
+            # Apply translations to the .po entries.
+            batch_translated = 0
+            for i, entry in enumerate(batch):
+                key = str(i)
+                if key in translations and translations[key]:
+                    entry.msgstr = translations[key]
+                    if review:
+                        if "fuzzy" not in entry.flags:
+                            entry.flags.append("fuzzy")
+                    batch_translated += 1
+
+            total_translated += batch_translated
+
+        return total_translated
+
+    def _call_translation_api(self, url, api_key, model, source_map):
+        """Make a single API call and return the parsed translation mapping.
+
+        Args:
+            url: Full chat completions endpoint URL.
+            api_key: API bearer token.
+            model: Model name to use.
+            source_map: Dict mapping string indices to English source strings.
+
+        Returns:
+            Dict mapping string indices to French translations.
+
+        Raises:
+            requests.RequestException: On HTTP errors or timeouts.
+            ValueError: On JSON parse failures.
+        """
+        payload = {
+            "model": model,
+            "temperature": 0.3,
+            "messages": [
+                {"role": "system", "content": TRANSLATION_SYSTEM_PROMPT},
+                {"role": "user", "content": json.dumps(
+                    source_map, ensure_ascii=False
+                )},
+            ],
+        }
+
+        response = requests.post(
+            url,
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=int(os.environ.get("TRANSLATE_API_TIMEOUT", "120")),
+        )
+        response.raise_for_status()
+
+        data = response.json()
+        try:
+            content = data["choices"][0]["message"]["content"].strip()
+        except (KeyError, IndexError, TypeError) as exc:
+            raise ValueError(
+                f"Unexpected API response structure: {exc}"
+            ) from exc
+
+        # Strip markdown code fences if the model wraps the response.
+        if content.startswith("```"):
+            # Remove opening fence (with optional language tag) and closing fence.
+            lines = content.split("\n")
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].strip() == "```":
+                lines = lines[:-1]
+            content = "\n".join(lines)
+
+        try:
+            translations = json.loads(content)
+        except json.JSONDecodeError as exc:
+            raise ValueError(
+                f"API returned invalid JSON: {exc}. "
+                f"Response: {content[:200]}"
+            ) from exc
+
+        if not isinstance(translations, dict):
+            raise ValueError(
+                f"API returned {type(translations).__name__}, expected dict."
+            )
+
+        return translations
 
     # ------------------------------------------------------------------
     # Extraction helpers

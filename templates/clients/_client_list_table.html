@@ -1,9 +1,15 @@
 {% load i18n %}
 {% if page.object_list %}
-<figure class="client-table-wrap">
+<figure class="client-table-wrap" data-total-clients="{{ page.paginator.count }}">
 <table role="grid" class="client-table" aria-label="{% blocktrans with clients=term.client_plural|default:'Participants' %}{{ clients }} list{% endblocktrans %}">
     <thead>
         <tr>
+            {% if show_bulk %}
+            <th scope="col" class="bulk-col">
+                <label class="visually-hidden" for="bulk-select-all">{% trans "Select all" %}</label>
+                <input type="checkbox" id="bulk-select-all" aria-label="{% trans 'Select all visible rows' %}">
+            </th>
+            {% endif %}
             <th scope="col">
                 {% if sort_by == "name" or not sort_by %}
                     <strong>{% trans "Name" %}</strong>
@@ -34,8 +40,18 @@
     <tbody>
         {% for item in page %}
         <tr>
+            {% if show_bulk %}
+            <td class="bulk-col">
+                <label class="visually-hidden" for="bulk-cb-{{ item.client.pk }}">{% blocktrans with name=item.name %}Select {{ name }}{% endblocktrans %}</label>
+                <input type="checkbox"
+                       class="bulk-select-row"
+                       id="bulk-cb-{{ item.client.pk }}"
+                       value="{{ item.client.pk }}"
+                       aria-label="{% blocktrans with name=item.name %}Select {{ name }}{% endblocktrans %}">
+            </td>
+            {% endif %}
             <td><a href="{% url 'clients:client_detail' client_id=item.client.pk %}">{{ item.name }}</a>{% if item.can_edit_plan %} <span class="badge badge-edit-plan" title="{% trans 'You can edit plans for this participant' %}" aria-hidden="true">&#9998;</span><span class="sr-only">{% trans "Editable plan" %}</span>{% endif %}</td>
-            <td data-label="{% trans 'ID' %}">{{ item.client.record_id|default:"—" }}</td>
+            <td data-label="{% trans 'ID' %}">{{ item.client.record_id|default:"&mdash;" }}</td>
             <td data-label="{% trans 'Status' %}">
                 {% if item.client.status == "active" %}
                     <span class="badge badge-success"><span aria-hidden="true">&#x25CF;</span> {% trans "Active" %}</span>

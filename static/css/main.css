@@ -4911,3 +4911,135 @@ article[aria-label="notification"].fading-out {
     font-size: 1rem;
     margin-right: 0.25rem;
 }
+
+/* ══════════════════════════════════════════════════════════════════ */
+/* ── Bulk Operations (UX17)                                     ── */
+/* ══════════════════════════════════════════════════════════════════ */
+
+/* Checkbox column — narrow, fixed width */
+.bulk-col {
+    width: 3rem;
+    text-align: centre;
+    padding-left: var(--kn-space-sm) !important;
+    padding-right: var(--kn-space-xs) !important;
+}
+.bulk-col input[type="checkbox"] {
+    margin: 0;
+    width: 1.125rem;
+    height: 1.125rem;
+    min-height: auto;
+    cursor: pointer;
+}
+
+/* Sticky action bar at bottom of viewport */
+.bulk-action-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--kn-space-base);
+    padding: var(--kn-space-sm) var(--kn-space-lg);
+    background: var(--kn-card-bg, #fff);
+    border-top: 2px solid var(--kn-primary);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+}
+.bulk-action-bar[hidden] {
+    display: none;
+}
+.bulk-action-bar__count {
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--kn-text);
+    white-space: nowrap;
+}
+.bulk-action-bar__actions {
+    display: flex;
+    gap: var(--kn-space-sm);
+    flex-wrap: wrap;
+}
+.bulk-action-bar__actions .btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+    min-height: 36px;
+}
+
+/* Bulk modal — centred overlay */
+.bulk-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--kn-card-bg, #fff);
+    border-radius: var(--kn-radius-card, 8px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    z-index: 10001;
+    padding: var(--kn-space-lg);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+.bulk-modal[hidden] {
+    display: none;
+}
+.bulk-modal h2 {
+    margin: 0 0 var(--kn-space-base) 0;
+    font-size: 1.125rem;
+}
+.bulk-client-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--kn-border, #dee2e6);
+    border-radius: var(--kn-radius, 4px);
+    padding: var(--kn-space-sm);
+    margin-bottom: var(--kn-space-base);
+    font-size: 0.875rem;
+    list-style: none;
+}
+.bulk-client-list li {
+    padding: 0.25rem 0;
+    border-bottom: 1px solid var(--kn-border-light, #f0f0f0);
+}
+.bulk-client-list li:last-child {
+    border-bottom: none;
+}
+.bulk-modal__actions {
+    display: flex;
+    gap: var(--kn-space-sm);
+    justify-content: flex-end;
+    margin-top: var(--kn-space-base);
+}
+.bulk-modal .form-group {
+    margin-bottom: var(--kn-space-base);
+}
+.bulk-modal .form-error {
+    color: var(--kn-danger-fg);
+    display: block;
+    margin-top: 0.25rem;
+}
+
+@media (max-width: 768px) {
+    .bulk-action-bar {
+        flex-direction: column;
+        gap: var(--kn-space-xs);
+        padding: var(--kn-space-sm);
+    }
+    .bulk-modal {
+        width: 95%;
+        max-width: none;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .bulk-action-bar {
+        border-top-color: var(--kn-primary);
+        box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+    }
+    .bulk-modal {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    }
+}

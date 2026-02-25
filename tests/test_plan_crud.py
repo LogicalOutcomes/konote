@@ -77,12 +77,12 @@ class PlanCRUDBaseTest(TestCase):
 class SectionCreateTest(PlanCRUDBaseTest):
     """Test creating plan sections with RBAC checks.
 
-    Per the permissions matrix: staff has plan.edit: SCOPED (can create sections),
+    Per the permissions matrix: staff has plan.edit: PROGRAM (can create sections),
     program_manager has plan.edit: DENY (cannot create sections).
     """
 
     def test_counsellor_can_create_section(self):
-        """Staff has plan.edit: SCOPED per permissions matrix — can create sections."""
+        """Staff has plan.edit: PROGRAM per permissions matrix — can create sections."""
         self.http.login(username="counsellor", password="pass")
         url = reverse("plans:section_create", args=[self.client_file.pk])
         resp = self.http.post(url, {
@@ -124,7 +124,7 @@ class SectionCreateTest(PlanCRUDBaseTest):
 class SectionEditTest(PlanCRUDBaseTest):
     """Test editing plan sections.
 
-    Per the permissions matrix: staff has plan.edit: SCOPED (can edit sections),
+    Per the permissions matrix: staff has plan.edit: PROGRAM (can edit sections),
     program_manager has plan.edit: DENY (cannot edit sections).
     """
 
@@ -136,7 +136,7 @@ class SectionEditTest(PlanCRUDBaseTest):
         )
 
     def test_counsellor_can_edit_section(self):
-        """Staff has plan.edit: SCOPED per permissions matrix — can edit sections."""
+        """Staff has plan.edit: PROGRAM per permissions matrix — can edit sections."""
         self.http.login(username="counsellor", password="pass")
         url = reverse("plans:section_edit", args=[self.section.pk])
         resp = self.http.post(url, {
@@ -163,7 +163,7 @@ class SectionEditTest(PlanCRUDBaseTest):
 class SectionStatusTest(PlanCRUDBaseTest):
     """Test changing section status.
 
-    Per the permissions matrix: staff has plan.edit: SCOPED (can change status),
+    Per the permissions matrix: staff has plan.edit: PROGRAM (can change status),
     program_manager has plan.edit: DENY (cannot change status).
     """
 
@@ -175,7 +175,7 @@ class SectionStatusTest(PlanCRUDBaseTest):
         )
 
     def test_counsellor_can_change_section_status(self):
-        """Staff has plan.edit: SCOPED per permissions matrix — can change section status."""
+        """Staff has plan.edit: PROGRAM per permissions matrix — can change section status."""
         self.http.login(username="counsellor", password="pass")
         url = reverse("plans:section_status", args=[self.section.pk])
         resp = self.http.post(url, {
@@ -202,7 +202,7 @@ class SectionStatusTest(PlanCRUDBaseTest):
 class TargetCreateTest(PlanCRUDBaseTest):
     """Test creating plan targets.
 
-    Per the permissions matrix: staff has plan.edit: SCOPED (can create targets),
+    Per the permissions matrix: staff has plan.edit: PROGRAM (can create targets),
     program_manager has plan.edit: DENY (cannot create targets).
     """
     databases = ("default", "audit")
@@ -214,7 +214,7 @@ class TargetCreateTest(PlanCRUDBaseTest):
         )
 
     def test_counsellor_can_create_target(self):
-        """Staff has plan.edit: SCOPED per permissions matrix — can create targets."""
+        """Staff has plan.edit: PROGRAM per permissions matrix — can create targets."""
         self.http.login(username="counsellor", password="pass")
         url = reverse("plans:target_create", args=[self.section.pk])
         resp = self.http.post(url, {
@@ -247,7 +247,7 @@ class TargetCreateTest(PlanCRUDBaseTest):
 class TargetEditTest(PlanCRUDBaseTest):
     """Test editing targets and revision creation.
 
-    Per the permissions matrix: staff has plan.edit: SCOPED (can edit targets),
+    Per the permissions matrix: staff has plan.edit: PROGRAM (can edit targets),
     program_manager has plan.edit: DENY (cannot edit targets).
     """
 
@@ -262,7 +262,7 @@ class TargetEditTest(PlanCRUDBaseTest):
         )
 
     def test_edit_creates_revision_with_old_values(self):
-        """Staff has plan.edit: SCOPED — editing a target creates a revision with old values."""
+        """Staff has plan.edit: PROGRAM — editing a target creates a revision with old values."""
         self.http.login(username="counsellor", password="pass")
         url = reverse("plans:target_edit", args=[self.target.pk])
         resp = self.http.post(url, {
@@ -305,7 +305,7 @@ class TargetEditTest(PlanCRUDBaseTest):
 class TargetStatusTest(PlanCRUDBaseTest):
     """Test changing target status.
 
-    Per the permissions matrix: staff has plan.edit: SCOPED (can change status),
+    Per the permissions matrix: staff has plan.edit: PROGRAM (can change status),
     program_manager has plan.edit: DENY (cannot change status).
     """
 
@@ -320,7 +320,7 @@ class TargetStatusTest(PlanCRUDBaseTest):
         )
 
     def test_counsellor_can_change_target_status(self):
-        """Staff has plan.edit: SCOPED per permissions matrix — can change target status."""
+        """Staff has plan.edit: PROGRAM per permissions matrix — can change target status."""
         self.http.login(username="counsellor", password="pass")
         url = reverse("plans:target_status", args=[self.target.pk])
         resp = self.http.post(url, {
@@ -351,7 +351,7 @@ class TargetStatusTest(PlanCRUDBaseTest):
 class MetricAssignmentTest(PlanCRUDBaseTest):
     """Test assigning metrics to a target.
 
-    Per the permissions matrix: staff has plan.edit: SCOPED (can assign metrics),
+    Per the permissions matrix: staff has plan.edit: PROGRAM (can assign metrics),
     program_manager has plan.edit: DENY (cannot assign metrics).
     """
 
@@ -374,7 +374,7 @@ class MetricAssignmentTest(PlanCRUDBaseTest):
         )
 
     def test_counsellor_can_assign_metric(self):
-        """Staff has plan.edit: SCOPED per permissions matrix — can assign one metric."""
+        """Staff has plan.edit: PROGRAM per permissions matrix — can assign one metric."""
         self.http.login(username="counsellor", password="pass")
         url = reverse("plans:target_metrics", args=[self.target.pk])
         resp = self.http.post(url, {

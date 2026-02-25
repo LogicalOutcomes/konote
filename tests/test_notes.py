@@ -1054,3 +1054,39 @@ class TemplatePreviewTest(TestCase):
         resp = self.http.get(f"/notes/template/{self.template.pk}/preview/")
         self.assertEqual(resp.status_code, 302)
         self.assertIn("/login/", resp.url)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AllianceRepairGuideTest(TestCase):
+    """Tests for the Alliance Repair Guide reference page."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_guide_returns_200_for_authenticated_user(self):
+        """Authenticated staff can view the Alliance Repair Guide."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get("/notes/alliance-repair-guide/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Alliance Repair Guide")
+
+    def test_guide_redirects_anonymous_user(self):
+        """Anonymous users are redirected to the login page."""
+        resp = self.http.get("/notes/alliance-repair-guide/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/login/", resp.url)
+
+    def test_guide_contains_key_sections(self):
+        """Guide contains all five expected content sections."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get("/notes/alliance-repair-guide/")
+        self.assertContains(resp, "What Low Ratings Mean")
+        self.assertContains(resp, "Immediate Response")
+        self.assertContains(resp, "Repair Strategies")
+        self.assertContains(resp, "When to Seek Support")
+        self.assertContains(resp, "Quick Reference")

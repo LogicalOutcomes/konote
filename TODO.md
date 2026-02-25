@@ -2,37 +2,20 @@
 
 ## Flagged
 
-- [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — GK (ONBOARD-APPROVE)
-- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GK (SEC3-Q1)
+- [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — SG (ONBOARD-APPROVE)
+- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
 - [ ] Confirm standard report schema and configuration template with partner contact before building — SG (RPT-SCHEMA1)
 - [x] Validate CIDS implementation plan against CIDS 3.2.0 spec — 5 corrections + 6 Phase 3 items identified, GO with corrections (see tasks/cids-plan-validation.md) — SG/GK review open questions (CIDS-APPROVE1)
-- [ ] Discuss: are Design Rationale Records (DRRs) working well as a practice? Should we keep using them, change the format, or retire them? — GK (PROCESS-DRR1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
-- [ ] Discuss: Should GK design insights/reports pages as HTML mockups (in a `mockups/` folder) to iterate on layout without PRs? Developer would translate approved mockups into Django templates — PB (PROCESS-MOCKUPS1)
 
 ## Active Work
 
-### Phase: Offline Field Collection (PR #34 — Prince reviewing)
+### Phase: Offline Field Collection (remaining items — code merged via PR #34)
 
-- [x] App skeleton, models, ODK client, sync command — 2026-02-24 (FIELD-ODK-APP1, SYNC1)
-- [x] XLSForms for attendance and visit notes — 2026-02-24 (FIELD-ODK-FORM-ATT1, FORM-VIS1)
-- [x] Admin UI, feature toggle, settings — 2026-02-24 (FIELD-ODK-ADMIN1)
-- [x] App user mapping, pull submissions, dedup — 2026-02-24 (FIELD-ODK-USERS1, IMPORT1)
-- [x] Four PII tiers with scope control — 2026-02-24 (FIELD-ODK-TIERS1)
-- [x] Sync status dashboard — 2026-02-24 (FIELD-ODK-DASH1)
-- [x] Tests (43 tests), two code reviews — 2026-02-24 (FIELD-ODK-TEST1)
-- [x] French translations — 2026-02-24 (FIELD-ODK-I18N1)
 - [ ] Deploy ODK Central on Canadian VM (Docker Compose) — ops task (FIELD-ODK-DEPLOY1)
 - [ ] Circle Observation XLSForm — depends on circles in ODK (FIELD-ODK-FORM-CIR1)
 - [ ] Push Circle/CircleMember Entity lists — depends on above (FIELD-ODK-CIRCLES1)
 - [ ] Agency-facing documentation — ODK Collect setup, device loss protocol (FIELD-ODK-DOC1)
-
-### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
-
-- [x] Phase 3: Update executive dashboard — program cards with lead outcome, trend direction, data completeness, feedback themes, 7 tests — 2026-02-24 (INSIGHTS-P3-EXEC)
-- [x] Phase 4: Achievement metric recording UI — dropdown in note form, form validation, 4 tests — 2026-02-24 (INSIGHTS-P4-RECORD)
-- [ ] 🔨 Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
-- [ ] 🔨 Extract and translate French strings for metric distributions templates (~25-30 new strings, several blocktrans blocks) — PB (INSIGHTS-I18N1)
 
 ### Phase: Launch Readiness
 
@@ -43,16 +26,8 @@
 - [ ] Verify production email configuration for exports, erasure alerts, and password resets — PB (OPS3)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — PB (OPS4)
 - [ ] Document scheduled task setup for export monitoring in the runbook — PB (EXP2w)
-- [x] Add program-level filtering to note search (`_find_clients_with_matching_notes`) — PHIPA consent filter + 2 tests — 2026-02-24 (PHIPA-SEARCH1)
-- [x] Add consent filter to qualitative_summary view — PHIPA consent filter + test — 2026-02-24 (PHIPA-QUAL1)
 - [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — (DEPLOY-TOOLKIT1)
-
-### Phase: I18N Process Improvements (see tasks/i18n-process-improvements.md — on docs/bilingual-drr branch, PR #36)
-
-- [x] Resolve fuzzy PO entries — verified 0 fuzzy entries exist; custom translate_strings workflow avoids them — 2026-02-24 (I18N-FUZZY1)
-- [x] Verify language toggle meets Ontario FLSA active offer requirements — added toggle to 6 public/unauthenticated pages, added aria-labels — 2026-02-24 (I18N-ACTIVE-OFFER1)
-- [x] Add insights-metric-distributions DRR to CLAUDE.md list — 2026-02-24 (I18N-DRR-LIST1)
 
 ## Do Occasionally
 
@@ -104,7 +79,10 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: Other Upcoming
 
-- [ ] Permissions Phase 2 — remaining 10 items: discharge access transitions, consent model, DV-safe mode, GATED clinical access, group schedule vs roster, per-field front desk edit, SCOPED→PROGRAM rename, partner report key, alert escalation, dashboard split (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P3–12)
+Blocked on infrastructure (dedicated sprint):
+- [ ] GATED clinical access for PM — build justification UI + time-boxing; `client.view_clinical` must move from ALLOW to GATED (highest-priority Phase 2 item) — GK reviews (PERM-P6)
+- [ ] Per-field front desk edit — build admin UI to configure which contact fields receptionist can edit (prerequisite for P5) (PERM-P8)
+- [ ] DV-safe mode — hide address/emergency contact from front desk when DV flag set; blocked on PERM-P8 — GK reviews (PERM-P5)
 
 ### Phase: Advanced Reporting
 
@@ -119,13 +97,13 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ### Phase: Surveys Future Work
 
 - [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
-- [x] Run `translate_strings` to extract and compile French translations for the new survey templates — 2026-02-24 (SURVEY-I18N1)
 
 ### Phase: Documentation & Website Updates
 
 - [ ] Create deployment documentation for surveys and portal features (DOC-DEPLOY1)
 - [ ] Update technical documentation in GitHub for surveys and portal architecture (DOC-TECH1)
-- [ ] Update website feature list to add a Surveys card — features.html has Participant Portal but no explicit surveys section (WEB-FEAT1)
+- [ ] Update website feature list and marketing copy to include surveys and portal (WEB-FEAT1)
+- [ ] Add Evidence section to website — adapt docs/evidence-outcome-measurement.md into a public-facing page explaining the research behind KoNote's outcome measurement approach (see tasks/web-evidence-prompt.md) (WEB-EVIDENCE1)
 
 ## Parking Lot
 
@@ -133,41 +111,33 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] PIPEDA data export from client profile — "Export Data" action for Section 8 access requests, needs design for data categories and output format — GK reviews privacy workflow (QA-R7-PRIVACY1)
 - [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
 - [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
-- [ ] Verify BLOCKER-1 and BLOCKER-2 with manual keyboard/JAWS test — requires human testing with assistive tech (T50)
+- [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed (T50)
 - [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
 - [ ] Add stress testing for 50+ concurrent users (QA-T15)
 - [ ] Add legacy system import migration scenario test (QA-T16)
 - [ ] Implement multi-session testing for SCN-046 shared device scenario (QA-W55)
-- [ ] Surveys — lightweight structured feedback collection from participants (see tasks/surveys-design.md) (SURVEY1)
 - [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
 - [ ] Build agency data offboarding command for secure departures and PIPEDA requests (SEC3)
 - [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
-- [ ] Add first-run setup wizard UI for guided initial configuration (SETUP1-UI)
 - [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
-- [ ] Add bulk operations for discharge and assignment workflows (UX17)
-- [ ] Re-add API-based auto-translation to translate_strings for production use (I18N-API1)
-- [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
 - [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — fix in qa-scenarios repo (QA-PA-TEST1)
 - [ ] Seed comm-my-messages populated state with actual messages — fix in qa-scenarios repo (QA-PA-TEST2)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
 - [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
 - [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
-- [ ] Alliance Repair Guide — one-page printable guide for workers when participants rate low (ALLIANCE-GUIDE1)
-- [ ] Participant-facing progress view — show descriptor timeline to participant in portal (PORTAL-PROGRESS1)
 - [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
 - [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
 
 ## Recently Done
 
-- [x] Verified: breadcrumbs already on plan-goal-create (implemented in prior session) — 2026-02-24 (QA-PA-GOAL3)
-- [x] Verified: TOTP MFA already implemented (see tasks/mfa-implementation.md) — 2026-02-24 (SEC2)
-- [x] Verified: deferred Tier 3 erasure (24-hour delay) already implemented — 2026-02-24 (ERASE-H8)
+- [x] Verified: surveys already implemented — full apps/surveys/ with models, views, forms, tests, migrations — 2026-02-24 (SURVEY1)
+- [x] Verified: first-run setup wizard already implemented — 8-step guided configuration in admin settings — 2026-02-24 (SETUP1-UI)
+- [x] Verified: deployment workflow enhancements already implemented — is_demo flag, seed command, demo/real separation — 2026-02-24 (DEPLOY1)
+- [x] Verified: participant-facing progress view already implemented — descriptor timeline in portal — 2026-02-24 (PORTAL-PROGRESS1)
+- [x] Re-add API-based auto-translation to translate_strings — `--auto-translate` flag, OpenAI-compatible API, 21 tests (PR #63) — 2026-02-24 (I18N-API1)
+- [x] Alliance Repair Guide — printable one-pager based on FIT principles, print CSS, help link in note form, 3 tests, GK reviews content (PR #62) — 2026-02-24 (ALLIANCE-GUIDE1)
+- [x] Bulk operations for discharge and program assignment — checkboxes, sticky action bar, HTMX modals, 7 tests (PR #64) — 2026-02-24 (UX17)
 - [x] Code review fixes (14 of 15 findings) — All Programs guard, age breakdown loop, aria-labels, PHIPA comment, export_type, permission tests, cross-program tests, audit log tests, role=grid removal, erasure badges, hardcoded URLs, ARIA state, modality null→default, innerHTML→HTMX, CSV string fix (PR #58) — 2026-02-24 (REVIEW-FIX1–15)
 - [x] Parking lot + Advanced Reporting parallel cleanup (15 items in 7 agents, 2 waves) — 2026-02-24 (QA-PA-ERASURE1, QA-PA-ERASURE2, QA-R7-BUG13, QA-R7-BUG21, A11Y-POLISH1, QA-W19, DEPLOY-VERIFY1, CODE-TIDY1, QA-W62, I18N-STALE1, I18N-CSV1, REP-SESS1, REP-PREVIEW1, REP-PDF1, REP-PDF2)
-- [x] Add insights-metric-distributions DRR to CLAUDE.md list — 2026-02-24 (I18N-DRR-LIST1)
 - [x] PHIPA consent filtering for note search and qualitative summary — 3 tests (PR pending) — 2026-02-24 (PHIPA-SEARCH1, PHIPA-QUAL1)
-- [x] Create bilingual requirements DRR — legal rationale (Official Languages Act, Ontario FLSA, WCAG), anti-patterns for deferred translations, technical approach, translation standards for Claude sessions — 2026-02-24 (I18N-DRR1)
-- [x] All Programs report filter — "__all__" sentinel, multi-program aggregation, RBAC-scoped, 18 tests — 2026-02-24 (REP-ALL-PROGS1)
-- [x] Insights P3 executive dashboard + P4 achievement recording + 65 French translations (PR #35) — 2026-02-24 (INSIGHTS-P3-EXEC, INSIGHTS-P4-RECORD)
-

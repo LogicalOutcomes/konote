@@ -168,7 +168,7 @@ class ClientViewsTest(TestCase):
 
     def test_edit_client(self):
         cf = self._create_client("Jane", "Doe", [self.prog_a])
-        # Staff role has client.edit SCOPED (same as program_manager)
+        # Staff role has client.edit PROGRAM (same as program_manager)
         self.client.login(username="staff", password="testpass123")
         resp = self.client.post(f"/participants/{cf.pk}/edit/", {
             "first_name": "Janet",
@@ -184,7 +184,7 @@ class ClientViewsTest(TestCase):
         self.assertEqual(cf.first_name, "Janet")
 
     def test_pm_can_edit_client(self):
-        """Program managers have client.edit SCOPED — can edit clients in their program."""
+        """Program managers have client.edit PROGRAM — can edit clients in their program."""
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="pm", password="testpass123")
         resp = self.client.post(f"/participants/{cf.pk}/edit/", {
@@ -217,7 +217,7 @@ class ClientViewsTest(TestCase):
     # --- Transfer tests ---
 
     def test_staff_can_transfer_client(self):
-        """Staff have client.transfer SCOPED — can add a program."""
+        """Staff have client.transfer PROGRAM — can add a program."""
         # Give staff access to both programs
         UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
         cf = self._create_client("Jane", "Doe", [self.prog_a])
@@ -315,7 +315,7 @@ class ClientViewsTest(TestCase):
         )
 
     def test_pm_can_transfer_client(self):
-        """PMs have client.transfer SCOPED — can transfer clients."""
+        """PMs have client.transfer PROGRAM — can transfer clients."""
         UserProgramRole.objects.create(user=self.pm, program=self.prog_b, role="program_manager")
         cf = self._create_client("Jane", "Doe", [self.prog_a])
         self.client.login(username="pm", password="testpass123")
@@ -1071,3 +1071,219 @@ class FormDataPreservationTest(TestCase):
         # The form should contain the entered first name and last name
         self.assertIn("Marie-Claire", content)
         self.assertIn("Tremblay", content)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class BulkOperationsTest(TestCase):
+    """Tests for bulk status change and program transfer (UX17)."""
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client = Client()
+        # Program manager with client.edit and client.transfer permissions
+        self.pm = User.objects.create_user(username="pm", password="testpass123", is_admin=False)
+        # Receptionist (no client.edit or client.transfer)
+        self.receptionist = User.objects.create_user(username="receptionist", password="testpass123", is_admin=False)
+        self.prog_a = Program.objects.create(name="Program A", colour_hex="#10B981")
+        self.prog_b = Program.objects.create(name="Program B", colour_hex="#3B82F6")
+        self.prog_c = Program.objects.create(name="Program C", colour_hex="#EF4444")
+        UserProgramRole.objects.create(user=self.pm, program=self.prog_a, role="program_manager")
+        UserProgramRole.objects.create(user=self.pm, program=self.prog_b, role="program_manager")
+        UserProgramRole.objects.create(user=self.receptionist, program=self.prog_a, role="receptionist")
+
+    def _create_client(self, first="Jane", last="Doe", programs=None, status="active"):
+        cf = ClientFile()
+        cf.first_name = first
+        cf.last_name = last
+        cf.status = status
+        cf.save()
+        if programs:
+            for p in programs:
+                ClientProgramEnrolment.objects.create(client_file=cf, program=p)
+        return cf
+
+    # ---- Checkbox rendering ----
+
+    def test_checkboxes_rendered_for_pm(self):
+        """Checkboxes should appear in client list for users with edit permissions."""
+        self._create_client("Alice", "Smith", [self.prog_a])
+        self.client.login(username="pm", password="testpass123")
+        resp = self.client.get("/participants/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'id="bulk-select-all"')
+        self.assertContains(resp, 'class="bulk-select-row"')
+
+    def test_checkboxes_not_rendered_for_receptionist(self):
+        """Checkboxes should NOT appear for receptionists (no edit/transfer)."""
+        self._create_client("Alice", "Smith", [self.prog_a])
+        self.client.login(username="receptionist", password="testpass123")
+        resp = self.client.get("/participants/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, 'id="bulk-select-all"')
+        self.assertNotContains(resp, 'class="bulk-select-row"')
+
+    # ---- Bulk status change ----
+
+    def test_bulk_status_change_happy_path(self):
+        """Three active clients discharged via bulk status change."""
+        c1 = self._create_client("Alice", "Smith", [self.prog_a])
+        c2 = self._create_client("Bob", "Jones", [self.prog_a])
+        c3 = self._create_client("Carol", "Lee", [self.prog_a])
+        self.client.login(username="pm", password="testpass123")
+
+        # Step 1: POST to show confirmation form
+        resp = self.client.post("/participants/bulk-status/", {
+            "client_ids[]": [c1.pk, c2.pk, c3.pk],
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Alice")
+        self.assertContains(resp, "Bob")
+        self.assertContains(resp, "Carol")
+
+        # Step 2: Confirm the status change
+        resp = self.client.post("/participants/bulk-status/", {
+            "confirm": "1",
+            "client_ids": f"{c1.pk},{c2.pk},{c3.pk}",
+            "status": "discharged",
+            "status_reason": "Program ended",
+        })
+        self.assertEqual(resp.status_code, 302)  # Redirect to client list
+
+        # Verify statuses changed
+        for pk in [c1.pk, c2.pk, c3.pk]:
+            cf = ClientFile.objects.get(pk=pk)
+            self.assertEqual(cf.status, "discharged")
+            self.assertEqual(cf.status_reason, "Program ended")
+
+        # Verify audit log entries
+        from apps.audit.models import AuditLog
+        audit_entries = AuditLog.objects.using("audit").filter(
+            resource_type="clients",
+            metadata__bulk=True,
+        )
+        self.assertEqual(audit_entries.count(), 3)
+
+    def test_bulk_status_change_permission_denied(self):
+        """Receptionist cannot access bulk status change."""
+        c1 = self._create_client("Alice", "Smith", [self.prog_a])
+        self.client.login(username="receptionist", password="testpass123")
+        resp = self.client.post("/participants/bulk-status/", {
+            "client_ids[]": [c1.pk],
+        })
+        self.assertEqual(resp.status_code, 403)
+
+    def test_bulk_status_filters_inaccessible_clients(self):
+        """Bulk status change should skip clients outside user's programs."""
+        c1 = self._create_client("Alice", "Smith", [self.prog_a])
+        c2 = self._create_client("Bob", "Jones", [self.prog_c])  # Not in PM's programs
+        self.client.login(username="pm", password="testpass123")
+
+        resp = self.client.post("/participants/bulk-status/", {
+            "confirm": "1",
+            "client_ids": f"{c1.pk},{c2.pk}",
+            "status": "inactive",
+            "status_reason": "",
+        })
+        self.assertEqual(resp.status_code, 302)
+
+        # Only c1 should be updated
+        self.assertEqual(ClientFile.objects.get(pk=c1.pk).status, "inactive")
+        self.assertEqual(ClientFile.objects.get(pk=c2.pk).status, "active")  # unchanged
+
+    # ---- Bulk program transfer ----
+
+    def test_bulk_transfer_happy_path(self):
+        """Three clients added to a new program via bulk transfer."""
+        c1 = self._create_client("Alice", "Smith", [self.prog_a])
+        c2 = self._create_client("Bob", "Jones", [self.prog_a])
+        c3 = self._create_client("Carol", "Lee", [self.prog_a])
+        self.client.login(username="pm", password="testpass123")
+
+        # Step 1: POST to show confirmation form
+        resp = self.client.post("/participants/bulk-transfer/", {
+            "client_ids[]": [c1.pk, c2.pk, c3.pk],
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Alice")
+
+        # Step 2: Confirm — add to Program B
+        resp = self.client.post("/participants/bulk-transfer/", {
+            "confirm": "1",
+            "client_ids": f"{c1.pk},{c2.pk},{c3.pk}",
+            "add_program": self.prog_b.pk,
+            "remove_program": "",
+        })
+        self.assertEqual(resp.status_code, 302)
+
+        # Verify enrolments
+        for pk in [c1.pk, c2.pk, c3.pk]:
+            self.assertTrue(
+                ClientProgramEnrolment.objects.filter(
+                    client_file_id=pk, program=self.prog_b, status="enrolled",
+                ).exists()
+            )
+
+        # Verify audit log entries
+        from apps.audit.models import AuditLog
+        audit_entries = AuditLog.objects.using("audit").filter(
+            resource_type="enrolment",
+            metadata__bulk=True,
+        )
+        self.assertEqual(audit_entries.count(), 3)
+
+    def test_bulk_transfer_permission_denied(self):
+        """Receptionist cannot access bulk transfer."""
+        c1 = self._create_client("Alice", "Smith", [self.prog_a])
+        self.client.login(username="receptionist", password="testpass123")
+        resp = self.client.post("/participants/bulk-transfer/", {
+            "client_ids[]": [c1.pk],
+        })
+        self.assertEqual(resp.status_code, 403)
+
+    # ---- Edge cases ----
+
+    def test_bulk_status_empty_selection(self):
+        """Empty client_ids redirects back to client list."""
+        self.client.login(username="pm", password="testpass123")
+        resp = self.client.post("/participants/bulk-status/", {
+            "client_ids[]": "",
+        })
+        # Should redirect (no clients to show in confirmation)
+        self.assertIn(resp.status_code, [200, 302])
+
+    def test_bulk_status_invalid_ids(self):
+        """Non-integer client_ids are handled gracefully."""
+        self.client.login(username="pm", password="testpass123")
+        resp = self.client.post("/participants/bulk-status/", {
+            "confirm": "1",
+            "client_ids": "abc,def",
+            "status": "discharged",
+        })
+        # Form validation should catch this — re-render with error, not crash
+        self.assertIn(resp.status_code, [200, 302])
+
+    def test_bulk_transfer_already_enrolled_idempotent(self):
+        """Adding to a program the client is already in does not create duplicates."""
+        c1 = self._create_client("Alice", "Smith", [self.prog_a, self.prog_b])
+        self.client.login(username="pm", password="testpass123")
+
+        initial_count = ClientProgramEnrolment.objects.filter(
+            client_file=c1, program=self.prog_b,
+        ).count()
+        self.assertEqual(initial_count, 1)
+
+        # Bulk add to prog_b (already enrolled)
+        resp = self.client.post("/participants/bulk-transfer/", {
+            "confirm": "1",
+            "client_ids": str(c1.pk),
+            "add_program": self.prog_b.pk,
+            "remove_program": "",
+        })
+        self.assertEqual(resp.status_code, 302)
+
+        # Should still be exactly 1 enrolment, not 2
+        final_count = ClientProgramEnrolment.objects.filter(
+            client_file=c1, program=self.prog_b,
+        ).count()
+        self.assertEqual(final_count, 1)

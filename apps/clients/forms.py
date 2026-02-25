@@ -38,7 +38,7 @@ class ConsentRecordForm(forms.Form):
 class ClientContactForm(forms.Form):
     """Narrow form for editing client phone number only.
 
-    Used by front desk (client.edit_contact: ALLOW) and staff (SCOPED).
+    Used by front desk (client.edit_contact: ALLOW) and staff (PROGRAM).
     Does NOT include address or emergency contact — safety implications for DV.
     Replace with PER_FIELD form in Phase 2.
     """
@@ -476,3 +476,81 @@ class DataAccessCompleteForm(forms.Form):
         choices=DELIVERY_METHOD_CHOICES,
         label=_("How was the information delivered?"),
     )
+
+
+# --- Bulk operation forms (UX17) ---
+
+class BulkStatusForm(forms.Form):
+    """Form for changing status of multiple clients at once."""
+
+    client_ids = forms.CharField(widget=forms.HiddenInput)
+    status = forms.ChoiceField(
+        choices=ClientFile.STATUS_CHOICES,
+        label=_("New status"),
+    )
+    status_reason = forms.CharField(
+        required=False,
+        label=_("Reason (optional)"),
+        widget=forms.Textarea(attrs={
+            "rows": 2,
+            "placeholder": _("Why is the status being changed?"),
+        }),
+    )
+
+    def clean_client_ids(self):
+        raw = self.cleaned_data["client_ids"]
+        try:
+            ids = [int(x.strip()) for x in raw.split(",") if x.strip()]
+        except (ValueError, TypeError):
+            raise forms.ValidationError(_("Invalid participant selection."))
+        if not ids:
+            raise forms.ValidationError(_("No participants selected."))
+        return ids
+
+
+class BulkTransferForm(forms.Form):
+    """Form for adding/removing program enrolments for multiple clients."""
+
+    client_ids = forms.CharField(widget=forms.HiddenInput)
+    add_program = forms.ModelChoiceField(
+        queryset=Program.objects.none(),
+        required=False,
+        label=_("Add to program"),
+        empty_label=_("— None —"),
+    )
+    remove_program = forms.ModelChoiceField(
+        queryset=Program.objects.none(),
+        required=False,
+        label=_("Remove from program"),
+        empty_label=_("— None —"),
+    )
+
+    def __init__(self, *args, available_programs=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if available_programs is not None:
+            self.fields["add_program"].queryset = available_programs
+            self.fields["remove_program"].queryset = available_programs
+
+    def clean_client_ids(self):
+        raw = self.cleaned_data["client_ids"]
+        try:
+            ids = [int(x.strip()) for x in raw.split(",") if x.strip()]
+        except (ValueError, TypeError):
+            raise forms.ValidationError(_("Invalid participant selection."))
+        if not ids:
+            raise forms.ValidationError(_("No participants selected."))
+        return ids
+
+    def clean(self):
+        cleaned = super().clean()
+        add = cleaned.get("add_program")
+        remove = cleaned.get("remove_program")
+        if not add and not remove:
+            raise forms.ValidationError(
+                _("Please select a program to add or remove.")
+            )
+        if add and remove and add.pk == remove.pk:
+            raise forms.ValidationError(
+                _("Cannot add and remove the same program.")
+            )
+        return cleaned
