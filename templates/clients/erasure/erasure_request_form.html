@@ -74,25 +74,25 @@
     <form method="post">
         {% csrf_token %}
 
-        {# Erasure tier selection #}
+        {# Erasure tier selection — iterate choices directly for reliable value attributes #}
         <fieldset>
             <legend><strong>{{ form.erasure_tier.label }}</strong></legend>
             <p class="secondary" style="font-size: 0.875rem; margin-bottom: 0.75rem;">
                 {% trans "Choose the level of data removal. Anonymisation (recommended) removes identifying information while keeping service records for compliance and reporting." %}
             </p>
-            {% for radio in form.erasure_tier %}
-            <label style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem; {% if radio.choice_value == 'full_erasure' and not available_tiers.full_erasure.available %}opacity: 0.5;{% endif %}">
-                <input type="radio" name="{{ form.erasure_tier.html_name }}" value="{{ radio.choice_value }}"
-                       {% if radio.is_checked %}checked{% endif %}
-                       {% if radio.choice_value == 'full_erasure' and not available_tiers.full_erasure.available %}disabled{% endif %}
+            {% for choice_value, choice_label in form.erasure_tier.field.choices %}
+            <label style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem; {% if choice_value == 'full_erasure' and not available_tiers.full_erasure.available %}opacity: 0.5;{% endif %}">
+                <input type="radio" name="{{ form.erasure_tier.html_name }}" value="{{ choice_value }}"
+                       {% if choice_value == form.erasure_tier.value %}checked{% endif %}
+                       {% if choice_value == 'full_erasure' and not available_tiers.full_erasure.available %}disabled{% endif %}
                        style="margin-top: 0.25rem;">
                 <span>
-                    {{ radio.choice_label }}
-                    {% if radio.choice_value == "anonymise" %}
+                    {{ choice_label }}
+                    {% if choice_value == "anonymise" %}
                     <br><small class="secondary">{% trans "Removes name, date of birth, and other identifying fields. Keeps notes, metrics, plans, and program data for reporting." %}</small>
-                    {% elif radio.choice_value == "anonymise_purge" %}
+                    {% elif choice_value == "anonymise_purge" %}
                     <br><small class="secondary">{% trans "Removes identifying fields AND all narrative content (notes, alerts, event descriptions). Keeps numeric metrics and program enrolments." %}</small>
-                    {% elif radio.choice_value == "full_erasure" %}
+                    {% elif choice_value == "full_erasure" %}
                     <br><small class="secondary">{% trans "Permanently deletes all records. Only a statistical summary is preserved." %}
                     {% if not available_tiers.full_erasure.available %}<br><em>{{ available_tiers.full_erasure.reason }}</em>{% endif %}
                     </small>
@@ -127,7 +127,7 @@
             <legend><strong>{% trans "Before submitting, confirm you understand:" %}</strong></legend>
 
             <label style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.75rem;">
-                <input type="checkbox" name="ack_permanent" class="erasure-ack-checkbox" style="margin-top: 0.25rem;" {% if form.ack_permanent.value %}checked{% endif %}>
+                <input type="checkbox" name="ack_permanent" value="on" class="erasure-ack-checkbox" style="margin-top: 0.25rem;" {% if form.ack_permanent.value %}checked{% endif %}>
                 <span>{{ form.ack_permanent.label }}</span>
             </label>
             {% if form.ack_permanent.errors %}
@@ -135,7 +135,7 @@
             {% endif %}
 
             <label style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.75rem;">
-                <input type="checkbox" name="ack_authorised" class="erasure-ack-checkbox" style="margin-top: 0.25rem;" {% if form.ack_authorised.value %}checked{% endif %}>
+                <input type="checkbox" name="ack_authorised" value="on" class="erasure-ack-checkbox" style="margin-top: 0.25rem;" {% if form.ack_authorised.value %}checked{% endif %}>
                 <span>{{ form.ack_authorised.label }}</span>
             </label>
             {% if form.ack_authorised.errors %}
@@ -143,7 +143,7 @@
             {% endif %}
 
             <label style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.75rem;">
-                <input type="checkbox" name="ack_notify" class="erasure-ack-checkbox" style="margin-top: 0.25rem;" {% if form.ack_notify.value %}checked{% endif %}>
+                <input type="checkbox" name="ack_notify" value="on" class="erasure-ack-checkbox" style="margin-top: 0.25rem;" {% if form.ack_notify.value %}checked{% endif %}>
                 <span>{{ form.ack_notify.label }}</span>
             </label>
             {% if form.ack_notify.errors %}
@@ -162,6 +162,7 @@
 (function() {
     var acks = document.querySelectorAll('.erasure-ack-checkbox');
     var submitBtn = document.getElementById('erasure-submit-btn');
+    var form = submitBtn ? submitBtn.closest('form') : null;
 
     function updateSubmitState() {
         var allChecked = Array.from(acks).every(function(cb) { return cb.checked; });
@@ -178,6 +179,14 @@
     acks.forEach(function(cb) {
         cb.addEventListener('change', updateSubmitState);
     });
+
+    // Prevent double-submit
+    if (form) {
+        form.addEventListener('submit', function() {
+            submitBtn.disabled = true;
+            submitBtn.setAttribute('aria-busy', 'true');
+        });
+    }
 
     updateSubmitState();
 })();
