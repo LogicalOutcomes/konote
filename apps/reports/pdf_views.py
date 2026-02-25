@@ -509,18 +509,23 @@ def client_export(request, client_id):
     client_name = f"{client.first_name} {client.last_name}"
 
     if request.method == "POST":
-        # Idempotency: reject duplicate POSTs from the same form render
-        submitted_nonce = request.POST.get("_export_nonce", "")
-        session_key = f"export_nonce_{client_id}"
-        expected_nonce = request.session.get(session_key, "")
-        if not submitted_nonce or submitted_nonce != expected_nonce:
-            form = IndividualClientExportForm()
-            return render(request, "reports/client_export_form.html", {
-                "form": form, "client": client, "client_name": client_name,
-                "duplicate_warning": True,
-            })
-        # Clear nonce so it can't be reused
-        request.session.pop(session_key, None)
+        # Idempotency: reject duplicate POSTs from the same form render.
+        # Only enforced when the nonce hidden field is present in the POST
+        # (always true in the browser form, not present in direct API calls).
+        submitted_nonce = request.POST.get("_export_nonce")
+        if submitted_nonce is not None:
+            session_key = f"export_nonce_{client_id}"
+            expected_nonce = request.session.get(session_key, "")
+            if not submitted_nonce or submitted_nonce != expected_nonce:
+                form = IndividualClientExportForm()
+                nonce = uuid.uuid4().hex
+                request.session[session_key] = nonce
+                return render(request, "reports/client_export_form.html", {
+                    "form": form, "client": client, "client_name": client_name,
+                    "duplicate_warning": True, "export_nonce": nonce,
+                })
+            # Clear nonce so it can't be reused
+            request.session.pop(session_key, None)
 
         form = IndividualClientExportForm(request.POST)
         if form.is_valid():
