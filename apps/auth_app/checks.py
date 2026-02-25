@@ -8,6 +8,7 @@ Check IDs:
     KoNote.W020 — Hardcoded role decorator found (should migrate to @requires_permission)
     KoNote.E020 — Unknown permission key in @requires_permission (typo / deleted key)
     KoNote.W021 — Matrix key not referenced by any @requires_permission (dead key)
+    KoNote.W022 — Documentation row count drift (permissions-matrix.md vs matrix keys)
 
 Run checks manually:
     python manage.py check
@@ -201,3 +202,78 @@ def check_dead_permission_keys(app_configs, **kwargs):
         )
 
     return warnings
+
+
+@register()
+def check_docs_permission_row_count(app_configs, **kwargs):
+    """W022: Warn if permissions-matrix.md has fewer data rows than matrix keys."""
+    base_dir = Path(getattr(settings, "BASE_DIR", "."))
+    docs_file = base_dir / "docs" / "permissions-matrix.md"
+
+    if not docs_file.exists():
+        return []
+
+    try:
+        content = docs_file.read_text(encoding="utf-8")
+    except OSError:
+        return []
+
+    lines = content.splitlines()
+
+    in_table = False
+    header_seen = False
+    data_rows = 0
+
+    for line in lines:
+        stripped = line.strip()
+
+        if stripped == "## Quick Summary":
+            in_table = True
+            continue
+
+        if in_table and stripped.startswith("**Legend:**"):
+            break
+
+        if not in_table or not stripped or not stripped.startswith("|"):
+            continue
+
+        # Skip the header row (first | row after ## Quick Summary)
+        if not header_seen:
+            header_seen = True
+            continue
+
+        # Skip separator row (|---|...|)
+        if re.match(r"^\|[\s\-:|]+\|$", stripped):
+            continue
+
+        # Skip section header rows (bold first cell, all other cells empty)
+        cells = [c.strip() for c in stripped.split("|")[1:-1]]
+        if cells and all(c == "" for c in cells[1:]):
+            continue
+
+        data_rows += 1
+
+    if data_rows == 0:
+        return [
+            Warning(
+                "Could not parse Quick Summary table in "
+                "docs/permissions-matrix.md. Manual review recommended.",
+                hint="Check that the file has a '## Quick Summary' heading "
+                     "followed by a markdown table and a '**Legend:**' marker.",
+                id="KoNote.W022",
+            )
+        ]
+
+    if data_rows < len(ALL_PERMISSION_KEYS):
+        return [
+            Warning(
+                f"Permissions matrix has {len(ALL_PERMISSION_KEYS)} keys but "
+                f"docs/permissions-matrix.md has {data_rows} data rows. "
+                f"Did you add a key without updating the docs?",
+                hint="Run 'python manage.py validate_permissions' to see all "
+                     "keys, then update docs/permissions-matrix.md to match.",
+                id="KoNote.W022",
+            )
+        ]
+
+    return []
