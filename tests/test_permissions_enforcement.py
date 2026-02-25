@@ -1,6 +1,6 @@
 """Parametrized permission enforcement test (Wave 6A).
 
-Tests all 48 permission keys x 4 roles = 192 cases. For each (role, key)
+Tests all 68 permission keys x 4 roles = 272 cases. For each (role, key)
 pair, makes an HTTP request to the URL protected by that key and asserts:
   - DENY -> 403 (or 302 redirect for executives on client-scoped URLs)
   - ALLOW / PROGRAM / GATED / PER_FIELD -> NOT 403
@@ -147,6 +147,11 @@ PERMISSION_URL_MAP = {
     "registration.manage": {"url": "/manage/registration/"},
     "suggestion_theme.view": {"url": "/manage/suggestions/"},
     "suggestion_theme.manage": {"url": "/manage/suggestions/create/"},
+
+    # Circle keys — enforced by @requires_permission_global
+    "circle.view": {"url": "/circles/"},
+    "circle.create": {"url": "/circles/create/"},
+    "circle.edit": {"url": "/circles/{circle_id}/edit/"},
 }
 
 ALL_ROLES = ["receptionist", "staff", "program_manager", "executive"]
@@ -223,6 +228,26 @@ class PermissionEnforcementTest(TestCase):
         )
         Meeting.objects.create(event=self.event)
 
+        # Enable circles feature toggle
+        from apps.admin_settings.models import FeatureToggle
+        FeatureToggle.objects.get_or_create(
+            feature_key="circles", defaults={"is_enabled": True},
+        )
+
+        # Circle with the client as a member
+        from apps.circles.models import Circle, CircleMembership
+        self.circle = Circle.objects.create(
+            created_by=self.users["staff"],
+        )
+        self.circle.name = "Test Family"
+        self.circle.save()
+        CircleMembership.objects.create(
+            circle=self.circle,
+            client_file=self.client_file,
+            relationship_label="parent",
+            is_primary_contact=True,
+        )
+
     def tearDown(self):
         enc_module._fernet = None
 
@@ -235,6 +260,7 @@ class PermissionEnforcementTest(TestCase):
             .replace("{alert_id}", str(self.alert.pk))
             .replace("{note_id}", str(self.note.pk))
             .replace("{event_id}", str(self.event.pk))
+            .replace("{circle_id}", str(self.circle.pk))
         )
 
     # ------------------------------------------------------------------
@@ -242,7 +268,7 @@ class PermissionEnforcementTest(TestCase):
     # ------------------------------------------------------------------
 
     def test_permission_matrix_enforcement(self):
-        """All 48 permission keys x 4 roles: DENY -> 403, others -> not 403."""
+        """All 68 permission keys x 4 roles: DENY -> 403, others -> not 403."""
         for role in ALL_ROLES:
             user = self.users[role]
             for perm_key, config in PERMISSION_URL_MAP.items():
