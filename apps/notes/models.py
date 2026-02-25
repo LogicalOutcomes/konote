@@ -261,7 +261,7 @@ class ProgressNote(models.Model):
     modality = models.CharField(
         max_length=20,
         choices=MODALITY_CHOICES,
-        null=True,
+        default="",
         blank=True,
         help_text=_("How the session was delivered."),
     )
