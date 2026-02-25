@@ -193,6 +193,7 @@ Current DRRs:
 
 ### How Claude Manages Tasks
 
+- **Always `git pull origin main` before reading or updating TODO.md.** The local copy goes stale after PRs merge on GitHub. Never trust the local file without pulling first. When the user asks for the to-do list, pull first — do not skip this step or assume the local copy is current.
 - When user describes a task: create an ID, add one line to the right section in TODO.md
 - When a task needs subtasks or context: create a detail file in `tasks/`
 - When user asks about a task: read TODO.md for status, read `tasks/*.md` for detail
