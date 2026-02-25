@@ -265,8 +265,14 @@
         </label>
     </fieldset>
 
-    {# 9. Generate button #}
-    <button type="submit">{% trans "Generate Report" %}</button>
+    {# 9. Generate / Preview buttons #}
+    <input type="hidden" name="preview" id="id_preview" value="">
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+        <button type="submit" id="btn-generate">{% trans "Generate Report" %}</button>
+        <button type="submit" id="btn-preview" class="secondary outline" onclick="document.getElementById('id_preview').value='1';">
+            {% trans "Preview on Screen" %}
+        </button>
+    </div>
 </form>
 
 <script>

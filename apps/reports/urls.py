@@ -4,6 +4,7 @@ from . import views
 from . import pdf_views
 from . import insights_views
 from . import oversight_views
+from . import preview_views
 
 app_name = "reports"
 urlpatterns = [
@@ -12,9 +13,11 @@ urlpatterns = [
     path("participant/<int:client_id>/insights/", insights_views.client_insights_partial, name="client_insights"),
     # Template-driven report generation (DRR: reporting-architecture.md)
     path("generate/", views.generate_report_form, name="generate_report"),
+    path("generate/preview/", preview_views.template_report_preview, name="template_report_preview"),
     path("generate/period-options/", views.template_period_options, name="template_period_options"),
     # Exports (ad-hoc + legacy funder report)
     path("export/", views.export_form, name="export_form"),
+    path("export/preview/", preview_views.adhoc_report_preview, name="adhoc_report_preview"),
     path("export/template-autofill/", views.adhoc_template_autofill, name="adhoc_template_autofill"),
     path("funder-report/", views.funder_report_form, name="funder_report"),
     path("participant/<int:client_id>/analysis/", views.client_analysis, name="client_analysis"),

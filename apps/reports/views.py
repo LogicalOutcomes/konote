@@ -360,6 +360,11 @@ def export_form(request):
             "consortium_partner_name": form.consortium_partner_name,
         })
 
+    # If preview=1 is set, delegate to the preview view
+    if request.POST.get("preview") == "1":
+        from .preview_views import adhoc_report_preview
+        return adhoc_report_preview(request)
+
     form = MetricExportForm(request.POST, user=request.user)
     if not form.is_valid():
         hint = show_template_hint and "report_template" not in form.fields
@@ -1388,6 +1393,11 @@ def generate_report_form(request):
             "has_templates": has_templates,
             "can_custom_export": can_custom_export,
         })
+
+    # If preview=1 is set, delegate to the preview view
+    if request.POST.get("preview") == "1":
+        from .preview_views import template_report_preview
+        return template_report_preview(request)
 
     form = TemplateExportForm(request.POST, user=request.user)
     if not form.is_valid():

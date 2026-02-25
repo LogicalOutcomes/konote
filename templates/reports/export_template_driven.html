@@ -138,7 +138,13 @@
         </label>
     </fieldset>
 
-    <button type="submit">{% trans "Generate Report" %}</button>
+    <input type="hidden" name="preview" id="id_preview" value="">
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+        <button type="submit" id="btn-generate">{% trans "Generate Report" %}</button>
+        <button type="submit" id="btn-preview" class="secondary outline" onclick="document.getElementById('id_preview').value='1';">
+            {% trans "Preview on Screen" %}
+        </button>
+    </div>
 </form>
 {% endif %}
 

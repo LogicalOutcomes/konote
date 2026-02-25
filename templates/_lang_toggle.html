@@ -1,11 +1,15 @@
-{# Language toggle — FLSA active offer compliance.
-   Usage:
-     Standalone (public pages):  {% include "_lang_toggle.html" %}
-     With form class (nav/footer): {% include "_lang_toggle.html" with form_class="nav-lang-form" %}
-     With max-width:              {% include "_lang_toggle.html" with max_width="720px" %}
-     Inline (no wrapping nav):    {% include "_lang_toggle.html" with inline=True form_class="footer-lang-form" %}
-   Note: embed pages intentionally omit the toggle (embedding page controls language).
-#}
+{% comment %}
+Language toggle — FLSA active offer compliance.
+
+Usage:
+  Standalone (public pages):  include "_lang_toggle.html"
+  With form class (nav/footer): include "_lang_toggle.html" with form_class="nav-lang-form"
+  With max-width:              include "_lang_toggle.html" with max_width="720px"
+  Inline (no wrapping nav):    include "_lang_toggle.html" with inline=True form_class="footer-lang-form"
+
+Note: embed pages intentionally omit the toggle (embedding page controls language).
+Do NOT use {# #} comment syntax with template tags inside — Django parses them.
+{% endcomment %}
 {% load i18n %}{% get_current_language as CURRENT_LANG %}{% if not inline %}
 <nav class="lang-nav" aria-label="{% trans 'Language selection' %}"{% if max_width %} style="max-width:{{ max_width }}; margin:0 auto"{% endif %}>
 {% endif %}
