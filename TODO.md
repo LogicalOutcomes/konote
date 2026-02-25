@@ -68,14 +68,14 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 ### Phase: CIDS Compliance (Common Approach Data Standard) — targeting FullTier, pinned to CIDS v3.2.0 (see tasks/cids-json-ld-export.md, tasks/cids-plan-validation.md)
 
-- [ ] Add CIDS metadata fields to MetricDefinition, Program, and PlanTarget — auto-populated when staff create targets/metrics, invisible to frontline staff (see tasks/cids-json-ld-export.md Phase 1) — (CIDS-META1)
-- [ ] Create OrganizationProfile model for CIDS org metadata — legal name, sector, address, province (Phase 1) — (CIDS-ORG1)
-- [ ] Import CIDS code lists (17 lists) via management command from codelist.commonapproach.org with version tracking (Phase 2) — (CIDS-CODES1)
-- [ ] Build admin UI for CIDS tagging — dropdowns on program and metric forms, pre-mapped via config templates so agencies are CIDS-ready out of the box (Phase 2) — (CIDS-ADMIN1)
-- [ ] Add CIDS codes to existing CSV/PDF partner reports + "Standards Alignment" appendix page — quick win, no new format needed (Phase 2.5) — (CIDS-ENRICH1)
-- [ ] Build full JSON-LD export with SHACL validation — FullTier compliance, new format option alongside CSV/PDF, aggregate only (Phase 3) — (CIDS-EXPORT1)
-- [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — (CIDS-IMPACT1)
-- [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — (CIDS-VALIDATE1)
+- [ ] Add CIDS metadata fields to MetricDefinition, Program, and PlanTarget — auto-populated when staff create targets/metrics, invisible to frontline staff (see tasks/cids-json-ld-export.md Phase 1) — PB (CIDS-META1)
+- [ ] Create OrganizationProfile model for CIDS org metadata — legal name, sector, address, province (Phase 1) — PB (CIDS-ORG1)
+- [ ] Import CIDS code lists (17 lists) via management command from codelist.commonapproach.org with version tracking (Phase 2) — PB (CIDS-CODES1)
+- [ ] Build admin UI for CIDS tagging — dropdowns on program and metric forms, pre-mapped via config templates so agencies are CIDS-ready out of the box (Phase 2) — PB (CIDS-ADMIN1)
+- [ ] Add CIDS codes to existing CSV/PDF partner reports + "Standards Alignment" appendix page — quick win, no new format needed (Phase 2.5) — PB (CIDS-ENRICH1)
+- [ ] Build full JSON-LD export with SHACL validation — FullTier compliance, new format option alongside CSV/PDF, aggregate only (Phase 3) — PB (CIDS-EXPORT1)
+- [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — PB (CIDS-IMPACT1)
+- [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — PB (CIDS-VALIDATE1)
 
 ### Phase: Other Upcoming
 
