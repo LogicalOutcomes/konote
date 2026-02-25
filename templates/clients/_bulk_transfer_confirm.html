@@ -1,0 +1,50 @@
+{% load i18n %}
+<h2 id="bulk-modal-title">{% trans "Transfer Programs" %}</h2>
+<form method="post" action="{% url 'clients:bulk_transfer' %}">
+    {% csrf_token %}
+    <input type="hidden" name="confirm" value="1">
+    <input type="hidden" name="client_ids" value="{{ client_ids_str }}">
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+        {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <p>{% blocktrans with count=selected_clients|length clients=term.client_plural|default:"participants" %}The following {{ count }} {{ clients }} will be updated:{% endblocktrans %}</p>
+
+    <ul class="bulk-client-list">
+        {% for c in selected_clients %}
+        <li>{{ c.display_name }} {{ c.last_name }}
+            {% for e in c.enrolments.all %}
+                {% if e.status == "enrolled" %}
+                <span class="program-dot" style="background-color: {{ e.program.colour_hex }}" aria-hidden="true"></span>{{ e.program.translated_name }}{% if not forloop.last %}, {% endif %}
+                {% endif %}
+            {% endfor %}
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="form-group">
+        <label for="id_add_program">{{ form.add_program.label }}</label>
+        {{ form.add_program }}
+        {% if form.add_program.errors %}
+        <small class="form-error">{{ form.add_program.errors.0 }}</small>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label for="id_remove_program">{{ form.remove_program.label }}</label>
+        {{ form.remove_program }}
+        {% if form.remove_program.errors %}
+        <small class="form-error">{{ form.remove_program.errors.0 }}</small>
+        {% endif %}
+    </div>
+
+    <div class="bulk-modal__actions">
+        <button type="submit" class="btn btn-primary">{% trans "Confirm" %}</button>
+        <button type="button" class="btn btn-secondary" onclick="closeBulkModal()">{% trans "Cancel" %}</button>
+    </div>
+</form>
