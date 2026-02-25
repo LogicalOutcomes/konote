@@ -138,6 +138,20 @@ class FullNoteForm(forms.Form):
         required=False,
         help_text=_("Change if this note is for a different day."),
     )
+    duration_minutes = forms.IntegerField(
+        required=False,
+        min_value=1,
+        max_value=1440,
+        label=_("Duration (minutes)"),
+        help_text=_("Optional \u2014 for session reporting"),
+        widget=forms.NumberInput(attrs={"placeholder": _("e.g. 60"), "min": "1", "max": "1440"}),
+    )
+    modality = forms.ChoiceField(
+        choices=[("", _("\u2014 Select \u2014"))] + list(ProgressNote.MODALITY_CHOICES),
+        required=False,
+        label=_("Session modality"),
+        help_text=_("Optional \u2014 for session reporting"),
+    )
     summary = forms.CharField(
         widget=forms.Textarea(attrs={"rows": 3, "placeholder": _("Optional summary...")}),
         required=False,

@@ -39,6 +39,18 @@
                 {% if form.session_date.errors %}<small class="error" id="session-date-error" role="alert">{{ form.session_date.errors.0 }}</small>{% endif %}
                 <div id="duplicate-note-warning" aria-live="polite"></div>
             </div>
+            <div class="field-duration">
+                <label for="{{ form.duration_minutes.id_for_label }}">{% trans "Duration (minutes)" %}</label>
+                {{ form.duration_minutes }}
+                <small id="duration-help">{{ form.duration_minutes.help_text }}</small>
+                {% if form.duration_minutes.errors %}<small class="error" id="duration-error" role="alert">{{ form.duration_minutes.errors.0 }}</small>{% endif %}
+            </div>
+            <div class="field-modality">
+                <label for="{{ form.modality.id_for_label }}">{% trans "Session modality" %}</label>
+                {{ form.modality }}
+                <small id="modality-help">{{ form.modality.help_text }}</small>
+                {% if form.modality.errors %}<small class="error" id="modality-error" role="alert">{{ form.modality.errors.0 }}</small>{% endif %}
+            </div>
         </div>
     </fieldset>
 
