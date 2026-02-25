@@ -4,7 +4,7 @@
 **Source:** https://ontology.commonapproach.org/cids-en.html
 **Plan document:** tasks/cids-json-ld-export.md
 **Date:** 2026-02-24
-**Status:** Ready for project lead review
+**Status:** Reviewed — all decisions resolved 2026-02-25
 
 ---
 
@@ -287,17 +287,19 @@ Phase 2 should import all 17 for completeness, but initially only #1-10 are acti
 
 ---
 
-## Open Questions for Project Lead
+## Decisions (resolved 2026-02-25 by GK)
 
-1. **Target tier:** Plan says EssentialTier. Given that Program is FullTier, should KoNote target BasicTier first (fastest to validate), then FullTier (which naturally includes programs)? Or skip straight to FullTier since KoNote already has all the data?
+1. **Target tier:** **FullTier directly.** KoNote already has all the data. BasicTier is an internal validation milestone, not a separate deliverable. Full compliance is the marketing differentiator — "one of the first CIDS-compliant systems in Canada."
 
-2. **Partner consumption pathway:** The plan notes a funder expressed interest. Do they want JSON-LD, or would CIDS-tagged CSV/PDF (Phase 2.5) satisfy their requirements? This determines urgency of Phase 3.
+2. **Partner consumption pathway:** Funders want **full JSON-LD export**. Phase 3 is high priority, not a "nice to have."
 
-3. **Common Approach engagement:** The expert panel recommended engaging Common Approach as a pilot implementer. Should this happen before or after Phase 1 fields are in place? Zero downside to early engagement — they need reference implementations.
+3. **Common Approach engagement:** Engage early — flagged for GK. No blocker on implementation. Early engagement provides advance notice of spec changes and co-marketing opportunities.
 
-4. **Config template pre-mapping:** Should the existing partner config template include pre-mapped CIDS codes for standard metrics? (Recommended: yes, per expert panel.)
+4. **Config template pre-mapping:** **Yes.** Pre-map CIDS codes in config templates so agencies are CIDS-ready out of the box.
 
-5. **CIDS version:** The plan references "v2.0" but the current spec is v3.2.0. No evidence of v3.2.1 exists publicly. Should we pin to v3.2.0?
+5. **CIDS version:** **Pin to v3.2.0.** No newer version exists. Early Common Approach engagement is insurance against surprises.
+
+6. **Auto-population (additional decision):** CIDS columns are added in Phase 1 and **auto-populated when staff create targets and metrics**. Staff never see or fill in CIDS fields — the system maps their normal work to CIDS behind the scenes using config template pre-mappings and code list lookups.
 
 ---
 
@@ -344,8 +346,8 @@ No change to the overall phase sequence. Within phases, prioritise corrections:
 4. Validate against BasicTier SHACL first, then EssentialTier
 
 **Phase 4 (Impact Dimensions):**
-1. Flag ImpactDuration as FullTier-only (A6)
-2. Implement ImpactScale and ImpactDepth for EssentialTier
+1. All three dimensions (ImpactScale, ImpactDepth, ImpactDuration) are EssentialTier (A6 corrected)
+2. Implement all three for FullTier target
 
 ---
 
