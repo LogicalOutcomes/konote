@@ -73,13 +73,13 @@ def field_access(request):
     # Build custom fields context
     custom_fields = CustomFieldDefinition.objects.filter(
         status="active"
-    ).select_related("group").order_by("group__name", "sort_order", "name")
+    ).select_related("group").order_by("group__sort_order", "sort_order", "name")
     custom_field_list = []
     for cf in custom_fields:
         custom_field_list.append({
             "pk": cf.pk,
             "name": cf.name,
-            "group_name": cf.group.name,
+            "group_name": cf.group.title,
             "access": cf.front_desk_access,
         })
 
