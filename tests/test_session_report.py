@@ -450,7 +450,8 @@ class SessionReportPermissionTest(TestCase):
         """Staff without report.program_report permission should be blocked."""
         self.http.login(username="staff", password="pass")
         resp = self.http.get("/reports/sessions/")
-        self.assertIn(resp.status_code, (403, 302))
+        # Staff with report.program_report=DENY gets 403 from the decorator
+        self.assertEqual(resp.status_code, 403)
 
     def test_anonymous_redirected(self):
         """Anonymous users should be redirected to login."""
