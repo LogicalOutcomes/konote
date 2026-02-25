@@ -4,18 +4,27 @@
 {% block title %}{% blocktrans with name=program.translated_name %}Program Outcome Report — {{ name }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
-<!-- Cover Page -->
-<div class="pdf-cover">
+<!-- Report Header (merged title + summary) -->
+<div class="pdf-header">
     <h1>{% trans "Program Outcome Report" %}</h1>
     <div class="subtitle">{{ program.translated_name }}</div>
-    <div class="meta">
-        {% blocktrans with dfrom=date_from dto=date_to %}{{ dfrom }} to {{ dto }}{% endblocktrans %}<br>
-        {% blocktrans with date=generated_at|date:"Y-m-d" author=generated_by %}Generated {{ date }} by {{ author }}{% endblocktrans %}
-    </div>
+    <dl class="meta-grid">
+        <dt>{% trans "Program" %}</dt>
+        <dd>{{ program.translated_name }}</dd>
+        <dt>{% trans "Date Range" %}</dt>
+        <dd>{% blocktrans with dfrom=date_from dto=date_to %}{{ dfrom }} to {{ dto }}{% endblocktrans %}</dd>
+        <dt>{% trans "Metrics" %}</dt>
+        <dd>{% for m in metrics %}{{ m.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd>
+        {% if grouping_label %}
+        <dt>{% trans "Grouped By" %}</dt>
+        <dd>{{ grouping_label }}</dd>
+        {% endif %}
+        <dt>{% trans "Generated" %}</dt>
+        <dd>{% blocktrans with date=generated_at|date:"Y-m-d" author=generated_by %}{{ date }} by {{ author }}{% endblocktrans %}</dd>
+    </dl>
 </div>
 
 <!-- Summary -->
-<h2>{% trans "Summary" %}</h2>
 <div class="summary-grid">
     <div class="summary-card">
         <div class="number">{{ total_clients }}</div>
@@ -26,19 +35,6 @@
         <div class="label">{% trans "Data Points" %}</div>
     </div>
 </div>
-
-<dl>
-    <dt>{% trans "Program" %}</dt>
-    <dd>{{ program.translated_name }}</dd>
-    <dt>{% trans "Date Range" %}</dt>
-    <dd>{% blocktrans with dfrom=date_from dto=date_to %}{{ dfrom }} to {{ dto }}{% endblocktrans %}</dd>
-    <dt>{% trans "Metrics Included" %}</dt>
-    <dd>{% for m in metrics %}{{ m.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</dd>
-    {% if grouping_label %}
-    <dt>{% trans "Grouped By" %}</dt>
-    <dd>{{ grouping_label }}</dd>
-    {% endif %}
-</dl>
 
 {% if achievement_summary %}
 <!-- Achievement Rate Summary -->
