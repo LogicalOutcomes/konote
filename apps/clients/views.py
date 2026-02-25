@@ -1518,13 +1518,18 @@ def bulk_transfer(request):
                 added = []
                 removed = []
 
-                # Add to program
+                # Add to program (idempotent — skip if already enrolled)
                 if add_program:
-                    enrolment, created = ClientProgramEnrolment.objects.update_or_create(
+                    enrolment, created = ClientProgramEnrolment.objects.get_or_create(
                         client_file=client_obj, program=add_program,
-                        defaults={"status": "enrolled", "unenrolled_at": None},
+                        defaults={"status": "enrolled"},
                     )
-                    if created or enrolment.status == "enrolled":
+                    if created:
+                        added.append(add_program.pk)
+                    elif enrolment.status != "enrolled":
+                        enrolment.status = "enrolled"
+                        enrolment.unenrolled_at = None
+                        enrolment.save()
                         added.append(add_program.pk)
 
                 # Remove from program

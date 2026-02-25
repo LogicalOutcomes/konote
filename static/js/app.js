@@ -1404,6 +1404,7 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
 // bulk status change and program transfer on the client list.
 (function () {
     var selectedIds = new Set();
+    var previousFocus = null;  // Store focus before modal opens
 
     function getBar() { return document.getElementById("bulk-action-bar"); }
     function getCount() { return document.getElementById("bulk-count"); }
@@ -1418,7 +1419,16 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
             bar.hidden = false;
             var countEl = getCount();
             if (countEl) {
-                countEl.textContent = count + " " + t("selected", "selected");
+                // Show "X selected on this page" when paginated
+                var totalEl = document.querySelector("[data-total-clients]");
+                var total = totalEl ? parseInt(totalEl.getAttribute("data-total-clients"), 10) : 0;
+                var visibleCbs = document.querySelectorAll(".bulk-select-row").length;
+                if (total > visibleCbs) {
+                    countEl.textContent = count + " " + t("selected", "selected")
+                        + " (" + t("on this page", "on this page") + ")";
+                } else {
+                    countEl.textContent = count + " " + t("selected", "selected");
+                }
             }
         } else {
             bar.hidden = true;
@@ -1446,12 +1456,19 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
     }
 
     function showModal() {
+        previousFocus = document.activeElement;
         var backdrop = getBackdrop();
         var modal = getModal();
         if (backdrop) backdrop.hidden = false;
         if (modal) {
             modal.hidden = false;
-            modal.focus();
+            // Focus first interactive element inside the modal
+            var firstField = modal.querySelector("select, input:not([type='hidden']), textarea, button");
+            if (firstField) {
+                firstField.focus();
+            } else {
+                modal.focus();
+            }
         }
     }
 
@@ -1464,7 +1481,32 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
             modal.hidden = true;
             modal.innerHTML = "";
         }
+        // Restore focus to the element that opened the modal
+        if (previousFocus && previousFocus.focus) {
+            previousFocus.focus();
+            previousFocus = null;
+        }
     };
+
+    // Focus trap — keep Tab cycling within the open modal
+    function trapFocus(e) {
+        var modal = getModal();
+        if (!modal || modal.hidden) return;
+        if (e.key !== "Tab") return;
+        var focusable = modal.querySelectorAll(
+            "select, input:not([type='hidden']), textarea, button, [tabindex]:not([tabindex='-1'])"
+        );
+        if (!focusable.length) return;
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    }
 
     function setupCheckboxes() {
         var selectAll = document.getElementById("bulk-select-all");
@@ -1519,7 +1561,7 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
             backdrop.addEventListener("click", window.closeBulkModal);
         }
 
-        // Close modal on Escape key
+        // Close modal on Escape key + focus trap
         document.addEventListener("keydown", function (e) {
             if (e.key === "Escape") {
                 var modal = getModal();
@@ -1527,6 +1569,7 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
                     window.closeBulkModal();
                 }
             }
+            trapFocus(e);
         });
     }
 
