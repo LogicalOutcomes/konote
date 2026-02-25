@@ -340,7 +340,573 @@ The JSON-LD output follows the CIDS class hierarchy. Every entity includes an `@
 }
 ```
 
-> **Note:** This example targets **BasicTier** — Organisation + Outcome + Indicator + IndicatorReport + Theme. For EssentialTier, add Stakeholder, StakeholderOutcome, ImpactReport, Target, and Code objects. For FullTier, wrap in an ImpactModel and add Program, Activity, and Service objects. See `tasks/cids-plan-validation.md` for complete tier requirements.
+> **Note:** The BasicTier example above covers Organisation + Outcome + Indicator + IndicatorReport + Theme. The following examples show how to extend it for higher tiers.
+
+#### EssentialTier example
+
+Adds BeneficialStakeholder, StakeholderOutcome, ImpactReport (with ImpactScale and ImpactDepth), Target, Characteristic, and full Code objects to the BasicTier structure. The Indicator gains `cids:hasBaseline`, `cids:definedBy`, and `cids:hasTarget`; the IndicatorReport gains `cids:forTarget`:
+
+```json
+{
+  "@context": "https://ontology.commonapproach.org/contexts/cidsContext.jsonld",
+  "@type": "cids:Organization",
+  "@id": "https://example-agency.konote.ca/cids/org",
+  "org:hasLegalName": "Community Services Agency",
+  "hasName": "Community Services Agency",
+  "cids:hasAddress": {
+    "@type": "cids:Address",
+    "cids:streetAddress": "123 Main St",
+    "cids:addressLocality": "Ottawa",
+    "cids:addressRegion": "ON",
+    "cids:postalCode": "K1A 0B1",
+    "cids:addressCountry": "CA"
+  },
+  "cids:hasCode": [
+    {
+      "@type": "cids:Code",
+      "@id": "https://example-agency.konote.ca/cids/code/icnpo-4",
+      "hasName": "Social Services",
+      "hasDescription": "ICNPO sector classification for social services",
+      "sch:codeValue": "ICNPO-4",
+      "i72:value": {
+        "@type": "i72:Measure",
+        "i72:hasNumericalValue": "4"
+      },
+      "cids:definedBy": {
+        "@type": "cids:StandardsOrganization",
+        "@id": "https://unstats.un.org/",
+        "org:hasLegalName": "United Nations Statistics Division"
+      },
+      "cids:hasSpecification": "https://codelist.commonapproach.org/codeLists/ICNPOsector"
+    }
+  ],
+  "cids:hasStakeholder": [
+    {
+      "@type": "cids:BeneficialStakeholder",
+      "@id": "https://example-agency.konote.ca/cids/stakeholder/adults-experiencing-homelessness",
+      "hasName": "Adults experiencing homelessness",
+      "hasDescription": "Adults aged 18+ currently without stable housing in the Ottawa region",
+      "cids:hasCatchmentArea": "local",
+      "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+      "cids:hasCharacteristic": [
+        {
+          "@type": "cids:Characteristic",
+          "@id": "https://example-agency.konote.ca/cids/characteristic/age-range",
+          "hasName": "Age range",
+          "cids:hasCode": {
+            "@type": "cids:Code",
+            "sch:codeValue": "POP-ADULT",
+            "hasName": "Adults (18+)",
+            "hasDescription": "Population aged 18 years and over",
+            "i72:value": {
+              "@type": "i72:Measure",
+              "i72:hasNumericalValue": "18"
+            },
+            "cids:definedBy": {
+              "@type": "cids:StandardsOrganization",
+              "@id": "https://codelist.commonapproach.org/",
+              "org:hasLegalName": "Common Approach"
+            },
+            "cids:hasSpecification": "https://codelist.commonapproach.org/codeLists/PopulationServed"
+          }
+        },
+        {
+          "@type": "cids:Characteristic",
+          "@id": "https://example-agency.konote.ca/cids/characteristic/equity-deserving",
+          "hasName": "Equity-deserving group",
+          "cids:hasCode": {
+            "@type": "cids:Code",
+            "sch:codeValue": "EDG-HOMELESS",
+            "hasName": "People experiencing homelessness",
+            "hasDescription": "Individuals without fixed, regular, and adequate housing",
+            "i72:value": {
+              "@type": "i72:Measure",
+              "i72:hasNumericalValue": "1"
+            },
+            "cids:definedBy": {
+              "@type": "cids:StandardsOrganization",
+              "@id": "https://www.canada.ca/esdc",
+              "org:hasLegalName": "Employment and Social Development Canada"
+            },
+            "cids:hasSpecification": "https://codelist.commonapproach.org/codeLists/EquityDeservingGroupsESDC"
+          }
+        }
+      ]
+    }
+  ],
+  "cids:hasOutcome": [
+    {
+      "@type": "cids:Outcome",
+      "@id": "https://example-agency.konote.ca/cids/outcome/housing-stability",
+      "hasName": "Improved housing stability",
+      "hasDescription": "Participants achieve and maintain stable housing",
+      "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+      "cids:forTheme": {
+        "@type": "cids:Theme",
+        "@id": "https://example-agency.konote.ca/cids/theme/sdg-11",
+        "hasName": "Sustainable Cities and Communities",
+        "hasDescription": "UN SDG Goal 11",
+        "cids:hasCode": {
+          "@type": "cids:Code",
+          "sch:codeValue": "SDG-11",
+          "hasName": "Sustainable Cities and Communities",
+          "hasDescription": "Make cities and human settlements inclusive, safe, resilient and sustainable",
+          "i72:value": {
+            "@type": "i72:Measure",
+            "i72:hasNumericalValue": "11"
+          },
+          "cids:definedBy": {
+            "@type": "cids:StandardsOrganization",
+            "@id": "https://unstats.un.org/sdgs/",
+            "org:hasLegalName": "United Nations"
+          },
+          "cids:hasSpecification": "https://codelist.commonapproach.org/codeLists/SDGImpacts"
+        }
+      },
+      "cids:hasIndicator": [
+        {
+          "@type": "cids:Indicator",
+          "@id": "https://example-agency.konote.ca/cids/indicator/housing-stability-score",
+          "hasName": "Housing Stability Score",
+          "hasDescription": "Self-reported housing stability on a 1-10 scale",
+          "cids:unitDescription": "score",
+          "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+          "cids:hasBaseline": {
+            "@type": "i72:Measure",
+            "i72:hasNumericalValue": "3.2"
+          },
+          "cids:definedBy": {
+            "@type": "cids:StandardsOrganization",
+            "@id": "https://iris.thegiin.org/",
+            "org:hasLegalName": "Global Impact Investing Network (GIIN)"
+          },
+          "cids:hasCode": [
+            {
+              "@type": "cids:Code",
+              "sch:codeValue": "PI2061",
+              "hasName": "Client Housing Situation Improved",
+              "hasDescription": "IRIS+ metric for housing outcome tracking",
+              "i72:value": {
+                "@type": "i72:Measure",
+                "i72:hasNumericalValue": "2061"
+              },
+              "cids:definedBy": {
+                "@type": "cids:StandardsOrganization",
+                "@id": "https://iris.thegiin.org/",
+                "org:hasLegalName": "Global Impact Investing Network (GIIN)"
+              },
+              "cids:hasSpecification": "https://codelist.commonapproach.org/codeLists/IrisMetric53"
+            }
+          ],
+          "cids:hasTarget": [
+            {
+              "@type": "cids:Target",
+              "@id": "https://example-agency.konote.ca/cids/target/housing-stability-fy2025",
+              "hasName": "Housing Stability Score target — FY2025-26",
+              "i72:value": {
+                "@type": "i72:Measure",
+                "i72:hasNumericalValue": "7.0"
+              },
+              "cids:hasComment": "Target based on funder agreement: average score of 7.0 or above by end of fiscal year",
+              "prov:startedAtTime": "2025-04-01T00:00:00-04:00",
+              "prov:endedAtTime": "2026-03-31T23:59:59-04:00",
+              "sch:dateCreated": "2025-03-15T00:00:00-04:00"
+            }
+          ],
+          "cids:hasIndicatorReport": [
+            {
+              "@type": "cids:IndicatorReport",
+              "@id": "https://example-agency.konote.ca/cids/report/housing-stability-fy2025",
+              "hasName": "Housing Stability Score — FY2025-26",
+              "i72:value": {
+                "@type": "i72:Measure",
+                "i72:hasNumericalValue": "7.8"
+              },
+              "cids:forIndicator": {"@id": "https://example-agency.konote.ca/cids/indicator/housing-stability-score"},
+              "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+              "cids:forTarget": {"@id": "https://example-agency.konote.ca/cids/target/housing-stability-fy2025"},
+              "prov:startedAtTime": "2025-04-01T00:00:00-04:00",
+              "prov:endedAtTime": "2026-03-31T23:59:59-04:00"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "cids:hasStakeholderOutcome": [
+    {
+      "@type": "cids:StakeholderOutcome",
+      "@id": "https://example-agency.konote.ca/cids/stakeholder-outcome/adults-housing",
+      "hasName": "Housing stability for adults experiencing homelessness",
+      "hasDescription": "Adults experiencing homelessness achieve improved housing stability through the Housing First program",
+      "cids:forStakeholder": {"@id": "https://example-agency.konote.ca/cids/stakeholder/adults-experiencing-homelessness"},
+      "cids:forOutcome": {"@id": "https://example-agency.konote.ca/cids/outcome/housing-stability"},
+      "cids:isUnderserved": true,
+      "cids:intendedImpact": "positive",
+      "cids:hasImportance": "highImportance",
+      "cids:hasImpactReport": [
+        {
+          "@type": "cids:ImpactReport",
+          "@id": "https://example-agency.konote.ca/cids/impact-report/housing-fy2025",
+          "hasName": "Housing Stability Impact — FY2025-26",
+          "cids:forOutcome": {"@id": "https://example-agency.konote.ca/cids/outcome/housing-stability"},
+          "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+          "cids:hasComment": "Impact measured across 142 participants enrolled in the Housing First program during FY2025-26",
+          "prov:startedAtTime": "2025-04-01T00:00:00-04:00",
+          "prov:endedAtTime": "2026-03-31T23:59:59-04:00",
+          "cids:hasImpactScale": {
+            "@type": "cids:ImpactScale",
+            "@id": "https://example-agency.konote.ca/cids/impact-scale/housing-fy2025",
+            "i72:value": {
+              "@type": "i72:Measure",
+              "i72:hasNumericalValue": "142"
+            },
+            "hasDescription": "142 participants had at least one Housing Stability Score recorded during the reporting period",
+            "cids:forIndicator": {"@id": "https://example-agency.konote.ca/cids/indicator/housing-stability-score"}
+          },
+          "cids:hasImpactDepth": {
+            "@type": "cids:ImpactDepth",
+            "@id": "https://example-agency.konote.ca/cids/impact-depth/housing-fy2025",
+            "i72:value": {
+              "@type": "i72:Measure",
+              "i72:hasNumericalValue": "68"
+            },
+            "hasDescription": "68% of participants achieved the target score of 7.0 or above, up from a baseline average of 3.2",
+            "cids:forIndicator": {"@id": "https://example-agency.konote.ca/cids/indicator/housing-stability-score"}
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### FullTier example
+
+Wraps the EssentialTier structure in an ImpactModel and adds Program, Activity, Service, Input, Output, ImpactDuration, Counterfactual, and ImpactRisk. At FullTier the Organisation gains `cids:hasProgram`, and the ImpactReport gains ImpactDuration and ImpactRisk:
+
+```json
+{
+  "@context": "https://ontology.commonapproach.org/contexts/cidsContext.jsonld",
+  "@type": "cids:Organization",
+  "@id": "https://example-agency.konote.ca/cids/org",
+  "org:hasLegalName": "Community Services Agency",
+  "hasName": "Community Services Agency",
+  "cids:hasAddress": {
+    "@type": "cids:Address",
+    "cids:streetAddress": "123 Main St",
+    "cids:addressLocality": "Ottawa",
+    "cids:addressRegion": "ON",
+    "cids:postalCode": "K1A 0B1",
+    "cids:addressCountry": "CA"
+  },
+  "cids:hasCode": [
+    {
+      "@type": "cids:Code",
+      "@id": "https://example-agency.konote.ca/cids/code/icnpo-4",
+      "hasName": "Social Services",
+      "hasDescription": "ICNPO sector classification for social services",
+      "sch:codeValue": "ICNPO-4",
+      "i72:value": {
+        "@type": "i72:Measure",
+        "i72:hasNumericalValue": "4"
+      },
+      "cids:definedBy": {
+        "@type": "cids:StandardsOrganization",
+        "@id": "https://unstats.un.org/",
+        "org:hasLegalName": "United Nations Statistics Division"
+      },
+      "cids:hasSpecification": "https://codelist.commonapproach.org/codeLists/ICNPOsector"
+    }
+  ],
+  "cids:hasProgram": [
+    {
+      "@type": "cids:Program",
+      "@id": "https://example-agency.konote.ca/cids/program/housing-first",
+      "hasName": "Housing First Initiative",
+      "hasDescription": "Rapid rehousing and wraparound support for adults experiencing homelessness",
+      "sch:dateCreated": "2020-09-01T00:00:00-04:00",
+      "cids:hasBeneficialStakeholder": [
+        {"@id": "https://example-agency.konote.ca/cids/stakeholder/adults-experiencing-homelessness"}
+      ],
+      "cids:hasOutcome": [
+        {"@id": "https://example-agency.konote.ca/cids/outcome/housing-stability"}
+      ],
+      "cids:hasService": [
+        {
+          "@type": "cids:Service",
+          "@id": "https://example-agency.konote.ca/cids/service/housing-support",
+          "hasName": "Housing Support Services",
+          "hasDescription": "Case management, landlord mediation, and life skills support for participants in the Housing First program",
+          "prov:startedAtTime": "2025-04-01T00:00:00-04:00",
+          "prov:endedAtTime": "2026-03-31T23:59:59-04:00",
+          "sch:dateCreated": "2020-09-01T00:00:00-04:00",
+          "cids:hasInput": [
+            {
+              "@type": "cids:Input",
+              "@id": "https://example-agency.konote.ca/cids/input/case-managers",
+              "hasName": "Case management staff",
+              "hasDescription": "3 FTE case managers, $450,000 annual budget including salaries, training, and program materials"
+            }
+          ],
+          "cids:hasOutput": [
+            {
+              "@type": "cids:Output",
+              "@id": "https://example-agency.konote.ca/cids/output/sessions-delivered",
+              "hasName": "Case management sessions delivered",
+              "hasDescription": "Individual case management sessions conducted with Housing First participants during the reporting period",
+              "i72:value": {
+                "@type": "i72:Measure",
+                "i72:hasNumericalValue": "847"
+              },
+              "cids:canProduce": {"@id": "https://example-agency.konote.ca/cids/outcome/housing-stability"}
+            }
+          ],
+          "cids:canProduce": [
+            {"@id": "https://example-agency.konote.ca/cids/outcome/housing-stability"}
+          ]
+        }
+      ],
+      "cids:hasImpactModel": [
+        {
+          "@type": "cids:ImpactModel",
+          "@id": "https://example-agency.konote.ca/cids/impact-model/housing-first",
+          "hasName": "Housing First Logic Model",
+          "hasDescription": "Theory of change: rapid rehousing combined with wraparound case management leads to sustained housing stability and improved wellbeing for adults who have experienced homelessness",
+          "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+          "cids:hasOutcome": [
+            {"@id": "https://example-agency.konote.ca/cids/outcome/housing-stability"}
+          ],
+          "cids:hasActivity": [
+            {
+              "@type": "cids:Activity",
+              "@id": "https://example-agency.konote.ca/cids/activity/case-management",
+              "hasName": "Case management sessions",
+              "hasDescription": "Weekly one-on-one sessions with case managers covering housing search, tenancy skills, budgeting, and referrals to community resources",
+              "cids:hasInput": [
+                {"@id": "https://example-agency.konote.ca/cids/input/case-managers"}
+              ],
+              "cids:hasOutput": [
+                {"@id": "https://example-agency.konote.ca/cids/output/sessions-delivered"}
+              ],
+              "cids:canProduce": [
+                {"@id": "https://example-agency.konote.ca/cids/outcome/housing-stability"}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "cids:hasStakeholder": [
+    {
+      "@type": "cids:BeneficialStakeholder",
+      "@id": "https://example-agency.konote.ca/cids/stakeholder/adults-experiencing-homelessness",
+      "hasName": "Adults experiencing homelessness",
+      "hasDescription": "Adults aged 18+ currently without stable housing in the Ottawa region",
+      "cids:hasCatchmentArea": "local",
+      "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+      "cids:hasCharacteristic": [
+        {
+          "@type": "cids:Characteristic",
+          "@id": "https://example-agency.konote.ca/cids/characteristic/age-range",
+          "hasName": "Age range",
+          "cids:hasCode": {
+            "@type": "cids:Code",
+            "sch:codeValue": "POP-ADULT",
+            "hasName": "Adults (18+)",
+            "hasDescription": "Population aged 18 years and over",
+            "i72:value": {
+              "@type": "i72:Measure",
+              "i72:hasNumericalValue": "18"
+            },
+            "cids:definedBy": {
+              "@type": "cids:StandardsOrganization",
+              "@id": "https://codelist.commonapproach.org/",
+              "org:hasLegalName": "Common Approach"
+            },
+            "cids:hasSpecification": "https://codelist.commonapproach.org/codeLists/PopulationServed"
+          }
+        }
+      ]
+    }
+  ],
+  "cids:hasOutcome": [
+    {
+      "@type": "cids:Outcome",
+      "@id": "https://example-agency.konote.ca/cids/outcome/housing-stability",
+      "hasName": "Improved housing stability",
+      "hasDescription": "Participants achieve and maintain stable housing",
+      "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+      "cids:forTheme": {
+        "@type": "cids:Theme",
+        "@id": "https://example-agency.konote.ca/cids/theme/sdg-11",
+        "hasName": "Sustainable Cities and Communities",
+        "hasDescription": "UN SDG Goal 11",
+        "cids:hasCode": {
+          "@type": "cids:Code",
+          "sch:codeValue": "SDG-11",
+          "hasName": "Sustainable Cities and Communities",
+          "hasDescription": "Make cities and human settlements inclusive, safe, resilient and sustainable",
+          "i72:value": {
+            "@type": "i72:Measure",
+            "i72:hasNumericalValue": "11"
+          },
+          "cids:definedBy": {
+            "@type": "cids:StandardsOrganization",
+            "@id": "https://unstats.un.org/sdgs/",
+            "org:hasLegalName": "United Nations"
+          },
+          "cids:hasSpecification": "https://codelist.commonapproach.org/codeLists/SDGImpacts"
+        }
+      },
+      "cids:hasIndicator": [
+        {
+          "@type": "cids:Indicator",
+          "@id": "https://example-agency.konote.ca/cids/indicator/housing-stability-score",
+          "hasName": "Housing Stability Score",
+          "hasDescription": "Self-reported housing stability on a 1-10 scale",
+          "cids:unitDescription": "score",
+          "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+          "cids:hasBaseline": {
+            "@type": "i72:Measure",
+            "i72:hasNumericalValue": "3.2"
+          },
+          "cids:definedBy": {
+            "@type": "cids:StandardsOrganization",
+            "@id": "https://iris.thegiin.org/",
+            "org:hasLegalName": "Global Impact Investing Network (GIIN)"
+          },
+          "cids:hasCode": [
+            {
+              "@type": "cids:Code",
+              "sch:codeValue": "PI2061",
+              "hasName": "Client Housing Situation Improved",
+              "hasDescription": "IRIS+ metric for housing outcome tracking",
+              "i72:value": {
+                "@type": "i72:Measure",
+                "i72:hasNumericalValue": "2061"
+              },
+              "cids:definedBy": {
+                "@type": "cids:StandardsOrganization",
+                "@id": "https://iris.thegiin.org/",
+                "org:hasLegalName": "Global Impact Investing Network (GIIN)"
+              },
+              "cids:hasSpecification": "https://codelist.commonapproach.org/codeLists/IrisMetric53"
+            }
+          ],
+          "cids:hasTarget": [
+            {
+              "@type": "cids:Target",
+              "@id": "https://example-agency.konote.ca/cids/target/housing-stability-fy2025",
+              "hasName": "Housing Stability Score target — FY2025-26",
+              "i72:value": {
+                "@type": "i72:Measure",
+                "i72:hasNumericalValue": "7.0"
+              },
+              "cids:hasComment": "Target based on funder agreement: average score of 7.0 or above by end of fiscal year",
+              "prov:startedAtTime": "2025-04-01T00:00:00-04:00",
+              "prov:endedAtTime": "2026-03-31T23:59:59-04:00",
+              "sch:dateCreated": "2025-03-15T00:00:00-04:00"
+            }
+          ],
+          "cids:hasIndicatorReport": [
+            {
+              "@type": "cids:IndicatorReport",
+              "@id": "https://example-agency.konote.ca/cids/report/housing-stability-fy2025",
+              "hasName": "Housing Stability Score — FY2025-26",
+              "i72:value": {
+                "@type": "i72:Measure",
+                "i72:hasNumericalValue": "7.8"
+              },
+              "cids:forIndicator": {"@id": "https://example-agency.konote.ca/cids/indicator/housing-stability-score"},
+              "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+              "cids:forTarget": {"@id": "https://example-agency.konote.ca/cids/target/housing-stability-fy2025"},
+              "prov:startedAtTime": "2025-04-01T00:00:00-04:00",
+              "prov:endedAtTime": "2026-03-31T23:59:59-04:00"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "cids:hasStakeholderOutcome": [
+    {
+      "@type": "cids:StakeholderOutcome",
+      "@id": "https://example-agency.konote.ca/cids/stakeholder-outcome/adults-housing",
+      "hasName": "Housing stability for adults experiencing homelessness",
+      "hasDescription": "Adults experiencing homelessness achieve improved housing stability through the Housing First program",
+      "cids:forStakeholder": {"@id": "https://example-agency.konote.ca/cids/stakeholder/adults-experiencing-homelessness"},
+      "cids:forOutcome": {"@id": "https://example-agency.konote.ca/cids/outcome/housing-stability"},
+      "cids:isUnderserved": true,
+      "cids:intendedImpact": "positive",
+      "cids:hasImportance": "highImportance",
+      "cids:hasImpactReport": [
+        {
+          "@type": "cids:ImpactReport",
+          "@id": "https://example-agency.konote.ca/cids/impact-report/housing-fy2025",
+          "hasName": "Housing Stability Impact — FY2025-26",
+          "cids:forOutcome": {"@id": "https://example-agency.konote.ca/cids/outcome/housing-stability"},
+          "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+          "cids:hasComment": "Impact measured across 142 participants enrolled in the Housing First program during FY2025-26",
+          "prov:startedAtTime": "2025-04-01T00:00:00-04:00",
+          "prov:endedAtTime": "2026-03-31T23:59:59-04:00",
+          "cids:hasImpactScale": {
+            "@type": "cids:ImpactScale",
+            "@id": "https://example-agency.konote.ca/cids/impact-scale/housing-fy2025",
+            "i72:value": {
+              "@type": "i72:Measure",
+              "i72:hasNumericalValue": "142"
+            },
+            "hasDescription": "142 participants had at least one Housing Stability Score recorded during the reporting period",
+            "cids:forIndicator": {"@id": "https://example-agency.konote.ca/cids/indicator/housing-stability-score"}
+          },
+          "cids:hasImpactDepth": {
+            "@type": "cids:ImpactDepth",
+            "@id": "https://example-agency.konote.ca/cids/impact-depth/housing-fy2025",
+            "i72:value": {
+              "@type": "i72:Measure",
+              "i72:hasNumericalValue": "68"
+            },
+            "hasDescription": "68% of participants achieved the target score of 7.0 or above, up from a baseline average of 3.2",
+            "cids:forIndicator": {"@id": "https://example-agency.konote.ca/cids/indicator/housing-stability-score"}
+          },
+          "cids:hasImpactDuration": {
+            "@type": "cids:ImpactDuration",
+            "@id": "https://example-agency.konote.ca/cids/impact-duration/housing-fy2025",
+            "i72:value": {
+              "@type": "i72:Measure",
+              "i72:hasNumericalValue": "12"
+            },
+            "hasDescription": "Outcomes measured over a 12-month reporting period (FY2025-26); 78% of participants who achieved target maintained it for 6+ consecutive months",
+            "cids:forIndicator": {"@id": "https://example-agency.konote.ca/cids/indicator/housing-stability-score"}
+          },
+          "cids:hasCounterfactual": {
+            "@type": "cids:Counterfactual",
+            "@id": "https://example-agency.konote.ca/cids/counterfactual/housing-fy2025",
+            "hasDescription": "Without the Housing First program, comparable populations in the Ottawa region show a 12% rate of achieving stable housing within 12 months (City of Ottawa Point-in-Time Count, 2024)",
+            "prov:startedAtTime": "2025-04-01T00:00:00-04:00",
+            "prov:endedAtTime": "2026-03-31T23:59:59-04:00"
+          },
+          "cids:hasImpactRisk": {
+            "@type": "cids:UnexpectedImpactRisk",
+            "@id": "https://example-agency.konote.ca/cids/impact-risk/housing-fy2025",
+            "org:hasIdentifier": "RISK-HSG-001",
+            "hasDescription": "Risk that housing market conditions (rising rents, low vacancy) reduce program effectiveness in subsequent years",
+            "cids:hasLikelihood": "likely",
+            "cids:hasConsequence": "average",
+            "cids:hasMitigation": "Landlord partnership agreements secure below-market units; rent supplement fund maintained as buffer",
+            "cids:forOutcome": {"@id": "https://example-agency.konote.ca/cids/outcome/housing-stability"},
+            "cids:forImpactReport": {"@id": "https://example-agency.konote.ca/cids/impact-report/housing-fy2025"}
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+> **Tip:** Use [pyshacl](https://github.com/RDFLib/pySHACL) to validate exports against the [CIDS SHACL shapes](https://github.com/commonapproach/CIDS/tree/main/validation/shacl). Start with BasicTier validation, then graduate to EssentialTier and FullTier as metadata coverage increases.
 
 #### 3b. What gets exported (no PII)
 
