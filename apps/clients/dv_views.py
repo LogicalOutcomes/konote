@@ -180,6 +180,13 @@ def dv_safe_review_remove(request, client_id, request_id):
         approved__isnull=True,
     )
 
+    # Two-person rule: reviewer must be a different person than requester
+    if removal_request.requested_by == request.user:
+        return HttpResponseForbidden(
+            _("A different program manager must review this request. "
+              "The person who requested removal cannot also approve it.")
+        )
+
     if request.method == "POST":
         action = request.POST.get("action")
         review_note = request.POST.get("review_note", "").strip()
