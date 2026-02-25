@@ -17,9 +17,10 @@ from django.utils.translation import gettext as _
 
 from apps.admin_settings.models import get_access_tier, InstanceSetting
 from apps.audit.models import AuditLog
-from apps.auth_app.models import UserProgramRole
+from apps.programs.models import UserProgramRole
 
 from .models import ClientFile, DvFlagRemovalRequest
+from .views import get_client_queryset
 
 
 def _get_user_role(user):
@@ -51,12 +52,6 @@ def _is_pm_or_above(user):
     ).exists()
 
 
-def _get_client_queryset(user):
-    """Return the correct client queryset for the user's demo status."""
-    from .models import ClientFile
-    return ClientFile.objects.for_user(user)
-
-
 @login_required
 def dv_safe_enable(request, client_id):
     """Set the DV safety flag on a client. Staff+ only, Tier 2+.
@@ -76,7 +71,7 @@ def dv_safe_enable(request, client_id):
     if not _is_staff_or_above(request.user):
         return HttpResponseForbidden(_("You do not have permission to set the DV safety flag."))
 
-    client = get_object_or_404(_get_client_queryset(request.user), pk=client_id)
+    client = get_object_or_404(get_client_queryset(request.user), pk=client_id)
 
     if client.is_dv_safe:
         messages.info(request, _("DV safety flag is already enabled for this participant."))
@@ -87,7 +82,9 @@ def dv_safe_enable(request, client_id):
 
     # Audit log
     AuditLog.objects.using("audit").create(
-        user=request.user,
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=str(request.user),
         action="create",
         resource_type="dv_safe_flag",
         resource_id=str(client.pk),
@@ -116,7 +113,7 @@ def dv_safe_request_remove(request, client_id):
     if not _is_staff_or_above(request.user):
         return HttpResponseForbidden()
 
-    client = get_object_or_404(_get_client_queryset(request.user), pk=client_id)
+    client = get_object_or_404(get_client_queryset(request.user), pk=client_id)
 
     if not client.is_dv_safe:
         messages.info(request, _("DV safety flag is not enabled for this participant."))
@@ -148,7 +145,9 @@ def dv_safe_request_remove(request, client_id):
 
         # Audit log
         AuditLog.objects.using("audit").create(
-            user=request.user,
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=str(request.user),
             action="create",
             resource_type="dv_removal_request",
             resource_id=str(client.pk),
@@ -182,7 +181,7 @@ def dv_safe_review_remove(request, client_id, request_id):
     if not _is_pm_or_above(request.user):
         return HttpResponseForbidden(_("Only program managers can review DV flag removal requests."))
 
-    client = get_object_or_404(_get_client_queryset(request.user), pk=client_id)
+    client = get_object_or_404(get_client_queryset(request.user), pk=client_id)
     removal_request = get_object_or_404(
         DvFlagRemovalRequest,
         pk=request_id,
@@ -206,7 +205,9 @@ def dv_safe_review_remove(request, client_id, request_id):
             client.save(update_fields=["is_dv_safe"])
 
             AuditLog.objects.using("audit").create(
-                user=request.user,
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=str(request.user),
                 action="update",
                 resource_type="dv_safe_flag",
                 resource_id=str(client.pk),
@@ -229,7 +230,9 @@ def dv_safe_review_remove(request, client_id, request_id):
             removal_request.save()
 
             AuditLog.objects.using("audit").create(
-                user=request.user,
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=str(request.user),
                 action="update",
                 resource_type="dv_removal_request",
                 resource_id=str(client.pk),
