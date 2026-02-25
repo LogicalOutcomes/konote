@@ -3,7 +3,7 @@
 **Task ID:** CIDS-EXPORT1
 **Created:** 2026-02-21
 **Status:** Validated against CIDS 3.2.0 — GO with corrections (see tasks/cids-plan-validation.md)
-**Validated:** 2026-02-24 — 5 critical corrections + 6 Phase 3 items identified
+**Validated:** 2026-02-24 — 5 critical corrections applied inline, 6 Phase 3 items documented
 **Strategic value:** Full CIDS compliance would make KoNote one of the first participant management systems in Canada to deliver standardised impact data exports — a significant differentiator for funder adoption across the nonprofit sector.
 
 ---
@@ -12,22 +12,22 @@
 
 > Full validation report: `tasks/cids-plan-validation.md`
 
-**Critical corrections to apply during implementation:**
+**Critical corrections (all applied inline — look for ⚠️ markers):**
 
-1. **Namespace URIs wrong in JSON-LD example below.** `org:` is `http://ontology.eil.utoronto.ca/tove/organization#` (TOVE), NOT `http://www.w3.org/ns/org#` (W3C). `sch:` is `http://schema.org/` (HTTP), NOT `https://schema.org/`. **Fix:** Use official context URL `https://ontology.commonapproach.org/contexts/cidsContext.jsonld` instead of inline context.
-2. **Version is 3.2.0** (July 2025), not v2.0. Update Standards Alignment appendix.
-3. **Indicator uses `cids:unitDescription`**, not `i72:unit_of_measure` (which is for Measure objects).
-4. **Entity names use `org:hasName`/`cids:hasName`**, not `sch:name`. Descriptions use `cids:hasDescription`, not `sch:description`.
-5. **Program is FullTier** (not EssentialTier). BasicTier/EssentialTier are Organisation-centric.
+1. ~~Namespace URIs wrong~~ → JSON-LD example now uses official context URL
+2. ~~Version was v2.0~~ → Corrected to v3.2 throughout
+3. ~~Indicator unit was `i72:unit_of_measure`~~ → Corrected to `cids:unitDescription`
+4. ~~Entity names used `sch:name`/`sch:description`~~ → Corrected to `org:hasName`/`cids:hasDescription`
+5. ~~Program was EssentialTier~~ → Corrected to FullTier in tier table
 
-**Phase 3 items to resolve before JSON-LD export:**
+**Phase 3 implementation notes (from validation):**
 
-- Code objects need 6 required fields (not simple strings) — expand CidsCodeList model
-- EssentialTier Indicator requires `cids:hasBaseline` and `cids:definedBy`
-- StakeholderOutcome class missing — construct at export time
-- BeneficialStakeholder is a group/cohort, NOT individual (ClientFile does NOT map to it)
-- `i72:value` wraps values in `i72:Measure` objects with `i72:hasNumericalValue`
-- ImpactDuration is FullTier only (ImpactScale and ImpactDepth are EssentialTier)
+- Code objects need 6 required SHACL fields — CidsCodeList model expanded to match (see Phase 2a)
+- EssentialTier Indicator requires `cids:hasBaseline` and `cids:definedBy` — both fields added to MetricDefinition (see Phase 1b)
+- StakeholderOutcome class — construct at export time from Program cohort + PlanTarget
+- BeneficialStakeholder = group/cohort, NOT individual — concept mapping corrected
+- `i72:value` wraps in `i72:Measure` objects — JSON-LD example corrected
+- ImpactDuration is FullTier only — Impact Dimensions table annotated with tiers
 
 ---
 
@@ -132,16 +132,18 @@ Stores CIDS BasicTier org metadata. Single row per agency instance.
 | Field | Type | CIDS Property | Notes |
 |---|---|---|---|
 | `legal_name` | CharField | `org:hasLegalName` | Required for BasicTier |
-| `operating_name` | CharField | `sch:name` | Display name |
-| `description` | TextField | `sch:description` | Mission statement |
+| `operating_name` | CharField | `org:hasName` | Display name (⚠️ corrected from `sch:name`) |
+| `description` | TextField | `cids:hasDescription` | Mission statement (⚠️ corrected from `sch:description`) |
 | `legal_status` | CharField | `org:hasLegalStatus` | Charity, nonprofit, etc. |
 | `sector_codes` | JSONField | `cids:hasCode` | From ICNPOsector code list |
-| `province` | CharField | `cids:addressRegion` | From ProvinceTerritory code list |
-| `city` | CharField | `cids:addressLocality` | |
-| `postal_code` | CharField | `cids:postalCode` | |
+| `street_address` | CharField | `cids:streetAddress` | Street address — required for CIDS Address |
+| `city` | CharField | `cids:addressLocality` | Required for CIDS Address |
+| `province` | CharField | `cids:addressRegion` | From ProvinceTerritory code list; required for CIDS Address |
+| `postal_code` | CharField | `cids:postalCode` | Required for CIDS Address |
+| `country` | CharField | `cids:addressCountry` | Default "CA"; required for CIDS Address |
 | `website` | URLField | `sch:url` | |
 
-**Where it lives:** `apps/settings/models.py` (alongside existing AgencySettings)
+**Where it lives:** `apps/admin_settings/models.py` (alongside existing TerminologyOverride / FeatureToggle / InstanceSetting)
 
 #### 1b. New fields on `MetricDefinition`
 
@@ -150,8 +152,10 @@ Stores CIDS BasicTier org metadata. Single row per agency instance.
 | `cids_indicator_uri` | CharField(blank=True) | `@id` | CIDS identifier (CharField not URLField — URIs may use urn: schemes) |
 | `iris_metric_code` | CharField(blank=True) | `cids:hasCode` | From IrisMetric53 code list |
 | `sdg_goals` | JSONField(default=list) | `cids:hasCode` | List of SDG numbers (1-17) |
-| `unit_of_measure_code` | CharField(blank=True) | `i72:unit_of_measure` | From UnitsOfMeasureList |
-| `cids_theme` | CharField(blank=True) | `cids:Theme` | From IRISImpactTheme code list |
+| `cids_unit_description` | CharField(blank=True) | `cids:unitDescription` | Human-readable unit label from UnitsOfMeasureList (⚠️ corrected from `i72:unit_of_measure` — that property is on IndicatorReport/Measure, not Indicator) |
+| `cids_theme` | CharField(blank=True) | `cids:forTheme` | From IRISImpactTheme code list (⚠️ corrected: maps to Theme via `forTheme` on Outcome) |
+| `cids_defined_by` | CharField(blank=True) | `cids:definedBy` | URI of defining organisation (e.g., GIIN for IRIS+ metrics, agency for custom). Required at EssentialTier. Can auto-derive from iris_metric_code presence. |
+| `cids_has_baseline` | CharField(blank=True) | `cids:hasBaseline` | Baseline value description. Required at EssentialTier. Human-readable (e.g., "Average score 3.2 at intake"). |
 
 #### 1c. New fields on `Program`
 
@@ -159,6 +163,7 @@ Stores CIDS BasicTier org metadata. Single row per agency instance.
 |---|---|---|---|
 | `cids_sector_code` | CharField(blank=True) | `cids:hasCode` | From ICNPOsector or ESDCSector |
 | `population_served_codes` | JSONField(default=list) | `cids:hasCode` | From PopulationServed code list |
+| `description_fr` | TextField(blank=True) | — | French description — currently missing from Program model. Needed for bilingual CIDS exports. |
 | `funder_program_code` | CharField(blank=True) | — | Funder-assigned ID for cross-referencing |
 
 #### 1d. New fields on `PlanTarget`
@@ -174,17 +179,24 @@ Import the 17 CIDS code lists so admins can pick from dropdowns rather than typi
 
 #### 2a. New model: `CidsCodeList`
 
-| Field | Type | Notes |
-|---|---|---|
-| `list_name` | CharField | e.g., "ICNPOsector", "SDGImpacts", "PopulationServed" |
-| `code` | CharField | The code value |
-| `label` | CharField | Display label |
-| `label_fr` | CharField | French label (where available) |
-| `description` | TextField | Longer description |
-| `source_url` | URLField | Link to Common Approach code list |
-| `version_date` | DateField | When this code list version was published (for staleness warnings) |
+| Field | Type | CIDS Property | Notes |
+|---|---|---|---|
+| `list_name` | CharField(max_length=100) | — | e.g., "ICNPOsector", "SDGImpacts", "PopulationServed" |
+| `code` | CharField(max_length=100) | `sch:codeValue` | The code value (e.g., "ICNPO-4", "SDG-11", "PI2061") |
+| `label` | CharField(max_length=255) | `org:hasName` | Display label (English) |
+| `label_fr` | CharField(max_length=255, blank=True) | — | French label (where available) |
+| `description` | TextField(blank=True) | `cids:hasDescription` | Longer description |
+| `specification_uri` | CharField(max_length=500, blank=True) | `cids:hasSpecification` | URI of code list spec (e.g., `https://codelist.commonapproach.org/codeLists/ICNPOsector`) |
+| `defined_by_name` | CharField(max_length=255, blank=True) | `cids:definedBy` → `org:hasLegalName` | Organisation name (e.g., "GIIN", "United Nations") |
+| `defined_by_uri` | CharField(max_length=500, blank=True) | `cids:definedBy` → `@id` | URI of defining organisation |
+| `source_url` | URLField(blank=True) | — | Link to Common Approach code list page |
+| `version_date` | DateField(blank=True, null=True) | — | When this code list version was published (for staleness warnings) |
 
-**Population:** Management command `import_cids_codelists` that fetches from `codelist.commonapproach.org` and populates the table. Run once during setup, re-run to update. Warn admins when local copy is stale.
+**Indexes:** `unique_together = [("list_name", "code")]`
+
+**Why the extra fields?** CIDS SHACL EssentialTier requires Code objects with `hasName`, `hasDescription`, `codeValue`, `definedBy` (an Organisation reference), and `hasSpecification` (a URI). Storing these on CidsCodeList means the JSON-LD export can construct full Code objects without hardcoding standards body references.
+
+**Population:** Management command `import_cids_codelists` that fetches from `codelist.commonapproach.org` and populates the table. Run once during setup, re-run to update. Warn admins when local copy is stale. Formats available: JSON-LD, CSV, Turtle, RDF/XML.
 
 #### 2b. Admin UI for CIDS tagging
 
@@ -205,11 +217,13 @@ Import the 17 CIDS code lists so admins can pick from dropdowns rather than typi
 - Add a **"Standards Alignment" appendix page** to PDF funder reports:
 
 > **Standards Alignment**
-> This report uses the Common Impact Data Standard (CIDS) v2.0
+> This report uses the Common Impact Data Standard (CIDS) v3.2
+> - Organisation: [Legal Name] — [Province]
 > - Sector: Social Services (ICNPO-4)
 > - SDG Alignment: SDG 1 (No Poverty), SDG 11 (Sustainable Cities)
 > - Outcome indicators mapped to IRIS+ metrics
 > - Demographic categories from Statistics Canada classifications
+> - Code lists sourced from codelist.commonapproach.org (version: [date])
 
 This one page transforms a regular funder report into a standards-compliant one in the eyes of a program officer who reads PDFs.
 
@@ -230,112 +244,103 @@ The JSON-LD output follows the CIDS class hierarchy. Every entity includes an `@
 
 ```json
 {
-  "@context": {
-    "cids": "http://ontology.commonapproach.org/cids#",
-    "org": "http://www.w3.org/ns/org#",
-    "i72": "http://ontology.eil.utoronto.ca/ISO21972/iso21972#",
-    "sch": "https://schema.org/",
-    "sdg": "http://metadata.un.org/sdg/",
-    "prov": "http://www.w3.org/ns/prov#",
-    "time": "http://www.w3.org/2006/time#"
-  },
-  "@type": "cids:ImpactModel",
-  "@id": "https://example-agency.konote.ca/cids/impact-model/fy2025-26",
-  "cids:forOrganization": {
-    "@type": "cids:Organization",
-    "@id": "https://example-agency.konote.ca/cids/org",
-    "org:hasLegalName": "Community Services Agency",
+  "@context": "https://ontology.commonapproach.org/contexts/cidsContext.jsonld",
+  "@type": "cids:Organization",
+  "@id": "https://example-agency.konote.ca/cids/org",
+  "org:hasLegalName": "Community Services Agency",
+  "hasName": "Community Services Agency",
+  "cids:hasAddress": {
+    "@type": "cids:Address",
+    "cids:streetAddress": "123 Main St",
+    "cids:addressLocality": "Ottawa",
     "cids:addressRegion": "ON",
-    "cids:hasCode": [
-      {
-        "@type": "cids:Code",
-        "sch:codeValue": "ICNPO-4",
-        "cids:definedBy": "ICNPOsector",
-        "sch:name": "Social Services"
-      }
-    ]
+    "cids:postalCode": "K1A 0B1",
+    "cids:addressCountry": "CA"
   },
-  "cids:hasProgram": [
+  "cids:hasCode": [
     {
-      "@type": "cids:Program",
-      "@id": "https://example-agency.konote.ca/cids/program/1",
-      "sch:name": "Housing First Initiative",
-      "cids:hasCode": [
-        {
+      "@type": "cids:Code",
+      "@id": "https://example-agency.konote.ca/cids/code/icnpo-4",
+      "hasName": "Social Services",
+      "hasDescription": "ICNPO sector classification for social services",
+      "sch:codeValue": "ICNPO-4",
+      "cids:definedBy": {
+        "@type": "cids:StandardsOrganization",
+        "@id": "https://unstats.un.org/",
+        "org:hasLegalName": "United Nations Statistics Division"
+      },
+      "cids:hasSpecification": "https://codelist.commonapproach.org/codeLists/ICNPOsector"
+    }
+  ],
+  "cids:hasOutcome": [
+    {
+      "@type": "cids:Outcome",
+      "@id": "https://example-agency.konote.ca/cids/outcome/housing-stability",
+      "hasName": "Improved housing stability",
+      "hasDescription": "Participants achieve and maintain stable housing",
+      "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+      "cids:forTheme": {
+        "@type": "cids:Theme",
+        "@id": "https://example-agency.konote.ca/cids/theme/sdg-11",
+        "hasName": "Sustainable Cities and Communities",
+        "hasDescription": "UN SDG Goal 11",
+        "cids:hasCode": {
           "@type": "cids:Code",
-          "sch:codeValue": "ESDC-Housing",
-          "cids:definedBy": "ESDCSector"
+          "sch:codeValue": "SDG-11",
+          "hasName": "Sustainable Cities and Communities",
+          "cids:definedBy": {
+            "@type": "cids:StandardsOrganization",
+            "@id": "https://unstats.un.org/sdgs/",
+            "org:hasLegalName": "United Nations"
+          },
+          "cids:hasSpecification": "https://codelist.commonapproach.org/codeLists/SDGImpacts"
         }
-      ],
-      "cids:hasOutcome": [
+      },
+      "cids:hasIndicator": [
         {
-          "@type": "cids:Outcome",
-          "@id": "https://example-agency.konote.ca/cids/outcome/housing-stability",
-          "sch:name": "Improved housing stability",
-          "cids:hasIndicator": [
+          "@type": "cids:Indicator",
+          "@id": "https://example-agency.konote.ca/cids/indicator/housing-stability-score",
+          "hasName": "Housing Stability Score",
+          "hasDescription": "Self-reported housing stability on a 1-10 scale",
+          "cids:unitDescription": "score",
+          "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+          "cids:hasCode": [
             {
-              "@type": "cids:Indicator",
-              "@id": "https://example-agency.konote.ca/cids/indicator/housing-stability-score",
-              "sch:name": "Housing Stability Score",
-              "cids:unitDescription": "score",
-              "cids:hasCode": [
-                {
-                  "@type": "cids:Code",
-                  "sch:codeValue": "PI2061",
-                  "cids:definedBy": "IrisMetric53",
-                  "sch:name": "Client Housing Situation Improved"
-                }
-              ],
-              "cids:hasIndicatorReport": [
-                {
-                  "@type": "cids:IndicatorReport",
-                  "cids:hasBaseline": {
-                    "i72:numerical_value": 3.2,
-                    "i72:unit_of_measure": "score"
-                  },
-                  "cids:hasValue": {
-                    "i72:numerical_value": 7.8,
-                    "i72:unit_of_measure": "score"
-                  },
-                  "prov:startedAtTime": "2025-04-01",
-                  "prov:endedAtTime": "2026-03-31"
-                }
-              ]
+              "@type": "cids:Code",
+              "sch:codeValue": "PI2061",
+              "hasName": "Client Housing Situation Improved",
+              "hasDescription": "IRIS+ metric for housing outcome tracking",
+              "cids:definedBy": {
+                "@type": "cids:StandardsOrganization",
+                "@id": "https://iris.thegiin.org/",
+                "org:hasLegalName": "Global Impact Investing Network (GIIN)"
+              },
+              "cids:hasSpecification": "https://codelist.commonapproach.org/codeLists/IrisMetric53"
             }
           ],
-          "cids:hasImpactReport": {
-            "@type": "cids:ImpactReport",
-            "cids:hasImpactScale": {
-              "@type": "cids:ImpactScale",
-              "cids:hasActualAmount": 141,
-              "cids:hasPlannedAmount": 156
-            },
-            "cids:hasImpactDepth": {
-              "@type": "cids:ImpactDepth",
-              "cids:hasDescription": "90% achievement rate"
-            },
-            "cids:hasImpactDuration": {
-              "@type": "cids:ImpactDuration",
-              "prov:startedAtTime": "2025-04-01",
-              "prov:endedAtTime": "2026-03-31"
+          "cids:hasIndicatorReport": [
+            {
+              "@type": "cids:IndicatorReport",
+              "@id": "https://example-agency.konote.ca/cids/report/housing-stability-fy2025",
+              "hasName": "Housing Stability Score — FY2025-26",
+              "i72:value": {
+                "@type": "i72:Measure",
+                "i72:hasNumericalValue": "7.8"
+              },
+              "cids:forIndicator": {"@id": "https://example-agency.konote.ca/cids/indicator/housing-stability-score"},
+              "cids:forOrganization": {"@id": "https://example-agency.konote.ca/cids/org"},
+              "prov:startedAtTime": "2025-04-01T00:00:00-04:00",
+              "prov:endedAtTime": "2026-03-31T23:59:59-04:00"
             }
-          },
-          "cids:forStakeholder": {
-            "@type": "cids:BeneficialStakeholder",
-            "cids:hasCode": [
-              {
-                "sch:codeValue": "SDG-11",
-                "cids:definedBy": "SDGImpacts",
-                "sch:name": "Sustainable Cities and Communities"
-              }
-            ]
-          }
+          ]
         }
       ]
     }
   ]
 }
 ```
+
+> **Note:** This example targets **BasicTier** — Organisation + Outcome + Indicator + IndicatorReport + Theme. For EssentialTier, add Stakeholder, StakeholderOutcome, ImpactReport, Target, and Code objects. For FullTier, wrap in an ImpactModel and add Program, Activity, and Service objects. See `tasks/cids-plan-validation.md` for complete tier requirements.
 
 #### 3b. What gets exported (no PII)
 
@@ -363,15 +368,20 @@ The JSON-LD export is **aggregate only** — no individual client data:
 
 ### Phase 4: Impact Dimensions (computed, no new data entry)
 
-CIDS requires three "How Much" dimensions for each outcome. These can be **computed from existing KoNote data**:
+CIDS defines "How Much" impact dimensions via `cids:HowMuchImpact` subclasses. These can be **computed from existing KoNote data** — no new data entry required:
 
-| CIDS Dimension | KoNote Source | Computation |
-|---|---|---|
-| **ImpactScale** (how many) | Count of clients with MetricValues for this target | `hasActualAmount` = count with values; `hasPlannedAmount` = count enrolled |
-| **ImpactDepth** (degree of change) | Achievement rate from existing `achievements.py` | % of clients meeting target threshold |
-| **ImpactDuration** (how long) | Reporting period from FunderReportForm date range | Start/end dates of the export period |
+| CIDS Dimension | Tier | KoNote Source | Computation |
+|---|---|---|---|
+| **ImpactScale** (how many) | EssentialTier | Count of clients with MetricValues for this target | `i72:value` = count with values (actual); compare to count enrolled (planned) |
+| **ImpactDepth** (degree of change) | EssentialTier | Achievement rate from existing `achievements.py` | `i72:value` = % of clients meeting target threshold |
+| **ImpactDuration** (how long) | **FullTier** | Reporting period from FunderReportForm date range | `prov:startedAtTime` / `prov:endedAtTime` of the export period |
 
-No new data entry required — these are derived from data KoNote already collects.
+⚠️ **ImpactDuration is FullTier** — omit from EssentialTier-only exports. ImpactScale and ImpactDepth are required at EssentialTier (each needs `i72:value` as `i72:Measure` object + `cids:hasDescription`).
+
+Each HowMuchImpact dimension requires:
+- `i72:value` → nested `i72:Measure` with `i72:hasNumericalValue` (string, not number)
+- `cids:hasDescription` (human-readable explanation)
+- `cids:forIndicator` (link to the Indicator being measured)
 
 ### Phase 5: Conformance Badge and Detailed Validation (future)
 
@@ -407,6 +417,26 @@ Phases 1 through 2.5 are the minimum viable deliverable. Phases 3-5 complete ful
 
 ---
 
+## Codebase Integration Notes
+
+Findings from codebase review (2026-02-24) — existing patterns to reuse and gaps to address:
+
+### Existing code to leverage
+
+- **`apps/reports/aggregations.py`** — `metric_stats()` returns count, avg, min, max, sum for MetricValues. Directly reusable for computing ImpactScale (count) and ImpactDepth (achievement rate) in Phase 4.
+- **`apps/reports/funder_report.py`** — `generate_funder_report_data()` is the main report entry point. Phase 2.5 enriches its output; Phase 3 uses it as the data source for JSON-LD.
+- **`apps/reports/export_engine.py`** — `generate_template_csv_rows()` handles template-driven CSV output. Phase 2.5 modifies this to include CIDS codes alongside indicator names.
+- **`apps/reports/models.py`** — `ReportMetric` already has 7 aggregation types; `DemographicBreakdown` supports demographic segmentation; `SecureExportLink` with 24-hour expiry handles secure downloads.
+- **Admin form patterns** — `MetricDefinitionForm` (18 fields) and `ProgramForm` (with confidential keyword detection) in `apps/plans/forms.py` and `apps/programs/forms.py`. Phase 2b CIDS fields should follow these patterns (collapsible sections, consistent validation).
+
+### Known gaps to address
+
+- **`Program.description_fr` is missing.** Program has `description` (TextField) but no French translation field. Needed for bilingual CIDS exports. Add alongside CIDS fields in Phase 1c or as a separate migration.
+- **No singleton pattern for settings.** `InstanceSetting` uses class methods, not a singleton. `OrganizationProfile` should follow the same pattern (class method to get-or-create the single row).
+- **PlanTargetForm is a plain Form** (not ModelForm) due to encrypted fields. Adding `cids_outcome_uri` and `cids_impact_theme` to PlanTarget will need corresponding fields in the form — these are not encrypted, so they can use standard ModelForm field patterns.
+
+---
+
 ## Go-to-Market Strategy
 
 ### Immediate (before code is written)
@@ -431,7 +461,8 @@ Phases 1 through 2.5 are the minimum viable deliverable. Phases 3-5 complete ful
 1. **Which funder expressed interest?** We need to confirm their actual consumption pathway — do they want JSON-LD, or would CIDS-tagged CSV/PDF satisfy their requirements?
 2. **Should we engage Common Approach now?** Recommendation: yes, position as a partnership/pilot implementation
 3. **Should CIDS metadata be part of the [funder partner] config template?** Recommendation: yes, pre-map their standard metrics to IRIS+ codes
-4. **Target tier?** Recommendation: EssentialTier (covers org, programs, outcomes, indicators, impact dimensions)
+4. **Target tier?** ⚠️ Updated per validation: Program is FullTier, not EssentialTier. **Recommendation:** Target FullTier directly — KoNote already has programs, outcomes, indicators, and metric values, so FullTier is naturally achievable. BasicTier validation can be a quick first milestone (5 classes: Organisation, Outcome, Indicator, IndicatorReport, Theme).
+5. **CIDS version pinning?** Current spec is v3.2.0 (July 2025). Pin to v3.2.0?
 
 ---
 
@@ -447,8 +478,28 @@ Phases 1 through 2.5 are the minimum viable deliverable. Phases 3-5 complete ful
 
 ## References
 
-- [CIDS Ontology (Turtle)](https://raw.githubusercontent.com/commonapproach/CIDS/main/cids.ttl)
+### Ontology and Specification
+- [CIDS Ontology HTML (v3.2.0)](https://ontology.commonapproach.org/cids-en.html) — human-readable class/property reference
+- [CIDS Ontology (Turtle)](https://raw.githubusercontent.com/commonapproach/CIDS/main/cids.ttl) — machine-readable OWL source
 - [CIDS GitHub Repository](https://github.com/commonapproach/CIDS)
-- [CIDS FAQ for Developers](https://github.com/commonapproach/CIDS/blob/main/faq/README.md)
-- [Common Approach Code Lists](https://codelist.commonapproach.org/)
+- [CIDS Developer Page](https://www.commonapproach.org/developers/data-standard/)
+- [CIDS FAQ for Developers](https://github.com/commonapproach/CIDS/blob/main/faq/README.md) — 12 files covering RDF, OWL, SHACL, SPARQL, JSON-LD context files
+
+### JSON-LD and Validation
+- [Official JSON-LD Context](https://ontology.commonapproach.org/contexts/cidsContext.jsonld) — **use this as `@context` in exports**
+- [SFF JSON-LD Context](https://ontology.commonapproach.org/contexts/sffContext.jsonld)
+- [BasicTier SHACL](https://github.com/commonapproach/CIDS/blob/main/validation/shacl/cids.basictier.shacl.ttl)
+- [EssentialTier SHACL](https://github.com/commonapproach/CIDS/blob/main/validation/shacl/cids.essentialtier.shacl.ttl)
+- [FullTier SHACL](https://github.com/commonapproach/CIDS/blob/main/validation/shacl/cids.fulltier.shacl.ttl)
+- [Validation README](https://github.com/commonapproach/CIDS/blob/main/validation/validationReadMe.md) — how to run SHACL validation
+
+### Code Lists
+- [Common Approach Code Lists](https://codelist.commonapproach.org/) — all 17 lists, available in JSON-LD, CSV, Turtle, RDF/XML
+- Last updated: Dec 1, 2025
+
+### Organisation
 - [Common Approach Website](https://commonapproach.org/)
+- [CIDS v3.2 Announcement](https://www.commonapproach.org/common-impact-data-standard-version-3-2/)
+
+### KoNote Validation
+- [Plan Validation Report](tasks/cids-plan-validation.md) — corrections and tier requirements verified against SHACL shapes
