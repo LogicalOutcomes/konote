@@ -581,6 +581,8 @@ def note_create(request, client_id):
                     alliance_rating=form.cleaned_data.get("alliance_rating") or None,
                     alliance_rater=form.cleaned_data.get("alliance_rater", ""),
                     follow_up_date=form.cleaned_data.get("follow_up_date"),
+                    duration_minutes=form.cleaned_data.get("duration_minutes") or None,
+                    modality=form.cleaned_data.get("modality") or "",
                 )
                 # Circle tagging
                 circle_id = form.cleaned_data.get("circle")

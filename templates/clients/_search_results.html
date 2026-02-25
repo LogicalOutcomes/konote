@@ -17,11 +17,11 @@
             <td data-label="{% trans 'ID' %}">{{ item.client.record_id|default:"—" }}</td>
             <td data-label="{% trans 'Status' %}">
                 {% if item.client.status == "active" %}
-                    <span class="badge badge-success">{% trans "Active" %}</span>
+                    <span class="badge badge-success"><span aria-hidden="true">&#x25CF;</span> {% trans "Active" %}</span>
                 {% elif item.client.status == "inactive" %}
-                    <span class="badge badge-warning">{% trans "Inactive" %}</span>
+                    <span class="badge badge-warning"><span aria-hidden="true">&#x25CB;</span> {% trans "Inactive" %}</span>
                 {% else %}
-                    <span class="badge badge-neutral">{% trans "Discharged" %}</span>
+                    <span class="badge badge-neutral"><span aria-hidden="true">&#x2014;</span> {% trans "Discharged" %}</span>
                 {% endif %}
             </td>
             <td data-label="{{ term.program_plural|default:'Programs' }}">

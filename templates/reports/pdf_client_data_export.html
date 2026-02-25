@@ -4,17 +4,20 @@
 {% block title %}{% trans "Participant Data Export" %} — {{ client.first_name }} {{ client.last_name }}{% endblock %}
 
 {% block content %}
-<!-- Cover Page -->
-<div class="pdf-cover">
+<!-- Report Header (merged title + participant info) -->
+<div class="pdf-header">
     <h1>{% trans "Participant Data Export" %}</h1>
     <div class="subtitle">{{ client.first_name }} {{ client.last_name }}</div>
-    <div class="meta">
-        {% if client.record_id %}{% trans "Record ID" %}: {{ client.record_id }}<br>{% endif %}
-        {% blocktrans with date=generated_at|date:"Y-m-d" by=generated_by %}Generated {{ date }} by {{ by }}{% endblocktrans %}
-    </div>
-    <div class="meta" style="margin-top: 0.5cm;">
-        <em>{% trans "Generated under PIPEDA data portability provisions" %}</em>
-    </div>
+    <dl class="meta-grid">
+        {% if client.record_id %}
+        <dt>{% trans "Record ID" %}</dt>
+        <dd>{{ client.record_id }}</dd>
+        {% endif %}
+        <dt>{% trans "Generated" %}</dt>
+        <dd>{% blocktrans with date=generated_at|date:"Y-m-d" by=generated_by %}{{ date }} by {{ by }}{% endblocktrans %}</dd>
+        <dt>{% trans "Notice" %}</dt>
+        <dd><em>{% trans "Generated under PIPEDA data portability provisions" %}</em></dd>
+    </dl>
 </div>
 
 <!-- Client Information -->

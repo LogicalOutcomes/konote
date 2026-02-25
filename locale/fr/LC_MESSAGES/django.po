@@ -14686,7 +14686,8 @@ msgstr ""
 "visites individuelles."
 
 msgid "%(scored)d scored · %(low_pct).0f%% need more support"
-msgstr "%(scored)d évalué(e)s · %(low_pct).0f %% ont besoin de plus de soutien"
+msgstr ""
+"%(scored)d évalué(e)s · %(low_pct).0f %% ont besoin de plus de soutien"
 
 msgid "Achievement"
 msgstr "Atteinte"
@@ -14719,7 +14720,8 @@ msgid "Distributions may not represent the full program."
 msgstr "Les répartitions peuvent ne pas représenter l'ensemble du programme."
 
 msgid "False for metrics like PHQ-9 where lower is better."
-msgstr "Faux pour les mesures comme le PHQ-9 où un score plus bas est meilleur."
+msgstr ""
+"Faux pour les mesures comme le PHQ-9 où un score plus bas est meilleur."
 
 msgid "Feedback themes"
 msgstr "Thèmes de rétroaction"
@@ -14728,7 +14730,7 @@ msgid "Full data"
 msgstr "Données complètes"
 
 msgid "Gap: aligned"
-msgstr "Écart\u00a0: aligné"
+msgstr "Écart\\u00a0: aligné"
 
 msgid "Goals within reach"
 msgstr "Objectifs à portée"
@@ -14750,13 +14752,16 @@ msgid "Invalid option selected."
 msgstr "Option sélectionnée non valide."
 
 msgid "Line chart showing staff assessment trends by month"
-msgstr "Graphique linéaire montrant les tendances d'évaluation du personnel par mois"
+msgstr ""
+"Graphique linéaire montrant les tendances d'évaluation du personnel par mois"
 
 msgid "Low band boundary (scale metrics)."
 msgstr "Limite du palier inférieur (mesures par échelle)."
 
 msgid "Low band threshold must be less than high band threshold."
-msgstr "Le seuil du palier inférieur doit être inférieur au seuil du palier supérieur."
+msgstr ""
+"Le seuil du palier inférieur doit être inférieur au seuil du palier "
+"supérieur."
 
 msgid "Low data"
 msgstr "Peu de données"
@@ -14768,8 +14773,8 @@ msgid ""
 "Movement tracking — who is progressing between bands over time — will be "
 "available in a future update."
 msgstr ""
-"Le suivi des mouvements — qui progresse entre les paliers au fil du temps "
-"— sera disponible dans une mise à jour future."
+"Le suivi des mouvements — qui progresse entre les paliers au fil du temps — "
+"sera disponible dans une mise à jour future."
 
 msgid "Not yet achieved"
 msgstr "Pas encore atteint"
@@ -14784,10 +14789,12 @@ msgid "Open feedback themes"
 msgstr "Thèmes de rétroaction ouverts"
 
 msgid "Optional target % for achievement metrics (e.g. 70 for 70%)."
-msgstr "Cible facultative en % pour les mesures d'atteinte (ex. 70 pour 70 %)."
+msgstr ""
+"Cible facultative en % pour les mesures d'atteinte (ex. 70 pour 70 %)."
 
 msgid "Optional target for % in high band (scale metrics)."
-msgstr "Cible facultative pour le % dans le palier supérieur (mesures par échelle)."
+msgstr ""
+"Cible facultative pour le % dans le palier supérieur (mesures par échelle)."
 
 msgid ""
 "Options for achievement metrics, e.g. [\"Employed\", \"In training\", "
@@ -14920,23 +14927,6 @@ msgstr ""
 "# Note : Les participants inscrits à plusieurs programmes sont comptés une "
 "fois par programme."
 
-msgid "All Programs \\u2014 Organisation Summary"
-msgstr ""
-
-msgid "None \\u2014 use default age categories"
-msgstr ""
-
-msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
-msgstr ""
-
-msgid "\\u2014 Custom date range \\u2014"
-msgstr ""
-
-msgid "\\u2014 Select a program \\u2014"
-msgstr ""
-
-msgid "\\u2014 Select a report \\u2014"
-msgstr ""
 msgid "Archive"
 msgstr "Archiver"
 
@@ -15005,8 +14995,12 @@ msgstr ""
 "appareils de terrain. Les niveaux supérieurs exposent plus de renseignements"
 " personnels et exigent une sécurité accrue des appareils."
 
-msgid "DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"
-msgstr "Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres visibles sont automatiquement masqués"
+msgid ""
+"DV safety: circles with blocked members and fewer than 4 visible members are"
+" automatically hidden"
+msgstr ""
+"Sécurité VF : les cercles avec des membres bloqués et moins de 4 membres "
+"visibles sont automatiquement masqués"
 
 msgid "Data Tier"
 msgstr "Niveau de données"
@@ -15234,11 +15228,11 @@ msgstr "exécutions de synchronisation"
 msgid "— None —"
 msgstr "— Aucun —"
 
-msgid "\u2014 Select a report \u2014"
+msgid "\\u2014 Select a report \\u2014"
 msgstr "— Sélectionner un rapport —"
 
-msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\u2013%(m2)s)"
-msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s\u2013%(m2)s)"
+msgid "Q%(q)s FY %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
+msgstr "T%(q)s AF %(start)s-%(end)s (%(m1)s\\u2013%(m2)s)"
 
 msgid "No outcome data recorded yet"
 msgstr "Aucune donnée de résultats enregistrée"
@@ -15268,3 +15262,604 @@ msgstr "cible"
 msgid "trend"
 msgstr "tendance"
 
+msgid "Alerts and flags"
+msgstr "Alertes et signalements"
+
+msgid "All Programs \\u2014 Organisation Summary"
+msgstr "Tous les programmes \\u2014 Sommaire organisationnel"
+
+msgid ""
+"All approvals received. %(term)s data is scheduled for permanent erasure in "
+"24 hours. You can cancel during this period."
+msgstr ""
+"Toutes les approbations reçues. Les données de %(term)s sont programmées "
+"pour suppression permanente dans 24 heures. Vous pouvez annuler pendant "
+"cette période."
+
+msgid ""
+"All individual information will be removed. Only anonymous counts remain in "
+"reports. This cannot be undone."
+msgstr ""
+"Toutes les informations individuelles seront supprimées. Seuls les décomptes"
+" anonymes restent dans les rapports. Cette action est irréversible."
+
+msgid "Back to Participant"
+msgstr "Retour au participant"
+
+msgid "Backup codes"
+msgstr "Codes de secours"
+
+msgid "Can't scan the QR code?"
+msgstr "Impossible de scanner le code QR ?"
+
+msgid "Cancel Scheduled Erasure"
+msgstr "Annuler la suppression programmée"
+
+msgid "Cancel this scheduled erasure? The participant data will be preserved."
+msgstr ""
+"Annuler cette suppression programmée ? Les données du participant seront "
+"préservées."
+
+msgid "Client profile (print the profile page)"
+msgstr "Profil du client (imprimer la page de profil)"
+
+msgid "Communication log entries"
+msgstr "Entrées du journal de communications"
+
+msgid "Continue to dashboard"
+msgstr "Continuer vers le tableau de bord"
+
+msgid "Data Access Request"
+msgstr "Demande d’accès aux données"
+
+msgid "Data access request logged."
+msgstr "Demande d’accès aux données enregistrée."
+
+msgid "Data access request marked as complete."
+msgstr "Demande d’accès aux données marquée comme complétée."
+
+msgid "Date Received"
+msgstr "Date de réception"
+
+msgid "Date delivered"
+msgstr "Date de livraison"
+
+msgid "Date request received"
+msgstr "Date de réception de la demande"
+
+msgid "Disable MFA"
+msgstr "Désactiver l’AMF"
+
+msgid "Disable Multi-Factor Authentication"
+msgstr "Désactiver l’authentification multifacteur"
+
+msgid "Enter the 6-digit code from your app"
+msgstr "Entrez le code à 6 chiffres de votre application"
+
+msgid "Enter this secret key manually in your authenticator app:"
+msgstr ""
+"Entrez cette clé secrète manuellement dans votre application "
+"d’authentification :"
+
+msgid "Erasure consequence"
+msgstr "Conséquence de l'effacement"
+
+msgid ""
+"Everything about this person will be permanently deleted, including from "
+"reports. This cannot be undone."
+msgstr ""
+"Tout ce qui concerne cette personne sera définitivement supprimé, y compris "
+"des rapports. Cette action est irréversible."
+
+msgid "Getting started"
+msgstr "Premiers pas"
+
+msgid "How was the information delivered?"
+msgstr "Comment l’information a-t-elle été livrée ?"
+
+msgid "How was the request received?"
+msgstr "Comment la demande a-t-elle été reçue ?"
+
+msgid ""
+"If you lose access to your authenticator app, you can use one of these "
+"backup codes to sign in. Each code can only be used once. Store them in a "
+"safe place."
+msgstr ""
+"Si vous perdez l’accès à votre application d’authentification, vous pouvez "
+"utiliser l’un de ces codes de secours pour vous connecter. Chaque code ne "
+"peut être utilisé qu’une seule fois. Conservez-les en lieu sûr."
+
+msgid "Information to Gather"
+msgstr "Information à recueillir"
+
+msgid "Invalid code. Please check your authenticator app and try again."
+msgstr ""
+"Code invalide. Vérifiez votre application d’authentification et réessayez."
+
+msgid "Invalid code. Please enter a valid verification code to disable MFA."
+msgstr ""
+"Code invalide. Veuillez entrer un code de vérification valide pour "
+"désactiver l’AMF."
+
+msgid "Invalid verification code. Please try again."
+msgstr "Code de vérification invalide. Veuillez réessayer."
+
+msgid "Log Data Access Request"
+msgstr "Enregistrer une demande d’accès aux données"
+
+msgid "Log Request & View Checklist"
+msgstr "Enregistrer la demande et voir la liste de vérification"
+
+msgid "Logged By"
+msgstr "Enregistré par"
+
+msgid "MFA Enabled"
+msgstr "AMF activée"
+
+msgid "MFA is already enabled on your account."
+msgstr "L’AMF est déjà activée sur votre compte."
+
+msgid "Mail"
+msgstr "Courrier"
+
+msgid "Mark as Complete"
+msgstr "Marquer comme complété"
+
+msgid "Mark this data access request as complete?"
+msgstr "Marquer cette demande d’accès aux données comme complétée ?"
+
+msgid "Multi-Factor Authentication Enabled"
+msgstr "Authentification multifacteur activée"
+
+msgid "Multi-factor authentication has been disabled."
+msgstr "L’authentification multifacteur a été désactivée."
+
+msgid "Need help? Ask your program manager or administrator"
+msgstr ""
+"Besoin d’aide ? Demandez à votre gestionnaire de programme ou administrateur"
+
+msgid "None \\u2014 use default age categories"
+msgstr "Aucun \\u2014 utiliser les catégories d’âge par défaut"
+
+msgid "Not all items may apply to your agency. Include what you have."
+msgstr ""
+"Tous les éléments ne s’appliquent pas nécessairement à votre organisme. "
+"Incluez ce que vous avez."
+
+msgid "Note sharing disabled."
+msgstr "Partage des notes désactivé."
+
+msgid "Note sharing enabled."
+msgstr "Partage des notes activé."
+
+msgid "Off"
+msgstr "Désactivé"
+
+msgid "On"
+msgstr "Activé"
+
+msgid "Plan goals and metric history (print the plan page)"
+msgstr ""
+"Objectifs du plan et historique des mesures (imprimer la page du plan)"
+
+msgid "Please correct the errors below and try again."
+msgstr "Veuillez corriger les erreurs ci-dessous et réessayer."
+
+msgid "Privacy Action Required"
+msgstr "Action de confidentialité requise"
+
+msgid "Privacy Compliance"
+msgstr "Conformité en matière de vie privée"
+
+msgid "Program enrolments and status"
+msgstr "Inscriptions au programme et statut"
+
+msgid ""
+"Progress notes (use the notes list — filter by this participant, print or "
+"export)"
+msgstr ""
+"Notes de progrès (utiliser la liste des notes – filtrer par ce participant, "
+"imprimer ou exporter)"
+
+msgid "Received By"
+msgstr "Reçu par"
+
+msgid "Respond to Data Access Request"
+msgstr "Répondre à la demande d’accès aux données"
+
+msgid ""
+"Review before including. You may withhold safety-related notes under PIPEDA "
+"s.9(1) if disclosure could threaten the safety of others."
+msgstr ""
+"Vérifier avant d’inclure. Vous pouvez retenir les notes liées à la sécurité "
+"en vertu de la LPRPDE art. 9(1) si la divulgation pourrait menacer la "
+"sécurité d’autrui."
+
+msgid "Save your backup codes"
+msgstr "Enregistrez vos codes de secours"
+
+msgid ""
+"Scan the QR code below with your authenticator app (Google Authenticator, "
+"Microsoft Authenticator, Authy, etc.), then enter the 6-digit code to "
+"confirm."
+msgstr ""
+"Scannez le code QR ci-dessous avec votre application d’authentification "
+"(Google Authenticator, Microsoft Authenticator, Authy, etc.), puis entrez le"
+" code à 6 chiffres pour confirmer."
+
+msgid "Scheduled erasure cancelled. %(term)s data has been preserved."
+msgstr ""
+"Suppression programmée annulée. Les données de %(term)s ont été préservées."
+
+msgid "Scheduled erasure notice"
+msgstr "Avis de suppression programmée"
+
+msgid "Scheduled for Permanent Erasure"
+msgstr "Programmé pour suppression permanente"
+
+msgid "Scheduled — Awaiting Erasure"
+msgstr "Programmé — En attente de suppression"
+
+msgid "Set Up Multi-Factor Authentication"
+msgstr "Configurer l’authentification multifacteur"
+
+msgid "Share notes across programs"
+msgstr "Partager les notes entre les programmes"
+
+msgid "Start sharing"
+msgstr "Débuter le partage"
+
+msgid "Stop sharing"
+msgstr "Arrêter le partage"
+
+msgid "Survey responses (if your agency uses surveys)"
+msgstr "Réponses aux sondages (si votre organisme utilise les sondages)"
+
+msgid ""
+"The 30-day PIPEDA response deadline will be calculated from the date above."
+msgstr ""
+"Le délai de réponse de 30 jours de la LPRPDE sera calculé à partir de la "
+"date ci-dessus."
+
+msgid ""
+"Their name and contact details will be blanked. Anonymous service records "
+"stay in reports. This cannot be undone."
+msgstr ""
+"Le nom et les coordonnées seront effacés. Les dossiers de service anonymes "
+"restent dans les rapports. Cette action est irréversible."
+
+msgid "These actions are for privacy compliance and data governance."
+msgstr ""
+"Ces actions visent la conformité en matière de vie privée et la gouvernance "
+"des données."
+
+msgid "This erasure cannot be cancelled — it is not in scheduled status."
+msgstr ""
+"Cette suppression ne peut pas être annulée — elle n’est pas en statut "
+"programmé."
+
+msgid "This request has already been completed."
+msgstr "Cette demande a déjà été complétée."
+
+msgid ""
+"To disable MFA, enter a verification code from your authenticator app or a "
+"backup code."
+msgstr ""
+"Pour désactiver l’AMF, entrez un code de vérification de votre application "
+"d’authentification ou un code de secours."
+
+msgid "Verbal"
+msgstr "Verbale"
+
+msgid "Verify Identity"
+msgstr "Vérifier l’identité"
+
+msgid "Verify and Enable MFA"
+msgstr "Vérifier et activer l’AMF"
+
+msgid "Verify your identity"
+msgstr "Vérifiez votre identité"
+
+msgid "Written"
+msgstr "Écrite"
+
+msgid ""
+"You can also enter a backup code if you have lost access to your "
+"authenticator app."
+msgstr ""
+"Vous pouvez également entrer un code de secours si vous avez perdu l’accès à"
+" votre application d’authentification."
+
+msgid "You used a backup code. You have %(count)s remaining."
+msgstr "Vous avez utilisé un code de secours. Il vous en reste %(count)s."
+
+msgid ""
+"Your account is now protected with multi-factor authentication. You will "
+"need to enter a code from your authenticator app each time you sign in."
+msgstr ""
+"Votre compte est maintenant protégé par l’authentification multifacteur. "
+"Vous devrez entrer un code de votre application d’authentification à chaque "
+"connexion."
+
+msgid "\\u2014 Custom date range \\u2014"
+msgstr "\\u2014 Plage de dates personnalisée \\u2014"
+
+msgid "\\u2014 Select a program \\u2014"
+msgstr "\\u2014 Sélectionner un programme \\u2014"
+
+msgid "Aggregate summary only"
+msgstr "Sommaire agrégé seulement"
+
+msgid "Average Contact Hours per Participant"
+msgstr "Heures de contact moyennes par participant"
+
+msgid "Average Sessions per Participant"
+msgstr "Séances moyennes par participant"
+
+msgid "Back to Custom Export"
+msgstr "Retour à l’exportation personnalisée"
+
+msgid "Back to Generate Report"
+msgstr "Retour à la génération de rapport"
+
+msgid "Breakdowns by session type and modality"
+msgstr "Répartition par type de séance et modalité"
+
+msgid "By Metric"
+msgstr "Par mesure"
+
+msgid "Clients Met Any Target"
+msgstr "Clients ayant atteint un objectif"
+
+msgid "Contact Hours"
+msgstr "Heures de contact"
+
+msgid "Data mode"
+msgstr "Mode de données"
+
+msgid "Days in Program"
+msgstr "Jours dans le programme"
+
+msgid "Duration (min)"
+msgstr "Durée (min)"
+
+msgid "Duration:"
+msgstr "Durée :"
+
+msgid "Email/Text"
+msgstr "Courriel/Texto"
+
+msgid "First Session"
+msgstr "Première séance"
+
+msgid "Generate Session Report"
+msgstr "Générer un rapport de séances"
+
+msgid ""
+"Generate a report of session counts, contact hours, and modality breakdown "
+"per participant."
+msgstr ""
+"Générer un rapport du nombre de séances, des heures de contact et de la "
+"répartition par modalité par participant."
+
+msgid "Generated by"
+msgstr "Généré par"
+
+msgid "How the session was delivered."
+msgstr "Comment la séance a été effectuée."
+
+msgid "Individual Data"
+msgstr "Données individuelles"
+
+msgid "Last Session"
+msgstr "Dernière séance"
+
+msgid "Measure"
+msgstr "Mesure"
+
+msgid "Modality"
+msgstr "Modalité"
+
+msgid "No chart data available for this report."
+msgstr "Aucune donnée graphique disponible pour ce rapport."
+
+msgid "No programs are linked to this report template."
+msgstr "Aucun programme n’est lié à ce modèle de rapport."
+
+msgid "Notice"
+msgstr "Avis"
+
+msgid "Optional \\u2014 for session reporting"
+msgstr "Facultatif \\u2014 pour les rapports de séances"
+
+msgid "Organisation"
+msgstr "Organisme"
+
+msgid "Participant Summary"
+msgstr "Sommaire du participant"
+
+msgid "Participant-Level Data Export"
+msgstr "Exportation de données au niveau du participant"
+
+msgid ""
+"Per-participant summary: total sessions, contact hours, first and last "
+"session dates"
+msgstr ""
+"Sommaire par participant : nombre total de séances, heures de contact, dates"
+" de première et dernière séance"
+
+msgid ""
+"Per-session detail rows: participant, date, type, duration, modality, "
+"provider"
+msgstr ""
+"Lignes de détail par séance : participant, date, type, durée, modalité, "
+"prestataire"
+
+msgid "Preview on Screen"
+msgstr "Aperçu à l’écran"
+
+msgid "Print"
+msgstr "Imprimer"
+
+msgid "Provider"
+msgstr "Prestataire"
+
+msgid "Report Contents"
+msgstr "Contenu du rapport"
+
+msgid "Report Preview"
+msgstr "Aperçu du rapport"
+
+msgid "Report Summary"
+msgstr "Sommaire du rapport"
+
+msgid "Report Type"
+msgstr "Type de rapport"
+
+msgid "Report metadata"
+msgstr "Métadonnées du rapport"
+
+msgid "Report-level aggregates: unique participants, total sessions, averages"
+msgstr ""
+"Agrégats au niveau du rapport : participants uniques, nombre total de "
+"séances, moyennes"
+
+msgid "Review the report data below before downloading."
+msgstr "Examinez les données du rapport ci-dessous avant de télécharger."
+
+msgid "Session Details"
+msgstr "Détails de la séance"
+
+msgid "Session Type"
+msgstr "Type de séance"
+
+msgid "Session duration in minutes."
+msgstr "Durée de la séance en minutes."
+
+msgid "Session modality"
+msgstr "Modalité de la séance"
+
+msgid ""
+"Session report generated. %(count)d participants, %(sessions)d sessions."
+msgstr ""
+"Rapport de séances généré. %(count)d participants, %(sessions)d séances."
+
+msgid "Sessions by Modality"
+msgstr "Séances par modalité"
+
+msgid "Sessions by Participant"
+msgstr "Séances par participant"
+
+msgid "Sessions by Participant Report"
+msgstr "Rapport des séances par participant"
+
+msgid "Sessions by Type"
+msgstr "Séances par type"
+
+msgid ""
+"Showing individual participant records. This data is included in the "
+"download."
+msgstr ""
+"Affichage des dossiers individuels des participants. Ces données sont "
+"incluses dans le téléchargement."
+
+msgid "Something went wrong generating the preview. Please try again."
+msgstr ""
+"Une erreur est survenue lors de la génération de l’aperçu. Veuillez "
+"réessayer."
+
+msgid "Statistic"
+msgstr "Statistique"
+
+msgid "Summary Statistics"
+msgstr "Statistiques sommaires"
+
+msgid "Total Clients"
+msgstr "Total des clients"
+
+msgid "Total Contact Hours"
+msgstr "Heures de contact totales"
+
+msgid "Total Sessions"
+msgstr "Séances totales"
+
+msgid "Total Unique Participants"
+msgstr "Nombre total de participants uniques"
+
+msgid "Video"
+msgstr "Vidéo"
+
+msgid "You do not have permission to export data for this program."
+msgstr "Vous n’avez pas la permission d’exporter les données de ce programme."
+
+msgid "\\u2014 Select \\u2014"
+msgstr "\\u2014 Sélectionner \\u2014"
+
+msgid "e.g. 60"
+msgstr "p. ex. 60"
+
+msgid "min"
+msgstr "min"
+
+msgid "# ===== %(label)s ====="
+msgstr ""
+
+msgid "# ===== %(name)s ====="
+msgstr ""
+
+msgid "# ===== BREAKDOWN BY %(label)s ====="
+msgstr ""
+
+msgid "# All Programs \\u2014 Organisation Summary"
+msgstr ""
+
+msgid "# Date Range: %(start)s to %(end)s"
+msgstr ""
+
+msgid "# Fiscal Year: %(label)s"
+msgstr ""
+
+msgid "# Grouped By: %(label)s"
+msgstr ""
+
+msgid "# Program: %(name)s"
+msgstr ""
+
+msgid "# Total Clients: %(count)s"
+msgstr ""
+
+msgid "# Total Data Points: %(count)s"
+msgstr ""
+
+msgid "# Total Participants: %(count)s"
+msgstr ""
+
+msgid "Dismiss welcome banner"
+msgstr ""
+
+msgid "View help guide"
+msgstr ""
+
+msgid "Welcome banner"
+msgstr ""
+
+msgid "Welcome to KoNote! Need help getting started?"
+msgstr ""
+
+msgid "%(date_from)s to %(date_to)s"
+msgstr "du %(date_from)s au %(date_to)s"
+
+msgid "Active alerts"
+msgstr "Alertes actives"
+
+msgid "Approaching deadline"
+msgstr "Date limite approchante"
+
+msgid "Deadlock notice"
+msgstr "Avis de blocage"
+
+msgid "Please select a specific program for session reports."
+msgstr "Veuillez sélectionner un programme spécifique pour les rapports de séances."
+
+msgid "Stuck request"
+msgstr "Demande bloquée"

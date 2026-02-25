@@ -4,14 +4,18 @@
 {% block title %}{% blocktrans with first=client.first_name last=client.last_name %}Progress Report — {{ first }} {{ last }}{% endblocktrans %}{% endblock %}
 
 {% block content %}
-<!-- Cover Page -->
-<div class="pdf-cover">
+<!-- Report Header (merged title + client info) -->
+<div class="pdf-header">
     <h1>{% trans "Progress Report" %}</h1>
     <div class="subtitle">{{ client.first_name }} {{ client.last_name }}</div>
-    <div class="meta">
-        {% if client.record_id %}{% blocktrans with rid=client.record_id %}Record ID: {{ rid }}{% endblocktrans %}<br>{% endif %}
-        {% blocktrans with date=generated_at|date:"Y-m-d" author=generated_by %}Generated {{ date }} by {{ author }}{% endblocktrans %}
-    </div>
+    <dl class="meta-grid">
+        {% if client.record_id %}
+        <dt>{% trans "Record ID" %}</dt>
+        <dd>{{ client.record_id }}</dd>
+        {% endif %}
+        <dt>{% trans "Generated" %}</dt>
+        <dd>{% blocktrans with date=generated_at|date:"Y-m-d" author=generated_by %}{{ date }} by {{ author }}{% endblocktrans %}</dd>
+    </dl>
 </div>
 
 <!-- Client Information -->
