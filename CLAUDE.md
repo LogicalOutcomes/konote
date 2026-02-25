@@ -190,6 +190,18 @@ Current DRRs:
 - `tasks/design-rationale/insights-metric-distributions.md` — Insights page & program reporting. Distributions not averages, three data layers (outcomes/goals/qualitative), client-centred page hierarchy, Campbell's Law safeguards, band display labels.
 - `tasks/design-rationale/bilingual-requirements.md` — Bilingual (EN/FR) requirements. Why translation is non-negotiable (Official Languages Act, Ontario FLSA, funder requirements, WCAG 3.1.2). Anti-patterns (deferring translations, treating them as low-priority). Technical approach (Claude + API backup). Translation standards for Claude sessions.
 
+### TODO.md Stays on Main
+
+**Never edit TODO.md on feature branches.** Edits on feature branches cause merge conflicts and lost updates — this has happened repeatedly.
+
+After merging a feature PR to main:
+1. Pull latest `main`
+2. Create a `chore/todo-update` branch from `main`
+3. Update TODO.md: mark completed tasks `[x]`, add completion date, move to Recently Done, archive overflow
+4. Push and merge the `chore/todo-update` PR immediately
+
+**The session that did the work updates the TODO** — the user should never have to remember what's done. Each session is responsible for updating TODO.md for its own merged work, always from a fresh `main`.
+
 ### How Claude Manages Tasks
 
 - When user describes a task: create an ID, add one line to the right section in TODO.md

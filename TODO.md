@@ -12,8 +12,7 @@
 ### Phase: Offline Field Collection (remaining items — code merged via PR #34)
 
 - [ ] Deploy ODK Central on Canadian VM (Docker Compose) — ops task (FIELD-ODK-DEPLOY1)
-- [ ] Circle Observation XLSForm — depends on circles in ODK (FIELD-ODK-FORM-CIR1)
-- [ ] Push Circle/CircleMember Entity lists — depends on above (FIELD-ODK-CIRCLES1)
+- [ ] Push Circle/CircleMember Entity lists to ODK — generic entity infrastructure exists, needs Circle-specific member push (FIELD-ODK-CIRCLES1)
 - [ ] Agency-facing documentation — ODK Collect setup, device loss protocol (FIELD-ODK-DOC1)
 
 ### Phase: Launch Readiness
@@ -83,33 +82,21 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 ### Phase: Advanced Reporting
 
 - [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (see konote-prosper-canada/tasks/session-reporting-research.md for field requirements) (REP-SESS1)
-- [ ] Expand report template system to support more flexible data exports across various modules (REP-FLEX1)
 - [ ] Implement report preview on-screen before downloading PDF/CSV (REP-PREVIEW1)
 - [ ] Research/Implement including data visuals (charts/graphs) in PDF reports (REP-PDF1)
 - [ ] Redesign PDF report layout: merge title page with page 2 to eliminate redundant empty space (REP-PDF2)
 - [ ] Define standardised report schema for [funder partner] — 10-15 key metrics and demographic breakdowns shared across all partner agencies (RPT-SCHEMA1)
-
-### Phase: Surveys Future Work
-
-- [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
 
 ### Phase: Documentation & Website Updates
 
 - [ ] Create deployment documentation for surveys and portal features (DOC-DEPLOY1)
 - [ ] Update technical documentation in GitHub for surveys and portal architecture (DOC-TECH1)
 - [ ] Update website feature list and marketing copy to include surveys and portal (WEB-FEAT1)
-- [ ] Add Evidence section to website — adapt docs/evidence-outcome-measurement.md into a public-facing page explaining the research behind KoNote's outcome measurement approach (see tasks/web-evidence-prompt.md) (WEB-EVIDENCE1)
 
 ## Parking Lot
 
 - [ ] Add PIPEDA compliance context to admin-erasure-requests page — show selected tier's consequences in plain language (see tasks/erasure-compliance-context.md) — GK approved 2026-02-24 (QA-PA-ERASURE1)
 - [ ] Replace decorative circular element on erasure empty state with static icon — cosmetic, low priority (QA-PA-ERASURE2)
-- [ ] Add breadcrumbs to plan-goal-create (Participants > Name > Plan > Add Goal) — navigation aid for new users (QA-PA-GOAL3)
-- [ ] PIPEDA data access request — guided manual checklist + 30-day tracking, not automated export (see tasks/pipeda-data-access-checklist.md) — GK approved 2026-02-24 (QA-R7-PRIVACY1)
-- [ ] Note sharing toggle on client profile — binary On/Off, PM/admin only, hidden when agency sharing is off (see tasks/note-sharing-toggle.md) — GK approved 2026-02-24 (QA-R7-PRIVACY2)
-- [ ] Privacy compliance banner + annual summary — event-driven pending-request banner on exec dashboard, one-line board report summary (see tasks/compliance-banner.md) — GK approved 2026-02-24 (QA-R7-EXEC-COMPLIANCE1)
-- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — add to seed_demo_data or fixture (QA-PA-TEST1)
-- [ ] Seed comm-my-messages populated state with actual messages — add to seed_demo_data (QA-PA-TEST2)
 - [ ] Add axe-core pass to `/capture-page-states` — automated WCAG checks for screen reader/speech recognition coverage (T59)
 - [ ] Verify accented character preservation through create/save/display cycle — may be test data issue, needs manual check (QA-R7-BUG13)
 - [ ] Verify form data preservation after validation error on create-participant — medium confidence, may be test artefact (QA-R7-BUG21)
@@ -122,18 +109,14 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Add legacy system import migration scenario test (QA-T16)
 - [ ] Add onboarding guidance for new users (help link or first-run banner) (QA-W19)
 - [ ] Implement multi-session testing for SCN-046 shared device scenario (QA-W55)
-- [ ] Surveys — lightweight structured feedback collection from participants (see tasks/surveys-design.md) (SURVEY1)
 - [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
 - [ ] Build agency data offboarding command for secure departures and PIPEDA requests (SEC3)
 - [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
-- [ ] Add first-run setup wizard UI for guided initial configuration (SETUP1-UI)
-- [ ] Add TOTP multi-factor authentication (see tasks/mfa-implementation.md) (SEC2)
 - [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
 - [ ] Add bulk operations for discharge and assignment workflows (UX17)
 - [ ] Re-add API-based auto-translation to translate_strings for production use (I18N-API1)
 - [ ] Translate CSV comment rows (# Program, # Date Range, etc.) — needs design decision on whether to use agency custom terminology or static translations (I18N-CSV1)
 - [ ] Clean up ~628 stale PO entries in django.po no longer referenced in code (I18N-STALE1)
-- [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
 - [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
 - [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
 - [ ] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering (CODE-TIDY1)
@@ -151,9 +134,9 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Approve CIDS implementation plan — metadata fields, code list integration, CIDS-enriched reports, JSON-LD export; partner pathway confirmed — 2026-02-24 — SG/GK (CIDS-APPROVE1)
 - [x] PHIPA consent filtering for note search and qualitative summary — program-level filtering prevents side-channel disclosure, tests — 2026-02-24 (PHIPA-SEARCH1, PHIPA-QUAL1)
 - [x] I18N process improvements — verified 0 fuzzy PO entries, added language toggle to 6 public pages for FLSA active offer, updated DRR list — 2026-02-24 (I18N-FUZZY1, I18N-ACTIVE-OFFER1, I18N-DRR-LIST1)
-- [x] Create bilingual requirements DRR — legal rationale (Official Languages Act, Ontario FLSA, WCAG), anti-patterns, translation standards — 2026-02-24 (I18N-DRR1)
-- [x] All Programs report filter — "__all__" sentinel, multi-program aggregation, RBAC-scoped, 18 tests — 2026-02-24 (REP-ALL-PROGS1)
-- [x] Research session reporting requirements (IRCC, CFPB, Employment Ontario, United Way) — 2026-02-24 (REP-REQ1)
-- [x] Add Evidence section to konote-website — evidence.html with Research Foundation content and citations — 2026-02-24 (WEB-EVIDENCE1)
-- [x] Survey French translations extracted and compiled — 2026-02-24 (SURVEY-I18N1)
-- [x] Offline Field Collection — full feature: models, ODK client, sync, admin UI, 4 PII tiers, 43 tests, translations (PR #34) — 2026-02-24 (FIELD-ODK-APP1–TEST1)
+- [x] TOTP multi-factor authentication — staff and portal MFA with QR setup, enable/disable, pyotp — 2026-02-24 (SEC2)
+- [x] Surveys feature complete — models, triggers, scoring, conditional branching, public shareable links, bilingual — 2026-02-24 (SURVEY1, SURVEY-LINK1)
+- [x] First-run setup wizard — 8-step guided configuration for terminology, features, programs, metrics, templates — 2026-02-24 (SETUP1-UI)
+- [x] PIPEDA privacy features — data access checklist with 30-day tracking, note sharing toggle, compliance banner on exec dashboard, Tier 3 deferred erasure — 2026-02-24 (QA-R7-PRIVACY1, QA-R7-PRIVACY2, QA-R7-EXEC-COMPLIANCE1, ERASE-H8)
+- [x] Breadcrumbs on plan-goal-create + groups-attendance seed data (8+ members, 12+ sessions) — 2026-02-24 (QA-PA-GOAL3, QA-PA-TEST1)
+- [x] Circle Observation XLSForm — form definition, model support, sync integration — 2026-02-24 (FIELD-ODK-FORM-CIR1)
