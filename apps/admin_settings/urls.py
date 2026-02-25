@@ -6,6 +6,8 @@ from . import partner_views
 from . import report_template_views
 from . import setup_wizard_views
 
+from apps.auth_app import access_grant_views
+
 app_name = "admin_settings"
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
@@ -19,6 +21,9 @@ urlpatterns = [
     path("field-access/", field_access_views.field_access, name="field_access"),
     path("diagnose-charts/", views.diagnose_charts, name="diagnose_charts"),
     path("demo-directory/", views.demo_directory, name="demo_directory"),
+    # Access grants admin (Tier 3 only)
+    path("access-grants/", access_grant_views.access_grant_admin_list, name="access_grant_admin_list"),
+    path("access-grant-reasons/", access_grant_views.access_grant_reasons_admin, name="access_grant_reasons"),
     # Partner management
     path("partners/", partner_views.partner_list, name="partner_list"),
     path("partners/create/", partner_views.partner_create, name="partner_create"),

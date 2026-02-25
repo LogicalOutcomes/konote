@@ -58,6 +58,17 @@ def dashboard(request):
             status="active", front_desk_access__in=["view", "edit"]
         ).count()
 
+    # Access grants card (Tier 3 only)
+    active_grant_count = 0
+    active_reason_count = 0
+    if access_tier >= 3:
+        from apps.auth_app.models import AccessGrant, AccessGrantReason
+        from django.utils import timezone as tz
+        active_grant_count = AccessGrant.objects.filter(
+            is_active=True, expires_at__gt=tz.now()
+        ).count()
+        active_reason_count = AccessGrantReason.objects.filter(is_active=True).count()
+
     return render(request, "admin_settings/dashboard.html", {
         "enabled_features": enabled_features,
         "total_features": total_features,
@@ -71,6 +82,8 @@ def dashboard(request):
         "messaging_profile": messaging_profile,
         "access_tier": access_tier,
         "field_access_count": field_access_count,
+        "active_grant_count": active_grant_count,
+        "active_reason_count": active_reason_count,
     })
 
 
