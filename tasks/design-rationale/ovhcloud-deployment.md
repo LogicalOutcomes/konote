@@ -10,6 +10,7 @@ KoNote handles PHIPA-protected health data for Ontario nonprofits. The current R
 - [Hosting cost comparison](../hosting-cost-comparison.md) — Azure vs OVHcloud pricing at 1, 5, and 10 agency scales
 - [AI feature toggles DRR](ai-feature-toggles.md) — self-hosted LLM scope and rationale (PR #102)
 - [Multi-tenancy DRR](multi-tenancy.md) — schema-per-tenant architecture for multi-agency hosting
+- [Data access residency policy](data-access-residency-policy.md) — which roles require Canadian residency for production access
 
 ## Decision: OVHcloud Beauharnois
 
