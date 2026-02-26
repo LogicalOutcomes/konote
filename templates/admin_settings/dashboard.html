@@ -106,7 +106,10 @@
                 {% trans "No demo accounts" %}
             {% endif %}
         </p>
-        <footer><a href="{% url 'admin_settings:demo_directory' %}" role="button" class="outline">{% trans "Demo Directory" %}</a></footer>
+        <footer>
+            <a href="{% url 'admin_settings:demo_directory' %}" role="button" class="outline">{% trans "Demo Directory" %}</a>
+            <a href="{% url 'admin_settings:demo_data_management' %}" role="button" class="outline" style="margin-left: 0.5rem;">{% trans "Demo Data" %}</a>
+        </footer>
     </article>
 
     <article>

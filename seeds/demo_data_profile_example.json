@@ -1,0 +1,113 @@
+{
+  "_comment": "Demo data profile for KoNote. Place alongside your setup_config.json. Programs not listed here will get auto-generated demo data.",
+  "description": "Example demo data profile — customise for your agency",
+  "defaults": {
+    "clients_per_program": 3,
+    "days_span": 180,
+    "note_count_range": [7, 12]
+  },
+  "programs": {
+    "Youth Mental Health": {
+      "note_text_pool": [
+        "Session focused on coping strategies. Youth identified three new grounding techniques they want to try this week.",
+        "Reviewed safety plan together. Youth reports feeling safer this week than last. Good eye contact throughout.",
+        "Discussed relationship patterns. Youth made a connection between past experiences and current reactions. Important insight.",
+        "Check-in session. Youth reported a tough week at school but used breathing exercises we practised. Celebrated this.",
+        "Worked on identifying triggers. Youth was able to name three situations that increase anxiety. Progress.",
+        "Art-based session today. Youth expressed feelings through drawing that they couldn't verbalise. Very powerful.",
+        "Goal review. Youth met two of three weekly goals. Discussed what helped and what got in the way.",
+        "Family dynamics came up today. Youth is navigating a complicated relationship with a parent. Offered support."
+      ],
+      "client_words_pool": [
+        "I almost didn't come today but I'm glad I did",
+        "The breathing thing actually helped when I got anxious at school",
+        "I don't know why I get so angry sometimes — I want to figure that out",
+        "I told my mum about what we talked about and she actually listened",
+        "I feel like I'm starting to understand myself better",
+        "Today was hard but I stayed the whole time which is new for me",
+        "I want to keep coming even when it's difficult",
+        "Something is different — I feel like I can actually handle things now"
+      ],
+      "suggestions_pool": [
+        "It would help to have a quiet room for sessions — the main area is too noisy",
+        "More group activities for teens would be nice",
+        "I wish there was someone to talk to on weekends when things get hard",
+        "Having a text line would be easier than calling when I'm in crisis"
+      ],
+      "suggestion_themes": [
+        {
+          "name": "Access to quiet spaces",
+          "description": "Youth have requested quieter spaces for one-on-one sessions away from group areas.",
+          "status": "open",
+          "source": "manual"
+        },
+        {
+          "name": "Weekend support availability",
+          "description": "Several youth have expressed need for support outside regular business hours.",
+          "status": "in_progress",
+          "source": "ai_generated"
+        }
+      ],
+      "client_personas": [
+        {
+          "first_name": "Alex",
+          "last_name": "Martin",
+          "trend": "improving",
+          "goal_statement": "I want to manage my anxiety without always needing someone else to help me."
+        },
+        {
+          "first_name": "River",
+          "last_name": "Chen",
+          "trend": "struggling",
+          "goal_statement": "I want to stop feeling so angry all the time."
+        },
+        {
+          "first_name": "Skyler",
+          "last_name": "Okafor",
+          "trend": "crisis_then_improving",
+          "goal_statement": "I want to feel safe enough to go to school every day."
+        }
+      ]
+    },
+    "Transitional Housing": {
+      "note_text_pool": [
+        "Apartment search session. Reviewed three listings together. Client identified one within budget near transit.",
+        "Budgeting session. Mapped monthly income against expenses. Found $120 in savings by switching phone plan.",
+        "Landlord communication support. Coached client through a difficult conversation about repairs. Went well.",
+        "Monthly check-in. Housing situation is stable. Client reports feeling more settled than last month.",
+        "Discussed tenant rights. Reviewed what landlords can and cannot do regarding inspections and rent increases.",
+        "Crisis follow-up. Client received a notice about rent increase. Connected with legal aid for advice.",
+        "Goal review. Income has stabilised. Client is now looking at longer-term housing options.",
+        "Joint session with income support worker. Explored additional benefits client may be eligible for."
+      ],
+      "client_words_pool": [
+        "I just need a place that feels like mine",
+        "The budget thing helped — I didn't realise how much I was spending on delivery",
+        "I'm scared of losing this place too",
+        "It's the first time in a long time I feel like things might be okay",
+        "I wish the landlord would just fix the heating",
+        "Having someone help me through the paperwork made all the difference"
+      ],
+      "client_personas": [
+        {
+          "first_name": "Sam",
+          "last_name": "Williams",
+          "trend": "crisis_then_improving",
+          "goal_statement": "I need a place that feels safe — not just a roof."
+        },
+        {
+          "first_name": "Kai",
+          "last_name": "Dubois",
+          "trend": "struggling",
+          "goal_statement": "I don't want to lose my apartment."
+        },
+        {
+          "first_name": "Jesse",
+          "last_name": "Morales",
+          "trend": "mixed",
+          "goal_statement": "I just want things to stop being so unpredictable."
+        }
+      ]
+    }
+  }
+}

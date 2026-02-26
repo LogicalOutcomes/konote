@@ -14,6 +14,9 @@ Creates:
 - Registration submissions in various review states
 - Suggestion themes linked to participant suggestions (for Outcome Insights)
 - Staff-to-staff messages (internal operational messages about participants)
+- DV-safe flags and removal requests (PERM P5)
+- Access grants with varied statuses (PERM P6)
+- Field access config overrides (PERM P8)
 
 This gives charts and reports meaningful data to display.
 
@@ -28,7 +31,14 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from apps.clients.models import ClientDetailValue, ClientFile, CustomFieldDefinition
+from apps.auth_app.models import AccessGrant, AccessGrantReason
+from apps.clients.models import (
+    ClientDetailValue,
+    ClientFile,
+    CustomFieldDefinition,
+    DvFlagRemovalRequest,
+    FieldAccessConfig,
+)
 from apps.communications.models import Communication, StaffMessage
 from apps.events.models import (
     Alert,
@@ -1453,14 +1463,29 @@ class Command(BaseCommand):
             # Delete calendar feed tokens for demo workers
             demo_users = User.objects.filter(is_demo=True)
             CalendarFeedToken.objects.filter(user__in=demo_users).delete()
+            # Delete PERM demo data (DV removal requests, access grants, field config)
+            dv_req_count = DvFlagRemovalRequest.objects.filter(
+                client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
+            grant_count = AccessGrant.objects.filter(
+                user__is_demo=True
+            ).delete()[0]
+            fa_count = FieldAccessConfig.objects.filter(
+                field_name__in=["birth_date", "email"]
+            ).delete()[0]
+            # Reset DV-safe flags on demo clients
+            ClientFile.objects.filter(
+                record_id__startswith="DEMO-", is_dv_safe=True
+            ).update(is_dv_safe=False)
             self.stdout.write(
                 f"  --force: Deleted {theme_count_del} themes, {staff_msg_count} staff messages, "
                 f"{comm_count} communications, {note_count} notes, "
                 f"{plan_count} plans, {event_count} events, {alert_count} alerts, "
                 f"{journal_count} journal entries, {message_count} portal messages, "
                 f"{staff_note_count} staff notes, {correction_count} correction requests, "
-                f"{circle_count} circles, "
-                f"{submission_count} registration submissions."
+                f"{circle_count} circles, {submission_count} registration submissions, "
+                f"{dv_req_count} DV removal requests, {grant_count} access grants, "
+                f"{fa_count} field access configs."
             )
 
         # Fetch workers
@@ -4190,3 +4215,134 @@ class Command(BaseCommand):
             f"  Surveys: {survey_count} surveys, {assignments_created} assignments, "
             f"{responses_created} responses created."
         )
+
+    def _seed_perm_demo_data(self, workers, programs_by_name, manager, now):
+        """Seed PERM P5/P6/P8 demo data: DV-safe flags, removal requests,
+        access grants, and field access config overrides.
+
+        Idempotent — safe to call on every seed run.
+        """
+        worker1 = workers["demo-worker-1"]
+        worker2 = workers.get("demo-worker-2", worker1)
+        created_items = []
+
+        # --- 1. DV-safe flags on demo clients ---
+        for record_id in ("DEMO-004", "DEMO-008"):
+            try:
+                client = ClientFile.objects.get(record_id=record_id)
+                if not client.is_dv_safe:
+                    client.is_dv_safe = True
+                    client.save(update_fields=["is_dv_safe"])
+                    created_items.append(f"DV-safe flag on {record_id}")
+            except ClientFile.DoesNotExist:
+                pass
+
+        # --- 2. DvFlagRemovalRequest ---
+        # Pending request for DEMO-008
+        try:
+            demo008 = ClientFile.objects.get(record_id="DEMO-008")
+            if not DvFlagRemovalRequest.objects.filter(client_file=demo008).exists():
+                DvFlagRemovalRequest.objects.create(
+                    client_file=demo008,
+                    requested_by=worker2,
+                    reason=(
+                        "Maya has moved to safe housing and requests "
+                        "the flag be removed."
+                    ),
+                )
+                created_items.append("DV removal request (pending) for DEMO-008")
+        except ClientFile.DoesNotExist:
+            pass
+
+        # Rejected request for DEMO-004
+        try:
+            demo004 = ClientFile.objects.get(record_id="DEMO-004")
+            if not DvFlagRemovalRequest.objects.filter(client_file=demo004).exists():
+                req = DvFlagRemovalRequest.objects.create(
+                    client_file=demo004,
+                    requested_by=worker1,
+                    reason="Sam asked about removing the flag.",
+                )
+                # Mark as reviewed/rejected
+                if manager:
+                    req.reviewed_by = manager
+                    req.reviewed_at = now - timedelta(days=5)
+                    req.approved = False
+                    req.review_note = (
+                        "Sam confirmed they still want the flag active "
+                        "after discussion."
+                    )
+                    req.save()
+                created_items.append("DV removal request (rejected) for DEMO-004")
+        except ClientFile.DoesNotExist:
+            pass
+
+        # --- 3. AccessGrant rows ---
+        if not AccessGrant.objects.filter(user__is_demo=True).exists():
+            reasons = {r.label: r for r in AccessGrantReason.objects.all()}
+
+            # Active program-wide grant: worker2 → Housing Stability
+            housing = programs_by_name.get("Housing Stability")
+            supervision = reasons.get("Clinical supervision")
+            if housing and supervision:
+                AccessGrant.objects.create(
+                    user=worker2,
+                    program=housing,
+                    reason=supervision,
+                    justification="Quarterly caseload review",
+                    expires_at=now + timedelta(days=30),
+                )
+
+            # Active client-specific grant: worker2 → DEMO-001 (cross-program)
+            intake_reason = reasons.get("Intake / case assignment")
+            try:
+                demo001 = ClientFile.objects.get(record_id="DEMO-001")
+                employment = programs_by_name.get("Supported Employment")
+                if intake_reason and employment:
+                    AccessGrant.objects.create(
+                        user=worker2,
+                        program=employment,
+                        client_file=demo001,
+                        reason=intake_reason,
+                        justification=(
+                            "Cross-program intake coordination for "
+                            "Community Kitchen referral"
+                        ),
+                        expires_at=now + timedelta(days=7),
+                    )
+            except ClientFile.DoesNotExist:
+                pass
+
+            # Expired grant: worker1 → Newcomer Connections
+            qa_reason = reasons.get("Quality assurance")
+            newcomer = programs_by_name.get("Newcomer Connections")
+            if qa_reason and newcomer:
+                grant = AccessGrant.objects.create(
+                    user=worker1,
+                    program=newcomer,
+                    reason=qa_reason,
+                    justification="Annual file audit",
+                    expires_at=now - timedelta(days=14),
+                )
+                # Mark as inactive (expired and deactivated)
+                grant.is_active = False
+                grant.save(update_fields=["is_active"])
+
+            created_items.append("3 access grants (2 active, 1 expired)")
+
+        # --- 4. FieldAccessConfig overrides ---
+        fa_created = 0
+        for field_name, access in [("birth_date", "none"), ("email", "view")]:
+            _, created = FieldAccessConfig.objects.get_or_create(
+                field_name=field_name,
+                defaults={"front_desk_access": access},
+            )
+            if created:
+                fa_created += 1
+        if fa_created:
+            created_items.append(f"{fa_created} field access config overrides")
+
+        if created_items:
+            self.stdout.write(
+                f"  PERM demo data: {', '.join(created_items)}."
+            )
