@@ -9,10 +9,8 @@
 
 ### Phase: Launch Readiness
 
-- [ ] Complete Agency Deployment Protocol with [funder partner] — Phase 0 Discovery Call first, includes hosting preference (Azure vs OVHcloud) and data sovereignty requirements (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — (DEPLOY-PC1)
+- [ ] Run deployment protocol with [funder partner] — currently at Phase 0 (see tasks/deployment-protocol.md, tasks/hosting-cost-comparison.md) — SG (DEPLOY-PC1)
 - [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
-- [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — include hosting preference and data sovereignty questions — SG (ONBOARD-GATE)
-- [ ] Store signed Configuration Summary with each deployment so new admins can see what was decided and why — SG (DEPLOY-CONFIG-DOC1)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — PB (OPS4)
 - [ ] Document scheduled task setup for export monitoring in the runbook — PB (EXP2w)
 - [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
