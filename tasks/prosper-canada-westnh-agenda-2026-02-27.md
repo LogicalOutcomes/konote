@@ -24,11 +24,19 @@ Walk through the latest iteration of KoNote — primarily for Claire's benefit.
 
 ### 3. Hosting Update (~5 min)
 
-WestNH's instance is already running on Azure (Canada Central, Toronto region), covered by their Microsoft for Nonprofits credits. Brief overview for context:
+WestNH's instance is already running on Azure (Canada Central, Toronto region), covered by Microsoft for Nonprofits credits. Brief overview for context:
 
 - Dedicated instance — WestNH's data is not shared with other agencies
 - All participant data stays in Canada; encrypted at rest
 - Covered by Azure's SOC 2, ISO 27001 certifications
+
+**Decision needed:** Whose Microsoft 365 / Azure account should the instance run under?
+
+- **West Neighbourhood House** — they own the data, so they own the infrastructure
+- **Prosper Canada** — funder manages infrastructure on behalf of agency
+- **Logical Outcomes** — we manage it as a hosted service
+
+This affects who holds the Azure subscription, who gets billed (even if credits cover it), who controls access, and what happens if the relationship between any of the parties changes.
 
 ### 4. What We Need from You (~10 min)
 
