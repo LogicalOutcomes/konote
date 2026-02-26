@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from konote.encryption import decrypt_field, encrypt_field
+from konote.encryption import decrypt_field, encrypt_field, DecryptionError
 
 
 class ClientFileQuerySet(models.QuerySet):
@@ -107,7 +107,10 @@ class ClientFile(models.Model):
     # Encrypted property accessors
     @property
     def first_name(self):
-        return decrypt_field(self._first_name_encrypted)
+        try:
+            return decrypt_field(self._first_name_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @first_name.setter
     def first_name(self, value):
@@ -115,7 +118,10 @@ class ClientFile(models.Model):
 
     @property
     def preferred_name(self):
-        return decrypt_field(self._preferred_name_encrypted)
+        try:
+            return decrypt_field(self._preferred_name_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @preferred_name.setter
     def preferred_name(self, value):
@@ -132,7 +138,10 @@ class ClientFile(models.Model):
 
     @property
     def middle_name(self):
-        return decrypt_field(self._middle_name_encrypted)
+        try:
+            return decrypt_field(self._middle_name_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @middle_name.setter
     def middle_name(self, value):
@@ -140,7 +149,10 @@ class ClientFile(models.Model):
 
     @property
     def last_name(self):
-        return decrypt_field(self._last_name_encrypted)
+        try:
+            return decrypt_field(self._last_name_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @last_name.setter
     def last_name(self, value):
@@ -148,8 +160,11 @@ class ClientFile(models.Model):
 
     @property
     def birth_date(self):
-        val = decrypt_field(self._birth_date_encrypted)
-        return val if val else None
+        try:
+            val = decrypt_field(self._birth_date_encrypted)
+            return val if val else None
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @birth_date.setter
     def birth_date(self, value):
@@ -157,7 +172,10 @@ class ClientFile(models.Model):
 
     @property
     def phone(self):
-        return decrypt_field(self._phone_encrypted)
+        try:
+            return decrypt_field(self._phone_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @phone.setter
     def phone(self, value):
@@ -165,7 +183,10 @@ class ClientFile(models.Model):
 
     @property
     def email(self):
-        return decrypt_field(self._email_encrypted)
+        try:
+            return decrypt_field(self._email_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @email.setter
     def email(self, value):
@@ -544,7 +565,10 @@ class ClientDetailValue(models.Model):
     def get_value(self):
         """Return decrypted value if field is sensitive, plain value otherwise."""
         if self.field_def.is_sensitive:
-            return decrypt_field(self._value_encrypted)
+            try:
+                return decrypt_field(self._value_encrypted)
+            except DecryptionError:
+                return "[DECRYPTION ERROR]"
         return self.value
 
     def set_value(self, val):

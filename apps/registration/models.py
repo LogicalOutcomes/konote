@@ -9,7 +9,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from konote.encryption import decrypt_field, encrypt_field
+from konote.encryption import decrypt_field, encrypt_field, DecryptionError
 
 
 def generate_unique_slug():
@@ -201,7 +201,10 @@ class RegistrationSubmission(models.Model):
     # Encrypted property accessors
     @property
     def first_name(self):
-        return decrypt_field(self._first_name_encrypted)
+        try:
+            return decrypt_field(self._first_name_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @first_name.setter
     def first_name(self, value):
@@ -209,7 +212,10 @@ class RegistrationSubmission(models.Model):
 
     @property
     def last_name(self):
-        return decrypt_field(self._last_name_encrypted)
+        try:
+            return decrypt_field(self._last_name_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @last_name.setter
     def last_name(self, value):
@@ -217,7 +223,10 @@ class RegistrationSubmission(models.Model):
 
     @property
     def email(self):
-        return decrypt_field(self._email_encrypted)
+        try:
+            return decrypt_field(self._email_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @email.setter
     def email(self, value):
@@ -230,7 +239,10 @@ class RegistrationSubmission(models.Model):
 
     @property
     def phone(self):
-        return decrypt_field(self._phone_encrypted)
+        try:
+            return decrypt_field(self._phone_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @phone.setter
     def phone(self, value):

@@ -2,7 +2,7 @@
 from django.test import TestCase, override_settings
 from cryptography.fernet import Fernet
 
-from konote.encryption import encrypt_field, decrypt_field, _get_fernet
+from konote.encryption import encrypt_field, decrypt_field, DecryptionError, _get_fernet
 import konote.encryption as enc_module
 
 
@@ -40,10 +40,10 @@ class EncryptionUtilsTest(TestCase):
     def test_none_returns_empty_bytes(self):
         self.assertEqual(encrypt_field(None), b"")
 
-    def test_invalid_ciphertext_returns_empty_string(self):
-        """Corrupted data returns empty string, not an exception."""
-        result = decrypt_field(b"not-valid-fernet-data")
-        self.assertEqual(result, "")
+    def test_invalid_ciphertext_raises_decryption_error(self):
+        """Corrupted data raises DecryptionError so the failure is never silent."""
+        with self.assertRaises(DecryptionError):
+            decrypt_field(b"not-valid-fernet-data")
 
     def test_memoryview_input(self):
         """BinaryField values come as memoryview — decryption handles this."""
@@ -499,3 +499,81 @@ class PlanTargetRevisionEncryptionTest(TestCase):
         rev.status_reason = "Target completed — client met all goals"
         self.assertEqual(rev.status_reason, "Target completed — client met all goals")
         self.assertNotIn(b"completed", rev._status_reason_encrypted)
+
+
+# --- DecryptionError sentinel value tests ---
+
+OTHER_KEY = Fernet.generate_key().decode()
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class DecryptionErrorSentinelTest(TestCase):
+    """When ciphertext is corrupt or from a different key, model property
+    accessors must return '[DECRYPTION ERROR]' rather than an empty string,
+    so staff see something visible instead of silently blank PII.
+    """
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def _garbage_ciphertext(self):
+        """Return ciphertext encrypted with a different key (cannot be decrypted)."""
+        enc_module._fernet = None
+        with self.settings(FIELD_ENCRYPTION_KEY=OTHER_KEY):
+            enc_module._fernet = None
+            bad = encrypt_field("original value")
+        enc_module._fernet = None
+        return bad
+
+    def test_client_first_name_returns_sentinel_on_bad_key(self):
+        from apps.clients.models import ClientFile
+        client = ClientFile()
+        client._first_name_encrypted = self._garbage_ciphertext()
+        self.assertEqual(client.first_name, "[DECRYPTION ERROR]")
+
+    def test_client_last_name_returns_sentinel_on_bad_key(self):
+        from apps.clients.models import ClientFile
+        client = ClientFile()
+        client._last_name_encrypted = self._garbage_ciphertext()
+        self.assertEqual(client.last_name, "[DECRYPTION ERROR]")
+
+    def test_plan_target_name_returns_sentinel_on_bad_key(self):
+        from apps.plans.models import PlanTarget
+        target = PlanTarget()
+        target._name_encrypted = self._garbage_ciphertext()
+        self.assertEqual(target.name, "[DECRYPTION ERROR]")
+
+    def test_progress_note_notes_text_returns_sentinel_on_bad_key(self):
+        from apps.notes.models import ProgressNote
+        note = ProgressNote()
+        note._notes_text_encrypted = self._garbage_ciphertext()
+        self.assertEqual(note.notes_text, "[DECRYPTION ERROR]")
+
+
+# --- System check tests ---
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class EncryptionSystemCheckTest(TestCase):
+    """Verify the Django system check correctly validates the encryption key."""
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_valid_key_produces_no_errors(self):
+        from konote.encryption import check_encryption_key
+        errors = check_encryption_key(app_configs=None)
+        self.assertEqual(errors, [])
+
+    @override_settings(FIELD_ENCRYPTION_KEY="not-a-valid-fernet-key")
+    def test_invalid_key_produces_error(self):
+        enc_module._fernet = None
+        from konote.encryption import check_encryption_key
+        errors = check_encryption_key(app_configs=None)
+        self.assertTrue(len(errors) > 0)
+        self.assertEqual(errors[0].id, "konote.E001")

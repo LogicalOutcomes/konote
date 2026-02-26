@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from konote.encryption import decrypt_field, encrypt_field
+from konote.encryption import decrypt_field, encrypt_field, DecryptionError
 
 
 SELF_EFFICACY_METRIC_NAME = "Self-Efficacy"
@@ -232,7 +232,10 @@ class PlanTarget(models.Model):
 
     @property
     def name(self):
-        return decrypt_field(self._name_encrypted)
+        try:
+            return decrypt_field(self._name_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @name.setter
     def name(self, value):
@@ -240,7 +243,10 @@ class PlanTarget(models.Model):
 
     @property
     def description(self):
-        return decrypt_field(self._description_encrypted)
+        try:
+            return decrypt_field(self._description_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @description.setter
     def description(self, value):
@@ -248,7 +254,10 @@ class PlanTarget(models.Model):
 
     @property
     def status_reason(self):
-        return decrypt_field(self._status_reason_encrypted)
+        try:
+            return decrypt_field(self._status_reason_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @status_reason.setter
     def status_reason(self, value):
@@ -256,7 +265,10 @@ class PlanTarget(models.Model):
 
     @property
     def client_goal(self):
-        return decrypt_field(self._client_goal_encrypted)
+        try:
+            return decrypt_field(self._client_goal_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @client_goal.setter
     def client_goal(self, value):
@@ -287,7 +299,10 @@ class PlanTargetRevision(models.Model):
 
     @property
     def name(self):
-        return decrypt_field(self._name_encrypted)
+        try:
+            return decrypt_field(self._name_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @name.setter
     def name(self, value):
@@ -295,7 +310,10 @@ class PlanTargetRevision(models.Model):
 
     @property
     def description(self):
-        return decrypt_field(self._description_encrypted)
+        try:
+            return decrypt_field(self._description_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @description.setter
     def description(self, value):
@@ -303,7 +321,10 @@ class PlanTargetRevision(models.Model):
 
     @property
     def status_reason(self):
-        return decrypt_field(self._status_reason_encrypted)
+        try:
+            return decrypt_field(self._status_reason_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @status_reason.setter
     def status_reason(self, value):
@@ -311,7 +332,10 @@ class PlanTargetRevision(models.Model):
 
     @property
     def client_goal(self):
-        return decrypt_field(self._client_goal_encrypted)
+        try:
+            return decrypt_field(self._client_goal_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @client_goal.setter
     def client_goal(self, value):

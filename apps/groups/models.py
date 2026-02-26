@@ -9,7 +9,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from konote.encryption import decrypt_field, encrypt_field
+from konote.encryption import decrypt_field, encrypt_field, DecryptionError
 
 
 # ---------------------------------------------------------------------------
@@ -161,7 +161,10 @@ class GroupSession(models.Model):
 
     @property
     def notes(self):
-        return decrypt_field(self._notes_encrypted)
+        try:
+            return decrypt_field(self._notes_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @notes.setter
     def notes(self, value):
@@ -237,7 +240,10 @@ class GroupSessionHighlight(models.Model):
 
     @property
     def notes(self):
-        return decrypt_field(self._notes_encrypted)
+        try:
+            return decrypt_field(self._notes_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @notes.setter
     def notes(self, value):

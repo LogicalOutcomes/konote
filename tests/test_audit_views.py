@@ -492,3 +492,68 @@ class ProgramAuditLogTests(TestCase):
         actions = [e.action for e in page.object_list]
         self.assertIn("create", actions)
         self.assertNotIn("delete", actions)
+
+
+# ── ImmutableAuditManager ─────────────────────────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ImmutableAuditManagerTests(TestCase):
+    """AuditLog.objects must allow create/bulk_create but block update/delete."""
+
+    databases = ["default", "audit"]
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def test_create_succeeds(self):
+        """Creating a new audit entry must work normally."""
+        entry = _create_audit_entry(user_display="CreateTest")
+        self.assertIsNotNone(entry.pk)
+
+    def test_bulk_create_succeeds(self):
+        """bulk_create must work — it uses INSERT, not UPDATE."""
+        entries = [
+            AuditLog(
+                event_timestamp=timezone.now(),
+                user_display="Bulk1",
+                action="view",
+                resource_type="clients",
+                is_demo_context=False,
+            ),
+            AuditLog(
+                event_timestamp=timezone.now(),
+                user_display="Bulk2",
+                action="view",
+                resource_type="clients",
+                is_demo_context=False,
+            ),
+        ]
+        created = AuditLog.objects.using("audit").bulk_create(entries)
+        self.assertEqual(len(created), 2)
+
+    def test_queryset_update_raises_permission_error(self):
+        """Calling update() on a queryset must raise PermissionError."""
+        _create_audit_entry(user_display="BeforeUpdate")
+        with self.assertRaises(PermissionError):
+            AuditLog.objects.using("audit").filter(
+                user_display="BeforeUpdate"
+            ).update(user_display="AfterUpdate")
+
+    def test_queryset_delete_raises_permission_error(self):
+        """Calling delete() on a queryset must raise PermissionError."""
+        _create_audit_entry(user_display="ToDelete")
+        with self.assertRaises(PermissionError):
+            AuditLog.objects.using("audit").filter(
+                user_display="ToDelete"
+            ).delete()
+
+    def test_manager_update_raises_permission_error(self):
+        """Calling update() directly on the manager must raise PermissionError."""
+        with self.assertRaises(PermissionError):
+            AuditLog.objects.using("audit").update(user_display="Tampered")
+
+    def test_manager_delete_raises_permission_error(self):
+        """Calling delete() directly on the manager must raise PermissionError."""
+        with self.assertRaises(PermissionError):
+            AuditLog.objects.using("audit").delete()

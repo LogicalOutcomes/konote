@@ -10,7 +10,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from konote.encryption import decrypt_field, encrypt_field
+from konote.encryption import decrypt_field, encrypt_field, DecryptionError
 
 
 class Survey(models.Model):
@@ -351,7 +351,10 @@ class SurveyAnswer(models.Model):
 
     @property
     def value(self):
-        return decrypt_field(self._value_encrypted)
+        try:
+            return decrypt_field(self._value_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @value.setter
     def value(self, val):
@@ -412,7 +415,10 @@ class PartialAnswer(models.Model):
 
     @property
     def value(self):
-        return decrypt_field(self.value_encrypted)
+        try:
+            return decrypt_field(self.value_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @value.setter
     def value(self, val):
