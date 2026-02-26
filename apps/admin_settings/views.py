@@ -696,3 +696,100 @@ def demo_directory(request):
         "demo_user_count": len(user_data),
         "demo_client_count": len(client_data),
     })
+
+
+# --- Demo Data Management ---
+
+@login_required
+@admin_required
+def demo_data_management(request):
+    """Manage configuration-aware demo data generation."""
+    from django.conf import settings as django_settings
+
+    from apps.auth_app.models import User
+    from apps.clients.models import ClientFile
+    from apps.notes.models import ProgressNote
+    from apps.programs.models import Program
+
+    demo_mode = django_settings.DEMO_MODE
+    demo_client_count = ClientFile.objects.filter(is_demo=True).count()
+    demo_user_count = User.objects.filter(is_demo=True).count()
+    demo_note_count = ProgressNote.objects.filter(
+        client_file__is_demo=True
+    ).count()
+    active_program_count = Program.objects.filter(status="active").count()
+
+    # Check when demo data was last generated
+    last_generated = InstanceSetting.objects.filter(
+        setting_key="demo_data_generated_at"
+    ).values_list("setting_value", flat=True).first()
+
+    if request.method == "POST":
+        if not demo_mode:
+            messages.error(request, _("Demo mode is not enabled."))
+            return redirect("admin_settings:demo_data_management")
+
+        action = request.POST.get("action")
+
+        if action == "generate":
+            from apps.admin_settings.demo_engine import DemoDataEngine
+            from io import StringIO
+
+            try:
+                clients_per_program = int(request.POST.get("clients_per_program", 3))
+                days_span = int(request.POST.get("days_span", 180))
+            except (ValueError, TypeError):
+                clients_per_program = 3
+                days_span = 180
+
+            # Clamp values
+            clients_per_program = max(1, min(10, clients_per_program))
+            days_span = max(30, min(365, days_span))
+
+            output = StringIO()
+            engine = DemoDataEngine(stdout=output, stderr=output)
+
+            try:
+                success = engine.run(
+                    clients_per_program=clients_per_program,
+                    days_span=days_span,
+                    force=True,
+                )
+                if success:
+                    # Store generation timestamp
+                    from django.utils import timezone as tz
+                    InstanceSetting.objects.update_or_create(
+                        setting_key="demo_data_generated_at",
+                        defaults={"setting_value": tz.now().isoformat()},
+                    )
+                    messages.success(request, _("Demo data generated successfully."))
+                else:
+                    messages.warning(request, _("Demo data generation did not complete. Check that programs are configured."))
+            except Exception as e:
+                messages.error(request, _("Error generating demo data: %(error)s") % {"error": str(e)})
+
+            return redirect("admin_settings:demo_data_management")
+
+        elif action == "clear":
+            from apps.admin_settings.demo_engine import DemoDataEngine
+            from io import StringIO
+
+            output = StringIO()
+            engine = DemoDataEngine(stdout=output, stderr=output)
+            engine.cleanup_demo_data()
+
+            InstanceSetting.objects.filter(
+                setting_key="demo_data_generated_at"
+            ).delete()
+
+            messages.success(request, _("Demo data cleared successfully."))
+            return redirect("admin_settings:demo_data_management")
+
+    return render(request, "admin_settings/demo_data.html", {
+        "demo_mode": demo_mode,
+        "demo_client_count": demo_client_count,
+        "demo_user_count": demo_user_count,
+        "demo_note_count": demo_note_count,
+        "active_program_count": active_program_count,
+        "last_generated": last_generated,
+    })

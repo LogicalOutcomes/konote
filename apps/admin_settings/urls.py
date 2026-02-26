@@ -21,6 +21,7 @@ urlpatterns = [
     path("field-access/", field_access_views.field_access, name="field_access"),
     path("diagnose-charts/", views.diagnose_charts, name="diagnose_charts"),
     path("demo-directory/", views.demo_directory, name="demo_directory"),
+    path("demo-data/", views.demo_data_management, name="demo_data_management"),
     # Access grants admin (Tier 3 only)
     path("access-grants/", access_grant_views.access_grant_admin_list, name="access_grant_admin_list"),
     path("access-grant-reasons/", access_grant_views.access_grant_reasons_admin, name="access_grant_reasons"),

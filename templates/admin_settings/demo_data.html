@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Demo Data Management" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Demo Data Management" %}</h1>
+    <p>{% trans "Generate and manage configuration-aware demo data that matches your instance's programs and metrics." %}</p>
+</hgroup>
+
+{# ---- Status Overview ---- #}
+<fieldset>
+    <legend>{% trans "Current Status" %}</legend>
+
+    <div class="grid">
+        <div>
+            <strong>{% trans "Demo Mode" %}</strong><br>
+            {% if demo_mode %}
+                <span class="badge badge-success">{% trans "Enabled" %}</span>
+            {% else %}
+                <span class="badge badge-secondary">{% trans "Disabled" %}</span>
+                <br><small>{% trans "Set DEMO_MODE=true in environment to enable." %}</small>
+            {% endif %}
+        </div>
+        <div>
+            <strong>{% trans "Active Programs" %}</strong><br>
+            {{ active_program_count }}
+        </div>
+        <div>
+            <strong>{% trans "Demo Users" %}</strong><br>
+            {{ demo_user_count }}
+        </div>
+        <div>
+            <strong>{% trans "Demo Participants" %}</strong><br>
+            {{ demo_client_count }}
+        </div>
+    </div>
+
+    {% if demo_note_count %}
+    <p>
+        <small>
+            {% blocktrans with notes=demo_note_count %}{{ notes }} demo progress notes in the system.{% endblocktrans %}
+            {% if last_generated %}
+                {% blocktrans with date=last_generated %}Last generated: {{ date }}.{% endblocktrans %}
+            {% endif %}
+        </small>
+    </p>
+    {% endif %}
+
+    {% if demo_client_count %}
+    <p>
+        <a href="{% url 'admin_settings:demo_directory' %}">{% trans "View Demo Directory" %}</a>
+    </p>
+    {% endif %}
+</fieldset>
+
+{# ---- Generate Demo Data ---- #}
+{% if demo_mode %}
+<fieldset>
+    <legend>{% trans "Generate Demo Data" %}</legend>
+    <p>
+        <small>{% trans "Creates demo users, participants, plans, progress notes, and events that match your current programs and metrics. Existing demo data will be replaced." %}</small>
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="generate">
+
+        <div class="grid">
+            <label>
+                {% trans "Participants per program" %}
+                <select name="clients_per_program">
+                    <option value="3" selected>3 ({% trans "Default" %})</option>
+                    <option value="5">5</option>
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                </select>
+            </label>
+            <label>
+                {% trans "Time span" %}
+                <select name="days_span">
+                    <option value="90">{% trans "3 months" %}</option>
+                    <option value="180" selected>{% trans "6 months" %} ({% trans "Default" %})</option>
+                    <option value="365">{% trans "12 months" %}</option>
+                </select>
+            </label>
+        </div>
+
+        {% if active_program_count == 0 %}
+            <p class="badge badge-warning">
+                {% trans "No active programs found. Configure programs before generating demo data." %}
+            </p>
+        {% else %}
+            {% trans "This will replace any existing demo data. Continue?" as confirm_generate %}
+            <button type="submit" onclick="return confirm('{{ confirm_generate|escapejs }}')">
+                {% if demo_client_count %}
+                    {% trans "Regenerate Demo Data" %}
+                {% else %}
+                    {% trans "Generate Demo Data" %}
+                {% endif %}
+            </button>
+        {% endif %}
+    </form>
+</fieldset>
+
+{# ---- Clear Demo Data ---- #}
+{% if demo_client_count %}
+<fieldset>
+    <legend>{% trans "Clear Demo Data" %}</legend>
+    <p><small>{% trans "Remove all demo users, participants, and their associated data. This cannot be undone." %}</small></p>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="clear">
+        {% trans "This will permanently delete all demo data. Are you sure?" as confirm_clear %}
+        <button type="submit" class="secondary" onclick="return confirm('{{ confirm_clear|escapejs }}')">
+            {% trans "Clear All Demo Data" %}
+        </button>
+    </form>
+</fieldset>
+{% endif %}
+
+{% else %}
+{# Demo mode not enabled #}
+<fieldset>
+    <legend>{% trans "Demo Mode Required" %}</legend>
+    <p>{% trans "Demo mode must be enabled to generate or manage demo data." %}</p>
+    <p><small>{% trans "Set the DEMO_MODE=true environment variable in your deployment configuration, then restart the application." %}</small></p>
+</fieldset>
+{% endif %}
+
+{# ---- Help / How It Works ---- #}
+<details>
+    <summary>{% trans "How configuration-aware demo data works" %}</summary>
+    <div style="padding: 1rem 0;">
+        <p>{% trans "Unlike the built-in default demo, configuration-aware demo data reads your actual instance configuration:" %}</p>
+        <ul>
+            <li>{% trans "Programs you have created" %}</li>
+            <li>{% trans "Metrics linked to your note and plan templates" %}</li>
+            <li>{% trans "Plan template structure (sections and targets)" %}</li>
+        </ul>
+        <p>{% trans "Demo data is isolated from real data. Demo users can only see demo participants, and real users can only see real participants." %}</p>
+        <p>{% trans "After changing your configuration (adding programs, enabling new metrics, updating templates), you can regenerate demo data to reflect the changes." %}</p>
+        <p><small>{% trans "For richer demo data with program-specific note text, use a demo data profile JSON with the management command:" %} <code>python manage.py generate_demo_data --profile seeds/demo_profile.json</code></small></p>
+    </div>
+</details>
+
+{% endblock %}
