@@ -428,7 +428,7 @@ def export_form(request):
             client_file_id__in=accessible_client_ids,
         ).values_list("client_file_id", flat=True).distinct()
     else:
-        _has_confidential_program = False
+        _has_confidential_program = program.is_confidential
         client_ids = ClientProgramEnrolment.objects.filter(
             program=program, status="enrolled",
             client_file_id__in=accessible_client_ids,
@@ -695,9 +695,9 @@ def export_form(request):
             # Aggregate CSV — summary statistics only
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
-            writer.writerow(sanitise_csv_row([_("# Program: %(name)s") % {"name": program_display_name}]))
-            writer.writerow(sanitise_csv_row([_("# Date Range: %(start)s to %(end)s") % {"start": date_from, "end": date_to}]))
-            writer.writerow(sanitise_csv_row([_("# Total Participants: %(count)s") % {"count": total_clients_display}]))
+            writer.writerow(sanitise_csv_row([f"# Program: {program_display_name}"]))
+            writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
+            writer.writerow(sanitise_csv_row([f"# Total Participants: {total_clients_display}"]))
             writer.writerow(sanitise_csv_row([_("# Export Mode: Aggregate Summary")]))
             if all_programs_mode:
                 writer.writerow(sanitise_csv_row([
@@ -827,10 +827,10 @@ def export_form(request):
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
             # Summary header rows (prefixed with # so spreadsheet apps treat them as comments)
-            writer.writerow(sanitise_csv_row([_("# Program: %(name)s") % {"name": program_display_name}]))
-            writer.writerow(sanitise_csv_row([_("# Date Range: %(start)s to %(end)s") % {"start": date_from, "end": date_to}]))
-            writer.writerow(sanitise_csv_row([_("# Total Clients: %(count)s") % {"count": total_clients_display}]))
-            writer.writerow(sanitise_csv_row([_("# Total Data Points: %(count)s") % {"count": total_data_points_display}]))
+            writer.writerow(sanitise_csv_row([f"# Program: {program_display_name}"]))
+            writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
+            writer.writerow(sanitise_csv_row([f"# Total Clients: {total_clients_display}"]))
+            writer.writerow(sanitise_csv_row([f"# Total Data Points: {total_data_points_display}"]))
             if grouping_type != "none":
                 writer.writerow(sanitise_csv_row([_("# Grouped By: %(label)s") % {"label": grouping_label}]))
 
@@ -1159,7 +1159,6 @@ def funder_report_form(request):
 
     program = form.cleaned_data["program"]
     all_programs_mode = form.is_all_programs
-    _has_confidential_program = False  # May be upgraded below for All Programs
 
     if all_programs_mode:
         if not can_create_export(request.user, "funder_report"):
@@ -1182,7 +1181,6 @@ def funder_report_form(request):
     if all_programs_mode:
         # Generate per-program reports and merge into a combined CSV
         accessible_programs = get_manageable_programs(request.user)
-        _has_confidential_program = accessible_programs.filter(is_confidential=True).exists()
         all_report_sections = []
         total_raw_client_count = 0
         for ap in accessible_programs:
@@ -1258,19 +1256,16 @@ def funder_report_form(request):
             csv_buffer = io.StringIO()
             writer = csv.writer(csv_buffer)
             writer.writerow(sanitise_csv_row([
-                _("# All Programs \u2014 Organisation Summary")
+                f"# All Programs \u2014 Organisation Summary"
             ]))
-            writer.writerow(sanitise_csv_row([_("# Fiscal Year: %(label)s") % {"label": fiscal_year_label}]))
+            writer.writerow(sanitise_csv_row([f"# Fiscal Year: {fiscal_year_label}"]))
             writer.writerow(sanitise_csv_row([
-                _("# Date Range: %(start)s to %(end)s") % {"start": date_from, "end": date_to}
-            ]))
-            writer.writerow(sanitise_csv_row([
-                _("# Note: Participants enrolled in multiple programs are counted once per program.")
+                f"# Date Range: {date_from} to {date_to}"
             ]))
             writer.writerow([])
             for ap, rd in all_report_sections:
                 writer.writerow(sanitise_csv_row([
-                    _("# ===== %(name)s =====") % {"name": ap.name}
+                    f"# ===== {ap.name} ====="
                 ]))
                 csv_rows = generate_funder_report_csv_rows(rd)
                 for row in csv_rows:
@@ -1338,8 +1333,7 @@ def funder_report_form(request):
             "date_to": str(date_to),
             "format": export_format,
             "total_individuals_served": (
-                "suppressed" if _has_confidential_program
-                else raw_client_count if all_programs_mode
+                raw_client_count if all_programs_mode
                 else report_data["total_individuals_served"]
             ),
             "recipient": recipient,
