@@ -7,13 +7,14 @@
 
 ## Agenda
 
-### 1. Feature Comparison Review (~10 min)
+### 1. Feature Comparison Review (~15 min)
 
-Feature comparison document was shared on Friday, February 21. Questions or feedback?
+Feature comparison document was shared on Friday, February 21. We need to walk through it together to get clarity on what WestNH actually needs.
 
-- Any features that are must-haves for WestNH that aren't listed?
+- What's their current setup? Are they using Aaliyah Care, Power BI, or other tools today?
+- For each tool they're currently using: what does it do for them, and does KoNote replace it, complement it, or need to integrate with it?
+- Any features that are must-haves for WestNH that aren't in KoNote?
 - Any features listed that aren't relevant or shouldn't be turned on?
-- Anything unclear in how a feature works?
 
 ### 2. Quick Demo (~15 min)
 
