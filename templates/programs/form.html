@@ -114,10 +114,11 @@
 </form>
 
 {% if suggest_confidential and confidential_keywords_json %}
+{{ confidential_keywords_json|json_script:"confidential-keywords-data" }}
 <script>
 (function() {
     // Progressive enhancement: suggest confidential when program name matches keywords
-    var keywords = {{ confidential_keywords_json|safe }};
+    var keywords = JSON.parse(document.getElementById('confidential-keywords-data').textContent);
     var nameInput = document.getElementById("id_name");
     var suggestion = document.getElementById("confidential-suggestion");
     if (!nameInput || !suggestion) return;
