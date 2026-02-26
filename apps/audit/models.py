@@ -3,6 +3,41 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
+class ImmutableAuditQuerySet(models.QuerySet):
+    """QuerySet that prevents any mutation of audit log rows."""
+
+    def update(self, **kwargs):
+        raise PermissionError(
+            "Audit logs are immutable and cannot be updated. "
+            "Direct ORM update() on AuditLog is not permitted."
+        )
+
+    def delete(self):
+        raise PermissionError(
+            "Audit logs are immutable and cannot be deleted. "
+            "Direct ORM delete() on AuditLog is not permitted."
+        )
+
+
+class ImmutableAuditManager(models.Manager):
+    """Manager that returns an immutable queryset and blocks bulk mutation."""
+
+    def get_queryset(self):
+        return ImmutableAuditQuerySet(self.model, using=self._db)
+
+    def update(self, **kwargs):
+        raise PermissionError(
+            "Audit logs are immutable and cannot be updated. "
+            "Direct ORM update() on AuditLog is not permitted."
+        )
+
+    def delete(self):
+        raise PermissionError(
+            "Audit logs are immutable and cannot be deleted. "
+            "Direct ORM delete() on AuditLog is not permitted."
+        )
+
+
 class AuditLog(models.Model):
     """
     Append-only audit trail. The database user for this table
@@ -69,6 +104,11 @@ class AuditLog(models.Model):
         default=False,
         help_text="True when the action involved a confidential program.",
     )
+
+    # ImmutableAuditManager raises PermissionError on update() and delete().
+    # .create() and .bulk_create() are intentionally NOT overridden — appending
+    # new rows is the only permitted mutation (append-only semantics).
+    objects = ImmutableAuditManager()
 
     class Meta:
         app_label = "audit"

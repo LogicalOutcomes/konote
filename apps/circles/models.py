@@ -14,7 +14,7 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from konote.encryption import decrypt_field, encrypt_field
+from konote.encryption import decrypt_field, encrypt_field, DecryptionError
 
 
 # ---------------------------------------------------------------------------
@@ -84,7 +84,10 @@ class Circle(models.Model):
 
     @property
     def name(self):
-        return decrypt_field(self._name_encrypted)
+        try:
+            return decrypt_field(self._name_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @name.setter
     def name(self, value):
@@ -150,7 +153,10 @@ class CircleMembership(models.Model):
 
     @property
     def member_name(self):
-        return decrypt_field(self._member_name_encrypted)
+        try:
+            return decrypt_field(self._member_name_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @member_name.setter
     def member_name(self, value):

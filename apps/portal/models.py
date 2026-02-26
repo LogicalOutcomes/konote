@@ -18,7 +18,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from konote.encryption import decrypt_field, encrypt_field
+from konote.encryption import decrypt_field, encrypt_field, DecryptionError
 
 
 # ---------------------------------------------------------------------------
@@ -160,7 +160,10 @@ class ParticipantUser(AbstractBaseUser):
 
     @property
     def email(self):
-        return decrypt_field(self._email_encrypted)
+        try:
+            return decrypt_field(self._email_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @email.setter
     def email(self, value):
@@ -170,7 +173,10 @@ class ParticipantUser(AbstractBaseUser):
 
     @property
     def totp_secret(self):
-        return decrypt_field(self._totp_secret_encrypted)
+        try:
+            return decrypt_field(self._totp_secret_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @totp_secret.setter
     def totp_secret(self, value):
@@ -346,7 +352,10 @@ class ParticipantJournalEntry(models.Model):
 
     @property
     def content(self):
-        return decrypt_field(self._content_encrypted)
+        try:
+            return decrypt_field(self._content_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @content.setter
     def content(self, value):
@@ -405,7 +414,10 @@ class ParticipantMessage(models.Model):
 
     @property
     def content(self):
-        return decrypt_field(self._content_encrypted)
+        try:
+            return decrypt_field(self._content_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @content.setter
     def content(self, value):
@@ -450,7 +462,10 @@ class StaffPortalNote(models.Model):
 
     @property
     def content(self):
-        return decrypt_field(self._content_encrypted)
+        try:
+            return decrypt_field(self._content_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @content.setter
     def content(self, value):
@@ -535,7 +550,10 @@ class CorrectionRequest(models.Model):
 
     @property
     def description(self):
-        return decrypt_field(self._description_encrypted)
+        try:
+            return decrypt_field(self._description_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @description.setter
     def description(self, value):

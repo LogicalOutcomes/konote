@@ -6,7 +6,7 @@ from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.utils.translation import gettext_lazy as _
 
-from konote.encryption import decrypt_field, encrypt_field
+from konote.encryption import decrypt_field, encrypt_field, DecryptionError
 
 
 class ProgressNoteTemplate(models.Model):
@@ -181,7 +181,10 @@ class ProgressNote(models.Model):
     @property
     def notes_text(self):
         """Content for quick notes (decrypted)."""
-        return decrypt_field(self._notes_text_encrypted)
+        try:
+            return decrypt_field(self._notes_text_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @notes_text.setter
     def notes_text(self, value):
@@ -190,7 +193,10 @@ class ProgressNote(models.Model):
     @property
     def summary(self):
         """Summary of the session (decrypted)."""
-        return decrypt_field(self._summary_encrypted)
+        try:
+            return decrypt_field(self._summary_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @summary.setter
     def summary(self, value):
@@ -199,7 +205,10 @@ class ProgressNote(models.Model):
     @property
     def participant_reflection(self):
         """The participant's own words about what they're taking away (decrypted)."""
-        return decrypt_field(self._participant_reflection_encrypted)
+        try:
+            return decrypt_field(self._participant_reflection_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @participant_reflection.setter
     def participant_reflection(self, value):
@@ -208,7 +217,10 @@ class ProgressNote(models.Model):
     @property
     def participant_suggestion(self):
         """The participant's suggestion for program improvement (decrypted)."""
-        return decrypt_field(self._participant_suggestion_encrypted)
+        try:
+            return decrypt_field(self._participant_suggestion_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @participant_suggestion.setter
     def participant_suggestion(self, value):
@@ -338,7 +350,10 @@ class ProgressNoteTarget(models.Model):
     @property
     def notes(self):
         """Target-specific notes (decrypted)."""
-        return decrypt_field(self._notes_encrypted)
+        try:
+            return decrypt_field(self._notes_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @notes.setter
     def notes(self, value):
@@ -347,7 +362,10 @@ class ProgressNoteTarget(models.Model):
     @property
     def client_words(self):
         """What the client said about this goal today (decrypted)."""
-        return decrypt_field(self._client_words_encrypted)
+        try:
+            return decrypt_field(self._client_words_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @client_words.setter
     def client_words(self, value):

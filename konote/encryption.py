@@ -29,10 +29,20 @@ import logging
 
 from cryptography.fernet import Fernet, InvalidToken, MultiFernet
 from django.conf import settings
+from django.core.checks import Error, register
 
 logger = logging.getLogger(__name__)
 
 _fernet = None
+
+
+class DecryptionError(Exception):
+    """Raised when a field cannot be decrypted.
+
+    This typically means the encryption key has changed (key rotation without
+    re-encryption) or the stored ciphertext is corrupted. Silent failure is
+    NOT acceptable — callers must handle this explicitly.
+    """
 
 
 def _get_fernet():
@@ -79,9 +89,54 @@ def decrypt_field(ciphertext):
         return f.decrypt(ciphertext).decode("utf-8")
     except InvalidToken:
         logger.error("Decryption failed — possible key mismatch or data corruption")
-        return ""
+        raise DecryptionError(
+            "Decryption failed — possible key mismatch or data corruption"
+        )
 
 
 def generate_key():
     """Generate a new Fernet key for initial setup."""
     return Fernet.generate_key().decode()
+
+
+@register()
+def check_encryption_key(app_configs, **kwargs):
+    """Django system check: verify the encryption key round-trips correctly.
+
+    Runs on every `./manage.py check` (and on startup). Fails loudly if the
+    key is misconfigured, so operators discover the problem at boot time rather
+    than when a staff member opens a client record.
+    """
+    errors = []
+    try:
+        # Reset the cached fernet so we pick up the current settings value
+        global _fernet
+        _fernet = None
+        test_plaintext = "konote-encryption-selftest"
+        ciphertext = encrypt_field(test_plaintext)
+        result = decrypt_field(ciphertext)
+        if result != test_plaintext:
+            errors.append(
+                Error(
+                    "FIELD_ENCRYPTION_KEY round-trip check failed: "
+                    "encrypt then decrypt did not return the original value.",
+                    hint="Check that FIELD_ENCRYPTION_KEY is a valid Fernet key.",
+                    id="konote.E001",
+                )
+            )
+    except Exception as exc:
+        errors.append(
+            Error(
+                f"FIELD_ENCRYPTION_KEY is invalid or missing: {exc}",
+                hint=(
+                    "Generate a key with: "
+                    "python -c \"from cryptography.fernet import Fernet; "
+                    "print(Fernet.generate_key().decode())\""
+                ),
+                id="konote.E001",
+            )
+        )
+    finally:
+        # Leave the cache clean so the first real use re-initialises normally
+        _fernet = None
+    return errors

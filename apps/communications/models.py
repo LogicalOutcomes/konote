@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from konote.encryption import decrypt_field, encrypt_field
+from konote.encryption import decrypt_field, encrypt_field, DecryptionError
 
 
 class Communication(models.Model):
@@ -130,7 +130,10 @@ class Communication(models.Model):
     # Encrypted content accessor
     @property
     def content(self):
-        return decrypt_field(self._content_encrypted)
+        try:
+            return decrypt_field(self._content_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @content.setter
     def content(self, value):
@@ -247,7 +250,10 @@ class StaffMessage(models.Model):
 
     @property
     def content(self):
-        return decrypt_field(self._content_encrypted)
+        try:
+            return decrypt_field(self._content_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @content.setter
     def content(self, value):

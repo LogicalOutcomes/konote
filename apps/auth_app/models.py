@@ -8,7 +8,7 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from konote.encryption import decrypt_field, encrypt_field
+from konote.encryption import decrypt_field, encrypt_field, DecryptionError
 
 
 class UserManager(BaseUserManager):
@@ -97,7 +97,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Encrypted email property
     @property
     def email(self):
-        return decrypt_field(self._email_encrypted)
+        try:
+            return decrypt_field(self._email_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @email.setter
     def email(self, value):
@@ -106,7 +109,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     # Encrypted MFA secret property
     @property
     def mfa_secret(self):
-        return decrypt_field(self._mfa_secret_encrypted)
+        try:
+            return decrypt_field(self._mfa_secret_encrypted)
+        except DecryptionError:
+            return "[DECRYPTION ERROR]"
 
     @mfa_secret.setter
     def mfa_secret(self, value):
