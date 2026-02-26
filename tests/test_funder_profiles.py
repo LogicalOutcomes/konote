@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 import pytest
 from django.test import TestCase, Client, override_settings
+from django.utils.translation import override as translation_override
 from cryptography.fernet import Fernet
 
 from apps.auth_app.models import User
@@ -276,6 +277,14 @@ class DemographicBlocklistsTest(TestCase):
 class CustomAgeBinsTest(TestCase):
     """Test age grouping with custom funder bins."""
 
+    def setUp(self):
+        from django.utils import translation
+        translation.activate("en")
+
+    def tearDown(self):
+        from django.utils import translation
+        translation.deactivate()
+
     def test_find_age_bin_custom(self):
         bins = [(0, 24, "Youth"), (25, 64, "Adult"), (65, 999, "Senior")]
         assert _find_age_bin(date(2010, 1, 1), date(2025, 6, 1), bins) == "Youth"
@@ -317,6 +326,14 @@ class CustomAgeBinsTest(TestCase):
 
 class CategoryMergeTest(TestCase):
     """Test category merging for custom field groupings."""
+
+    def setUp(self):
+        from django.utils import translation
+        translation.activate("en")
+
+    def tearDown(self):
+        from django.utils import translation
+        translation.deactivate()
 
     def test_apply_category_merge_basic(self):
         raw_groups = {

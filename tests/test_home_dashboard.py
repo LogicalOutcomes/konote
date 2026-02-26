@@ -117,7 +117,7 @@ class HomeDashboardPermissionsTest(TestCase):
         self.assertNotIn("Active Participants", content)
 
         # Basic sections should still appear
-        self.assertIn("Recently Viewed", content)
+        self.assertIn("Pick up where you left off", content)
 
     def test_staff_dashboard_html_shows_clinical_sections(self):
         """Clinical staff dashboard should render all sections including clinical data."""
@@ -132,7 +132,7 @@ class HomeDashboardPermissionsTest(TestCase):
         self.assertIn("Notes Today", content)
         self.assertIn("Follow-ups Due", content)
         self.assertIn("Needs Attention", content)
-        self.assertIn("Priority Items", content)
+        self.assertIn("What needs your attention", content)
 
 
 class HomeDashboardRoleBasedTest(TestCase):
@@ -274,5 +274,5 @@ class HomeDashboardRoleBasedTest(TestCase):
         content = response.content.decode()
         self.assertNotIn("Program Health", content)
         self.assertNotIn("Executive Overview", content)
-        self.assertNotIn("Priority Items", content)
-        self.assertIn("Recently Viewed", content)
+        self.assertNotIn("What needs your attention", content)
+        self.assertIn("Pick up where you left off", content)

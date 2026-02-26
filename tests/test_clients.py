@@ -1055,7 +1055,7 @@ class FormDataPreservationTest(TestCase):
         """When a required field is missing, entered data should be in the response."""
         self.http_client.login(username="admin", password="testpass123")
         # Submit without selecting a program (required) to trigger a validation error
-        resp = self.http_client.post("/clients/new/", {
+        resp = self.http_client.post("/participants/create/", {
             "first_name": "Marie-Claire",
             "last_name": "Tremblay",
             "preferred_name": "",

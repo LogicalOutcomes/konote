@@ -282,7 +282,7 @@ class ExportFormViewTest(TestCase):
         self.client.login(username="admin", password="testpass123")
         resp = self.client.get("/reports/export/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "Fiscal Year (April-March)")
+        self.assertContains(resp, "Period")
         self.assertContains(resp, "Custom date range")
 
     def test_export_form_has_achievement_rate_checkbox(self):
@@ -2155,7 +2155,7 @@ class TemplatePeriodOptionsViewTest(TestCase):
         self.client_http.login(username="admin", password="testpass123")
         resp = self.client_http.get(
             "/reports/generate/period-options/",
-            {"template_id": self.template.pk},
+            {"report_template": self.template.pk},
         )
         self.assertEqual(resp.status_code, 200)
         content = resp.content.decode()
@@ -2167,7 +2167,7 @@ class TemplatePeriodOptionsViewTest(TestCase):
         self.client_http.login(username="admin", password="testpass123")
         resp = self.client_http.get(
             "/reports/generate/period-options/",
-            {"template_id": self.template.pk},
+            {"report_template": self.template.pk},
         )
         content = resp.content.decode()
         self.assertIn("United Way", content)

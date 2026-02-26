@@ -426,6 +426,7 @@ class MetricLibraryPermissionTest(PlanCRUDBaseTest):
             "name": "New Metric",
             "definition": "A test metric",
             "category": "custom",
+            "metric_type": "scale",
             "min_value": 0,
             "max_value": 10,
             "unit": "score",

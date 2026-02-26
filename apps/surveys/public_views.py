@@ -6,7 +6,7 @@ link token can view and submit a survey response.
 import logging
 
 from django.db import transaction
-from django.http import HttpResponseGone, HttpResponseServerError
+from django.http import Http404, HttpResponseGone, HttpResponseServerError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template import loader
 from django.utils.translation import gettext as _
@@ -24,6 +24,8 @@ def public_survey_form(request, token):
     """Display and process a public survey form via shareable link."""
     try:
         link = get_object_or_404(SurveyLink, token=token)
+    except Http404:
+        raise  # propagate — token not found is a genuine 404
     except Exception:
         # Database table may not exist yet, or other unexpected error.
         # Show the expired/unavailable page rather than a raw 500.
