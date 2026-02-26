@@ -11,7 +11,7 @@ from apps.admin_settings.models import get_access_tier, InstanceSetting
 from apps.audit.models import AuditLog
 from apps.auth_app.decorators import admin_required
 
-from .forms import AccessGrantForm
+from .forms import AccessGrantForm, AccessGrantReasonForm
 from .models import AccessGrant
 
 
@@ -195,22 +195,24 @@ def access_grant_reasons_admin(request):
     from .models import AccessGrantReason
 
     reasons = AccessGrantReason.objects.all()
+    add_form = AccessGrantReasonForm()
 
     if request.method == "POST":
         action = request.POST.get("action")
 
         if action == "add":
-            label = request.POST.get("label", "").strip()
-            label_fr = request.POST.get("label_fr", "").strip()
-            if label:
+            add_form = AccessGrantReasonForm(request.POST)
+            if add_form.is_valid():
                 max_order = reasons.aggregate(
                     m=models.Max("sort_order")
                 )["m"] or 0
                 AccessGrantReason.objects.create(
-                    label=label,
-                    label_fr=label_fr,
+                    label=add_form.cleaned_data["label"],
+                    label_fr=add_form.cleaned_data["label_fr"],
                     sort_order=max_order + 1,
                 )
+                return redirect("admin_settings:access_grant_reasons")
+            # Fall through to re-render with form errors
 
         elif action == "toggle":
             reason_id = request.POST.get("reason_id")
@@ -220,11 +222,11 @@ def access_grant_reasons_admin(request):
                 reason.save(update_fields=["is_active"])
             except AccessGrantReason.DoesNotExist:
                 pass
-
-        return redirect("admin_settings:access_grant_reasons")
+            return redirect("admin_settings:access_grant_reasons")
 
     return render(request, "admin_settings/access_grant_reasons.html", {
         "reasons": reasons,
+        "add_form": add_form,
     })
 
 

@@ -111,6 +111,22 @@ class UserEditForm(forms.ModelForm):
             cleaned["is_admin"] = False
             if self.instance and self.instance.pk:
                 cleaned["is_active"] = self.instance.is_active
+        # Guard: prevent the last active admin from removing their own admin status
+        if (
+            self.instance
+            and self.instance.pk
+            and self.instance.is_admin
+            and not cleaned.get("is_admin", True)
+        ):
+            remaining_admins = (
+                User.objects.filter(is_admin=True, is_active=True)
+                .exclude(pk=self.instance.pk)
+                .count()
+            )
+            if remaining_admins == 0:
+                raise forms.ValidationError({
+                    "is_admin": _("Cannot remove admin status from the last active admin user."),
+                })
         return cleaned
 
     def save(self, commit=True):
@@ -265,3 +281,23 @@ class AccessGrantForm(forms.ModelForm):
                 _("Maximum duration is %(max)s days.") % {"max": max_days}
             )
         return value
+
+
+class AccessGrantReasonForm(forms.Form):
+    """Form for admin creation of an AccessGrantReason (label + optional French label)."""
+
+    label = forms.CharField(
+        max_length=200,
+        label=_("English label"),
+    )
+    label_fr = forms.CharField(
+        max_length=200,
+        required=False,
+        label=_("French label (optional)"),
+    )
+
+    def clean_label(self):
+        return self.cleaned_data["label"].strip()
+
+    def clean_label_fr(self):
+        return self.cleaned_data["label_fr"].strip()

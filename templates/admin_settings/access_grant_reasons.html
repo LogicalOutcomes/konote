@@ -53,12 +53,18 @@
     <input type="hidden" name="action" value="add">
     <div class="grid">
         <label>
-            {% trans "English" %}
-            <input type="text" name="label" required maxlength="100" placeholder="{% trans 'e.g. Program audit' %}">
+            {{ add_form.label.label }}
+            {{ add_form.label }}
+            {% if add_form.label.errors %}
+                {% for error in add_form.label.errors %}<small class="error">{{ error }}</small>{% endfor %}
+            {% endif %}
         </label>
         <label>
-            {% trans "French (optional)" %}
-            <input type="text" name="label_fr" maxlength="100" placeholder="{% trans 'e.g. Audit de programme' %}">
+            {{ add_form.label_fr.label }}
+            {{ add_form.label_fr }}
+            {% if add_form.label_fr.errors %}
+                {% for error in add_form.label_fr.errors %}<small class="error">{{ error }}</small>{% endfor %}
+            {% endif %}
         </label>
     </div>
     <button type="submit">{% trans "Add Reason" %}</button>

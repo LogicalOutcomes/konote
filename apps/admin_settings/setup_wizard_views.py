@@ -10,6 +10,7 @@ from django.utils.translation import gettext as _
 
 from apps.auth_app.decorators import admin_required
 
+from .forms import SetupWizardInstanceSettingsForm
 from .management.commands.apply_setup import apply_setup_config
 from .models import DEFAULT_TERMS, FeatureToggle, InstanceSetting
 from .views import DEFAULT_FEATURES, FEATURES_DEFAULT_ENABLED
@@ -100,17 +101,25 @@ def setup_wizard(request, step=None):
 def _handle_instance_settings(request, context, wizard_data):
     """Step 1: Instance settings (product name, support email, etc.)."""
     if request.method == "POST":
-        wizard_data["instance_settings"] = {
-            "product_name": request.POST.get("product_name", "KoNote"),
-            "support_email": request.POST.get("support_email", ""),
-            "logo_url": request.POST.get("logo_url", ""),
-            "date_format": request.POST.get("date_format", "YYYY-MM-DD"),
-            "access_tier": request.POST.get("access_tier", "1"),
-        }
-        _set_wizard_data(request, wizard_data)
-        return redirect("admin_settings:setup_wizard_step", step="terminology")
+        form = SetupWizardInstanceSettingsForm(request.POST)
+        if form.is_valid():
+            wizard_data["instance_settings"] = {
+                "product_name": form.cleaned_data["product_name"] or "KoNote",
+                "support_email": form.cleaned_data["support_email"] or "",
+                "logo_url": form.cleaned_data["logo_url"] or "",
+                "date_format": form.cleaned_data["date_format"],
+                "access_tier": form.cleaned_data["access_tier"],
+            }
+            _set_wizard_data(request, wizard_data)
+            return redirect("admin_settings:setup_wizard_step", step="terminology")
+        # Re-render with form errors
+        context["form"] = form
+        context["current_data"] = wizard_data.get("instance_settings", {})
+        return render(request, "admin_settings/setup_wizard/instance_settings.html", context)
 
     current = wizard_data.get("instance_settings", {})
+    form = SetupWizardInstanceSettingsForm(initial=current)
+    context["form"] = form
     context["current_data"] = current
     return render(request, "admin_settings/setup_wizard/instance_settings.html", context)
 

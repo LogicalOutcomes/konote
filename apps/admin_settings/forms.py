@@ -325,3 +325,61 @@ class MessagingSettingsForm(forms.Form):
                 )
             else:
                 InstanceSetting.objects.filter(setting_key=key).delete()
+
+
+class DemoDataForm(forms.Form):
+    """Form for the demo data generation action."""
+
+    clients_per_program = forms.IntegerField(
+        min_value=1,
+        max_value=50,
+        initial=3,
+        label=_("Participants per program"),
+    )
+    days_span = forms.IntegerField(
+        min_value=30,
+        max_value=730,
+        initial=180,
+        label=_("Time span (days)"),
+    )
+
+
+class SetupWizardInstanceSettingsForm(forms.Form):
+    """Form for step 1 of the setup wizard — instance settings."""
+
+    DATE_FORMAT_CHOICES = [
+        ("YYYY-MM-DD", _("2026-02-16 (ISO)")),
+        ("MMM D, YYYY", _("Feb 16, 2026")),
+        ("DD/MM/YYYY", _("16/02/2026")),
+    ]
+
+    ACCESS_TIER_CHOICES_WIZARD = [
+        ("1", _("Tier 1 — Role-based only")),
+        ("2", _("Tier 2 — Role-based + field-level access")),
+        ("3", _("Tier 3 — Role-based + field-level + gated grants")),
+    ]
+
+    product_name = forms.CharField(
+        max_length=255,
+        required=False,
+        initial="KoNote",
+        label=_("Product name"),
+    )
+    support_email = forms.EmailField(
+        required=False,
+        label=_("Support email"),
+    )
+    logo_url = forms.URLField(
+        required=False,
+        label=_("Logo URL"),
+    )
+    date_format = forms.ChoiceField(
+        choices=DATE_FORMAT_CHOICES,
+        initial="YYYY-MM-DD",
+        label=_("Date format"),
+    )
+    access_tier = forms.ChoiceField(
+        choices=ACCESS_TIER_CHOICES_WIZARD,
+        initial="1",
+        label=_("Access tier"),
+    )
