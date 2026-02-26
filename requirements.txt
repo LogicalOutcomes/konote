@@ -1,37 +1,43 @@
+# Pinning strategy: each package is constrained to the current stable major/minor
+# series using >=minimum,<next-major (or next-minor for Django). This prevents
+# pip from silently pulling in breaking changes while still allowing patch
+# releases with security fixes within the series. Update the upper bound
+# deliberately when upgrading to a new major series.
+
 # Core
 Django>=5.1,<5.2
-gunicorn>=22.0
-psycopg[binary]>=3.2
-psycopg2-binary>=2.9
+gunicorn>=22.0,<24.0
+psycopg[binary]>=3.2,<4.0
+psycopg2-binary>=2.9,<3.0
 
 # Authentication
-authlib>=1.3
-argon2-cffi>=23.1
+authlib>=1.3,<2.0
+argon2-cffi>=23.1,<26.0
 
 # Security
-django-csp>=4.0
-django-ratelimit>=4.1
+django-csp>=4.0,<5.0
+django-ratelimit>=4.1,<5.0
 
 # MFA (QR code generation for TOTP setup)
-qrcode>=7.4
+qrcode>=7.4,<9.0
 
 # Encryption
-cryptography>=43.0
+cryptography>=43.0,<47.0
 
 # HTTP
-requests>=2.31
+requests>=2.31,<3.0
 
 # Utilities
-python-dotenv>=1.0
-dj-database-url>=2.2
-whitenoise>=6.7
+python-dotenv>=1.0,<2.0
+dj-database-url>=2.2,<4.0
+whitenoise>=6.7,<7.0
 
 # PDF export
-weasyprint>=62.0
-matplotlib>=3.8
+weasyprint>=62.0,<69.0
+matplotlib>=3.8,<4.0
 
 # Calendar feeds (Phase 1 — Meetings + iCal)
-icalendar>=6.0
+icalendar>=6.0,<8.0
 
 # SMS via Twilio (Phase 4 — Outbound Messaging)
-twilio>=9.0
+twilio>=9.0,<10.0

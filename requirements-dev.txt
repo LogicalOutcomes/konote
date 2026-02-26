@@ -2,6 +2,6 @@
 # Install with: pip install -r requirements-dev.txt
 -r requirements.txt
 
-pytest>=9.0
-pytest-django>=4.11
-polib>=1.2.0
+pytest>=9.0,<10.0
+pytest-django>=4.11,<5.0
+polib>=1.2.0,<2.0
