@@ -6,6 +6,7 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ## Moved from Recently Done (2026-02-26 TODO cleanup)
 
+- [x] Verified: deployment workflow enhancements already implemented — is_demo flag, seed command, demo/real separation — 2026-02-24 (DEPLOY1)
 - [x] Verified: participant-facing progress view already implemented — descriptor timeline in portal — 2026-02-24 (PORTAL-PROGRESS1)
 - [x] Re-add API-based auto-translation to translate_strings — `--auto-translate` flag, OpenAI-compatible API, 21 tests (PR #63) — 2026-02-24 (I18N-API1)
 
