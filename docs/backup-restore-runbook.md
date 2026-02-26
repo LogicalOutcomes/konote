@@ -11,7 +11,10 @@ This document tells you everything you need to back up, restore, and recover KoN
 | Task | Where to Find It |
 |------|-------------------|
 | Back up Azure databases | [Azure Automated Backups](#1-azure-automated-backups) |
+| Back up Azure databases (script) | `scripts/backup-azure.ps1` |
 | Back up Docker Compose databases | [Docker Compose Backup](#docker-compose-backup-commands) |
+| Test backup/restore end-to-end | `scripts/test-backup-restore.ps1` |
+| Verify a restored database | `python manage.py verify_backup_restore` |
 | Restore from Azure point-in-time | [Point-in-Time Restore](#point-in-time-restore-pitr) |
 | Restore from a dump file | [Restore from Dump File](#restore-from-a-dump-file) |
 | Back up the encryption key | [Encryption Key Management](#5-encryption-key-management) |
@@ -264,6 +267,18 @@ az storage blob upload `
 
 **Tip:** Set the storage container's access level to **Private** (no anonymous access). Use Azure RBAC to control who can read backups.
 
+#### Using the Backup Script
+
+KoNote includes a ready-made backup script at `scripts/backup-azure.ps1` that automates all of the above. It resolves the server address, prompts for passwords securely, creates timestamped backups, and optionally uploads to Azure Blob Storage:
+
+```powershell
+# Basic backup (saves to ./backups/)
+.\scripts\backup-azure.ps1 -ResourceGroup konote-prod-rg -ServerName konote-db -AdminUser konoteadmin
+
+# Backup with upload to Azure Blob Storage
+.\scripts\backup-azure.ps1 -ResourceGroup konote-prod-rg -ServerName konote-db -AdminUser konoteadmin -StorageAccount konotestorage -Container db-backups
+```
+
 ---
 
 ## 3. Docker Compose Procedures (Self-Hosted)
@@ -391,6 +406,23 @@ Add this to your crontab (`crontab -e`):
 # KoNote daily backup at 2:00 AM
 0 2 * * * cd /opt/konote && docker compose exec -T db pg_dump -U konote konote > /backups/konote/backup_main_$(date +\%Y-\%m-\%d).sql && docker compose exec -T audit_db pg_dump -U audit_writer konote_audit > /backups/konote/backup_audit_$(date +\%Y-\%m-\%d).sql && find /backups/konote -name "backup_*.sql" -mtime +30 -delete
 ```
+
+### End-to-End Backup/Restore Test Script
+
+KoNote includes `scripts/test-backup-restore.ps1` that automates the full backup → destroy → restore → verify cycle using Docker Compose. This is your go-to tool for monthly restore testing:
+
+```powershell
+# Interactive (prompts before destroying volumes)
+.\scripts\test-backup-restore.ps1
+
+# Non-interactive (for CI or scheduled runs)
+.\scripts\test-backup-restore.ps1 -Force
+
+# Keep backup files after the test
+.\scripts\test-backup-restore.ps1 -Force -KeepBackups
+```
+
+The script backs up both databases, destroys and recreates the volumes, restores from the backups, and runs `verify_backup_restore` to confirm integrity.
 
 ---
 
