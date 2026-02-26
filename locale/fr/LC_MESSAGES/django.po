@@ -16787,3 +16787,48 @@ msgstr "Voir le répertoire de démonstration"
 
 msgid "Demo mode is not enabled."
 msgstr ""
+
+msgid "16/02/2026"
+msgstr ""
+
+msgid "2026-02-16 (ISO)"
+msgstr ""
+
+msgid "Access tier"
+msgstr ""
+
+msgid "Cannot remove admin status from the last active admin user."
+msgstr ""
+
+msgid "Date format"
+msgstr ""
+
+msgid "English label"
+msgstr ""
+
+msgid "Feb 16, 2026"
+msgstr ""
+
+msgid "French label (optional)"
+msgstr ""
+
+msgid "Invalid parameters for demo data generation."
+msgstr ""
+
+msgid "Product name"
+msgstr ""
+
+msgid "Support email"
+msgstr ""
+
+msgid "Tier 1 — Role-based only"
+msgstr ""
+
+msgid "Tier 2 — Role-based + field-level access"
+msgstr ""
+
+msgid "Tier 3 — Role-based + field-level + gated grants"
+msgstr ""
+
+msgid "Time span (days)"
+msgstr ""
