@@ -1,4 +1,5 @@
 """Public registration views."""
+from django.conf import settings
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -17,21 +18,46 @@ def _is_embed_mode(request):
 
 
 def _render_with_frame_options(request, template, context, allow_framing=False):
-    """Render template with appropriate X-Frame-Options header.
+    """Render template with appropriate X-Frame-Options / CSP frame-ancestors header.
+
+    When allow_framing is False (the default) the global X_FRAME_OPTIONS=DENY
+    setting applies and no CSP override is added.
+
+    When allow_framing is True (embed mode):
+    - EMBED_ALLOWED_ORIGINS from settings controls which parent origins may
+      frame the page.  An empty list means framing is denied even with ?embed=1.
+    - A CSP frame-ancestors directive is added to the response; it is the
+      authoritative browser-side restriction in CSP-capable browsers.
+    - response.xframe_options_exempt is set only when origins are configured, so
+      Django's XFrameOptionsMiddleware does not add a conflicting DENY header.
 
     Args:
         request: The HTTP request
         template: Template path to render
         context: Template context dict
-        allow_framing: If True, allows the page to be embedded in iframes
+        allow_framing: If True, applies allowed-origins framing policy
 
     Returns:
-        HttpResponse, optionally exempt from X-Frame-Options
+        HttpResponse with appropriate framing headers
     """
     response = render(request, template, context)
     if allow_framing:
-        # Tell Django's XFrameOptionsMiddleware to skip this response,
-        # allowing the page to be embedded in iframes on other domains.
+        allowed_origins = getattr(settings, "EMBED_ALLOWED_ORIGINS", [])
+        if not allowed_origins:
+            # No origins configured — deny framing even when ?embed=1 is passed.
+            # Return 403 so the integrating site gets a clear signal rather than
+            # silently displaying a broken embed.
+            from django.http import HttpResponseForbidden
+            return HttpResponseForbidden(
+                "Iframe embedding is not enabled for this instance. "
+                "Set EMBED_ALLOWED_ORIGINS in the environment to allow specific origins."
+            )
+        # Build CSP frame-ancestors value.
+        # "*" is a valid wildcard (dev only); in production set explicit origins.
+        frame_ancestors = " ".join(allowed_origins)
+        response["Content-Security-Policy"] = f"frame-ancestors 'self' {frame_ancestors}"
+        # Tell Django's XFrameOptionsMiddleware to skip so it does not override
+        # the CSP directive with an X-Frame-Options: DENY header.
         response.xframe_options_exempt = True
     return response
 

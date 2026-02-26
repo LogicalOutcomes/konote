@@ -9,6 +9,7 @@ Sub-objects are always fetched with get_object_or_404(..., client_file=client_fi
 """
 import json
 import logging
+import secrets
 from functools import wraps
 
 from django.conf import settings
@@ -26,6 +27,23 @@ logger = logging.getLogger(__name__)
 # Account lockout settings for participant login
 PORTAL_LOCKOUT_THRESHOLD = 5
 PORTAL_LOCKOUT_DURATION_MINUTES = 15
+
+
+# ---------------------------------------------------------------------------
+# Session helpers
+# ---------------------------------------------------------------------------
+
+SESSION_EMERGENCY_LOGOUT_TOKEN = "_portal_emergency_logout_token"
+
+
+def _set_emergency_logout_token(request):
+    """Generate and store a single-use emergency logout token in the session.
+
+    Called at every portal login point so the JavaScript panic button can
+    include the token when it calls navigator.sendBeacon(). The token is
+    validated in emergency_logout() and removed after use, preventing replay.
+    """
+    request.session[SESSION_EMERGENCY_LOGOUT_TOKEN] = secrets.token_urlsafe(32)
 
 
 # ---------------------------------------------------------------------------
@@ -219,6 +237,7 @@ def portal_login(request):
             ])
             request.session.cycle_key()  # Prevent session fixation
             request.session["_portal_participant_id"] = str(participant.pk)
+            _set_emergency_logout_token(request)
             _audit_portal_event(request, "portal_login", metadata={
                 "participant_id": str(participant.pk),
             })
@@ -255,8 +274,23 @@ def emergency_logout(request):
     """Quick logout via sendBeacon — for panic/safety button.
 
     Returns 204 No Content (no redirect, since sendBeacon is fire-and-forget).
-    csrf_exempt is safe here — this only destroys the session; no state change.
+
+    csrf_exempt is intentional: sendBeacon() cannot attach CSRF tokens because
+    it uses Content-Type text/plain and fires asynchronously. As a compensating
+    control we require a session-bound single-use token that only the legitimate
+    portal page can supply. A cross-origin attacker cannot read the token because
+    of the browser's same-origin policy on the session cookie.
     """
+    # Validate the session-bound emergency logout token.
+    # The token is set on portal login and sent by portal.js via sendBeacon.
+    # We use secrets.compare_digest to prevent timing-based attacks.
+    expected = request.session.get(SESSION_EMERGENCY_LOGOUT_TOKEN, "")
+    submitted = request.POST.get("token", "")
+    if not expected or not secrets.compare_digest(expected, submitted):
+        return HttpResponse(status=403)
+
+    # Token is single-use — remove it before flushing so it cannot be replayed.
+    request.session.pop(SESSION_EMERGENCY_LOGOUT_TOKEN, None)
     request.session.pop("_portal_participant_id", None)
     request.session.pop("_portal_mfa_pending_id", None)
     return HttpResponse(status=204)
@@ -350,6 +384,7 @@ def accept_invite(request, token):
                 # Log them in and start consent flow
                 request.session.cycle_key()  # Prevent session fixation
                 request.session["_portal_participant_id"] = str(participant.pk)
+                _set_emergency_logout_token(request)
                 return redirect("portal:consent_flow")
     else:
         form = InviteAcceptForm()
@@ -548,6 +583,7 @@ def mfa_verify(request):
                     request.session.pop("_portal_mfa_attempts", None)
                     request.session.cycle_key()  # Prevent session fixation
                     request.session["_portal_participant_id"] = str(participant.pk)
+                    _set_emergency_logout_token(request)
                     _audit_portal_event(request, "portal_login", metadata={
                         "participant_id": str(participant.pk),
                         "mfa": True,
@@ -865,6 +901,7 @@ def staff_assisted_login(request, token):
     # Create session
     request.session.cycle_key()
     request.session["_portal_participant_id"] = str(participant.pk)
+    _set_emergency_logout_token(request)
     # Mark this as a staff-assisted session (shorter max age)
     request.session["_portal_staff_assisted"] = True
     request.session.set_expiry(30 * 60)  # 30 minutes max

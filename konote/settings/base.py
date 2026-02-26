@@ -176,6 +176,22 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = "DENY"
 
+# Iframe embedding for registration forms (?embed=1)
+# ─────────────────────────────────────────────────────────────────────
+# Comma-separated list of origins allowed to embed the public registration
+# form in an iframe, e.g. "https://example.org,https://agency.ca".
+# An empty list (the default) disables embedding even when ?embed=1 is passed.
+# In development this defaults to "*" so the embed preview works without
+# configuring real origins.  Set explicitly in production via EMBED_ALLOWED_ORIGINS.
+#
+# The list is used to build a CSP frame-ancestors directive on the response,
+# which is the authoritative browser-enforced restriction. X-Frame-Options is
+# also set to ALLOWALL on the response so older browsers respect it, but
+# frame-ancestors takes precedence in CSP-capable browsers.
+# ─────────────────────────────────────────────────────────────────────
+_embed_origins_raw = os.environ.get("EMBED_ALLOWED_ORIGINS", "")
+EMBED_ALLOWED_ORIGINS = [o.strip() for o in _embed_origins_raw.split(",") if o.strip()]
+
 # CSP — Content Security Policy
 # ─────────────────────────────────────────────────────────────────────
 # Controls which resources the browser is allowed to load.
