@@ -85,19 +85,19 @@
             <p class="demo-heading">{% trans "Try the Demo" %}</p>
             <p class="demo-subtext">{% trans "Sign in instantly as a demo user to explore the system" %}</p>
             <div class="demo-grid">
-                <a href="/auth/demo-login/frontdesk/" class="demo-btn">{% trans "Front Desk" %} — Dana</a>
-                <a href="/auth/demo-login/manager/" class="demo-btn">{% trans "Manager" %} — Morgan</a>
-                <a href="/auth/demo-login/worker-1/" class="demo-btn">{% trans "Lead Worker" %} — Casey</a>
-                <a href="/auth/demo-login/worker-2/" class="demo-btn">{% trans "Direct Service" %} — Noor</a>
-                <a href="/auth/demo-login/executive/" class="demo-btn">{% trans "Executive" %} — Eva</a>
-                <a href="/auth/demo-login/admin/" class="demo-btn">{% trans "Administrator" %} — Alex</a>
+                <form method="post" action="/auth/demo-login/frontdesk/">{% csrf_token %}<button type="submit" class="demo-btn">{% trans "Front Desk" %} — Dana</button></form>
+                <form method="post" action="/auth/demo-login/manager/">{% csrf_token %}<button type="submit" class="demo-btn">{% trans "Manager" %} — Morgan</button></form>
+                <form method="post" action="/auth/demo-login/worker-1/">{% csrf_token %}<button type="submit" class="demo-btn">{% trans "Lead Worker" %} — Casey</button></form>
+                <form method="post" action="/auth/demo-login/worker-2/">{% csrf_token %}<button type="submit" class="demo-btn">{% trans "Direct Service" %} — Noor</button></form>
+                <form method="post" action="/auth/demo-login/executive/">{% csrf_token %}<button type="submit" class="demo-btn">{% trans "Executive" %} — Eva</button></form>
+                <form method="post" action="/auth/demo-login/admin/">{% csrf_token %}<button type="submit" class="demo-btn">{% trans "Administrator" %} — Alex</button></form>
             </div>
 
             <hr class="demo-divider" style="margin: 1.5rem 0 1rem;">
             <p class="demo-heading">{% trans "Participant Portal" %}</p>
             <p class="demo-subtext">{% trans "See what participants see when they check their goals and progress (if this is enabled)" %}</p>
             <div class="demo-grid">
-                <a href="/auth/demo-portal-login/" class="demo-btn demo-btn-portal">{% trans "Participant" %} — Jordan</a>
+                <form method="post" action="/auth/demo-portal-login/">{% csrf_token %}<button type="submit" class="demo-btn demo-btn-portal">{% trans "Participant" %} — Jordan</button></form>
             </div>
         </section>
         {% endif %}

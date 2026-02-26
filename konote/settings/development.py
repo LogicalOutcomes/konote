@@ -1,6 +1,7 @@
 """Development settings — local use only."""
 import os
 
+from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
 # Load .env FIRST so its values take priority over the dev defaults below.
@@ -14,7 +15,18 @@ load_dotenv()
 os.environ.setdefault("SECRET_KEY", "insecure-dev-key-do-not-use-in-production")
 os.environ.setdefault("DATABASE_URL", "postgresql://konote:konote@localhost:5432/konote")
 os.environ.setdefault("AUDIT_DATABASE_URL", "postgresql://audit_writer:audit_pass@localhost:5433/konote_audit")
-os.environ.setdefault("FIELD_ENCRYPTION_KEY", "ly6OqAlMm32VVf08PoPJigrLCIxGd_tW1-kfWhXxXj8=")
+
+# FIELD_ENCRYPTION_KEY must be set explicitly — no hardcoded fallback.
+# A known-public key in dev settings is a security risk: if a developer
+# accidentally points dev settings at real data, all PII is encrypted with
+# a publicly-committed key.
+# Generate a key with: python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+if not os.environ.get("FIELD_ENCRYPTION_KEY"):
+    raise ImproperlyConfigured(
+        "FIELD_ENCRYPTION_KEY is not set. Add it to your .env file.\n"
+        "Generate one with: python -c \"from cryptography.fernet import Fernet; "
+        "print(Fernet.generate_key().decode())\""
+    )
 
 from .base import *  # noqa: F401, F403
 

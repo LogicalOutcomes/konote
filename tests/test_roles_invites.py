@@ -184,11 +184,16 @@ class DemoLoginTest(TestCase):
         enc_module._fernet = None
 
     def test_demo_login_works_when_enabled(self):
-        response = self.client.get("/auth/demo-login/worker-1/")
+        response = self.client.post("/auth/demo-login/worker-1/")
         self.assertEqual(response.status_code, 302)  # Redirect to home
 
+    def test_demo_login_get_rejected(self):
+        """GET requests must be rejected — prevents CSRF-style forced authentication."""
+        response = self.client.get("/auth/demo-login/worker-1/")
+        self.assertEqual(response.status_code, 405)
+
     def test_demo_login_invalid_role_404(self):
-        response = self.client.get("/auth/demo-login/superuser/")
+        response = self.client.post("/auth/demo-login/superuser/")
         self.assertEqual(response.status_code, 404)
 
 
@@ -203,5 +208,5 @@ class DemoLoginDisabledTest(TestCase):
         enc_module._fernet = None
 
     def test_demo_login_404_when_disabled(self):
-        response = self.client.get("/auth/demo-login/worker-1/")
+        response = self.client.post("/auth/demo-login/worker-1/")
         self.assertEqual(response.status_code, 404)
