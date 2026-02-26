@@ -17,6 +17,8 @@
 
     <!-- CSRF token for HTMX -->
     <meta name="csrf-token" content="{{ csrf_token }}">
+    <!-- Emergency logout token — session-bound, single-use; read by portal.js quickExit() -->
+    <meta name="emergency-logout-token" content="{{ emergency_logout_token }}">
 
     <!-- Pico CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">

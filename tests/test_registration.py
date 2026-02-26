@@ -815,13 +815,15 @@ class CapacityLimitPropertiesTest(TestCase):
         self.assertTrue(link.is_open())
 
 
-@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, EMBED_ALLOWED_ORIGINS=["https://example.org"])
 class IframeEmbedSecurityTest(TestCase):
     """Security tests for iframe embed functionality.
 
     Verifies that:
-    - Registration forms CAN be framed when embed=1
+    - Registration forms CAN be framed when embed=1 and EMBED_ALLOWED_ORIGINS is set
+    - Registration forms are denied when EMBED_ALLOWED_ORIGINS is empty (even with embed=1)
     - Registration forms cannot be framed without embed=1
+    - The CSP frame-ancestors header is set to the configured allowed origins
     - Admin pages cannot be framed
     - Client data pages cannot be framed
     """
@@ -850,7 +852,7 @@ class IframeEmbedSecurityTest(TestCase):
         enc_module._fernet = None
 
     def test_embed_mode_allows_framing(self):
-        """Registration form with ?embed=1 should allow iframe framing."""
+        """Registration form with ?embed=1 and configured origins should allow framing."""
         url = reverse(
             "registration:public_registration_form",
             kwargs={"slug": self.registration_link.slug}
@@ -861,6 +863,21 @@ class IframeEmbedSecurityTest(TestCase):
         # Embed mode exempts the response from X-Frame-Options middleware
         self.assertTrue(getattr(response, "xframe_options_exempt", False))
         self.assertIsNone(response.get("X-Frame-Options"))
+        # A CSP frame-ancestors directive must be set to the allowed origins
+        csp = response.get("Content-Security-Policy", "")
+        self.assertIn("frame-ancestors", csp)
+        self.assertIn("https://example.org", csp)
+
+    @override_settings(EMBED_ALLOWED_ORIGINS=[])
+    def test_embed_mode_denied_when_no_origins_configured(self):
+        """Registration form with ?embed=1 must return 403 when EMBED_ALLOWED_ORIGINS is empty."""
+        url = reverse(
+            "registration:public_registration_form",
+            kwargs={"slug": self.registration_link.slug}
+        ) + "?embed=1"
+
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 403)
 
     def test_regular_form_has_default_frame_options(self):
         """Registration form without ?embed=1 should NOT be frameable."""
@@ -912,6 +929,9 @@ class IframeEmbedSecurityTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(getattr(response, "xframe_options_exempt", False))
         self.assertIsNone(response.get("X-Frame-Options"))
+        csp = response.get("Content-Security-Policy", "")
+        self.assertIn("frame-ancestors", csp)
+        self.assertIn("https://example.org", csp)
 
     def test_admin_pages_cannot_be_framed(self):
         """Admin pages should never allow framing."""

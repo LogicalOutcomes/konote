@@ -6,8 +6,15 @@
 function quickExit() {
     // Clear any localStorage drafts before leaving (privacy safety)
     try { localStorage.clear(); } catch (e) { /* ignore */ }
-    // Best-effort session destruction via sendBeacon
-    navigator.sendBeacon('/my/emergency-logout/');
+    // Read the session-bound emergency logout token from the meta tag.
+    // The token is validated server-side; without it the endpoint returns 403.
+    var tokenMeta = document.querySelector('meta[name="emergency-logout-token"]');
+    var token = tokenMeta ? tokenMeta.getAttribute('content') : '';
+    // Send token as form data so Django can read it via request.POST.get("token").
+    // sendBeacon with FormData sends a multipart/form-data POST, which Django parses.
+    var payload = new FormData();
+    payload.append('token', token);
+    navigator.sendBeacon('/my/emergency-logout/', payload);
     // Read configurable exit URL from button data attribute (set by admin)
     var btn = document.getElementById('quick-exit');
     var exitUrl = (btn && btn.dataset.exitUrl) || 'https://www.theweathernetwork.com';

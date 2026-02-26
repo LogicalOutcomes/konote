@@ -37,3 +37,7 @@ ALLOWED_HOSTS = ["*"]
 SESSION_COOKIE_SECURE = False
 LANGUAGE_COOKIE_SECURE = False
 SECURE_SSL_REDIRECT = False
+
+# Allow any origin to embed registration forms in dev so the embed preview
+# works without configuring real allowed origins.
+EMBED_ALLOWED_ORIGINS = ["*"]

@@ -297,7 +297,12 @@ def portal_context(request):
         elif url_name == "settings":
             page = "settings"
 
-    return {"participant": participant, "portal_page": page}
+    emergency_logout_token = request.session.get("_portal_emergency_logout_token", "")
+    return {
+        "participant": participant,
+        "portal_page": page,
+        "emergency_logout_token": emergency_logout_token,
+    }
 
 
 def unread_messages(request):
