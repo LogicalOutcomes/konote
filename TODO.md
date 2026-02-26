@@ -137,5 +137,3 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [x] Verified: surveys already implemented — full apps/surveys/ with models, views, forms, tests, migrations — 2026-02-24 (SURVEY1)
 - [x] Verified: first-run setup wizard already implemented — 8-step guided configuration in admin settings — 2026-02-24 (SETUP1-UI)
 - [x] Verified: deployment workflow enhancements already implemented — is_demo flag, seed command, demo/real separation — 2026-02-24 (DEPLOY1)
-- [x] Verified: participant-facing progress view already implemented — descriptor timeline in portal — 2026-02-24 (PORTAL-PROGRESS1)
-- [x] Re-add API-based auto-translation to translate_strings — `--auto-translate` flag, OpenAI-compatible API, 21 tests (PR #63) — 2026-02-24 (I18N-API1)
