@@ -193,6 +193,7 @@ Current DRRs:
 - `tasks/design-rationale/bilingual-requirements.md` — Bilingual (EN/FR) requirements. Why translation is non-negotiable (Official Languages Act, Ontario FLSA, funder requirements, WCAG 3.1.2). Anti-patterns (deferring translations, treating them as low-priority). Technical approach (Claude + API backup). Translation standards for Claude sessions.
 - `tasks/design-rationale/ai-feature-toggles.md` — AI feature toggle split. Two-tier design: `ai_assist_tools_only` (no participant data, default enabled) vs `ai_assist_participant_data` (de-identified participant content, default disabled). Anti-patterns (including translation in toggles, single three-level toggle). Future path: self-hosted open-source LLM for participant data.
 - `tasks/design-rationale/ovhcloud-deployment.md` — OVHcloud Beauharnois deployment architecture. Full stack (Docker Compose, Caddy, PostgreSQL x2), 4-layer self-healing automation, backup strategy, Azure Key Vault for encryption keys, LLM integration, multi-agency hosting. Anti-patterns (US cloud backups, missing autoheal, single-point key storage).
+- `tasks/design-rationale/data-access-residency-policy.md` — Data access residency policy. Three access tiers (direct data access, indirect, no data access). Canadian residency required for Tier 1 (SSH, DB, backups). Open questions on VPN-from-Canada, temporary travel, contractor/MSP requirements. Anti-patterns (VPN as residency substitute, production data in non-Canadian staging).
 
 ### How Claude Manages Tasks
 
