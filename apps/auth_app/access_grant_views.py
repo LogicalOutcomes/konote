@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.utils.translation import gettext as _
 
 from datetime import timedelta
@@ -64,6 +65,8 @@ def access_grant_request(request):
                     },
                 )
 
+                if not url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                    next_url = "/"
                 return redirect(next_url)
     else:
         form = AccessGrantForm()
