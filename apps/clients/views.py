@@ -1142,6 +1142,7 @@ def client_consent_save(request, client_id):
 
 
 @login_required
+@requires_permission("client.view_name")
 def client_search(request):
     """HTMX: return search results partial.
 

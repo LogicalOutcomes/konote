@@ -111,6 +111,22 @@ class UserEditForm(forms.ModelForm):
             cleaned["is_admin"] = False
             if self.instance and self.instance.pk:
                 cleaned["is_active"] = self.instance.is_active
+        # Guard: prevent the last active admin from removing their own admin status
+        if (
+            self.instance
+            and self.instance.pk
+            and self.instance.is_admin
+            and not cleaned.get("is_admin", True)
+        ):
+            remaining_admins = (
+                User.objects.filter(is_admin=True, is_active=True)
+                .exclude(pk=self.instance.pk)
+                .count()
+            )
+            if remaining_admins == 0:
+                raise forms.ValidationError({
+                    "is_admin": _("Cannot remove admin status from the last active admin user."),
+                })
         return cleaned
 
     def save(self, commit=True):
