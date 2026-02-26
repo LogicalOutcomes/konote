@@ -425,6 +425,77 @@ For the first OVHcloud deployment (single agency):
 
 ---
 
+## Second-Level Support Options
+
+OVHcloud provides infrastructure-only support. Their [Statement of Support](https://us.ovhcloud.com/support/statement-of-support/) explicitly excludes OS administration, application troubleshooting, Docker, databases, and all software. Even at their Business tier ($300 USD/mo minimum, 30-minute P1 response), they will only confirm "your VPS is running" or replace failed hardware — they won't restart containers, check PostgreSQL, or investigate application issues.
+
+The 4-layer self-healing stack (see above) handles most incidents automatically. But when automated recovery fails, a human needs to SSH in and diagnose. These are the options for that second-level response:
+
+### Option 1: Canadian MSP (Managed Service Provider)
+
+OVHcloud maintains a [partner network](https://partner.ovhcloud.com/en/managed-services-provider/) of MSPs who provide managed operations on OVHcloud infrastructure.
+
+| Factor | Detail |
+|--------|--------|
+| Scope | OS patching, Docker management, PostgreSQL monitoring, incident response |
+| Availability | 24/7 or business hours depending on contract |
+| Cost | ~$200–500 CAD/mo for a small VPS fleet (varies by MSP) |
+| Data sovereignty | Must verify the MSP is Canadian-incorporated and stores logs in Canada |
+| Pros | Professional ops team, SLA-backed response, no KoNote team burden |
+| Cons | Cost, onboarding time, need to vet for data sovereignty |
+
+**When to use:** When KoNote is managing 5+ agency instances and the operational burden exceeds what the team can handle.
+
+### Option 2: Freelance Sysadmin on Retainer
+
+A Canadian-based Linux/Docker sysadmin with SSH access to the VPS(es), responding to escalation alerts from Layer 4.
+
+| Factor | Detail |
+|--------|--------|
+| Scope | Incident response, Docker troubleshooting, backup verification, OS updates |
+| Availability | Business hours + on-call for critical alerts |
+| Cost | ~$50–150 CAD/mo retainer + hourly for incidents (~$75–125/hr) |
+| Data sovereignty | Verify individual is Canadian-resident; SSH access from Canada |
+| Pros | Low fixed cost, personal relationship, can learn KoNote-specific runbook |
+| Cons | Single point of failure (one person), vacation coverage gaps |
+
+**When to use:** At launch through early growth (1–5 agencies). Low cost, good enough for the volume.
+
+### Option 3: KoNote Team Member with Runbook
+
+A designated KoNote team member (e.g., PB) trained on the deployment runbook, responding to escalation alerts.
+
+| Factor | Detail |
+|--------|--------|
+| Scope | Same as freelance sysadmin, but internal |
+| Availability | Business hours; after-hours = best-effort |
+| Cost | $0 additional (existing team) |
+| Pros | Deepest knowledge of the application, no onboarding, no data sovereignty concerns |
+| Cons | Adds operational burden to a small team, no after-hours SLA, bus-factor risk |
+
+**When to use:** From day one. This is the default — the question is when to add one of the options above alongside it.
+
+### OVHcloud Support Tiers (for reference — infrastructure only)
+
+| Tier | P1 Response | Hours | Cost | What It Gets You |
+|------|------------|-------|------|------------------|
+| Standard | 8 business hrs | Business hours | Included | Tickets, docs |
+| Premium | 2 business hrs | 24/7 incidents | ~$50–60 USD/mo | Priority handling |
+| Business | 30 minutes | 24/7 | 10% of bill, min $300 USD/mo | Dedicated contacts |
+| Enterprise | 15 minutes | 24/7 | Custom | Technical Account Manager |
+
+**Recommendation for KoNote:** Standard tier is sufficient. OVHcloud support only covers hardware/network — paying more won't help with application-level issues. Invest in a sysadmin retainer instead.
+
+### Recommended Progression
+
+| Stage | Second-Level Support | Estimated Cost |
+|-------|---------------------|----------------|
+| Launch (1–2 agencies) | KoNote team + runbook | $0 |
+| Early growth (3–5 agencies) | Add freelance sysadmin retainer | ~$100 CAD/mo |
+| Scale (5–10+ agencies) | Transition to Canadian MSP | ~$300–500 CAD/mo |
+
+---
+
 ## Anti-Patterns
 
 **Do not:**
