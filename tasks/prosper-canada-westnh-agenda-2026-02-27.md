@@ -22,25 +22,22 @@ Walk through the latest iteration of KoNote — primarily for Claire's benefit.
 - Demo instance is pre-loaded with financial coaching data (30 clients across 6 programs) to show realistic workflows
 - Key areas to show: client intake, progress notes, outcome tracking, reporting
 
-### 3. Hosting and Infrastructure (~10 min)
+### 3. Hosting Update (~5 min)
 
-KoNote will be hosted on Azure (Canada Central, Toronto region).
+WestNH's instance is already running on Azure (Canada Central, Toronto region), covered by their Microsoft for Nonprofits credits. Brief overview for context:
 
-- **Canadian data residency** — all participant data stays in Canada
-- **Enterprise security** — SOC 2, ISO 27001, HIPAA certifications
-- **Nonprofit credits** — Microsoft offers $2,700 CAD/year through Microsoft for Nonprofits (does WestNH already have a Microsoft nonprofit account?)
-- **Encryption** — all personal information is encrypted at rest; encryption keys managed through Azure Key Vault
-- Each agency runs its own dedicated instance (not shared infrastructure)
+- Dedicated instance — WestNH's data is not shared with other agencies
+- All participant data stays in Canada; encrypted at rest
+- Covered by Azure's SOC 2, ISO 27001 certifications
 
 ### 4. What We Need from You (~10 min)
 
-To move forward with deployment, we'll need the following from WestNH:
+To configure the instance for WestNH, we'll need:
 
 - **Staff list** — job titles and which program(s) each person works in
 - **Programs/services** — the distinct programs you run (as you'd describe them to a funder)
 - **Sensitive programs** — any services where even knowing someone is enrolled could cause harm
 - **Current intake form** — what information you collect when someone first comes in
-- **Hosting decision** — confirmation that Azure hosting works for your requirements
 - **Terminology preferences** — what you call your participants (clients, participants, members), plans, notes, etc.
 
 ### 5. Next Steps (~5 min)
