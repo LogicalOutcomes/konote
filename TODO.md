@@ -7,7 +7,6 @@
 - [x] Validate CIDS implementation plan against CIDS 3.2.0 spec — 5 corrections + 6 Phase 3 items identified, GO with corrections. All decisions resolved 2026-02-25: FullTier target, JSON-LD export, pin v3.2.0, pre-map codes, auto-populate fields (see tasks/cids-plan-validation.md) (CIDS-APPROVE1)
 - [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
-- [ ] Deploy and test config-aware demo data engine on Azure client instance — write client-specific profile JSON, run generate_demo_data, verify demo mode end-to-end (see tasks/demo-data-engine-guide.md, PR #92) — PB (DEMO-ENGINE-DEPLOY1)
 
 ## Active Work
 
@@ -125,6 +124,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Deploy and test config-aware demo data engine on Azure client instance — wrote Prosper Canada profile JSON, built and pushed to ACR, redeployed container, generated 30 demo clients across 6 programs, verified end-to-end with Playwright — 2026-02-25 (DEMO-ENGINE-DEPLOY1)
 - [x] GATED clinical access for PM — justification UI, time-boxed grants, configurable reasons + durations, admin views, 32 tests — 2026-02-25 (PERM-P6)
 - [x] Per-field front desk edit — build admin UI to configure which contact fields receptionist can edit (prerequisite for P5) — 2026-02-25 (PERM-P8)
 - [x] DV-safe mode — hide DV-sensitive fields from front desk when DV flag set; two-person removal, fail-closed, 28+5 tests — 2026-02-25 (PERM-P5)

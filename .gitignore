@@ -51,6 +51,9 @@ tests/*.log
 # Original document files (converted to .md — originals kept locally for reference)
 tasks/prosper-canada/originals/
 
+# Deploy scripts (kept locally, not tracked)
+scripts/push-acr-local.ps1
+
 # Docker volumes
 pgdata/
 audit_pgdata/
