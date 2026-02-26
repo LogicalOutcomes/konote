@@ -3,8 +3,6 @@
 ## Flagged
 
 - [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — SG (ONBOARD-APPROVE)
-- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
-- [x] Validate CIDS implementation plan against CIDS 3.2.0 spec — 5 corrections + 6 Phase 3 items identified, GO with corrections. All decisions resolved 2026-02-25: FullTier target, JSON-LD export, pin v3.2.0, pre-map codes, auto-populate fields (see tasks/cids-plan-validation.md) (CIDS-APPROVE1)
 - [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
 - [ ] Define data access residency policy — who needs to be Canadian-resident to hold production access (SSH, DB, backups) vs. who can work from outside Canada (code-only, no data access). Affects hiring, contracting, and agency data agreements. (see tasks/design-rationale/data-access-residency-policy.md) — GK (POLICY-RESIDENCY1)
@@ -21,6 +19,7 @@
 - [ ] Document scheduled task setup for export monitoring in the runbook — PB (EXP2w)
 - [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — (DEPLOY-TOOLKIT1)
+- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
 - [ ] Fix demo login section layout — compress demo user buttons (remove blank space between boxes), centre the Participant portal button — PB (UI1)
 
 ## Do Occasionally
@@ -128,6 +127,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Validate CIDS implementation plan against CIDS 3.2.0 spec — GO with corrections, all decisions resolved 2026-02-25 (see tasks/cids-plan-validation.md) — 2026-02-25 (CIDS-APPROVE1)
 - [x] Deploy and test config-aware demo data engine on Azure client instance — wrote Prosper Canada profile JSON, built and pushed to ACR, redeployed container, generated 30 demo clients across 6 programs, verified end-to-end with Playwright — 2026-02-25 (DEMO-ENGINE-DEPLOY1)
 - [x] GATED clinical access for PM — justification UI, time-boxed grants, configurable reasons + durations, admin views, 32 tests — 2026-02-25 (PERM-P6)
 - [x] Per-field front desk edit — build admin UI to configure which contact fields receptionist can edit (prerequisite for P5) — 2026-02-25 (PERM-P8)
