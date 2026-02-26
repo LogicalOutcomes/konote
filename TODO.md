@@ -91,6 +91,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST1)
 - [ ] Seed comm-my-messages populated state with actual messages — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST2)
 - [ ] Add new features and capabilities to the web site as they are built (WEBSITE-UPDATE1)
+- [ ] Use KoNote logos from `Logo/brand/` folder across app and website (see PR #100) — PB (LOGO1)
 
 ## Parking Lot: Ready to Build
 
@@ -121,6 +122,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
 - [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
 - [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
+- [ ] Consider self-hosted open-source LLM for AI operations (e.g. Qwen3.5-35B-A3B) — cost, privacy, and latency trade-offs vs cloud API — GK reviews (AI-SELFHOST1)
 
 ## Recently Done
 
