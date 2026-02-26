@@ -1,0 +1,110 @@
+{
+  "description": "Demo data profile for Prosper Canada Financial Coaching — realistic financial empowerment coaching scenarios with diverse Canadian demographics",
+  "defaults": {
+    "clients_per_program": 5,
+    "days_span": 180,
+    "note_count_range": [8, 12]
+  },
+  "programs": {
+    "Prosper Canada Financial Coaching": {
+      "note_text_pool": [
+        "Intake session. Reviewed financial situation overview — income sources, major expenses, and outstanding debts. Participant identified three priority areas: building an emergency fund, reducing credit card debt, and understanding available government benefits.",
+        "Budgeting session. Mapped monthly income against expenses using the cash flow worksheet. Found $85 in potential savings by switching phone plan and cancelling unused subscriptions. Participant felt empowered seeing it laid out.",
+        "Discussed credit report. Reviewed Equifax report together and explained each section. Participant was surprised to see an old collection account — connected with credit counselling service for next steps.",
+        "Goal review session. Participant met two of three monthly goals: opened a TFSA and set up automatic $50 transfers. Third goal (calling CRA about benefits) was delayed due to work schedule. Rescheduled.",
+        "Tax preparation support. Helped participant gather documents for tax filing. Identified unclaimed Canada Child Benefit and GST/HST credit. Estimated $2,400 in missed refunds over two years.",
+        "Debt repayment planning. Compared snowball vs. avalanche approaches for three outstanding debts totalling $8,200. Participant chose avalanche method. Created a 14-month payoff timeline.",
+        "Follow-up session. Participant reports feeling less anxious about finances this month. Has been using the spending tracker consistently. Credit card balance decreased by $340 since last session.",
+        "Housing cost review. Analysed rent-to-income ratio (currently 48%). Discussed strategies for finding more affordable housing and explored rent supplement programs available in the region.",
+        "Benefits check-in. Reviewed all government benefits participant is currently receiving. Identified Ontario Trillium Benefit and Canada Workers Benefit as unclaimed. Submitted applications together.",
+        "Crisis follow-up. Participant received unexpected car repair bill ($1,800). Reviewed emergency fund options and connected with community lending circle. Discussed priority payment order for this month."
+      ],
+      "client_words_pool": [
+        "I didn't know I was leaving money on the table with those tax credits",
+        "Seeing the budget on paper made it feel manageable for the first time",
+        "I'm scared of my credit report but I'm glad we looked at it together",
+        "The automatic savings — I don't even notice it coming out now",
+        "I wish I had learned this stuff in school, honestly",
+        "My kids don't need to worry about money the way I did growing up",
+        "Having someone explain the forms in plain language makes such a difference",
+        "I told my sister about the benefits check and she's going to come in too",
+        "I actually feel like I have a plan now, not just stress",
+        "The debt payoff date on that chart keeps me going when it feels hard"
+      ],
+      "suggestions_pool": [
+        "It would help to have budget worksheets available in Arabic so I can work on them at home more easily",
+        "Group sessions with other newcomer women could help us share tips and feel less alone in learning about finances",
+        "Evening or Saturday appointments would help since I work during the day and cannot easily take time off",
+        "Materials in simplified Chinese would help me understand without always relying on my daughter to translate",
+        "Childcare during coaching sessions would make it much easier to attend and focus on the conversation",
+        "An online portal where I can track my credit score progress between sessions would be really motivating",
+        "A short guide comparing debt repayment strategies would help me choose the best approach",
+        "A checklist of all the benefits and credits available to families with children would be very useful"
+      ],
+      "suggestion_themes": [
+        {
+          "name": "Multilingual resources and interpretation",
+          "description": "Participants request coaching materials and support in languages other than English and French — Arabic, Chinese, Tagalog, etc.",
+          "status": "open",
+          "source": "ai_generated"
+        },
+        {
+          "name": "Evening and weekend appointment availability",
+          "description": "Several participants have requested coaching sessions outside of standard business hours to accommodate work and family schedules.",
+          "status": "in_progress",
+          "source": "ai_generated"
+        },
+        {
+          "name": "Childcare during coaching sessions",
+          "description": "Parents — especially single mothers — report difficulty attending sessions due to lack of childcare.",
+          "status": "open",
+          "source": "manual"
+        },
+        {
+          "name": "Digital tools for tracking progress",
+          "description": "Participants want online or app-based tools to monitor their financial progress between coaching sessions.",
+          "status": "open",
+          "source": "ai_generated"
+        },
+        {
+          "name": "Benefits and credits awareness",
+          "description": "Participants want comprehensive information about government benefits and tax credits available to them.",
+          "status": "open",
+          "source": "ai_generated"
+        }
+      ],
+      "client_personas": [
+        {
+          "first_name": "Amira",
+          "last_name": "Al-Rashid",
+          "trend": "improving",
+          "goal_statement": "I want to build an emergency fund so unexpected bills don't throw everything off."
+        },
+        {
+          "first_name": "Jean-Pierre",
+          "last_name": "Bouchard",
+          "trend": "mixed",
+          "goal_statement": "I need to get my credit card debt under control before it gets worse."
+        },
+        {
+          "first_name": "Priya",
+          "last_name": "Sharma",
+          "trend": "improving",
+          "goal_statement": "I want to understand my credit report and start building a better score."
+        },
+        {
+          "first_name": "Kwame",
+          "last_name": "Asante",
+          "trend": "struggling",
+          "goal_statement": "I need help getting my international credentials recognised so I can earn what I'm worth."
+        },
+        {
+          "first_name": "Marie-Claire",
+          "last_name": "Dubois",
+          "trend": "crisis_then_improving",
+          "goal_statement": "I need a fresh start — a safe place to live and a budget that works for me and my children."
+        }
+      ]
+    }
+  }
+}
