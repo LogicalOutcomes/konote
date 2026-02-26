@@ -64,6 +64,8 @@ Every person who works with client data gets assigned one of these roles per pro
 | **Program Manager** | Program coordinator, team lead, clinical supervisor | Oversee a program, supervise staff, review reports |
 | **Executive** | Executive Director, board member, funder liaison | See the big picture — aggregate numbers, not individual files |
 
+*These are the default roles. Your agency may have staff whose responsibilities don't map neatly to one of these four — for example, a clinical supervisor who needs read-only access, or a data entry clerk who enters information but shouldn't see historical notes. If none of these roles fit, note the gap and we'll discuss what access that person actually needs.*
+
 #### System Administrator
 
 The System Administrator flag is separate from program roles. It controls:
