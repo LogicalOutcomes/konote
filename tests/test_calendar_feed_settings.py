@@ -11,6 +11,7 @@ class CalendarFeedSettingsTests(TestCase):
             username="calendar_user",
             password="testpass123",
             display_name="Calendar User",
+            is_admin=True,
         )
 
     def test_outlook_subscribe_url_uses_webcal_scheme(self):

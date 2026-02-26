@@ -296,6 +296,7 @@ class InstanceSettingsTest(TestCase):
             "meeting_time_start": "9",
             "meeting_time_end": "17",
             "meeting_time_step": "30",
+            "access_tier": "1",
         })
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(InstanceSetting.get("product_name"), "MyApp")
@@ -407,6 +408,7 @@ class DocumentStorageSettingsTest(TestCase):
             "meeting_time_end": "17",
             "meeting_time_step": "30",
             "document_storage_url_template": "https://contoso.sharepoint.com/sites/konote/Clients/{record_id}/",
+            "access_tier": "1",
         })
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
@@ -430,6 +432,7 @@ class DocumentStorageSettingsTest(TestCase):
             "meeting_time_start": "9",
             "meeting_time_end": "17",
             "meeting_time_step": "30",
+            "access_tier": "1",
         })
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(
@@ -454,6 +457,7 @@ class DocumentStorageSettingsTest(TestCase):
             "meeting_time_start": "9",
             "meeting_time_end": "17",
             "meeting_time_step": "30",
+            "access_tier": "1",
         })
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(

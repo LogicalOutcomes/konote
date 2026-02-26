@@ -1226,9 +1226,10 @@ def client_search(request):
             results.append(item)
 
     # Second pass: search progress notes for clients not matched by name/ID
+    # PHIPA-SEARCH1: pass user for consent filtering
     if query and unmatched:
         note_matched_ids = _find_clients_with_matching_notes(
-            unmatched.keys(), query
+            unmatched.keys(), query, user=request.user,
         )
         for cid in note_matched_ids:
             results.append(unmatched[cid])

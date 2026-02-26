@@ -917,7 +917,7 @@ class HomePageFrenchTest(FrenchJourneyBaseTest):
         self._login_staff_fr()
         resp = self.http.get("/")
         self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, "\u00c9l\u00e9ments prioritaires")  # "Priority Items"
+        self.assertContains(resp, "Ce qui n\u00e9cessite votre attention")  # "What needs your attention"
 
     def test_home_page_no_english_leaks(self):
         """Home page in French does not show key English-only UI strings."""

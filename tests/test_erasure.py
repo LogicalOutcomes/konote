@@ -12,6 +12,7 @@ from apps.clients.erasure import (
     build_data_summary,
     check_all_approved,
     execute_erasure,
+    execute_scheduled_tier3,
     get_available_tiers,
     get_required_programs,
     is_deadlocked,
@@ -376,6 +377,8 @@ class ExecuteErasureTests(TestCase):
     def test_execute_deletes_client_and_cascades(self):
         cf_pk = self.cf.pk
         execute_erasure(self.er, "127.0.0.1")
+        # Tier 3 is now scheduled — call execute_scheduled_tier3 to actually delete
+        execute_scheduled_tier3(self.er, "127.0.0.1")
 
         self.assertFalse(ClientFile.objects.filter(pk=cf_pk).exists())
         self.assertFalse(Alert.objects.filter(client_file_id=cf_pk).exists())
@@ -385,9 +388,8 @@ class ExecuteErasureTests(TestCase):
     def test_execute_updates_erasure_request(self):
         execute_erasure(self.er, "127.0.0.1")
         self.er.refresh_from_db()
-        self.assertEqual(self.er.status, "approved")
-        self.assertIsNotNone(self.er.completed_at)
-        self.assertIsNone(self.er.client_file)
+        # Tier 3 is now scheduled — status is "scheduled" until execute_scheduled_tier3 runs
+        self.assertEqual(self.er.status, "scheduled")
 
     def test_execute_scrubs_registration_pii(self):
         from apps.registration.models import RegistrationLink, RegistrationSubmission
@@ -405,6 +407,8 @@ class ExecuteErasureTests(TestCase):
         sub.save()
 
         execute_erasure(self.er, "127.0.0.1")
+        # Tier 3 is scheduled — execute_scheduled_tier3 performs the actual deletion and scrubbing
+        execute_scheduled_tier3(self.er, "127.0.0.1")
 
         sub.refresh_from_db()
         # Submission should still exist but PII scrubbed
@@ -675,8 +679,9 @@ class ErasureViewWorkflowTests(TestCase):
         })
         self.assertEqual(resp.status_code, 302)
         er.refresh_from_db()
-        self.assertEqual(er.status, "approved")
-        self.assertFalse(ClientFile.objects.filter(pk=self.cf.pk).exists())
+        # Tier 3 is now scheduled — client is not deleted until execute_scheduled_tier3 runs
+        self.assertEqual(er.status, "scheduled")
+        self.assertTrue(ClientFile.objects.filter(pk=self.cf.pk).exists())
 
     @patch("apps.clients.erasure_views._notify_pms_erasure_request")
     def test_approve_anonymise_via_post(self, mock_notify):

@@ -189,7 +189,12 @@ class ConfidentialIsolationTest(TestCase):
 
     def test_search_does_not_reveal_confidential_clients(self):
         self.http.login(username="standard_staff", password="testpass123")
-        resp = self.http.get("/participants/search/?q=Bob")
+        # Use HTMX header so only the results partial is returned (not the full
+        # page, which echoes the query string in the language-switch form URL).
+        resp = self.http.get(
+            "/participants/search/?q=Bob",
+            HTTP_HX_REQUEST="true",
+        )
         self.assertNotContains(resp, "Bob")
 
     def test_search_no_hint_about_hidden_data(self):
@@ -895,13 +900,13 @@ class SmallCellSuppressionTest(TestCase):
         self.assertEqual(suppress_small_cell(0, self.standard_prog), 0)
 
     def test_confidential_small_count_suppressed(self):
-        """Confidential program with < 10 clients shows '< 10'."""
-        self.assertEqual(suppress_small_cell(7, self.conf_prog), "< 10")
-        self.assertEqual(suppress_small_cell(1, self.conf_prog), "< 10")
-        self.assertEqual(suppress_small_cell(0, self.conf_prog), "< 10")
+        """Confidential program with < 5 clients shows '< 5'."""
+        self.assertEqual(suppress_small_cell(7, self.conf_prog), 7)
+        self.assertEqual(suppress_small_cell(1, self.conf_prog), "< 5")
+        self.assertEqual(suppress_small_cell(0, self.conf_prog), "< 5")
 
     def test_confidential_large_count_not_suppressed(self):
-        """Confidential program with >= 10 clients shows exact count."""
+        """Confidential program with >= 5 clients shows exact count."""
         self.assertEqual(suppress_small_cell(10, self.conf_prog), 10)
         self.assertEqual(suppress_small_cell(25, self.conf_prog), 25)
 
