@@ -123,7 +123,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 - [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
 - [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
 - [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
-- [ ] Consider self-hosted open-source LLM for AI operations (e.g. Qwen3.5-35B-A3B) — cost, privacy, and latency trade-offs vs cloud API — GK reviews (AI-SELFHOST1)
+- [ ] Self-hosted LLM for suggestion theme tagging — Qwen3.5-35B-A3B on OVHcloud Beauharnois, shared endpoint, nightly batch — see tasks/design-rationale/ai-feature-toggles.md — GK reviews (AI-SELFHOST1)
 
 ## Recently Done
 

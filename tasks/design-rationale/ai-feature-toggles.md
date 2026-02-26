@@ -213,15 +213,77 @@ The goal builder input should include helper text: "Describe the general goal ar
 
 When AI generates a suggested target or metric, staff should see a small "AI-suggested" indicator — not as a warning, but as transparency. Preserves human agency in the decision.
 
-## Future: Self-Hosted Open-Source LLM for Participant Data
+## Future: Self-Hosted Open-Source LLM for Participant Suggestions
 
 For agencies with heightened data sovereignty concerns (Indigenous communities under OCAP principles, newcomer-serving organisations), even de-identified data leaving the agency's infrastructure may be unacceptable.
 
-**Future architectural direction:** For `ai_assist_participant_data`, support a self-hosted open-source LLM (e.g., Llama, Mistral) so participant data never leaves the agency's infrastructure.
+### Scope: Participant suggestions only
 
-The toggle design already supports this — `ai_assist_participant_data` can switch between external API and local model without changing the user-facing feature. The existing `INSIGHTS_API_BASE` environment variable already supports pointing to a local Ollama endpoint.
+The self-hosted LLM analyses the `participant_suggestion` field — the response to "If you could change one thing about this program, what would it be?"
 
-**When to build:** After the first agency deployment, when real data sovereignty requirements are articulated by a specific partner. Do not build speculatively.
+**Why suggestions specifically:** Unlike `client_words` (clinical observations recorded by the worker) or `participant_reflection` (personal processing), suggestions are explicit communications directed at the agency — participants telling managers and executive directors what they want changed. This makes them a natural fit for AI-assisted theme aggregation: the LLM surfaces patterns from individual suggestions so program managers and EDs can see what participants are collectively asking for, without reading every note. This reframes the self-hosted LLM from a privacy accommodation into a **participant voice pipeline** — a direct channel from participants to agency leadership, with AI doing the aggregation that would otherwise require hours of manual review.
+
+`client_words` and `participant_reflection` are not in scope for self-hosting. They remain on the existing OpenRouter path via the current insights feature.
+
+**Output: qualitative theme tagging.** The LLM tags each suggestion with themes from a predefined list (e.g., "scheduling," "location," "peer support"). Tags are used only in aggregate reporting — never surfaced at the individual participant level. This avoids creating new personal health information records. Open-ended interpretation and sentiment analysis were considered and rejected (methodological risk, Campbell's Law concerns).
+
+### Recommended model
+
+**Qwen3.5-35B-A3B** (February 2026). 35B total parameters, 3B active per forward pass (Mixture-of-Experts with 256 experts, top-9 routing). Apache 2.0 licensed. Benchmarks above Qwen3-235B-A22B despite far lower compute requirements. The 3B active parameters make CPU inference viable — no GPU required at KoNote's volume.
+
+Re-evaluate model choice at implementation time. The architecture is model-agnostic — swapping models in Ollama requires no code changes.
+
+### Recommended hosting: OVHcloud Beauharnois, QC
+
+**Host:** OVHcloud Beauharnois, Quebec (region `ca-east-bhs`). ~90,000 servers, powered by Quebec hydroelectricity.
+
+**Why OVHcloud:** OVH Groupe SA is French-incorporated (Euronext Paris). OVH Canada (OVH Hébergement Inc.) is a Canadian subsidiary of the French parent. The US CLOUD Act applies to OVH US (a separate, independent subsidiary) but **not** to OVH Canada or OVH France. This provides meaningful protection against the specific threat KoNote addresses: US government access to Canadian health data.
+
+**Why not US-incorporated providers:** The CLOUD Act applies to US-incorporated companies regardless of where their data centres are located. DigitalOcean (Toronto DC), AWS (Montreal DC), and Azure (Canada Central) are all subject to US government data requests even for data stored in Canada.
+
+**Canadian court jurisdiction:** In September 2025, an Ontario court ordered OVH Canada to produce subscriber data for the RCMP. This demonstrates that Canadian authorities can compel OVH Canada to produce data. For KoNote's threat model, this is expected — Canadian law enforcement jurisdiction over Canadian data is normal. However, for agencies serving populations with concerns about Canadian law enforcement (e.g., undocumented newcomers), this risk profile is different and should be discussed during the Agency Permissions Interview.
+
+### Architecture
+
+- Self-host only for suggestion analysis (gated by the `ai_assist_participant_data` toggle)
+- Keep Claude via OpenRouter for translation and `ai_assist_tools_only` features — no privacy benefit to self-hosting those, and Claude produces higher quality results for nuanced translation, SMART goal formulation, and CIDS taxonomy mapping
+- **Shared inference endpoint:** one OVHcloud VPS serves all agencies (~$10–15 CAD/agency/month for 10 agencies). KoNote manages the infrastructure, not individual agencies. Separate processing queues per agency — no cross-agency data mixing.
+- **Nightly batch processing** via cron/Celery with email alerts on failure. Not real-time per-note analysis.
+- The existing `INSIGHTS_API_BASE` environment variable already routes to a local Ollama endpoint — near-zero code change for the routing itself
+
+### Code constraint to address at implementation time
+
+`collect_quotes()` in `insights.py` fills 30 shared slots with `client_words` first (lines 249–292). Suggestions only get remaining space (lines 337–354). In a program with 30+ substantive `client_words` entries, zero suggestions reach the LLM. A suggestions-only collection path is needed so suggestions aren't crowded out by other quote types.
+
+### Cost estimate
+
+| Tier | Monthly cost | Per-agency (10 agencies) | Notes |
+|------|-------------|------------------------|-------|
+| CPU-only shared VPS (64 GB RAM) | ~$100–150 CAD | ~$10–15 CAD | Recommended starting point |
+| GPU cloud L4 (24 GB VRAM) | ~$634 CAD | ~$63 CAD | If available in BHS — verify with OVHcloud sales |
+| Dedicated GPU (Scale-GPU-1, 2× L4) | ~$1,400–1,500 CAD | ~$140–150 CAD | Overkill at current volume |
+
+### Capacity estimate (10 agencies × 200 participants × 2 visits/month)
+
+- ~4,000 notes/month, ~25% have suggestions = **~1,000 suggestions/month**
+- ~800 tokens per LLM call (system prompt + suggestion text + theme tag response)
+- ~800K tokens/month total
+- **~1–2 hours of CPU inference/month** via nightly batch
+- Comfortable headroom on a single 64 GB RAM VPS
+
+### Risks to monitor
+
+| Risk | Likelihood | Impact | Mitigation |
+|------|-----------|--------|------------|
+| Agency boards object to "AI reading participant suggestions" | Medium | High | Clear governance documentation, opt-in via toggle, aggregate-only output |
+| CPU inference too slow at higher volumes | Low | Medium | Upgrade to GPU tier ($634/mo) or optimise batching |
+| OVHcloud discontinues BHS services | Low | Medium | Architecture is provider-agnostic (any Ollama host works) |
+| Qwen3.5-35B-A3B superseded by better model | High | Low | Swap model in Ollama, no code changes |
+| Theme tags create new PHI obligations | Medium | High | Aggregate-only design — never surface at individual participant level |
+
+### When to build
+
+After the first agency deployment, when real data sovereignty requirements are articulated by a specific partner. Do not build speculatively. The toggle design and `INSIGHTS_API_BASE` routing already support the switch — implementation is primarily infrastructure setup, not application code.
 
 ## Migration Notes
 
