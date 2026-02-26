@@ -422,11 +422,13 @@ def export_form(request):
     if all_programs_mode:
         # All programs the user has access to
         accessible_programs = get_manageable_programs(request.user)
+        _has_confidential_program = accessible_programs.filter(is_confidential=True).exists()
         client_ids = ClientProgramEnrolment.objects.filter(
             program__in=accessible_programs, status="enrolled",
             client_file_id__in=accessible_client_ids,
         ).values_list("client_file_id", flat=True).distinct()
     else:
+        _has_confidential_program = program.is_confidential
         client_ids = ClientProgramEnrolment.objects.filter(
             program=program, status="enrolled",
             client_file_id__in=accessible_client_ids,
@@ -669,8 +671,6 @@ def export_form(request):
 
         safe_display = sanitise_filename(str(program_display_name).replace(" ", "_"))
 
-        safe_display = sanitise_filename(str(program_display_name).replace(" ", "_"))
-
         if export_format == "pdf":
             from .pdf_views import generate_outcome_report_pdf
             pdf_response = generate_outcome_report_pdf(
@@ -805,8 +805,6 @@ def export_form(request):
         # Apply small-cell suppression for confidential programs
         total_clients_display = suppress_small_cell(len(unique_clients), program, is_confidential=_has_confidential_program)
         total_data_points_display = suppress_small_cell(len(rows), program, is_confidential=_has_confidential_program)
-
-        safe_display_indiv = sanitise_filename(str(program_display_name).replace(" ", "_"))
 
         safe_display_indiv = sanitise_filename(str(program_display_name).replace(" ", "_"))
 
