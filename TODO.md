@@ -4,7 +4,6 @@
 
 - [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
-- [ ] Define data access residency policy — who needs to be Canadian-resident to hold production access (SSH, DB, backups) vs. who can work from outside Canada (code-only, no data access). Affects hiring, contracting, and agency data agreements. (see tasks/design-rationale/data-access-residency-policy.md) — GK (POLICY-RESIDENCY1)
 
 ## Active Work
 
