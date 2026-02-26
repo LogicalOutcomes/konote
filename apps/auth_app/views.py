@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.http import HttpResponseNotAllowed
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 from django.utils import timezone
 from django.utils import translation
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -305,6 +306,7 @@ def azure_callback(request):
     return _set_language_cookie(response, lang_code)
 
 
+@require_POST
 def demo_login(request, role):
     """Quick-login as a demo user. Only available when DEMO_MODE is enabled."""
     if not settings.DEMO_MODE:
@@ -340,6 +342,7 @@ def demo_login(request, role):
     return _set_language_cookie(response, lang_code)
 
 
+@require_POST
 def demo_portal_login(request):
     """Quick-login as the demo participant. Only available when DEMO_MODE is enabled."""
     if not settings.DEMO_MODE:

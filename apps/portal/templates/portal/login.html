@@ -77,7 +77,7 @@
     <section class="portal-demo-section">
         <p><strong>{% trans "Try the Demo" %}</strong></p>
         <p><small>{% trans "Sign in instantly as a demo participant" %}</small></p>
-        <a href="/auth/demo-portal-login/" role="button">{% trans "Sign in as Jordan" %}</a>
+        <form method="post" action="/auth/demo-portal-login/">{% csrf_token %}<button type="submit" role="button">{% trans "Sign in as Jordan" %}</button></form>
     </section>
     {% endif %}
 </article>
