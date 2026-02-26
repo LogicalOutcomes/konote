@@ -281,3 +281,23 @@ class AccessGrantForm(forms.ModelForm):
                 _("Maximum duration is %(max)s days.") % {"max": max_days}
             )
         return value
+
+
+class AccessGrantReasonForm(forms.Form):
+    """Form for admin creation of an AccessGrantReason (label + optional French label)."""
+
+    label = forms.CharField(
+        max_length=200,
+        label=_("English label"),
+    )
+    label_fr = forms.CharField(
+        max_length=200,
+        required=False,
+        label=_("French label (optional)"),
+    )
+
+    def clean_label(self):
+        return self.cleaned_data["label"].strip()
+
+    def clean_label_fr(self):
+        return self.cleaned_data["label_fr"].strip()

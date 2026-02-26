@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _, gettext_lazy as _lazy
 
 from apps.auth_app.decorators import admin_required
 
-from .forms import FeatureToggleForm, InstanceSettingsForm, MessagingSettingsForm, TerminologyForm
+from .forms import DemoDataForm, FeatureToggleForm, InstanceSettingsForm, MessagingSettingsForm, TerminologyForm
 from .models import DEFAULT_TERMS, TERM_HELP_TEXT, FeatureToggle, InstanceSetting, TerminologyOverride
 
 
@@ -735,16 +735,13 @@ def demo_data_management(request):
             from apps.admin_settings.demo_engine import DemoDataEngine
             from io import StringIO
 
-            try:
-                clients_per_program = int(request.POST.get("clients_per_program", 3))
-                days_span = int(request.POST.get("days_span", 180))
-            except (ValueError, TypeError):
-                clients_per_program = 3
-                days_span = 180
+            demo_form = DemoDataForm(request.POST)
+            if not demo_form.is_valid():
+                messages.error(request, _("Invalid parameters for demo data generation."))
+                return redirect("admin_settings:demo_data_management")
 
-            # Clamp values
-            clients_per_program = max(1, min(10, clients_per_program))
-            days_span = max(30, min(365, days_span))
+            clients_per_program = demo_form.cleaned_data["clients_per_program"]
+            days_span = demo_form.cleaned_data["days_span"]
 
             output = StringIO()
             engine = DemoDataEngine(stdout=output, stderr=output)

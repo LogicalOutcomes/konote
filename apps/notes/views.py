@@ -14,7 +14,7 @@ from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
@@ -694,11 +694,11 @@ def note_create(request, client_id):
                 if is_pm or getattr(request.user, "is_admin", False):
                     messages.info(
                         request,
-                        mark_safe(
-                            _("Suggestion recorded.")
-                            + ' <a href="' + reverse("suggestion_themes:theme_list") + '">'
-                            + _("View Suggestion Themes")
-                            + "</a>"
+                        format_html(
+                            '{} <a href="{}">{}</a>',
+                            _("Suggestion recorded."),
+                            reverse("suggestion_themes:theme_list"),
+                            _("View Suggestion Themes"),
                         ),
                     )
                 else:
