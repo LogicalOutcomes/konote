@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Access Grant Reasons" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Access Grant Reasons" %}</h1>
+    <p>{% trans "Manage the list of reasons program managers can choose when requesting clinical data access." %}</p>
+</hgroup>
+
+<figure>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Reason" %}</th>
+                <th>{% trans "French" %}</th>
+                <th>{% trans "Status" %}</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for reason in reasons %}
+            <tr>
+                <td>{{ reason.label }}</td>
+                <td>{{ reason.label_fr|default:"—" }}</td>
+                <td>
+                    {% if reason.is_active %}
+                        <span class="badge badge-success">{% trans "Active" %}</span>
+                    {% else %}
+                        <span class="badge">{% trans "Inactive" %}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="toggle">
+                        <input type="hidden" name="reason_id" value="{{ reason.pk }}">
+                        <button type="submit" class="outline" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">
+                            {% if reason.is_active %}{% trans "Deactivate" %}{% else %}{% trans "Activate" %}{% endif %}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</figure>
+
+<h2>{% trans "Add a Reason" %}</h2>
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="add">
+    <div class="grid">
+        <label>
+            {% trans "English" %}
+            <input type="text" name="label" required maxlength="100" placeholder="{% trans 'e.g. Program audit' %}">
+        </label>
+        <label>
+            {% trans "French (optional)" %}
+            <input type="text" name="label_fr" maxlength="100" placeholder="{% trans 'e.g. Audit de programme' %}">
+        </label>
+    </div>
+    <button type="submit">{% trans "Add Reason" %}</button>
+</form>
+{% endblock %}

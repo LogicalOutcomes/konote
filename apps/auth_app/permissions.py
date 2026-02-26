@@ -14,7 +14,7 @@ from apps.auth_app.constants import ROLE_RANK
 # Permission levels
 DENY = "deny"          # Never allowed
 ALLOW = "allow"        # Always allowed (within program scope)
-SCOPED = "scoped"      # Allowed if assigned to specific group/client
+PROGRAM = "program"    # Allowed within user's assigned program(s)
 GATED = "gated"        # Allowed with documented reason (just-in-time access)
 PER_FIELD = "per_field"  # Check field-level configuration
 
@@ -116,6 +116,10 @@ PERMISSIONS = {
 
         "message.leave": ALLOW,    # Front desk can leave messages for case workers
         "message.view": DENY,      # Cannot read messages left for others
+
+        "circle.view": DENY,      # Front desk don't see family/network relationships
+        "circle.create": DENY,
+        "circle.edit": DENY,
     },
 
     "staff": {
@@ -125,74 +129,74 @@ PERMISSIONS = {
         "client.view_contact": ALLOW,
         "client.view_safety": ALLOW,  # Allergies, medical alert CONDITIONS (not treatments),
                                       # emergency contacts, staff alerts. NOT medications.
-        "client.view_medications": SCOPED,  # Same access pattern as clinical data
-        "client.view_clinical": SCOPED,  # Phase 1: program. Phase 2: assigned groups/clients
-        "client.edit": SCOPED,  # Enforced by @requires_permission
-        "client.create": SCOPED,  # Creates in own program, especially outreach. Enforced by @requires_permission
-        "client.edit_contact": SCOPED,  # Phone + email within own program. Enforced by @requires_permission
-        "client.transfer": SCOPED,  # Outreach/drop-in staff manage intake-to-program enrolment.
+        "client.view_medications": PROGRAM,  # Same access pattern as clinical data
+        "client.view_clinical": PROGRAM,  # Phase 1: program. Phase 2: assigned groups/clients
+        "client.edit": PROGRAM,  # Enforced by @requires_permission
+        "client.create": PROGRAM,  # Creates in own program, especially outreach. Enforced by @requires_permission
+        "client.edit_contact": PROGRAM,  # Phone + email within own program. Enforced by @requires_permission
+        "client.transfer": PROGRAM,  # Outreach/drop-in staff manage intake-to-program enrolment.
                                     # Enforced by @requires_permission
 
-        "attendance.check_in": SCOPED,
-        "attendance.view_report": SCOPED,
+        "attendance.check_in": PROGRAM,
+        "attendance.view_report": PROGRAM,
 
-        "group.view_roster": SCOPED,  # Phase 1: program. Phase 2: assigned groups only
-        "group.view_detail": SCOPED,
-        "group.log_session": SCOPED,
+        "group.view_roster": PROGRAM,  # Phase 1: program. Phase 2: assigned groups only
+        "group.view_detail": PROGRAM,
+        "group.log_session": PROGRAM,
         "group.edit": DENY,  # Can't change group config
-        "group.manage_members": SCOPED,  # Facilitators manage own group rosters.
+        "group.manage_members": PROGRAM,  # Facilitators manage own group rosters.
                                          # All changes must create audit entry (PHIPA — group type reveals diagnosis).
                                          # Enforced by @requires_permission
-        "group.create": SCOPED,  # Staff can create groups in their program. Enforced by @requires_permission
-        "group.manage_content": SCOPED,  # Milestones + outcomes for project groups. Enforced by @requires_permission
-        "group.view_report": SCOPED,  # Attendance reports for groups in their program. Enforced by @requires_permission
+        "group.create": PROGRAM,  # Staff can create groups in their program. Enforced by @requires_permission
+        "group.manage_content": PROGRAM,  # Milestones + outcomes for project groups. Enforced by @requires_permission
+        "group.view_report": PROGRAM,  # Attendance reports for groups in their program. Enforced by @requires_permission
 
-        "note.view": SCOPED,  # Enforced by @requires_permission. Migrate from @program_role_required
-        "note.create": SCOPED,  # Enforced by @requires_permission
-        "note.edit": SCOPED,  # Own notes only. Enforced by @requires_permission
+        "note.view": PROGRAM,  # Enforced by @requires_permission. Migrate from @program_role_required
+        "note.create": PROGRAM,  # Enforced by @requires_permission
+        "note.edit": PROGRAM,  # Own notes only. Enforced by @requires_permission
 
-        "plan.view": SCOPED,  # Enforced by @requires_permission
-        "plan.edit": SCOPED,  # Enforced by @requires_permission
+        "plan.view": PROGRAM,  # Enforced by @requires_permission
+        "plan.edit": PROGRAM,  # Enforced by @requires_permission
 
-        "metric.view_individual": SCOPED,
-        "metric.view_aggregate": SCOPED,
+        "metric.view_individual": PROGRAM,
+        "metric.view_aggregate": PROGRAM,
 
         "report.program_report": DENY,
         "report.funder_report": DENY,  # Managers/executives generate funder reports
         "report.data_extract": DENY,
 
-        "insights.view": SCOPED,  # Program-level outcome insights. Enforced by @requires_permission
+        "insights.view": PROGRAM,  # Program-level outcome insights. Enforced by @requires_permission
 
-        "suggestion_theme.view": SCOPED,  # View themes in own program
+        "suggestion_theme.view": PROGRAM,  # View themes in own program
         "suggestion_theme.manage": DENY,  # Staff cannot create/edit/link themes
 
-        "event.view": SCOPED,  # Enforced by @requires_permission
-        "event.create": SCOPED,
+        "event.view": PROGRAM,  # Enforced by @requires_permission
+        "event.create": PROGRAM,
 
-        "meeting.view": SCOPED,    # Staff see their own meetings. Enforced by @requires_permission
-        "meeting.create": SCOPED,  # Staff schedule meetings with clients. Enforced by @requires_permission
-        "meeting.edit": SCOPED,    # Staff edit their own meetings. Enforced by @requires_permission
+        "meeting.view": PROGRAM,    # Staff see their own meetings. Enforced by @requires_permission
+        "meeting.create": PROGRAM,  # Staff schedule meetings with clients. Enforced by @requires_permission
+        "meeting.edit": PROGRAM,    # Staff edit their own meetings. Enforced by @requires_permission
 
-        "communication.view": SCOPED,  # View logs for clients in their program
-        "communication.log": SCOPED,   # Log calls, texts, emails. Enforced by @requires_permission
+        "communication.view": PROGRAM,  # View logs for clients in their program
+        "communication.log": PROGRAM,   # Log calls, texts, emails. Enforced by @requires_permission
 
-        "alert.view": SCOPED,
-        "alert.create": SCOPED,
+        "alert.view": PROGRAM,
+        "alert.create": PROGRAM,
         "alert.cancel": DENY,  # Two-person safety rule. Staff posts "recommend cancellation"
                                 # with assessment; PM reviews and cancels.
                                 # See alert recommendation workflow.
-        "alert.recommend_cancel": SCOPED,  # Staff proposes cancellation; PM approves (two-person rule).
+        "alert.recommend_cancel": PROGRAM,  # Staff proposes cancellation; PM approves (two-person rule).
                                            # Enforced by @requires_permission
         "alert.review_cancel_recommendation": DENY,  # Only PMs review recommendations
 
-        "custom_field.view": SCOPED,
-        "custom_field.edit": SCOPED,
+        "custom_field.view": PROGRAM,
+        "custom_field.edit": PROGRAM,
 
         # Clinical records
-        "consent.view": SCOPED,
-        "consent.manage": SCOPED,  # Enforced by @requires_permission
-        "intake.view": SCOPED,
-        "intake.edit": SCOPED,
+        "consent.view": PROGRAM,
+        "consent.manage": PROGRAM,  # Enforced by @requires_permission
+        "intake.view": PROGRAM,
+        "intake.edit": PROGRAM,
 
         # Delete permissions (destructive actions — almost always admin-only)
         "note.delete": DENY,   # Notes are clinical records — cancel, don't delete
@@ -214,7 +218,11 @@ PERMISSIONS = {
         "registration.manage": DENY,
 
         "message.leave": ALLOW,    # Staff can leave messages for each other
-        "message.view": SCOPED,    # Can read messages for clients in their program
+        "message.view": PROGRAM,    # Can read messages for clients in their program
+
+        "circle.view": PROGRAM,    # View circles for clients in their program
+        "circle.create": PROGRAM,  # Create circles for clients in their program
+        "circle.edit": PROGRAM,    # Edit circles and manage members in their program
     },
 
     "program_manager": {
@@ -226,11 +234,11 @@ PERMISSIONS = {
         "client.view_safety": ALLOW,  # Allergies, medical alert CONDITIONS (not treatments),
                                       # emergency contacts, staff alerts. NOT medications.
         "client.view_medications": ALLOW,  # Same access pattern as clinical data
-        "client.view_clinical": ALLOW,  # Phase 3: GATED (just-in-time with reason)
-        "client.edit": SCOPED,  # Same as staff until Phase 3
-        "client.create": SCOPED,  # Intake in smaller programs. Enforced by @requires_permission
+        "client.view_clinical": GATED,  # Tier 3: requires AccessGrant. Tiers 1-2: relaxed to ALLOW by decorator.
+        "client.edit": PROGRAM,  # Same as staff until Phase 3
+        "client.create": PROGRAM,  # Intake in smaller programs. Enforced by @requires_permission
         "client.edit_contact": DENY,  # PMs don't edit individual contact info
-        "client.transfer": SCOPED,  # PMs manage program enrolment for their programs.
+        "client.transfer": PROGRAM,  # PMs manage program enrolment for their programs.
                                     # Enforced by @requires_permission
 
         "attendance.check_in": DENY,
@@ -245,11 +253,11 @@ PERMISSIONS = {
         "group.manage_content": ALLOW,  # Managers oversee project milestones/outcomes. Enforced by @requires_permission
         "group.view_report": ALLOW,  # Attendance reports. Enforced by @requires_permission
 
-        "note.view": ALLOW,  # Phase 3: GATED with documented reason. Enforced by @requires_permission
-        "note.create": SCOPED,  # Lead workers / team leads carry caseloads and write notes
-        "note.edit": SCOPED,  # Own notes only. Enforced by @requires_permission
+        "note.view": GATED,  # Tier 3: requires AccessGrant. Tiers 1-2: relaxed to ALLOW by decorator.
+        "note.create": PROGRAM,  # Lead workers / team leads carry caseloads and write notes
+        "note.edit": PROGRAM,  # Own notes only. Enforced by @requires_permission
 
-        "plan.view": ALLOW,  # Phase 3: GATED. Enforced by @requires_permission
+        "plan.view": GATED,  # Tier 3: requires AccessGrant. Tiers 1-2: relaxed to ALLOW by decorator.
         "plan.edit": DENY,
 
         "metric.view_individual": ALLOW,  # Phase 3: GATED
@@ -265,17 +273,17 @@ PERMISSIONS = {
         "insights.view": ALLOW,  # Program-level outcome insights. Enforced by @requires_permission
 
         "suggestion_theme.view": ALLOW,  # View all themes in own programs
-        "suggestion_theme.manage": SCOPED,  # Create/edit/link themes in own programs
+        "suggestion_theme.manage": PROGRAM,  # Create/edit/link themes in own programs
 
         "event.view": ALLOW,  # Phase 3: GATED. Enforced by @requires_permission
         "event.create": DENY,
 
         "meeting.view": ALLOW,    # PMs see team meetings for oversight
-        "meeting.create": SCOPED,  # PMs can schedule in smaller programs
+        "meeting.create": PROGRAM,  # PMs can schedule in smaller programs
         "meeting.edit": DENY,     # PMs don't edit individual meetings
 
         "communication.view": ALLOW,  # PMs view communication logs for oversight + funder stats
-        "communication.log": SCOPED,  # PMs log in smaller programs
+        "communication.log": PROGRAM,  # PMs log in smaller programs
 
         "alert.view": ALLOW,
         "alert.create": ALLOW,  # Supervisors should flag safety concerns when reviewing
@@ -291,7 +299,7 @@ PERMISSIONS = {
 
         # Clinical records
         "consent.view": ALLOW,
-        "consent.manage": SCOPED,  # PMs do intake in smaller programs. Consent records
+        "consent.manage": PROGRAM,  # PMs do intake in smaller programs. Consent records
                                    # immutable after creation — can only withdraw and re-record.
                                    # Enforced by @requires_permission
         "intake.view": ALLOW,
@@ -301,27 +309,31 @@ PERMISSIONS = {
         "note.delete": DENY,   # Notes are clinical records — cancel, don't delete
         "client.delete": DENY,  # Handled by admin erasure workflow
         "plan.delete": DENY,   # Plans should be archived, not deleted
-        "erasure.manage": SCOPED,  # PMs manage erasure requests for their own programs.
+        "erasure.manage": PROGRAM,  # PMs manage erasure requests for their own programs.
                                    # Enforced by @requires_permission_global + internal scoping
 
-        # System administration — SCOPED for program managers (own program only)
-        "user.manage": SCOPED,  # Own program team. CANNOT elevate roles
+        # System administration — PROGRAM for program managers (own program only)
+        "user.manage": PROGRAM,  # Own program team. CANNOT elevate roles
                                 # (front desk->staff) or create PM/executive accounts.
                                 # Requires custom enforcement — see no-elevation constraint.
                                 # Enforced by @requires_permission + custom view logic
         "settings.manage": DENY,  # Enforced by @admin_required (not matrix-driven)
-        "program.manage": SCOPED,  # Own program only. Enforced by @requires_permission
-        "audit.view": SCOPED,  # QA oversight for own program. Enforced by @requires_permission
+        "program.manage": PROGRAM,  # Own program only. Enforced by @requires_permission
+        "audit.view": PROGRAM,  # QA oversight for own program. Enforced by @requires_permission
 
         # PM admin features — PMs manage these for their own programs
-        "template.plan.manage": SCOPED,  # Create/edit plan templates in own program
-        "template.note.manage": SCOPED,  # Create/edit note templates in own program
-        "event_type.manage": SCOPED,     # Create/edit event types in own program
-        "metric.manage": SCOPED,         # Create/edit metrics in own program
-        "registration.manage": SCOPED,   # Manage registration links for own program
+        "template.plan.manage": PROGRAM,  # Create/edit plan templates in own program
+        "template.note.manage": PROGRAM,  # Create/edit note templates in own program
+        "event_type.manage": PROGRAM,     # Create/edit event types in own program
+        "metric.manage": PROGRAM,         # Create/edit metrics in own program
+        "registration.manage": PROGRAM,   # Manage registration links for own program
 
         "message.leave": ALLOW,    # PMs can leave messages
         "message.view": ALLOW,     # Can read all messages in their program
+
+        "circle.view": ALLOW,     # View all circles with accessible members
+        "circle.create": ALLOW,   # Create circles
+        "circle.edit": ALLOW,     # Edit circles and manage members
     },
 
     "executive": {
@@ -416,6 +428,10 @@ PERMISSIONS = {
 
         "message.leave": DENY,     # Executives don't interact with individual clients
         "message.view": DENY,      # No access to operational messages
+
+        "circle.view": DENY,      # Executives see aggregate data only, no family detail
+        "circle.create": DENY,
+        "circle.edit": DENY,
     },
 }
 
@@ -435,7 +451,7 @@ def can_access(role, permission):
         permission: permission key like "group.view_roster"
 
     Returns:
-        Permission level: DENY, ALLOW, SCOPED, GATED, or PER_FIELD
+        Permission level: DENY, ALLOW, PROGRAM, GATED, or PER_FIELD
     """
     return PERMISSIONS.get(role, {}).get(permission, DENY)
 
@@ -484,7 +500,7 @@ def permission_to_plain_english(perm_key, perm_level):
 
     Args:
         perm_key: permission key like "group.view_roster"
-        perm_level: permission level (ALLOW, DENY, SCOPED, etc.)
+        perm_level: permission level (ALLOW, DENY, PROGRAM, etc.)
 
     Returns:
         Human-readable description of what this permission means
@@ -576,12 +592,16 @@ def permission_to_plain_english(perm_key, perm_level):
 
         "message.leave": "Leave messages for case workers about participants",
         "message.view": "Read messages left by front desk or other staff",
+
+        "circle.view": "View circles (families, households, support networks)",
+        "circle.create": "Create new circles",
+        "circle.edit": "Edit circles and manage circle members",
     }
 
     base = TRANSLATIONS.get(perm_key, perm_key)
 
-    if perm_level == SCOPED:
-        base += " (for their assigned clients/groups)"
+    if perm_level == PROGRAM:
+        base += " (within their assigned program)"
     elif perm_level == GATED:
         base += " (with documented reason)"
     elif perm_level == PER_FIELD:

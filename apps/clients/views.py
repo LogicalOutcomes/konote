@@ -12,14 +12,14 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.auth_app.decorators import admin_required, requires_permission
+from apps.auth_app.decorators import _get_user_highest_role, admin_required, requires_permission
 from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 
 from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm
 from .helpers import get_client_tab_counts, get_document_folder_url
-from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldGroup
+from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldDefinition, CustomFieldGroup
 from .validators import (
     normalize_phone_number, normalize_postal_code,
     validate_phone_number, validate_postal_code,
@@ -48,7 +48,10 @@ from apps.programs.access import (
     get_user_program_ids as _get_user_program_ids,
     get_accessible_programs as _get_accessible_programs,
     get_program_from_client as _get_program_from_client,
+    should_share_across_programs,
+    _resolve_viewing_program,
 )
+from django.db.models import Q
 
 
 def _get_accessible_clients(user, active_program_ids=None):
@@ -130,22 +133,99 @@ def _get_last_contact_dates(client_ids):
     return result
 
 
-def _find_clients_with_matching_notes(client_ids, query_lower):
+def _find_clients_with_matching_notes(client_ids, query_lower, user,
+                                      active_program_ids=None):
     """Return set of client IDs whose progress notes contain the search query.
 
     Encrypted fields can't be searched in SQL, so we decrypt each note's text
     fields in memory and check for a case- and accent-insensitive substring match.
     Stops checking a client as soon as one matching note is found.
+
+    PHIPA (PHIPA-SEARCH1): Filters notes by program access and consent
+    settings to prevent side-channel disclosure through search results.
+    A search for sensitive clinical terms must not reveal that a restricted-
+    program note contains that term.
     """
-    matched = set()
+    from apps.clients.dashboard_views import _get_feature_flags
+
+    user_program_ids = _get_user_program_ids(user, active_program_ids)
+
+    # Step 1: Filter notes to user's accessible programs (basic access control)
     notes = (
         ProgressNote.objects.filter(client_file_id__in=client_ids)
+        .filter(
+            Q(author_program_id__in=user_program_ids)
+            | Q(author_program__isnull=True)
+        )
+        .select_related("author_program")
         .prefetch_related("target_entries")
     )
+
+    # Step 2: Check agency sharing flag once
+    flags = _get_feature_flags()
+    agency_shares = flags.get("cross_program_note_sharing", True)
+
+    # Step 3: Pre-load per-client consent overrides for efficient filtering.
+    # Load client objects for those that need per-client checking.
+    # - Agency ON:  most clients (default) get all accessible notes.
+    #               Only filter for clients with cross_program_sharing="restrict".
+    # - Agency OFF: most clients (default) get only viewing-program notes.
+    #               Clients with cross_program_sharing="consent" get all accessible notes.
+    client_sharing_map = dict(
+        ClientFile.objects.filter(pk__in=client_ids)
+        .values_list("pk", "cross_program_sharing")
+    )
+
+    # Pre-compute the viewing program for clients that need per-client filtering.
+    # Resolving viewing program is expensive, so only do it when needed.
+    viewing_program_cache = {}  # client_id -> viewing_program or None
+
+    def _get_viewing_program_for_client(client_id):
+        if client_id not in viewing_program_cache:
+            client_obj = ClientFile.objects.get(pk=client_id)
+            viewing_program_cache[client_id] = _resolve_viewing_program(
+                user, client_obj, active_program_ids
+            )
+        return viewing_program_cache[client_id]
+
+    def _note_passes_consent(note):
+        """Check if a note passes PHIPA consent filtering for its client."""
+        cid = note.client_file_id
+        sharing = client_sharing_map.get(cid, "default")
+
+        # Determine if this client shares across programs
+        if sharing == "consent":
+            return True  # Client explicitly consents — all accessible notes OK
+        if sharing == "restrict":
+            # Client restricts — only viewing program notes
+            if note.author_program is None:
+                return True  # Legacy notes always visible
+            vp = _get_viewing_program_for_client(cid)
+            if vp is None:
+                return False  # Fail-closed (DRR decision #9)
+            return note.author_program_id == vp.pk
+
+        # sharing == "default" — follow agency toggle
+        if agency_shares:
+            return True  # Agency shares by default, client uses default
+        # Agency does NOT share, client uses default — restrict to viewing program
+        if note.author_program is None:
+            return True  # Legacy notes always visible
+        vp = _get_viewing_program_for_client(cid)
+        if vp is None:
+            return False  # Fail-closed
+        return note.author_program_id == vp.pk
+
+    matched = set()
     for note in notes:
         cid = note.client_file_id
         if cid in matched:
             continue  # already found a match for this client
+
+        # PHIPA consent check before revealing search match
+        if not _note_passes_consent(note):
+            continue
+
         for text in [note.notes_text or "", note.summary or "", note.participant_reflection or ""]:
             if query_lower in _strip_accents(text.lower()):
                 matched.add(cid)
@@ -236,9 +316,11 @@ def client_list(request):
             client_data.append(item)
 
     # Second pass: search progress notes for clients not matched by name/ID
+    # PHIPA-SEARCH1: pass user + active_program_ids for consent filtering
     if search_query and unmatched:
         note_matched_ids = _find_clients_with_matching_notes(
-            unmatched.keys(), search_query
+            unmatched.keys(), search_query,
+            user=request.user, active_program_ids=active_ids,
         )
         for cid in note_matched_ids:
             client_data.append(unmatched[cid])
@@ -258,10 +340,12 @@ def client_list(request):
     page = paginator.get_page(request.GET.get("page"))
 
     # Show create button if user's role grants client.create permission
-    from apps.auth_app.decorators import _get_user_highest_role
-    from apps.auth_app.permissions import DENY, PERMISSIONS
     user_role = _get_user_highest_role(request.user)
     can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
+    # Bulk operation permission flags (UX17)
+    can_bulk_status = PERMISSIONS.get(user_role, {}).get("client.edit", DENY) != DENY
+    can_bulk_transfer = PERMISSIONS.get(user_role, {}).get("client.transfer", DENY) != DENY
+    show_bulk = can_bulk_status or can_bulk_transfer
 
     context = {
         "page": page,
@@ -273,6 +357,9 @@ def client_list(request):
         "search_query": request.GET.get("q", ""),
         "sort_by": sort_by,
         "can_create": can_create,
+        "show_bulk": show_bulk,
+        "can_bulk_status": can_bulk_status,
+        "can_bulk_transfer": can_bulk_transfer,
     }
 
     # HTMX request — return only the table partial
@@ -286,8 +373,17 @@ def client_list(request):
 @requires_permission("client.create")
 def client_create(request):
     available_programs = _get_accessible_programs(request.user)
+
+    # Circle integration — only when feature is enabled
+    circle_choices = None
+    from apps.admin_settings.models import FeatureToggle
+    if FeatureToggle.get_all_flags().get("circles", False):
+        from apps.circles.helpers import get_visible_circles
+        visible = get_visible_circles(request.user)
+        circle_choices = [(c.pk, c.name) for c in visible]
+
     if request.method == "POST":
-        form = ClientFileForm(request.POST, available_programs=available_programs)
+        form = ClientFileForm(request.POST, available_programs=available_programs, circle_choices=circle_choices)
         if form.is_valid():
             # BUG-7: Wrap in transaction so client + enrollments commit
             # atomically. Prevents a half-created client if enrollment
@@ -325,6 +421,29 @@ def client_create(request):
                     ClientProgramEnrolment.objects.create(
                         client_file=client, program=program, status="enrolled",
                     )
+                # Circle linking/creation (when circles feature is on)
+                existing_circle_id = form.cleaned_data.get("existing_circle", "")
+                new_circle_name = form.cleaned_data.get("new_circle_name", "").strip()
+                if existing_circle_id or new_circle_name:
+                    from apps.circles.models import Circle, CircleMembership
+                    from apps.circles.helpers import get_visible_circles
+                    if existing_circle_id:
+                        circle = get_visible_circles(request.user).filter(pk=existing_circle_id).first()
+                    else:
+                        circle = Circle(is_demo=request.user.is_demo)
+                        circle.name = new_circle_name
+                        circle.created_by = request.user
+                        circle.save()
+                    if circle:
+                        # Set as primary contact if first participant member
+                        has_participant = CircleMembership.objects.filter(
+                            circle=circle, client_file__isnull=False, status="active",
+                        ).exists()
+                        CircleMembership.objects.create(
+                            circle=circle,
+                            client_file=client,
+                            is_primary_contact=not has_participant,
+                        )
             # Allow immediate access on redirect — the RBAC middleware may
             # not yet see the new enrollment depending on connection timing.
             request.session["_just_created_client_id"] = client.pk
@@ -338,7 +457,7 @@ def client_create(request):
             )
             return redirect("clients:client_detail", client_id=client.pk)
     else:
-        form = ClientFileForm(available_programs=available_programs)
+        form = ClientFileForm(available_programs=available_programs, circle_choices=circle_choices)
     return render(request, "clients/form.html", {"form": form, "editing": False})
 
 
@@ -528,23 +647,36 @@ def client_transfer(request, client_id):
 @login_required
 @requires_permission("client.edit_contact", _get_program_from_client)
 def client_contact_edit(request, client_id):
-    """Edit client phone number only — narrow scope for front desk.
+    """Edit client contact fields based on field access config.
 
-    Front desk can update phone (client.edit_contact: ALLOW).
+    Front desk sees fields based on FieldAccessConfig (PER_FIELD).
+    Staff and above see phone + email by default.
     Does NOT include address or emergency contact (DV safety implications).
-    Replace with PER_FIELD form in Phase 2.
     """
     base_queryset = get_client_queryset(request.user)
     client = get_object_or_404(base_queryset, pk=client_id)
+
+    # Use field access map from decorator if available (PER_FIELD),
+    # otherwise default to phone + email editable (staff/admin).
+    field_access_map = getattr(request, "field_access_map", {"phone": "edit", "email": "edit"})
+
     if request.method == "POST":
-        form = ClientContactForm(request.POST)
+        form = ClientContactForm(request.POST, field_access_map=field_access_map)
         if form.is_valid():
-            client.phone = form.cleaned_data["phone"]
+            if "phone" in form.cleaned_data:
+                client.phone = form.cleaned_data["phone"]
+            if "email" in form.cleaned_data:
+                client.email = form.cleaned_data["email"]
             client.save()
             messages.success(request, _("Contact information updated."))
             return redirect("clients:client_detail", client_id=client.pk)
     else:
-        form = ClientContactForm(initial={"phone": client.phone})
+        initial = {}
+        if field_access_map.get("phone") == "edit":
+            initial["phone"] = client.phone
+        if field_access_map.get("email") == "edit":
+            initial["email"] = client.email
+        form = ClientContactForm(initial=initial, field_access_map=field_access_map)
     breadcrumbs = [
         {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
         {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
@@ -641,12 +773,64 @@ def client_detail(request, client_id):
 
     is_pm_or_admin = user_role in ("program_manager", "executive") or getattr(request.user, "is_admin", False)
 
+    # Circles sidebar (only when feature toggle is on and user is not front desk)
+    client_circles = []
+    from apps.admin_settings.models import FeatureToggle
+    circles_enabled = FeatureToggle.get_all_flags().get("circles", False)
+    if circles_enabled and not is_receptionist:
+        from apps.circles.models import CircleMembership
+        from apps.circles.helpers import get_visible_circles
+        from apps.circles.helpers import get_accessible_client_ids, get_blocked_client_ids
+        visible_circle_ids = set(get_visible_circles(request.user).values_list("pk", flat=True))
+        accessible_client_ids = get_accessible_client_ids(request.user)
+        blocked_client_ids = get_blocked_client_ids(request.user)
+        accessible_client_ids -= blocked_client_ids
+        memberships = (
+            CircleMembership.objects.filter(
+                client_file=client, status="active", circle_id__in=visible_circle_ids,
+            )
+            .select_related("circle")
+            .prefetch_related("circle__memberships__client_file")
+        )
+        for m in memberships:
+            # Build "other members" string — only show names the user can access
+            others = []
+            hidden_count = 0
+            for om in m.circle.memberships.all():
+                if om.status != "active" or om.pk == m.pk:
+                    continue
+                # Non-participant members (no client_file) are always shown
+                if om.client_file_id is None:
+                    others.append(om.display_name)
+                elif om.client_file_id in accessible_client_ids:
+                    others.append(om.display_name)
+                else:
+                    hidden_count += 1
+            display = ", ".join(others[:5])
+            if len(others) > 5:
+                display += f" (+{len(others) - 5})"
+            if hidden_count:
+                display += f" (+{hidden_count} other)" if hidden_count == 1 else f" (+{hidden_count} others)"
+            m.other_members = display
+            client_circles.append(m)
+
     # PERM-S3: Field-level visibility based on role.
     # Determines which core model fields (e.g. birth_date) the user can see.
     # Custom fields use their own front_desk_access setting instead.
-    from apps.auth_app.decorators import _get_user_highest_role
     effective_role = user_role or _get_user_highest_role(request.user)
     visible_fields = client.get_visible_fields(effective_role) if effective_role else client.get_visible_fields("receptionist")
+
+    # Compute effective sharing state for the note sharing toggle (QA-R7-PRIVACY2).
+    # Binary: ON if field is "consent", or "default" with agency toggle on.
+    from django.core.cache import cache as _cache
+    _flags = _cache.get("feature_toggles") or {}
+    _agency_shares = _flags.get("cross_program_note_sharing", True)
+    if client.cross_program_sharing == "consent":
+        sharing_effective = True
+    elif client.cross_program_sharing == "restrict":
+        sharing_effective = False
+    else:  # "default"
+        sharing_effective = _agency_shares
 
     context = {
         "client": client,
@@ -659,11 +843,25 @@ def client_detail(request, client_id):
         "is_pm_or_admin": is_pm_or_admin,
         "pending_erasure": pending_erasure,
         "visible_fields": visible_fields,
+        "sharing_effective": sharing_effective,
         "document_folder_url": get_document_folder_url(client),
         "has_hidden_programs": has_hidden_programs,
+        "client_circles": client_circles,
         "breadcrumbs": breadcrumbs,
         **tab_counts,  # notes_count, events_count, targets_count
     }
+
+    # DV-safe context (PERM-P5) — only for staff+ at Tier 2+
+    if not is_receptionist:
+        from apps.admin_settings.models import get_access_tier
+        access_tier = get_access_tier()
+        context["access_tier"] = access_tier
+        if access_tier >= 2:
+            from .models import DvFlagRemovalRequest
+            context["dv_pending_removal"] = DvFlagRemovalRequest.objects.filter(
+                client_file=client, approved__isnull=True,
+            ).select_related("requested_by").first()
+            context["is_staff_or_above"] = True  # already checked: not receptionist
     # HTMX tab switch — return only the tab content partial
     if request.headers.get("HX-Request"):
         return render(request, "clients/_tab_info.html", context)
@@ -680,8 +878,20 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
                    If False, include all fields (for edit mode).
 
     Returns a dict with custom_data, has_editable_fields, client, and is_receptionist (front desk flag).
+
+    DV-safe enforcement (PERM-P5): when client.is_dv_safe is True and user
+    is a receptionist, fields marked is_dv_sensitive are excluded regardless
+    of their front_desk_access setting. Fail closed: if is_dv_safe cannot be
+    read, assume True for receptionists.
     """
     is_receptionist = user_role == "receptionist"
+    # DV-safe: determine whether to hide DV-sensitive fields from front desk
+    dv_hide = False
+    if is_receptionist:
+        try:
+            dv_hide = bool(getattr(client, "is_dv_safe", False))
+        except Exception:
+            dv_hide = True  # Fail closed
     groups = CustomFieldGroup.objects.filter(status="active").prefetch_related("fields")
     custom_data = []
     has_editable_fields = False
@@ -689,6 +899,8 @@ def _get_custom_fields_context(client, user_role, hide_empty=False):
     for group in groups:
         if is_receptionist:
             fields = group.fields.filter(status="active", front_desk_access__in=["view", "edit"])
+            if dv_hide:
+                fields = fields.exclude(is_dv_sensitive=True)
         else:
             fields = group.fields.filter(status="active")
         field_values = []
@@ -769,10 +981,16 @@ def client_save_custom_fields(request, client_id):
 
         # Get field definitions the user can edit
         if is_receptionist:
-            editable_field_defs = [
-                fd for group in groups
-                for fd in group.fields.filter(status="active", front_desk_access="edit")
-            ]
+            qs = CustomFieldDefinition.objects.filter(
+                group__in=groups, status="active", front_desk_access="edit",
+            )
+            # DV-safe: exclude DV-sensitive fields for this client (PERM-P5)
+            try:
+                if getattr(client, "is_dv_safe", False):
+                    qs = qs.exclude(is_dv_sensitive=True)
+            except Exception:
+                qs = qs.exclude(is_dv_sensitive=True)  # Fail closed
+            editable_field_defs = list(qs)
         else:
             editable_field_defs = [
                 fd for group in groups
@@ -1018,8 +1236,6 @@ def client_search(request):
     results.sort(key=lambda c: c["name"].lower())
 
     # IMPROVE-2: pass can_create so search results can show "Create New" prompt
-    from apps.auth_app.decorators import _get_user_highest_role
-    from apps.auth_app.permissions import DENY, PERMISSIONS
     user_role = _get_user_highest_role(request.user)
     can_create = PERMISSIONS.get(user_role, {}).get("client.create", DENY) != DENY
 
@@ -1125,3 +1341,326 @@ def check_duplicate(request):
         "matches": matches,
         "match_type": match_type,
     })
+
+
+# ---- Note Sharing Toggle (QA-R7-PRIVACY2) ----
+
+@login_required
+@requires_permission("client.edit")
+def client_sharing_toggle(request, client_id):
+    """Toggle cross-program note sharing for a participant.
+
+    PM/admin only. Sets the field to "consent" (ON) or "restrict" (OFF).
+    The "default" state is never written by this toggle — it resolves
+    the binary for the user and stores the explicit choice.
+    """
+    if request.method != "POST":
+        return redirect("clients:client_detail", client_id=client_id)
+
+    from apps.programs.access import get_client_or_403
+    client = get_client_or_403(request, client_id)
+    if client is None:
+        return HttpResponseForbidden()
+
+    old_value = client.cross_program_sharing
+    new_sharing = request.POST.get("sharing", "")
+
+    if new_sharing == "on":
+        client.cross_program_sharing = "consent"
+    elif new_sharing == "off":
+        client.cross_program_sharing = "restrict"
+    else:
+        return redirect("clients:client_detail", client_id=client_id)
+
+    client.save(update_fields=["cross_program_sharing"])
+
+    # Audit log
+    from apps.audit.models import AuditLog
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=getattr(request.user, "display_name", str(request.user)),
+        action="update",
+        resource_type="client_sharing",
+        resource_id=client.pk,
+        is_demo_context=getattr(request.user, "is_demo", False),
+        metadata={
+            "old_value": old_value,
+            "new_value": client.cross_program_sharing,
+        },
+    )
+
+    if new_sharing == "on":
+        messages.success(request, _("Note sharing enabled."))
+    else:
+        messages.success(request, _("Note sharing disabled."))
+
+    return redirect("clients:client_detail", client_id=client_id)
+
+
+# ---- Bulk Operations (UX17) ----
+
+@login_required
+@requires_permission("client.edit")
+def bulk_status(request):
+    """Bulk status change for multiple clients.
+
+    Step 1 (POST without 'confirm'): show confirmation form with client names.
+    Step 2 (POST with 'confirm'): execute status change and redirect.
+    """
+    from .forms import BulkStatusForm
+    from apps.audit.models import AuditLog
+
+    active_ids = getattr(request, "active_program_ids", None)
+
+    if request.method != "POST":
+        return redirect("clients:client_list")
+
+    # Build the initial client_ids string from the posted array
+    raw_ids = request.POST.getlist("client_ids[]") or request.POST.getlist("client_ids")
+    # If coming from confirmation form, client_ids is a comma-separated hidden field
+    if len(raw_ids) == 1 and "," in raw_ids[0]:
+        raw_ids = raw_ids[0].split(",")
+
+    client_ids_str = ",".join(str(x) for x in raw_ids if str(x).strip())
+
+    # Confirmation step — process the form
+    if "confirm" in request.POST:
+        form = BulkStatusForm(request.POST)
+        if form.is_valid():
+            client_ids = form.cleaned_data["client_ids"]
+            new_status = form.cleaned_data["status"]
+            reason = form.cleaned_data.get("status_reason", "")
+
+            # Security: filter to only accessible clients
+            accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
+            clients_to_update = accessible.filter(pk__in=client_ids)
+
+            updated_count = 0
+            for client_obj in clients_to_update:
+                old_status = client_obj.status
+                if old_status != new_status:
+                    client_obj.status = new_status
+                    client_obj.status_reason = reason
+                    client_obj.save(update_fields=["status", "status_reason", "updated_at"])
+                    updated_count += 1
+
+                    # Audit log per client
+                    AuditLog.objects.using("audit").create(
+                        event_timestamp=timezone.now(),
+                        user_id=request.user.pk,
+                        user_display=getattr(request.user, "display_name", str(request.user)),
+                        action="update",
+                        resource_type="clients",
+                        resource_id=client_obj.pk,
+                        is_demo_context=getattr(request.user, "is_demo", False),
+                        metadata={
+                            "bulk": True,
+                            "count": len(client_ids),
+                            "old_status": old_status,
+                            "new_status": new_status,
+                            "reason": reason,
+                        },
+                    )
+
+            messages.success(
+                request,
+                _("%(count)d %(term)s status updated to %(status)s.")
+                % {
+                    "count": updated_count,
+                    "term": request.get_term("client_plural") if updated_count != 1 else request.get_term("client"),
+                    "status": dict(ClientFile.STATUS_CHOICES).get(new_status, new_status),
+                },
+            )
+            return redirect("clients:client_list")
+        else:
+            # Form invalid — re-show confirmation with errors
+            accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
+            try:
+                ids = [int(x.strip()) for x in client_ids_str.split(",") if x.strip()]
+            except (ValueError, TypeError):
+                ids = []
+            selected_clients = list(accessible.filter(pk__in=ids))
+            return render(request, "clients/_bulk_status_confirm.html", {
+                "form": form,
+                "selected_clients": selected_clients,
+                "client_ids_str": client_ids_str,
+            })
+
+    # Initial step — show confirmation form
+    try:
+        client_ids = [int(x.strip()) for x in client_ids_str.split(",") if x.strip()]
+    except (ValueError, TypeError):
+        messages.error(request, _("Invalid selection."))
+        return redirect("clients:client_list")
+
+    if not client_ids:
+        messages.error(request, _("No participants selected."))
+        return redirect("clients:client_list")
+
+    # Security: filter to accessible clients only
+    accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
+    selected_clients = list(accessible.filter(pk__in=client_ids))
+
+    if not selected_clients:
+        messages.error(request, _("None of the selected participants are accessible."))
+        return redirect("clients:client_list")
+
+    form = BulkStatusForm(initial={"client_ids": client_ids_str})
+
+    template = "clients/_bulk_status_confirm.html"
+    context = {
+        "form": form,
+        "selected_clients": selected_clients,
+        "client_ids_str": client_ids_str,
+    }
+
+    # HTMX request — return partial for modal
+    if request.headers.get("HX-Request"):
+        return render(request, template, context)
+
+    return render(request, template, context)
+
+
+@login_required
+@requires_permission("client.transfer")
+def bulk_transfer(request):
+    """Bulk program transfer for multiple clients.
+
+    Step 1 (POST without 'confirm'): show confirmation form with client names.
+    Step 2 (POST with 'confirm'): execute transfer and redirect.
+    """
+    from .forms import BulkTransferForm
+    from apps.audit.models import AuditLog
+
+    active_ids = getattr(request, "active_program_ids", None)
+    available_programs = _get_accessible_programs(request.user, active_program_ids=active_ids)
+
+    if request.method != "POST":
+        return redirect("clients:client_list")
+
+    # Build the initial client_ids string from the posted array
+    raw_ids = request.POST.getlist("client_ids[]") or request.POST.getlist("client_ids")
+    if len(raw_ids) == 1 and "," in raw_ids[0]:
+        raw_ids = raw_ids[0].split(",")
+
+    client_ids_str = ",".join(str(x) for x in raw_ids if str(x).strip())
+
+    # Confirmation step — process the form
+    if "confirm" in request.POST:
+        form = BulkTransferForm(request.POST, available_programs=available_programs)
+        if form.is_valid():
+            client_ids = form.cleaned_data["client_ids"]
+            add_program = form.cleaned_data.get("add_program")
+            remove_program = form.cleaned_data.get("remove_program")
+
+            # Security: filter to only accessible clients
+            accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
+            clients_to_update = list(accessible.filter(pk__in=client_ids))
+
+            affected_count = 0
+            for client_obj in clients_to_update:
+                added = []
+                removed = []
+
+                # Add to program (idempotent — skip if already enrolled)
+                if add_program:
+                    enrolment, created = ClientProgramEnrolment.objects.get_or_create(
+                        client_file=client_obj, program=add_program,
+                        defaults={"status": "enrolled"},
+                    )
+                    if created:
+                        added.append(add_program.pk)
+                    elif enrolment.status != "enrolled":
+                        enrolment.status = "enrolled"
+                        enrolment.unenrolled_at = None
+                        enrolment.save()
+                        added.append(add_program.pk)
+
+                # Remove from program
+                if remove_program:
+                    updated = ClientProgramEnrolment.objects.filter(
+                        client_file=client_obj,
+                        program=remove_program,
+                        status="enrolled",
+                    ).update(status="unenrolled", unenrolled_at=timezone.now())
+                    if updated:
+                        removed.append(remove_program.pk)
+
+                if added or removed:
+                    affected_count += 1
+                    AuditLog.objects.using("audit").create(
+                        event_timestamp=timezone.now(),
+                        user_id=request.user.pk,
+                        user_display=getattr(request.user, "display_name", str(request.user)),
+                        action="update",
+                        resource_type="enrolment",
+                        resource_id=client_obj.pk,
+                        is_demo_context=getattr(request.user, "is_demo", False),
+                        metadata={
+                            "bulk": True,
+                            "count": len(client_ids),
+                            "programs_added": added,
+                            "programs_removed": removed,
+                        },
+                    )
+
+            messages.success(
+                request,
+                _("%(count)d %(term)s program enrolment updated.")
+                % {
+                    "count": affected_count,
+                    "term": request.get_term("client_plural") if affected_count != 1 else request.get_term("client"),
+                },
+            )
+            return redirect("clients:client_list")
+        else:
+            # Form invalid — re-show confirmation with errors
+            accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
+            try:
+                ids = [int(x.strip()) for x in client_ids_str.split(",") if x.strip()]
+            except (ValueError, TypeError):
+                ids = []
+            selected_clients = list(accessible.filter(pk__in=ids))
+            return render(request, "clients/_bulk_transfer_confirm.html", {
+                "form": form,
+                "selected_clients": selected_clients,
+                "client_ids_str": client_ids_str,
+            })
+
+    # Initial step — show confirmation form
+    try:
+        client_ids = [int(x.strip()) for x in client_ids_str.split(",") if x.strip()]
+    except (ValueError, TypeError):
+        messages.error(request, _("Invalid selection."))
+        return redirect("clients:client_list")
+
+    if not client_ids:
+        messages.error(request, _("No participants selected."))
+        return redirect("clients:client_list")
+
+    # Security: filter to accessible clients only
+    accessible = _get_accessible_clients(request.user, active_program_ids=active_ids)
+    selected_clients = list(accessible.filter(pk__in=client_ids))
+
+    if not selected_clients:
+        messages.error(request, _("None of the selected participants are accessible."))
+        return redirect("clients:client_list")
+
+    form = BulkTransferForm(
+        initial={"client_ids": client_ids_str},
+        available_programs=available_programs,
+    )
+
+    template = "clients/_bulk_transfer_confirm.html"
+    context = {
+        "form": form,
+        "selected_clients": selected_clients,
+        "client_ids_str": client_ids_str,
+    }
+
+    # HTMX request — return partial for modal
+    if request.headers.get("HX-Request"):
+        return render(request, template, context)
+
+    return render(request, template, context)

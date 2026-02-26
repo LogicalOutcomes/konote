@@ -44,7 +44,7 @@ class EditableFilterTest(TestCase):
         enc_module._fernet = None
         self.http = Client()
 
-        # Two programs — user is staff in prog_a (plan.edit=SCOPED), PM in prog_b (plan.edit=DENY)
+        # Two programs — user is staff in prog_a (plan.edit=PROGRAM), PM in prog_b (plan.edit=DENY)
         self.prog_a = Program.objects.create(name="Housing Support", status="active")
         self.prog_b = Program.objects.create(name="Youth Services", status="active")
 
@@ -133,7 +133,7 @@ class PlanViewDisabledButtonTest(TestCase):
 
         self.program = Program.objects.create(name="Housing Support", status="active")
 
-        # Staff user (plan.edit=SCOPED — can edit)
+        # Staff user (plan.edit=PROGRAM — can edit)
         self.staff = User.objects.create_user(
             username="staff", password="testpass123", display_name="Staff"
         )

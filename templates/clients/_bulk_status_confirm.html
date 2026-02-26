@@ -1,0 +1,49 @@
+{% load i18n %}
+<h2 id="bulk-modal-title">{% trans "Change Status" %}</h2>
+<form method="post" action="{% url 'clients:bulk_status' %}">
+    {% csrf_token %}
+    <input type="hidden" name="confirm" value="1">
+    <input type="hidden" name="client_ids" value="{{ client_ids_str }}">
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger" role="alert">
+        {% for error in form.non_field_errors %}
+        <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <p>{% blocktrans with count=selected_clients|length clients=term.client_plural|default:"participants" %}The following {{ count }} {{ clients }} will be updated:{% endblocktrans %}</p>
+
+    <ul class="bulk-client-list">
+        {% for c in selected_clients %}
+        <li>{{ c.display_name }} {{ c.last_name }}
+            {% if c.status == "active" %}
+                <span class="badge badge-success">{% trans "Active" %}</span>
+            {% elif c.status == "inactive" %}
+                <span class="badge badge-warning">{% trans "Inactive" %}</span>
+            {% else %}
+                <span class="badge badge-neutral">{% trans "Discharged" %}</span>
+            {% endif %}
+        </li>
+        {% endfor %}
+    </ul>
+
+    <div class="form-group">
+        <label for="id_status">{{ form.status.label }}</label>
+        {{ form.status }}
+        {% if form.status.errors %}
+        <small class="form-error">{{ form.status.errors.0 }}</small>
+        {% endif %}
+    </div>
+
+    <div class="form-group">
+        <label for="id_status_reason">{{ form.status_reason.label }}</label>
+        {{ form.status_reason }}
+    </div>
+
+    <div class="bulk-modal__actions">
+        <button type="submit" class="btn btn-primary">{% trans "Confirm" %}</button>
+        <button type="button" class="btn btn-secondary" onclick="closeBulkModal()">{% trans "Cancel" %}</button>
+    </div>
+</form>

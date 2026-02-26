@@ -14,6 +14,9 @@ Creates:
 - Registration submissions in various review states
 - Suggestion themes linked to participant suggestions (for Outcome Insights)
 - Staff-to-staff messages (internal operational messages about participants)
+- DV-safe flags and removal requests (PERM P5)
+- Access grants with varied statuses (PERM P6)
+- Field access config overrides (PERM P8)
 
 This gives charts and reports meaningful data to display.
 
@@ -28,7 +31,14 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from apps.clients.models import ClientDetailValue, ClientFile, CustomFieldDefinition
+from apps.auth_app.models import AccessGrant, AccessGrantReason
+from apps.clients.models import (
+    ClientDetailValue,
+    ClientFile,
+    CustomFieldDefinition,
+    DvFlagRemovalRequest,
+    FieldAccessConfig,
+)
 from apps.communications.models import Communication, StaffMessage
 from apps.events.models import (
     Alert,
@@ -67,6 +77,7 @@ from apps.portal.models import (
 )
 from apps.programs.models import Program
 from apps.registration.models import RegistrationLink, RegistrationSubmission
+from apps.circles.models import Circle, CircleMembership
 from apps.surveys.models import (
     Survey,
     SurveyAnswer,
@@ -127,6 +138,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Confidence in your job search",
                             "How ready do you feel for work?",
+                            "Job Placement",
                         ],
                     },
                     {
@@ -156,6 +168,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "How ready do you feel for work?",
                             "How are you feeling today?",
+                            "Job Placement",
                         ],
                     },
                     {
@@ -185,6 +198,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "How ready do you feel for work?",
                             "Goal Progress (1-10)",
+                            "Job Placement",
                         ],
                     },
                 ],
@@ -209,6 +223,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Housing Stability Index",
                             "How safe do you feel where you live?",
+                            "Housing Secured",
                         ],
                     },
                     {
@@ -235,6 +250,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Housing Stability Index",
                             "How safe do you feel where you live?",
+                            "Housing Secured",
                         ],
                     },
                     {
@@ -264,6 +280,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Housing Stability Index",
                             "How safe do you feel where you live?",
+                            "Housing Secured",
                         ],
                     },
                     {
@@ -293,6 +310,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "How connected do you feel to the group?",
                             "Sessions attended this month",
+                            "School Enrolment",
                         ],
                     },
                     {
@@ -322,6 +340,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Sessions attended this month",
                             "How are you feeling today?",
+                            "School Enrolment",
                         ],
                     },
                     {
@@ -351,6 +370,7 @@ CLIENT_PLANS = {
                         "metrics": [
                             "Sessions attended this month",
                             "Service Engagement",
+                            "School Enrolment",
                         ],
                     },
                     {
@@ -708,6 +728,23 @@ PROGRAM_THEMES = {
             "keywords": "buddy,mentor,alumni,share,working,group",
             "addressed_note": "Recruiting two alumni volunteers to pilot monthly peer sessions.",
         },
+        # Permission-correct themes: only PMs can create (suggestion_theme.manage)
+        {
+            "name": "Transportation Barriers",
+            "description": "Multiple participants report transit costs and scheduling as barriers to maintaining employment.",
+            "status": "open",
+            "source": "manual",
+            "keywords": "transit,transportation,bus,travel,commute,fare",
+            "created_by_username": "demo-worker-1",  # Casey — PM in Employment
+        },
+        {
+            "name": "Interview Confidence",
+            "description": "Participants express anxiety about interviews even after practice sessions. May need group-based rehearsal format.",
+            "status": "open",
+            "source": "ai_generated",
+            "keywords": "interview,confidence,nervous,anxiety,practice",
+            "created_by_username": "demo-manager",  # Morgan — PM in Employment
+        },
     ],
     "Housing Stability": [
         {
@@ -724,6 +761,14 @@ PROGRAM_THEMES = {
             "source": "ai_generated",
             "keywords": "tenant,rights,eviction,rent,legal",
             "addressed_note": "Created a tenant rights info sheet and added it to intake package.",
+        },
+        {
+            "name": "Housing Waitlist Anxiety",
+            "description": "Recurring theme of stress and hopelessness related to long waitlists for subsidised housing.",
+            "status": "open",
+            "source": "manual",
+            "keywords": "waitlist,wait,housing,anxiety,stress,hopeless",
+            "created_by_username": "demo-manager",  # Morgan — PM in Housing
         },
     ],
     "Youth Drop-In": [
@@ -781,6 +826,14 @@ PROGRAM_THEMES = {
             "status": "open",
             "source": "ai_generated",
             "keywords": "take,home,family,portions",
+        },
+        {
+            "name": "Food Security Concerns",
+            "description": "Participants frequently mention food insecurity outside of kitchen sessions.",
+            "status": "open",
+            "source": "manual",
+            "keywords": "food,hungry,insecurity,afford,meals,grocery",
+            "created_by_username": "demo-manager",  # Morgan — PM in Kitchen
         },
     ],
 }
@@ -966,8 +1019,61 @@ PROGRAM_FULL_SUMMARIES = {
 # ---------------------------------------------------------------------------
 
 
+def _generate_achievement_values(trend, count, metric_def):
+    """Generate a list of achievement option strings that follow a realistic trend.
+
+    For achievement metrics, returns categorical values (e.g. "Placed — full-time")
+    with probability weighted by the trend direction.
+    """
+    options = metric_def.achievement_options or []
+    success_values = set(metric_def.achievement_success_values or [])
+    if not options:
+        return [""] * count
+
+    # Split options into success and non-success
+    non_success = [o for o in options if o not in success_values]
+    success = [o for o in options if o in success_values]
+
+    values = []
+    for i in range(count):
+        t = i / max(count - 1, 1)  # 0.0 to 1.0
+
+        # Probability of a success value increases/decreases with trend
+        if trend == "improving":
+            success_prob = 0.1 + 0.7 * t  # 10% → 80%
+        elif trend == "struggling":
+            success_prob = 0.15 - 0.05 * t  # 15% → 10%
+        elif trend == "mixed":
+            success_prob = 0.3 + 0.2 * (1 if i % 3 == 2 else -1) * t
+        elif trend == "crisis_then_improving":
+            if t < 0.3:
+                success_prob = 0.05
+            else:
+                recovery_t = (t - 0.3) / 0.7
+                success_prob = 0.05 + 0.65 * recovery_t
+        elif trend == "stable":
+            success_prob = 0.6
+        else:
+            success_prob = 0.3
+
+        success_prob = max(0.0, min(1.0, success_prob))
+
+        if random.random() < success_prob and success:
+            values.append(random.choice(success))
+        elif non_success:
+            values.append(random.choice(non_success))
+        else:
+            values.append(random.choice(options))
+
+    return values
+
+
 def _generate_trend_values(trend, count, metric_name, metric_def):
     """Generate a list of metric values that follow a realistic trend."""
+    # Achievement metrics return option strings, not numbers
+    if metric_def.metric_type == "achievement":
+        return _generate_achievement_values(trend, count, metric_def)
+
     lo = metric_def.min_value or 0
     hi = metric_def.max_value or 100
 
@@ -1240,6 +1346,13 @@ class Command(BaseCommand):
         except User.DoesNotExist:
             pass  # Workers not yet created — full seed below will handle it
 
+        # Always ensure demo circles exist (idempotent via get_or_create)
+        try:
+            worker1 = User.objects.get(username="demo-worker-1")
+            self._create_demo_circles(worker1)
+        except User.DoesNotExist:
+            pass
+
         # Always ensure at least one pending alert cancellation recommendation
         # exists for the Reviews queue (idempotent).
         try:
@@ -1279,6 +1392,9 @@ class Command(BaseCommand):
             )
         except User.DoesNotExist:
             pass
+
+        # Always ensure DV-safe flags are set (idempotent — just sets a boolean).
+        self._set_dv_safe_flags()
 
         # Check if rich data already exists
         force = options.get("force", False)
@@ -1342,16 +1458,34 @@ class Command(BaseCommand):
             submission_count = RegistrationSubmission.objects.filter(
                 registration_link__slug="demo"
             ).delete()[0]
+            # Delete demo circles (cascade handles memberships)
+            circle_count = Circle.objects.filter(is_demo=True).delete()[0]
             # Delete calendar feed tokens for demo workers
             demo_users = User.objects.filter(is_demo=True)
             CalendarFeedToken.objects.filter(user__in=demo_users).delete()
+            # Delete PERM demo data (DV removal requests, access grants, field config)
+            dv_req_count = DvFlagRemovalRequest.objects.filter(
+                client_file__record_id__startswith="DEMO-"
+            ).delete()[0]
+            grant_count = AccessGrant.objects.filter(
+                user__is_demo=True
+            ).delete()[0]
+            fa_count = FieldAccessConfig.objects.filter(
+                field_name__in=["birth_date", "email"]
+            ).delete()[0]
+            # Reset DV-safe flags on demo clients
+            ClientFile.objects.filter(
+                record_id__startswith="DEMO-", is_dv_safe=True
+            ).update(is_dv_safe=False)
             self.stdout.write(
                 f"  --force: Deleted {theme_count_del} themes, {staff_msg_count} staff messages, "
                 f"{comm_count} communications, {note_count} notes, "
                 f"{plan_count} plans, {event_count} events, {alert_count} alerts, "
                 f"{journal_count} journal entries, {message_count} portal messages, "
                 f"{staff_note_count} staff notes, {correction_count} correction requests, "
-                f"{submission_count} registration submissions."
+                f"{circle_count} circles, {submission_count} registration submissions, "
+                f"{dv_req_count} DV removal requests, {grant_count} access grants, "
+                f"{fa_count} field access configs."
             )
 
         # Fetch workers
@@ -1411,6 +1545,9 @@ class Command(BaseCommand):
         # --- Ensure one pending recommendation exists for Reviews queue demo ---
         self._ensure_pending_alert_recommendation(workers, programs_by_name)
 
+        # --- Create demo circles ---
+        self._create_demo_circles(worker1)
+
         # --- Create demo groups ---
         self._create_demo_groups(workers, programs_by_name, now)
 
@@ -1439,11 +1576,17 @@ class Command(BaseCommand):
         # --- Create calendar feed tokens for demo workers ---
         self._create_demo_calendar_feeds(workers)
 
+        # --- Create narrative progress notes ---
+        self._create_narrative_notes(workers, programs_by_name, now)
+
         # --- Create suggestion themes and link to notes ---
         self._create_demo_suggestion_themes(workers, programs_by_name)
 
         # --- Create staff-to-staff messages ---
         self._create_demo_staff_messages(workers, programs_by_name, now)
+
+        # --- Set DV-safe flags (PERM-P5 demonstration) ---
+        self._set_dv_safe_flags()
 
         self.stdout.write(self.style.SUCCESS(
             "  Demo rich data seeded successfully (15 clients across 5 programs)."
@@ -1489,6 +1632,80 @@ class Command(BaseCommand):
             link.auto_approve = True
             link.save(update_fields=["title", "description", "auto_approve"])
             self.stdout.write("  Updated demo registration link.")
+
+    def _create_demo_circles(self, created_by):
+        """Create demo circles with members.
+
+        Circles represent families, households, and support networks.
+        Uses get_or_create for idempotency.
+        """
+        # Three circles demonstrating different family/network structures:
+        # A: Same-household couple + non-participant child (cross-enrolment)
+        # B: Youth support network with non-participant parent (different households)
+        # C: Newcomer family with participant sibling (same household)
+        DEMO_CIRCLES = [
+            {
+                "name": "Rivera-Chen Household",
+                "members": [
+                    {"record_id": "DEMO-001", "relationship": "parent", "primary": True},
+                    {"record_id": "DEMO-002", "relationship": "partner", "primary": False},
+                    {"name": "Mika Rivera-Chen", "relationship": "child", "primary": False},
+                ],
+            },
+            {
+                "name": "Ahmed-Martinez Support Network",
+                "members": [
+                    {"record_id": "DEMO-009", "relationship": "self", "primary": False},
+                    {"record_id": "DEMO-007", "relationship": "friend", "primary": False},
+                    {"name": "Fatimah Ahmed", "relationship": "mother", "primary": True},
+                ],
+            },
+            {
+                "name": "Diallo-Hassan Family",
+                "members": [
+                    {"record_id": "DEMO-010", "relationship": "parent", "primary": True},
+                    {"record_id": "DEMO-011", "relationship": "sibling", "primary": False},
+                    {"name": "Ibrahim Diallo", "relationship": "spouse", "primary": False},
+                ],
+            },
+        ]
+
+        created_count = 0
+        for circle_def in DEMO_CIRCLES:
+            # Check if circle already exists by looking for exact name match in demo circles
+            existing = [
+                c for c in Circle.objects.demo().filter(status="active")
+                if c.name == circle_def["name"]
+            ]
+            if existing:
+                continue
+
+            circle = Circle(is_demo=True, created_by=created_by)
+            circle.name = circle_def["name"]
+            circle.save()
+
+            for member_def in circle_def["members"]:
+                membership = CircleMembership(
+                    circle=circle,
+                    relationship_label=member_def.get("relationship", ""),
+                    is_primary_contact=member_def.get("primary", False),
+                )
+                if "record_id" in member_def:
+                    client = ClientFile.objects.filter(
+                        record_id=member_def["record_id"]
+                    ).first()
+                    if client:
+                        membership.client_file = client
+                    else:
+                        continue
+                else:
+                    membership.member_name = member_def["name"]
+                membership.save()
+
+            created_count += 1
+
+        if created_count:
+            self.stdout.write(f"  Created {created_count} demo circles with members.")
 
     def _seed_client_data(
         self, record_id, plan_config, workers, programs_by_name,
@@ -1781,7 +1998,11 @@ class Command(BaseCommand):
                         )
 
     def _create_alerts(self, workers, programs_by_name):
-        """Create alerts for clients with notable situations."""
+        """Create alerts for clients with notable situations.
+
+        Includes DV and crisis alerts that demonstrate the two-person safety
+        rule: staff create alerts, PMs review cancellation recommendations.
+        """
         alert_data = [
             {
                 "record_id": "DEMO-004",
@@ -1789,10 +2010,30 @@ class Command(BaseCommand):
                 "program": "Housing Stability",
                 "worker": "demo-worker-1",
             },
+            # DV alert — connects to DV-safe flag on DEMO-004 (set in _set_dv_safe_flags)
+            {
+                "record_id": "DEMO-004",
+                "content": (
+                    "Participant disclosed domestic violence situation. Safety plan "
+                    "in place. Notify supervisor before any home visits."
+                ),
+                "program": "Housing Stability",
+                "worker": "demo-worker-1",
+            },
             {
                 "record_id": "DEMO-005",
                 "content": "Eviction risk — legal aid case pending. Monitor closely.",
                 "program": "Housing Stability",
+                "worker": "demo-worker-1",
+            },
+            # Crisis alert — will have a pending cancellation recommendation
+            {
+                "record_id": "DEMO-001",
+                "content": (
+                    "Participant expressed suicidal ideation during session. Crisis "
+                    "team contacted. 72-hour follow-up required."
+                ),
+                "program": "Supported Employment",
                 "worker": "demo-worker-1",
             },
             {
@@ -1824,31 +2065,50 @@ class Command(BaseCommand):
                 )
 
     def _ensure_pending_alert_recommendation(self, workers, programs_by_name):
-        """Ensure one pending cancellation recommendation exists for demo reviews."""
+        """Ensure a pending cancellation recommendation exists for demo reviews.
+
+        Creates one recommendation demonstrating the two-person safety rule:
+        DEMO-005 eviction alert — Casey (staff in Housing) recommends, Morgan reviews.
+
+        NOTE: The DEMO-001 crisis alert has NO recommendation on purpose.
+        Casey is PM in Employment, and PMs cancel directly (alert.cancel=ALLOW)
+        rather than recommending (alert.recommend_cancel=DENY for PMs).
+        The crisis alert stays active to show an unresolved safety alert.
+        """
+        recommender = workers.get("demo-worker-1")
+        if not recommender:
+            return
+
         client = ClientFile.objects.filter(record_id="DEMO-005").first()
         if not client:
             return
 
         program = programs_by_name.get("Housing Stability")
-        recommender = workers.get("demo-worker-1")
-        if not program or not recommender:
+        if not program:
             return
 
+        alert_content = "Eviction risk — legal aid case pending. Monitor closely."
+
+        # Find the specific alert by content prefix (defensive — DEMO-005
+        # could have multiple alerts in future)
         alert = Alert.objects.filter(
             client_file=client,
             author_program=program,
             status="default",
+            content__startswith=alert_content[:50],
         ).order_by("-created_at").first()
 
         if not alert:
             alert = Alert.objects.create(
                 client_file=client,
-                content="Eviction risk — legal aid case pending. Monitor closely.",
+                content=alert_content,
                 author=recommender,
                 author_program=program,
             )
 
-        if AlertCancellationRecommendation.objects.filter(alert=alert, status="pending").exists():
+        if AlertCancellationRecommendation.objects.filter(
+            alert=alert, status="pending"
+        ).exists():
             return
 
         AlertCancellationRecommendation.objects.create(
@@ -1859,6 +2119,114 @@ class Command(BaseCommand):
                 "risk indicators. Recommend closing this alert and monitoring in regular notes."
             ),
         )
+
+    # ------------------------------------------------------------------
+    # Narrative progress notes — human-readable case notes for demo
+    # ------------------------------------------------------------------
+
+    def _create_narrative_notes(self, workers, programs_by_name, now):
+        """Create readable narrative notes that bring the demo to life.
+
+        These supplement the metric-bearing notes from _seed_client_data
+        with plain-language case notes a worker might actually write.
+        """
+        narrative_data = [
+            {
+                "record_id": "DEMO-001",
+                "program": "Supported Employment",
+                "worker": "demo-worker-1",
+                "days_ago": 5,
+                "note_type": "full",
+                "interaction_type": "session",
+                "text": (
+                    "Client completed resume update. Identified 3 target employers "
+                    "in logistics sector. Next step: mock interview practice."
+                ),
+            },
+            {
+                "record_id": "DEMO-004",
+                "program": "Housing Stability",
+                "worker": "demo-worker-1",
+                "days_ago": 3,
+                "note_type": "full",
+                "interaction_type": "collateral",
+                "text": (
+                    "Accompanied client to housing tribunal hearing. Application "
+                    "for rent supplement submitted. Awaiting decision within 2 weeks."
+                ),
+            },
+            {
+                "record_id": "DEMO-007",
+                "program": "Youth Drop-In",
+                "worker": "demo-worker-2",
+                "days_ago": 7,
+                "note_type": "quick",
+                "interaction_type": "group",
+                "text": (
+                    "Jayden participated in homework club. Completed math assignment "
+                    "with peer tutor support. Expressed interest in coding workshop."
+                ),
+            },
+            {
+                "record_id": "DEMO-010",
+                "program": "Newcomer Connections",
+                "worker": "demo-worker-2",
+                "days_ago": 4,
+                "note_type": "full",
+                "interaction_type": "session",
+                "text": (
+                    "Assisted with Service Canada appointment scheduling. Reviewed "
+                    "banking documents. Client reports feeling more confident "
+                    "navigating services independently."
+                ),
+            },
+        ]
+
+        created = 0
+        for nd in narrative_data:
+            client = ClientFile.objects.filter(record_id=nd["record_id"]).first()
+            if not client:
+                continue
+            program = programs_by_name.get(nd["program"])
+            author = workers.get(nd["worker"])
+            if not program or not author:
+                continue
+
+            note = ProgressNote(
+                client_file=client,
+                author=author,
+                author_program=program,
+                note_type=nd["note_type"],
+                interaction_type=nd["interaction_type"],
+            )
+            note.notes_text = nd["text"]
+            note.save()
+
+            # Backdate for realistic timeline spread
+            backdated = now - timedelta(days=nd["days_ago"])
+            ProgressNote.objects.filter(pk=note.pk).update(created_at=backdated)
+            created += 1
+
+        self.stdout.write(f"  Narrative notes: {created} created.")
+
+    # ------------------------------------------------------------------
+    # DV-safe flags (PERM-P5 demonstration)
+    # ------------------------------------------------------------------
+
+    def _set_dv_safe_flags(self):
+        """Set is_dv_safe=True on DEMO-004 (Sam Williams) for DV-safe mode demo.
+
+        Narratively: Sam disclosed a domestic violence situation (see alert data).
+        When Dana (front desk) views Sam's record, DV-sensitive custom fields
+        (address, emergency contact, employer) are hidden — demonstrating PERM-P5.
+
+        Idempotent: just sets a boolean field.
+        """
+        updated = ClientFile.objects.filter(
+            record_id="DEMO-004", is_dv_safe=False,
+        ).update(is_dv_safe=True)
+        if updated:
+            self.stdout.write("  DV-safe: DEMO-004 (Sam Williams) flagged.")
 
     # ------------------------------------------------------------------
     # Demo groups: groups and projects
@@ -2210,6 +2578,7 @@ class Command(BaseCommand):
                 "record_id": "DEMO-001",
                 "worker": worker1,
                 "program": "Supported Employment",
+                "title": "Resume review follow-up",
                 "days_offset": 3,
                 "location": "Office A — 2nd floor",
                 "status": "scheduled",
@@ -2240,7 +2609,8 @@ class Command(BaseCommand):
                 "record_id": "DEMO-004",
                 "worker": worker1,
                 "program": "Housing Stability",
-                "days_offset": 5,
+                "title": "Housing tribunal prep",
+                "days_offset": 1,
                 "location": "Housing Support Office",
                 "status": "scheduled",
                 "duration": 60,
@@ -2280,7 +2650,8 @@ class Command(BaseCommand):
                 "record_id": "DEMO-010",
                 "worker": worker2,
                 "program": "Newcomer Connections",
-                "days_offset": 6,
+                "title": "Settlement check-in",
+                "days_offset": 5,
                 "location": "Settlement Office",
                 "status": "scheduled",
                 "duration": 60,
@@ -2430,10 +2801,10 @@ class Command(BaseCommand):
                 hours=random.choice([9, 10, 11, 13, 14, 15]),
             )
 
-            # Create the underlying Event
+            # Create the underlying Event (use title from data or default)
             event = Event.objects.create(
                 client_file=client,
-                title="Meeting",
+                title=md.get("title", "Meeting"),
                 start_timestamp=timestamp,
                 author_program=program,
             )
@@ -3319,9 +3690,20 @@ class Command(BaseCommand):
             self.stdout.write(f"  Calendar feed tokens: {created} created for demo workers.")
 
     def _create_demo_suggestion_themes(self, workers, programs_by_name):
-        """Create suggestion themes and link them to existing demo notes."""
+        """Create suggestion themes and link them to existing demo notes.
+
+        Themes with created_by_username use a specific user (permission-correct
+        creator). Without it, defaults to the program's primary worker.
+        """
         theme_count = 0
         link_count = 0
+
+        # Build extended user lookup including manager
+        all_users = dict(workers)
+        try:
+            all_users["demo-manager"] = User.objects.get(username="demo-manager")
+        except User.DoesNotExist:
+            pass
 
         for program_name, theme_defs in PROGRAM_THEMES.items():
             program = programs_by_name.get(program_name)
@@ -3337,10 +3719,13 @@ class Command(BaseCommand):
                 .select_related("client_file")
             )
 
-            worker_username = PROGRAM_WORKER.get(program_name, "demo-worker-1")
-            author = workers.get(worker_username)
+            default_username = PROGRAM_WORKER.get(program_name, "demo-worker-1")
 
             for theme_def in theme_defs:
+                # Use explicit creator if specified, otherwise default worker
+                author_username = theme_def.get("created_by_username", default_username)
+                author = all_users.get(author_username)
+
                 theme, was_created = SuggestionTheme.objects.get_or_create(
                     program=program,
                     name=theme_def["name"],
@@ -3830,3 +4215,134 @@ class Command(BaseCommand):
             f"  Surveys: {survey_count} surveys, {assignments_created} assignments, "
             f"{responses_created} responses created."
         )
+
+    def _seed_perm_demo_data(self, workers, programs_by_name, manager, now):
+        """Seed PERM P5/P6/P8 demo data: DV-safe flags, removal requests,
+        access grants, and field access config overrides.
+
+        Idempotent — safe to call on every seed run.
+        """
+        worker1 = workers["demo-worker-1"]
+        worker2 = workers.get("demo-worker-2", worker1)
+        created_items = []
+
+        # --- 1. DV-safe flags on demo clients ---
+        for record_id in ("DEMO-004", "DEMO-008"):
+            try:
+                client = ClientFile.objects.get(record_id=record_id)
+                if not client.is_dv_safe:
+                    client.is_dv_safe = True
+                    client.save(update_fields=["is_dv_safe"])
+                    created_items.append(f"DV-safe flag on {record_id}")
+            except ClientFile.DoesNotExist:
+                pass
+
+        # --- 2. DvFlagRemovalRequest ---
+        # Pending request for DEMO-008
+        try:
+            demo008 = ClientFile.objects.get(record_id="DEMO-008")
+            if not DvFlagRemovalRequest.objects.filter(client_file=demo008).exists():
+                DvFlagRemovalRequest.objects.create(
+                    client_file=demo008,
+                    requested_by=worker2,
+                    reason=(
+                        "Maya has moved to safe housing and requests "
+                        "the flag be removed."
+                    ),
+                )
+                created_items.append("DV removal request (pending) for DEMO-008")
+        except ClientFile.DoesNotExist:
+            pass
+
+        # Rejected request for DEMO-004
+        try:
+            demo004 = ClientFile.objects.get(record_id="DEMO-004")
+            if not DvFlagRemovalRequest.objects.filter(client_file=demo004).exists():
+                req = DvFlagRemovalRequest.objects.create(
+                    client_file=demo004,
+                    requested_by=worker1,
+                    reason="Sam asked about removing the flag.",
+                )
+                # Mark as reviewed/rejected
+                if manager:
+                    req.reviewed_by = manager
+                    req.reviewed_at = now - timedelta(days=5)
+                    req.approved = False
+                    req.review_note = (
+                        "Sam confirmed they still want the flag active "
+                        "after discussion."
+                    )
+                    req.save()
+                created_items.append("DV removal request (rejected) for DEMO-004")
+        except ClientFile.DoesNotExist:
+            pass
+
+        # --- 3. AccessGrant rows ---
+        if not AccessGrant.objects.filter(user__is_demo=True).exists():
+            reasons = {r.label: r for r in AccessGrantReason.objects.all()}
+
+            # Active program-wide grant: worker2 → Housing Stability
+            housing = programs_by_name.get("Housing Stability")
+            supervision = reasons.get("Clinical supervision")
+            if housing and supervision:
+                AccessGrant.objects.create(
+                    user=worker2,
+                    program=housing,
+                    reason=supervision,
+                    justification="Quarterly caseload review",
+                    expires_at=now + timedelta(days=30),
+                )
+
+            # Active client-specific grant: worker2 → DEMO-001 (cross-program)
+            intake_reason = reasons.get("Intake / case assignment")
+            try:
+                demo001 = ClientFile.objects.get(record_id="DEMO-001")
+                employment = programs_by_name.get("Supported Employment")
+                if intake_reason and employment:
+                    AccessGrant.objects.create(
+                        user=worker2,
+                        program=employment,
+                        client_file=demo001,
+                        reason=intake_reason,
+                        justification=(
+                            "Cross-program intake coordination for "
+                            "Community Kitchen referral"
+                        ),
+                        expires_at=now + timedelta(days=7),
+                    )
+            except ClientFile.DoesNotExist:
+                pass
+
+            # Expired grant: worker1 → Newcomer Connections
+            qa_reason = reasons.get("Quality assurance")
+            newcomer = programs_by_name.get("Newcomer Connections")
+            if qa_reason and newcomer:
+                grant = AccessGrant.objects.create(
+                    user=worker1,
+                    program=newcomer,
+                    reason=qa_reason,
+                    justification="Annual file audit",
+                    expires_at=now - timedelta(days=14),
+                )
+                # Mark as inactive (expired and deactivated)
+                grant.is_active = False
+                grant.save(update_fields=["is_active"])
+
+            created_items.append("3 access grants (2 active, 1 expired)")
+
+        # --- 4. FieldAccessConfig overrides ---
+        fa_created = 0
+        for field_name, access in [("birth_date", "none"), ("email", "view")]:
+            _, created = FieldAccessConfig.objects.get_or_create(
+                field_name=field_name,
+                defaults={"front_desk_access": access},
+            )
+            if created:
+                fa_created += 1
+        if fa_created:
+            created_items.append(f"{fa_created} field access config overrides")
+
+        if created_items:
+            self.stdout.write(
+                f"  PERM demo data: {', '.join(created_items)}."
+            )

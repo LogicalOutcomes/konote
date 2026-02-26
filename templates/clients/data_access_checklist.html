@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Data Access Request" %} — {{ client }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Data Access Request" %}</h1>
+    <p>{{ client.display_name }} {{ client.last_name }}</p>
+</hgroup>
+
+{# Deadline banner #}
+{% if dar.completed_at %}
+<article style="border-left: 4px solid var(--kn-success-fg); background: var(--kn-success-bg);">
+    <strong>{% trans "Complete" %}</strong>
+    <p>{% blocktrans with date=dar.completed_at|date:"Y-m-d" method=dar.get_delivery_method_display %}Delivered on {{ date }} ({{ method }}).{% endblocktrans %}</p>
+</article>
+{% elif dar.is_overdue %}
+<article style="border-left: 4px solid var(--kn-danger-fg); background: var(--kn-danger-bg);">
+    <strong>{% trans "Overdue" %}</strong>
+    <p>{% blocktrans with date=dar.deadline|date:"Y-m-d" %}The 30-day PIPEDA deadline was {{ date }}. Please respond as soon as possible.{% endblocktrans %}</p>
+</article>
+{% else %}
+<article style="border-left: 4px solid var(--kn-warning-fg); background: var(--kn-warning-bg);">
+    <strong>{% blocktrans with date=dar.deadline|date:"Y-m-d" %}Response due by {{ date }}{% endblocktrans %}</strong>
+    <p>{% blocktrans with days=dar.days_remaining %}{{ days }} days remaining.{% endblocktrans %}</p>
+</article>
+{% endif %}
+
+{# Request details #}
+<article>
+    <header>
+        <h2 style="margin: 0; font-size: 1.1rem;">{% trans "Request Details" %}</h2>
+    </header>
+    <dl>
+        <dt>{% trans "Date Received" %}</dt>
+        <dd>{{ dar.requested_at|date:"Y-m-d" }}</dd>
+        <dt>{% trans "Received By" %}</dt>
+        <dd>{{ dar.get_request_method_display }}</dd>
+        <dt>{% trans "Logged By" %}</dt>
+        <dd>{{ dar.created_by }}</dd>
+    </dl>
+</article>
+
+{# Checklist #}
+{% if not dar.completed_at %}
+<article>
+    <header>
+        <h2 style="margin: 0; font-size: 1.1rem;">{% trans "Information to Gather" %}</h2>
+    </header>
+    <p class="secondary">{% trans "Not all items may apply to your agency. Include what you have." %}</p>
+
+    <ul style="list-style: none; padding: 0;">
+        <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--pico-muted-border-color);">
+            <label><input type="checkbox"> {% trans "Client profile (print the profile page)" %}</label>
+        </li>
+        <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--pico-muted-border-color);">
+            <label><input type="checkbox"> {% trans "Program enrolments and status" %}</label>
+        </li>
+        <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--pico-muted-border-color);">
+            <label><input type="checkbox"> {% trans "Progress notes (use the notes list — filter by this participant, print or export)" %}</label>
+        </li>
+        <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--pico-muted-border-color);">
+            <label><input type="checkbox"> {% trans "Plan goals and metric history (print the plan page)" %}</label>
+        </li>
+        <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--pico-muted-border-color);">
+            <label><input type="checkbox"> {% trans "Communication log entries" %}</label>
+        </li>
+        <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--pico-muted-border-color);">
+            <label><input type="checkbox"> {% trans "Survey responses (if your agency uses surveys)" %}</label>
+        </li>
+        <li style="padding: 0.5rem 0;">
+            <label><input type="checkbox"> {% trans "Alerts and flags" %}</label>
+            <p class="secondary" style="margin: 0.25rem 0 0 1.5rem; font-size: 0.85rem;">
+                {% trans "Review before including. You may withhold safety-related notes under PIPEDA s.9(1) if disclosure could threaten the safety of others." %}
+            </p>
+        </li>
+    </ul>
+</article>
+
+{# Mark complete #}
+<article>
+    <header>
+        <h2 style="margin: 0; font-size: 1.1rem;">{% trans "Mark as Complete" %}</h2>
+    </header>
+    <form method="post" action="{% url 'data_access:data_access_complete' pk=dar.pk %}">
+        {% csrf_token %}
+
+        <label for="id_delivery_method">{% trans "How was the information delivered?" %}</label>
+        <select name="delivery_method" id="id_delivery_method">
+            <option value="in_person">{% trans "In person" %}</option>
+            <option value="mail">{% trans "Mail" %}</option>
+            <option value="email">{% trans "Email" %}</option>
+        </select>
+
+        <label for="id_completed_at">{% trans "Date delivered" %}</label>
+        <input type="date" name="completed_at" id="id_completed_at" value="{% now 'Y-m-d' %}">
+
+        <button type="submit" onclick="return confirm('{% trans "Mark this data access request as complete?" %}')">{% trans "Mark as Complete" %}</button>
+    </form>
+</article>
+{% endif %}
+
+<div style="margin-top: 1rem;">
+    <a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Back to Participant" %}</a>
+</div>
+{% endblock %}

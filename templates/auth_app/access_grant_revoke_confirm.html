@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Revoke Access Grant" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Revoke Access Grant" %}</h1>
+    <p>{% trans "This will immediately end your access to the clinical data covered by this grant." %}</p>
+</hgroup>
+
+<article>
+    <dl>
+        <dt>{% trans "Program" %}</dt>
+        <dd>{{ grant.program.name }}</dd>
+        <dt>{% trans "Reason" %}</dt>
+        <dd>{{ grant.reason.label }}</dd>
+        <dt>{% trans "Justification" %}</dt>
+        <dd>{{ grant.justification }}</dd>
+        <dt>{% trans "Expires" %}</dt>
+        <dd>{{ grant.expires_at|date:"M j, Y g:i A" }}</dd>
+    </dl>
+</article>
+
+<form method="post">
+    {% csrf_token %}
+    <div role="group">
+        <button type="submit" class="contrast">{% trans "Revoke Now" %}</button>
+        <a href="{% url 'auth_app:access_grant_list' %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

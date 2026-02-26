@@ -41,14 +41,14 @@
                 <td>
                     {{ er.approvals.count }}/{{ er.programs_required|length }}
                     {% if er.is_stuck %}
-                    <span class="badge badge-warning" title="{% trans 'This request may be stuck — a required program has no active PM.' %}">!</span>
+                    <span class="badge badge-warning" title="{% trans 'This request may be stuck — a required program has no active PM.' %}" aria-label="{% trans 'Stuck request' %}">!</span>
                     {% endif %}
                 </td>
                 <td>
                     {% if er.days_pending >= 30 %}
-                    <span class="badge badge-danger" title="{% trans 'PIPEDA requires a response within 30 days. This request is overdue.' %}">{{ er.days_pending }}d</span>
+                    <span class="badge badge-danger" title="{% trans 'PIPEDA requires a response within 30 days. This request is overdue.' %}" aria-label="{% trans 'Overdue' %}: {{ er.days_pending }}d">{{ er.days_pending }}d</span>
                     {% elif er.days_pending >= 25 %}
-                    <span class="badge badge-warning" title="{% trans 'Approaching 30-day PIPEDA deadline.' %}">{{ er.days_pending }}d</span>
+                    <span class="badge badge-warning" title="{% trans 'Approaching 30-day PIPEDA deadline.' %}" aria-label="{% trans 'Approaching deadline' %}: {{ er.days_pending }}d">{{ er.days_pending }}d</span>
                     {% else %}
                     <span class="badge badge-secondary">{{ er.days_pending }}d</span>
                     {% endif %}
@@ -61,7 +61,8 @@
     </table>
 </figure>
 {% else %}
-<div class="empty-state">
+<div class="empty-state empty-state--erasure">
+    <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.45; margin-bottom: 0.5rem;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
     <p>{% trans "No pending erasure requests." %}</p>
 </div>
 {% endif %}

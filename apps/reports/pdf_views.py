@@ -1,6 +1,7 @@
 """PDF export views for client progress reports, program outcome reports, and individual client data export."""
 import csv
 import io
+import uuid
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseForbidden
@@ -252,6 +253,7 @@ def generate_funder_report_pdf(request, report_data, sections=None,
     if not is_pdf_available():
         return _pdf_unavailable_response(request)
 
+    from .chart_utils import generate_metric_charts, is_chart_available
     from .suppression import SMALL_CELL_THRESHOLD
 
     context = {
@@ -264,6 +266,11 @@ def generate_funder_report_pdf(request, report_data, sections=None,
         context["sections"] = sections
     if metric_results:
         context["metric_results"] = metric_results
+
+        # Generate chart images for chart sections
+        if is_chart_available():
+            chart_images = generate_metric_charts(metric_results)
+            context["chart_images"] = chart_images
 
     safe_name = sanitise_filename(report_data["program_name"].replace(" ", "_"))
     fy_label = sanitise_filename(report_data["reporting_period"].replace(" ", "_"))
@@ -502,6 +509,24 @@ def client_export(request, client_id):
     client_name = f"{client.first_name} {client.last_name}"
 
     if request.method == "POST":
+        # Idempotency: reject duplicate POSTs from the same form render.
+        # Only enforced when the nonce hidden field is present in the POST
+        # (always true in the browser form, not present in direct API calls).
+        submitted_nonce = request.POST.get("_export_nonce")
+        if submitted_nonce is not None:
+            session_key = f"export_nonce_{client_id}"
+            expected_nonce = request.session.get(session_key, "")
+            if not submitted_nonce or submitted_nonce != expected_nonce:
+                form = IndividualClientExportForm()
+                nonce = uuid.uuid4().hex
+                request.session[session_key] = nonce
+                return render(request, "reports/client_export_form.html", {
+                    "form": form, "client": client, "client_name": client_name,
+                    "duplicate_warning": True, "export_nonce": nonce,
+                })
+            # Clear nonce so it can't be reused
+            request.session.pop(session_key, None)
+
         form = IndividualClientExportForm(request.POST)
         if form.is_valid():
             export_format = form.cleaned_data["format"]
@@ -581,8 +606,13 @@ def client_export(request, client_id):
     else:
         form = IndividualClientExportForm()
 
+    # Generate nonce for idempotency
+    nonce = uuid.uuid4().hex
+    request.session[f"export_nonce_{client_id}"] = nonce
+
     return render(request, "reports/client_export_form.html", {
         "form": form,
         "client": client,
         "client_name": client_name,
+        "export_nonce": nonce,
     })

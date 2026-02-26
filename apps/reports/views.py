@@ -1,12 +1,12 @@
 """Report views — aggregate metric CSV export, report template report, client analysis charts, and secure links."""
 import csv
+import datetime as dt
 import io
 import json
 import logging
 import os
 import uuid
 from collections import defaultdict
-import datetime as dt
 from datetime import datetime, time, timedelta
 
 from django.conf import settings
@@ -263,17 +263,22 @@ def _get_grouping_label(group_by_value, grouping_field):
     return _("Demographic Group")
 
 
-def _write_achievement_csv(writer, achievement_summary, program):
+def _write_achievement_csv(writer, achievement_summary, program, *,
+                           is_confidential=None):
     """Write the achievement rate summary section to a CSV writer.
 
     Used by both aggregate and individual export paths. The achievement
     data is already aggregate (counts and percentages) so it's safe for
     all roles.
+
+    Args:
+        is_confidential: Optional bool override for All Programs mode
+            where program is None but confidential suppression is needed.
     """
     writer.writerow([])  # blank separator
     writer.writerow(sanitise_csv_row([_("# ===== ACHIEVEMENT RATE SUMMARY =====")]))
-    ach_total = suppress_small_cell(achievement_summary["total_clients"], program)
-    ach_met = suppress_small_cell(achievement_summary["clients_met_any_target"], program)
+    ach_total = suppress_small_cell(achievement_summary["total_clients"], program, is_confidential=is_confidential)
+    ach_met = suppress_small_cell(achievement_summary["clients_met_any_target"], program, is_confidential=is_confidential)
     if isinstance(ach_total, str) or isinstance(ach_met, str):
         writer.writerow(sanitise_csv_row([
             _("# Overall: %(met)s of %(total)s clients met at least one target")
@@ -288,8 +293,8 @@ def _write_achievement_csv(writer, achievement_summary, program):
         writer.writerow(sanitise_csv_row([_("# No client data available for achievement calculation")]))
 
     for metric in achievement_summary.get("by_metric", []):
-        m_total = suppress_small_cell(metric["total_clients"], program)
-        m_met = suppress_small_cell(metric.get("clients_met_target", 0), program)
+        m_total = suppress_small_cell(metric["total_clients"], program, is_confidential=is_confidential)
+        m_met = suppress_small_cell(metric.get("clients_met_target", 0), program, is_confidential=is_confidential)
         if metric["has_target"]:
             if isinstance(m_total, str) or isinstance(m_met, str):
                 writer.writerow(sanitise_csv_row([
@@ -354,6 +359,11 @@ def export_form(request):
             "consortium_locked_metric_strings": {str(m) for m in form.consortium_locked_metrics},
             "consortium_partner_name": form.consortium_partner_name,
         })
+
+    # If preview=1 is set, delegate to the preview view
+    if request.POST.get("preview") == "1":
+        from .preview_views import adhoc_report_preview
+        return adhoc_report_preview(request)
 
     form = MetricExportForm(request.POST, user=request.user)
     if not form.is_valid():
@@ -536,8 +546,8 @@ def export_form(request):
             avg_val = round(stats["avg"], 1) if stats.get("avg") is not None else "N/A"
             aggregate_rows.append({
                 "metric_name": mv.metric_def.name,
-                "clients_measured": suppress_small_cell(len(metric_client_sets.get(mid, set())), program),
-                "data_points": suppress_small_cell(stats.get("valid_count", 0), program),
+                "clients_measured": suppress_small_cell(len(metric_client_sets.get(mid, set())), program, is_confidential=_has_confidential_program),
+                "data_points": suppress_small_cell(stats.get("valid_count", 0), program, is_confidential=_has_confidential_program),
                 "avg": avg_val,
                 "min": stats.get("min", "N/A"),
                 "max": stats.get("max", "N/A"),
@@ -560,7 +570,7 @@ def export_form(request):
                     demographic_aggregate_rows.append({
                         "demographic_group": group_label,
                         "metric_name": mv_metric_def.name,
-                        "clients_measured": suppress_small_cell(client_count, program),
+                        "clients_measured": suppress_small_cell(client_count, program, is_confidential=_has_confidential_program),
                         "avg": avg_val,
                         "min": stats.get("min", "N/A"),
                         "max": stats.get("max", "N/A"),
@@ -643,7 +653,7 @@ def export_form(request):
                         section_rows.append({
                             "demographic_group": group_label,
                             "metric_name": mv_metric_def.name,
-                            "clients_measured": suppress_small_cell(client_count, program),
+                            "clients_measured": suppress_small_cell(client_count, program, is_confidential=_has_confidential_program),
                             "avg": avg_val,
                             "min": stats.get("min", "N/A"),
                             "max": stats.get("max", "N/A"),
@@ -655,7 +665,9 @@ def export_form(request):
                         "rows": section_rows,
                     })
 
-        total_clients_display = suppress_small_cell(len(unique_clients), program)
+        total_clients_display = suppress_small_cell(len(unique_clients), program, is_confidential=_has_confidential_program)
+
+        safe_display = sanitise_filename(str(program_display_name).replace(" ", "_"))
 
         safe_display = sanitise_filename(str(program_display_name).replace(" ", "_"))
 
@@ -670,6 +682,7 @@ def export_form(request):
                 total_clients_display=total_clients_display,
                 total_data_points_display=suppress_small_cell(
                     sum(s.get("valid_count", 0) for s in agg_by_metric.values()), program,
+                    is_confidential=_has_confidential_program,
                 ),
                 is_aggregate=True,
                 aggregate_rows=aggregate_rows,
@@ -686,12 +699,16 @@ def export_form(request):
             writer.writerow(sanitise_csv_row([f"# Date Range: {date_from} to {date_to}"]))
             writer.writerow(sanitise_csv_row([f"# Total Participants: {total_clients_display}"]))
             writer.writerow(sanitise_csv_row([_("# Export Mode: Aggregate Summary")]))
+            if all_programs_mode:
+                writer.writerow(sanitise_csv_row([
+                    _("# Note: Participants enrolled in multiple programs are counted once per program.")
+                ]))
             if grouping_type != "none":
-                writer.writerow(sanitise_csv_row([f"# Grouped By: {grouping_label}"]))
+                writer.writerow(sanitise_csv_row([_("# Grouped By: %(label)s") % {"label": grouping_label}]))
 
             # Achievement rate summary (same as individual path — already aggregate)
             if achievement_summary:
-                _write_achievement_csv(writer, achievement_summary, program)
+                _write_achievement_csv(writer, achievement_summary, program, is_confidential=_has_confidential_program)
 
             writer.writerow([])  # blank separator
 
@@ -712,7 +729,7 @@ def export_form(request):
             # Demographic breakdown table
             if demographic_aggregate_rows:
                 writer.writerow([])
-                writer.writerow(sanitise_csv_row([f"# ===== BREAKDOWN BY {grouping_label.upper()} ====="]))
+                writer.writerow(sanitise_csv_row([_("# ===== BREAKDOWN BY %(label)s =====") % {"label": grouping_label.upper()}]))
                 writer.writerow(sanitise_csv_row([
                     grouping_label, _("Metric Name"), _("Participants Measured"), _("Average"), _("Min"), _("Max"),
                 ]))
@@ -730,7 +747,7 @@ def export_form(request):
             if report_template_breakdown_sections:
                 for section in report_template_breakdown_sections:
                     writer.writerow([])
-                    writer.writerow(sanitise_csv_row([f"# ===== {section['label'].upper()} ====="]))
+                    writer.writerow(sanitise_csv_row([_("# ===== %(label)s =====") % {"label": section['label'].upper()}]))
                     writer.writerow(sanitise_csv_row([
                         section["label"], _("Metric Name"), _("Participants Measured"), _("Average"), _("Min"), _("Max"),
                     ]))
@@ -786,8 +803,10 @@ def export_form(request):
             rows.append(row)
 
         # Apply small-cell suppression for confidential programs
-        total_clients_display = suppress_small_cell(len(unique_clients), program)
-        total_data_points_display = suppress_small_cell(len(rows), program)
+        total_clients_display = suppress_small_cell(len(unique_clients), program, is_confidential=_has_confidential_program)
+        total_data_points_display = suppress_small_cell(len(rows), program, is_confidential=_has_confidential_program)
+
+        safe_display_indiv = sanitise_filename(str(program_display_name).replace(" ", "_"))
 
         safe_display_indiv = sanitise_filename(str(program_display_name).replace(" ", "_"))
 
@@ -815,11 +834,11 @@ def export_form(request):
             writer.writerow(sanitise_csv_row([f"# Total Clients: {total_clients_display}"]))
             writer.writerow(sanitise_csv_row([f"# Total Data Points: {total_data_points_display}"]))
             if grouping_type != "none":
-                writer.writerow(sanitise_csv_row([f"# Grouped By: {grouping_label}"]))
+                writer.writerow(sanitise_csv_row([_("# Grouped By: %(label)s") % {"label": grouping_label}]))
 
             # Achievement rate summary if requested
             if achievement_summary:
-                _write_achievement_csv(writer, achievement_summary, program)
+                _write_achievement_csv(writer, achievement_summary, program, is_confidential=_has_confidential_program)
 
             writer.writerow([])  # blank separator
 
@@ -885,7 +904,9 @@ def export_form(request):
         "metrics": [m.name for m in selected_metrics],
         "date_from": str(date_from),
         "date_to": str(date_to),
-        "total_clients": len(unique_clients),
+        "total_clients": (
+            "suppressed" if _has_confidential_program else len(unique_clients)
+        ),
         "total_data_points": total_data_points_count if is_aggregate else len(rows),
         "export_mode": "aggregate" if is_aggregate else "individual",
         "recipient": recipient,
@@ -1368,6 +1389,11 @@ def generate_report_form(request):
             "has_templates": has_templates,
             "can_custom_export": can_custom_export,
         })
+
+    # If preview=1 is set, delegate to the preview view
+    if request.POST.get("preview") == "1":
+        from .preview_views import template_report_preview
+        return template_report_preview(request)
 
     form = TemplateExportForm(request.POST, user=request.user)
     if not form.is_valid():
@@ -1890,3 +1916,137 @@ def revoke_export_link(request, link_id):
 
     messages.success(request, _("Export link revoked successfully."))
     return redirect("reports:manage_export_links")
+
+
+# ---------------------------------------------------------------------------
+# Sessions by Participant report (REP-SESS1)
+# ---------------------------------------------------------------------------
+
+
+@login_required
+@requires_permission("report.program_report", allow_admin=True)
+def session_report_form(request):
+    """
+    Sessions by Participant report — session counts, contact hours, modality.
+
+    GET  — display the session report form.
+    POST — generate and return the CSV report.
+
+    Access: program_manager and admin (via report.program_report permission).
+    This report contains individual participant data (names, session details)
+    so it is NOT available to executives (aggregate-only users).
+    """
+    from .forms import SessionReportForm
+    from .session_report import generate_session_report
+    from .session_csv import generate_session_report_csv
+
+    # Block aggregate-only users — this report contains participant-level data.
+    # Admins are exempt (they have system-wide access via allow_admin=True).
+    if is_aggregate_only_user(request.user) and not getattr(request.user, "is_admin", False):
+        return HttpResponseForbidden(
+            _("This report contains individual participant data. "
+              "Please use the template-driven report for aggregate output.")
+        )
+
+    if request.method != "POST":
+        form = SessionReportForm(user=request.user)
+        breadcrumbs = [
+            {"url": reverse("reports:export_form"), "label": _("Reports")},
+            {"url": "", "label": _("Sessions by Participant")},
+        ]
+        return render(request, "reports/session_report_form.html", {
+            "form": form,
+            "breadcrumbs": breadcrumbs,
+        })
+
+    form = SessionReportForm(request.POST, user=request.user)
+    if not form.is_valid():
+        breadcrumbs = [
+            {"url": reverse("reports:export_form"), "label": _("Reports")},
+            {"url": "", "label": _("Sessions by Participant")},
+        ]
+        return render(request, "reports/session_report_form.html", {
+            "form": form,
+            "breadcrumbs": breadcrumbs,
+        })
+
+    program = form.cleaned_data["program"]
+    date_from = form.cleaned_data["date_from"]
+    date_to = form.cleaned_data["date_to"]
+    recipient = form.get_recipient_display()
+
+    if program is None:
+        return HttpResponseForbidden(
+            _("Please select a specific program for session reports.")
+        )
+
+    # Permission check
+    if not can_create_export(request.user, "session_report", program=program):
+        return HttpResponseForbidden(
+            _("You do not have permission to export data for this program.")
+        )
+
+    # Generate report data
+    report_data = generate_session_report(program, date_from, date_to, user=request.user)
+
+    # Generate CSV
+    csv_content, filename = generate_session_report_csv(report_data)
+    client_count = report_data["summary"]["total_unique_participants"]
+
+    # Save as secure export link (follows existing pattern)
+    secure_dir = getattr(settings, "SECURE_EXPORT_DIR", "/tmp/konote_exports")
+    os.makedirs(secure_dir, exist_ok=True)
+
+    file_id = str(uuid.uuid4())
+    file_path = os.path.join(secure_dir, f"{file_id}.csv")
+    with open(file_path, "w", newline="", encoding="utf-8-sig") as f:
+        f.write(csv_content)
+
+    link = SecureExportLink.objects.create(
+        created_by=request.user,
+        expires_at=timezone.now() + timedelta(hours=24),
+        export_type="session_report",
+        filters_json=json.dumps({
+            "report_type": "session_by_participant",
+            "program_id": program.pk,
+            "program_name": str(program),
+            "date_from": str(date_from),
+            "date_to": str(date_to),
+        }),
+        client_count=client_count,
+        includes_notes=False,
+        recipient=recipient,
+        filename=filename,
+        file_path=file_path,
+        contains_pii=True,
+    )
+
+    # Audit log
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=request.user.display_name,
+        action="create",
+        resource_type="session_report",
+        ip_address=_get_client_ip(request),
+        is_demo_context=getattr(request.user, "is_demo", False),
+        metadata={
+            "link_id": str(link.id),
+            "program": str(program),
+            "date_from": str(date_from),
+            "date_to": str(date_to),
+            "client_count": client_count,
+            "total_sessions": report_data["summary"]["total_sessions"],
+            "recipient": recipient,
+        },
+    )
+
+    from django.contrib import messages
+    from django.shortcuts import redirect
+
+    messages.success(
+        request,
+        _("Session report generated. %(count)d participants, %(sessions)d sessions.")
+        % {"count": client_count, "sessions": report_data["summary"]["total_sessions"]},
+    )
+    return redirect("reports:download_export", link_id=link.pk)

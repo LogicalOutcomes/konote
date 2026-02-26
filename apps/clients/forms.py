@@ -36,23 +36,43 @@ class ConsentRecordForm(forms.Form):
 
 
 class ClientContactForm(forms.Form):
-    """Narrow form for editing client phone number only.
+    """Dynamic form for editing client contact fields.
 
-    Used by front desk (client.edit_contact: ALLOW) and staff (SCOPED).
+    Accepts a field_access_map (from FieldAccessConfig.get_all_access())
+    to determine which fields to include. Only fields with "edit" access
+    are shown.
+
+    Used by front desk (client.edit_contact: PER_FIELD) and staff (PROGRAM).
     Does NOT include address or emergency contact — safety implications for DV.
-    Replace with PER_FIELD form in Phase 2.
     """
 
-    phone = forms.CharField(
-        max_length=20, required=False,
-        label=_("Phone Number"),
-        widget=forms.TextInput(attrs={
-            "type": "tel",
-            "placeholder": _("(613) 555-1234"),
-            "autofocus": True,
-            "aria-describedby": "phone-errors",
-        }),
-    )
+    def __init__(self, *args, field_access_map=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Default: phone only (backward-compatible with pre-tier behaviour)
+        if field_access_map is None:
+            field_access_map = {"phone": "edit"}
+
+        # Dynamically add fields based on access config
+        if field_access_map.get("phone") == "edit":
+            self.fields["phone"] = forms.CharField(
+                max_length=20, required=False,
+                label=_("Phone Number"),
+                widget=forms.TextInput(attrs={
+                    "type": "tel",
+                    "placeholder": _("(613) 555-1234"),
+                    "aria-describedby": "phone-errors",
+                }),
+            )
+
+        if field_access_map.get("email") == "edit":
+            self.fields["email"] = forms.EmailField(
+                max_length=254, required=False,
+                label=_("Email Address"),
+                widget=forms.EmailInput(attrs={
+                    "placeholder": _("name@example.com"),
+                    "aria-describedby": "email-errors",
+                }),
+            )
 
     def clean_phone(self):
         phone = self.cleaned_data.get("phone", "").strip()
@@ -113,7 +133,7 @@ class ClientFileForm(forms.Form):
         error_messages={"required": _("Please select at least one program.")},
     )
 
-    def __init__(self, *args, available_programs=None, **kwargs):
+    def __init__(self, *args, available_programs=None, circle_choices=None, **kwargs):
         super().__init__(*args, **kwargs)
         if available_programs is not None:
             self.fields["programs"].queryset = available_programs
@@ -121,6 +141,31 @@ class ClientFileForm(forms.Form):
             # Pre-select when user has exactly one program (IMPROVE-2)
             if not self.is_bound and available_programs.count() == 1:
                 self.initial["programs"] = [available_programs.first().pk]
+
+        # Circle fields — only added when circles feature toggle is on
+        if circle_choices is not None:
+            self.fields["existing_circle"] = forms.ChoiceField(
+                choices=[("", _("— None —"))] + list(circle_choices),
+                required=False,
+                label=_("Link to existing circle"),
+                help_text=_("Optional — link to an existing circle or create a new one below."),
+            )
+            self.fields["new_circle_name"] = forms.CharField(
+                max_length=255,
+                required=False,
+                label=_("Or create a new circle"),
+                widget=forms.TextInput(attrs={"placeholder": _("e.g. Garcia Family")}),
+            )
+
+    def clean(self):
+        cleaned = super().clean()
+        existing = cleaned.get("existing_circle", "")
+        new_name = cleaned.get("new_circle_name", "").strip()
+        if existing and new_name:
+            raise forms.ValidationError(
+                _("Choose either an existing circle or create a new one — not both.")
+            )
+        return cleaned
 
     def clean_phone(self):
         phone = self.cleaned_data.get("phone", "").strip()
@@ -244,16 +289,19 @@ class CustomFieldDefinitionForm(forms.ModelForm):
         model = CustomFieldDefinition
         fields = [
             "group", "name", "input_type", "placeholder", "is_required",
-            "is_sensitive", "front_desk_access", "options_json", "sort_order", "status",
+            "is_sensitive", "front_desk_access", "is_dv_sensitive",
+            "options_json", "sort_order", "status",
         ]
         widgets = {
             "options_json": forms.Textarea(attrs={"rows": 3, "placeholder": _('["Option 1", "Option 2"]')}),
         }
         labels = {
             "sort_order": _("Display order"),
+            "is_dv_sensitive": _("DV-sensitive"),
         }
         help_texts = {
             "front_desk_access": _("Set front desk access to 'View and edit' for contact info, emergency contacts, and safety alerts."),
+            "is_dv_sensitive": _("When checked, this field is hidden from front desk staff for participants with a DV safety flag."),
         }
 
 
@@ -411,3 +459,121 @@ class MergeConfirmForm(forms.Form):
                     label=conflict["field_name"],
                     initial=str(client_a_pk),
                 )
+
+
+# --- Data Access Request forms (QA-R7-PRIVACY1) ---
+
+class DataAccessRequestForm(forms.Form):
+    """Form to log a new PIPEDA data access request."""
+
+    REQUEST_METHOD_CHOICES = [
+        ("verbal", _("Verbal")),
+        ("written", _("Written")),
+        ("email", _("Email")),
+    ]
+
+    requested_at = forms.DateField(
+        label=_("Date request received"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    request_method = forms.ChoiceField(
+        choices=REQUEST_METHOD_CHOICES,
+        label=_("How was the request received?"),
+    )
+
+
+class DataAccessCompleteForm(forms.Form):
+    """Form to mark a data access request as complete."""
+
+    DELIVERY_METHOD_CHOICES = [
+        ("in_person", _("In person")),
+        ("mail", _("Mail")),
+        ("email", _("Email")),
+    ]
+
+    completed_at = forms.DateField(
+        label=_("Date delivered"),
+        widget=forms.DateInput(attrs={"type": "date"}),
+    )
+    delivery_method = forms.ChoiceField(
+        choices=DELIVERY_METHOD_CHOICES,
+        label=_("How was the information delivered?"),
+    )
+
+
+# --- Bulk operation forms (UX17) ---
+
+class BulkStatusForm(forms.Form):
+    """Form for changing status of multiple clients at once."""
+
+    client_ids = forms.CharField(widget=forms.HiddenInput)
+    status = forms.ChoiceField(
+        choices=ClientFile.STATUS_CHOICES,
+        label=_("New status"),
+    )
+    status_reason = forms.CharField(
+        required=False,
+        label=_("Reason (optional)"),
+        widget=forms.Textarea(attrs={
+            "rows": 2,
+            "placeholder": _("Why is the status being changed?"),
+        }),
+    )
+
+    def clean_client_ids(self):
+        raw = self.cleaned_data["client_ids"]
+        try:
+            ids = [int(x.strip()) for x in raw.split(",") if x.strip()]
+        except (ValueError, TypeError):
+            raise forms.ValidationError(_("Invalid participant selection."))
+        if not ids:
+            raise forms.ValidationError(_("No participants selected."))
+        return ids
+
+
+class BulkTransferForm(forms.Form):
+    """Form for adding/removing program enrolments for multiple clients."""
+
+    client_ids = forms.CharField(widget=forms.HiddenInput)
+    add_program = forms.ModelChoiceField(
+        queryset=Program.objects.none(),
+        required=False,
+        label=_("Add to program"),
+        empty_label=_("— None —"),
+    )
+    remove_program = forms.ModelChoiceField(
+        queryset=Program.objects.none(),
+        required=False,
+        label=_("Remove from program"),
+        empty_label=_("— None —"),
+    )
+
+    def __init__(self, *args, available_programs=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        if available_programs is not None:
+            self.fields["add_program"].queryset = available_programs
+            self.fields["remove_program"].queryset = available_programs
+
+    def clean_client_ids(self):
+        raw = self.cleaned_data["client_ids"]
+        try:
+            ids = [int(x.strip()) for x in raw.split(",") if x.strip()]
+        except (ValueError, TypeError):
+            raise forms.ValidationError(_("Invalid participant selection."))
+        if not ids:
+            raise forms.ValidationError(_("No participants selected."))
+        return ids
+
+    def clean(self):
+        cleaned = super().clean()
+        add = cleaned.get("add_program")
+        remove = cleaned.get("remove_program")
+        if not add and not remove:
+            raise forms.ValidationError(
+                _("Please select a program to add or remove.")
+            )
+        if add and remove and add.pk == remove.pk:
+            raise forms.ValidationError(
+                _("Cannot add and remove the same program.")
+            )
+        return cleaned

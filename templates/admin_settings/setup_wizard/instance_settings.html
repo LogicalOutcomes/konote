@@ -36,6 +36,27 @@
         <option value="DD/MM/YYYY"{% if current_data.date_format == 'DD/MM/YYYY' %} selected{% endif %}>16/02/2026</option>
     </select>
 
+    <fieldset>
+        <legend>{% trans "Access Tier" %}</legend>
+        <p><small>{% trans "Controls which advanced permission features are active. The baseline role matrix is always enforced." %}</small></p>
+
+        <label>
+            <input type="radio" name="access_tier" value="1"{% if current_data.access_tier == '1' or not current_data.access_tier %} checked{% endif %}>
+            <strong>{% trans "Open Access" %}</strong>
+            <br><small>{% trans "Good for programs where data is non-sensitive and the team is small. Front desk still cannot see clinical notes." %}</small>
+        </label>
+        <label>
+            <input type="radio" name="access_tier" value="2"{% if current_data.access_tier == '2' %} checked{% endif %}>
+            <strong>{% trans "Role-Based" %}</strong>
+            <br><small>{% trans "Configure which fields front desk can see or edit. DV-safe mode is available." %}</small>
+        </label>
+        <label>
+            <input type="radio" name="access_tier" value="3"{% if current_data.access_tier == '3' %} checked{% endif %}>
+            <strong>{% trans "Clinical Safeguards" %}</strong>
+            <br><small>{% trans "Program managers must document why they need clinical notes, with time-limited access. DV-safe mode prompted during setup." %}</small>
+        </label>
+    </fieldset>
+
     <div class="wizard-nav">
         <span class="spacer"></span>
         <button type="submit">{% trans "Next: Terminology" %} &rarr;</button>

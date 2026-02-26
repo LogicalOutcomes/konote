@@ -8,8 +8,10 @@
     <title>{% trans "Survey Unavailable" %}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    {% include "_lang_toggle_styles.html" %}
 </head>
 <body>
+{% include "_lang_toggle.html" with max_width="720px" %}
 <main class="container" style="max-width:720px; padding-top:2rem; text-align:center">
 
 <h1>{% trans "Survey Unavailable" %}</h1>

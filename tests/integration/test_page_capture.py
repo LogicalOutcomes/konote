@@ -25,6 +25,7 @@ import pytest
 
 from tests.ux_walkthrough.browser_base import BrowserTestBase, TEST_PASSWORD
 from tests.utils.page_capture import (
+    AXE_REPORT_PATH,
     MANIFEST_PATH,
     PAGE_INVENTORY_PATH,
     PERSONA_MAP,
@@ -35,6 +36,8 @@ from tests.utils.page_capture import (
     load_page_inventory,
     new_manifest,
     resolve_url_pattern,
+    run_axe_for_page,
+    write_axe_report,
     write_manifest,
 )
 
@@ -207,8 +210,10 @@ class TestPageCapture(BrowserTestBase):
         filter_pages = _env_list("PAGE_CAPTURE_PAGES")
         filter_personas = _env_list("PAGE_CAPTURE_PERSONAS")
         filter_breakpoints = _env_list("PAGE_CAPTURE_BREAKPOINTS")
+        skip_axe = os.environ.get("PAGE_CAPTURE_SKIP_AXE", "").strip() == "1"
 
         manifest = new_manifest()
+        axe_scans = []  # Accumulated for standalone axe report
         personas_seen = set()
         states_seen = set()
         current_persona = None  # track to avoid redundant logins
@@ -260,6 +265,7 @@ class TestPageCapture(BrowserTestBase):
                 "personas_captured": [],
                 "states_captured": [],
                 "screenshot_count": 0,
+                "axe_results": [],
             }
 
             for persona_id in persona_ids:
@@ -299,6 +305,63 @@ class TestPageCapture(BrowserTestBase):
                         continue
 
                 for state in capturable_states:
+                    # Navigate once per page+persona+state (not per breakpoint)
+                    full_url = self.live_url(resolved)
+                    try:
+                        self.page.goto(full_url, timeout=15000)
+                        self._wait_for_idle()
+                        page_loaded = True
+                    except Exception as exc:
+                        page_loaded = False
+                        for bp in breakpoints:
+                            if filter_breakpoints and bp not in filter_breakpoints:
+                                continue
+                            manifest["missing_screenshots"].append({
+                                "page_id": page_id,
+                                "persona": persona_id,
+                                "state": state,
+                                "breakpoint": bp,
+                                "reason": str(exc),
+                            })
+                        print(
+                            f"  FAIL  {page_id}/{persona_id}/{state}: {exc}",
+                            flush=True,
+                        )
+                        continue
+
+                    # Axe scan (once per page+persona+state, before viewport resizing)
+                    if not skip_axe and page_loaded:
+                        axe_result = run_axe_for_page(self.run_axe)
+                        axe_result["page_id"] = page_id
+                        axe_result["persona"] = persona_id
+                        axe_result["state"] = state
+                        axe_scans.append(axe_result)
+
+                        page_manifest["axe_results"].append({
+                            "persona": persona_id,
+                            "state": state,
+                            "violation_count": axe_result["violation_count"],
+                            "violations": axe_result["violations"],
+                        })
+
+                        manifest["axe_total_scans"] += 1
+                        if axe_result["violation_count"] > 0:
+                            manifest["axe_total_violations"] += (
+                                axe_result["violation_count"]
+                            )
+                            print(
+                                f"  AXE  {page_id}/{persona_id}/{state}: "
+                                f"{axe_result['violation_count']} violations",
+                                flush=True,
+                            )
+                        elif axe_result.get("error"):
+                            print(
+                                f"  AXE  {page_id}/{persona_id}/{state}: "
+                                f"ERROR {axe_result['error'][:60]}",
+                                flush=True,
+                            )
+
+                    # Screenshots at each breakpoint
                     for bp in breakpoints:
                         if filter_breakpoints and bp not in filter_breakpoints:
                             continue
@@ -307,9 +370,6 @@ class TestPageCapture(BrowserTestBase):
                         filepath = SCREENSHOT_DIR / filename
 
                         try:
-                            full_url = self.live_url(resolved)
-                            self.page.goto(full_url, timeout=15000)
-                            self._wait_for_idle()
                             capture_page_screenshot(self.page, filepath, bp)
 
                             manifest["total_screenshots"] += 1
@@ -337,10 +397,21 @@ class TestPageCapture(BrowserTestBase):
             manifest["pages"].append(page_manifest)
             manifest["pages_captured"] += 1
 
+        # Compute axe pages-with-violations count
+        if axe_scans:
+            pages_with_axe_issues = {
+                s["page_id"] for s in axe_scans if s["violation_count"] > 0
+            }
+            manifest["axe_pages_with_violations"] = len(pages_with_axe_issues)
+
         # Finalise manifest
         manifest["personas_tested"] = sorted(personas_seen)
         manifest["states_captured"] = sorted(states_seen)
         write_manifest(manifest)
+
+        # Write standalone axe report
+        if axe_scans:
+            write_axe_report(axe_scans, manifest["timestamp"])
 
         # Summary
         total = manifest["total_screenshots"]
@@ -353,6 +424,22 @@ class TestPageCapture(BrowserTestBase):
         print(f"Total screenshots: {total}")
         print(f"Skipped pages: {skipped}")
         print(f"Missing screenshots: {missing}")
+        if not skip_axe:
+            axe_scans_count = manifest.get("axe_total_scans", 0)
+            axe_violations = manifest.get("axe_total_violations", 0)
+            axe_pages = manifest.get("axe_pages_with_violations", 0)
+            axe_errors = sum(1 for s in axe_scans if s.get("error"))
+            print(f"\nAccessibility (axe-core)")
+            print(f"------------------------")
+            print(f"Axe scans: {axe_scans_count}")
+            print(f"Pages with violations: {axe_pages}")
+            print(f"Total violations: {axe_violations}")
+            if axe_errors and axe_errors == axe_scans_count:
+                print(f"WARNING: All {axe_errors} axe scans failed — "
+                      f"check CDN connectivity or network access")
+            elif axe_errors:
+                print(f"Axe scan errors: {axe_errors}")
+            print(f"Axe report: {AXE_REPORT_PATH}")
         print(f"\nManifest: {MANIFEST_PATH}")
 
         self.assertGreater(total, 0, "No screenshots were captured!")

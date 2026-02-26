@@ -22,9 +22,42 @@ class Command(BaseCommand):
         self._seed_note_templates()
         self._seed_intake_fields()
         if settings.DEMO_MODE:
+            demo_profile = os.environ.get("DEMO_DATA_PROFILE", "")
+            if demo_profile:
+                # Use config-aware demo data engine with a profile
+                self._generate_config_aware_demo_data(demo_profile)
+            else:
+                # Use the hardcoded default demo data
+                self._create_demo_users_and_clients()
+                self._update_demo_client_fields()
+        self.stdout.write(self.style.SUCCESS("Seed complete."))
+
+    def _generate_config_aware_demo_data(self, profile_path):
+        """Use the DemoDataEngine to generate demo data from current config."""
+        from apps.admin_settings.demo_engine import DemoDataEngine
+
+        self.stdout.write("  Using configuration-aware demo data engine...")
+        engine = DemoDataEngine(stdout=self.stdout, stderr=self.stderr)
+
+        try:
+            success = engine.run(
+                profile_path=profile_path if profile_path else None,
+                force=True,
+            )
+            if success:
+                self.stdout.write("  Configuration-aware demo data generated.")
+            else:
+                self.stdout.write(self.style.WARNING(
+                    "  Config-aware demo data did not complete. "
+                    "Falling back to default demo data..."
+                ))
+                self._create_demo_users_and_clients()
+                self._update_demo_client_fields()
+        except Exception as e:
+            self.stderr.write(f"  WARNING: Config-aware demo data failed: {e}")
+            self.stderr.write("  Falling back to default demo data...")
             self._create_demo_users_and_clients()
             self._update_demo_client_fields()
-        self.stdout.write(self.style.SUCCESS("Seed complete."))
 
     def _seed_event_types(self):
         """Delegate to the seed_event_types command so all seeding runs in one place."""
@@ -65,6 +98,10 @@ class Command(BaseCommand):
                     "min_value": m.get("min_value"),
                     "max_value": m.get("max_value"),
                     "unit": m.get("unit", ""),
+                    "metric_type": m.get("metric_type", "scale"),
+                    "achievement_options": m.get("achievement_options", []),
+                    "achievement_success_values": m.get("achievement_success_values", []),
+                    "target_rate": m.get("target_rate"),
                     "name_fr": m.get("name_fr", ""),
                     "definition_fr": m.get("definition_fr", ""),
                     "unit_fr": m.get("unit_fr", ""),
@@ -117,6 +154,7 @@ class Command(BaseCommand):
             ("messaging_sms", False),
             ("messaging_email", True),
             ("surveys", False),
+            ("circles", False),
         ]
         created = 0
         for key, enabled in defaults:
@@ -141,8 +179,11 @@ class Command(BaseCommand):
             FeatureToggle.objects.filter(feature_key="surveys").update(
                 is_enabled=True
             )
+            FeatureToggle.objects.filter(feature_key="circles").update(
+                is_enabled=True
+            )
             self.stdout.write(
-                "  Demo mode: participant_portal, messaging_email, ai_assist, surveys enabled."
+                "  Demo mode: participant_portal, messaging_email, ai_assist, surveys, circles enabled."
             )
 
     def _seed_instance_settings(self):

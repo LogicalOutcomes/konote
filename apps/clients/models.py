@@ -90,6 +90,15 @@ class ClientFile(models.Model):
         help_text="True after PII has been stripped. Record kept for statistical purposes.",
     )
 
+    # DV safety — hides sensitive custom fields from front desk
+    is_dv_safe = models.BooleanField(
+        default=False,
+        help_text=_(
+            "When enabled, DV-sensitive custom fields (address, emergency contact, "
+            "employer) are hidden from front desk staff for this participant."
+        ),
+    )
+
     def __str__(self):
         if self.is_anonymised:
             return _("[ANONYMISED]")
@@ -246,38 +255,57 @@ class ClientFile(models.Model):
     def get_visible_fields(self, role):
         """Return dict of field visibility for a given role.
 
-        Core model fields are categorised as either "safety" (visible to all
-        roles including front desk) or "clinical" (hidden from front desk).
+        For non-receptionist roles: all fields visible (subject to clinical
+        permission check for clinical fields).
+
+        For receptionist at Tier 1: safe defaults from FieldAccessConfig.
+        For receptionist at Tier 2+: per-field config from FieldAccessConfig
+        (admin-configurable via the field access page).
 
         Custom fields (EAV) are NOT covered here — they use the per-field
         front_desk_access setting on CustomFieldDefinition instead.
 
         Usage in templates:
             {% if visible_fields.birth_date %}{{ client.birth_date }}{% endif %}
+            {% if visible_fields.phone_editable %}...edit form...{% endif %}
         """
-        from apps.auth_app.permissions import can_access, ALLOW, SCOPED, GATED
+        from apps.auth_app.permissions import can_access, ALLOW, PROGRAM, GATED
 
-        # Safety fields — visible to all roles including front desk.
-        # These are needed for check-in, emergency contact, and safety purposes.
-        safety_fields = {
+        # All core fields
+        all_fields = {
             'first_name', 'last_name', 'preferred_name', 'display_name',
-            'middle_name', 'phone', 'record_id', 'status',
+            'middle_name', 'phone', 'email', 'record_id', 'status',
+            'birth_date',
         }
-
-        # Clinical fields — only visible to staff and above.
-        # birth_date reveals age which is clinical context in a treatment setting.
-        clinical_fields = {'birth_date'}
 
         visible = {}
 
-        # Safety fields always visible
-        for f in safety_fields:
-            visible[f] = True
+        if role == 'receptionist':
+            # Always-visible fields (identity + status)
+            for f in FieldAccessConfig.ALWAYS_VISIBLE:
+                visible[f] = True
 
-        # Clinical fields depend on role permission
-        clinical_access = can_access(role, 'client.view_clinical')
-        for f in clinical_fields:
-            visible[f] = clinical_access in (ALLOW, SCOPED, GATED)
+            # Configurable fields — check FieldAccessConfig
+            access_map = FieldAccessConfig.get_all_access()
+            for field_name, access_level in access_map.items():
+                visible[field_name] = access_level in ('view', 'edit')
+                visible[f'{field_name}_editable'] = access_level == 'edit'
+
+            # Clinical fields are always hidden from receptionist
+            visible['birth_date'] = access_map.get('birth_date', 'none') in ('view', 'edit')
+            visible['birth_date_editable'] = access_map.get('birth_date', 'none') == 'edit'
+
+        else:
+            # Non-receptionist: all fields visible
+            for f in all_fields:
+                visible[f] = True
+                visible[f'{f}_editable'] = True
+
+            # Clinical fields depend on role permission
+            clinical_access = can_access(role, 'client.view_clinical')
+            has_clinical = clinical_access in (ALLOW, PROGRAM, GATED)
+            visible['birth_date'] = has_clinical
+            visible['birth_date_editable'] = has_clinical
 
         return visible
 
@@ -344,6 +372,65 @@ class ClientAccessBlock(models.Model):
         return f"Block: {self.user} cannot access {self.client_file}"
 
 
+class DvFlagRemovalRequest(models.Model):
+    """Two-person-rule workflow for removing a DV safety flag.
+
+    Step 1: A staff member recommends removal (requested_by + reason).
+    Step 2: A program manager reviews and approves or rejects (reviewed_by).
+
+    Until approved, is_dv_safe stays True on the ClientFile. If rejected,
+    the request is closed and a new request can be made.
+    """
+
+    client_file = models.ForeignKey(
+        ClientFile,
+        on_delete=models.CASCADE,
+        related_name="dv_removal_requests",
+    )
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+    )
+    requested_at = models.DateTimeField(auto_now_add=True)
+    reason = models.TextField(
+        help_text=_("Explain why the DV safety flag should be removed."),
+    )
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="+",
+    )
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    approved = models.BooleanField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="None = pending, True = approved (flag removed), False = rejected.",
+    )
+    review_note = models.TextField(
+        default="",
+        blank=True,
+        help_text=_("Reviewer's note on approval or rejection."),
+    )
+
+    class Meta:
+        app_label = "clients"
+        db_table = "dv_flag_removal_requests"
+        ordering = ["-requested_at"]
+
+    def __str__(self):
+        status = "pending" if self.approved is None else ("approved" if self.approved else "rejected")
+        return f"DV removal request for {self.client_file} ({status})"
+
+    @property
+    def is_pending(self):
+        return self.approved is None
+
+
 class CustomFieldGroup(models.Model):
     """A group of custom fields (e.g., 'Contact Information', 'Demographics')."""
 
@@ -398,6 +485,13 @@ class CustomFieldDefinition(models.Model):
             ("edit", "View and edit"),
         ],
         help_text="What access front desk staff have to this field.",
+    )
+    is_dv_sensitive = models.BooleanField(
+        default=False,
+        help_text=_(
+            "When checked, this field is hidden from front desk staff "
+            "for participants with a DV safety flag."
+        ),
     )
     # Determines which validation and normalisation rules apply (I18N-FIX2).
     # Auto-detected from field name on first save if not explicitly set.
@@ -475,6 +569,7 @@ class ErasureRequest(models.Model):
     STATUS_CHOICES = [
         ("pending", _("Pending Approval")),
         ("anonymised", _("Approved — Data Anonymised")),
+        ("scheduled", _("Scheduled — Awaiting Erasure")),
         ("approved", _("Approved — Data Erased")),
         ("rejected", _("Rejected")),
         ("cancelled", _("Cancelled")),
@@ -537,6 +632,10 @@ class ErasureRequest(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     completed_at = models.DateTimeField(null=True, blank=True)
     receipt_downloaded_at = models.DateTimeField(null=True, blank=True)
+    scheduled_execution_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Tier 3 only: when the deferred erasure will execute (24h after approval).",
+    )
 
     # Programs that need PM approval (snapshot of program PKs at request time)
     programs_required = models.JSONField(
@@ -604,6 +703,93 @@ class ErasureApproval(models.Model):
         return f"Approval for {program_name} by {self.approved_by_display}"
 
 
+class FieldAccessConfig(models.Model):
+    """Configures front desk access to core model fields.
+
+    Only used at Tier 2+. At Tier 1, safe defaults apply automatically.
+    Custom fields use CustomFieldDefinition.front_desk_access instead.
+
+    This model covers core ClientFile fields (phone, email, birth_date, etc.)
+    that an agency may want to grant or restrict for the receptionist role.
+    """
+
+    ACCESS_CHOICES = [
+        ("none", _("Hidden")),
+        ("view", _("View only")),
+        ("edit", _("View and edit")),
+    ]
+
+    # Default access for core fields when no FieldAccessConfig row exists.
+    # At Tier 1, these defaults are used without admin UI.
+    # At Tier 2+, admin can override via the field access page.
+    # Tier 3 uses tighter defaults (email: view only) for clinical safety.
+    SAFE_DEFAULTS = {
+        "phone": "edit",
+        "email": "edit",
+        "birth_date": "none",
+        "preferred_name": "view",
+    }
+
+    SAFE_DEFAULTS_TIER3 = {
+        "phone": "edit",
+        "email": "view",
+        "birth_date": "none",
+        "preferred_name": "view",
+    }
+
+    # Fields that are always visible to front desk regardless of config.
+    # These cannot be hidden because front desk needs them to identify clients.
+    ALWAYS_VISIBLE = {"first_name", "last_name", "display_name", "record_id", "status"}
+
+    field_name = models.CharField(max_length=100, unique=True)
+    front_desk_access = models.CharField(
+        max_length=10,
+        choices=ACCESS_CHOICES,
+        default="view",
+    )
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        app_label = "clients"
+        db_table = "field_access_configs"
+        ordering = ["field_name"]
+
+    def __str__(self):
+        return f"{self.field_name}: {self.get_front_desk_access_display()}"
+
+    @classmethod
+    def _get_defaults(cls):
+        """Return the appropriate safe defaults for the current access tier.
+
+        Tier 3 (clinical) uses tighter defaults — email is view-only
+        instead of editable, since email addresses can be a safety
+        concern in clinical and DV-serving agencies.
+        """
+        from apps.admin_settings.models import get_access_tier
+        if get_access_tier() >= 3:
+            return cls.SAFE_DEFAULTS_TIER3
+        return cls.SAFE_DEFAULTS
+
+    @classmethod
+    def get_access(cls, field_name):
+        """Return the front desk access level for a core field.
+
+        Falls back to tier-sensitive safe defaults if no config row exists.
+        """
+        try:
+            return cls.objects.get(field_name=field_name).front_desk_access
+        except cls.DoesNotExist:
+            return cls._get_defaults().get(field_name, "none")
+
+    @classmethod
+    def get_all_access(cls):
+        """Return dict of field_name -> access level for all configurable fields."""
+        result = dict(cls._get_defaults())  # Start with tier-sensitive defaults
+        for config in cls.objects.all():
+            result[config.field_name] = config.front_desk_access
+        return result
+
+
 class ClientMerge(models.Model):
     """Records that two client records were merged.
 
@@ -659,3 +845,74 @@ class ClientMerge(models.Model):
             f"Merge #{self.pk}: Participant #{self.archived_client_pk} "
             f"→ Participant #{self.kept_client_pk}"
         )
+
+
+class DataAccessRequest(models.Model):
+    """Tracks a PIPEDA Section 8 data access request through a guided manual process.
+
+    NOT an automated export — a checklist that tells staff what to gather,
+    tracks the 30-day deadline, and logs completion to the audit trail.
+    """
+
+    REQUEST_METHOD_CHOICES = [
+        ("verbal", _("Verbal")),
+        ("written", _("Written")),
+        ("email", _("Email")),
+    ]
+
+    DELIVERY_METHOD_CHOICES = [
+        ("in_person", _("In person")),
+        ("mail", _("Mail")),
+        ("email", _("Email")),
+    ]
+
+    client_file = models.ForeignKey(
+        ClientFile, on_delete=models.CASCADE, related_name="data_access_requests",
+    )
+    requested_at = models.DateField(
+        help_text="Date the access request was received.",
+    )
+    request_method = models.CharField(
+        max_length=20, choices=REQUEST_METHOD_CHOICES,
+    )
+    deadline = models.DateField(
+        help_text="Auto-set to requested_at + 30 days.",
+    )
+
+    # Completion
+    completed_at = models.DateField(null=True, blank=True)
+    delivery_method = models.CharField(
+        max_length=20, blank=True, choices=DELIVERY_METHOD_CHOICES,
+    )
+    completed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name="data_access_completions",
+    )
+
+    # Metadata
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, related_name="data_access_requests_created",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        app_label = "clients"
+        db_table = "data_access_requests"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        status = _("Complete") if self.completed_at else _("Pending")
+        return f"Data Access #{self.pk} — {status}"
+
+    @property
+    def is_overdue(self):
+        from datetime import date
+        return not self.completed_at and self.deadline < date.today()
+
+    @property
+    def days_remaining(self):
+        from datetime import date
+        if self.completed_at:
+            return None
+        return (self.deadline - date.today()).days

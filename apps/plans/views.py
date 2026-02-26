@@ -10,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.translation import gettext as _
 
 from apps.audit.models import AuditLog
@@ -68,8 +69,8 @@ def _get_program_from_target(request, target_id, **kwargs):
 def _can_edit_plan(user, client_file):
     """Return True if the user may modify this client's plan.
 
-    Uses the permissions matrix (plan.edit) — only roles with ALLOW or SCOPED
-    for plan.edit can edit. Currently staff has SCOPED, PM has DENY.
+    Uses the permissions matrix (plan.edit) — only roles with ALLOW or PROGRAM
+    for plan.edit can edit. Currently staff has PROGRAM, PM has DENY.
 
     Note: admin status does NOT bypass program role checks (PERM-S2).
     """
@@ -636,9 +637,16 @@ def goal_create(request, client_id):
     from konote.ai_views import _ai_enabled
     ai_enabled = _can_edit_plan(request.user, client) and _ai_enabled()
 
+    breadcrumbs = [
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
+        {"url": reverse("plans:plan_view", kwargs={"client_id": client.pk}), "label": _("Plan")},
+        {"url": "", "label": _("Add a Goal")},
+    ]
     context = {
         "form": form,
         "client": client,
+        "breadcrumbs": breadcrumbs,
         "preselected_section": preselected_section,
         "universal_metrics": universal_metrics,
         "program_used_metrics": program_used_metrics,

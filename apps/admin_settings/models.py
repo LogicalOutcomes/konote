@@ -45,6 +45,9 @@ DEFAULT_TERMS = {
     "member_plural": ("Members", "Membres"),
     "session": ("Session", "Séance"),
     "session_plural": ("Sessions", "Séances"),
+    # Circles
+    "circle": ("Circle", "Cercle"),
+    "circle_plural": ("Circles", "Cercles"),
 }
 
 # Help text showing where each term appears in the interface.
@@ -82,6 +85,8 @@ TERM_HELP_TEXT = {
     "member_plural": _lazy("Used in: group detail page, attendance summary"),
     "session": _lazy("Used in: group session recording form, attendance page"),
     "session_plural": _lazy("Used in: group detail page, session history"),
+    "circle": _lazy("Used in: navigation, circle list, circle detail, participant file sidebar, note form"),
+    "circle_plural": _lazy("Used in: navigation menu, dashboard counts, reports"),
 }
 
 
@@ -196,3 +201,41 @@ class InstanceSetting(models.Model):
             return cls.objects.get(setting_key=key).setting_value
         except cls.DoesNotExist:
             return default
+
+
+# --- Access tier helper ---
+
+# Tier descriptions for admin UI and documentation
+ACCESS_TIER_CHOICES = [
+    ("1", "Open Access"),
+    ("2", "Role-Based"),
+    ("3", "Clinical Safeguards"),
+]
+
+ACCESS_TIER_DESCRIPTIONS = {
+    "1": (
+        "Everyone on the team sees what they need for their role. "
+        "Good for programs where data is non-sensitive and the team is small. "
+        "Front desk still cannot see clinical notes. Executives see aggregate data only."
+    ),
+    "2": (
+        "Different roles see different things, and you can configure exactly which "
+        "fields front desk can see or edit. Good for agencies with distinct front desk, "
+        "worker, and manager functions. DV-safe mode is available."
+    ),
+    "3": (
+        "Additional protections for clinical and safety-sensitive data. Program managers "
+        "must document why they need to view clinical notes, with time-limited access. "
+        "DV-safe mode is prompted during setup."
+    ),
+}
+
+
+def get_access_tier():
+    """Return the agency's access tier (1, 2, or 3). Default is 1.
+
+    Used by the permission decorator to determine whether GATED
+    permissions are enforced (Tier 3) or relaxed to ALLOW (Tiers 1–2).
+    Also used by templates to show/hide tier-specific admin UI.
+    """
+    return int(InstanceSetting.get("access_tier", "1"))

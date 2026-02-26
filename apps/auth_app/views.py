@@ -196,6 +196,13 @@ def _local_login(request):
                 if user.check_password(password):
                     # Successful login — clear lockout counter
                     _clear_failed_attempts(client_ip)
+
+                    # MFA check — redirect to TOTP verification if enabled
+                    if user.mfa_enabled and user.mfa_secret:
+                        request.session["_mfa_pending_user_id"] = user.pk
+                        request.session["_mfa_pending_at"] = timezone.now().timestamp()
+                        return redirect("auth_app:mfa_verify")
+
                     login(request, user)
                     user.last_login_at = timezone.now()
                     user.save(update_fields=["last_login_at"])
@@ -460,3 +467,226 @@ def _audit_logout(request):
         )
     except Exception as e:
         logger.error("Audit logging failed for logout (user=%s): %s", request.user.username, e)
+
+
+# --- MFA (TOTP) views ---
+
+# MFA session expiry: pending MFA must be completed within this window
+MFA_PENDING_EXPIRY_SECONDS = 300  # 5 minutes
+
+
+def _complete_mfa_login(request, user):
+    """Shared login completion after successful MFA verification."""
+    request.session.pop("_mfa_pending_user_id", None)
+    request.session.pop("_mfa_pending_at", None)
+    login(request, user)
+    user.last_login_at = timezone.now()
+    user.save(update_fields=["last_login_at"])
+    _audit_login(request, user)
+    lang_code = sync_language_on_login(request, user)
+    response = _login_redirect(user, request.session)
+    return _set_language_cookie(response, lang_code)
+
+
+@ratelimit(key="ip", rate="5/m", method="POST", block=True)
+def mfa_verify(request):
+    """Verify TOTP code after password login when MFA is enabled."""
+    from django.contrib import messages
+    from django.utils.translation import gettext as _
+
+    from .forms import MFAVerifyForm
+    from .models import User
+
+    user_id = request.session.get("_mfa_pending_user_id")
+    if not user_id:
+        return redirect("auth_app:login")
+
+    # Reject expired MFA sessions (Fix 6)
+    pending_at = request.session.get("_mfa_pending_at")
+    if pending_at:
+        elapsed = timezone.now().timestamp() - pending_at
+        if elapsed > MFA_PENDING_EXPIRY_SECONDS:
+            request.session.pop("_mfa_pending_user_id", None)
+            request.session.pop("_mfa_pending_at", None)
+            return redirect("auth_app:login")
+
+    try:
+        user = User.objects.get(pk=user_id, is_active=True)
+    except User.DoesNotExist:
+        request.session.pop("_mfa_pending_user_id", None)
+        request.session.pop("_mfa_pending_at", None)
+        return redirect("auth_app:login")
+
+    error = None
+    form = MFAVerifyForm()
+
+    if request.method == "POST":
+        form = MFAVerifyForm(request.POST)
+        if form.is_valid():
+            code = form.cleaned_data["code"]
+            if _verify_totp(user.mfa_secret, code):
+                return _complete_mfa_login(request, user)
+
+            # Check backup codes (hashed comparison)
+            if user.check_backup_code(code):
+                messages.warning(request, _("You used a backup code. You have %(count)s remaining.") % {"count": len(user.mfa_backup_codes)})
+                return _complete_mfa_login(request, user)
+
+            error = _("Invalid verification code. Please try again.")
+
+    return render(request, "auth/mfa_verify.html", {
+        "form": form,
+        "error": error,
+    })
+
+
+@login_required
+def mfa_setup(request):
+    """Enable TOTP MFA — show QR code and confirm with a verification code."""
+    import secrets
+
+    from django.contrib import messages
+    from django.utils.translation import gettext as _
+
+    from .forms import MFAVerifyForm
+
+    user = request.user
+    if user.mfa_enabled:
+        messages.info(request, _("MFA is already enabled on your account."))
+        return redirect("home")
+
+    # Generate a new secret or reuse one from the session (in case of form re-render)
+    secret = request.session.get("_mfa_setup_secret")
+    if not secret:
+        secret = _generate_totp_secret()
+        request.session["_mfa_setup_secret"] = secret
+
+    error = None
+    form = MFAVerifyForm()
+
+    if request.method == "POST":
+        form = MFAVerifyForm(request.POST)
+        if form.is_valid():
+            code = form.cleaned_data["code"]
+            if _verify_totp(secret, code):
+                # Code valid — enable MFA and store hashed backup codes
+                backup_codes = [secrets.token_hex(4) for _ in range(10)]
+                user.mfa_secret = secret
+                user.mfa_enabled = True
+                user.set_backup_codes(backup_codes)
+                user.save(update_fields=["_mfa_secret_encrypted", "mfa_enabled", "mfa_backup_codes"])
+                request.session.pop("_mfa_setup_secret", None)
+
+                return render(request, "auth/mfa_setup_complete.html", {
+                    "backup_codes": backup_codes,
+                })
+            else:
+                error = _("Invalid code. Please check your authenticator app and try again.")
+
+    # Generate QR code as data URI
+    qr_uri = _generate_totp_uri(secret, user.username)
+    qr_data_uri = _qr_code_data_uri(qr_uri)
+
+    return render(request, "auth/mfa_setup.html", {
+        "form": form,
+        "error": error,
+        "qr_data_uri": qr_data_uri,
+        "secret": secret,
+    })
+
+
+@login_required
+def mfa_disable(request):
+    """Disable TOTP MFA — requires re-entering a valid code."""
+    from django.contrib import messages
+    from django.utils.translation import gettext as _
+
+    from .forms import MFAVerifyForm
+
+    user = request.user
+    if not user.mfa_enabled:
+        return redirect("home")
+
+    error = None
+    form = MFAVerifyForm()
+
+    if request.method == "POST":
+        form = MFAVerifyForm(request.POST)
+        if form.is_valid():
+            code = form.cleaned_data["code"]
+            if _verify_totp(user.mfa_secret, code) or user.check_backup_code(code):
+                user.mfa_enabled = False
+                user.mfa_secret = ""
+                user.mfa_backup_codes = []
+                user.save(update_fields=["mfa_enabled", "_mfa_secret_encrypted", "mfa_backup_codes"])
+                messages.success(request, _("Multi-factor authentication has been disabled."))
+                return redirect("home")
+            else:
+                error = _("Invalid code. Please enter a valid verification code to disable MFA.")
+
+    return render(request, "auth/mfa_disable.html", {
+        "form": form,
+        "error": error,
+    })
+
+
+# --- TOTP helpers ---
+
+def _generate_totp_secret():
+    """Generate a base32-encoded TOTP secret."""
+    import base64
+    import secrets
+    return base64.b32encode(secrets.token_bytes(20)).decode("ascii").rstrip("=")
+
+
+def _generate_totp_uri(secret, username, issuer="KoNote"):
+    """Build an otpauth:// URI for QR code scanning."""
+    import urllib.parse
+    label = urllib.parse.quote(f"{issuer}:{username}")
+    params = urllib.parse.urlencode({"secret": secret, "issuer": issuer, "digits": 6, "period": 30})
+    return f"otpauth://totp/{label}?{params}"
+
+
+def _verify_totp(secret, code, window=1):
+    """Verify a TOTP code against a secret, allowing a +/-1 period window."""
+    import base64
+    import hashlib
+    import hmac
+    import struct
+    import time
+
+    if not secret or not code or len(code) != 6 or not code.isdigit():
+        return False
+
+    # Pad the secret back to a valid base32 string
+    padded = secret + "=" * (-len(secret) % 8)
+    try:
+        key = base64.b32decode(padded, casefold=True)
+    except Exception:
+        return False
+
+    now = int(time.time())
+    for offset in range(-window, window + 1):
+        counter = (now // 30) + offset
+        msg = struct.pack(">Q", counter)
+        h = hmac.new(key, msg, hashlib.sha1).digest()
+        o = h[-1] & 0x0F
+        token = str((struct.unpack(">I", h[o:o + 4])[0] & 0x7FFFFFFF) % 1000000).zfill(6)
+        if hmac.compare_digest(token, code):
+            return True
+    return False
+
+
+def _qr_code_data_uri(data):
+    """Generate a QR code as a base64 data URI. Falls back to text if qrcode not installed."""
+    try:
+        import base64
+        import io
+        import qrcode
+        img = qrcode.make(data, box_size=6, border=2)
+        buf = io.BytesIO()
+        img.save(buf, format="PNG")
+        encoded = base64.b64encode(buf.getvalue()).decode("ascii")
+        return f"data:image/png;base64,{encoded}"
+    except ImportError:
+        return None

@@ -44,6 +44,31 @@ def dashboard(request):
     current_settings = InstanceSetting.get_all()
     messaging_profile = current_settings.get("messaging_profile", "record_keeping")
 
+    # Field access card (Tier 2+ only)
+    from apps.admin_settings.models import get_access_tier
+    from apps.clients.models import CustomFieldDefinition, FieldAccessConfig
+    access_tier = get_access_tier()
+    field_access_count = 0
+    if access_tier >= 2:
+        # Count core fields with view or edit access
+        access_map = FieldAccessConfig.get_all_access()
+        field_access_count += sum(1 for v in access_map.values() if v in ("view", "edit"))
+        # Count custom fields with view or edit access
+        field_access_count += CustomFieldDefinition.objects.filter(
+            status="active", front_desk_access__in=["view", "edit"]
+        ).count()
+
+    # Access grants card (Tier 3 only)
+    active_grant_count = 0
+    active_reason_count = 0
+    if access_tier >= 3:
+        from apps.auth_app.models import AccessGrant, AccessGrantReason
+        from django.utils import timezone as tz
+        active_grant_count = AccessGrant.objects.filter(
+            is_active=True, expires_at__gt=tz.now()
+        ).count()
+        active_reason_count = AccessGrantReason.objects.filter(is_active=True).count()
+
     return render(request, "admin_settings/dashboard.html", {
         "enabled_features": enabled_features,
         "total_features": total_features,
@@ -55,6 +80,10 @@ def dashboard(request):
         "partner_count": partner_count,
         "report_template_count": report_template_count,
         "messaging_profile": messaging_profile,
+        "access_tier": access_tier,
+        "field_access_count": field_access_count,
+        "active_grant_count": active_grant_count,
+        "active_reason_count": active_reason_count,
     })
 
 
@@ -284,6 +313,29 @@ DEFAULT_FEATURES = {
         "when_on": [_lazy("Staff can see notes from other programs for participants enrolled in multiple programs")],
         "when_off": [_lazy("Notes are only visible within the program they were created in")],
         "depends_on": ["programs"],
+        "used_by": [],
+    },
+    "field_collection": {
+        "label": _lazy("Field Collection"),
+        "description": _lazy("Offline mobile data collection for field staff using ODK Central."),
+        "when_on": [_lazy("Per-program field collection settings become available"), _lazy("Admin can configure ODK Central sync for attendance and visit notes")],
+        "when_off": [_lazy("Field collection settings are hidden"), _lazy("Existing sync configurations are preserved")],
+        "depends_on": [],
+        "used_by": [],
+        "requires_config": ["ODK_CENTRAL_URL"],
+    },
+    "circles": {
+        "label": _lazy("Circles"),
+        "description": _lazy("Track families, households, and support networks as circles of connected people."),
+        "when_on": [
+            _lazy("Circles menu appears in the navigation bar"),
+            _lazy("Staff can create circles and manage members"),
+            _lazy("Circle membership shows on participant files"),
+            _lazy("Notes can be tagged to a circle"),
+            _lazy("DV safety: circles with blocked members and fewer than 4 visible members are automatically hidden"),
+        ],
+        "when_off": [_lazy("Circles menu is hidden — existing circle data is preserved")],
+        "depends_on": [],
         "used_by": [],
     },
 }
@@ -643,4 +695,101 @@ def demo_directory(request):
         "client_data": client_data,
         "demo_user_count": len(user_data),
         "demo_client_count": len(client_data),
+    })
+
+
+# --- Demo Data Management ---
+
+@login_required
+@admin_required
+def demo_data_management(request):
+    """Manage configuration-aware demo data generation."""
+    from django.conf import settings as django_settings
+
+    from apps.auth_app.models import User
+    from apps.clients.models import ClientFile
+    from apps.notes.models import ProgressNote
+    from apps.programs.models import Program
+
+    demo_mode = django_settings.DEMO_MODE
+    demo_client_count = ClientFile.objects.filter(is_demo=True).count()
+    demo_user_count = User.objects.filter(is_demo=True).count()
+    demo_note_count = ProgressNote.objects.filter(
+        client_file__is_demo=True
+    ).count()
+    active_program_count = Program.objects.filter(status="active").count()
+
+    # Check when demo data was last generated
+    last_generated = InstanceSetting.objects.filter(
+        setting_key="demo_data_generated_at"
+    ).values_list("setting_value", flat=True).first()
+
+    if request.method == "POST":
+        if not demo_mode:
+            messages.error(request, _("Demo mode is not enabled."))
+            return redirect("admin_settings:demo_data_management")
+
+        action = request.POST.get("action")
+
+        if action == "generate":
+            from apps.admin_settings.demo_engine import DemoDataEngine
+            from io import StringIO
+
+            try:
+                clients_per_program = int(request.POST.get("clients_per_program", 3))
+                days_span = int(request.POST.get("days_span", 180))
+            except (ValueError, TypeError):
+                clients_per_program = 3
+                days_span = 180
+
+            # Clamp values
+            clients_per_program = max(1, min(10, clients_per_program))
+            days_span = max(30, min(365, days_span))
+
+            output = StringIO()
+            engine = DemoDataEngine(stdout=output, stderr=output)
+
+            try:
+                success = engine.run(
+                    clients_per_program=clients_per_program,
+                    days_span=days_span,
+                    force=True,
+                )
+                if success:
+                    # Store generation timestamp
+                    from django.utils import timezone as tz
+                    InstanceSetting.objects.update_or_create(
+                        setting_key="demo_data_generated_at",
+                        defaults={"setting_value": tz.now().isoformat()},
+                    )
+                    messages.success(request, _("Demo data generated successfully."))
+                else:
+                    messages.warning(request, _("Demo data generation did not complete. Check that programs are configured."))
+            except Exception as e:
+                messages.error(request, _("Error generating demo data: %(error)s") % {"error": str(e)})
+
+            return redirect("admin_settings:demo_data_management")
+
+        elif action == "clear":
+            from apps.admin_settings.demo_engine import DemoDataEngine
+            from io import StringIO
+
+            output = StringIO()
+            engine = DemoDataEngine(stdout=output, stderr=output)
+            engine.cleanup_demo_data()
+
+            InstanceSetting.objects.filter(
+                setting_key="demo_data_generated_at"
+            ).delete()
+
+            messages.success(request, _("Demo data cleared successfully."))
+            return redirect("admin_settings:demo_data_management")
+
+    return render(request, "admin_settings/demo_data.html", {
+        "demo_mode": demo_mode,
+        "demo_client_count": demo_client_count,
+        "demo_user_count": demo_user_count,
+        "demo_note_count": demo_note_count,
+        "active_program_count": active_program_count,
+        "last_generated": last_generated,
     })

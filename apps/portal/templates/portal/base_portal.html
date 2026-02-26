@@ -51,17 +51,7 @@
     <!-- Language toggle nav -->
     <nav class="portal-lang-nav" aria-label="{% trans 'Language selection' %}">
         <div class="container">
-            <form action="{% url 'switch_language' %}" method="post">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request.path }}">
-                {% if CURRENT_LANG == "en" %}
-                <input type="hidden" name="language" value="fr">
-                <button type="submit" class="lang-link" lang="fr" hreflang="fr">Fran&ccedil;ais</button>
-                {% else %}
-                <input type="hidden" name="language" value="en">
-                <button type="submit" class="lang-link" lang="en" hreflang="en">English</button>
-                {% endif %}
-            </form>
+            {% include "_lang_toggle.html" with inline=True %}
         </div>
     </nav>
 

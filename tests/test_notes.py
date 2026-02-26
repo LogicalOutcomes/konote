@@ -502,6 +502,46 @@ class NoteViewsTest(TestCase):
         form = MetricValueForm(metric_def=metric)
         self.assertEqual(form.fields["value"].widget.__class__.__name__, "NumberInput")
 
+    def test_achievement_metric_renders_as_radio(self):
+        """Achievement metrics render as RadioSelect with option labels."""
+        from apps.notes.forms import MetricValueForm
+        metric = MetricDefinition.objects.create(
+            name="Job Placement", metric_type="achievement",
+            achievement_options=["Not placed", "Interview stage", "Placed — full-time"],
+            achievement_success_values=["Placed — full-time"],
+            definition="Employment status", category="employment",
+        )
+        form = MetricValueForm(metric_def=metric)
+        self.assertTrue(form.is_achievement)
+        self.assertFalse(form.is_scale)
+        self.assertEqual(form.fields["value"].widget.__class__.__name__, "RadioSelect")
+        choices = form.fields["value"].widget.choices
+        self.assertEqual(len(choices), 4)  # empty + 3 options
+
+    def test_achievement_metric_validates_option(self):
+        """Achievement metric rejects values not in achievement_options."""
+        from apps.notes.forms import MetricValueForm
+        metric = MetricDefinition.objects.create(
+            name="Housing Secured", metric_type="achievement",
+            achievement_options=["No housing", "Transitional", "Permanent housing"],
+            achievement_success_values=["Permanent housing"],
+            definition="Housing status", category="housing",
+        )
+        # Valid option
+        form = MetricValueForm(
+            data={"metric_def_id": metric.pk, "value": "Permanent housing"},
+            metric_def=metric,
+        )
+        self.assertTrue(form.is_valid())
+        self.assertEqual(form.cleaned_data["value"], "Permanent housing")
+
+        # Invalid option
+        form = MetricValueForm(
+            data={"metric_def_id": metric.pk, "value": "Invented option"},
+            metric_def=metric,
+        )
+        self.assertFalse(form.is_valid())
+
     def test_auto_calc_session_count(self):
         """Auto-calc metric shows session count for current month."""
         section = PlanSection.objects.create(
@@ -1014,3 +1054,39 @@ class TemplatePreviewTest(TestCase):
         resp = self.http.get(f"/notes/template/{self.template.pk}/preview/")
         self.assertEqual(resp.status_code, 302)
         self.assertIn("/login/", resp.url)
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AllianceRepairGuideTest(TestCase):
+    """Tests for the Alliance Repair Guide reference page."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.http = Client()
+        self.staff = User.objects.create_user(username="staff", password="pass", is_admin=False)
+
+    def tearDown(self):
+        enc_module._fernet = None
+
+    def test_guide_returns_200_for_authenticated_user(self):
+        """Authenticated staff can view the Alliance Repair Guide."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get("/notes/alliance-repair-guide/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Alliance Repair Guide")
+
+    def test_guide_redirects_anonymous_user(self):
+        """Anonymous users are redirected to the login page."""
+        resp = self.http.get("/notes/alliance-repair-guide/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn("/login/", resp.url)
+
+    def test_guide_contains_key_sections(self):
+        """Guide contains all five expected content sections."""
+        self.http.login(username="staff", password="pass")
+        resp = self.http.get("/notes/alliance-repair-guide/")
+        self.assertContains(resp, "What Low Ratings Mean")
+        self.assertContains(resp, "Immediate Response")
+        self.assertContains(resp, "Repair Strategies")
+        self.assertContains(resp, "When to Seek Support")
+        self.assertContains(resp, "Quick Reference")

@@ -31,9 +31,10 @@
     </div>
     <div class="client-toolbar__filters">
         <div class="filter-field">
-            <label for="filter-status" class="visually-hidden">{% trans "Status" %}</label>
+            <label for="filter-status" class="visually-hidden">{% trans "Filter by status" %}</label>
             <select id="filter-status"
                     name="status"
+                    title="{% trans 'Filter by status' %}"
                     hx-get="{% url 'clients:client_list' %}"
                     hx-target="#client-list-container"
                     hx-include="#client-filters"
@@ -47,9 +48,10 @@
         </div>
         {% if features.programs and accessible_programs %}
         <div class="filter-field">
-            <label for="filter-program" class="visually-hidden">{{ term.program|default:"Program" }}</label>
+            <label for="filter-program" class="visually-hidden">{% blocktrans with program=term.program|default:"Program" %}Filter by {{ program }}{% endblocktrans %}</label>
             <select id="filter-program"
                     name="program"
+                    title="{% blocktrans with program=term.program|default:"Program" %}Filter by {{ program }}{% endblocktrans %}"
                     hx-get="{% url 'clients:client_list' %}"
                     hx-target="#client-list-container"
                     hx-include="#client-filters"
@@ -90,4 +92,35 @@
 <div id="client-list-container" aria-live="polite">
     {% include "clients/_client_list_table.html" %}
 </div>
+
+{% if show_bulk %}
+<!-- Bulk action bar (UX17) — hidden until checkboxes are selected -->
+<div id="bulk-action-bar" class="bulk-action-bar" hidden aria-live="polite">
+    <span id="bulk-count" class="bulk-action-bar__count"></span>
+    <div class="bulk-action-bar__actions">
+        {% if can_bulk_status %}
+        <button type="button"
+                id="bulk-status-btn"
+                class="btn btn-secondary btn-sm"
+                hx-post="{% url 'clients:bulk_status' %}"
+                hx-target="#bulk-modal-container"
+                hx-swap="innerHTML"
+                aria-label="{% trans 'Change status for selected participants' %}">{% trans "Change Status" %}</button>
+        {% endif %}
+        {% if can_bulk_transfer %}
+        <button type="button"
+                id="bulk-transfer-btn"
+                class="btn btn-secondary btn-sm"
+                hx-post="{% url 'clients:bulk_transfer' %}"
+                hx-target="#bulk-modal-container"
+                hx-swap="innerHTML"
+                aria-label="{% blocktrans with programs=term.program_plural|default:'programs' %}Transfer selected participants between {{ programs }}{% endblocktrans %}">{% trans "Transfer Programs" %}</button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Bulk modal container (filled by HTMX) -->
+<div class="modal-backdrop" id="bulk-modal-backdrop" hidden></div>
+<div id="bulk-modal-container" class="bulk-modal" hidden role="dialog" aria-labelledby="bulk-modal-title" aria-modal="true" tabindex="-1"></div>
+{% endif %}
 {% endblock %}

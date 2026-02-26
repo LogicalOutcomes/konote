@@ -2,23 +2,14 @@
 
 ## Flagged
 
-- [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — GK (ONBOARD-APPROVE)
-- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — GK (SEC3-Q1)
-- [ ] Confirm standard report schema and configuration template with partner contact before building — SG (RPT-SCHEMA1)
-- [ ] Approve CIDS implementation plan with project lead before building — covers metadata fields, code list integration, CIDS-enriched reports, and full JSON-LD export; confirm partner consumption pathway and whether to engage Common Approach as pilot implementer (see tasks/cids-json-ld-export.md) — SG/GK (CIDS-APPROVE1)
-- [ ] Approve band display labels and clinical thresholds for insights metric distributions — hard blocker on Phase 2 template work (see tasks/design-rationale/insights-metric-distributions.md, Phase 0) — GK (INSIGHTS-LANG1)
-- [ ] Discuss: are Design Rationale Records (DRRs) working well as a practice? Should we keep using them, change the format, or retire them? — GK (PROCESS-DRR1)
+- [ ] Approve Agency Permissions Interview questionnaire before first agency deployment (see tasks/agency-permissions-interview.md) — SG (ONBOARD-APPROVE)
+- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
+- [x] Validate CIDS implementation plan against CIDS 3.2.0 spec — 5 corrections + 6 Phase 3 items identified, GO with corrections. All decisions resolved 2026-02-25: FullTier target, JSON-LD export, pin v3.2.0, pre-map codes, auto-populate fields (see tasks/cids-plan-validation.md) (CIDS-APPROVE1)
+- [ ] Contact Common Approach to position KoNote as a pilot CIDS implementer — early engagement for co-marketing and advance notice of spec changes — GK (CIDS-CA-OUTREACH1)
 - [ ] Discuss: are the `convening-experts` and `review-session` commands useful for our workflow? Worth the time? How should we use them going forward? — GK (PROCESS-EXPERT-PANEL1)
-- [ ] Discuss: Should GK design insights/reports pages as HTML mockups (in a `mockups/` folder) to iterate on layout without PRs? Developer would translate approved mockups into Django templates — PB (PROCESS-MOCKUPS1)
+- [ ] Deploy and test config-aware demo data engine on Azure client instance — write client-specific profile JSON, run generate_demo_data, verify demo mode end-to-end (see tasks/demo-data-engine-guide.md, PR #92) — PB (DEMO-ENGINE-DEPLOY1)
 
 ## Active Work
-
-### Phase: Insights Metric Distributions (see tasks/design-rationale/insights-metric-distributions.md, tasks/insights-metrics-implementation.md)
-
-- [ ] Phase 3: Update executive dashboard — program cards with trend direction, data completeness, feedback themes (INSIGHTS-P3-EXEC)
-- [ ] Phase 4: Achievement metric recording UI — dropdown in note form, tests (INSIGHTS-P4-RECORD)
-- [ ] Phase 5: Workbench-to-report links, board summary template, translations, docs (INSIGHTS-P5-POLISH)
-- [ ] Extract and translate French strings for metric distributions templates (~25-30 new strings, several blocktrans blocks) (INSIGHTS-I18N1)
 
 ### Phase: Launch Readiness
 
@@ -26,11 +17,8 @@
 - [ ] Follow up with [funder contact] for additional must-haves on feature comparison — (DEPLOY-PC2)
 - [ ] Complete Agency Permissions Interview and signed Configuration Summary before first deployment — SG (ONBOARD-GATE)
 - [ ] Store signed Configuration Summary with each deployment so new admins can see what was decided and why — SG (DEPLOY-CONFIG-DOC1)
-- [ ] Verify production email configuration for exports, erasure alerts, and password resets — PB (OPS3)
 - [ ] Test backup restore from a production-like database dump and capture runbook notes — PB (OPS4)
 - [ ] Document scheduled task setup for export monitoring in the runbook — PB (EXP2w)
-- [ ] Add program-level filtering to note search (`_find_clients_with_matching_notes`) — search can reveal restricted program data through side channel (see DRR: phipa-consent-enforcement.md) — PB (PHIPA-SEARCH1)
-- [ ] Add consent filter to qualitative_summary view — shows client words from note entries across programs (see DRR) — PB (PHIPA-QUAL1)
 - [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — (DEPLOY-TOOLKIT1)
 
@@ -45,24 +33,6 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] **Redeploy to Railway** — after merging to main. Push to `main` and Railway auto-deploys (OPS-RAIL1)
 
 ## Coming Up
-
-### Phase: QA Round 7 — Tier 2 Fixes (see tasks/qa-action-plan-2026-02-21.md)
-
-- [x] Verify 8 items already implemented (BUG-4, BUG-8, BUG-11, IMPROVE-12/13, BLOCKER-2/3/5) — 2026-02-22 (QA-R7-TIER2-VERIFY)
-- [x] Hide admin dropdown in nav for executive role (IMPROVE-3) — 2026-02-22 (QA-R7-NAV1)
-- [x] Add "Log Communication" to client profile Actions dropdown (BUG-7) — 2026-02-22 (QA-R7-COMM1)
-- [x] Add quarterly date range presets to ad-hoc report form (IMPROVE-4) — 2026-02-22 (QA-R7-RPT-QUARTER1)
-
-### Phase: QA Round 7 — Page Audit Tier 2 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
-
-- [x] Fix groups-attendance: replace "--" with "N/R" (aria-label) + rename "Rate" to "Attendance Rate" — screen reader a11y — 2026-02-22 (QA-PA-ATTEND1)
-- [x] Fix groups-attendance "1 sessions" pluralization — Django pluralize filter + French blocktrans — 2026-02-22 (QA-PA-ATTEND2)
-- [x] Improve comm-my-messages empty state — distinguish "no messages yet" from "all read", add guidance text — 2026-02-22 (QA-PA-MSG1)
-- [x] Add required-field indicator to comm-leave-message textarea — asterisk + aria-required — 2026-02-22 (QA-PA-MSG2)
-- [x] Add onboarding context to plan-goal-create — collapsible 1-2 sentence explainer for new users — 2026-02-22 (QA-PA-GOAL1)
-- [x] Add step indicator ("Step 1 of 2") to goal creation wizard — helps DS1c (ADHD) track progress — 2026-02-22 (QA-PA-GOAL2)
-- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — fix in qa-scenarios repo (QA-PA-TEST1)
-- [ ] Seed comm-my-messages populated state with actual messages — fix in qa-scenarios repo (QA-PA-TEST2)
 
 ### Phase: Post-Launch Communication Enhancements
 
@@ -89,110 +59,79 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [ ] Improve admin UI for self-service configuration — better guidance for terminology, metrics, templates (ADMIN-UX1)
 - [ ] Align report-template.json "bins" field naming with DemographicBreakdown model's "bins_json" when building Phase 2 template automation (TEMPLATE-ALIGN1)
 
-### Phase: CIDS Compliance (Common Approach Data Standard) — waiting on CIDS-APPROVE1
+### Phase: CIDS Compliance (Common Approach Data Standard) — targeting FullTier, pinned to CIDS v3.2.0 (see tasks/cids-json-ld-export.md, tasks/cids-plan-validation.md)
 
-- [ ] Add CIDS metadata fields to MetricDefinition, Program, and PlanTarget — optional fields for IRIS+ codes, SDG goals, sector codes (see tasks/cids-json-ld-export.md Phase 1) — (CIDS-META1)
-- [ ] Create OrganizationProfile model for CIDS BasicTier org metadata — legal name, sector, province (Phase 1) — (CIDS-ORG1)
+- [ ] Add CIDS metadata fields to MetricDefinition, Program, and PlanTarget — auto-populated when staff create targets/metrics, invisible to frontline staff (see tasks/cids-json-ld-export.md Phase 1) — (CIDS-META1)
+- [ ] Create OrganizationProfile model for CIDS org metadata — legal name, sector, address, province (Phase 1) — (CIDS-ORG1)
 - [ ] Import CIDS code lists (17 lists) via management command from codelist.commonapproach.org with version tracking (Phase 2) — (CIDS-CODES1)
-- [ ] Build admin UI for CIDS tagging — dropdowns on program and metric forms, integrate into config template system (Phase 2) — (CIDS-ADMIN1)
+- [ ] Build admin UI for CIDS tagging — dropdowns on program and metric forms, pre-mapped via config templates so agencies are CIDS-ready out of the box (Phase 2) — (CIDS-ADMIN1)
 - [ ] Add CIDS codes to existing CSV/PDF partner reports + "Standards Alignment" appendix page — quick win, no new format needed (Phase 2.5) — (CIDS-ENRICH1)
-- [ ] Build JSON-LD export with basic SHACL validation — new format option alongside CSV/PDF, aggregate only (Phase 3) — (CIDS-EXPORT1)
+- [ ] Build full JSON-LD export with SHACL validation — FullTier compliance, new format option alongside CSV/PDF, aggregate only (Phase 3) — (CIDS-EXPORT1)
 - [ ] Compute CIDS impact dimensions (scale, depth, duration) from existing KoNote data — no new data entry (Phase 4) — (CIDS-IMPACT1)
 - [ ] Add CIDS conformance badge and detailed validation reporting (Phase 5) — (CIDS-VALIDATE1)
 
-### Phase: Other Upcoming
+### Phase: Offline Field Collection (if requested by client)
 
-- [ ] Permissions Phase 2 — remaining 10 items: discharge access transitions, consent model, DV-safe mode, GATED clinical access, group schedule vs roster, per-field front desk edit, SCOPED→PROGRAM rename, partner report key, alert escalation, dashboard split (see tasks/permissions-expert-panel-2026-02-09.md) (PERM-P3–12)
-
-### Phase: Advanced Reporting
-
-- [x] Research typical nonprofit session reporting requirements (IRCC, CFPB, Employment Ontario, United Way) — key gap: need duration and modality fields on notes (see konote-prosper-canada/tasks/session-reporting-research.md) — 2026-02-24 (REP-REQ1)
-- [ ] Build "Sessions by Participant" report template — count and type of sessions (Progress Note interactions) per participant (see konote-prosper-canada/tasks/session-reporting-research.md for field requirements) (REP-SESS1)
-- [ ] Expand report template system to support more flexible data exports across various modules (REP-FLEX1)
-- [ ] Add "All Programs" option to report filters for organization-wide summaries (REP-ALL-PROGS1)
-- [ ] Implement report preview on-screen before downloading PDF/CSV (REP-PREVIEW1)
-- [ ] Research/Implement including data visuals (charts/graphs) in PDF reports (REP-PDF1)
-- [ ] Redesign PDF report layout: merge title page with page 2 to eliminate redundant empty space (REP-PDF2)
-- [ ] Define standardised report schema for [funder partner] — 10-15 key metrics and demographic breakdowns shared across all partner agencies (RPT-SCHEMA1)
-
-### Phase: Demo Data Quality
-
-_Nothing pending._
+- [ ] Deploy ODK Central on Canadian VM (Docker Compose) — ops task (FIELD-ODK-DEPLOY1)
+- [ ] Circle Observation XLSForm — depends on circles in ODK (FIELD-ODK-FORM-CIR1)
+- [ ] Push Circle/CircleMember Entity lists — depends on above (FIELD-ODK-CIRCLES1)
+- [ ] Agency-facing documentation — ODK Collect setup, device loss protocol (FIELD-ODK-DOC1)
 
 ### Phase: Surveys Future Work
 
 - [ ] Build shareable link channel for public survey links without login (SURVEY-LINK1)
-- [ ] Run `translate_strings` to extract and compile French translations for the new survey templates (SURVEY-I18N1)
 
 ### Phase: Documentation & Website Updates
 
 - [ ] Create deployment documentation for surveys and portal features (DOC-DEPLOY1)
 - [ ] Update technical documentation in GitHub for surveys and portal architecture (DOC-TECH1)
-- [ ] Update website feature list and marketing copy to include surveys and portal (WEB-FEAT1)
-- [ ] Add Evidence section to website — adapt docs/evidence-outcome-measurement.md into a public-facing page explaining the research behind KoNote's outcome measurement approach (see tasks/web-evidence-prompt.md) (WEB-EVIDENCE1)
+- [ ] Write client-facing guide for demo data engine — how to use the admin UI, when to regenerate, how to write a profile JSON (see tasks/demo-data-engine-guide.md for internal reference) (DOC-DEMO1)
+- [ ] Document DV-safe mode and GATED clinical access for agency admins — configuration options, what staff see, two-person DV removal workflow (DOC-PERM1)
+- [ ] Document per-field front desk access controls for agency admins — how to configure which contact fields receptionists can edit (DOC-PERM2)
+- [ ] Document access tiers (3-tier RBAC model) for deployment runbook — what each tier controls, how to configure (DOC-PERM3)
+- [ ] Seed groups-attendance test data with 8+ members and 12+ sessions — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST1)
+- [ ] Seed comm-my-messages populated state with actual messages — re-seed after workflow changes, fix in qa-scenarios repo (QA-PA-TEST2)
+- [ ] Add new features and capabilities to the web site as they are built (WEBSITE-UPDATE1)
 
-### Phase: QA Round 7 — Page Audit Tier 1 (see tasks/qa-action-plan-2026-02-21-page-audit.md)
+## Parking Lot: Ready to Build
 
-- [x] Create custom styled 500.html template — standalone, bilingual, branded fallback for all unhandled errors — 2026-02-22 (QA-PA-500)
-- [x] Fix public unsubscribe page returning 500 — CASL compliance, safety net for import/token errors — 2026-02-22 (QA-PA-BLOCKER4)
-- [x] Fix public survey link page returning 500 — try/except renders "survey unavailable" instead of raw 500 — 2026-02-22 (QA-PA-BLOCKER3)
-- [x] Fix plan-goal-create heading "Add Target" → "Add a Goal" — terminology migration artifact — 2026-02-22 (QA-PA-BUG1)
+Scope is clear, just needs time. A session can pick these up without special approval.
 
-## Parking Lot
+_Nothing here right now._
 
-- [ ] Add PIPEDA compliance context to admin-erasure-requests page — explain what gets deleted vs. retained — GK reviews privacy/data retention (QA-PA-ERASURE1)
-- [ ] Replace decorative circular element on erasure empty state with static icon — cosmetic, low priority (QA-PA-ERASURE2)
-- [ ] Add breadcrumbs to plan-goal-create (Participants > Name > Plan > Add Goal) — navigation aid for new users (QA-PA-GOAL3)
+## Parking Lot: Needs Review
+
+Not yet clear we should build these, or the design isn't settled. May be too complex, too risky, or not worth the effort. **Do not build without explicit user approval in the current conversation.**
+
+- [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed. Do before launch. (T50)
 - [ ] PIPEDA data export from client profile — "Export Data" action for Section 8 access requests, needs design for data categories and output format — GK reviews privacy workflow (QA-R7-PRIVACY1)
 - [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
 - [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
-- [ ] Verify accented character preservation through create/save/display cycle — may be test data issue, needs manual check (QA-R7-BUG13)
-- [ ] Verify form data preservation after validation error on create-participant — medium confidence, may be test artefact (QA-R7-BUG21)
-- [ ] Accessibility polish: status dropdown auto-open on Tab, colour-only status indicator fix (remaining from QA-R7-A11Y2) (A11Y-POLISH1)
 - [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
-- [ ] Verify deploy-azure.md reference in deployment protocol still resolves — may have been moved or renamed (DEPLOY-VERIFY1)
-- [ ] Add stress testing for 50+ concurrent users (QA-T15)
-- [ ] Add legacy system import migration scenario test (QA-T16)
-- [ ] Add onboarding guidance for new users (help link or first-run banner) (QA-W19)
-- [ ] Implement multi-session testing for SCN-046 shared device scenario (QA-W55)
-- [ ] Surveys — lightweight structured feedback collection from participants (see tasks/surveys-design.md) (SURVEY1)
 - [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
 - [ ] Build agency data offboarding command for secure departures and PIPEDA requests (SEC3)
 - [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
-- [ ] Add first-run setup wizard UI for guided initial configuration (SETUP1-UI)
-- [ ] Add TOTP multi-factor authentication (see tasks/mfa-implementation.md) (SEC2)
-- [ ] Optimize encrypted client search performance beyond ~2000 records (PERF1)
-- [ ] Add bulk operations for discharge and assignment workflows (UX17)
-- [ ] Re-add API-based auto-translation to translate_strings for production use (I18N-API1)
-- [ ] Translate CSV comment rows (# Program, # Date Range, etc.) — needs design decision on whether to use agency custom terminology or static translations (I18N-CSV1)
-- [ ] Clean up ~628 stale PO entries in django.po no longer referenced in code (I18N-STALE1)
-- [ ] Add deferred execution for Tier 3 erasure (24-hour delay) (ERASE-H8)
-- [ ] Implement deployment workflow enhancements (see docs/plans/2026-02-05-deployment-workflow-design.md) (DEPLOY1)
-- [ ] Document scenario_loader cache lifetime if reused outside pytest (QA-W62)
-- [ ] Tidy `import datetime as dt` placement in reports/views.py — cosmetic import ordering (CODE-TIDY1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
+- [ ] Split `ai_assist` toggle into `ai_assist_tools_only` (default enabled) and `ai_assist_participant_data` (default disabled) — see tasks/design-rationale/ai-feature-toggles.md — GK reviews (AI-TOGGLE1)
+- [ ] Add stress testing for 50+ concurrent users — defer until a client is onboarded (QA-T15)
+- [ ] Add legacy system import migration scenario test — defer until an import is needed (QA-T16)
+- [ ] Implement multi-session testing for SCN-046 shared device scenario — defer until workflows stabilise (QA-W55)
+- [ ] Optimize encrypted client search performance beyond ~2000 records — defer until a client approaches that scale (PERF1)
 - [ ] Metric cadence system — only prompt for metric values when due, configurable per metric (METRIC-CADENCE1)
 - [ ] 90-day metric relevance check — prompt worker to confirm or change the chosen metric (METRIC-REVIEW1)
-- [ ] Alliance Repair Guide — one-page printable guide for workers when participants rate low (ALLIANCE-GUIDE1)
-- [ ] Participant-facing progress view — show descriptor timeline to participant in portal (PORTAL-PROGRESS1)
 - [ ] Alliance prompt rotation — cycle 3-4 phrasings to prevent habituation (ALLIANCE-ROTATE1)
 - [ ] Portal-based async alliance rating — post-session notification for participant self-rating (PORTAL-ALLIANCE1)
 
 ## Recently Done
 
-- [x] Enforce PHIPA cross-program consent in views — note_detail, note_summary, event_list; fix fail-open bug; fix CONF9 interaction; shared banner include; 4 new tests; DRR created — 2026-02-22 (PHIPA-ENFORCE1)
-- [x] Insights metric distributions Phases 0-2 — model fields, aggregation, distributions, achievements, trends, Two Lenses, data completeness, 50 tests, 10 review fixes (PR #23) — 2026-02-22 (INSIGHTS-P0-ADMIN, INSIGHTS-P1-MODEL, INSIGHTS-P1-AGG, INSIGHTS-P2-LAYOUT, INSIGHTS-P2-VIZ)
-- [x] Approve band display labels — "More support needed" / "On track" / "Goals within reach" — 2026-02-22 — GK (INSIGHTS-LANG1)
-- [x] QA Page Audit Tier 1 + Tier 2 — 500.html standalone, public view hardening, goal heading/onboarding/steps, attendance a11y, messages UX, leave-message required field, translations (PR #20) — 2026-02-22 (QA-PA-TIER1-2)
-- [x] Fix suggestion theme linking in seed_demo_data — program-specific suggestions, removed blind fallback — 2026-02-22 (DEMO-FIX1)
-- [x] Add quarterly date range presets to ad-hoc report form — optgroup dropdown with FY + quarters, i18n month names, 8 tests — 2026-02-22 (QA-R7-RPT-QUARTER1)
-- [x] QA Round 7 Tier 2 — verified 8 items already implemented, fixed IMPROVE-3 (executive nav) and BUG-7 (log communication) — 2026-02-22 (QA-R7-TIER2)
-- [x] Scenario YAML URL fixes — updated 7 files in konote-qa-scenarios repo from /admin/ to /manage/ paths (PR #14) — 2026-02-22 (QA-R7-YAML1)
-- [x] QA Round 7 Tier 1 — language persistence, skip-to-content verified, notes 403 fixed, htmx syntax fixed — 2026-02-21 (QA-R7-TIER1)
-- [x] Fix report generation page — duplicate template name in dropdown and HTMX period options 500 error (PR #14) — 2026-02-22 (BUG-RPT1)
-- [x] Code review fixes for template-driven reporting — 12 issues (suppression, WCAG, XSS, race condition, tests) (PR #12) — 2026-02-22 (RPT-REVIEW1)
-- [x] Aggregation engine + consortium metric locking for ad-hoc export form — 2026-02-22 (RPT-AGG1)
-- [x] UX + QA Round 7 fixes — 18 items: accessibility, dashboard, notes UX, front desk, label improvements — 2026-02-21
-- [x] Unify analysis chart quick-select and date picker into single form control — 2026-02-21 (UX-CHART1)
-- [x] Accessibility fixes: aria-labels on audit table, notes error container, mobile touch targets — 2026-02-21 (A11Y-UX1)
+- [x] GATED clinical access for PM — justification UI, time-boxed grants, configurable reasons + durations, admin views, 32 tests — 2026-02-25 (PERM-P6)
+- [x] Per-field front desk edit — build admin UI to configure which contact fields receptionist can edit (prerequisite for P5) — 2026-02-25 (PERM-P8)
+- [x] DV-safe mode — hide DV-sensitive fields from front desk when DV flag set; two-person removal, fail-closed, 28+5 tests — 2026-02-25 (PERM-P5)
+- [x] Email verification fixes — export double-submit protection, erasure form radio hardening, 17 password reset tests (PR pending) — 2026-02-24 (OPS3)
+- [x] Add axe-core pass to `/capture-page-states` — automated WCAG checks on every page+persona+state, standalone report, skip flag — 2026-02-25 (T59)
+- [x] Verified: surveys already implemented — full apps/surveys/ with models, views, forms, tests, migrations — 2026-02-24 (SURVEY1)
+- [x] Verified: first-run setup wizard already implemented — 8-step guided configuration in admin settings — 2026-02-24 (SETUP1-UI)
+- [x] Verified: deployment workflow enhancements already implemented — is_demo flag, seed command, demo/real separation — 2026-02-24 (DEPLOY1)
+- [x] Verified: participant-facing progress view already implemented — descriptor timeline in portal — 2026-02-24 (PORTAL-PROGRESS1)
+- [x] Re-add API-based auto-translation to translate_strings — `--auto-translate` flag, OpenAI-compatible API, 21 tests (PR #63) — 2026-02-24 (I18N-API1)

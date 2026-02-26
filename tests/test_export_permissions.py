@@ -933,7 +933,7 @@ class IndividualClientExportPermissionTest(TestCase):
 class ClientProgressPdfPermissionTest(TestCase):
     """Verify client_progress_pdf uses metric.view_individual permission.
 
-    Staff (SCOPED) and PM (ALLOW) can generate PDFs for clients in their
+    Staff (PROGRAM) and PM (ALLOW) can generate PDFs for clients in their
     programs. Executive (DENY) and receptionist (DENY) cannot. Admin-only
     users without program roles are blocked by _get_client_or_403().
     """
@@ -991,7 +991,7 @@ class ClientProgressPdfPermissionTest(TestCase):
         self.assertIn(resp.status_code, [200, 503])
 
     def test_staff_can_download_client_pdf(self):
-        """Staff CAN download client progress PDF (metric.view_individual=SCOPED)."""
+        """Staff CAN download client progress PDF (metric.view_individual=PROGRAM)."""
         self.http_client.login(username="staff", password="testpass123")
         resp = self.http_client.get(self._pdf_url())
         # 200 if WeasyPrint available, 503 if missing (Windows)

@@ -193,6 +193,61 @@ Program Managers already get some admin-like powers for their own program (manag
 
 *Goal: Walk through specific access choices using what was learned in Session 1. Each section ends with a decision table.*
 
+### Section 2B: Access Tier Selection
+
+**Goal:** Determine the right level of permission complexity for this agency. KoNote has three access tiers — choose the one that fits.
+
+*Important: All three tiers enforce the baseline role matrix (front desk can't see clinical notes, executives see aggregate only). Tiers control additional layers of protection on top of the baseline — they never weaken it.*
+
+#### Scenario Questions
+
+Walk through these four questions. The agency's answers will map to a tier recommendation.
+
+**2B.1** "Does your program collect health information — things like diagnosis, treatment plans, medications, or mental health notes?"
+
+*Yes → Tier 2 minimum, likely Tier 3*
+
+**2B.2** "Do you serve clients who may be at risk of domestic violence, stalking, or family conflict?"
+
+*Yes → Tier 3 with DV-safe mode*
+
+**2B.3** "Do you have distinct roles — front desk, case workers, supervisors — who should see different information?"
+
+*Yes → Tier 2 minimum*
+*No, everyone does everything → Tier 1*
+
+**2B.4** "Would a funder or accreditor expect you to show an audit trail of who accessed individual client records?"
+
+*Yes → Tier 2 or 3*
+
+#### Present the Recommendation
+
+Based on their answers, present a recommendation using this script:
+
+> "Based on your answers, we recommend **[tier name]** access. Here's what that means for your team:"
+
+**If recommending Tier 1 — Open Access:**
+> "Everyone on your team sees what they need for their role. Front desk still can't see clinical notes, and executives only see aggregate numbers. There's no extra configuration needed — it's the simplest setup and a good fit for programs where the data isn't highly sensitive."
+
+**If recommending Tier 2 — Role-Based:**
+> "In addition to the baseline protections, you can configure exactly which fields your front desk can see or edit. This gives you fine-grained control over who sees what. DV-safe mode is also available if you need it for specific clients."
+
+**If recommending Tier 3 — Clinical Safeguards:**
+> "This adds the strongest protections. If a program manager needs to see clinical notes, they'll need to document why and their access will be time-limited. DV-safe mode will be set up as part of this process. This is the right choice for agencies handling clinical or safety-sensitive data."
+
+The agency confirms or overrides the recommendation. If they override, record the reasoning.
+
+#### Record
+
+| Access Tier Decision | Choice | Notes |
+|---|---|---|
+| Recommended tier | Tier ___ | Based on scenario answers |
+| Agency's chosen tier | Tier ___ | Override reason (if different): |
+
+*What this means: You've chosen how much permission complexity your agency needs. This determines which settings pages you'll see and which protection features are active. You can change this later, but moving to a lower tier requires admin confirmation.*
+
+---
+
 ### Section 3: What Front Desk Can See
 
 **Goal:** Make the hardest privacy decision — what does the person who answers the phone need to know?

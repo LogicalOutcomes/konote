@@ -15,6 +15,20 @@
     </div>
 </header>
 
+<!-- First-time onboarding banner (QA-W19) — dismissed permanently via localStorage -->
+<article class="onboarding-banner" id="onboarding-banner" role="complementary" aria-label="{% trans 'Welcome banner' %}" hidden>
+    <header>
+        <strong>{% trans "Welcome to KoNote! Need help getting started?" %}</strong>
+        <button type="button" class="close-btn" id="dismiss-onboarding" aria-label="{% trans 'Dismiss welcome banner' %}">&times;</button>
+    </header>
+    <ul>
+        <li>{% blocktrans with clients=term.client_plural|default:"participants" %}Use the search bar to find {{ clients }}, or the "+ New" button to register one{% endblocktrans %}</li>
+        <li>{% blocktrans with client=term.client|default:"participant" %}Open a {{ client }} profile to view their plan, notes, and progress{% endblocktrans %}</li>
+        <li>{% trans "Need help? Ask your program manager or administrator" %}</li>
+    </ul>
+    <p class="onboarding-help-link"><a href="{% url 'help' %}">{% trans "View help guide" %} &rarr;</a></p>
+</article>
+
 <!-- Search and actions bar -->
 <div class="search-bar">
     <form id="search-filters">
@@ -163,11 +177,11 @@
 <nav class="quick-links" aria-label="{% trans 'Quick links' %}">
     <span class="quick-links-label">{% trans "Quick links:" %}</span>
     {% if features.programs %}
-    <a href="/programs/">{{ term.program_plural|default:"Programs" }}</a>
+    <a href="{% url 'programs:program_list' %}">{{ term.program_plural|default:"Programs" }}</a>
     {% endif %}
     {% if user.is_admin %}
-    <a href="/reports/export/">{% trans "Reports" %}</a>
-    <a href="/admin/settings/">{% trans "Settings" %}</a>
+    <a href="{% url 'reports:export_form' %}">{% trans "Reports" %}</a>
+    <a href="{% url 'admin_settings:dashboard' %}">{% trans "Settings" %}</a>
     {% endif %}
 </nav>
 {% endif %}

@@ -490,11 +490,13 @@ def _execute_tier2_anonymise_purge(erasure_request, ip_address):
 
 
 def _execute_tier3_full_erasure(erasure_request, ip_address):
-    """Tier 3: CASCADE delete — the original behaviour.
+    """Tier 3: Schedule CASCADE delete with a 24-hour safety delay.
 
-    Deletes the ClientFile and all related records. Only the ErasureRequest
-    tombstone survives (with data_summary counts and erasure_code).
-    Only available when the retention period has expired.
+    Instead of deleting immediately, sets status to "scheduled" and
+    scheduled_execution_at to now + 24 hours. The actual deletion is
+    performed by the ``execute_pending_erasures`` management command
+    (run via cron). During the 24-hour window, any PM or admin can
+    cancel the erasure.
     """
     client = erasure_request.client_file
     if client is None:
@@ -503,9 +505,34 @@ def _execute_tier3_full_erasure(erasure_request, ip_address):
     client_pk = client.pk
     record_id = client.record_id
 
-    # Write audit FIRST — if this fails, erasure doesn't proceed
-    _log_erasure_audit(erasure_request, client_pk, record_id, "delete", ip_address)
+    # Write audit FIRST — if this fails, scheduling doesn't proceed
+    _log_erasure_audit(erasure_request, client_pk, record_id, "scheduled", ip_address)
 
+    from datetime import timedelta
+    erasure_request.status = "scheduled"
+    erasure_request.scheduled_execution_at = timezone.now() + timedelta(hours=24)
+    erasure_request.save(update_fields=["status", "scheduled_execution_at"])
+
+
+def execute_scheduled_tier3(erasure_request, ip_address="[cron]"):
+    """Actually perform the Tier 3 deletion for a scheduled erasure.
+
+    Called by the ``execute_pending_erasures`` management command after
+    the 24-hour window has elapsed.
+    """
+    client = erasure_request.client_file
+    if client is None:
+        # Client was deleted by some other process — mark complete
+        erasure_request.status = "approved"
+        erasure_request.completed_at = timezone.now()
+        erasure_request.client_file = None
+        erasure_request.save(update_fields=["status", "completed_at", "client_file"])
+        return
+
+    client_pk = client.pk
+    record_id = client.record_id
+
+    _log_erasure_audit(erasure_request, client_pk, record_id, "delete", ip_address)
     _scrub_registration_submissions(client)
     client.delete()
 

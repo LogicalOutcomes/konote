@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Log Data Access Request" %} — {{ client }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "Log Data Access Request" %}</h1>
+    <p>{% blocktrans with name=client.display_name %}Record a data access request from {{ name }} or their representative.{% endblocktrans %}</p>
+</hgroup>
+
+<article>
+    <form method="post">
+        {% csrf_token %}
+
+        <label for="id_requested_at">{{ form.requested_at.label }}</label>
+        {{ form.requested_at }}
+        {% if form.requested_at.errors %}
+        <small class="error">{{ form.requested_at.errors.0 }}</small>
+        {% endif %}
+
+        <label for="id_request_method">{{ form.request_method.label }}</label>
+        {{ form.request_method }}
+        {% if form.request_method.errors %}
+        <small class="error">{{ form.request_method.errors.0 }}</small>
+        {% endif %}
+
+        <p class="secondary" style="margin-top: var(--kn-space-base);">
+            {% trans "The 30-day PIPEDA response deadline will be calculated from the date above." %}
+        </p>
+
+        <div style="display: flex; gap: 1rem; margin-top: var(--kn-space-lg);">
+            <button type="submit">{% trans "Log Request & View Checklist" %}</button>
+            <a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="outline secondary">{% trans "Cancel" %}</a>
+        </div>
+    </form>
+</article>
+{% endblock %}

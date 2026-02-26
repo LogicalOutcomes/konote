@@ -43,6 +43,45 @@
         <footer><a href="{% url 'admin_settings:instance_settings' %}" role="button" class="outline">{% trans "Manage Settings" %}</a></footer>
     </article>
 
+    {% if access_tier >= 2 %}
+    <article>
+        <header>{% trans "Field Access for Front Desk" %}</header>
+        <p>{% trans "Configure which fields front desk staff can see or edit on participant records." %}</p>
+        <p class="settings-indicator">
+            {% if field_access_count %}
+                {% blocktrans count count=field_access_count %}{{ count }} field accessible{% plural %}{{ count }} fields accessible{% endblocktrans %}
+            {% else %}
+                {% trans "No fields accessible" %}
+            {% endif %}
+        </p>
+        <footer><a href="{% url 'admin_settings:field_access' %}" role="button" class="outline">{% trans "Manage Field Access" %}</a></footer>
+    </article>
+    {% endif %}
+
+    {% if access_tier >= 3 %}
+    <article>
+        <header>{% trans "Clinical Access Grants" %}</header>
+        <p>{% trans "View and monitor all documented justifications for program manager access to clinical data." %}</p>
+        <p class="settings-indicator">
+            {% if active_grant_count %}
+                {% blocktrans count count=active_grant_count %}{{ count }} active grant{% plural %}{{ count }} active grants{% endblocktrans %}
+            {% else %}
+                {% trans "No active grants" %}
+            {% endif %}
+        </p>
+        <footer><a href="{% url 'admin_settings:access_grant_admin_list' %}" role="button" class="outline">{% trans "View Grants" %}</a></footer>
+    </article>
+
+    <article>
+        <header>{% trans "Access Grant Reasons" %}</header>
+        <p>{% trans "Manage the list of reasons program managers can choose when requesting clinical access." %}</p>
+        <p class="settings-indicator">
+            {% blocktrans count count=active_reason_count %}{{ count }} active reason{% plural %}{{ count }} active reasons{% endblocktrans %}
+        </p>
+        <footer><a href="{% url 'admin_settings:access_grant_reasons' %}" role="button" class="outline">{% trans "Manage Reasons" %}</a></footer>
+    </article>
+    {% endif %}
+
     <article>
         <header>{% trans "Users" %}</header>
         <p>{% trans "Create, edit, and deactivate user accounts." %}</p>
@@ -67,7 +106,10 @@
                 {% trans "No demo accounts" %}
             {% endif %}
         </p>
-        <footer><a href="{% url 'admin_settings:demo_directory' %}" role="button" class="outline">{% trans "Demo Directory" %}</a></footer>
+        <footer>
+            <a href="{% url 'admin_settings:demo_directory' %}" role="button" class="outline">{% trans "Demo Directory" %}</a>
+            <a href="{% url 'admin_settings:demo_data_management' %}" role="button" class="outline" style="margin-left: 0.5rem;">{% trans "Demo Data" %}</a>
+        </footer>
     </article>
 
     <article>

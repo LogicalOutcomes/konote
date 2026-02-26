@@ -15,6 +15,12 @@
         {% if note.template %}
             <small>| {% trans "Template:" %} {{ note.template.translated_name }}</small>
         {% endif %}
+        {% if note.duration_minutes %}
+            <small>| {% trans "Duration:" %} {{ note.duration_minutes }} {% trans "min" %}</small>
+        {% endif %}
+        {% if note.modality %}
+            <small>| {{ note.get_modality_display }}</small>
+        {% endif %}
     </div>
 </header>
 

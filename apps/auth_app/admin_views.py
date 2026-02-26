@@ -1,7 +1,7 @@
 """User management views — admin and PM access.
 
 Admins: full access to all users.
-PMs with user.manage: SCOPED: manage staff/receptionist in their own programs.
+PMs with user.manage: PROGRAM: manage staff/receptionist in their own programs.
 Invites and impersonation remain admin-only (separate views).
 """
 import logging
@@ -24,7 +24,7 @@ from .forms import UserCreateForm, UserEditForm, UserProgramRoleForm
 from .models import User
 
 # Roles that PMs are NOT allowed to assign (no-elevation constraint).
-# PMs with user.manage: SCOPED can manage staff in their own program
+# PMs with user.manage: PROGRAM can manage staff in their own program
 # but cannot create PM/executive accounts or elevate front desk to staff.
 _PM_BLOCKED_ROLE_ASSIGNMENTS = {"program_manager", "executive"}
 
@@ -248,7 +248,7 @@ def user_roles(request, user_id):
 def user_role_add(request, user_id):
     """Add a program role assignment (POST only).
 
-    No-elevation constraint: non-admin users with user.manage: SCOPED
+    No-elevation constraint: non-admin users with user.manage: PROGRAM
     (program managers) cannot assign PM or executive roles, and cannot
     elevate front desk to staff.
     """

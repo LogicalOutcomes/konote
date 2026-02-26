@@ -152,6 +152,15 @@ class ProgressNote(models.Model):
     author_program = models.ForeignKey(
         "programs.Program", on_delete=models.SET_NULL, null=True, blank=True
     )
+    # Optional circle tag — note appears in circle timeline but access is
+    # still governed by client_file's permissions, not the circle's.
+    circle = models.ForeignKey(
+        "circles.Circle",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="tagged_notes",
+    )
     # Encrypted clinical content fields
     _notes_text_encrypted = models.BinaryField(default=b"", blank=True)
     _summary_encrypted = models.BinaryField(default=b"", blank=True)
@@ -235,6 +244,26 @@ class ProgressNote(models.Model):
     )
     alliance_rater = models.CharField(
         max_length=20, choices=ALLIANCE_RATER_CHOICES, default="", blank=True,
+    )
+
+    MODALITY_CHOICES = [
+        ("in_person", _("In Person")),
+        ("phone", _("Phone")),
+        ("video", _("Video")),
+        ("email_text", _("Email/Text")),
+    ]
+
+    duration_minutes = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        help_text=_("Session duration in minutes."),
+    )
+    modality = models.CharField(
+        max_length=20,
+        choices=MODALITY_CHOICES,
+        default="",
+        blank=True,
+        help_text=_("How the session was delivered."),
     )
 
     backdate = models.DateTimeField(null=True, blank=True, help_text="Override date if note is for a past session.")

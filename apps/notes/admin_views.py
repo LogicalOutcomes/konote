@@ -1,7 +1,7 @@
 """Admin views for progress note templates.
 
 Admins: full access to all note templates.
-PMs with template.note.manage: SCOPED: manage templates in their own programs,
+PMs with template.note.manage: PROGRAM: manage templates in their own programs,
 read-only view of global (admin-created) templates.
 """
 from django.contrib import messages

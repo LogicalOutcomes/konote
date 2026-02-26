@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.programs.models import Program, UserProgramRole
 
-from .models import Invite, User
+from .models import AccessGrant, AccessGrantReason, Invite, User
 
 
 class LoginForm(forms.Form):
@@ -190,3 +190,78 @@ class UserProgramRoleForm(forms.Form):
         choices=UserProgramRole.ROLE_CHOICES,
         label=_("Role"),
     )
+
+
+class MFAVerifyForm(forms.Form):
+    """6-digit TOTP code entry for login verification or MFA setup confirmation."""
+    code = forms.CharField(
+        max_length=6, min_length=6,
+        label=_("Verification code"),
+        widget=forms.TextInput(attrs={
+            "inputmode": "numeric",
+            "autocomplete": "one-time-code",
+            "pattern": "[0-9]{6}",
+            "autofocus": True,
+        }),
+    )
+
+
+DURATION_CHOICES = [
+    (1, _("1 day")),
+    (3, _("3 days")),
+    (7, _("7 days")),
+    (14, _("14 days")),
+    (30, _("30 days")),
+]
+
+
+class AccessGrantForm(forms.ModelForm):
+    """Form for requesting GATED clinical access at Tier 3."""
+
+    duration_days = forms.TypedChoiceField(
+        choices=DURATION_CHOICES,
+        coerce=int,
+        label=_("How long do you need access?"),
+    )
+
+    class Meta:
+        model = AccessGrant
+        fields = ["reason", "justification"]
+        widgets = {
+            "justification": forms.Textarea(attrs={"rows": 3}),
+        }
+        labels = {
+            "reason": _("Reason for access"),
+            "justification": _("Brief explanation"),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Only show active reasons
+        self.fields["reason"].queryset = AccessGrantReason.objects.filter(
+            is_active=True
+        )
+
+        # Set defaults from InstanceSettings
+        from apps.admin_settings.models import InstanceSetting
+
+        default_days = int(InstanceSetting.get("access_grant_default_days", "7"))
+        max_days = int(InstanceSetting.get("access_grant_max_days", "30"))
+
+        # Filter duration choices to those <= max_days
+        self.fields["duration_days"].choices = [
+            (d, label) for d, label in DURATION_CHOICES if d <= max_days
+        ]
+        self.fields["duration_days"].initial = min(default_days, max_days)
+
+    def clean_duration_days(self):
+        """Validate duration against max_days setting."""
+        from apps.admin_settings.models import InstanceSetting
+
+        value = self.cleaned_data["duration_days"]
+        max_days = int(InstanceSetting.get("access_grant_max_days", "30"))
+        if value > max_days:
+            raise forms.ValidationError(
+                _("Maximum duration is %(max)s days.") % {"max": max_days}
+            )
+        return value

@@ -4,16 +4,22 @@
 {% block title %}{% trans "Safety Oversight Report" %} — {{ period_label }}{% endblock %}
 
 {% block content %}
-<div class="pdf-cover">
+<!-- Report Header (merged title) -->
+<div class="pdf-header">
     <h1>{% trans "Safety Oversight Report" %}</h1>
     <div class="subtitle">{{ period_label }}</div>
-    <div class="meta">
-        {{ period_start|date:"M j, Y" }} — {{ period_end|date:"M j, Y" }}<br>
-        {% blocktrans with date=generated_at|date:"Y-m-d" %}Generated {{ date }}{% endblocktrans %}
-    </div>
-    <div class="status-badge" style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 4px; font-weight: 600; {% if overall_status == 'ROUTINE' %}background: #e8f5e9; color: #2e7d32;{% else %}background: #fff3e0; color: #e65100;{% endif %}">
-        {{ overall_status }}
-    </div>
+    <dl class="meta-grid">
+        <dt>{% trans "Period" %}</dt>
+        <dd>{{ period_start|date:"M j, Y" }} — {{ period_end|date:"M j, Y" }}</dd>
+        <dt>{% trans "Generated" %}</dt>
+        <dd>{% blocktrans with date=generated_at|date:"Y-m-d" %}{{ date }}{% endblocktrans %}</dd>
+        <dt>{% trans "Status" %}</dt>
+        <dd>
+            <span style="display: inline-block; padding: 0.1rem 0.5rem; border-radius: 3px; font-weight: 600; font-size: 9pt; {% if overall_status == 'ROUTINE' %}background: #e8f5e9; color: #2e7d32;{% else %}background: #fff3e0; color: #e65100;{% endif %}">
+                {{ overall_status }}
+            </span>
+        </dd>
+    </dl>
 </div>
 
 <h2>{% trans "Key Metrics" %}</h2>

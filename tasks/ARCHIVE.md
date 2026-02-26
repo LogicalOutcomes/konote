@@ -4,6 +4,62 @@ Tasks moved from TODO.md after 10+ items in Recently Done.
 
 ---
 
+## Moved from Recently Done (2026-02-24 TODO verification)
+
+- [x] Verified: breadcrumbs already on plan-goal-create (implemented in prior session) — 2026-02-24 (QA-PA-GOAL3)
+- [x] Verified: TOTP MFA already implemented (see tasks/mfa-implementation.md) — 2026-02-24 (SEC2)
+- [x] Verified: deferred Tier 3 erasure (24-hour delay) already implemented — 2026-02-24 (ERASE-H8)
+- [x] Add insights-metric-distributions DRR to CLAUDE.md list — 2026-02-24 (I18N-DRR-LIST1)
+
+## Moved from Recently Done (2026-02-24 parking-lot items)
+
+- [x] Create bilingual requirements DRR — legal rationale (Official Languages Act, Ontario FLSA, WCAG), anti-patterns for deferred translations, technical approach, translation standards for Claude sessions — 2026-02-24 (I18N-DRR1)
+- [x] All Programs report filter — "__all__" sentinel, multi-program aggregation, RBAC-scoped, 18 tests — 2026-02-24 (REP-ALL-PROGS1)
+- [x] Insights P3 executive dashboard + P4 achievement recording + 65 French translations (PR #35) — 2026-02-24 (INSIGHTS-P3-EXEC, INSIGHTS-P4-RECORD)
+
+## Moved from Recently Done (2026-02-24 parking-lot cleanup)
+
+- [x] French translations — all 54 remaining empty strings translated and compiled — 2026-02-24 (INSIGHTS-I18N1)
+- [x] Achievement metric seed data + recording UI — radio pill UI in note form with validation + CSS + tests — 2026-02-24 (INSIGHTS-P0-SEED)
+- [x] Research session reporting requirements (IRCC, CFPB, Employment Ontario, United Way) — 2026-02-24 (REP-REQ1)
+
+## Moved from Recently Done (2026-02-25 website updates)
+
+- [x] PHIPA consent filtering for note search and qualitative summary — 3 tests (PR pending) — 2026-02-24 (PHIPA-SEARCH1, PHIPA-QUAL1)
+
+## Moved from Recently Done (2026-02-25 PERM hardening)
+
+- [x] Bulk operations for discharge and program assignment — checkboxes, sticky action bar, HTMX modals, 7 tests (PR #64) — 2026-02-24 (UX17)
+- [x] Code review fixes (14 of 15 findings) — All Programs guard, age breakdown loop, aria-labels, PHIPA comment, export_type, permission tests, cross-program tests, audit log tests, role=grid removal, erasure badges, hardcoded URLs, ARIA state, modality null→default, innerHTML→HTMX, CSV string fix (PR #58) — 2026-02-24 (REVIEW-FIX1–15)
+- [x] Parking lot + Advanced Reporting parallel cleanup (15 items in 7 agents, 2 waves) — 2026-02-24 (QA-PA-ERASURE1, QA-PA-ERASURE2, QA-R7-BUG13, QA-R7-BUG21, A11Y-POLISH1, QA-W19, DEPLOY-VERIFY1, CODE-TIDY1, QA-W62, I18N-STALE1, I18N-CSV1, REP-SESS1, REP-PREVIEW1, REP-PDF1, REP-PDF2)
+- [x] Alliance Repair Guide — printable one-pager based on FIT principles, print CSS, help link in note form, 3 tests, GK reviews content (PR #62) — 2026-02-24 (ALLIANCE-GUIDE1)
+
+## Moved from Recently Done (2026-02-24 review-fixes update)
+
+- [x] Add Evidence section to konote-website — evidence.html with Research Foundation content and citations — 2026-02-24 (WEB-EVIDENCE1)
+- [x] Offline Field Collection — full feature: models, ODK client, sync, admin UI, 4 PII tiers, 43 tests, translations (PR #34) — 2026-02-24 (FIELD-ODK-APP1–TEST1)
+- [x] Circles Lite Phase 1 — full feature: models, views, templates, nav, sidebar, note tagging, intake, tests, translations — 2026-02-24 (CIRCLES-1–9)
+- [x] Enforce PHIPA cross-program consent in views — note_detail, note_summary, event_list; fix fail-open bug; fix CONF9 interaction; shared banner include; 4 new tests; DRR created — 2026-02-22 (PHIPA-ENFORCE1)
+
+## Moved from Recently Done (2026-02-24 TODO cleanup)
+
+- [x] Insights metric distributions Phases 0-2 — model fields, aggregation, distributions, achievements, trends, Two Lenses, data completeness, 50 tests, 10 review fixes (PR #23) — 2026-02-22 (INSIGHTS-P0-ADMIN, INSIGHTS-P1-MODEL, INSIGHTS-P1-AGG, INSIGHTS-P2-LAYOUT, INSIGHTS-P2-VIZ)
+- [x] Approve band display labels — "More support needed" / "On track" / "Goals within reach" — 2026-02-22 — GK (INSIGHTS-LANG1)
+- [x] QA Page Audit Tier 1 + Tier 2 — 500.html standalone, public view hardening, goal heading/onboarding/steps, attendance a11y, messages UX, leave-message required field, translations (PR #20) — 2026-02-22 (QA-PA-TIER1-2)
+- [x] Fix suggestion theme linking in seed_demo_data — program-specific suggestions, removed blind fallback — 2026-02-22 (DEMO-FIX1)
+- [x] Add quarterly date range presets to ad-hoc report form — optgroup dropdown with FY + quarters, i18n month names, 8 tests — 2026-02-22 (QA-R7-RPT-QUARTER1)
+- [x] QA Round 7 Tier 2 — verified 8 items already implemented, fixed IMPROVE-3 (executive nav) and BUG-7 (log communication) — 2026-02-22 (QA-R7-TIER2)
+- [x] Scenario YAML URL fixes — updated 7 files in konote-qa-scenarios repo from /admin/ to /manage/ paths (PR #14) — 2026-02-22 (QA-R7-YAML1)
+- [x] QA Round 7 Tier 1 — language persistence, skip-to-content verified, notes 403 fixed, htmx syntax fixed — 2026-02-21 (QA-R7-TIER1)
+- [x] Fix report generation page — duplicate template name in dropdown and HTMX period options 500 error (PR #14) — 2026-02-22 (BUG-RPT1)
+- [x] Code review fixes for template-driven reporting — 12 issues (suppression, WCAG, XSS, race condition, tests) (PR #12) — 2026-02-22 (RPT-REVIEW1)
+- [x] Aggregation engine + consortium metric locking for ad-hoc export form — 2026-02-22 (RPT-AGG1)
+- [x] UX + QA Round 7 fixes — 18 items: accessibility, dashboard, notes UX, front desk, label improvements — 2026-02-21
+- [x] Unify analysis chart quick-select and date picker into single form control — 2026-02-21 (UX-CHART1)
+- [x] Accessibility fixes: aria-labels on audit table, notes error container, mobile touch targets — 2026-02-21 (A11Y-UX1)
+
+---
+
 ## Moved from Recently Done (2026-02-22 QA Round 7 cleanup)
 
 - [x] Mobile touch targets WCAG fix — enforce 44px minimum — 2026-02-17 (UX-WALK5)

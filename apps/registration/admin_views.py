@@ -1,7 +1,7 @@
 """Admin views for managing registration links and submissions.
 
 Admins: full access to all registration links and submissions.
-PMs with registration.manage: SCOPED: manage links/submissions for their own programs.
+PMs with registration.manage: PROGRAM: manage links/submissions for their own programs.
 """
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required

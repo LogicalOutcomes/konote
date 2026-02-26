@@ -1380,3 +1380,226 @@ document.body.addEventListener("htmx:afterSettle", function (event) {
         if (hidden) hidden.value = "";
     });
 })();
+
+// --- Onboarding banner (QA-W19) ---
+// Shows a "Getting started" banner on the dashboard for first-time users.
+// Dismissed permanently via localStorage.
+(function () {
+    var banner = document.getElementById("onboarding-banner");
+    var btn = document.getElementById("dismiss-onboarding");
+    if (!banner || !btn) return;
+    var KEY = "konote_onboarding_dismissed";
+    try {
+        if (localStorage.getItem(KEY)) return; // already dismissed
+    } catch (e) { return; }
+    banner.hidden = false;
+    btn.addEventListener("click", function () {
+        banner.hidden = true;
+        try { localStorage.setItem(KEY, "1"); } catch (e) { /* ignore */ }
+    });
+})();
+
+// --- Bulk Operations (UX17) ---
+// Checkbox selection, action bar visibility, and modal management for
+// bulk status change and program transfer on the client list.
+(function () {
+    var selectedIds = new Set();
+    var previousFocus = null;  // Store focus before modal opens
+
+    function getBar() { return document.getElementById("bulk-action-bar"); }
+    function getCount() { return document.getElementById("bulk-count"); }
+    function getBackdrop() { return document.getElementById("bulk-modal-backdrop"); }
+    function getModal() { return document.getElementById("bulk-modal-container"); }
+
+    function updateBar() {
+        var bar = getBar();
+        if (!bar) return;
+        var count = selectedIds.size;
+        if (count > 0) {
+            bar.hidden = false;
+            var countEl = getCount();
+            if (countEl) {
+                // Show "X selected on this page" when paginated
+                var totalEl = document.querySelector("[data-total-clients]");
+                var total = totalEl ? parseInt(totalEl.getAttribute("data-total-clients"), 10) : 0;
+                var visibleCbs = document.querySelectorAll(".bulk-select-row").length;
+                if (total > visibleCbs) {
+                    countEl.textContent = count + " " + t("selected", "selected")
+                        + " (" + t("on this page", "on this page") + ")";
+                } else {
+                    countEl.textContent = count + " " + t("selected", "selected");
+                }
+            }
+        } else {
+            bar.hidden = true;
+        }
+    }
+
+    // Inject selected IDs into HTMX requests from bulk action buttons
+    function injectIds(event) {
+        var elt = event.detail.elt;
+        if (!elt) return;
+        if (elt.id !== "bulk-status-btn" && elt.id !== "bulk-transfer-btn") return;
+        // Add client_ids[] parameters to the request
+        var params = event.detail.parameters;
+        if (!params) return;
+        selectedIds.forEach(function (id) {
+            if (!params["client_ids[]"]) {
+                params["client_ids[]"] = [];
+            }
+            if (Array.isArray(params["client_ids[]"])) {
+                params["client_ids[]"].push(id);
+            } else {
+                params["client_ids[]"] = [params["client_ids[]"], id];
+            }
+        });
+    }
+
+    function showModal() {
+        previousFocus = document.activeElement;
+        var backdrop = getBackdrop();
+        var modal = getModal();
+        if (backdrop) backdrop.hidden = false;
+        if (modal) {
+            modal.hidden = false;
+            // Focus first interactive element inside the modal
+            var firstField = modal.querySelector("select, input:not([type='hidden']), textarea, button");
+            if (firstField) {
+                firstField.focus();
+            } else {
+                modal.focus();
+            }
+        }
+    }
+
+    // Global function for the Cancel button in confirmation templates
+    window.closeBulkModal = function () {
+        var backdrop = getBackdrop();
+        var modal = getModal();
+        if (backdrop) backdrop.hidden = true;
+        if (modal) {
+            modal.hidden = true;
+            modal.innerHTML = "";
+        }
+        // Restore focus to the element that opened the modal
+        if (previousFocus && previousFocus.focus) {
+            previousFocus.focus();
+            previousFocus = null;
+        }
+    };
+
+    // Focus trap — keep Tab cycling within the open modal
+    function trapFocus(e) {
+        var modal = getModal();
+        if (!modal || modal.hidden) return;
+        if (e.key !== "Tab") return;
+        var focusable = modal.querySelectorAll(
+            "select, input:not([type='hidden']), textarea, button, [tabindex]:not([tabindex='-1'])"
+        );
+        if (!focusable.length) return;
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    }
+
+    function setupCheckboxes() {
+        var selectAll = document.getElementById("bulk-select-all");
+        if (selectAll) {
+            selectAll.addEventListener("change", function () {
+                var checked = selectAll.checked;
+                var rowCbs = document.querySelectorAll(".bulk-select-row");
+                rowCbs.forEach(function (cb) {
+                    cb.checked = checked;
+                    if (checked) {
+                        selectedIds.add(cb.value);
+                    } else {
+                        selectedIds.delete(cb.value);
+                    }
+                });
+                updateBar();
+            });
+        }
+
+        // Delegate click events for row checkboxes
+        document.addEventListener("change", function (e) {
+            if (!e.target.classList.contains("bulk-select-row")) return;
+            if (e.target.checked) {
+                selectedIds.add(e.target.value);
+            } else {
+                selectedIds.delete(e.target.value);
+                // Uncheck select-all if any row is unchecked
+                var sa = document.getElementById("bulk-select-all");
+                if (sa) sa.checked = false;
+            }
+            updateBar();
+        });
+    }
+
+    function setup() {
+        setupCheckboxes();
+
+        // Listen for HTMX config to inject selected IDs
+        document.body.addEventListener("htmx:configRequest", injectIds);
+
+        // Show modal after HTMX loads the confirmation form
+        document.body.addEventListener("htmx:afterSwap", function (event) {
+            var target = event.detail.target;
+            if (target && target.id === "bulk-modal-container" && target.innerHTML.trim()) {
+                showModal();
+            }
+        });
+
+        // Close modal on backdrop click
+        var backdrop = getBackdrop();
+        if (backdrop) {
+            backdrop.addEventListener("click", window.closeBulkModal);
+        }
+
+        // Close modal on Escape key + focus trap
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Escape") {
+                var modal = getModal();
+                if (modal && !modal.hidden) {
+                    window.closeBulkModal();
+                }
+            }
+            trapFocus(e);
+        });
+    }
+
+    // Re-sync checkboxes after HTMX replaces the table (pagination, filtering)
+    document.body.addEventListener("htmx:afterSwap", function (event) {
+        var target = event.detail.target;
+        if (target && target.id === "client-list-container") {
+            // Re-check any checkboxes that were previously selected
+            var rowCbs = target.querySelectorAll(".bulk-select-row");
+            rowCbs.forEach(function (cb) {
+                if (selectedIds.has(cb.value)) {
+                    cb.checked = true;
+                }
+            });
+            // Update select-all state
+            var sa = target.querySelector("#bulk-select-all");
+            if (sa && rowCbs.length > 0) {
+                var allChecked = true;
+                rowCbs.forEach(function (cb) {
+                    if (!cb.checked) allChecked = false;
+                });
+                sa.checked = allChecked;
+            }
+            updateBar();
+        }
+    });
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", setup);
+    } else {
+        setup();
+    }
+})();

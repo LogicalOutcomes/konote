@@ -13,7 +13,7 @@ from apps.auth_app.permissions import (
     DENY,
     GATED,
     PER_FIELD,
-    SCOPED,
+    PROGRAM,
     can_access,
 )
 
@@ -255,27 +255,71 @@ def requires_permission(permission_key, get_program_fn=None, get_client_fn=None,
                     _("Access denied. Your role does not have permission for this action.")
                 )
 
-            if level in (ALLOW, SCOPED):
+            if level in (ALLOW, PROGRAM):
                 return view_func(request, *args, **kwargs)
 
             if level == GATED:
-                # Future: check for documented justification.
-                # For now, treat as ALLOW with a log warning.
-                logger.warning(
-                    "GATED permission '%s' treated as ALLOW for user %s (role=%s). "
-                    "Justification UI not yet implemented.",
-                    permission_key, request.user.pk, user_role,
+                from apps.admin_settings.models import get_access_tier
+
+                tier = get_access_tier()
+                if tier < 3:
+                    # Tiers 1-2: GATED relaxed to ALLOW
+                    return view_func(request, *args, **kwargs)
+
+                # Tier 3: Check for active AccessGrant
+                from apps.auth_app.models import AccessGrant
+                from django.urls import reverse
+                from django.shortcuts import redirect
+                from django.utils import timezone as tz
+                from urllib.parse import urlencode
+
+                now = tz.now()
+                program = getattr(request, "user_program", None)
+
+                has_grant = False
+                if program:
+                    # Check for program-level grant (covers all clients)
+                    has_grant = AccessGrant.objects.filter(
+                        user=request.user,
+                        program=program,
+                        is_active=True,
+                        expires_at__gt=now,
+                        client_file__isnull=True,
+                    ).exists()
+
+                if not has_grant and get_client_fn is not None:
+                    # Check for client-specific grant
+                    try:
+                        client = get_client_fn(request, *args, **kwargs)
+                        if client is not None and program:
+                            has_grant = AccessGrant.objects.filter(
+                                user=request.user,
+                                program=program,
+                                is_active=True,
+                                expires_at__gt=now,
+                                client_file=client,
+                            ).exists()
+                    except Exception:
+                        pass
+
+                if has_grant:
+                    return view_func(request, *args, **kwargs)
+
+                # No grant — redirect to justification form
+                params = urlencode({
+                    "next": request.get_full_path(),
+                    "permission": permission_key,
+                })
+                return redirect(
+                    f"{reverse('auth_app:access_grant_request')}?{params}"
                 )
-                return view_func(request, *args, **kwargs)
 
             if level == PER_FIELD:
-                # Future: delegate to field-level check.
-                # For now, treat as ALLOW with a log warning.
-                logger.warning(
-                    "PER_FIELD permission '%s' treated as ALLOW for user %s (role=%s). "
-                    "Field-level check not yet implemented.",
-                    permission_key, request.user.pk, user_role,
-                )
+                # Allow access but annotate request with field-level config.
+                # Views/forms use request.field_access_map to decide which
+                # fields to show/hide/make editable.
+                from apps.clients.models import FieldAccessConfig
+                request.field_access_map = FieldAccessConfig.get_all_access()
                 return view_func(request, *args, **kwargs)
 
             # Unknown level — fail closed

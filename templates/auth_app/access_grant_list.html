@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "My Access Grants" %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+<hgroup>
+    <h1>{% trans "My Access Grants" %}</h1>
+    <p>{% trans "Clinical data you currently have access to, and recent expired grants." %}</p>
+</hgroup>
+
+<h2>{% trans "Active Grants" %}</h2>
+{% if active_grants %}
+<figure>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Program" %}</th>
+                <th>{% trans "Scope" %}</th>
+                <th>{% trans "Reason" %}</th>
+                <th>{% trans "Expires" %}</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grant in active_grants %}
+            <tr>
+                <td>{{ grant.program.name }}</td>
+                <td>{% if grant.client_file %}{{ grant.client_file }}{% else %}{% trans "All clients" %}{% endif %}</td>
+                <td>{{ grant.reason.label }}</td>
+                <td>{{ grant.expires_at|date:"M j, Y g:i A" }}</td>
+                <td>
+                    <a href="{% url 'auth_app:access_grant_revoke' grant.pk %}" class="outline" role="button" style="font-size: 0.8rem; padding: 0.25rem 0.5rem;">{% trans "Revoke" %}</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</figure>
+{% else %}
+<p>{% trans "You have no active access grants." %}</p>
+{% endif %}
+
+<h2>{% trans "Recent Expired / Revoked" %}</h2>
+{% if expired_grants %}
+<figure>
+    <table>
+        <thead>
+            <tr>
+                <th>{% trans "Program" %}</th>
+                <th>{% trans "Reason" %}</th>
+                <th>{% trans "Granted" %}</th>
+                <th>{% trans "Status" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for grant in expired_grants %}
+            <tr>
+                <td>{{ grant.program.name }}</td>
+                <td>{{ grant.reason.label }}</td>
+                <td>{{ grant.granted_at|date:"M j, Y" }}</td>
+                <td>
+                    {% if not grant.is_active %}
+                        {% trans "Revoked" %}
+                    {% else %}
+                        {% trans "Expired" %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</figure>
+{% else %}
+<p>{% trans "No recent expired grants." %}</p>
+{% endif %}
+{% endblock %}

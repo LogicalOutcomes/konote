@@ -2,7 +2,10 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from .models import DEFAULT_TERMS, TerminologyOverride
+from .models import (
+    ACCESS_TIER_CHOICES, ACCESS_TIER_DESCRIPTIONS,
+    DEFAULT_TERMS, TerminologyOverride,
+)
 
 
 class FeatureToggleForm(forms.Form):
@@ -78,6 +81,15 @@ DOCUMENT_STORAGE_CHOICES = [
 
 class InstanceSettingsForm(forms.Form):
     """Form for instance-level settings."""
+
+    access_tier = forms.ChoiceField(
+        choices=ACCESS_TIER_CHOICES,
+        initial="1",
+        label=_("Access Tier"),
+        help_text=_("Controls which advanced permission features are active. "
+                     "The baseline role matrix is always enforced at every tier."),
+        widget=forms.RadioSelect,
+    )
 
     product_name = forms.CharField(
         max_length=255, required=False, label=_("Product Name"),
@@ -181,6 +193,7 @@ class InstanceSettingsForm(forms.Form):
     )
 
     SETTING_KEYS = [
+        "access_tier",
         "product_name", "support_email", "logo_url",
         "date_format", "session_timeout_minutes",
         "document_storage_provider", "document_storage_url_template",
