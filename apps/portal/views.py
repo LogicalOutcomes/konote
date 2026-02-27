@@ -730,27 +730,31 @@ def resources_list(request):
         client_file=client_file, is_active=True,
     ).order_by("-created_at")
 
-    # Build display list with resolved language
-    display_resources = []
+    # Group program resources by program for display
+    from collections import OrderedDict
+    program_groups = OrderedDict()
     for r in program_resources:
-        display_resources.append({
+        pname = r.program.portal_display_name or r.program.name
+        if pname not in program_groups:
+            program_groups[pname] = []
+        program_groups[pname].append({
             "title": r.get_title(lang),
             "url": r.url,
             "description": r.get_description(lang),
-            "source": "program",
-            "program_name": r.program.portal_display_name or r.program.name,
-        })
-    for r in client_resources:
-        display_resources.append({
-            "title": r.title,
-            "url": r.url,
-            "description": r.description,
-            "source": "staff",
         })
 
+    # Client-specific resources as a flat list
+    staff_resources = [
+        {"title": r.title, "url": r.url, "description": r.description}
+        for r in client_resources
+    ]
+
+    has_resources = bool(program_groups) or bool(staff_resources)
+
     return render(request, "portal/resources.html", {
-        "resources": display_resources,
-        "has_resources": len(display_resources) > 0,
+        "program_groups": program_groups,
+        "staff_resources": staff_resources,
+        "has_resources": has_resources,
     })
 
 
