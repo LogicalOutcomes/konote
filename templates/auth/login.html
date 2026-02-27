@@ -84,6 +84,13 @@
         <section class="demo-section">
             <p class="demo-heading">{% trans "Try the Demo" %}</p>
             <p class="demo-subtext">{% trans "Sign in instantly as a demo user to explore the system" %}</p>
+            {% if demo_users %}
+            <div class="demo-grid">
+                {% for u in demo_users %}
+                <form method="post" action="/auth/demo-login/{{ u.username }}/">{% csrf_token %}<button type="submit" class="demo-btn">{{ u.display_name }}</button></form>
+                {% endfor %}
+            </div>
+            {% else %}
             <div class="demo-grid">
                 <form method="post" action="/auth/demo-login/frontdesk/">{% csrf_token %}<button type="submit" class="demo-btn">{% trans "Front Desk" %} — Dana</button></form>
                 <form method="post" action="/auth/demo-login/manager/">{% csrf_token %}<button type="submit" class="demo-btn">{% trans "Manager" %} — Morgan</button></form>
@@ -92,6 +99,7 @@
                 <form method="post" action="/auth/demo-login/executive/">{% csrf_token %}<button type="submit" class="demo-btn">{% trans "Executive" %} — Eva</button></form>
                 <form method="post" action="/auth/demo-login/admin/">{% csrf_token %}<button type="submit" class="demo-btn">{% trans "Administrator" %} — Alex</button></form>
             </div>
+            {% endif %}
 
             <hr class="demo-divider" style="margin: 1.5rem 0 1rem;">
             <p class="demo-heading">{% trans "Participant Portal" %}</p>

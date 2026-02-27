@@ -549,6 +549,81 @@ class AccountLockoutTest(TestCase):
         self.assertEqual(resp.status_code, 302)  # Redirect on success
 
 
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local", RATELIMIT_ENABLE=False, DEMO_MODE=True)
+class DemoLoginTest(TestCase):
+    """Test dynamic demo login from is_demo=True users and fallback to hardcoded."""
+
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        from django.core.cache import cache
+
+        enc_module._fernet = None
+        cache.clear()
+        self.http = Client()
+
+    def tearDown(self):
+        from django.core.cache import cache
+
+        enc_module._fernet = None
+        cache.clear()
+
+    def test_login_page_shows_dynamic_demo_users_when_present(self):
+        """When is_demo=True users exist, demo_users is in context and buttons are dynamic."""
+        User.objects.create_user(
+            username="alice-demo", password="x", display_name="Alice", is_demo=True
+        )
+        User.objects.create_user(
+            username="bob-demo", password="x", display_name="Bob", is_demo=True
+        )
+        resp = self.http.get("/auth/login/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("demo_users", resp.context)
+        self.assertEqual(len(resp.context["demo_users"]), 2)
+        self.assertContains(resp, "/auth/demo-login/alice-demo/")
+        self.assertContains(resp, "Alice")
+
+    def test_login_page_shows_hardcoded_fallback_when_no_demo_users(self):
+        """When no is_demo=True users exist, demo_users is empty and hardcoded buttons shown."""
+        resp = self.http.get("/auth/login/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("demo_users", resp.context)
+        self.assertEqual(resp.context["demo_users"], [])
+        self.assertContains(resp, "/auth/demo-login/frontdesk/")
+        self.assertContains(resp, "Dana")
+
+    def test_demo_login_with_dynamic_is_demo_username(self):
+        """demo_login accepts a username that belongs to an is_demo=True user."""
+        demo = User.objects.create_user(
+            username="charlie-demo", password="x", display_name="Charlie", is_demo=True
+        )
+        resp = self.http.post("/auth/demo-login/charlie-demo/")
+        self.assertEqual(resp.status_code, 302)
+        self.assertEqual(int(self.http.session["_auth_user_id"]), demo.pk)
+
+    def test_demo_login_with_hardcoded_role_name(self):
+        """demo_login still works with old role-name shortcuts like 'frontdesk'."""
+        User.objects.create_user(
+            username="demo-frontdesk", password="x", display_name="Front Desk"
+        )
+        resp = self.http.post("/auth/demo-login/frontdesk/")
+        self.assertEqual(resp.status_code, 302)
+
+    def test_demo_login_unknown_role_returns_404(self):
+        """demo_login returns 404 when role is not hardcoded and no is_demo=True user matches."""
+        resp = self.http.post("/auth/demo-login/nobody-here/")
+        self.assertEqual(resp.status_code, 404)
+
+    def test_demo_login_inactive_is_demo_user_returns_404(self):
+        """An inactive is_demo=True user cannot log in via demo_login."""
+        User.objects.create_user(
+            username="inactive-demo", password="x", display_name="Inactive",
+            is_demo=True, is_active=False
+        )
+        resp = self.http.post("/auth/demo-login/inactive-demo/")
+        self.assertEqual(resp.status_code, 404)
+
+
 @override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY, AUTH_MODE="local", RATELIMIT_ENABLE=False)
 class ExecutiveLoginRedirectTest(TestCase):
     """BUG-5: Executives should land on aggregate dashboard, not staff home."""
