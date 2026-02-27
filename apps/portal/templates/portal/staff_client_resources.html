@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ term.resource_plural }} — {{ client_file }}{% endblock %}
+
+{% block content %}
+<h1>{% blocktrans with resource_term=term.resource_plural %}{{ resource_term }} for this participant{% endblocktrans %}</h1>
+<p>{% blocktrans with resource_term=term.resource_plural|lower %}Add helpful website links that only this participant will see in their portal.{% endblocktrans %}</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    {% if form.errors %}
+    <p role="alert" class="error">{% trans "Please correct the errors below." %}</p>
+    {% endif %}
+
+    <div class="button-group">
+        <button type="submit">{% blocktrans with resource_term=term.resource|lower %}Add {{ resource_term }}{% endblocktrans %}</button>
+        <a href="{% url 'clients:client_detail' client_id=client_file.pk %}" class="secondary">{% trans "Back to file" %}</a>
+    </div>
+</form>
+
+{% if resources %}
+<hr>
+<h2>{% blocktrans with resource_term=term.resource_plural %}Current {{ resource_term }}{% endblocktrans %}</h2>
+<table role="grid">
+    <thead>
+        <tr>
+            <th>{% trans "Title" %}</th>
+            <th>{% trans "URL" %}</th>
+            <th>{% trans "Added" %}</th>
+            <th>{% trans "Actions" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for resource in resources %}
+        <tr>
+            <td>{{ resource.title }}</td>
+            <td><a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer">{{ resource.url|truncatechars:40 }}</a></td>
+            <td>{{ resource.created_at|date:"N j, Y" }}</td>
+            <td>
+                <form method="post" action="{% url 'clients:client_resource_deactivate' client_id=client_file.pk resource_id=resource.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="secondary outline" onclick="return confirm('{% trans "Remove this resource?" %}')">{% trans "Remove" %}</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<hr>
+<p>{% blocktrans with resource_term=term.resource_plural|lower %}No {{ resource_term }} added for this participant yet.{% endblocktrans %}</p>
+{% endif %}
+{% endblock %}

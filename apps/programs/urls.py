@@ -1,5 +1,11 @@
 from django.urls import path
 
+from apps.portal.staff_views import (
+    program_resource_deactivate,
+    program_resource_edit,
+    program_resources_manage,
+)
+
 from . import views
 
 app_name = "programs"
@@ -12,4 +18,8 @@ urlpatterns = [
     path("<int:program_id>/edit/", views.program_edit, name="program_edit"),
     path("<int:program_id>/roles/add/", views.program_add_role, name="program_add_role"),
     path("<int:program_id>/roles/<int:role_id>/remove/", views.program_remove_role, name="program_remove_role"),
+    # Portal resource links
+    path("<int:program_id>/resources/", program_resources_manage, name="program_resources"),
+    path("<int:program_id>/resources/<int:resource_id>/edit/", program_resource_edit, name="program_resource_edit"),
+    path("<int:program_id>/resources/<int:resource_id>/deactivate/", program_resource_deactivate, name="program_resource_deactivate"),
 ]

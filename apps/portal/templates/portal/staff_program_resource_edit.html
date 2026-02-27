@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Edit" %} {{ term.resource }} — {{ program.name }}{% endblock %}
+
+{% block content %}
+<h1>{% blocktrans with resource_term=term.resource|lower %}Edit {{ resource_term }}{% endblocktrans %}</h1>
+
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    {% if form.errors %}
+    <p role="alert" class="error">{% trans "Please correct the errors below." %}</p>
+    {% endif %}
+
+    <div class="button-group">
+        <button type="submit">{% trans "Save changes" %}</button>
+        <a href="{% url 'programs:program_resources' program_id=program.pk %}" class="secondary">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}
