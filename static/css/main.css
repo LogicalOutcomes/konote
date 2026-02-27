@@ -1366,6 +1366,12 @@ details.search-filters-panel[open] summary {
     max-width: 420px;
     margin-top: 10vh;
 }
+.login-logo {
+    display: block;
+    margin: 0 auto 1rem;
+    max-height: 120px;
+    width: auto;
+}
 .login-wordmark {
     text-align: center;
     margin-bottom: 1.5rem;
@@ -3517,6 +3523,16 @@ article[aria-label="notification"].fading-out {
 .site-footer-links a:hover {
     color: var(--kn-primary);
     text-decoration: underline;
+}
+.powered-by {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--kn-text-muted);
+    font-size: 0.85rem;
+}
+.powered-by img {
+    vertical-align: middle;
 }
 
 .site-footer-session {
