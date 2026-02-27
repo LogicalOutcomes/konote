@@ -57,3 +57,7 @@ scripts/push-acr-local.ps1
 # Docker volumes
 pgdata/
 audit_pgdata/
+
+# Backup files
+backups/
+*.dump

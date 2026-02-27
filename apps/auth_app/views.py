@@ -232,12 +232,21 @@ def _local_login(request):
     else:
         form = LoginForm()
 
+    demo_users = []
+    if settings.DEMO_MODE:
+        demo_users = list(
+            User.objects.filter(is_demo=True, is_active=True)
+            .order_by("display_name")
+            .values("username", "display_name")
+        )
+
     has_language_cookie = bool(request.COOKIES.get(settings.LANGUAGE_COOKIE_NAME))
     return render(request, "auth/login.html", {
         "error": error,
         "form": form,
         "auth_mode": "local",
         "demo_mode": settings.DEMO_MODE,
+        "demo_users": demo_users,
         "has_language_cookie": has_language_cookie,
     })
 
@@ -324,15 +333,19 @@ def demo_login(request, role):
         "admin": "demo-admin",
     }
     username = demo_usernames.get(role)
-    if not username:
-        from django.http import Http404
-        raise Http404
-
-    try:
-        user = User.objects.get(username=username, is_active=True)
-    except User.DoesNotExist:
-        from django.http import Http404
-        raise Http404
+    if username:
+        try:
+            user = User.objects.get(username=username, is_active=True)
+        except User.DoesNotExist:
+            from django.http import Http404
+            raise Http404
+    else:
+        # Try dynamic is_demo=True lookup by username (fallback)
+        try:
+            user = User.objects.get(username=role, is_demo=True, is_active=True)
+        except User.DoesNotExist:
+            from django.http import Http404
+            raise Http404
 
     login(request, user)
     user.last_login_at = timezone.now()
