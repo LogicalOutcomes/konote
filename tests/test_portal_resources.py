@@ -10,7 +10,7 @@ from apps.admin_settings.models import FeatureToggle
 from apps.auth_app.models import User
 from apps.clients.models import ClientFile, ClientProgramEnrolment
 from apps.portal.models import ClientResourceLink, ParticipantUser, PortalResourceLink
-from apps.programs.models import Program
+from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -291,6 +291,14 @@ class StaffClientResourceTests(TestCase):
             status="enrolled",
         )
 
+        # Staff needs a program role to access client-scoped views
+        UserProgramRole.objects.create(
+            user=self.staff,
+            program=self.program,
+            role="program_manager",
+            status="active",
+        )
+
         FeatureToggle.objects.update_or_create(
             feature_key="participant_portal",
             defaults={"is_enabled": True},
@@ -299,14 +307,14 @@ class StaffClientResourceTests(TestCase):
     def test_staff_can_view_client_resources(self):
         """Staff can access the client resources management page."""
         self.client.login(username="cli_staff", password="testpass123")
-        response = self.client.get(f"/clients/{self.client_file.pk}/resources/")
+        response = self.client.get(f"/participants/{self.client_file.pk}/resources/")
         self.assertEqual(response.status_code, 200)
 
     def test_staff_can_create_client_resource(self):
         """Staff can create a client resource link."""
         self.client.login(username="cli_staff", password="testpass123")
         response = self.client.post(
-            f"/clients/{self.client_file.pk}/resources/",
+            f"/participants/{self.client_file.pk}/resources/",
             {
                 "title": "Local Food Bank",
                 "url": "https://foodbank.example.com",
@@ -330,7 +338,7 @@ class StaffClientResourceTests(TestCase):
         )
         self.client.login(username="cli_staff", password="testpass123")
         response = self.client.post(
-            f"/clients/{self.client_file.pk}/resources/{resource.pk}/deactivate/",
+            f"/participants/{self.client_file.pk}/resources/{resource.pk}/deactivate/",
         )
         self.assertEqual(response.status_code, 302)
         resource.refresh_from_db()
