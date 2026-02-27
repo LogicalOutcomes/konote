@@ -1,14 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stop-color="#4A90D9"/>
-      <stop offset="100%" stop-color="#2560C7"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
-  <g stroke="white" stroke-width="80" stroke-linecap="round" fill="none">
-    <line x1="150" y1="100" x2="150" y2="412"/>
-    <line x1="190" y1="256" x2="362" y2="100"/>
-    <line x1="190" y1="256" x2="362" y2="412"/>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 37.25">
+  <!-- KoNote K mark — extracted from konote-logo-text.svg -->
+  <!-- Blue vertical bar -->
+  <path fill="#3176aa" d="M0 0.45v36.35h6.35V0.45z"/>
+  <!-- Grey upper diagonal -->
+  <path fill="#808285" d="M29.15 0.45 13.54 12.45c1.59 1.09 3.15 2.24 4.67 3.43L39.05 0.45z"/>
+  <!-- Blue lower K stroke / arrow -->
+  <path fill="#3176aa" d="M10.59 14.72c-1.26 0.82-2.53 2.05-2.3 3.7-0.02 1.18 0.78 2.13 1.73 2.72l19.93 15.67h9.7C20.04 21.99 20.06 22 10.59 14.72z"/>
 </svg>
