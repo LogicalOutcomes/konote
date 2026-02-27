@@ -707,8 +707,7 @@ def resources_list(request):
     lang = participant.preferred_language or "en"
 
     flags = FeatureToggle.get_all_flags()
-    from apps.admin_settings.views import FEATURES_DEFAULT_ENABLED
-    if not flags.get("portal_resources", "portal_resources" in FEATURES_DEFAULT_ENABLED):
+    if not flags.get("portal_resources"):
         raise Http404
 
     from apps.clients.models import ClientProgramEnrolment
