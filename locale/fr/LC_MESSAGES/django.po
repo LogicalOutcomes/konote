@@ -3634,6 +3634,22 @@ msgstr "Fournisseur de stockage de documents"
 msgid "URL Template"
 msgstr "Modèle d'URL"
 
+# admin_settings/forms.py — Document storage URL template validation
+msgid "URL template must use HTTPS."
+msgstr "Le modèle d'URL doit utiliser HTTPS."
+
+msgid "URL template contains a disallowed protocol."
+msgstr "Le modèle d'URL contient un protocole non autorisé."
+
+msgid "Domain must be one of: %(domains)s"
+msgstr "Le domaine doit être l'un des suivants\u00a0: %(domains)s"
+
+msgid "URL template must contain {record_id} placeholder."
+msgstr "Le modèle d'URL doit contenir l'espace réservé {record_id}."
+
+msgid "URL template is required when a provider is selected."
+msgstr "Le modèle d'URL est requis lorsqu'un fournisseur est sélectionné."
+
 msgid "Privacy Officer Name"
 msgstr "Nom du responsable de la protection de la vie privée"
 
