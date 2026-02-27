@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{{ term.resource_plural }} — {{ program.name }}{% endblock %}
+
+{% block content %}
+<h1>{% blocktrans with resource_term=term.resource_plural program_name=program.name %}{{ resource_term }} for {{ program_name }}{% endblocktrans %}</h1>
+<p>{% blocktrans with resource_term=term.resource_plural|lower %}These {{ resource_term }} will be visible to all participants enrolled in this program.{% endblocktrans %}</p>
+
+<form method="post">
+    {% csrf_token %}
+
+    {{ form.as_p }}
+
+    {% if form.errors %}
+    <p role="alert" class="error">{% trans "Please correct the errors below." %}</p>
+    {% endif %}
+
+    <div class="button-group">
+        <button type="submit">{% blocktrans with resource_term=term.resource|lower %}Add {{ resource_term }}{% endblocktrans %}</button>
+        <a href="{% url 'programs:program_detail' program_id=program.pk %}" class="secondary">{% trans "Back to program" %}</a>
+    </div>
+</form>
+
+{% if resources %}
+<hr>
+<h2>{% blocktrans with resource_term=term.resource_plural %}Current {{ resource_term }}{% endblocktrans %}</h2>
+<table role="grid">
+    <thead>
+        <tr>
+            <th>{% trans "Title" %}</th>
+            <th>{% trans "URL" %}</th>
+            <th>{% trans "Order" %}</th>
+            <th>{% trans "Actions" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for resource in resources %}
+        <tr>
+            <td>
+                {{ resource.title }}
+                {% if resource.title_fr %}<br><small>FR: {{ resource.title_fr }}</small>{% endif %}
+            </td>
+            <td><a href="{{ resource.url }}" target="_blank" rel="noopener noreferrer">{{ resource.url|truncatechars:40 }}</a></td>
+            <td>{{ resource.display_order }}</td>
+            <td>
+                <a href="{% url 'programs:program_resource_edit' program_id=program.pk resource_id=resource.pk %}">{% trans "Edit" %}</a>
+                <form method="post" action="{% url 'programs:program_resource_deactivate' program_id=program.pk resource_id=resource.pk %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="secondary outline" onclick="return confirm('{% trans "Remove this resource?" %}')">{% trans "Remove" %}</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<hr>
+<p>{% blocktrans with resource_term=term.resource_plural|lower %}No {{ resource_term }} added yet.{% endblocktrans %}</p>
+{% endif %}
+{% endblock %}

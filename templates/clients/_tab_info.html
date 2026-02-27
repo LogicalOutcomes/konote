@@ -241,6 +241,10 @@
             <p class="secondary">{% trans "No portal account." %}</p>
             <a href="{% url 'clients:create_portal_invite' client_id=client.pk %}" role="button" class="outline" style="font-size: 0.875rem;">{% trans "Invite to Portal" %}</a>
             {% endif %}
+            {% if features.portal_resources %}
+            <hr style="margin: var(--kn-space-sm) 0;">
+            <a href="{% url 'clients:client_resources' client_id=client.pk %}" class="secondary" style="font-size: 0.875rem;">{% blocktrans with resource_term=term.resource_plural|lower %}Manage portal {{ resource_term }}{% endblocktrans %}</a>
+            {% endif %}
         </div>
     </details>
 </section>

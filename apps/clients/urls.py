@@ -1,6 +1,8 @@
 from django.urls import path
 
 from apps.portal.staff_views import (
+    client_resource_deactivate,
+    client_resources_manage,
     create_portal_invite,
     create_staff_portal_note,
     generate_staff_login_token,
@@ -54,6 +56,9 @@ urlpatterns = [
     path("<int:client_id>/dv-safe/enable/", dv_safe_enable, name="dv_safe_enable"),
     path("<int:client_id>/dv-safe/request-remove/", dv_safe_request_remove, name="dv_safe_request_remove"),
     path("<int:client_id>/dv-safe/review-remove/<int:request_id>/", dv_safe_review_remove, name="dv_safe_review_remove"),
+    # Portal client resources
+    path("<int:client_id>/resources/", client_resources_manage, name="client_resources"),
+    path("<int:client_id>/resources/<int:resource_id>/deactivate/", client_resource_deactivate, name="client_resource_deactivate"),
     # Portal staff note
     path("<int:client_id>/portal-note/", create_staff_portal_note, name="create_staff_portal_note"),
     # Portal management

@@ -74,6 +74,9 @@
             {% if features.surveys %}
             <li><a href="{% url 'portal:surveys' %}" {% if portal_page == 'surveys' %}aria-current="page"{% endif %}>{% trans "Surveys" %}</a></li>
             {% endif %}
+            {% if features.portal_resources %}
+            <li><a href="{% url 'portal:resources' %}" {% if portal_page == 'resources' %}aria-current="page"{% endif %}>{{ term.resource_plural }}</a></li>
+            {% endif %}
             <li><a href="{% url 'portal:settings' %}" {% if portal_page == 'settings' %}aria-current="page"{% endif %}>{% trans "Settings" %}</a></li>
         </ul>
         <ul>

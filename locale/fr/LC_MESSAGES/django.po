@@ -16832,3 +16832,124 @@ msgstr ""
 
 msgid "Time span (days)"
 msgstr ""
+
+msgid "(opens in a new tab)"
+msgstr "(s'ouvre dans un nouvel onglet)"
+
+msgid "Added"
+msgstr "Ajouté"
+
+msgid "Back to file"
+msgstr "Retour au dossier"
+
+msgid "Back to program"
+msgstr "Retour au programme"
+
+msgid "Brief description (optional)"
+msgstr "Brève description (optionnel)"
+
+msgid "Description (English)"
+msgstr "Description (anglais)"
+
+msgid "Description en français (optionnel)"
+msgstr "Description en français (optionnel)"
+
+msgid "Remove this resource?"
+msgstr "Retirer cette ressource?"
+
+msgid "Save changes"
+msgstr "Enregistrer les modifications"
+
+msgid "Title (English)"
+msgstr "Titre (anglais)"
+
+msgid "Title (French)"
+msgstr "Titre (français)"
+
+msgid "URL"
+msgstr "URL"
+
+msgid "Website URL"
+msgstr "URL du site Web"
+
+msgid "client resource link"
+msgstr "lien de ressource pour le participant"
+
+msgid "client resource links"
+msgstr "liens de ressources pour le participant"
+
+msgid "e.g. Crisis Support Line"
+msgstr "p. ex. Ligne de soutien en situation de crise"
+
+msgid "e.g. Ligne de soutien en situation de crise"
+msgstr "p. ex. Ligne de soutien en situation de crise"
+
+msgid "e.g. Local Housing Directory"
+msgstr "p. ex. Répertoire local de logement"
+
+msgid "portal resource link"
+msgstr "lien de ressource du portail"
+
+msgid "portal resource links"
+msgstr "liens de ressources du portail"
+
+#. blocktrans — portal/resources.html
+msgid "No %(resource_term)s are available right now."
+msgstr "Aucune %(resource_term)s n'est disponible pour le moment."
+
+#. blocktrans — portal/staff_program_resources.html
+msgid "%(resource_term)s for %(program_name)s"
+msgstr "%(resource_term)s pour %(program_name)s"
+
+#. blocktrans — portal/staff_program_resources.html
+msgid ""
+"These %(resource_term)s will be visible to all participants enrolled in this"
+" program."
+msgstr ""
+"Ces %(resource_term)s seront visibles par tous les participants inscrits à "
+"ce programme."
+
+#. blocktrans — portal/staff_program_resources.html,
+#. staff_client_resources.html
+msgid "Add %(resource_term)s"
+msgstr "Ajouter %(resource_term)s"
+
+#. blocktrans — portal/staff_program_resources.html,
+#. staff_client_resources.html
+msgid "Current %(resource_term)s"
+msgstr "%(resource_term)s actuelles"
+
+#. blocktrans — portal/staff_program_resources.html
+msgid "No %(resource_term)s added yet."
+msgstr "Aucune %(resource_term)s ajoutée pour le moment."
+
+#. blocktrans — portal/staff_client_resources.html
+msgid "%(resource_term)s for this participant"
+msgstr "%(resource_term)s pour ce participant"
+
+#. blocktrans — portal/staff_client_resources.html
+msgid ""
+"Add helpful website links that only this participant will see in their "
+"portal."
+msgstr ""
+"Ajoutez des liens utiles vers des sites Web que seul ce participant verra "
+"dans son portail."
+
+#. blocktrans — portal/staff_client_resources.html
+msgid "No %(resource_term)s added for this participant yet."
+msgstr "Aucune %(resource_term)s ajoutée pour ce participant pour le moment."
+
+#. blocktrans — portal/staff_program_resource_edit.html
+msgid "Edit %(resource_term)s"
+msgstr "Modifier %(resource_term)s"
+
+msgid "Added for you"
+msgstr "Ajoutés pour vous"
+
+#, python-format
+msgid "Manage portal %(resource_term)s"
+msgstr "Gérer %(resource_term)s du portail"
+
+#, python-format
+msgid "Manage %(resource_term)s"
+msgstr "Gérer %(resource_term)s"

@@ -1,7 +1,14 @@
 """Django admin registration for participant portal models."""
 from django.contrib import admin
 
-from .models import CorrectionRequest, ParticipantUser, PortalInvite, StaffPortalNote
+from .models import (
+    ClientResourceLink,
+    CorrectionRequest,
+    ParticipantUser,
+    PortalInvite,
+    PortalResourceLink,
+    StaffPortalNote,
+)
 
 
 @admin.register(ParticipantUser)
@@ -78,3 +85,23 @@ class StaffPortalNoteAdmin(admin.ModelAdmin):
     list_filter = ["is_active"]
     readonly_fields = ["created_at"]
     exclude = ["_content_encrypted"]
+
+
+@admin.register(PortalResourceLink)
+class PortalResourceLinkAdmin(admin.ModelAdmin):
+    """Admin view for program-level portal resource links."""
+
+    list_display = ["title", "program", "url", "display_order", "is_active", "created_at"]
+    list_filter = ["is_active", "program"]
+    search_fields = ["title", "url"]
+    readonly_fields = ["created_at", "updated_at"]
+
+
+@admin.register(ClientResourceLink)
+class ClientResourceLinkAdmin(admin.ModelAdmin):
+    """Admin view for client-specific portal resource links."""
+
+    list_display = ["title", "client_file", "url", "is_active", "created_at"]
+    list_filter = ["is_active"]
+    search_fields = ["title", "url"]
+    readonly_fields = ["created_at"]

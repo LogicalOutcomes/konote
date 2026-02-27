@@ -18,15 +18,19 @@ from apps.admin_settings.models import FeatureToggle
 from apps.audit.models import AuditLog
 from apps.auth_app.decorators import requires_permission
 from apps.clients.models import ClientFile
-from apps.portal.forms import StaffPortalInviteForm, StaffPortalNoteForm
+from apps.auth_app.decorators import admin_required
+from apps.portal.forms import ClientResourceForm, ProgramResourceForm, StaffPortalInviteForm, StaffPortalNoteForm
 from apps.portal.models import (
+    ClientResourceLink,
     CorrectionRequest,
     ParticipantUser,
     PortalInvite,
+    PortalResourceLink,
     StaffAssistedLoginToken,
     StaffPortalNote,
 )
 from apps.programs.access import get_program_from_client as _get_program_from_client
+from apps.programs.models import Program
 
 
 def _portal_enabled_or_404():
@@ -281,3 +285,195 @@ def portal_reset_mfa(request, client_id):
         )
 
     return redirect("clients:portal_manage", client_id=client_id)
+
+
+# ---------------------------------------------------------------------------
+# Program resource links (admin-only, per-program)
+# ---------------------------------------------------------------------------
+
+
+@login_required
+@admin_required
+def program_resources_manage(request, program_id):
+    """List and add resource links for a program."""
+    _portal_enabled_or_404()
+    program = get_object_or_404(Program, pk=program_id)
+
+    if request.method == "POST":
+        form = ProgramResourceForm(request.POST)
+        if form.is_valid():
+            resource = form.save(commit=False)
+            resource.program = program
+            resource.created_by = request.user
+            resource.save()
+            AuditLog.objects.using("audit").create(
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=request.user.display_name,
+                action="create",
+                resource_type="portal_resource_link",
+                resource_id=resource.pk,
+                metadata={
+                    "program_id": program.pk,
+                    "title": resource.title,
+                    "url": resource.url,
+                },
+            )
+            return redirect("programs:program_resources", program_id=program.pk)
+    else:
+        form = ProgramResourceForm()
+
+    resources = PortalResourceLink.objects.filter(
+        program=program, is_active=True,
+    ).order_by("display_order", "title")
+
+    return render(request, "portal/staff_program_resources.html", {
+        "form": form,
+        "program": program,
+        "resources": resources,
+    })
+
+
+@login_required
+@admin_required
+def program_resource_edit(request, program_id, resource_id):
+    """Edit a program resource link."""
+    _portal_enabled_or_404()
+    program = get_object_or_404(Program, pk=program_id)
+    resource = get_object_or_404(
+        PortalResourceLink, pk=resource_id, program=program, is_active=True,
+    )
+
+    if request.method == "POST":
+        form = ProgramResourceForm(request.POST, instance=resource)
+        if form.is_valid():
+            form.save()
+            AuditLog.objects.using("audit").create(
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=request.user.display_name,
+                action="update",
+                resource_type="portal_resource_link",
+                resource_id=resource.pk,
+                metadata={
+                    "program_id": program.pk,
+                    "title": resource.title,
+                    "url": resource.url,
+                },
+            )
+            return redirect("programs:program_resources", program_id=program.pk)
+    else:
+        form = ProgramResourceForm(instance=resource)
+
+    return render(request, "portal/staff_program_resource_edit.html", {
+        "form": form,
+        "program": program,
+        "resource": resource,
+    })
+
+
+@login_required
+@admin_required
+def program_resource_deactivate(request, program_id, resource_id):
+    """Soft-delete a program resource link (POST only)."""
+    _portal_enabled_or_404()
+    if request.method != "POST":
+        raise Http404
+
+    program = get_object_or_404(Program, pk=program_id)
+    resource = get_object_or_404(
+        PortalResourceLink, pk=resource_id, program=program, is_active=True,
+    )
+    resource.is_active = False
+    resource.save(update_fields=["is_active", "updated_at"])
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=request.user.display_name,
+        action="delete",
+        resource_type="portal_resource_link",
+        resource_id=resource.pk,
+        metadata={
+            "program_id": program.pk,
+            "title": resource.title,
+        },
+    )
+
+    return redirect("programs:program_resources", program_id=program.pk)
+
+
+# ---------------------------------------------------------------------------
+# Client resource links (staff, per-client)
+# ---------------------------------------------------------------------------
+
+
+@login_required
+@requires_permission("note.create", _get_program_from_client)
+def client_resources_manage(request, client_id):
+    """List and add resource links for a specific participant."""
+    _portal_enabled_or_404()
+    client_file = get_object_or_404(ClientFile, pk=client_id)
+
+    if request.method == "POST":
+        form = ClientResourceForm(request.POST)
+        if form.is_valid():
+            resource = form.save(commit=False)
+            resource.client_file = client_file
+            resource.created_by = request.user
+            resource.save()
+            AuditLog.objects.using("audit").create(
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=request.user.display_name,
+                action="create",
+                resource_type="client_resource_link",
+                resource_id=resource.pk,
+                metadata={
+                    "client_file_id": client_file.pk,
+                    "title": resource.title,
+                    "url": resource.url,
+                },
+            )
+            return redirect("clients:client_resources", client_id=client_file.pk)
+    else:
+        form = ClientResourceForm()
+
+    resources = ClientResourceLink.objects.filter(
+        client_file=client_file, is_active=True,
+    ).order_by("-created_at")
+
+    return render(request, "portal/staff_client_resources.html", {
+        "form": form,
+        "client_file": client_file,
+        "resources": resources,
+    })
+
+
+@login_required
+@requires_permission("note.create", _get_program_from_client)
+def client_resource_deactivate(request, client_id, resource_id):
+    """Soft-delete a client resource link (POST only)."""
+    _portal_enabled_or_404()
+    if request.method != "POST":
+        raise Http404
+
+    client_file = get_object_or_404(ClientFile, pk=client_id)
+    resource = get_object_or_404(
+        ClientResourceLink, pk=resource_id, client_file=client_file, is_active=True,
+    )
+    resource.is_active = False
+    resource.save(update_fields=["is_active"])
+    AuditLog.objects.using("audit").create(
+        event_timestamp=timezone.now(),
+        user_id=request.user.pk,
+        user_display=request.user.display_name,
+        action="delete",
+        resource_type="client_resource_link",
+        resource_id=resource.pk,
+        metadata={
+            "client_file_id": client_file.pk,
+            "title": resource.title,
+        },
+    )
+
+    return redirect("clients:client_resources", client_id=client_file.pk)

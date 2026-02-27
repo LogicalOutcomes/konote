@@ -48,6 +48,9 @@ DEFAULT_TERMS = {
     # Circles
     "circle": ("Circle", "Cercle"),
     "circle_plural": ("Circles", "Cercles"),
+    # Portal resources
+    "resource": ("Resource", "Ressource"),
+    "resource_plural": ("Resources", "Ressources"),
 }
 
 # Help text showing where each term appears in the interface.
@@ -87,6 +90,8 @@ TERM_HELP_TEXT = {
     "session_plural": _lazy("Used in: group detail page, session history"),
     "circle": _lazy("Used in: navigation, circle list, circle detail, participant file sidebar, note form"),
     "circle_plural": _lazy("Used in: navigation menu, dashboard counts, reports"),
+    "resource": _lazy("Used in: portal resources page heading, staff resource management"),
+    "resource_plural": _lazy("Used in: portal navigation menu, portal resources page"),
 }
 
 

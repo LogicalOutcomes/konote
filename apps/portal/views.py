@@ -700,6 +700,65 @@ def dashboard(request):
 
 
 @portal_login_required
+def resources_list(request):
+    """Show helpful resource links from programs and staff."""
+    participant = request.participant_user
+    client_file = _get_client_file(request)
+    lang = participant.preferred_language or "en"
+
+    flags = FeatureToggle.get_all_flags()
+    if not flags.get("portal_resources"):
+        raise Http404
+
+    from apps.clients.models import ClientProgramEnrolment
+    from apps.portal.models import ClientResourceLink, PortalResourceLink
+
+    # Get active program IDs for this participant
+    active_program_ids = list(
+        ClientProgramEnrolment.objects.filter(
+            client_file=client_file, status="enrolled",
+        ).values_list("program_id", flat=True)
+    )
+
+    # Program-level resources
+    program_resources = PortalResourceLink.objects.filter(
+        program_id__in=active_program_ids, is_active=True,
+    ).select_related("program").order_by("display_order", "title")
+
+    # Client-specific resources
+    client_resources = ClientResourceLink.objects.filter(
+        client_file=client_file, is_active=True,
+    ).order_by("-created_at")
+
+    # Group program resources by program for display
+    from collections import OrderedDict
+    program_groups = OrderedDict()
+    for r in program_resources:
+        pname = r.program.portal_display_name or r.program.name
+        if pname not in program_groups:
+            program_groups[pname] = []
+        program_groups[pname].append({
+            "title": r.get_title(lang),
+            "url": r.url,
+            "description": r.get_description(lang),
+        })
+
+    # Client-specific resources as a flat list
+    staff_resources = [
+        {"title": r.title, "url": r.url, "description": r.description}
+        for r in client_resources
+    ]
+
+    has_resources = bool(program_groups) or bool(staff_resources)
+
+    return render(request, "portal/resources.html", {
+        "program_groups": program_groups,
+        "staff_resources": staff_resources,
+        "has_resources": has_resources,
+    })
+
+
+@portal_login_required
 def settings_view(request):
     """Portal settings — MFA status, password change link."""
     participant = request.participant_user
