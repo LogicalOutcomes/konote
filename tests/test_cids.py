@@ -3,14 +3,17 @@ from unittest.mock import patch, MagicMock
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase, Client, override_settings
+from django.utils import timezone
 from cryptography.fernet import Fernet
 
 from apps.admin_settings.models import (
     CidsCodeList, OrganizationProfile, TaxonomyMapping,
 )
 from apps.auth_app.models import User
-from apps.plans.models import MetricDefinition, PlanTarget, PlanSection
-from apps.programs.models import Program
+from apps.notes.models import ProgressNote, ProgressNoteTarget, MetricValue
+from apps.plans.models import MetricDefinition, PlanTarget, PlanSection, PlanTargetMetric
+from apps.plans.achievement import compute_achievement_status, update_achievement_status
+from apps.programs.models import Program, UserProgramRole
 import konote.encryption as enc_module
 
 TEST_KEY = Fernet.generate_key().decode()
@@ -994,3 +997,351 @@ class DataMigrationLogicTest(TestCase):
         )
         self.assertEqual(ep.status, "active")
         self.assertNotEqual(ep.status, "enrolled")
+
+
+# ── Session 4: Achievement Status Tests ─────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AchievementStatusQuantitativeTest(TestCase):
+    """Test quantitative achievement derivation from MetricValues."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client_file = ClientFile.objects.create()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "User"
+        self.client_file.save()
+        self.program = Program.objects.create(name="Test Program")
+        self.section = PlanSection.objects.create(
+            client_file=self.client_file, program=self.program,
+        )
+        self.metric = MetricDefinition.objects.create(
+            name="Wellbeing Score", definition="1-10 scale",
+            higher_is_better=True, max_value=8.0,
+        )
+        self.target = PlanTarget(
+            plan_section=self.section, client_file=self.client_file,
+        )
+        self.target.name = "Improve wellbeing"
+        self.target.save()
+        PlanTargetMetric.objects.create(
+            plan_target=self.target, metric_def=self.metric, sort_order=0,
+        )
+        self.user = User.objects.create_user(username="worker", password="test123")
+
+    def _create_note_with_value(self, value):
+        """Helper to create a ProgressNote with a MetricValue."""
+        note = ProgressNote(
+            client_file=self.client_file,
+            note_type="quick",
+            author=self.user,
+        )
+        note.notes_text = "Session note"
+        note.save()
+        pnt = ProgressNoteTarget.objects.create(
+            progress_note=note, plan_target=self.target,
+        )
+        MetricValue.objects.create(
+            progress_note_target=pnt, metric_def=self.metric, value=str(value),
+        )
+        return note
+
+    def test_zero_data_points_in_progress(self):
+        status, source = compute_achievement_status(self.target)
+        self.assertEqual(status, "in_progress")
+        self.assertEqual(source, "auto_computed")
+
+    def test_one_data_point_in_progress(self):
+        self._create_note_with_value(5)
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "in_progress")
+
+    def test_one_data_point_meets_target_achieved(self):
+        self._create_note_with_value(9)  # Above max_value=8 — signal computes
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "achieved")
+
+    def test_two_points_improving(self):
+        self._create_note_with_value(3)
+        self._create_note_with_value(6)
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "improving")
+
+    def test_two_points_worsening(self):
+        self._create_note_with_value(6)
+        self._create_note_with_value(3)
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "worsening")
+
+    def test_three_points_improving(self):
+        self._create_note_with_value(2)
+        self._create_note_with_value(4)
+        self._create_note_with_value(6)
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "improving")
+
+    def test_three_points_worsening(self):
+        self._create_note_with_value(6)
+        self._create_note_with_value(4)
+        self._create_note_with_value(2)
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "worsening")
+
+    def test_three_points_no_change(self):
+        self._create_note_with_value(5)
+        self._create_note_with_value(6)
+        self._create_note_with_value(5)  # Mixed: 1 up, 1 down
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "no_change")
+
+    def test_achieved_sets_first_achieved_at(self):
+        self._create_note_with_value(9)  # Meets target — signal auto-computes
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "achieved")
+        self.assertIsNotNone(self.target.first_achieved_at)
+
+    def test_sustaining_after_achieved(self):
+        # First achieve — signal sets first_achieved_at
+        self._create_note_with_value(9)
+        self.target.refresh_from_db()
+        first_achieved = self.target.first_achieved_at
+        self.assertIsNotNone(first_achieved)
+
+        # Another note still meeting target — signal updates to sustaining
+        self._create_note_with_value(8.5)
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "sustaining")
+        # first_achieved_at never cleared
+        self.assertEqual(self.target.first_achieved_at, first_achieved)
+
+    def test_worsening_after_achieved(self):
+        self._create_note_with_value(9)  # Signal sets achieved + first_achieved_at
+        self.target.refresh_from_db()
+        self.assertIsNotNone(self.target.first_achieved_at)
+
+        # Drop below target — signal updates to worsening
+        self._create_note_with_value(3)
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "worsening")
+        # first_achieved_at is preserved
+        self.assertIsNotNone(self.target.first_achieved_at)
+
+    def test_higher_is_better_false(self):
+        """Lower-is-better metrics (e.g. PHQ-9)."""
+        self.metric.higher_is_better = False
+        self.metric.max_value = 5.0  # Target: score <= 5
+        self.metric.save()
+
+        self._create_note_with_value(12)
+        self._create_note_with_value(8)
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "improving")
+
+    def test_higher_is_better_false_achieved(self):
+        self.metric.higher_is_better = False
+        self.metric.max_value = 5.0
+        self.metric.save()
+
+        self._create_note_with_value(4)  # Below threshold = achieved
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "achieved")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AchievementStatusQualitativeTest(TestCase):
+    """Test qualitative achievement derivation from progress_descriptor."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client_file = ClientFile.objects.create()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "User"
+        self.client_file.save()
+        self.program = Program.objects.create(name="Test Program")
+        self.section = PlanSection.objects.create(
+            client_file=self.client_file, program=self.program,
+        )
+        self.target = PlanTarget(
+            plan_section=self.section, client_file=self.client_file,
+        )
+        self.target.name = "Qualitative goal"
+        self.target.save()
+        # No metrics linked — qualitative path
+        self.user = User.objects.create_user(username="worker2", password="test123")
+
+    def _create_note_with_descriptor(self, descriptor):
+        note = ProgressNote(
+            client_file=self.client_file,
+            note_type="quick",
+            author=self.user,
+        )
+        note.notes_text = "Note"
+        note.save()
+        ProgressNoteTarget.objects.create(
+            progress_note=note,
+            plan_target=self.target,
+            progress_descriptor=descriptor,
+        )
+        return note
+
+    def test_harder_maps_to_worsening(self):
+        self._create_note_with_descriptor("harder")
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "worsening")
+
+    def test_holding_maps_to_no_change(self):
+        self._create_note_with_descriptor("holding")
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "no_change")
+
+    def test_shifting_maps_to_improving(self):
+        self._create_note_with_descriptor("shifting")
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "improving")
+
+    def test_good_place_maps_to_achieved(self):
+        self._create_note_with_descriptor("good_place")
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "achieved")
+
+    def test_good_place_sustaining_after_achieved(self):
+        # First achieve — signal sets it
+        self._create_note_with_descriptor("good_place")
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "achieved")
+
+        # Second good_place → sustaining
+        self._create_note_with_descriptor("good_place")
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.achievement_status, "sustaining")
+
+    def test_no_descriptor_in_progress(self):
+        """No progress entries → in_progress."""
+        status, _ = compute_achievement_status(self.target)
+        self.assertEqual(status, "in_progress")
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AchievementWorkerOverrideTest(TestCase):
+    """Test worker override and not_attainable rules."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client_file = ClientFile.objects.create()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "User"
+        self.client_file.save()
+        self.program = Program.objects.create(name="Test Program")
+        self.section = PlanSection.objects.create(
+            client_file=self.client_file, program=self.program,
+        )
+        self.target = PlanTarget(
+            plan_section=self.section, client_file=self.client_file,
+        )
+        self.target.name = "Worker override test"
+        self.target.save()
+
+    def test_worker_override_preserved_through_auto_computation(self):
+        """Auto-computation does NOT overwrite worker_assessed status."""
+        self.target.achievement_status = "not_attainable"
+        self.target.achievement_status_source = "worker_assessed"
+        self.target.save()
+
+        # Try auto-computation
+        update_achievement_status(self.target)
+        self.target.refresh_from_db()
+        # Worker assessment preserved
+        self.assertEqual(self.target.achievement_status, "not_attainable")
+        self.assertEqual(self.target.achievement_status_source, "worker_assessed")
+
+    def test_not_attainable_never_auto_set(self):
+        """compute_achievement_status never returns not_attainable."""
+        status, _ = compute_achievement_status(self.target)
+        self.assertNotEqual(status, "not_attainable")
+
+    def test_first_achieved_at_never_cleared(self):
+        """Once first_achieved_at is set, it persists even on status change."""
+        now = timezone.now()
+        self.target.first_achieved_at = now
+        self.target.achievement_status = "achieved"
+        self.target.achievement_status_source = "auto_computed"
+        self.target.save()
+
+        # Recompute — status changes but first_achieved_at stays
+        update_achievement_status(self.target)
+        self.target.refresh_from_db()
+        self.assertEqual(self.target.first_achieved_at, now)
+
+
+# ── Session 4: Author Role Tests ────────────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class AuthorRoleAutoFillTest(TestCase):
+    """Test author_role auto-fill on ProgressNote creation."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.user = User.objects.create_user(username="staff", password="test123")
+        self.program = Program.objects.create(name="Test Program")
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role="staff",
+        )
+        self.client_file = ClientFile.objects.create()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "User"
+        self.client_file.save()
+
+    def test_auto_fill_on_creation(self):
+        note = ProgressNote(
+            client_file=self.client_file,
+            note_type="quick",
+            author=self.user,
+            author_program=self.program,
+        )
+        note.notes_text = "Test"
+        note.save()
+        self.assertEqual(note.author_role, "staff")
+
+    def test_correct_role_lookup(self):
+        """Uses the role from the specific program, not just any role."""
+        other_program = Program.objects.create(name="Other Program")
+        UserProgramRole.objects.create(
+            user=self.user, program=other_program, role="program_manager",
+        )
+        note = ProgressNote(
+            client_file=self.client_file,
+            note_type="quick",
+            author=self.user,
+            author_program=other_program,
+        )
+        note.notes_text = "Test"
+        note.save()
+        self.assertEqual(note.author_role, "program_manager")
+
+    def test_missing_role_handled_gracefully(self):
+        """No UserProgramRole → author_role stays blank."""
+        other_user = User.objects.create_user(
+            username="norole", password="test123",
+        )
+        note = ProgressNote(
+            client_file=self.client_file,
+            note_type="quick",
+            author=other_user,
+            author_program=self.program,
+        )
+        note.notes_text = "Test"
+        note.save()
+        self.assertEqual(note.author_role, "")
+
+    def test_no_author_program_stays_blank(self):
+        """No author_program → author_role stays blank."""
+        note = ProgressNote(
+            client_file=self.client_file,
+            note_type="quick",
+            author=self.user,
+        )
+        note.notes_text = "Test"
+        note.save()
+        self.assertEqual(note.author_role, "")

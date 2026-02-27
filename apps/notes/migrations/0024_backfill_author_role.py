@@ -43,7 +43,7 @@ def reverse_backfill(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         ("notes", "0023_session4_achievement_role"),
-        ("programs", "0009_session_1_cids_metadata"),
+        ("programs", "0009_program_cids_sector_code_program_description_fr_and_more"),
     ]
 
     operations = [
