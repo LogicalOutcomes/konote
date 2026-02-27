@@ -1334,14 +1334,14 @@ details.search-filters-panel[open] summary {
     line-height: 1.5;
 }
 .filter-btn:hover {
-    border-color: var(--kn-primary-active, var(--kn-primary, #0d7377));
-    color: var(--kn-primary-active, var(--kn-primary, #0d7377));
+    border-color: var(--kn-primary-active, var(--kn-primary, #3176aa));
+    color: var(--kn-primary-active, var(--kn-primary, #3176aa));
 }
 .filter-btn[aria-pressed="true"],
 .filter-btn.filter-active {
-    background-color: var(--kn-primary, #0d7377);
+    background-color: var(--kn-primary, #3176aa);
     color: #fff;
-    border-color: var(--kn-primary, #0d7377);
+    border-color: var(--kn-primary, #3176aa);
 }
 
 /* ---- Alert cards ---- */
@@ -1547,9 +1547,9 @@ details.search-filters-panel[open] summary {
     outline-offset: 2px;
 }
 .demo-btn-portal {
-    background: var(--kn-primary, #0d7377);
+    background: var(--kn-primary, #3176aa);
     color: #fff;
-    border-color: var(--kn-primary, #0d7377);
+    border-color: var(--kn-primary, #3176aa);
     grid-column: 1 / -1;
     max-width: 16rem;
     margin: 0 auto;

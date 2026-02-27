@@ -31,7 +31,7 @@
     clip: auto;
     clip-path: none;
     white-space: normal;
-    background: #0d7377;
+    background: #3176aa;
     color: #fff;
     z-index: 10001;
     font-size: 1rem;
@@ -53,8 +53,8 @@
 }
 .portal-lang-nav .lang-link {
     background: none;
-    border: 2px solid #0d7377;
-    color: #0d7377;
+    border: 2px solid #3176aa;
+    color: #3176aa;
     padding: 0.25rem 0.75rem;
     border-radius: 4px;
     cursor: pointer;
@@ -65,7 +65,7 @@
 }
 .portal-lang-nav .lang-link:hover,
 .portal-lang-nav .lang-link:focus {
-    background: #0d7377;
+    background: #3176aa;
     color: #fff;
 }
 
@@ -167,7 +167,7 @@
     color: var(--pico-del-color, #c62828);
 }
 .portal-logout-btn:focus-visible {
-    outline: 2px solid #0d7377;
+    outline: 2px solid #3176aa;
     outline-offset: 2px;
 }
 
@@ -199,7 +199,7 @@ a.portal-card {
 }
 a.portal-card:hover,
 a.portal-card:focus-visible {
-    border-color: #0d7377;
+    border-color: #3176aa;
     box-shadow: 0 2px 8px rgba(13, 115, 119, 0.12);
 }
 a.portal-card article {
@@ -213,7 +213,7 @@ a.portal-card article {
 .portal-card svg {
     display: block;
     margin-bottom: 0.5rem;
-    color: #0d7377;
+    color: #3176aa;
 }
 .portal-card h2 {
     margin-top: 0;
@@ -295,7 +295,7 @@ a.portal-card article {
     padding: 0;
 }
 .portal-banner-dismiss:focus-visible {
-    outline: 2px solid #0d7377;
+    outline: 2px solid #3176aa;
     outline-offset: 2px;
 }
 .portal-new-detail {
@@ -319,7 +319,7 @@ a.portal-card article {
 }
 .portal-staff-note {
     background: #f0f7f7;
-    border-left: 4px solid #0d7377;
+    border-left: 4px solid #3176aa;
     padding: 0.75rem 1rem;
     margin-bottom: 0.75rem;
     border-radius: 0 4px 4px 0;
@@ -335,7 +335,7 @@ a.portal-card article {
 .portal-metric-goal {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--pico-primary, #0d7377);
+    color: var(--pico-primary, #3176aa);
     margin-bottom: 0.25rem;
 }
 

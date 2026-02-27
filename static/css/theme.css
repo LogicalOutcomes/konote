@@ -6,11 +6,11 @@
    ============================================ */
 
 :root {
-    /* --- Brand --- */
-    --kn-primary: #0d7377;
-    --kn-primary-hover: #0a5c5f;
-    --kn-primary-focus: rgba(13, 115, 119, 0.25);
-    --kn-primary-subtle: rgba(13, 115, 119, 0.08);
+    /* --- Brand (matches KoNote logo blue, WCAG AA 4.88:1 on white) --- */
+    --kn-primary: #3176aa;
+    --kn-primary-hover: #296490;
+    --kn-primary-focus: rgba(49, 118, 170, 0.25);
+    --kn-primary-subtle: rgba(49, 118, 170, 0.08);
     --kn-secondary: #4a5568;
 
     /* --- Typography (tighter than Pico defaults) --- */
@@ -93,7 +93,7 @@
    This block ensures KoNote's custom --kn-* variables also adapt. */
 @media (prefers-color-scheme: dark) {
     :root {
-        --kn-primary-subtle: rgba(13, 115, 119, 0.15);
+        --kn-primary-subtle: rgba(49, 118, 170, 0.15);
 
         --kn-success-bg: #1a3a2a;
         --kn-success-fg: #a3d9b1;
@@ -120,7 +120,7 @@
         --kn-text-secondary: #cbd5e0;
         --kn-text-muted: #b8c5d4;   /* Brightened for WCAG AA (5.2:1 on #1e2533) */
         --kn-text-faint: #8e9bb0;   /* Brightened for WCAG AA (4.6:1 on #1e2533) */
-        --kn-primary-active: #3ec0c4;  /* Lighter teal for dark-mode active states (6.4:1 on #1e2533, 7.4:1 on #13171f) */
+        --kn-primary-active: #44a5ed;  /* Lighter blue for dark-mode active states (5.74:1 on #1e2533) */
 
         --kn-shadow-card: 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 0 0.5px rgba(255, 255, 255, 0.05);
         --kn-shadow-card-hover: 0 2px 8px rgba(0, 0, 0, 0.3), 0 0 0 0.5px rgba(255, 255, 255, 0.08);
