@@ -347,6 +347,11 @@ class ServiceEpisode(models.Model):
         ("cancelled", _("Cancelled")),
     ]
 
+    # Statuses that grant staff access to the client file.
+    # Used by middleware, access.py, client list, and search.
+    # Update this ONE place when adding new accessible statuses.
+    ACCESSIBLE_STATUSES = ["active", "on_hold"]
+
     EPISODE_TYPE_CHOICES = [
         ("new_intake", _("New Intake")),
         ("re_enrolment", _("Re-enrolment")),

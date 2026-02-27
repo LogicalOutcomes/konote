@@ -8,7 +8,7 @@ import logging
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
-from apps.clients.models import ClientFile, ClientProgramEnrolment
+from apps.clients.models import ClientFile, ClientProgramEnrolment, ServiceEpisode
 
 from .models import Program, UserProgramRole
 
@@ -72,7 +72,7 @@ def get_author_program(user, client, permission_key=None):
     ).values_list("program_id", "role")
     client_program_ids = set(
         ClientProgramEnrolment.objects.filter(
-            client_file=client, status__in=["active", "on_hold"]
+            client_file=client, status__in=ServiceEpisode.ACCESSIBLE_STATUSES
         ).values_list("program_id", flat=True)
     )
 
@@ -154,7 +154,7 @@ def get_client_or_403(request, client_id):
     )
     client_program_ids = set(
         ClientProgramEnrolment.objects.filter(
-            client_file=client, status__in=["active", "on_hold"]
+            client_file=client, status__in=ServiceEpisode.ACCESSIBLE_STATUSES
         ).values_list("program_id", flat=True)
     )
     if user_program_ids & client_program_ids:
@@ -214,7 +214,7 @@ def _resolve_viewing_program(user, client, active_program_ids=None):
         single_pid = next(iter(active_program_ids))
         client_program_ids = set(
             ClientProgramEnrolment.objects.filter(
-                client_file=client, status__in=["active", "on_hold"]
+                client_file=client, status__in=ServiceEpisode.ACCESSIBLE_STATUSES
             ).values_list("program_id", flat=True)
         )
         if single_pid in client_program_ids:

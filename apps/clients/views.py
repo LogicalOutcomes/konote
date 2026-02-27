@@ -19,7 +19,7 @@ from apps.programs.models import Program, UserProgramRole
 
 from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm, DischargeForm, OnHoldForm
 from .helpers import get_client_tab_counts, get_document_folder_url
-from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldDefinition, CustomFieldGroup, ServiceEpisodeStatusChange
+from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldDefinition, CustomFieldGroup, ServiceEpisode, ServiceEpisodeStatusChange
 from .validators import (
     normalize_phone_number, normalize_postal_code,
     validate_phone_number, validate_postal_code,
@@ -70,7 +70,7 @@ def _get_accessible_clients(user, active_program_ids=None):
     else:
         program_ids = UserProgramRole.objects.filter(user=user, status="active").values_list("program_id", flat=True)
     client_ids = ClientProgramEnrolment.objects.filter(
-        program_id__in=program_ids, status="active"
+        program_id__in=program_ids, status__in=ServiceEpisode.ACCESSIBLE_STATUSES
     ).values_list("client_file_id", flat=True)
     # Filter by demo status using the helper function
     base_queryset = get_client_queryset(user)
@@ -285,7 +285,7 @@ def client_list(request):
         # Prevents leaking confidential program names.
         programs = [
             e.program for e in client.enrolments.all()
-            if e.status == "active" and e.program_id in user_program_ids
+            if e.status in ServiceEpisode.ACCESSIBLE_STATUSES and e.program_id in user_program_ids
         ]
 
         # Apply program filter
@@ -1415,7 +1415,7 @@ def client_search(request):
         if date_to_parsed and client.created_at.date() > date_to_parsed:
             continue
 
-        programs = [e.program for e in client.enrolments.all() if e.status == "active"]
+        programs = [e.program for e in client.enrolments.all() if e.status in ServiceEpisode.ACCESSIBLE_STATUSES]
 
         # Apply program filter
         if program_filter:
