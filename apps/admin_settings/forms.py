@@ -1,4 +1,6 @@
 """Forms for admin settings views."""
+import re
+
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
@@ -201,6 +203,12 @@ class InstanceSettingsForm(forms.Form):
         help_text=_("Gap between time slots in the meeting picker."),
     )
 
+    def clean_brand_color(self):
+        value = self.cleaned_data.get("brand_color", "").strip()
+        if value and not re.match(r'^#[0-9a-fA-F]{6}$', value):
+            raise forms.ValidationError(_("Enter a valid hex colour (e.g. #3176aa)."))
+        return value
+
     SETTING_KEYS = [
         "access_tier",
         "product_name", "support_email", "logo_url", "brand_color",
@@ -222,6 +230,13 @@ class InstanceSettingsForm(forms.Form):
 
     def save(self):
         from .models import InstanceSetting
+
+        # Derive brand colour variants first (crash early on bad input)
+        brand_color = self.cleaned_data.get("brand_color", "").strip()
+        derived = {}
+        if brand_color and re.match(r'^#[0-9a-fA-F]{6}$', brand_color):
+            derived = _derive_brand_colours(brand_color)
+
         for key in self.SETTING_KEYS:
             value = str(self.cleaned_data.get(key, "")).strip()
             if value:
@@ -231,10 +246,8 @@ class InstanceSettingsForm(forms.Form):
             else:
                 InstanceSetting.objects.filter(setting_key=key).delete()
 
-        # Derive brand colour variants when a custom colour is set
-        brand_color = self.cleaned_data.get("brand_color", "").strip()
-        if brand_color and len(brand_color) == 7 and brand_color.startswith("#"):
-            derived = _derive_brand_colours(brand_color)
+        # Save derived brand colour variants
+        if derived:
             for dk, dv in derived.items():
                 InstanceSetting.objects.update_or_create(
                     setting_key=dk, defaults={"setting_value": dv}
