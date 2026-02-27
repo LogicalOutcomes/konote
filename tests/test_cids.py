@@ -638,3 +638,359 @@ class StandardsAlignmentDataTest(TestCase):
         self.assertEqual(data["total_count"], 2)
         self.assertEqual(data["mapped_count"], 1)
         self.assertEqual(data["sdg_summary"], {1: 1, 11: 1})
+
+
+# ══════════════════════════════════════════════════════════════════════
+# Session 3: ServiceEpisode tests
+# ══════════════════════════════════════════════════════════════════════
+
+from apps.clients.models import (
+    ClientFile, ClientProgramEnrolment, ServiceEpisode,
+    ServiceEpisodeStatusChange,
+)
+
+
+# ── ServiceEpisode model tests ────────────────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class ServiceEpisodeModelTest(TestCase):
+    """Test ServiceEpisode model (renamed from ClientProgramEnrolment)."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.client_file = ClientFile.objects.create()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "User"
+        self.client_file.save()
+        self.program = Program.objects.create(name="Test Program")
+        self.program2 = Program.objects.create(name="Other Program")
+
+    def test_alias_still_works(self):
+        """ClientProgramEnrolment alias refers to the same class."""
+        self.assertIs(ClientProgramEnrolment, ServiceEpisode)
+
+    def test_new_status_choices(self):
+        """Status field accepts all new choices."""
+        for status_val in ("planned", "waitlist", "active", "on_hold", "finished", "cancelled"):
+            ep = ServiceEpisode.objects.create(
+                client_file=self.client_file,
+                program=self.program,
+                status=status_val,
+            )
+            ep.refresh_from_db()
+            self.assertEqual(ep.status, status_val)
+            ep.delete()
+
+    def test_default_status_is_active(self):
+        ep = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+        )
+        self.assertEqual(ep.status, "active")
+
+    def test_episode_type_auto_derives_new_intake(self):
+        """First episode for client × program auto-derives as new_intake."""
+        ep = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+        )
+        self.assertEqual(ep.episode_type, "new_intake")
+
+    def test_episode_type_auto_derives_re_enrolment(self):
+        """Second episode after a finished one auto-derives as re_enrolment."""
+        ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+            status="finished",
+        )
+        ep2 = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+        )
+        self.assertEqual(ep2.episode_type, "re_enrolment")
+
+    def test_episode_type_auto_derives_transfer_in(self):
+        """Episode after a transferred one from another program."""
+        ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+            status="finished",
+            end_reason="transferred",
+        )
+        ep2 = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program2,
+        )
+        self.assertEqual(ep2.episode_type, "transfer_in")
+
+    def test_episode_type_preserves_admin_set(self):
+        """Crisis and short_term are not overridden by auto-derivation."""
+        ep = ServiceEpisode(
+            client_file=self.client_file,
+            program=self.program,
+            episode_type="crisis",
+        )
+        derived = ep.derive_episode_type()
+        self.assertEqual(derived, "crisis")
+
+    def test_new_fields_nullable(self):
+        """All new fields default to blank/null."""
+        ep = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+        )
+        self.assertEqual(ep.status_reason, "")
+        self.assertEqual(ep.referral_source, "")
+        self.assertEqual(ep.end_reason, "")
+        self.assertIsNone(ep.primary_worker)
+        self.assertIsNone(ep.ended_at)
+
+    def test_started_at_auto_set(self):
+        """started_at auto-sets on create."""
+        ep = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+        )
+        self.assertIsNotNone(ep.started_at)
+
+    def test_db_table_unchanged(self):
+        """Table name stays as client_program_enrolments."""
+        self.assertEqual(ServiceEpisode._meta.db_table, "client_program_enrolments")
+
+    def test_str_representation(self):
+        ep = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+        )
+        self.assertIn("→", str(ep))
+
+
+# ── ServiceEpisodeStatusChange tests ───────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class StatusChangeTest(TestCase):
+    def setUp(self):
+        enc_module._fernet = None
+        self.client_file = ClientFile.objects.create()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "User"
+        self.client_file.save()
+        self.program = Program.objects.create(name="Test Program")
+        self.user = User.objects.create_user(
+            username="worker", password="test123",
+        )
+
+    def test_create_status_change(self):
+        ep = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+        )
+        sc = ServiceEpisodeStatusChange.objects.create(
+            episode=ep,
+            status="on_hold",
+            reason="Summer break",
+            changed_by=self.user,
+        )
+        self.assertEqual(sc.status, "on_hold")
+        self.assertEqual(sc.reason, "Summer break")
+        self.assertEqual(sc.changed_by, self.user)
+
+    def test_cascade_delete(self):
+        """Deleting episode cascades to status changes."""
+        ep = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+        )
+        ServiceEpisodeStatusChange.objects.create(
+            episode=ep, status="active",
+        )
+        ServiceEpisodeStatusChange.objects.create(
+            episode=ep, status="on_hold",
+        )
+        self.assertEqual(ServiceEpisodeStatusChange.objects.count(), 2)
+        ep.delete()
+        self.assertEqual(ServiceEpisodeStatusChange.objects.count(), 0)
+
+    def test_ordering(self):
+        """Status changes are ordered by changed_at."""
+        ep = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+        )
+        sc1 = ServiceEpisodeStatusChange.objects.create(
+            episode=ep, status="active",
+        )
+        sc2 = ServiceEpisodeStatusChange.objects.create(
+            episode=ep, status="on_hold",
+        )
+        changes = list(ep.status_changes.values_list("status", flat=True))
+        self.assertEqual(changes, ["active", "on_hold"])
+
+    def test_str_representation(self):
+        ep = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+        )
+        sc = ServiceEpisodeStatusChange.objects.create(
+            episode=ep, status="finished",
+        )
+        self.assertIn("finished", str(sc))
+
+
+# ── Discharge / On-hold / Resume view tests ───────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class DischargeViewTest(TestCase):
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.user = User.objects.create_user(
+            username="pm", password="test123",
+        )
+        self.program = Program.objects.create(name="Test Program")
+        from apps.programs.models import UserProgramRole
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role="program_manager",
+        )
+        self.client_file = ClientFile.objects.create()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "User"
+        self.client_file.save()
+        self.episode = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+            status="active",
+        )
+        self.http_client = Client()
+        self.http_client.force_login(self.user)
+
+    def test_discharge_sets_finished(self):
+        resp = self.http_client.post(
+            f"/participants/{self.client_file.pk}/discharge/",
+            {"program_id": self.program.pk, "end_reason": "goals_met"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.episode.refresh_from_db()
+        self.assertEqual(self.episode.status, "finished")
+        self.assertEqual(self.episode.end_reason, "goals_met")
+        self.assertIsNotNone(self.episode.ended_at)
+
+    def test_discharge_creates_status_change(self):
+        self.http_client.post(
+            f"/participants/{self.client_file.pk}/discharge/",
+            {"program_id": self.program.pk, "end_reason": "withdrew", "status_reason": "Personal reasons"},
+        )
+        sc = ServiceEpisodeStatusChange.objects.filter(
+            episode=self.episode, status="finished",
+        ).first()
+        self.assertIsNotNone(sc)
+        self.assertIn("Withdrew", sc.reason)
+
+    def test_discharge_requires_end_reason(self):
+        resp = self.http_client.post(
+            f"/participants/{self.client_file.pk}/discharge/",
+            {"program_id": self.program.pk},
+        )
+        # Should re-render form (200), not redirect (302)
+        self.assertEqual(resp.status_code, 200)
+        self.episode.refresh_from_db()
+        self.assertEqual(self.episode.status, "active")  # unchanged
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class OnHoldResumeViewTest(TestCase):
+    databases = {"default", "audit"}
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.user = User.objects.create_user(
+            username="pm", password="test123",
+        )
+        self.program = Program.objects.create(name="Test Program")
+        from apps.programs.models import UserProgramRole
+        UserProgramRole.objects.create(
+            user=self.user, program=self.program, role="program_manager",
+        )
+        self.client_file = ClientFile.objects.create()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "User"
+        self.client_file.save()
+        self.episode = ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+            status="active",
+        )
+        self.http_client = Client()
+        self.http_client.force_login(self.user)
+
+    def test_on_hold(self):
+        resp = self.http_client.post(
+            f"/participants/{self.client_file.pk}/on-hold/",
+            {"program_id": self.program.pk, "status_reason": "Summer break"},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.episode.refresh_from_db()
+        self.assertEqual(self.episode.status, "on_hold")
+        self.assertEqual(self.episode.status_reason, "Summer break")
+
+    def test_resume(self):
+        self.episode.status = "on_hold"
+        self.episode.save()
+        resp = self.http_client.post(
+            f"/participants/{self.client_file.pk}/resume/",
+            {"program_id": self.program.pk},
+        )
+        self.assertEqual(resp.status_code, 302)
+        self.episode.refresh_from_db()
+        self.assertEqual(self.episode.status, "active")
+
+    def test_on_hold_creates_status_change(self):
+        self.http_client.post(
+            f"/participants/{self.client_file.pk}/on-hold/",
+            {"program_id": self.program.pk, "status_reason": "Vacation"},
+        )
+        sc = ServiceEpisodeStatusChange.objects.filter(
+            episode=self.episode, status="on_hold",
+        ).first()
+        self.assertIsNotNone(sc)
+        self.assertEqual(sc.reason, "Vacation")
+
+    def test_resume_creates_status_change(self):
+        self.episode.status = "on_hold"
+        self.episode.save()
+        self.http_client.post(
+            f"/participants/{self.client_file.pk}/resume/",
+            {"program_id": self.program.pk},
+        )
+        sc = ServiceEpisodeStatusChange.objects.filter(
+            episode=self.episode, status="active",
+        ).first()
+        self.assertIsNotNone(sc)
+
+
+# ── Data migration test ──────────────────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class DataMigrationLogicTest(TestCase):
+    """Test the migration logic that converts enrolled→active."""
+
+    def setUp(self):
+        enc_module._fernet = None
+
+    def test_new_episodes_use_active_not_enrolled(self):
+        """After migration, new episodes default to 'active'."""
+        cf = ClientFile.objects.create()
+        cf.first_name = "Test"
+        cf.last_name = "User"
+        cf.save()
+        program = Program.objects.create(name="Test")
+        ep = ServiceEpisode.objects.create(
+            client_file=cf, program=program,
+        )
+        self.assertEqual(ep.status, "active")
+        self.assertNotEqual(ep.status, "enrolled")

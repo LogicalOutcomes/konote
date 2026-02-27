@@ -239,7 +239,7 @@ class ProgramAccessMiddleware:
 
         client_program_ids = set(
             ClientProgramEnrolment.objects.filter(
-                client_file_id=client_id, status="active"
+                client_file_id=client_id, status__in=["active", "on_hold"]
             ).values_list("program_id", flat=True)
         )
         return bool(user_program_ids & client_program_ids)
