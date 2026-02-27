@@ -87,7 +87,7 @@ A single folder per client with program subfolders would require per-folder perm
 
 **Future path:** If demand justifies it, Microsoft Graph API integration could enable automatic folder creation in SharePoint. But the link-broker approach is correct for launch.
 
-### 6. "Digital toolkit handoff" workflow for Google Drive
+### 7. "Digital toolkit handoff" workflow for Google Drive
 
 **The workflow:**
 
@@ -105,16 +105,16 @@ A single folder per client with program subfolders would require per-folder perm
 
 ### Data model changes
 
-- Add `document_folder_url` field to the program enrolment model (for Google Drive portal link)
-- Existing SharePoint URL template on program settings stays (per-program template with `{record_id}` placeholder)
-- Both URL fields must be **encrypted at rest** (Fernet/AES, consistent with other PII fields)
+- Add `document_folder_url` URLField to the program enrolment model (for Google Drive portal link — plain URLField, not encrypted; see decision #5)
+- Add `sharepoint_url_template` CharField(max_length=1000) to Program model (per-program template with `{record_id}` placeholder)
 - Both must be **audit-logged** when accessed/displayed
+- Add Record ID format validator (URL-safe characters only)
 
 ### URL validation on input
 
-- **SharePoint:** Must match `https://*.sharepoint.com/*`
+- **SharePoint:** Must start with `https://`, must contain `{record_id}`, must NOT be a OneDrive URL (`-my.sharepoint.com` or `/personal/`). Domain allowlist enforcement stays in the security audit command (to support custom domains, GCC tenants, vanity URLs).
 - **Google Drive:** Must match `https://drive.google.com/drive/folders/*` (folder URL, not doc or search URL)
-- Domain allowlist already exists in the security audit command — extend it
+- Validation enforced at **model level** (`clean()` methods), not just form level
 
 ### Portal UI
 
@@ -197,7 +197,7 @@ If the worker created the folder, they are the owner. Removing themselves withou
 
 - **Program-centric separation** enforces PHIPA s. 17(1) purpose limitation structurally — staff in Program A cannot access Program B's documents
 - **KoNote as link broker** limits custodian obligations — file contents remain under the custodianship of whoever manages SharePoint/Drive
-- **Folder URLs are protected metadata** — they encode program membership and must be encrypted, access-controlled, and audit-logged
+- **Folder URLs are protected metadata** — SharePoint URL templates encode organizational structure; Google Drive URLs are opaque but still access-controlled and audit-logged (not encrypted — see decision #5)
 - **Google Drive and data residency** — Google Drive data may be stored outside Canada. The design mitigates this by framing Google Drive as participant-owned content (personal working documents), not agency health records. Staff must not upload clinical documents to participant Google Drive folders. Document this in training materials.
 - **Referral disclosures** — when Program A writes a referral summary for Program B, that's a disclosure under PHIPA requiring participant consent or a permitted purpose under s. 39. KoNote's transfer workflow should prompt for consent confirmation.
 - **Retention** — PHIPA s. 13(1) requires a retention policy; s. 13(2) requires secure disposal after the retention period. Agencies must set SharePoint retention policies accordingly (7-year minimum typical for health information custodians).
@@ -218,6 +218,6 @@ If the worker created the folder, they are the owner. Removing themselves withou
 2. **Staff UI** — Update client record to show per-program SharePoint buttons; add Google Drive link field to enrolment form
 3. **Portal UI** — Add "Your Documents" link to participant portal, labelled by program
 4. **Validation** — URL format validation on input, domain allowlist enforcement
-5. **Security** — Encrypt URL fields, add audit logging, extend security audit command
+5. **Security** — Add audit logging, extend security audit command, Record ID format validation
 6. **Discharge workflow** — Add Google Drive handoff checklist to discharge process
 7. **Documentation** — SharePoint setup guide, Google Drive setup guide, discharge checklist, retention policy template
