@@ -104,6 +104,7 @@ class MetricDefinitionForm(forms.ModelForm):
     """Form for creating/editing a metric definition.
 
     Pass requesting_user to scope owning_program choices for PMs.
+    Includes CIDS metadata fields with dropdowns populated from CidsCodeList.
     """
 
     class Meta:
@@ -115,6 +116,10 @@ class MetricDefinitionForm(forms.ModelForm):
             "achievement_options", "achievement_success_values",
             "target_rate", "target_band_high_pct",
             "owning_program",
+            # CIDS metadata fields
+            "iris_metric_code", "sdg_goals",
+            "cids_indicator_uri", "cids_unit_description",
+            "cids_defined_by", "cids_has_baseline", "cids_theme_override",
         ]
         widgets = {
             "name": forms.TextInput(attrs={"placeholder": _("Metric name")}),
@@ -153,6 +158,50 @@ class MetricDefinitionForm(forms.ModelForm):
             )
             self.fields["owning_program"].empty_label = None
             self.fields["owning_program"].required = True
+
+        # Populate CIDS dropdowns from CidsCodeList (if imported)
+        self._populate_cids_choices()
+
+    def _populate_cids_choices(self):
+        """Populate CIDS dropdown fields from CidsCodeList entries."""
+        from apps.admin_settings.models import CidsCodeList
+
+        # iris_metric_code → Select from IrisMetric53
+        iris_choices = [("", _("— None —"))]
+        iris_entries = CidsCodeList.objects.filter(
+            list_name="IrisMetric53",
+        ).order_by("code")
+        iris_choices += [(e.code, f"{e.code} — {e.label}") for e in iris_entries]
+        self.fields["iris_metric_code"].widget = forms.Select(choices=iris_choices)
+
+        # sdg_goals → SelectMultiple from SDGImpacts
+        sdg_choices = []
+        sdg_entries = CidsCodeList.objects.filter(
+            list_name="SDGImpacts",
+        ).order_by("code")
+        if sdg_entries.exists():
+            sdg_choices = [(e.code, f"SDG {e.code}: {e.label}") for e in sdg_entries]
+        else:
+            # Fallback: SDG goals 1-17
+            sdg_choices = [(str(i), f"SDG {i}") for i in range(1, 18)]
+        self.fields["sdg_goals"].widget = forms.CheckboxSelectMultiple(
+            choices=sdg_choices,
+        )
+        # Set initial value: convert ints to strings for the widget
+        if self.instance and self.instance.pk and self.instance.sdg_goals:
+            self.initial["sdg_goals"] = [str(g) for g in self.instance.sdg_goals]
+
+    def clean_sdg_goals(self):
+        """Convert multi-select string values to a list of integers."""
+        value = self.cleaned_data.get("sdg_goals")
+        if not value:
+            return []
+        if isinstance(value, list):
+            try:
+                return [int(v) for v in value]
+            except (ValueError, TypeError):
+                raise forms.ValidationError(_("SDG goals must be numbers 1–17."))
+        return value
 
     def _clean_json_list_field(self, field_name):
         """Validate that a field contains a JSON list (or is empty)."""
