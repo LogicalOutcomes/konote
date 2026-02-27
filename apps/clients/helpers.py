@@ -1,4 +1,6 @@
 """Helper functions for client-related operations."""
+from urllib.parse import quote
+
 from django.core.cache import cache
 
 
@@ -31,7 +33,8 @@ def get_document_folder_url(client):
     if not client.record_id:
         return None
 
-    return template.replace("{record_id}", client.record_id)
+    encoded_id = quote(client.record_id, safe="")
+    return template.replace("{record_id}", encoded_id)
 
 
 def get_document_storage_info():
