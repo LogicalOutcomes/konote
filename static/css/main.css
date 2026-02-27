@@ -1483,7 +1483,7 @@ details.search-filters-panel[open] summary {
     gap: 0.4rem;
 }
 .demo-grid form {
-    margin-bottom: 0;
+    margin-bottom: 0 !important;
 }
 .demo-grid form:only-child {
     grid-column: 1 / -1;
