@@ -266,6 +266,36 @@ class PlanTarget(models.Model):
         help_text=_("CIDS outcome @id."),
     )
 
+    # ── Achievement status (Phase F2) ──────────────────────────────────
+    ACHIEVEMENT_STATUS_CHOICES = [
+        ("in_progress", _("In progress")),
+        ("improving", _("Improving")),
+        ("worsening", _("Worsening")),
+        ("no_change", _("No change")),
+        ("achieved", _("Achieved")),
+        ("sustaining", _("Sustaining")),
+        ("not_achieved", _("Not achieved")),
+        ("not_attainable", _("Not attainable")),
+    ]
+    ACHIEVEMENT_SOURCE_CHOICES = [
+        ("auto_computed", _("Auto-computed")),
+        ("worker_assessed", _("Worker assessed")),
+    ]
+
+    achievement_status = models.CharField(
+        max_length=20, blank=True, default="",
+        choices=ACHIEVEMENT_STATUS_CHOICES,
+    )
+    achievement_status_source = models.CharField(
+        max_length=20, blank=True, default="",
+        choices=ACHIEVEMENT_SOURCE_CHOICES,
+    )
+    achievement_status_updated_at = models.DateTimeField(null=True, blank=True)
+    first_achieved_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text=_("When first achieved. Never cleared once set."),
+    )
+
     @property
     def name(self):
         try:

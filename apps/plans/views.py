@@ -407,6 +407,37 @@ def target_status(request, target_id):
     })
 
 
+@login_required
+@requires_permission("plan.edit", _get_program_from_target)
+def target_achievement_override(request, target_id):
+    """HTMX action to override achievement_status (worker-assessed)."""
+    target = get_object_or_404(PlanTarget, pk=target_id)
+    if not _can_edit_plan(request.user, target.client_file):
+        raise PermissionDenied(_("You don't have permission to access this page."))
+
+    if request.method == "POST":
+        new_status = request.POST.get("achievement_status", "")
+        valid_choices = [c[0] for c in PlanTarget.ACHIEVEMENT_STATUS_CHOICES]
+        if new_status in valid_choices:
+            target.achievement_status = new_status
+            target.achievement_status_source = "worker_assessed"
+            target.achievement_status_updated_at = timezone.now()
+            if new_status in ("achieved", "sustaining") and not target.first_achieved_at:
+                target.first_achieved_at = timezone.now()
+            target.save(update_fields=[
+                "achievement_status",
+                "achievement_status_source",
+                "achievement_status_updated_at",
+                "first_achieved_at",
+            ])
+            messages.success(request, _("Achievement status updated."))
+
+    return render(request, "plans/_target.html", {
+        "target": target,
+        "can_edit": True,
+    })
+
+
 # ---------------------------------------------------------------------------
 # Combined goal creation — shared helper + view + autocomplete
 # ---------------------------------------------------------------------------

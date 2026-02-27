@@ -152,6 +152,10 @@ class ProgressNote(models.Model):
     author_program = models.ForeignKey(
         "programs.Program", on_delete=models.SET_NULL, null=True, blank=True
     )
+    author_role = models.CharField(
+        max_length=30, blank=True, default="",
+        help_text=_("Auto-filled from UserProgramRole at note creation."),
+    )
     # Optional circle tag — note appears in circle timeline but access is
     # still governed by client_file's permissions, not the circle's.
     circle = models.ForeignKey(
@@ -297,6 +301,19 @@ class ProgressNote(models.Model):
         app_label = "notes"
         db_table = "progress_notes"
         ordering = ["-created_at"]
+
+    def save(self, *args, **kwargs):
+        # Auto-fill author_role from UserProgramRole on first save
+        if not self.pk and not self.author_role and self.author_id and self.author_program_id:
+            from apps.programs.models import UserProgramRole
+            role_obj = UserProgramRole.objects.filter(
+                user_id=self.author_id,
+                program_id=self.author_program_id,
+                status="active",
+            ).first()
+            if role_obj:
+                self.author_role = role_obj.role
+        super().save(*args, **kwargs)
 
     def __str__(self):
         # Build date portion

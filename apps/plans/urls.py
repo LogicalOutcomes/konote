@@ -19,4 +19,5 @@ urlpatterns = [
     path("targets/<int:target_id>/status/", views.target_status, name="target_status"),
     path("targets/<int:target_id>/metrics/", views.target_metrics, name="target_metrics"),
     path("targets/<int:target_id>/history/", views.target_history, name="target_history"),
+    path("targets/<int:target_id>/achievement/", views.target_achievement_override, name="target_achievement_override"),
 ]
