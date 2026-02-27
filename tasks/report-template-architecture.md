@@ -518,7 +518,7 @@ This means KoNote can serve an unlimited number of different partner dashboard n
 
 ## Connection to Multi-Tenancy Plan
 
-This architecture integrates with the [multi-tenancy implementation plan](prosper-canada/multi-tenancy-implementation-plan.md), but the Partner model works identically whether an agency runs standalone or inside a multi-tenant deployment:
+This architecture integrates with the [multi-tenancy implementation plan](multi-tenancy-implementation-plan.md), but the Partner model works identically whether an agency runs standalone or inside a multi-tenant deployment:
 
 - **Partner** lives in tenant schema → each agency manages their own partners
 - **Partner.consortium** FK points to shared-schema Consortium → enables cross-agency linkage
