@@ -1,7 +1,10 @@
 """Tests for CIDS metadata fields, code lists, taxonomy, and reports."""
+import json
+from io import StringIO
 from unittest.mock import patch, MagicMock
 
 from django.core.exceptions import ValidationError
+from django.core.management import call_command
 from django.test import TestCase, Client, override_settings
 from django.utils import timezone
 from cryptography.fernet import Fernet
@@ -1345,3 +1348,192 @@ class AuthorRoleAutoFillTest(TestCase):
         note.notes_text = "Test"
         note.save()
         self.assertEqual(note.author_role, "")
+
+
+# ── Session 5: JSON-LD Export Tests ─────────────────────────────────
+
+
+@override_settings(FIELD_ENCRYPTION_KEY=TEST_KEY)
+class CidsJsonLdExportTest(TestCase):
+    """Test the CIDS JSON-LD export command."""
+
+    def setUp(self):
+        enc_module._fernet = None
+        self.program = Program.objects.create(
+            name="Youth Services",
+            description="Support program for youth",
+            cids_sector_code="youth_services",
+        )
+        self.org = OrganizationProfile.get_solo()
+        self.org.legal_name = "Test Agency Inc."
+        self.org.operating_name = "Test Agency"
+        self.org.legal_status = "Registered charity"
+        self.org.save()
+
+        self.client_file = ClientFile.objects.create()
+        self.client_file.first_name = "Test"
+        self.client_file.last_name = "Client"
+        self.client_file.save()
+
+        # Create episode for stakeholder count
+        ServiceEpisode.objects.create(
+            client_file=self.client_file,
+            program=self.program,
+            status="active",
+            episode_type="new_intake",
+        )
+
+        self.metric = MetricDefinition.objects.create(
+            name="Wellbeing Score",
+            definition="1-10 scale",
+            cids_indicator_uri="urn:example:indicator:1",
+            cids_unit_description="Scale score",
+        )
+        self.section = PlanSection.objects.create(
+            client_file=self.client_file, program=self.program,
+        )
+        self.target = PlanTarget(
+            plan_section=self.section,
+            client_file=self.client_file,
+        )
+        self.target.name = "Improve wellbeing"
+        self.target.achievement_status = "improving"
+        self.target.save()
+
+    def _run_export(self, **kwargs):
+        """Run the export command and return parsed JSON."""
+        out = StringIO()
+        call_command("export_cids_jsonld", stdout=out, **kwargs)
+        return json.loads(out.getvalue())
+
+    def test_export_produces_valid_json(self):
+        doc = self._run_export()
+        self.assertIn("@context", doc)
+        self.assertIn("@graph", doc)
+
+    def test_export_has_cids_context(self):
+        doc = self._run_export()
+        self.assertEqual(
+            doc["@context"],
+            "https://ontology.commonapproach.org/contexts/cidsContext.jsonld",
+        )
+
+    def test_export_has_version(self):
+        doc = self._run_export()
+        self.assertEqual(doc["cids:version"], "3.2.0")
+
+    def test_organization_node(self):
+        doc = self._run_export()
+        org_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Organization"]
+        self.assertEqual(len(org_nodes), 1)
+        org = org_nodes[0]
+        self.assertEqual(org["hasLegalName"], "Test Agency Inc.")
+        self.assertEqual(org["hasName"], "Test Agency")
+        self.assertEqual(org["cids:hasOrganizationType"], "Registered charity")
+
+    def test_program_node(self):
+        doc = self._run_export()
+        prog_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Program"]
+        self.assertEqual(len(prog_nodes), 1)
+        prog = prog_nodes[0]
+        self.assertEqual(prog["hasName"], "Youth Services")
+        self.assertIn("org:offeredBy", prog)
+
+    def test_outcome_node(self):
+        doc = self._run_export()
+        outcome_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Outcome"]
+        self.assertEqual(len(outcome_nodes), 1)
+        outcome = outcome_nodes[0]
+        self.assertEqual(outcome["hasName"], "Improve wellbeing")
+        self.assertEqual(outcome["cids:achievementStatus"], "improving")
+
+    def test_indicator_node(self):
+        doc = self._run_export()
+        ind_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Indicator"]
+        self.assertTrue(len(ind_nodes) >= 1)
+        ind = ind_nodes[0]
+        self.assertEqual(ind["hasName"], "Wellbeing Score")
+        self.assertEqual(ind["cids:unitDescription"], "Scale score")
+
+    def test_beneficial_stakeholder_is_group_not_individual(self):
+        """BeneficialStakeholder must be a cohort, never an individual client."""
+        doc = self._run_export()
+        sh_nodes = [
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:BeneficialStakeholder"
+        ]
+        self.assertTrue(len(sh_nodes) >= 1)
+        sh = sh_nodes[0]
+        # Must describe a group, not contain PII
+        self.assertIn("Participants in", sh["hasName"])
+        self.assertNotIn("Test", sh["hasName"])  # No client name
+        # Must have stakeholder size as i72:Measure
+        self.assertIn("cids:hasStakeholderSize", sh)
+        self.assertEqual(
+            sh["cids:hasStakeholderSize"]["@type"], "i72:Measure",
+        )
+
+    def test_i72_measure_wrapping(self):
+        """Numerical values must be wrapped in i72:Measure with string values."""
+        doc = self._run_export()
+        sh_nodes = [
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:BeneficialStakeholder"
+        ]
+        measure = sh_nodes[0]["cids:hasStakeholderSize"]
+        self.assertEqual(measure["@type"], "i72:Measure")
+        # Value must be xsd:string, not number literal
+        self.assertIsInstance(measure["i72:hasNumericalValue"], str)
+
+    def test_no_individual_pii_in_export(self):
+        """Export must not contain any individual client names."""
+        doc = self._run_export()
+        export_str = json.dumps(doc)
+        self.assertNotIn("Test Client", export_str)
+
+    def test_stakeholder_outcome_junction(self):
+        doc = self._run_export()
+        so_nodes = [
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:StakeholderOutcome"
+        ]
+        self.assertTrue(len(so_nodes) >= 1)
+        so = so_nodes[0]
+        self.assertIn("cids:forStakeholder", so)
+        self.assertIn("cids:forOutcome", so)
+
+    def test_impact_report_has_scale(self):
+        doc = self._run_export()
+        impact_nodes = [
+            n for n in doc["@graph"]
+            if n.get("@type") == "cids:ImpactReport"
+        ]
+        self.assertTrue(len(impact_nodes) >= 1)
+        impact = impact_nodes[0]
+        self.assertIn("cids:hasImpactScale", impact)
+        self.assertEqual(
+            impact["cids:hasImpactScale"]["@type"], "i72:Measure",
+        )
+
+    def test_program_filter(self):
+        """--program-id filters to a single program."""
+        Program.objects.create(name="Other Program")
+        doc = self._run_export(program_id=self.program.pk)
+        prog_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Program"]
+        self.assertEqual(len(prog_nodes), 1)
+        self.assertEqual(prog_nodes[0]["hasName"], "Youth Services")
+
+    def test_theme_nodes_from_code_list(self):
+        """Theme nodes are exported from CidsCodeList entries."""
+        CidsCodeList.objects.create(
+            list_name="IRISImpactTheme",
+            code="THEME01",
+            label="Education",
+            specification_uri="urn:iris:theme:education",
+        )
+        doc = self._run_export()
+        theme_nodes = [n for n in doc["@graph"] if n.get("@type") == "cids:Theme"]
+        self.assertTrue(len(theme_nodes) >= 1)
+        theme = theme_nodes[0]
+        self.assertEqual(theme["hasName"], "Education")
+        self.assertEqual(theme["@id"], "urn:iris:theme:education")

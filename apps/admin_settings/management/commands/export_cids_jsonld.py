@@ -79,10 +79,10 @@ class Command(BaseCommand):
             org_node["hasName"] = org.operating_name
         if org.description:
             org_node["hasDescription"] = org.description
-        if org.cids_org_type:
-            org_node["cids:hasOrganizationType"] = org.cids_org_type
-        if org.jurisdiction:
-            org_node["org:hasJurisdiction"] = org.jurisdiction
+        if org.legal_status:
+            org_node["cids:hasOrganizationType"] = org.legal_status
+        if org.province:
+            org_node["org:hasJurisdiction"] = f"{org.province}, {org.country}"
         graph.append(org_node)
 
         # ── Programs ─────────────────────────────────────────────────
@@ -98,8 +98,6 @@ class Command(BaseCommand):
                 prog_node["hasDescription"] = program.description
             if program.cids_sector_code:
                 prog_node["cids:hasSectorCode"] = program.cids_sector_code
-            if program.cids_service_type:
-                prog_node["cids:hasServiceType"] = program.cids_service_type
 
             # BeneficialStakeholder (cohort-level, NOT individual)
             episode_stats = ServiceEpisode.objects.filter(
@@ -249,7 +247,7 @@ class Command(BaseCommand):
         for theme in themes:
             theme_id = f"urn:konote:theme:{theme.pk}"
             theme_node = {
-                "@id": theme.uri or theme_id,
+                "@id": theme.specification_uri or theme_id,
                 "@type": "cids:Theme",
                 "hasName": theme.label,
             }
