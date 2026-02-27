@@ -19,7 +19,7 @@ We're implementing CIDS Phase 1 metadata fields. This is step 1 of the interleav
 1. Read these files in order — **all five are required before writing any code**:
    - `tasks/fhir-informed-data-modelling.md` — the full implementation plan (focus on the REMOVED Phase F0 section — understand WHY outcome_domain was dropped)
    - `tasks/design-rationale/fhir-informed-modelling.md` — anti-patterns and trade-offs (DO NOT violate these). Pay special attention to the Taxonomy Panel addendum.
-   - `tasks/cids-json-ld-export.md` — Phase 1 fields (sections 1a through 1d)
+   - `tasks/cids-json-ld-export.md` — Phase 1 fields (sections 1a through 1d). **Note:** The CIDS plan lists `cids_theme` (Phase 1b) and `cids_impact_theme` (Phase 1d) — **both are superseded** by the taxonomy panel decision. Follow the field tables in this prompt instead.
    - `tasks/cids-plan-validation.md` — corrections to the CIDS plan
    - `CLAUDE.md` — project conventions and development rules
 
@@ -90,6 +90,7 @@ Implement singleton with a `get_solo()` class method or similar pattern. Check h
 - Author role (Phase F3) — that's Session 4
 - CidsCodeList import (CIDS Phase 2) — that's Session 2
 - Admin UI dropdowns (CIDS Phase 2) — that's Session 2
+- **CIDS theme derivation will be incomplete after this session.** Custom metrics without an `iris_metric_code` will have no auto-derived theme until Session 2 adds the taxonomy mapping layer. This is expected — do not try to solve it.
 
 #### Rules
 
@@ -149,20 +150,15 @@ We're implementing CIDS Phase 2 (code list import + taxonomy mapping) and Phase 
 
 `unique_together = [("list_name", "code")]`
 
-**New model: `TaxonomyMapping`** — supports multiple external taxonomies per metric:
+**New model: `TaxonomyMapping`** — supports multiple external taxonomies per metric.
 
-| Field | Type | Notes |
-|---|---|---|
-| `content_type` | FK to ContentType | Generic FK — allows mapping metrics, programs, or targets |
-| `object_id` | PositiveIntegerField | |
-| `taxonomy` | CharField(max_length=100) | Which external system: "cids_iris", "united_way", "phac", etc. |
-| `code` | CharField(max_length=100) | The code within that taxonomy |
-| `label` | CharField(max_length=255, blank=True) | Display label (cached from code list or manually entered) |
-| `context` | CharField(max_length=100, blank=True) | Optional: which funder/partner relationship (blank = universal) |
+**This model is new — it is NOT in the original CIDS plan.** It was added by the taxonomy panel (2026-02-27) to solve the multi-funder taxonomy problem. See `tasks/design-rationale/fhir-informed-modelling.md` — "DO NOT hardcode an internal outcome taxonomy."
 
-`unique_together = [("content_type", "object_id", "taxonomy", "code", "context")]`
-
-This model enables: one metric → multiple taxonomy codes across multiple external systems. Config templates can pre-populate these mappings during agency onboarding.
+**Requirements** (choose the best Django pattern for this project's scale):
+- A single metric (or program, or plan target) can have multiple taxonomy mappings
+- Each mapping identifies: which taxonomy system (e.g., "cids_iris", "united_way", "phac"), which code within that system, and optionally which funder/partner relationship this mapping serves (blank = universal)
+- Config templates can pre-populate these mappings during agency onboarding
+- Evaluate whether GenericForeignKey (content_type + object_id) or explicit FK fields (metric_definition, program, plan_target — each nullable) is simpler for this project. The project does not currently use GenericForeignKeys elsewhere.
 
 **Management command: `import_cids_codelists`**
 - Fetches 17 code lists from `codelist.commonapproach.org`
