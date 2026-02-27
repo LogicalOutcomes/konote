@@ -6,7 +6,7 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 
 ## Origins & Acknowledgements
 
-**KoNote** is the second generation of [KoNote](https://github.com/LogicalOutcomes/KoNote), an open-source outcome tracking system originally created by **Dr. David Gotlib**. David, a former board member of [LogicalOutcomes](https://github.com/LogicalOutcomes), donated the original KoNote to the organisation and made it open source. LogicalOutcomes is a Canadian nonprofit focused on evaluation consulting and building organisational learning capacity.
+**KoNote** is the second generation of [KoNote](https://github.com/LogicalOutcomes/KoNote), an open-source outcome tracking system originally created by **Dr. David Gotlib**. David, a former board member of [LogicalOutcomes](https://LogicalOutcomes.net), donated the original KoNote to the organisation and made it open source. LogicalOutcomes is a Canadian nonprofit focused on evaluation consulting and building organisational learning capacity.
 
 The original KoNote was designed to help mental health professionals and social service agencies track client outcomes — "notes that count." As Dr. Gotlib put it, traditional EMRs are often "over-engineered and cluttered." KoNote took the opposite approach: a simple interface designed for frontline workers, not IT departments.
 
