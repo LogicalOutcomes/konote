@@ -16,7 +16,6 @@
 - [ ] Document scheduled task setup for export monitoring in the runbook — PB (EXP2w)
 - [ ] Build cross-agency data rollup for partners — waiting on requirements re: which metrics to aggregate — PB, GK reviews metric aggregation (SCALE-ROLLUP1)
 - [ ] Create AI-assisted admin toolkit decision documents (01-09) for agency setup — reformat deployment protocol into AI-consumable reference docs, test with [funder partner] dry run (see tasks/ai-assisted-admin-toolkit.md, docs/agency-setup-guide/) — (DEPLOY-TOOLKIT1)
-- [ ] Decide who can run the secure offboarding export command (KoNote team only vs self-hosted agencies) to finalize SEC3 design (see tasks/agency-data-offboarding.md) — SG (SEC3-Q1)
 
 ## Do Occasionally
 
@@ -97,20 +96,23 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 
 Scope is clear, just needs time. A session can pick these up without special approval.
 
-_Nothing here right now._
+- [ ] Individual client data export from client profile (Tier 1) — "Export Client Data" action, staff chooses PDF or JSON, delivered via SecureExportLink. For PIPEDA requests, program transfers, and client data requests. Design approved (see tasks/agency-data-offboarding.md) — GK reviews privacy workflow (QA-R7-PRIVACY1)
+- [ ] Build `export_agency_data` management command (Tier 2) — AES-256-GCM encryption, automatic model discovery, HTML/JS decryptor, tiered access (self-hosted self-serve, SaaS via KoNote). Design complete (see tasks/agency-data-offboarding.md) (SEC3)
+- [ ] Build HTML/JS AES-256-GCM decryptor — self-contained browser-based file, Web Crypto API, fully offline, CSP-locked. Ships with Tier 2 exports (SEC3-DECRYPT1)
+- [ ] Add export coverage safety nets — Django system check + CI test to catch uncovered models automatically (SEC3-SAFETY1)
+- [ ] Add automated backup reminder notifications — periodic reminders to agency contact person when a backup export is due (SEC3-REMIND1)
+- [ ] Create data handling acknowledgement template — agency signs before plaintext exports are enabled (SEC3-AGREE1)
 
 ## Parking Lot: Needs Review
 
 Not yet clear we should build these, or the design isn't settled. May be too complex, too risky, or not worth the effort. **Do not build without explicit user approval in the current conversation.**
 
 - [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed. Do before launch. (T50)
-- [ ] PIPEDA data export from client profile — "Export Data" action for Section 8 access requests, needs design for data categories and output format — GK reviews privacy workflow (QA-R7-PRIVACY1)
 - [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
 - [ ] Executive compliance report — aggregate dashboard showing privacy request counts, processing times (no PII) — GK reviews reporting methodology (QA-R7-EXEC-COMPLIANCE1)
 - [ ] DQ1 implementation: build threshold tuning feedback from day one — admin view of warnings triggered vs overridden per metric (DQ1-TUNE)
 - [ ] DQ2 implementation: define severity tiers so the quality gate doesn't produce too many warnings that staff ignore (DQ2-TIERS)
 - [ ] Add serious reportable events workflow and reporting (see tasks/serious-reportable-events.md) (SRE1)
-- [ ] Build agency data offboarding command for secure departures and PIPEDA requests (SEC3)
 - [ ] Add in-app configuration dashboard showing all active settings with decision rationale and change history (DEPLOY-CONFIG-UI1)
 - [ ] Separate "Scheduled Assessment" workflow for standardized instruments (PHQ-9, etc.) — partner reporting (ASSESS1)
 - [ ] Split `ai_assist` toggle into `ai_assist_tools_only` (default enabled) and `ai_assist_participant_data` (default disabled) — see tasks/design-rationale/ai-feature-toggles.md — GK reviews (AI-TOGGLE1)
@@ -126,6 +128,8 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Write DRR: No live API for individual participant data — architectural decision record with anti-patterns, two-tier export model (see tasks/design-rationale/no-live-api-individual-data.md) — 2026-02-27 (SEC3-DRR1)
+- [x] Resolve SEC3-Q1: who runs the export command — tiered model: self-hosted self-serve, SaaS via KoNote with SLA. Expert panel. Design unblocked — 2026-02-27 (SEC3-Q1)
 - [x] Backup restore verification — management command, Azure/Docker test scripts, 757-line runbook — 2026-02-26 (OPS4)
 - [x] Fix demo login section layout — compressed demo user buttons into single grid, centred participant portal button — 2026-02-26 (UI1)
 - [x] Approve Agency Permissions Interview questionnaire — approved with note re: custom roles beyond four defaults (see tasks/agency-permissions-interview.md) — 2026-02-26 (ONBOARD-APPROVE)
