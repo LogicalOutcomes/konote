@@ -402,6 +402,23 @@ class ClientViewsTest(TestCase):
         self.assertContains(resp, "Discharged Client")
         self.assertNotContains(resp, "Active Client")
 
+    def test_on_hold_client_visible_in_list(self):
+        """On-hold clients must remain visible in client list (regression)."""
+        active = self._create_client("Active", "Client", [self.prog_a])
+        on_hold = self._create_client("OnHold", "Client", [self.prog_a])
+        # Put the enrolment on hold
+        ep = ClientProgramEnrolment.objects.get(
+            client_file=on_hold, program=self.prog_a,
+        )
+        ep.status = "on_hold"
+        ep.save()
+
+        self.client.login(username="staff", password="testpass123")
+        resp = self.client.get("/participants/")
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Active Client")
+        self.assertContains(resp, "OnHold Client")
+
     def test_filter_by_program(self):
         """Filter clients by program enrolment."""
         UserProgramRole.objects.create(user=self.staff, program=self.prog_b, role="staff")
