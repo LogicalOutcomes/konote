@@ -131,18 +131,31 @@ The original plan proposed replacing `cids_theme` with `outcome_domain`. The rev
 
 **FHIR source:** EpisodeOfCare resource (status state machine + statusHistory pattern)
 
-**Migration strategy (revised per review panel):** Extend ClientProgramEnrolment in place rather than replacing it. Keep the same `db_table`, add new fields, create a `ServiceEpisode` class alias for new code. This eliminates the mass query rewrite risk — all existing references to `ClientProgramEnrolment` continue working unchanged.
+**Migration strategy (revised per review panel):** Extend ClientProgramEnrolment in place rather than replacing it. Rename the existing class to `ServiceEpisode`, add new fields, create a `ClientProgramEnrolment` alias for backwards compatibility. This eliminates the mass query rewrite risk — all existing references continue working unchanged.
+
+**Django migration approach:** Use `RenameModel` operation (or manual `state_operations` with `migrations.RenameModel`) so Django's migration framework knows the model was renamed, not deleted and recreated. Do NOT create a new model class pointing at the same `db_table` — Django may interpret that as creating a new model.
 
 ```python
-# In apps/clients/models.py
-class ServiceEpisode(models.Model):
-    """Extended from ClientProgramEnrolment with FHIR-informed fields."""
+# In apps/clients/models.py — rename the existing class, add fields
+class ServiceEpisode(models.Model):  # Was: ClientProgramEnrolment
+    """Extended with FHIR-informed fields. Keeps existing table."""
     class Meta:
         db_table = "clients_clientprogramenrolment"  # Keep existing table
-    # ... all new fields below ...
+    # ... existing fields + new fields below ...
 
-# Backwards compatibility alias
+# Backwards compatibility alias — all existing imports still work
 ClientProgramEnrolment = ServiceEpisode
+```
+
+```python
+# In the migration file
+operations = [
+    migrations.RenameModel(
+        old_name="ClientProgramEnrolment",
+        new_name="ServiceEpisode",
+    ),
+    # Then AddField for each new field...
+]
 ```
 
 #### Model: `ServiceEpisode` (extends existing table)
@@ -161,8 +174,7 @@ ClientProgramEnrolment = ServiceEpisode
 | `started_at` | DateTimeField | period.start | When active service began |
 | `ended_at` | DateTimeField(null=True, blank=True) | period.end | When service ended |
 | `end_reason` | CharField(max_length=30, blank=True) | — | Why service ended |
-| `enrolled_at` | DateTimeField(auto_now_add=True) | — | When the record was created (preserves current behaviour) |
-| `created_at` | DateTimeField(auto_now_add=True) | — | |
+| `enrolled_at` | DateTimeField(auto_now_add=True) | — | When the record was created (preserves current behaviour). Serves as `created_at` — no separate timestamp needed. |
 | `updated_at` | DateTimeField(auto_now=True) | — | |
 
 **Status choices** (from FHIR EpisodeOfCare, adapted for social services):
@@ -238,14 +250,21 @@ Since we extend the existing table, migration is simpler — no data copying:
 
 ```
 Django migration:
+  0. RenameModel: ClientProgramEnrolment → ServiceEpisode
   1. Add new fields (all nullable) to clients_clientprogramenrolment table
-  2. Run data migration:
+  2. Replace STATUS_CHOICES:
+       Old: enrolled, unenrolled (2 values)
+       New: planned, waitlist, active, on_hold, finished, cancelled (6 values)
+       The old "enrolled" and "unenrolled" values are REMOVED from choices.
+       The data migration (step 3) converts all existing rows before the
+       new choices take effect, so no orphaned values remain.
+  3. Run data migration:
      For each existing row:
        → Set started_at = enrolled_at
        → Set new status: "active" if old status == "enrolled", else "finished"
        → Set ended_at = unenrolled_at (if unenrolled)
        → Leave episode_type, end_reason, referral_source blank (unknown for historical data)
-  3. Create initial ServiceEpisodeStatusChange for each row:
+  4. Create initial ServiceEpisodeStatusChange for each row:
        status = new status value
        reason = "Migrated from ClientProgramEnrolment"
        changed_at = enrolled_at
@@ -355,7 +374,7 @@ Map from the existing ProgressNoteTarget.progress_descriptor:
 | `harder` (Harder right now) | `worsening` |
 | `holding` (Holding steady) | `no_change` |
 | `shifting` (Something's shifting) | `improving` |
-| `good_place` (In a good place) | `achieved` (first time) or `sustaining` (if previously achieved) |
+| `good_place` (In a good place) | `achieved` (first time) or `sustaining` (if previously achieved). **GK to review:** this mapping may inflate achievement rates for qualitative goals — consider mapping to `sustaining` or `no_change` instead unless a quantitative target has also been met. |
 
 **Fallback:** If no metrics and no progress_descriptor recorded, leave as `in_progress`.
 
