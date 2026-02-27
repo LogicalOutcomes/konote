@@ -159,9 +159,10 @@ class InstanceSettingsForm(forms.Form):
     portal_safe_exit_url = forms.URLField(
         required=False, label=_("Leave Quickly Destination URL"),
         help_text=_("Where the 'Leave quickly' button sends participants. "
-                     "Choose something that looks normal in browser history "
-                     "(e.g. a weather or news site). Default: theweathernetwork.com"),
-        widget=forms.URLInput(attrs={"placeholder": "https://www.theweathernetwork.com"}),
+                     "Must be a site with no cookie popups, no ads, and no login walls. "
+                     "Recommended: google.ca, en.wikipedia.org, canada.ca. "
+                     "Default: google.ca"),
+        widget=forms.URLInput(attrs={"placeholder": "https://www.google.ca"}),
     )
 
     # Meeting scheduling settings
