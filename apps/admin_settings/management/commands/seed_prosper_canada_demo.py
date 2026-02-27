@@ -63,35 +63,35 @@ User = get_user_model()
 STAFF = [
     {
         "username": "fatima@demo.konote.ca",
-        "display_name": "Fatima Hassan",
+        "display_name": "Fatima Front Desk",
         "role": "receptionist",
         "is_admin": False,
         "preferred_language": "en",
     },
     {
         "username": "marcus@demo.konote.ca",
-        "display_name": "Marcus Chen",
+        "display_name": "Marcus Worker",
         "role": "staff",
         "is_admin": False,
         "preferred_language": "en",
     },
     {
         "username": "aminata@demo.konote.ca",
-        "display_name": "Aminata Diallo",
+        "display_name": "Aminata Worker",
         "role": "staff",
         "is_admin": False,
         "preferred_language": "fr",
     },
     {
         "username": "sara@demo.konote.ca",
-        "display_name": "Sara Gaudon",
+        "display_name": "Sara Manager",
         "role": "program_manager",
         "is_admin": True,
         "preferred_language": "en",
     },
     {
         "username": "david@demo.konote.ca",
-        "display_name": "David Okafor",
+        "display_name": "David Executive",
         "role": "executive",
         "is_admin": False,
         "preferred_language": "en",
@@ -1976,6 +1976,7 @@ class Command(BaseCommand):
                     "is_admin": s["is_admin"],
                     "is_active": True,
                     "is_staff": s["is_admin"],
+                    "is_demo": True,
                     "preferred_language": s["preferred_language"],
                 },
             )
@@ -1985,6 +1986,16 @@ class Command(BaseCommand):
                 user.save()
                 self.stdout.write(f"  Created staff: {s['display_name']}")
             else:
+                # Always sync is_demo and display_name, even on existing users
+                update_fields = []
+                if not user.is_demo:
+                    user.is_demo = True
+                    update_fields.append("is_demo")
+                if user.display_name != s["display_name"]:
+                    user.display_name = s["display_name"]
+                    update_fields.append("display_name")
+                if update_fields:
+                    user.save(update_fields=update_fields)
                 self.stdout.write(f"  Staff exists: {s['display_name']}")
             staff_map[s["username"]] = user
         return staff_map
