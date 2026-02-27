@@ -126,6 +126,7 @@ Not yet clear we should build these, or the design isn't settled. May be too com
 
 ## Recently Done
 
+- [x] Create data handling acknowledgement template — plain language template for agencies to sign before plaintext exports are enabled, integrated into deployment protocol Phases 1 and 4 (see docs/data-handling-acknowledgement.md) — 2026-02-27 (SEC3-AGREE1)
 - [x] Backup restore verification — management command, Azure/Docker test scripts, 757-line runbook — 2026-02-26 (OPS4)
 - [x] Fix demo login section layout — compressed demo user buttons into single grid, centred participant portal button — 2026-02-26 (UI1)
 - [x] Approve Agency Permissions Interview questionnaire — approved with note re: custom roles beyond four defaults (see tasks/agency-permissions-interview.md) — 2026-02-26 (ONBOARD-APPROVE)
