@@ -10,7 +10,9 @@ We're implementing the first step of the FHIR-informed data modelling plan combi
 
 ### Before you start
 
-1. Read these files in order:
+0. **Pull main first.** Run `git pull origin main` before anything else. Your worktree may be missing recently merged files (the implementation plan, DRR, and CLAUDE.md updates were merged in PR #120). If you skip this, you will be missing critical design documents.
+
+1. Read these files in order — **all four are required before writing any code**:
    - `tasks/fhir-informed-data-modelling.md` — the full implementation plan (focus on Phase F0)
    - `tasks/design-rationale/fhir-informed-modelling.md` — anti-patterns and trade-offs (DO NOT violate these)
    - `tasks/cids-json-ld-export.md` — Phase 1 fields (sections 1a through 1d)
