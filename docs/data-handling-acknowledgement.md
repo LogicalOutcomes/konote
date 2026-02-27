@@ -10,15 +10,15 @@
 
 ## About This Document
 
-This acknowledgement is between KoNote (the service provider) and your organisation (the agency). It covers how your data is protected inside KoNote, what changes when data is exported as a plaintext file, and what your organisation is responsible for after receiving an export.
+This is an internal policy acknowledgement for your organisation. KoNote is open-source software — it is a tool, not a service provider, and it makes no warranties or commitments. This document exists to help your organisation make an informed decision about plaintext data exports and to document that decision for your own records.
 
-**You do not need to sign this to use KoNote.** This acknowledgement is only required if your organisation wants to receive plaintext (unencrypted) data exports — for example, as a backup against encryption key loss. Encrypted exports (for offboarding or migration) and individual client exports (for PIPEDA requests or program transfers) are covered by the standard service agreement.
+**You do not need to sign this to use KoNote.** This acknowledgement is only relevant if your organisation chooses to produce plaintext (unencrypted) data exports — for example, as a backup against encryption key loss.
 
 ---
 
 ## How KoNote Protects Your Data
 
-Inside KoNote, participant data is protected by multiple layers:
+While data stays inside KoNote, it is protected by multiple layers:
 
 - **Encryption at rest** — names, dates of birth, contact information, clinical notes, and other personal information are encrypted in the database using Fernet (AES-128-CBC) encryption. Even someone with direct database access cannot read these fields without the encryption key.
 - **Role-based access control** — staff see only the data relevant to their role and program assignments. Front desk staff, coaches, program managers, and executives all have different access levels.
@@ -38,10 +38,10 @@ Once the export file leaves KoNote:
 
 - **Encryption is gone** — the file is readable by anyone who has it
 - **Access control is gone** — there are no roles, no program boundaries, no consent filters
-- **Audit logging is gone** — KoNote cannot track who opens, copies, or forwards the file
+- **Audit logging is gone** — no system can track who opens, copies, or forwards the file
 - **Authentication is gone** — there is no login required to read the file
 
-**The file contains everything.** A plaintext export has no access control after handover — whoever has the file has all your participant data.
+**The file contains everything.** A plaintext export has no access control after it is produced — whoever has the file has all your participant data.
 
 ---
 
@@ -49,25 +49,39 @@ Once the export file leaves KoNote:
 
 Despite the risks above, there is one scenario where a plaintext backup is the responsible choice:
 
-**Key loss insurance.** KoNote uses encryption that is all-or-nothing. If your organisation loses the encryption key — due to a server failure, administrative turnover, or misconfigured migration — every encrypted field in your database becomes permanently unrecoverable. No one, including KoNote, can recover this data.
+**Key loss insurance.** KoNote uses encryption that is all-or-nothing. If your organisation loses the encryption key — due to a server failure, administrative turnover, or misconfigured migration — every encrypted field in your database becomes permanently unrecoverable. No one can recover this data.
 
 A plaintext backup stored securely by your organisation ensures that even in a worst-case key loss scenario, your participant data is not permanently lost.
 
-**KoNote provides the export tool and periodic reminders.** Your organisation decides whether and when to act on each reminder.
+KoNote includes an export tool and can be configured to send periodic reminders when a backup is due. Your organisation decides whether and when to act on each reminder.
+
+---
+
+## What the Software Provides
+
+KoNote includes the following features related to data export. These are capabilities of the software, not commitments from a service provider:
+
+- **Export tool** (`export_agency_data` management command) that produces structured data files
+- **Configurable backup reminders** sent to a designated contact person when a backup is due
+- **Audit logging** of every export — who ran it, when, what format, how many records
+- **Encrypted export mode** (AES-256-GCM) as the default, with plaintext as an opt-in alternative
+- **Dry-run mode** to preview what would be exported without writing data
+
+Your organisation is responsible for operating and maintaining the software, or for arranging with a hosting provider to do so on your behalf. Any service commitments (SLAs, support, managed exports) are between your organisation and your hosting provider — not part of this document.
 
 ---
 
 ## Your Organisation's Responsibilities
 
-By signing this acknowledgement, your organisation agrees to the following:
+By signing this acknowledgement, your organisation confirms it understands the following and accepts responsibility:
 
 ### 1. Designated Contact Person
 
 You will designate one person as the **data export contact**. This person:
-- Receives backup reminders from KoNote
-- Initiates export requests (for SaaS agencies) or runs the export command (for self-hosted agencies)
+- Receives backup reminders from the system
+- Initiates or runs exports
 - Is responsible for the secure handling of exported files
-- Notifies KoNote if they leave the organisation, so the designation can be updated
+- Must be replaced promptly if they leave the organisation
 
 > **Your designated contact:** ____________________________
 >
@@ -93,16 +107,16 @@ Exported files must be stored securely. Your organisation is responsible for:
 
 - **Keep only the most recent backup.** When a new export supersedes an old one, securely delete the previous file.
 - **Secure deletion** means overwriting or destroying the media — not just moving the file to the recycle bin.
-- **If your organisation leaves KoNote**, securely delete all plaintext exports within 90 days of receiving your final encrypted offboarding export, unless you have an active legal obligation to retain the data.
+- **If your organisation stops using KoNote**, securely delete all plaintext exports within 90 days of receiving your final encrypted export, unless you have an active legal obligation to retain the data.
 
 ### 4. Breach Response
 
 If a plaintext export is lost, stolen, or accessed by an unauthorised person:
 
-- **Notify KoNote immediately** (within 24 hours of discovery)
 - **Assess the scope** — what data was in the file, how many participants are affected
 - **Follow your organisation's breach response plan** and applicable privacy legislation (PIPEDA mandatory breach notification, s. 10.1)
-- **Note:** A properly encrypted export (AES-256-GCM) that is lost or stolen does not require breach notification if the encryption key was not also compromised. A plaintext export that is lost or stolen **does** require breach notification.
+- **Notify your hosting provider** if applicable, so they can assist with the response
+- **Note:** A properly encrypted export (AES-256-GCM) that is lost or stolen does not require breach notification if the passphrase was not also compromised. A plaintext export that is lost or stolen **does** require breach notification.
 
 ### 5. Staff Awareness
 
@@ -112,23 +126,11 @@ If a plaintext export is lost, stolen, or accessed by an unauthorised person:
 
 ---
 
-## KoNote's Responsibilities
-
-KoNote commits to the following:
-
-- **Providing the export tool** and keeping it current as the system evolves
-- **Sending periodic reminders** (quarterly by default, configurable) when a backup is due
-- **Logging every export** in the audit database — who ran it, when, what format, how many records
-- **Supporting your organisation** in running exports or responding to PIPEDA data access requests within the agreed SLA
-- **Never accessing your plaintext exports** — once the file is handed to your organisation, KoNote does not retain a copy
-
----
-
 ## What This Acknowledgement Does NOT Cover
 
-This acknowledgement is specifically about **plaintext exports** (decrypted backup files). The following are covered by the standard service agreement and do not require this acknowledgement:
+This acknowledgement is specifically about **plaintext exports** (decrypted backup files). The following do not require this acknowledgement:
 
-- **Encrypted offboarding exports** — AES-256-GCM encrypted files produced when an agency leaves KoNote
+- **Encrypted exports** — AES-256-GCM encrypted files produced for offboarding or migration
 - **Individual client exports** — single-client data produced via the client profile for PIPEDA requests or program transfers (delivered via time-limited secure download link)
 - **Aggregate reports** — de-identified funder and partner reports
 - **Database backups** — encrypted at rest by the hosting provider; these are ciphertext, not readable data
@@ -137,25 +139,19 @@ This acknowledgement is specifically about **plaintext exports** (decrypted back
 
 ## Signatures
 
-By signing below, you confirm that:
+By signing below, your organisation confirms that:
 
 1. You have read and understand this acknowledgement
 2. You accept responsibility for the secure handling of plaintext exports
 3. You have designated a contact person for data export reminders
-4. You understand that a plaintext export has no access control once it leaves KoNote
-5. You will notify KoNote within 24 hours if an export is lost, stolen, or accessed by an unauthorised person
+4. You understand that a plaintext export has no access control once it is produced
+5. You understand that KoNote is open-source software provided as-is, and that responsibility for data security after export rests entirely with your organisation
 
 > **Organisation:** ____________________________
 >
 > **Signed by:** ____________________________ (print name)
 >
 > **Title:** ____________________________
->
-> **Signature:** ____________________________
->
-> **Date:** ____________________________
-
-> **KoNote representative:** ____________________________
 >
 > **Signature:** ____________________________
 >
