@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% blocktrans with client=term.client|default:"Participant" %}Discharge {{ client }}{% endblocktrans %} — {{ site.product_name|default:"KoNote" }}{% endblock %}
+
+{% block content %}
+{% include "_breadcrumbs.html" %}
+<hgroup>
+    <h1>{% blocktrans with first=client.display_name last=client.last_name %}Discharge {{ first }} {{ last }}{% endblocktrans %}</h1>
+    <p>{% trans "End this participant's service episode in the program." %}</p>
+</hgroup>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.program_id }}
+
+    {% include "includes/_form_errors.html" %}
+
+    <fieldset>
+        <legend>{% trans "Why is this person leaving?" %}</legend>
+        {% for radio in form.end_reason %}
+        <label>
+            {{ radio.tag }} {{ radio.choice_label }}
+        </label>
+        {% endfor %}
+        {% if form.end_reason.errors %}
+        <small class="error" role="alert">{{ form.end_reason.errors.0 }}</small>
+        {% endif %}
+    </fieldset>
+
+    <div>
+        <label for="id_status_reason">{{ form.status_reason.label }}</label>
+        {{ form.status_reason }}
+        {% if form.status_reason.help_text %}
+        <small>{{ form.status_reason.help_text }}</small>
+        {% endif %}
+    </div>
+
+    <div role="group" style="margin-top: var(--kn-space-base);">
+        <button type="submit">{% trans "Confirm Discharge" %}</button>
+        <a href="{% url 'clients:client_detail' client_id=client.pk %}" role="button" class="outline">{% trans "Cancel" %}</a>
+    </div>
+</form>
+{% endblock %}

@@ -55,6 +55,14 @@
                 {% endif %}
                 {% if can_transfer_client %}
                 <li role="none"><a role="menuitem" href="{% url 'clients:client_transfer' client_id=client.pk %}">{% trans "Transfer" %}<small>{% trans "Transfer between programs" %}</small></a></li>
+                {% for e in enrolments %}
+                {% if e.status == "active" %}
+                <li role="none"><a role="menuitem" href="{% url 'clients:client_discharge' client_id=client.pk %}?program_id={{ e.program_id }}">{% trans "Discharge" %}<small>{{ e.program.translated_name }}</small></a></li>
+                <li role="none"><a role="menuitem" href="{% url 'clients:client_on_hold' client_id=client.pk %}?program_id={{ e.program_id }}">{% trans "Put on Hold" %}<small>{{ e.program.translated_name }}</small></a></li>
+                {% elif e.status == "on_hold" %}
+                <li role="none"><form method="post" action="{% url 'clients:client_resume' client_id=client.pk %}" style="margin:0;">{% csrf_token %}<input type="hidden" name="program_id" value="{{ e.program_id }}"><button type="submit" role="menuitem" class="actions-dropdown-btn">{% trans "Resume Service" %}<small>{{ e.program.translated_name }}</small></button></form></li>
+                {% endif %}
+                {% endfor %}
                 {% endif %}
             </ul>
         </div>

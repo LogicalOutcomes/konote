@@ -17,9 +17,9 @@ from apps.auth_app.permissions import DENY, PERMISSIONS, can_access
 from apps.notes.models import ProgressNote
 from apps.programs.models import Program, UserProgramRole
 
-from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm
+from .forms import ClientContactForm, ClientFileForm, ClientTransferForm, ConsentRecordForm, CustomFieldDefinitionForm, CustomFieldGroupForm, CustomFieldValuesForm, DischargeForm, OnHoldForm
 from .helpers import get_client_tab_counts, get_document_folder_url
-from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldDefinition, CustomFieldGroup
+from .models import ClientDetailValue, ClientFile, ClientProgramEnrolment, CustomFieldDefinition, CustomFieldGroup, ServiceEpisodeStatusChange
 from .validators import (
     normalize_phone_number, normalize_postal_code,
     validate_phone_number, validate_postal_code,
@@ -645,6 +645,197 @@ def client_transfer(request, client_id):
 
 
 @login_required
+@requires_permission("client.transfer", _get_program_from_client)
+def client_discharge(request, client_id):
+    """Discharge a client from a specific program.
+
+    Sets episode status to 'finished', records end_reason and ended_at,
+    and writes a ServiceEpisodeStatusChange row.
+    """
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+
+    if request.method == "POST":
+        form = DischargeForm(request.POST)
+        if form.is_valid():
+            program_id = form.cleaned_data["program_id"]
+            episode = get_object_or_404(
+                ClientProgramEnrolment,
+                client_file=client, program_id=program_id, status="active",
+            )
+            now = timezone.now()
+            episode.status = "finished"
+            episode.ended_at = now
+            episode.unenrolled_at = now
+            episode.end_reason = form.cleaned_data["end_reason"]
+            episode.status_reason = form.cleaned_data.get("status_reason", "")
+            episode.save()
+
+            # Record status change
+            ServiceEpisodeStatusChange.objects.create(
+                episode=episode,
+                status="finished",
+                reason=f"{episode.get_end_reason_display()}: {episode.status_reason}".strip(": "),
+                changed_by=request.user,
+            )
+
+            # Audit log
+            from apps.audit.models import AuditLog
+            AuditLog.objects.using("audit").create(
+                event_timestamp=now,
+                user_id=request.user.pk,
+                user_display=(
+                    request.user.display_name
+                    if hasattr(request.user, "display_name")
+                    else str(request.user)
+                ),
+                action="update",
+                resource_type="enrolment",
+                resource_id=client.pk,
+                is_demo_context=getattr(request.user, "is_demo", False),
+                metadata={
+                    "discharge": True,
+                    "program_id": program_id,
+                    "end_reason": form.cleaned_data["end_reason"],
+                    "status_reason": form.cleaned_data.get("status_reason", ""),
+                },
+            )
+
+            messages.success(
+                request,
+                _("%(term)s has been discharged from the program.")
+                % {"term": request.get_term("client")},
+            )
+            return redirect("clients:client_detail", client_id=client.pk)
+    else:
+        # GET — show the discharge form
+        program_id = request.GET.get("program_id")
+        form = DischargeForm(initial={"program_id": program_id})
+
+    breadcrumbs = [
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
+        {"url": "", "label": _("Discharge")},
+    ]
+    return render(request, "clients/discharge.html", {
+        "form": form,
+        "client": client,
+        "breadcrumbs": breadcrumbs,
+    })
+
+
+@login_required
+@requires_permission("client.transfer", _get_program_from_client)
+def client_on_hold(request, client_id):
+    """Put a client's service episode on hold."""
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+
+    if request.method == "POST":
+        form = OnHoldForm(request.POST)
+        if form.is_valid():
+            program_id = form.cleaned_data["program_id"]
+            episode = get_object_or_404(
+                ClientProgramEnrolment,
+                client_file=client, program_id=program_id, status="active",
+            )
+            episode.status = "on_hold"
+            episode.status_reason = form.cleaned_data["status_reason"]
+            episode.save()
+
+            ServiceEpisodeStatusChange.objects.create(
+                episode=episode,
+                status="on_hold",
+                reason=form.cleaned_data["status_reason"],
+                changed_by=request.user,
+            )
+
+            from apps.audit.models import AuditLog
+            AuditLog.objects.using("audit").create(
+                event_timestamp=timezone.now(),
+                user_id=request.user.pk,
+                user_display=(
+                    request.user.display_name
+                    if hasattr(request.user, "display_name")
+                    else str(request.user)
+                ),
+                action="update",
+                resource_type="enrolment",
+                resource_id=client.pk,
+                is_demo_context=getattr(request.user, "is_demo", False),
+                metadata={
+                    "on_hold": True,
+                    "program_id": program_id,
+                    "reason": form.cleaned_data["status_reason"],
+                },
+            )
+
+            messages.success(request, _("Service has been put on hold."))
+            return redirect("clients:client_detail", client_id=client.pk)
+    else:
+        program_id = request.GET.get("program_id")
+        form = OnHoldForm(initial={"program_id": program_id})
+
+    breadcrumbs = [
+        {"url": reverse("clients:client_list"), "label": request.get_term("client_plural")},
+        {"url": reverse("clients:client_detail", kwargs={"client_id": client.pk}), "label": f"{client.display_name} {client.last_name}"},
+        {"url": "", "label": _("Put on Hold")},
+    ]
+    return render(request, "clients/on_hold.html", {
+        "form": form,
+        "client": client,
+        "breadcrumbs": breadcrumbs,
+    })
+
+
+@login_required
+@requires_permission("client.transfer", _get_program_from_client)
+def client_resume(request, client_id):
+    """Resume a client's on-hold service episode."""
+    base_queryset = get_client_queryset(request.user)
+    client = get_object_or_404(base_queryset, pk=client_id)
+
+    if request.method == "POST":
+        program_id = request.POST.get("program_id")
+        episode = get_object_or_404(
+            ClientProgramEnrolment,
+            client_file=client, program_id=program_id, status="on_hold",
+        )
+        episode.status = "active"
+        episode.status_reason = ""
+        episode.save()
+
+        ServiceEpisodeStatusChange.objects.create(
+            episode=episode,
+            status="active",
+            reason="Resumed from on-hold",
+            changed_by=request.user,
+        )
+
+        from apps.audit.models import AuditLog
+        AuditLog.objects.using("audit").create(
+            event_timestamp=timezone.now(),
+            user_id=request.user.pk,
+            user_display=(
+                request.user.display_name
+                if hasattr(request.user, "display_name")
+                else str(request.user)
+            ),
+            action="update",
+            resource_type="enrolment",
+            resource_id=client.pk,
+            is_demo_context=getattr(request.user, "is_demo", False),
+            metadata={
+                "resumed": True,
+                "program_id": int(program_id),
+            },
+        )
+
+        messages.success(request, _("Service has been resumed."))
+    return redirect("clients:client_detail", client_id=client.pk)
+
+
+@login_required
 @requires_permission("client.edit_contact", _get_program_from_client)
 def client_contact_edit(request, client_id):
     """Edit client contact fields based on field access config.
@@ -742,13 +933,15 @@ def client_detail(request, client_id):
 
     # Only show enrolments in programs the user has access to.
     # Prevents leaking confidential program names.
+    # Include on_hold episodes so they appear with a badge.
     user_program_ids = _get_user_program_ids(request.user)
     enrolments = ClientProgramEnrolment.objects.filter(
-        client_file=client, status="active", program_id__in=user_program_ids,
+        client_file=client, status__in=["active", "on_hold"],
+        program_id__in=user_program_ids,
     ).select_related("program")
     # IMPROVE-5: Check if client has programs hidden from this user
     all_enrolled_count = ClientProgramEnrolment.objects.filter(
-        client_file=client, status="active",
+        client_file=client, status__in=["active", "on_hold"],
     ).count()
     visible_count = enrolments.count()
     has_hidden_programs = all_enrolled_count > visible_count
