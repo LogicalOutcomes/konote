@@ -1795,12 +1795,24 @@ def bulk_transfer(request):
 
                 # Remove from program
                 if remove_program:
-                    updated = ClientProgramEnrolment.objects.filter(
+                    now = timezone.now()
+                    episodes = list(ClientProgramEnrolment.objects.filter(
                         client_file=client_obj,
                         program=remove_program,
                         status="active",
-                    ).update(status="finished", unenrolled_at=timezone.now())
-                    if updated:
+                    ))
+                    for ep in episodes:
+                        ep.status = "finished"
+                        ep.unenrolled_at = now
+                        ep.ended_at = now
+                        ep.save()
+                        ServiceEpisodeStatusChange.objects.create(
+                            episode=ep,
+                            status="finished",
+                            reason="Bulk transfer",
+                            changed_by=request.user,
+                        )
+                    if episodes:
                         removed.append(remove_program.pk)
 
                 if added or removed:
