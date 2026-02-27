@@ -86,7 +86,7 @@ STAFF = [
         "username": "sara@demo.konote.ca",
         "display_name": "Sara Manager",
         "role": "program_manager",
-        "is_admin": True,
+        "is_admin": False,
         "preferred_language": "en",
     },
     {
@@ -94,6 +94,13 @@ STAFF = [
         "display_name": "David Executive",
         "role": "executive",
         "is_admin": False,
+        "preferred_language": "en",
+    },
+    {
+        "username": "alex@demo.konote.ca",
+        "display_name": "Alex Admin",
+        "role": "admin",
+        "is_admin": True,
         "preferred_language": "en",
     },
 ]
@@ -2050,6 +2057,9 @@ class Command(BaseCommand):
             # Try to find existing client by record_id
             try:
                 client = ClientFile.objects.get(record_id=p["record_id"])
+                if not client.is_demo:
+                    client.is_demo = True
+                    client.save(update_fields=["is_demo"])
                 self.stdout.write(f"  Participant exists: {p['first_name']} {p['last_name']}")
             except ClientFile.DoesNotExist:
                 client = ClientFile(
