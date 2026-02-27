@@ -25,7 +25,7 @@
     {# ── First visit: bilingual hero with language chooser ── #}
     <main id="main-content" class="container login-container" tabindex="-1">
         {% if site.logo_url %}
-        <img src="{{ site.logo_url }}" alt="{{ site.organisation_name|default:'' }}" class="login-logo">
+        <img src="{{ site.logo_url }}" alt="{{ site.organisation_name|default:'' }}" class="login-logo" height="120" width="120">
         {% endif %}
         <h1 class="login-wordmark">{{ site.product_name|default:"KoNote" }}</h1>
         <p class="login-tagline-bilingual">
@@ -55,7 +55,7 @@
 
     <main id="main-content" class="container login-container" tabindex="-1">
         {% if site.logo_url %}
-        <img src="{{ site.logo_url }}" alt="{{ site.organisation_name|default:'' }}" class="login-logo">
+        <img src="{{ site.logo_url }}" alt="{{ site.organisation_name|default:'' }}" class="login-logo" height="120" width="120">
         {% endif %}
         <h1 class="login-wordmark">{{ site.product_name|default:"KoNote" }}</h1>
         <p class="login-tagline">{% trans "Participant Outcome Management" %}</p>

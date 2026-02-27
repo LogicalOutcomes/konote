@@ -12916,6 +12916,9 @@ msgstr "Analytique du portail"
 msgid "Sign in"
 msgstr "Se connecter"
 
+msgid "Powered by"
+msgstr "Propulsé par"
+
 msgid "Staff-assisted login link (expires in 15 minutes):"
 msgstr "Lien de connexion assistée (expire dans 15 minutes) :"
 
