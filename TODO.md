@@ -66,7 +66,7 @@ Step-by-step commands for each task are in [tasks/recurring-tasks.md](tasks/recu
 - [x] Add achievement_status + first_achieved_at to PlanTarget — PR #131 (FHIR-ACHIEVE1)
 - [x] Add author_role to ProgressNote — PR #131 (FHIR-ROLE1)
 - [x] Build JSON-LD export + impact dimensions — PR #131 (CIDS-EXPORT1 + CIDS-IMPACT1)
-- [ ] Add CIDS conformance badge and SHACL validation reporting — deferred, requires pyshacl (CIDS-VALIDATE1)
+- [x] Review fix: on-hold visibility, translations, bulk transfer audit, form fix, regression test — 2026-02-27 (CIDS-REVIEW-FIX1)
 
 ### Phase: Offline Field Collection (if requested by client)
 
@@ -102,6 +102,7 @@ _Nothing here right now._
 
 Not yet clear we should build these, or the design isn't settled. May be too complex, too risky, or not worth the effort. **Do not build without explicit user approval in the current conversation.**
 
+- [ ] Add CIDS conformance badge and SHACL validation reporting — deferred, requires pyshacl dependency. Consider after first funder requests conformance certification (CIDS-VALIDATE1)
 - [ ] Verify BLOCKER-1 and BLOCKER-2 with manual JAWS test — automated Playwright tests pass, manual assistive tech testing still needed. Do before launch. (T50)
 - [ ] PIPEDA data export from client profile — "Export Data" action for Section 8 access requests, needs design for data categories and output format — GK reviews privacy workflow (QA-R7-PRIVACY1)
 - [ ] Consent withdrawal workflow on client profile — wizard for PIPEDA consent withdrawal with data retention rules — GK reviews privacy/data retention (QA-R7-PRIVACY2)
