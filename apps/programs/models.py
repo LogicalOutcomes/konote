@@ -49,6 +49,24 @@ class Program(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # ── CIDS metadata fields (Phase 1) ────────────────────────────────
+    cids_sector_code = models.CharField(
+        max_length=100, blank=True, default="",
+        help_text=_("CIDS sector code from ICNPOsector or ESDCSector code list."),
+    )
+    population_served_codes = models.JSONField(
+        default=list, blank=True,
+        help_text=_("Population served codes from PopulationServed code list."),
+    )
+    description_fr = models.TextField(
+        blank=True, default="",
+        help_text=_("French description for bilingual CIDS exports."),
+    )
+    funder_program_code = models.CharField(
+        max_length=100, blank=True, default="",
+        help_text=_("Funder-assigned program identifier."),
+    )
+
     class Meta:
         app_label = "programs"
         db_table = "programs"

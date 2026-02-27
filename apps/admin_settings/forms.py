@@ -4,8 +4,32 @@ from django.utils.translation import gettext_lazy as _
 
 from .models import (
     ACCESS_TIER_CHOICES, ACCESS_TIER_DESCRIPTIONS,
-    DEFAULT_TERMS, TerminologyOverride,
+    DEFAULT_TERMS, OrganizationProfile, TerminologyOverride,
 )
+
+
+class OrganizationProfileForm(forms.ModelForm):
+    """Form for editing the singleton OrganizationProfile."""
+
+    class Meta:
+        model = OrganizationProfile
+        fields = [
+            "legal_name", "operating_name",
+            "description", "description_fr",
+            "legal_status", "sector_codes",
+            "street_address", "city", "province",
+            "postal_code", "country", "website",
+        ]
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 3}),
+            "description_fr": forms.Textarea(attrs={"rows": 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["legal_name"].widget.attrs["placeholder"] = _("e.g., Example Community Services Inc.")
+        self.fields["operating_name"].widget.attrs["placeholder"] = _("e.g., Example Community Services")
+        self.fields["postal_code"].widget.attrs["placeholder"] = "A1A 1A1"
 
 
 class FeatureToggleForm(forms.Form):
