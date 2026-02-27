@@ -64,6 +64,8 @@ Every person who works with client data gets assigned one of these roles per pro
 | **Program Manager** | Program coordinator, team lead, clinical supervisor | Oversee a program, supervise staff, review reports |
 | **Executive** | Executive Director, board member, funder liaison | See the big picture — aggregate numbers, not individual files |
 
+*These are the default roles. Your agency may have staff whose responsibilities don't map neatly to one of these four — for example, a clinical supervisor who needs read-only access, or a data entry clerk who enters information but shouldn't see historical notes. If none of these roles fit, note the gap and we'll discuss what access that person actually needs.*
+
 #### System Administrator
 
 The System Administrator flag is separate from program roles. It controls:
@@ -494,6 +496,61 @@ KoNote has features that can be turned on or off for each agency. Walk through t
 | Email addresses (if specific) | | |
 
 *What this means: You've chosen which KoNote features to turn on and who gets notified when data is exported. Your system will only include the tools your agency actually needs.*
+
+---
+
+### Section 8: Hosting & Data Sovereignty
+
+**Goal:** Decide where your data lives and what data sovereignty requirements your agency has.
+
+KoNote can be hosted on different infrastructure depending on your needs:
+
+| Option | Where Data Lives | US CLOUD Act Exposure | Managed Services | Cost |
+|---|---|---|---|---|
+| **OVHcloud (Beauharnois, QC)** | Quebec, Canada | No — French parent company | Self-managed | Lower (~$45/agency/mo) |
+| **Azure (Canada Central)** | Toronto, Canada | Yes — Microsoft is US-incorporated | Fully managed | Higher (~$112/agency/mo) |
+| **Other** | Depends on provider | Depends on provider | Varies | Varies |
+
+*See [hosting-cost-comparison.md](hosting-cost-comparison.md) and [design-rationale/ovhcloud-deployment.md](design-rationale/ovhcloud-deployment.md) for full technical details.*
+
+**8.1** "Where would you like your data hosted? Do you have a preference or a requirement from your funder, board, or privacy officer?"
+
+*Common patterns:*
+- **No strong preference** → OVHcloud is recommended (lower cost, no US CLOUD Act exposure)
+- **Must use Azure** → funder or IT policy requires Microsoft ecosystem
+- **Must avoid US-incorporated providers entirely** → OVHcloud; note that Azure Key Vault is still used for encryption key management in both scenarios (see below)
+- **Other provider** → discuss requirements and evaluate
+
+**8.2** "Does your agency have specific data sovereignty requirements — for example, from your funder, your board, or your privacy officer — about where data can be stored or who can access it?"
+
+*Prompt if needed:*
+- "Does your funder require data to stay in Canada?"
+- "Does your privacy policy or data-sharing agreement say anything about cloud providers or US-based companies?"
+- "Has your board passed any resolutions about data hosting?"
+
+**8.3** "Do you require that all personnel with access to your production data — including the people who maintain the servers and databases — be Canadian residents?"
+
+*This is about the people, not just the servers. KoNote's data access residency policy (see [design-rationale/data-access-residency-policy.md](design-rationale/data-access-residency-policy.md)) defines three tiers:*
+
+- **Tier 1 (direct data access):** SSH, database credentials, backups — Canadian residency required by default
+- **Tier 2 (indirect data access):** CI/CD pipelines, staging with realistic data — Canadian residency strongly recommended
+- **Tier 3 (no data access):** Code only, documentation, design — no residency requirement
+
+*Some agencies may have stricter requirements than our baseline — for example, requiring Canadian residency for all personnel, not just those with data access. Record whatever the agency requires.*
+
+**8.4** "Are there any other security or compliance requirements we should know about? For example, specific encryption standards, audit requirements, or certifications your funder expects?"
+
+#### Record
+
+| Hosting & Sovereignty Decision | Choice | Notes |
+|---|---|---|
+| Hosting provider | OVHcloud / Azure / Other | |
+| Data must stay in Canada? | Yes / No / Funder requirement | |
+| US CLOUD Act concern? | Yes (avoid US providers) / Acceptable / Not discussed | |
+| Canadian residency required for data access personnel? | Our baseline / Stricter (describe) / Not discussed | |
+| Other security/compliance requirements? | Describe | |
+
+*What this means: You've decided where your data lives and what sovereignty requirements apply. This determines the deployment architecture and informs your data-sharing agreements.*
 
 ---
 
