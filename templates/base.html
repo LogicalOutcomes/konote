@@ -29,9 +29,11 @@
         --kn-primary-hover: {{ site.brand_color_hover|default:site.brand_color }};
         --kn-primary-focus: {{ site.brand_color_focus|default:"rgba(49, 118, 170, 0.25)" }};
         --kn-primary-subtle: {{ site.brand_color_subtle|default:"rgba(49, 118, 170, 0.08)" }};
+        --kn-text-on-primary: {{ site.brand_color_text|default:"#ffffff" }};
         --pico-primary: var(--kn-primary);
         --pico-primary-hover: var(--kn-primary-hover);
         --pico-primary-focus: var(--kn-primary-focus);
+        --pico-primary-inverse: var(--kn-text-on-primary);
     }
     </style>
     {% endif %}
