@@ -6,6 +6,8 @@ Encryption, audit logs, data erasure, incident response, and backup/restore proc
 
 ## Backup and Restore
 
+> **Full runbook:** See [Backup & Restore Runbook](../backup-restore-runbook.md) for detailed procedures, Azure-specific steps, disaster recovery scenarios, and testing schedules.
+
 KoNote stores data in **two PostgreSQL databases**:
 - **Main database** -- participants, programs, plans, notes
 - **Audit database** -- immutable log of every change

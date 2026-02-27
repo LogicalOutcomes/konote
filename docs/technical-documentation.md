@@ -185,11 +185,12 @@ python manage.py migrate --database=audit
 
 ### Backups
 
-Both databases should be backed up regularly. See [Backup & Restore Guide](backup-restore.md) for:
+Both databases should be backed up regularly. See [Backup & Restore Runbook](backup-restore-runbook.md) for:
 - Manual backup commands for Docker Compose, Railway, and Azure
 - Automated backup scripts (Windows Task Scheduler, cron)
-- Cloud storage integration (Azure Blob, S3, Google Cloud)
-- Monitoring and alerting for backup failures
+- Cloud storage integration (Azure Blob Storage)
+- Disaster recovery scenarios and testing schedule
+- Post-restore verification (`python manage.py verify_backup_restore`)
 
 ### PostgreSQL Role Security
 
