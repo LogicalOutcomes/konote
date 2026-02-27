@@ -570,23 +570,44 @@ def client_transfer(request, client_id):
             selected_ids = set(p.pk for p in form.cleaned_data["programs"])
             added = []
             removed = []
-            # Unenrol removed programs (only within user's accessible programs)
+            # Determine if this is a transfer (removing + adding simultaneously)
+            is_transfer = bool(selected_ids - current_program_ids) and bool(
+                current_program_ids & accessible_program_ids - selected_ids
+            )
+
+            # Finish removed programs (only within user's accessible programs)
+            now = timezone.now()
             for enrolment in ClientProgramEnrolment.objects.filter(
                 client_file=client, status="active",
                 program_id__in=accessible_program_ids,
             ):
                 if enrolment.program_id not in selected_ids:
                     enrolment.status = "finished"
-                    enrolment.unenrolled_at = timezone.now()
+                    enrolment.ended_at = now
+                    enrolment.unenrolled_at = now
+                    enrolment.end_reason = "transferred" if is_transfer else ""
                     enrolment.save()
+                    ServiceEpisodeStatusChange.objects.create(
+                        episode=enrolment,
+                        status="finished",
+                        reason="Transferred to another program" if is_transfer else "Removed from program",
+                        changed_by=request.user,
+                    )
                     removed.append(enrolment.program_id)
             # Enrol in new programs
             for program_id in selected_ids:
                 if program_id not in current_program_ids:
-                    ClientProgramEnrolment.objects.update_or_create(
+                    episode, created = ClientProgramEnrolment.objects.update_or_create(
                         client_file=client, program_id=program_id,
-                        defaults={"status": "active", "unenrolled_at": None},
+                        defaults={"status": "active", "unenrolled_at": None, "started_at": now},
                     )
+                    if created:
+                        ServiceEpisodeStatusChange.objects.create(
+                            episode=episode,
+                            status="active",
+                            reason="Enrolled via transfer" if is_transfer else "Enrolled",
+                            changed_by=request.user,
+                        )
                     added.append(program_id)
             # Update cross-program sharing preference
             client.cross_program_sharing = form.cleaned_data.get(
