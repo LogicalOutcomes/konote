@@ -424,6 +424,10 @@ def generate_funder_report_data(
             else:
                 secondary_outcomes.append(outcome_data)
 
+    # CIDS standards alignment data
+    from apps.reports.cids_enrichment import get_standards_alignment_data
+    cids_alignment = get_standards_alignment_data(program)
+
     return {
         # Report metadata
         "generated_at": timezone.now(),
@@ -452,6 +456,9 @@ def generate_funder_report_data(
         "primary_outcome": primary_outcome,
         "secondary_outcomes": secondary_outcomes,
         "achievement_summary": achievement_summary,
+
+        # CIDS standards alignment
+        "cids_alignment": cids_alignment,
 
         # Raw data for detailed views
         "active_client_count": len(active_client_ids),
@@ -579,5 +586,26 @@ def generate_funder_report_csv_rows(report_data: dict[str, Any]) -> list[list[st
         rows.append([_("Total Clients with Outcome Data"), format_number(summary["total_clients"])])
         rows.append([_("Clients Meeting Any Target"), format_number(summary["clients_met_any_target"])])
         rows.append([_("Overall Achievement Rate"), f"{summary['overall_rate']}%"])
+        rows.append([])
+
+    # CIDS Standards Alignment appendix
+    cids = report_data.get("cids_alignment")
+    if cids and cids.get("mapped_count", 0) > 0:
+        rows.append([_("STANDARDS ALIGNMENT (CIDS v%(version)s)") % {"version": cids["cids_version"]}])
+        if cids["program_cids"].get("sector_code"):
+            rows.append([_("Sector"), cids["program_cids"]["sector_code"]])
+        if cids["program_cids"].get("funder_code"):
+            rows.append([_("Funder Program Code"), cids["program_cids"]["funder_code"]])
+        rows.append([])
+        rows.append([_("Indicator"), _("IRIS+ Code"), _("SDG Goals"), _("CIDS Theme")])
+        for m in cids["metrics"]:
+            if m.get("iris_code") or m.get("sdg_goals") or m.get("theme"):
+                sdg_str = ", ".join(str(g) for g in m.get("sdg_goals", []))
+                rows.append([m["name"], m.get("iris_code", ""), sdg_str, m.get("theme", "")])
+        rows.append([])
+        rows.append([
+            _("%(mapped)s of %(total)s indicators mapped to CIDS standards.")
+            % {"mapped": cids["mapped_count"], "total": cids["total_count"]}
+        ])
 
     return rows
