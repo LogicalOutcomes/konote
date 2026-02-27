@@ -10,7 +10,7 @@ A secure, web-based Participant Outcome Management system for nonprofits. Agenci
 
 The original KoNote was designed to help mental health professionals and social service agencies track client outcomes — "notes that count." As Dr. Gotlib put it, traditional EMRs are often "over-engineered and cluttered." KoNote took the opposite approach: a simple interface designed for frontline workers, not IT departments.
 
-### Why KoNote?
+### Why KoNote? 
 
 When we implemented KoNote in nonprofit organisations, we discovered something important: **every nonprofit is different**. Each agency had:
 
